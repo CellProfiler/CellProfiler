@@ -16,13 +16,13 @@ import wx.lib.mixins.gridlabelrenderer
 
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
-import cellprofiler.measurement
-import cellprofiler.modules.images
-import cellprofiler.pipeline
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
-import cellprofiler.utilities.legacy
+import cellprofiler_core.measurement
+import cellprofiler_core.modules.images
+import cellprofiler_core.pipeline
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
+import cellprofiler_core.utilities.legacy
 
 """Table column displays metadata"""
 COL_METADATA = "Metadata"
@@ -111,48 +111,48 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         m = self.measurements
         if m is None or len(self.cache) == 0:
             return columns
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         metadata_tags = m.get_metadata_tags()
-        for feature in m.get_feature_names(cellprofiler.measurement.IMAGE):
+        for feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE):
             is_key = False
             channel = None
             if self.display_mode == DISPLAY_MODE_COMPLEX:
-                if feature.startswith(cellprofiler.measurement.C_METADATA):
+                if feature.startswith(cellprofiler_core.measurement.C_METADATA):
                     column_type = COL_METADATA
                     name = feature.split("_", 1)[1]
                     if feature in metadata_tags:
                         is_key = True
                 elif feature.startswith(
-                    cellprofiler.measurement.C_FILE_NAME
-                ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_FILE_NAME):
+                    cellprofiler_core.measurement.C_FILE_NAME
+                ) or feature.startswith(cellprofiler_core.measurement.C_OBJECTS_FILE_NAME):
                     column_type = COL_FILENAME
                     channel = feature.split("_", 1)[1]
                     name = "%s File Name" % channel
                 elif feature.startswith(
-                    cellprofiler.measurement.C_PATH_NAME
-                ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_PATH_NAME):
+                    cellprofiler_core.measurement.C_PATH_NAME
+                ) or feature.startswith(cellprofiler_core.measurement.C_OBJECTS_PATH_NAME):
                     column_type = COL_PATHNAME
                     channel = feature.split("_", 1)[1]
                     name = "%s Path Name" % channel
                 elif feature.startswith(
-                    cellprofiler.measurement.C_URL
-                ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_URL):
+                    cellprofiler_core.measurement.C_URL
+                ) or feature.startswith(cellprofiler_core.measurement.C_OBJECTS_URL):
                     column_type = COL_URL
                     channel = feature.split("_", 1)[1]
                     name = "%s URL" % channel
-                elif feature.startswith(cellprofiler.measurement.C_SERIES):
+                elif feature.startswith(cellprofiler_core.measurement.C_SERIES):
                     column_type = COL_SERIES
                     channel = feature.split("_", 1)[1]
                     name = "%s Series" % channel
-                elif feature.startswith(cellprofiler.measurement.C_FRAME):
+                elif feature.startswith(cellprofiler_core.measurement.C_FRAME):
                     column_type = COL_FRAME
                     channel = feature.split("_", 1)[1]
                     name = "%s Frame" % channel
                 else:
                     continue
             elif feature.startswith(
-                cellprofiler.measurement.C_URL
-            ) or feature.startswith(cellprofiler.measurement.C_OBJECTS_URL):
+                cellprofiler_core.measurement.C_URL
+            ) or feature.startswith(cellprofiler_core.measurement.C_OBJECTS_URL):
                 column_type = COL_URL
                 channel = feature.split("_", 1)[1]
                 name = channel
@@ -178,7 +178,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             #
             if a.is_key:
                 if b.is_key:
-                    return cellprofiler.utilities.legacy.cmp(a.name, b.name)
+                    return cellprofiler_core.utilities.legacy.cmp(a.name, b.name)
                 return -1
             elif b.is_key:
                 return 1
@@ -187,7 +187,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             #
             if a.column_type == COL_METADATA:
                 if b.column_type == COL_METADATA:
-                    return cellprofiler.utilities.legacy.cmp(a.name, b.name)
+                    return cellprofiler_core.utilities.legacy.cmp(a.name, b.name)
                 return 1
             elif b.column_type == COL_METADATA:
                 return -1
@@ -195,11 +195,11 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             # If different channels, order by channel
             #
             if a.channel != b.channel:
-                return cellprofiler.utilities.legacy.cmp(a.channel, b.channel)
+                return cellprofiler_core.utilities.legacy.cmp(a.channel, b.channel)
             #
             # Otherwise, the order is given by COL_ORDER
             #
-            return cellprofiler.utilities.legacy.cmp(
+            return cellprofiler_core.utilities.legacy.cmp(
                 COL_ORDER.index(a.column_type), COL_ORDER.index(b.column_type)
             )
 
@@ -249,11 +249,11 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         column = self.columns[col]
         if (
             column.channel_type
-            == cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS
+            == cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS
         ):
-            feature = cellprofiler.measurement.C_OBJECTS_URL + "_" + column.channel
+            feature = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + column.channel
         else:
-            feature = cellprofiler.measurement.C_URL + "_" + column.channel
+            feature = cellprofiler_core.measurement.C_URL + "_" + column.channel
         value = self.cache[feature, image_set]
         if value is not None:
             return value.encode()
@@ -367,7 +367,7 @@ class ImageSetCache:
             if len(self.cache) >= self.max_size:
                 self.decimate()
             entry = [
-                self.m[cellprofiler.measurement.IMAGE, feature, self.pages[page]],
+                self.m[cellprofiler_core.measurement.IMAGE, feature, self.pages[page]],
                 self.access_time,
             ]
             self.cache[key] = entry
@@ -479,7 +479,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 parent=self,
             )
         else:
-            cellprofiler.preferences.report_progress(
+            cellprofiler_core.preferences.report_progress(
                 "ImageSetCount", None, "Found %d image sets" % n_imagesets
             )
         self.recompute()
@@ -688,27 +688,27 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             choices = [
                 (
-                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                    cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_GRAYSCALE,
                     self.monochrome_channel_image,
                     "Treat the image as monochrome, averaging colors if needed",
                 ),
                 (
-                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
+                    cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_COLOR,
                     self.color_channel_image,
                     "Treat the image as color. Use ColorToGray to get individual colors",
                 ),
                 (
-                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_MASK,
+                    cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_MASK,
                     self.mask_image,
                     "Treat the image as a binary mask",
                 ),
                 (
-                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
+                    cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS,
                     self.objects_image,
                     "Treat the image as objects",
                 ),
                 (
-                    cellprofiler.pipeline.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
+                    cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_FUNCTION,
                     self.illumination_function_image,
                     "Use the image for illumination correction",
                 ),
@@ -994,7 +994,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     ###############################
 
     def on_grid_begin_drag(self, event):
-        from cellprofiler.modules.loadimages import url2pathname
+        from cellprofiler_core.modules.loadimages import url2pathname
 
         selections = self.get_selected_cells()
         if len(selections) > 0:
@@ -1561,10 +1561,10 @@ class FilterPanelDlg(wx.Dialog):
                         """
         super(self.__class__, self).__init__(parent, size=(640, 480))
         self.SetTitle("Select images using a filter")
-        from cellprofiler.modules.images import FilePredicate, DirectoryPredicate
-        from cellprofiler.modules.images import ExtensionPredicate
+        from cellprofiler_core.modules.images import FilePredicate, DirectoryPredicate
+        from cellprofiler_core.modules.images import ExtensionPredicate
 
-        self.filter_setting = cellprofiler.setting.Filter(
+        self.filter_setting = cellprofiler_core.setting.Filter(
             "Filter",
             predicates=[FilePredicate(), DirectoryPredicate(), ExtensionPredicate()],
             value='and (file does contain "")',
@@ -1580,9 +1580,9 @@ class FilterPanelDlg(wx.Dialog):
 
     def fn_filter(self, url):
         """A filter function that applies the current filter to a URL"""
-        modpath = cellprofiler.modules.images.Images.url_to_modpath(url)
+        modpath = cellprofiler_core.modules.images.Images.url_to_modpath(url)
         return self.filter_setting.evaluate(
-            (cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None)
+            (cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None)
         )
 
     def on_value_change(self, setting, panel, new_text, event, timeout):

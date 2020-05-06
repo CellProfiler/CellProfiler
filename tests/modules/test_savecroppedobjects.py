@@ -7,10 +7,10 @@ import skimage
 import skimage.measure
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.modules.savecroppedobjects
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 instance = cellprofiler.modules.savecroppedobjects.SaveCroppedObjects()
 
@@ -20,7 +20,7 @@ def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
 
     segmented = skimage.measure.label(image.pixel_data > 0.5)
 
-    obj = cellprofiler.object.Objects()
+    obj = cellprofiler_core.object.Objects()
 
     obj.segmented = segmented
 
@@ -33,7 +33,7 @@ def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
     module.objects_name.value = "example"
 
     module.directory.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.run(workspace)
@@ -68,7 +68,7 @@ def test_defaults(module):
 
     assert (
         module.directory.get_dir_choice()
-        == cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME
+        == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
     )
 
 
@@ -76,7 +76,7 @@ def test_defaults(module):
     "image",
     [
         pytest.param(
-            cellprofiler.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
+            cellprofiler_core.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
         )
     ],
 )
@@ -85,7 +85,7 @@ def test_run_masks(image, module, image_set, workspace, object_set, tmpdir):
 
     segmented = skimage.measure.label(image.pixel_data > 0.5)
 
-    obj = cellprofiler.object.Objects()
+    obj = cellprofiler_core.object.Objects()
 
     obj.segmented = segmented
 
@@ -96,7 +96,7 @@ def test_run_masks(image, module, image_set, workspace, object_set, tmpdir):
     module.objects_name.value = "example"
 
     module.directory.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.run(workspace)
@@ -124,7 +124,7 @@ def test_run_masks(image, module, image_set, workspace, object_set, tmpdir):
     "image",
     [
         pytest.param(
-            cellprofiler.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
+            cellprofiler_core.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
         )
     ],
 )
@@ -133,7 +133,7 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
 
     segmented = skimage.measure.label(image.pixel_data > 0.5)
 
-    obj = cellprofiler.object.Objects()
+    obj = cellprofiler_core.object.Objects()
 
     obj.segmented = segmented
 
@@ -144,7 +144,7 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
     module.objects_name.value = "example"
 
     module.directory.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME,
         os.path.join(directory, "subdirectory"),
     )
 
@@ -173,7 +173,7 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
     "image",
     [
         pytest.param(
-            cellprofiler.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
+            cellprofiler_core.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
         )
     ],
 )
@@ -184,7 +184,7 @@ def test_create_subfolders_from_metadata(
 
     segmented = skimage.measure.label(image.pixel_data > 0.5)
 
-    obj = cellprofiler.object.Objects()
+    obj = cellprofiler_core.object.Objects()
 
     obj.segmented = segmented
 
@@ -199,7 +199,7 @@ def test_create_subfolders_from_metadata(
     module.export_option.value = "Masks"
 
     module.directory.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME,
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME,
         os.path.join(directory, "\\g<Plate>", "\\g<Well>"),
     )
 

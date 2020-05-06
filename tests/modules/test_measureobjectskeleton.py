@@ -5,14 +5,14 @@ import traceback
 import numpy
 import six.moves
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.measureobjectskeleton
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
 
 IMAGE_NAME = "MyImage"
@@ -42,10 +42,10 @@ def test_load_v1():
     with open("./tests/resources/modules/measureobjectskeleton/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -61,20 +61,20 @@ def test_load_v1():
 
 
 def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=False):
-    m = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
+    m = cellprofiler_core.measurement.Measurements()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     m.add_measurement(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_NUMBER, 1
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER, 1
     )
     m.add_measurement(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.GROUP_INDEX, 1
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, 1
     )
     image_set = m
-    img = cellprofiler.image.Image(image, mask)
+    img = cellprofiler_core.image.Image(image, mask)
     image_set.add(IMAGE_NAME, img)
 
-    object_set = cellprofiler.object.ObjectSet()
-    o = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    o = cellprofiler_core.object.Objects()
     o.segmented = labels
     object_set.add_objects(o, OBJECT_NAME)
 
@@ -82,26 +82,26 @@ def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=F
     module.image_name.value = IMAGE_NAME
     module.seed_objects_name.value = OBJECT_NAME
     if intensity_image is not None:
-        img = cellprofiler.image.Image(intensity_image)
+        img = cellprofiler_core.image.Image(intensity_image)
         image_set.add(INTENSITY_IMAGE_NAME, img)
         module.intensity_image_name.value = INTENSITY_IMAGE_NAME
     if wants_graph:
         module.wants_objskeleton_graph.value = True
-        module.directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = temp_dir
         module.edge_file_name.value = EDGE_FILE
         module.vertex_file_name.value = VERTEX_FILE
     module.set_module_num(1)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list
     )
     return workspace, module
@@ -130,10 +130,10 @@ def test_empty():
         )
         assert feature == expected_feature
         coltypes[expected_feature] = (
-            cellprofiler.measurement.COLTYPE_FLOAT
+            cellprofiler_core.measurement.COLTYPE_FLOAT
             if expected
-            == cellprofiler.modules.measureobjectskeleton.F_TOTAL_OBJSKELETON_LENGTH
-            else cellprofiler.measurement.COLTYPE_INTEGER
+               == cellprofiler.modules.measureobjectskeleton.F_TOTAL_OBJSKELETON_LENGTH
+            else cellprofiler_core.measurement.COLTYPE_INTEGER
         )
     assert all([c[0] == OBJECT_NAME for c in columns])
     assert all([c[2] == coltypes[c[1]] for c in columns])
@@ -174,7 +174,7 @@ def test_empty():
 
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature in cellprofiler.modules.measureobjectskeleton.F_ALL:
         mname = "_".join(
             (
@@ -196,7 +196,7 @@ def test_trunk():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 0),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 1),
@@ -223,11 +223,11 @@ def test_trunks():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (
-            cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
-            [0, 0],
+                cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
+                [0, 0],
         ),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, [2, 1]),
     ):
@@ -255,7 +255,7 @@ def test_branch():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 1),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 1),
@@ -286,7 +286,7 @@ def test_img_667():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 1),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 2),
@@ -330,7 +330,7 @@ def test_quadrabranch():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES, 0),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, 3),
@@ -365,11 +365,11 @@ def test_wrong_size():
     workspace, module = make_workspace(labels, image)
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (
-            cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
-            [0, 0],
+                cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
+                [0, 0],
         ),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, [2, 1]),
     ):

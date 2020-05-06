@@ -40,11 +40,11 @@ These File Processing modules are considered deprecated and will be removed
 in a future release of CellProfiler. It is not recommended that you build
 new pipelines containing these modules.
 
-.. automodule:: cellprofiler.modules.loadimages
+.. automodule:: cellprofiler_core.modules.loadimages
 
 `(Jump to top)`_
 
-.. automodule:: cellprofiler.modules.loadsingleimage
+.. automodule:: cellprofiler_core.modules.loadsingleimage
 
 `(Jump to top)`_
 

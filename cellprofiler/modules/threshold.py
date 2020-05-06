@@ -25,10 +25,10 @@ import skimage.filters
 import skimage.filters.rank
 import skimage.morphology
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 O_TWO_CLASS = "Two classes"
@@ -56,7 +56,7 @@ PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
 
-class Threshold(cellprofiler.module.ImageProcessing):
+class Threshold(cellprofiler_core.module.ImageProcessing):
     module_name = "Threshold"
 
     variable_revision_number = 10
@@ -64,7 +64,7 @@ class Threshold(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(Threshold, self).create_settings()
 
-        self.threshold_scope = cellprofiler.setting.Choice(
+        self.threshold_scope = cellprofiler_core.setting.Choice(
             "Threshold strategy",
             TS_ALL,
             value=TS_GLOBAL,
@@ -103,7 +103,7 @@ The choices for the threshold strategy are:
             ),
         )
 
-        self.global_operation = cellprofiler.setting.Choice(
+        self.global_operation = cellprofiler_core.setting.Choice(
             "Thresholding method",
             [
                 TM_MANUAL,
@@ -241,7 +241,7 @@ There are a number of methods for finding thresholds automatically:
             ),
         )
 
-        self.local_operation = cellprofiler.setting.Choice(
+        self.local_operation = cellprofiler_core.setting.Choice(
             "Thresholding method",
             [centrosome.threshold.TM_OTSU],
             value=centrosome.threshold.TM_OTSU,
@@ -316,7 +316,7 @@ threshold value.
             ),
         )
 
-        self.threshold_smoothing_scale = cellprofiler.setting.Float(
+        self.threshold_smoothing_scale = cellprofiler_core.setting.Float(
             "Threshold smoothing scale",
             0,
             minval=0,
@@ -337,7 +337,7 @@ with a sigma of 1.
 """,
         )
 
-        self.threshold_correction_factor = cellprofiler.setting.Float(
+        self.threshold_correction_factor = cellprofiler_core.setting.Float(
             "Threshold correction factor",
             1,
             doc="""\
@@ -366,7 +366,7 @@ setting.
             ),
         )
 
-        self.threshold_range = cellprofiler.setting.FloatRange(
+        self.threshold_range = cellprofiler_core.setting.FloatRange(
             "Lower and upper bounds on threshold",
             (0, 1),
             minval=0,
@@ -396,7 +396,7 @@ empirically-determined value.
             ),
         )
 
-        self.manual_threshold = cellprofiler.setting.Float(
+        self.manual_threshold = cellprofiler_core.setting.Float(
             "Manual threshold",
             value=0.0,
             minval=0.0,
@@ -409,9 +409,9 @@ value from 0 to 1.
 """,
         )
 
-        self.thresholding_measurement = cellprofiler.setting.Measurement(
+        self.thresholding_measurement = cellprofiler_core.setting.Measurement(
             "Select the measurement to threshold with",
-            lambda: cellprofiler.measurement.IMAGE,
+            lambda: cellprofiler_core.measurement.IMAGE,
             doc="""\
 *(Used only if Measurement is selected for thresholding method)*
 
@@ -421,7 +421,7 @@ a prior module.
 """,
         )
 
-        self.two_class_otsu = cellprofiler.setting.Choice(
+        self.two_class_otsu = cellprofiler_core.setting.Choice(
             "Two-class or three-class thresholding?",
             [O_TWO_CLASS, O_THREE_CLASS],
             doc="""\
@@ -466,7 +466,7 @@ objects, three-class thresholding may perform worse than two-class.
             ),
         )
 
-        self.assign_middle_to_foreground = cellprofiler.setting.Choice(
+        self.assign_middle_to_foreground = cellprofiler_core.setting.Choice(
             "Assign pixels in the middle intensity class to the foreground or the background?",
             [O_FOREGROUND, O_BACKGROUND],
             doc="""\
@@ -477,7 +477,7 @@ be assigned to the foreground class or the background class.
 """,
         )
 
-        self.lower_outlier_fraction = cellprofiler.setting.Float(
+        self.lower_outlier_fraction = cellprofiler_core.setting.Float(
             "Lower outlier fraction",
             0.05,
             minval=0,
@@ -492,7 +492,7 @@ the lowest intensity.
             ),
         )
 
-        self.upper_outlier_fraction = cellprofiler.setting.Float(
+        self.upper_outlier_fraction = cellprofiler_core.setting.Float(
             "Upper outlier fraction",
             0.05,
             minval=0,
@@ -507,7 +507,7 @@ the highest intensity.
             ),
         )
 
-        self.averaging_method = cellprofiler.setting.Choice(
+        self.averaging_method = cellprofiler_core.setting.Choice(
             "Averaging method",
             [RB_MEAN, RB_MEDIAN, RB_MODE],
             doc="""\
@@ -536,7 +536,7 @@ This setting determines how the intensity midpoint is determined.
             ),
         )
 
-        self.variance_method = cellprofiler.setting.Choice(
+        self.variance_method = cellprofiler_core.setting.Choice(
             "Variance method",
             [RB_SD, RB_MAD],
             doc="""\
@@ -556,7 +556,7 @@ difference of the pixel intensities from their median).
             ),
         )
 
-        self.number_of_deviations = cellprofiler.setting.Float(
+        self.number_of_deviations = cellprofiler_core.setting.Float(
             "# of deviations",
             2,
             doc="""\
@@ -574,7 +574,7 @@ use a negative number if you want the threshold to be lower than the average
             ),
         )
 
-        self.adaptive_window_size = cellprofiler.setting.Integer(
+        self.adaptive_window_size = cellprofiler_core.setting.Integer(
             "Size of adaptive window",
             50,
             doc="""\
@@ -700,7 +700,7 @@ Often a good choice is some multiple of the largest expected object size.
             binary_image,
         )
 
-        output = cellprofiler.image.Image(
+        output = cellprofiler_core.image.Image(
             binary_image, parent_image=input, dimensions=dimensions
         )
 
@@ -957,14 +957,14 @@ Often a good choice is some multiple of the largest expected object size.
         ave_threshold = numpy.mean(numpy.atleast_1d(local_threshold))
 
         measurements.add_measurement(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_FINAL_THRESHOLD % objname,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_FINAL_THRESHOLD % objname,
             ave_threshold,
         )
 
         measurements.add_measurement(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_ORIG_THRESHOLD % objname,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_ORIG_THRESHOLD % objname,
             global_threshold,
         )
 
@@ -976,16 +976,16 @@ Often a good choice is some multiple of the largest expected object size.
         wv = centrosome.threshold.weighted_variance(data, mask, binary_image)
 
         measurements.add_measurement(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_WEIGHTED_VARIANCE % objname,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_WEIGHTED_VARIANCE % objname,
             numpy.array([wv], dtype=float),
         )
 
         entropies = centrosome.threshold.sum_of_entropies(data, mask, binary_image)
 
         measurements.add_measurement(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_SUM_OF_ENTROPIES % objname,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_SUM_OF_ENTROPIES % objname,
             numpy.array([entropies], dtype=float),
         )
 
@@ -995,43 +995,43 @@ Often a good choice is some multiple of the largest expected object size.
 
         return [
             (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.FF_FINAL_THRESHOLD % object_name,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.FF_FINAL_THRESHOLD % object_name,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.FF_ORIG_THRESHOLD % object_name,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.FF_ORIG_THRESHOLD % object_name,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.FF_WEIGHTED_VARIANCE % object_name,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.FF_WEIGHTED_VARIANCE % object_name,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.FF_SUM_OF_ENTROPIES % object_name,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.FF_SUM_OF_ENTROPIES % object_name,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
         ]
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler.measurement.IMAGE:
-            return [cellprofiler.measurement.C_THRESHOLD]
+        if object_name == cellprofiler_core.measurement.IMAGE:
+            return [cellprofiler_core.measurement.C_THRESHOLD]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler.measurement.IMAGE
-            and category == cellprofiler.measurement.C_THRESHOLD
+            object_name == cellprofiler_core.measurement.IMAGE
+            and category == cellprofiler_core.measurement.C_THRESHOLD
         ):
             return [
-                cellprofiler.measurement.FTR_ORIG_THRESHOLD,
-                cellprofiler.measurement.FTR_FINAL_THRESHOLD,
-                cellprofiler.measurement.FTR_SUM_OF_ENTROPIES,
-                cellprofiler.measurement.FTR_WEIGHTED_VARIANCE,
+                cellprofiler_core.measurement.FTR_ORIG_THRESHOLD,
+                cellprofiler_core.measurement.FTR_FINAL_THRESHOLD,
+                cellprofiler_core.measurement.FTR_SUM_OF_ENTROPIES,
+                cellprofiler_core.measurement.FTR_WEIGHTED_VARIANCE,
             ]
 
         return []
@@ -1043,13 +1043,8 @@ Often a good choice is some multiple of the largest expected object size.
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab:
-            raise NotImplementedError(
-                "There is no automatic upgrade path for this module from MatLab pipelines."
-            )
-
         if variable_revision_number < 7:
             raise NotImplementedError(
                 "Automatic upgrade for this module is not supported in CellProfiler 3.0."
@@ -1089,7 +1084,7 @@ Often a good choice is some multiple of the largest expected object size.
             else:
                 setting_values += [centrosome.threshold.TM_OTSU]
 
-        return setting_values, variable_revision_number, False
+        return setting_values, variable_revision_number
 
     def upgrade_threshold_settings(self, setting_values):
         """Upgrade the threshold settings to the current version
@@ -1183,7 +1178,7 @@ Often a good choice is some multiple of the largest expected object size.
             and self.lower_outlier_fraction.value + self.upper_outlier_fraction.value
             >= 1
         ):
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 """
                 The sum of the lower robust background outlier fraction ({0:f}) and the upper fraction ({1:f}) must be
                 less than one.

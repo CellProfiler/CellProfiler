@@ -4,13 +4,13 @@
 Create an RGB image with color-coded labels overlaid on a grayscale image.
 """
 
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.preferences
-import cellprofiler.setting
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 
 
-class OverlayObjects(cellprofiler.module.ImageProcessing):
+class OverlayObjects(cellprofiler_core.module.ImageProcessing):
     module_name = "OverlayObjects"
 
     variable_revision_number = 1
@@ -26,12 +26,12 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
             "An RGB image with color-coded labels overlaid on a grayscale image."
         )
 
-        self.objects = cellprofiler.setting.ObjectNameSubscriber(
+        self.objects = cellprofiler_core.setting.ObjectNameSubscriber(
             text="Objects",
             doc="Color-coded labels of this object will be overlaid on the input image.",
         )
 
-        self.opacity = cellprofiler.setting.Float(
+        self.opacity = cellprofiler_core.setting.Float(
             text="Opacity",
             value=0.3,
             minval=0.0,
@@ -57,7 +57,7 @@ class OverlayObjects(cellprofiler.module.ImageProcessing):
         return visible_settings
 
     def run(self, workspace):
-        self.function = lambda pixel_data, objects_name, opacity: cellprofiler.object.overlay_labels(
+        self.function = lambda pixel_data, objects_name, opacity: cellprofiler_core.object.overlay_labels(
             pixel_data,
             workspace.object_set.get_objects(objects_name).segmented,
             opacity,

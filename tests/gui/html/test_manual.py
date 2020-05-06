@@ -2,7 +2,7 @@
 # """Tests for cellprofiler.gui.html.manual"""
 #
 # import cellprofiler.gui.html.manual
-# import cellprofiler.preferences
+# import cellprofiler_core.preferences
 # import os
 # import re
 # import tempfile
@@ -13,7 +13,7 @@
 # class TestManual(unittest.TestCase):
 #     def setUp(self):
 #         self.temp_dir = tempfile.mkdtemp()
-#         from cellprofiler.setting import Text
+#         from cellprofiler_core.setting import Text
 #
 #         def make_command_choice(self, label, doc):
 #             return Text(label, "None", doc=doc)
@@ -40,7 +40,7 @@
 #                 module = instantiate_module(module_name)
 #                 location = os.path.split(
 #                         module.create_settings.im_func.func_code.co_filename)[0]
-#                 if location == cellprofiler.preferences.get_plugin_directory():
+#                 if location == cellprofiler_core.preferences.get_plugin_directory():
 #                     continue
 #                 traceback.print_exc()
 #                 self.assert_("Failed to open %s.html" % module_name)

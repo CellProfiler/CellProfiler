@@ -1,8 +1,8 @@
 import six.moves
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 import cellprofiler.modules.editobjectsmanually
-import cellprofiler.pipeline
+import cellprofiler_core.pipeline
 
 INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"
@@ -12,10 +12,10 @@ def test_load_v1():
     with open("./tests/resources/modules/editobjectsmanually/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -34,10 +34,10 @@ def test_load_v2():
     with open("./tests/resources/modules/editobjectsmanually/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -58,10 +58,10 @@ def test_load_v3():
     with open("./tests/resources/modules/editobjectsmanually/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -82,10 +82,10 @@ def test_load_v4():
     with open("./tests/resources/modules/editobjectsmanually/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.loadtxt(six.moves.StringIO(data))
@@ -107,34 +107,34 @@ def test_measurements():
     columns = module.get_measurement_columns(None)
     expected_columns = [
         (
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS_NAME,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
         (
             INPUT_OBJECTS_NAME,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         ),
     ]
 
@@ -159,22 +159,22 @@ def test_measurements():
     # Check the measurement features
     #
     d = {
-        cellprofiler.measurement.IMAGE: {
-            cellprofiler.measurement.C_COUNT: [OUTPUT_OBJECTS_NAME],
+        cellprofiler_core.measurement.IMAGE: {
+            cellprofiler_core.measurement.C_COUNT: [OUTPUT_OBJECTS_NAME],
             "Foo": [],
         },
         INPUT_OBJECTS_NAME: {
-            cellprofiler.measurement.C_CHILDREN: ["%s_Count" % OUTPUT_OBJECTS_NAME],
+            cellprofiler_core.measurement.C_CHILDREN: ["%s_Count" % OUTPUT_OBJECTS_NAME],
             "Foo": [],
         },
         OUTPUT_OBJECTS_NAME: {
-            cellprofiler.measurement.C_LOCATION: [
-                cellprofiler.measurement.FTR_CENTER_X,
-                cellprofiler.measurement.FTR_CENTER_Y,
+            cellprofiler_core.measurement.C_LOCATION: [
+                cellprofiler_core.measurement.FTR_CENTER_X,
+                cellprofiler_core.measurement.FTR_CENTER_Y,
             ],
-            cellprofiler.measurement.C_PARENT: [INPUT_OBJECTS_NAME],
-            cellprofiler.measurement.C_NUMBER: [
-                cellprofiler.measurement.FTR_OBJECT_NUMBER
+            cellprofiler_core.measurement.C_PARENT: [INPUT_OBJECTS_NAME],
+            cellprofiler_core.measurement.C_NUMBER: [
+                cellprofiler_core.measurement.FTR_OBJECT_NUMBER
             ],
             "Foo": [],
         },

@@ -50,10 +50,10 @@ import scipy.ndimage as scind
 import skimage.morphology
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
+import cellprofiler_core.workspace as cpw
 
 "Granularity category"
 C_GRANULARITY = "Granularity_%s_%s"
@@ -89,7 +89,7 @@ class MeasureGranularity(cpm.Module):
             "image_name",
             cps.ImageNameSubscriber(
                 "Select an image to measure",
-                cps.NONE,
+                "None",
                 doc="Select the grayscale images whose granularity you want to measure.",
             ),
         )
@@ -278,7 +278,7 @@ object at the requested scales.""",
         new_shape = np.array(im.pixel_data.shape)
         if image.subsample_size.value < 1:
             new_shape = new_shape * image.subsample_size.value
-            if im.dimensions is 2:
+            if im.dimensions == 2:
                 i, j = (
                     np.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
                     / image.subsample_size.value
@@ -302,7 +302,7 @@ object at the requested scales.""",
         #
         if image.image_sample_size.value < 1:
             back_shape = new_shape * image.image_sample_size.value
-            if im.dimensions is 2:
+            if im.dimensions == 2:
                 i, j = (
                     np.mgrid[0 : back_shape[0], 0 : back_shape[1]].astype(float)
                     / image.image_sample_size.value
@@ -323,7 +323,7 @@ object at the requested scales.""",
             back_mask = mask
             back_shape = new_shape
         radius = image.element_size.value
-        if im.dimensions is 2:
+        if im.dimensions == 2:
             selem = skimage.morphology.disk(radius, dtype=bool)
         else:
             selem = skimage.morphology.ball(radius, dtype=bool)
@@ -334,7 +334,7 @@ object at the requested scales.""",
         back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
         back_pixels = skimage.morphology.dilation(back_pixels_mask, selem=selem)
         if image.image_sample_size.value < 1:
-            if im.dimensions is 2:
+            if im.dimensions == 2:
                 i, j = np.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
                 #
                 # Make sure the mapping only references the index range of
@@ -394,7 +394,7 @@ object at the requested scales.""",
         currentmean = startmean
         startmean = max(startmean, np.finfo(float).eps)
 
-        if im.dimensions is 2:
+        if im.dimensions == 2:
             footprint = skimage.morphology.disk(1, dtype=bool)
         else:
             footprint = skimage.morphology.ball(1, dtype=bool)
@@ -415,7 +415,7 @@ object at the requested scales.""",
             # original image so we can match against object labels
             #
             orig_shape = im.pixel_data.shape
-            if im.dimensions is 2:
+            if im.dimensions == 2:
                 i, j = np.mgrid[0 : orig_shape[0], 0 : orig_shape[1]].astype(float)
                 #
                 # Make sure the mapping only references the index range of
@@ -519,12 +519,8 @@ object at the requested scales.""",
         return result
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 1:
-            # Matlab and pyCP v1 are identical
-            from_matlab = False
-            variable_revision_number = 1
         if variable_revision_number == 1:
             # changed to use cps.SettingsGroup() but did not change the
             # ordering of any of the settings
@@ -540,7 +536,7 @@ object at the requested scales.""",
                 setting_values = setting_values[IMAGE_SETTING_COUNT_V2:]
             setting_values = new_setting_values
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True
@@ -556,7 +552,7 @@ class GranularitySettingsGroup(cps.SettingsGroup):
             "objects_name",
             cps.ObjectNameSubscriber(
                 "Select objects to measure",
-                cps.NONE,
+                "None",
                 doc="""\
 Select the objects whose granularity will be measured. You can select
 objects from prior modules that identify objects, such as

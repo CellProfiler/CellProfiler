@@ -30,9 +30,9 @@ import skimage.filters
 import skimage.morphology
 import skimage.transform
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 ENHANCE = "Enhance"
@@ -52,7 +52,7 @@ N_GRADIENT = "Line structures"
 N_TUBENESS = "Tubeness"
 
 
-class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
+class EnhanceOrSuppressFeatures(cellprofiler_core.module.ImageProcessing):
     module_name = "EnhanceOrSuppressFeatures"
 
     variable_revision_number = 6
@@ -60,7 +60,7 @@ class EnhanceOrSuppressFeatures(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(EnhanceOrSuppressFeatures, self).create_settings()
 
-        self.method = cellprofiler.setting.Choice(
+        self.method = cellprofiler_core.setting.Choice(
             "Select the operation",
             [ENHANCE, SUPPRESS],
             doc="""\
@@ -75,7 +75,7 @@ designate.
             ),
         )
 
-        self.enhance_method = cellprofiler.setting.Choice(
+        self.enhance_method = cellprofiler_core.setting.Choice(
             "Feature type",
             [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],
             doc="""\
@@ -140,7 +140,7 @@ This module can enhance several kinds of image features:
             ),
         )
 
-        self.object_size = cellprofiler.setting.Integer(
+        self.object_size = cellprofiler_core.setting.Integer(
             "Feature size",
             10,
             2,
@@ -163,7 +163,7 @@ used to calculate an appropriate filter size.
             ),
         )
 
-        self.hole_size = cellprofiler.setting.IntegerRange(
+        self.hole_size = cellprofiler_core.setting.IntegerRange(
             "Range of hole sizes",
             value=(1, 10),
             minval=1,
@@ -177,7 +177,7 @@ holes whose diameters fall between these two values.
             ),
         )
 
-        self.smoothing = cellprofiler.setting.Float(
+        self.smoothing = cellprofiler_core.setting.Float(
             "Smoothing scale",
             value=2.0,
             minval=0.0,
@@ -214,7 +214,7 @@ this is not recommended.
             ),
         )
 
-        self.angle = cellprofiler.setting.Float(
+        self.angle = cellprofiler_core.setting.Float(
             "Shear angle",
             value=0,
             doc="""\
@@ -231,7 +231,7 @@ the shear angle is 180° + 45° = 225°.
             ),
         )
 
-        self.decay = cellprofiler.setting.Float(
+        self.decay = cellprofiler_core.setting.Float(
             "Decay",
             value=0.95,
             minval=0.1,
@@ -252,7 +252,7 @@ appears to be a bias in the integration direction.
             ),
         )
 
-        self.neurite_choice = cellprofiler.setting.Choice(
+        self.neurite_choice = cellprofiler_core.setting.Choice(
             "Enhancement method",
             [N_TUBENESS, N_GRADIENT],
             doc="""\
@@ -287,7 +287,7 @@ Two methods can be used to enhance neurites:
             ),
         )
 
-        self.speckle_accuracy = cellprofiler.setting.Choice(
+        self.speckle_accuracy = cellprofiler_core.setting.Choice(
             "Speed and accuracy",
             choices=[S_FAST, S_SLOW],
             doc="""\
@@ -381,7 +381,7 @@ Two methods can be used to enhance neurites:
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
 
-        result_image = cellprofiler.image.Image(
+        result_image = cellprofiler_core.image.Image(
             result, parent_image=image, dimensions=image.dimensions
         )
 
@@ -582,7 +582,7 @@ Two methods can be used to enhance neurites:
         return self.__unmask(result, image.pixel_data, image.mask)
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust setting values if they came from a previous revision
 
@@ -595,34 +595,27 @@ Two methods can be used to enhance neurites:
         module_name - the name of the module that did the saving. This can be
                       used to import the settings from another module if
                       that module was merged into the current module
-        from_matlab - True if the settings came from a Matlab pipeline, False
-                      if the settings are from a CellProfiler 2.0 pipeline.
-
-        Overriding modules should return a tuple of setting_values,
-        variable_revision_number and True if upgraded to CP 2.0, otherwise
-        they should leave things as-is so that the caller can report
-        an error.
         """
-        if not from_matlab and variable_revision_number == 1:
+        if variable_revision_number == 1:
             #
             # V1 -> V2, added enhance method and hole size
             #
             setting_values = setting_values + [E_SPECKLES, "1,10"]
             variable_revision_number = 2
-        if not from_matlab and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # V2 -> V3, added texture and DIC
             #
             setting_values = setting_values + ["2.0", "0", ".95"]
             variable_revision_number = 3
-        if not from_matlab and variable_revision_number == 3:
+        if variable_revision_number == 3:
             setting_values = setting_values + [N_GRADIENT]
             variable_revision_number = 4
-        if not from_matlab and variable_revision_number == 4:
+        if variable_revision_number == 4:
             setting_values = setting_values + ["Slow / circular"]
             variable_revision_number = 5
 
-        if not from_matlab and variable_revision_number == 5:
+        if variable_revision_number == 5:
             if setting_values[-1] == "Slow / circular":
                 setting_values[-1] = "Slow"
             else:
@@ -630,7 +623,7 @@ Two methods can be used to enhance neurites:
 
             variable_revision_number = 6
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 EnhanceOrSuppressSpeckles = EnhanceOrSuppressFeatures

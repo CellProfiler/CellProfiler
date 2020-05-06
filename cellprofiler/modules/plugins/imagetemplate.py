@@ -9,9 +9,9 @@
 import numpy
 import scipy.ndimage
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.setting
 
 #################################
 #
@@ -127,26 +127,26 @@ GRADIENT_DIRECTION_Y = "Gradient direction - Y"
 #
 # The module class.
 #
-# Your module should "inherit" from cellprofiler.module.Module, or a
-# subclass of cellprofiler.module.Module. This module inherits from
-# cellprofiler.module.ImageProcessing, which is the base class for
+# Your module should "inherit" from cellprofiler_core.module.Module, or a
+# subclass of cellprofiler_core.module.Module. This module inherits from
+# cellprofiler_core.module.ImageProcessing, which is the base class for
 # image processing modules. Image processing modules take an image as
 # input and output an image.
 #
-# This module will use the methods from cellprofiler.module.ImageProcessing
-# unless you re-implement them. You can let cellprofiler.module.ImageProcessing
+# This module will use the methods from cellprofiler_core.module.ImageProcessing
+# unless you re-implement them. You can let cellprofiler_core.module.ImageProcessing
 # do most of the work and implement only what you need.
 #
 # Other classes you can inherit from are:
 #
-# -  cellprofiler.module.ImageSegmentation: modules which take an image
+# -  cellprofiler_core.module.image_segmentation.ImageSegmentation: modules which take an image
 #    as input and output a segmentation (objects) should inherit from this
 #    class.
-# -  cellprofiler.module.ObjectProcessing: modules which operate on objects
+# -  cellprofiler_core.module.image_segmentation.ObjectProcessing: modules which operate on objects
 #    should inherit from this class. These are modules that take objects as
 #    input and output new objects.
 #
-class ImageTemplate(cellprofiler.module.ImageProcessing):
+class ImageTemplate(cellprofiler_core.module.ImageProcessing):
     #
     # The module starts by declaring the name that's used for display,
     # the category under which it is stored and the variable revision
@@ -164,12 +164,12 @@ class ImageTemplate(cellprofiler.module.ImageProcessing):
     # "create_settings" is where you declare the user interface elements
     # (the "settings") which the user will use to customize your module.
     #
-    # You can look at other modules and in cellprofiler.settings for
+    # You can look at other modules and in cellprofiler_core.settings for
     # settings you can use.
     #
     def create_settings(self):
         #
-        # The superclass (cellprofiler.module.ImageProcessing) defines two
+        # The superclass (cellprofiler_core.module.ImageProcessing) defines two
         # settings for image input and output:
         #
         # -  x_name: an ImageNameSubscriber which "subscribes" to all
@@ -200,7 +200,7 @@ that is made available by a prior module.
         # Here's a choice box - the user gets a drop-down list of what
         # can be done.
         #
-        self.gradient_choice = cellprofiler.setting.Choice(
+        self.gradient_choice = cellprofiler_core.setting.Choice(
             text="Gradient choice:",
             # The choice takes a list of possibilities. The first one
             # is the default - the one the user will typically choose.
@@ -240,7 +240,7 @@ Choose what to calculate:
         #
         # A binary setting displays a checkbox.
         #
-        self.automatic_smoothing = cellprofiler.setting.Binary(
+        self.automatic_smoothing = cellprofiler_core.setting.Binary(
             text="Automatically choose the smoothing scale?",
             value=True,  # The default value is to choose automatically
             doc="The module will automatically choose a smoothing scale for you if you leave this checked.",
@@ -253,7 +253,7 @@ Choose what to calculate:
         # for the scale. The control will turn red if the user types in
         # an invalid scale.
         #
-        self.scale = cellprofiler.setting.Float(
+        self.scale = cellprofiler_core.setting.Float(
             text="Scale",
             value=1,  # The default value is 1 - a short-range scale
             minval=0.1,  # We don't let the user type in really small values

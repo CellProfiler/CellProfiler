@@ -73,13 +73,13 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import strel_disk, centers_of_labels
 from centrosome.outline import outline
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-import cellprofiler.workspace as cpw
+import cellprofiler_core.image as cpi
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.object as cpo
+import cellprofiler_core.preferences as cpprefs
+import cellprofiler_core.setting as cps
+import cellprofiler_core.workspace as cpw
 
 D_ADJACENT = "Adjacent"
 D_EXPAND = "Expand until adjacent"
@@ -117,14 +117,14 @@ class MeasureObjectNeighbors(cpm.Module):
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
             "Select objects to measure",
-            cps.NONE,
+            "None",
             doc="""\
 Select the objects whose neighbors you want to measure.""",
         )
 
         self.neighbors_name = cps.ObjectNameSubscriber(
             "Select neighboring objects to measure",
-            cps.NONE,
+            "None",
             doc="""\
 This is the name of the objects that are potential
 neighbors of the above objects. You can find the neighbors
@@ -254,7 +254,7 @@ the image borders will be considered as potential object neighbours in this
 analysis. You may want to disable this if using object sets which were
 further filtered, since those filters won't have been applied to the
 previously discarded objects.""".format(
-                **{"YES": cps.YES}),
+                **{"YES": "Yes"}),
         )
 
     def settings(self):
@@ -890,7 +890,7 @@ previously discarded objects.""".format(
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             # Added neighbor objects
@@ -902,7 +902,7 @@ previously discarded objects.""".format(
             # Added border object exclusion
             setting_values = setting_values[:4] + [True] + setting_values[4:]
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True
@@ -910,6 +910,6 @@ previously discarded objects.""".format(
 
 def get_colormap(name):
     """Get colormap, accounting for possible request for default"""
-    if name == cps.DEFAULT:
+    if name == "Default":
         name = cpprefs.get_default_colormap()
     return matplotlib.cm.get_cmap(name)

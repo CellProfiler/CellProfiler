@@ -5,15 +5,15 @@ import numpy.testing
 import skimage.exposure
 import skimage.transform
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.resize
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 INPUT_IMAGE_NAME = "input"
 OUTPUT_IMAGE_NAME = "output"
@@ -23,10 +23,10 @@ def test_load_v3():
     with open("./tests/resources/modules/resize/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -59,18 +59,18 @@ def make_workspace(
     module.size_method.value = size_method
     module.interpolation.value = interpolation
     module.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image = cellprofiler.image.Image(image, mask, cropping, dimensions=dimensions)
+    image = cellprofiler_core.image.Image(image, mask, cropping, dimensions=dimensions)
     image_set.add(INPUT_IMAGE_NAME, image)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.object.ObjectSet(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -225,7 +225,7 @@ def test_reshape_using_another_images_dimensions():
     module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
     module.specific_image.value = "AnotherImage"
     workspace.image_set.add(
-        module.specific_image.value, cellprofiler.image.Image(expected)
+        module.specific_image.value, cellprofiler_core.image.Image(expected)
     )
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
@@ -310,7 +310,7 @@ def test_resize_color_bw():
     module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
     module.specific_image.value = "AnotherImage"
     workspace.image_set.add(
-        module.specific_image.value, cellprofiler.image.Image(tgt_image)
+        module.specific_image.value, cellprofiler_core.image.Image(tgt_image)
     )
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -329,7 +329,7 @@ def test_resize_color_color():
     module.use_manual_or_image.value = cellprofiler.modules.resize.C_IMAGE
     module.specific_image.value = "AnotherImage"
     workspace.image_set.add(
-        module.specific_image.value, cellprofiler.image.Image(tgt_image)
+        module.specific_image.value, cellprofiler_core.image.Image(tgt_image)
     )
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -574,7 +574,7 @@ def test_resize_volume_grayscale_other_volume_grayscale():
         skimage.transform.resize(crop_mask, (10, 30, 25), order=0, mode="constant")
     )
 
-    other_image = cellprofiler.image.Image(
+    other_image = cellprofiler_core.image.Image(
         expected_data, mask=expected_mask, crop_mask=expected_crop_mask, dimensions=3
     )
 
@@ -629,7 +629,7 @@ def test_resize_volume_grayscale_other_volume_color():
         skimage.transform.resize(crop_mask, (10, 30, 25), order=0, mode="constant")
     )
 
-    other_image = cellprofiler.image.Image(
+    other_image = cellprofiler_core.image.Image(
         numpy.random.rand(10, 30, 25, 3),
         mask=expected_mask,
         crop_mask=expected_crop_mask,
@@ -690,7 +690,7 @@ def test_resize_volume_color_other_volume_grayscale():
         skimage.transform.resize(crop_mask, (10, 30, 25), order=0, mode="constant")
     )
 
-    other_image = cellprofiler.image.Image(
+    other_image = cellprofiler_core.image.Image(
         expected_data, mask=expected_mask, crop_mask=expected_crop_mask, dimensions=3
     )
 
@@ -748,7 +748,7 @@ def test_resize_volume_color_other_volume_color():
         skimage.transform.resize(crop_mask, (10, 30, 25), order=0, mode="constant")
     )
 
-    other_image = cellprofiler.image.Image(
+    other_image = cellprofiler_core.image.Image(
         numpy.random.rand(10, 30, 25, 3),
         mask=expected_mask,
         crop_mask=expected_crop_mask,

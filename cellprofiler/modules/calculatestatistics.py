@@ -148,9 +148,10 @@ import numpy as np
 import scipy.optimize
 import six
 
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.preferences as cpprefs
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
 
 from cellprofiler.modules._help import (
     IO_FOLDER_CHOICE_HELP_TEXT,
@@ -176,11 +177,11 @@ class CalculateStatistics(cpm.Module):
 
         You should create the setting variables for your module here:
             # Ask the user for the input image
-            self.image_name = cellprofiler.settings.ImageNameSubscriber(...)
+            self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler.settings.ImageNameProvider(...)
+            self.output_image = cellprofiler_core.settings.ImageNameProvider(...)
             # Ask the user for a parameter
-            self.smoothing_size = cellprofiler.settings.Float(...)"""
+            self.smoothing_size = cellprofiler_core.settings.Float(...)"""
 
         self.grouping_values = cps.Measurement(
             "Select the image measurement describing the positive and negative control status",
@@ -286,11 +287,11 @@ Leave this setting blank if you do not want a prefix.
             cps.DirectoryPath(
                 "Output file location",
                 dir_choices=[
-                    cps.DEFAULT_OUTPUT_FOLDER_NAME,
-                    cps.DEFAULT_INPUT_FOLDER_NAME,
-                    cps.ABSOLUTE_FOLDER_NAME,
-                    cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cps.DEFAULT_INPUT_SUBFOLDER_NAME,
+                    cpprefs.DEFAULT_OUTPUT_FOLDER_NAME,
+                    cpprefs.DEFAULT_INPUT_FOLDER_NAME,
+                    cpprefs.ABSOLUTE_FOLDER_NAME,
+                    cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                    cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME,
                 ],
                 doc="""\
 *(Used only when creating dose-response plots)*
@@ -316,7 +317,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
@@ -560,29 +561,13 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
             )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
 
         PC_DEFAULT = "Default output folder"
         PC_WITH_IMAGE = "Same folder as image"
 
-        if from_matlab and variable_revision_number == 3:
-            data_name = setting_values[0]
-            logarithmic = setting_values[1]
-            figure_name = setting_values[2]
-            wants_save_figure = cps.NO if figure_name == cps.DO_NOT_USE else cps.YES
-            setting_values = [
-                data_name,
-                data_name,
-                logarithmic,
-                wants_save_figure,
-                figure_name,
-                PC_DEFAULT,
-                cps.DO_NOT_USE,
-            ]
-            variable_revision_number = 1
-            from_matlab = False
-        if variable_revision_number == 1 and not from_matlab:
+        if variable_revision_number == 1:
             #
             # Minor change: Default output directory -> folder
             #
@@ -592,12 +577,12 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                 custom_path = setting_values[offset + 5]
                 if dir_choice == PC_CUSTOM:
                     if custom_path[0] == ".":
-                        dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                        dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
                     elif custom_path[0] == "&":
-                        dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                        dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
                         custom_path = "." + custom_path[1:]
                     else:
-                        dir_choice = cps.ABSOLUTE_FOLDER_NAME
+                        dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
                 directory = cps.DirectoryPath.static_join_string(
                     dir_choice, custom_path
                 )
@@ -613,7 +598,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                 setting_values[offset]
             )
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 ########################################################

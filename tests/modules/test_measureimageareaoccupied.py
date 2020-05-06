@@ -1,38 +1,38 @@
 import numpy
 import six
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.measureimageareaoccupied
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 OBJECTS_NAME = "MyObjects"
 
 
 def make_workspace(labels, parent_image=None):
-    object_set = cellprofiler.object.ObjectSet()
-    objects = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     objects.parent_image = parent_image
     object_set.add_objects(objects, OBJECTS_NAME)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
     module.set_module_num(1)
     module.operands[0].operand_objects.value = OBJECTS_NAME
     pipeline.add_module(module)
-    image_set_list = cellprofiler.image.ImageSetList()
-    workspace = cellprofiler.workspace.Workspace(
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace
@@ -52,7 +52,7 @@ def test_zeros():
     assert m.get_current_measurement("Image", mn("TotalArea")) == 100
 
     columns = module.get_measurement_columns(workspace.pipeline)
-    features = m.get_feature_names(cellprofiler.measurement.IMAGE)
+    features = m.get_feature_names(cellprofiler_core.measurement.IMAGE)
     assert len(columns) == len(features)
     for column in columns:
         assert column[1] in features
@@ -80,7 +80,7 @@ def test_object_with_cropping():
     labels[0:7, 3:8] = 1
     mask = numpy.zeros((10, 10), bool)
     mask[1:9, 1:9] = True
-    image = cellprofiler.image.Image(numpy.zeros((10, 10)), mask=mask)
+    image = cellprofiler_core.image.Image(numpy.zeros((10, 10)), mask=mask)
     area_occupied = [30]
     perimeter = [18]
     total_area = 64
@@ -102,22 +102,22 @@ def test_get_measurement_columns():
     module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
     module.operands[0].operand_objects.value = OBJECTS_NAME
     module.operands[0].operand_choice.value = "Objects"
-    columns = module.get_measurement_columns(cellprofiler.pipeline.Pipeline())
+    columns = module.get_measurement_columns(cellprofiler_core.pipeline.Pipeline())
     expected = (
         (
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "AreaOccupied_AreaOccupied_%s" % OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "AreaOccupied_Perimeter_%s" % OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
         (
-            cellprofiler.measurement.IMAGE,
+            cellprofiler_core.measurement.IMAGE,
             "AreaOccupied_TotalArea_%s" % OBJECTS_NAME,
-            cellprofiler.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.measurement.COLTYPE_FLOAT,
         ),
     )
     assert len(columns) == len(expected)
@@ -167,7 +167,7 @@ def test_image_volume():
     pixel_data[:2, :2, :2] = True
     pixel_data[3:, 8:, 8:] = True
 
-    image = cellprofiler.image.Image(pixel_data, dimensions=3)
+    image = cellprofiler_core.image.Image(pixel_data, dimensions=3)
 
     expected_area = [16]
     expected_perimeter = [16]
@@ -210,9 +210,9 @@ def test_load_v3():
         data = fd.read()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(callback)
     pipeline.load(six.StringIO(data))
 

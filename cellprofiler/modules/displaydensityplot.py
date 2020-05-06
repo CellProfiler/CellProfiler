@@ -46,8 +46,8 @@ See also **DisplayScatterPlot**, **DisplayHistogram**.
 
 import matplotlib.cm
 
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
 
 
 class DisplayDensityPlot(cpm.Module):
@@ -64,7 +64,7 @@ class DisplayDensityPlot(cpm.Module):
     def create_settings(self):
         self.x_object = cps.ObjectNameSubscriber(
             "Select the object to display on the X-axis",
-            cps.NONE,
+            "None",
             doc="""\
 Choose the name of objects identified by some previous module (such as
 **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**) whose
@@ -75,13 +75,13 @@ measurements are to be displayed on the X-axis.
         self.x_axis = cps.Measurement(
             "Select the object measurement to plot on the X-axis",
             self.get_x_object,
-            cps.NONE,
+            "None",
             doc="""Choose the object measurement made by a previous module to display on the X-axis.""",
         )
 
         self.y_object = cps.ObjectNameSubscriber(
             "Select the object to display on the Y-axis",
-            cps.NONE,
+            "None",
             doc="""\
 Choose the name of objects identified by some previous module (such as
 **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**) whose
@@ -92,7 +92,7 @@ measurements are to be displayed on the Y-axis.
         self.y_axis = cps.Measurement(
             "Select the object measurement to plot on the Y-axis",
             self.get_y_object,
-            cps.NONE,
+            "None",
             doc="""Choose the object measurement made by a previous module to display on the Y-axis.""",
         )
 
@@ -232,8 +232,3 @@ executed.
 
     def run_as_data_tool(self, workspace):
         self.run(workspace)
-
-    def backwards_compatibilize(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
-        return setting_values, variable_revision_number, from_matlab

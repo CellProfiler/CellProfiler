@@ -7,17 +7,17 @@ import pytest
 import skimage.data
 import skimage.exposure
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.modules.injectimage
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.modules.injectimage
 import cellprofiler.modules.rescaleintensity
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 INPUT_NAME = "input"
 OUTPUT_NAME = "output"
@@ -29,7 +29,7 @@ MEASUREMENT_NAME = "measurement"
 def image():
     data = numpy.tile(skimage.data.camera(), (3, 1)).reshape(3, 512, 512)
 
-    return cellprofiler.image.Image(image=data, dimensions=3, convert=False)
+    return cellprofiler_core.image.Image(image=data, dimensions=3, convert=False)
 
 
 @pytest.fixture(scope="function")
@@ -58,18 +58,18 @@ def module():
 
 @pytest.fixture(scope="function")
 def workspace(image, module):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
 
     image_set = image_set_list.get_image_set(0)
 
     image_set.add("input", image)
 
-    return cellprofiler.workspace.Workspace(
-        pipeline=cellprofiler.pipeline.Pipeline(),
+    return cellprofiler_core.workspace.Workspace(
+        pipeline=cellprofiler_core.pipeline.Pipeline(),
         module=module,
         image_set=image_set,
-        object_set=cellprofiler.object.ObjectSet(),
-        measurements=cellprofiler.measurement.Measurements(),
+        object_set=cellprofiler_core.object.ObjectSet(),
+        measurements=cellprofiler_core.measurement.Measurements(),
         image_set_list=image_set_list,
     )
 
@@ -322,7 +322,7 @@ def test_scale_by_image_maximum_zero(image, module, workspace):
 
     image.pixel_data = data
 
-    match_image = cellprofiler.image.Image(
+    match_image = cellprofiler_core.image.Image(
         image=match_data, dimensions=3, convert=False
     )
 
@@ -346,7 +346,7 @@ def test_scale_by_image_maximum(image, module, workspace):
 
     match_data = data / 2.0
 
-    match_image = cellprofiler.image.Image(
+    match_image = cellprofiler_core.image.Image(
         image=match_data, dimensions=3, convert=False
     )
 
@@ -372,7 +372,7 @@ def test_scale_by_image_maximum_masked(image, mask, module, workspace):
 
     match_data = data / 2.0
 
-    match_image = cellprofiler.image.Image(
+    match_image = cellprofiler_core.image.Image(
         image=match_data, mask=mask, dimensions=3, convert=False
     )
 

@@ -58,11 +58,11 @@ from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
+import cellprofiler_core.image as cpi
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.pipeline as cpp
+import cellprofiler_core.setting as cps
 
 IC_REGULAR = "Regular"
 IC_BACKGROUND = "Background"
@@ -101,7 +101,7 @@ class CorrectIlluminationCalculate(cpm.Module):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="Choose the image to be used to calculate the illumination function.",
         )
 
@@ -110,8 +110,8 @@ class CorrectIlluminationCalculate(cpm.Module):
             "IllumBlue",
             doc="""Enter a name for the resultant illumination function.""",
             provided_attributes={
-                cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
-                cps.AVAILABLE_ON_LAST_ATTRIBUTE: False,
+                "aggregate_image": True,
+                "available_on_last": False,
             },
         )
 
@@ -208,7 +208,7 @@ located.
 
         self.rescale_option = cps.Choice(
             "Rescale the illumination function?",
-            [cps.YES, cps.NO, RE_MEDIAN],
+            ["Yes", "No", RE_MEDIAN],
             doc="""\
 The illumination function can be rescaled so that the pixel intensities
 are all equal to or greater than 1. You have the following options:
@@ -1039,7 +1039,7 @@ fewer iterations, but less accuracy.
         image - an instance of cpimage.Image
         returns another instance of cpimage.Image
         """
-        if self.rescale_option == cps.NO:
+        if self.rescale_option == "No":
             return image
 
         def scaling_fn_2d(pixel_data):
@@ -1050,7 +1050,7 @@ fewer iterations, but less accuracy.
             if sorted_pixel_data.shape[0] == 0:
                 return pixel_data
             sorted_pixel_data.sort()
-            if self.rescale_option == cps.YES:
+            if self.rescale_option == "Yes":
                 idx = int(sorted_pixel_data.shape[0] * ROBUST_FACTOR)
                 robust_minimum = sorted_pixel_data[idx]
                 pixel_data = pixel_data.copy()
@@ -1085,9 +1085,9 @@ fewer iterations, but less accuracy.
         """Modify the image provider attributes based on other setttings"""
         d = self.illumination_image_name.provided_attributes
         if self.each_or_all == EA_ALL_ACROSS:
-            d[cps.AVAILABLE_ON_LAST_ATTRIBUTE] = True
-        elif cps.AVAILABLE_ON_LAST_ATTRIBUTE in d:
-            del d[cps.AVAILABLE_ON_LAST_ATTRIBUTE]
+            d["available_on_last"] = True
+        elif "available_on_last" in d:
+            del d["available_on_last"]
 
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
@@ -1099,7 +1099,7 @@ fewer iterations, but less accuracy.
             )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust the setting values of old versions
 
@@ -1107,73 +1107,14 @@ fewer iterations, but less accuracy.
         variable_revision_number - settings were saved by module with this
                                    variable revision number
         module_name - name of module that did the saving
-        from_matlab - True if it was the Matlab version that did the saving
-
-        returns upgraded setting values, upgraded variable revision number
-                and from_matlab flag
-
-        Matlab variable revision numbers 6 and 7 supported.
+        returns upgraded setting values and upgraded variable revision number
         pyCellProfiler variable revision number 1 supported.
         """
 
-        if from_matlab and variable_revision_number == 6:
-            # Smoothing could be sum of squares or square of sums in 6,
-            # could be Gaussian in 7 - arbitrarily, I've translated
-            # the obsolete ones to be Gaussian
-            new_setting_values = list(setting_values)
-            if new_setting_values[8] in ("Sum of Squares", "Square of Sum"):
-                new_setting_values[8] = SM_GAUSSIAN_FILTER
-            setting_values = new_setting_values
-
-        if from_matlab and variable_revision_number == 7:
-            # Convert Matlab variable order to ours
-            new_setting_values = list(setting_values[:3])
-            #
-            # If object_dilation_radius is 0, then set self.dilate_objects
-            # to false, otherwise true
-            #
-            if setting_values[3] == "0":
-                new_setting_values.append(cps.NO)
-            else:
-                new_setting_values.append(cps.YES)
-            #
-            # We determine whether the input image is loaded from a file
-            # or generated by the pipeline. In Matlab, setting # 8 (our 7)
-            # made the user answer this question.
-            #
-            new_setting_values.extend(setting_values[3:7])
-            new_setting_values.append(setting_values[8])
-            #
-            # set self.automatic_object_width based on settings 9 (the old
-            # ObjectWidth setting) and 10 (the old SizeOfSmoothingFilter)
-            #
-            if setting_values[9] == FI_AUTOMATIC:
-                new_setting_values.extend([FI_AUTOMATIC, "10", "10"])
-            elif setting_values[10] == cps.DO_NOT_USE or setting_values[10] == "/":
-                new_setting_values.extend([FI_OBJECT_SIZE, setting_values[9], "10"])
-            else:
-                new_setting_values.extend(
-                    [FI_MANUALLY, setting_values[9], setting_values[10]]
-                )
-            #
-            # The optional output images: were "Do not use" if the user
-            # didn't want them. Now it's two settings each.
-            #
-            for setting, name in zip(
-                setting_values[11:], ("IllumBlueAvg", "IllumBlueDilated")
-            ):
-                if setting == cps.DO_NOT_USE:
-                    new_setting_values.extend([cps.NO, name])
-                else:
-                    new_setting_values.extend([cps.YES, setting])
-            setting_values = new_setting_values
-            variable_revision_number = 1
-            from_matlab = False
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Added spline parameters
             setting_values = setting_values + [
-                cps.YES,  # automatic_splines
+                "Yes",  # automatic_splines
                 MODE_AUTO,  # spline_bg_mode
                 "5",  # spline points
                 "2",  # spline threshold
@@ -1183,7 +1124,7 @@ fewer iterations, but less accuracy.
             ]  # spline convergence
             variable_revision_number = 2
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def post_pipeline_load(self, pipeline):
         """After loading, set each_or_all appropriately

@@ -101,11 +101,11 @@ import scipy.ndimage
 import scipy.sparse
 
 import cellprofiler.icons
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 C_IMAGE_OVERLAP = "Overlap"
@@ -142,15 +142,15 @@ DM_KMEANS = "K Means"
 DM_SKEL = "Skeleton"
 
 
-class MeasureImageOverlap(cellprofiler.module.Module):
+class MeasureImageOverlap(cellprofiler_core.module.Module):
     category = "Measurement"
     variable_revision_number = 5
     module_name = "MeasureImageOverlap"
 
     def create_settings(self):
-        self.ground_truth = cellprofiler.setting.ImageNameSubscriber(
+        self.ground_truth = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the image to be used as the ground truth basis for calculating the amount of overlap",
-            cellprofiler.setting.NONE,
+            "None",
             doc="""\
 This binary (black and white) image is known as the “ground truth”
 image. It can be the product of segmentation performed by hand, or the
@@ -158,15 +158,15 @@ result of another segmentation algorithm whose results you would like to
 compare.""",
         )
 
-        self.test_img = cellprofiler.setting.ImageNameSubscriber(
+        self.test_img = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the image to be used to test for overlap",
-            cellprofiler.setting.NONE,
+            "None",
             doc="""\
 This binary (black and white) image is what you will compare with the
 ground truth image. It is known as the “test image”.""",
         )
 
-        self.wants_emd = cellprofiler.setting.Binary(
+        self.wants_emd = cellprofiler_core.setting.Binary(
             "Calculate earth mover's distance?",
             False,
             doc="""\
@@ -184,7 +184,7 @@ with each representative in the test image to those in the reference
 image.""",
         )
 
-        self.max_points = cellprofiler.setting.Integer(
+        self.max_points = cellprofiler_core.setting.Integer(
             "Maximum # of points",
             value=250,
             minval=100,
@@ -196,7 +196,7 @@ foreground of the test image and from the foreground of the reference
 image using the point selection method (see below).""",
         )
 
-        self.decimation_method = cellprofiler.setting.Choice(
+        self.decimation_method = cellprofiler_core.setting.Choice(
             "Point selection method",
             choices=[DM_KMEANS, DM_SKEL],
             doc="""\
@@ -227,7 +227,7 @@ worms or neurites.
             ),
         )
 
-        self.max_distance = cellprofiler.setting.Integer(
+        self.max_distance = cellprofiler_core.setting.Integer(
             "Maximum distance",
             value=250,
             minval=1,
@@ -244,7 +244,7 @@ The maximum distance should be set to the largest reasonable distance
 that pixels could be expected to move from one image to the next.""",
         )
 
-        self.penalize_missing = cellprofiler.setting.Binary(
+        self.penalize_missing = cellprofiler_core.setting.Binary(
             "Penalize missing pixels",
             value=False,
             doc="""\
@@ -437,11 +437,11 @@ the two images. Set this setting to “No” to assess no penalty.""",
         )
 
         if self.wants_emd:
-            test_objects = cellprofiler.object.Objects()
+            test_objects = cellprofiler_core.object.Objects()
 
             test_objects.segmented = test_labels
 
-            ground_truth_objects = cellprofiler.object.Objects()
+            ground_truth_objects = cellprofiler_core.object.Objects()
 
             ground_truth_objects.segmented = ground_truth_labels
 
@@ -766,14 +766,14 @@ the two images. Set this setting to “No” to assess no penalty.""",
         return "_".join((C_IMAGE_OVERLAP, feature, self.test_img.value))
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler.measurement.IMAGE:
+        if object_name == cellprofiler_core.measurement.IMAGE:
             return [C_IMAGE_OVERLAP]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler.measurement.IMAGE
+            object_name == cellprofiler_core.measurement.IMAGE
             and category == C_IMAGE_OVERLAP
         ):
             return self.all_features()
@@ -797,15 +797,15 @@ the two images. Set this setting to “No” to assess no penalty.""",
     def get_measurement_columns(self, pipeline):
         return [
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 self.measurement_name(feature),
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             )
             for feature in self.all_features()
         ]
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             # no object choice before rev 2
@@ -833,11 +833,11 @@ the two images. Set this setting to “No” to assess no penalty.""",
             # Added earth mover's distance
             #
             setting_values = setting_values + [
-                cellprofiler.setting.NO,  # wants_emd
+                "No",  # wants_emd
                 250,  # max points
                 DM_KMEANS,  # decimation method
                 250,  # max distance
-                cellprofiler.setting.NO,  # penalize missing
+                "No",  # penalize missing
             ]
             variable_revision_number = 4
 
@@ -856,7 +856,7 @@ Please update your pipeline to use MeasureObjectOverlap to compute object measur
             setting_values = setting_values[1:]
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

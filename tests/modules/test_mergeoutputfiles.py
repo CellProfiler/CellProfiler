@@ -3,17 +3,17 @@ import tempfile
 
 import numpy
 
-import cellprofiler.measurement
-import cellprofiler.modules.loadimages
+import cellprofiler_core.measurement
+import cellprofiler_core.modules.loadimages
 import cellprofiler.modules.mergeoutputfiles
-import cellprofiler.pipeline
+import cellprofiler_core.pipeline
 
 
 def execute_merge_files(mm):
     input_files = []
     output_fd, output_file = tempfile.mkstemp(".mat")
-    pipeline = cellprofiler.pipeline.Pipeline()
-    li = cellprofiler.modules.loadimages.LoadImages()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    li = cellprofiler_core.modules.loadimages.LoadImages()
     li.module_num = 1
     pipeline.add_module(li)
 
@@ -25,7 +25,7 @@ def execute_merge_files(mm):
     cellprofiler.modules.mergeoutputfiles.MergeOutputFiles.merge_files(
         output_file, [x[1] for x in input_files]
     )
-    m = cellprofiler.measurement.load_measurements(output_file)
+    m = cellprofiler_core.measurement.load_measurements(output_file)
     os.close(output_fd)
     os.remove(output_file)
     for fd, filename in input_files:
@@ -35,7 +35,7 @@ def execute_merge_files(mm):
 
 
 def write_image_measurements(m, feature, image_count):
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for i in range(image_count):
         if i > 0:
             m.next_image_set(i + 1)
@@ -43,7 +43,7 @@ def write_image_measurements(m, feature, image_count):
 
 
 def write_object_measurements(m, object_name, feature, object_counts):
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for i, count in enumerate(object_counts):
         object_measurements = numpy.random.uniform(size=i)
         m.add_measurement(
@@ -52,7 +52,7 @@ def write_object_measurements(m, object_name, feature, object_counts):
 
 
 def write_experiment_measurement(m, feature):
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     m.add_experiment_measurement(feature, numpy.random.uniform())
 
 
@@ -64,7 +64,7 @@ def test_nothing():
 def test_one():
     """Test "merging" one file"""
     numpy.random.seed(11)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     write_image_measurements(m, "foo", 5)
     write_object_measurements(m, "myobjects", "bar", [3, 6, 2, 9, 16])
     write_experiment_measurement(m, "baz")
@@ -85,10 +85,10 @@ def test_one():
         assert (
             round(
                 abs(
-                    result.get_all_measurements(cellprofiler.measurement.IMAGE, "foo")[
+                    result.get_all_measurements(cellprofiler_core.measurement.IMAGE, "foo")[
                         i
                     ]
-                    - m.get_all_measurements(cellprofiler.measurement.IMAGE, "foo")[i]
+                    - m.get_all_measurements(cellprofiler_core.measurement.IMAGE, "foo")[i]
                 ),
                 7,
             )
@@ -102,7 +102,7 @@ def test_two():
     numpy.random.seed(12)
     mm = []
     for i in range(2):
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         write_image_measurements(m, "foo", 5)
         write_object_measurements(m, "myobjects", "bar", [3, 6, 2, 9, 16])
         write_experiment_measurement(m, "baz")
@@ -131,7 +131,7 @@ def test_different_measurements():
     numpy.random.seed(13)
     mm = []
     for i in range(2):
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         write_image_measurements(m, "foo", 5)
         write_object_measurements(m, "myobjects", "bar%d" % i, [3, 6, 2, 9, 16])
         write_experiment_measurement(m, "baz")
@@ -165,7 +165,7 @@ def test_different_objects():
     numpy.random.seed(13)
     mm = []
     for i in range(2):
-        m = cellprofiler.measurement.Measurements()
+        m = cellprofiler_core.measurement.Measurements()
         write_image_measurements(m, "foo", 5)
         write_object_measurements(m, "myobjects%d" % i, "bar", [3, 6, 2, 9, 16])
         write_experiment_measurement(m, "baz")

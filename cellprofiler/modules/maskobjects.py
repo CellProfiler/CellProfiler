@@ -5,12 +5,13 @@ import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.outline import outline
 
-import cellprofiler.measurement
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-from cellprofiler.modules import _help, identify as I
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.object as cpo
+import cellprofiler_core.preferences as cpprefs
+import cellprofiler_core.setting as cps
+from cellprofiler.modules import _help
+from cellprofiler_core.modules import identify as I
 
 __doc__ = """\
 MaskObjects
@@ -105,7 +106,7 @@ class MaskObjects(I.Identify):
         """Create the settings that control this module"""
         self.object_name = cps.ObjectNameSubscriber(
             "Select objects to be masked",
-            cps.NONE,
+            "None",
             doc="""\
 Select the objects that will be masked (that is, excluded in whole or in
 part based on the other settings in the module). You can choose from any
@@ -139,7 +140,7 @@ previously loaded or created in your pipeline (*%(MC_IMAGE)s*).
 
         self.masking_objects = cps.ObjectNameSubscriber(
             "Select the masking object",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if mask is to be made from objects)*
 
@@ -152,7 +153,7 @@ module, such as **IdentifyPrimaryObjects**,
 
         self.masking_image = cps.ImageNameSubscriber(
             "Select the masking image",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if mask is to be made from an image)*
 
@@ -374,7 +375,7 @@ controls how remaining objects are associated with their predecessors:
         m = workspace.measurements
         m.add_measurement(
             remaining_object_name,
-            cellprofiler.measurement.FF_PARENT % object_name,
+            cellprofiler_core.measurement.FF_PARENT % object_name,
             parent_objects,
         )
         if np.max(original_objects.segmented) == 0:
@@ -390,7 +391,7 @@ controls how remaining objects are associated with their predecessors:
             child_count = (child_count > 0).astype(int)
         m.add_measurement(
             object_name,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % remaining_object_name,
             child_count,
         )
         if self.retain_or_renumber == R_RETAIN:
@@ -465,12 +466,12 @@ controls how remaining objects are associated with their predecessors:
         columns += [
             (
                 object_name,
-                cellprofiler.measurement.FF_CHILDREN_COUNT % remaining_object_name,
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT % remaining_object_name,
                 cpmeas.COLTYPE_INTEGER,
             ),
             (
                 remaining_object_name,
-                cellprofiler.measurement.FF_PARENT % object_name,
+                cellprofiler_core.measurement.FF_PARENT % object_name,
                 cpmeas.COLTYPE_INTEGER,
             ),
         ]
@@ -509,48 +510,11 @@ controls how remaining objects are associated with their predecessors:
         pass
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 2:
-            object_name, mask_region_name, remaining_object_name, renumber, save_outlines, remove_overlapping = (
-                setting_values
-            )
-            wants_outlines = (
-                cps.NO if save_outlines.lower() == cps.DO_NOT_USE.lower() else cps.YES
-            )
-            renumber = (
-                R_RENUMBER
-                if renumber == "Renumber"
-                else R_RETAIN
-                if renumber == "Retain"
-                else renumber
-            )
-            overlap_choice = (
-                P_MASK
-                if remove_overlapping == "Retain"
-                else P_REMOVE
-                if remove_overlapping == "Remove"
-                else remove_overlapping
-            )
-
-            setting_values = [
-                object_name,
-                remaining_object_name,
-                MC_OBJECTS,
-                mask_region_name,
-                mask_region_name,
-                overlap_choice,
-                ".5",
-                renumber,
-                wants_outlines,
-                save_outlines,
-            ]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if variable_revision_number == 1 and not from_matlab:
+        if variable_revision_number == 1:
             # Added "wants_inverted_mask"
-            setting_values = setting_values + [cps.NO]
+            setting_values = setting_values + ["No"]
             variable_revision_number = 2
 
         if variable_revision_number == 2:
@@ -561,4 +525,4 @@ controls how remaining objects are associated with their predecessors:
         setting_values = list(setting_values)
         setting_values[5] = s_lookup(setting_values[5])
         setting_values[7] = s_lookup(setting_values[7])
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

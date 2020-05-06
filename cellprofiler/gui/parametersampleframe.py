@@ -16,13 +16,13 @@ import wx
 import wx.lib.agw.floatspin
 
 import cellprofiler.gui.workspace
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 
 PARAM_CLASS_TEXT_LABEL = "Input text label"
 PARAM_CLASS_BOUNDED_DISCRETE = "Bounded, discrete"
@@ -367,36 +367,36 @@ class ParameterSampleFrame(wx.Frame):
     @staticmethod
     def get_parameter_type(setting):
         """Get parameter type of 'setting' by considering its class."""
-        if isinstance(setting, cellprofiler.setting.Binary):
+        if isinstance(setting, cellprofiler_core.setting.Binary):
             return PARAM_CLASS_BOUNDED_DISCRETE
-        elif isinstance(setting, cellprofiler.setting.Choice):
+        elif isinstance(setting, cellprofiler_core.setting.Choice):
             return PARAM_CLASS_BOUNDED_DISCRETE
-        elif isinstance(setting, cellprofiler.setting.Divider):
+        elif isinstance(setting, cellprofiler_core.setting.Divider):
             return PARAM_CLASS_DECORATION
-        elif isinstance(setting, cellprofiler.setting.DoSomething):
+        elif isinstance(setting, cellprofiler_core.setting.DoSomething):
             return PARAM_CLASS_DECORATION
-        elif isinstance(setting, cellprofiler.setting.FigureSubscriber):
+        elif isinstance(setting, cellprofiler_core.setting.FigureSubscriber):
             return PARAM_CLASS_BOUNDED_DISCRETE
-        elif isinstance(setting, cellprofiler.setting.Float):
+        elif isinstance(setting, cellprofiler_core.setting.Float):
             return PARAM_CLASS_UNBOUNDED
-        elif isinstance(setting, cellprofiler.setting.FloatRange):
+        elif isinstance(setting, cellprofiler_core.setting.FloatRange):
             return PARAM_CLASS_UNBOUNDED
-        elif isinstance(setting, cellprofiler.setting.Integer):
+        elif isinstance(setting, cellprofiler_core.setting.Integer):
             return PARAM_CLASS_UNBOUNDED
-        elif isinstance(setting, cellprofiler.setting.IntegerRange):
+        elif isinstance(setting, cellprofiler_core.setting.IntegerRange):
             return PARAM_CLASS_UNBOUNDED
-        elif isinstance(setting, cellprofiler.setting.IntegerOrUnboundedRange):
+        elif isinstance(setting, cellprofiler_core.setting.IntegerOrUnboundedRange):
             return PARAM_CLASS_UNBOUNDED
-        elif isinstance(setting, cellprofiler.setting.Measurement):
+        elif isinstance(setting, cellprofiler_core.setting.Measurement):
             # NB: Not sure what to do with 'Measurement' yet
             return "not sure"
-        elif isinstance(setting, cellprofiler.setting.NameProvider):
+        elif isinstance(setting, cellprofiler_core.setting.NameProvider):
             return PARAM_CLASS_TEXT_LABEL
-        elif isinstance(setting, cellprofiler.setting.NameSubscriber):
+        elif isinstance(setting, cellprofiler_core.setting.NameSubscriber):
             return PARAM_CLASS_BOUNDED_DISCRETE
-        elif isinstance(setting, cellprofiler.setting.RemoveSettingButton):
+        elif isinstance(setting, cellprofiler_core.setting.RemoveSettingButton):
             return PARAM_CLASS_DECORATION
-        elif isinstance(setting, cellprofiler.setting.Text):
+        elif isinstance(setting, cellprofiler_core.setting.Text):
             return PARAM_CLASS_TEXT_LABEL
         else:
             return "whatever is left"
@@ -413,20 +413,20 @@ class ParameterSampleFrame(wx.Frame):
 
     @staticmethod
     def is_parameter_float(setting):
-        if isinstance(setting, cellprofiler.setting.Float):
+        if isinstance(setting, cellprofiler_core.setting.Float):
             return True
-        elif isinstance(setting, cellprofiler.setting.FloatRange):
+        elif isinstance(setting, cellprofiler_core.setting.FloatRange):
             return True
         else:
             return False
 
     @staticmethod
     def is_parameter_int(setting):
-        if isinstance(setting, cellprofiler.setting.Integer):
+        if isinstance(setting, cellprofiler_core.setting.Integer):
             return True
-        elif isinstance(setting, cellprofiler.setting.IntegerRange):
+        elif isinstance(setting, cellprofiler_core.setting.IntegerRange):
             return True
-        elif isinstance(setting, cellprofiler.setting.IntegerOrUnboundedRange):
+        elif isinstance(setting, cellprofiler_core.setting.IntegerOrUnboundedRange):
             return True
         else:
             return False
@@ -468,7 +468,7 @@ class ParameterSampleFrame(wx.Frame):
                 try:
                     setting.set_value(lower_value)
                     setting.test_valid(self.__pipeline)
-                except cellprofiler.setting.ValidationError as instance:
+                except cellprofiler_core.setting.ValidationError as instance:
                     message += (
                         "'"
                         + str(setting.get_text())
@@ -480,7 +480,7 @@ class ParameterSampleFrame(wx.Frame):
                 try:
                     setting.set_value(upper_value)
                     setting.test_valid(self.__pipeline)
-                except cellprofiler.setting.ValidationError as instance:
+                except cellprofiler_core.setting.ValidationError as instance:
                     message += (
                         "'"
                         + str(setting.get_text())
@@ -638,9 +638,9 @@ class ParameterSampleFrame(wx.Frame):
         better understanding of what exactly this does, but I'm pretty much
         using it as a black box for the time being.
         """
-        self.__measurements = cellprofiler.measurement.Measurements(can_overwrite=True)
-        self.__object_set = cellprofiler.object.ObjectSet(can_overwrite=True)
-        self.__image_set_list = cellprofiler.image.ImageSetList()
+        self.__measurements = cellprofiler_core.measurement.Measurements(can_overwrite=True)
+        self.__object_set = cellprofiler_core.object.ObjectSet(can_overwrite=True)
+        self.__image_set_list = cellprofiler_core.image.ImageSetList()
         workspace = cellprofiler.gui.workspace.Workspace(
             self.__pipeline,
             None,
@@ -713,7 +713,7 @@ class ParameterSampleFrame(wx.Frame):
             failure = 0
         except Exception as instance:
             traceback.print_exc()
-            event = cellprofiler.pipeline.RunExceptionEvent(instance, module)
+            event = cellprofiler_core.pipeline.event.RunException(instance, module)
             self.__pipeline.notify_listeners(event)
             failure = 1
         if (
@@ -737,7 +737,7 @@ class ParameterSampleFrame(wx.Frame):
             # Do not write settings without values, ie, buttons etc
             if setting.get_text() != "":
                 value_to_write = str(setting.get_value())
-                if isinstance(setting, cellprofiler.setting.ImageNameProvider):
+                if isinstance(setting, cellprofiler_core.setting.ImageNameProvider):
                     # Save image
                     image = self.__measurements.get_image(value_to_write)
                     path = os.path.join(

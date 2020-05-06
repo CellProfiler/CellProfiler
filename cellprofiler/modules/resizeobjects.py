@@ -3,8 +3,9 @@
 import numpy
 import scipy.ndimage
 
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -39,7 +40,7 @@ See also
 )
 
 
-class ResizeObjects(cellprofiler.module.ObjectProcessing):
+class ResizeObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     module_name = "ResizeObjects"
 
     variable_revision_number = 2
@@ -47,7 +48,7 @@ class ResizeObjects(cellprofiler.module.ObjectProcessing):
     def create_settings(self):
         super(ResizeObjects, self).create_settings()
 
-        self.method = cellprofiler.setting.Choice(
+        self.method = cellprofiler_core.setting.Choice(
             "Method",
             ["Dimensions", "Factor", "Match Image"],
             doc="""\
@@ -58,7 +59,7 @@ The following options are available:
             value="Factor",
         )
 
-        self.factor = cellprofiler.setting.Float(
+        self.factor = cellprofiler_core.setting.Float(
             "Factor",
             0.25,
             minval=0,
@@ -69,7 +70,7 @@ Numbers less than 1 will shrink the objects; numbers greater than 1 will
 enlarge the objects.""",
         )
 
-        self.width = cellprofiler.setting.Integer(
+        self.width = cellprofiler_core.setting.Integer(
             "Width",
             100,
             minval=1,
@@ -79,7 +80,7 @@ enlarge the objects.""",
 Enter the desired width of the final objects, in pixels.""",
         )
 
-        self.height = cellprofiler.setting.Integer(
+        self.height = cellprofiler_core.setting.Integer(
             "Height",
             100,
             minval=1,
@@ -89,9 +90,9 @@ Enter the desired width of the final objects, in pixels.""",
 Enter the desired height of the final objects, in pixels.""",
         )
 
-        self.specific_image = cellprofiler.setting.ImageNameSubscriber(
+        self.specific_image = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the image with the desired dimensions",
-            cellprofiler.setting.NONE,
+            "None",
             doc="""\
         *(Used only if resizing by specifying desired final dimensions using an image)*
 
@@ -139,7 +140,7 @@ Enter the desired height of the final objects, in pixels.""",
         else:
             y_data = rescale(x_data, self.factor.value)
 
-        y = cellprofiler.object.Objects()
+        y = cellprofiler_core.object.Objects()
         y.segmented = y_data
         y.parent_image = x.parent_image
         objects.add_objects(y, y_name)
@@ -155,7 +156,7 @@ Enter the desired height of the final objects, in pixels.""",
     def add_measurements(
         self, workspace, input_object_name=None, output_object_name=None
     ):
-        super(cellprofiler.module.ObjectProcessing, self).add_measurements(
+        super(cellprofiler_core.module.image_segmentation.ObjectProcessing, self).add_measurements(
             workspace, self.y_name.value
         )
 
@@ -168,23 +169,23 @@ Enter the desired height of the final objects, in pixels.""",
 
         workspace.measurements.add_measurement(
             self.x_name.value,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
             [1] * len(unique_labels),
         )
 
         workspace.measurements.add_measurement(
             self.y_name.value,
-            cellprofiler.measurement.FF_PARENT % self.x_name.value,
+            cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
             unique_labels,
         )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
-            setting_values += [cellprofiler.setting.NONE]
+            setting_values += ["None"]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 def resize(data, size):

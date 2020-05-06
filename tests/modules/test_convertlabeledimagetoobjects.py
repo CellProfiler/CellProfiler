@@ -2,8 +2,8 @@ import numpy
 import numpy.random
 import pytest
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.convertimagetoobjects
 
 instance = cellprofiler.modules.convertimagetoobjects.ConvertImageToObjects()
@@ -41,7 +41,7 @@ def image(request):
 
     dimensions = data.ndim
 
-    return cellprofiler.image.Image(image=data, dimensions=dimensions)
+    return cellprofiler_core.image.Image(image=data, dimensions=dimensions)
 
 
 def test_run_labels(image, module, workspace):
@@ -62,17 +62,17 @@ def test_run_labels(image, module, workspace):
     measurements = workspace.measurements
 
     assert measurements.has_current_measurements(
-        "labeled", cellprofiler.measurement.M_LOCATION_CENTER_X
+        "labeled", cellprofiler_core.measurement.M_LOCATION_CENTER_X
     )
     assert measurements.has_current_measurements(
-        "labeled", cellprofiler.measurement.M_LOCATION_CENTER_Y
+        "labeled", cellprofiler_core.measurement.M_LOCATION_CENTER_Y
     )
     assert measurements.has_current_measurements(
-        "labeled", cellprofiler.measurement.M_LOCATION_CENTER_Z
+        "labeled", cellprofiler_core.measurement.M_LOCATION_CENTER_Z
     )
     assert measurements.has_current_measurements(
-        "labeled", cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER
+        "labeled", cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER
     )
     assert measurements.has_current_measurements(
-        cellprofiler.measurement.IMAGE, cellprofiler.measurement.FF_COUNT % "labeled"
+        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.FF_COUNT % "labeled"
     )

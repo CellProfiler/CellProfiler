@@ -9,21 +9,21 @@ import skimage.exposure
 import skimage.filters
 import skimage.transform
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
 import cellprofiler.modules.enhanceorsuppressfeatures
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 
 @pytest.fixture(scope="function")
 def image():
-    return cellprofiler.image.Image()
+    return cellprofiler_core.image.Image()
 
 
 @pytest.fixture(scope="function")
@@ -39,18 +39,18 @@ def module():
 
 @pytest.fixture(scope="function")
 def workspace(image, module):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
 
     image_set = image_set_list.get_image_set(0)
 
     image_set.add("input", image)
 
-    return cellprofiler.workspace.Workspace(
-        pipeline=cellprofiler.pipeline.Pipeline(),
+    return cellprofiler_core.workspace.Workspace(
+        pipeline=cellprofiler_core.pipeline.Pipeline(),
         module=module,
         image_set=image_set,
-        object_set=cellprofiler.object.ObjectSet(),
-        measurements=cellprofiler.measurement.Measurements(),
+        object_set=cellprofiler_core.object.ObjectSet(),
+        measurements=cellprofiler_core.measurement.Measurements(),
         image_set_list=image_set_list,
     )
 
@@ -944,10 +944,10 @@ def test_load_v2():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -1033,10 +1033,10 @@ def test_test_load_v3():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -1049,8 +1049,8 @@ def test_test_load_v3():
     assert module.y_name == "EnhancedTexture"
     assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
     assert (
-        module.enhance_method
-        == cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE
+            module.enhance_method
+            == cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE
     )
     assert module.smoothing == 3.5
     assert module.object_size == 10
@@ -1059,7 +1059,7 @@ def test_test_load_v3():
     assert module.angle == 45
     assert module.decay == 0.9
     assert (
-        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+            module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
     )
 
     module = pipeline.modules()[1]
@@ -1075,10 +1075,10 @@ def test_load_v4():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -1091,8 +1091,8 @@ def test_load_v4():
     assert module.y_name == "EnhancedDendrite"
     assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
     assert (
-        module.enhance_method
-        == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+            module.enhance_method
+            == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
     )
     assert module.smoothing == 2.0
     assert module.object_size == 10
@@ -1101,8 +1101,8 @@ def test_load_v4():
     assert module.angle == 0
     assert module.decay == 0.95
     assert (
-        module.neurite_choice
-        == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+            module.neurite_choice
+            == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
     )
 
     module = pipeline.modules()[1]
@@ -1110,8 +1110,8 @@ def test_load_v4():
         module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
     assert (
-        module.neurite_choice
-        == cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT
+            module.neurite_choice
+            == cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT
     )
 
 
@@ -1121,10 +1121,10 @@ def test_load_v5():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -1137,8 +1137,8 @@ def test_load_v5():
     assert module.y_name == "EnhancedDendrite"
     assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
     assert (
-        module.enhance_method
-        == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+            module.enhance_method
+            == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
     )
     assert module.smoothing == 2.0
     assert module.object_size == 10
@@ -1147,11 +1147,11 @@ def test_load_v5():
     assert module.angle == 0
     assert module.decay == 0.95
     assert (
-        module.neurite_choice
-        == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+            module.neurite_choice
+            == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
     )
     assert (
-        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+            module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
     )
 
     module = pipeline.modules()[1]
@@ -1159,5 +1159,5 @@ def test_load_v5():
         module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
     assert (
-        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_FAST
+            module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_FAST
     )

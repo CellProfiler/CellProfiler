@@ -12,12 +12,12 @@ import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pipeline
 import cellprofiler.gui.workspace
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 
 ID_FILE_LOAD_MEASUREMENTS = wx.NewId()
 ID_FILE_SAVE_MEASUREMENTS = wx.NewId()
@@ -45,7 +45,7 @@ class DataToolFrame(wx.Frame):
         del kwds_copy["measurements_file_name"]
         kwds_copy["title"] = "%s data tool" % module_name
         wx.Frame.__init__(self, *args, **kwds_copy)
-        self.module = cellprofiler.modules.instantiate_module(module_name)
+        self.module = cellprofiler_core.modules.instantiate_module(module_name)
         self.module.use_as_data_tool = True
         self.pipeline = cellprofiler.gui.pipeline.Pipeline()
         if h5py.is_hdf5(measurements_file_name):
@@ -155,7 +155,7 @@ class DataToolFrame(wx.Frame):
             assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
                 if dlg.GetFilterIndex() == 0:
-                    new_measurements = cellprofiler.measurement.Measurements(
+                    new_measurements = cellprofiler_core.measurement.Measurements(
                         filename=dlg.GetPath(), copy=self.measurements
                     )
                     new_measurements.flush()
@@ -182,7 +182,7 @@ class DataToolFrame(wx.Frame):
         metadata_db = {}
         metadata_features = [
             x
-            for x in self.measurements.get_feature_names(cellprofiler.measurement.IMAGE)
+            for x in self.measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
             if x.startswith("Metadata")
         ]
         sel = None
@@ -193,7 +193,7 @@ class DataToolFrame(wx.Frame):
                     % (
                         feature,
                         self.measurements.get_measurement(
-                            cellprofiler.measurement.IMAGE, feature, i
+                            cellprofiler_core.measurement.IMAGE, feature, i
                         ),
                     )
                     for feature in metadata_features
@@ -234,20 +234,20 @@ class DataToolFrame(wx.Frame):
             self.measurements.image_set_number = index + 1
 
     def load_measurements(self, measurements_file_name):
-        self.measurements = cellprofiler.measurement.load_measurements(
+        self.measurements = cellprofiler_core.measurement.load_measurements(
             measurements_file_name, can_overwrite=True
         )
         # Start on the first image
         self.measurements.next_image_set(1)
 
     def on_run(self, event):
-        image_set_list = cellprofiler.image.ImageSetList()
+        image_set_list = cellprofiler_core.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         workspace = cellprofiler.gui.workspace.Workspace(
             self.pipeline,
             self.module,
             image_set,
-            cellprofiler.object.ObjectSet(),
+            cellprofiler_core.object.ObjectSet(),
             self.measurements,
             image_set_list,
             frame=self,

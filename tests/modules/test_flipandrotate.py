@@ -1,16 +1,12 @@
-import base64
-import zlib
-
 import centrosome.cpmorphology
 import numpy
-import six.moves
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.flipandrotate
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 IMAGE_NAME = "my_image"
 OUTPUT_IMAGE = "my_output_image"
@@ -26,8 +22,8 @@ def run_module(image, mask=None, fn=None):
     returns an Image object containing the flipped/rotated/masked/cropped
     image and the angle measurement.
     """
-    img = cellprofiler.image.Image(image, mask)
-    image_set_list = cellprofiler.image.ImageSetList()
+    img = cellprofiler_core.image.Image(image, mask)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, img)
     module = cellprofiler.modules.flipandrotate.FlipAndRotate()
@@ -36,25 +32,25 @@ def run_module(image, mask=None, fn=None):
     module.set_module_num(1)
     if fn is not None:
         fn(module)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
 
     def error_callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(error_callback)
-    measurements = cellprofiler.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    measurements = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         measurements,
         image_set_list,
     )
     module.run(workspace)
     feature = cellprofiler.modules.flipandrotate.M_ROTATION_F % OUTPUT_IMAGE
-    assert feature in measurements.get_feature_names(cellprofiler.measurement.IMAGE)
+    assert feature in measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
     angle = measurements.get_current_image_measurement(feature)
     output_image = image_set.get_image(OUTPUT_IMAGE)
     return output_image, angle
@@ -223,8 +219,8 @@ def test_rotate_coordinates():
     centrosome.cpmorphology.draw_line(img, pt0, pt1, 1)
     i, j = numpy.mgrid[0:20, 0:20]
     for option in (
-        cellprofiler.modules.flipandrotate.C_HORIZONTALLY,
-        cellprofiler.modules.flipandrotate.C_VERTICALLY,
+            cellprofiler.modules.flipandrotate.C_HORIZONTALLY,
+            cellprofiler.modules.flipandrotate.C_VERTICALLY,
     ):
 
         def fn(module):
@@ -312,7 +308,7 @@ def test_crop():
             module.wants_crop.value = False
 
         output_image, angle = run_module(image, fn=fn)
-        assert isinstance(crop_output_image, cellprofiler.image.Image)
+        assert isinstance(crop_output_image, cellprofiler_core.image.Image)
         pixel_data = output_image.pixel_data
         slop = (numpy.array(pixel_data.shape) - numpy.array(image.shape)) / 2
         mask = output_image.mask
@@ -336,26 +332,26 @@ def test_get_measurements():
     module.output_name.value = OUTPUT_IMAGE
     columns = module.get_measurement_columns(None)
     assert len(columns) == 1
-    assert columns[0][0] == cellprofiler.measurement.IMAGE
+    assert columns[0][0] == cellprofiler_core.measurement.IMAGE
     assert (
-        columns[0][1] == cellprofiler.modules.flipandrotate.M_ROTATION_F % OUTPUT_IMAGE
+            columns[0][1] == cellprofiler.modules.flipandrotate.M_ROTATION_F % OUTPUT_IMAGE
     )
-    assert columns[0][2] == cellprofiler.measurement.COLTYPE_FLOAT
+    assert columns[0][2] == cellprofiler_core.measurement.COLTYPE_FLOAT
 
-    categories = module.get_categories(None, cellprofiler.measurement.IMAGE)
+    categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
     assert len(categories) == 1
     assert categories[0] == cellprofiler.modules.flipandrotate.M_ROTATION_CATEGORY
     assert len(module.get_categories(None, "Foo")) == 0
 
     measurements = module.get_measurements(
         None,
-        cellprofiler.measurement.IMAGE,
+        cellprofiler_core.measurement.IMAGE,
         cellprofiler.modules.flipandrotate.M_ROTATION_CATEGORY,
     )
     assert len(measurements) == 1
     assert measurements[0] == OUTPUT_IMAGE
     assert (
-        len(module.get_measurements(None, cellprofiler.measurement.IMAGE, "Foo")) == 0
+        len(module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "Foo")) == 0
     )
     assert (
         len(

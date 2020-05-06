@@ -8,7 +8,7 @@ import cellprofiler.gui
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
 import cellprofiler.modules
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 
 MENU_HELP = {
     "Accessing Images From OMERO": cellprofiler.gui.help.content.read_content(
@@ -68,9 +68,6 @@ MENU_HELP = {
     ),
     "Plate Viewer": cellprofiler.gui.help.content.read_content(
         "output_plateviewer.rst"
-    ),
-    "Running Multiple Pipelines": cellprofiler.gui.help.content.read_content(
-        "other_multiple_pipelines.rst"
     ),
     "Running Your Pipeline": cellprofiler.gui.help.content.read_content(
         "pipelines_running.rst"
@@ -271,14 +268,14 @@ def search_module_help(text):
 
             count += len(matches)
 
-    for module_name in cellprofiler.modules.get_module_names():
-        module = cellprofiler.modules.instantiate_module(module_name)
+    for module_name in cellprofiler_core.modules.get_module_names():
+        module = cellprofiler_core.modules.instantiate_module(module_name)
 
         location = os.path.split(module.create_settings.__func__.__code__.co_filename)[
             0
         ]
 
-        if location == cellprofiler.preferences.get_plugin_directory():
+        if location == cellprofiler_core.preferences.get_plugin_directory():
             continue
 
         help_text = module.get_help()

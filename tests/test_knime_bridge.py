@@ -1,23 +1,17 @@
 """test_knime_bridge.py - test the Knime bridge"""
 
-import json
 import unittest
 import uuid
 
-import numpy
-import six.moves
 import zmq
 
 import cellprofiler.knime_bridge
-import cellprofiler.measurement
 import cellprofiler.modules.flagimage
 import cellprofiler.modules.identifyprimaryobjects
-import cellprofiler.modules.loadimages
 import cellprofiler.modules.measureobjectsizeshape
 import cellprofiler.modules.saveimages
 import cellprofiler.modules.threshold
-import cellprofiler.pipeline
-import cellprofiler.worker
+import cellprofiler_core.worker
 
 
 class TestKnimeBridge(unittest.TestCase):
@@ -59,8 +53,8 @@ class TestKnimeBridge(unittest.TestCase):
 
     # FIXME: wxPython 4 PR
     # def test_02_01_pipeline_info(self):
-    #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     pipeline = cellprofiler_core.pipeline.Pipeline()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.add_imagecb()
     #     load_images.images[0].channels[0].image_name.value = "Foo"
@@ -116,8 +110,8 @@ class TestKnimeBridge(unittest.TestCase):
 
     # FIXME: wxPython 4 PR
     # def test_02_03_clean_pipeline(self):
-    #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     pipeline = cellprofiler_core.pipeline.Pipeline()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.add_imagecb()
     #     load_images.images[0].channels[0].image_name.value = "Foo"
@@ -151,17 +145,17 @@ class TestKnimeBridge(unittest.TestCase):
     #     self.assertEqual(message.pop(0), "")
     #     self.assertEqual(message.pop(0), cellprofiler.knime_bridge.CLEAN_PIPELINE_REPLY_1)
     #     pipeline_txt = message.pop(0)
-    #     pipeline = cellprofiler.pipeline.Pipeline()
+    #     pipeline = cellprofiler_core.pipeline.Pipeline()
     #     pipeline.loadtxt(six.moves.StringIO(pipeline_txt))
     #     self.assertEqual(len(pipeline.modules()), 3)
-    #     self.assertIsInstance(pipeline.modules()[0], cellprofiler.modules.loadimages.LoadImages)
+    #     self.assertIsInstance(pipeline.modules()[0], cellprofiler_core.modules.loadimages.LoadImages)
     #     self.assertIsInstance(pipeline.modules()[1], cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects)
     #     self.assertIsInstance(pipeline.modules()[2], cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape)
 
     # FIXME: wxPython 4 PR
     # def test_03_01_run_something(self):
-    #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     pipeline = cellprofiler_core.pipeline.Pipeline()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.images[0].channels[0].image_name.value = "Foo"
     #     pipeline.add_module(load_images)
@@ -201,13 +195,13 @@ class TestKnimeBridge(unittest.TestCase):
     #     metadata = json.loads(response.pop(0))
     #     data = response.pop(0)
     #     measurements = self.decode_measurements(metadata, data)
-    #     self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][0], 1)
+    #     self.assertEqual(measurements[cellprofiler_core.measurement.IMAGE]["Count_dizzy"][0], 1)
     #     self.assertEqual(measurements["dizzy"]["Location_Center_Y"][0], 5)
 
     # FIXME: wxPython 4 PR
     # def test_03_02_bad_cellprofiler(self):
-    #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     pipeline = cellprofiler_core.pipeline.Pipeline()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.images[0].channels[0].image_name.value = "Foo"
     #     pipeline.add_module(load_images)
@@ -251,8 +245,8 @@ class TestKnimeBridge(unittest.TestCase):
     #     #
     #     # Missing measurement causes exception
     #     #
-    #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     pipeline = cellprofiler_core.pipeline.Pipeline()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.images[0].channels[0].image_name.value = "Foo"
     #     pipeline.add_module(load_images)
@@ -308,14 +302,14 @@ class TestKnimeBridge(unittest.TestCase):
     #     metadata = json.loads(response.pop(0))
     #     data = response.pop(0)
     #     measurements = self.decode_measurements(metadata, data)
-    #     self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][0], 1)
+    #     self.assertEqual(measurements[cellprofiler_core.measurement.IMAGE]["Count_dizzy"][0], 1)
     #     self.assertEqual(measurements["dizzy"]["Location_Center_Y"][0], 5)
     #     self.assertEqual(len(measurements["dizzy"]["AreaShape_Area"]), 0)
 
     # FIXME: wxPython 4 PR
     # def test_04_01_run_group(self):
-    #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     pipeline = cellprofiler_core.pipeline.Pipeline()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.images[0].channels[0].image_name.value = "Foo"
     #     pipeline.add_module(load_images)
@@ -358,15 +352,15 @@ class TestKnimeBridge(unittest.TestCase):
     #     metadata = json.loads(response.pop(0))
     #     data = response.pop(0)
     #     measurements = self.decode_measurements(metadata, data)
-    #     self.assertEqual(len(measurements[cellprofiler.measurement.IMAGE][cellprofiler.measurement.IMAGE_NUMBER]), 2)
-    #     self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][0], 1)
-    #     self.assertEqual(measurements[cellprofiler.measurement.IMAGE]["Count_dizzy"][1], 2)
+    #     self.assertEqual(len(measurements[cellprofiler_core.measurement.IMAGE][cellprofiler_core.measurement.IMAGE_NUMBER]), 2)
+    #     self.assertEqual(measurements[cellprofiler_core.measurement.IMAGE]["Count_dizzy"][0], 1)
+    #     self.assertEqual(measurements[cellprofiler_core.measurement.IMAGE]["Count_dizzy"][1], 2)
     #     self.assertEqual(measurements["dizzy"]["Location_Center_Y"][0], 5)
 
     # FIXME: wxPython 4 PR
     # def test_04_02_bad_cellprofiler(self):
-    #     pipeline = cellprofiler.pipeline.Pipeline()
-    #     load_images = cellprofiler.modules.loadimages.LoadImages()
+    #     pipeline = cellprofiler_core.pipeline.Pipeline()
+    #     load_images = cellprofiler_core.modules.loadimages.LoadImages()
     #     load_images.module_num = 1
     #     load_images.images[0].channels[0].image_name.value = "Foo"
     #     pipeline.add_module(load_images)

@@ -66,9 +66,9 @@ import logging
 import numpy as np
 
 logger = logging.getLogger(__name__)
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.image as cpi
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
 
 T_WITHIN_CYCLES = "Within cycles"
 T_ACROSS_CYCLES = "Across cycles"
@@ -104,7 +104,7 @@ class Tile(cpm.Module):
     def create_settings(self):
         self.input_image = cps.ImageNameSubscriber(
             "Select an input image",
-            cps.NONE,
+            "None",
             doc="""Select the image to be tiled. Additional images within the cycle can be
 added later by choosing the "*%(T_ACROSS_CYCLES)s*" option below.
 """
@@ -257,7 +257,7 @@ create a grid that has roughly the same number of rows and columns.
             "input_image_name",
             cps.ImageNameSubscriber(
                 "Select an additional image to tile",
-                cps.NONE,
+                "None",
                 doc="""Select an additional image to tile?""",
             ),
         )
@@ -544,97 +544,3 @@ create a grid that has roughly the same number of rows and columns.
                 ),
                 self.rows,
             )
-
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
-        """this must take into account both Tile and PlaceAdjacent from the Matlab"""
-        if from_matlab and module_name == "Tile" and variable_revision_number == 1:
-            image_name, orig_image_name, tiled_image, number_rows, number_columns, row_or_column, top_or_bottom, left_or_right, meander_mode, size_change = (
-                setting_values
-            )
-
-            if size_change != "1":
-                logger.warning(
-                    "Discarding rescaling during import of Tile. "
-                    "Use the resize module with a factor of %s.\n" % size_change
-                )
-
-            left = left_or_right.lower() == "left"
-            if top_or_bottom.lower() == "top":
-                place_first = P_TOP_LEFT if left else P_TOP_RIGHT
-            else:
-                place_first = P_BOTTOM_LEFT if left else P_BOTTOM_RIGHT
-
-            tile_style = S_ROW if row_or_column.lower() == "row" else S_COL
-
-            wants_automatic_rows = cps.NO
-            wants_automatic_columns = cps.NO
-            if number_rows == cps.AUTOMATIC:
-                number_rows = 8
-                wants_automatic_rows = cps.YES
-            if number_columns == cps.AUTOMATIC:
-                number_columns = 12
-                wants_automatic_columns = cps.YES
-            setting_values = [
-                image_name,
-                tiled_image,
-                T_ACROSS_CYCLES,
-                number_rows,
-                number_columns,
-                place_first,
-                tile_style,
-                meander_mode,
-                wants_automatic_rows,
-                wants_automatic_columns,
-            ]
-            from_matlab = False
-            variable_revision_number = 1
-            module_name = self.module_name
-
-        if (
-            from_matlab
-            and module_name == "PlaceAdjacent"
-            and variable_revision_number == 3
-        ):
-            image_names = [
-                s for s in setting_values[:6] if s.lower() != cps.DO_NOT_USE.lower()
-            ]
-            adjacent_image_name = setting_values[6]
-            horizontal_or_vertical = setting_values[7]
-            delete_pipeline = setting_values[8]
-            if delete_pipeline == cps.YES:
-                logger.warning(
-                    "Ignoring memory option when importing PlaceAdjacent "
-                    "into Tile. Use the ConserveMemory module to remove "
-                    "the image from memory if desired.\n"
-                )
-            if len(image_names) == 0:
-                image_names.append(cps.DO_NOT_USE)
-            if horizontal_or_vertical.lower() == "horizontal":
-                tile_style = S_ROW
-                number_rows = "1"
-                number_columns = str(len(image_names))
-            else:
-                tile_style = S_COL
-                number_rows = str(len(image_names))
-                number_columns = "1"
-
-            setting_values = [
-                image_names[0],
-                adjacent_image_name,
-                T_WITHIN_CYCLES,
-                number_rows,
-                number_columns,
-                P_TOP_LEFT,
-                tile_style,
-                cps.NO,
-                cps.NO,
-                cps.NO,
-            ]
-            setting_values += image_names[1:]
-            variable_revision_number = 1
-            from_matlab = False
-            module_name = self.module_name
-
-        return setting_values, variable_revision_number, from_matlab

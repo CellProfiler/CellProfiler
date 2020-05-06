@@ -53,10 +53,10 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 import cellprofiler.grid as cpg
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.setting as cps
+import cellprofiler_core.module as cpm
+import cellprofiler_core.image as cpi
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.setting as cps
 from centrosome.cpmorphology import centers_of_labels
 
 NUM_TOP_LEFT = "Top left"
@@ -210,7 +210,7 @@ setting controls how the grid is defined:
 
         self.object_name = cps.ObjectNameSubscriber(
             "Select the previously identified objects",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if you selected "%(AM_AUTOMATIC)s" to define the grid)*
 
@@ -244,7 +244,7 @@ entering the coordinates of the cells.
 
         self.manual_image = cps.ImageNameSubscriber(
             "Select the image to display when drawing",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if you selected "%(AM_MANUAL)s" and "%(MAN_MOUSE)s" to define
 the grid)*
@@ -368,7 +368,7 @@ be saved using the **SaveImages** module.
 
         self.display_image_name = cps.ImageNameSubscriber(
             "Select the image on which to display the grid",
-            cps.LEAVE_BLANK,
+            "Leave blank",
             can_be_blank=True,
             doc="""\
 *(Used only if saving an image of the grid)*
@@ -412,7 +412,7 @@ first image.
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
@@ -573,7 +573,7 @@ first image.
     def get_background_image(self, workspace, gridding):
         if self.auto_or_manual == AM_MANUAL and self.manual_choice == MAN_MOUSE and gridding is None:
             image = workspace.image_set.get_image(self.manual_image.value).pixel_data
-        elif self.display_image_name.value == cps.LEAVE_BLANK:
+        elif self.display_image_name.value == "Leave blank":
             if gridding is None:
                 return None
             image = np.zeros(
@@ -812,7 +812,7 @@ first image.
         status_bar.SetStatusText(SELECT_FIRST_CELL)
         status = [wx.OK]
         gridding = [None]
-        if self.display_image_name == cps.LEAVE_BLANK:
+        if self.display_image_name == "Leave blank":
             image_shape = None
         else:
             image_shape = background_image.shape[:2]
@@ -1120,7 +1120,7 @@ first image.
                 )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust setting values if they came from a previous revision
 
@@ -1133,65 +1133,8 @@ first image.
         module_name - the name of the module that did the saving. This can be
                       used to import the settings from another module if
                       that module was merged into the current module
-        from_matlab - True if the settings came from a Matlab pipeline, False
-                      if the settings are from a CellProfiler 2.0 pipeline.
-
-        Overriding modules should return a tuple of setting_values,
-        variable_revision_number and True if upgraded to CP 2.0, otherwise
-        they should leave things as-is so that the caller can report
-        an error.
         """
-        if from_matlab and variable_revision_number == 3:
-            grid_name, rows_cols, left_or_right, top_or_bottom, rows_or_columns, each_or_once, auto_or_manual, object_name, control_spot_mode, image_name, horz_vert_offset, distance_units, horz_vert_spacing, control_spot, rgb_name, failed_grid_choice = (
-                setting_values
-            )
-            try:
-                rows, cols = [int(x.strip()) for x in rows_cols.split(",")]
-            except:
-                rows, cols = (8, 12)
-            try:
-                x_spacing, y_spacing = [
-                    int(x.strip()) for x in horz_vert_spacing.split(",")
-                ]
-            except:
-                x_spacing, y_spacing = (10, 10)
-            try:
-                off_x, off_y = [int(x.strip()) for x in horz_vert_offset.split(",")]
-                first_x, first_y = [int(x.strip()) for x in control_spot.split(",")]
-                first_x += off_x
-                first_y += off_y
-            except:
-                first_x, first_y = (0, 0)
-            second_x = first_x + (cols - 1) * x_spacing
-            second_y = first_y + (rows - 1) * y_spacing
-
-            origin = top_or_bottom + " " + left_or_right.lower()
-            setting_values = [
-                grid_name,
-                str(rows),
-                str(cols),
-                origin,
-                rows_or_columns,
-                each_or_once,
-                auto_or_manual,
-                object_name,
-                control_spot_mode,
-                image_name,
-                "%d,%d" % (first_x, first_y),
-                "1",
-                "1",
-                "%d,%d" % (second_x, second_y),
-                str(rows),
-                str(cols),
-                cps.NO if rgb_name == cps.DO_NOT_USE else cps.YES,
-                rgb_name,
-                image_name,
-                failed_grid_choice,
-            ]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if variable_revision_number == 1 and not from_matlab:
+        if variable_revision_number == 1:
             #
             # Some of the wording changed for the failed grid choice
             #
@@ -1199,7 +1142,7 @@ first image.
                 setting_values = setting_values[:-1] + [FAIL_ANY_PREVIOUS]
             elif setting_values[-1] == "The First":
                 setting_values = setting_values[:-1] + [FAIL_FIRST]
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_measurement_columns(self, pipeline):
         """Return a sequence describing the measurement columns needed by this module

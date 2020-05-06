@@ -39,9 +39,9 @@ See also other **Display** modules and data tools.
 import numpy as np
 import six
 
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
 from cellprofiler.modules._help import USING_METADATA_HELP_REF
 
 AGG_AVG = "avg"
@@ -81,7 +81,7 @@ class DisplayPlatemap(cpm.Module):
 
         self.object = cps.ObjectNameSubscriber(
             "Select the object whose measurements will be displayed",
-            cps.NONE,
+            "None",
             doc="""\
 Choose the name of objects identified by some previous module (such as
 **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**)
@@ -92,7 +92,7 @@ whose measurements are to be displayed.
         self.plot_measurement = cps.Measurement(
             "Select the measurement to plot",
             self.get_object,
-            cps.NONE,
+            "None",
             doc="""Choose the image or object measurement made by a previous module to plot.""",
         )
 
@@ -311,11 +311,11 @@ executed.
     def run_as_data_tool(self, workspace):
         return self.run(workspace)
 
-    def backwards_compatibilize(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             # Add the wellformat setting
             setting_values += [WF_NAME]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

@@ -3,16 +3,16 @@ import sys
 import pytest
 import six.moves
 
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules.createbatchfiles
-import cellprofiler.pipeline
-import cellprofiler.setting
+import cellprofiler_core.pipeline
+import cellprofiler_core.setting
 
 
 def test_test_load_version_9_please():
     assert (
-        cellprofiler.modules.createbatchfiles.CreateBatchFiles.variable_revision_number
-        == 8
+            cellprofiler.modules.createbatchfiles.CreateBatchFiles.variable_revision_number
+            == 8
     )
 
 
@@ -20,7 +20,7 @@ def test_load_v7():
     with open("./tests/resources/modules/createbatchfiles/v7.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
@@ -42,7 +42,7 @@ def test_load_v8():
     with open("./tests/resources/modules/createbatchfiles/v8.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(six.moves.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
@@ -58,24 +58,24 @@ def test_module_must_be_last():
     #
     # First, make sure that a naked CPModule tests valid
     #
-    pipeline = cellprofiler.pipeline.Pipeline()
-    module = cellprofiler.module.Module()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    module = cellprofiler_core.module.Module()
     module.set_module_num(len(pipeline.modules()) + 1)
     pipeline.add_module(module)
     pipeline.test_valid()
     #
     # Make sure that CreateBatchFiles on its own tests valid
     #
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     module = cellprofiler.modules.createbatchfiles.CreateBatchFiles()
     module.set_module_num(len(pipeline.modules()) + 1)
     pipeline.add_module(module)
     pipeline.test_valid()
 
-    module = cellprofiler.module.Module()
+    module = cellprofiler_core.module.Module()
     module.set_module_num(len(pipeline.modules()) + 1)
     pipeline.add_module(module)
-    with pytest.raises(cellprofiler.setting.ValidationError):
+    with pytest.raises(cellprofiler_core.setting.ValidationError):
         pipeline.test_valid()
 
 

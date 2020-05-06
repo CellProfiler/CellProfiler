@@ -3,7 +3,7 @@ import pytest
 import skimage.data
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.modules.morphologicalskeleton
 
 instance = cellprofiler.modules.morphologicalskeleton.MorphologicalSkeleton()
@@ -20,7 +20,7 @@ instance = cellprofiler.modules.morphologicalskeleton.MorphologicalSkeleton()
 def image(request):
     data, dimensions = request.param
 
-    return cellprofiler.image.Image(image=data, dimensions=dimensions)
+    return cellprofiler_core.image.Image(image=data, dimensions=dimensions)
 
 
 def test_run(image, module, image_set, workspace):

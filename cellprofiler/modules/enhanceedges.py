@@ -32,9 +32,9 @@ from centrosome.filter import roberts, canny, sobel, hsobel, vsobel
 from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.image as cpi
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"
@@ -59,7 +59,7 @@ class EnhanceEdges(cpm.Module):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="""Select the image whose edges you want to enhance.""",
         )
 
@@ -370,31 +370,13 @@ values below this threshold as not being edges.
             return self.sigma.value
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 3:
-            setting_values = [
-                setting_values[0],  # ImageName
-                setting_values[1],  # OutputName
-                setting_values[2] == cps.DO_NOT_USE,  # Threshold
-                setting_values[2] if setting_values[2] != cps.DO_NOT_USE else 0.5,
-                setting_values[3],  # Threshold adjustment factor
-                setting_values[4],  # Method
-                setting_values[5],  # Filter size
-                setting_values[8],  # Direction
-                setting_values[9] == cps.DO_NOT_USE,  # Sigma
-                setting_values[9] if setting_values[9] != cps.DO_NOT_USE else 5,
-                setting_values[10] == cps.DO_NOT_USE,  # Low threshold
-                setting_values[10] if setting_values[10] != cps.DO_NOT_USE else 0.5,
-            ]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if from_matlab == False and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Ratio removed / filter size removed
             setting_values = setting_values[:6] + setting_values[7:]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 FindEdges = EnhanceEdges

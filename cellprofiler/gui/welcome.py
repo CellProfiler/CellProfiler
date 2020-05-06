@@ -11,7 +11,7 @@ import cellprofiler
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html
 import cellprofiler.gui.html.utils
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 
 CONFIGURE_IMAGES_REF = six.moves.urllib.parse.quote("Configure images")
 EXPORTING_RESULTS_REF = six.moves.urllib.parse.quote("Exporting results")
@@ -567,7 +567,7 @@ class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):
             )
 
     def __set_startup_blurb(self):
-        cellprofiler.preferences.set_startup_blurb(False)
+        cellprofiler_core.preferences.set_startup_blurb(False)
 
         parent = self.GetParent()
 

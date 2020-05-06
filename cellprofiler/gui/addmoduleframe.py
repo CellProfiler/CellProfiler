@@ -3,9 +3,9 @@ import wx
 import cellprofiler.gui
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.help.search
-import cellprofiler.module
+import cellprofiler_core.module
 import cellprofiler.modules
-import cellprofiler.preferences
+import cellprofiler_core.preferences
 
 
 class AddModuleFrame(wx.Frame):
@@ -148,15 +148,15 @@ class AddModuleFrame(wx.Frame):
         for key in self.__module_files:
             self.__module_dict[key] = {}
 
-        for mn in cellprofiler.modules.get_module_names():
+        for mn in cellprofiler_core.modules.get_module_names():
 
             def loader(module_num, mn=mn):
-                module = cellprofiler.modules.instantiate_module(mn)
+                module = cellprofiler_core.modules.instantiate_module(mn)
                 module.set_module_num(module_num)
                 return module
 
             try:
-                module = cellprofiler.modules.get_module_class(mn)
+                module = cellprofiler_core.modules.get_module_class(mn)
                 if module.is_input_module():
                     continue
                 categories = (

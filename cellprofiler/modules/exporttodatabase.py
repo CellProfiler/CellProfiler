@@ -100,13 +100,13 @@ import six.moves
 
 import cellprofiler
 import cellprofiler.icons
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.modules.loadimages
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
-import cellprofiler.utilities.legacy
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.modules.loadimages
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
+import cellprofiler_core.utilities.legacy
 from cellprofiler.modules import _help
 
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
@@ -192,8 +192,8 @@ W_PLATEVIEWER = "PlateViewer"
 W_BOXPLOT = "BoxPlot"
 W_DISPLAY_ALL = [W_SCATTERPLOT, W_HISTOGRAM, W_PLATEVIEWER, W_DENSITYPLOT, W_BOXPLOT]
 W_INDEX = "Index"
-W_TYPE_ALL = [cellprofiler.measurement.IMAGE, cellprofiler.measurement.OBJECT, W_INDEX]
-W_INDEX_ALL = [C_IMAGE_NUMBER, cellprofiler.pipeline.GROUP_INDEX]
+W_TYPE_ALL = [cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.OBJECT, W_INDEX]
+W_INDEX_ALL = [C_IMAGE_NUMBER, cellprofiler_core.pipeline.GROUP_INDEX]
 
 ################################################
 #
@@ -260,7 +260,7 @@ OT_DICTIONARY = {
     "Single object table": OT_COMBINE,
     "Single object view": OT_VIEW,
 }
-from cellprofiler.measurement import C_PARENT, M_NUMBER_OBJECT_NUMBER
+from cellprofiler_core.measurement import C_PARENT, M_NUMBER_OBJECT_NUMBER
 
 T_EXPERIMENT = "Experiment"
 T_EXPERIMENT_PROPERTIES = "Experiment_Properties"
@@ -379,7 +379,7 @@ class DBContext(object):
         self.connection.close()
 
 
-class ExportToDatabase(cellprofiler.module.Module):
+class ExportToDatabase(cellprofiler_core.module.Module):
     module_name = "ExportToDatabase"
     variable_revision_number = 27
     category = ["File Processing", "Data Tools"]
@@ -391,7 +391,7 @@ class ExportToDatabase(cellprofiler.module.Module):
             else [DB_MYSQL_CSV, DB_SQLITE]
         )
         default_db = DB_MYSQL if HAS_MYSQL_DB else DB_MYSQL_CSV
-        self.db_type = cellprofiler.setting.Choice(
+        self.db_type = cellprofiler_core.setting.Choice(
             "Database type",
             db_choices,
             default_db,
@@ -433,7 +433,7 @@ considerations to note:
             ),
         )
 
-        self.test_connection_button = cellprofiler.setting.DoSomething(
+        self.test_connection_button = cellprofiler_core.setting.DoSomething(
             "Test the database connection",
             "Test connection",
             self.test_connection,
@@ -442,13 +442,13 @@ This button test the connection to MySQL server specified using
 the settings entered by the user.""",
         )
 
-        self.db_name = cellprofiler.setting.Text(
+        self.db_name = cellprofiler_core.setting.Text(
             "Database name",
             "DefaultDB",
             doc="""Select a name for the database you want to use.""",
         )
 
-        self.experiment_name = cellprofiler.setting.Text(
+        self.experiment_name = cellprofiler_core.setting.Text(
             "Experiment name",
             "MyExpt",
             doc="""\
@@ -459,7 +459,7 @@ and will be able to find the experiment’s tables through database
 queries.""",
         )
 
-        self.want_table_prefix = cellprofiler.setting.Binary(
+        self.want_table_prefix = cellprofiler_core.setting.Binary(
             "Add a prefix to table names?",
             True,
             doc="""\
@@ -477,11 +477,11 @@ purposes.
 Whether you chose to use a prefix or not, CellProfiler will warn you if
 your choice entails overwriting an existing table.
 """.format(
-                **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
-        self.table_prefix = cellprofiler.setting.Text(
+        self.table_prefix = cellprofiler_core.setting.Text(
             "Table prefix",
             "MyExpt_",
             doc="""\
@@ -494,7 +494,7 @@ combination of the table name and prefix exceeds this limit, you will
 receive an error associated with this setting.""",
         )
 
-        self.sql_file_prefix = cellprofiler.setting.Text(
+        self.sql_file_prefix = cellprofiler_core.setting.Text(
             "SQL file prefix",
             "SQL_",
             doc="""\
@@ -506,14 +506,14 @@ Enter the prefix to be used to name the SQL file.
             ),
         )
 
-        self.directory = cellprofiler.setting.DirectoryPath(
+        self.directory = cellprofiler_core.setting.DirectoryPath(
             "Output file location",
             dir_choices=[
-                cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
-                cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME,
-                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME,
-                cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME,
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
             ],
             doc="""\
 *(Used only when using a CSV or a SQLite database, and/or creating a
@@ -536,9 +536,9 @@ location.
             ),
         )
 
-        self.directory.dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        self.directory.dir_choice = cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
 
-        self.save_cpa_properties = cellprofiler.setting.Binary(
+        self.save_cpa_properties = cellprofiler_core.setting.Binary(
             "Create a CellProfiler Analyst properties file?",
             False,
             doc="""\
@@ -550,13 +550,13 @@ many entries as possible based on the pipeline’s settings, including the
 server name, username, and password if MySQL is used. Keep in mind you
 should not share the resulting file because it contains your password.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.location_object = cellprofiler.setting.ObjectNameSubscriber(
+        self.location_object = cellprofiler_core.setting.ObjectNameSubscriber(
             "Which objects should be used for locations?",
-            cellprofiler.setting.NONE,
+            "None",
             doc="""\
 *(Used only if creating a properties file)*
 
@@ -579,7 +579,7 @@ setting: ‘Export measurements for all objects to the database?’.
             % globals(),
         )
 
-        self.wants_properties_image_url_prepend = cellprofiler.setting.Binary(
+        self.wants_properties_image_url_prepend = cellprofiler_core.setting.Binary(
             "Access CellProfiler Analyst images via URL?",
             False,
             doc="""\
@@ -606,7 +606,7 @@ file name. E.g., if an image is loaded from the path
         if "broadinstitute" in fqdn.lower():  # Broad
             default_prepend = "http://imageweb/images/CPALinks"
 
-        self.properties_image_url_prepend = cellprofiler.setting.Text(
+        self.properties_image_url_prepend = cellprofiler_core.setting.Text(
             "Enter an image url prepend if you plan to access your files via http",
             default_prepend,
             doc="""\
@@ -623,7 +623,7 @@ If you are not using the web to access your files (i.e., they are
 locally accessible by your computer), leave this setting blank.""",
         )
 
-        self.properties_plate_type = cellprofiler.setting.Choice(
+        self.properties_plate_type = cellprofiler_core.setting.Choice(
             "Select the plate type",
             PLATE_TYPES,
             doc="""\
@@ -635,7 +635,7 @@ plate type here. Supported types in CellProfiler Analyst are 96- and
 a plate or microarray, select *None*.""",
         )
 
-        self.properties_plate_metadata = cellprofiler.setting.Choice(
+        self.properties_plate_metadata = cellprofiler_core.setting.Choice(
             "Select the plate metadata",
             ["None"],
             choices_fn=self.get_metadata_choices,
@@ -652,7 +652,7 @@ metadata associated with the image set, select *None*.
             ),
         )
 
-        self.properties_well_metadata = cellprofiler.setting.Choice(
+        self.properties_well_metadata = cellprofiler_core.setting.Choice(
             "Select the well metadata",
             ["None"],
             choices_fn=self.get_metadata_choices,
@@ -669,7 +669,7 @@ associated with the image set, select *None*.
             ),
         )
 
-        self.properties_export_all_image_defaults = cellprofiler.setting.Binary(
+        self.properties_export_all_image_defaults = cellprofiler_core.setting.Binary(
             "Include information for all images, using default values?",
             True,
             doc="""\
@@ -686,20 +686,20 @@ images. This option will do the following:
 
 Select "*{NO}*" to specify which images should be included or to
 override the automatic values.""".format(
-                **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
         self.image_groups = []
-        self.image_group_count = cellprofiler.setting.HiddenCount(
+        self.image_group_count = cellprofiler_core.setting.HiddenCount(
             self.image_groups, "Properties image group count"
         )
         self.add_image_group(False)
-        self.add_image_button = cellprofiler.setting.DoSomething(
+        self.add_image_button = cellprofiler_core.setting.DoSomething(
             "", "Add another image", self.add_image_group
         )
 
-        self.properties_wants_groups = cellprofiler.setting.Binary(
+        self.properties_wants_groups = cellprofiler_core.setting.Binary(
             "Do you want to add group fields?",
             False,
             doc="""\
@@ -730,20 +730,20 @@ Classifier function within CellProfiler Analyst.
 It will also provide new options in the Classifier fetch menu so you can
 fetch objects from images with specific values for the group columns.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
         self.group_field_groups = []
-        self.group_field_count = cellprofiler.setting.HiddenCount(
+        self.group_field_count = cellprofiler_core.setting.HiddenCount(
             self.group_field_groups, "Properties group field count"
         )
         self.add_group_field_group(False)
-        self.add_group_field_button = cellprofiler.setting.DoSomething(
+        self.add_group_field_button = cellprofiler_core.setting.DoSomething(
             "", "Add another group", self.add_group_field_group
         )
 
-        self.properties_wants_filters = cellprofiler.setting.Binary(
+        self.properties_wants_filters = cellprofiler_core.setting.Binary(
             "Do you want to add filter fields?",
             False,
             doc="""\
@@ -754,11 +754,11 @@ defining a *filter*. Filters are useful, for example, for fetching and
 scoring objects in Classifier within CellProfiler Analyst or making graphs using the plotting tools
 that satisfy a specific metadata constraint.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.create_filters_for_plates = cellprofiler.setting.Binary(
+        self.create_filters_for_plates = cellprofiler_core.setting.Binary(
             "Automatically create a filter for each plate?",
             False,
             doc="""\
@@ -767,19 +767,19 @@ that satisfy a specific metadata constraint.
 If you have specified a plate metadata tag, select "*{YES}*" to
 create a set of filters in the properties file, one for each plate.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
         self.filter_field_groups = []
-        self.filter_field_count = cellprofiler.setting.HiddenCount(
+        self.filter_field_count = cellprofiler_core.setting.HiddenCount(
             self.filter_field_groups, "Properties filter field count"
         )
-        self.add_filter_field_button = cellprofiler.setting.DoSomething(
+        self.add_filter_field_button = cellprofiler_core.setting.DoSomething(
             "", "Add another filter", self.add_filter_field_group
         )
 
-        self.properties_class_table_name = cellprofiler.setting.Text(
+        self.properties_class_table_name = cellprofiler_core.setting.Text(
             "Enter a phenotype class table name if using the Classifier tool in CellProfiler Analyst",
             "",
             doc="""\
@@ -797,7 +797,7 @@ the *class\_table* field. Leave this field blank if you are not using
 Classifier or do not need the table written to the database.""",
         )
 
-        self.properties_classification_type = cellprofiler.setting.Choice(
+        self.properties_classification_type = cellprofiler_core.setting.Choice(
             "Select the classification type",
             CLASSIFIER_TYPE,
             doc="""\
@@ -820,7 +820,7 @@ the *classification\_type* field.
             ),
         )
 
-        self.create_workspace_file = cellprofiler.setting.Binary(
+        self.create_workspace_file = cellprofiler_core.setting.Binary(
             "Create a CellProfiler Analyst workspace file?",
             False,
             doc="""\
@@ -843,13 +843,13 @@ the *classification\_type* field.
             ),
         )
 
-        self.divider = cellprofiler.setting.Divider(line=True)
-        self.divider_props = cellprofiler.setting.Divider(line=True)
-        self.divider_props_wkspace = cellprofiler.setting.Divider(line=True)
-        self.divider_wkspace = cellprofiler.setting.Divider(line=True)
+        self.divider = cellprofiler_core.setting.Divider(line=True)
+        self.divider_props = cellprofiler_core.setting.Divider(line=True)
+        self.divider_props_wkspace = cellprofiler_core.setting.Divider(line=True)
+        self.divider_wkspace = cellprofiler_core.setting.Divider(line=True)
 
         self.workspace_measurement_groups = []
-        self.workspace_measurement_count = cellprofiler.setting.HiddenCount(
+        self.workspace_measurement_count = cellprofiler_core.setting.HiddenCount(
             self.workspace_measurement_groups, "Workspace measurement count"
         )
 
@@ -857,33 +857,33 @@ the *classification\_type* field.
             self.add_workspace_measurement_group(can_remove)
 
         add_workspace_measurement_group(False)
-        self.add_workspace_measurement_button = cellprofiler.setting.DoSomething(
+        self.add_workspace_measurement_button = cellprofiler_core.setting.DoSomething(
             "", "Add another measurement", self.add_workspace_measurement_group
         )
 
-        self.mysql_not_available = cellprofiler.setting.Divider(
+        self.mysql_not_available = cellprofiler_core.setting.Divider(
             "Cannot write to MySQL directly - CSV file output only",
             line=False,
             doc="""The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""",
         )
 
-        self.db_host = cellprofiler.setting.Text(
+        self.db_host = cellprofiler_core.setting.Text(
             text="Database host",
             value="",
             doc="""Enter the address CP must contact to write to the database.""",
         )
 
-        self.db_user = cellprofiler.setting.Text(
+        self.db_user = cellprofiler_core.setting.Text(
             text="Username", value="", doc="""Enter your database username."""
         )
 
-        self.db_passwd = cellprofiler.setting.Text(
+        self.db_passwd = cellprofiler_core.setting.Text(
             text="Password",
             value="",
             doc="""Enter your database password. Note that this will be saved in your pipeline file and thus you should never share the pipeline file with anyone else.""",
         )
 
-        self.sqlite_file = cellprofiler.setting.Text(
+        self.sqlite_file = cellprofiler_core.setting.Text(
             "Name the SQLite database file",
             "DefaultDB.db",
             doc="""\
@@ -892,7 +892,7 @@ the *classification\_type* field.
 Enter the name of the SQLite database filename to which you want to write.""",
         )
 
-        self.wants_agg_mean = cellprofiler.setting.Binary(
+        self.wants_agg_mean = cellprofiler_core.setting.Binary(
             "Calculate the per-image mean values of object measurements?",
             True,
             doc="""\
@@ -914,11 +914,11 @@ Mean\_Nuclei\_AreaShape\_Area column:
 Mean_Nuclei_AreaShape_Area = (SELECT AVG(Nuclei_AreaShape_Area) FROM Per_Object
 WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);`` 
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.wants_agg_median = cellprofiler.setting.Binary(
+        self.wants_agg_median = cellprofiler_core.setting.Binary(
             "Calculate the per-image median values of object measurements?",
             False,
             doc="""\
@@ -935,11 +935,11 @@ per-object measurements; doing so might exceed database column limits.
 However, unlike population means and standard deviations, there is no
 built in median operation in MySQL to create these values manually.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.wants_agg_std_dev = cellprofiler.setting.Binary(
+        self.wants_agg_std_dev = cellprofiler_core.setting.Binary(
             "Calculate the per-image standard deviation values of object measurements?",
             False,
             doc="""\
@@ -961,11 +961,11 @@ StDev\_Nuclei\_AreaShape\_Area column:
 StDev_Nuclei_AreaShape_Area = (SELECT STDDEV(Nuclei_AreaShape_Area) FROM Per_Object
 WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);`` 
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.wants_agg_mean_well = cellprofiler.setting.Binary(
+        self.wants_agg_mean_well = cellprofiler_core.setting.Binary(
             "Calculate the per-well mean values of object measurements?",
             False,
             doc="""\
@@ -993,13 +993,13 @@ create the Per\_Well table, regardless of the option chosen above.
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_MYSQL_CSV": DB_MYSQL_CSV,
-                    "YES": cellprofiler.setting.YES,
+                    "YES": "Yes",
                     "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
                 }
             ),
         )
 
-        self.wants_agg_median_well = cellprofiler.setting.Binary(
+        self.wants_agg_median_well = cellprofiler_core.setting.Binary(
             "Calculate the per-well median values of object measurements?",
             False,
             doc="""\
@@ -1028,13 +1028,13 @@ create the Per\_Well table, regardless of the option chosen above.
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_MYSQL_CSV": DB_MYSQL_CSV,
-                    "YES": cellprofiler.setting.YES,
+                    "YES": "Yes",
                     "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
                 }
             ),
         )
 
-        self.wants_agg_std_dev_well = cellprofiler.setting.Binary(
+        self.wants_agg_std_dev_well = cellprofiler_core.setting.Binary(
             "Calculate the per-well standard deviation values of object measurements?",
             False,
             doc="""\
@@ -1063,13 +1063,13 @@ create the Per\_Well table, regardless of the option chosen above.
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_MYSQL_CSV": DB_MYSQL_CSV,
-                    "YES": cellprofiler.setting.YES,
+                    "YES": "Yes",
                     "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
                 }
             ),
         )
 
-        self.objects_choice = cellprofiler.setting.Choice(
+        self.objects_choice = cellprofiler_core.setting.Choice(
             "Export measurements for all objects to the database?",
             [O_ALL, O_NONE, O_SELECT],
             doc="""\
@@ -1086,7 +1086,7 @@ in the Per\_Object and Per\_Well(s) database tables.
             ),
         )
 
-        self.objects_list = cellprofiler.setting.ObjectSubscriberMultiChoice(
+        self.objects_list = cellprofiler_core.setting.ObjectSubscriberMultiChoice(
             "Select the objects",
             doc="""\
 *(Used only if "Select" is chosen for adding objects)*
@@ -1098,7 +1098,7 @@ will be written out to the Per\_Object and/or Per\_Well(s) tables,
 otherwise, the object’s measurements will be skipped.""",
         )
 
-        self.wants_relationship_table_setting = cellprofiler.setting.Binary(
+        self.wants_relationship_table_setting = cellprofiler_core.setting.Binary(
             "Export object relationships?",
             True,
             doc="""\
@@ -1125,7 +1125,7 @@ This view has the following columns:
    and object number of the second object in the relationship
 """.format(
                 **{
-                    "YES": cellprofiler.setting.YES,
+                    "YES": "Yes",
                     "COL_MODULE_NUMBER": COL_MODULE_NUMBER,
                     "COL_RELATIONSHIP": COL_RELATIONSHIP,
                     "COL_OBJECT_NAME1": COL_OBJECT_NAME1,
@@ -1138,7 +1138,7 @@ This view has the following columns:
             ),
         )
 
-        self.max_column_size = cellprofiler.setting.Integer(
+        self.max_column_size = cellprofiler_core.setting.Integer(
             "Maximum # of characters in a column name",
             64,
             minval=10,
@@ -1152,7 +1152,7 @@ column names by removing characters, at the same time guaranteeing that
 no two columns have the same name.""",
         )
 
-        self.separate_object_tables = cellprofiler.setting.Choice(
+        self.separate_object_tables = cellprofiler_core.setting.Choice(
             "Create one table per object, a single object table or a single object view?",
             [OT_COMBINE, OT_PER_OBJECT, OT_VIEW],
             doc="""\
@@ -1198,7 +1198,7 @@ object exported or a single object table.
             ),
         )
 
-        self.want_image_thumbnails = cellprofiler.setting.Binary(
+        self.want_image_thumbnails = cellprofiler_core.setting.Binary(
             "Write image thumbnails directly to the database?",
             False,
             doc="""\
@@ -1212,12 +1212,12 @@ dropdown.""".format(
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_SQLITE": DB_SQLITE,
-                    "YES": cellprofiler.setting.YES,
+                    "YES": "Yes",
                 }
             ),
         )
 
-        self.thumbnail_image_names = cellprofiler.setting.ImageNameSubscriberMultiChoice(
+        self.thumbnail_image_names = cellprofiler_core.setting.ImageNameSubscriberMultiChoice(
             "Select the images for which you want to save thumbnails",
             doc="""\
 *(Used only if {DB_MYSQL} or {DB_SQLITE} are selected as database type)*
@@ -1230,12 +1230,12 @@ dropdown.""".format(
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_SQLITE": DB_SQLITE,
-                    "YES": cellprofiler.setting.YES,
+                    "YES": "Yes",
                 }
             ),
         )
 
-        self.auto_scale_thumbnail_intensities = cellprofiler.setting.Binary(
+        self.auto_scale_thumbnail_intensities = cellprofiler_core.setting.Binary(
             "Auto-scale thumbnail pixel intensities?",
             True,
             doc="""\
@@ -1248,12 +1248,12 @@ is white/saturated. """.format(
                 **{
                     "DB_MYSQL": DB_MYSQL,
                     "DB_SQLITE": DB_SQLITE,
-                    "YES": cellprofiler.setting.YES,
+                    "YES": "Yes",
                 }
             ),
         )
 
-        self.allow_overwrite = cellprofiler.setting.Choice(
+        self.allow_overwrite = cellprofiler_core.setting.Choice(
             "Overwrite without warning?",
             [OVERWRITE_NEVER, OVERWRITE_DATA, OVERWRITE_ALL],
             doc="""\
@@ -1293,15 +1293,15 @@ You can choose from three options to control overwriting behavior:
         )
 
     def add_image_group(self, can_remove=True):
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
 
         group.can_remove = can_remove
 
         group.append(
             "image_cols",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Select an image to include",
-                [cellprofiler.setting.NONE],
+                ["None"],
                 choices_fn=self.get_property_file_image_choices,
                 doc="""\
 *(Used only if creating a properties file and specifying the image information)*
@@ -1321,7 +1321,7 @@ modules.""",
 
         group.append(
             "wants_automatic_image_name",
-            cellprofiler.setting.Binary(
+            cellprofiler_core.setting.Binary(
                 "Use the image name for the display?",
                 True,
                 doc="""\
@@ -1332,14 +1332,14 @@ displayed name.
 
 Select "*{NO}*" to name the image yourself.
 """.format(
-                    **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                    **{"YES": "Yes", "NO": "No"}
                 ),
             ),
         )
 
         group.append(
             "image_name",
-            cellprofiler.setting.Text(
+            cellprofiler_core.setting.Text(
                 "Image name",
                 "Channel%d" % (len(self.image_groups) + 1),
                 doc="""\
@@ -1358,7 +1358,7 @@ Enter a name for the specified image.""",
 
         group.append(
             "image_channel_colors",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Channel color",
                 COLOR_ORDER,
                 default_color,
@@ -1371,21 +1371,21 @@ Enter a color to display this channel.""",
 
         group.append(
             "remover",
-            cellprofiler.setting.RemoveSettingButton(
+            cellprofiler_core.setting.RemoveSettingButton(
                 "", "Remove this image", self.image_groups, group
             ),
         )
 
-        group.append("divider", cellprofiler.setting.Divider(line=False))
+        group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
         self.image_groups.append(group)
 
     def add_group_field_group(self, can_remove=True):
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         group.can_remove = can_remove
         group.append(
             "group_name",
-            cellprofiler.setting.Text(
+            cellprofiler_core.setting.Text(
                 "Enter the name of the group",
                 "",
                 doc="""\
@@ -1397,7 +1397,7 @@ are permitted.""",
         )
         group.append(
             "group_statement",
-            cellprofiler.setting.Text(
+            cellprofiler_core.setting.Text(
                 "Enter the per-image columns which define the group, separated by commas",
                 GROUP_COL_DEFAULT,
                 doc="""\
@@ -1425,22 +1425,22 @@ automatically, so there is no need to enter them here.""",
         )
         group.append(
             "remover",
-            cellprofiler.setting.RemoveSettingButton(
+            cellprofiler_core.setting.RemoveSettingButton(
                 "", "Remove this group", self.group_field_groups, group
             ),
         )
-        group.append("divider", cellprofiler.setting.Divider(line=True))
+        group.append("divider", cellprofiler_core.setting.Divider(line=True))
 
         self.group_field_groups.append(group)
 
     def add_filter_field_group(self, can_remove=True):
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
 
         group.can_remove = can_remove
 
         group.append(
             "filter_name",
-            cellprofiler.setting.Text(
+            cellprofiler_core.setting.Text(
                 "Enter the name of the filter",
                 "",
                 doc="""\
@@ -1453,7 +1453,7 @@ underscores are permitted.""",
 
         group.append(
             "filter_statement",
-            cellprofiler.setting.Text(
+            cellprofiler_core.setting.Text(
                 "Enter the MySQL WHERE clause to define a filter",
                 "",
                 doc="""\
@@ -1474,25 +1474,25 @@ here.""",
         )
         group.append(
             "remover",
-            cellprofiler.setting.RemoveSettingButton(
+            cellprofiler_core.setting.RemoveSettingButton(
                 "", "Remove this filter", self.filter_field_groups, group
             ),
         )
-        group.append("divider", cellprofiler.setting.Divider(line=True))
+        group.append("divider", cellprofiler_core.setting.Divider(line=True))
 
         self.filter_field_groups.append(group)
 
     def add_workspace_measurement_group(self, can_remove=True):
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         self.workspace_measurement_groups.append(group)
 
         group.can_remove = can_remove
 
-        group.append("divider", cellprofiler.setting.Divider(line=False))
+        group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
         group.append(
             "measurement_display",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Select the measurement display tool",
                 W_DISPLAY_ALL,
                 doc="""\
@@ -1570,14 +1570,14 @@ available:
 """.format(
                 **{
                     "C_IMAGE_NUMBER": C_IMAGE_NUMBER,
-                    "GROUP_INDEX": cellprofiler.pipeline.GROUP_INDEX,
+                    "GROUP_INDEX": cellprofiler_core.pipeline.GROUP_INDEX,
                     "USING_METADATA_GROUPING_HELP_REF": _help.USING_METADATA_GROUPING_HELP_REF,
                 }
             )
 
         group.append(
             "x_measurement_type",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Type of measurement to plot on the X-axis",
                 W_TYPE_ALL,
                 doc=measurement_type_help(),
@@ -1586,20 +1586,20 @@ available:
 
         group.append(
             "x_object_name",
-            cellprofiler.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.ObjectNameSubscriber(
                 "Enter the object name",
-                cellprofiler.setting.NONE,
+                "None",
                 doc=object_name_help(),
             ),
         )
 
         def object_fn_x():
             if group.x_measurement_type.value in (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.EXPERIMENT,
             ):
                 return group.x_measurement_type.value
-            elif group.x_measurement_type.value == cellprofiler.measurement.OBJECT:
+            elif group.x_measurement_type.value == cellprofiler_core.measurement.OBJECT:
                 return group.x_object_name.value
             else:
                 raise NotImplementedError(
@@ -1609,7 +1609,7 @@ available:
 
         group.append(
             "x_measurement_name",
-            cellprofiler.setting.Measurement(
+            cellprofiler_core.setting.Measurement(
                 "Select the X-axis measurement",
                 object_fn_x,
                 doc=measurement_name_help(),
@@ -1618,14 +1618,14 @@ available:
 
         group.append(
             "x_index_name",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Select the X-axis index", W_INDEX_ALL, doc=index_name_help()
             ),
         )
 
         group.append(
             "y_measurement_type",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Type of measurement to plot on the Y-axis",
                 W_TYPE_ALL,
                 doc=measurement_type_help(),
@@ -1634,17 +1634,17 @@ available:
 
         group.append(
             "y_object_name",
-            cellprofiler.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.ObjectNameSubscriber(
                 "Enter the object name",
-                cellprofiler.setting.NONE,
+                "None",
                 doc=object_name_help(),
             ),
         )
 
         def object_fn_y():
-            if group.y_measurement_type.value == cellprofiler.measurement.IMAGE:
-                return cellprofiler.measurement.IMAGE
-            elif group.y_measurement_type.value == cellprofiler.measurement.OBJECT:
+            if group.y_measurement_type.value == cellprofiler_core.measurement.IMAGE:
+                return cellprofiler_core.measurement.IMAGE
+            elif group.y_measurement_type.value == cellprofiler_core.measurement.OBJECT:
                 return group.y_object_name.value
             else:
                 raise NotImplementedError(
@@ -1654,7 +1654,7 @@ available:
 
         group.append(
             "y_measurement_name",
-            cellprofiler.setting.Measurement(
+            cellprofiler_core.setting.Measurement(
                 "Select the Y-axis measurement",
                 object_fn_y,
                 doc=measurement_name_help(),
@@ -1663,7 +1663,7 @@ available:
 
         group.append(
             "y_index_name",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Select the Y-axis index", W_INDEX_ALL, doc=index_name_help()
             ),
         )
@@ -1671,7 +1671,7 @@ available:
         if can_remove:
             group.append(
                 "remove_button",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "",
                     "Remove this measurement",
                     self.workspace_measurement_groups,
@@ -1684,9 +1684,9 @@ available:
         choices = ["None"]
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cellprofiler.measurement.C_METADATA) + 1) :]
-            if object_name == cellprofiler.measurement.IMAGE and feature.startswith(
-                cellprofiler.measurement.C_METADATA
+            choice = feature[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
+            if object_name == cellprofiler_core.measurement.IMAGE and feature.startswith(
+                cellprofiler_core.measurement.C_METADATA
             ):
                 choices.append(choice)
         return choices
@@ -1696,9 +1696,9 @@ available:
         image_names = []
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cellprofiler.measurement.C_FILE_NAME) + 1) :]
-            if object_name == cellprofiler.measurement.IMAGE and (
-                feature.startswith(cellprofiler.measurement.C_FILE_NAME)
+            choice = feature[(len(cellprofiler_core.measurement.C_FILE_NAME) + 1) :]
+            if object_name == cellprofiler_core.measurement.IMAGE and (
+                feature.startswith(cellprofiler_core.measurement.C_FILE_NAME)
             ):
                 image_names.append(choice)
         return image_names
@@ -1896,7 +1896,7 @@ available:
         result += [workspace_group.x_measurement_type]
         if workspace_group.x_measurement_type == W_INDEX:
             result += [workspace_group.x_index_name]
-        elif workspace_group.x_measurement_type == cellprofiler.measurement.OBJECT:
+        elif workspace_group.x_measurement_type == cellprofiler_core.measurement.OBJECT:
             result += [
                 workspace_group.x_object_name,
                 workspace_group.x_measurement_name,
@@ -1907,7 +1907,7 @@ available:
             result += [workspace_group.y_measurement_type]
             if workspace_group.y_measurement_type == W_INDEX:
                 result += [workspace_group.y_index_name]
-            elif workspace_group.y_measurement_type == cellprofiler.measurement.OBJECT:
+            elif workspace_group.y_measurement_type == cellprofiler_core.measurement.OBJECT:
                 result += [
                     workspace_group.y_object_name,
                     workspace_group.y_measurement_name,
@@ -2054,40 +2054,40 @@ available:
     def validate_module(self, pipeline):
         if self.want_table_prefix.value:
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$", self.table_prefix.value):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Invalid table prefix", self.table_prefix
                 )
 
         if self.db_type == DB_MYSQL:
             if not re.match("^[A-Za-z0-9_]+$", self.db_name.value):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "The database name has invalid characters", self.db_name
                 )
         elif self.db_type == DB_SQLITE:
             if not re.match("^[A-Za-z0-9_].*$", self.sqlite_file.value):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "The sqlite file name has invalid characters", self.sqlite_file
                 )
 
         if self.db_type == DB_MYSQL:
             if not re.match("^[A-Za-z0-9_].*$", self.db_host.value):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "The database host name has invalid characters", self.db_host
                 )
             if not re.match("^[A-Za-z0-9_]+$", self.db_user.value):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "The database user name has invalid characters", self.db_user
                 )
         else:
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$", self.sql_file_prefix.value):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Invalid SQL file prefix", self.sql_file_prefix
                 )
 
         if self.objects_choice == O_SELECT:
             self.objects_list.load_choices(pipeline)
             if len(self.objects_list.choices) == 0:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Please choose at least one object", self.objects_choice
                 )
 
@@ -2096,14 +2096,14 @@ available:
                 self.properties_wants_filters.value
                 and self.create_filters_for_plates.value
             ):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "You must specify the plate metadata",
                     self.create_filters_for_plates,
                 )
 
         if self.want_image_thumbnails:
             if not self.thumbnail_image_names.get_selections():
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Please choose at least one image", self.thumbnail_image_names
                 )
 
@@ -2132,18 +2132,18 @@ available:
                 )
                 msg += "Please shorten the prefix if using a single object table,\n"
                 msg += "and/or the object name if using separate tables."
-                raise cellprofiler.setting.ValidationError(msg, self.table_prefix)
+                raise cellprofiler_core.setting.ValidationError(msg, self.table_prefix)
 
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
         if pipeline.test_mode:
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "ExportToDatabase does not produce output in Test Mode", self.db_type
             )
 
         # Warn user if using SQLLite and CreateBatchFiles
         if self.db_type == DB_SQLITE and pipeline.has_create_batch_module():
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "Only one process can access a SQLite database at a time.\n"
                 "Database operations will fail if you run more than one copy\n"
                 "of CellProfiler simultaneously. You can run multiple copies\n"
@@ -2158,7 +2158,7 @@ available:
             self.objects_choice != O_NONE
             and self.separate_object_tables == OT_PER_OBJECT
         ):
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 (
                     "You will have to merge the separate object tables in order\n"
                     "to use CellProfiler Analyst fully, or you will be restricted\n"
@@ -2173,7 +2173,7 @@ available:
         if self.save_cpa_properties:
             warning_string = "CellProfiler Analyst will not recognize this %s because it contains invalid characters. Allowable characters are letters, numbers and underscores."
             if not re.match("^[\w]*$", self.location_object.value):
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     warning_string % "object", self.location_object
                 )
 
@@ -2183,7 +2183,7 @@ available:
                         not re.match("^[\w]*$", group.group_name.value)
                         or group.group_name.value == ""
                     ):
-                        raise cellprofiler.setting.ValidationError(
+                        raise cellprofiler_core.setting.ValidationError(
                             warning_string % "group name", group.group_name
                         )
 
@@ -2193,20 +2193,20 @@ available:
                         not re.match("^[\w]*$", group.filter_name.value)
                         or group.filter_name.value == ""
                     ):
-                        raise cellprofiler.setting.ValidationError(
+                        raise cellprofiler_core.setting.ValidationError(
                             warning_string % "filter name", group.filter_name
                         )
                     if (
                         not re.match("^[\w\s\"'=]*$", group.filter_statement.value)
                         or group.filter_statement.value == ""
                     ):
-                        raise cellprofiler.setting.ValidationError(
+                        raise cellprofiler_core.setting.ValidationError(
                             warning_string % "filter statement", group.filter_statement
                         )
 
             if self.properties_class_table_name:
                 if not re.match("^[\w]*$", self.properties_class_table_name.value):
-                    raise cellprofiler.setting.ValidationError(
+                    raise cellprofiler_core.setting.ValidationError(
                         warning_string % "class table name",
                         self.properties_class_table_name,
                     )
@@ -2221,7 +2221,7 @@ available:
             elif self.objects_choice == O_ALL:
                 selected_objs = list(
                     pipeline.get_provider_dictionary(
-                        cellprofiler.setting.OBJECT_GROUP
+                        "objectgroup"
                     ).keys()
                 )
 
@@ -2274,7 +2274,7 @@ available:
                         if self.objects_choice == O_ALL
                         else " or de-select the object(s)."
                     )
-                    raise cellprofiler.setting.ValidationError(
+                    raise cellprofiler_core.setting.ValidationError(
                         msg, self.separate_object_tables
                     )
 
@@ -2367,7 +2367,7 @@ available:
 
             if (
                 pipeline.in_batch_mode()
-                or not cellprofiler.preferences.get_allow_schema_write()
+                or not cellprofiler_core.preferences.get_allow_schema_write()
             ):
                 return True
             if self.db_type == DB_ORACLE:
@@ -2375,11 +2375,11 @@ available:
                     "Writing to an Oracle database is not supported"
                 )
             if self.db_type in (DB_MYSQL, DB_SQLITE):
-                tables = [self.get_table_name(cellprofiler.measurement.IMAGE)]
+                tables = [self.get_table_name(cellprofiler_core.measurement.IMAGE)]
                 if self.objects_choice != O_NONE:
                     if self.separate_object_tables == OT_COMBINE:
                         tables.append(
-                            self.get_table_name(cellprofiler.measurement.OBJECT)
+                            self.get_table_name(cellprofiler_core.measurement.OBJECT)
                         )
                     else:
                         for object_name in self.get_object_names(
@@ -2401,7 +2401,7 @@ available:
                             ", ".join(tables_that_exist[:-1]),
                             tables_that_exist[-1],
                         )
-                    if cellprofiler.preferences.get_headless():
+                    if cellprofiler_core.preferences.get_headless():
                         if self.allow_overwrite == OVERWRITE_NEVER:
                             logger.error(
                                 "%s already in database and overwrite not allowed. Exiting"
@@ -2442,9 +2442,9 @@ available:
                 )
                 if self.objects_choice != O_ALL:
                     onames = [
-                        cellprofiler.measurement.EXPERIMENT,
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.measurement.NEIGHBORS,
+                        cellprofiler_core.measurement.EXPERIMENT,
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.NEIGHBORS,
                     ]
                     if self.objects_choice == O_SELECT:
                         onames += self.objects_list.selections
@@ -2487,9 +2487,9 @@ available:
             for name in self.thumbnail_image_names.get_selections():
                 cols += [
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         C_THUMBNAIL + "_" + name,
-                        cellprofiler.measurement.COLTYPE_LONGBLOB,
+                        cellprofiler_core.measurement.COLTYPE_LONGBLOB,
                     )
                 ]
             return cols
@@ -2506,18 +2506,18 @@ available:
         # have to hack our measurement column cache to circumvent this.
         #
         m = workspace.measurements
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         d = self.get_dictionary()
         columns = m.get_measurement_columns()
         for i, (object_name, feature_name, coltype) in enumerate(columns):
             if (
-                object_name == cellprofiler.measurement.IMAGE
+                object_name == cellprofiler_core.measurement.IMAGE
                 and feature_name.startswith(C_THUMBNAIL)
             ):
                 columns[i] = (
                     object_name,
                     feature_name,
-                    cellprofiler.measurement.COLTYPE_LONGBLOB,
+                    cellprofiler_core.measurement.COLTYPE_LONGBLOB,
                 )
         columns = self.filter_measurement_columns(columns)
         d[D_MEASUREMENT_COLUMNS] = columns
@@ -2825,16 +2825,16 @@ available:
             # Process the image numbers in the current image's group
             #
             m = workspace.measurements
-            assert isinstance(m, cellprofiler.measurement.Measurements)
+            assert isinstance(m, cellprofiler_core.measurement.Measurements)
             group_number = m[
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.GROUP_NUMBER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_NUMBER,
                 m.image_set_number,
             ]
             all_image_numbers = m.get_image_numbers()
             all_group_numbers = m[
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.GROUP_NUMBER,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.GROUP_NUMBER,
                 all_image_numbers,
             ]
             group_image_numbers = all_image_numbers[all_group_numbers == group_number]
@@ -2903,8 +2903,8 @@ available:
         If strict is True, then we ignore objects based on the object selection
         """
         if object_name in (
-            cellprofiler.measurement.EXPERIMENT,
-            cellprofiler.measurement.NEIGHBORS,
+            cellprofiler_core.measurement.EXPERIMENT,
+            cellprofiler_core.measurement.NEIGHBORS,
         ):
             return True
         if strict and self.objects_choice == O_NONE:
@@ -2912,7 +2912,7 @@ available:
         if (
             strict
             and self.objects_choice == O_SELECT
-            and object_name != cellprofiler.measurement.IMAGE
+            and object_name != cellprofiler_core.measurement.IMAGE
         ):
             return object_name not in self.objects_list.selections
         return False
@@ -2946,7 +2946,7 @@ available:
             if self.ignore_feature(object_name, feature_name):
                 continue
             mappings.add("%s_%s" % (object_name, feature_name))
-            if object_name != cellprofiler.measurement.IMAGE:
+            if object_name != cellprofiler_core.measurement.IMAGE:
                 for agg_name in self.agg_names:
                     mappings.add("%s_%s_%s" % (agg_name, object_name, feature_name))
         return mappings
@@ -2980,7 +2980,7 @@ available:
                 if (
                     obname == ob_table
                     and (not self.ignore_feature(obname, feature))
-                    and (not cellprofiler.measurement.agg_ignore_feature(feature))
+                    and (not cellprofiler_core.measurement.agg_ignore_feature(feature))
                 ):
                     feature_name = "%s_%s" % (obname, feature)
                     # create per_image aggregate column defs
@@ -3004,9 +3004,9 @@ available:
             if not self.ignore_object(obname, True)
             and obname
             not in (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.EXPERIMENT,
-                cellprofiler.measurement.NEIGHBORS,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.NEIGHBORS,
             )
         ]
 
@@ -3016,9 +3016,9 @@ available:
         return [
             name
             for name, setting in (
-                (cellprofiler.measurement.AGG_MEAN, self.wants_agg_mean),
-                (cellprofiler.measurement.AGG_MEDIAN, self.wants_agg_median),
-                (cellprofiler.measurement.AGG_STD_DEV, self.wants_agg_std_dev),
+                (cellprofiler_core.measurement.AGG_MEAN, self.wants_agg_mean),
+                (cellprofiler_core.measurement.AGG_MEDIAN, self.wants_agg_median),
+                (cellprofiler_core.measurement.AGG_STD_DEV, self.wants_agg_std_dev),
             )
             if setting.value
         ]
@@ -3068,12 +3068,12 @@ available:
         #
         # Drop either the unified objects table or the view of it
         #
-        object_table_name = self.get_table_name(cellprofiler.measurement.OBJECT)
+        object_table_name = self.get_table_name(cellprofiler_core.measurement.OBJECT)
         try:
             execute(
                 cursor,
                 "DROP TABLE IF EXISTS %s"
-                % self.get_table_name(cellprofiler.measurement.OBJECT),
+                % self.get_table_name(cellprofiler_core.measurement.OBJECT),
                 return_result=False,
             )
         except:
@@ -3083,7 +3083,7 @@ available:
             execute(
                 cursor,
                 "DROP VIEW IF EXISTS %s"
-                % self.get_table_name(cellprofiler.measurement.OBJECT),
+                % self.get_table_name(cellprofiler_core.measurement.OBJECT),
                 return_result=False,
             )
         except:
@@ -3119,7 +3119,7 @@ available:
         execute(
             cursor,
             "DROP TABLE IF EXISTS %s"
-            % self.get_table_name(cellprofiler.measurement.IMAGE),
+            % self.get_table_name(cellprofiler_core.measurement.IMAGE),
             return_result=False,
         )
         statement = self.get_create_image_table_statement(pipeline, image_set_list)
@@ -3128,7 +3128,7 @@ available:
         execute(
             cursor,
             "DROP TABLE IF EXISTS %s"
-            % self.get_table_name(cellprofiler.measurement.EXPERIMENT),
+            % self.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
         )
         for statement in self.get_experiment_table_statements(workspace):
             execute(cursor, statement, return_result=False)
@@ -3203,7 +3203,7 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
 
         experiment_columns = list(
             filter(
-                lambda x: x[0] == cellprofiler.measurement.EXPERIMENT,
+                lambda x: x[0] == cellprofiler_core.measurement.EXPERIMENT,
                 workspace.pipeline.get_measurement_columns(),
             )
         )
@@ -3212,7 +3212,7 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
             % (
                 x[1],
                 "TEXT"
-                if x[2].startswith(cellprofiler.measurement.COLTYPE_VARCHAR)
+                if x[2].startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR)
                 else x[2],
             )
             for x in experiment_columns
@@ -3221,7 +3221,7 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
 CREATE TABLE %s (
 %s)
 """ % (
-            self.get_table_name(cellprofiler.measurement.EXPERIMENT),
+            self.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
             ",\n".join(experiment_coldefs),
         )
         statements.append(create_per_experiment)
@@ -3233,16 +3233,16 @@ CREATE TABLE %s (
             if (
                 len(column) > 3
                 and column[3].get(
-                    cellprofiler.measurement.MCA_AVAILABLE_POST_RUN, False
+                    cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN, False
                 )
             ) or not workspace.measurements.has_feature(
-                cellprofiler.measurement.EXPERIMENT, ftr
+                cellprofiler_core.measurement.EXPERIMENT, ftr
             ):
                 values.append("null")
                 continue
             value = workspace.measurements.get_experiment_measurement(ftr)
 
-            if column[2].startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
+            if column[2].startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR):
                 if isinstance(value, six.text_type):
                     value = value
                 if self.db_type != DB_SQLITE:
@@ -3257,7 +3257,7 @@ CREATE TABLE %s (
                 value = "X'" + "".join(["%02X" % ord(x) for x in value]) + "'"
             values.append(value)
         experiment_insert_statement = "INSERT INTO %s (%s) VALUES (%s)" % (
-            self.get_table_name(cellprofiler.measurement.EXPERIMENT),
+            self.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
             ",".join(column_names),
             ",".join(values),
         )
@@ -3268,7 +3268,7 @@ CREATE TABLE %s (
         """Return a SQL statement that generates the image table"""
         statement = (
             "CREATE TABLE "
-            + self.get_table_name(cellprofiler.measurement.IMAGE)
+            + self.get_table_name(cellprofiler_core.measurement.IMAGE)
             + " (\n"
         )
         statement += "%s INTEGER" % C_IMAGE_NUMBER
@@ -3277,17 +3277,17 @@ CREATE TABLE %s (
         columns = self.get_pipeline_measurement_columns(pipeline, image_set_list)
         for column in columns:
             obname, feature, ftype = column[:3]
-            if obname == cellprofiler.measurement.IMAGE and not self.ignore_feature(
+            if obname == cellprofiler_core.measurement.IMAGE and not self.ignore_feature(
                 obname, feature
             ):
-                if ftype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
+                if ftype.startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR):
                     ftype = "TEXT"
                 feature_name = "%s_%s" % (obname, feature)
                 statement += ",\n%s %s" % (mappings[feature_name], ftype)
         for column in self.get_aggregate_columns(pipeline, image_set_list):
             statement += ",\n%s %s" % (
                 mappings[column[3]],
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             )
         statement += ",\nPRIMARY KEY (%s) )" % C_IMAGE_NUMBER
         return statement
@@ -3298,7 +3298,7 @@ CREATE TABLE %s (
         object_name - None = PerObject, otherwise a specific table
         """
         if object_name is None:
-            object_table = self.get_table_name(cellprofiler.measurement.OBJECT)
+            object_table = self.get_table_name(cellprofiler_core.measurement.OBJECT)
         else:
             object_table = self.get_table_name(object_name)
         statement = "CREATE TABLE " + object_table + " (\n"
@@ -3328,7 +3328,7 @@ CREATE TABLE %s (
 
         object_names is the list of objects to be included into the view
         """
-        object_table = self.get_table_name(cellprofiler.measurement.OBJECT)
+        object_table = self.get_table_name(cellprofiler_core.measurement.OBJECT)
 
         # Produce a list of columns from each of the separate tables
         list_of_columns = []
@@ -3629,7 +3629,7 @@ CREATE TABLE %s (
         #
         if self.objects_choice != O_NONE:
             if self.separate_object_tables == OT_COMBINE:
-                data = [(None, cellprofiler.measurement.OBJECT)]
+                data = [(None, cellprofiler_core.measurement.OBJECT)]
             else:
                 data = [(x, x) for x in self.get_object_names(pipeline, image_set_list)]
 
@@ -3652,8 +3652,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 """
             % (
                 self.base_name(workspace),
-                cellprofiler.measurement.IMAGE,
-                self.get_table_name(cellprofiler.measurement.IMAGE),
+                cellprofiler_core.measurement.IMAGE,
+                self.get_table_name(cellprofiler_core.measurement.IMAGE),
             )
         )
 
@@ -3736,9 +3736,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         % (self.get_table_prefix(), aggname)
                     )
                 for i, object_name in enumerate(
-                    object_names + [cellprofiler.measurement.IMAGE]
+                    object_names + [cellprofiler_core.measurement.IMAGE]
                 ):
-                    if object_name == cellprofiler.measurement.IMAGE:
+                    if object_name == cellprofiler_core.measurement.IMAGE:
                         object_table_name = "IT"
                     elif self.separate_object_tables == OT_COMBINE:
                         object_table_name = "OT"
@@ -3754,7 +3754,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         # Don't take an aggregate on a string column
                         #
                         if data_type.startswith(
-                            cellprofiler.measurement.COLTYPE_VARCHAR
+                            cellprofiler_core.measurement.COLTYPE_VARCHAR
                         ):
                             continue
                         feature_name = "%s_%s" % (object_name, feature)
@@ -3782,7 +3782,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 fid.write(
                     "JOIN %s OT ON IT.%s = OT.%s\n"
                     % (
-                        self.get_table_name(cellprofiler.measurement.OBJECT),
+                        self.get_table_name(cellprofiler_core.measurement.OBJECT),
                         C_IMAGE_NUMBER,
                         C_IMAGE_NUMBER,
                     )
@@ -3873,7 +3873,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         image_filename = self.make_full_filename(
-            "%s_%s.CSV" % (self.base_name(workspace), cellprofiler.measurement.IMAGE),
+            "%s_%s.CSV" % (self.base_name(workspace), cellprofiler_core.measurement.IMAGE),
             workspace,
         )
         fid_per_image = open(image_filename, "w")
@@ -3884,22 +3884,22 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         for image_number in measurements.get_image_numbers():
             image_row = [image_number]
             for object_name, feature, coltype in columns:
-                if object_name != cellprofiler.measurement.IMAGE:
+                if object_name != cellprofiler_core.measurement.IMAGE:
                     continue
                 if self.ignore_feature(object_name, feature, measurements):
                     continue
                 feature_name = "%s_%s" % (object_name, feature)
                 if not measurements.has_feature(
-                    cellprofiler.measurement.IMAGE, feature
+                    cellprofiler_core.measurement.IMAGE, feature
                 ):
                     value = numpy.NaN
                 else:
                     value = measurements.get_measurement(
-                        cellprofiler.measurement.IMAGE, feature, image_number
+                        cellprofiler_core.measurement.IMAGE, feature, image_number
                     )
                 if isinstance(value, numpy.ndarray):
                     value = value[0]
-                if coltype.startswith(cellprofiler.measurement.COLTYPE_VARCHAR):
+                if coltype.startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR):
                     if isinstance(value, six.string_types):
                         value = '"' + MySQLdb.escape_string(value).decode() + '"'
                     elif value is None:
@@ -3927,7 +3927,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             return
 
         if self.separate_object_tables == OT_COMBINE:
-            data = [(cellprofiler.measurement.OBJECT, object_names)]
+            data = [(cellprofiler_core.measurement.OBJECT, object_names)]
         else:
             data = [(object_name, [object_name]) for object_name in object_names]
         for file_object_name, object_list in data:
@@ -3939,7 +3939,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 max_count = 0
                 for object_name in object_list:
                     count = measurements.get_measurement(
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         "Count_%s" % object_name,
                         image_number,
                     )
@@ -3947,7 +3947,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 d = {}
                 for j in range(max_count):
                     object_row = [image_number]
-                    if file_object_name == cellprofiler.measurement.OBJECT:
+                    if file_object_name == cellprofiler_core.measurement.OBJECT:
                         # the object number
                         object_row.append(j + 1)
                     #
@@ -4022,11 +4022,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             return not post_group
         if not hasattr(column[3], "has_key"):
             return not post_group
-        if cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP not in column[3]:
+        if cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP not in column[3]:
             return not post_group
         return (
             post_group
-            if column[3][cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP]
+            if column[3][cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP]
             else not post_group
         )
 
@@ -4042,7 +4042,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         try:
             zeros_for_nan = False
             measurements = workspace.measurements
-            assert isinstance(measurements, cellprofiler.measurement.Measurements)
+            assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
             pipeline = workspace.pipeline
             image_set_list = workspace.image_set_list
             measurement_cols = self.get_pipeline_measurement_columns(
@@ -4063,15 +4063,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 image_row += [
                     (
                         image_number,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                         C_IMAGE_NUMBER,
                     )
                 ]
             feature_names = set(
-                measurements.get_feature_names(cellprofiler.measurement.IMAGE)
+                measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
             )
             for m_col in measurement_cols:
-                if m_col[0] != cellprofiler.measurement.IMAGE:
+                if m_col[0] != cellprofiler_core.measurement.IMAGE:
                     continue
                 if not self.should_write(m_col, post_group):
                     continue
@@ -4082,9 +4082,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 #
                 if m_col[1] not in feature_names:
                     continue
-                feature_name = "%s_%s" % (cellprofiler.measurement.IMAGE, m_col[1])
+                feature_name = "%s_%s" % (cellprofiler_core.measurement.IMAGE, m_col[1])
                 value = measurements.get_measurement(
-                    cellprofiler.measurement.IMAGE, m_col[1], image_number
+                    cellprofiler_core.measurement.IMAGE, m_col[1], image_number
                 )
                 if isinstance(value, numpy.ndarray):
                     value = value[0]
@@ -4105,7 +4105,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 pipeline, image_set_list, post_group
             )
             image_row += [
-                (agg_dict[agg[3]], cellprofiler.measurement.COLTYPE_FLOAT, agg[3])
+                (agg_dict[agg[3]], cellprofiler_core.measurement.COLTYPE_FLOAT, agg[3])
                 for agg in agg_columns
             ]
 
@@ -4116,7 +4116,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             #
             if not post_group:
                 stmt = "DELETE FROM %s WHERE %s=%d" % (
-                    self.get_table_name(cellprofiler.measurement.IMAGE),
+                    self.get_table_name(cellprofiler_core.measurement.IMAGE),
                     C_IMAGE_NUMBER,
                     image_number,
                 )
@@ -4141,7 +4141,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             object_names = self.get_object_names(pipeline, image_set_list)
             if len(object_names) > 0:
                 if self.separate_object_tables == OT_COMBINE:
-                    data = [(cellprofiler.measurement.OBJECT, object_names)]
+                    data = [(cellprofiler_core.measurement.OBJECT, object_names)]
                 else:
                     data = [
                         (object_name, [object_name]) for object_name in object_names
@@ -4160,7 +4160,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     for object_name in object_list:
                         ftr_count = "Count_%s" % object_name
                         count = measurements.get_measurement(
-                            cellprofiler.measurement.IMAGE, ftr_count, image_number
+                            cellprofiler_core.measurement.IMAGE, ftr_count, image_number
                         )
                         max_count = max(max_count, int(count))
                     column_values = []
@@ -4182,7 +4182,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     object_cols = []
                     if not post_group:
                         object_cols += [C_IMAGE_NUMBER]
-                    if table_object_name == cellprofiler.measurement.OBJECT:
+                    if table_object_name == cellprofiler_core.measurement.OBJECT:
                         object_number_column = C_OBJECT_NUMBER
                         if not post_group:
                             object_cols += [object_number_column]
@@ -4202,7 +4202,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     for j in range(max_count):
                         if not post_group:
                             object_row = [image_number]
-                            if table_object_name == cellprofiler.measurement.OBJECT:
+                            if table_object_name == cellprofiler_core.measurement.OBJECT:
                                 # the object number
                                 object_row.append(object_numbers[j])
                         else:
@@ -4265,26 +4265,26 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                 (table_name, self.truncate_string_for_display(row_stmt))
                             )
 
-            image_table = self.get_table_name(cellprofiler.measurement.IMAGE)
+            image_table = self.get_table_name(cellprofiler_core.measurement.IMAGE)
             replacement = "%s" if self.db_type == DB_MYSQL else "?"
             image_row_values = [
                 None
                 if field[0] is None
                 else None
                 if (
-                    (field[1] == cellprofiler.measurement.COLTYPE_FLOAT)
+                    (field[1] == cellprofiler_core.measurement.COLTYPE_FLOAT)
                     and (numpy.isnan(field[0]) or numpy.isinf(field[0]))
                 )
                 else float(field[0])
-                if (field[1] == cellprofiler.measurement.COLTYPE_FLOAT)
+                if (field[1] == cellprofiler_core.measurement.COLTYPE_FLOAT)
                 else int(field[0])
-                if (field[1] == cellprofiler.measurement.COLTYPE_INTEGER)
+                if (field[1] == cellprofiler_core.measurement.COLTYPE_INTEGER)
                 else buffer(field[0].encode())
                 if field[1]
                 in (
-                    cellprofiler.measurement.COLTYPE_BLOB,
-                    cellprofiler.measurement.COLTYPE_LONGBLOB,
-                    cellprofiler.measurement.COLTYPE_MEDIUMBLOB,
+                    cellprofiler_core.measurement.COLTYPE_BLOB,
+                    cellprofiler_core.measurement.COLTYPE_LONGBLOB,
+                    cellprofiler_core.measurement.COLTYPE_MEDIUMBLOB,
                 )
                 else field[0]
                 for field in image_row
@@ -4356,7 +4356,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     when,
                 ) in pipeline.get_object_relationships():
                     if post_group != (
-                        when == cellprofiler.measurement.MCA_AVAILABLE_POST_GROUP
+                        when == cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP
                     ):
                         continue
                     r = measurements.get_relationships(
@@ -4403,8 +4403,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             #
             ###########################################
             stmt = "UPDATE %s SET %s='%s'" % (
-                self.get_table_name(cellprofiler.measurement.EXPERIMENT),
-                cellprofiler.pipeline.M_MODIFICATION_TIMESTAMP,
+                self.get_table_name(cellprofiler_core.measurement.EXPERIMENT),
+                cellprofiler_core.pipeline.M_MODIFICATION_TIMESTAMP,
                 datetime.datetime.now().isoformat(),
             )
             execute(self.cursor, stmt, return_result=False)
@@ -4420,7 +4420,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 be truncated using an ellipsis.
         """
         if len(s) > field_size:
-            half = int(field_size - 3) / 2
+            half = int(field_size - 3) // 2
             s = s[:half] + "..." + s[-half:]
         return s
 
@@ -4451,24 +4451,24 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         columns = list(
             filter(
                 (
-                    lambda c: c[0] == cellprofiler.measurement.EXPERIMENT
+                    lambda c: c[0] == cellprofiler_core.measurement.EXPERIMENT
                     and len(c) > 3
-                    and c[3].get(cellprofiler.measurement.MCA_AVAILABLE_POST_RUN, False)
+                    and c[3].get(cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN, False)
                 ),
                 columns,
             )
         )
         if len(columns) > 0:
             statement = "UPDATE %s SET " % self.get_table_name(
-                cellprofiler.measurement.EXPERIMENT
+                cellprofiler_core.measurement.EXPERIMENT
             )
             assignments = []
             for column in columns:
                 if workspace.measurements.has_feature(
-                    cellprofiler.measurement.EXPERIMENT, column[1]
+                    cellprofiler_core.measurement.EXPERIMENT, column[1]
                 ):
                     value = workspace.measurements[
-                        cellprofiler.measurement.EXPERIMENT, column[1]
+                        cellprofiler_core.measurement.EXPERIMENT, column[1]
                     ]
                     if value is not None:
                         assignments.append("%s='%s'" % (column[1], value))
@@ -4532,7 +4532,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     object_names = [
                         object_name
                         for object_name in workspace.measurements.get_object_names()
-                        if (object_name != cellprofiler.measurement.IMAGE)
+                        if (object_name != cellprofiler_core.measurement.IMAGE)
                         and (not self.ignore_object(object_name))
                     ]
             elif self.separate_object_tables == OT_VIEW:
@@ -4545,11 +4545,11 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         image_features = [
             c[1]
             for c in workspace.pipeline.get_measurement_columns()
-            if c[0] == cellprofiler.measurement.IMAGE
+            if c[0] == cellprofiler_core.measurement.IMAGE
         ]
         for feature in image_features:
             match = re.match(
-                "^%s_(.+)$" % cellprofiler.measurement.C_FILE_NAME, feature
+                "^%s_(.+)$" % cellprofiler_core.measurement.C_FILE_NAME, feature
             )
             if match:
                 default_image_names.append(match.groups()[0])
@@ -4565,7 +4565,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         else:
             name = self.db_name.value
         tbl_prefix = self.get_table_prefix()
-        if tbl_prefix is not "":
+        if tbl_prefix != "":
             if tbl_prefix.endswith("_"):
                 tbl_prefix = tbl_prefix[:-1]
             name = "_".join((name, tbl_prefix))
@@ -4659,7 +4659,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             image_thumbnail_cols = (
                 ",".join(
                     [
-                        "%s_%s_%s" % (cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
+                        "%s_%s_%s" % (cellprofiler_core.measurement.IMAGE, C_THUMBNAIL, name)
                         for name in self.thumbnail_image_names.get_selections()
                     ]
                 )
@@ -4672,8 +4672,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     [
                         "%s_%s_%s"
                         % (
-                            cellprofiler.measurement.IMAGE,
-                            cellprofiler.measurement.C_FILE_NAME,
+                            cellprofiler_core.measurement.IMAGE,
+                            cellprofiler_core.measurement.C_FILE_NAME,
                             name,
                         )
                         for name in default_image_names
@@ -4683,8 +4683,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     [
                         "%s_%s_%s"
                         % (
-                            cellprofiler.measurement.IMAGE,
-                            cellprofiler.measurement.C_PATH_NAME,
+                            cellprofiler_core.measurement.IMAGE,
+                            cellprofiler_core.measurement.C_PATH_NAME,
                             name,
                         )
                         for name in default_image_names
@@ -4733,7 +4733,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     image_thumbnail_cols = ",".join(
                         [
                             "%s_%s_%s"
-                            % (cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
+                            % (cellprofiler_core.measurement.IMAGE, C_THUMBNAIL, name)
                             for name in thumb_names
                         ]
                     )
@@ -4757,8 +4757,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     [
                         "%s_%s_%s"
                         % (
-                            cellprofiler.measurement.IMAGE,
-                            cellprofiler.measurement.C_FILE_NAME,
+                            cellprofiler_core.measurement.IMAGE,
+                            cellprofiler_core.measurement.C_FILE_NAME,
                             name,
                         )
                         for name in selected_image_names
@@ -4768,8 +4768,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     [
                         "%s_%s_%s"
                         % (
-                            cellprofiler.measurement.IMAGE,
-                            cellprofiler.measurement.C_PATH_NAME,
+                            cellprofiler_core.measurement.IMAGE,
+                            cellprofiler_core.measurement.C_PATH_NAME,
                             name,
                         )
                         for name in selected_image_names
@@ -4791,7 +4791,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     image_thumbnail_cols = ",".join(
                         [
                             "%s_%s_%s"
-                            % (cellprofiler.measurement.IMAGE, C_THUMBNAIL, name)
+                            % (cellprofiler_core.measurement.IMAGE, C_THUMBNAIL, name)
                             for name in thumb_names
                         ]
                     )
@@ -4865,8 +4865,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if self.properties_plate_metadata.value == NONE_CHOICE
                 else "%s_%s_%s"
                 % (
-                    cellprofiler.measurement.IMAGE,
-                    cellprofiler.measurement.C_METADATA,
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.C_METADATA,
                     self.properties_plate_metadata.value,
                 )
             )
@@ -4875,8 +4875,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if self.properties_well_metadata.value == NONE_CHOICE
                 else "%s_%s_%s"
                 % (
-                    cellprofiler.measurement.IMAGE,
-                    cellprofiler.measurement.C_METADATA,
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.C_METADATA,
                     self.properties_well_metadata.value,
                 )
             )
@@ -5071,7 +5071,7 @@ check_tables = yes
         else:
             name = self.db_name.value
         tbl_prefix = self.get_table_prefix()
-        if tbl_prefix is not "":
+        if tbl_prefix != "":
             if tbl_prefix.endswith("_"):
                 tbl_prefix = tbl_prefix[:-1]
             name = "_".join((name, tbl_prefix))
@@ -5107,17 +5107,17 @@ CP version : %d\n""" % int(
             )
             if (
                 workspace_group.x_measurement_type.value
-                == cellprofiler.measurement.IMAGE
+                == cellprofiler_core.measurement.IMAGE
             ):
                 axis_meas = "_".join(
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         workspace_group.x_measurement_name.value,
                     )
                 )
             elif (
                 workspace_group.x_measurement_type.value
-                == cellprofiler.measurement.OBJECT
+                == cellprofiler_core.measurement.OBJECT
             ):
                 axis_meas = "_".join(
                     (
@@ -5134,10 +5134,10 @@ CP version : %d\n""" % int(
                 else "table"
             )
             table_name = self.get_table_name(
-                cellprofiler.measurement.OBJECT
+                cellprofiler_core.measurement.OBJECT
                 if workspace_group.x_measurement_type.value
-                == cellprofiler.measurement.OBJECT
-                else cellprofiler.measurement.IMAGE
+                == cellprofiler_core.measurement.OBJECT
+                else cellprofiler_core.measurement.IMAGE
             )
             display_tool_text += """
 \t%s: %s
@@ -5154,17 +5154,17 @@ CP version : %d\n""" % int(
             ):
                 if (
                     workspace_group.y_measurement_type.value
-                    == cellprofiler.measurement.IMAGE
+                    == cellprofiler_core.measurement.IMAGE
                 ):
                     axis_meas = "_".join(
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             workspace_group.y_measurement_name.value,
                         )
                     )
                 elif (
                     workspace_group.y_measurement_type.value
-                    == cellprofiler.measurement.OBJECT
+                    == cellprofiler_core.measurement.OBJECT
                 ):
                     axis_meas = "_".join(
                         (
@@ -5175,10 +5175,10 @@ CP version : %d\n""" % int(
                 elif workspace_group.y_measurement_type.value == W_INDEX:
                     axis_meas = workspace_group.y_index_name.value
                 table_name = self.get_table_name(
-                    cellprofiler.measurement.OBJECT
+                    cellprofiler_core.measurement.OBJECT
                     if workspace_group.y_measurement_type.value
-                    == cellprofiler.measurement.OBJECT
-                    else cellprofiler.measurement.IMAGE
+                    == cellprofiler_core.measurement.OBJECT
+                    else cellprofiler_core.measurement.IMAGE
                 )
                 display_tool_text += """
 \ty-axis: %s
@@ -5199,23 +5199,23 @@ CP version : %d\n""" % int(
         #
         FileNameWidth = 128
         PathNameWidth = 128
-        image_features = m.get_feature_names(cellprofiler.measurement.IMAGE)
+        image_features = m.get_feature_names(cellprofiler_core.measurement.IMAGE)
         for feature in image_features:
-            if feature.startswith(cellprofiler.measurement.C_FILE_NAME):
+            if feature.startswith(cellprofiler_core.measurement.C_FILE_NAME):
                 names = [
                     name
                     for name in m.get_all_measurements(
-                        cellprofiler.measurement.IMAGE, feature
+                        cellprofiler_core.measurement.IMAGE, feature
                     )
                     if name is not None
                 ]
                 if len(names) > 0:
                     FileNameWidth = max(FileNameWidth, numpy.max(list(map(len, names))))
-            elif feature.startswith(cellprofiler.measurement.C_PATH_NAME):
+            elif feature.startswith(cellprofiler_core.measurement.C_PATH_NAME):
                 names = [
                     name
                     for name in m.get_all_measurements(
-                        cellprofiler.measurement.IMAGE, feature
+                        cellprofiler_core.measurement.IMAGE, feature
                     )
                     if name is not None
                 ]
@@ -5260,17 +5260,17 @@ CP version : %d\n""" % int(
         #
         def cmpfn(x, y):
             if x[0] != y[0]:
-                if x[0] == cellprofiler.measurement.IMAGE:
+                if x[0] == cellprofiler_core.measurement.IMAGE:
                     return -1
-                elif y[0] == cellprofiler.measurement.IMAGE:
+                elif y[0] == cellprofiler_core.measurement.IMAGE:
                     return 1
                 else:
-                    return cellprofiler.utilities.legacy.cmp(x[0], y[0])
+                    return cellprofiler_core.utilities.legacy.cmp(x[0], y[0])
             if x[1] == M_NUMBER_OBJECT_NUMBER:
                 return -1
             if y[1] == M_NUMBER_OBJECT_NUMBER:
                 return 1
-            return cellprofiler.utilities.legacy.cmp(x[1], y[1])
+            return cellprofiler_core.utilities.legacy.cmp(x[1], y[1])
 
         columns = sorted(columns, key=functools.cmp_to_key(cmpfn))
         #
@@ -5294,161 +5294,31 @@ CP version : %d\n""" % int(
         self.db_passwd.value = "".join(["*"] * len(self.db_passwd.value))
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
 
         DIR_DEFAULT_OUTPUT = "Default output folder"
         DIR_DEFAULT_IMAGE = "Default input folder"
 
-        if from_matlab and variable_revision_number == 4:
-            setting_values = setting_values + [cellprofiler.setting.NO]
-            variable_revision_number = 5
-        if from_matlab and variable_revision_number == 5:
-            if setting_values[-1] == cellprofiler.setting.YES:
-                setting_values = setting_values[:-1] + ["Yes - V1.0 format"]
-            variable_revision_number = 6
-        if from_matlab and variable_revision_number == 6:
-            new_setting_values = [setting_values[0], setting_values[1]]
-            if setting_values[2] == cellprofiler.setting.DO_NOT_USE:
-                new_setting_values.append(cellprofiler.setting.NO)
-                new_setting_values.append("MyExpt_")
-            else:
-                new_setting_values.append(cellprofiler.setting.YES)
-                new_setting_values.append(setting_values[2])
-            new_setting_values.append(setting_values[3])
-            if setting_values[4] == ".":
-                new_setting_values.append(cellprofiler.setting.YES)
-                new_setting_values.append(setting_values[4])
-            else:
-                new_setting_values.append(cellprofiler.setting.NO)
-                new_setting_values.append(setting_values[4])
-            if setting_values[5][:3] == cellprofiler.setting.YES:
-                new_setting_values.append(cellprofiler.setting.YES)
-            else:
-                new_setting_values.append(cellprofiler.setting.NO)
-            from_matlab = False
-            variable_revision_number = 6
-            setting_values = new_setting_values
-        if from_matlab and variable_revision_number == 7:
-            #
-            # Added object names
-            #
-            setting_values = (
-                setting_values[:-1]
-                + [cellprofiler.measurement.IMAGE]
-                + [cellprofiler.setting.DO_NOT_USE] * 3
-                + setting_values[-1:]
-            )
-            variable_revision_number = 8
-
-        if from_matlab and variable_revision_number == 8:
-            #
-            # Added more object names
-            #
-            setting_values = (
-                setting_values[:-1]
-                + [cellprofiler.setting.DO_NOT_USE] * 3
-                + setting_values[-1:]
-            )
-            variable_revision_number = 9
-        if from_matlab and variable_revision_number == 9:
-            #
-            # Per-well export
-            #
-            setting_values = (
-                setting_values[:-1]
-                + [
-                    cellprofiler.setting.NO,
-                    cellprofiler.setting.DO_NOT_USE,
-                    cellprofiler.setting.DO_NOT_USE,
-                ]
-                + setting_values[-1:]
-            )
-            variable_revision_number = 10
-        if from_matlab and variable_revision_number == 10:
-            new_setting_values = setting_values[0:2]
-            if setting_values[2] == cellprofiler.setting.DO_NOT_USE:
-                new_setting_values.append(cellprofiler.setting.NO)
-                new_setting_values.append("MyExpt_")
-            else:
-                new_setting_values.append(cellprofiler.setting.YES)
-                new_setting_values.append(setting_values[2])
-            new_setting_values.append(setting_values[3])
-            if setting_values[4] == ".":
-                new_setting_values.append(cellprofiler.setting.YES)
-                new_setting_values.append(setting_values[4])
-            else:
-                new_setting_values.append(cellprofiler.setting.NO)
-                new_setting_values.append(setting_values[4])
-            if setting_values[18][:3] == cellprofiler.setting.YES:
-                new_setting_values.append(cellprofiler.setting.YES)
-            else:
-                new_setting_values.append(cellprofiler.setting.NO)
-            #
-            # store_csvs
-            #
-            new_setting_values.append(cellprofiler.setting.YES)
-            #
-            # DB host / user / password
-            #
-            new_setting_values += ["imgdb01", "cpuser", "password"]
-            #
-            # SQLite file name
-            #
-            new_setting_values += ["DefaultDB.db"]
-            #
-            # Aggregate mean, median & std dev
-            wants_mean = cellprofiler.setting.NO
-            wants_std_dev = cellprofiler.setting.NO
-            wants_median = cellprofiler.setting.NO
-            for setting in setting_values[5:8]:
-                if setting == "Median":
-                    wants_median = cellprofiler.setting.YES
-                elif setting == "Mean":
-                    wants_mean = cellprofiler.setting.YES
-                elif setting == "Standard deviation":
-                    wants_std_dev = cellprofiler.setting.YES
-            new_setting_values += [wants_mean, wants_median, wants_std_dev]
-            #
-            # Object export
-            #
-            if setting_values[8] == "All objects":
-                new_setting_values += [O_ALL, ""]
-            else:
-                objects_list = []
-                for setting in setting_values[8:15]:
-                    if setting not in (
-                        cellprofiler.measurement.IMAGE,
-                        cellprofiler.setting.DO_NOT_USE,
-                    ):
-                        objects_list.append(setting)
-                if len(objects_list) > 0:
-                    new_setting_values += [O_SELECT, ",".join(objects_list)]
-                else:
-                    new_setting_values += [O_NONE, ""]
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 9
-
-        if (not from_matlab) and variable_revision_number == 6:
+        if variable_revision_number == 6:
             # Append default values for store_csvs, db_host, db_user,
             #  db_passwd, and sqlite_file to update to revision 7
             setting_values += [False, "imgdb01", "cpuser", "", "DefaultDB.db"]
             variable_revision_number = 7
 
-        if (not from_matlab) and variable_revision_number == 7:
+        if variable_revision_number == 7:
             # Added ability to selectively turn on aggregate measurements
             # which were all automatically calculated in version 7
             setting_values = setting_values + [True, True, True]
             variable_revision_number = 8
 
-        if (not from_matlab) and variable_revision_number == 8:
+        if variable_revision_number == 8:
             # Made it possible to choose objects to save
             #
             setting_values += [O_ALL, ""]
             variable_revision_number = 9
 
-        if (not from_matlab) and variable_revision_number == 9:
+        if variable_revision_number == 9:
             # Added aggregate per well choices
             #
             setting_values = (
@@ -5456,11 +5326,11 @@ CP version : %d\n""" % int(
             )
             variable_revision_number = 10
 
-        if (not from_matlab) and variable_revision_number == 10:
+        if variable_revision_number == 10:
             #
             # Added a directory choice instead of a checkbox
             #
-            if setting_values[5] == cellprofiler.setting.NO or setting_values[6] == ".":
+            if setting_values[5] == "No" or setting_values[6] == ".":
                 directory_choice = DIR_DEFAULT_OUTPUT
             elif setting_values[6] == "&":
                 directory_choice = DIR_DEFAULT_IMAGE
@@ -5471,46 +5341,46 @@ CP version : %d\n""" % int(
             )
             variable_revision_number = 11
 
-        if (not from_matlab) and variable_revision_number == 11:
+        if variable_revision_number == 11:
             #
             # Added separate "database type" of CSV files and removed
             # "store_csvs" setting
             #
             db_type = setting_values[0]
-            store_csvs = setting_values[8] == cellprofiler.setting.YES
+            store_csvs = setting_values[8] == "Yes"
             if db_type == DB_MYSQL and store_csvs:
                 db_type = DB_MYSQL_CSV
             setting_values = [db_type] + setting_values[1:8] + setting_values[9:]
             variable_revision_number = 12
 
-        if (not from_matlab) and variable_revision_number == 12:
+        if variable_revision_number == 12:
             #
             # Added maximum column size
             #
             setting_values = setting_values + ["64"]
             variable_revision_number = 13
 
-        if (not from_matlab) and variable_revision_number == 13:
+        if variable_revision_number == 13:
             #
             # Added single/multiple table choice
             #
             setting_values = setting_values + [OT_COMBINE]
             variable_revision_number = 14
 
-        if (not from_matlab) and variable_revision_number == 14:
+        if variable_revision_number == 14:
             #
             # Combined directory_choice and output_folder into directory
             #
             dir_choice, custom_directory = setting_values[5:7]
             if dir_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
                 if custom_directory.startswith("."):
-                    dir_choice = cellprofiler.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    dir_choice = cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
                 elif custom_directory.startswith("&"):
-                    dir_choice = cellprofiler.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                    dir_choice = cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
                     custom_directory = "." + custom_directory[1:]
                 else:
-                    dir_choice = cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
-            directory = cellprofiler.setting.DirectoryPath.static_join_string(
+                    dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
                 dir_choice, custom_directory
             )
             setting_values = setting_values[:5] + [directory] + setting_values[7:]
@@ -5524,65 +5394,65 @@ CP version : %d\n""" % int(
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 5
         directory = setting_values[SLOT_DIRCHOICE]
-        directory = cellprofiler.setting.DirectoryPath.upgrade_setting(directory)
+        directory = cellprofiler_core.setting.DirectoryPath.upgrade_setting(directory)
         setting_values[SLOT_DIRCHOICE] = directory
 
-        if (not from_matlab) and variable_revision_number == 15:
+        if variable_revision_number == 15:
             #
             # Added 3 new args: url_prepend and thumbnail options
             #
-            setting_values = setting_values + ["", cellprofiler.setting.NO, ""]
+            setting_values = setting_values + ["", "No", ""]
             variable_revision_number = 16
 
-        if (not from_matlab) and variable_revision_number == 16:
+        if variable_revision_number == 16:
             #
             # Added binary choice for auto-scaling thumbnail intensities
             #
-            setting_values = setting_values + [cellprofiler.setting.NO]
+            setting_values = setting_values + ["No"]
             variable_revision_number = 17
 
-        if (not from_matlab) and variable_revision_number == 17:
+        if variable_revision_number == 17:
             #
             # Added choice for plate type in properties file
             #
             setting_values = setting_values + [NONE_CHOICE]
             variable_revision_number = 18
 
-        if (not from_matlab) and variable_revision_number == 18:
+        if variable_revision_number == 18:
             #
             # Added choices for plate and well metadata in properties file
             #
             setting_values = setting_values + [NONE_CHOICE, NONE_CHOICE]
             variable_revision_number = 19
 
-        if (not from_matlab) and variable_revision_number == 19:
+        if variable_revision_number == 19:
             #
             # Added configuration of image information, groups, filters in properties file
             #
             setting_values = setting_values + [
-                cellprofiler.setting.YES,
+                "Yes",
                 "1",
                 "1",
                 "0",
             ]  # Hidden counts
             setting_values = setting_values + [
                 "None",
-                cellprofiler.setting.YES,
+                "Yes",
                 "None",
                 "gray",
             ]  # Image info
             setting_values = setting_values + [
-                cellprofiler.setting.NO,
+                "No",
                 "",
                 "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well",
             ]  # Group specifications
             setting_values = setting_values + [
-                cellprofiler.setting.NO,
-                cellprofiler.setting.NO,
+                "No",
+                "No",
             ]  # Filter specifications
             variable_revision_number = 20
 
-        if (not from_matlab) and variable_revision_number == 20:
+        if variable_revision_number == 20:
             #
             # Added configuration of workspace file
             #
@@ -5591,33 +5461,33 @@ CP version : %d\n""" % int(
                 + ["1"]
                 + setting_values[SETTING_WORKSPACE_GROUP_COUNT:]
             )  # workspace_measurement_count
-            setting_values += [cellprofiler.setting.NO]  # create_workspace_file
+            setting_values += ["No"]  # create_workspace_file
             setting_values += [
                 W_SCATTERPLOT,  # measurement_display
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "",
                 C_IMAGE_NUMBER,
                 # x_measurement_type, x_object_name, x_measurement_name, x_index_name
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "",
                 C_IMAGE_NUMBER,
             ]  # y_measurement_type, y_object_name, y_measurement_name, y_index_name
             variable_revision_number = 21
 
-        if (not from_matlab) and variable_revision_number == 21:
+        if variable_revision_number == 21:
             #
             # Added experiment name and location object
             #
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V21]
-                + ["MyExpt", cellprofiler.setting.NONE]
+                + ["MyExpt", "None"]
                 + setting_values[SETTING_FIXED_SETTING_COUNT_V21:]
             )
             variable_revision_number = 22
 
-        if (not from_matlab) and variable_revision_number == 22:
+        if variable_revision_number == 22:
             #
             # Added class table properties field
             #
@@ -5628,18 +5498,18 @@ CP version : %d\n""" % int(
             )
             variable_revision_number = 23
 
-        if (not from_matlab) and variable_revision_number == 23:
+        if variable_revision_number == 23:
             #
             # Added wants_relationships_table
             #
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V23]
-                + [cellprofiler.setting.NO]
+                + ["No"]
                 + setting_values[SETTING_FIXED_SETTING_COUNT_V23:]
             )
             variable_revision_number = 24
 
-        if (not from_matlab) and variable_revision_number == 24:
+        if variable_revision_number == 24:
             #
             # Added allow_overwrite
             #
@@ -5650,7 +5520,7 @@ CP version : %d\n""" % int(
             )
             variable_revision_number = 25
 
-        if (not from_matlab) and variable_revision_number == 25:
+        if variable_revision_number == 25:
             #
             # added wants_properties_image_url_prepend setting
             #
@@ -5659,7 +5529,7 @@ CP version : %d\n""" % int(
             )
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V25]
-                + [cellprofiler.setting.YES if wants_urls else cellprofiler.setting.NO]
+                + ["Yes" if wants_urls else "No"]
                 + setting_values[SETTING_FIXED_SETTING_COUNT_V25:]
             )
             variable_revision_number = 26
@@ -5669,7 +5539,7 @@ CP version : %d\n""" % int(
             setting_values[OT_IDX], setting_values[OT_IDX]
         )
 
-        if (not from_matlab) and variable_revision_number == 26:
+        if variable_revision_number == 26:
             #
             # added classification_type setting
             #
@@ -5680,7 +5550,7 @@ CP version : %d\n""" % int(
             )
             variable_revision_number = 27
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

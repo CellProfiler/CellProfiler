@@ -89,19 +89,16 @@ import functools
 import itertools
 import os
 
+import cellprofiler_core.image as cpi
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.object as cpo
+import cellprofiler_core.preferences as cpprefs
+import cellprofiler_core.setting as cps
+import cellprofiler_core.utilities.legacy
 import centrosome.index as INDEX
 import numpy as np
-from scipy.interpolate import interp1d
-from scipy.ndimage import map_coordinates, extrema
-
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
-import cellprofiler.utilities.legacy
-from cellprofiler.measurement import (
+from cellprofiler_core.measurement import (
     C_LOCATION,
     C_NUMBER,
     C_COUNT,
@@ -109,17 +106,17 @@ from cellprofiler.measurement import (
     FTR_CENTER_Y,
     FTR_OBJECT_NUMBER,
 )
-from .identify import add_object_count_measurements
-from .identify import add_object_location_measurements
-from .identify import get_object_measurement_columns
-from .untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
-from .untangleworms import F_LENGTH
-from .untangleworms import read_params
-from .untangleworms import recalculate_single_worm_control_points
-from cellprofiler.modules._help import (
-    USING_METADATA_GROUPING_HELP_REF,
-    IO_FOLDER_CHOICE_HELP_TEXT,
-)
+from cellprofiler_core.modules.identify import add_object_count_measurements
+from cellprofiler_core.modules.identify import add_object_location_measurements
+from cellprofiler_core.modules.identify import get_object_measurement_columns
+from scipy.interpolate import interp1d
+from scipy.ndimage import map_coordinates, extrema
+
+from cellprofiler.modules.untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
+from cellprofiler.modules.untangleworms import F_LENGTH
+from cellprofiler.modules.untangleworms import read_params
+from cellprofiler.modules.untangleworms import recalculate_single_worm_control_points
+from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"
@@ -307,7 +304,7 @@ always at the same end of the worm.
 
         self.flip_image = cps.Choice(
             "Alignment image",
-            [cps.NONE],
+            ["None"],
             choices_fn=image_choices_fn,
             doc="""
 (*Only used if aligning worms*)
@@ -336,7 +333,7 @@ You must use one of the straightened images below.""",
             "image_name",
             cps.ImageNameSubscriber(
                 "Select an input image to straighten",
-                cps.NONE,
+                "None",
                 doc="""\
 This is the name of an image that will be straightened
 similarly to the worm. The straightened image and objects can
@@ -481,7 +478,7 @@ of the straightened worms.""",
                 """Sort by control point number"""
                 acp = int(a.split("_")[-1])
                 bcp = int(b.split("_")[-1])
-                return cellprofiler.utilities.legacy.cmp(acp, bcp)
+                return cellprofiler_core.utilities.legacy.cmp(acp, bcp)
 
             cpx.sort(key=functools.cmp_to_key(sort_fn))
             cpy.sort(key=functools.cmp_to_key(sort_fn))
@@ -1271,7 +1268,7 @@ of the straightened worms.""",
         return result
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Modify the settings to match the current version
 
@@ -1284,7 +1281,7 @@ of the straightened worms.""",
         variable_revision_number - revision of version of StraightenWorms that
         output the settings
 
-        module_name, from_matlab - not used, see CPModule for use elsewhere.
+        module_name - not used, see CPModule for use elsewhere.
 
         Overriding modules should return a tuple of setting_values,
         variable_revision_number and True if upgraded to CP 2.0, otherwise
@@ -1298,7 +1295,7 @@ of the straightened worms.""",
             #
             setting_values = (
                 setting_values[:FIXED_SETTINGS_COUNT_V1]
-                + [cps.NO, "4", cps.NO, "None"]
+                + ["No", "4", "No", "None"]
                 + setting_values[FIXED_SETTINGS_COUNT_V1:]
             )
             variable_revision_number = 2
@@ -1312,7 +1309,7 @@ of the straightened worms.""",
                 + setting_values[IDX_FLIP_WORMS_V2:]
             )
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         """Prepare to create a batch file

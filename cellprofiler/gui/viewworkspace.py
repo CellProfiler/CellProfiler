@@ -9,9 +9,9 @@ import cellprofiler.gui.figure
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.htmldialog
-import cellprofiler.measurement
-import cellprofiler.modules.identify
-import cellprofiler.preferences
+import cellprofiler_core.measurement
+import cellprofiler_core.modules.identify
+import cellprofiler_core.preferences
 
 __the_workspace_viewer = None
 
@@ -122,10 +122,10 @@ class VWImageRow(VWRow):
         image_set = vw.workspace.image_set
         name = self.chooser.GetStringSelection()
 
-        im = cellprofiler.preferences.get_intensity_mode()
-        if im == cellprofiler.preferences.INTENSITY_MODE_LOG:
+        im = cellprofiler_core.preferences.get_intensity_mode()
+        if im == cellprofiler_core.preferences.INTENSITY_MODE_LOG:
             normalization = cellprofiler.gui.artist.NORMALIZE_LOG
-        elif im == cellprofiler.preferences.INTENSITY_MODE_NORMAL:
+        elif im == cellprofiler_core.preferences.INTENSITY_MODE_NORMAL:
             normalization = cellprofiler.gui.artist.NORMALIZE_LINEAR
         else:
             normalization = cellprofiler.gui.artist.NORMALIZE_RAW
@@ -137,7 +137,7 @@ class VWImageRow(VWRow):
             None,
             mode=cellprofiler.gui.artist.MODE_HIDE,
             color=self.color,
-            colormap=cellprofiler.preferences.get_default_colormap(),
+            colormap=cellprofiler_core.preferences.get_default_colormap(),
             alpha=alpha,
             normalization=normalization,
         )
@@ -167,7 +167,7 @@ class VWObjectsRow(VWRow):
             name,
             None,
             outline_color=self.color,
-            colormap=cellprofiler.preferences.get_default_colormap(),
+            colormap=cellprofiler_core.preferences.get_default_colormap(),
             alpha=0.5,
             mode=cellprofiler.gui.artist.MODE_HIDE,
         )
@@ -246,10 +246,10 @@ class ViewWorkspace(object):
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
         self.axes.invert_yaxis()
-        interpolation = cellprofiler.preferences.get_interpolation_mode()
-        if interpolation == cellprofiler.preferences.IM_NEAREST:
+        interpolation = cellprofiler_core.preferences.get_interpolation_mode()
+        if interpolation == cellprofiler_core.preferences.IM_NEAREST:
             interpolation = cellprofiler.gui.artist.INTERPOLATION_NEAREST
-        elif interpolation == cellprofiler.preferences.IM_BILINEAR:
+        elif interpolation == cellprofiler_core.preferences.IM_BILINEAR:
             interpolation = cellprofiler.gui.artist.INTERPOLATION_BILINEAR
         else:
             interpolation = cellprofiler.gui.artist.INTERPOLATION_BICUBIC
@@ -623,7 +623,7 @@ class ViewWorkspace(object):
             artist.remove()
 
         m = self.workspace.measurements
-        assert isinstance(m, cellprofiler.measurement.Measurements)
+        assert isinstance(m, cellprofiler_core.measurement.Measurements)
         title_lines = []
         object_values = {}
         for measurement_row in self.measurement_rows:
@@ -639,8 +639,8 @@ class ViewWorkspace(object):
 
             value = m[object_name, feature]
             if object_name in (
-                cellprofiler.measurement.IMAGE,
-                cellprofiler.measurement.EXPERIMENT,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.EXPERIMENT,
             ):
                 if isinstance(value, int):
                     fmt = "%s: %d"
@@ -655,8 +655,8 @@ class ViewWorkspace(object):
                         [
                             not m.has_feature(object_name, lf)
                             for lf in (
-                                cellprofiler.measurement.M_LOCATION_CENTER_X,
-                                cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+                                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
                             )
                         ]
                     ):
@@ -673,8 +673,8 @@ class ViewWorkspace(object):
             x, y = [
                 m[object_name, ftr]
                 for ftr in (
-                    cellprofiler.measurement.M_LOCATION_CENTER_X,
-                    cellprofiler.measurement.M_LOCATION_CENTER_Y,
+                    cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+                    cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
                 )
             ]
             for i in range(len(x)):

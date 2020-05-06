@@ -6,15 +6,15 @@ import tempfile
 
 import numpy
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.filterobjects
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 INPUT_IMAGE = "input_image"
 INPUT_OBJECTS = "input_objects"
@@ -26,22 +26,22 @@ TEST_FTR = "my_measurement"
 def make_workspace(object_dict={}, image_dict={}):
     """Make a workspace for testing FilterByObjectMeasurement"""
     module = cellprofiler.modules.filterobjects.FilterByObjectMeasurement()
-    pipeline = cellprofiler.pipeline.Pipeline()
-    object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     for key in list(image_dict.keys()):
-        image_set.add(key, cellprofiler.image.Image(image_dict[key]))
+        image_set.add(key, cellprofiler_core.image.Image(image_dict[key]))
     for key in list(object_dict.keys()):
-        o = cellprofiler.object.Objects()
+        o = cellprofiler_core.object.Objects()
         o.segmented = object_dict[key]
         object_set.add_objects(o, key)
     return workspace, module
@@ -152,17 +152,17 @@ def test_keep_single_min():
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
     assert numpy.all(labels.segmented == expected)
     parents = m.get_current_measurement(
-        OUTPUT_OBJECTS, cellprofiler.measurement.FF_PARENT % INPUT_OBJECTS
+        OUTPUT_OBJECTS, cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS
     )
     assert len(parents) == 1
     assert parents[0] == 2
     assert (
         m.get_current_image_measurement(
-            cellprofiler.measurement.FF_COUNT % OUTPUT_OBJECTS
+            cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS
         )
         == 1
     )
-    feature = cellprofiler.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
+    feature = cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
     child_count = m.get_current_measurement(INPUT_OBJECTS, feature)
     assert len(child_count) == 2
     assert child_count[0] == 0
@@ -472,10 +472,10 @@ def test_load_v3():
     with open("./tests/resources/modules/filterobjects/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -487,7 +487,7 @@ def test_load_v3():
     assert module.mode == cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
     assert (
         module.rules_directory.dir_choice
-        == cellprofiler.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
     )
     assert module.rules_file_name == "myrules.txt"
     assert module.measurements[0].measurement == "Intensity_MeanIntensity_DNA"
@@ -498,10 +498,10 @@ def test_load_v4():
     with open("./tests/resources/modules/filterobjects/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -514,7 +514,7 @@ def test_load_v4():
     assert module.filter_choice == cellprofiler.modules.filterobjects.FI_LIMITS
     assert (
         module.rules_directory.dir_choice
-        == cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
+        == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
     )
     assert module.rules_directory.custom_path == "./rules"
     assert module.rules_file_name == "myrules.txt"
@@ -539,10 +539,10 @@ def test_load_v5():
     with open("./tests/resources/modules/filterobjects/v5.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -555,7 +555,7 @@ def test_load_v5():
     assert module.filter_choice == cellprofiler.modules.filterobjects.FI_LIMITS
     assert (
         module.rules_directory.dir_choice
-        == cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
+        == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
     )
     assert module.rules_directory.custom_path == "./rules"
     assert module.rules_file_name == "myrules.txt"
@@ -581,10 +581,10 @@ def test_load_v6():
     with open("./tests/resources/modules/filterobjects/v6.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -598,7 +598,7 @@ def test_load_v6():
     assert module.per_object_assignment == cellprofiler.modules.filterobjects.PO_BOTH
     assert (
         module.rules_directory.dir_choice
-        == cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
+        == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
     )
     assert module.rules_directory.custom_path == "./rules"
     assert module.rules_file_name == "myrules.txt"
@@ -624,10 +624,10 @@ def test_load_v7():
     with open("./tests/resources/modules/filterobjects/v7.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -639,12 +639,12 @@ def test_load_v7():
     assert module.mode == cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
     assert module.filter_choice == cellprofiler.modules.filterobjects.FI_LIMITS
     assert (
-        module.per_object_assignment
-        == cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+            module.per_object_assignment
+            == cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
     )
     assert (
         module.rules_directory.dir_choice
-        == cellprofiler.preferences.DEFAULT_INPUT_FOLDER_NAME
+        == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
     )
     assert module.rules_directory.custom_path == "./rules"
     assert module.rules_file_name == "myrules.txt"
@@ -688,7 +688,7 @@ def test_filter_by_rule():
         module.mode.value = cellprofiler.modules.filterobjects.MODE_RULES
         module.rules_file_name.value = rules_file
         module.rules_directory.dir_choice = (
-            cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+            cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         )
         module.rules_directory.custom_path = rules_dir
         module.y_name.value = "MyTargetObjects"
@@ -730,7 +730,7 @@ def test_filter_by_3_class_rule():
             module.mode.value = cellprofiler.modules.filterobjects.MODE_RULES
             module.rules_file_name.value = rules_file
             module.rules_directory.dir_choice = (
-                cellprofiler.preferences.ABSOLUTE_FOLDER_NAME
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
             )
             module.rules_directory.custom_path = rules_dir
             module.rules_class.value = rules_class
@@ -775,10 +775,10 @@ def test_discard_mask_objects():
     expected[expected == 2] = 0
 
     workspace, module = make_workspace({})
-    parent_image = cellprofiler.image.Image(numpy.zeros((10, 10)), mask=mask)
+    parent_image = cellprofiler_core.image.Image(numpy.zeros((10, 10)), mask=mask)
     workspace.image_set.add(INPUT_IMAGE, parent_image)
 
-    input_objects = cellprofiler.object.Objects()
+    input_objects = cellprofiler_core.object.Objects()
     input_objects.segmented = labels
     input_objects.parent_image = parent_image
 
@@ -805,7 +805,7 @@ def test_unedited_segmented():
     segmented[6:8, 0:4] = 2
 
     workspace, module = make_workspace({})
-    input_objects = cellprofiler.object.Objects()
+    input_objects = cellprofiler_core.object.Objects()
     workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
     input_objects.segmented = segmented
     input_objects.unedited_segmented = unedited
@@ -836,7 +836,7 @@ def test_small_removed_segmented():
     segmented[6:8, 0:4] = 2
 
     workspace, module = make_workspace({})
-    input_objects = cellprofiler.object.Objects()
+    input_objects = cellprofiler_core.object.Objects()
     input_objects.segmented = segmented
     input_objects.unedited_segmented = unedited
     workspace.object_set.add_objects(input_objects, INPUT_OBJECTS)
@@ -944,21 +944,21 @@ def test_measurements():
 
     for input_object_name, output_object_name in object_names:
         assert measurements.has_current_measurements(
-            cellprofiler.measurement.IMAGE,
-            cellprofiler.measurement.FF_COUNT % output_object_name,
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.FF_COUNT % output_object_name,
         )
 
         assert measurements.has_current_measurements(
             input_object_name,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % output_object_name,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % output_object_name,
         )
 
         output_object_features = [
-            cellprofiler.measurement.FF_PARENT % input_object_name,
-            cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler.measurement.M_LOCATION_CENTER_Z,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.FF_PARENT % input_object_name,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
         ]
 
         for feature in output_object_features:
@@ -976,7 +976,7 @@ def test_discard_border_objects_volume():
     expected = numpy.zeros_like(labels)
     expected[2:7, 6:10, 6:10] = 1
 
-    src_objects = cellprofiler.object.Objects()
+    src_objects = cellprofiler_core.object.Objects()
     src_objects.segmented = labels
 
     workspace, module = make_workspace({INPUT_OBJECTS: labels})

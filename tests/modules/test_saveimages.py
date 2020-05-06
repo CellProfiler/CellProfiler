@@ -9,10 +9,10 @@ import pytest
 import skimage.data
 import skimage.util
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.modules.saveimages
-import cellprofiler.pipeline
-import cellprofiler.setting
+import cellprofiler_core.pipeline
+import cellprofiler_core.setting
 
 instance = cellprofiler.modules.saveimages.SaveImages()
 
@@ -23,14 +23,14 @@ instance = cellprofiler.modules.saveimages.SaveImages()
     ids=["grayscale_image", "multichannel_image"],
 )
 def image(request):
-    return cellprofiler.image.Image(image=request.param)
+    return cellprofiler_core.image.Image(image=request.param)
 
 
 @pytest.fixture(scope="module")
 def volume():
     data = numpy.random.rand(10, 10, 10)
 
-    return cellprofiler.image.Image(image=data, dimensions=3)
+    return cellprofiler_core.image.Image(image=data, dimensions=3)
 
 
 def test_load_v11():
@@ -139,9 +139,9 @@ SaveImages:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:11|sho
 """
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     pipeline.add_listener(callback)
 
@@ -154,7 +154,7 @@ SaveImages:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:11|sho
     assert module.image_name.value == "DNA"
 
     assert (
-        module.file_name_method.value == cellprofiler.modules.saveimages.FN_FROM_IMAGE
+            module.file_name_method.value == cellprofiler.modules.saveimages.FN_FROM_IMAGE
     )
 
     assert module.file_image_name.value == "DNA"
@@ -206,7 +206,7 @@ def test_save_image_png_8(tmpdir, image, module, workspace):
     module.single_file_name.value = "example"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_PNG
@@ -236,7 +236,7 @@ def test_save_image_jpeg_8(tmpdir, image, module, workspace):
     module.single_file_name.value = "example"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_JPEG
@@ -266,7 +266,7 @@ def test_save_image_tiff_uint8(tmpdir, image, module, workspace):
     module.single_file_name.value = "example"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
@@ -296,7 +296,7 @@ def test_save_image_tiff_uint16(tmpdir, image, module, workspace):
     module.single_file_name.value = "example"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
@@ -326,7 +326,7 @@ def test_save_image_tiff_float32(tmpdir, image, module, workspace):
     module.single_file_name.value = "example"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
@@ -356,7 +356,7 @@ def test_save_image_npy(tmpdir, image, module, workspace):
     module.single_file_name.value = "example"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_NPY
@@ -384,7 +384,7 @@ def test_save_volume_tiff_uint8(tmpdir, volume, module, workspace):
     module.single_file_name.value = "example_volume"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
@@ -416,7 +416,7 @@ def test_save_volume_tiff_uint16(tmpdir, volume, module, workspace):
     module.single_file_name.value = "example_volume"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
@@ -448,7 +448,7 @@ def test_save_volume_tiff_float32(tmpdir, volume, module, workspace):
     module.single_file_name.value = "example_volume"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_TIFF
@@ -480,7 +480,7 @@ def test_save_volume_npy(tmpdir, volume, module, workspace):
     module.single_file_name.value = "example_volume"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_NPY
@@ -496,16 +496,16 @@ def test_save_volume_npy(tmpdir, volume, module, workspace):
 @pytest.mark.parametrize(
     "volume,outshape",
     [# an yxc image
-    (cellprofiler.image.Image(image=numpy.random.rand(100, 200, 8), dimensions=2),
+    (cellprofiler_core.image.Image(image=numpy.random.rand(100, 200, 8), dimensions=2),
         (1, 100, 200, 8)),
      # an zyx image
-    (cellprofiler.image.Image(image=numpy.random.rand(5, 100, 200), dimensions=3),
+    (cellprofiler_core.image.Image(image=numpy.random.rand(5, 100, 200), dimensions=3),
         (5, 100, 200, 1)),
      # an yx image
-    (cellprofiler.image.Image(image=numpy.random.rand(100, 200), dimensions=2),
+    (cellprofiler_core.image.Image(image=numpy.random.rand(100, 200), dimensions=2),
         (1, 100, 200, 1)),
      # an zyxc image
-    (cellprofiler.image.Image(image=numpy.random.rand(5, 100, 200, 8), dimensions=3),
+    (cellprofiler_core.image.Image(image=numpy.random.rand(5, 100, 200, 8), dimensions=3),
         (5, 100, 200, 8))
 ]
 )
@@ -535,7 +535,7 @@ def test_save_hdf5_saving(tmpdir, volume, module, workspace,
     module.single_file_name.value = "example_volume"
 
     module.pathname.value = "{}|{}".format(
-        cellprofiler.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.file_format.value = cellprofiler.modules.saveimages.FF_H5

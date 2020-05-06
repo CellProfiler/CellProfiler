@@ -34,14 +34,14 @@ import sys
 import zlib
 
 import cellprofiler
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-import cellprofiler.preferences as cpprefs
-import cellprofiler.workspace as cpw
+import cellprofiler_core.module as cpm
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.pipeline as cpp
+import cellprofiler_core.setting as cps
+import cellprofiler_core.preferences as cpprefs
+import cellprofiler_core.workspace as cpw
 
-from cellprofiler.measurement import F_BATCH_DATA_H5, F_BATCH_DATA
+from cellprofiler_core.measurement import F_BATCH_DATA_H5, F_BATCH_DATA
 
 """# of settings aside from the mappings"""
 S_FIXED_COUNT = 8
@@ -299,7 +299,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
         pass
 
     def clear_old_matlab(self):
-        self.from_old_matlab.value = cps.NO
+        self.from_old_matlab.value = "No"
 
     def validate_module(self, pipeline):
         """Make sure the module settings are valid"""
@@ -452,75 +452,35 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
         return path
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number < 8:
-            # We never were able to convert from pre-8 to 8 in Matlab.  Why may
-            # be lost to history, but my guess is there were conflicting ways
-            # to interpret settings previous to this point, so we decided not
-            # to try to automate it.
-            self.notes = [
-                "The pipeline you loaded was from an old version of CellProfiler 1.0, "
-                "which could not be made compatible with this version of CellProfiler.",
-                "For reference, previous values were:",
-            ] + [str(x) for x in setting_values]
-            setting_values = [cps.NO, "", cps.NO, cps.NO, cps.NO, "", 0, cps.YES]
-            variable_revision_number = 6
-            from_matlab = False
-
-        if from_matlab and variable_revision_number == 8:
-            batch_save_path, old_pathname, new_pathname = setting_values[:3]
-            if batch_save_path == ".":
-                wants_default_output_directory = cps.YES
-                batch_save_path = cpprefs.get_default_output_directory()
-            else:
-                wants_default_output_directory = cps.NO
-            old_pathnames = old_pathname.split(",")
-            new_pathnames = new_pathname.split(",")
-            if len(old_pathnames) != len(new_pathnames):
-                raise ValueError(
-                    "Number of pathnames does not match. "
-                    "%d local pathnames, but %d remote pathnames"
-                    % (len(old_pathnames), len(new_pathnames))
-                )
-            setting_values = [
-                wants_default_output_directory,
-                batch_save_path,
-                cps.NO,
-                cps.NO,
-                "",
-            ]
-            for old_pathname, new_pathname in zip(old_pathnames, new_pathnames):
-                setting_values += [old_pathname, new_pathname]
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             setting_values = (
                 setting_values[:5]
                 + [cpprefs.get_default_image_directory()]
                 + setting_values[5:]
             )
             variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             setting_values = (
                 setting_values[:6]
                 + [int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))]
                 + setting_values[6:]
             )
             variable_revision_number = 3
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Pickled image list is now the batch state
             self.batch_state = np.array(zlib.compress(setting_values[4]))
             setting_values = setting_values[:4] + setting_values[5:]
             variable_revision_number = 4
-        if (not from_matlab) and variable_revision_number == 4:
+        if variable_revision_number == 4:
             setting_values = setting_values[:4] + [False] + setting_values[4:]
             variable_revision_number = 5
-        if (not from_matlab) and variable_revision_number == 5:
+        if variable_revision_number == 5:
             # added from_old_matlab
             setting_values = setting_values[:7] + [False] + setting_values[7:]
             variable_revision_number = 6
-        if (not from_matlab) and variable_revision_number == 6:
+        if variable_revision_number == 6:
             # added go_to_website
             setting_values = setting_values[:8] + [False] + setting_values[8:]
             variable_revision_number = 7
@@ -528,4 +488,4 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
             setting_values = setting_values[:8] + setting_values[9:]
             variable_revision_number = 8
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

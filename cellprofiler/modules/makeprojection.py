@@ -58,9 +58,9 @@ See also the help for the **Input** modules.
 
 import numpy as np
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.image as cpi
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
 
 P_AVERAGE = "Average"
 P_MAXIMUM = "Maximum"
@@ -92,7 +92,7 @@ class MakeProjection(cpm.Module):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="Select the images to be made into a projection.",
         )
 
@@ -160,8 +160,8 @@ References
             "ProjectionBlue",
             doc="Enter the name for the projected image.",
             provided_attributes={
-                cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
-                cps.AVAILABLE_ON_LAST_ATTRIBUTE: True,
+                "aggregate_image": True,
+                "available_on_last": True,
             },
         )
         self.frequency = cps.Float(
@@ -259,25 +259,13 @@ slices."""
             )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and module_name == "Average":
-            setting_values = setting_values[:2] + P_AVERAGE
-            from_matlab = False
-            module_name = self.module_name
-            variable_revision_number = 1
-        if (
-            from_matlab
-            and module_name == "MakeProjection"
-            and variable_revision_number == 3
-        ):
-            setting_values = setting_values[:3]
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Added frequency
             setting_values = setting_values + ["6"]
-        return setting_values, variable_revision_number, from_matlab
+            variable_revision_number = 2
+        return setting_values, variable_revision_number
 
 
 class ImageProvider(cpi.AbstractImageProvider):

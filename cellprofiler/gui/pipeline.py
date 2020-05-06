@@ -1,11 +1,11 @@
 import wx
 
-import cellprofiler.pipeline
+import cellprofiler_core.pipeline
 
 FMT_NATIVE = "Native"
 
 
-class Pipeline(cellprofiler.pipeline.Pipeline):
+class Pipeline(cellprofiler_core.pipeline.Pipeline):
     def create_progress_dialog(self, message, pipeline, title):
         return wx.ProgressDialog(
             title, message, style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT
@@ -23,7 +23,7 @@ class Pipeline(cellprofiler.pipeline.Pipeline):
             if dialog.ShowModal() != wx.ID_OK:
                 dialog.Destroy()
 
-                raise cellprofiler.pipeline.PipelineLoadCancelledException(message)
+                raise cellprofiler_core.pipeline.event.PipelineLoadCancelledException(message)
 
             dialog.Destroy()
         else:

@@ -1,4 +1,4 @@
-# coding=utf-8
+﻿# coding=utf-8
 
 import re
 
@@ -6,10 +6,10 @@ import numpy
 import scipy.ndimage
 import skimage.segmentation
 
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -97,7 +97,7 @@ FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1
 
 
-class RelateObjects(cellprofiler.module.ObjectProcessing):
+class RelateObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     module_name = "RelateObjects"
 
     variable_revision_number = 5
@@ -113,7 +113,7 @@ For example, when relating speckles to the nuclei that contain them,
 the nuclei are the parents.
         """
 
-        self.y_name = cellprofiler.setting.ObjectNameSubscriber(
+        self.y_name = cellprofiler_core.setting.ObjectNameSubscriber(
             "Child objects",
             doc="""\
 Child objects are defined as those objects contained within the parent object. For example, when relating
@@ -121,7 +121,7 @@ speckles to the nuclei that contains them, the speckles are the children.
             """,
         )
 
-        self.find_parent_child_distances = cellprofiler.setting.Choice(
+        self.find_parent_child_distances = cellprofiler_core.setting.Choice(
             "Calculate child-parent distances?",
             D_ALL,
             doc="""\
@@ -146,7 +146,7 @@ periphery.
             ),
         )
 
-        self.wants_step_parent_distances = cellprofiler.setting.Binary(
+        self.wants_step_parent_distances = cellprofiler_core.setting.Binary(
             "Calculate distances to other parents?",
             False,
             doc="""\
@@ -162,7 +162,7 @@ to cells and then measure distances to nuclei and cytoplasm. You could
 not use **RelateObjects** to relate speckles to cytoplasm and then
 measure distances to nuclei, because nuclei are neither a direct parent
 nor child of cytoplasm.""".format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -170,11 +170,11 @@ nor child of cytoplasm.""".format(
 
         self.add_step_parent(can_delete=False)
 
-        self.add_step_parent_button = cellprofiler.setting.DoSomething(
+        self.add_step_parent_button = cellprofiler_core.setting.DoSomething(
             "", "Add another parent", self.add_step_parent
         )
 
-        self.wants_per_parent_means = cellprofiler.setting.Binary(
+        self.wants_per_parent_means = cellprofiler_core.setting.Binary(
             "Calculate per-parent means for all child measurements?",
             False,
             doc="""\
@@ -184,21 +184,21 @@ measurement for the parent; the nomenclature of this new measurement is
 “Mean_<child>_<category>_<feature>”. This module
 must be placed *after* all **Measure** modules that make measurements
 of the children objects.""".format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.wants_child_objects_saved = cellprofiler.setting.Binary(
+        self.wants_child_objects_saved = cellprofiler_core.setting.Binary(
             "Do you want to save the children with parents as a new object set?",
             False,
             doc="""\
 Select "*{YES}*" to save the children objects that do have parents as new
 object set. Objects with no parents will be discarded""".format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.output_child_objects_name = cellprofiler.setting.ObjectNameProvider(
+        self.output_child_objects_name = cellprofiler_core.setting.ObjectNameProvider(
             "Name the output object",
             "RelateObjects",
             doc="""\
@@ -206,13 +206,13 @@ Enter the name you want to call the object produced by this module. """,
         )
 
     def add_step_parent(self, can_delete=True):
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
 
         group.append(
             "step_parent_name",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Parent name",
-                [cellprofiler.setting.NONE],
+                ["None"],
                 choices_fn=self.get_step_parents,
                 doc="""\
 *(Used only if calculating distances to another parent)*
@@ -227,7 +227,7 @@ parents or children of the parent object.""",
         if can_delete:
             group.append(
                 "remove",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this object", self.step_parent_names, group
                 ),
             )
@@ -246,14 +246,14 @@ parents or children of the parent object.""",
 
             # Objects that are the parent of the parents
             grandparents = module.get_measurements(
-                pipeline, parent_name, cellprofiler.measurement.C_PARENT
+                pipeline, parent_name, cellprofiler_core.measurement.C_PARENT
             )
 
             step_parents.update(grandparents)
 
             # Objects that are the children of the parents
             siblings = module.get_measurements(
-                pipeline, parent_name, cellprofiler.measurement.C_CHILDREN
+                pipeline, parent_name, cellprofiler_core.measurement.C_CHILDREN
             )
 
             for sibling in siblings:
@@ -263,7 +263,7 @@ parents or children of the parent object.""",
                     sibling_name = match.groups()[0]
 
                     if parent_name in module.get_measurements(
-                        pipeline, sibling_name, cellprofiler.measurement.C_PARENT
+                        pipeline, sibling_name, cellprofiler_core.measurement.C_PARENT
                     ):
                         step_parents.add(sibling_name)
 
@@ -326,13 +326,13 @@ parents or children of the parent object.""",
 
         m.add_measurement(
             self.y_name.value,
-            cellprofiler.measurement.FF_PARENT % self.x_name.value,
+            cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
             parents_of,
         )
 
         m.add_measurement(
             self.x_name.value,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
             child_count,
         )
 
@@ -345,7 +345,7 @@ parents or children of the parent object.""",
         if numpy.any(good_parents):
             m.add_relate_measurement(
                 self.module_num,
-                cellprofiler.measurement.R_PARENT,
+                cellprofiler_core.measurement.R_PARENT,
                 self.x_name.value,
                 self.y_name.value,
                 image_numbers,
@@ -356,7 +356,7 @@ parents or children of the parent object.""",
 
             m.add_relate_measurement(
                 self.module_num,
-                cellprofiler.measurement.R_CHILD,
+                cellprofiler_core.measurement.R_CHILD,
                 self.y_name.value,
                 self.x_name.value,
                 image_numbers,
@@ -427,7 +427,7 @@ parents or children of the parent object.""",
             # segmentation for the new and generally try to copy stuff
             # from the old to the new.
             #
-            target_objects = cellprofiler.object.Objects()
+            target_objects = cellprofiler_core.object.Objects()
             target_objects.segmented = target_labels
             target_objects.unedited_segmented = children.unedited_segmented
             #
@@ -674,13 +674,13 @@ parents or children of the parent object.""",
         """
         meas = workspace.measurements
 
-        parent_feature = cellprofiler.measurement.FF_PARENT % parent_name
+        parent_feature = cellprofiler_core.measurement.FF_PARENT % parent_name
 
         primary_parent = self.x_name.value
 
         sub_object_name = self.y_name.value
 
-        primary_parent_feature = cellprofiler.measurement.FF_PARENT % primary_parent
+        primary_parent_feature = cellprofiler_core.measurement.FF_PARENT % primary_parent
 
         if parent_feature in meas.get_feature_names(sub_object_name):
             parents_of = meas.get_current_measurement(sub_object_name, parent_feature)
@@ -739,7 +739,7 @@ parents or children of the parent object.""",
 
         return parents_of
 
-    ignore_features = set(cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER)
+    ignore_features = set(cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER)
 
     def should_aggregate_feature(self, feature_name):
         """Return True if aggregate measurements should be made on a feature
@@ -749,7 +749,7 @@ parents or children of the parent object.""",
         if feature_name.startswith(C_MEAN):
             return False
 
-        if feature_name.startswith(cellprofiler.measurement.C_PARENT):
+        if feature_name.startswith(cellprofiler_core.measurement.C_PARENT):
             return False
 
         if feature_name in self.ignore_features:
@@ -771,7 +771,7 @@ parents or children of the parent object.""",
             )
 
             if self.x_name.value in parent_features:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "{} and {} were related by the {} module".format(
                         self.y_name.value, self.x_name.value, module.module_name
                     ),
@@ -782,7 +782,7 @@ parents or children of the parent object.""",
             step_parents = set()
             for group in self.step_parent_names:
                 if group.step_parent_name.value in step_parents:
-                    raise cellprofiler.setting.ValidationError(
+                    raise cellprofiler_core.setting.ValidationError(
                         "{} has already been chosen".format(
                             group.step_parent_name.value
                         ),
@@ -812,7 +812,7 @@ parents or children of the parent object.""",
                     (
                         self.y_name.value,
                         FF_CENTROID % parent_name,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                     )
                 ]
 
@@ -822,7 +822,7 @@ parents or children of the parent object.""",
                     (
                         self.y_name.value,
                         FF_MINIMUM % parent_name,
-                        cellprofiler.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
                     )
                 ]
 
@@ -847,13 +847,13 @@ parents or children of the parent object.""",
         columns = [
             (
                 self.y_name.value,
-                cellprofiler.measurement.FF_PARENT % self.x_name.value,
-                cellprofiler.measurement.COLTYPE_INTEGER
+                cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
+                cellprofiler_core.measurement.COLTYPE_INTEGER
             ),
             (
                 self.x_name.value,
-                cellprofiler.measurement.FF_CHILDREN_COUNT % self.y_name.value,
-                cellprofiler.measurement.COLTYPE_INTEGER
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+                cellprofiler_core.measurement.COLTYPE_INTEGER
             )
         ]
 
@@ -867,7 +867,7 @@ parents or children of the parent object.""",
                 (
                     self.x_name.value,
                     FF_MEAN % (self.y_name.value, column[1]),
-                    cellprofiler.measurement.COLTYPE_FLOAT,
+                    cellprofiler_core.measurement.COLTYPE_FLOAT,
                 )
                 for column in child_columns
             ]
@@ -884,16 +884,16 @@ parents or children of the parent object.""",
 
         return [
             (
-                cellprofiler.measurement.R_PARENT,
+                cellprofiler_core.measurement.R_PARENT,
                 parent_name,
                 sub_object_name,
-                cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+                cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
             ),
             (
-                cellprofiler.measurement.R_CHILD,
+                cellprofiler_core.measurement.R_CHILD,
                 sub_object_name,
                 parent_name,
-                cellprofiler.measurement.MCA_AVAILABLE_EACH_CYCLE,
+                cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
             ),
         ]
 
@@ -909,12 +909,12 @@ parents or children of the parent object.""",
 
             if self.find_parent_child_distances != D_NONE:
                 result += [C_DISTANCE]
-        elif object_name == cellprofiler.measurement.IMAGE:
-            result += [cellprofiler.measurement.C_COUNT]
+        elif object_name == cellprofiler_core.measurement.IMAGE:
+            result += [cellprofiler_core.measurement.C_COUNT]
         elif object_name == self.output_child_objects_name.value:
             result += [
-                cellprofiler.measurement.C_LOCATION,
-                cellprofiler.measurement.C_NUMBER,
+                cellprofiler_core.measurement.C_LOCATION,
+                cellprofiler_core.measurement.C_NUMBER,
             ]
         return result
 
@@ -949,20 +949,20 @@ parents or children of the parent object.""",
 
             return result
         elif object_name == self.output_child_objects_name.value:
-            if category == cellprofiler.measurement.C_LOCATION:
+            if category == cellprofiler_core.measurement.C_LOCATION:
                 return [
-                    cellprofiler.measurement.FTR_CENTER_X,
-                    cellprofiler.measurement.FTR_CENTER_Y,
-                    cellprofiler.measurement.FTR_CENTER_Z,
+                    cellprofiler_core.measurement.FTR_CENTER_X,
+                    cellprofiler_core.measurement.FTR_CENTER_Y,
+                    cellprofiler_core.measurement.FTR_CENTER_Z,
                 ]
 
-            if category == cellprofiler.measurement.C_NUMBER:
-                return [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+            if category == cellprofiler_core.measurement.C_NUMBER:
+                return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
 
         elif (
-            object_name == cellprofiler.measurement.IMAGE
+            object_name == cellprofiler_core.measurement.IMAGE
             and self.wants_child_objects_saved.value
-            and category == cellprofiler.measurement.C_COUNT
+            and category == cellprofiler_core.measurement.C_COUNT
         ):
             return [self.output_child_objects_name.value]
 
@@ -983,21 +983,21 @@ parents or children of the parent object.""",
             self.add_step_parent()
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             #
             # Added other distance parents
             #
-            if setting_values[2] == cellprofiler.setting.DO_NOT_USE:
+            if setting_values[2] == "Do not use":
                 find_parent_distances = D_NONE
             else:
                 find_parent_distances = setting_values[2]
 
-            if setting_values[3].upper() == cellprofiler.setting.DO_NOT_USE.upper():
-                wants_step_parent_distances = cellprofiler.setting.NO
+            if setting_values[3].upper() == "Do not use".upper():
+                wants_step_parent_distances = "No"
             else:
-                wants_step_parent_distances = cellprofiler.setting.YES
+                wants_step_parent_distances = "Yes"
 
             setting_values = setting_values[:2] + [
                 find_parent_distances,
@@ -1015,7 +1015,7 @@ parents or children of the parent object.""",
 
         if variable_revision_number == 3:
             setting_values = (
-                setting_values[:5] + [cellprofiler.setting.NO] + setting_values[5:]
+                setting_values[:5] + ["No"] + setting_values[5:]
             )
 
             variable_revision_number = 5
@@ -1024,14 +1024,14 @@ parents or children of the parent object.""",
             setting_values = (
                 setting_values[0:2]
                 + setting_values[3:6]
-                + [cellprofiler.setting.YES]
+                + ["Yes"]
                 + [setting_values[2]]
                 + setting_values[6:]
             )
 
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 Relate = RelateObjects

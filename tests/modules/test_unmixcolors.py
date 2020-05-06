@@ -1,12 +1,12 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.unmixcolors
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 INPUT_IMAGE = "inputimage"
 
@@ -19,10 +19,10 @@ def test_load_v1():
     with open("./tests/resources/modules/unmixcolors/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -35,17 +35,17 @@ def test_load_v1():
     assert module.outputs[-1].image_name == "RedWine"
     for i, stain in enumerate(
         (
-            cellprofiler.modules.unmixcolors.CHOICE_HEMATOXYLIN,
-            cellprofiler.modules.unmixcolors.CHOICE_EOSIN,
-            cellprofiler.modules.unmixcolors.CHOICE_DAB,
-            cellprofiler.modules.unmixcolors.CHOICE_FAST_RED,
-            cellprofiler.modules.unmixcolors.CHOICE_FAST_BLUE,
-            cellprofiler.modules.unmixcolors.CHOICE_METHYL_GREEN,
-            cellprofiler.modules.unmixcolors.CHOICE_AEC,
-            cellprofiler.modules.unmixcolors.CHOICE_ANILINE_BLUE,
-            cellprofiler.modules.unmixcolors.CHOICE_AZOCARMINE,
-            cellprofiler.modules.unmixcolors.CHOICE_ALICAN_BLUE,
-            cellprofiler.modules.unmixcolors.CHOICE_PAS,
+                cellprofiler.modules.unmixcolors.CHOICE_HEMATOXYLIN,
+                cellprofiler.modules.unmixcolors.CHOICE_EOSIN,
+                cellprofiler.modules.unmixcolors.CHOICE_DAB,
+                cellprofiler.modules.unmixcolors.CHOICE_FAST_RED,
+                cellprofiler.modules.unmixcolors.CHOICE_FAST_BLUE,
+                cellprofiler.modules.unmixcolors.CHOICE_METHYL_GREEN,
+                cellprofiler.modules.unmixcolors.CHOICE_AEC,
+                cellprofiler.modules.unmixcolors.CHOICE_ANILINE_BLUE,
+                cellprofiler.modules.unmixcolors.CHOICE_AZOCARMINE,
+                cellprofiler.modules.unmixcolors.CHOICE_ALICAN_BLUE,
+                cellprofiler.modules.unmixcolors.CHOICE_PAS,
         )
     ):
         assert module.outputs[i].stain_choice == stain
@@ -60,10 +60,10 @@ def make_workspace(pixels, choices):
     pixels - input image
     choices - a list of choice strings for the images desired
     """
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
 
@@ -79,17 +79,17 @@ def make_workspace(pixels, choices):
     module.set_module_num(1)
     pipeline.add_module(module)
 
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    image = cellprofiler.image.Image(pixels)
+    image = cellprofiler_core.image.Image(pixels)
     image_set.add(INPUT_IMAGE, image)
 
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.object.ObjectSet(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module

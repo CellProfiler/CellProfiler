@@ -15,7 +15,7 @@ import tempfile
 import functools
 
 import scipy.io.matlab.mio
-import cellprofiler.utilities.legacy
+import cellprofiler_core.utilities.legacy
 
 __temp_example_images_folder = None
 
@@ -108,7 +108,7 @@ def load_pipeline(test_case, encoded_data):
     fd.close()
     b64data = base64.b64encode(bindata)
     """
-    import cellprofiler.pipeline
+    import cellprofiler_core.pipeline
 
     (matfd, matpath) = tempfile.mkstemp(".mat")
     matfh = os.fdopen(matfd, "wb")
@@ -116,7 +116,7 @@ def load_pipeline(test_case, encoded_data):
         data = base64.b64decode(encoded_data)
         matfh.write(data)
         matfh.flush()
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         handles = scipy.io.matlab.mio.loadmat(matpath, struct_as_record=True)
     finally:
         matfh.close()
@@ -125,8 +125,8 @@ def load_pipeline(test_case, encoded_data):
         if isinstance(
             event,
             (
-                cellprofiler.pipeline.RunExceptionEvent,
-                cellprofiler.pipeline.LoadExceptionEvent,
+                cellprofiler_core.pipeline.event.RunException,
+                cellprofiler_core.pipeline.event.LoadException,
             ),
         ):
             if test_case is not None:
@@ -209,7 +209,7 @@ def make_12_bit_image(folder, filename, shape):
     ifds = sorted(
         ifds,
         key=functools.cmp_to_key(
-            lambda a, b: cellprofiler.utilities.legacy.cmp(a.tolist(), b.tolist())
+            lambda a, b: cellprofiler_core.utilities.legacy.cmp(a.tolist(), b.tolist())
         ),
     )
     old_end = offset + 2 + nentries * 12

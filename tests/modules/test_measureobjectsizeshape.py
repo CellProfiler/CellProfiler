@@ -4,39 +4,39 @@ import os
 import numpy
 import skimage.io
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.modules.injectimage
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.modules.injectimage
 import cellprofiler.modules.measureobjectsizeshape
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 OBJECTS_NAME = "myobjects"
 
 
 def make_workspace(labels):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    objects = cellprofiler.object.Objects()
+    object_set = cellprofiler_core.object.ObjectSet()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, OBJECTS_NAME)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.set_module_num(1)
     module.object_groups[0].name.value = OBJECTS_NAME
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list
     )
     return workspace, module
@@ -48,10 +48,10 @@ def test_01_load_v1():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -68,20 +68,20 @@ def test_01_load_v1():
 
 def test_zeros():
     """Run on an empty labels matrix"""
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     labels = numpy.zeros((10, 20), int)
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, "SomeObjects")
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),
@@ -92,24 +92,24 @@ def test_zeros():
     module.run(workspace)
 
     for f in (
-        cellprofiler.modules.measureobjectsizeshape.F_AREA,
-        cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
-        cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
-        cellprofiler.modules.measureobjectsizeshape.F_ECCENTRICITY,
-        cellprofiler.modules.measureobjectsizeshape.F_EULER_NUMBER,
-        cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
-        cellprofiler.modules.measureobjectsizeshape.F_FORM_FACTOR,
-        cellprofiler.modules.measureobjectsizeshape.F_MAJOR_AXIS_LENGTH,
-        cellprofiler.modules.measureobjectsizeshape.F_MINOR_AXIS_LENGTH,
-        cellprofiler.modules.measureobjectsizeshape.F_ORIENTATION,
-        cellprofiler.modules.measureobjectsizeshape.F_PERIMETER,
-        cellprofiler.modules.measureobjectsizeshape.F_SOLIDITY,
-        cellprofiler.modules.measureobjectsizeshape.F_COMPACTNESS,
-        cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS,
-        cellprofiler.modules.measureobjectsizeshape.F_MEAN_RADIUS,
-        cellprofiler.modules.measureobjectsizeshape.F_MEDIAN_RADIUS,
-        cellprofiler.modules.measureobjectsizeshape.F_MIN_FERET_DIAMETER,
-        cellprofiler.modules.measureobjectsizeshape.F_MAX_FERET_DIAMETER,
+            cellprofiler.modules.measureobjectsizeshape.F_AREA,
+            cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
+            cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
+            cellprofiler.modules.measureobjectsizeshape.F_ECCENTRICITY,
+            cellprofiler.modules.measureobjectsizeshape.F_EULER_NUMBER,
+            cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
+            cellprofiler.modules.measureobjectsizeshape.F_FORM_FACTOR,
+            cellprofiler.modules.measureobjectsizeshape.F_MAJOR_AXIS_LENGTH,
+            cellprofiler.modules.measureobjectsizeshape.F_MINOR_AXIS_LENGTH,
+            cellprofiler.modules.measureobjectsizeshape.F_ORIENTATION,
+            cellprofiler.modules.measureobjectsizeshape.F_PERIMETER,
+            cellprofiler.modules.measureobjectsizeshape.F_SOLIDITY,
+            cellprofiler.modules.measureobjectsizeshape.F_COMPACTNESS,
+            cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS,
+            cellprofiler.modules.measureobjectsizeshape.F_MEAN_RADIUS,
+            cellprofiler.modules.measureobjectsizeshape.F_MEDIAN_RADIUS,
+            cellprofiler.modules.measureobjectsizeshape.F_MIN_FERET_DIAMETER,
+            cellprofiler.modules.measureobjectsizeshape.F_MAX_FERET_DIAMETER,
     ):
         m = cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + f
         a = measurements.get_current_measurement("SomeObjects", m)
@@ -118,29 +118,29 @@ def test_zeros():
 
 def test_run():
     """Run with a rectangle, cross and circle"""
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     labels = numpy.zeros((10, 20), int)
     labels[1:9, 1:5] = 1
     labels[1:9, 11] = 2
     labels[4, 6:19] = 2
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, "SomeObjects")
     labels = numpy.zeros((115, 115), int)
     x, y = numpy.mgrid[-50:51, -50:51]
     labels[:101, :101][x ** 2 + y ** 2 <= 2500] = 1
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, "OtherObjects")
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "OtherObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),
@@ -197,12 +197,12 @@ def test_measurements_zernike():
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "OtherObjects", "Yes"]
     module.set_settings_from_values(settings, 1, module.module_class())
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     for object_name in settings[:-1]:
         measurements = module.get_measurements(pipeline, object_name, "AreaShape")
         for measurement in (
-            cellprofiler.modules.measureobjectsizeshape.F_STANDARD
-            + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+                cellprofiler.modules.measureobjectsizeshape.F_STANDARD
+                + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
         ):
             assert measurement in measurements
         assert "Zernike_3_1" in measurements
@@ -212,12 +212,12 @@ def test_measurements_no_zernike():
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     settings = ["SomeObjects", "OtherObjects", "No"]
     module.set_settings_from_values(settings, 1, module.module_class())
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     for object_name in settings[:-1]:
         measurements = module.get_measurements(pipeline, object_name, "AreaShape")
         for measurement in (
-            cellprofiler.modules.measureobjectsizeshape.F_STANDARD
-            + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+                cellprofiler.modules.measureobjectsizeshape.F_STANDARD
+                + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
         ):
             assert measurement in measurements
         assert not ("Zernike_3_1" in measurements)
@@ -228,24 +228,24 @@ def test_non_contiguous():
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.object_groups[0].name.value = "SomeObjects"
     module.calculate_zernikes.value = True
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     labels = numpy.zeros((10, 20), int)
     labels[1:9, 1:5] = 1
     labels[4:6, 6:19] = 1
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, "SomeObjects")
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),
@@ -269,24 +269,24 @@ def test_zernikes_are_different():
     #
     labels[1:19, 1:19] = (numpy.random.uniform(size=(18, 18)) > 0.5).astype(int)
     labels[21:39, 1:19] = (numpy.random.uniform(size=(18, 18)) > 0.5).astype(int) * 2
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     object_set.add_objects(objects, "SomeObjects")
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.object_groups[0].name.value = "SomeObjects"
     module.calculate_zernikes.value = True
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),
@@ -310,25 +310,25 @@ def test_extent():
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.object_groups[0].name.value = "SomeObjects"
     module.calculate_zernikes.value = True
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     labels = numpy.zeros((10, 20), int)
     # 3/4 of a square is covered
     labels[5:7, 5:10] = 1
     labels[7:9, 5:15] = 1
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
     object_set.add_objects(objects, "SomeObjects")
     module.set_module_num(1)
-    image_set_list = cellprofiler.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),
@@ -360,7 +360,7 @@ def test_overlapping():
     mlist = []
     olist = []
     for m in (m1, m2):
-        objects = cellprofiler.object.Objects()
+        objects = cellprofiler_core.object.Objects()
         objects.segmented = m.astype(int)
         olist.append(objects)
     ijv = numpy.column_stack(
@@ -370,27 +370,27 @@ def test_overlapping():
             numpy.array([1] * numpy.sum(m1) + [2] * numpy.sum(m2)),
         )
     )
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.ijv = ijv
     olist.append(objects)
     for objects in olist:
         module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
         module.object_groups[0].name.value = "SomeObjects"
         module.calculate_zernikes.value = True
-        object_set = cellprofiler.object.ObjectSet()
+        object_set = cellprofiler_core.object.ObjectSet()
         object_set.add_objects(objects, "SomeObjects")
         module.set_module_num(1)
-        image_set_list = cellprofiler.image.ImageSetList()
-        measurements = cellprofiler.measurement.Measurements()
+        image_set_list = cellprofiler_core.image.ImageSetList()
+        measurements = cellprofiler_core.measurement.Measurements()
         mlist.append(measurements)
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         pipeline.add_module(module)
 
         def callback(caller, event):
-            assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+            assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
             pipeline.add_listener(callback)
 
-        workspace = cellprofiler.workspace.Workspace(
+        workspace = cellprofiler_core.workspace.Workspace(
             pipeline,
             module,
             image_set_list.get_image_set(0),
@@ -400,13 +400,13 @@ def test_overlapping():
         )
         module.run(workspace)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     for c in module.get_measurement_columns(pipeline):
         oname, feature = c[:2]
         if oname != "SomeObjects":
             continue
         measurements = mlist[0]
-        assert isinstance(measurements, cellprofiler.measurement.Measurements)
+        assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
         v1 = measurements.get_current_measurement(oname, feature)
         assert len(v1) == 1
         v1 = v1[0]
@@ -448,7 +448,7 @@ def features_and_columns_match(measurements, module, pipeline):
     for column in columns:
         assert column[0] in ["SomeObjects", "OtherObjects"]
         assert column[1] in features
-        assert column[2] == cellprofiler.measurement.COLTYPE_FLOAT
+        assert column[2] == cellprofiler_core.measurement.COLTYPE_FLOAT
 
 
 def test_run_volume():

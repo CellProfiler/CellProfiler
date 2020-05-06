@@ -54,19 +54,19 @@ See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
 
 import logging
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 
 logger = logging.getLogger(__name__)
 
 import os
 import numpy as np
 
-import cellprofiler.measurement as cpmeas
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
 
-from cellprofiler.modules.loadimages import pathname2url
-from cellprofiler.modules import identify as I
+from cellprofiler_core.modules.loadimages import pathname2url
+from cellprofiler_core.modules import identify as I
 
 ###########################################
 #
@@ -89,15 +89,15 @@ class EditObjectsManually(I.Identify):
 
         You should create the setting variables for your module here:
             # Ask the user for the input image
-            self.image_name = cellprofiler.settings.ImageNameSubscriber(...)
+            self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler.settings.ImageNameProvider(...)
+            self.output_image = cellprofiler_core.settings.ImageNameProvider(...)
             # Ask the user for a parameter
-            self.smoothing_size = cellprofiler.settings.Float(...)
+            self.smoothing_size = cellprofiler_core.settings.Float(...)
         """
         self.object_name = cps.ObjectNameSubscriber(
             "Select the objects to be edited",
-            cps.NONE,
+            "None",
             doc="""\
 Choose a set of previously identified objects
 for editing, such as those produced by one of the
@@ -163,7 +163,7 @@ Select "*No*" if you do not want a guide image while editing.
 
         self.image_name = cps.ImageNameSubscriber(
             "Select the guiding image",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if a guiding image is desired)*
 
@@ -175,7 +175,7 @@ supplied by a previous module.
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
@@ -271,12 +271,12 @@ supplied by a previous module.
         child_count, parents = orig_objects.relate_children(filtered_objects)
         m.add_measurement(
             filtered_objects_name,
-            cellprofiler.measurement.FF_PARENT % orig_objects_name,
+            cellprofiler_core.measurement.FF_PARENT % orig_objects_name,
             parents,
         )
         m.add_measurement(
             orig_objects_name,
-            cellprofiler.measurement.FF_CHILDREN_COUNT % filtered_objects_name,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % filtered_objects_name,
             child_count,
         )
         #
@@ -314,7 +314,7 @@ supplied by a previous module.
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
-        from cellprofiler.modules.namesandtypes import ObjectsImageProvider
+        from cellprofiler_core.modules.namesandtypes import ObjectsImageProvider
         from bioformats import load_image
 
         with wx.Dialog(None) as dlg:
@@ -504,12 +504,12 @@ supplied by a previous module.
         columns += [
             (
                 orig_image_name,
-                cellprofiler.measurement.FF_CHILDREN_COUNT % filtered_image_name,
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT % filtered_image_name,
                 cpmeas.COLTYPE_INTEGER,
             ),
             (
                 filtered_image_name,
-                cellprofiler.measurement.FF_PARENT % orig_image_name,
+                cellprofiler_core.measurement.FF_PARENT % orig_image_name,
                 cpmeas.COLTYPE_INTEGER,
             ),
         ]
@@ -543,42 +543,16 @@ supplied by a previous module.
         return measurements
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 2:
-            object_name, filtered_object_name, outlines_name, renumber_or_retain = (
-                setting_values
-            )
-
-            if renumber_or_retain == "Renumber":
-                renumber_or_retain = R_RENUMBER
-            else:
-                renumber_or_retain = R_RETAIN
-
-            if outlines_name == cps.DO_NOT_USE:
-                wants_outlines = cps.NO
-            else:
-                wants_outlines = cps.YES
-
-            setting_values = [
-                object_name,
-                filtered_object_name,
-                wants_outlines,
-                outlines_name,
-                renumber_or_retain,
-            ]
-            variable_revision_number = 1
-            from_matlab = False
-            module_name = self.module_name
-
         if variable_revision_number == 1:
             # Added wants image + image
-            setting_values = setting_values + [cps.NO, cps.NONE]
+            setting_values = setting_values + ["No", "None"]
             variable_revision_number = 2
 
         if variable_revision_number == 2:
             # Added allow overlap, default = False
-            setting_values = setting_values + [cps.NO]
+            setting_values = setting_values + ["No"]
             variable_revision_number = 3
 
         if variable_revision_number == 3:
@@ -586,4 +560,4 @@ supplied by a previous module.
             setting_values = setting_values[:2] + setting_values[4:]
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

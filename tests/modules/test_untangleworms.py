@@ -9,13 +9,13 @@ import centrosome.outline
 import numpy
 import scipy.ndimage
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.untangleworms
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
 cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
 
@@ -270,10 +270,10 @@ def test_load_v1():
     with open("./tests/resources/modules/untangleworms/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -305,10 +305,10 @@ def test_load_v2():
     with open("./tests/resources/modules/untangleworms/v2.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -327,11 +327,11 @@ def test_load_v2():
     for module, complexity in zip(
         pipeline.modules(),
         (
-            cellprofiler.modules.untangleworms.C_ALL,
-            cellprofiler.modules.untangleworms.C_MEDIUM,
-            cellprofiler.modules.untangleworms.C_HIGH,
-            cellprofiler.modules.untangleworms.C_VERY_HIGH,
-            cellprofiler.modules.untangleworms.C_CUSTOM,
+                cellprofiler.modules.untangleworms.C_ALL,
+                cellprofiler.modules.untangleworms.C_MEDIUM,
+                cellprofiler.modules.untangleworms.C_HIGH,
+                cellprofiler.modules.untangleworms.C_VERY_HIGH,
+                cellprofiler.modules.untangleworms.C_CUSTOM,
         ),
     ):
         assert module.complexity == complexity
@@ -347,14 +347,14 @@ def make_workspace(image, data=None, write_mode="wb"):
         with open(filename, "wb") as fd:
             fd.write(data)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
         assert not isinstance(
             event,
             (
-                cellprofiler.pipeline.RunExceptionEvent,
-                cellprofiler.pipeline.LoadExceptionEvent,
+                cellprofiler_core.pipeline.event.RunException,
+                cellprofiler_core.pipeline.event.LoadException,
             ),
         )
 
@@ -365,22 +365,22 @@ def make_workspace(image, data=None, write_mode="wb"):
     module.overlap_objects.value = OVERLAP_OBJECTS_NAME
     module.set_module_num(1)
     pipeline.add_module(module)
-    img = cellprofiler.image.Image(image)
-    image_set_list = cellprofiler.image.ImageSetList()
+    img = cellprofiler_core.image.Image(image)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, img)
-    module.training_set_directory.dir_choice = cellprofiler.setting.ABSOLUTE_FOLDER_NAME
+    module.training_set_directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
     (
         module.training_set_directory.custom_path,
         module.training_set_file_name.value,
     ) = os.path.split(filename)
 
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.object.ObjectSet(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -2015,13 +2015,13 @@ def test_A02():
     module.override_overlap_weight.value = 3
     module.run(workspace)
     object_set = workspace.object_set
-    assert isinstance(object_set, cellprofiler.object.ObjectSet)
+    assert isinstance(object_set, cellprofiler_core.object.ObjectSet)
     worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
-    assert isinstance(worms, cellprofiler.object.Objects)
+    assert isinstance(worms, cellprofiler_core.object.Objects)
     worm_ijv = worms.get_ijv()
     assert numpy.max(worm_ijv[:, 2]) == 15
     m = workspace.measurements
-    assert isinstance(m, cellprofiler.measurement.Measurements)
+    assert isinstance(m, cellprofiler_core.measurement.Measurements)
     ocount = m.get_current_image_measurement("Count_" + OVERLAP_OBJECTS_NAME)
     assert ocount == 15
     ncount = m.get_current_image_measurement("Count_" + NON_OVERLAPPING_OBJECTS_NAME)
@@ -2044,7 +2044,7 @@ def test_nonoverlapping_outlines():
     module.nonoverlapping_outlines_name.value = NON_OVERLAPPING_OUTLINES_NAME
     module.run(workspace)
     object_set = workspace.object_set
-    assert isinstance(object_set, cellprofiler.object.ObjectSet)
+    assert isinstance(object_set, cellprofiler_core.object.ObjectSet)
     worms = object_set.get_objects(NON_OVERLAPPING_OBJECTS_NAME).segmented
     outlines = workspace.image_set.get_image(NON_OVERLAPPING_OUTLINES_NAME).pixel_data
     expected = centrosome.outline.outline(worms) > 0
@@ -2063,7 +2063,7 @@ def test_overlapping_outlines():
     module.overlapping_outlines_name.value = OVERLAPPING_OUTLINES_NAME
     module.run(workspace)
     object_set = workspace.object_set
-    assert isinstance(object_set, cellprofiler.object.ObjectSet)
+    assert isinstance(object_set, cellprofiler_core.object.ObjectSet)
     worms = object_set.get_objects(OVERLAP_OBJECTS_NAME)
     outlines = workspace.image_set.get_image(OVERLAPPING_OUTLINES_NAME).pixel_data
     outlines = numpy.sum(outlines, 2) > 0  # crunch color dimension

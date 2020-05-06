@@ -20,12 +20,12 @@ import numpy
 import skimage.morphology
 import skimage.segmentation
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.setting
 
 
-class RemoveObjectsBySize(cellprofiler.module.ObjectProcessing):
+class RemoveObjectsBySize(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     category = "Advanced"
 
     module_name = "RemoveObjectsBySize"
@@ -35,7 +35,7 @@ class RemoveObjectsBySize(cellprofiler.module.ObjectProcessing):
     def create_settings(self):
         super(RemoveObjectsBySize, self).create_settings()
 
-        self.size = cellprofiler.setting.FloatRange(
+        self.size = cellprofiler_core.setting.FloatRange(
             text="Size",
             value=(0.0, numpy.inf),
             doc="""

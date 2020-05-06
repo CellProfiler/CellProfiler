@@ -23,10 +23,10 @@ import skimage.color
 import skimage.segmentation
 import skimage.util
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 WANTS_COLOR = "Color"
 WANTS_GRAYSCALE = "Grayscale"
@@ -60,13 +60,13 @@ NUM_OUTLINE_SETTINGS_V4 = 2
 NUM_OUTLINE_SETTINGS = 2
 
 
-class OverlayOutlines(cellprofiler.module.Module):
+class OverlayOutlines(cellprofiler_core.module.Module):
     module_name = "OverlayOutlines"
     variable_revision_number = 4
     category = "Image Processing"
 
     def create_settings(self):
-        self.blank_image = cellprofiler.setting.Binary(
+        self.blank_image = cellprofiler_core.setting.Binary(
             "Display outlines on a blank image?",
             False,
             doc="""\
@@ -74,13 +74,13 @@ Select "*{YES}*" to produce an image of the outlines on a black background.
 
 Select "*{NO}*" to overlay the outlines on an image you choose.
 """.format(
-                **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select image on which to display outlines",
-            cellprofiler.setting.NONE,
+            "None",
             doc="""\
 *(Used only when a blank image has not been selected)*
 
@@ -90,7 +90,7 @@ this one.
 """,
         )
 
-        self.line_mode = cellprofiler.setting.Choice(
+        self.line_mode = cellprofiler_core.setting.Choice(
             "How to outline",
             ["Inner", "Outer", "Thick"],
             value="Inner",
@@ -107,7 +107,7 @@ Specify how to mark the boundaries around an object:
 """,
         )
 
-        self.output_image_name = cellprofiler.setting.ImageNameProvider(
+        self.output_image_name = cellprofiler_core.setting.ImageNameProvider(
             "Name the output image",
             "OrigOverlay",
             doc="""\
@@ -116,7 +116,7 @@ image can be selected in later modules (for instance, **SaveImages**).
 """,
         )
 
-        self.wants_color = cellprofiler.setting.Choice(
+        self.wants_color = cellprofiler_core.setting.Choice(
             "Outline display mode",
             [WANTS_COLOR, WANTS_GRAYSCALE],
             doc="""\
@@ -128,9 +128,9 @@ same intensity as the brightest pixel in the image.
 """,
         )
 
-        self.spacer = cellprofiler.setting.Divider(line=False)
+        self.spacer = cellprofiler_core.setting.Divider(line=False)
 
-        self.max_type = cellprofiler.setting.Choice(
+        self.max_type = cellprofiler_core.setting.Choice(
             "Select method to determine brightness of outlines",
             [MAX_IMAGE, MAX_POSSIBLE],
             doc="""\
@@ -156,20 +156,20 @@ maximal brightness already occurring in the image.
 
         self.add_outline(can_remove=False)
 
-        self.add_outline_button = cellprofiler.setting.DoSomething(
+        self.add_outline_button = cellprofiler_core.setting.DoSomething(
             "", "Add another outline", self.add_outline
         )
 
     def add_outline(self, can_remove=True):
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         if can_remove:
-            group.append("divider", cellprofiler.setting.Divider(line=False))
+            group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
         group.append(
             "objects_name",
-            cellprofiler.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.ObjectNameSubscriber(
                 "Select objects to display",
-                cellprofiler.setting.NONE,
+                "None",
                 doc="Choose the objects whose outlines you would like to display.",
             ),
         )
@@ -182,7 +182,7 @@ maximal brightness already occurring in the image.
 
         group.append(
             "color",
-            cellprofiler.setting.Color(
+            cellprofiler_core.setting.Color(
                 "Select outline color",
                 default_color,
                 doc="Objects will be outlined in this color.",
@@ -192,7 +192,7 @@ maximal brightness already occurring in the image.
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this outline", self.outlines, group
                 ),
             )
@@ -253,7 +253,7 @@ maximal brightness already occurring in the image.
         else:
             pixel_data = self.run_bw(workspace, base_image)
 
-        output_image = cellprofiler.image.Image(pixel_data, dimensions=dimensions)
+        output_image = cellprofiler_core.image.Image(pixel_data, dimensions=dimensions)
 
         workspace.image_set.add(self.output_image_name.value, output_image)
 
@@ -406,29 +406,9 @@ maximal brightness already occurring in the image.
         )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 2:
-            # Order is
-            # image_name
-            # outline name
-            # max intensity
-            # output_image_name
-            # color
-            setting_values = [
-                cellprofiler.setting.YES
-                if setting_values[0] == "Blank"
-                else cellprofiler.setting.NO,
-                setting_values[0],
-                setting_values[3],
-                WANTS_COLOR,
-                setting_values[2],
-                setting_values[1],
-                setting_values[4],
-            ]
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             #
             # Added line width
             #
@@ -439,7 +419,7 @@ maximal brightness already occurring in the image.
             )
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Added overlay image / objects choice
             #
@@ -448,11 +428,11 @@ maximal brightness already occurring in the image.
                 NUM_FIXED_SETTINGS_V2, len(setting_values), NUM_OUTLINE_SETTINGS_V2
             ):
                 new_setting_values += setting_values[i : (i + NUM_OUTLINE_SETTINGS_V2)]
-                new_setting_values += [FROM_IMAGES, cellprofiler.setting.NONE]
+                new_setting_values += [FROM_IMAGES, "None"]
             setting_values = new_setting_values
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             new_setting_values = setting_values[: NUM_FIXED_SETTINGS_V3 - 1]
 
             new_setting_values += ["Inner"]
@@ -470,7 +450,7 @@ maximal brightness already occurring in the image.
 
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

@@ -2,7 +2,7 @@ import numpy.testing
 import skimage.color
 import skimage.morphology
 
-import cellprofiler.image
+import cellprofiler_core.image
 import cellprofiler.modules.medialaxis
 
 instance = cellprofiler.modules.medialaxis.MedialAxis()
@@ -30,7 +30,7 @@ def test_run(image, module, image_set, workspace):
     else:
         expected_data = skimage.morphology.medial_axis(data)
 
-    expected = cellprofiler.image.Image(
+    expected = cellprofiler_core.image.Image(
         image=expected_data, dimensions=image.dimensions
     )
 

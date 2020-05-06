@@ -37,10 +37,10 @@ import inflect
 import numpy
 import skimage.util
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.setting
 
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"
@@ -76,7 +76,7 @@ FIXED_SETTING_COUNT_1 = 8
 FIXED_SETTING_COUNT = 9
 
 
-class ImageMath(cellprofiler.module.ImageProcessing):
+class ImageMath(cellprofiler_core.module.ImageProcessing):
     variable_revision_number = 5
 
     module_name = "ImageMath"
@@ -89,7 +89,7 @@ class ImageMath(cellprofiler.module.ImageProcessing):
         self.add_image(False)
 
         # other settings
-        self.operation = cellprofiler.setting.Choice(
+        self.operation = cellprofiler_core.setting.Choice(
             "Operation",
             [
                 O_ADD,
@@ -165,30 +165,30 @@ single image.
 """
             % globals(),
         )
-        self.divider_top = cellprofiler.setting.Divider(line=False)
+        self.divider_top = cellprofiler_core.setting.Divider(line=False)
 
-        self.exponent = cellprofiler.setting.Float(
+        self.exponent = cellprofiler_core.setting.Float(
             "Raise the power of the result by",
             1,
             doc="""\
 Enter an exponent to raise the result to *after* the chosen operation.""",
         )
 
-        self.after_factor = cellprofiler.setting.Float(
+        self.after_factor = cellprofiler_core.setting.Float(
             "Multiply the result by",
             1,
             doc="""\
 Enter a factor to multiply the result by *after* the chosen operation.""",
         )
 
-        self.addend = cellprofiler.setting.Float(
+        self.addend = cellprofiler_core.setting.Float(
             "Add to result",
             0,
             doc="""\
 Enter a number to add to the result *after* the chosen operation.""",
         )
 
-        self.truncate_low = cellprofiler.setting.Binary(
+        self.truncate_low = cellprofiler_core.setting.Binary(
             "Set values less than 0 equal to 0?",
             True,
             doc="""\
@@ -198,7 +198,7 @@ modules. Select *Yes* to set negative values to 0.
             % globals(),
         )
 
-        self.truncate_high = cellprofiler.setting.Binary(
+        self.truncate_high = cellprofiler_core.setting.Binary(
             "Set values greater than 1 equal to 1?",
             True,
             doc="""\
@@ -209,7 +209,7 @@ value of 1.
             % globals(),
         )
 
-        self.replace_nan = cellprofiler.setting.Binary(
+        self.replace_nan = cellprofiler_core.setting.Binary(
             "Replace invalid values with 0?",
             True,
             doc="""\
@@ -223,7 +223,7 @@ value of 1.
             % globals(),
         )
 
-        self.ignore_mask = cellprofiler.setting.Binary(
+        self.ignore_mask = cellprofiler_core.setting.Binary(
             "Ignore the image masks?",
             False,
             doc="""\
@@ -234,26 +234,26 @@ the smallest image mask is applied after image math has been completed.
             % globals(),
         )
 
-        self.output_image_name = cellprofiler.setting.ImageNameProvider(
+        self.output_image_name = cellprofiler_core.setting.ImageNameProvider(
             "Name the output image",
             "ImageAfterMath",
             doc="""\
 Enter a name for the resulting image.""",
         )
 
-        self.add_button = cellprofiler.setting.DoSomething(
+        self.add_button = cellprofiler_core.setting.DoSomething(
             "", "Add another image", self.add_image
         )
 
-        self.divider_bottom = cellprofiler.setting.Divider(line=False)
+        self.divider_bottom = cellprofiler_core.setting.Divider(line=False)
 
     def add_image(self, removable=True):
         # The text for these settings will be replaced in renumber_settings()
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         group.removable = removable
         group.append(
             "image_or_measurement",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Image or measurement?",
                 [IM_IMAGE, IM_MEASUREMENT],
                 doc="""\
@@ -271,9 +271,9 @@ use the median intensity measurement as the denominator.
 
         group.append(
             "image_name",
-            cellprofiler.setting.ImageNameSubscriber(
+            cellprofiler_core.setting.ImageNameSubscriber(
                 "Select the image",
-                cellprofiler.setting.NONE,
+                "None",
                 doc="""\
 Select the image that you want to use for this operation.""",
             ),
@@ -281,9 +281,9 @@ Select the image that you want to use for this operation.""",
 
         group.append(
             "measurement",
-            cellprofiler.setting.Measurement(
+            cellprofiler_core.setting.Measurement(
                 "Measurement",
-                lambda: cellprofiler.measurement.IMAGE,
+                lambda: cellprofiler_core.measurement.IMAGE,
                 "",
                 doc="""\
 Select a measurement made on the image. The value of the
@@ -294,7 +294,7 @@ other operand's image.""",
 
         group.append(
             "factor",
-            cellprofiler.setting.Float(
+            cellprofiler_core.setting.Float(
                 "Multiply the image by",
                 1,
                 doc="""\
@@ -306,12 +306,12 @@ is applied before other operations.""",
         if removable:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this image", self.images, group
                 ),
             )
 
-        group.append("divider", cellprofiler.setting.Divider())
+        group.append("divider", cellprofiler_core.setting.Divider())
         self.images.append(group)
 
     def renumber_settings(self):
@@ -600,7 +600,7 @@ is applied before other operations.""",
             if smallest_image.has_masking_objects
             else None
         )
-        output_image = cellprofiler.image.Image(
+        output_image = cellprofiler_core.image.Image(
             output_pixel_data,
             mask=output_mask,
             crop_mask=crop_mask,
@@ -659,206 +659,14 @@ is applied before other operations.""",
             op = self.images[i]
             if op.image_or_measurement == IM_IMAGE:
                 return
-        raise cellprofiler.setting.ValidationError(
+        raise cellprofiler_core.setting.ValidationError(
             "At least one of the operands must be an image", op.image_or_measurement
         )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and module_name == "Subtract" and variable_revision_number == 3:
-            subtract_image_name, basic_image_name, resulting_image_name, multiply_factor_1, multiply_factor_2, truncate = (
-                setting_values
-            )
-            setting_values = [
-                O_SUBTRACT,
-                1,  # exponent
-                1,  # post-multiply factor
-                0,  # addend
-                truncate,  # truncate low
-                cellprofiler.setting.NO,  # truncate high
-                resulting_image_name,
-                basic_image_name,
-                multiply_factor_2,
-                subtract_image_name,
-                multiply_factor_1,
-            ]
-            module_name = "ImageMath"
-            from_matlab = False
-            variable_revision_number = 1
-        if from_matlab and module_name == "Combine" and variable_revision_number == 3:
-            names_and_weights = [
-                (name, weight)
-                for name, weight in zip(setting_values[:3], setting_values[4:])
-                if name.lower() != cellprofiler.setting.DO_NOT_USE.lower()
-            ]
-
-            multiplier = 1.0 / sum(
-                [float(weight) for name, weight in names_and_weights]
-            )
-            output_image = setting_values[3]
-            setting_values = [
-                O_ADD,  # Operation
-                "1",  # Exponent
-                str(multiplier),  # Post-operation multiplier
-                "0",  # Post-operation offset
-                cellprofiler.setting.NO,  # Truncate low
-                cellprofiler.setting.NO,  # Truncate high
-                output_image,
-            ]
-            for name, weight in names_and_weights:
-                setting_values += [name, weight]
-            module_name = "ImageMath"
-            variable_revision_number = 1
-            from_matlab = False
-        if (
-            from_matlab
-            and module_name == "InvertIntensity"
-            and variable_revision_number == 1
-        ):
-            image_name, output_image = setting_values
-            setting_values = [
-                image_name,
-                cellprofiler.setting.DO_NOT_USE,
-                cellprofiler.setting.DO_NOT_USE,
-                "Invert",
-                1,
-                1,
-                1,
-                1,
-                1,
-                cellprofiler.setting.NO,
-                cellprofiler.setting.NO,
-                output_image,
-            ]
-            module_name = "ImageMath"
-            variable_revision_number = 2
-        if from_matlab and module_name == "Multiply" and variable_revision_number == 1:
-            image1, image2, output_image = setting_values
-            setting_values = [
-                image1,
-                image2,
-                cellprofiler.setting.DO_NOT_USE,
-                "Multiply",
-                1,
-                1,
-                1,
-                1,
-                1,
-                cellprofiler.setting.NO,
-                cellprofiler.setting.NO,
-                output_image,
-            ]
-            module_name = "ImageMath"
-            variable_revision_number = 2
-
-        if from_matlab and variable_revision_number == 1 and module_name == "ImageMath":
-            image_names = [setting_values[1]]
-            input_factors = [float(setting_values[4])]
-            operation = setting_values[3]
-            factors = []
-            # The user could type in a constant for the second image name
-            try:
-                factors += [float(setting_values[2]) * float(setting_values[5])]
-            except ValueError:
-                if setting_values[2] != cellprofiler.setting.DO_NOT_USE:
-                    image_names += [setting_values[2]]
-                    input_factors += [float(setting_values[5])]
-            exponent = 1.0
-            multiplier = 1.0
-            addend = 0
-            wants_truncate_low = setting_values[6]
-            wants_truncate_high = setting_values[7]
-            output_image_name = setting_values[0]
-            old_operation = operation
-            if operation == O_DIVIDE and len(factors):
-                multiplier /= numpy.product(factors)
-            elif operation == O_MULTIPLY and len(factors):
-                multiplier *= numpy.product(factors)
-            elif operation == O_ADD and len(factors):
-                addend = numpy.sum(factors)
-            elif operation == O_SUBTRACT:
-                addend = -numpy.sum(factors)
-            setting_values = [
-                operation,
-                exponent,
-                multiplier,
-                addend,
-                wants_truncate_low,
-                wants_truncate_high,
-                output_image_name,
-            ]
-            if operation == O_COMPLEMENT:
-                image_names = image_names[:1]
-                input_factors = input_factors[:1]
-            elif old_operation in (O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE):
-                if len(image_names) < 2:
-                    setting_values[0] = O_NONE
-                image_names = image_names[:2]
-                input_factors = input_factors[:2]
-            for image_name, input_factor in zip(image_names, input_factors):
-                setting_values += [image_name, input_factor]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if from_matlab and variable_revision_number == 2 and module_name == "ImageMath":
-            image_names = [setting_values[0]]
-            input_factors = [float(setting_values[4])]
-            operation = setting_values[3]
-            factors = []
-            for i in range(1, 3 if operation == O_COMBINE else 2):
-                # The user could type in a constant for the second or third image name
-                try:
-                    factors += [float(setting_values[i]) * float(setting_values[i + 4])]
-                except ValueError:
-                    if setting_values[i] != cellprofiler.setting.DO_NOT_USE:
-                        image_names += [setting_values[i]]
-                        input_factors += [float(setting_values[i + 4])]
-
-            exponent = float(setting_values[7])
-            multiplier = float(setting_values[8])
-            addend = 0
-            wants_truncate_low = setting_values[9]
-            wants_truncate_high = setting_values[10]
-            output_image_name = setting_values[11]
-            old_operation = operation
-            if operation == O_COMBINE:
-                addend = numpy.sum(factors)
-                operation = O_ADD
-            elif operation == O_DIVIDE and len(factors):
-                multiplier /= numpy.product(factors)
-            elif operation == O_MULTIPLY and len(factors):
-                multiplier *= numpy.product(factors)
-            elif operation == O_ADD and len(factors):
-                addend = numpy.sum(factors)
-            elif operation == O_SUBTRACT:
-                addend = -numpy.sum(factors)
-            setting_values = [
-                operation,
-                exponent,
-                multiplier,
-                addend,
-                wants_truncate_low,
-                wants_truncate_high,
-                output_image_name,
-            ]
-            if operation in (O_INVERT, O_LOG_TRANSFORM):
-                image_names = image_names[:1]
-                input_factors = input_factors[:1]
-            elif old_operation in (O_ADD, O_SUBTRACT, O_MULTIPLY, O_DIVIDE, O_AVERAGE):
-                if len(image_names) < 2:
-                    setting_values[0] = O_NONE
-                image_names = image_names[:2]
-                input_factors = input_factors[:2]
-                # Fix for variable_revision_number 2: subtract reversed operands
-                if old_operation == O_SUBTRACT:
-                    image_names.reverse()
-                    input_factors.reverse()
-            for image_name, input_factor in zip(image_names, input_factors):
-                setting_values += [image_name, input_factor]
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # added image_or_measurement and measurement
             new_setting_values = setting_values[:FIXED_SETTING_COUNT_1]
             for i in range(
@@ -872,21 +680,21 @@ is applied before other operations.""",
                 ]
             setting_values = new_setting_values
             variable_revision_number = 2
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # added the ability to ignore the mask
             new_setting_values = setting_values
             new_setting_values.insert(6, "No")
             setting_values = new_setting_values
             variable_revision_number = 3
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Log transform -> legacy log transform
             if setting_values[0] == O_LOG_TRANSFORM:
                 setting_values = [O_LOG_TRANSFORM_LEGACY] + setting_values[1:]
             variable_revision_number = 4
-        if (not from_matlab) and variable_revision_number == 4:
+        if variable_revision_number == 4:
             # Add NaN handling
             new_setting_values = setting_values
             new_setting_values.insert(6, "Yes")
             setting_values = new_setting_values
             variable_revision_number = 5
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

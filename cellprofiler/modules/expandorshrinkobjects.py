@@ -51,12 +51,12 @@ import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.modules.identify
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.modules.identify
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 
 O_SHRINK_INF = "Shrink objects to a point"
@@ -77,25 +77,25 @@ O_ALL = [
 ]
 
 
-class ExpandOrShrinkObjects(cellprofiler.module.Module):
+class ExpandOrShrinkObjects(cellprofiler_core.module.Module):
     module_name = "ExpandOrShrinkObjects"
     category = "Object Processing"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.object_name = cellprofiler.setting.ObjectNameSubscriber(
+        self.object_name = cellprofiler_core.setting.ObjectNameSubscriber(
             "Select the input objects",
-            cellprofiler.setting.NONE,
+            "None",
             doc="Select the objects that you want to expand or shrink.",
         )
 
-        self.output_object_name = cellprofiler.setting.ObjectNameProvider(
+        self.output_object_name = cellprofiler_core.setting.ObjectNameProvider(
             "Name the output objects",
             "ShrunkenNuclei",
             doc="Enter a name for the resulting objects.",
         )
 
-        self.operation = cellprofiler.setting.Choice(
+        self.operation = cellprofiler_core.setting.Choice(
             "Select the operation",
             O_ALL,
             doc="""\
@@ -141,7 +141,7 @@ Choose the operation that you want to perform:
             ),
         )
 
-        self.iterations = cellprofiler.setting.Integer(
+        self.iterations = cellprofiler_core.setting.Integer(
             "Number of pixels by which to expand or shrink",
             1,
             minval=1,
@@ -154,7 +154,7 @@ Specify the number of pixels to add or remove from object borders.
             ),
         )
 
-        self.wants_fill_holes = cellprofiler.setting.Binary(
+        self.wants_fill_holes = cellprofiler_core.setting.Binary(
             "Fill holes in objects so that all objects shrink to a single point?",
             False,
             doc="""\
@@ -169,7 +169,7 @@ erode an object with a hole to a ring in order to keep the hole. An
 object with two holes will be shrunk to two rings connected by a line in
 order to keep from breaking up the object or breaking the hole.
 """.format(
-                **{"NO": cellprofiler.setting.NO, "YES": cellprofiler.setting.YES}
+                **{"NO": "No", "YES": "Yes"}
             ),
         )
 
@@ -196,7 +196,7 @@ order to keep from breaking up the object or breaking the hole.
     def run(self, workspace):
         input_objects = workspace.object_set.get_objects(self.object_name.value)
 
-        output_objects = cellprofiler.object.Objects()
+        output_objects = cellprofiler_core.object.Objects()
 
         output_objects.segmented = self.do_labels(input_objects.segmented)
 
@@ -221,13 +221,13 @@ order to keep from breaking up the object or breaking the hole.
 
         workspace.object_set.add_objects(output_objects, self.output_object_name.value)
 
-        cellprofiler.modules.identify.add_object_count_measurements(
+        cellprofiler_core.modules.identify.add_object_count_measurements(
             workspace.measurements,
             self.output_object_name.value,
             numpy.max(output_objects.segmented),
         )
 
-        cellprofiler.modules.identify.add_object_location_measurements(
+        cellprofiler_core.modules.identify.add_object_location_measurements(
             workspace.measurements,
             self.output_object_name.value,
             output_objects.segmented,
@@ -319,48 +319,18 @@ order to keep from breaking up the object or breaking the hole.
         raise NotImplementedError("Unsupported operation: %s" % self.operation.value)
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 2:
-            inf = setting_values[4] == "Inf"
-
-            if setting_values[3] == "Expand":
-                operation = O_EXPAND_INF if inf else O_EXPAND
-            elif setting_values[3] == "Shrink":
-                operation = (
-                    O_SHRINK_INF
-                    if inf
-                    else O_DIVIDE
-                    if setting_values[4] == "0"
-                    else O_SHRINK
-                )
-
-            iterations = "1" if inf else setting_values[4]
-
-            wants_outlines = setting_values[5] != cellprofiler.setting.DO_NOT_USE
-
-            setting_values = setting_values[:2] + [
-                operation,
-                iterations,
-                cellprofiler.setting.NO,
-                cellprofiler.setting.YES if wants_outlines else cellprofiler.setting.NO,
-                setting_values[5],
-            ]
-
-            from_matlab = False
-
-            variable_revision_number = 1
-
         if variable_revision_number == 1:
             setting_values = setting_values[:-2]
 
             variable_revision_number = 2
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
-        columns = cellprofiler.modules.identify.get_object_measurement_columns(
+        columns = cellprofiler_core.modules.identify.get_object_measurement_columns(
             self.output_object_name.value
         )
         return columns
@@ -371,7 +341,7 @@ order to keep from breaking up the object or breaking the hole.
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         categories = []
-        if object_name == cellprofiler.measurement.IMAGE:
+        if object_name == cellprofiler_core.measurement.IMAGE:
             categories += ["Count"]
         if object_name == self.output_object_name:
             categories += ("Location", "Number")
@@ -385,7 +355,7 @@ order to keep from breaking up the object or breaking the hole.
         """
         result = []
 
-        if object_name == cellprofiler.measurement.IMAGE:
+        if object_name == cellprofiler_core.measurement.IMAGE:
             if category == "Count":
                 result += [self.output_object_name.value]
         if object_name == self.output_object_name:

@@ -75,10 +75,10 @@ import scipy.stats
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
 
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
@@ -109,7 +109,7 @@ F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 
-class MeasureColocalization(cellprofiler.module.Module):
+class MeasureColocalization(cellprofiler_core.module.Module):
     module_name = "MeasureColocalization"
     category = "Measurement"
     variable_revision_number = 3
@@ -118,15 +118,15 @@ class MeasureColocalization(cellprofiler.module.Module):
         """Create the initial settings for the module"""
         self.image_groups = []
         self.add_image(can_delete=False)
-        self.spacer_1 = cellprofiler.setting.Divider()
+        self.spacer_1 = cellprofiler_core.setting.Divider()
         self.add_image(can_delete=False)
-        self.image_count = cellprofiler.setting.HiddenCount(self.image_groups)
+        self.image_count = cellprofiler_core.setting.HiddenCount(self.image_groups)
 
-        self.add_image_button = cellprofiler.setting.DoSomething(
+        self.add_image_button = cellprofiler_core.setting.DoSomething(
             "", "Add another image", self.add_image
         )
-        self.spacer_2 = cellprofiler.setting.Divider()
-        self.thr = cellprofiler.setting.Float(
+        self.spacer_2 = cellprofiler_core.setting.Divider()
+        self.thr = cellprofiler_core.setting.Float(
             "Set threshold as percentage of maximum intensity for the images",
             15,
             minval=0,
@@ -134,7 +134,7 @@ class MeasureColocalization(cellprofiler.module.Module):
             doc="You may choose to measure colocalization metrics only for those pixels above a certain threshold. Select the threshold as a percentage of the maximum intensity of the above image [0-99].",
         )
 
-        self.images_or_objects = cellprofiler.setting.Choice(
+        self.images_or_objects = cellprofiler_core.setting.Choice(
             "Select where to measure correlation",
             [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS],
             doc="""\
@@ -154,14 +154,14 @@ All methods measure correlation on a pixel by pixel basis.
 
         self.object_groups = []
         self.add_object(can_delete=False)
-        self.object_count = cellprofiler.setting.HiddenCount(self.object_groups)
+        self.object_count = cellprofiler_core.setting.HiddenCount(self.object_groups)
 
-        self.spacer_2 = cellprofiler.setting.Divider(line=True)
+        self.spacer_2 = cellprofiler_core.setting.Divider(line=True)
 
-        self.add_object_button = cellprofiler.setting.DoSomething(
+        self.add_object_button = cellprofiler_core.setting.DoSomething(
             "", "Add another object", self.add_object
         )
-        self.do_all = cellprofiler.setting.Binary(
+        self.do_all = cellprofiler_core.setting.Binary(
             "Run all metrics?",
             True,
             doc="""\
@@ -170,57 +170,57 @@ and colocalization algorithms on your images and/or objects;
 otherwise select *{NO}* to pick which correlation and 
 colocalization algorithms to run.
 """.format(
-                **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
-        self.do_corr_and_slope = cellprofiler.setting.Binary(
+        self.do_corr_and_slope = cellprofiler_core.setting.Binary(
             "Calculate correlation and slope metrics?",
             True,
             doc="""\
 Select *{YES}* to run the Pearson correlation and slope metrics.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.do_manders = cellprofiler.setting.Binary(
+        self.do_manders = cellprofiler_core.setting.Binary(
             "Calculate the Manders coefficients?",
             True,
             doc="""\
 Select *{YES}* to run the Manders coefficients.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.do_rwc = cellprofiler.setting.Binary(
+        self.do_rwc = cellprofiler_core.setting.Binary(
             "Calculate the Rank Weighted Coloalization coefficients?",
             True,
             doc="""\
 Select *{YES}* to run the Rank Weighted Coloalization coefficients.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.do_overlap = cellprofiler.setting.Binary(
+        self.do_overlap = cellprofiler_core.setting.Binary(
             "Calculate the Overlap coefficients?",
             True,
             doc="""\
 Select *{YES}* to run the Overlap coefficients.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.do_costes = cellprofiler.setting.Binary(
+        self.do_costes = cellprofiler_core.setting.Binary(
             "Calculate the Manders coefficients using Costes auto threshold?",
             True,
             doc="""\
 Select *{YES}* to run the Manders coefficients using Costes auto threshold.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -230,14 +230,14 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present.
         """
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         if can_delete:
-            group.append("divider", cellprofiler.setting.Divider(line=False))
+            group.append("divider", cellprofiler_core.setting.Divider(line=False))
         group.append(
             "image_name",
-            cellprofiler.setting.ImageNameSubscriber(
+            cellprofiler_core.setting.ImageNameSubscriber(
                 "Select an image to measure",
-                cellprofiler.setting.NONE,
+                "None",
                 doc="Select an image to measure the correlation/colocalization in.",
             ),
         )
@@ -245,12 +245,12 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
         if (
             len(self.image_groups) == 0
         ):  # Insert space between 1st two images for aesthetics
-            group.append("extra_divider", cellprofiler.setting.Divider(line=False))
+            group.append("extra_divider", cellprofiler_core.setting.Divider(line=False))
 
         if can_delete:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this image", self.image_groups, group
                 ),
             )
@@ -259,15 +259,15 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
 
     def add_object(self, can_delete=True):
         """Add an object to the object_groups collection"""
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         if can_delete:
-            group.append("divider", cellprofiler.setting.Divider(line=False))
+            group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
         group.append(
             "object_name",
-            cellprofiler.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.ObjectNameSubscriber(
                 "Select an object to measure",
-                cellprofiler.setting.NONE,
+                "None",
                 doc="""\
 *(Used only when "Within objects" or "Both" are selected)*
 
@@ -278,7 +278,7 @@ Select the objects to be measured.""",
         if can_delete:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this object", self.object_groups, group
                 ),
             )
@@ -702,10 +702,10 @@ Select the objects to be measured.""",
             first_pixels = objects.crop_image_similarly(first_image.pixel_data)
             first_mask = objects.crop_image_similarly(first_image.mask)
         except ValueError:
-            first_pixels, m1 = cellprofiler.object.size_similarly(
+            first_pixels, m1 = cellprofiler_core.object.size_similarly(
                 labels, first_image.pixel_data
             )
-            first_mask, m1 = cellprofiler.object.size_similarly(
+            first_mask, m1 = cellprofiler_core.object.size_similarly(
                 labels, first_image.mask
             )
             first_mask[~m1] = False
@@ -713,10 +713,10 @@ Select the objects to be measured.""",
             second_pixels = objects.crop_image_similarly(second_image.pixel_data)
             second_mask = objects.crop_image_similarly(second_image.mask)
         except ValueError:
-            second_pixels, m1 = cellprofiler.object.size_similarly(
+            second_pixels, m1 = cellprofiler_core.object.size_similarly(
                 labels, second_image.pixel_data
             )
-            second_mask, m1 = cellprofiler.object.size_similarly(
+            second_mask, m1 = cellprofiler_core.object.size_similarly(
                 labels, second_image.mask
             )
             second_mask[~m1] = False
@@ -1335,72 +1335,72 @@ Select the objects to be measured.""",
                 if self.do_corr_and_slope:
                     columns += [
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_CORRELATION_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_SLOPE_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                     ]
                 if self.do_overlap:
                     columns += [
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_OVERLAP_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_K_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_K_FORMAT % (second_image, first_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                     ]
                 if self.do_manders:
                     columns += [
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_MANDERS_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_MANDERS_FORMAT % (second_image, first_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                     ]
 
                 if self.do_rwc:
                     columns += [
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_RWC_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_RWC_FORMAT % (second_image, first_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                     ]
                 if self.do_costes:
                     columns += [
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_COSTES_FORMAT % (first_image, second_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             F_COSTES_FORMAT % (second_image, first_image),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                     ]
 
@@ -1412,7 +1412,7 @@ Select the objects to be measured.""",
                             (
                                 object_name,
                                 F_CORRELATION_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
                         ]
                     if self.do_overlap:
@@ -1420,17 +1420,17 @@ Select the objects to be measured.""",
                             (
                                 object_name,
                                 F_OVERLAP_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_K_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_K_FORMAT % (second_image, first_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                         ]
                     if self.do_manders:
@@ -1438,12 +1438,12 @@ Select the objects to be measured.""",
                             (
                                 object_name,
                                 F_MANDERS_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_MANDERS_FORMAT % (second_image, first_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                         ]
                     if self.do_rwc:
@@ -1451,12 +1451,12 @@ Select the objects to be measured.""",
                             (
                                 object_name,
                                 F_RWC_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_RWC_FORMAT % (second_image, first_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                         ]
                     if self.do_costes:
@@ -1464,12 +1464,12 @@ Select the objects to be measured.""",
                             (
                                 object_name,
                                 F_COSTES_FORMAT % (first_image, second_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_COSTES_FORMAT % (second_image, first_image),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             ),
                         ]
         return columns
@@ -1477,10 +1477,10 @@ Select the objects to be measured.""",
     def get_categories(self, pipeline, object_name):
         """Return the categories supported by this module for the given object
 
-        object_name - name of the measured object or cellprofiler.measurement.IMAGE
+        object_name - name of the measured object or cellprofiler_core.measurement.IMAGE
         """
-        if (object_name == cellprofiler.measurement.IMAGE and self.wants_images()) or (
-            (object_name != cellprofiler.measurement.IMAGE)
+        if (object_name == cellprofiler_core.measurement.IMAGE and self.wants_images()) or (
+            (object_name != cellprofiler_core.measurement.IMAGE)
             and self.wants_objects()
             and (object_name in [x.object_name.value for x in self.object_groups])
         ):
@@ -1491,7 +1491,7 @@ Select the objects to be measured.""",
         if self.get_categories(pipeline, object_name) == [category]:
             results = []
             if self.do_corr_and_slope:
-                if object_name == cellprofiler.measurement.IMAGE:
+                if object_name == cellprofiler_core.measurement.IMAGE:
                     results += ["Correlation", "Slope"]
                 else:
                     results += ["Correlation"]
@@ -1518,14 +1518,9 @@ Select the objects to be measured.""",
         return result
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust the setting values for pipelines saved under old revisions"""
-        if from_matlab:
-            raise NotImplementedError(
-                "There is no automatic upgrade path for this module from MatLab pipelines."
-            )
-
         if variable_revision_number < 2:
             raise NotImplementedError(
                 "Automatic upgrade for this module is not supported in CellProfiler 3."
@@ -1539,7 +1534,7 @@ Select the objects to be measured.""",
             )
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

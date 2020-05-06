@@ -212,12 +212,12 @@ import numpy.ma
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
-import cellprofiler.module as cpm
-import cellprofiler.image as cpi
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpprefs
+import cellprofiler_core.module as cpm
+import cellprofiler_core.image as cpi
+import cellprofiler_core.pipeline as cpp
+import cellprofiler_core.setting as cps
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.preferences as cpprefs
 from centrosome.lapjv import lapjv
 import centrosome.filter as cpfilter
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -225,7 +225,7 @@ from centrosome.cpmorphology import centers_of_labels
 from centrosome.cpmorphology import associate_by_distance
 from centrosome.cpmorphology import all_connected_components
 from centrosome.index import Indexes
-from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler_core.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
 
 # if neighmovetrack is not available remove it from options
@@ -483,7 +483,7 @@ References
 
         self.object_name = cps.ObjectNameSubscriber(
             "Select the objects to track",
-            cps.NONE,
+            "None",
             doc="""Select the objects to be tracked by this module.""",
         )
 
@@ -3626,7 +3626,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             setting_values = setting_values + ["100", "100"]
@@ -3647,7 +3647,7 @@ Enter a name to give the color-coded image of tracked labels.""",
 
         if variable_revision_number == 4:
             # Added lifetime filtering: Wants filtering + min/max allowed lifetime
-            setting_values = setting_values + [cps.NO, cps.YES, "1", cps.NO, "100"]
+            setting_values = setting_values + ["No", "Yes", "1", "No", "100"]
             variable_revision_number = 5
 
         if variable_revision_number == 5:
@@ -3663,4 +3663,4 @@ Enter a name to give the color-coded image of tracked labels.""",
             # self.average_cell_diameter, self.advanced_parameters,self.drop_cost, self.area_weight
             variable_revision_number = 7
 
-        return setting_values, variable_revision_number, False
+        return setting_values, variable_revision_number

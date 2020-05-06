@@ -28,12 +28,12 @@ import matplotlib.figure
 import matplotlib.text
 import numpy
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.preferences
-import cellprofiler.setting
-from cellprofiler.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
+from cellprofiler_core.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 
 OI_OBJECTS = "Object"
 OI_IMAGE = "Image"
@@ -49,7 +49,7 @@ CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
 CMS_MANUAL = "Manual"
 
 
-class DisplayDataOnImage(cellprofiler.module.Module):
+class DisplayDataOnImage(cellprofiler_core.module.Module):
     module_name = "DisplayDataOnImage"
     category = "Data Tools"
     variable_revision_number = 6
@@ -61,13 +61,13 @@ class DisplayDataOnImage(cellprofiler.module.Module):
 
         You should create the setting variables for your module here:
             # Ask the user for the input image
-            self.image_name = cellprofiler.settings.ImageNameSubscriber(...)
+            self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler.settings.ImageNameProvider(...)
+            self.output_image = cellprofiler_core.settings.ImageNameProvider(...)
             # Ask the user for a parameter
-            self.smoothing_size = cellprofiler.settings.Float(...)
+            self.smoothing_size = cellprofiler_core.settings.Float(...)
         """
-        self.objects_or_image = cellprofiler.setting.Choice(
+        self.objects_or_image = cellprofiler_core.setting.Choice(
             "Display object or image measurements?",
             [OI_OBJECTS, OI_IMAGE],
             doc="""\
@@ -77,9 +77,9 @@ class DisplayDataOnImage(cellprofiler.module.Module):
             % globals(),
         )
 
-        self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
+        self.objects_name = cellprofiler_core.setting.ObjectNameSubscriber(
             "Select the input objects",
-            cellprofiler.setting.NONE,
+            "None",
             doc="""\
 *(Used only when displaying object measurements)*
 
@@ -92,9 +92,9 @@ Choose the name of objects identified by some previous module (such as
             if self.objects_or_image == OI_OBJECTS:
                 return self.objects_name.value
             else:
-                return cellprofiler.measurement.IMAGE
+                return cellprofiler_core.measurement.IMAGE
 
-        self.measurement = cellprofiler.setting.Measurement(
+        self.measurement = cellprofiler_core.setting.Measurement(
             "Measurement to display",
             object_fn,
             doc="""\
@@ -104,7 +104,7 @@ image measurement) or on the objects you selected.
 """,
         )
 
-        self.wants_image = cellprofiler.setting.Binary(
+        self.wants_image = cellprofiler_core.setting.Binary(
             "Display background image?",
             True,
             doc="""\
@@ -117,9 +117,9 @@ display the measurements on top of a background image or "No"
 to display the measurements on a black background.""",
         )
 
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the image on which to display the measurements",
-            cellprofiler.setting.NONE,
+            "None",
             doc="""\
 Choose the image to be displayed behind the measurements.
 This can be any image created or loaded by a previous module.
@@ -127,7 +127,7 @@ If you have chosen not to display the background image, the image
 will only be used to determine the dimensions of the displayed image.""",
         )
 
-        self.color_or_text = cellprofiler.setting.Choice(
+        self.color_or_text = cellprofiler_core.setting.Choice(
             "Display mode",
             [CT_TEXT, CT_COLOR],
             doc="""\
@@ -144,7 +144,7 @@ default color map.
             % globals(),
         )
 
-        self.colormap = cellprofiler.setting.Colormap(
+        self.colormap = cellprofiler_core.setting.Colormap(
             "Color map",
             doc="""\
 *(Used only when displaying object measurements)*
@@ -156,13 +156,13 @@ of the available colormaps.
 .. _this page: http://matplotlib.org/users/colormaps.html
             """,
         )
-        self.text_color = cellprofiler.setting.Color(
+        self.text_color = cellprofiler_core.setting.Color(
             "Text color",
             "red",
             doc="""This is the color that will be used when displaying the text.""",
         )
 
-        self.display_image = cellprofiler.setting.ImageNameProvider(
+        self.display_image = cellprofiler_core.setting.ImageNameProvider(
             "Name the output image that has the measurements displayed",
             "DisplayImage",
             doc="""\
@@ -172,21 +172,21 @@ modules (such as **SaveImages**).
 """,
         )
 
-        self.font_size = cellprofiler.setting.Integer(
+        self.font_size = cellprofiler_core.setting.Integer(
             "Font size (points)",
             10,
             minval=1,
             doc="""Set the font size of the letters to be displayed.""",
         )
 
-        self.decimals = cellprofiler.setting.Integer(
+        self.decimals = cellprofiler_core.setting.Integer(
             "Number of decimals",
             2,
             minval=0,
             doc="""Set how many decimals to be displayed, for example 2 decimals for 0.01; 3 decimals for 0.001.""",
         )
 
-        self.saved_image_contents = cellprofiler.setting.Choice(
+        self.saved_image_contents = cellprofiler_core.setting.Choice(
             "Image elements to save",
             [E_IMAGE, E_FIGURE, E_AXES],
             doc="""\
@@ -200,7 +200,7 @@ This setting controls the level of annotation on the image:
             % globals(),
         )
 
-        self.offset = cellprofiler.setting.Integer(
+        self.offset = cellprofiler_core.setting.Integer(
             "Annotation offset (in pixels)",
             0,
             doc="""\
@@ -210,7 +210,7 @@ the object. This setting adds a specified offset to the text, in a random
 direction.""",
         )
 
-        self.color_map_scale_choice = cellprofiler.setting.Choice(
+        self.color_map_scale_choice = cellprofiler_core.setting.Choice(
             "Color map scale",
             [CMS_USE_MEASUREMENT_RANGE, CMS_MANUAL],
             doc="""\
@@ -232,7 +232,7 @@ current image or manually-entered extremes.
 """
             % globals(),
         )
-        self.color_map_scale = cellprofiler.setting.FloatRange(
+        self.color_map_scale = cellprofiler_core.setting.FloatRange(
             "Color map range",
             value=(0.0, 1.0),
             doc="""\
@@ -246,7 +246,7 @@ color map.
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
@@ -401,14 +401,14 @@ color map.
                 fig.subplots_adjust(0.1, 0.1, 0.9, 0.9, 0, 0)
 
         pixel_data = figure_to_image(fig, dpi=fig.dpi)
-        image = cellprofiler.image.Image(pixel_data)
+        image = cellprofiler_core.image.Image(pixel_data)
         workspace.image_set.add(self.display_image.value, image)
 
     def run_as_data_tool(self, workspace):
         # Note: workspace.measurements.image_set_number contains the image
         #    number that should be displayed.
         import wx
-        from cellprofiler.modules import loadimages as LI
+        from cellprofiler_core.modules import loadimages as LI
         import os.path
 
         im_id = self.image_name.value
@@ -419,7 +419,7 @@ color map.
         filename_feature = "_".join((LI.C_FILE_NAME, image_name))
         if not all(
             [
-                m.has_feature(cellprofiler.measurement.IMAGE, f)
+                m.has_feature(cellprofiler_core.measurement.IMAGE, f)
                 for f in (pathname_feature, filename_feature)
             ]
         ):
@@ -450,7 +450,7 @@ color map.
         title = "%s_%s" % (
             self.objects_name.value
             if self.objects_or_image == OI_OBJECTS
-            else cellprofiler.measurement.IMAGE,
+            else cellprofiler_core.measurement.IMAGE,
             self.measurement.value,
         )
 
@@ -472,8 +472,8 @@ color map.
             if pixel_data.ndim == 3:
                 pixel_data = numpy.sum(pixel_data, 2) / pixel_data.shape[2]
             colormap_name = self.colormap.value
-            if colormap_name == cellprofiler.setting.DEFAULT:
-                colormap_name = cellprofiler.preferences.get_default_colormap()
+            if colormap_name == "Default":
+                colormap_name = cellprofiler_core.preferences.get_default_colormap()
             colormap = matplotlib.cm.get_cmap(colormap_name)
             values = workspace.display_data.values
             vmask = workspace.display_data.mask
@@ -515,30 +515,8 @@ color map.
                 axes.add_artist(text)
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and (variable_revision_number == 2):
-            object_name, category, feature_nbr, image_name, size_scale, display_image, data_image, dpi_to_save, saved_image_contents = (
-                setting_values
-            )
-            objects_or_image = (
-                OI_IMAGE
-                if object_name == cellprofiler.measurement.IMAGE
-                else OI_OBJECTS
-            )
-            measurement = "_".join((category, feature_nbr, image_name, size_scale))
-            setting_values = [
-                objects_or_image,
-                object_name,
-                measurement,
-                display_image,
-                "red",
-                data_image,
-                dpi_to_save,
-                saved_image_contents,
-            ]
-            from_matlab = False
-            variable_revision_number = 1
         if variable_revision_number == 1:
             objects_or_image, objects_name, measurement, image_name, text_color, display_image, dpi, saved_image_contents = (
                 setting_values
@@ -565,19 +543,19 @@ color map.
             # Added color map mode
             setting_values = setting_values + [
                 CT_TEXT,
-                cellprofiler.preferences.get_default_colormap(),
+                cellprofiler_core.preferences.get_default_colormap(),
             ]
             variable_revision_number = 4
 
         if variable_revision_number == 4:
             # added wants_image
-            setting_values = setting_values + [cellprofiler.setting.YES]
+            setting_values = setting_values + ["Yes"]
             variable_revision_number = 5
         if variable_revision_number == 5:
             # added color_map_scale_choice and color_map_scale
             setting_values = setting_values + [CMS_USE_MEASUREMENT_RANGE, "0.0,1.0"]
             variable_revision_number = 6
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 if __name__ == "__main__":

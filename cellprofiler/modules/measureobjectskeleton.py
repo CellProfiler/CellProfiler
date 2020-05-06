@@ -70,12 +70,12 @@ import scipy.ndimage as scind
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.ndimage import grey_dilation, grey_erosion
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
+import cellprofiler_core.image as cpi
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.object as cpo
+import cellprofiler_core.preferences as cpprefs
+import cellprofiler_core.setting as cps
 
 """The measurement category"""
 C_OBJSKELETON = "ObjectSkeleton"
@@ -109,7 +109,7 @@ class MeasureObjectSkeleton(cpm.Module):
         """Create the UI settings for the module"""
         self.seed_objects_name = cps.ObjectNameSubscriber(
             "Select the seed objects",
-            cps.NONE,
+            "None",
             doc="""\
 Select the previously identified objects that you want to use as the
 seeds for measuring branches and distances. Branches and trunks are assigned
@@ -119,7 +119,7 @@ instead are usually objects of varying sizes.""",
 
         self.image_name = cps.ImageNameSubscriber(
             "Select the skeletonized image",
-            cps.NONE,
+            "None",
             doc="""\
 Select the skeletonized image of the dendrites and/or axons as produced
 by the **Morph** module’s *Skel* operation.""",
@@ -178,7 +178,7 @@ relationships between vertices (trunks, branchpoints and endpoints)."""
 
         self.intensity_image_name = cps.ImageNameSubscriber(
             "Intensity image",
-            cps.NONE,
+            "None",
             doc="""\
 Select the image to be used to calculate
 the total intensity along the edges between the vertices (trunks, branchpoints, and endpoints).""",
@@ -188,14 +188,14 @@ the total intensity along the edges between the vertices (trunks, branchpoints, 
             "File output directory",
             doc="Select the directory you want to save the graph relationships to.",
             dir_choices=[
-                cps.DEFAULT_OUTPUT_FOLDER_NAME,
-                cps.DEFAULT_INPUT_FOLDER_NAME,
-                cps.ABSOLUTE_FOLDER_NAME,
-                cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cps.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cpprefs.DEFAULT_OUTPUT_FOLDER_NAME,
+                cpprefs.DEFAULT_INPUT_FOLDER_NAME,
+                cpprefs.ABSOLUTE_FOLDER_NAME,
+                cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME,
             ],
         )
-        self.directory.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
+        self.directory.dir_choice = cpprefs.DEFAULT_OUTPUT_FOLDER_NAME
 
         self.vertex_file_name = cps.Text(
             "Vertex file name",
@@ -684,43 +684,35 @@ The file has the following columns:
             return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Provide backwards compatibility for old pipelines
 
         setting_values - the strings to be fed to settings
         variable_revision_number - the version number at time of saving
         module_name - name of original module
-        from_matlab - true if a matlab pipeline, false if pyCP
         """
-        if from_matlab and variable_revision_number == 1:
-            #
-            # Added "Wants branchpoint image" and branchpoint image name
-            #
-            setting_values = setting_values + [cps.NO, "Branchpoints"]
-            from_matlab = False
-            variable_revision_number = 1
-        if not from_matlab and variable_revision_number == 1:
+        if variable_revision_number == 1:
             #
             # Added hole size questions
             #
-            setting_values = setting_values + [cps.YES, "10"]
+            setting_values = setting_values + ["Yes", "10"]
             variable_revision_number = 2
-        if not from_matlab and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Added graph stuff
             #
             setting_values = setting_values + [
-                cps.NO,
-                cps.NONE,
+                "No",
+                "None",
                 cps.DirectoryPath.static_join_string(
-                    cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.NONE
+                    cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, "None"
                 ),
-                cps.NONE,
-                cps.NONE,
+                "None",
+                "None",
             ]
             variable_revision_number = 3
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def make_objskeleton_graph(
         self, skeleton, skeleton_labels, trunks, branchpoints, endpoints, image

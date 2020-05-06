@@ -41,9 +41,9 @@ See also
 
 import numpy as np
 
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
-from cellprofiler.modules import identify as I
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
+from cellprofiler_core.modules import identify as I
 
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"
@@ -58,7 +58,7 @@ class IdentifyObjectsManually(I.Identify):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="""Choose the name of the image to display in the object selection user interface.""",
         )
 
@@ -154,23 +154,14 @@ refer to your objects in subsequent modules.""",
             return dialog_box.labels[0]
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 2:
-            image_name, object_name, max_resolution, save_outlines = setting_values
-            wants_outlines = (
-                cps.YES if save_outlines.lower() == cps.DO_NOT_USE.lower() else cps.NO
-            )
-            setting_values = [image_name, object_name, wants_outlines, save_outlines]
-            variable_revision_number = 1
-            from_matlab = False
-
         if variable_revision_number == 1:
             setting_values = setting_values[:-2]
 
             variable_revision_number = 2
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_measurement_columns(self, pipeline):
         """Return database info on measurements made in module

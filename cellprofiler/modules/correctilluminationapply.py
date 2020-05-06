@@ -30,11 +30,9 @@ See also **CorrectIlluminationCalculate**.
 
 import numpy as np
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
-
-from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR
+import cellprofiler_core.image as cpi
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
 
 ######################################
 #
@@ -76,7 +74,7 @@ class CorrectIlluminationApply(cpm.Module):
     def add_image(self, can_delete=True):
         """Add an image and its settings to the list of images"""
         image_name = cps.ImageNameSubscriber(
-            "Select the input image", cps.NONE, doc="Select the image to be corrected."
+            "Select the input image", "None", doc="Select the image to be corrected."
         )
 
         corrected_image_name = cps.ImageNameProvider(
@@ -87,7 +85,7 @@ class CorrectIlluminationApply(cpm.Module):
 
         illum_correct_function_image_name = cps.ImageNameSubscriber(
             "Select the illumination function",
-            cps.NONE,
+            "None",
             doc="""\
 Select the illumination correction function image that will be used to
 carry out the correction. This image is usually produced by another
@@ -112,11 +110,11 @@ somewhat empirical.
 -  *%(DOS_SUBTRACT)s:* Use this option if the background signal is
    significant relative to the real signal coming from the cells. If you
    created the illumination correction function using
-   *%(IC_BACKGROUND)s*, then you will want to choose
+   *Background*, then you will want to choose
    *%(DOS_SUBTRACT)s* here.
 -  *%(DOS_DIVIDE)s:* Choose this option if the signal to background
    ratio is high (the cells are stained very strongly). If you created
-   the illumination correction function using *%(IC_REGULAR)s*, then
+   the illumination correction function using *Regular*, then
    you will want to choose *%(DOS_DIVIDE)s* here.
 """
             % globals(),
@@ -144,7 +142,7 @@ somewhat empirical.
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
@@ -339,7 +337,7 @@ somewhat empirical.
                 )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust settings based on revision # of save file
 
@@ -348,21 +346,15 @@ somewhat empirical.
         variable_revision_number - the variable revision number of the module
                                    at the time of saving
         module_name - the name of the module that did the saving
-        from_matlab - True if saved in CP Matlab, False if saved in pyCP
 
         returns the updated setting_values, revision # and matlab flag
         """
-        # No SVN records of revisions 1 & 2
-        if from_matlab and variable_revision_number == 3:
-            # Same order as pyCP
-            from_matlab = False
-            variable_revision_number = 1
-        if not from_matlab and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Added multiple settings, but, if you only had 1,
             # the order didn't change
             variable_revision_number = 2
 
-        if not from_matlab and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # If revision < 2, remove rescaling option; warning user and suggest RescaleIntensity instead.
             # Keep the prior selection around for the validation warning.
             SLOT_RESCALE_OPTION = 4
@@ -378,4 +370,4 @@ somewhat empirical.
             for i, image in enumerate(self.images):
                 image.rescale_option = RE_NONE
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

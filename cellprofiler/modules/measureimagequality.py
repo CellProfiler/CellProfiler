@@ -12,11 +12,11 @@ import numpy
 import scipy.linalg.basic
 import scipy.ndimage
 
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.preferences
-import cellprofiler.setting
-from cellprofiler.modules import identify, loadimages
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
+from cellprofiler_core.modules import identify, loadimages
 
 __doc__ = """\
 MeasureImageQuality
@@ -204,13 +204,13 @@ SETTINGS_PER_GROUP_V3 = 11
 IMAGE_GROUP_SETTING_OFFSET = 2
 
 
-class MeasureImageQuality(cellprofiler.module.Module):
+class MeasureImageQuality(cellprofiler_core.module.Module):
     module_name = "MeasureImageQuality"
     category = "Measurement"
     variable_revision_number = 5
 
     def create_settings(self):
-        self.images_choice = cellprofiler.setting.Choice(
+        self.images_choice = cellprofiler_core.setting.Choice(
             text="Calculate metrics for which images?",
             choices=[O_ALL_LOADED, O_SELECT],
             doc="""\
@@ -227,27 +227,27 @@ calculated.
             ),
         )
 
-        self.divider = cellprofiler.setting.Divider(line=True)
+        self.divider = cellprofiler_core.setting.Divider(line=True)
 
         self.image_groups = []
-        self.image_count = cellprofiler.setting.HiddenCount(
+        self.image_count = cellprofiler_core.setting.HiddenCount(
             self.image_groups, "Image count"
         )
         self.add_image_group(can_remove=False)
-        self.add_image_button = cellprofiler.setting.DoSomething(
+        self.add_image_button = cellprofiler_core.setting.DoSomething(
             "", "Add another image list", self.add_image_group
         )
 
     def add_image_group(self, can_remove=True):
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
 
         group.can_remove = can_remove
         if can_remove:
-            group.append("divider", cellprofiler.setting.Divider(line=True))
+            group.append("divider", cellprofiler_core.setting.Divider(line=True))
 
         group.append(
             "image_names",
-            cellprofiler.setting.ImageNameSubscriberMultiChoice(
+            cellprofiler_core.setting.ImageNameSubscriberMultiChoice(
                 text="Select the images to measure",
                 doc="""\
 *(Used only if “{O_SELECT}” is chosen for selecting images)*
@@ -263,7 +263,7 @@ images, the list includes the images that were created by prior modules.
 
         group.append(
             "include_image_scalings",
-            cellprofiler.setting.Binary(
+            cellprofiler_core.setting.Binary(
                 text="Include the image rescaling value?",
                 value=True,
                 doc="""\
@@ -273,14 +273,14 @@ metric. This value is recorded only for images loaded using the
 rescaled by the same value, given that some acquisition device vendors may
 output this value differently. See **NamesAndTypes** for more
 information.""".format(
-                    **{"YES": cellprofiler.setting.YES}
+                    **{"YES": "Yes"}
                 ),
             ),
         )
 
         group.append(
             "check_blur",
-            cellprofiler.setting.Binary(
+            cellprofiler_core.setting.Binary(
                 text="Calculate blur metrics?",
                 value=True,
                 doc="""\
@@ -288,19 +288,19 @@ Select *{YES}* to compute a series of blur metrics. The blur metrics
 are described in the overall help for this module (select the module in
 the pipeline and press the "?" button).
 """.format(
-                    **{"YES": cellprofiler.setting.YES}
+                    **{"YES": "Yes"}
                 ),
             ),
         )
 
         group.append(
             "include_local_blur",
-            cellprofiler.setting.Binary(text="Include local blur metrics?", value=True),
+            cellprofiler_core.setting.Binary(text="Include local blur metrics?", value=True),
         )
 
         group.scale_groups = []
 
-        group.scale_count = cellprofiler.setting.HiddenCount(
+        group.scale_count = cellprofiler_core.setting.HiddenCount(
             group.scale_groups, "Scale count"
         )
 
@@ -311,7 +311,7 @@ the pipeline and press the "?" button).
 
         group.append(
             "add_scale_button",
-            cellprofiler.setting.DoSomething(
+            cellprofiler_core.setting.DoSomething(
                 "",
                 "Add another scale",
                 add_scale_group,
@@ -322,7 +322,7 @@ the pipeline and press the "?" button).
 
         group.append(
             "check_saturation",
-            cellprofiler.setting.Binary(
+            cellprofiler_core.setting.Binary(
                 text="Calculate saturation metrics?",
                 value=True,
                 doc="""\
@@ -340,7 +340,7 @@ than usual *{F_PERCENT_MAXIMAL}* will be observed, and if there are
 no objects, the *{F_PERCENT_MINIMAL}* value will increase.
 """.format(
                     **{
-                        "YES": cellprofiler.setting.YES,
+                        "YES": "Yes",
                         "F_PERCENT_MAXIMAL": F_PERCENT_MAXIMAL,
                         "F_PERCENT_MINIMAL": F_PERCENT_MINIMAL,
                     }
@@ -350,7 +350,7 @@ no objects, the *{F_PERCENT_MINIMAL}* value will increase.
 
         group.append(
             "check_intensity",
-            cellprofiler.setting.Binary(
+            cellprofiler_core.setting.Binary(
                 text="Calculate intensity metrics?",
                 value=True,
                 doc="""\
@@ -359,14 +359,14 @@ mean, maximum, minimum, standard deviation and median absolute deviation
 of pixel intensities. These measures are identical to those calculated
 by **MeasureImageIntensity**.
 """.format(
-                    **{"YES": cellprofiler.setting.YES}
+                    **{"YES": "Yes"}
                 ),
             ),
         )
 
         group.append(
             "calculate_threshold",
-            cellprofiler.setting.Binary(
+            cellprofiler_core.setting.Binary(
                 text="Calculate thresholds?",
                 value=True,
                 doc="""\
@@ -379,7 +379,7 @@ artifacts.""",
 
         group.append(
             "use_all_threshold_methods",
-            cellprofiler.setting.Binary(
+            cellprofiler_core.setting.Binary(
                 text="Use all thresholding methods?",
                 value=False,
                 doc="""\
@@ -399,7 +399,7 @@ See the **IdentifyPrimaryObjects** module for more information on
 thresholding methods.
 """.format(
                     **{
-                        "YES": cellprofiler.setting.YES,
+                        "YES": "Yes",
                         "TM_OTSU": centrosome.threshold.TM_OTSU,
                         "TM_MOG": centrosome.threshold.TM_MOG,
                     }
@@ -409,7 +409,7 @@ thresholding methods.
 
         group.threshold_groups = []
 
-        group.threshold_count = cellprofiler.setting.HiddenCount(
+        group.threshold_count = cellprofiler_core.setting.HiddenCount(
             group.threshold_groups, "Threshold count"
         )
 
@@ -420,7 +420,7 @@ thresholding methods.
 
         group.append(
             "add_threshold_button",
-            cellprofiler.setting.DoSomething(
+            cellprofiler_core.setting.DoSomething(
                 "",
                 "Add another threshold method",
                 add_threshold_group,
@@ -432,7 +432,7 @@ thresholding methods.
         if can_remove:
             group.append(
                 "remove_button",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this image list", self.image_groups, group
                 ),
             )
@@ -440,16 +440,16 @@ thresholding methods.
         return group
 
     def add_scale_group(self, image_group, can_remove=True):
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         image_group.scale_groups.append(group)
 
         group.image_names = image_group.image_names
 
-        group.append("divider", cellprofiler.setting.Divider(line=False))
+        group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
         group.append(
             "scale",
-            cellprofiler.setting.Integer(
+            cellprofiler_core.setting.Integer(
                 text="Spatial scale for blur measurements",
                 value=len(image_group.scale_groups) * 10 + 10,
                 doc="""\
@@ -478,7 +478,7 @@ multiple window sizes by selecting additional scales for each image.
         if can_remove:
             group.append(
                 "remove_button",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this scale", image_group.scale_groups, group
                 ),
             )
@@ -490,11 +490,11 @@ multiple window sizes by selecting additional scales for each image.
             image_group.threshold_groups.append(group)
             group.image_names = image_group.image_names
 
-        group.append("divider", cellprofiler.setting.Divider(line=False))
+        group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
         group.append(
             "threshold_method",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 "Select a thresholding method",
                 centrosome.threshold.TM_METHODS,
                 centrosome.threshold.TM_OTSU,
@@ -509,7 +509,7 @@ help on thresholding, see the **Identify** modules.""",
 
         group.append(
             "object_fraction",
-            cellprofiler.setting.Float(
+            cellprofiler_core.setting.Float(
                 text="Typical fraction of the image covered by objects",
                 value=0.1,
                 minval=0,
@@ -528,7 +528,7 @@ covered by objects.
 
         group.append(
             "two_class_otsu",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 text="Two-class or three-class thresholding?",
                 choices=[identify.O_TWO_CLASS, identify.O_THREE_CLASS],
                 doc="""\
@@ -560,7 +560,7 @@ thresholding may perform worse than two-class.
 
         group.append(
             "use_weighted_variance",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 text="Minimize the weighted variance or the entropy?",
                 choices=[identify.O_WEIGHTED_VARIANCE, identify.O_ENTROPY],
                 doc="""\
@@ -571,7 +571,7 @@ the threshold.""",
 
         group.append(
             "assign_middle_to_foreground",
-            cellprofiler.setting.Choice(
+            cellprofiler_core.setting.Choice(
                 text="Assign pixels in the middle intensity class to the foreground or the background?",
                 choices=[identify.O_FOREGROUND, identify.O_BACKGROUND],
                 doc="""\
@@ -593,7 +593,7 @@ to the foreground pixels or the background pixels.
         if can_remove and image_group is not None:
             group.append(
                 "remove_button",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "",
                     "Remove this threshold method",
                     image_group.threshold_groups,
@@ -723,7 +723,7 @@ to the foreground pixels or the background pixels.
         if self.images_choice.value == O_SELECT:
             for image_group in self.image_groups:
                 if not image_group.image_names.get_selections():
-                    raise cellprofiler.setting.ValidationError(
+                    raise cellprofiler_core.setting.ValidationError(
                         "Please choose at least one image", image_group.image_names
                     )
 
@@ -735,13 +735,13 @@ to the foreground pixels or the background pixels.
         for m, s in zip(measurements, sources):
             m = (m[0], m[1])
             if m in d:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Measurement {} for image {} made twice.".format(m[1], s[1]), s[0]
                 )
             d[m] = True
 
     def prepare_run(self, workspace):
-        if cellprofiler.preferences.get_headless():
+        if cellprofiler_core.preferences.get_headless():
             logger.warning(
                 "Experiment-wide values for mean threshold, etc calculated by MeasureImageQuality may be incorrect if the run is split into subsets of images."
             )
@@ -789,11 +789,11 @@ to the foreground pixels or the background pixels.
                 for image_name in selected_images:
                     columns.append(
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             "{}_{}_{}".format(
                                 C_IMAGE_QUALITY, loadimages.C_SCALING, image_name
                             ),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         )
                     )
                     sources.append([image_group.include_image_scalings, image_name])
@@ -803,22 +803,22 @@ to the foreground pixels or the background pixels.
                 for image_name in selected_images:
                     columns.append(
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             "{}_{}_{}".format(
                                 C_IMAGE_QUALITY, F_FOCUS_SCORE, image_name
                             ),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         )
                     )
                     sources.append([image_group.check_blur, image_name])
 
                     columns.append(
                         (
-                            cellprofiler.measurement.IMAGE,
+                            cellprofiler_core.measurement.IMAGE,
                             "{}_{}_{}".format(
                                 C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE, image_name
                             ),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         )
                     )
                     sources.append([image_group.check_blur, image_name])
@@ -826,28 +826,28 @@ to the foreground pixels or the background pixels.
                     for scale_group in image_group.scale_groups:
                         columns.append(
                             (
-                                cellprofiler.measurement.IMAGE,
+                                cellprofiler_core.measurement.IMAGE,
                                 "{}_{}_{}_{:d}".format(
                                     C_IMAGE_QUALITY,
                                     F_LOCAL_FOCUS_SCORE,
                                     image_name,
                                     scale_group.scale.value,
                                 ),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
                         )
                         sources.append([scale_group.scale, image_name])
 
                         columns.append(
                             (
-                                cellprofiler.measurement.IMAGE,
+                                cellprofiler_core.measurement.IMAGE,
                                 "{}_{}_{}_{:d}".format(
                                     C_IMAGE_QUALITY,
                                     F_CORRELATION,
                                     image_name,
                                     scale_group.scale.value,
                                 ),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
                         )
                         sources.append([scale_group.scale, image_name])
@@ -862,11 +862,11 @@ to the foreground pixels or the background pixels.
                         measurement_name = image_name
                         columns.append(
                             (
-                                cellprofiler.measurement.IMAGE,
+                                cellprofiler_core.measurement.IMAGE,
                                 "{}_{}_{}".format(
                                     C_IMAGE_QUALITY, feature, measurement_name
                                 ),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
                         )
                         sources.append([image_group.check_intensity, image_name])
@@ -877,9 +877,9 @@ to the foreground pixels or the background pixels.
                     for feature in SATURATION_FEATURES:
                         columns.append(
                             (
-                                cellprofiler.measurement.IMAGE,
+                                cellprofiler_core.measurement.IMAGE,
                                 "{}_{}_{}".format(C_IMAGE_QUALITY, feature, image_name),
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
                         )
                         sources.append([image_group.check_saturation, image_name])
@@ -892,9 +892,9 @@ to the foreground pixels or the background pixels.
                         feature = threshold_group.threshold_feature_name(image_name)
                         columns.append(
                             (
-                                cellprofiler.measurement.IMAGE,
+                                cellprofiler_core.measurement.IMAGE,
                                 feature,
-                                cellprofiler.measurement.COLTYPE_FLOAT,
+                                cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
                         )
                         for agg in ("Mean", "Median", "Std"):
@@ -903,11 +903,11 @@ to the foreground pixels or the background pixels.
                             )
                             columns.append(
                                 (
-                                    cellprofiler.measurement.EXPERIMENT,
+                                    cellprofiler_core.measurement.EXPERIMENT,
                                     feature,
-                                    cellprofiler.measurement.COLTYPE_FLOAT,
+                                    cellprofiler_core.measurement.COLTYPE_FLOAT,
                                     {
-                                        cellprofiler.measurement.MCA_AVAILABLE_POST_RUN: True
+                                        cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN: True
                                     },
                                 )
                             )
@@ -927,17 +927,17 @@ to the foreground pixels or the background pixels.
             return columns
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler.measurement.IMAGE:
+        if object_name == cellprofiler_core.measurement.IMAGE:
             return [C_IMAGE_QUALITY]
         elif (
-            object_name == cellprofiler.measurement.EXPERIMENT and self.any_threshold()
+            object_name == cellprofiler_core.measurement.EXPERIMENT and self.any_threshold()
         ):
             return [C_IMAGE_QUALITY]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler.measurement.IMAGE
+            object_name == cellprofiler_core.measurement.IMAGE
             and category == C_IMAGE_QUALITY
         ):
             result = []
@@ -972,7 +972,7 @@ to the foreground pixels or the background pixels.
 
             return result
         elif (
-            object_name == cellprofiler.measurement.EXPERIMENT
+            object_name == cellprofiler_core.measurement.EXPERIMENT
             and category == C_IMAGE_QUALITY
         ):
             return [
@@ -984,7 +984,7 @@ to the foreground pixels or the background pixels.
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
 
-        if object_name != cellprofiler.measurement.IMAGE or category != C_IMAGE_QUALITY:
+        if object_name != cellprofiler_core.measurement.IMAGE or category != C_IMAGE_QUALITY:
             return []
         if measurement in (
             F_FOCUS_SCORE,
@@ -1034,7 +1034,7 @@ to the foreground pixels or the background pixels.
     ):
         """Get the scales (window_sizes) for the given measurement"""
         if (
-            object_name == cellprofiler.measurement.IMAGE
+            object_name == cellprofiler_core.measurement.IMAGE
             and category == C_IMAGE_QUALITY
         ):
             if measurement in (F_LOCAL_FOCUS_SCORE, F_CORRELATION):
@@ -1116,7 +1116,7 @@ to the foreground pixels or the background pixels.
             value = workspace.image_set.get_image(image_name).scale
             if not value:  # Set to NaN if not defined, such as for derived images
                 value = numpy.NaN
-            workspace.add_measurement(cellprofiler.measurement.IMAGE, feature, value)
+            workspace.add_measurement(cellprofiler_core.measurement.IMAGE, feature, value)
             result += [["{} scaling".format(image_name), value]]
         return result
 
@@ -1148,7 +1148,7 @@ to the foreground pixels or the background pixels.
                 # Create a labels matrix that grids the image to the dimensions
                 # of the window size
                 #
-                if image.dimensions is 2:
+                if image.dimensions == 2:
                     i, j = numpy.mgrid[0 : shape[0], 0 : shape[1]].astype(float)
                     m, n = (numpy.array(shape) + scale - 1) // scale
                     i = (i * float(m) / float(shape[0])).astype(int)
@@ -1212,7 +1212,7 @@ to the foreground pixels or the background pixels.
                 C_IMAGE_QUALITY, F_FOCUS_SCORE, image_name
             )
             workspace.add_measurement(
-                cellprofiler.measurement.IMAGE, focus_score_name, focus_score
+                cellprofiler_core.measurement.IMAGE, focus_score_name, focus_score
             )
             result += [["{} focus score @{:d}".format(image_name, scale), focus_score]]
 
@@ -1222,7 +1222,7 @@ to the foreground pixels or the background pixels.
                     C_IMAGE_QUALITY, F_LOCAL_FOCUS_SCORE, image_name, scale
                 )
                 workspace.add_measurement(
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     local_focus_score_name,
                     local_focus_score[idx],
                 )
@@ -1255,7 +1255,7 @@ to the foreground pixels or the background pixels.
                 if not numpy.isfinite(value):
                     value = 0.0
                 workspace.add_measurement(
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     "{}_{}_{}_{:d}".format(
                         C_IMAGE_QUALITY, F_CORRELATION, image_name, scale
                     ),
@@ -1298,10 +1298,10 @@ to the foreground pixels or the background pixels.
                 C_IMAGE_QUALITY, F_PERCENT_MINIMAL, image_name
             )
             workspace.add_measurement(
-                cellprofiler.measurement.IMAGE, percent_maximal_name, percent_maximal
+                cellprofiler_core.measurement.IMAGE, percent_maximal_name, percent_maximal
             )
             workspace.add_measurement(
-                cellprofiler.measurement.IMAGE, percent_minimal_name, percent_minimal
+                cellprofiler_core.measurement.IMAGE, percent_minimal_name, percent_minimal
             )
             result += [
                 ["{} maximal".format(image_name), "{:.1f} %".format(percent_maximal)],
@@ -1392,7 +1392,7 @@ to the foreground pixels or the background pixels.
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-            if image.dimensions is 3:
+            if image.dimensions == 3:
                 # TODO: calculate "radial power spectrum" for volumes.
                 continue
 
@@ -1429,7 +1429,7 @@ to the foreground pixels or the background pixels.
                 powerslope = 0
 
             workspace.add_measurement(
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 "{}_{}_{}".format(C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE, image_name),
                 powerslope,
             )
@@ -1495,7 +1495,7 @@ to the foreground pixels or the background pixels.
                 else:
                     threshold_description = threshold_method + " " + scale
                 workspace.add_measurement(
-                    cellprofiler.measurement.IMAGE,
+                    cellprofiler_core.measurement.IMAGE,
                     threshold_group.threshold_feature_name(image_name),
                     global_threshold,
                 )
@@ -1526,7 +1526,7 @@ to the foreground pixels or the background pixels.
             for image_name in self.images_to_process(image_group, workspace):
                 for threshold_group in all_threshold_groups:
                     values = m.get_all_measurements(
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         threshold_group.threshold_feature_name(image_name),
                     )
 
@@ -1628,130 +1628,39 @@ to the foreground pixels or the background pixels.
             # Get a dictionary of image name to (module, setting)
             #
             image_providers = pipeline.get_provider_dictionary(
-                cellprofiler.setting.IMAGE_GROUP, self
+                "imagegroup", self
             )
             for image_name in image_providers:
                 for module, setting in image_providers[image_name]:
                     if module.is_load_module() and (
                         (
                             not isinstance(
-                                setting, cellprofiler.setting.ImageNameProvider
+                                setting, cellprofiler_core.setting.ImageNameProvider
                             )
                         )
-                        or cellprofiler.setting.FILE_IMAGE_ATTRIBUTE
+                        or "file_image"
                         in setting.provided_attributes
                     ):
                         accepted_image_list.append(image_name)
             return accepted_image_list
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Upgrade from previous versions of setting formats"""
 
-        if (
-            from_matlab
-            and variable_revision_number == 4
-            and module_name == "MeasureImageSaturationBlur"
-        ):
-            image_names = []
-            for image_name in setting_values[:6]:
-                if image_name != cellprofiler.setting.DO_NOT_USE:
-                    image_names.append(image_name)
-            wants_blur = setting_values[-2]
-            local_focus_score = setting_values[-1]
-            setting_values = []
-            for image_name in image_names:
-                setting_values += [
-                    image_name,
-                    wants_blur,
-                    local_focus_score,
-                    cellprofiler.setting.YES,  # check saturation
-                    cellprofiler.setting.NO,  # calculate threshold
-                    centrosome.threshold.TM_OTSU_GLOBAL,
-                    0.1,  # object fraction
-                    cellprofiler.setting.NO,
-                ]  # compute power spectrum
-            variable_revision_number = 2
-            from_matlab = False
-            module_name = "MeasureImageQuality"
-
-        if (
-            from_matlab
-            and variable_revision_number == 1
-            and module_name == "MeasureImageQuality"
-        ):
-            # Slot 0 asked if blur should be checked on all images
-            # Slot 1 had the window size for all images
-            # Slots 2-4, 5-7, 8-10, 11-13 contain triples of:
-            # image name for blur and saturation
-            # image name for threshold calculation
-            # threshold method
-            #
-            # So here, we save the answer to the blur question and
-            # the window size and apply those to every image. We
-            # collect images in dictionaries that tell how the image
-            # should be checked.
-            #
-            d = {}
-            check_blur = setting_values[0]
-            window_size = setting_values[1]
-            for i in range(2, 14, 3):
-                saturation_image = setting_values[i]
-                threshold_image = setting_values[i + 1]
-                threshold_method = setting_values[i + 2]
-                if saturation_image != cellprofiler.setting.DO_NOT_USE:
-                    if saturation_image not in d:
-                        d[saturation_image] = {
-                            "check_blur": check_blur,
-                            "check_saturation": cellprofiler.setting.YES,
-                            "check_threshold": cellprofiler.setting.NO,
-                            "threshold_method": threshold_method,
-                        }
-                    else:
-                        d[saturation_image]["check_blur"] = check_blur
-                        d[saturation_image][
-                            "check_saturation"
-                        ] = cellprofiler.setting.YES
-                if threshold_image != cellprofiler.setting.DO_NOT_USE:
-                    if threshold_image not in d:
-                        d[threshold_image] = {
-                            "check_blur": cellprofiler.setting.NO,
-                            "check_saturation": cellprofiler.setting.NO,
-                            "check_threshold": cellprofiler.setting.YES,
-                            "threshold_method": threshold_method,
-                        }
-                    else:
-                        d[threshold_image]["check_threshold"] = cellprofiler.setting.YES
-                        d[threshold_image]["threshold_method"] = threshold_method
-            setting_values = []
-            for image_name in list(d.keys()):
-                dd = d[image_name]
-                setting_values += [
-                    image_name,
-                    dd["check_blur"],
-                    window_size,
-                    dd["check_saturation"],
-                    dd["check_threshold"],
-                    dd["threshold_method"],
-                    ".10",
-                ]
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # add power spectrum calculations
-            assert not from_matlab
             assert len(setting_values) % 7 == 0
             num_images = len(setting_values) / 7
             new_settings = []
             for idx in range(num_images):
                 new_settings += setting_values[(idx * 7) : (idx * 7 + 7)]
-                new_settings += [cellprofiler.setting.YES]
+                new_settings += ["Yes"]
             setting_values = new_settings
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # add otsu threshold settings
             assert len(setting_values) % 8 == 0
             num_images = len(setting_values) / 8
@@ -1766,7 +1675,7 @@ to the foreground pixels or the background pixels.
             setting_values = new_settings
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Rearrangement/consolidation of settings
             assert len(setting_values) % SETTINGS_PER_GROUP_V3 == 0
             num_images = len(setting_values) // SETTINGS_PER_GROUP_V3
@@ -1808,13 +1717,13 @@ to the foreground pixels or the background pixels.
                 # Set blur and thresholds if the user sets any of the setting groups.
                 d[image_name]["wants_saturation"] = d[image_name][
                     "wants_saturation"
-                ] or (im_settings[3] == cellprofiler.setting.YES)
+                ] or (im_settings[3] == "Yes")
                 d[image_name]["wants_blur"] = d[image_name]["wants_blur"] or (
-                    im_settings[1] == cellprofiler.setting.YES
-                    or im_settings[7] == cellprofiler.setting.YES
+                    im_settings[1] == "Yes"
+                    or im_settings[7] == "Yes"
                 )
                 d[image_name]["wants_threshold"] = d[image_name]["wants_threshold"] or (
-                    im_settings[4] == cellprofiler.setting.YES
+                    im_settings[4] == "Yes"
                 )
                 #  Collect blur scales and threshold methods
                 d[image_name]["blur_scales"] += [im_settings[2]]
@@ -1850,28 +1759,28 @@ to the foreground pixels or the background pixels.
             for image_name in unique_image_names:
                 new_settings += [
                     image_name,  # image_name
-                    cellprofiler.setting.YES
+                    "Yes"
                     if d[image_name]["wants_scaling"]
-                    else cellprofiler.setting.NO,  # include_image_scalings
-                    cellprofiler.setting.YES
+                    else "No",  # include_image_scalings
+                    "Yes"
                     if d[image_name]["wants_blur"]
-                    else cellprofiler.setting.NO,
+                    else "No",
                 ]  # check_blur
                 new_settings += [k for k in d[image_name]["blur_scales"]]  # scale
                 new_settings += [
-                    cellprofiler.setting.YES
+                    "Yes"
                     if d[image_name]["wants_saturation"]
-                    else cellprofiler.setting.NO,
+                    else "No",
                     # check_saturation
-                    cellprofiler.setting.YES
+                    "Yes"
                     if d[image_name]["wants_intensity"]
-                    else cellprofiler.setting.NO,
+                    else "No",
                     # check_intensity
-                    cellprofiler.setting.YES
+                    "Yes"
                     if d[image_name]["wants_threshold"]
-                    else cellprofiler.setting.NO,
+                    else "No",
                     # calculate_threshold,
-                    cellprofiler.setting.NO,
+                    "No",
                 ]  # use_all_threshold_methods
                 for k in d[image_name]["threshold_methods"]:
                     # threshold_method, object_fraction, two_class_otsu,
@@ -1881,7 +1790,7 @@ to the foreground pixels or the background pixels.
             setting_values = new_settings
             variable_revision_number = 4
 
-        if (not from_matlab) and variable_revision_number == 4:
+        if variable_revision_number == 4:
             # Thresholding method name change: Strip off "Global"
             thresh_dict = dict(
                 list(
@@ -1898,13 +1807,13 @@ to the foreground pixels or the background pixels.
             ]
             variable_revision_number = 5
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True
 
 
-class ImageQualitySettingsGroup(cellprofiler.setting.SettingsGroup):
+class ImageQualitySettingsGroup(cellprofiler_core.setting.SettingsGroup):
     @property
     def threshold_algorithm(self):
         """The thresholding algorithm to run"""

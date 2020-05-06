@@ -23,10 +23,10 @@ Measurements made by this module
 import numpy as np
 import scipy.ndimage as scind
 
-import cellprofiler.image as cpi
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.image as cpi
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
 
 FLIP_NONE = "Do not flip"
 FLIP_LEFT_TO_RIGHT = "Left to right"
@@ -64,7 +64,7 @@ class FlipAndRotate(cpm.Module):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="Choose the image you want to flip or rotate.",
         )
 
@@ -558,95 +558,9 @@ negative as clockwise."""
         return [self.output_name.value]
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 2 and module_name == "Rotate":
-            image_name, output_name, rotate_method, crop_edges, individual_or_once, horiz_or_vert, pixel1, pixel2, angle = (
-                setting_values
-            )
-            if rotate_method == "Coordinates":
-                rotate_method = ROTATE_COORDINATES
-            elif rotate_method == "Mouse":
-                rotate_method = ROTATE_MOUSE
-            else:
-                rotate_method = ROTATE_ANGLE
-            if horiz_or_vert == "horizontally":
-                horiz_or_vert = C_HORIZONTALLY
-            else:
-                horiz_or_vert = C_VERTICALLY
-            if individual_or_once == "Only once":
-                individual_or_once = IO_ONCE
-            else:
-                individual_or_once = IO_INDIVIDUALLY
-            setting_values = [
-                image_name,
-                output_name,
-                FLIP_NONE,
-                rotate_method,
-                crop_edges,
-                individual_or_once,
-                pixel1,
-                pixel2,
-                horiz_or_vert,
-                angle,
-            ]
-            variable_revision_number = 2
-            from_matlab = False
-            module_name = self.module_name
-        if from_matlab and variable_revision_number == 1 and module_name == "Flip":
-            image_name, output_name, left_to_right, top_to_bottom = setting_values
-            if left_to_right == cps.YES:
-                if top_to_bottom == cps.YES:
-                    flip_choice = FLIP_BOTH
-                else:
-                    flip_choice = FLIP_LEFT_TO_RIGHT
-            elif top_to_bottom == cps.YES:
-                flip_choice = FLIP_TOP_TO_BOTTOM
-            else:
-                flip_choice = FLIP_NONE
-            setting_values = [
-                image_name,
-                output_name,
-                flip_choice,
-                ROTATE_NONE,
-                cps.NO,
-                "10,10",
-                "100,100",
-                C_VERTICALLY,
-                "0",
-            ]
-            from_matlab = False
-            module_name = self.module_name
-            variable_revision_number = 2
-        if (
-            from_matlab
-            and variable_revision_number == 1
-            and module_name == self.module_name
-        ):
-            if setting_values[2] == cps.YES:
-                if setting_values[3] == cps.YES:
-                    flip_choice = FLIP_BOTH
-                else:
-                    flip_choice = FLIP_LEFT_TO_RIGHT
-            elif setting_values[3] == cps.YES:
-                flip_choice = FLIP_TOP_TO_BOTTOM
-            else:
-                flip_choice = FLIP_NONE
-            setting_values = [
-                setting_values[0],  # image_name
-                setting_values[1],  # output_name
-                flip_choice,
-                setting_values[4],  # rotate_choice
-                setting_values[5],  # wants crop
-                setting_values[6],  # how often
-                setting_values[8],  # first_pixel
-                setting_values[9],  # second_pixel
-                setting_values[7],  # horiz_or_vert
-                setting_values[10],
-            ]  # angle
-            from_matlab = False
-            variable_revision_number = 1
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Text for ROTATE_MOUSE changed from "mouse" to "Use mouse"
             if setting_values[3] == "Mouse":
                 setting_values[3] = ROTATE_MOUSE
@@ -657,7 +571,7 @@ negative as clockwise."""
             elif setting_values[3] == "Angle":
                 setting_values[3] = ROTATE_ANGLE
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 def affine_offset(shape, transform):

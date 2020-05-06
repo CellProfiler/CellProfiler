@@ -31,9 +31,9 @@ from centrosome.filter import median_filter, circular_average_filter
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.setting
 from cellprofiler.modules._help import (
     HELP_ON_MEASURING_DISTANCES,
     HELP_ON_PIXEL_INTENSITIES,
@@ -47,25 +47,25 @@ CIRCULAR_AVERAGE_FILTER = "Circular Average Filter"
 SM_TO_AVERAGE = "Smooth to Average"
 
 
-class Smooth(cellprofiler.module.Module):
+class Smooth(cellprofiler_core.module.Module):
     module_name = "Smooth"
     category = "Image Processing"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the input image",
-            cellprofiler.setting.NONE,
+            "None",
             doc="""Select the image to be smoothed.""",
         )
 
-        self.filtered_image_name = cellprofiler.setting.ImageNameProvider(
+        self.filtered_image_name = cellprofiler_core.setting.ImageNameProvider(
             "Name the output image",
             "FilteredImage",
             doc="""Enter a name for the resulting image.""",
         )
 
-        self.smoothing_method = cellprofiler.setting.Choice(
+        self.smoothing_method = cellprofiler_core.setting.Choice(
             "Select smoothing method",
             [
                 FIT_POLYNOMIAL,
@@ -126,7 +126,7 @@ anyway.*
             % globals(),
         )
 
-        self.wants_automatic_object_size = cellprofiler.setting.Binary(
+        self.wants_automatic_object_size = cellprofiler_core.setting.Binary(
             "Calculate artifact diameter automatically?",
             True,
             doc="""\
@@ -141,7 +141,7 @@ Select *No* to manually enter an artifact diameter.
             % globals(),
         )
 
-        self.object_size = cellprofiler.setting.Float(
+        self.object_size = cellprofiler_core.setting.Float(
             "Typical artifact diameter",
             16.0,
             doc="""\
@@ -157,7 +157,7 @@ amounts of time to process.
             % globals(),
         )
 
-        self.sigma_range = cellprofiler.setting.Float(
+        self.sigma_range = cellprofiler_core.setting.Float(
             "Edge intensity difference",
             0.1,
             doc="""\
@@ -173,7 +173,7 @@ and one. %(HELP_ON_PIXEL_INTENSITIES)s
             % globals(),
         )
 
-        self.clip = cellprofiler.setting.Binary(
+        self.clip = cellprofiler_core.setting.Binary(
             "Clip intensities to 0 and 1?",
             True,
             doc="""\
@@ -259,7 +259,7 @@ the output image.
             raise ValueError(
                 "Unsupported smoothing method: %s" % self.smoothing_method.value
             )
-        output_image = cellprofiler.image.Image(output_pixels, parent_image=image)
+        output_image = cellprofiler_core.image.Image(output_pixels, parent_image=image)
         workspace.image_set.add(self.filtered_image_name.value, output_image)
         workspace.display_data.pixel_data = pixel_data
         workspace.display_data.output_pixels = output_pixels
@@ -281,68 +281,9 @@ the output image.
         )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if (
-            module_name == "SmoothKeepingEdges"
-            and from_matlab
-            and variable_revision_number == 1
-        ):
-            image_name, smoothed_image_name, spatial_radius, intensity_radius = (
-                setting_values
-            )
-            setting_values = [
-                image_name,
-                smoothed_image_name,
-                "Smooth Keeping Edges",
-                "Automatic",
-                cellprofiler.setting.DO_NOT_USE,
-                cellprofiler.setting.NO,
-                spatial_radius,
-                intensity_radius,
-            ]
-            module_name = "SmoothOrEnhance"
-            variable_revision_number = 5
-        if (
-            module_name == "SmoothOrEnhance"
-            and from_matlab
-            and variable_revision_number == 4
-        ):
-            # Added spatial radius
-            setting_values = setting_values + ["0.1"]
-            variable_revision_number = 5
-        if (
-            module_name == "SmoothOrEnhance"
-            and from_matlab
-            and variable_revision_number == 5
-        ):
-            if setting_values[2] in (
-                "Remove BrightRoundSpeckles",
-                "Enhance BrightRoundSpeckles (Tophat Filter)",
-            ):
-                raise ValueError(
-                    "The Smooth module does not support speckles operations. Please use EnhanceOrSuppressFeatures with the Speckles feature type instead"
-                )
-            setting_values = [
-                setting_values[0],  # image name
-                setting_values[1],  # result name
-                setting_values[2],  # smoothing method
-                cellprofiler.setting.YES
-                if setting_values[3] == "Automatic"
-                else cellprofiler.setting.NO,  # wants smoothing
-                "16.0"
-                if setting_values[3] == "Automatic"
-                else (
-                    setting_values[6]
-                    if setting_values[2] == SMOOTH_KEEPING_EDGES
-                    else setting_values[3]
-                ),
-                setting_values[7],
-            ]
-            module_name = "Smooth"
-            from_matlab = False
-            variable_revision_number = 1
-        if variable_revision_number == 1 and not from_matlab:
-            setting_values = setting_values + [cellprofiler.setting.YES]
+        if variable_revision_number == 1:
+            setting_values = setting_values + ["Yes"]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

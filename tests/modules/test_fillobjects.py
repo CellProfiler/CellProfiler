@@ -4,7 +4,6 @@ import pytest
 import skimage.morphology
 
 import cellprofiler.modules.fillobjects
-import cellprofiler.object
 
 instance = cellprofiler.modules.fillobjects.FillObjects()
 

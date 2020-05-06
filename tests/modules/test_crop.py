@@ -1,11 +1,11 @@
 import numpy
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.crop
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 INPUT_IMAGE = "input_image"
 CROP_IMAGE = "crop_image"
@@ -16,48 +16,48 @@ OUTPUT_IMAGE = "output_image"
 
 def make_workspace(input_pixels, crop_image=None, cropping=None, crop_objects=None):
     """Return a workspace with the given images installed and the crop module"""
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     module = cellprofiler.modules.crop.Crop()
     module.set_module_num(1)
-    image_set.add(INPUT_IMAGE, cellprofiler.image.Image(input_pixels))
+    image_set.add(INPUT_IMAGE, cellprofiler_core.image.Image(input_pixels))
     module.image_name.value = INPUT_IMAGE
     module.cropped_image_name.value = OUTPUT_IMAGE
     if crop_image is not None:
-        image_set.add(CROP_IMAGE, cellprofiler.image.Image(crop_image))
+        image_set.add(CROP_IMAGE, cellprofiler_core.image.Image(crop_image))
         module.image_mask_source.value = CROP_IMAGE
     if cropping is not None:
         image_set.add(
             CROPPING,
-            cellprofiler.image.Image(numpy.zeros(cropping.shape), crop_mask=cropping),
+            cellprofiler_core.image.Image(numpy.zeros(cropping.shape), crop_mask=cropping),
         )
         module.cropping_mask_source.value = CROPPING
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     if crop_objects is not None:
-        objects = cellprofiler.object.Objects()
+        objects = cellprofiler_core.object.Objects()
         objects.segmented = crop_objects
         object_set.add_objects(objects, CROP_OBJECTS)
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    m = cellprofiler.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    m = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, image_set, object_set, m, image_set_list
     )
     m.add_measurement(
-        cellprofiler.measurement.IMAGE,
-        cellprofiler.measurement.GROUP_INDEX,
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.GROUP_INDEX,
         0,
         image_set_number=1,
     )
     m.add_measurement(
-        cellprofiler.measurement.IMAGE,
-        cellprofiler.measurement.GROUP_NUMBER,
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.GROUP_NUMBER,
         1,
         image_set_number=1,
     )
@@ -80,8 +80,8 @@ def test_zeros():
     assert "Image" in m.get_object_names()
     columns = module.get_measurement_columns(workspace.pipeline)
     assert len(columns) == 2
-    assert all([x[0] == cellprofiler.measurement.IMAGE for x in columns])
-    assert all([x[2] == cellprofiler.measurement.COLTYPE_INTEGER for x in columns])
+    assert all([x[0] == cellprofiler_core.measurement.IMAGE for x in columns])
+    assert all([x[2] == cellprofiler_core.measurement.COLTYPE_INTEGER for x in columns])
     feature = "Crop_OriginalImageArea_%s" % OUTPUT_IMAGE
     assert feature in [x[1] for x in columns]
     assert feature in m.get_feature_names("Image")

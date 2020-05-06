@@ -34,16 +34,16 @@ import skimage.measure
 import skimage.morphology
 import skimage.transform
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 O_DISTANCE = "Distance"
 O_MARKERS = "Markers"
 
 
-class Watershed(cellprofiler.module.ImageSegmentation):
+class Watershed(cellprofiler_core.module.image_segmentation.ImageSegmentation):
     category = "Advanced"
 
     module_name = "Watershed"
@@ -53,7 +53,7 @@ class Watershed(cellprofiler.module.ImageSegmentation):
     def create_settings(self):
         super(Watershed, self).create_settings()
 
-        self.operation = cellprofiler.setting.Choice(
+        self.operation = cellprofiler_core.setting.Choice(
             text="Generate from",
             choices=[O_DISTANCE, O_MARKERS],
             value=O_DISTANCE,
@@ -74,18 +74,18 @@ Select a method of inputs for the watershed algorithm:
             ),
         )
 
-        self.markers_name = cellprofiler.setting.ImageNameSubscriber(
+        self.markers_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Markers",
             doc="An image marking the approximate centers of the objects for segmentation.",
         )
 
-        self.mask_name = cellprofiler.setting.ImageNameSubscriber(
+        self.mask_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Mask",
             can_be_blank=True,
             doc="Optional. Only regions not blocked by the mask will be segmented.",
         )
 
-        self.connectivity = cellprofiler.setting.Integer(
+        self.connectivity = cellprofiler_core.setting.Integer(
             doc="""\
 Maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. 
 Accepted values are ranging from 1 to the number of dimensions.
@@ -103,7 +103,7 @@ See `skimage label`_ for more information.
             value=1,
         )
 
-        self.compactness = cellprofiler.setting.Float(
+        self.compactness = cellprofiler_core.setting.Float(
             text="Compactness",
             minval=0.0,
             value=0.0,
@@ -116,7 +116,7 @@ Higher values result in more regularly-shaped watershed basins.
 """,
         )
 
-        self.watershed_line = cellprofiler.setting.Binary(
+        self.watershed_line = cellprofiler_core.setting.Binary(
             text="Separate watershed labels",
             value=False,
             doc="""\
@@ -126,7 +126,7 @@ to touch. The line has the same label as the background.
 """,
         )
 
-        self.footprint = cellprofiler.setting.Integer(
+        self.footprint = cellprofiler_core.setting.Integer(
             doc="""\
 The connectivity defines the dimensions of the footprint used to scan
 the input image for local maximum. The footprint can be interpreted as a
@@ -147,7 +147,7 @@ information.
             value=8,
         )
 
-        self.downsample = cellprofiler.setting.Integer(
+        self.downsample = cellprofiler_core.setting.Integer(
             doc="""\
 Downsample an n-dimensional image by local averaging. If the downsampling factor is 1,
 the image is not downsampled.
@@ -282,7 +282,7 @@ the image is not downsampled.
 
         y_data = skimage.measure.label(y_data)
 
-        objects = cellprofiler.object.Objects()
+        objects = cellprofiler_core.object.Objects()
 
         objects.segmented = y_data
 
@@ -300,7 +300,7 @@ the image is not downsampled.
             workspace.display_data.dimensions = dimensions
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
 
         if variable_revision_number == 1:
@@ -318,4 +318,4 @@ the image is not downsampled.
         else:
             __settings__ = setting_values
 
-        return __settings__, variable_revision_number, from_matlab
+        return __settings__, variable_revision_number

@@ -95,14 +95,13 @@ import os
 
 import six
 
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.pipeline as cpp
-import cellprofiler.setting as cps
-from cellprofiler.setting import YES
-from cellprofiler.measurement import IMAGE, EXPERIMENT
-from cellprofiler.preferences import get_headless
-from cellprofiler.preferences import (
+import cellprofiler_core.module as cpm
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.pipeline as cpp
+import cellprofiler_core.setting as cps
+from cellprofiler_core.measurement import IMAGE, EXPERIMENT
+from cellprofiler_core.preferences import get_headless
+from cellprofiler_core.preferences import (
     DEFAULT_INPUT_FOLDER_NAME,
     DEFAULT_OUTPUT_FOLDER_NAME,
     ABSOLUTE_FOLDER_NAME,
@@ -295,7 +294,7 @@ measurements would be a nuisance.
 Alternatively, this option can be helpful for viewing spreadsheets in
 programs which limit the number of rows and columns.
 """.format(
-                **{"YES": YES}
+                **{"YES": "Yes"}
             ),
         )
 
@@ -420,7 +419,7 @@ metadata from the **Metadata** module. %(USING_METADATA_HELP_REF)s"""
 
         self.use_which_image_for_gene_name = cps.ImageNameSubscriber(
             "Select the image to use as the identifier",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if a GenePattern file is requested and image filename is
 used to name each row)*
@@ -949,7 +948,7 @@ desired.
         if self.wants_everything:
             object_names = {IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS}
             object_providers = workspace.pipeline.get_provider_dictionary(
-                cps.OBJECT_GROUP, self
+                "objectgroup", self
             )
             object_names.update(list(object_providers.keys()))
             metadata_groups = self.get_metadata_groups(workspace)
@@ -1022,7 +1021,7 @@ desired.
         ]
         if len(feature_names) == 0:
             return
-        fd = open(file_name, "wb")
+        fd = open(file_name, "w", newline='')
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
             writer.writerow((EH_KEY, EH_VALUE))
@@ -1052,7 +1051,7 @@ desired.
         image_features = m.get_feature_names(IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
 
-        fd = open(file_name, "wb")
+        fd = open(file_name, "w", newline='')
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
             for img_number in image_set_numbers:
@@ -1110,9 +1109,9 @@ desired.
         image_set_numbers - the image sets whose data gets extracted
         workspace - workspace containing the measurements
         """
-        from .loaddata import is_path_name_feature, is_file_name_feature
-        from cellprofiler.measurement import C_PATH_NAME, C_FILE_NAME, C_URL
-        from .loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
+        from cellprofiler.modules.loaddata import is_path_name_feature, is_file_name_feature
+        from cellprofiler_core.measurement import C_PATH_NAME, C_FILE_NAME, C_URL
+        from cellprofiler_core.modules.loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
         file_name = self.make_gct_file_name(
             workspace, image_set_numbers[0], settings_group
@@ -1143,7 +1142,7 @@ desired.
         image_features = m.get_feature_names(IMAGE)
         image_features.insert(0, IMAGE_NUMBER)
 
-        fd = open(file_name, "wb")
+        fd = open(file_name, "w", newline='')
         try:
             writer = csv.writer(fd, delimiter="\t")
             for img_number in image_set_numbers:
@@ -1307,7 +1306,7 @@ desired.
             ofeatures = [(object_name, feature_name) for feature_name in ofeatures]
             ofeatures.sort()
             features += ofeatures
-        fd = open(file_name, "w")
+        fd = open(file_name, "w", newline='')
         try:
             writer = csv.writer(fd, delimiter=self.delimiter_char)
 
@@ -1369,7 +1368,7 @@ desired.
         )
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        fd = open(file_name, "w")
+        fd = open(file_name, "w", newline='')
         module_map = {}
         for module in workspace.pipeline.modules():
             module_map[module.module_num] = module.module_name
@@ -1448,70 +1447,19 @@ desired.
         return True
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust the setting values based on the version that saved them
 
         """
 
-        if variable_revision_number == 1 and from_matlab:
-            # Added create subdirectories question
-            setting_values = list(setting_values)
-            setting_values.append(cps.NO)
-            variable_revision_number = 2
-        if variable_revision_number == 2 and from_matlab:
-            wants_subdirectories = setting_values[8] == cps.YES
-            object_names = [x for x in setting_values[:-1] if x != cps.DO_NOT_USE]
-            setting_values = [DELIMITER_TAB, cps.YES, cps.NO, cps.NO, cps.NO, cps.NO]
-            for name in object_names:
-                setting_values.extend([name, cps.NO, "%s.csv" % name])
-            variable_revision_number = 1
-            from_matlab = False
-        if variable_revision_number == 3 and from_matlab:
-            #
-            # Variables 9 and 10 are the pathname and prefix and
-            # are not yet replicated in pyCP
-            #
-            custom_directory = "."
-            if setting_values[8] == ".":
-                directory_choice = DEFAULT_OUTPUT_FOLDER_NAME
-            elif setting_values[8] == "&":
-                directory_choice = DEFAULT_INPUT_FOLDER_NAME
-            elif setting_values[8].find(r"\(?<"):
-                directory_choice = DIR_CUSTOM_WITH_METADATA
-                custom_directory = setting_values[8]
-            else:
-                directory_choice = DIR_CUSTOM
-                custom_directory = setting_values[8]
-            if setting_values[9] != cps.DO_NOT_USE:
-                prefix = setting_values[9] + "_"
-            else:
-                prefix = ""
-            object_names = [x for x in setting_values[:8] if x != cps.DO_NOT_USE]
-            setting_values = [
-                DELIMITER_TAB,
-                cps.YES,
-                cps.NO,
-                cps.NO,
-                cps.NO,
-                cps.NO,
-                cps.NO,
-                cps.NO,
-                cps.NO,
-                directory_choice,
-                custom_directory,
-            ]
-            for name in object_names:
-                setting_values.extend([name, cps.NO, "%s%s.csv" % (prefix, name)])
-            variable_revision_number = 3
-            from_matlab = False
-        if variable_revision_number == 1 and not from_matlab:
+        if variable_revision_number == 1:
             # Added aggregate questions
             setting_values = (
-                setting_values[:6] + [cps.NO, cps.NO, cps.NO] + setting_values[6:]
+                setting_values[:6] + ["No", "No", "No"] + setting_values[6:]
             )
             variable_revision_number = 2
-        if variable_revision_number == 2 and not from_matlab:
+        if variable_revision_number == 2:
             # Added directory choice questions
             setting_values = (
                 setting_values[:9]
@@ -1519,22 +1467,22 @@ desired.
                 + setting_values[9:]
             )
             variable_revision_number = 3
-        if variable_revision_number == 3 and not from_matlab:
+        if variable_revision_number == 3:
             # Added "wants everything" setting
             #
-            new_setting_values = setting_values[:11] + [cps.NO]
+            new_setting_values = setting_values[:11] + ["No"]
             for i in range(11, len(setting_values), 3):
-                new_setting_values += setting_values[i : i + 3] + [cps.NO]
+                new_setting_values += setting_values[i : i + 3] + ["No"]
 
             setting_values = new_setting_values
             variable_revision_number = 4
 
-        if variable_revision_number == 4 and not from_matlab:
+        if variable_revision_number == 4:
             # Added column selector
             setting_values = setting_values[:12] + ["None|None"] + setting_values[12:]
             variable_revision_number = 5
 
-        if variable_revision_number == 5 and not from_matlab:
+        if variable_revision_number == 5:
             # Combined directory_choice and custom_directory
             # Removed add_indexes
             directory_choice = setting_values[9]
@@ -1558,19 +1506,19 @@ desired.
             )
             variable_revision_number = 6
 
-        if variable_revision_number == 6 and not from_matlab:
+        if variable_revision_number == 6:
             """ Add GenePattern export options
             self.wants_genepattern_file, self.how_to_specify_gene_name,
             self.use_which_image_for_gene_name,self.gene_name_column
             """
             setting_values = (
                 setting_values[:9]
-                + [cps.NO, GP_NAME_METADATA, cps.NONE, cps.NONE]
+                + ["No", GP_NAME_METADATA, "None", "None"]
                 + setting_values[9:]
             )
             variable_revision_number = 7
 
-        if variable_revision_number == 7 and not from_matlab:
+        if variable_revision_number == 7:
             # Add nan_representation
             setting_values = (
                 setting_values[:SETTING_OG_OFFSET_V7]
@@ -1579,25 +1527,25 @@ desired.
             )
             variable_revision_number = 8
 
-        if variable_revision_number == 8 and not from_matlab:
+        if variable_revision_number == 8:
             # Removed output file prepend
             setting_values = setting_values[:1] + setting_values[2:]
             variable_revision_number = 9
 
-        if variable_revision_number == 9 and not from_matlab:
+        if variable_revision_number == 9:
             # Added prefix
             setting_values = (
                 setting_values[:SETTING_OG_OFFSET_V9]
-                + [cps.NO, "MyExpt_"]
+                + ["No", "MyExpt_"]
                 + setting_values[SETTING_OG_OFFSET_V9:]
             )
             variable_revision_number = 10
 
-        if variable_revision_number == 10 and not from_matlab:
+        if variable_revision_number == 10:
             # added overwrite choice - legacy value is "Yes"
             setting_values = (
                 setting_values[:SETTING_OG_OFFSET_V10]
-                + [cps.YES]
+                + ["Yes"]
                 + setting_values[SETTING_OG_OFFSET_V10:]
             )
             variable_revision_number = 11
@@ -1608,12 +1556,13 @@ desired.
             variable_revision_number = 12
         if variable_revision_number == 12:
             # Add "add file path" setting.
-            setting_values = setting_values[:2] + [cps.NO] + setting_values[2:]
+            setting_values = setting_values[:2] + ["No"] + setting_values[2:]
             variable_revision_number = 13
 
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 7
         directory = setting_values[SLOT_DIRCHOICE]
+        directory = directory.encode('utf-8').decode('unicode_escape')
         directory = cps.DirectoryPath.upgrade_setting(directory)
         setting_values = (
             setting_values[:SLOT_DIRCHOICE]
@@ -1621,7 +1570,7 @@ desired.
             + setting_values[SLOT_DIRCHOICE + 1 :]
         )
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

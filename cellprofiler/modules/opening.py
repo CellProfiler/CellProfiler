@@ -23,13 +23,13 @@ YES          YES          NO
 import numpy
 import skimage.morphology
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.setting
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 
-class Opening(cellprofiler.module.ImageProcessing):
+class Opening(cellprofiler_core.module.ImageProcessing):
     category = "Advanced"
 
     module_name = "Opening"
@@ -39,7 +39,7 @@ class Opening(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(Opening, self).create_settings()
 
-        self.structuring_element = cellprofiler.setting.StructuringElement(
+        self.structuring_element = cellprofiler_core.setting.StructuringElement(
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 

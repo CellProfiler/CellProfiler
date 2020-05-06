@@ -33,9 +33,9 @@ import re
 import matplotlib.colors
 import numpy as np
 
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.image as cpi
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
 
 COMBINE = "Combine"
 SPLIT = "Split"
@@ -59,7 +59,7 @@ class ColorToGray(cpm.Module):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            cps.NONE,
+            "None",
             doc="""Select the multichannel image you want to convert to grayscale.""",
         )
 
@@ -529,7 +529,7 @@ Select the name of the output grayscale image.""",
     def run(self, workspace):
         """Run the module
 
-        pipeline     - instance of CellProfiler.Pipeline for this run
+        pipeline     - instance of cellprofiler_core.pipeline for this run
         workspace    - the workspace contains:
             image_set    - the images in the image set being processed
             object_set   - the objects (labeled masks) in this image set
@@ -643,30 +643,9 @@ Select the name of the output grayscale image.""",
             self.add_channel()
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 1:
-            new_setting_values = [
-                setting_values[0],  # image name
-                setting_values[1],  # combine or split
-                # blank slot for text: "Combine options"
-                setting_values[3],  # grayscale name
-                setting_values[4],  # red contribution
-                setting_values[5],  # green contribution
-                setting_values[6]  # blue contribution
-                # blank slot for text: "Split options"
-            ]
-            for i in range(3):
-                vv = setting_values[i + 8]
-                use_it = ((vv == cps.DO_NOT_USE or vv == "N") and cps.NO) or cps.YES
-                new_setting_values.append(use_it)
-                new_setting_values.append(vv)
-            setting_values = new_setting_values
-            module_name = self.module_class()
-            variable_revision_number = 1
-            from_matlab = False
-
-        if not from_matlab and variable_revision_number == 1:
+        if variable_revision_number == 1:
             #
             # Added rgb_or_channels at position # 2, added channel count
             # at end.
@@ -679,13 +658,13 @@ Select the name of the output grayscale image.""",
             )
             variable_revision_number = 2
 
-        if not from_matlab and variable_revision_number == 2:
+        if variable_revision_number == 2:
             #
             # Added HSV settings
             #
             setting_values = (
                 setting_values[:13]
-                + [cps.YES, "OrigHue", cps.YES, "OrigSaturation", cps.YES, "OrigValue"]
+                + ["Yes", "OrigHue", "Yes", "OrigSaturation", "Yes", "OrigValue"]
                 + setting_values[13:]
             )
             variable_revision_number = 3
@@ -702,4 +681,4 @@ Select the name of the output grayscale image.""",
                 setting_values[idx] = channel_idx + 1
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

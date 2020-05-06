@@ -6,15 +6,15 @@ import numpy
 import pytest
 import scipy.ndimage
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.modules.identify
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.modules.identify
 import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.modules.threshold
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.setting
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
 IMAGE_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
@@ -23,7 +23,7 @@ MEASUREMENT_NAME = "my_measurement"
 
 
 def load_error_handler(caller, event):
-    if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
+    if isinstance(event, cellprofiler_core.pipeline.event.LoadException):
         pytest.fail(event.error.message)
 
 
@@ -41,17 +41,17 @@ def make_workspace(image, mask=None, labels=None):
     module.x_name.value = IMAGE_NAME
     module.y_name.value = OBJECTS_NAME
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
-    m = cellprofiler.measurement.Measurements()
-    cpimage = cellprofiler.image.Image(image, mask=mask)
+    m = cellprofiler_core.measurement.Measurements()
+    cpimage = cellprofiler_core.image.Image(image, mask=mask)
     m.add(IMAGE_NAME, cpimage)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
     if labels is not None:
-        o = cellprofiler.object.Objects()
+        o = cellprofiler_core.object.Objects()
         o.segmented = labels
         object_set.add_objects(o, MASKING_OBJECTS_NAME)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, m, object_set, m, None
     )
     return workspace, module
@@ -69,17 +69,17 @@ def test_test_zero_objects():
     x.threshold.threshold_range.max = 1
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
     img = numpy.zeros((25, 25))
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -119,17 +119,17 @@ def test_test_zero_objects_wa_in_lo_in():
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     img = numpy.zeros((25, 25))
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -149,17 +149,17 @@ def test_test_zero_objects_wa_di_lo_in():
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     img = numpy.zeros((25, 25))
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -179,17 +179,17 @@ def test_test_zero_objects_wa_in_lo_sh():
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
     img = numpy.zeros((25, 25))
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -209,17 +209,17 @@ def test_test_zero_objects_wa_di_lo_sh():
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
     img = numpy.zeros((25, 25))
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -237,21 +237,21 @@ def test_test_one_object():
     x.x_name.value = "my_image"
     x.exclude_size.value = False
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = one_cell_image()
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -290,7 +290,7 @@ def test_test_one_object():
     assert location_center_x[0] > 13
     assert location_center_x[0] < 16
     columns = x.get_measurement_columns(pipeline)
-    for object_name in (cellprofiler.measurement.IMAGE, "my_object"):
+    for object_name in (cellprofiler_core.measurement.IMAGE, "my_object"):
         ocolumns = [x for x in columns if x[0] == object_name]
         features = measurements.get_feature_names(object_name)
         assert len(ocolumns) == len(features)
@@ -304,21 +304,21 @@ def test_test_two_objects():
     x.x_name.value = "my_image"
     x.exclude_size.value = False
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = two_cell_image()
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -367,22 +367,22 @@ def test_test_threshold_range():
     x.threshold.threshold_range.min = 0.7
     x.threshold.threshold_range.max = 1
     x.threshold.threshold_correction_factor.value = 0.95
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
     x.exclude_size.value = False
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
     img = two_cell_image()
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -428,7 +428,7 @@ def test_fill_holes():
     x.exclude_size.value = False
     x.fill_holes.value = True
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.zeros((40, 40))
@@ -436,17 +436,17 @@ def test_fill_holes():
     draw_circle(img, (30, 30), 7, 0.5)
     img[10, 10] = 0
     img[30, 30] = 0
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -472,17 +472,17 @@ def test_dont_fill_holes():
     draw_circle(img, (30, 30), 7, 0.5)
     img[10, 10] = 0
     img[30, 30] = 0
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -502,24 +502,24 @@ def test_01_fill_holes_within_holes():
     x.exclude_size.value = False
     x.fill_holes.value = cellprofiler.modules.identifyprimaryobjects.FH_DECLUMP
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.zeros((40, 40))
     draw_circle(img, (20, 20), 10, 0.5)
     draw_circle(img, (20, 20), 4, 0)
     img[20, 20] = 1
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -546,7 +546,7 @@ def test_test_watershed_shape_shape():
     x.automatic_suppression.value = False
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -574,17 +574,17 @@ def test_test_watershed_shape_shape():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
     )
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -609,7 +609,7 @@ def test_test_watershed_shape_intensity():
     x.automatic_suppression.value = False
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -637,17 +637,17 @@ def test_test_watershed_shape_intensity():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
     )
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -673,7 +673,7 @@ def test_test_watershed_intensity_distance_single():
     x.automatic_suppression.value = False
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -704,17 +704,17 @@ def test_test_watershed_intensity_distance_single():
     # We do a little blur here so that there's some monotonic decrease
     # from the central peak
     img = scipy.ndimage.gaussian_filter(img, 0.25, mode="constant")
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -741,7 +741,7 @@ def test_test_watershed_intensity_distance_triple():
     x.automatic_suppression.value = False
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -769,17 +769,17 @@ def test_test_watershed_intensity_distance_triple():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
     )
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -806,7 +806,7 @@ def test_test_watershed_intensity_distance_filter():
     x.automatic_suppression.value = False
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -834,17 +834,17 @@ def test_test_watershed_intensity_distance_filter():
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         ]
     )
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -902,17 +902,17 @@ def test_test_watershed_intensity_distance_double():
     # We do a little blur here so that there's some monotonic decrease
     # from the central peak
     img = scipy.ndimage.gaussian_filter(img, 0.5, mode="constant")
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -937,7 +937,7 @@ def test_propagate():
     x.threshold.manual_threshold.value = 0.3
     x.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     x.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
-    x.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    x.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
     x.threshold.threshold_smoothing_scale.value = 0
     img = numpy.array(
@@ -968,17 +968,17 @@ def test_propagate():
     # We do a little blur here so that there's some monotonic decrease
     # from the central peak
     img = scipy.ndimage.gaussian_filter(img, 0.5, mode="constant")
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -996,14 +996,14 @@ def test_fly():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(pipeline, event):
         assert not isinstance(
             event,
             (
-                cellprofiler.pipeline.RunExceptionEvent,
-                cellprofiler.pipeline.LoadExceptionEvent,
+                cellprofiler_core.pipeline.event.RunException,
+                cellprofiler_core.pipeline.event.LoadException,
             ),
         )
 
@@ -1015,7 +1015,7 @@ def test_fly():
     )
 
     img = fly_image()
-    image = cellprofiler.image.Image(img)
+    image = cellprofiler_core.image.Image(img)
     #
     # Make sure it runs both regular and with reduced image
     #
@@ -1025,23 +1025,23 @@ def test_fly():
         #
         x.size_range.min = min_size
         for unclump_method in (
-            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
-            cellprofiler.modules.identifyprimaryobjects.UN_SHAPE,
+                cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
+                cellprofiler.modules.identifyprimaryobjects.UN_SHAPE,
         ):
             x.unclump_method.value = unclump_method
             for watershed_method in (
-                cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY,
-                cellprofiler.modules.identifyprimaryobjects.WA_SHAPE,
-                cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE,
+                    cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY,
+                    cellprofiler.modules.identifyprimaryobjects.WA_SHAPE,
+                    cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE,
             ):
                 x.watershed_method.value = watershed_method
-                image_set_list = cellprofiler.image.ImageSetList()
+                image_set_list = cellprofiler_core.image.ImageSetList()
                 image_set = image_set_list.get_image_set(0)
                 image_set.add(x.x_name.value, image)
-                object_set = cellprofiler.object.ObjectSet()
-                measurements = cellprofiler.measurement.Measurements()
+                object_set = cellprofiler_core.object.ObjectSet()
+                measurements = cellprofiler_core.measurement.Measurements()
                 x.run(
-                    cellprofiler.workspace.Workspace(
+                    cellprofiler_core.workspace.Workspace(
                         pipeline, x, image_set, object_set, measurements, None
                     )
                 )
@@ -1092,14 +1092,14 @@ def test_maxima_suppression_zero():
         x.threshold.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
         x.threshold.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
         x.threshold.threshold_smoothing_scale.value = 0
-        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline = cellprofiler_core.pipeline.Pipeline()
         x.set_module_num(1)
         pipeline.add_module(x)
-        object_set = cellprofiler.object.ObjectSet()
-        measurements = cellprofiler.measurement.Measurements()
-        measurements.add(x.x_name.value, cellprofiler.image.Image(img))
+        object_set = cellprofiler_core.object.ObjectSet()
+        measurements = cellprofiler_core.measurement.Measurements()
+        measurements.add(x.x_name.value, cellprofiler_core.image.Image(img))
         x.run(
-            cellprofiler.workspace.Workspace(
+            cellprofiler_core.workspace.Workspace(
                 pipeline, x, measurements, object_set, measurements, None
             )
         )
@@ -1117,10 +1117,10 @@ def test_load_v10():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
@@ -1135,12 +1135,12 @@ def test_load_v10():
     assert module.exclude_size
     assert module.exclude_border_objects
     assert (
-        module.unclump_method
-        == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+            module.unclump_method
+            == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     )
     assert (
-        module.watershed_method
-        == cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+            module.watershed_method
+            == cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
     )
     assert module.automatic_smoothing
     assert module.smoothing_filter_size == 11
@@ -1148,12 +1148,12 @@ def test_load_v10():
     assert module.maxima_suppression_size == 9
     assert module.low_res_maxima
     assert (
-        module.fill_holes == cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING
+            module.fill_holes == cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING
     )
     assert module.limit_choice == cellprofiler.modules.identifyprimaryobjects.LIMIT_NONE
     assert module.maximum_object_count == 499
     #
-    assert module.threshold.threshold_scope == cellprofiler.modules.identify.TS_ADAPTIVE
+    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_ADAPTIVE
     assert module.threshold.local_operation.value == centrosome.threshold.TM_OTSU
     assert module.threshold.threshold_smoothing_scale == 1.3488
     assert round(abs(module.threshold.threshold_correction_factor.value - 0.80), 7) == 0
@@ -1161,10 +1161,10 @@ def test_load_v10():
     assert round(abs(module.threshold.threshold_range.max - 0.90), 7) == 0
     assert round(abs(module.threshold.manual_threshold.value - 0.03), 7) == 0
     assert module.threshold.thresholding_measurement == "Metadata_Threshold"
-    assert module.threshold.two_class_otsu == cellprofiler.modules.identify.O_TWO_CLASS
+    assert module.threshold.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
     assert (
         module.threshold.assign_middle_to_foreground
-        == cellprofiler.modules.identify.O_FOREGROUND
+        == cellprofiler_core.modules.identify.O_FOREGROUND
     )
     assert module.threshold.adaptive_window_size == 12
     #
@@ -1177,29 +1177,29 @@ def test_load_v10():
     assert not module.exclude_size
     assert not module.exclude_border_objects
     assert (
-        module.unclump_method
-        == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+            module.unclump_method
+            == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     )
     assert (
-        module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_NONE
+            module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_NONE
     )
     assert not module.automatic_smoothing
     assert not module.automatic_suppression
     assert not module.low_res_maxima
     assert module.fill_holes == cellprofiler.modules.identifyprimaryobjects.FH_NEVER
     assert (
-        module.limit_choice == cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
+            module.limit_choice == cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
     )
-    assert module.threshold.threshold_scope == cellprofiler.modules.identify.TS_GLOBAL
+    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
     assert (
-        module.threshold.global_operation.value == cellprofiler.modules.threshold.TM_LI
+            module.threshold.global_operation.value == cellprofiler.modules.threshold.TM_LI
     )
     assert (
-        module.threshold.two_class_otsu == cellprofiler.modules.identify.O_THREE_CLASS
+        module.threshold.two_class_otsu == cellprofiler_core.modules.identify.O_THREE_CLASS
     )
     assert (
         module.threshold.assign_middle_to_foreground
-        == cellprofiler.modules.identify.O_BACKGROUND
+        == cellprofiler_core.modules.identify.O_BACKGROUND
     )
     assert module.use_advanced.value
 
@@ -1209,8 +1209,8 @@ def test_load_v10():
     )
     assert module.unclump_method == cellprofiler.modules.identifyprimaryobjects.UN_NONE
     assert (
-        module.watershed_method
-        == cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
+            module.watershed_method
+            == cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
     )
     assert module.limit_choice == "None"
     assert module.threshold.global_operation.value == "None"
@@ -1223,9 +1223,9 @@ def test_load_v10():
     )
     assert module.unclump_method == cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
     assert (
-        module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
+            module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
     )
-    assert module.threshold.threshold_scope == cellprofiler.modules.identify.TS_GLOBAL
+    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
     assert (
         module.threshold.global_operation.value
         == centrosome.threshold.TM_ROBUST_BACKGROUND
@@ -1233,9 +1233,9 @@ def test_load_v10():
     assert module.threshold.lower_outlier_fraction.value == 0.02
     assert module.threshold.upper_outlier_fraction.value == 0.02
     assert (
-        module.threshold.averaging_method.value == cellprofiler.modules.identify.RB_MODE
+        module.threshold.averaging_method.value == cellprofiler_core.modules.identify.RB_MODE
     )
-    assert module.threshold.variance_method.value == cellprofiler.modules.identify.RB_SD
+    assert module.threshold.variance_method.value == cellprofiler_core.modules.identify.RB_SD
     assert module.threshold.number_of_deviations.value == 0
     assert module.threshold.threshold_correction_factor.value == 1.6
     assert module.use_advanced.value
@@ -1246,8 +1246,8 @@ def test_load_v10():
     )
     assert module.threshold.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
     assert (
-        module.threshold.global_operation.value
-        == cellprofiler.modules.threshold.TM_MANUAL
+            module.threshold.global_operation.value
+            == cellprofiler.modules.threshold.TM_MANUAL
     )
     assert module.use_advanced.value
 
@@ -1257,8 +1257,8 @@ def test_load_v10():
     )
     assert module.threshold.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
     assert (
-        module.threshold.global_operation.value
-        == cellprofiler.modules.threshold.TM_MEASUREMENT
+            module.threshold.global_operation.value
+            == cellprofiler.modules.threshold.TM_MEASUREMENT
     )
     assert module.use_advanced.value
 
@@ -1273,8 +1273,8 @@ def test_load_v10():
     )
     assert module.threshold.lower_outlier_fraction == 0.05
     assert module.threshold.upper_outlier_fraction == 0.05
-    assert module.threshold.averaging_method == cellprofiler.modules.identify.RB_MEAN
-    assert module.threshold.variance_method == cellprofiler.modules.identify.RB_SD
+    assert module.threshold.averaging_method == cellprofiler_core.modules.identify.RB_MEAN
+    assert module.threshold.variance_method == cellprofiler_core.modules.identify.RB_SD
     assert module.threshold.number_of_deviations == 2
     assert module.use_advanced.value
 
@@ -1289,24 +1289,24 @@ def test_01_load_new_robust_background():
     ) as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(io.StringIO(data))
     for module, averaging_method, variance_method in zip(
         pipeline.modules(),
         (
-            cellprofiler.modules.identify.RB_MEAN,
-            cellprofiler.modules.identify.RB_MEDIAN,
-            cellprofiler.modules.identify.RB_MODE,
+            cellprofiler_core.modules.identify.RB_MEAN,
+            cellprofiler_core.modules.identify.RB_MEDIAN,
+            cellprofiler_core.modules.identify.RB_MODE,
         ),
         (
-            cellprofiler.modules.identify.RB_SD,
-            cellprofiler.modules.identify.RB_MAD,
-            cellprofiler.modules.identify.RB_MAD,
+            cellprofiler_core.modules.identify.RB_SD,
+            cellprofiler_core.modules.identify.RB_MAD,
+            cellprofiler_core.modules.identify.RB_MAD,
         ),
     ):
         assert isinstance(
@@ -1335,17 +1335,17 @@ def test_discard_large():
     img = numpy.zeros((200, 200))
     draw_circle(img, (100, 100), 25, 0.5)
     draw_circle(img, (25, 25), 10, 0.5)
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -1386,17 +1386,17 @@ def test_keep_large():
     img = numpy.zeros((200, 200))
     draw_circle(img, (100, 100), 25, 0.5)
     draw_circle(img, (25, 25), 10, 0.5)
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -1431,17 +1431,17 @@ def test_discard_small():
     img = numpy.zeros((200, 200))
     draw_circle(img, (100, 100), 25, 0.5)
     draw_circle(img, (25, 25), 10, 0.5)
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -1484,17 +1484,17 @@ def test_regression_diagonal():
     img = numpy.zeros((10, 10))
     img[4, 4] = 1
     img[5, 5] = 1
-    image = cellprofiler.image.Image(img)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -1518,17 +1518,17 @@ def test_regression_adaptive_mask():
     img = numpy.random.uniform(size=(100, 100))
     mask = numpy.zeros(img.shape, bool)
     mask[-1, -1] = True
-    image = cellprofiler.image.Image(img, mask)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(img, mask)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.providers.append(
-        cellprofiler.image.VanillaImageProvider("my_image", image)
+        cellprofiler_core.image.VanillaImageProvider("my_image", image)
     )
-    object_set = cellprofiler.object.ObjectSet()
-    measurements = cellprofiler.measurement.Measurements()
-    pipeline = cellprofiler.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    measurements = cellprofiler_core.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     x.run(
-        cellprofiler.workspace.Workspace(
+        cellprofiler_core.workspace.Workspace(
             pipeline, x, image_set, object_set, measurements, None
         )
     )
@@ -1558,43 +1558,43 @@ def test_get_measurement_columns():
     x.x_name.value = "my_image"
     columns = x.get_measurement_columns(None)
     expected_columns = [
-        (cellprofiler.measurement.IMAGE, format % oname, coltype)
+        (cellprofiler_core.measurement.IMAGE, format % oname, coltype)
         for format, coltype in (
             (
-                cellprofiler.measurement.FF_COUNT,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.FF_COUNT,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
-                cellprofiler.measurement.FF_FINAL_THRESHOLD,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.FF_FINAL_THRESHOLD,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.measurement.FF_ORIG_THRESHOLD,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.FF_ORIG_THRESHOLD,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.measurement.FF_WEIGHTED_VARIANCE,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.FF_WEIGHTED_VARIANCE,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                cellprofiler.measurement.FF_SUM_OF_ENTROPIES,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.FF_SUM_OF_ENTROPIES,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
         )
     ]
     expected_columns += [
-        (oname, feature, cellprofiler.measurement.COLTYPE_FLOAT)
+        (oname, feature, cellprofiler_core.measurement.COLTYPE_FLOAT)
         for feature in (
-            cellprofiler.measurement.M_LOCATION_CENTER_X,
-            cellprofiler.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler.measurement.M_LOCATION_CENTER_Z,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_X,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
+            cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
         )
     ]
     expected_columns += [
         (
             oname,
-            cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER,
-            cellprofiler.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.measurement.COLTYPE_INTEGER,
         )
     ]
     assert len(columns) == len(expected_columns)
@@ -1794,11 +1794,11 @@ def test_regression_holes():
         ],
         bool,
     )
-    image = cellprofiler.image.Image(pixels)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(pixels)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("my_image", image)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
@@ -1814,10 +1814,10 @@ def test_regression_holes():
     x.threshold.manual_threshold.value = 0.1
     x.threshold.threshold_correction_factor.value = 1
     x.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(x)
-    measurements = cellprofiler.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    measurements = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, x, image_set, object_set, measurements, image_set_list
     )
     x.run(workspace)
@@ -1834,11 +1834,11 @@ def test_erase_objects():
     pixels[12:18, 2:8] = 0.5
     pixels[2:8, 12:18] = 0.5
     pixels[12:18, 12:18] = 0.5
-    image = cellprofiler.image.Image(pixels)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(pixels)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("my_image", image)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
@@ -1854,10 +1854,10 @@ def test_erase_objects():
     x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
     x.maximum_object_count.value = maximum_object_count
     x.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(x)
-    measurements = cellprofiler.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    measurements = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, x, image_set, object_set, measurements, image_set_list
     )
     x.run(workspace)
@@ -1875,11 +1875,11 @@ def test_dont_erase_objects():
     pixels[12:18, 2:8] = 0.5
     pixels[2:8, 12:18] = 0.5
     pixels[12:18, 12:18] = 0.5
-    image = cellprofiler.image.Image(pixels)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(pixels)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("my_image", image)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
     x.use_advanced.value = True
@@ -1895,10 +1895,10 @@ def test_dont_erase_objects():
     x.limit_choice.value = cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
     x.maximum_object_count.value = maximum_object_count
     x.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(x)
-    measurements = cellprofiler.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    measurements = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, x, image_set, object_set, measurements, image_set_list
     )
     x.run(workspace)
@@ -1912,14 +1912,14 @@ def test_threshold_by_measurement():
     pixels = numpy.zeros((10, 10))
     pixels[2:6, 2:6] = 0.5
 
-    image = cellprofiler.image.Image(pixels)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image = cellprofiler_core.image.Image(pixels)
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add("MyImage", image)
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
-    measurements = cellprofiler.measurement.Measurements()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    measurements = cellprofiler_core.measurement.Measurements()
     measurements.add_image_measurement("MeanIntensity_MyImage", numpy.mean(pixels))
 
     x = cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects()
@@ -1937,7 +1937,7 @@ def test_threshold_by_measurement():
     x.set_module_num(1)
     pipeline.add_module(x)
 
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, x, image_set, object_set, measurements, image_set_list
     )
     x.run(workspace)
@@ -1980,7 +1980,7 @@ def test_threshold_smoothing_automatic():
     module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
     # MCT on this image is zero, so set the threshold at .225
     # with the threshold minimum (manual = no smoothing)
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
     module.threshold.threshold_range.min = 0.225
     module.run(workspace)
@@ -2019,7 +2019,7 @@ def test_threshold_smoothing_manual():
     module.exclude_size.value = False
     module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
     module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    module.threshold.threshold_scope.value = cellprofiler.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
     module.threshold.threshold_range.min = 0.125
     module.threshold.threshold_smoothing_scale.value = 3
@@ -2052,8 +2052,8 @@ def test_threshold_no_smoothing():
         ]
     )
     for tm in (
-        cellprofiler.modules.identify.TS_MANUAL,
-        cellprofiler.modules.identify.TS_MEASUREMENT,
+        cellprofiler_core.modules.identify.TS_MANUAL,
+        cellprofiler_core.modules.identify.TS_MEASUREMENT,
     ):
         workspace, module = make_workspace(image)
         assert isinstance(
@@ -2073,7 +2073,7 @@ def test_threshold_no_smoothing():
         module.threshold.global_operation.value = tm
         module.threshold.manual_threshold.value = 0.125
         module.threshold.thresholding_measurement.value = MEASUREMENT_NAME
-        workspace.measurements[cellprofiler.measurement.IMAGE, MEASUREMENT_NAME] = 0.125
+        workspace.measurements[cellprofiler_core.measurement.IMAGE, MEASUREMENT_NAME] = 0.125
         module.threshold.threshold_smoothing_scale.value = 3
         module.run(workspace)
         labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented

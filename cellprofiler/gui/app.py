@@ -11,8 +11,8 @@ import wx
 import wx.lib.inspection
 
 import cellprofiler.gui.dialog
-import cellprofiler.preferences
-import cellprofiler.utilities.cpjvm
+import cellprofiler_core.preferences
+import cellprofiler_core.utilities.java
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +45,7 @@ class App(wx.App):
 
         self.workspace_path = kwargs.pop("workspace_path", None)
 
-        cellprofiler.utilities.cpjvm.cp_start_vm()
+        cellprofiler_core.utilities.java.start_java()
 
         super(App, self).__init__(*args, **kwargs)
 
@@ -67,17 +67,17 @@ class App(wx.App):
 
         self.frame.Show()
 
-        if cellprofiler.preferences.get_telemetry_prompt():
+        if cellprofiler_core.preferences.get_telemetry_prompt():
             telemetry = cellprofiler.gui.dialog.Telemetry()
 
             if telemetry.status == wx.ID_YES:
-                cellprofiler.preferences.set_telemetry(True)
+                cellprofiler_core.preferences.set_telemetry(True)
             else:
-                cellprofiler.preferences.set_telemetry(False)
+                cellprofiler_core.preferences.set_telemetry(False)
 
-            cellprofiler.preferences.set_telemetry_prompt(False)
+            cellprofiler_core.preferences.set_telemetry_prompt(False)
 
-        if cellprofiler.preferences.get_telemetry():
+        if cellprofiler_core.preferences.get_telemetry():
             sentry_handler = raven.handlers.logging.SentryHandler(sentry)
 
             sentry_handler.setLevel(logging.ERROR)
@@ -90,7 +90,7 @@ class App(wx.App):
         return True
 
     def OnExit(self):
-        cellprofiler.utilities.cpjvm.cp_stop_vm()
+        cellprofiler_core.utilities.java.stop_java()
 
         return 0
 

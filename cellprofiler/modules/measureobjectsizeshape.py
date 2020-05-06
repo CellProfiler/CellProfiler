@@ -7,10 +7,10 @@ import skimage.measure
 
 import cellprofiler.gui.help.content
 import cellprofiler.icons
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 __doc__ = """\
 MeasureObjectSizeShape
@@ -215,7 +215,7 @@ F_STANDARD = [
 ]
 
 
-class MeasureObjectSizeShape(cellprofiler.module.Module):
+class MeasureObjectSizeShape(cellprofiler_core.module.Module):
     module_name = "MeasureObjectSizeShape"
     variable_revision_number = 1
     category = "Measurement"
@@ -228,12 +228,12 @@ class MeasureObjectSizeShape(cellprofiler.module.Module):
         """
         self.object_groups = []
         self.add_object(can_remove=False)
-        self.spacer = cellprofiler.setting.Divider(line=True)
-        self.add_objects = cellprofiler.setting.DoSomething(
+        self.spacer = cellprofiler_core.setting.Divider(line=True)
+        self.add_objects = cellprofiler_core.setting.DoSomething(
             "", "Add another object", self.add_object
         )
 
-        self.calculate_zernikes = cellprofiler.setting.Binary(
+        self.calculate_zernikes = cellprofiler_core.setting.Binary(
             text="Calculate the Zernike features?",
             value=True,
             doc="""\
@@ -242,21 +242,21 @@ first 10 Zernike polynomials (from order 0 to order 9) are calculated,
 this operation can be time consuming if the image contains a lot of
 objects. Select *{NO}* if you are measuring 3D objects with this
 module.""".format(
-                **{"YES": cellprofiler.setting.YES, "NO": cellprofiler.setting.NO}
+                **{"YES": "Yes", "NO": "No"}
             ),
         )
 
     def add_object(self, can_remove=True):
         """Add a slot for another object"""
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
         if can_remove:
-            group.append("divider", cellprofiler.setting.Divider(line=False))
+            group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
         group.append(
             "name",
-            cellprofiler.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.ObjectNameSubscriber(
                 "Select objects to measure",
-                cellprofiler.setting.NONE,
+                "None",
                 doc="""Select the objects that you want to measure.""",
             ),
         )
@@ -264,7 +264,7 @@ module.""".format(
         if can_remove:
             group.append(
                 "remove",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove this object", self.object_groups, group
                 ),
             )
@@ -299,7 +299,7 @@ module.""".format(
         objects = set()
         for group in self.object_groups:
             if group.name.value in objects:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "%s has already been selected" % group.name.value, group.name
                 )
             objects.add(group.name.value)
@@ -661,40 +661,10 @@ module.""".format(
                     (
                         oname,
                         AREA_SHAPE + "_" + mname,
-                        cellprofiler.measurement.COLTYPE_FLOAT,
+                        cellprofiler_core.measurement.COLTYPE_FLOAT,
                     )
                 ]
         return cols
-
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
-        """Adjust the setting_values for older save file versions
-
-        setting_values - a list of strings representing the settings for
-                         this module.
-        variable_revision_number - the variable revision number of the module
-                                   that saved the settings
-        module_name - the name of the module that saved the settings
-        from_matlab - true if it was a Matlab module that saved the settings
-
-        returns the modified settings, revision number and "from_matlab" flag
-        """
-        if from_matlab and variable_revision_number == 2:
-            # Added Zernike question at revision # 2
-            setting_values = list(setting_values)
-            setting_values.append(cellprofiler.setting.NO)
-            variable_revision_number = 3
-
-        if from_matlab and variable_revision_number == 3:
-            # Remove the "Do not use" objects from the list
-            setting_values = numpy.array(setting_values)
-            setting_values = list(
-                setting_values[setting_values != cellprofiler.setting.DO_NOT_USE]
-            )
-            variable_revision_number = 1
-            from_matlab = False
-        return setting_values, variable_revision_number, from_matlab
 
     def volumetric(self):
         return True

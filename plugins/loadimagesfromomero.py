@@ -37,15 +37,15 @@ import traceback
 import numpy as np
 import wx
 
-import cellprofiler.image as cpimage
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.preferences as cpp
-import cellprofiler.setting as cps
+import cellprofiler_core.image as cpimage
+import cellprofiler_core.module as cpm
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.preferences as cpp
+import cellprofiler_core.setting as cps
 
 # get the default cellprofiler image names for the different
 # channels of an omero image from the loadimages module
-from cellprofiler.modules.loadimages import default_cpimage_name
+from cellprofiler_core.modules.loadimages import default_cpimage_name
 
 import omero
 from omero.rtypes import rlong

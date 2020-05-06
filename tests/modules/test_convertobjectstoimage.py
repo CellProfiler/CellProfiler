@@ -2,16 +2,16 @@ import numpy
 import pytest
 import scipy.sparse.coo
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
 import cellprofiler.modules.convertobjectstoimage
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 OBJECTS_NAME = "inputobjects"
 IMAGE_NAME = "outputimage"
@@ -28,7 +28,7 @@ def image_set(image_set_list):
 
 @pytest.fixture(scope="function")
 def object_set(objects):
-    object_set = cellprofiler.object.ObjectSet()
+    object_set = cellprofiler_core.object.ObjectSet()
 
     object_set.add_objects(objects, "inputobjects")
 
@@ -57,7 +57,7 @@ def volume_segmentation():
     ids=["image_segmentation", "volume_segmentation"],
 )
 def objects(request):
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
 
     objects.segmented = request.getfixturevalue(request.param)
 
@@ -212,19 +212,19 @@ def make_workspace_ijv():
 
     ijv = ijv[: numpy.prod(shape) - 1][~same, :]
 
-    pipeline = cellprofiler.pipeline.Pipeline()
-    object_set = cellprofiler.object.ObjectSet()
-    image_set_list = cellprofiler.image.ImageSetList()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
         object_set,
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
-    objects = cellprofiler.object.Objects()
+    objects = cellprofiler_core.object.Objects()
     objects.set_ijv(ijv, shape)
     object_set.add_objects(objects, OBJECTS_NAME)
     assert len(objects.get_labels()) > 1

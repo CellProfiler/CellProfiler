@@ -117,7 +117,7 @@ class TestCellProfiler(unittest.TestCase):
                 "1",
                 measurements_file,
             )
-            import cellprofiler.preferences as cpprefs
+            import cellprofiler_core.preferences as cpprefs
 
             self.assertTrue(os.path.exists(measurements_file))
             self.assertTrue(os.path.exists(done_file))

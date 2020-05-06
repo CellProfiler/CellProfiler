@@ -64,11 +64,11 @@ import sys
 import h5py
 import numpy as np
 
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.pipeline as cpp
-import cellprofiler.utilities.legacy
-from cellprofiler.preferences import get_headless
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.pipeline as cpp
+import cellprofiler_core.utilities.legacy
+from cellprofiler_core.preferences import get_headless
 
 
 class MergeOutputFiles(cpm.Module):
@@ -335,7 +335,7 @@ class MergeOutputFiles(cpm.Module):
         """
 
         def sortfn(item1, item2):
-            return cellprofiler.utilities.legacy.cmp(order[item1], order[item2])
+            return cellprofiler_core.utilities.legacy.cmp(order[item1], order[item2])
 
         list_ctrl.SortItems(sortfn)
 
@@ -362,7 +362,7 @@ class MergeOutputFiles(cpm.Module):
             has_error = [False]
 
             def callback(caller, event):
-                if isinstance(event, cpp.LoadExceptionEvent):
+                if isinstance(event, cpp.event.LoadException):
                     has_error = True
                     wx.MessageBox(
                         message="Could not load %s: %s" % (sources[0], event.error),
@@ -436,7 +436,7 @@ class MergeOutputFiles(cpm.Module):
 
 
 if __name__ == "__main__":
-    import cellprofiler.modules
+    import cellprofiler_core.modules
     import wx
 
     app = wx.PySimpleApp(False)

@@ -60,12 +60,12 @@ import numpy as np
 from centrosome.cpmorphology import centers_of_labels
 
 import cellprofiler.grid as cpg
-import cellprofiler.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
-from cellprofiler.modules.identify import get_object_measurement_columns
+import cellprofiler_core.module as cpm
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
+from cellprofiler_core.modules.identify import add_object_count_measurements
+from cellprofiler_core.modules.identify import add_object_location_measurements
+from cellprofiler_core.modules.identify import get_object_measurement_columns
 from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
 
 SHAPE_RECTANGLE = "Rectangle Forced Location"
@@ -93,7 +93,7 @@ class IdentifyObjectsInGrid(cpm.Module):
         """
         self.grid_name = cps.GridNameSubscriber(
             "Select the defined grid",
-            cps.NONE,
+            "None",
             doc="""Select the name of a grid created by a previous **DefineGrid** module.""",
         )
 
@@ -181,7 +181,7 @@ Enter the diameter to be used for each grid circle, in pixels.
 
         self.guiding_object_name = cps.ObjectNameSubscriber(
             "Select the guiding objects",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if "Circle" is selected as object shape and diameter is
 specified automatically, or if "Natural Location" is selected as the
@@ -196,7 +196,7 @@ depending on the method chosen.
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
 
-        These are the settings (from cellprofiler.settings) that are
+        These are the settings (from cellprofiler_core.settings) that are
         either read from the strings in the pipeline or written out
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
@@ -469,7 +469,7 @@ depending on the method chosen.
                 axes.add_line(line)
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         """Adjust setting values if they came from a previous revision
 
@@ -482,38 +482,8 @@ depending on the method chosen.
         module_name - the name of the module that did the saving. This can be
                       used to import the settings from another module if
                       that module was merged into the current module
-        from_matlab - True if the settings came from a Matlab pipeline, False
-                      if the settings are from a CellProfiler 2.0 pipeline.
-
-        Overriding modules should return a tuple of setting_values,
-        variable_revision_number and True if upgraded to CP 2.0, otherwise
-        they should leave things as-is so that the caller can report
-        an error.
         """
-        if from_matlab and variable_revision_number == 2:
-            grid_name, new_object_name, shape, old_object_name, diameter, save_outlines, failed_grid_choice = (
-                setting_values
-            )
-            if diameter == AM_AUTOMATIC:
-                diameter = "40"
-                diameter_choice = AM_AUTOMATIC
-            else:
-                diameter_choice = AM_MANUAL
-            wants_outlines = cps.NO if save_outlines == cps.DO_NOT_USE else cps.YES
-            setting_values = [
-                grid_name,
-                new_object_name,
-                shape,
-                diameter_choice,
-                diameter,
-                old_object_name,
-                wants_outlines,
-                save_outlines,
-            ]
-            variable_revision_number = 1
-            from_matlab = False
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Change shape_choice names: Rectangle > Rectangle Forced Location, Natural Shape > Natural Shape and Location
             if setting_values[2] == "Rectangle":
                 setting_values[2] = SHAPE_RECTANGLE
@@ -525,7 +495,7 @@ depending on the method chosen.
             setting_values = setting_values[:-2]
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_measurement_columns(self, pipeline):
         """Column definitions for measurements made by IdentifyPrimaryObjects"""

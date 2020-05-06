@@ -58,10 +58,10 @@ import numpy as np
 from scipy.linalg import lstsq
 
 import cellprofiler.gui.help.content
-import cellprofiler.image as cpi
-import cellprofiler.module as cpm
-import cellprofiler.preferences as cpprefs
-import cellprofiler.setting as cps
+import cellprofiler_core.image as cpi
+import cellprofiler_core.module as cpm
+import cellprofiler_core.preferences as cpprefs
+import cellprofiler_core.setting as cps
 
 CHOICE_HEMATOXYLIN = "Hematoxylin"
 ST_HEMATOXYLIN = (0.644, 0.717, 0.267)
@@ -172,7 +172,7 @@ class UnmixColors(cpm.Module):
 
         self.input_image_name = cps.ImageNameSubscriber(
             "Select the input color image",
-            cps.NONE,
+            "None",
             doc="""\
 Choose the name of the histologically stained color image
 loaded or created by some prior module.""",
@@ -467,7 +467,7 @@ blue absorbance values from the image.
         Returns a 3-tuple of the R/G/B absorbances
         """
 
-        from cellprofiler.modules.loadimages import LoadImagesImageProvider
+        from cellprofiler_core.modules.loadimages import LoadImagesImageProvider
         import wx
 
         dlg = wx.FileDialog(
@@ -518,32 +518,3 @@ blue absorbance values from the image.
             del self.outputs[stain_count:]
         while len(self.outputs) < stain_count:
             self.add_image()
-
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
-    ):
-        if (
-            from_matlab and variable_revision_number == 0
-        ):  # If coming from DifferentiateStains, no variable revision number
-            setting_values = list(setting_values)
-            stain1_absorbance = str.split(setting_values[5], ",")
-            stain2_absorbance = str.split(setting_values[6], ",")
-            new_setting_values = [
-                "2",  # Stain count
-                setting_values[0],  # Input image
-                setting_values[1],  # Output image name1
-                CHOICE_CUSTOM,  # Output stain1 choice for stain1
-                str(float(stain1_absorbance[0])),  # Red absorbance for stain1
-                str(float(stain1_absorbance[1])),  # Green absorbance for stain1
-                str(float(stain1_absorbance[2])),  # Blue absorbance for stain1
-                setting_values[2],  # Output image name2
-                CHOICE_CUSTOM,  # Output stain1 choice for stain2
-                str(float(stain2_absorbance[0])),  # Red absorbance for stain2
-                str(float(stain2_absorbance[1])),  # Green absorbance for stain2
-                str(float(stain2_absorbance[2])),
-            ]  # Blue absorbance for stain2
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 2
-
-        return setting_values, variable_revision_number, from_matlab

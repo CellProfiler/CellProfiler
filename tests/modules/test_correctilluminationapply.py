@@ -1,17 +1,17 @@
 import numpy
 import pytest
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.correctilluminationapply
-import cellprofiler.modules.injectimage
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.modules.injectimage
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 
 def error_callback(calller, event):
-    if isinstance(event, cellprofiler.pipeline.RunExceptionEvent):
+    if isinstance(event, cellprofiler_core.pipeline.event.RunException):
         pytest.fail(event.error.message)
 
 
@@ -21,12 +21,12 @@ def test_divide():
     image = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
     illum = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
     expected = image / illum
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    input_module = cellprofiler.modules.injectimage.InjectImage("InputImage", image)
+    input_module = cellprofiler_core.modules.injectimage.InjectImage("InputImage", image)
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
-    illum_module = cellprofiler.modules.injectimage.InjectImage("IllumImage", illum)
+    illum_module = cellprofiler_core.modules.injectimage.InjectImage("IllumImage", illum)
     illum_module.set_module_num(2)
     pipeline.add_module(illum_module)
     module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
@@ -40,9 +40,9 @@ def test_divide():
         cellprofiler.modules.correctilluminationapply.DOS_DIVIDE
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
-    image_set_list = cellprofiler.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    measurements = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
@@ -50,8 +50,8 @@ def test_divide():
     illum_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, input_module, image_set, object_set, measurements, image_set_list
     )
     input_module.run(workspace)
@@ -68,12 +68,12 @@ def test_subtract():
     illum = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
     expected = image - illum
     expected[expected < 0] = 0
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    input_module = cellprofiler.modules.injectimage.InjectImage("InputImage", image)
+    input_module = cellprofiler_core.modules.injectimage.InjectImage("InputImage", image)
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
-    illum_module = cellprofiler.modules.injectimage.InjectImage("IllumImage", illum)
+    illum_module = cellprofiler_core.modules.injectimage.InjectImage("IllumImage", illum)
     illum_module.set_module_num(2)
     pipeline.add_module(illum_module)
     module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
@@ -87,10 +87,10 @@ def test_subtract():
         cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
-    measurements = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    measurements = cellprofiler_core.measurement.Measurements()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    measurements = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
@@ -98,8 +98,8 @@ def test_subtract():
     illum_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, input_module, image_set, object_set, measurements, image_set_list
     )
     input_module.run(workspace)
@@ -116,12 +116,12 @@ def test_color_by_bw():
     illum = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
     expected = image - illum[:, :, numpy.newaxis]
     expected[expected < 0] = 0
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    input_module = cellprofiler.modules.injectimage.InjectImage("InputImage", image)
+    input_module = cellprofiler_core.modules.injectimage.InjectImage("InputImage", image)
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
-    illum_module = cellprofiler.modules.injectimage.InjectImage("IllumImage", illum)
+    illum_module = cellprofiler_core.modules.injectimage.InjectImage("IllumImage", illum)
     illum_module.set_module_num(2)
     pipeline.add_module(illum_module)
     module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
@@ -135,10 +135,10 @@ def test_color_by_bw():
         cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
-    measurements = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    measurements = cellprofiler_core.measurement.Measurements()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    measurements = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
@@ -146,8 +146,8 @@ def test_color_by_bw():
     illum_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, input_module, image_set, object_set, measurements, image_set_list
     )
     input_module.run(workspace)
@@ -164,12 +164,12 @@ def test_color_by_color():
     illum = numpy.random.uniform(size=(10, 10, 3)).astype(numpy.float32)
     expected = image - illum
     expected[expected < 0] = 0
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    input_module = cellprofiler.modules.injectimage.InjectImage("InputImage", image)
+    input_module = cellprofiler_core.modules.injectimage.InjectImage("InputImage", image)
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
-    illum_module = cellprofiler.modules.injectimage.InjectImage("IllumImage", illum)
+    illum_module = cellprofiler_core.modules.injectimage.InjectImage("IllumImage", illum)
     illum_module.set_module_num(2)
     pipeline.add_module(illum_module)
     module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
@@ -183,10 +183,10 @@ def test_color_by_color():
         cellprofiler.modules.correctilluminationapply.DOS_SUBTRACT
     )
     image.rescale_option = cellprofiler.modules.correctilluminationapply.RE_NONE
-    measurements = cellprofiler.measurement.Measurements()
-    image_set_list = cellprofiler.image.ImageSetList()
-    measurements = cellprofiler.measurement.Measurements()
-    workspace = cellprofiler.workspace.Workspace(
+    measurements = cellprofiler_core.measurement.Measurements()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    measurements = cellprofiler_core.measurement.Measurements()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, None, None, None, measurements, image_set_list
     )
     pipeline.prepare_run(workspace)
@@ -194,8 +194,8 @@ def test_color_by_color():
     illum_module.prepare_group(workspace, {}, [1])
     module.prepare_group(workspace, {}, [1])
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler.object.ObjectSet()
-    workspace = cellprofiler.workspace.Workspace(
+    object_set = cellprofiler_core.object.ObjectSet()
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline, input_module, image_set, object_set, measurements, image_set_list
     )
     input_module.run(workspace)

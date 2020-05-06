@@ -49,11 +49,11 @@ import matplotlib.patches
 import numpy
 from centrosome.filter import stretch
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.preferences
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 
 logger = logging.getLogger(__name__)
 
@@ -106,25 +106,25 @@ D_FIRST_CROPPING = "FirstCropping"
 D_FIRST_CROPPING_MASK = "FirstCroppingMask"
 
 
-class Crop(cellprofiler.module.Module):
+class Crop(cellprofiler_core.module.Module):
     module_name = "Crop"
     variable_revision_number = 3
     category = "Image Processing"
 
     def create_settings(self):
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             text="Select the input image",
-            value=cellprofiler.setting.NONE,
+            value="None",
             doc="Choose the image to be cropped.",
         )
 
-        self.cropped_image_name = cellprofiler.setting.CroppingNameProvider(
+        self.cropped_image_name = cellprofiler_core.setting.CroppingNameProvider(
             text="Name the output image",
             value="CropBlue",
             doc="Enter the name to be given to cropped image.",
         )
 
-        self.shape = cellprofiler.setting.Choice(
+        self.shape = cellprofiler_core.setting.Choice(
             text="Select the cropping shape",
             choices=[SH_RECTANGLE, SH_ELLIPSE, SH_IMAGE, SH_OBJECTS, SH_CROPPING],
             value=SH_RECTANGLE,
@@ -166,7 +166,7 @@ Choose the shape into which you would like to crop:
             ),
         )
 
-        self.crop_method = cellprofiler.setting.Choice(
+        self.crop_method = cellprofiler_core.setting.Choice(
             text="Select the cropping method",
             choices=[CM_COORDINATES, CM_MOUSE],
             value=CM_COORDINATES,
@@ -194,7 +194,7 @@ clicking with the mouse.
             ),
         )
 
-        self.individual_or_once = cellprofiler.setting.Choice(
+        self.individual_or_once = cellprofiler_core.setting.Choice(
             text="Apply which cycle's cropping pattern?",
             choices=[IO_INDIVIDUALLY, IO_FIRST],
             value=IO_INDIVIDUALLY,
@@ -210,7 +210,7 @@ Specify how a given cropping pattern should be applied to other image cycles:
             ),
         )
 
-        self.horizontal_limits = cellprofiler.setting.IntegerOrUnboundedRange(
+        self.horizontal_limits = cellprofiler_core.setting.IntegerOrUnboundedRange(
             text="Left and right rectangle positions",
             minval=0,
             doc="""\
@@ -235,7 +235,7 @@ Specify the left and right positions for the bounding rectangle by selecting one
             ),
         )
 
-        self.vertical_limits = cellprofiler.setting.IntegerOrUnboundedRange(
+        self.vertical_limits = cellprofiler_core.setting.IntegerOrUnboundedRange(
             text="Top and bottom rectangle positions",
             minval=0,
             doc="""\
@@ -258,7 +258,7 @@ Specify the top and bottom positions for the bounding rectangle by selecting one
             ),
         )
 
-        self.ellipse_center = cellprofiler.setting.Coordinates(
+        self.ellipse_center = cellprofiler_core.setting.Coordinates(
             text="Coordinates of ellipse center",
             value=(500, 500),
             doc="""\
@@ -270,7 +270,7 @@ Specify the center pixel position of the ellipse.
             ),
         )
 
-        self.ellipse_x_radius = cellprofiler.setting.Integer(
+        self.ellipse_x_radius = cellprofiler_core.setting.Integer(
             text="Ellipse radius, X direction",
             value=400,
             doc="""\
@@ -282,7 +282,7 @@ Specify the radius of the ellipse in the X direction.
             ),
         )
 
-        self.ellipse_y_radius = cellprofiler.setting.Integer(
+        self.ellipse_y_radius = cellprofiler_core.setting.Integer(
             text="Ellipse radius, Y direction",
             value=200,
             doc="""\
@@ -294,9 +294,9 @@ Specify the radius of the ellipse in the Y direction.
             ),
         )
 
-        self.image_mask_source = cellprofiler.setting.ImageNameSubscriber(
+        self.image_mask_source = cellprofiler_core.setting.ImageNameSubscriber(
             text="Select the masking image",
-            value=cellprofiler.setting.NONE,
+            value="None",
             doc="""\
 *(Used only if "{SH_IMAGE}" selected as cropping shape)*
 
@@ -306,9 +306,9 @@ Select the image to be use as a cropping mask.
             ),
         )
 
-        self.cropping_mask_source = cellprofiler.setting.CroppingNameSubscriber(
+        self.cropping_mask_source = cellprofiler_core.setting.CroppingNameSubscriber(
             text="Select the image with a cropping mask",
-            value=cellprofiler.setting.NONE,
+            value="None",
             doc="""\
 *(Used only if "{SH_CROPPING}" selected as cropping shape)*
 
@@ -318,9 +318,9 @@ Select the image associated with the cropping mask that you want to use.
             ),
         )
 
-        self.objects_source = cellprofiler.setting.ObjectNameSubscriber(
+        self.objects_source = cellprofiler_core.setting.ObjectNameSubscriber(
             text="Select the objects",
-            value=cellprofiler.setting.NONE,
+            value="None",
             doc="""\
 *(Used only if "{SH_OBJECTS}" selected as cropping shape)*
 
@@ -330,7 +330,7 @@ Select the objects that are to be used as a cropping mask.
             ),
         )
 
-        self.remove_rows_and_columns = cellprofiler.setting.Choice(
+        self.remove_rows_and_columns = cellprofiler_core.setting.Choice(
             text="Remove empty rows and columns?",
             choices=[RM_NO, RM_EDGES, RM_ALL],
             value=RM_ALL,
@@ -394,7 +394,7 @@ objects:
     def run(self, workspace):
         first_image_set = (
             workspace.measurements.get_current_image_measurement(
-                cellprofiler.measurement.GROUP_INDEX
+                cellprofiler_core.measurement.GROUP_INDEX
             )
             == 1
         )
@@ -458,16 +458,16 @@ objects:
                 image_mask = mask
         else:
             internal_cropping = self.remove_rows_and_columns == RM_ALL
-            cropped_pixel_data = cellprofiler.image.crop_image(
+            cropped_pixel_data = cellprofiler_core.image.crop_image(
                 orig_image.pixel_data, cropping, internal_cropping
             )
             if mask is None:
-                mask = cellprofiler.image.crop_image(
+                mask = cellprofiler_core.image.crop_image(
                     cropping, cropping, internal_cropping
                 )
             if orig_image.has_mask:
                 image_mask = (
-                    cellprofiler.image.crop_image(
+                    cellprofiler_core.image.crop_image(
                         orig_image.mask, cropping, internal_cropping
                     )
                     & mask
@@ -482,13 +482,13 @@ objects:
         if self.shape == SH_OBJECTS:
             # Special handling for objects - masked objects instead of
             # mask and crop mask
-            output_image = cellprofiler.image.Image(
+            output_image = cellprofiler_core.image.Image(
                 image=cropped_pixel_data,
                 masking_objects=masking_objects,
                 parent_image=orig_image,
             )
         else:
-            output_image = cellprofiler.image.Image(
+            output_image = cellprofiler_core.image.Image(
                 image=cropped_pixel_data,
                 mask=image_mask,
                 parent_image=orig_image,
@@ -543,9 +543,9 @@ objects:
         """Return information on the measurements made during cropping"""
         return [
             (
-                cellprofiler.measurement.IMAGE,
+                cellprofiler_core.measurement.IMAGE,
                 x % self.cropped_image_name.value,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             )
             for x in (FF_AREA_RETAINED, FF_ORIGINAL_AREA)
         ]
@@ -615,7 +615,7 @@ objects:
                 x = max(0, min(x, pixel_data.shape[1]))
                 y = max(0, min(y, pixel_data.shape[0]))
                 self.__selected = False
-                self.__color = cellprofiler.preferences.get_primary_outline_color()
+                self.__color = cellprofiler_core.preferences.get_primary_outline_color()
                 self.__color = numpy.hstack((self.__color, [255])).astype(float) / 255.0
                 self.__on_move = on_move
                 super(Handle, self).__init__(
@@ -688,7 +688,7 @@ objects:
             def __init__(self, top_left, bottom_right):
                 self.__left, self.__top = top_left
                 self.__right, self.__bottom = bottom_right
-                color = cellprofiler.preferences.get_primary_outline_color()
+                color = cellprofiler_core.preferences.get_primary_outline_color()
                 color = numpy.hstack((color, [255])).astype(float) / 255.0
                 self.rectangle = matplotlib.patches.Rectangle(
                     (min(self.__left, self.__right), min(self.__bottom, self.__top)),
@@ -754,7 +754,7 @@ objects:
                 self.center_x, self.center_y = center
                 self.radius_x = self.center_x + radius[0] / 2
                 self.radius_y = self.center_y + radius[1] / 2
-                color = cellprofiler.preferences.get_primary_outline_color()
+                color = cellprofiler_core.preferences.get_primary_outline_color()
                 color = numpy.hstack((color, [255])).astype(float) / 255.0
                 self.ellipse = matplotlib.patches.Ellipse(
                     center, self.width, self.height, edgecolor=color, facecolor="none"
@@ -941,53 +941,15 @@ objects:
         return cropping
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 4:
-            # Added OFF_REMOVE_ROWS_AND_COLUMNS
-            new_setting_values = list(setting_values)
-            new_setting_values.append(cellprofiler.setting.NO)
-            variable_revision_number = 5
-        if from_matlab and variable_revision_number == 5:
-            # added image mask source, cropping mask source and reworked
-            # the shape to add SH_IMAGE and SH_CROPPING
-            new_setting_values = list(setting_values)
-            new_setting_values.extend(
-                [
-                    cellprofiler.setting.NONE,
-                    cellprofiler.setting.NONE,
-                    cellprofiler.setting.NONE,
-                ]
-            )
-            shape = setting_values[OFF_SHAPE]
-            if shape not in (SH_ELLIPSE, SH_RECTANGLE):
-                # the "shape" is the name of some image file. If it
-                # starts with Cropping, then it's the crop mask of
-                # some other image
-                if shape.startswith("Cropping"):
-                    new_setting_values[OFF_CROPPING_MASK_SOURCE] = shape[
-                        len("Cropping") :
-                    ]
-                    new_setting_values[OFF_SHAPE] = SH_CROPPING
-                else:
-                    new_setting_values[OFF_IMAGE_MASK_SOURCE] = shape
-                    new_setting_values[OFF_SHAPE] = SH_IMAGE
-            if (
-                new_setting_values[OFF_REMOVE_ROWS_AND_COLUMNS]
-                == cellprofiler.setting.YES
-            ):
-                new_setting_values[OFF_REMOVE_ROWS_AND_COLUMNS] = RM_EDGES
-            setting_values = new_setting_values
-            variable_revision_number = 2
-            from_matlab = False
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             # Added ability to crop objects
             new_setting_values = list(setting_values)
-            new_setting_values.append(cellprofiler.setting.NONE)
+            new_setting_values.append("None")
             variable_revision_number = 2
 
-        if variable_revision_number == 2 and not from_matlab:
+        if variable_revision_number == 2:
             # minor - "Cropping" changed to "Previous cropping"
             setting_values = list(setting_values)
             if setting_values[OFF_SHAPE] == "Cropping":
@@ -1002,4 +964,4 @@ objects:
 
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

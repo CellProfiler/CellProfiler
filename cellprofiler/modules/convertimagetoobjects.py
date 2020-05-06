@@ -2,8 +2,8 @@
 import skimage
 import skimage.measure
 
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.module
+import cellprofiler_core.setting
 
 HELP_BINARY_IMAGE = """\
 This module can also convert a grayscale image to binary before converting it to an object.
@@ -41,7 +41,7 @@ YES          YES          NO
 )
 
 
-class ConvertImageToObjects(cellprofiler.module.ImageSegmentation):
+class ConvertImageToObjects(cellprofiler_core.module.image_segmentation.ImageSegmentation):
     category = "Object Processing"
 
     module_name = "ConvertImageToObjects"
@@ -51,11 +51,11 @@ class ConvertImageToObjects(cellprofiler.module.ImageSegmentation):
     def create_settings(self):
         super(ConvertImageToObjects, self).create_settings()
 
-        self.cast_to_bool = cellprofiler.setting.Binary(
+        self.cast_to_bool = cellprofiler_core.setting.Binary(
             text="Convert to boolean image", value=True, doc=HELP_BINARY_IMAGE
         )
 
-        self.preserve_labels = cellprofiler.setting.Binary(
+        self.preserve_labels = cellprofiler_core.setting.Binary(
             text="Preserve original labels",
             value=False,
             doc="""\
@@ -63,11 +63,11 @@ By default, this module will re-label the input image.
 Setting this to *{YES}* will ensure that the original labels 
 (i.e. pixel values of the objects) are preserved.
 """.format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": "Yes"}
             ),
         )
 
-        self.background_label = cellprofiler.setting.Integer(
+        self.background_label = cellprofiler_core.setting.Integer(
             text="Background label",
             value=0,
             doc="""\
@@ -76,7 +76,7 @@ By default, 0-valued pixels are considered as background pixels.
 """,
         )
 
-        self.connectivity = cellprofiler.setting.Integer(
+        self.connectivity = cellprofiler_core.setting.Integer(
             text="Connectivity",
             minval=0,
             value=0,

@@ -37,10 +37,10 @@ import cellprofiler.gui.preferencesview
 import cellprofiler.gui.welcome
 import cellprofiler.gui.workspace
 import cellprofiler.icons
-import cellprofiler.modules
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.modules
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +167,7 @@ class CPFrame(wx.Frame):
 
         super(CPFrame, self).__init__(*args, **kwds)
 
-        # background_color = cellprofiler.preferences.get_background_color()
+        # background_color = cellprofiler_core.preferences.get_background_color()
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
         #
         # Screen size metrics might be used below
@@ -362,7 +362,7 @@ class CPFrame(wx.Frame):
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)
-        if cellprofiler.preferences.get_startup_blurb():
+        if cellprofiler_core.preferences.get_startup_blurb():
             self.show_welcome_screen(True)
         self.show_module_ui(True)
 
@@ -580,7 +580,7 @@ class CPFrame(wx.Frame):
             wx.ID_OPEN,
             "Open Project...\tctrl+O",
             helpString="Open a project from a .{} project file".format(
-                cellprofiler.preferences.EXT_PROJECT
+                cellprofiler_core.preferences.EXT_PROJECT
             ),
         )
         self.recent_workspace_files = wx.Menu()
@@ -605,7 +605,7 @@ class CPFrame(wx.Frame):
             ID_FILE_LOAD_PIPELINE,
             "Pipeline from File...",
             "Import a pipeline into the project from a .%s file"
-            % cellprofiler.preferences.EXT_PIPELINE,
+            % cellprofiler_core.preferences.EXT_PIPELINE,
         )
         submenu.Append(
             ID_FILE_URL_LOAD_PIPELINE,
@@ -624,7 +624,7 @@ class CPFrame(wx.Frame):
             ID_FILE_SAVE_PIPELINE,
             "Pipeline...\tctrl+P",
             "Save the project's pipeline to a .%s file"
-            % cellprofiler.preferences.EXT_PIPELINE,
+            % cellprofiler_core.preferences.EXT_PIPELINE,
         )
         submenu.Append(
             ID_FILE_EXPORT_IMAGE_SETS,
@@ -829,7 +829,7 @@ class CPFrame(wx.Frame):
         self.__menu_bar.Append(self.__menu_file, "&File")
         self.__menu_bar.Append(self.menu_edit, "&Edit")
         self.__menu_bar.Append(self.__menu_debug, "&Test")
-        if cellprofiler.preferences.get_show_sampling():
+        if cellprofiler_core.preferences.get_show_sampling():
             self.__menu_sample = wx.Menu()
             self.__menu_sample.Append(
                 ID_SAMPLE_INIT,
@@ -916,7 +916,7 @@ class CPFrame(wx.Frame):
             self.__menu_data_tools_help_menu.Append(new_id, "Plate viewer")
             self.Bind(wx.EVT_MENU, on_plate_viewer_help, id=new_id)
 
-            for data_tool_name in cellprofiler.modules.get_data_tool_names():
+            for data_tool_name in cellprofiler_core.modules.get_data_tool_names():
                 new_id = wx.NewId()
                 self.__menu_data_tools_help_menu.Append(new_id, data_tool_name)
 
@@ -964,7 +964,7 @@ class CPFrame(wx.Frame):
 
             self.__data_tools_menu.AppendSeparator()
 
-            for data_tool_name in cellprofiler.modules.get_data_tool_names():
+            for data_tool_name in cellprofiler_core.modules.get_data_tool_names():
                 new_id = wx.NewId()
                 self.__data_tools_menu.Append(new_id, data_tool_name)
 
@@ -1304,7 +1304,7 @@ class CPFrame(wx.Frame):
             style=wx.FD_OPEN,
         )
         if dlg.ShowModal() == wx.ID_OK:
-            from cellprofiler.modules.loadimages import LoadImagesImageProvider
+            from cellprofiler_core.modules.loadimages import LoadImagesImageProvider
             from cellprofiler.gui.figure import Figure
 
             lip = LoadImagesImageProvider("dummy", "", dlg.GetPath())
@@ -1381,7 +1381,7 @@ class CPFrame(wx.Frame):
         self.SetIcon(cellprofiler.gui.get_cp_icon())
 
     def __on_data_tool(self, event, tool_name):
-        module = cellprofiler.modules.instantiate_module(tool_name)
+        module = cellprofiler_core.modules.instantiate_module(tool_name)
         args, varargs, varkw, vardef = inspect.getargspec(module.run_as_data_tool)
         if len(args) + (0 if varargs is None else len(varargs)) == 1:
             # Data tool doesn't need the data tool frame because it doesn't
@@ -1401,7 +1401,7 @@ class CPFrame(wx.Frame):
             )
 
     def __on_data_tool_help(self, event, tool_name):
-        module = cellprofiler.modules.instantiate_module(tool_name)
+        module = cellprofiler_core.modules.instantiate_module(tool_name)
         self.do_help_module(tool_name, module.get_help())
 
     def add_error_listener(self, listener):

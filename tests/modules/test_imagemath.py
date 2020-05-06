@@ -6,16 +6,16 @@ import pytest
 import six.moves
 import skimage.util
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
 import cellprofiler.modules.imagemath
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.workspace
 
-cellprofiler.preferences.set_headless()
+cellprofiler_core.preferences.set_headless()
 
 MEASUREMENT_NAME = "mymeasurement"
 
@@ -27,15 +27,15 @@ def module():
 
 @pytest.fixture(scope="function")
 def workspace(image_a, image_b, module):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         image_set=image_set,
         image_set_list=image_set_list,
         module=module,
-        pipeline=cellprofiler.pipeline.Pipeline(),
-        measurements=cellprofiler.measurement.Measurements(),
-        object_set=cellprofiler.object.ObjectSet(),
+        pipeline=cellprofiler_core.pipeline.Pipeline(),
+        measurements=cellprofiler_core.measurement.Measurements(),
+        object_set=cellprofiler_core.object.ObjectSet(),
     )
 
     workspace.image_set.add("input_a", image_a)
@@ -71,7 +71,7 @@ class TestVolumes(object):
         data_a = numpy.zeros((11, 11, 15))
         data_a[k ** 2 + i ** 2 + j ** 2 <= 25] = 1
 
-        image_a = cellprofiler.image.Image()
+        image_a = cellprofiler_core.image.Image()
         image_a.pixel_data = data_a
         image_a.dimensions = 3
 
@@ -84,7 +84,7 @@ class TestVolumes(object):
         data_b = numpy.zeros((11, 11, 15))
         data_b[k ** 2 + i ** 2 + j ** 2 <= 25] = 0.5
 
-        image_b = cellprofiler.image.Image()
+        image_b = cellprofiler_core.image.Image()
         image_b.pixel_data = data_b
         image_b.dimensions = 3
 
@@ -181,7 +181,7 @@ class TestBinaryImages(object):
     def image_a():
         data_a = numpy.random.rand(128, 128) > 0.5
 
-        image_a = cellprofiler.image.Image()
+        image_a = cellprofiler_core.image.Image()
         image_a.pixel_data = data_a
         image_a.dimensions = 2
 
@@ -192,7 +192,7 @@ class TestBinaryImages(object):
     def image_b():
         data_b = numpy.random.rand(128, 128) > 0.5
 
-        image_b = cellprofiler.image.Image()
+        image_b = cellprofiler_core.image.Image()
         image_b.pixel_data = data_b
         image_b.dimensions = 2
 
@@ -287,10 +287,10 @@ def test_load_v3():
     with open("./tests/resources/modules/imagemath/v3.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -305,13 +305,13 @@ def test_load_v3():
     assert module.ignore_mask
     assert module.output_image_name == "LogTransformed"
     assert (
-        module.images[0].image_or_measurement == cellprofiler.modules.imagemath.IM_IMAGE
+            module.images[0].image_or_measurement == cellprofiler.modules.imagemath.IM_IMAGE
     )
     assert module.images[0].image_name == "DNA"
     assert module.images[0].factor == 1.2
     assert (
-        module.images[1].image_or_measurement
-        == cellprofiler.modules.imagemath.IM_MEASUREMENT
+            module.images[1].image_or_measurement
+            == cellprofiler.modules.imagemath.IM_MEASUREMENT
     )
     assert module.images[1].measurement == "Count_Nuclei"
     assert module.images[1].factor == 1.5
@@ -321,10 +321,10 @@ def test_load_v4():
     with open("./tests/resources/modules/imagemath/v4.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -339,13 +339,13 @@ def test_load_v4():
     assert module.ignore_mask
     assert module.output_image_name == "LogTransformed"
     assert (
-        module.images[0].image_or_measurement == cellprofiler.modules.imagemath.IM_IMAGE
+            module.images[0].image_or_measurement == cellprofiler.modules.imagemath.IM_IMAGE
     )
     assert module.images[0].image_name == "DNA"
     assert module.images[0].factor == 1.2
     assert (
-        module.images[1].image_or_measurement
-        == cellprofiler.modules.imagemath.IM_MEASUREMENT
+            module.images[1].image_or_measurement
+            == cellprofiler.modules.imagemath.IM_MEASUREMENT
     )
     assert module.images[1].measurement == "Count_Nuclei"
     assert module.images[1].factor == 1.5
@@ -362,7 +362,7 @@ def run_imagemath(images, modify_module_fn=None, measurement=None):
              that allows the test to modify the module.
     measurement - an image measurement value
     """
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     module = cellprofiler.modules.imagemath.ImageMath()
     module.set_module_num(1)
@@ -374,21 +374,21 @@ def run_imagemath(images, modify_module_fn=None, measurement=None):
             module.add_image()
         name = "inputimage%s" % i
         module.images[i].image_name.value = name
-        img = cellprofiler.image.Image(pixel_data, mask=mask, crop_mask=cropping)
+        img = cellprofiler_core.image.Image(pixel_data, mask=mask, crop_mask=cropping)
         image_set.add(name, img)
     module.output_image_name.value = "outputimage"
     if modify_module_fn is not None:
         modify_module_fn(module)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
-    measurements = cellprofiler.measurement.Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     if measurement is not None:
         measurements.add_image_measurement(MEASUREMENT_NAME, str(measurement))
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
+        cellprofiler_core.object.ObjectSet(),
         measurements,
         image_set_list,
     )
@@ -829,18 +829,18 @@ def test_add_and_do_nothing():
     #
     r = numpy.random.RandomState()
     r.seed(1101)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     pixel_data = r.uniform(size=(20, 20))
-    m.add("inputimage", cellprofiler.image.Image(pixel_data))
+    m.add("inputimage", cellprofiler_core.image.Image(pixel_data))
     module = cellprofiler.modules.imagemath.ImageMath()
     module.images[0].image_name.value = "inputimage"
     module.output_image_name.value = "outputimage"
     module.operation.value = cellprofiler.modules.imagemath.O_NONE
     module.addend.value = 0.5
     module.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
-    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
     module.run(workspace)
     numpy.testing.assert_array_almost_equal(
         pixel_data, m.get_image("inputimage").pixel_data
@@ -853,23 +853,23 @@ def test_invert_binary_invert():
     #
     r = numpy.random.RandomState()
     r.seed(1102)
-    m = cellprofiler.measurement.Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     pixel_data = r.uniform(size=(20, 20)) > 0.5
-    m.add("inputimage", cellprofiler.image.Image(pixel_data))
+    m.add("inputimage", cellprofiler_core.image.Image(pixel_data))
     module = cellprofiler.modules.imagemath.ImageMath()
     module.images[0].image_name.value = "inputimage"
     module.output_image_name.value = "intermediateimage"
     module.operation.value = cellprofiler.modules.imagemath.O_INVERT
     module.set_module_num(1)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
     module = cellprofiler.modules.imagemath.ImageMath()
     module.images[0].image_name.value = "intermediateimage"
     module.output_image_name.value = "outputimage"
     module.operation.value = cellprofiler.modules.imagemath.O_INVERT
     module.set_module_num(2)
-    pipeline = cellprofiler.pipeline.Pipeline()
-    workspace = cellprofiler.workspace.Workspace(pipeline, module, m, None, m, None)
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
     for module in pipeline.modules():
         module.run(workspace)
     numpy.testing.assert_array_equal(

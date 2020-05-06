@@ -2,10 +2,10 @@ import numpy
 import numpy.testing
 import pytest
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.resizeobjects
-import cellprofiler.object
+import cellprofiler_core.object
 
 instance = cellprofiler.modules.resizeobjects.ResizeObjects()
 
@@ -69,14 +69,14 @@ def test_resize_by_factor_shrink_image_labels(
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+            "InputObjects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
         [1, 1, 1, 1],
     )
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+            "ResizeObjects", cellprofiler_core.measurement.FF_PARENT % "InputObjects"
         ),
         [1, 2, 3, 4],
     )
@@ -111,14 +111,14 @@ def test_resize_by_factor_enlarge_image_labels(
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+            "InputObjects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
         [1, 1, 1, 1],
     )
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+            "ResizeObjects", cellprofiler_core.measurement.FF_PARENT % "InputObjects"
         ),
         [1, 2, 3, 4],
     )
@@ -155,14 +155,14 @@ def test_resize_by_dimensions_shrink_image_labels(
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+            "InputObjects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
         [1, 1, 1, 1],
     )
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+            "ResizeObjects", cellprofiler_core.measurement.FF_PARENT % "InputObjects"
         ),
         [1, 2, 3, 4],
     )
@@ -199,14 +199,14 @@ def test_resize_by_dimensions_enlarge_image_labels(
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+            "InputObjects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
         [1, 1, 1, 1],
     )
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+            "ResizeObjects", cellprofiler_core.measurement.FF_PARENT % "InputObjects"
         ),
         [1, 2, 3, 4],
     )
@@ -241,14 +241,14 @@ def test_resize_by_factor_shrink_volume_labels(
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+            "InputObjects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
         [1, 1, 1, 1],
     )
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+            "ResizeObjects", cellprofiler_core.measurement.FF_PARENT % "InputObjects"
         ),
         [1, 2, 3, 4],
     )
@@ -283,14 +283,14 @@ def test_resize_by_factor_enlarge_volume_labels(
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+            "InputObjects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
         [1, 1, 1, 1],
     )
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+            "ResizeObjects", cellprofiler_core.measurement.FF_PARENT % "InputObjects"
         ),
         [1, 2, 3, 4],
     )
@@ -327,14 +327,14 @@ def test_resize_by_dimensions_shrink_volume_labels(
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+            "InputObjects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
         [1, 1, 1, 1],
     )
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+            "ResizeObjects", cellprofiler_core.measurement.FF_PARENT % "InputObjects"
         ),
         [1, 2, 3, 4],
     )
@@ -371,14 +371,14 @@ def test_resize_by_dimensions_enlarge_volume_labels(
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+            "InputObjects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
         [1, 1, 1, 1],
     )
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+            "ResizeObjects", cellprofiler_core.measurement.FF_PARENT % "InputObjects"
         ),
         [1, 2, 3, 4],
     )
@@ -389,7 +389,7 @@ def test_resize_by_image(
 ):
     objects_empty.segmented = image_labels
     pixel_data = numpy.zeros((10, 5))
-    workspace_empty.image_set.add("TestImage", cellprofiler.image.Image(pixel_data))
+    workspace_empty.image_set.add("TestImage", cellprofiler_core.image.Image(pixel_data))
     module.x_name.value = "InputObjects"
     module.method.value = "Match Image"
     module.specific_image.value = "TestImage"
@@ -408,14 +408,14 @@ def test_resize_by_image(
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+            "InputObjects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
         [1, 1, 1, 1],
     )
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+            "ResizeObjects", cellprofiler_core.measurement.FF_PARENT % "InputObjects"
         ),
         [1, 2, 3, 4],
     )
@@ -426,7 +426,7 @@ def test_resize_by_image_volume(
 ):
     objects_empty.segmented = volume_labels
     pixel_data = numpy.zeros((9, 10, 5))
-    workspace_empty.image_set.add("TestImage", cellprofiler.image.Image(pixel_data, dimensions=3))
+    workspace_empty.image_set.add("TestImage", cellprofiler_core.image.Image(pixel_data, dimensions=3))
     module.x_name.value = "InputObjects"
     module.method.value = "Match Image"
     module.specific_image.value = "TestImage"
@@ -445,14 +445,14 @@ def test_resize_by_image_volume(
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "InputObjects", cellprofiler.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
+            "InputObjects", cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ResizeObjects"
         ),
         [1, 1, 1, 1],
     )
 
     numpy.testing.assert_array_equal(
         workspace_empty.measurements.get_current_measurement(
-            "ResizeObjects", cellprofiler.measurement.FF_PARENT % "InputObjects"
+            "ResizeObjects", cellprofiler_core.measurement.FF_PARENT % "InputObjects"
         ),
         [1, 2, 3, 4],
     )

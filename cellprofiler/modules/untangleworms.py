@@ -104,21 +104,21 @@ from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from scipy.sparse import coo
 
-import cellprofiler.measurement
+import cellprofiler_core.measurement
 
 logger = logging.getLogger(__name__)
 import cellprofiler
-import cellprofiler.module as cpm
-import cellprofiler.measurement as cpmeas
-import cellprofiler.image as cpi
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
+import cellprofiler_core.module as cpm
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.image as cpi
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
 import centrosome.cpmorphology as morph
-import cellprofiler.preferences as cpprefs
-from cellprofiler.modules import identify as I
+import cellprofiler_core.preferences as cpprefs
+from cellprofiler_core.modules import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
-from cellprofiler.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler.modules._help import (
     USING_METADATA_GROUPING_HELP_REF,
     IO_FOLDER_CHOICE_HELP_TEXT,
@@ -131,7 +131,7 @@ purposes by overlaying them on your image of choice using the
 **OverlayOutlines** module and then saving the overlay image with the
 **SaveImages** module.
 """.format(
-    **{"YES": cps.YES}
+    **{"YES": "Yes"}
 )
 
 OO_WITH_OVERLAP = "With overlap"
@@ -246,7 +246,7 @@ class UntangleWorms(cpm.Module):
 
         self.image_name = cps.ImageNameSubscriber(
             "Select the input binary image",
-            cps.NONE,
+            "None",
             doc="""\
 A binary image where the foreground indicates the worm
 shapes. The binary image can be produced by the **ApplyThreshold**
@@ -1142,13 +1142,13 @@ should be processed.
                 center_x = np.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
                 center_y = np.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
             measurements.add_measurement(
-                name, cellprofiler.measurement.M_LOCATION_CENTER_X, center_x
+                name, cellprofiler_core.measurement.M_LOCATION_CENTER_X, center_x
             )
             measurements.add_measurement(
-                name, cellprofiler.measurement.M_LOCATION_CENTER_Y, center_y
+                name, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, center_y
             )
             measurements.add_measurement(
-                name, cellprofiler.measurement.M_NUMBER_OBJECT_NUMBER, o.indices
+                name, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER, o.indices
             )
             #
             # Save outlines
@@ -1157,7 +1157,7 @@ should be processed.
                 from matplotlib.cm import ScalarMappable
 
                 colormap = self.overlapping_outlines_colormap.value
-                if colormap == cps.DEFAULT:
+                if colormap == "Default":
                     colormap = cpprefs.get_default_colormap()
                 if len(ijv) == 0:
                     ishape = image.pixel_data.shape
@@ -2866,7 +2866,7 @@ should be processed.
 
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [cellprofiler.measurement.C_COUNT]
+            return [cellprofiler_core.measurement.C_COUNT]
         if (
             object_name == self.overlap_objects.value
             and self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
@@ -2875,8 +2875,8 @@ should be processed.
             and self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         ):
             return [
-                cellprofiler.measurement.C_LOCATION,
-                cellprofiler.measurement.C_NUMBER,
+                cellprofiler_core.measurement.C_LOCATION,
+                cellprofiler_core.measurement.C_NUMBER,
                 C_WORM,
             ]
         return []
@@ -2885,7 +2885,7 @@ should be processed.
         wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
         wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         result = []
-        if object_name == cpmeas.IMAGE and category == cellprofiler.measurement.C_COUNT:
+        if object_name == cpmeas.IMAGE and category == cellprofiler_core.measurement.C_COUNT:
             if wants_overlapping:
                 result += [self.overlap_objects.value]
             if wants_nonoverlapping:
@@ -2893,13 +2893,13 @@ should be processed.
         if (wants_overlapping and object_name == self.overlap_objects) or (
             wants_nonoverlapping and object_name == self.nonoverlapping_objects
         ):
-            if category == cellprofiler.measurement.C_LOCATION:
+            if category == cellprofiler_core.measurement.C_LOCATION:
                 result += [
-                    cellprofiler.measurement.FTR_CENTER_X,
-                    cellprofiler.measurement.FTR_CENTER_Y,
+                    cellprofiler_core.measurement.FTR_CENTER_X,
+                    cellprofiler_core.measurement.FTR_CENTER_Y,
                 ]
-            elif category == cellprofiler.measurement.C_NUMBER:
-                result += [cellprofiler.measurement.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler_core.measurement.C_NUMBER:
+                result += [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
             elif category == C_WORM:
                 result += [F_LENGTH, F_ANGLE, F_CONTROL_POINT_X, F_CONTROL_POINT_Y]
         return result
@@ -2940,13 +2940,13 @@ should be processed.
         return True
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
             # Added complexity
             setting_values = setting_values + [C_ALL, "400"]
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
 
 def read_params(training_set_directory, training_set_file_name, d):
@@ -3022,7 +3022,7 @@ def read_params(training_set_directory, training_set_file_name, d):
         ):
             return d[file_name][0]
 
-    if training_set_directory.dir_choice == cps.URL_FOLDER_NAME:
+    if training_set_directory.dir_choice == cpprefs.URL_FOLDER_NAME:
         url = file_name
         fd_or_file = six.moves.urllib.request.urlopen(url)
         is_url = True

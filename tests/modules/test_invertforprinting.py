@@ -1,11 +1,11 @@
 import numpy
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.invertforprinting
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 I_RED_IN = "RedInput"
 I_GREEN_IN = "GreenInput"
@@ -28,7 +28,7 @@ def run_module(
 
     Returns a dictionary of the pixel data of the images in the image set
     """
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     module = cellprofiler.modules.invertforprinting.InvertForPrinting()
     module.set_module_num(1)
@@ -39,7 +39,7 @@ def run_module(
         (blue_image, I_BLUE_IN, module.blue_input_image, module.wants_blue_input),
     ):
         if image is not None:
-            img = cellprofiler.image.Image(image)
+            img = cellprofiler_core.image.Image(image)
             image_set.add(name, img)
             setting.value = name
             if check is not None:
@@ -55,19 +55,19 @@ def run_module(
         setting.value = name
     if fn is not None:
         fn(module)
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.object.ObjectSet(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     module.run(workspace)

@@ -1,12 +1,12 @@
 import numpy
 import six.moves
 
-import cellprofiler.image
-import cellprofiler.measurement
+import cellprofiler_core.image
+import cellprofiler_core.measurement
 import cellprofiler.modules.tile
-import cellprofiler.object
-import cellprofiler.pipeline
-import cellprofiler.workspace
+import cellprofiler_core.object
+import cellprofiler_core.pipeline
+import cellprofiler_core.workspace
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
@@ -20,10 +20,10 @@ def test_load_v1():
     with open("./tests/resources/modules/tile/v1.pipeline", "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.LoadExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -54,24 +54,24 @@ def make_tile_workspace(images):
     module.input_image.value = INPUT_IMAGE_NAME
     module.output_image.value = OUTPUT_IMAGE_NAME
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     for i, image in enumerate(images):
         image_set = image_set_list.get_image_set(i)
-        image_set.add(INPUT_IMAGE_NAME, cellprofiler.image.Image(image))
+        image_set.add(INPUT_IMAGE_NAME, cellprofiler_core.image.Image(image))
 
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set_list.get_image_set(0),
-        cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.object.ObjectSet(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -84,7 +84,7 @@ def test_manual_rows_and_columns():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
@@ -115,7 +115,7 @@ def test_automatic_rows():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = True
     module.rows.value = 8
@@ -146,7 +146,7 @@ def test_automatic_columns():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = True
     module.wants_automatic_rows.value = False
     module.rows.value = 6
@@ -177,7 +177,7 @@ def test_automatic_rows_and_columns():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = True
     module.wants_automatic_rows.value = True
     module.rows.value = 365
@@ -207,7 +207,7 @@ def test_color():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
@@ -238,7 +238,7 @@ def test_columns_first():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
@@ -270,7 +270,7 @@ def test_top_right():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
@@ -303,7 +303,7 @@ def test_bottom_left():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
@@ -336,7 +336,7 @@ def test_bottom_right():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
@@ -372,7 +372,7 @@ def test_different_sizes():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 1
@@ -402,7 +402,7 @@ def test_filtered():
     ]
     workspace, module = make_tile_workspace(images)
     assert isinstance(module, cellprofiler.modules.tile.Tile)
-    assert isinstance(workspace, cellprofiler.workspace.Workspace)
+    assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     module.wants_automatic_columns.value = False
     module.wants_automatic_rows.value = False
     module.rows.value = 6
@@ -430,7 +430,7 @@ def test_filtered():
 
 
 def make_place_workspace(images):
-    image_set_list = cellprofiler.image.ImageSetList()
+    image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     module = cellprofiler.modules.tile.Tile()
     module.set_module_num(1)
@@ -447,22 +447,22 @@ def make_place_workspace(images):
             if len(module.additional_images) <= i:
                 module.add_image()
             module.additional_images[i - 1].input_image_name.value = image_name
-        image_set.add(image_name, cellprofiler.image.Image(image))
+        image_set.add(image_name, cellprofiler_core.image.Image(image))
 
-    pipeline = cellprofiler.pipeline.Pipeline()
+    pipeline = cellprofiler_core.pipeline.Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler.pipeline.RunExceptionEvent)
+        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
 
-    workspace = cellprofiler.workspace.Workspace(
+    workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
         module,
         image_set,
-        cellprofiler.object.ObjectSet(),
-        cellprofiler.measurement.Measurements(),
+        cellprofiler_core.object.ObjectSet(),
+        cellprofiler_core.measurement.Measurements(),
         image_set_list,
     )
     return workspace, module
@@ -476,7 +476,7 @@ def test_some_images():
         ]
         workspace, module = make_place_workspace(images)
         assert isinstance(module, cellprofiler.modules.tile.Tile)
-        assert isinstance(workspace, cellprofiler.workspace.Workspace)
+        assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
 
         module.run(workspace)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)

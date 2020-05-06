@@ -4,15 +4,15 @@ import centrosome.cpmorphology as morph
 import numpy as np
 import scipy.ndimage as scind
 
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
-from cellprofiler.measurement import C_PARENT, FF_CHILDREN_COUNT, FF_PARENT
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
+from cellprofiler_core.measurement import C_PARENT, FF_CHILDREN_COUNT, FF_PARENT
 from cellprofiler.modules import _help
-from cellprofiler.modules.identify import add_object_count_measurements
-from cellprofiler.modules.identify import add_object_location_measurements
-from cellprofiler.modules.identify import get_object_measurement_columns
+from cellprofiler_core.modules.identify import add_object_count_measurements
+from cellprofiler_core.modules.identify import add_object_location_measurements
+from cellprofiler_core.modules.identify import get_object_measurement_columns
 
 __doc__ = """\
 SplitOrMergeObjects
@@ -107,7 +107,7 @@ class SplitOrMergeObjects(cpm.Module):
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
             "Select the input objects",
-            cps.NONE,
+            "None",
             doc="""\
 Select the objects you would like to split or merge (that is,
 whose object numbers you want to reassign). You can
@@ -176,7 +176,7 @@ create an output object that is the convex hull around them all."""
 
         self.parent_object = cps.Choice(
             "Select the parent object",
-            [cps.NONE],
+            ["None"],
             choices_fn=self.get_parent_choices,
             doc="""\
 Select the parent object that will be used to merge the child objects.
@@ -224,7 +224,7 @@ objects within the grayscale image are met."""
 
         self.image_name = cps.ImageNameSubscriber(
             "Select the grayscale image to guide merging",
-            cps.NONE,
+            "None",
             doc="""\
 *(Used only if a grayscale image is to be used as a guide for
 merging)*
@@ -289,7 +289,7 @@ above):
 
     def get_parent_choices(self, pipeline):
         columns = pipeline.get_measurement_columns()
-        choices = [cps.NONE]
+        choices = ["None"]
         for column in columns:
             object_name, feature, coltype = column[:3]
             if object_name == self.objects_name.value and feature.startswith(C_PARENT):
@@ -300,10 +300,10 @@ above):
         if (
             self.relabel_option == OPTION_MERGE
             and self.merge_option == UNIFY_PARENT
-            and self.parent_object.value == cps.NONE
+            and self.parent_object.value == "None"
         ):
             raise cps.ValidationError(
-                "%s is not a valid object name" % cps.NONE, self.parent_object
+                "%s is not a valid object name" % "None", self.parent_object
             )
 
     def settings(self):
@@ -617,21 +617,16 @@ above):
         return new_labels
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab:
-            raise NotImplementedError(
-                "There is no automatic upgrade path for this module from MATLAB pipelines."
-            )
-
         if variable_revision_number == 1:
             # Added outline options
-            setting_values += [cps.NO, "RelabeledNucleiOutlines"]
+            setting_values += ["No", "RelabeledNucleiOutlines"]
             variable_revision_number = 2
 
         if variable_revision_number == 1:
             # Added per-parent unification
-            setting_values += [UNIFY_DISTANCE, cps.NONE]
+            setting_values += [UNIFY_DISTANCE, "None"]
             variable_revision_number = 3
 
         if variable_revision_number == 3:
@@ -649,7 +644,7 @@ above):
 
             variable_revision_number = 6
 
-        return setting_values, variable_revision_number, False
+        return setting_values, variable_revision_number
 
     def get_image(self, workspace):
         """Get the image for image-directed merging"""

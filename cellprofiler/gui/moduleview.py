@@ -26,9 +26,9 @@ import cellprofiler.gui.html.utils
 import cellprofiler.gui.htmldialog
 import cellprofiler.gui.pipeline
 import cellprofiler.icons
-import cellprofiler.pipeline
-import cellprofiler.preferences
-import cellprofiler.setting
+import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 from cellprofiler.gui import (
     cornerbuttonmixin,
     metadatactrl,
@@ -283,7 +283,7 @@ class ModuleView(object):
         self.notes_panel = notes_panel
         self.__frame = frame
         self.top_panel = top_panel
-        background_color = cellprofiler.preferences.get_background_color()
+        background_color = cellprofiler_core.preferences.get_background_color()
         #############################################
         #
         # Build the top-level GUI windows
@@ -386,7 +386,7 @@ class ModuleView(object):
             )
             settings = []
         try:
-            assert all([isinstance(s, cellprofiler.setting.Setting) for s in settings])
+            assert all([isinstance(s, cellprofiler_core.setting.Setting) for s in settings])
         except:
             wx.MessageBox(
                 "Module %s.visible_settings() returned something other than a list of Settings!\n  value: %s"
@@ -453,13 +453,13 @@ class ModuleView(object):
             #
             #################################
             for i, v in enumerate(settings):
-                if isinstance(v, cellprofiler.setting.PathListDisplay):
+                if isinstance(v, cellprofiler_core.setting.PathListDisplay):
                     path_control = v
                     self.__frame.pipeline_controller.set_path_list_filtering(
                         v.using_filter
                     )
                     continue
-                if isinstance(v, cellprofiler.setting.ImageSetDisplay):
+                if isinstance(v, cellprofiler_core.setting.ImageSetDisplay):
                     v.on_event_fired = self.__frame.reset_imageset_ctrl
                     imageset_control = v
                     continue
@@ -489,68 +489,68 @@ class ModuleView(object):
                 if control:
                     control.Show()
                 self.__static_texts.append(static_text)
-                if isinstance(v, cellprofiler.setting.Binary):
+                if isinstance(v, cellprofiler_core.setting.Binary):
                     control = self.make_binary_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
                     text_sizer_item.Flag = (
                         wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL | wx.ALL
                     )
-                elif isinstance(v, cellprofiler.setting.MeasurementMultiChoice):
+                elif isinstance(v, cellprofiler_core.setting.MeasurementMultiChoice):
                     control = self.make_measurement_multichoice_control(
                         v, control_name, control
                     )
-                elif isinstance(v, cellprofiler.setting.SubdirectoryFilter):
+                elif isinstance(v, cellprofiler_core.setting.SubdirectoryFilter):
                     control = self.make_subdirectory_filter_control(
                         v, control_name, control
                     )
-                elif isinstance(v, cellprofiler.setting.MultiChoice):
+                elif isinstance(v, cellprofiler_core.setting.MultiChoice):
                     control = self.make_multichoice_control(v, control_name, control)
-                elif isinstance(v, cellprofiler.setting.CustomChoice):
+                elif isinstance(v, cellprofiler_core.setting.CustomChoice):
                     control = self.make_choice_control(
                         v, v.get_choices(), control_name, wx.CB_DROPDOWN, control
                     )
-                elif isinstance(v, cellprofiler.setting.Colormap):
+                elif isinstance(v, cellprofiler_core.setting.Colormap):
                     control = self.make_colormap_control(v, control_name, control)
-                elif isinstance(v, cellprofiler.setting.Choice):
+                elif isinstance(v, cellprofiler_core.setting.Choice):
                     control = self.make_choice_control(
                         v, v.get_choices(), control_name, wx.CB_READONLY, control
                     )
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cellprofiler.setting.NameSubscriber):
+                elif isinstance(v, cellprofiler_core.setting.NameSubscriber):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_name_subscriber_control(
                         v, choices, control_name, control
                     )
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cellprofiler.setting.FigureSubscriber):
+                elif isinstance(v, cellprofiler_core.setting.FigureSubscriber):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_choice_control(
                         v, choices, control_name, wx.CB_DROPDOWN, control
                     )
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cellprofiler.setting.DoSomething):
+                elif isinstance(v, cellprofiler_core.setting.DoSomething):
                     if (
-                        isinstance(v, cellprofiler.setting.PathListRefreshButton)
+                        isinstance(v, cellprofiler_core.setting.PathListRefreshButton)
                         and v.callback is None
                     ):
                         v.callback = self.__frame.pipeline_controller.on_update_pathlist
                     control = self.make_callback_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cellprofiler.setting.DoThings):
+                elif isinstance(v, cellprofiler_core.setting.DoThings):
                     control = self.make_callback_controls(v, control_name, control)
-                elif isinstance(v, cellprofiler.setting.IntegerOrUnboundedRange):
+                elif isinstance(v, cellprofiler_core.setting.IntegerOrUnboundedRange):
                     control = self.make_unbounded_range_control(v, control)
-                elif isinstance(v, cellprofiler.setting.IntegerRange) or isinstance(
-                    v, cellprofiler.setting.FloatRange
+                elif isinstance(v, cellprofiler_core.setting.IntegerRange) or isinstance(
+                    v, cellprofiler_core.setting.FloatRange
                 ):
                     control = self.make_range_control(v, control)
-                elif isinstance(v, cellprofiler.setting.Coordinates):
+                elif isinstance(v, cellprofiler_core.setting.Coordinates):
                     control = self.make_coordinates_control(v, control)
-                elif isinstance(v, cellprofiler.setting.RegexpText):
+                elif isinstance(v, cellprofiler_core.setting.RegexpText):
                     control = self.make_regexp_control(v, control)
-                elif isinstance(v, cellprofiler.setting.Measurement):
+                elif isinstance(v, cellprofiler_core.setting.Measurement):
                     control = self.make_measurement_control(v, control)
-                elif isinstance(v, cellprofiler.setting.Divider):
+                elif isinstance(v, cellprofiler_core.setting.Divider):
                     if control is None:
                         if v.line:
                             control = wx.StaticLine(
@@ -562,27 +562,27 @@ class ModuleView(object):
                             )
                     flag = wx.EXPAND | wx.ALL
                     border = 2
-                elif isinstance(v, cellprofiler.setting.FilenameText):
+                elif isinstance(v, cellprofiler_core.setting.FilenameText):
                     control = self.make_filename_text_control(v, control)
-                elif isinstance(v, cellprofiler.setting.DirectoryPath):
+                elif isinstance(v, cellprofiler_core.setting.DirectoryPath):
                     control = self.make_directory_path_control(v, control_name, control)
-                elif isinstance(v, cellprofiler.setting.Pathname):
+                elif isinstance(v, cellprofiler_core.setting.Pathname):
                     control = self.make_pathname_control(v, control)
-                elif isinstance(v, cellprofiler.setting.ImagePlane):
+                elif isinstance(v, cellprofiler_core.setting.ImagePlane):
                     control = self.make_image_plane_control(v, control)
-                elif isinstance(v, cellprofiler.setting.Color):
+                elif isinstance(v, cellprofiler_core.setting.Color):
                     control = self.make_color_control(v, control_name, control)
-                elif isinstance(v, cellprofiler.setting.TreeChoice):
+                elif isinstance(v, cellprofiler_core.setting.TreeChoice):
                     control = self.make_tree_choice_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cellprofiler.setting.Filter):
+                elif isinstance(v, cellprofiler_core.setting.Filter):
                     if control is not None:
                         control.filter_panel_controller.update()
                     else:
                         fc = FilterPanelController(self, v, control)
                         control = fc.panel
                         control.filter_panel_controller = fc
-                elif isinstance(v, cellprofiler.setting.FileCollectionDisplay):
+                elif isinstance(v, cellprofiler_core.setting.FileCollectionDisplay):
                     if control is not None:
                         # control.file_collection_display.update()
                         pass
@@ -590,7 +590,7 @@ class ModuleView(object):
                         fcd = FileCollectionDisplayController(self, v, self.__pipeline)
                         control = fcd.panel
                         fcd.panel.file_collection_display = fcd
-                elif isinstance(v, cellprofiler.setting.Table):
+                elif isinstance(v, cellprofiler_core.setting.Table):
                     if v.use_sash:
                         table_control = v
                         grid = self.__frame.get_grid_ctrl()
@@ -606,19 +606,19 @@ class ModuleView(object):
                         continue
                     control = self.make_table_control(v, control)
                     flag = wx.EXPAND
-                elif isinstance(v, cellprofiler.setting.HTMLText):
+                elif isinstance(v, cellprofiler_core.setting.HTMLText):
                     control = self.make_html_control(v, control)
                     flag = wx.EXPAND | wx.ALL
-                elif isinstance(v, cellprofiler.setting.Joiner):
+                elif isinstance(v, cellprofiler_core.setting.Joiner):
                     control = JoinerController.update_control(self, v)
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cellprofiler.setting.BinaryMatrix):
+                elif isinstance(v, cellprofiler_core.setting.BinaryMatrix):
                     control = BinaryMatrixController.update_control(self, v)
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cellprofiler.setting.DataTypes):
+                elif isinstance(v, cellprofiler_core.setting.DataTypes):
                     control = DataTypeController.update_control(self, v)
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cellprofiler.setting.StructuringElement):
+                elif isinstance(v, cellprofiler_core.setting.StructuringElement):
                     control = self.make_structuring_element_control(
                         v, control_name, control
                     )
@@ -784,7 +784,7 @@ class ModuleView(object):
         if not control:
             control = wx.RadioBox(
                 self.__module_panel,
-                choices=[cellprofiler.setting.YES, cellprofiler.setting.NO],
+                choices=["Yes", "No"],
                 name=control_name,
             )
 
@@ -837,7 +837,7 @@ class ModuleView(object):
         style        - one of the CB_ styles
         """
         assert isinstance(
-            v, (cellprofiler.setting.Choice, cellprofiler.setting.FigureSubscriber)
+            v, (cellprofiler_core.setting.Choice, cellprofiler_core.setting.FigureSubscriber)
         )
         try:
             v.test_valid(self.__pipeline)
@@ -907,7 +907,7 @@ class ModuleView(object):
 
             def on_press(event):
                 d = {}
-                assert isinstance(v, cellprofiler.setting.MeasurementMultiChoice)
+                assert isinstance(v, cellprofiler_core.setting.MeasurementMultiChoice)
                 if len(v.choices) == 0:
                     v.populate_choices(self.__pipeline)
                 #
@@ -996,7 +996,7 @@ class ModuleView(object):
             control = wx.Button(self.module_panel, -1, "Press to select folders")
 
             def on_press(event):
-                assert isinstance(v, cellprofiler.setting.SubdirectoryFilter)
+                assert isinstance(v, cellprofiler_core.setting.SubdirectoryFilter)
 
                 root = v.directory_path.get_absolute_path()
                 self.module_panel.SetCursor(wx.Cursor(wx.CURSOR_WAIT))
@@ -1092,8 +1092,8 @@ class ModuleView(object):
 
     def make_multichoice_control(self, v, control_name, control):
         selections = v.selections
-        assert isinstance(v, cellprofiler.setting.MultiChoice)
-        if isinstance(v, cellprofiler.setting.SubscriberMultiChoice):
+        assert isinstance(v, cellprofiler_core.setting.MultiChoice)
+        if isinstance(v, cellprofiler_core.setting.SubscriberMultiChoice):
             # Get the choices from the providers
             v.load_choices(self.__pipeline)
         choices = v.choices + [
@@ -1112,7 +1112,7 @@ class ModuleView(object):
                 control.SetSelection(index)
                 if selection not in v.choices:
                     control.SetItemForegroundColour(
-                        index, cellprofiler.preferences.get_error_color()
+                        index, cellprofiler_core.preferences.get_error_color()
                     )
 
             def callback(event, setting=v, control=control):
@@ -1133,7 +1133,7 @@ class ModuleView(object):
                     control.Select(i)
                     if choices[i] not in v.choices:
                         control.SetItemForegroundColour(
-                            i, cellprofiler.preferences.get_error_color()
+                            i, cellprofiler_core.preferences.get_error_color()
                         )
         return control
 
@@ -1145,8 +1145,8 @@ class ModuleView(object):
         style        - one of the CB_ styles
         """
         try:
-            if v.value == cellprofiler.setting.DEFAULT:
-                cmap_name = cellprofiler.preferences.get_default_colormap()
+            if v.value == "Default":
+                cmap_name = cellprofiler_core.preferences.get_default_colormap()
             else:
                 cmap_name = v.value
             cm = matplotlib.cm.get_cmap(cmap_name)
@@ -1344,7 +1344,7 @@ class ModuleView(object):
 
         control - either None or the panel containing the buttons
         """
-        assert isinstance(v, cellprofiler.setting.DoThings)
+        assert isinstance(v, cellprofiler_core.setting.DoThings)
         if not control:
             control = wx.Panel(self.module_panel, name=control_name)
             control.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
@@ -1394,7 +1394,7 @@ class ModuleView(object):
                 filename = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
                 try:
                     if setting.get_example_fn is None:
-                        path = cellprofiler.preferences.get_default_image_directory()
+                        path = cellprofiler_core.preferences.get_default_image_directory()
                         filenames = [
                             x
                             for x in os.listdir(path)
@@ -1409,7 +1409,7 @@ class ModuleView(object):
                 except:
                     pass
 
-                if v.guess == cellprofiler.setting.RegexpText.GUESS_FOLDER:
+                if v.guess == cellprofiler_core.setting.RegexpText.GUESS_FOLDER:
                     guesses = regexp_editor.RE_FOLDER_GUESSES
                 else:
                     guesses = regexp_editor.RE_FILENAME_GUESSES
@@ -1471,9 +1471,9 @@ class ModuleView(object):
 
             def on_press(event):
                 """Open a file browser"""
-                if v.mode == cellprofiler.setting.FilenameText.MODE_OPEN:
+                if v.mode == cellprofiler_core.setting.FilenameText.MODE_OPEN:
                     mode = wx.FD_OPEN
-                elif v.mode == cellprofiler.setting.FilenameText.MODE_APPEND:
+                elif v.mode == cellprofiler_core.setting.FilenameText.MODE_APPEND:
                     mode = wx.FD_SAVE
                 else:
                     mode = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
@@ -1503,7 +1503,7 @@ class ModuleView(object):
         return control
 
     def make_directory_path_control(self, v, control_name, control):
-        assert isinstance(v, cellprofiler.setting.DirectoryPath)
+        assert isinstance(v, cellprofiler_core.setting.DirectoryPath)
         dir_ctrl_name = combobox_ctrl_name(v)
         custom_ctrl_name = subedit_control_name(v)
         custom_ctrl_label_name = custom_label_name(v)
@@ -1607,11 +1607,11 @@ class ModuleView(object):
             if not browse_ctrl.IsShown():
                 browse_ctrl.Show()
             if v.dir_choice in (
-                cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
-                cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+                cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
             ):
                 custom_label.Label = "Sub-folder:"
-            elif v.dir_choice == cellprofiler.setting.URL_FOLDER_NAME:
+            elif v.dir_choice == cellprofiler_core.preferences.URL_FOLDER_NAME:
                 if v.support_urls:
                     custom_label.Label = "URL:"
                     custom_label.Show()
@@ -1627,18 +1627,18 @@ class ModuleView(object):
             custom_ctrl.Hide()
             browse_ctrl.Hide()
         if v.dir_choice in (
-            cellprofiler.setting.DEFAULT_INPUT_FOLDER_NAME,
-            cellprofiler.setting.DEFAULT_INPUT_SUBFOLDER_NAME,
+            cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME,
+            cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
         ):
             folder_label.Label = (
-                "( %s )" % cellprofiler.preferences.get_default_image_directory()
+                "( %s )" % cellprofiler_core.preferences.get_default_image_directory()
             )
         elif v.dir_choice in (
-            cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME,
-            cellprofiler.setting.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+            cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+            cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
         ):
             folder_label.Label = (
-                "( %s )" % cellprofiler.preferences.get_default_output_directory()
+                "( %s )" % cellprofiler_core.preferences.get_default_output_directory()
             )
         else:
             folder_label.Label = wx.EmptyString
@@ -1682,9 +1682,9 @@ class ModuleView(object):
 
     def make_image_plane_control(self, v, control):
         """Make a control to pick an image plane from the file list"""
-        from cellprofiler.modules.loadimages import url2pathname
+        from cellprofiler_core.modules.loadimages import url2pathname
 
-        assert isinstance(v, cellprofiler.setting.ImagePlane)
+        assert isinstance(v, cellprofiler_core.setting.ImagePlane)
         if not control:
             control = wx.Panel(self.module_panel, name=edit_control_name(v))
             control.SetSizer(wx.BoxSizer(wx.HORIZONTAL))
@@ -2312,12 +2312,12 @@ class ModuleView(object):
         request_module_validation(self.__validation_request)
 
     def __on_pipeline_event(self, pipeline, event):
-        if isinstance(event, cellprofiler.pipeline.PipelineClearedEvent) or isinstance(
-            event, cellprofiler.pipeline.PipelineLoadedEvent
+        if isinstance(event, cellprofiler_core.pipeline.event.PipelineCleared) or isinstance(
+            event, cellprofiler_core.pipeline.event.PipelineLoaded
         ):
             if self.__module not in self.__pipeline.modules(False):
                 self.clear_selection()
-        elif isinstance(event, cellprofiler.pipeline.ModuleEditedPipelineEvent):
+        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleEdited):
             if (
                 not self.__inside_notify
                 and self.__module is not None
@@ -2329,7 +2329,7 @@ class ModuleView(object):
                 and self.__module.module_num == event.module_num
             ):
                 self.request_validation()
-        elif isinstance(event, cellprofiler.pipeline.ModuleRemovedPipelineEvent):
+        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleRemoved):
             if (
                 self.__module is not None
                 and event.module_num == self.__module.module_num
@@ -2359,7 +2359,7 @@ class ModuleView(object):
 
     def on_validation(self, setting_idx, message, level):
         default_fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
-        default_bg_color = cellprofiler.preferences.get_background_color()
+        default_bg_color = cellprofiler_core.preferences.get_background_color()
         if not self.__module:  # defensive coding, in case the module was deleted
             return
 
@@ -2378,7 +2378,7 @@ class ModuleView(object):
                 self.__module.test_valid(self.__pipeline)
                 level = logging.WARNING
                 self.__module.test_module_warnings(self.__pipeline)
-            except cellprofiler.setting.ValidationError as instance:
+            except cellprofiler_core.setting.ValidationError as instance:
                 message = instance.message
                 bad_setting = instance.get_setting()
         # update settings' foreground/background
@@ -2393,7 +2393,7 @@ class ModuleView(object):
                     desired_fg, desired_bg = default_fg_color, default_bg_color
                     if setting is bad_setting:
                         if level == logging.ERROR:
-                            desired_fg = cellprofiler.preferences.get_error_color()
+                            desired_fg = cellprofiler_core.preferences.get_error_color()
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
         except Exception:
@@ -2485,7 +2485,7 @@ class FilterPanelController(object):
 
     def __init__(self, module_view, v, panel):
         assert isinstance(module_view, ModuleView)
-        assert isinstance(v, cellprofiler.setting.Filter)
+        assert isinstance(v, cellprofiler_core.setting.Filter)
         self.module_view = module_view
         self.v = v
         self.panel = wx.Panel(
@@ -2580,11 +2580,11 @@ class FilterPanelController(object):
         if len(tokens) == 0 or (
             tokens[0]
             not in (
-                cellprofiler.setting.Filter.AND_PREDICATE,
-                cellprofiler.setting.Filter.OR_PREDICATE,
+                cellprofiler_core.setting.Filter.AND_PREDICATE,
+                cellprofiler_core.setting.Filter.OR_PREDICATE,
             )
         ):
-            tokens = [cellprofiler.setting.Filter.AND_PREDICATE, tokens]
+            tokens = [cellprofiler_core.setting.Filter.AND_PREDICATE, tokens]
         return tokens
 
     def update(self):
@@ -2603,8 +2603,8 @@ class FilterPanelController(object):
             self.inside_update = False
 
     ANY_ALL_PREDICATES = [
-        cellprofiler.setting.Filter.AND_PREDICATE,
-        cellprofiler.setting.Filter.OR_PREDICATE,
+        cellprofiler_core.setting.Filter.AND_PREDICATE,
+        cellprofiler_core.setting.Filter.OR_PREDICATE,
     ]
 
     def any_all_choices(self):
@@ -2699,7 +2699,7 @@ class FilterPanelController(object):
         logger.debug("Add rules after " + str(address))
         structure = self.v.parse()
         sequence = self.find_address(structure, address[:-1])
-        new_rule = [cellprofiler.setting.Filter.OR_PREDICATE, self.v.default()]
+        new_rule = [cellprofiler_core.setting.Filter.OR_PREDICATE, self.v.default()]
         sequence.insert(address[-1] + 2, new_rule)
         new_text = self.v.build_string(structure)
         self.on_value_change(event, new_text)
@@ -2753,7 +2753,7 @@ class FilterPanelController(object):
         #
         for index in range(index + 1, len(sequence)):
             if isinstance(sequence[index], six.string_types):
-                is_good = cellprofiler.setting.Filter.LITERAL_PREDICATE in predicates
+                is_good = cellprofiler_core.setting.Filter.LITERAL_PREDICATE in predicates
             else:
                 matches = [p for p in predicates if sequence[index].symbol == p.symbol]
                 is_good = len(matches) == 1
@@ -2764,7 +2764,7 @@ class FilterPanelController(object):
                 sequence += self.v.default(predicates)
                 break
             if not isinstance(
-                sequence[index], cellprofiler.setting.Filter.FilterPredicate
+                sequence[index], cellprofiler_core.setting.Filter.FilterPredicate
             ):
                 break
             predicates = sequence[index].subpredicates
@@ -2946,7 +2946,7 @@ class FilterPanelController(object):
                     if (
                         len(predicates) == 1
                         and predicates[0]
-                        is cellprofiler.setting.Filter.LITERAL_PREDICATE
+                        is cellprofiler_core.setting.Filter.LITERAL_PREDICATE
                     ):
                         self.make_literal("", i, subaddress, sizer)
                     else:
@@ -3086,7 +3086,7 @@ class FileCollectionDisplayController(object):
             return True
 
     def __init__(self, module_view, v, pipeline):
-        assert isinstance(v, cellprofiler.setting.FileCollectionDisplay)
+        assert isinstance(v, cellprofiler_core.setting.FileCollectionDisplay)
         self.module_view = module_view
         self.v = v
         assert isinstance(pipeline, cellprofiler.gui.pipeline.Pipeline)
@@ -3341,7 +3341,7 @@ class FileCollectionDisplayController(object):
                 for context_item in context_menu:
                     if isinstance(
                         context_item,
-                        cellprofiler.setting.FileCollectionDisplay.DeleteMenuItem,
+                        cellprofiler_core.setting.FileCollectionDisplay.DeleteMenuItem,
                     ):
                         delete_menu_items.append(menu.Append(-1, context_item.text).Id)
                     else:
@@ -3405,10 +3405,10 @@ class FileCollectionDisplayController(object):
         return self.modpath_to_item.get(tuple(modpath))
 
     def request_update(self, hint=None, modpath=None):
-        if hint == cellprofiler.setting.FileCollectionDisplay.BKGND_RESUME:
+        if hint == cellprofiler_core.setting.FileCollectionDisplay.BKGND_RESUME:
             self.on_start_received()
             return
-        if hint == cellprofiler.setting.FileCollectionDisplay.BKGND_STOP:
+        if hint == cellprofiler_core.setting.FileCollectionDisplay.BKGND_STOP:
             self.on_stop_received()
             self.status_text.Label = "Idle..."
             return
@@ -3420,7 +3420,7 @@ class FileCollectionDisplayController(object):
             path = []
             mp = modpath[0]
             any_others = len(modpath) > 1
-            if hint != cellprofiler.setting.FileCollectionDisplay.REMOVE:
+            if hint != cellprofiler_core.setting.FileCollectionDisplay.REMOVE:
                 # It's likely that the leaf was removed and it doesn't
                 # make sense to descend
                 file_tree = self.v.file_tree
@@ -3432,19 +3432,19 @@ class FileCollectionDisplayController(object):
                     and len(mp) == 3
                 ):
                     path.append(mp)
-                    if hint != cellprofiler.setting.FileCollectionDisplay.REMOVE:
+                    if hint != cellprofiler_core.setting.FileCollectionDisplay.REMOVE:
                         is_filtered = not file_tree[mp]
                     break
                 part, mp_list = mp
                 path.append(part)
-                if hint != cellprofiler.setting.FileCollectionDisplay.REMOVE:
+                if hint != cellprofiler_core.setting.FileCollectionDisplay.REMOVE:
                     file_tree = file_tree[part]
                 if len(mp_list) == 0:
                     is_filtered = not file_tree[None]
                     break
                 any_others = any_others or len(mp_list) > 1
                 mp = mp_list[0]
-            if hint != cellprofiler.setting.FileCollectionDisplay.REMOVE:
+            if hint != cellprofiler_core.setting.FileCollectionDisplay.REMOVE:
                 self.status_text.Label = (
                     "Processing " + path[-1]
                     if isinstance(path[-1], six.string_types)
@@ -3456,7 +3456,7 @@ class FileCollectionDisplayController(object):
                 # It's just a modification to a single node. Try and handle
                 # here.
                 #
-                if hint == cellprofiler.setting.FileCollectionDisplay.METADATA:
+                if hint == cellprofiler_core.setting.FileCollectionDisplay.METADATA:
                     if (not self.v.show_filtered) and is_filtered:
                         return
                     item_id = self.get_item_from_modpath(path)
@@ -3466,7 +3466,7 @@ class FileCollectionDisplayController(object):
                         self.tree_ctrl.SetItemText(item_id, text)
                         self.tree_ctrl.SetItemImage(item_id, image_id)
                         return
-                elif hint == cellprofiler.setting.FileCollectionDisplay.ADD:
+                elif hint == cellprofiler_core.setting.FileCollectionDisplay.ADD:
                     if self.get_item_from_modpath(path) is None:
                         text, node_type, tooltip = self.v.get_node_info(path)
                         item_id = self.add_item(path, text)
@@ -3474,7 +3474,7 @@ class FileCollectionDisplayController(object):
                         self.tree_ctrl.SetItemImage(item_id, image_id)
                         self.manage_expansion()
                         return
-                elif hint == cellprofiler.setting.FileCollectionDisplay.REMOVE:
+                elif hint == cellprofiler_core.setting.FileCollectionDisplay.REMOVE:
                     if is_filtered:
                         return
                     self.remove_item(path)
@@ -3498,7 +3498,7 @@ class FileCollectionDisplayController(object):
             self.v.file_tree, self.root_item, False, [], operation_id, 0, total
         )
         self.manage_expansion()
-        cellprofiler.preferences.report_progress(operation_id, 1, None)
+        cellprofiler_core.preferences.report_progress(operation_id, 1, None)
 
     def manage_expansion(self):
         """Handle UI expansion issues
@@ -3555,7 +3555,7 @@ class FileCollectionDisplayController(object):
             if x is None:
                 continue
             text, node_type, tooltip = self.v.get_node_info(sub_modpath)
-            cellprofiler.preferences.report_progress(
+            cellprofiler_core.preferences.report_progress(
                 operation_id, float(count) / float(total), "Processing %s" % text
             )
             count += 1
@@ -3585,8 +3585,8 @@ class FileCollectionDisplayController(object):
                 if node_is_filtered and not show_filtered:
                     continue
                 if node_type in (
-                    cellprofiler.setting.FileCollectionDisplay.NODE_COMPOSITE_IMAGE,
-                    cellprofiler.setting.FileCollectionDisplay.NODE_MOVIE,
+                    cellprofiler_core.setting.FileCollectionDisplay.NODE_COMPOSITE_IMAGE,
+                    cellprofiler_core.setting.FileCollectionDisplay.NODE_MOVIE,
                 ):
                     expanded_image_id = image_id
                 else:
@@ -3645,18 +3645,18 @@ class FileCollectionDisplayController(object):
         return count
 
     def get_image_id_from_nodetype(self, node_type):
-        if node_type == cellprofiler.setting.FileCollectionDisplay.NODE_COLOR_IMAGE:
+        if node_type == cellprofiler_core.setting.FileCollectionDisplay.NODE_COLOR_IMAGE:
             image_id = self.COLOR_IMAGE_INDEX
         elif (
-            node_type == cellprofiler.setting.FileCollectionDisplay.NODE_COMPOSITE_IMAGE
+            node_type == cellprofiler_core.setting.FileCollectionDisplay.NODE_COMPOSITE_IMAGE
         ):
             image_id = self.IMAGE_PLANES_IMAGE_INDEX
         elif node_type in (
-            cellprofiler.setting.FileCollectionDisplay.NODE_MONOCHROME_IMAGE,
-            cellprofiler.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
+            cellprofiler_core.setting.FileCollectionDisplay.NODE_MONOCHROME_IMAGE,
+            cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
         ):
             image_id = self.IMAGE_PLANE_IMAGE_INDEX
-        elif node_type == cellprofiler.setting.FileCollectionDisplay.NODE_MOVIE:
+        elif node_type == cellprofiler_core.setting.FileCollectionDisplay.NODE_MOVIE:
             image_id = self.MOVIE_IMAGE_INDEX
         else:
             image_id = self.FILE_IMAGE_INDEX
@@ -4023,7 +4023,7 @@ class BinaryMatrixController(object):
         if i is not None:
             matrix = self.setting.get_matrix()
             matrix[i][j] = not matrix[i][j]
-            value = cellprofiler.setting.BinaryMatrix.to_value(matrix)
+            value = cellprofiler_core.setting.BinaryMatrix.to_value(matrix)
             self.module_view.on_value_change(self.setting, self.panel, value, event)
 
     def on_matrix_ctrl_paint(self, event):
@@ -4043,7 +4043,7 @@ class BinaryMatrixController(object):
             )
         ]
         paint_dc.SetBackground(
-            wx.Brush(cellprofiler.preferences.get_background_color())
+            wx.Brush(cellprofiler_core.preferences.get_background_color())
         )
         paint_dc.Clear()
         pShadow = wx.Pen(
@@ -4141,7 +4141,7 @@ class BinaryMatrixController(object):
             matrix = [[False] * n + row + [False] * n for row in matrix]
         else:
             return
-        value = cellprofiler.setting.BinaryMatrix.to_value(matrix)
+        value = cellprofiler_core.setting.BinaryMatrix.to_value(matrix)
         self.module_view.on_value_change(self.setting, self.panel, value, event)
 
     def on_height_changed(self, event):
@@ -4159,7 +4159,7 @@ class BinaryMatrixController(object):
             )
         else:
             return
-        value = cellprofiler.setting.BinaryMatrix.to_value(matrix)
+        value = cellprofiler_core.setting.BinaryMatrix.to_value(matrix)
         self.module_view.on_value_change(self.setting, self.panel, value, event)
 
     @classmethod
@@ -4186,21 +4186,21 @@ class DataTypeController(object):
     DTC_INTEGER = "Integer"
     DTC_FLOAT = "Float"
     DTC_TO_DT = {
-        DTC_NONE: cellprofiler.setting.DataTypes.DT_NONE,
-        DTC_TEXT: cellprofiler.setting.DataTypes.DT_TEXT,
-        DTC_INTEGER: cellprofiler.setting.DataTypes.DT_INTEGER,
-        DTC_FLOAT: cellprofiler.setting.DataTypes.DT_FLOAT,
-        None: cellprofiler.setting.DataTypes.DT_TEXT,
+        DTC_NONE: cellprofiler_core.setting.DataTypes.DT_NONE,
+        DTC_TEXT: cellprofiler_core.setting.DataTypes.DT_TEXT,
+        DTC_INTEGER: cellprofiler_core.setting.DataTypes.DT_INTEGER,
+        DTC_FLOAT: cellprofiler_core.setting.DataTypes.DT_FLOAT,
+        None: cellprofiler_core.setting.DataTypes.DT_TEXT,
     }
     DT_TO_DTC = {
-        cellprofiler.setting.DataTypes.DT_NONE: DTC_NONE,
-        cellprofiler.setting.DataTypes.DT_TEXT: DTC_TEXT,
-        cellprofiler.setting.DataTypes.DT_INTEGER: DTC_INTEGER,
-        cellprofiler.setting.DataTypes.DT_FLOAT: DTC_FLOAT,
+        cellprofiler_core.setting.DataTypes.DT_NONE: DTC_NONE,
+        cellprofiler_core.setting.DataTypes.DT_TEXT: DTC_TEXT,
+        cellprofiler_core.setting.DataTypes.DT_INTEGER: DTC_INTEGER,
+        cellprofiler_core.setting.DataTypes.DT_FLOAT: DTC_FLOAT,
     }
 
     def __init__(self, module_view, v):
-        assert isinstance(v, cellprofiler.setting.DataTypes)
+        assert isinstance(v, cellprofiler_core.setting.DataTypes)
         self.module_view = module_view
         self.v = v
         self.panel = module_view.module_panel.FindWindowByName(edit_control_name(v))
@@ -4337,7 +4337,7 @@ class DataTypeController(object):
             label = self.panel.FindWindowByName(self.get_label_control_name(i))
             choice = self.panel.FindWindowByName(self.get_choice_control_name(i))
             result[label.Label] = self.DTC_TO_DT[choice.GetStringSelection()]
-        result = cellprofiler.setting.DataTypes.encode_data_types(result)
+        result = cellprofiler_core.setting.DataTypes.encode_data_types(result)
         if self.v.value != result:
             self.module_view.on_value_change(self.v, self.panel, result, event)
 
@@ -4360,11 +4360,11 @@ class DataTypeController(object):
 class TableController(wx.grid.GridTableBase):
     DEFAULT_ATTR = wx.grid.GridCellAttr()
     ERROR_ATTR = wx.grid.GridCellAttr()
-    ERROR_ATTR.SetTextColour(cellprofiler.preferences.get_error_color())
+    ERROR_ATTR.SetTextColour(cellprofiler_core.preferences.get_error_color())
 
     def __init__(self, v):
         super(self.__class__, self).__init__()
-        assert isinstance(v, cellprofiler.setting.Table)
+        assert isinstance(v, cellprofiler_core.setting.Table)
         self.v = v
         self.column_size = [v.max_field_size] * len(v.column_names)
 
@@ -4833,7 +4833,7 @@ def validate_module(pipeline, module_num, test_mode, callback):
         level = logging.WARNING
         module.test_module_warnings(pipeline)
         level = logging.INFO
-    except cellprofiler.setting.ValidationError as instance:
+    except cellprofiler_core.setting.ValidationError as instance:
         message = instance.message
         setting_idx = [m.key() for m in module.visible_settings()].index(
             instance.get_setting().key()
@@ -4850,7 +4850,7 @@ def validation_queue_handler():
             request = validation_queue.get()
             if not isinstance(request, ValidationRequest) or request.cancelled:
                 continue
-            start = time.clock()
+            start = time.perf_counter()
             try:
                 validate_module(
                     request.pipeline,
@@ -4861,7 +4861,7 @@ def validation_queue_handler():
             except:
                 pass
             # Make sure this thread utilizes less than 1/2 of GIL clock
-            wait_for = max(0.25, time.clock() - start)
+            wait_for = max(0.25, time.perf_counter() - start)
             time.sleep(wait_for)
     finally:
         detach()

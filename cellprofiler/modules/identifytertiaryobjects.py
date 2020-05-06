@@ -3,12 +3,13 @@
 import numpy as np
 from centrosome.outline import outline
 
-import cellprofiler.measurement
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.object as cpo
-import cellprofiler.setting as cps
-from cellprofiler.modules import _help, identify as cpmi
+import cellprofiler_core.measurement
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.object as cpo
+import cellprofiler_core.setting as cps
+from cellprofiler.modules import _help
+from cellprofiler_core.modules import identify as cpmi
 
 __doc__ = """\
 IdentifyTertiaryObjects
@@ -121,7 +122,7 @@ class IdentifyTertiaryObjects(cpm.Module):
         """
         self.secondary_objects_name = cps.ObjectNameSubscriber(
             "Select the larger identified objects",
-            cps.NONE,
+            "None",
             doc="""\
 Select the larger identified objects. This will usually be an object
 previously identified by an **IdentifySecondaryObjects** module.""",
@@ -129,7 +130,7 @@ previously identified by an **IdentifySecondaryObjects** module.""",
 
         self.primary_objects_name = cps.ObjectNameSubscriber(
             "Select the smaller identified objects",
-            cps.NONE,
+            "None",
             doc="""\
 Select the smaller identified objects. This will usually be an object
 previously identified by an **IdentifyPrimaryObjects** module.""",
@@ -345,12 +346,12 @@ but the results will be zero or not-a-number (NaN).
         ):
             m.add_measurement(
                 self.subregion_objects_name.value,
-                cellprofiler.measurement.FF_PARENT % parent_objects_name.value,
+                cellprofiler_core.measurement.FF_PARENT % parent_objects_name.value,
                 parents_of,
             )
             m.add_measurement(
                 parent_objects_name.value,
-                cellprofiler.measurement.FF_CHILDREN_COUNT
+                cellprofiler_core.measurement.FF_CHILDREN_COUNT
                 % self.subregion_objects_name.value,
                 child_count,
             )
@@ -441,59 +442,22 @@ but the results will be zero or not-a-number (NaN).
             columns += [
                 (
                     parent,
-                    cellprofiler.measurement.FF_CHILDREN_COUNT % subregion_name,
+                    cellprofiler_core.measurement.FF_CHILDREN_COUNT % subregion_name,
                     cpmeas.COLTYPE_INTEGER,
                 ),
                 (
                     subregion_name,
-                    cellprofiler.measurement.FF_PARENT % parent,
+                    cellprofiler_core.measurement.FF_PARENT % parent,
                     cpmeas.COLTYPE_INTEGER,
                 ),
             ]
         return columns
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        """Adjust the setting values to make old pipelines compatible with new
-
-        This function allows the caller to adjust the setting_values
-        (which are the text representation of the values of the settings)
-        based on the variable_revision_number, the name of the module
-        used to save the values (if two modules' functions were merged)
-        and whether the values were saved by the Matlab or Python version
-        of the module.
-
-        setting_values - a list of string setting values in the order
-                         specified by the "settings" function
-        variable_revision_number - the variable revision number at the time
-                                   of saving
-        module_name - the name of the module that did the saving
-        from_matlab - True if the matlab version of the module did the saving,
-                      False if a Python module did the saving
-
-        returns the modified setting_values, the corrected
-                variable_revision_number and the corrected from_matlab flag
-        """
-
-        if from_matlab and variable_revision_number == 1:
-            new_setting_values = list(setting_values)
-            #
-            # if the Matlab outlines name was "Do not use", turn
-            # use_outlines off, otherwise turn it on
-            #
-            if new_setting_values[3] == cps.DO_NOT_USE:
-                # The text value, "No", sets use_outlines to False
-                new_setting_values.append(cps.NO)
-            else:
-                # The text value, "Yes", sets use_outlines to True
-                new_setting_values.append(cps.YES)
-            setting_values = new_setting_values
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
-            setting_values = setting_values + [cps.YES]
+        if variable_revision_number == 1:
+            setting_values = setting_values + ["Yes"]
             variable_revision_number = 2
 
         if variable_revision_number == 2:
@@ -501,7 +465,7 @@ but the results will be zero or not-a-number (NaN).
 
             variable_revision_number = 3
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def get_categories(self, pipeline, object_name):
         """Return the categories of measurements that this module produces

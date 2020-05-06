@@ -25,13 +25,13 @@ YES          YES          NO
 import numpy
 import skimage.measure
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 
-class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):
+class ShrinkToObjectCenters(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     module_name = "ShrinkToObjectCenters"
 
     category = "Advanced"
@@ -41,7 +41,7 @@ class ShrinkToObjectCenters(cellprofiler.module.ObjectProcessing):
     def run(self, workspace):
         input_objects = workspace.object_set.get_objects(self.x_name.value)
 
-        output_objects = cellprofiler.object.Objects()
+        output_objects = cellprofiler_core.object.Objects()
 
         output_objects.segmented = self.find_centroids(input_objects.segmented)
 

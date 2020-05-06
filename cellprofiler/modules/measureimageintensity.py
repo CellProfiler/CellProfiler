@@ -2,9 +2,9 @@
 
 import numpy as np
 
-import cellprofiler.measurement as cpmeas
-import cellprofiler.module as cpm
-import cellprofiler.setting as cps
+import cellprofiler_core.measurement as cpmeas
+import cellprofiler_core.module as cpm
+import cellprofiler_core.setting as cps
 from cellprofiler.modules import _help
 
 __doc__ = """
@@ -129,7 +129,7 @@ class MeasureImageIntensity(cpm.Module):
             "image_name",
             cps.ImageNameSubscriber(
                 "Select the image to measure",
-                cps.NONE,
+                "None",
                 doc="""\
 Choose an image name from the drop-down menu to calculate intensity for
 that image. Use the *Add another image* button below to add additional
@@ -158,7 +158,7 @@ object individually, see **MeasureObjectIntensity** instead.
             "object_name",
             cps.ObjectNameSubscriber(
                 "Select the input objects",
-                cps.NONE,
+                "None",
                 doc="""\
 *(Used only when measuring intensity from area occupied by objects)*
 
@@ -397,24 +397,11 @@ objects.""",
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        """Account for prior versions when loading
-
-        We handle Matlab revision # 2 here. We don't support thresholding
-        because it was generally unused. The first setting is the image name.
-        """
-        if from_matlab and variable_revision_number == 2:
-            setting_values = [
-                setting_values[0],  # image name
-                cps.NO,  # wants objects
-                cps.NONE,
-            ]  # object name
-            variable_revision_number = 1
-            from_matlab = False
         if variable_revision_number == 1:
             variable_revision_number = 2
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

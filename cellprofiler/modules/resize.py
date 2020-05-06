@@ -33,9 +33,9 @@ import logging
 import numpy
 import skimage.transform
 
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.setting
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +56,7 @@ I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 S_ADDITIONAL_IMAGE_COUNT = 9
 
 
-class Resize(cellprofiler.module.ImageProcessing):
+class Resize(cellprofiler_core.module.ImageProcessing):
     variable_revision_number = 4
 
     module_name = "Resize"
@@ -64,7 +64,7 @@ class Resize(cellprofiler.module.ImageProcessing):
     def create_settings(self):
         super(Resize, self).create_settings()
 
-        self.size_method = cellprofiler.setting.Choice(
+        self.size_method = cellprofiler_core.setting.Choice(
             "Resizing method",
             R_ALL,
             doc="""\
@@ -74,7 +74,7 @@ The following options are available:
 -  *Resize by specifying desired final dimensions:* Enter the new height and width of the resized image, in units of pixels.""",
         )
 
-        self.resizing_factor = cellprofiler.setting.Float(
+        self.resizing_factor = cellprofiler_core.setting.Float(
             "Resizing factor",
             0.25,
             minval=0,
@@ -85,7 +85,7 @@ Numbers less than one (that is, fractions) will shrink the image;
 numbers greater than one (that is, multiples) will enlarge the image.""",
         )
 
-        self.use_manual_or_image = cellprofiler.setting.Choice(
+        self.use_manual_or_image = cellprofiler_core.setting.Choice(
             "Method to specify the dimensions",
             C_ALL,
             doc="""\
@@ -100,7 +100,7 @@ You have two options on how to resize your image:
             ),
         )
 
-        self.specific_width = cellprofiler.setting.Integer(
+        self.specific_width = cellprofiler_core.setting.Integer(
             "Width of the final image",
             100,
             minval=1,
@@ -110,7 +110,7 @@ You have two options on how to resize your image:
 Enter the desired width of the final image, in pixels.""",
         )
 
-        self.specific_height = cellprofiler.setting.Integer(
+        self.specific_height = cellprofiler_core.setting.Integer(
             "Height of the final image",
             100,
             minval=1,
@@ -120,16 +120,16 @@ Enter the desired width of the final image, in pixels.""",
 Enter the desired height of the final image, in pixels.""",
         )
 
-        self.specific_image = cellprofiler.setting.ImageNameSubscriber(
+        self.specific_image = cellprofiler_core.setting.ImageNameSubscriber(
             "Select the image with the desired dimensions",
-            cellprofiler.setting.NONE,
+            "None",
             doc="""\
 *(Used only if resizing by specifying desired final dimensions using an image)*
 
 The input image will be resized to the dimensions of the specified image.""",
         )
 
-        self.interpolation = cellprofiler.setting.Choice(
+        self.interpolation = cellprofiler_core.setting.Choice(
             "Interpolation method",
             I_ALL,
             doc="""\
@@ -143,29 +143,29 @@ The input image will be resized to the dimensions of the specified image.""",
    input image.""",
         )
 
-        self.separator = cellprofiler.setting.Divider(line=False)
+        self.separator = cellprofiler_core.setting.Divider(line=False)
 
         self.additional_images = []
 
-        self.additional_image_count = cellprofiler.setting.HiddenCount(
+        self.additional_image_count = cellprofiler_core.setting.HiddenCount(
             self.additional_images, "Additional image count"
         )
 
-        self.add_button = cellprofiler.setting.DoSomething(
+        self.add_button = cellprofiler_core.setting.DoSomething(
             "", "Add another image", self.add_image
         )
 
     def add_image(self, can_remove=True):
-        group = cellprofiler.setting.SettingsGroup()
+        group = cellprofiler_core.setting.SettingsGroup()
 
         if can_remove:
-            group.append("divider", cellprofiler.setting.Divider(line=False))
+            group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
         group.append(
             "input_image_name",
-            cellprofiler.setting.ImageNameSubscriber(
+            cellprofiler_core.setting.ImageNameSubscriber(
                 "Select the additional image?",
-                cellprofiler.setting.NONE,
+                "None",
                 doc="""\
 What is the name of the additional image to resize? This image will be
 resized with the same settings as the first image.""",
@@ -174,7 +174,7 @@ resized with the same settings as the first image.""",
 
         group.append(
             "output_image_name",
-            cellprofiler.setting.ImageNameProvider(
+            cellprofiler_core.setting.ImageNameProvider(
                 "Name the output image",
                 "ResizedBlue",
                 doc="What is the name of the additional resized image?",
@@ -184,7 +184,7 @@ resized with the same settings as the first image.""",
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler.setting.RemoveSettingButton(
+                cellprofiler_core.setting.RemoveSettingButton(
                     "", "Remove above image", self.additional_images, group
                 ),
             )
@@ -378,7 +378,7 @@ resized with the same settings as the first image.""",
         else:
             cropping = None
 
-        output_image = cellprofiler.image.Image(
+        output_image = cellprofiler_core.image.Image(
             output_pixels,
             parent_image=image,
             mask=mask,
@@ -469,43 +469,28 @@ resized with the same settings as the first image.""",
                 )
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab and variable_revision_number == 1:
-            width, height = setting_values[3].split(",")
-            size_method = R_BY_FACTOR if setting_values[2] != "1" else R_TO_SIZE
-            setting_values = [
-                setting_values[0],  # image name
-                setting_values[1],  # resized image name
-                size_method,
-                setting_values[2],  # resizing factor
-                width,
-                height,
-                setting_values[4],
-            ]  # interpolation method
-            from_matlab = False
-            variable_revision_number = 1
-
-        if (not from_matlab) and variable_revision_number == 1:
+        if variable_revision_number == 1:
             if setting_values[2] == "Resize by a factor of the original size":
                 setting_values[2] = R_BY_FACTOR
             if setting_values[2] == "Resize to a size in pixels":
                 setting_values[2] = R_TO_SIZE
             variable_revision_number = 2
 
-        if (not from_matlab) and variable_revision_number == 2:
+        if variable_revision_number == 2:
             # Add additional images to be resized similarly, but if you only had 1,
             # the order didn't change
             setting_values = setting_values + ["0"]
             variable_revision_number = 3
 
-        if (not from_matlab) and variable_revision_number == 3:
+        if variable_revision_number == 3:
             # Add resizing to another image size
             setting_values = (
                 setting_values[:7]
-                + [C_MANUAL, cellprofiler.setting.NONE]
+                + [C_MANUAL, "None"]
                 + setting_values[7:]
             )
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number

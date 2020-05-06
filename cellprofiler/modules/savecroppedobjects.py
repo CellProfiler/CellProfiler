@@ -28,8 +28,9 @@ import numpy
 import skimage.io
 import skimage.measure
 
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.module
+import cellprofiler_core.setting
+import cellprofiler_core.preferences
 
 O_PNG = "png"
 O_TIFF_8 = "8-bit tiff"
@@ -38,7 +39,7 @@ SAVE_PER_OBJECT = "Images"
 SAVE_MASK = "Masks"
 
 
-class SaveCroppedObjects(cellprofiler.module.Module):
+class SaveCroppedObjects(cellprofiler_core.module.Module):
     category = "File Processing"
 
     module_name = "SaveCroppedObjects"
@@ -46,7 +47,7 @@ class SaveCroppedObjects(cellprofiler.module.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.export_option = cellprofiler.setting.Choice(
+        self.export_option = cellprofiler_core.setting.Choice(
             "Do you want to save cropped images or object masks?",
             [SAVE_PER_OBJECT, SAVE_MASK],
             doc="""\
@@ -61,21 +62,21 @@ The choices are:
             ),
         )
 
-        self.objects_name = cellprofiler.setting.ObjectNameSubscriber(
+        self.objects_name = cellprofiler_core.setting.ObjectNameSubscriber(
             "Objects", doc="Select the objects you want to export as per-object crops."
         )
 
-        self.image_name = cellprofiler.setting.ImageNameSubscriber(
+        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
             "Image", doc="Select the image to crop"
         )
 
-        self.directory = cellprofiler.setting.DirectoryPath(
+        self.directory = cellprofiler_core.setting.DirectoryPath(
             "Directory",
             doc="Enter the directory where object crops are saved.",
-            value=cellprofiler.setting.DEFAULT_OUTPUT_FOLDER_NAME,
+            value=cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
         )
 
-        self.file_format = cellprofiler.setting.Choice(
+        self.file_format = cellprofiler_core.setting.Choice(
             "Saved file format",
             [O_PNG, O_TIFF_8, O_TIFF_16],
             value=O_TIFF_8,

@@ -48,10 +48,10 @@ Measurements made by this module
 import numpy
 import skimage.measure
 
-import cellprofiler.image
-import cellprofiler.measurement
-import cellprofiler.module
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.setting
 
 C_AREA_OCCUPIED = "AreaOccupied"
 
@@ -76,7 +76,7 @@ IMAGE_SETTING_COUNT = 1
 OBJECT_SETTING_COUNT = 3
 
 
-class MeasureImageAreaOccupied(cellprofiler.module.Module):
+class MeasureImageAreaOccupied(cellprofiler_core.module.Module):
     module_name = "MeasureImageAreaOccupied"
     category = "Measurement"
     variable_revision_number = 4
@@ -84,24 +84,24 @@ class MeasureImageAreaOccupied(cellprofiler.module.Module):
     def create_settings(self):
         self.operands = []
 
-        self.count = cellprofiler.setting.HiddenCount(self.operands)
+        self.count = cellprofiler_core.setting.HiddenCount(self.operands)
 
         self.add_operand(can_remove=False)
 
-        self.add_operand_button = cellprofiler.setting.DoSomething(
+        self.add_operand_button = cellprofiler_core.setting.DoSomething(
             "", "Add another area", self.add_operand
         )
 
-        self.remover = cellprofiler.setting.DoSomething(
+        self.remover = cellprofiler_core.setting.DoSomething(
             "", "Remove this area", self.remove
         )
 
     def add_operand(self, can_remove=True):
         class Operand(object):
             def __init__(self):
-                self.__spacer = cellprofiler.setting.Divider(line=True)
+                self.__spacer = cellprofiler_core.setting.Divider(line=True)
 
-                self.__operand_choice = cellprofiler.setting.Choice(
+                self.__operand_choice = cellprofiler_core.setting.Choice(
                     "Measure the area occupied in a binary image, or in objects?",
                     [O_BINARY_IMAGE, O_OBJECTS],
                     doc="""\
@@ -114,9 +114,9 @@ The area can be measured in two ways:
                     ),
                 )
 
-                self.__operand_objects = cellprofiler.setting.ObjectNameSubscriber(
+                self.__operand_objects = cellprofiler_core.setting.ObjectNameSubscriber(
                     "Select objects to measure",
-                    cellprofiler.setting.NONE,
+                    "None",
                     doc="""\
 *(Used only if ‘{O_OBJECTS}’ are to be measured)*
 
@@ -126,9 +126,9 @@ Select the previously identified objects you would like to measure.
                     ),
                 )
 
-                self.__binary_name = cellprofiler.setting.ImageNameSubscriber(
+                self.__binary_name = cellprofiler_core.setting.ImageNameSubscriber(
                     "Select a binary image to measure",
-                    cellprofiler.setting.NONE,
+                    "None",
                     doc="""\
 *(Used only if ‘{O_BINARY_IMAGE}’ is to be measured)*
 
@@ -179,7 +179,7 @@ like to measure the area occupied by the foreground in the image.
         for group in self.operands:
             if (group.operand_choice.value, group.operand_objects.value) in settings:
                 if group.operand_choice.value == O_OBJECTS:
-                    raise cellprofiler.setting.ValidationError(
+                    raise cellprofiler_core.setting.ValidationError(
                         "{} has already been selected".format(
                             group.operand_objects.value
                         ),
@@ -192,7 +192,7 @@ like to measure the area occupied by the foreground in the image.
         for group in self.operands:
             if (group.operand_choice.value, group.binary_name.value) in settings:
                 if group.operand_choice.value == O_BINARY_IMAGE:
-                    raise cellprofiler.setting.ValidationError(
+                    raise cellprofiler_core.setting.ValidationError(
                         "%s has already been selected" % group.binary_name.value,
                         group.binary_name,
                     )
@@ -405,7 +405,7 @@ like to measure the area occupied by the foreground in the image.
             for feature in self._get_feature_names(pipeline):
                 columns.append(
                     (
-                        cellprofiler.measurement.IMAGE,
+                        cellprofiler_core.measurement.IMAGE,
                         "{:s}_{:s}_{:s}".format(
                             C_AREA_OCCUPIED,
                             feature,
@@ -413,21 +413,21 @@ like to measure the area occupied by the foreground in the image.
                             if op.operand_choice == O_OBJECTS
                             else op.binary_name.value,
                         ),
-                        cellprofiler.measurement.COLTYPE_FLOAT,
+                        cellprofiler_core.measurement.COLTYPE_FLOAT,
                     )
                 )
 
         return columns
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler.measurement.IMAGE:
+        if object_name == cellprofiler_core.measurement.IMAGE:
             return [C_AREA_OCCUPIED]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler.measurement.IMAGE
+            object_name == cellprofiler_core.measurement.IMAGE
             and category == C_AREA_OCCUPIED
         ):
             return self._get_feature_names(pipeline)
@@ -463,17 +463,8 @@ like to measure the area occupied by the foreground in the image.
         return []
 
     def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name, from_matlab
+        self, setting_values, variable_revision_number, module_name
     ):
-        if from_matlab:
-            raise NotImplementedError(
-                "The MeasureImageAreaOccupied module has changed substantially. \n"
-                "You should use this module by either:\n"
-                "(1) Thresholding your image using an Identify module\n"
-                "and then measure the resulting objects' area; or\n"
-                "(2) Create a binary image with Threshold and then measure the\n"
-                "resulting foreground image area."
-            )
         if variable_revision_number == 1:
             # We added the ability to process multiple objects in v2, but
             # the settings for v1 miraculously map to v2
@@ -491,7 +482,7 @@ like to measure the area occupied by the foreground in the image.
                     setting_values[(i * 3)],
                     setting_values[(i * 3) + 1],
                     setting_values[(i * 3) + 2],
-                    cellprofiler.setting.NONE,
+                    "None",
                 ]
 
             setting_values = new_setting_values
@@ -517,7 +508,7 @@ like to measure the area occupied by the foreground in the image.
 
             variable_revision_number = 4
 
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

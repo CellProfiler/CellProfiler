@@ -157,11 +157,11 @@ def get_config():
         if not config.Exists(PREFERENCES_VERSION):
             for key in ALL_KEYS:
                 if config.Exists(key) and config.GetEntryType(key) == 1:
-                    if key in bool_keys:
+                    if key in BOOL_KEYS:
                         v = config.ReadBool(key)
-                    elif key in int_keys:
+                    elif key in INT_KEYS:
                         v = config.ReadInt(key)
-                    elif key in float_keys:
+                    elif key in FLOAT_KEYS:
                         v = config.ReadFloat(key)
                     else:
                         v = config.Read(key)
@@ -247,11 +247,11 @@ def config_read(key):
             # Fix problems with some 32-bit
             import wx
 
-            if key in bool_keys:
+            if key in BOOL_KEYS:
                 return get_config().ReadBool(key)
-            elif key in int_keys:
+            elif key in INT_KEYS:
                 return get_config().ReadInt(key)
-            elif key in float_keys:
+            elif key in FLOAT_KEYS:
                 return get_config().ReadFloat(key)
         value = get_config().Read(key)
     else:
@@ -271,11 +271,11 @@ def config_write(key, value):
 
         shutup = wx.LogNull()
     __cached_values[key] = value
-    if key in bool_keys:
+    if key in BOOL_KEYS:
         get_config().WriteBool(key, bool(value))
-    elif key in int_keys:
+    elif key in INT_KEYS:
         get_config().WriteInt(key, int(value))
-    elif key in float_keys:
+    elif key in FLOAT_KEYS:
         get_config().WriteFloat(key, float(value))
     else:
         get_config().Write(key, value)
@@ -294,13 +294,13 @@ def config_exists(key):
             return get_config().Read(key) is not None
     else:
         # Bool keys
-        if key in bool_keys:
+        if key in BOOL_KEYS:
             return get_config().ReadBool(key) is not None
         # Int keys
-        elif key in int_keys:
+        elif key in INT_KEYS:
             return get_config().ReadInt(key) is not None
         # Double keys
-        elif key in float_keys:
+        elif key in FLOAT_KEYS:
             return get_config().ReadFloat(key) is not None
         # String keys
         else:
@@ -452,9 +452,9 @@ SPP_ALL = [
 ]
 
 # Registry Key Types
-bool_keys = [SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB]
-int_keys = [SKIPVERSION, OMERO_PORT, MAX_WORKERS, JVM_HEAP_MB]
-float_keys = [TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE]
+BOOL_KEYS = [SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB]
+INT_KEYS = [SKIPVERSION, OMERO_PORT, MAX_WORKERS, JVM_HEAP_MB]
+FLOAT_KEYS = [TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE]
 
 #######################
 #

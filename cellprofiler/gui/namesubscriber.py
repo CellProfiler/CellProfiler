@@ -200,7 +200,7 @@ class NameSubscriberListBox(wx.Panel):
         self.choice_names = self.get_choice_names()
         self.nametype = nametype
         self.list_dlg = wx.CheckListBox(self, style=wx.LB_NEEDED_SB | wx.LB_HSCROLL)
-        self.list_dlg.SetMinSize((200, 100))
+        self.list_dlg.SetMinSize((350, 125))
         self.SetItems(self.choices)
         self.SetChecked(self.checked)
         sizer = wx.BoxSizer(wx.VERTICAL)

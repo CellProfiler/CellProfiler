@@ -11,6 +11,7 @@ jobs:
       matrix:
         python-version: [3.8]
     steps:
+    - run: sudo apt-get install libgtk-3-dev
     - uses: actions/checkout@v2
     - name: Setup Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1

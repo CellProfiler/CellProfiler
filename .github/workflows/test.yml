@@ -11,7 +11,6 @@ jobs:
       matrix:
         python-version: [3.8]
     steps:
-    - run: sudo apt-get install libgtk-3-dev
     - uses: actions/checkout@v2
     - name: Setup Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
@@ -21,6 +20,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install numpy
+        pip install -U https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
         pip install --editable .[build,test]
     - name: Test
       run: |

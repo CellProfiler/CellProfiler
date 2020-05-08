@@ -259,7 +259,7 @@ module.""".format(
         """Make sure chosen objects are selected only once"""
         objects = set()
         if len(self.objects_list.value) == 0:
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "No object sets selected", self.objects_list
             )
 

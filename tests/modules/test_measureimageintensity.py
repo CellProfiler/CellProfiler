@@ -471,45 +471,45 @@ def test_get_measurement_columns_whole_image_mode(module):
 
     columns = module.get_measurement_columns(None)
 
-    assert all([column[0] == cellprofiler.measurement.IMAGE for column in columns])
+    assert all([column[0] == cellprofiler_core.measurement.IMAGE for column in columns])
 
     for expected_suffix in expected_suffixes:
         for feature, coltype in (
             (
                 cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_TOTAL_AREA,
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
                 cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE,
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
         ):
             # feature names are now formatting strings

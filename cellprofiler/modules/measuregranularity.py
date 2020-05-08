@@ -182,13 +182,13 @@ class MeasureGranularity(cellprofiler_core.module.Module):
     def validate_module(self, pipeline):
         """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
         if len(self.images_list.value) == 0:
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "No images selected", self.images_list
             )
 
         if self.wants_objects.value:
             if len(self.objects_list.value) == 0:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "No object sets selected", self.objects_list
                 )
 
@@ -435,7 +435,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             gslength = self.granular_spectrum_length.value
             for i in range(1, gslength + 1):
                 result += [
-                    (cellprofiler.measurement.IMAGE, self.granularity_feature(i, image_name), cellprofiler.measurement.COLTYPE_FLOAT)
+                    (cellprofiler_core.measurement.IMAGE, self.granularity_feature(i, image_name), cellprofiler_core.measurement.COLTYPE_FLOAT)
                 ]
                 sources += [(image_name, self.granularity_feature(i, image_name))]
             for object_name in self.objects_list.value:
@@ -444,7 +444,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
                         (
                             object_name,
                             self.granularity_feature(i, image_name),
-                            cellprofiler.measurement.COLTYPE_FLOAT,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         )
                     ]
                     sources += [(object_name, self.granularity_feature(i, image_name))]
@@ -459,7 +459,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
 
         object_name - name of an object or IMAGE to match all
         """
-        if object_name == cellprofiler.measurement.IMAGE:
+        if object_name == cellprofiler_core.measurement.IMAGE:
             return self.images_list.value
         return [
             image_name
@@ -470,7 +470,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
     def get_categories(self, pipeline, object_name):
         """Return the categories supported by this module for the given object
 
-        object_name - name of the measured object or cellprofiler.measurement.IMAGE
+        object_name - name of the measured object or cellprofiler_core.measurement.IMAGE
         """
         if object_name in self.objects_list.value and self.wants_objects.value:
             return ["Granularity"]
@@ -504,7 +504,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
-            # changed to use cellprofiler.setting.SettingsGroup() but did not change the
+            # changed to use cellprofiler_core.setting.SettingsGroup() but did not change the
             # ordering of any of the settings
             variable_revision_number = 2
         if variable_revision_number == 2:

@@ -278,7 +278,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         #
         if self.image_sample_size.value < 1:
             back_shape = new_shape * self.image_sample_size.value
-            if im.dimensions is 2:
+            if im.dimensions == 2:
                 i, j = (
                     np.mgrid[0 : back_shape[0], 0 : back_shape[1]].astype(float)
                     / self.image_sample_size.value

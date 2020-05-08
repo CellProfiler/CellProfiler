@@ -177,7 +177,7 @@ class MeasureObjectIntensity(cellprofiler_core.module.Module):
             objects_list = setting_values[num_imgs+1:]
             setting_values = [", ".join(map(str, images_list)), ", ".join(map(str, objects_list))]
             variable_revision_number = 4
-        return setting_values, variable_revision_number, from_matlab
+        return setting_values, variable_revision_number
 
     def validate_module(self, pipeline):
         """Make sure chosen objects and images are selected only once"""

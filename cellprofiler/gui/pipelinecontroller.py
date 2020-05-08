@@ -2546,7 +2546,6 @@ class PipelineController(object):
                 cellprofiler.gui.pipeline.Pipeline.capture_module_settings(m),
                 m.variable_revision_number,
                 m.module_name,
-                False,
             )
             module.show_window = m.show_window  # copy visibility
             self.__pipeline.add_module(module)

@@ -157,7 +157,14 @@ def get_config():
         if not config.Exists(PREFERENCES_VERSION):
             for key in ALL_KEYS:
                 if config.Exists(key) and config.GetEntryType(key) == 1:
-                    v = config.Read(key)
+                    if key in bool_keys:
+                        v = config.ReadBool(key)
+                    elif key in int_keys:
+                        v = config.ReadInt(key)
+                    elif key in float_keys:
+                        v = config.ReadFloat(key)
+                    else:
+                        v = config.Read(key)
                     config_write(key, v)
             config_write(PREFERENCES_VERSION, str(PREFERENCES_VERSION_NUMBER))
         else:
@@ -240,12 +247,11 @@ def config_read(key):
             # Fix problems with some 32-bit
             import wx
 
-            entry_type = get_config().GetEntryType(key)
-            if entry_type == wx.Config.Type_Boolean:
+            if key in bool_keys:
                 return get_config().ReadBool(key)
-            elif entry_type == wx.Config.Type_Integer:
+            elif key in int_keys:
                 return get_config().ReadInt(key)
-            elif entry_type == wx.Config.Type_Float:
+            elif key in float_keys:
                 return get_config().ReadFloat(key)
         value = get_config().Read(key)
     else:
@@ -265,7 +271,14 @@ def config_write(key, value):
 
         shutup = wx.LogNull()
     __cached_values[key] = value
-    get_config().Write(key, value)
+    if key in bool_keys:
+        get_config().WriteBool(key, bool(value))
+    elif key in int_keys:
+        get_config().WriteInt(key, int(value))
+    elif key in float_keys:
+        get_config().WriteFloat(key, float(value))
+    else:
+        get_config().Write(key, value)
 
 
 def config_exists(key):
@@ -281,14 +294,14 @@ def config_exists(key):
             return get_config().Read(key) is not None
     else:
         # Bool keys
-        if key in [SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB]:
+        if key in bool_keys:
             return get_config().ReadBool(key) is not None
         # Int keys
-        elif key in [SKIPVERSION, OMERO_PORT, MAX_WORKERS, JVM_HEAP_MB]:
+        elif key in int_keys:
             return get_config().ReadInt(key) is not None
         # Double keys
-        elif key in [TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE]:
-            return get_config.ReadDouble(key) is not None
+        elif key in float_keys:
+            return get_config().ReadFloat(key) is not None
         # String keys
         else:
             return get_config().Read(key) is not None
@@ -437,6 +450,11 @@ SPP_ALL = [
     SPP_FILE_LIST_ONLY,
     SPP_PIPELINE_AND_FILE_LIST,
 ]
+
+# Registry Key Types
+bool_keys = [SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB]
+int_keys = [SKIPVERSION, OMERO_PORT, MAX_WORKERS, JVM_HEAP_MB]
+float_keys = [TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE]
 
 #######################
 #
@@ -724,10 +742,9 @@ ALL_KEYS = [
     WORKSPACE_CHOICE,
     SHOW_SAMPLING,
     SKIPVERSION,
-    # TODO: Figure out why windows hates these keys
-    # STARTUPBLURB,
-    # TELEMETRY,
-    # TELEMETRY_PROMPT,
+    STARTUPBLURB,
+    TELEMETRY,
+    TELEMETRY_PROMPT,
     TABLE_FONT_NAME,
     TABLE_FONT_SIZE,
     TERTIARY_OUTLINE_COLOR,

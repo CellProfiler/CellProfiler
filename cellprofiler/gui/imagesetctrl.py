@@ -234,7 +234,8 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         image_set = self.image_numbers[row]
         column = self.columns[col]
         value = self.cache[column.feature, image_set]
-        value = value.decode('unicode_escape')
+        if isinstance(value, bytes):
+            value = value.decode('unicode_escape')
         if (
             column.column_type == COL_URL
             and self.display_mode == DISPLAY_MODE_SIMPLE

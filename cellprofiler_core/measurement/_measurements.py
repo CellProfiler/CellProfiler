@@ -1855,9 +1855,9 @@ class Measurements:
         Returns pipeline.ImageSetChannelDescriptor instances for each
         channel descriptor specified in the experiment measurements.
         """
-        from cellprofiler_core.pipeline import Pipeline
+        from cellprofiler_core.pipeline import ImageSetChannelDescriptor
 
-        image_set_channel_descriptor = Pipeline.ImageSetChannelDescriptor
+        image_set_channel_descriptor = ImageSetChannelDescriptor
         iscds = []
         for feature_name in self.get_feature_names(
             cellprofiler_core.measurement.EXPERIMENT

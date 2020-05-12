@@ -521,7 +521,7 @@ desired behavior.
 
             for i, iscd in enumerate(channel_descriptors):
                 assert isinstance(
-                    iscd, cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor
+                    iscd, cellprofiler_core.pipeline.ImageSetChannelDescriptor
                 )
                 image_name = iscd.name
                 idx = len(image_set_feature_names)

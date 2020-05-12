@@ -288,8 +288,6 @@ See **NamesAndTypes** for more details.
     def add_extraction_method(self, can_remove=True):
         group = cellprofiler_core.setting.SettingsGroup()
 
-        self.extraction_methods.append(group)
-
         if can_remove:
             group.append("divider", cellprofiler_core.setting.Divider())
 
@@ -338,7 +336,7 @@ the images in any of three ways:
    the internal structure of the file format itself. Typically, image
    metadata is embedded in the image file as header information; this
    information includes the dimensions and color depth among other
-   things. **If you select this method, you must press the “Update metadata” button
+   things. **If you select this method, you must press the “Extract metadata” button
    (as opposed to the "Update" button beneath it) to extract the metadata.**
    Note that this extraction process can take a while for assays with lots
    of images since each one needs to read for extraction. Since the metadata
@@ -675,7 +673,7 @@ not being applied, your choice on this setting may be the culprit.
             "update_metadata",
             cellprofiler_core.setting.DoSomething(
                 "",
-                "Update metadata",
+                "Extract metadata",
                 lambda: self.do_update_metadata(group),
                 doc="Press this button to automatically extract metadata from your image files.",
             ),
@@ -692,6 +690,8 @@ not being applied, your choice on this setting may be the culprit.
                     "", "Remove this extraction method", self.extraction_methods, group
                 ),
             )
+        group.metadata_autoextracted = False
+        self.extraction_methods.append(group)
 
     @staticmethod
     def csv_path(group):
@@ -1099,7 +1099,7 @@ not being applied, your choice on this setting may be the culprit.
         from bioformats.formatreader import get_omexml_metadata
 
         with wx.ProgressDialog(
-            "Updating metadata",
+            "Extracting metadata",
             msg(list(urls)[0]),
             len(urls),
             style=wx.PD_CAN_ABORT
@@ -1126,17 +1126,27 @@ not being applied, your choice on this setting may be the culprit.
                 if metadata is None:
                     metadata = get_omexml_metadata(url=url)
                     filelist.add_metadata(url, metadata)
+        group.metadata_autoextracted = True
 
     def on_activated(self, workspace):
         self.workspace = workspace
         self.pipeline = workspace.pipeline
+        needextract = []
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 self.refresh_group_joiner(group)
+            elif group.extraction_method == X_AUTOMATIC_EXTRACTION:
+                if not group.metadata_autoextracted:
+                    needextract.append(True)
         self.table.clear_rows()
         self.table.clear_columns()
         if workspace.pipeline.has_cached_image_plane_details():
-            self.update_table()
+            if not any(needextract):
+                self.update_table()
+        else:
+            # File list has changed, reset 'needs metadata extraction' flag
+            for group in self.extraction_methods:
+                group.metadata_autoextracted = False
 
     def on_setting_changed(self, setting, pipeline):
         """Update the imported extraction joiners on setting changes"""
@@ -1169,6 +1179,25 @@ not being applied, your choice on this setting may be the culprit.
                 self.refresh_group_joiner(group)
 
     def update_table(self):
+        for group in self.extraction_methods:
+            if (
+                group.extraction_method == X_AUTOMATIC_EXTRACTION
+                and not group.metadata_autoextracted
+            ):
+                # Should never need to update the table without the GUI, so importing wx is ok?
+                import wx
+
+                response = wx.MessageBox(
+                    "Metadata extraction from file headers is enabled\n"
+                    "but as not been performed.\n"
+                    "Extract metadata now?",
+                    "Metadata extraction needed.",
+                    wx.OK | wx.CANCEL | wx.ICON_INFORMATION,
+                )
+                if response == wx.OK:
+                    self.do_update_metadata(group)
+                else:
+                    return
         columns = set(self.get_metadata_keys())
         columns.discard(COL_SERIES)
         columns.discard(COL_INDEX)

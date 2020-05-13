@@ -16,6 +16,7 @@ import cellprofiler_core.modules.images as cpmi
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.utilities
 
 logger = logging.getLogger(__name__)
 
@@ -178,11 +179,11 @@ IDX_EXTRACTION_METHOD_V2 = 2
 IDX_EXTRACTION_METHOD_V3 = 2
 """# of settings in an extraction method block"""
 LEN_EXTRACTION_METHOD_V1 = 8
-LEN_EXTRACTION_METHOD = 9
+LEN_EXTRACTION_METHOD = 10
 
 
 class Metadata(cellprofiler_core.module.Module):
-    variable_revision_number = 5
+    variable_revision_number = 6
     module_name = "Metadata"
     category = "File Processing"
 
@@ -670,6 +671,15 @@ not being applied, your choice on this setting may be the culprit.
         )
 
         group.append(
+            "metadata_autoextracted",
+            cellprofiler_core.setting.Binary(
+                "Does cached metadata exist?",
+                False,
+                doc="""Used to keep track of whether a project has stored metadata.""",
+            ),
+        )
+
+        group.append(
             "update_metadata",
             cellprofiler_core.setting.DoSomething(
                 "",
@@ -690,7 +700,6 @@ not being applied, your choice on this setting may be the culprit.
                     "", "Remove this extraction method", self.extraction_methods, group
                 ),
             )
-        group.metadata_autoextracted = False
         self.extraction_methods.append(group)
 
     @staticmethod
@@ -843,6 +852,7 @@ not being applied, your choice on this setting may be the culprit.
                 group.csv_joiner,
                 group.wants_case_insensitive,
                 group.csv_filename,
+                group.metadata_autoextracted,
             ]
         return result
 
@@ -1126,27 +1136,32 @@ not being applied, your choice on this setting may be the culprit.
                 if metadata is None:
                     metadata = get_omexml_metadata(url=url)
                     filelist.add_metadata(url, metadata)
-        group.metadata_autoextracted = True
+        group.metadata_autoextracted.value = True
 
     def on_activated(self, workspace):
         self.workspace = workspace
         self.pipeline = workspace.pipeline
-        needextract = []
+        needextract = False
+        if self.pipeline.file_list_edited:
+            for group in self.extraction_methods:
+                if group.extraction_method == X_AUTOMATIC_EXTRACTION:
+                    group.metadata_autoextracted.value = False
+            self.pipeline.file_list_edited = False
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 self.refresh_group_joiner(group)
             elif group.extraction_method == X_AUTOMATIC_EXTRACTION:
-                if not group.metadata_autoextracted:
-                    needextract.append(True)
+                if not group.metadata_autoextracted.value:
+                    needextract = True
         self.table.clear_rows()
         self.table.clear_columns()
-        if workspace.pipeline.has_cached_image_plane_details():
-            if not any(needextract):
+        if not self.pipeline.file_list_edited:
+            if not needextract:
                 self.update_table()
         else:
             # File list has changed, reset 'needs metadata extraction' flag
             for group in self.extraction_methods:
-                group.metadata_autoextracted = False
+                group.metadata_autoextracted.value = False
 
     def on_setting_changed(self, setting, pipeline):
         """Update the imported extraction joiners on setting changes"""
@@ -1182,7 +1197,7 @@ not being applied, your choice on this setting may be the culprit.
         for group in self.extraction_methods:
             if (
                 group.extraction_method == X_AUTOMATIC_EXTRACTION
-                and not group.metadata_autoextracted
+                and not group.metadata_autoextracted.value
             ):
                 # Should never need to update the table without the GUI, so importing wx is ok?
                 import wx
@@ -1192,12 +1207,12 @@ not being applied, your choice on this setting may be the culprit.
                     "but as not been performed.\n"
                     "Extract metadata now?",
                     "Metadata extraction needed.",
-                    wx.OK | wx.CANCEL | wx.ICON_INFORMATION,
+                    wx.YES | wx.NO | wx.ICON_INFORMATION,
                 )
-                if response == wx.OK:
+                if response == wx.YES:
                     self.do_update_metadata(group)
                 else:
-                    return
+                    pass
         columns = set(self.get_metadata_keys())
         columns.discard(COL_SERIES)
         columns.discard(COL_INDEX)
@@ -1495,6 +1510,22 @@ not being applied, your choice on this setting may be the culprit.
 
             setting_values[4:] = sum(groups, [])
             variable_revision_number = 5
+        if variable_revision_number == 5:
+            # Add record of group metadata storage.
+            new_setting_values = setting_values
+            groups = []
+            n_groups = int(setting_values[3])
+            for group_idx in six.moves.xrange(n_groups):
+                # group offset: 4
+                # no. group settings: 10
+                group = setting_values[
+                    4 + (group_idx * 10) : 4 + ((group_idx + 1) * 10)
+                ]
+                group += ["No"]
+                groups += [group]
+            new_setting_values[4:] = sum(groups, [])
+            setting_values = new_setting_values
+            variable_revision_number = 6
 
         return setting_values, variable_revision_number
 

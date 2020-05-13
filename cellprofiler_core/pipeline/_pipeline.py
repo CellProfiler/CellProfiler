@@ -65,6 +65,11 @@ class Pipeline:
         #
         self.__file_list_generation = None
         #
+        # A cookie to let the metadata module know that the file list
+        # has been edited (so extracted metadata is invalid).
+        #
+        self.file_list_edited = False
+        #
         # The filtered file list is the list of URLS after filtering using
         # the Images module. The images settings are used to determine
         # whether the cache is valid

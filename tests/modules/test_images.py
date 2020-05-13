@@ -42,7 +42,7 @@ class TestImages:
         module = pipeline.modules()[0]
         assert isinstance(module, cellprofiler_core.modules.images.Images)
         assert (
-            module.filter_choice
+            module.filter_choice.value
             == cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
         )
         assert (

@@ -1627,7 +1627,12 @@ def test_load_monochrome_as_color():
 
 
 def test_load_color_frame():
-    path = tests.modules.maybe_download_tesst_image("DrosophilaEmbryo_GFPHistone.avi")
+    path = os.path.realpath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "../data/modules/loadimages/DrosophilaEmbryo_GFPHistone.avi",
+        )
+    )
     workspace = run_workspace(
         path, cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE, index=3
     )
@@ -1675,8 +1680,11 @@ def test_load_color_as_monochrome():
 
 
 def test_load_monochrome_plane():
-    path = tests.modules.maybe_download_tesst_image("5channel.tif")
-
+    path = os.path.realpath(
+        os.path.join(
+            os.path.dirname(__file__), "../data/modules/loadimages/5channel.tif"
+        )
+    )
     for i in range(5):
         workspace = run_workspace(
             path,

@@ -727,6 +727,10 @@ not being applied, your choice on this setting may be the culprit.
             else:
                 fd = open(csv_path, "rb")
             group.imported_metadata_header_line = fd.readline()
+            if isinstance(group.imported_metadata_header_line, bytes):
+                group.imported_metadata_header_line = group.imported_metadata_header_line.decode(
+                    "utf-8"
+                )
         except Exception as e:
             return None
         return group.imported_metadata_header_line

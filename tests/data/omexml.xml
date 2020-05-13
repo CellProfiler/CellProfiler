@@ -1,0 +1,550 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OME xmlns="http://www.openmicroscopy.org/Schemas/OME/2012-06"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xmlns:SPW="http://www.openmicroscopy.org/Schemas/SPW/2012-06"
+     xsi:schemaLocation="http://www.openmicroscopy.org/Schemas/OME/2012-06 http://www.openmicroscopy.org/Schemas/OME/2012-06/ome.xsd">
+    <SPW:Plate
+            ColumnNamingConvention="number" ExternalIdentifier="136570140804" ID="Plate:0"
+            Name="136570140804 96_Greiner" RowNamingConvention="letter">
+        <SPW:Well Column="0" ID="Well:0:0" Row="0"/>
+        <SPW:Well Column="1" ID="Well:0:1" Row="0"/>
+        <SPW:Well Column="2" ID="Well:0:2" Row="0"/>
+        <SPW:Well Column="3" ID="Well:0:3" Row="0"/>
+        <SPW:Well Column="4" ID="Well:0:4" Row="0"/>
+        <SPW:Well Column="5" ID="Well:0:5" Row="0"/>
+        <SPW:Well Column="6" ID="Well:0:6" Row="0"/>
+        <SPW:Well Column="7" ID="Well:0:7" Row="0"/>
+        <SPW:Well Column="8" ID="Well:0:8" Row="0"/>
+        <SPW:Well Column="9" ID="Well:0:9" Row="0"/>
+        <SPW:Well Column="10" ID="Well:0:10" Row="0"/>
+        <SPW:Well Column="11" ID="Well:0:11" Row="0"/>
+        <SPW:Well Column="0" ID="Well:0:12" Row="1"/>
+        <SPW:Well Column="1" ID="Well:0:13" Row="1"/>
+        <SPW:Well Column="2" ID="Well:0:14" Row="1"/>
+        <SPW:Well Column="3" ID="Well:0:15" Row="1"/>
+        <SPW:Well Column="4" ID="Well:0:16" Row="1"/>
+        <SPW:Well Column="5" ID="Well:0:17" Row="1"/>
+        <SPW:Well Column="6" ID="Well:0:18" Row="1"/>
+        <SPW:Well Column="7" ID="Well:0:19" Row="1"/>
+        <SPW:Well Column="8" ID="Well:0:20" Row="1"/>
+        <SPW:Well Column="9" ID="Well:0:21" Row="1"/>
+        <SPW:Well Column="10" ID="Well:0:22" Row="1"/>
+        <SPW:Well Column="11" ID="Well:0:23" Row="1"/>
+        <SPW:Well Column="0" ID="Well:0:24" Row="2"/>
+        <SPW:Well Column="1" ID="Well:0:25" Row="2"/>
+        <SPW:Well Column="2" ID="Well:0:26" Row="2"/>
+        <SPW:Well Column="3" ID="Well:0:27" Row="2"/>
+        <SPW:Well Column="4" ID="Well:0:28" Row="2"/>
+        <SPW:Well Column="5" ID="Well:0:29" Row="2"/>
+        <SPW:Well Column="6" ID="Well:0:30" Row="2"/>
+        <SPW:Well Column="7" ID="Well:0:31" Row="2"/>
+        <SPW:Well Column="8" ID="Well:0:32" Row="2"/>
+        <SPW:Well Column="9" ID="Well:0:33" Row="2"/>
+        <SPW:Well Column="10" ID="Well:0:34" Row="2"/>
+        <SPW:Well Column="11" ID="Well:0:35" Row="2"/>
+        <SPW:Well Column="0" ID="Well:0:36" Row="3"/>
+        <SPW:Well Column="1" ID="Well:0:37" Row="3"/>
+        <SPW:Well Column="2" ID="Well:0:38" Row="3"/>
+        <SPW:Well Column="3" ID="Well:0:39" Row="3"/>
+        <SPW:Well Column="4" ID="Well:0:40" Row="3"/>
+        <SPW:Well Column="5" ID="Well:0:41" Row="3"/>
+        <SPW:Well Column="6" ID="Well:0:42" Row="3"/>
+        <SPW:Well Column="7" ID="Well:0:43" Row="3"/>
+        <SPW:Well Column="8" ID="Well:0:44" Row="3"/>
+        <SPW:Well Column="9" ID="Well:0:45" Row="3"/>
+        <SPW:Well Column="10" ID="Well:0:46" Row="3"/>
+        <SPW:Well Column="11" ID="Well:0:47" Row="3"/>
+        <SPW:Well Column="0" ID="Well:0:48" Row="4"/>
+        <SPW:Well Column="1" ID="Well:0:49" Row="4"/>
+        <SPW:Well Column="2" ID="Well:0:50" Row="4"/>
+        <SPW:Well Column="3" ID="Well:0:51" Row="4"/>
+        <SPW:Well Column="4" ID="Well:0:52" Row="4"/>
+        <SPW:Well Column="5" ID="Well:0:53" Row="4"/>
+        <SPW:Well Column="6" ID="Well:0:54" Row="4"/>
+        <SPW:Well Column="7" ID="Well:0:55" Row="4"/>
+        <SPW:Well Column="8" ID="Well:0:56" Row="4"/>
+        <SPW:Well Column="9" ID="Well:0:57" Row="4"/>
+        <SPW:Well Column="10" ID="Well:0:58" Row="4"/>
+        <SPW:Well Column="11" ID="Well:0:59" Row="4">
+            <SPW:WellSample ID="WellSample:0:59:0" Index="0" PositionX="889.0"
+                            PositionY="1323.0">
+                <ImageRef xmlns="http://www.openmicroscopy.org/Schemas/OME/2012-06"
+                          ID="Image:0"/>
+            </SPW:WellSample>
+            <SPW:WellSample ID="WellSample:0:59:1" Index="1" PositionX="-889.0"
+                            PositionY="1323.0">
+                <ImageRef xmlns="http://www.openmicroscopy.org/Schemas/OME/2012-06"
+                          ID="Image:1"/>
+            </SPW:WellSample>
+            <SPW:WellSample ID="WellSample:0:59:2" Index="2" PositionX="-889.0"
+                            PositionY="-1323.0">
+                <ImageRef xmlns="http://www.openmicroscopy.org/Schemas/OME/2012-06"
+                          ID="Image:2"/>
+            </SPW:WellSample>
+            <SPW:WellSample ID="WellSample:0:59:3" Index="3" PositionX="889.0"
+                            PositionY="-1323.0">
+                <ImageRef xmlns="http://www.openmicroscopy.org/Schemas/OME/2012-06"
+                          ID="Image:3"/>
+            </SPW:WellSample>
+        </SPW:Well>
+        <SPW:Well Column="0" ID="Well:0:60" Row="5"/>
+        <SPW:Well Column="1" ID="Well:0:61" Row="5"/>
+        <SPW:Well Column="2" ID="Well:0:62" Row="5"/>
+        <SPW:Well Column="3" ID="Well:0:63" Row="5"/>
+        <SPW:Well Column="4" ID="Well:0:64" Row="5"/>
+        <SPW:Well Column="5" ID="Well:0:65" Row="5"/>
+        <SPW:Well Column="6" ID="Well:0:66" Row="5"/>
+        <SPW:Well Column="7" ID="Well:0:67" Row="5"/>
+        <SPW:Well Column="8" ID="Well:0:68" Row="5"/>
+        <SPW:Well Column="9" ID="Well:0:69" Row="5"/>
+        <SPW:Well Column="10" ID="Well:0:70" Row="5"/>
+        <SPW:Well Column="11" ID="Well:0:71" Row="5"/>
+        <SPW:Well Column="0" ID="Well:0:72" Row="6"/>
+        <SPW:Well Column="1" ID="Well:0:73" Row="6"/>
+        <SPW:Well Column="2" ID="Well:0:74" Row="6"/>
+        <SPW:Well Column="3" ID="Well:0:75" Row="6"/>
+        <SPW:Well Column="4" ID="Well:0:76" Row="6"/>
+        <SPW:Well Column="5" ID="Well:0:77" Row="6"/>
+        <SPW:Well Column="6" ID="Well:0:78" Row="6"/>
+        <SPW:Well Column="7" ID="Well:0:79" Row="6"/>
+        <SPW:Well Column="8" ID="Well:0:80" Row="6"/>
+        <SPW:Well Column="9" ID="Well:0:81" Row="6"/>
+        <SPW:Well Column="10" ID="Well:0:82" Row="6"/>
+        <SPW:Well Column="11" ID="Well:0:83" Row="6"/>
+        <SPW:Well Column="0" ID="Well:0:84" Row="7"/>
+        <SPW:Well Column="1" ID="Well:0:85" Row="7"/>
+        <SPW:Well Column="2" ID="Well:0:86" Row="7"/>
+        <SPW:Well Column="3" ID="Well:0:87" Row="7"/>
+        <SPW:Well Column="4" ID="Well:0:88" Row="7"/>
+        <SPW:Well Column="5" ID="Well:0:89" Row="7"/>
+        <SPW:Well Column="6" ID="Well:0:90" Row="7"/>
+        <SPW:Well Column="7" ID="Well:0:91" Row="7"/>
+        <SPW:Well Column="8" ID="Well:0:92" Row="7"/>
+        <SPW:Well Column="9" ID="Well:0:93" Row="7"/>
+        <SPW:Well Column="10" ID="Well:0:94" Row="7"/>
+        <SPW:Well Column="11" ID="Well:0:95" Row="7"/>
+        <SPW:PlateAcquisition ID="PlateAcquisition:0:0"
+                              MaximumFieldCount="4">
+            <SPW:WellSampleRef ID="WellSample:0:59:0"/>
+            <SPW:WellSampleRef ID="WellSample:0:59:1"/>
+            <SPW:WellSampleRef ID="WellSample:0:59:2"/>
+            <SPW:WellSampleRef ID="WellSample:0:59:3"/>
+        </SPW:PlateAcquisition>
+    </SPW:Plate>
+    <Instrument ID="Instrument:0">
+        <LightSource ID="LightSource:0:0">
+            <Laser LaserMedium="Other" Type="Other" Wavelength="488"/>
+        </LightSource>
+        <LightSource ID="LightSource:0:1">
+            <Laser LaserMedium="Other" Type="Other" Wavelength="561"/>
+        </LightSource>
+        <LightSource ID="LightSource:0:2">
+            <Laser LaserMedium="Other" Type="Other" Wavelength="635"/>
+        </LightSource>
+        <LightSource ID="LightSource:0:3">
+            <Laser LaserMedium="Other" Type="Other" Wavelength="405"/>
+        </LightSource>
+        <LightSource ID="LightSource:0:4">
+            <Laser LaserMedium="Other" Type="Other" Wavelength="365"/>
+        </LightSource>
+        <Detector ID="Detector:0:0" Type="CCD"/>
+        <Detector ID="Detector:0:1" Type="CCD"/>
+        <Detector ID="Detector:0:2" Type="CCD"/>
+        <Detector ID="Detector:0:3" Type="CCD"/>
+        <Objective CalibratedMagnification="10.0" Correction="Other"
+                   ID="Objective:0:0" Immersion="Air" LensNA="0.4"/>
+        <Objective CalibratedMagnification="20.0" Correction="Other"
+                   ID="Objective:0:1" Immersion="Water" LensNA="0.7"/>
+        <Objective CalibratedMagnification="20.0" Correction="Other"
+                   ID="Objective:0:2" Immersion="Air" LensNA="0.45"/>
+        <Objective CalibratedMagnification="40.0" Correction="Other"
+                   ID="Objective:0:3" Immersion="Water" LensNA="0.9"/>
+        <Objective CalibratedMagnification="60.0" Correction="Other"
+                   ID="Objective:0:4" Immersion="Water" LensNA="1.2"/>
+        <Filter FilterWheel="Camera1" ID="Filter:0:0" Model="450/50"/>
+        <Filter FilterWheel="Camera1" ID="Filter:0:1" Model="475/50"/>
+        <Filter FilterWheel="Camera1" ID="Filter:0:2" Model="520/35"/>
+        <Filter FilterWheel="Camera1" ID="Filter:0:3" Model="540/75"/>
+        <Filter FilterWheel="Camera1" ID="Filter:0:4" Model="562/40"/>
+        <Filter FilterWheel="Camera1" ID="Filter:0:5" Model="custom"/>
+        <Filter FilterWheel="Camera2" ID="Filter:0:6" Model="540/75"/>
+        <Filter FilterWheel="Camera2" ID="Filter:0:7" Model="565/50"/>
+        <Filter FilterWheel="Camera2" ID="Filter:0:8" Model="585/40"/>
+        <Filter FilterWheel="Camera2" ID="Filter:0:9" Model="600/40"/>
+        <Filter FilterWheel="Camera2" ID="Filter:0:10" Model="empty2"/>
+        <Filter FilterWheel="Camera2" ID="Filter:0:11" Model="custom"/>
+        <Filter FilterWheel="Camera3" ID="Filter:0:12" Model="690/50"/>
+        <Filter FilterWheel="UV_Excitation" ID="Filter:0:13" Model="empty1"/>
+        <Filter FilterWheel="UV_Excitation" ID="Filter:0:14" Model="425"/>
+        <Filter FilterWheel="UV_Excitation" ID="Filter:0:15" Model="empty2"/>
+        <Filter FilterWheel="UV_Emission" ID="Filter:0:16" Model="empty1"/>
+        <Filter FilterWheel="UV_Emission" ID="Filter:0:17" Model="475"/>
+        <Filter FilterWheel="UV_Emission" ID="Filter:0:18" Model="empty2"/>
+        <Filter FilterWheel="UV_Bandpass" ID="Filter:0:19" Model="empty1"/>
+        <Filter FilterWheel="UV_Bandpass" ID="Filter:0:20" Model="450/50"/>
+        <Filter FilterWheel="UV_Bandpass" ID="Filter:0:21" Model="empty2"/>
+        <Filter FilterWheel="UV_Bandpass" ID="Filter:0:22" Model="empty3"/>
+        <Filter FilterWheel="UV_Bandpass" ID="Filter:0:23" Model="empty4"/>
+        <Filter FilterWheel="UV_Bandpass" ID="Filter:0:24" Model="empty5"/>
+        <Filter FilterWheel="UV_Bandpass" ID="Filter:0:25" Model="empty6"/>
+        <Filter FilterWheel="UV_Bandpass" ID="Filter:0:26" Model="empty7"/>
+        <Dichroic ID="Dichroic:0:0" Model="510"/>
+        <Dichroic ID="Dichroic:0:1" Model="568"/>
+        <Dichroic ID="Dichroic:0:2" Model="empty1"/>
+        <Dichroic ID="Dichroic:0:3" Model="405/488"/>
+        <Dichroic ID="Dichroic:0:4" Model="405/488/635"/>
+        <Dichroic ID="Dichroic:0:5" Model="405/561/635"/>
+    </Instrument>
+    <Image ID="Image:0" Name="Well E-12; Field #1">
+        <AcquisitionDate>2011-09-05T12:53:48</AcquisitionDate>
+        <InstrumentRef ID="Instrument:0"/>
+        <ObjectiveSettings ID="Objective:0:0"/>
+        <Pixels DimensionOrder="XYCZT" ID="Pixels:0" PhysicalSizeX="1.292"
+                PhysicalSizeY="1.292" SizeC="1" SizeT="1" SizeX="688" SizeY="512"
+                SizeZ="36" Type="uint16">
+            <Channel ID="Channel:0:0" Name="Exp1Cam1" SamplesPerPixel="1">
+                <LightSourceSettings ID="LightSource:0:0"/>
+                <DetectorSettings Binning="2x2" ID="Detector:0:0"/>
+                <LightPath/>
+            </Channel>
+            <BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+                     BigEndian="false" Length="0"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="-70.0" TheC="0" TheT="0" TheZ="0"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="-60.0" TheC="0" TheT="0" TheZ="1"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="-50.0" TheC="0" TheT="0" TheZ="2"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="-40.0" TheC="0" TheT="0" TheZ="3"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="-30.0" TheC="0" TheT="0" TheZ="4"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="-20.0" TheC="0" TheT="0" TheZ="5"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="-10.0" TheC="0" TheT="0" TheZ="6"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="0.0" TheC="0" TheT="0" TheZ="7"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="10.0" TheC="0" TheT="0" TheZ="8"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="20.0" TheC="0" TheT="0" TheZ="9"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="30.0" TheC="0" TheT="0" TheZ="10"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="40.0" TheC="0" TheT="0" TheZ="11"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="50.0" TheC="0" TheT="0" TheZ="12"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="60.0" TheC="0" TheT="0" TheZ="13"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="70.0" TheC="0" TheT="0" TheZ="14"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="80.0" TheC="0" TheT="0" TheZ="15"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="90.0" TheC="0" TheT="0" TheZ="16"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="100.0" TheC="0" TheT="0" TheZ="17"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="110.0" TheC="0" TheT="0" TheZ="18"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="120.0" TheC="0" TheT="0" TheZ="19"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="130.0" TheC="0" TheT="0" TheZ="20"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="140.0" TheC="0" TheT="0" TheZ="21"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="150.0" TheC="0" TheT="0" TheZ="22"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="160.0" TheC="0" TheT="0" TheZ="23"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="170.0" TheC="0" TheT="0" TheZ="24"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="180.0" TheC="0" TheT="0" TheZ="25"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="190.0" TheC="0" TheT="0" TheZ="26"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="200.0" TheC="0" TheT="0" TheZ="27"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="210.0" TheC="0" TheT="0" TheZ="28"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="220.0" TheC="0" TheT="0" TheZ="29"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="230.0" TheC="0" TheT="0" TheZ="30"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="240.0" TheC="0" TheT="0" TheZ="31"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="250.0" TheC="0" TheT="0" TheZ="32"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="260.0" TheC="0" TheT="0" TheZ="33"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="270.0" TheC="0" TheT="0" TheZ="34"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="1323.0"
+                   PositionZ="280.0" TheC="0" TheT="0" TheZ="35"/>
+        </Pixels>
+    </Image>
+    <Image ID="Image:1" Name="Well E-12; Field #2">
+        <AcquisitionDate>2011-09-05T12:53:58</AcquisitionDate>
+        <InstrumentRef ID="Instrument:0"/>
+        <ObjectiveSettings ID="Objective:0:0"/>
+        <Pixels DimensionOrder="XYCZT" ID="Pixels:1" PhysicalSizeX="1.292"
+                PhysicalSizeY="1.292" SizeC="1" SizeT="1" SizeX="688" SizeY="512"
+                SizeZ="36" Type="uint16">
+            <Channel ID="Channel:1:0" Name="Exp1Cam1" SamplesPerPixel="1">
+                <LightSourceSettings ID="LightSource:0:0"/>
+                <DetectorSettings Binning="2x2" ID="Detector:0:0"/>
+                <LightPath/>
+            </Channel>
+            <BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+                     BigEndian="false" Length="0"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="-70.0" TheC="0" TheT="0" TheZ="0"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="-60.0" TheC="0" TheT="0" TheZ="1"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="-50.0" TheC="0" TheT="0" TheZ="2"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="-40.0" TheC="0" TheT="0" TheZ="3"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="-30.0" TheC="0" TheT="0" TheZ="4"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="-20.0" TheC="0" TheT="0" TheZ="5"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="-10.0" TheC="0" TheT="0" TheZ="6"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="0.0" TheC="0" TheT="0" TheZ="7"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="10.0" TheC="0" TheT="0" TheZ="8"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="20.0" TheC="0" TheT="0" TheZ="9"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="30.0" TheC="0" TheT="0" TheZ="10"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="40.0" TheC="0" TheT="0" TheZ="11"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="50.0" TheC="0" TheT="0" TheZ="12"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="60.0" TheC="0" TheT="0" TheZ="13"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="70.0" TheC="0" TheT="0" TheZ="14"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="80.0" TheC="0" TheT="0" TheZ="15"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="90.0" TheC="0" TheT="0" TheZ="16"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="100.0" TheC="0" TheT="0" TheZ="17"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="110.0" TheC="0" TheT="0" TheZ="18"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="120.0" TheC="0" TheT="0" TheZ="19"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="130.0" TheC="0" TheT="0" TheZ="20"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="140.0" TheC="0" TheT="0" TheZ="21"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="150.0" TheC="0" TheT="0" TheZ="22"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="160.0" TheC="0" TheT="0" TheZ="23"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="170.0" TheC="0" TheT="0" TheZ="24"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="180.0" TheC="0" TheT="0" TheZ="25"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="190.0" TheC="0" TheT="0" TheZ="26"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="200.0" TheC="0" TheT="0" TheZ="27"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="210.0" TheC="0" TheT="0" TheZ="28"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="220.0" TheC="0" TheT="0" TheZ="29"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="230.0" TheC="0" TheT="0" TheZ="30"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="240.0" TheC="0" TheT="0" TheZ="31"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="250.0" TheC="0" TheT="0" TheZ="32"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="260.0" TheC="0" TheT="0" TheZ="33"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="270.0" TheC="0" TheT="0" TheZ="34"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="1323.0"
+                   PositionZ="280.0" TheC="0" TheT="0" TheZ="35"/>
+        </Pixels>
+    </Image>
+    <Image ID="Image:2" Name="Well E-12; Field #3">
+        <AcquisitionDate>2011-09-05T12:54:07</AcquisitionDate>
+        <InstrumentRef ID="Instrument:0"/>
+        <ObjectiveSettings ID="Objective:0:0"/>
+        <Pixels DimensionOrder="XYCZT" ID="Pixels:2" PhysicalSizeX="1.292"
+                PhysicalSizeY="1.292" SizeC="1" SizeT="1" SizeX="688" SizeY="512"
+                SizeZ="36" Type="uint16">
+            <Channel ID="Channel:2:0" Name="Exp1Cam1" SamplesPerPixel="1">
+                <LightSourceSettings ID="LightSource:0:0"/>
+                <DetectorSettings Binning="2x2" ID="Detector:0:0"/>
+                <LightPath/>
+            </Channel>
+            <BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+                     BigEndian="false" Length="0"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="-70.0" TheC="0" TheT="0" TheZ="0"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="-60.0" TheC="0" TheT="0" TheZ="1"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="-50.0" TheC="0" TheT="0" TheZ="2"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="-40.0" TheC="0" TheT="0" TheZ="3"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="-30.0" TheC="0" TheT="0" TheZ="4"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="-20.0" TheC="0" TheT="0" TheZ="5"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="-10.0" TheC="0" TheT="0" TheZ="6"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="0.0" TheC="0" TheT="0" TheZ="7"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="10.0" TheC="0" TheT="0" TheZ="8"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="20.0" TheC="0" TheT="0" TheZ="9"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="30.0" TheC="0" TheT="0" TheZ="10"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="40.0" TheC="0" TheT="0" TheZ="11"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="50.0" TheC="0" TheT="0" TheZ="12"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="60.0" TheC="0" TheT="0" TheZ="13"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="70.0" TheC="0" TheT="0" TheZ="14"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="80.0" TheC="0" TheT="0" TheZ="15"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="90.0" TheC="0" TheT="0" TheZ="16"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="100.0" TheC="0" TheT="0" TheZ="17"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="110.0" TheC="0" TheT="0" TheZ="18"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="120.0" TheC="0" TheT="0" TheZ="19"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="130.0" TheC="0" TheT="0" TheZ="20"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="140.0" TheC="0" TheT="0" TheZ="21"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="150.0" TheC="0" TheT="0" TheZ="22"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="160.0" TheC="0" TheT="0" TheZ="23"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="170.0" TheC="0" TheT="0" TheZ="24"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="180.0" TheC="0" TheT="0" TheZ="25"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="190.0" TheC="0" TheT="0" TheZ="26"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="200.0" TheC="0" TheT="0" TheZ="27"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="210.0" TheC="0" TheT="0" TheZ="28"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="220.0" TheC="0" TheT="0" TheZ="29"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="230.0" TheC="0" TheT="0" TheZ="30"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="240.0" TheC="0" TheT="0" TheZ="31"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="250.0" TheC="0" TheT="0" TheZ="32"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="260.0" TheC="0" TheT="0" TheZ="33"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="270.0" TheC="0" TheT="0" TheZ="34"/>
+            <Plane ExposureTime="0.04" PositionX="-889.0" PositionY="-1323.0"
+                   PositionZ="280.0" TheC="0" TheT="0" TheZ="35"/>
+        </Pixels>
+    </Image>
+    <Image ID="Image:3" Name="Well E-12; Field #4">
+        <AcquisitionDate>2011-09-05T12:54:16</AcquisitionDate>
+        <InstrumentRef ID="Instrument:0"/>
+        <ObjectiveSettings ID="Objective:0:0"/>
+        <Pixels DimensionOrder="XYCZT" ID="Pixels:3" PhysicalSizeX="1.292"
+                PhysicalSizeY="1.292" SizeC="1" SizeT="1" SizeX="688" SizeY="512"
+                SizeZ="36" Type="uint16">
+            <Channel ID="Channel:3:0" Name="Exp1Cam1" SamplesPerPixel="1">
+                <LightSourceSettings ID="LightSource:0:0"/>
+                <DetectorSettings Binning="2x2" ID="Detector:0:0"/>
+                <LightPath/>
+            </Channel>
+            <BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+                     BigEndian="false" Length="0"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="-70.0" TheC="0" TheT="0" TheZ="0"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="-60.0" TheC="0" TheT="0" TheZ="1"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="-50.0" TheC="0" TheT="0" TheZ="2"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="-40.0" TheC="0" TheT="0" TheZ="3"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="-30.0" TheC="0" TheT="0" TheZ="4"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="-20.0" TheC="0" TheT="0" TheZ="5"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="-10.0" TheC="0" TheT="0" TheZ="6"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="0.0" TheC="0" TheT="0" TheZ="7"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="10.0" TheC="0" TheT="0" TheZ="8"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="20.0" TheC="0" TheT="0" TheZ="9"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="30.0" TheC="0" TheT="0" TheZ="10"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="40.0" TheC="0" TheT="0" TheZ="11"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="50.0" TheC="0" TheT="0" TheZ="12"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="60.0" TheC="0" TheT="0" TheZ="13"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="70.0" TheC="0" TheT="0" TheZ="14"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="80.0" TheC="0" TheT="0" TheZ="15"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="90.0" TheC="0" TheT="0" TheZ="16"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="100.0" TheC="0" TheT="0" TheZ="17"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="110.0" TheC="0" TheT="0" TheZ="18"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="120.0" TheC="0" TheT="0" TheZ="19"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="130.0" TheC="0" TheT="0" TheZ="20"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="140.0" TheC="0" TheT="0" TheZ="21"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="150.0" TheC="0" TheT="0" TheZ="22"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="160.0" TheC="0" TheT="0" TheZ="23"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="170.0" TheC="0" TheT="0" TheZ="24"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="180.0" TheC="0" TheT="0" TheZ="25"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="190.0" TheC="0" TheT="0" TheZ="26"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="200.0" TheC="0" TheT="0" TheZ="27"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="210.0" TheC="0" TheT="0" TheZ="28"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="220.0" TheC="0" TheT="0" TheZ="29"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="230.0" TheC="0" TheT="0" TheZ="30"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="240.0" TheC="0" TheT="0" TheZ="31"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="250.0" TheC="0" TheT="0" TheZ="32"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="260.0" TheC="0" TheT="0" TheZ="33"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="270.0" TheC="0" TheT="0" TheZ="34"/>
+            <Plane ExposureTime="0.04" PositionX="889.0" PositionY="-1323.0"
+                   PositionZ="280.0" TheC="0" TheT="0" TheZ="35"/>
+        </Pixels>
+    </Image>
+</OME>

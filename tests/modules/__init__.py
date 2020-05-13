@@ -1,8 +1,13 @@
 import os
 import tempfile
 
+import cellprofiler_core.utilities.legacy
+
+from bioformats import PT_UINT16
 from bioformats.formatwriter import write_image
 import logging
+import functools
+import hashlib
 
 logger = logging.getLogger(__name__)
 import numpy
@@ -98,6 +103,80 @@ def maybe_download_example_image(folders, file_name, shape=None):
         image = (random_state.uniform(size=shape) * 255).astype(numpy.uint8)
         write_image(local_path, image, "uint8")
     return local_path
+
+
+def make_12_bit_image(folder, filename, shape):
+    """Create a 12-bit image of the desired shape
+
+    folder - subfolder of example images directory
+    filename - filename for image file
+    shape - 2-tuple or 3-tuple of the dimensions of the image. The axis order
+            is i, j, c or y, x, c
+    """
+    r = numpy.random.RandomState()
+    r.seed(
+        numpy.frombuffer(
+            hashlib.sha1("/".join([folder, filename]).encode()).digest(), numpy.uint8
+        )
+    )
+    img = (r.uniform(size=shape) * 4095).astype(numpy.uint16)
+    path = os.path.join(example_images_directory(), folder, filename)
+    if not os.path.isdir(os.path.dirname(path)):
+        os.makedirs(os.path.dirname(path))
+
+    write_image(path, img, PT_UINT16)
+    #
+    # Now go through the file and find the TIF bits per sample IFD (#258) and
+    # change it from 16 to 12.
+    #
+    with open(path, "rb") as fd:
+        data = numpy.frombuffer(fd.read(), numpy.uint8).copy()
+    offset = numpy.frombuffer(data[4:8].data, numpy.uint32)[0]
+    nentries = numpy.frombuffer(data[offset : offset + 2], numpy.uint16)[0]
+    ifds = []
+    # Get the IFDs we don't modify
+    for idx in range(nentries):
+        ifd = data[offset + 2 + idx * 12 : offset + 14 + idx * 12]
+        code = ifd[0] + 256 * ifd[1]
+        if code not in (258, 281):
+            ifds.append(ifd)
+    ifds += [
+        # 12 bits/sample
+        numpy.array([2, 1, 3, 0, 1, 0, 0, 0, 12, 0, 0, 0], numpy.uint8),
+        # max value = 4095
+        numpy.array([25, 1, 3, 0, 1, 0, 0, 0, 255, 15, 0, 0], numpy.uint8),
+    ]
+    ifds = sorted(
+        ifds,
+        key=functools.cmp_to_key(
+            lambda a, b: cellprofiler_core.utilities.legacy.cmp(a.tolist(), b.tolist())
+        ),
+    )
+    old_end = offset + 2 + nentries * 12
+    new_end = offset + 2 + len(ifds) * 12
+    diff = new_end - old_end
+    #
+    # Fix up the IFD offsets if greater than "offset"
+    #
+    for ifd in ifds:
+        count = numpy.frombuffer(ifd[4:8].data, numpy.uint32)[0]
+        if count > 4:
+            ifd_off = (
+                numpy.array([numpy.frombuffer(ifd[8:12].data, numpy.uint32)[0]]) + diff
+            )
+            if ifd_off > offset:
+                ifd[8:12] = numpy.frombuffer(ifd_off.data, numpy.uint8)
+    new_data = numpy.zeros(len(data) + diff, numpy.uint8)
+    new_data[:offset] = data[:offset]
+    new_data[offset] = len(ifds) % 256
+    new_data[offset + 1] = int(len(ifds) / 256)
+    for idx, ifd in enumerate(ifds):
+        new_data[offset + 2 + idx * 12 : offset + 14 + idx * 12] = ifd
+    new_data[new_end:] = data[old_end:]
+
+    with open(path, "wb") as fd:
+        fd.write(new_data.data)
+    return path
 
 
 def maybe_download_example_images(folders, file_names):

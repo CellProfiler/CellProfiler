@@ -15,8 +15,14 @@ OME_XML = open(
 ).read()
 
 
+def get_data_directory():
+    folder = os.path.dirname(cellprofiler_core.workspace.__file__)
+    return os.path.abspath(os.path.join(folder, "../..", "tests/data/"))
+
+
 def test_load_v1():
-    with open("./tests/data/modules/metadata/v1.pipeline", "r") as fd:
+    pipeline_file = os.path.join(get_data_directory(), "modules/metadata/v1.pipeline")
+    with open(pipeline_file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -65,7 +71,8 @@ def test_load_v1():
 
 
 def test_load_v2():
-    with open("./tests/data/modules/metadata/v2.pipeline", "r") as fd:
+    pipeline_file = os.path.join(get_data_directory(), "modules/metadata/v2.pipeline")
+    with open(pipeline_file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -114,7 +121,8 @@ def test_load_v2():
 
 
 def test_load_v3():
-    with open("./tests/data/modules/metadata/v3.pipeline", "r") as fd:
+    pipeline_file = os.path.join(get_data_directory(), "modules/metadata/v3.pipeline")
+    with open(pipeline_file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -164,7 +172,8 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/data/modules/metadata/v4.pipeline", "r") as fd:
+    pipeline_file = os.path.join(get_data_directory(), "modules/metadata/v4.pipeline")
+    with open(pipeline_file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -225,7 +234,8 @@ def test_load_v4():
 
 
 def test_load_v5():
-    with open("./tests/data/modules/metadata/v5.pipeline", "r") as fd:
+    pipeline_file = os.path.join(get_data_directory(), "modules/metadata/v5.pipeline")
+    with open(pipeline_file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

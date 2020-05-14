@@ -35,6 +35,11 @@ import cellprofiler_core.workspace
 import tests.modules
 
 
+def get_data_directory():
+    folder = os.path.dirname(cellprofiler_core.workspace.__file__)
+    return os.path.abspath(os.path.join(folder, "../..", "tests/data/"))
+
+
 @pytest.fixture
 def image_name():
     return "image"
@@ -57,7 +62,7 @@ def outlines_name():
 
 @pytest.fixture
 def test_images_path():
-    return "tests/data/modules/loadimages/"
+    return os.path.abspath(os.path.join(get_data_directory(), "modules/loadimages"))
 
 
 @pytest.fixture
@@ -214,7 +219,10 @@ def test_load_url():
 def test_load_Nikon_tif():
     """This is the Nikon format TIF file from IMG-838"""
     lip = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
-        "nikon", "tests/data/modules/loadimages", "NikonTIF.tif", True
+        "nikon",
+        os.path.join(get_data_directory(), "modules/loadimages"),
+        "NikonTIF.tif",
+        True,
     )
     image = lip.provide_image(None).pixel_data
     assert tuple(image.shape) == (731, 805, 3)
@@ -227,7 +235,10 @@ def test_load_Metamorph_tif():
     This file generated a null-pointer exception in the MetamorphReader
     """
     lip = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
-        "nikon", "tests/data/modules/loadimages", "MetamorphImage.tif", True,
+        "nikon",
+        os.path.join(get_data_directory(), "modules/loadimages"),
+        "MetamorphImage.tif",
+        True,
     )
     image = lip.provide_image(None).pixel_data
     assert tuple(image.shape) == (520, 696)
@@ -886,9 +897,11 @@ def test_some_subfolders():
 
 
 def get_example_pipeline_data():
-    with open("./tests/data/modules/loadimages/example.pipeline", "r") as fd:
+    pipeline_path = os.path.join(
+        get_data_directory(), "modules/loadimages/example.pipeline"
+    )
+    with open(pipeline_path, "r") as fd:
         data = fd.read()
-
     return data
 
 
@@ -1199,7 +1212,7 @@ def test_get_object_measurements(objects_name):
 
 def test_get_groupings():
     """Get groupings for the SBS image set"""
-    sbs_path = os.path.join("tests/data/", "ExampleSBSImages")
+    sbs_path = os.path.join(get_data_directory(), "ExampleSBSImages")
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.location.dir_choice = "Elsewhere..."
     module.location.custom_path = sbs_path
@@ -2046,7 +2059,7 @@ def test_batch_images(image_name):
     module = cellprofiler_core.modules.loadimages.LoadImages()
     module.match_method.value = cellprofiler_core.modules.loadimages.MS_REGEXP
     module.location.dir_choice = "Elsewhere..."
-    orig_path = os.path.abspath(os.path.join("tests/data/", "ExampleSBSImages"))
+    orig_path = os.path.abspath(os.path.join(get_data_directory(), "ExampleSBSImages"))
     module.location.custom_path = orig_path
     target_path = orig_path.replace("ExampleSBSImages", "ExampleTrackObjects")
     url_path = cellprofiler_core.modules.loadimages.url2pathname(
@@ -2850,7 +2863,7 @@ Name the outline image:NucleiOutlines
 Channel number:1
 Rescale intensities?:Yes
 """
-    directory = os.path.abspath("tests/data/ExampleSBSImages")
+    directory = os.path.join(get_data_directory(), "ExampleSBSImages")
     convtester(pipeline_text, directory)
 
 

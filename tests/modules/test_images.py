@@ -9,6 +9,11 @@ import cellprofiler_core.pipeline.event._load_exception
 import cellprofiler_core.workspace
 
 
+def get_data_directory():
+    folder = os.path.dirname(cellprofiler_core.workspace.__file__)
+    return os.path.abspath(os.path.join(folder, "../..", "tests/data/"))
+
+
 class TestImages:
     def setup_method(self):
         # The Images module needs a workspace and the workspace needs
@@ -26,7 +31,8 @@ class TestImages:
         assert not os.path.exists(self.temp_filename)
 
     def test_load_v1(self):
-        with open("./tests/data/modules/images/v1.pipeline", "r") as fd:
+        pipeline_file = os.path.join(get_data_directory(), "modules/images/v1.pipeline")
+        with open(pipeline_file, "r") as fd:
             data = fd.read()
 
         pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -51,7 +57,8 @@ class TestImages:
         )
 
     def test_load_v2(self):
-        with open("./tests/data/modules/images/v2.pipeline", "r") as fd:
+        pipeline_file = os.path.join(get_data_directory(), "modules/images/v2.pipeline")
+        with open(pipeline_file, "r") as fd:
             data = fd.read()
 
         for fc, fctext in (

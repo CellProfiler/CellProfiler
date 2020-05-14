@@ -52,7 +52,7 @@ def test_load_v1():
     assert not em0.wants_case_insensitive
 
     assert (
-        em1.extraction_method
+        em1.extraction_method.value
         == cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
     )
     assert em1.source == cellprofiler_core.modules.metadata.XM_FOLDER_NAME

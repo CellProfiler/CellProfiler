@@ -179,7 +179,7 @@ IDX_EXTRACTION_METHOD_V2 = 2
 IDX_EXTRACTION_METHOD_V3 = 2
 """# of settings in an extraction method block"""
 LEN_EXTRACTION_METHOD_V1 = 8
-LEN_EXTRACTION_METHOD = 10
+LEN_EXTRACTION_METHOD = 9
 
 
 class Metadata(cellprofiler_core.module.Module):

@@ -179,7 +179,12 @@ def get_config():
 
 
 def preferences_as_dict():
-    return dict((k, config_read(k)) for k in ALL_KEYS)
+    # Decode settings from older CP versions which are stored as bytes.
+    pref_dict = dict((k, config_read(k)) for k in ALL_KEYS)
+    for key in ALL_KEYS:
+        if isinstance(pref_dict[key], bytes):
+            pref_dict[key] = pref_dict[key].decode("utf-8")
+    return pref_dict
 
 
 def set_preferences_from_dict(d):

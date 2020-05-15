@@ -273,6 +273,7 @@ OFF_THRESHOLDING_MEASUREMENT_V9 = 31
 OFF_ADAPTIVE_WINDOW_METHOD_V9 = 32
 OFF_ADAPTIVE_WINDOW_SIZE_V9 = 33
 OFF_FILL_HOLES_V10 = 12
+OFF_N_SETTINGS = 16
 
 """The number of settings, exclusive of threshold settings"""
 N_SETTINGS = 18
@@ -921,9 +922,9 @@ If "*{NO}*" is selected, the following settings are used:
             variable_revision_number = 12
 
         if variable_revision_number == 12:
-            new_setting_values = setting_values[: N_SETTINGS - 1]
+            new_setting_values = setting_values[: OFF_N_SETTINGS - 1]
             new_setting_values += ["Yes"]
-            new_setting_values += setting_values[N_SETTINGS - 1 :]
+            new_setting_values += setting_values[OFF_N_SETTINGS - 1 :]
 
             setting_values = new_setting_values
 

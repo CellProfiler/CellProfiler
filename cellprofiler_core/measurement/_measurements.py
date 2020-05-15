@@ -925,10 +925,15 @@ class Measurements:
                     # A missing result is assumed to be "unable to calculate
                     # in this case and we substitute NaN for it.
                     #
+                    # Python 2 CellProfiler workspaces will have measurements
+                    # stored as bytes rather than strings, so we decode them.
+                    #
                     result = numpy.array(
                         [
                             numpy.NaN
                             if v is None or len(v) == 0
+                            else v[0].decode("utf-8")
+                            if len(v) == 1 and isinstance(v[0], bytes)
                             else v[0]
                             if len(v) == 1
                             else v

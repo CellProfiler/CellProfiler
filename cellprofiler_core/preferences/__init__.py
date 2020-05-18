@@ -378,7 +378,6 @@ TERTIARY_OUTLINE_COLOR = "TertiaryOutlineColor"
 JVM_ERROR = "JVMError"
 ALLOW_OUTPUT_FILE_OVERWRITE = "AllowOutputFileOverwrite"
 PLUGIN_DIRECTORY = "PluginDirectory"
-IJ_PLUGIN_DIRECTORY = "IJPluginDirectory"
 SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
 SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
 SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
@@ -418,13 +417,6 @@ WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
 WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
 WC_CREATE_NEW_WORKSPACE = "CreateNewWorkspace"
 WC_OPEN_OLD_WORKSPACE = "OpenOldWorkspace"
-
-"""The preference key for selecting the correct version of ImageJ"""
-IJ_VERSION = "ImageJVersion"
-"""Use the enhanced version of ImageJ 1.44 with some support for @parameter"""
-IJ_1 = "ImageJ 1.x"
-"""Use ImageJ 2.0 with Imglib and new framework"""
-IJ_2 = "ImageJ 2.0"
 
 """The default extension for a CellProfiler pipeline (without the dot)"""
 EXT_PIPELINE = "cppipe"
@@ -530,13 +522,6 @@ to the pathname you have typed.\
 
 ERROR_COLOR_HELP = "Sets the color used for the error alerts associated with misconfigured settings and other errors."
 
-IJ_PLUGINS_DIRECTORY_HELP = """\
-Sets the directory that holds ImageJ plugins (for the **RunImageJ**
-module). You can download or write your own ImageJ plugin and place it
-in this directory and CellProfiler will make it available for your
-pipeline. You must restart CellProfiler after modifying this setting.\
-"""
-
 INTENSITY_MODE_HELP = """\
 Sets the way CellProfiler normalizes pixel intensities when displaying.
 If you choose “raw”, CellProfiler will display a pixel with a value of
@@ -565,14 +550,13 @@ data.\
 
 JVM_HEAP_HELP = """\
 Sets the maximum amount of memory that can be used by the Java virtual
-machine. CellProfiler uses Java for loading images, for running ImageJ
-and for processing image sets. If you load extremely large images, use
-the RunImageJ module extensively or process large image set lists, you
-can use this option to start Java with a larger amount of memory. By
-default, CellProfiler starts Java with 512 MB, but you can override this
-by specifying the number of megabytes to load. You can also start
-CellProfiler from the command-line with the –jvm-heap-size switch to get
-the same effect.\
+machine. CellProfiler uses Java for loading images and for processing 
+image sets. If you load extremely large images or process large image
+set lists, you can use this option to start Java with a larger amount of 
+memory. By default, CellProfiler starts Java with 512 MB, but you can 
+override this by specifying the number of megabytes to load. You can 
+also start CellProfiler from the command-line with the –jvm-heap-size
+switch to get the same effect.\
 """
 
 MAX_WORKERS_HELP = """\
@@ -736,7 +720,6 @@ ALL_KEYS = [
     COLORMAP,
     DEFAULT_IMAGE_DIRECTORY,
     DEFAULT_OUTPUT_DIRECTORY,
-    IJ_PLUGIN_DIRECTORY,
     MODULEDIRECTORY,
     PLUGIN_DIRECTORY,
     PRIMARY_OUTLINE_COLOR,
@@ -1225,31 +1208,6 @@ def set_plugin_directory(value, globally=True):
     __plugin_directory = value
     if globally:
         config_write(PLUGIN_DIRECTORY, value)
-
-
-__ij_plugin_directory = None
-
-
-def get_ij_plugin_directory():
-    global __ij_plugin_directory
-
-    if __ij_plugin_directory is not None:
-        return __ij_plugin_directory
-
-    if config_exists(IJ_PLUGIN_DIRECTORY):
-        __ij_plugin_directory = config_read(IJ_PLUGIN_DIRECTORY)
-    else:
-        # The default is the startup directory
-        return os.path.abspath(os.path.join(os.curdir, "plugins"))
-    return __ij_plugin_directory
-
-
-def set_ij_plugin_directory(value, globally=True):
-    global __ij_plugin_directory
-
-    __ij_plugin_directory = value
-    if globally:
-        config_write(IJ_PLUGIN_DIRECTORY, value)
 
 
 __data_file = None

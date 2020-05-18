@@ -740,8 +740,6 @@ class Runner:
                 cls.work_announce_address,
                 "--plugins-directory",
                 cellprofiler_core.preferences.get_plugin_directory(),
-                "--ij-plugins-directory",
-                cellprofiler_core.preferences.get_ij_plugin_directory(),
             ]
             jvm_arg = "%dm" % cellprofiler_core.preferences.get_jvm_heap_mb()
             aw_args.append("--jvm-heap-size=%s" % jvm_arg)

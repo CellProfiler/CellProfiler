@@ -42,7 +42,6 @@ def aw_parse_args():
         set_headless,
         set_awt_headless,
         set_plugin_directory,
-        set_ij_plugin_directory,
     )
     import optparse
 
@@ -67,12 +66,6 @@ def aw_parse_args():
         "--plugins-directory",
         dest="plugins_directory",
         help="Folder containing the CellProfiler plugin modules needed by client pipelines",
-        default=None,
-    )
-    parser.add_option(
-        "--ij-plugins-directory",
-        dest="ij_plugins_directory",
-        help="Folder containing the ImageJ plugin .jar and .class files needed bby client pipelines",
         default=None,
     )
     parser.add_option(
@@ -107,18 +100,13 @@ def aw_parse_args():
     work_announce_address = options.work_announce_address
     knime_bridge_address = options.knime_bridge_address
     #
-    # Set up the headless plugins and ij plugins directories before doing
+    # Set up the headless plugins directories before doing
     # anything so loading will get them
     #
     if options.plugins_directory is not None:
         set_plugin_directory(options.plugins_directory, globally=False)
     else:
         logger.warning("Plugins directory not set")
-    if options.ij_plugins_directory is not None:
-        logger.debug("Using %s as IJ plugins directory" % options.ij_plugins_directory)
-        set_ij_plugin_directory(options.ij_plugins_directory, globally=False)
-    else:
-        logger.debug("IJ plugins directory not set")
 
 
 if __name__ == "__main__":

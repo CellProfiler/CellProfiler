@@ -417,7 +417,7 @@ class PreferencesDlg(wx.Dialog):
                 cellprofiler_core.preferences.get_wants_pony,
                 cellprofiler_core.preferences.set_wants_pony,
                 CHOICE,
-                "Pony",
+                "The end is neigh.",
             ],
         ]
 

@@ -651,6 +651,7 @@ class PipelineController(object):
         self.__test_controls_panel.Layout()
         self.__test_controls_panel.GetParent().Layout()
         self.__frame.enable_launch_commands()
+        self.__test_controls_panel.Update()
 
     def show_analysis_controls(self):
         """Show the controls that stop and pause analysis"""

@@ -35,35 +35,6 @@ class IntegerPreference(object):
         self.maxval = maxval
 
 
-class ClassPathValidator(wx.Validator):
-    def __init__(self):
-        wx.Validator.__init__(self)
-
-    def Validate(self, win):
-        ctrl = self.GetWindow()
-        for c in ctrl.Value:
-            if ord(c) > 254:
-                wx.MessageBox(
-                    "Due to technical limitations, the path to the ImageJ plugins "
-                    'folder cannot contain the character, "%s".' % c,
-                    caption="Unsupported character in path name",
-                    style=wx.OK | wx.ICON_ERROR,
-                    parent=win,
-                )
-                ctrl.SetFocus()
-                return False
-        return True
-
-    def TransferToWindow(self):
-        return True
-
-    def TransferFromWindow(self):
-        return True
-
-    def Clone(self):
-        return ClassPathValidator()
-
-
 class PreferencesDlg(wx.Dialog):
     """Display a dialog for setting preferences
 
@@ -117,10 +88,7 @@ class PreferencesDlg(wx.Dialog):
                 maxval = sys.maxsize if ui_info.maxval is None else ui_info.maxval
                 ctl = wx.SpinCtrl(scrollpanel, min=minval, max=maxval, initial=getter())
             else:
-                if getter == cellprofiler_core.preferences.get_ij_plugin_directory:
-                    validator = ClassPathValidator()
-                else:
-                    validator = wx.DefaultValidator
+                validator = wx.DefaultValidator
                 current = getter()
                 if current is None:
                     current = ""
@@ -367,13 +335,6 @@ class PreferencesDlg(wx.Dialog):
                 cellprofiler_core.preferences.set_plugin_directory,
                 DIRBROWSE,
                 cellprofiler_core.preferences.PLUGINS_DIRECTORY_HELP,
-            ],
-            [
-                "ImageJ plugins directory",
-                cellprofiler_core.preferences.get_ij_plugin_directory,
-                cellprofiler_core.preferences.set_ij_plugin_directory,
-                DIRBROWSE,
-                cellprofiler_core.preferences.IJ_PLUGINS_DIRECTORY_HELP,
             ],
             [
                 "Display welcome text on startup",

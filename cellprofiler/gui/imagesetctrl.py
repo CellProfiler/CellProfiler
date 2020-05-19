@@ -234,6 +234,8 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         image_set = self.image_numbers[row]
         column = self.columns[col]
         value = self.cache[column.feature, image_set]
+        if isinstance(value, bytes):
+            value = value.decode('unicode_escape')
         if (
             column.column_type == COL_URL
             and self.display_mode == DISPLAY_MODE_SIMPLE
@@ -249,7 +251,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         column = self.columns[col]
         if (
             column.channel_type
-            == cellprofiler_core.pipeline.Pipeline.ImageSetChannelDescriptor.CT_OBJECTS
+            == cellprofiler_core.pipeline.ImageSetChannelDescriptor.CT_OBJECTS
         ):
             feature = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + column.channel
         else:
@@ -375,7 +377,10 @@ class ImageSetCache:
             entry = self.cache[key]
             entry[1] = self.access_time
         self.access_time += 1
-        return entry[0][index]
+        result = entry[0][index]
+        if isinstance(result, bytes):
+            result = result.decode("utf-8")
+        return result
 
     def decimate(self):
         """Reduce the cache size by 1/2"""

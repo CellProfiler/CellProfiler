@@ -200,24 +200,26 @@ order to keep from breaking up the object or breaking the hole.
 
         output_objects.segmented = self.do_labels(input_objects.segmented)
 
+        # If we're shrinking objects we treat objects from the final segmentation as truth when generating
+        # the unedited segmentations. This prevents edited/hole-filled objects from ending up with slightly
+        # different centers (which would impact other modules).
         if input_objects.has_small_removed_segmented and self.operation not in (
             O_EXPAND,
             O_EXPAND_INF,
             O_DIVIDE,
         ):
-            output_objects.small_removed_segmented = self.do_labels(
-                input_objects.small_removed_segmented
-            )
+            shrunk_objects = self.do_labels(input_objects.small_removed_segmented)
+            output_objects.small_removed_segmented = numpy.where(input_objects.segmented > 0,
+                                                            output_objects.segmented, shrunk_objects)
 
         if input_objects.has_unedited_segmented and self.operation not in (
             O_EXPAND,
             O_EXPAND_INF,
             O_DIVIDE,
         ):
-
-            output_objects.unedited_segmented = self.do_labels(
-                input_objects.unedited_segmented
-            )
+            shrunk_objects = self.do_labels(input_objects.unedited_segmented)
+            output_objects.unedited_segmented = numpy.where(input_objects.segmented > 0,
+                                                            output_objects.segmented, shrunk_objects)
 
         workspace.object_set.add_objects(output_objects, self.output_object_name.value)
 

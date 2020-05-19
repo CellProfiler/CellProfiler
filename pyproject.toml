@@ -14,4 +14,4 @@ exclude = '''
   )/
 )
 '''
-target_version = ['py37']
+target_version = ['py38']

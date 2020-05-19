@@ -33,7 +33,6 @@ import numpy as np
 import cellprofiler.image  as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
-from cellprofiler.setting import YES, NO
 from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR
 
 ######################################
@@ -76,16 +75,16 @@ class CorrectIlluminationApply(cpm.Module):
         self.truncate_low = cps.Binary(
             "Set values less than 0 equal to 0?", True, doc="""\
 Values outside the range 0 to 1 might not be handled well by other
-modules. Select *%(YES)s* to set negative values to 0, which was previously
+modules. Select *"Yes"* to set negative values to 0, which was previously
 done automatically without ability to override.
-""" % globals())
+""" 
 
         self.truncate_high = cps.Binary(
             "Set values greater than 1 equal to 1?", False, doc="""\
 Values outside the range 0 to 1 might not be handled well by other
-modules. Select *%(YES)s* to set values greater than 1 to a maximum
+modules. Select *"Yes"* to set values greater than 1 to a maximum
 value of 1.
-""" % globals())
+"""
 
     def add_image(self, can_delete=True):
         '''Add an image and its settings to the list of images'''

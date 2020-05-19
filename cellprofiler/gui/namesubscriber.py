@@ -67,7 +67,7 @@ class NameSubscriberComboBox(wx.Panel):
         self.update_annotation()
 
         sizer.AddStretchSpacer()
-        sizer.Add(self.combo_dlg, flag=wx.ALL | wx.EXPAND | wx.ALIGN_CENTER, border=3)
+        sizer.Add(self.combo_dlg, flag=wx.ALL | wx.EXPAND, border=3)
         sizer.Add((5, 5))
         sizer.Add(self.annotation_dlg, flag=wx.ALIGN_CENTER)
         sizer.AddStretchSpacer()

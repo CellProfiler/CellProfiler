@@ -2543,17 +2543,17 @@ class FilterPanelController(object):
             sizer.Add(
                 self.make_delete_button(address),
                 0,
-                wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL,
+                wx.ALIGN_CENTER_VERTICAL,
             )
             sizer.Add(
                 self.make_add_rule_button(address),
                 0,
-                wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL,
+                wx.ALIGN_CENTER_VERTICAL,
             )
             sizer.Add(
                 self.make_add_rules_button(address),
                 0,
-                wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL,
+                wx.ALIGN_CENTER_VERTICAL,
             )
             key = tuple(address[:-1] + [address[-1] + 1])
             if key not in self.sizer_dict:
@@ -2797,7 +2797,7 @@ class FilterPanelController(object):
         else:
             next_ctrl = self.stretch_spacer_dict[tuple(address)]
         index = self.get_sizer_index(sizer, next_ctrl)
-        sizer.Insert(index, item, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_HORIZONTAL)
+        sizer.Insert(index, item, 0, wx.ALIGN_LEFT)
         if key not in self.sizer_item_dict:
             self.sizer_item_dict[key] = item
 

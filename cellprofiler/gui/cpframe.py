@@ -1064,7 +1064,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_RESTART, False)
 
         assert isinstance(startstop, wx.MenuItem)
-        startstop.SetText("&Exit Test Mode\tF5")
+        startstop.SetItemLabel("&Exit Test Mode\tF5")
         startstop.SetHelp("Stop testing your pipeline")
         for cmd in self.debug_commands:
             self.__menu_debug.Enable(cmd, True)
@@ -1072,8 +1072,8 @@ class CPFrame(wx.Frame):
     def enable_launch_commands(self):
         """Enable commands to start analysis or test mode"""
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
-        startstop.Text = "&Start Test Mode\tF5"
-        startstop.Help = "Start testing your pipeline"
+        startstop.SetItemLabel("&Start Test Mode\tF5")
+        startstop.SetHelp("Start testing your pipeline")
         for cmd in self.debug_commands:
             self.__menu_debug.Enable(cmd, False)
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, True)

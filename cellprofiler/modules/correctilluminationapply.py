@@ -33,6 +33,7 @@ import numpy as np
 import cellprofiler.image  as cpi
 import cellprofiler.module as cpm
 import cellprofiler.setting as cps
+from cellprofiler.setting import YES, NO
 from cellprofiler.modules.correctilluminationcalculate import IC_BACKGROUND, IC_REGULAR
 
 ######################################
@@ -63,7 +64,7 @@ SETTINGS_PER_IMAGE = 4
 
 class CorrectIlluminationApply(cpm.Module):
     category = "Image Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     module_name = "CorrectIlluminationApply"
 
     def create_settings(self):
@@ -72,6 +73,19 @@ class CorrectIlluminationApply(cpm.Module):
         self.add_image(can_delete=False)
         self.add_image_button = cps.DoSomething("", "Add another image",
                                                 self.add_image)
+        self.truncate_low = cps.Binary(
+            "Set values less than 0 equal to 0?", True, doc="""\
+Values outside the range 0 to 1 might not be handled well by other
+modules. Select *%(YES)s* to set negative values to 0, which was previously
+done automatically without ability to override.
+""" % globals())
+
+        self.truncate_high = cps.Binary(
+            "Set values greater than 1 equal to 1?", False, doc="""\
+Values outside the range 0 to 1 might not be handled well by other
+modules. Select *%(YES)s* to set values greater than 1 to a maximum
+value of 1.
+""" % globals())
 
     def add_image(self, can_delete=True):
         '''Add an image and its settings to the list of images'''
@@ -149,6 +163,7 @@ somewhat empirical.
             result += [image.image_name, image.corrected_image_name,
                        image.illum_correct_function_image_name,
                        image.divide_or_subtract]
+        result += [self.truncate_low, self.truncate_high]
         return result
 
     def visible_settings(self):
@@ -167,6 +182,7 @@ somewhat empirical.
                 result.append(remover)
             result.append(image.divider)
         result.append(self.add_image_button)
+        result += [self.truncate_low, self.truncate_high]
         return result
 
     def prepare_settings(self, setting_values):
@@ -182,7 +198,7 @@ somewhat empirical.
         #
         # Figure out how many images there are based on the number of setting_values
         #
-        assert len(setting_values) % SETTINGS_PER_IMAGE == 0
+        assert len(setting_values) % SETTINGS_PER_IMAGE == 2
         image_count = len(setting_values) / SETTINGS_PER_IMAGE
         del self.images[image_count:]
         while len(self.images) < image_count:
@@ -230,10 +246,18 @@ somewhat empirical.
             output_pixels = orig_image.pixel_data / illum_function_pixel_data
         elif image.divide_or_subtract == DOS_SUBTRACT:
             output_pixels = orig_image.pixel_data - illum_function_pixel_data
-            output_pixels[output_pixels < 0] = 0
         else:
             raise ValueError("Unhandled option for divide or subtract: %s" %
                              image.divide_or_subtract.value)
+
+        #
+        # Optionally, clip high and low values
+        #
+        if self.truncate_low.value:
+            output_pixels = np.where(output_pixels < 0, 0, output_pixels)
+        if self.truncate_high.value:
+            output_pixels = np.where(output_pixels > 1, 1, output_pixels)
+
         #
         # Save the output image in the image set and have it inherit
         # mask & cropping from the original image.
@@ -332,5 +356,7 @@ somewhat empirical.
             # If revision >= 2, initialize rescaling option for validation warning
             for i, image in enumerate(self.images):
                 image.rescale_option = RE_NONE
-
+        if variable_revision_number == 3:
+            setting_values += ['True', 'False']
+            
         return setting_values, variable_revision_number, from_matlab

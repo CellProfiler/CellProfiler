@@ -430,7 +430,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.GetGridColLabelWindow().SetDoubleBuffered(True)
         self.GetGridRowLabelWindow().SetDoubleBuffered(True)
         self.column_label_editor = wx.TextCtrl(
-            gclw, validator=ColumnNameValidator(self.table)
+            gclw, style=wx.TE_PROCESS_ENTER, validator=ColumnNameValidator(self.table)
         )
         self.column_label_editor.Hide()
         self.column_label_editor.Bind(

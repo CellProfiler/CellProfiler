@@ -297,7 +297,7 @@ class PreferencesView(object):
                 show = False
                 output_sizer = wx.BoxSizer(wx.HORIZONTAL)
                 output_sizer.Add(output_filename_help_button, 0, wx.EXPAND)
-                output_sizer.Add(output_file_format_text, 0, wx.ALIGN_RIGHT)
+                output_sizer.Add(output_file_format_text, 0)
                 output_sizer.Add(write_measurements_combo_box, 0, wx.ALIGN_LEFT)
             else:
                 show = True

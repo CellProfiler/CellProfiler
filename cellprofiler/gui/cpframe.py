@@ -1355,7 +1355,7 @@ class CPFrame(wx.Frame):
         self.__splitter.SetMinimumPaneSize(120)
         self.__splitter.SplitVertically(self.__left_win, self.__right_win, 300)
         self.__splitter.BorderSize = 0
-        self.__splitter.SetSashSize(5)
+        self.__splitter.SetMinimumPaneSize(5)
 
         top_left_sizer = wx.BoxSizer(wx.VERTICAL)
         top_left_sizer.Add(self.__module_list_panel, 1, wx.EXPAND | wx.ALL, 1)

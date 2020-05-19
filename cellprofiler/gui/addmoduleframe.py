@@ -63,7 +63,7 @@ class AddModuleFrame(wx.Frame):
             0,
             wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL,
         )
-        self.search_text = wx.TextCtrl(self)
+        self.search_text = wx.TextCtrl(self, style=wx.TE_PROCESS_ENTER)
         search_sizer.Add(self.search_text, 1, wx.EXPAND)
         self.search_button = wx.Button(self, label="Search Help")
         search_sizer.Add(self.search_button, 0, wx.EXPAND)

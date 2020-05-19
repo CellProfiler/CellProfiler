@@ -148,7 +148,7 @@ class PipelineListView(object):
         )
         self.outputs_panel.GetSizer().AddStretchSpacer(1)
         self.outputs_panel.GetSizer().Add(
-            self.outputs_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 2
+            self.outputs_button, 0, wx.ALL, 2
         )
         self.outputs_panel.GetSizer().AddStretchSpacer(1)
         self.outputs_button.Bind(wx.EVT_BUTTON, self.on_outputs_button)

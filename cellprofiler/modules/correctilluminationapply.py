@@ -77,14 +77,14 @@ class CorrectIlluminationApply(cpm.Module):
 Values outside the range 0 to 1 might not be handled well by other
 modules. Select *"Yes"* to set negative values to 0, which was previously
 done automatically without ability to override.
-""" 
+""" )
 
         self.truncate_high = cps.Binary(
             "Set values greater than 1 equal to 1?", False, doc="""\
 Values outside the range 0 to 1 might not be handled well by other
 modules. Select *"Yes"* to set values greater than 1 to a maximum
 value of 1.
-"""
+""")
 
     def add_image(self, can_delete=True):
         '''Add an image and its settings to the list of images'''

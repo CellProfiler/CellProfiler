@@ -13,6 +13,14 @@ Granularity is measured as described by Ilya Ravkin (references below).
 The size of the starting structure element as well as the range of the
 spectrum is given as input.
 
+As of **CellProfiler 4.0** the settings for this module have been changed to simplify
+configuration. A single set of parameters is now applied to all images and objects within the module,
+rather than each image needing individual configuration.
+Pipelines from older versions will be converted to match this format. If multiple sets of parameters
+were defined CellProfiler will apply the first set from the older pipeline version.
+Specifying multiple sets of parameters can still be achieved by running multiple copies of this module.
+
+
 |
 
 ============ ============ ===============
@@ -44,16 +52,17 @@ References
    processing”, *Applied Informatics*, v.14, pp. 41-90, Finances and
    Statistics, Moskow, (in Russian)
 """
+import logging
 
 import numpy as np
 import scipy.ndimage as scind
 import skimage.morphology
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
-import cellprofiler_core.workspace as cpw
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.setting
+import cellprofiler_core.workspace
 
 "Granularity category"
 C_GRANULARITY = "Granularity_%s_%s"
@@ -65,195 +74,162 @@ IMAGE_SETTING_COUNT = IMAGE_SETTING_COUNT_V3
 OBJECTS_SETTING_COUNT_V3 = 1
 OBJECTS_SETTING_COUNT = OBJECTS_SETTING_COUNT_V3
 
+logger = logging.getLogger(__name__)
 
-class MeasureGranularity(cpm.Module):
+
+class MeasureGranularity(cellprofiler_core.module.Module):
     module_name = "MeasureGranularity"
     category = "Measurement"
-    variable_revision_number = 3
+    variable_revision_number = 4
 
     def create_settings(self):
-        self.divider_top = cps.Divider(line=False)
-        self.images = []
-        self.image_count = cps.HiddenCount(self.images, "Image count")
-        self.add_image(can_remove=False)
-        self.add_button = cps.DoSomething("", "Add another image", self.add_image)
-        self.divider_bottom = cps.Divider(line=False)
-
-    def add_image(self, can_remove=True):
-        group = GranularitySettingsGroup()
-        group.can_remove = can_remove
-        if can_remove:
-            group.append("divider", cps.Divider(line=True))
-
-        group.append(
-            "image_name",
-            cps.ImageNameSubscriber(
-                "Select an image to measure",
-                "None",
-                doc="Select the grayscale images whose granularity you want to measure.",
-            ),
+        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+            "Select images to measure",
+            [],
+            doc="""Select images in which to measure the granularity.""",
         )
 
-        group.append(
-            "subsample_size",
-            cps.Float(
+        self.divider_top = cellprofiler_core.setting.Divider(line=True)
+
+        self.wants_objects = cellprofiler_core.setting.Binary(
+            "Measure within objects?",
+            False,
+            doc="""\
+        Press this button to capture granularity measurements for objects, such as
+        those identified by a prior **IdentifyPrimaryObjects** module.
+        **MeasureGranularity** will measure the image’s granularity within each
+        object at the requested scales."""
+        )
+
+        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+            "Select objects to measure",
+            [],
+            doc="""\
+        *(Used only when "Measure within objects" is enabled)*
+
+        Select the objects within which granularity will be measured.""",
+        )
+
+        self.divider_bottom = cellprofiler_core.setting.Divider(line=True)
+        self.subsample_size = cellprofiler_core.setting.Float(
                 "Subsampling factor for granularity measurements",
                 0.25,
                 minval=np.finfo(float).eps,
                 maxval=1,
                 doc="""\
-If the textures of interest are larger than a few pixels, we recommend
-you subsample the image with a factor <1 to speed up the processing.
-Down sampling the image will let you detect larger structures with a
-smaller sized structure element. A factor >1 might increase the accuracy
-but also require more processing time. Images are typically of higher
-resolution than is required for granularity measurements, so the default
-value is 0.25. For low-resolution images, increase the subsampling
-fraction; for high-resolution images, decrease the subsampling fraction.
-Subsampling by 1/4 reduces computation time by (1/4) :sup:`3` because the
-size of the image is (1/4) :sup:`2` of original and the range of granular
-spectrum can be 1/4 of original. Moreover, the results are sometimes
-actually a little better with subsampling, which is probably because
-with subsampling the individual granular spectrum components can be used
-as features, whereas without subsampling a feature should be a sum of
-several adjacent granular spectrum components. The recommendation on the
-numerical value cannot be determined in advance; an analysis as in this
-reference may be required before running the whole set. See this `pdf`_,
-slides 27-31, 49-50.
+        If the textures of interest are larger than a few pixels, we recommend
+        you subsample the image with a factor <1 to speed up the processing.
+        Down sampling the image will let you detect larger structures with a
+        smaller sized structure element. A factor >1 might increase the accuracy
+        but also require more processing time. Images are typically of higher
+        resolution than is required for granularity measurements, so the default
+        value is 0.25. For low-resolution images, increase the subsampling
+        fraction; for high-resolution images, decrease the subsampling fraction.
+        Subsampling by 1/4 reduces computation time by (1/4) :sup:`3` because the
+        size of the image is (1/4) :sup:`2` of original and the range of granular
+        spectrum can be 1/4 of original. Moreover, the results are sometimes
+        actually a little better with subsampling, which is probably because
+        with subsampling the individual granular spectrum components can be used
+        as features, whereas without subsampling a feature should be a sum of
+        several adjacent granular spectrum components. The recommendation on the
+        numerical value cannot be determined in advance; an analysis as in this
+        reference may be required before running the whole set. See this `pdf`_,
+        slides 27-31, 49-50.
 
-.. _pdf: http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf""",
-            ),
-        )
+        .. _pdf: http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf""",
+            )
 
-        group.append(
-            "image_sample_size",
-            cps.Float(
+        self.image_sample_size = cellprofiler_core.setting.Float(
                 "Subsampling factor for background reduction",
                 0.25,
                 minval=np.finfo(float).eps,
                 maxval=1,
                 doc="""\
-It is important to remove low frequency image background variations as
-they will affect the final granularity measurement. Any method can be
-used as a pre-processing step prior to this module; we have chosen to
-simply subtract a highly open image. To do it quickly, we subsample the
-image first. The subsampling factor for background reduction is usually
-[0.125 – 0.25]. This is highly empirical, but a small factor should be
-used if the structures of interest are large. The significance of
-background removal in the context of granulometry is that image volume
-at certain granular size is normalized by total image volume, which
-depends on how the background was removed.""",
-            ),
-        )
+        It is important to remove low frequency image background variations as
+        they will affect the final granularity measurement. Any method can be
+        used as a pre-processing step prior to this module; we have chosen to
+        simply subtract a highly open image. To do it quickly, we subsample the
+        image first. The subsampling factor for background reduction is usually
+        [0.125 – 0.25]. This is highly empirical, but a small factor should be
+        used if the structures of interest are large. The significance of
+        background removal in the context of granulometry is that image volume
+        at certain granular size is normalized by total image volume, which
+        depends on how the background was removed.""",
+            )
 
-        group.append(
-            "element_size",
-            cps.Integer(
+        self.element_size = cellprofiler_core.setting.Integer(
                 "Radius of structuring element",
                 10,
                 minval=1,
                 doc="""\
-This radius should correspond to the radius of the textures of interest
-*after* subsampling; i.e., if textures in the original image scale have
-a radius of 40 pixels, and a subsampling factor of 0.25 is used, the
-structuring element size should be 10 or slightly smaller, and the range
-of the spectrum defined below will cover more sizes.""",
-            ),
-        )
+        This radius should correspond to the radius of the textures of interest
+        *after* subsampling; i.e., if textures in the original image scale have
+        a radius of 40 pixels, and a subsampling factor of 0.25 is used, the
+        structuring element size should be 10 or slightly smaller, and the range
+        of the spectrum defined below will cover more sizes.""",
+            )
 
-        group.append(
-            "granular_spectrum_length",
-            cps.Integer(
+        self.granular_spectrum_length = cellprofiler_core.setting.Integer(
                 "Range of the granular spectrum",
                 16,
                 minval=1,
                 doc="""\
-You may need a trial run to see which granular
-spectrum range yields informative measurements. Start by using a wide spectrum and
-narrow it down to the informative range to save time.""",
-            ),
-        )
-
-        group.append(
-            "add_objects_button",
-            cps.DoSomething(
-                "",
-                "Add another object",
-                group.add_objects,
-                doc="""\
-Press this button to add granularity measurements for objects, such as
-those identified by a prior **IdentifyPrimaryObjects** module.
-**MeasureGranularity** will measure the image’s granularity within each
-object at the requested scales.""",
-            ),
-        )
-
-        group.objects = []
-
-        group.object_count = cps.HiddenCount(group.objects, "Object count")
-
-        if can_remove:
-            group.append(
-                "remover",
-                cps.RemoveSettingButton("", "Remove this image", self.images, group),
+        You may need a trial run to see which granular
+        spectrum range yields informative measurements. Start by using a wide spectrum and
+        narrow it down to the informative range to save time.""",
             )
-        self.images.append(group)
-        return group
 
     def validate_module(self, pipeline):
         """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
+        if len(self.images_list.value) == 0:
+            raise cellprofiler_core.setting.ValidationError(
+                "No images selected", self.images_list
+            )
+
+        if self.wants_objects.value:
+            if len(self.objects_list.value) == 0:
+                raise cellprofiler_core.setting.ValidationError(
+                    "No object sets selected", self.objects_list
+                )
+
+
         measurements, sources = self.get_measurement_columns(
             pipeline, return_sources=True
         )
         d = {}
         for m, s in zip(measurements, sources):
             if m in d:
-                raise cps.ValidationError("Measurement %s made twice." % (m[1]), s[0])
+                raise cellprofiler_core.setting.ValidationError("Measurement %s made twice." % (m[1]), s[0])
             d[m] = True
 
     def settings(self):
-        result = [self.image_count]
-        for image in self.images:
-            result += [
-                image.object_count,
-                image.image_name,
-                image.subsample_size,
-                image.image_sample_size,
-                image.element_size,
-                image.granular_spectrum_length,
-            ]
-            result += [ob.objects_name for ob in image.objects]
+        result = [self.images_list,
+                  self.wants_objects,
+                  self.objects_list,
+                  self.subsample_size,
+                  self.image_sample_size,
+                  self.element_size,
+                  self.granular_spectrum_length,
+                  ]
         return result
 
-    def prepare_settings(self, setting_values):
-        """Adjust self.images to account for the expected # of images"""
-        image_count = int(setting_values[0])
-        idx = 1
-        del self.images[:]
-        while len(self.images) < image_count:
-            image = self.add_image(len(self.images) > 0)
-            object_count = int(setting_values[idx])
-            idx += IMAGE_SETTING_COUNT
-            for i in range(object_count):
-                image.add_objects()
-                idx += OBJECTS_SETTING_COUNT
-
     def visible_settings(self):
-        result = []
-        for index, image in enumerate(self.images):
-            result += image.visible_settings()
-        result += [self.add_button]
+        result = [self.images_list, self.divider_top, self.wants_objects]
+        if self.wants_objects.value:
+            result += [self.objects_list]
+        result += [self.divider_bottom,
+                   self.subsample_size,
+                   self.image_sample_size,
+                   self.element_size,
+                   self.granular_spectrum_length
+                   ]
         return result
 
     def run(self, workspace):
-        max_scale = np.max(
-            [image.granular_spectrum_length.value for image in self.images]
-        )
-        col_labels = ["Image name"] + ["GS%d" % n for n in range(1, max_scale + 1)]
+        col_labels = ["Image name"] + ["GS%d" % n for n in range(1, self.granular_spectrum_length.value + 1)]
         statistics = []
-        for image in self.images:
-            statistic = self.run_on_image_setting(workspace, image)
-            statistic += ["-"] * (max_scale - image.granular_spectrum_length.value)
+        for image_name in self.images_list.value:
+            statistic = self.run_on_image_setting(workspace, image_name)
             statistics.append(statistic)
         if self.show_window:
             workspace.display_data.statistics = statistics
@@ -267,21 +243,21 @@ object at the requested scales.""",
                              title="If individual objects were measured, use an Export module to view their results"
                              )
 
-    def run_on_image_setting(self, workspace, image):
-        assert isinstance(workspace, cpw.Workspace)
+    def run_on_image_setting(self, workspace, image_name):
+        assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
         image_set = workspace.image_set
         measurements = workspace.measurements
-        im = image_set.get_image(image.image_name.value, must_be_grayscale=True)
+        im = image_set.get_image(image_name, must_be_grayscale=True)
         #
         # Downsample the image and mask
         #
         new_shape = np.array(im.pixel_data.shape)
-        if image.subsample_size.value < 1:
-            new_shape = new_shape * image.subsample_size.value
+        if self.subsample_size.value < 1:
+            new_shape = new_shape * self.subsample_size.value
             if im.dimensions == 2:
                 i, j = (
                     np.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
-                    / image.subsample_size.value
+                    / self.subsample_size.value
                 )
                 pixels = scind.map_coordinates(im.pixel_data, (i, j), order=1)
                 mask = scind.map_coordinates(im.mask.astype(float), (i, j)) > 0.9
@@ -290,7 +266,7 @@ object at the requested scales.""",
                     np.mgrid[
                         0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
                     ].astype(float)
-                    / image.subsample_size.value
+                    / self.subsample_size.value
                 )
                 pixels = scind.map_coordinates(im.pixel_data, (k, i, j), order=1)
                 mask = scind.map_coordinates(im.mask.astype(float), (k, i, j)) > 0.9
@@ -300,12 +276,12 @@ object at the requested scales.""",
         #
         # Remove background pixels using a greyscale tophat filter
         #
-        if image.image_sample_size.value < 1:
-            back_shape = new_shape * image.image_sample_size.value
+        if self.image_sample_size.value < 1:
+            back_shape = new_shape * self.image_sample_size.value
             if im.dimensions == 2:
                 i, j = (
                     np.mgrid[0 : back_shape[0], 0 : back_shape[1]].astype(float)
-                    / image.image_sample_size.value
+                    / self.image_sample_size.value
                 )
                 back_pixels = scind.map_coordinates(pixels, (i, j), order=1)
                 back_mask = scind.map_coordinates(mask.astype(float), (i, j)) > 0.9
@@ -314,7 +290,7 @@ object at the requested scales.""",
                     np.mgrid[
                         0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
                     ].astype(float)
-                    / image.subsample_size.value
+                    / self.subsample_size.value
                 )
                 back_pixels = scind.map_coordinates(pixels, (k, i, j), order=1)
                 back_mask = scind.map_coordinates(mask.astype(float), (k, i, j)) > 0.9
@@ -322,7 +298,7 @@ object at the requested scales.""",
             back_pixels = pixels
             back_mask = mask
             back_shape = new_shape
-        radius = image.element_size.value
+        radius = self.element_size.value
         if im.dimensions == 2:
             selem = skimage.morphology.disk(radius, dtype=bool)
         else:
@@ -333,7 +309,7 @@ object at the requested scales.""",
         back_pixels_mask = np.zeros_like(back_pixels)
         back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
         back_pixels = skimage.morphology.dilation(back_pixels_mask, selem=selem)
-        if image.image_sample_size.value < 1:
+        if self.image_sample_size.value < 1:
             if im.dimensions == 2:
                 i, j = np.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
                 #
@@ -371,7 +347,7 @@ object at the requested scales.""",
                     )
                     self.start_mean = np.maximum(self.current_mean, np.finfo(float).eps)
 
-        object_records = [ObjectRecord(ob.objects_name.value) for ob in image.objects]
+        object_records = [ObjectRecord(objects_name) for objects_name in self.objects_list.value]
         #
         # Transcribed from the Matlab module: granspectr function
         #
@@ -384,7 +360,7 @@ object at the requested scales.""",
         # I.Ravkin, V.Temov "Bit representation techniques and image processing", Applied Informatics, v.14, pp. 41-90, Finances and Statistics, Moskow, 1988 (in Russian)
         # THIS IMPLEMENTATION INSTEAD OF OPENING USES EROSION FOLLOWED BY RECONSTRUCTION
         #
-        ng = image.granular_spectrum_length.value
+        ng = self.granular_spectrum_length.value
         startmean = np.mean(pixels[mask])
         ero = pixels.copy()
         # Mask the test image so that masked pixels will have no effect
@@ -398,7 +374,7 @@ object at the requested scales.""",
             footprint = skimage.morphology.disk(1, dtype=bool)
         else:
             footprint = skimage.morphology.ball(1, dtype=bool)
-        statistics = [image.image_name.value]
+        statistics = [image_name]
         for i in range(1, ng + 1):
             prevmean = currentmean
             ero_mask = np.zeros_like(ero)
@@ -408,7 +384,7 @@ object at the requested scales.""",
             currentmean = np.mean(rec[mask])
             gs = (prevmean - currentmean) * 100 / startmean
             statistics += ["%.2f" % gs]
-            feature = image.granularity_feature(i)
+            feature = self.granularity_feature(i, image_name)
             measurements.add_image_measurement(feature, gs)
             #
             # Restore the reconstructed image to the shape of the
@@ -455,23 +431,23 @@ object at the requested scales.""",
     def get_measurement_columns(self, pipeline, return_sources=False):
         result = []
         sources = []
-        for image in self.images:
-            gslength = image.granular_spectrum_length.value
+        for image_name in self.images_list.value:
+            gslength = self.granular_spectrum_length.value
             for i in range(1, gslength + 1):
                 result += [
-                    (cpmeas.IMAGE, image.granularity_feature(i), cpmeas.COLTYPE_FLOAT)
+                    (cellprofiler_core.measurement.IMAGE, self.granularity_feature(i, image_name), cellprofiler_core.measurement.COLTYPE_FLOAT)
                 ]
-                sources += [(image.image_name, image.granularity_feature(i))]
-            for ob in image.objects:
+                sources += [(image_name, self.granularity_feature(i, image_name))]
+            for object_name in self.objects_list.value:
                 for i in range(1, gslength + 1):
                     result += [
                         (
-                            ob.objects_name.value,
-                            image.granularity_feature(i),
-                            cpmeas.COLTYPE_FLOAT,
+                            object_name,
+                            self.granularity_feature(i, image_name),
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
                         )
                     ]
-                    sources += [(ob.objects_name.value, image.granularity_feature(i))]
+                    sources += [(object_name, self.granularity_feature(i, image_name))]
 
         if return_sources:
             return result, sources
@@ -483,16 +459,20 @@ object at the requested scales.""",
 
         object_name - name of an object or IMAGE to match all
         """
-        if object_name == cpmeas.IMAGE:
-            return self.images
+        if object_name == cellprofiler_core.measurement.IMAGE:
+            return self.images_list.value
         return [
-            image
-            for image in self.images
-            if object_name in [ob.objects_name.value for ob in image.objects]
+            image_name
+            for image_name in self.images_list.value
+            if object_name in self.objects_list.value
         ]
 
     def get_categories(self, pipeline, object_name):
-        if len(self.get_matching_images(object_name)) > 0:
+        """Return the categories supported by this module for the given object
+
+        object_name - name of the measured object or cellprofiler_core.measurement.IMAGE
+        """
+        if object_name in self.objects_list.value and self.wants_objects.value:
             return ["Granularity"]
         else:
             return []
@@ -500,8 +480,7 @@ object at the requested scales.""",
     def get_measurements(self, pipeline, object_name, category):
         max_length = 0
         if category == "Granularity":
-            for image in self.get_matching_images(object_name):
-                max_length = max(max_length, image.granular_spectrum_length.value)
+                max_length = max(max_length, self.granular_spectrum_length.value)
         return [str(i) for i in range(1, max_length + 1)]
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
@@ -513,16 +492,19 @@ object at the requested scales.""",
                     return []
             except ValueError:
                 return []
-            for image in self.get_matching_images(object_name):
-                if image.granular_spectrum_length.value >= length:
-                    result.append(image.image_name.value)
+            if self.granular_spectrum_length.value >= length:
+                for image_name in self.images_list.value:
+                    result.append(image_name)
         return result
+
+    def granularity_feature(self, length, image_name):
+        return C_GRANULARITY % (length, image_name)
 
     def upgrade_settings(
         self, setting_values, variable_revision_number, module_name
     ):
         if variable_revision_number == 1:
-            # changed to use cps.SettingsGroup() but did not change the
+            # changed to use cellprofiler_core.setting.SettingsGroup() but did not change the
             # ordering of any of the settings
             variable_revision_number = 2
         if variable_revision_number == 2:
@@ -536,51 +518,52 @@ object at the requested scales.""",
                 setting_values = setting_values[IMAGE_SETTING_COUNT_V2:]
             setting_values = new_setting_values
             variable_revision_number = 3
+        if variable_revision_number == 3:
+            n_images = int(setting_values[0])
+            grouplist = setting_values[1:]
+            images_list = []
+            objects_list = []
+            setting_groups = []
+            while grouplist:
+                n_objects = int(grouplist[0])
+                images_list += [grouplist[1]]
+                setting_groups.append(tuple(grouplist[2:6]))
+                if grouplist[6:6+n_objects] != "None":
+                    objects_list += grouplist[6:6+n_objects]
+                if len(grouplist) > 6+n_objects:
+                    grouplist = grouplist[6+n_objects:]
+                else:
+                    grouplist = False
+            images_set = set(images_list)
+            objects_set = set(objects_list)
+            settings_set = set(setting_groups)
+            if "None" in images_set:
+                images_set.remove("None")
+            if len(settings_set) > 1:
+                logger.warning(
+                    "The pipeline you loaded was converted from an older version of CellProfiler.\n"
+                    "The MeasureGranularity module no longer supports different settings for each image.\n"
+                    "Instead, all selected images and objects will be analysed together with the same settings.\n"
+                    "If you want to perform analysis with additional settings, please use a second "
+                    "copy of the module."
+                )
+            if len(objects_set) > len(objects_list):
+                logger.warning(
+                    "The pipeline you loaded was converted from an older version of CellProfiler.\n"
+                    "The MeasureGranularity module now analyses all images and object sets together.\n"
+                    "Specific pairs of images and objects are no longer supported.\n"
+                    "If you want to restrict analysis to specific image/object sets, please use a second "
+                    "copy of the module."
+                )
+            if len(objects_set) > 0:
+                wants_objects = True
+            else:
+                wants_objects = False
+            images_string = ", ".join(map(str, images_set))
+            objects_string = ", ".join(map(str, objects_set))
+            setting_values = [images_string, wants_objects, objects_string] + list(setting_groups[0])
+            variable_revision_number = 4
         return setting_values, variable_revision_number
 
     def volumetric(self):
         return True
-
-
-class GranularitySettingsGroup(cps.SettingsGroup):
-    def granularity_feature(self, length):
-        return C_GRANULARITY % (length, self.image_name.value)
-
-    def add_objects(self):
-        og = cps.SettingsGroup()
-        og.append(
-            "objects_name",
-            cps.ObjectNameSubscriber(
-                "Select objects to measure",
-                "None",
-                doc="""\
-Select the objects whose granularity will be measured. You can select
-objects from prior modules that identify objects, such as
-**IdentifyPrimaryObjects**. If you only want to measure the granularity
-for the image overall, you can remove all objects using the “Remove this
-object” button.""",
-            ),
-        )
-        og.append(
-            "remover",
-            cps.RemoveSettingButton("", "Remove this object", self.objects, og),
-        )
-        self.objects.append(og)
-
-    def visible_settings(self):
-        result = []
-        if self.can_remove:
-            result += [self.divider]
-        result += [
-            self.image_name,
-            self.subsample_size,
-            self.image_sample_size,
-            self.element_size,
-            self.granular_spectrum_length,
-        ]
-        for ob in self.objects:
-            result += [ob.objects_name, ob.remover]
-        result += [self.add_objects_button]
-        if self.can_remove:
-            result += [self.remover]
-        return result

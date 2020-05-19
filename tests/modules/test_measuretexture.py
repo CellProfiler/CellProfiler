@@ -16,8 +16,8 @@ INPUT_OBJECTS_NAME = "inputobjects"
 def make_workspace(image, labels, convert=True, mask=None):
     """Make a workspace for testing MeasureTexture"""
     module = cellprofiler.modules.measuretexture.MeasureTexture()
-    module.image_groups[0].image_name.value = INPUT_IMAGE_NAME
-    module.object_groups[0].object_name.value = INPUT_OBJECTS_NAME
+    module.images_list.value = INPUT_IMAGE_NAME
+    module.objects_list.value = INPUT_OBJECTS_NAME
     pipeline = cellprofiler_core.pipeline.Pipeline()
     object_set = cellprofiler_core.object.ObjectSet()
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -84,12 +84,10 @@ Number of angles to compute for Gabor:6
     for i, wants_gabor in enumerate((True, False)):
         module = pipeline.modules()[i]
         assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
-        assert len(module.image_groups) == 2
-        assert module.image_groups[0].image_name.value == "rawDNA"
-        assert module.image_groups[1].image_name.value == "rawGFP"
-        assert len(module.object_groups) == 2
-        assert module.object_groups[0].object_name.value == "Cells"
-        assert module.object_groups[1].object_name.value == "Nuclei"
+        assert len(module.images_list.value) == 2
+        assert {'rawDNA', 'rawGFP'}.issubset(module.images_list.value)
+        assert len(module.objects_list.value) == 2
+        assert {'Cells', 'Nuclei'}.issubset(module.objects_list.value)
         assert len(module.scale_groups) == 2
         assert module.scale_groups[0].scale == 3
         assert module.scale_groups[1].scale == 5
@@ -141,12 +139,10 @@ Number of angles to compute for Gabor:6
     for i, wants_gabor in enumerate((True, False)):
         module = pipeline.modules()[i]
         assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
-        assert len(module.image_groups) == 2
-        assert module.image_groups[0].image_name.value == "rawDNA"
-        assert module.image_groups[1].image_name.value == "rawGFP"
-        assert len(module.object_groups) == 2
-        assert module.object_groups[0].object_name.value == "Cells"
-        assert module.object_groups[1].object_name.value == "Nuclei"
+        assert len(module.images_list.value) == 2
+        assert {'rawDNA', 'rawGFP'}.issubset(module.images_list.value)
+        assert len(module.objects_list.value) == 2
+        assert {'Cells', 'Nuclei'}.issubset(module.objects_list.value)
         assert len(module.scale_groups) == 2
         assert module.scale_groups[0].scale == 3
         assert module.scale_groups[1].scale == 5
@@ -226,12 +222,10 @@ Measure images or objects?:Both
     ):
         module = pipeline.modules()[i]
         assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
-        assert len(module.image_groups) == 2
-        assert module.image_groups[0].image_name.value == "rawDNA"
-        assert module.image_groups[1].image_name.value == "rawGFP"
-        assert len(module.object_groups) == 2
-        assert module.object_groups[0].object_name.value == "Cells"
-        assert module.object_groups[1].object_name.value == "Nuclei"
+        assert len(module.images_list.value) == 2
+        assert {'rawDNA', 'rawGFP'}.issubset(module.images_list.value)
+        assert len(module.objects_list.value) == 2
+        assert {'Cells', 'Nuclei'}.issubset(module.objects_list.value)
         assert len(module.scale_groups) == 2
         assert module.scale_groups[0].scale == 3
         assert module.scale_groups[1].scale == 5

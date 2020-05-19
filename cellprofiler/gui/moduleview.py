@@ -517,6 +517,13 @@ class ModuleView(object):
                         v, v.get_choices(), control_name, wx.CB_READONLY, control
                     )
                     flag = wx.ALIGN_LEFT
+                elif isinstance(v, (cellprofiler_core.setting.ListImageNameSubscriber,
+                                    cellprofiler_core.setting.ListObjectNameSubscriber)):
+                    choices = v.get_choices(self.__pipeline)
+                    control = self.make_list_name_subscriber_control(
+                        v, choices, control_name, control
+                    )
+                    flag = wx.EXPAND
                 elif isinstance(v, cellprofiler_core.setting.NameSubscriber):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_name_subscriber_control(
@@ -834,6 +841,28 @@ class ModuleView(object):
             and (control.Value in v.tooltips)
         ):
             control.SetToolTip(wx.ToolTip(v.tooltips[control.Value]))
+        return control
+
+    def make_list_name_subscriber_control(self, v, choices, control_name, control):
+        """Make a read-only combobox with extra feedback about source modules,
+        and a context menu with choices navigable by module name.
+
+        v            - the setting
+        choices      - a list of (name, module_name, module_number)
+        control_name - assign this name to the control
+        """
+        if not control:
+            namelabel = "Image" if isinstance(v, cellprofiler_core.setting.ListImageNameSubscriber) else "Object"
+            control = namesubscriber.NameSubscriberListBox(
+                self.__module_panel, checked=v.value, choices=choices, name=control_name, nametype=namelabel,
+            )
+
+            def callback(event, setting=v, control=control):
+                self.__on_checklistbox_change(event, setting, control)
+            control.add_callback(callback)
+        else:
+            if list(choices) != list(control.Items):
+                control.Items = choices
         return control
 
     def make_choice_control(self, v, choices, control_name, style, control):
@@ -2243,6 +2272,11 @@ class ModuleView(object):
         if not self.__handle_change:
             return
         self.on_value_change(setting, control, control.GetValue(), event)
+
+    def __on_checklistbox_change(self, event, setting, control):
+        if not self.__handle_change:
+            return
+        self.on_value_change(setting, control, control.GetChecked(), event, timeout=CHECK_TIMEOUT_SEC * 1000)
 
     def __on_multichoice_change(self, event, setting, control):
         if not self.__handle_change:

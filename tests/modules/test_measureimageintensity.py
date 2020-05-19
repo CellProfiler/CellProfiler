@@ -38,9 +38,9 @@ def measurements():
 def module():
     module = cellprofiler.modules.measureimageintensity.MeasureImageIntensity()
 
-    module.images[0].image_name.value = "image"
+    module.images_list.value = "image"
 
-    module.images[0].object_name.value = "objects"
+    module.objects_list.value = "objects"
 
     return module
 
@@ -167,7 +167,7 @@ def test_volume_and_objects(image, measurements, module, objects, workspace):
 
     objects.segmented = object_data
 
-    module.images[0].wants_objects.value = True
+    module.wants_objects.value = True
 
     module.run(workspace)
 
@@ -206,7 +206,7 @@ def test_volume_and_objects_and_mask(image, measurements, module, objects, works
 
     objects.segmented = object_data
 
-    module.images[0].wants_objects.value = True
+    module.wants_objects.value = True
 
     module.run(workspace)
 
@@ -367,7 +367,7 @@ def test_image_and_objects(image, measurements, module, objects, workspace):
 
     objects.segmented = labels
 
-    module.images[0].wants_objects.value = True
+    module.wants_objects.value = True
 
     module.run(workspace)
 
@@ -432,7 +432,7 @@ def test_image_and_objects_and_mask(image, measurements, module, objects, worksp
 
     objects.segmented = labels
 
-    module.images[0].wants_objects.value = True
+    module.wants_objects.value = True
 
     module.run(workspace)
 
@@ -455,39 +455,87 @@ def test_image_and_objects_and_mask(image, measurements, module, objects, worksp
     )
 
 
-def test_get_measurement_columns(module):
+def test_get_measurement_columns_whole_image_mode(module):
     image_names = ["image%d" % i for i in range(3)]
 
-    object_names = ["object%d" % i for i in range(3)]
-
-    first = True
+    module.wants_objects.value = False
 
     expected_suffixes = []
 
     for image_name in image_names:
-        if first:
-            first = False
-        else:
-            module.add_image_measurement()
+        im = module.images_list.value[-1]
 
-        im = module.images[-1]
-
-        im.image_name.value = image_name
-
-        im.wants_objects.value = False
+        module.images_list.value.append(image_name)
 
         expected_suffixes.append(image_name)
 
+    columns = module.get_measurement_columns(None)
+
+    assert all([column[0] == cellprofiler_core.measurement.IMAGE for column in columns])
+
+    for expected_suffix in expected_suffixes:
+        for feature, coltype in (
+            (
+                cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_TOTAL_AREA,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
+            ),
+        ):
+            # feature names are now formatting strings
+            feature_name = feature % expected_suffix
+
+            assert any(
+                [
+                    (column[1] == feature_name and column[2] == coltype)
+                    for column in columns
+                ]
+            )
+
+def test_get_measurement_columns_object_mode(module):
+    image_names = ["image%d" % i for i in range(3)]
+
+    object_names = ["object%d" % i for i in range(3)]
+
+    module.wants_objects.value = True
+
+    expected_suffixes = []
+
+    for image_name in image_names:
+        module.images_list.value.append(image_name)
+
         for object_name in object_names:
-            module.add_image_measurement()
-
-            im = module.images[-1]
-
-            im.image_name.value = image_name
-
-            im.wants_objects.value = True
-
-            im.object_name.value = object_name
+            module.objects_list.value.append(object_name)
 
             expected_suffixes.append("%s_%s" % (image_name, object_name))
 
@@ -536,7 +584,6 @@ def test_get_measurement_columns(module):
         ):
             # feature names are now formatting strings
             feature_name = feature % expected_suffix
-
             assert any(
                 [
                     (column[1] == feature_name and column[2] == coltype)

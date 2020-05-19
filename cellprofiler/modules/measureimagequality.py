@@ -207,7 +207,7 @@ IMAGE_GROUP_SETTING_OFFSET = 2
 class MeasureImageQuality(cellprofiler_core.module.Module):
     module_name = "MeasureImageQuality"
     category = "Measurement"
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     def create_settings(self):
         self.images_choice = cellprofiler_core.setting.Choice(
@@ -247,13 +247,12 @@ calculated.
 
         group.append(
             "image_names",
-            cellprofiler_core.setting.ImageNameSubscriberMultiChoice(
+            cellprofiler_core.setting.ListImageNameSubscriber(
                 text="Select the images to measure",
                 doc="""\
 *(Used only if “{O_SELECT}” is chosen for selecting images)*
 
-Choose one or more images from this list. You can select multiple images
-by clicking using the shift or command keys. In addition to loaded
+Choose one or more images from this list. In addition to loaded
 images, the list includes the images that were created by prior modules.
 """.format(
                     **{"O_SELECT": O_SELECT}
@@ -722,7 +721,7 @@ to the foreground pixels or the background pixels.
         """Make sure a measurement is selected in image_names"""
         if self.images_choice.value == O_SELECT:
             for image_group in self.image_groups:
-                if not image_group.image_names.get_selections():
+                if len(image_group.image_names.value) == 0:
                     raise cellprofiler_core.setting.ValidationError(
                         "Please choose at least one image", image_group.image_names
                     )
@@ -1618,7 +1617,7 @@ to the foreground pixels or the background pixels.
     def images_to_process(self, image_group, workspace, pipeline=None):
         """Return a list of input image names appropriate to the setting choice """
         if self.images_choice.value == O_SELECT:
-            return image_group.image_names.get_selections()
+            return image_group.image_names.value
         elif self.images_choice.value == O_ALL_LOADED:
             # Grab all loaded images
             accepted_image_list = []
@@ -1806,7 +1805,24 @@ to the foreground pixels or the background pixels.
                 for x in setting_values
             ]
             variable_revision_number = 5
+        if variable_revision_number == 5:
+            if setting_values[0] == "Select...":
+                num_images = setting_values[1]
+                metadata_end = int(num_images)*2
+                num_settings = [int(setting_values[i+2]) + int(setting_values[i+3]*5) for i in range(0, metadata_end, 2)]
 
+                to_unpack = setting_values[2+metadata_end:]
+                new_setting_values = setting_values[:2+metadata_end]
+                while to_unpack:
+                    image_names = to_unpack[0]
+                    split_image_names = image_names.split(',')
+                    new_image_names = ", ".join(map(str, split_image_names))
+                    num_moresettings = num_settings.pop(0)
+                    new_setting_values.append(new_image_names)
+                    new_setting_values += to_unpack[1:2+num_moresettings]
+                    to_unpack = to_unpack[2+num_moresettings:]
+                setting_values = new_setting_values
+            variable_revision_number = 6
         return setting_values, variable_revision_number
 
     def volumetric(self):

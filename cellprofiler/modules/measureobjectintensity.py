@@ -136,93 +136,28 @@ ALL_LOCATION_MEASUREMENTS = [
 
 class MeasureObjectIntensity(cellprofiler_core.module.Module):
     module_name = "MeasureObjectIntensity"
-    variable_revision_number = 3
+    variable_revision_number = 4
     category = "Measurement"
 
     def create_settings(self):
-        self.images = []
-        self.add_image(can_remove=False)
-        self.image_count = cellprofiler_core.setting.HiddenCount(self.images)
-        self.add_image_button = cellprofiler_core.setting.DoSomething(
-            "", "Add another image", self.add_image
+        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+            "Select images to measure",
+            [],
+            doc="""Select the grayscale images whose intensity you want to measure.""",
         )
         self.divider = cellprofiler_core.setting.Divider()
-        self.objects = []
-        self.add_object(can_remove=False)
-        self.add_object_button = cellprofiler_core.setting.DoSomething(
-            "", "Add another object", self.add_object
+        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+            "Select objects to measure",
+            [],
+            doc="""Select the object sets whose intensity you want to measure.""",
         )
-
-    def add_image(self, can_remove=True):
-        """Add an image to the image_groups collection
-
-        can_delete - set this to False to keep from showing the "remove"
-                     button for images that must be present.
-        """
-        group = cellprofiler_core.setting.SettingsGroup()
-        if can_remove:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
-        group.append(
-            "name",
-            cellprofiler_core.setting.ImageNameSubscriber(
-                "Select an image to measure",
-                "None",
-                doc="""\
-Select the grayscale images whose intensity you want to measure.""",
-            ),
-        )
-
-        if can_remove:
-            group.append(
-                "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
-                    "", "Remove this image", self.images, group
-                ),
-            )
-        self.images.append(group)
-
-    def add_object(self, can_remove=True):
-        """Add an object to the object_groups collection
-
-        can_delete - set this to False to keep from showing the "remove"
-                     button for images that must be present.
-        """
-        group = cellprofiler_core.setting.SettingsGroup()
-        if can_remove:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
-        group.append(
-            "name",
-            cellprofiler_core.setting.ObjectNameSubscriber(
-                "Select objects to measure",
-                "None",
-                doc="""\
-Select the objects whose intensities you want to measure.""",
-            ),
-        )
-
-        if can_remove:
-            group.append(
-                "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
-                    "", "Remove this object", self.objects, group
-                ),
-            )
-        self.objects.append(group)
 
     def settings(self):
-        result = [self.image_count]
-        result += [im.name for im in self.images]
-        result += [obj.name for obj in self.objects]
+        result = [self.images_list, self.objects_list]
         return result
 
     def visible_settings(self):
-        result = []
-        for im in self.images:
-            result += im.visible_settings()
-        result += [self.add_image_button, self.divider]
-        for im in self.objects:
-            result += im.visible_settings()
-        result += [self.add_object_button]
+        result = [self.images_list, self.divider, self.objects_list]
         return result
 
     def upgrade_settings(
@@ -236,56 +171,41 @@ Select the objects whose intensities you want to measure.""",
                 + setting_values[num_imgs + 1 :]
             )
             variable_revision_number = 3
+        if variable_revision_number == 3:
+            num_imgs = int(setting_values[0])
+            images_list = setting_values[1:num_imgs+1]
+            objects_list = setting_values[num_imgs+1:]
+            setting_values = [", ".join(map(str, images_list)), ", ".join(map(str, objects_list))]
+            variable_revision_number = 4
         return setting_values, variable_revision_number
-
-    def prepare_settings(self, setting_values):
-        """Do any sort of adjustment to the settings required for the given values
-
-        setting_values - the values for the settings
-
-        This method allows a module to specialize itself according to
-        the number of settings and their value. For instance, a module that
-        takes a variable number of images or objects can increase or decrease
-        the number of relevant settings so they map correctly to the values.
-
-        See cellprofiler.modules.measureobjectsizeshape for an example.
-        """
-        #
-        # The settings have two parts - images, then objects
-        # The parts are divided by the string, "Do not use"
-        #
-        image_count = int(setting_values[0])
-        object_count = len(setting_values) - image_count - 1
-        del self.images[image_count:]
-        while len(self.images) < image_count:
-            self.add_image()
-        del self.objects[object_count:]
-        while len(self.objects) < object_count:
-            self.add_object()
 
     def validate_module(self, pipeline):
         """Make sure chosen objects and images are selected only once"""
         images = set()
-        for group in self.images:
-            if group.name.value in images:
+        if len(self.images_list.value) == 0:
+            raise cellprofiler_core.setting.ValidationError("No images selected", self.images_list)
+        elif len(self.objects_list.value) == 0:
+            raise cellprofiler_core.setting.ValidationError("No objects selected", self.objects_list)
+        for image_name in self.images_list.value:
+            if image_name in images:
                 raise cellprofiler_core.setting.ValidationError(
-                    "%s has already been selected" % group.name.value, group.name
+                    "%s has already been selected" % image_name, image_name
                 )
-            images.add(group.name.value)
+            images.add(image_name)
 
         objects = set()
-        for group in self.objects:
-            if group.name.value in objects:
+        for object_name in self.objects_list.value:
+            if object_name in objects:
                 raise cellprofiler_core.setting.ValidationError(
-                    "%s has already been selected" % group.name.value, group.name
+                    "%s has already been selected" % object_name, object_name
                 )
-            objects.add(group.name.value)
+            objects.add(object_name)
 
     def get_measurement_columns(self, pipeline):
         """Return the column definitions for measurements made by this module"""
         columns = []
-        for image_name in [im.name for im in self.images]:
-            for object_name in [obj.name for obj in self.objects]:
+        for image_name in self.images_list.value:
+            for object_name in self.objects_list.value:
                 for category, features in (
                     (INTENSITY, ALL_MEASUREMENTS),
                     (cellprofiler_core.measurement.C_LOCATION, ALL_LOCATION_MEASUREMENTS),
@@ -293,8 +213,8 @@ Select the objects whose intensities you want to measure.""",
                     for feature in features:
                         columns.append(
                             (
-                                object_name.value,
-                                "%s_%s_%s" % (category, feature, image_name.value),
+                                object_name,
+                                "%s_%s_%s" % (category, feature, image_name),
                                 cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
                         )
@@ -308,8 +228,8 @@ Select the objects whose intensities you want to measure.""",
         object_name - name of labels in question (or 'Images')
         returns a list of category names
         """
-        for object_name_variable in [obj.name for obj in self.objects]:
-            if object_name_variable.value == object_name:
+        for object_set in self.objects_list.value:
+            if object_set == object_name:
                 return [INTENSITY, cellprofiler_core.measurement.C_LOCATION]
         return []
 
@@ -321,8 +241,8 @@ Select the objects whose intensities you want to measure.""",
             all_measurements = ALL_MEASUREMENTS
         else:
             return []
-        for object_name_variable in [obj.name for obj in self.objects]:
-            if object_name_variable.value == object_name:
+        for object_set in self.objects_list.value:
+            if object_set == object_name:
                 return all_measurements
         return []
 
@@ -336,9 +256,9 @@ Select the objects whose intensities you want to measure.""",
                 return []
         else:
             return []
-        for object_name_variable in [obj.name for obj in self.objects]:
-            if object_name_variable.value == object_name:
-                return [image.name.value for image in self.images]
+        for object_set in self.objects_list.value:
+            if object_set == object_name:
+                return self.images_list.value
         return []
 
     def run(self, workspace):
@@ -352,11 +272,15 @@ Select the objects whose intensities you want to measure.""",
                 "STD",
             )
             workspace.display_data.statistics = statistics = []
-        for image_name in [img.name for img in self.images]:
+        if len(self.images_list.value) == 0 or len(self.objects_list.value) == 0:
+            raise ValueError("This module needs at least 1 image and object set selected")
+        for image_name in self.images_list.value:
             image = workspace.image_set.get_image(
-                image_name.value, must_be_grayscale=True
+                image_name, must_be_grayscale=True
             )
-            for object_name in [obj.name for obj in self.objects]:
+            for object_name in self.objects_list.value:
+                if object_name not in workspace.object_set.object_names:
+                    raise ValueError("The %s objects are missing from the pipeline." % object_name)
                 # Need to refresh image after each iteration...
                 img = image.pixel_data
                 if image.has_mask:
@@ -372,7 +296,7 @@ Select the objects whose intensities you want to measure.""",
                     masked_image = masked_image.reshape(1, *masked_image.shape)
                     image_mask = image_mask.reshape(1, *image_mask.shape)
 
-                objects = workspace.object_set.get_objects(object_name.value)
+                objects = workspace.object_set.get_objects(object_name)
                 nobjects = objects.count
                 integrated_intensity = numpy.zeros((nobjects,))
                 integrated_intensity_edge = numpy.zeros((nobjects,))
@@ -643,14 +567,14 @@ Select the objects whose intensities you want to measure.""",
                     (cellprofiler_core.measurement.C_LOCATION, LOC_MAX_Z, max_z),
                 ):
                     measurement_name = "{}_{}_{}".format(
-                        category, feature_name, image_name.value
+                        category, feature_name, image_name
                     )
-                    m.add_measurement(object_name.value, measurement_name, measurement)
+                    m.add_measurement(object_name, measurement_name, measurement)
                     if self.show_window and len(measurement) > 0:
                         statistics.append(
                             (
-                                image_name.value,
-                                object_name.value,
+                                image_name,
+                                object_name,
                                 feature_name,
                                 numpy.round(numpy.mean(measurement), 3),
                                 numpy.round(numpy.median(measurement), 3),

@@ -217,7 +217,7 @@ F_STANDARD = [
 
 class MeasureObjectSizeShape(cellprofiler_core.module.Module):
     module_name = "MeasureObjectSizeShape"
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Measurement"
 
     def create_settings(self):
@@ -226,13 +226,12 @@ class MeasureObjectSizeShape(cellprofiler_core.module.Module):
         The module allows for an unlimited number of measured objects, each
         of which has an entry in self.object_groups.
         """
-        self.object_groups = []
-        self.add_object(can_remove=False)
-        self.spacer = cellprofiler_core.setting.Divider(line=True)
-        self.add_objects = cellprofiler_core.setting.DoSomething(
-            "", "Add another object", self.add_object
+        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+            "Select object sets to measure",
+            [],
+            doc="""Select the object sets whose size and shape you want to measure.""",
         )
-
+        self.spacer = cellprofiler_core.setting.Divider(line=True)
         self.calculate_zernikes = cellprofiler_core.setting.Binary(
             text="Calculate the Zernike features?",
             value=True,
@@ -246,63 +245,30 @@ module.""".format(
             ),
         )
 
-    def add_object(self, can_remove=True):
-        """Add a slot for another object"""
-        group = cellprofiler_core.setting.SettingsGroup()
-        if can_remove:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
-
-        group.append(
-            "name",
-            cellprofiler_core.setting.ObjectNameSubscriber(
-                "Select objects to measure",
-                "None",
-                doc="""Select the objects that you want to measure.""",
-            ),
-        )
-
-        if can_remove:
-            group.append(
-                "remove",
-                cellprofiler_core.setting.RemoveSettingButton(
-                    "", "Remove this object", self.object_groups, group
-                ),
-            )
-
-        self.object_groups.append(group)
-
     def settings(self):
         """The settings as they appear in the save file"""
-        result = [og.name for og in self.object_groups]
-        result.append(self.calculate_zernikes)
+        result = [self.objects_list, self.calculate_zernikes]
         return result
-
-    def prepare_settings(self, setting_values):
-        """Adjust the number of object groups based on the number of setting_values"""
-        object_group_count = len(setting_values) - 1
-        while len(self.object_groups) > object_group_count:
-            self.remove_object(object_group_count)
-
-        while len(self.object_groups) < object_group_count:
-            self.add_object()
 
     def visible_settings(self):
         """The settings as they appear in the module viewer"""
-        result = []
-        for og in self.object_groups:
-            result += og.visible_settings()
-        result.extend([self.add_objects, self.spacer, self.calculate_zernikes])
+        result = [self.objects_list, self.spacer, self.calculate_zernikes]
         return result
 
     def validate_module(self, pipeline):
         """Make sure chosen objects are selected only once"""
         objects = set()
-        for group in self.object_groups:
-            if group.name.value in objects:
+        if len(self.objects_list.value) == 0:
+            raise cellprofiler_core.setting.ValidationError(
+                "No object sets selected", self.objects_list
+            )
+
+        for object_name in self.objects_list.value:
+            if object_name in objects:
                 raise cellprofiler_core.setting.ValidationError(
-                    "%s has already been selected" % group.name.value, group.name
+                    "%s has already been selected" % object_name, object_name
                 )
-            objects.add(group.name.value)
+            objects.add(object_name)
 
     def get_categories(self, pipeline, object_name):
         """Get the categories of measurements supplied for the given object name
@@ -311,8 +277,9 @@ module.""".format(
         object_name - name of labels in question (or 'Images')
         returns a list of category names
         """
-        if object_name in [og.name for og in self.object_groups]:
-            return [AREA_SHAPE]
+        for object_set in self.objects_list.value:
+            if object_set == object_name:
+                return [AREA_SHAPE]
         else:
             return []
 
@@ -370,8 +337,8 @@ module.""".format(
 
             workspace.display_data.statistics = []
 
-        for object_group in self.object_groups:
-            self.run_on_objects(object_group.name.value, workspace)
+        for object_name in self.objects_list.value:
+            self.run_on_objects(object_name, workspace)
 
     def run_on_objects(self, object_name, workspace):
         """Run, computing the area measurements for a single map of objects"""
@@ -652,10 +619,9 @@ module.""".format(
     def get_measurement_columns(self, pipeline):
         """Return measurement column definitions.
         All cols returned as float even though "Area" will only ever be int"""
-        object_names = [s.value for s in self.settings()][:-1]
         measurement_names = self.get_feature_names(pipeline)
         cols = []
-        for oname in object_names:
+        for oname in self.objects_list.value:
             for mname in measurement_names:
                 cols += [
                     (
@@ -665,6 +631,16 @@ module.""".format(
                     )
                 ]
         return cols
+
+    def upgrade_settings(
+        self, setting_values, variable_revision_number, module_name
+    ):
+        """Adjust the setting_values for older save file versions"""
+        if variable_revision_number == 1:
+            objects_list = setting_values[:-1]
+            setting_values = [", ".join(map(str, objects_list)), setting_values[-1]]
+            variable_revision_number = 2
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

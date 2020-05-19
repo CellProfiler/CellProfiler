@@ -391,6 +391,7 @@ class Figure(wx.Frame):
             pass
         if size == wx.DefaultSize:
             self.panel.SetInitialSize(wx.Size(640, 480))
+            self.panel.SetMinSize(wx.Size(320, 240))
             self.Fit()
         else:
             self.Layout()

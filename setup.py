@@ -7,7 +7,7 @@ setuptools.setup(
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
     extras_require={
         "dev": ["black==19.10b0", "pre-commit==2.2.0", "twine==3.1.1"],

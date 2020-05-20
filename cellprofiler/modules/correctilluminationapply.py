@@ -197,7 +197,7 @@ somewhat empirical.
         #
         # Figure out how many images there are based on the number of setting_values
         #
-        assert len(setting_values) % SETTINGS_PER_IMAGE == 0
+        assert len(setting_values) % SETTINGS_PER_IMAGE == 2
         image_count = len(setting_values) / SETTINGS_PER_IMAGE
         del self.images[image_count:]
         while len(self.images) < image_count:
@@ -245,10 +245,21 @@ somewhat empirical.
             output_pixels = orig_image.pixel_data / illum_function_pixel_data
         elif image.divide_or_subtract == DOS_SUBTRACT:
             output_pixels = orig_image.pixel_data - illum_function_pixel_data
-            output_pixels[output_pixels < 0] = 0
         else:
             raise ValueError("Unhandled option for divide or subtract: %s" %
                              image.divide_or_subtract.value)
+        #
+        # Optionally, clip high and low values
+        #
+
+        if self.truncate_low.value:
+            output_pixels = np.where(output_pixels < 0, 0, output_pixels)
+
+        if self.truncate_high.value:
+            output_pixels = np.where(output_pixels > 1, 1, output_pixels)
+
+
+
         #
         # Save the output image in the image set and have it inherit
         # mask & cropping from the original image.

@@ -359,4 +359,7 @@ somewhat empirical.
             for i, image in enumerate(self.images):
                 image.rescale_option = RE_NONE
 
+        if variable_revision_number == 3:
+            setting_values += ['True', 'False']
+
         return setting_values, variable_revision_number, from_matlab

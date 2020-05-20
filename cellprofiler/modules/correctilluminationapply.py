@@ -63,7 +63,7 @@ SETTINGS_PER_IMAGE = 4
 
 class CorrectIlluminationApply(cpm.Module):
     category = "Image Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     module_name = "CorrectIlluminationApply"
 
     def create_settings(self):
@@ -72,6 +72,19 @@ class CorrectIlluminationApply(cpm.Module):
         self.add_image(can_delete=False)
         self.add_image_button = cps.DoSomething("", "Add another image",
                                                 self.add_image)
+
+        self.truncate_low = cps.Binary(text= "Set values less than 0 to 0?",
+        value = True, doc="""\
+Values outside the range 0 to 1 might not be handled well by other
+modules. Select *"Yes"* to set negative values to 0, which was previously
+done automatically without ability to override.""")
+
+        self.truncate_high = cps.Binary(
+text = "Set values greater than 1 equal to 1?", value = False, doc="""\
+Values outside the range 0 to 1 might not be handled well by other
+modules. Select *"Yes"* to set values greater than 1 to a maximum
+value of 1.
+""")
 
     def add_image(self, can_delete=True):
         '''Add an image and its settings to the list of images'''

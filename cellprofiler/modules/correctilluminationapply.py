@@ -162,6 +162,7 @@ somewhat empirical.
             result += [image.image_name, image.corrected_image_name,
                        image.illum_correct_function_image_name,
                        image.divide_or_subtract]
+        result += [self.truncate_low, self.truncate_high]
         return result
 
     def visible_settings(self):
@@ -180,6 +181,7 @@ somewhat empirical.
                 result.append(remover)
             result.append(image.divider)
         result.append(self.add_image_button)
+        result += [self.truncate_low, self.truncate_high]
         return result
 
     def prepare_settings(self, setting_values):

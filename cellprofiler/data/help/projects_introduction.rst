@@ -11,7 +11,7 @@ In CellProfiler, a *project* is comprised of two elements:
 -  The *pipeline*, which is a series of modules put together to
    analyze a set of images.
 -  Optionally, the associated information about the images (*metadata*).
-   This information may be part of the images themselves, or you may
+   This information may be extracted from the images themselves, or you may
    import them from an external file.
 
 The project is the container for image information associated with a

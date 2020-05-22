@@ -556,28 +556,3 @@ color map.
             setting_values = setting_values + [CMS_USE_MEASUREMENT_RANGE, "0.0,1.0"]
             variable_revision_number = 6
         return setting_values, variable_revision_number
-
-
-if __name__ == "__main__":
-    """ For debugging purposes only...
-    """
-    import wx
-    from cellprofiler.gui.datatoolframe import DataToolFrame
-
-    app = wx.PySimpleApp()
-
-    tool_name = "DisplayDataOnImage"
-    dlg = wx.FileDialog(
-        None,
-        "Choose data output file for %s data tool" % tool_name,
-        wildcard="*.mat",
-        style=(wx.FD_OPEN | wx.FD_FILE_MUST_EXIST),
-    )
-    if dlg.ShowModal() == wx.ID_OK:
-        data_tool_frame = DataToolFrame(
-            None, module_name=tool_name, measurements_file_name=dlg.Path
-        )
-
-        data_tool_frame.Show()
-
-    app.MainLoop()

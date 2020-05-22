@@ -644,7 +644,7 @@ class PipelineListView(object):
                             self.get_current_debug_module()
                         )
 
-                        if active_index <= debug_index:
+                        if active_index <= debug_index and module.enabled:
                             menu.Append(
                                 ID_DEBUG_RUN_FROM_THIS_MODULE,
                                 "&Run from {} (#{})".format(module.module_name, module.module_num),

@@ -51,6 +51,6 @@ menu with the following options:
          image pixel values.
 
 -  *Save subplot:* Save the clicked subplot as an image file. If there
-   is only one p lot in the figure, this option will save that one.
+   is only one plot in the figure, this option will save that one.
 -  *Channels:* For color images only. You can show any combination of
    the red, green, and blue color channels.

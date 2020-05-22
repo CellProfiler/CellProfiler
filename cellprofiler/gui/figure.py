@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 import uuid
+from textwrap import fill
 
 import centrosome.cpmorphology
 import centrosome.outline
@@ -987,9 +988,8 @@ class Figure(wx.Frame):
         y - subplot's row
         """
         fontname = cellprofiler_core.preferences.get_title_font_name()
-
         self.subplot(x, y).set_title(
-            title,
+            fill(title, 30),
             fontname=fontname,
             fontsize=cellprofiler_core.preferences.get_title_font_size(),
         )

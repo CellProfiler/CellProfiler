@@ -48,6 +48,8 @@ TS_ADAPTIVE = "Adaptive"
 TM_MANUAL = "Manual"
 TM_MEASUREMENT = "Measurement"
 TM_LI = "Minimum cross entropy"
+TM_OTSU = "Otsu"
+
 
 TS_ALL = [TS_GLOBAL, TS_ADAPTIVE]
 
@@ -681,8 +683,24 @@ Often a good choice is some multiple of the largest expected object size.
         input = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
 
         dimensions = input.dimensions
-
+        import time
+        start = time.perf_counter()
         local_threshold, global_threshold = self.get_threshold(input, workspace)
+        time1 = time.perf_counter() - start
+        start = time.perf_counter()
+        if self.threshold_operation in (TM_MANUAL, TM_MEASUREMENT):
+            threshold = self.get_manual_threshold(input, workspace)
+        elif self.threshold_scope.value == TS_GLOBAL:
+            threshold = self.get_global_threshold(input, workspace)
+        elif self.threshold_scope.value == TS_ADAPTIVE:
+            local_threshold, threshold = self.get_local_threshold(input, workspace)
+        else:
+            raise ValueError("Invalid threshold settings")
+        time2 = time.perf_counter() - start
+
+        print("Threshold original: ", "%.4f" % global_threshold, " in ", "%.4fs" % time1)
+        print("Threshold rewrite: ", "%.4f" % threshold, " in ", "%.4fs" % time2)
+
 
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
@@ -772,6 +790,78 @@ Often a good choice is some multiple of the largest expected object size.
                 return self._threshold_otsu(image)
 
         return self._threshold_otsu3(image)
+
+    def get_global_threshold(self, image, workspace, automatic=False):
+        image_data = image.pixel_data[image.mask]
+
+        # Shortcuts - Check if image array is empty or all pixels are the same value.
+        if len(image_data) == 0:
+            return 0.0
+        elif numpy.all(image_data == image_data[0]):
+            return image_data[0]
+
+        if automatic or self.threshold_operation == TM_LI:
+            print("Running MCE")
+            threshold = skimage.filters.threshold_li(image_data)
+
+        elif self.threshold_operation == centrosome.threshold.TM_ROBUST_BACKGROUND:
+            return self._threshold_robust_background(image)
+
+        elif self.threshold_operation == TM_OTSU:
+            if self.two_class_otsu.value == O_TWO_CLASS:
+                print("Running Otsu 2 class")
+                threshold = skimage.filters.threshold_otsu(image_data)
+            elif self.two_class_otsu.value == O_THREE_CLASS:
+                print("Running Otsu 3 class")
+                bin_wanted = 0 if self.assign_middle_to_foreground.value == "Foreground" else 1
+                threshold = skimage.filters.threshold_multiotsu(image_data)
+                threshold = threshold[bin_wanted]
+        else:
+            raise ValueError("Invalid thresholding settings")
+        return self._correct_global_threshold(threshold)
+
+    def get_local_threshold(self, image, workspace, automatic=False):
+        image_data = image.pixel_data[image.mask]
+        image_data = numpy.where(image.mask, image.pixel_data, numpy.nan)
+        adaptive_window = self.adaptive_window_size.value
+        if adaptive_window % 2 == 0:
+            adaptive_window += 1
+
+        # Shortcuts - Check if image array is empty or all pixels are the same value.
+        if len(image_data) == 0:
+            return 0.0
+        elif numpy.all(image_data == image_data[0]):
+            return image_data[0]
+
+        if self.threshold_operation == TM_LI:
+            print("Running Local MCE")
+            global_threshold = skimage.filters.threshold_li(image_data)
+            local_threshold = skimage.filters.threshold_local(image_data, block_size=adaptive_window,
+                                                        method='generic', param=skimage.filters.threshold_li)
+        elif self.threshold_operation == TM_OTSU:
+            if self.two_class_otsu.value == O_TWO_CLASS:
+                import time
+                print("Running local Otsu 2 class")
+                global_threshold = skimage.filters.threshold_li(image_data)
+                time0 = time.perf_counter()
+                local_threshold = self._threshold_local_otsu(image)
+                time1 = time.perf_counter() - time0
+                time0 = time.perf_counter()
+                local_threshold2 = skimage.filters.threshold_local(image_data, block_size=adaptive_window,
+                                                                  method='generic', param=skimage.filters.threshold_otsu)
+
+                time2 = time.perf_counter() - time0
+
+                #print("Orig: ", local_threshold)
+                #print("New: ", local_threshold2)
+                print("LThreshold original: ", "%.4fs" % time1)
+                print("LThreshold rewrite: ", "%.4fs" % time2)
+
+
+        else:
+            raise ValueError("Invalid thresholding settings")
+        return self._correct_local_threshold(local_threshold, global_threshold), global_threshold
+
 
     def _global_threshold(self, image, threshold_fn):
         data = image.pixel_data

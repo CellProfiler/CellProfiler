@@ -603,11 +603,11 @@ class PreferencesView(object):
                 )
                 # Clearing the whole edit box also wipes typed text. Specifically remove items which are invalid.
                 for i in range(len(items), 0, -1):
-                    if items[i-1] not in filtered_items:
+                    if items[i - 1] not in filtered_items:
                         edit_box.Delete(i)
                     else:
                         # Prevent exact duplicate entries
-                        filtered_items.remove(items[i-1])
+                        filtered_items.remove(items[i - 1])
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)

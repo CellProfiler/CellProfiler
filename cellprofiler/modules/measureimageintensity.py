@@ -134,7 +134,7 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
         choose, identified by a prior module. Note that this module will
         aggregate intensities across all objects in the image: to measure each
         object individually, see **MeasureObjectIntensity** instead.
-        """
+        """,
         )
 
         self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
@@ -147,7 +147,9 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
         """Make sure chosen objects and images are selected only once"""
         images = set()
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError("No images selected", self.images_list)
+            raise cellprofiler_core.setting.ValidationError(
+                "No images selected", self.images_list
+            )
         for image_name in self.images_list.value:
             if image_name in images:
                 raise cellprofiler_core.setting.ValidationError(
@@ -157,14 +159,15 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
         if self.wants_objects:
             objects = set()
             if len(self.objects_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError("No objects selected", self.objects_list)
+                raise cellprofiler_core.setting.ValidationError(
+                    "No objects selected", self.objects_list
+                )
             for object_name in self.objects_list.value:
                 if object_name in objects:
                     raise cellprofiler_core.setting.ValidationError(
                         "%s has already been selected" % object_name, object_name
                     )
                 objects.add(object_name)
-
 
     def settings(self):
         result = [self.images_list, self.wants_objects, self.objects_list]
@@ -181,9 +184,7 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
         col_labels = ["Image", "Masking object", "Feature", "Value"]
         statistics = []
         for im in self.images_list.value:
-            image = workspace.image_set.get_image(
-                im, must_be_grayscale=True
-            )
+            image = workspace.image_set.get_image(im, must_be_grayscale=True)
             input_pixels = image.pixel_data
 
             measurement_name = im
@@ -197,24 +198,25 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
                             "The %s image and %s objects do not (%s vs %s).\n"
                             "If they are paired correctly you may want to use the Resize, ResizeObjects or "
                             "Crop module(s) to make them the same size."
-                            % (
-                                im,
-                                object_set,
-                                input_pixels.shape,
-                                objects.shape,
-                            )
+                            % (im, object_set, input_pixels.shape, objects.shape,)
                         )
                     if image.has_mask:
-                        pixels = input_pixels[np.logical_and(objects.segmented != 0, image.mask)]
+                        pixels = input_pixels[
+                            np.logical_and(objects.segmented != 0, image.mask)
+                        ]
                     else:
                         pixels = input_pixels[objects.segmented != 0]
-                    statistics += self.measure(pixels, im, object_set, measurement_name, workspace)
+                    statistics += self.measure(
+                        pixels, im, object_set, measurement_name, workspace
+                    )
             else:
                 if image.has_mask:
                     pixels = input_pixels[image.mask]
                 else:
                     pixels = input_pixels
-                statistics += self.measure(pixels, im, None, measurement_name, workspace)
+                statistics += self.measure(
+                    pixels, im, None, measurement_name, workspace
+                )
         workspace.display_data.statistics = statistics
         workspace.display_data.col_labels = col_labels
 
@@ -320,10 +322,22 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
                 if self.wants_objects:
                     for object_set in self.objects_list.value:
                         measurement_name = im + "_" + object_set
-                        columns.append((cellprofiler_core.measurement.IMAGE, feature % measurement_name, coltype))
+                        columns.append(
+                            (
+                                cellprofiler_core.measurement.IMAGE,
+                                feature % measurement_name,
+                                coltype,
+                            )
+                        )
                 else:
                     measurement_name = im
-                    columns.append((cellprofiler_core.measurement.IMAGE, feature % measurement_name, coltype))
+                    columns.append(
+                        (
+                            cellprofiler_core.measurement.IMAGE,
+                            feature % measurement_name,
+                            coltype,
+                        )
+                    )
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -333,7 +347,10 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cellprofiler_core.measurement.IMAGE and category == "Intensity":
+        if (
+            object_name == cellprofiler_core.measurement.IMAGE
+            and category == "Intensity"
+        ):
             return ALL_MEASUREMENTS
         return []
 
@@ -355,14 +372,14 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
             return result
         return []
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             variable_revision_number = 2
         if variable_revision_number == 2:
             # Convert to new format, warn if settings will be lost.
-            images_set, use_objects, objects_set = [set(setting_values[i::3]) for i in range(3)]
+            images_set, use_objects, objects_set = [
+                set(setting_values[i::3]) for i in range(3)
+            ]
             if "None" in images_set:
                 images_set.remove("None")
             if "None" in objects_set:

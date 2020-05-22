@@ -92,8 +92,8 @@ Area occupied can be measured in two ways:
 -  *{O_BINARY_IMAGE}:* The area occupied by the foreground in a binary (black and white) image.
 -  *{O_OBJECTS}:* The area occupied by previously-identified objects.
                     """.format(
-                        **{"O_BINARY_IMAGE": O_BINARY_IMAGE, "O_OBJECTS": O_OBJECTS}
-                    ),
+                **{"O_BINARY_IMAGE": O_BINARY_IMAGE, "O_OBJECTS": O_OBJECTS}
+            ),
         )
 
         self.divider = cellprofiler_core.setting.Divider()
@@ -106,8 +106,8 @@ Area occupied can be measured in two ways:
 These should be binary images created earlier in the pipeline, where you would
 like to measure the area occupied by the foreground in the image.
                     """.format(
-                        **{"O_BINARY_IMAGE": O_BINARY_IMAGE}
-                    ),
+                **{"O_BINARY_IMAGE": O_BINARY_IMAGE}
+            ),
         )
 
         self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
@@ -116,8 +116,8 @@ like to measure the area occupied by the foreground in the image.
             doc="""*(Used only if ‘{O_OBJECTS}’ are to be measured)*
 
 Select the previously identified objects you would like to measure.""".format(
-                        **{"O_OBJECTS": O_OBJECTS}
-                    ),
+                **{"O_OBJECTS": O_OBJECTS}
+            ),
         )
 
     def validate_module(self, pipeline):
@@ -125,7 +125,9 @@ Select the previously identified objects you would like to measure.""".format(
         if self.operand_choice in (O_BINARY_IMAGE, O_BOTH):
             images = set()
             if len(self.images_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError("No images selected", self.images_list)
+                raise cellprofiler_core.setting.ValidationError(
+                    "No images selected", self.images_list
+                )
             for image_name in self.images_list.value:
                 if image_name in images:
                     raise cellprofiler_core.setting.ValidationError(
@@ -135,7 +137,9 @@ Select the previously identified objects you would like to measure.""".format(
         if self.operand_choice in (O_OBJECTS, O_BOTH):
             objects = set()
             if len(self.objects_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError("No objects selected", self.objects_list)
+                raise cellprofiler_core.setting.ValidationError(
+                    "No objects selected", self.objects_list
+                )
             for object_name in self.objects_list.value:
                 if object_name in objects:
                     raise cellprofiler_core.setting.ValidationError(
@@ -256,19 +260,10 @@ Select the previously identified objects you would like to measure.""".format(
             measurements,
         )
 
-        return [
-            [
-                object_set,
-                str(area_occupied),
-                str(perimeter),
-                str(total_area),
-            ]
-        ]
+        return [[object_set, str(area_occupied), str(perimeter), str(total_area),]]
 
     def measure_images(self, image_set, workspace):
-        image = workspace.image_set.get_image(
-            image_set, must_be_binary=True
-        )
+        image = workspace.image_set.get_image(image_set, must_be_binary=True)
 
         area_occupied = numpy.sum(image.pixel_data > 0)
 
@@ -303,14 +298,7 @@ Select the previously identified objects you would like to measure.""".format(
             measurements,
         )
 
-        return [
-            [
-                image_set,
-                str(area_occupied),
-                str(perimeter),
-                str(total_area),
-            ]
-        ]
+        return [[image_set, str(area_occupied), str(perimeter), str(total_area),]]
 
     def _get_feature_names(self, pipeline):
         if pipeline.volumetric():
@@ -329,9 +317,7 @@ Select the previously identified objects you would like to measure.""".format(
                         (
                             cellprofiler_core.measurement.IMAGE,
                             "{:s}_{:s}_{:s}".format(
-                                C_AREA_OCCUPIED,
-                                feature,
-                                object_set,
+                                C_AREA_OCCUPIED, feature, object_set,
                             ),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         )
@@ -343,9 +329,7 @@ Select the previously identified objects you would like to measure.""".format(
                         (
                             cellprofiler_core.measurement.IMAGE,
                             "{:s}_{:s}_{:s}".format(
-                                C_AREA_OCCUPIED,
-                                feature,
-                                image_set,
+                                C_AREA_OCCUPIED, feature, image_set,
                             ),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         )
@@ -392,9 +376,7 @@ Select the previously identified objects you would like to measure.""".format(
             ]
         return []
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # We added the ability to process multiple objects in v2, but
             # the settings for v1 miraculously map to v2

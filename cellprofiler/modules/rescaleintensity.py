@@ -438,7 +438,7 @@ Select the measurement value to use as the divisor for the final image.
         figure.set_subplots((2, 1))
 
         figure.set_subplots(
-            dimensions=workspace.display_data.dimensions, subplots=(2,1)
+            dimensions=workspace.display_data.dimensions, subplots=(2, 1)
         )
 
         figure.subplot_imshow(
@@ -459,7 +459,6 @@ Select the measurement value to use as the divisor for the final image.
             x=1,
             y=0,
         )
-
 
     def rescale(self, image, in_range, out_range=(0.0, 1.0)):
         data = 1.0 * image.pixel_data
@@ -586,9 +585,7 @@ Select the measurement value to use as the divisor for the final image.
             src_max = self.source_high.value
         return src_min, src_max
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # wants_automatic_low (# 3) and wants_automatic_high (# 4)

@@ -242,11 +242,16 @@ class AddModuleFrame(wx.Frame):
 
     def __on_search_modules(self, event):
         self.__module_list_box.Enable(True)
-        if len(self.search_text.GetValue()) == 0 or self.__module_categories_list_box.GetSelection() != -1:
+        if (
+            len(self.search_text.GetValue()) == 0
+            or self.__module_categories_list_box.GetSelection() != -1
+        ):
             self.__module_categories_list_box.Select(-1)
             self.__on_category_selected(None)
-        keys = list(self.__module_dict['All'].keys())
-        keys = [key for key in keys if self.search_text.GetValue().lower() in key.lower()]
+        keys = list(self.__module_dict["All"].keys())
+        keys = [
+            key for key in keys if self.search_text.GetValue().lower() in key.lower()
+        ]
         self.__module_list_box.Clear()
         self.__module_list_box.AppendItems(sorted(keys))
         if len(keys) > 0:

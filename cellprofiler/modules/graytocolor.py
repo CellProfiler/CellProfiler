@@ -616,9 +616,7 @@ pixel values are multiplied by this weight before assigning the color.
             sharexy=figure.subplot(0, 0),
         )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # Was RGB-only. Convert values to CYMK-style

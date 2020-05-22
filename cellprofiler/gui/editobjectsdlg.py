@@ -626,7 +626,9 @@ class EditObjectsDialog(wx.Dialog):
                 self.li = numpy.hstack((self.li, li))
                 self.lj = numpy.hstack((self.lj, lj))
                 self.ll = numpy.hstack((self.ll, ll))
-        cm = matplotlib.cm.get_cmap(cellprofiler_core.preferences.get_default_colormap())
+        cm = matplotlib.cm.get_cmap(
+            cellprofiler_core.preferences.get_default_colormap()
+        )
         cm.set_bad((0, 0, 0))
 
         mappable = matplotlib.cm.ScalarMappable(cmap=cm)

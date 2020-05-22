@@ -50,7 +50,9 @@ def run_module(image, mask=None, fn=None):
     )
     module.run(workspace)
     feature = cellprofiler.modules.flipandrotate.M_ROTATION_F % OUTPUT_IMAGE
-    assert feature in measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
+    assert feature in measurements.get_feature_names(
+        cellprofiler_core.measurement.IMAGE
+    )
     angle = measurements.get_current_image_measurement(feature)
     output_image = image_set.get_image(OUTPUT_IMAGE)
     return output_image, angle
@@ -219,8 +221,8 @@ def test_rotate_coordinates():
     centrosome.cpmorphology.draw_line(img, pt0, pt1, 1)
     i, j = numpy.mgrid[0:20, 0:20]
     for option in (
-            cellprofiler.modules.flipandrotate.C_HORIZONTALLY,
-            cellprofiler.modules.flipandrotate.C_VERTICALLY,
+        cellprofiler.modules.flipandrotate.C_HORIZONTALLY,
+        cellprofiler.modules.flipandrotate.C_VERTICALLY,
     ):
 
         def fn(module):
@@ -334,7 +336,7 @@ def test_get_measurements():
     assert len(columns) == 1
     assert columns[0][0] == cellprofiler_core.measurement.IMAGE
     assert (
-            columns[0][1] == cellprofiler.modules.flipandrotate.M_ROTATION_F % OUTPUT_IMAGE
+        columns[0][1] == cellprofiler.modules.flipandrotate.M_ROTATION_F % OUTPUT_IMAGE
     )
     assert columns[0][2] == cellprofiler_core.measurement.COLTYPE_FLOAT
 
@@ -351,7 +353,8 @@ def test_get_measurements():
     assert len(measurements) == 1
     assert measurements[0] == OUTPUT_IMAGE
     assert (
-        len(module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "Foo")) == 0
+        len(module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "Foo"))
+        == 0
     )
     assert (
         len(

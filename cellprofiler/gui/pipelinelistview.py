@@ -147,9 +147,7 @@ class PipelineListView(object):
             self.outputs_panel, label="View output settings", style=wx.BU_EXACTFIT
         )
         self.outputs_panel.GetSizer().AddStretchSpacer(1)
-        self.outputs_panel.GetSizer().Add(
-            self.outputs_button, 0, wx.ALL, 2
-        )
+        self.outputs_panel.GetSizer().Add(self.outputs_button, 0, wx.ALL, 2)
         self.outputs_panel.GetSizer().AddStretchSpacer(1)
         self.outputs_button.Bind(wx.EVT_BUTTON, self.on_outputs_button)
         self.outputs_panel.SetAutoLayout(True)
@@ -611,16 +609,26 @@ class PipelineListView(object):
                     self.__controller.populate_edit_menu(sub_menu)
                     menu.AppendSubMenu(sub_menu, "&Add")
                     menu.Append(
-                        ID_EDIT_DELETE, "&Delete {} (#{})".format(module.module_name, module.module_num)
+                        ID_EDIT_DELETE,
+                        "&Delete {} (#{})".format(
+                            module.module_name, module.module_num
+                        ),
                     )
                     menu.Append(
-                        ID_EDIT_DUPLICATE, "Duplicate {} (#{})".format(module.module_name, module.module_num)
+                        ID_EDIT_DUPLICATE,
+                        "Duplicate {} (#{})".format(
+                            module.module_name, module.module_num
+                        ),
                     )
                     menu.Append(
-                        ID_EDIT_ENABLE_MODULE, "Enable {} (#{})".format(module.module_name, module.module_num)
+                        ID_EDIT_ENABLE_MODULE,
+                        "Enable {} (#{})".format(module.module_name, module.module_num),
                     )
                     menu.Append(
-                        ID_HELP_MODULE, "&Help for {} (#{})".format(module.module_name, module.module_num)
+                        ID_HELP_MODULE,
+                        "&Help for {} (#{})".format(
+                            module.module_name, module.module_num
+                        ),
                     )
                     if self.__debug_mode:
                         _, active_index = self.get_ctrl_and_index(module)
@@ -631,22 +639,29 @@ class PipelineListView(object):
                         if active_index <= debug_index:
                             menu.Append(
                                 ID_DEBUG_RUN_FROM_THIS_MODULE,
-                                "&Run from {} (#{})".format(module.module_name, module.module_num),
+                                "&Run from {} (#{})".format(
+                                    module.module_name, module.module_num
+                                ),
                             )
                             menu.Append(
                                 ID_DEBUG_STEP_FROM_THIS_MODULE,
-                                "&Step from {} (#{})".format(module.module_name, module.module_num),
+                                "&Step from {} (#{})".format(
+                                    module.module_name, module.module_num
+                                ),
                             )
                 elif num_modules > 1:
                     # Multiple modules are selected
                     menu.Append(
-                        ID_EDIT_DELETE, "&Delete selected modules ({})".format(num_modules)
+                        ID_EDIT_DELETE,
+                        "&Delete selected modules ({})".format(num_modules),
                     )
                     menu.Append(
-                        ID_EDIT_DUPLICATE, "Duplicate selected modules ({})".format(num_modules)
+                        ID_EDIT_DUPLICATE,
+                        "Duplicate selected modules ({})".format(num_modules),
                     )
                     menu.Append(
-                        ID_EDIT_ENABLE_MODULE, "Enable selected modules ({})".format(num_modules)
+                        ID_EDIT_ENABLE_MODULE,
+                        "Enable selected modules ({})".format(num_modules),
                     )
 
             else:
@@ -669,7 +684,9 @@ class PipelineListView(object):
         temp_pipeline = cellprofiler_core.pipeline.Pipeline()
         for module in modules_to_save:
             temp_pipeline.add_module(module)
-        cellprofiler_core.pipeline.io.dump(temp_pipeline, fd, save_image_plane_details=False, version=5)
+        cellprofiler_core.pipeline.io.dump(
+            temp_pipeline, fd, save_image_plane_details=False, version=5
+        )
         pipeline_data_object = PipelineDataObject()
         pipeline_data_object.SetData(fd.getvalue().encode())
 
@@ -776,7 +793,10 @@ class PipelineListView(object):
     def on_filelist_data(self, x, y, action, filenames):
         for filename in filenames:
             _, ext = os.path.splitext(filename)
-            if len(ext) > 1 and ext[1:] in cellprofiler_core.preferences.EXT_PROJECT_CHOICES:
+            if (
+                len(ext) > 1
+                and ext[1:] in cellprofiler_core.preferences.EXT_PROJECT_CHOICES
+            ):
                 self.__frame.Raise()
                 if (
                     wx.MessageBox(
@@ -1000,8 +1020,9 @@ class PipelineListView(object):
         setting = event.get_setting()
         module = event.get_module()
         list_ctrl, index = self.get_ctrl_and_index(module)
-        if not module.is_input_module() and (not self.list_ctrl.running_item or
-                                             self.list_ctrl.running_item > index):
+        if not module.is_input_module() and (
+            not self.list_ctrl.running_item or self.list_ctrl.running_item > index
+        ):
             self.list_ctrl.set_running_item(index)
 
     def on_stop_debugging(self):

@@ -369,9 +369,7 @@ values below this threshold as not being edges.
         else:
             return self.sigma.value
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Ratio removed / filter size removed
             setting_values = setting_values[:6] + setting_values[7:]

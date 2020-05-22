@@ -542,9 +542,7 @@ supplied by a previous module.
         )
         return measurements
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Added wants image + image
             setting_values = setting_values + ["No", "None"]

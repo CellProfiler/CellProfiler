@@ -364,7 +364,9 @@ class Figure(wx.Frame):
         self.mouse_down = None
         self.remove_menu = []
         self.figure = matplotlib.pyplot.Figure(constrained_layout=True)
-        self.figure.set_constrained_layout_pads(w_pad=0.1, h_pad=0.05, wspace=0, hspace=0)
+        self.figure.set_constrained_layout_pads(
+            w_pad=0.1, h_pad=0.05, wspace=0, hspace=0
+        )
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(
             self, -1, self.figure
         )
@@ -891,7 +893,7 @@ class Figure(wx.Frame):
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
 
-                with open(path, "w", newline='') as fd:
+                with open(path, "w", newline="") as fd:
                     csv.writer(fd).writerows(self.table)
 
     def on_file_save_subplot(self, event, x, y):
@@ -942,7 +944,9 @@ class Figure(wx.Frame):
         else:
             if dimensions == 2:
                 self.subplots = numpy.zeros(subplots, dtype=object)
-                self.gridspec = matplotlib.gridspec.GridSpec(subplots[1], subplots[0], figure=self.figure)
+                self.gridspec = matplotlib.gridspec.GridSpec(
+                    subplots[1], subplots[0], figure=self.figure
+                )
             else:
                 self.set_grids(subplots)
 
@@ -963,7 +967,7 @@ class Figure(wx.Frame):
             if self.gridspec:
                 # Add the plot to a premade subplot layout
                 plot = self.figure.add_subplot(
-                    self.gridspec[y,x], sharex=sharex, sharey=sharey,
+                    self.gridspec[y, x], sharex=sharex, sharey=sharey,
                 )
             else:
                 rows, cols = self.subplots.shape
@@ -1513,15 +1517,21 @@ class Figure(wx.Frame):
                         if i == 0:
                             d[
                                 CPLD_OUTLINE_COLOR
-                            ] = cellprofiler_core.preferences.get_primary_outline_color()
+                            ] = (
+                                cellprofiler_core.preferences.get_primary_outline_color()
+                            )
                         elif i == 1:
                             d[
                                 CPLD_OUTLINE_COLOR
-                            ] = cellprofiler_core.preferences.get_secondary_outline_color()
+                            ] = (
+                                cellprofiler_core.preferences.get_secondary_outline_color()
+                            )
                         elif i == 2:
                             d[
                                 CPLD_OUTLINE_COLOR
-                            ] = cellprofiler_core.preferences.get_tertiary_outline_color()
+                            ] = (
+                                cellprofiler_core.preferences.get_tertiary_outline_color()
+                            )
 
                     if CPLD_MODE not in d:
                         d[CPLD_MODE] = CPLDM_OUTLINES
@@ -1573,7 +1583,9 @@ class Figure(wx.Frame):
             self.subplot_params[(x, y)].update(kwargs)
 
             if kwargs["colormap"] is None:
-                kwargs["colormap"] = cellprofiler_core.preferences.get_default_colormap()
+                kwargs[
+                    "colormap"
+                ] = cellprofiler_core.preferences.get_default_colormap()
 
             # and fetch back out
             title = kwargs["title"]
@@ -1905,7 +1917,9 @@ class Figure(wx.Frame):
         image = numpy.zeros(list(shape) + [3], numpy.float)
 
         if len(ijv) > 0:
-            cm = matplotlib.cm.get_cmap(cellprofiler_core.preferences.get_default_colormap())
+            cm = matplotlib.cm.get_cmap(
+                cellprofiler_core.preferences.get_default_colormap()
+            )
 
             max_label = numpy.max(ijv[:, 2])
 
@@ -2143,15 +2157,17 @@ class Figure(wx.Frame):
 
         if title is not None:
             if title == "default":
-                title = "Per-image means, use an Export module for per-object measurements"
+                title = (
+                    "Per-image means, use an Export module for per-object measurements"
+                )
             elif title == "short":
                 title = "Per-image means"
             ystart += 0.1
             axes = self.subplot(x, y)
             if not self.figure.get_constrained_layout():
                 self.figure.tight_layout()
-            axes.axis('off')
-            axes.annotate(title, xy=(0.5, 1.0), ha='center', va='top', fontsize=9)
+            axes.axis("off")
+            axes.annotate(title, xy=(0.5, 1.0), ha="center", va="top", fontsize=9)
 
         self.widgets.append(
             (xstart, ystart, width, height, wx.ALIGN_CENTER, wx.ALIGN_CENTER, ctrl)

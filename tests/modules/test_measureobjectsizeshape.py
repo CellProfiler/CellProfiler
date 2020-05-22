@@ -92,24 +92,24 @@ def test_zeros():
     module.run(workspace)
 
     for f in (
-            cellprofiler.modules.measureobjectsizeshape.F_AREA,
-            cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
-            cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
-            cellprofiler.modules.measureobjectsizeshape.F_ECCENTRICITY,
-            cellprofiler.modules.measureobjectsizeshape.F_EULER_NUMBER,
-            cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
-            cellprofiler.modules.measureobjectsizeshape.F_FORM_FACTOR,
-            cellprofiler.modules.measureobjectsizeshape.F_MAJOR_AXIS_LENGTH,
-            cellprofiler.modules.measureobjectsizeshape.F_MINOR_AXIS_LENGTH,
-            cellprofiler.modules.measureobjectsizeshape.F_ORIENTATION,
-            cellprofiler.modules.measureobjectsizeshape.F_PERIMETER,
-            cellprofiler.modules.measureobjectsizeshape.F_SOLIDITY,
-            cellprofiler.modules.measureobjectsizeshape.F_COMPACTNESS,
-            cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS,
-            cellprofiler.modules.measureobjectsizeshape.F_MEAN_RADIUS,
-            cellprofiler.modules.measureobjectsizeshape.F_MEDIAN_RADIUS,
-            cellprofiler.modules.measureobjectsizeshape.F_MIN_FERET_DIAMETER,
-            cellprofiler.modules.measureobjectsizeshape.F_MAX_FERET_DIAMETER,
+        cellprofiler.modules.measureobjectsizeshape.F_AREA,
+        cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
+        cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
+        cellprofiler.modules.measureobjectsizeshape.F_ECCENTRICITY,
+        cellprofiler.modules.measureobjectsizeshape.F_EULER_NUMBER,
+        cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
+        cellprofiler.modules.measureobjectsizeshape.F_FORM_FACTOR,
+        cellprofiler.modules.measureobjectsizeshape.F_MAJOR_AXIS_LENGTH,
+        cellprofiler.modules.measureobjectsizeshape.F_MINOR_AXIS_LENGTH,
+        cellprofiler.modules.measureobjectsizeshape.F_ORIENTATION,
+        cellprofiler.modules.measureobjectsizeshape.F_PERIMETER,
+        cellprofiler.modules.measureobjectsizeshape.F_SOLIDITY,
+        cellprofiler.modules.measureobjectsizeshape.F_COMPACTNESS,
+        cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS,
+        cellprofiler.modules.measureobjectsizeshape.F_MEAN_RADIUS,
+        cellprofiler.modules.measureobjectsizeshape.F_MEDIAN_RADIUS,
+        cellprofiler.modules.measureobjectsizeshape.F_MIN_FERET_DIAMETER,
+        cellprofiler.modules.measureobjectsizeshape.F_MAX_FERET_DIAMETER,
     ):
         m = cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + f
         a = measurements.get_current_measurement("SomeObjects", m)
@@ -201,8 +201,8 @@ def test_measurements_zernike():
     for object_name in settings[:-1]:
         measurements = module.get_measurements(pipeline, object_name, "AreaShape")
         for measurement in (
-                cellprofiler.modules.measureobjectsizeshape.F_STANDARD
-                + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+            cellprofiler.modules.measureobjectsizeshape.F_STANDARD
+            + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
         ):
             assert measurement in measurements
         assert "Zernike_3_1" in measurements
@@ -216,8 +216,8 @@ def test_measurements_no_zernike():
     for object_name in settings[:-1]:
         measurements = module.get_measurements(pipeline, object_name, "AreaShape")
         for measurement in (
-                cellprofiler.modules.measureobjectsizeshape.F_STANDARD
-                + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+            cellprofiler.modules.measureobjectsizeshape.F_STANDARD
+            + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
         ):
             assert measurement in measurements
         assert not ("Zernike_3_1" in measurements)

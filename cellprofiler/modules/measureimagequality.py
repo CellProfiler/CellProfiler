@@ -294,7 +294,9 @@ the pipeline and press the "?" button).
 
         group.append(
             "include_local_blur",
-            cellprofiler_core.setting.Binary(text="Include local blur metrics?", value=True),
+            cellprofiler_core.setting.Binary(
+                text="Include local blur metrics?", value=True
+            ),
         )
 
         group.scale_groups = []
@@ -929,7 +931,8 @@ to the foreground pixels or the background pixels.
         if object_name == cellprofiler_core.measurement.IMAGE:
             return [C_IMAGE_QUALITY]
         elif (
-            object_name == cellprofiler_core.measurement.EXPERIMENT and self.any_threshold()
+            object_name == cellprofiler_core.measurement.EXPERIMENT
+            and self.any_threshold()
         ):
             return [C_IMAGE_QUALITY]
         return []
@@ -983,7 +986,10 @@ to the foreground pixels or the background pixels.
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
 
-        if object_name != cellprofiler_core.measurement.IMAGE or category != C_IMAGE_QUALITY:
+        if (
+            object_name != cellprofiler_core.measurement.IMAGE
+            or category != C_IMAGE_QUALITY
+        ):
             return []
         if measurement in (
             F_FOCUS_SCORE,
@@ -1115,7 +1121,9 @@ to the foreground pixels or the background pixels.
             value = workspace.image_set.get_image(image_name).scale
             if not value:  # Set to NaN if not defined, such as for derived images
                 value = numpy.NaN
-            workspace.add_measurement(cellprofiler_core.measurement.IMAGE, feature, value)
+            workspace.add_measurement(
+                cellprofiler_core.measurement.IMAGE, feature, value
+            )
             result += [["{} scaling".format(image_name), value]]
         return result
 
@@ -1297,10 +1305,14 @@ to the foreground pixels or the background pixels.
                 C_IMAGE_QUALITY, F_PERCENT_MINIMAL, image_name
             )
             workspace.add_measurement(
-                cellprofiler_core.measurement.IMAGE, percent_maximal_name, percent_maximal
+                cellprofiler_core.measurement.IMAGE,
+                percent_maximal_name,
+                percent_maximal,
             )
             workspace.add_measurement(
-                cellprofiler_core.measurement.IMAGE, percent_minimal_name, percent_minimal
+                cellprofiler_core.measurement.IMAGE,
+                percent_minimal_name,
+                percent_minimal,
             )
             result += [
                 ["{} maximal".format(image_name), "{:.1f} %".format(percent_maximal)],
@@ -1626,9 +1638,7 @@ to the foreground pixels or the background pixels.
             #
             # Get a dictionary of image name to (module, setting)
             #
-            image_providers = pipeline.get_provider_dictionary(
-                "imagegroup", self
-            )
+            image_providers = pipeline.get_provider_dictionary("imagegroup", self)
             for image_name in image_providers:
                 for module, setting in image_providers[image_name]:
                     if module.is_load_module() and (
@@ -1637,15 +1647,12 @@ to the foreground pixels or the background pixels.
                                 setting, cellprofiler_core.setting.ImageNameProvider
                             )
                         )
-                        or "file_image"
-                        in setting.provided_attributes
+                        or "file_image" in setting.provided_attributes
                     ):
                         accepted_image_list.append(image_name)
             return accepted_image_list
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Upgrade from previous versions of setting formats"""
 
         if variable_revision_number == 1:
@@ -1718,8 +1725,7 @@ to the foreground pixels or the background pixels.
                     "wants_saturation"
                 ] or (im_settings[3] == "Yes")
                 d[image_name]["wants_blur"] = d[image_name]["wants_blur"] or (
-                    im_settings[1] == "Yes"
-                    or im_settings[7] == "Yes"
+                    im_settings[1] == "Yes" or im_settings[7] == "Yes"
                 )
                 d[image_name]["wants_threshold"] = d[image_name]["wants_threshold"] or (
                     im_settings[4] == "Yes"
@@ -1761,23 +1767,15 @@ to the foreground pixels or the background pixels.
                     "Yes"
                     if d[image_name]["wants_scaling"]
                     else "No",  # include_image_scalings
-                    "Yes"
-                    if d[image_name]["wants_blur"]
-                    else "No",
+                    "Yes" if d[image_name]["wants_blur"] else "No",
                 ]  # check_blur
                 new_settings += [k for k in d[image_name]["blur_scales"]]  # scale
                 new_settings += [
-                    "Yes"
-                    if d[image_name]["wants_saturation"]
-                    else "No",
+                    "Yes" if d[image_name]["wants_saturation"] else "No",
                     # check_saturation
-                    "Yes"
-                    if d[image_name]["wants_intensity"]
-                    else "No",
+                    "Yes" if d[image_name]["wants_intensity"] else "No",
                     # check_intensity
-                    "Yes"
-                    if d[image_name]["wants_threshold"]
-                    else "No",
+                    "Yes" if d[image_name]["wants_threshold"] else "No",
                     # calculate_threshold,
                     "No",
                 ]  # use_all_threshold_methods
@@ -1808,19 +1806,22 @@ to the foreground pixels or the background pixels.
         if variable_revision_number == 5:
             if setting_values[0] == "Select...":
                 num_images = setting_values[1]
-                metadata_end = int(num_images)*2
-                num_settings = [int(setting_values[i+2]) + int(setting_values[i+3]*5) for i in range(0, metadata_end, 2)]
+                metadata_end = int(num_images) * 2
+                num_settings = [
+                    int(setting_values[i + 2]) + int(setting_values[i + 3] * 5)
+                    for i in range(0, metadata_end, 2)
+                ]
 
-                to_unpack = setting_values[2+metadata_end:]
-                new_setting_values = setting_values[:2+metadata_end]
+                to_unpack = setting_values[2 + metadata_end :]
+                new_setting_values = setting_values[: 2 + metadata_end]
                 while to_unpack:
                     image_names = to_unpack[0]
-                    split_image_names = image_names.split(',')
+                    split_image_names = image_names.split(",")
                     new_image_names = ", ".join(map(str, split_image_names))
                     num_moresettings = num_settings.pop(0)
                     new_setting_values.append(new_image_names)
-                    new_setting_values += to_unpack[1:2+num_moresettings]
-                    to_unpack = to_unpack[2+num_moresettings:]
+                    new_setting_values += to_unpack[1 : 2 + num_moresettings]
+                    to_unpack = to_unpack[2 + num_moresettings :]
                 setting_values = new_setting_values
             variable_revision_number = 6
         return setting_values, variable_revision_number

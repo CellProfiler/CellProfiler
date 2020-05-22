@@ -167,7 +167,9 @@ N_SETTING_VALUES = 10
 R_PARENT = "Parent"
 
 
-class IdentifySecondaryObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
+class IdentifySecondaryObjects(
+    cellprofiler_core.module.image_segmentation.ObjectProcessing
+):
     module_name = "IdentifySecondaryObjects"
 
     variable_revision_number = 10
@@ -470,9 +472,7 @@ segmentation.""",
 
         return help_settings
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number < 9:
             raise NotImplementedError(
                 "Automatic upgrade for this module is not supported in CellProfiler 3."
@@ -496,7 +496,10 @@ segmentation.""",
 
             threshold_settings_version = 9
 
-        threshold_upgrade_settings, threshold_settings_version = self.threshold.upgrade_settings(
+        (
+            threshold_upgrade_settings,
+            threshold_settings_version,
+        ) = self.threshold.upgrade_settings(
             ["None", "None"] + threshold_setting_values[1:],
             threshold_settings_version,
             "Threshold",
@@ -523,12 +526,7 @@ segmentation.""",
                 "The %s image and %s objects are not (%s vs %s).\n"
                 "If they are paired correctly you may want to use the Resize, ResizeObjects or "
                 "Crop module(s) to make them the same size."
-                % (
-                    image_name,
-                    self.x_name.value,
-                    img.shape,
-                    objects.shape,
-                )
+                % (image_name, self.x_name.value, img.shape, objects.shape,)
             )
         global_threshold = None
         if self.method == M_DISTANCE_N:
@@ -584,8 +582,7 @@ segmentation.""",
             if self.fill_holes:
                 label_mask = labels_out == 0
                 small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
-                    labels_out,
-                    mask=label_mask
+                    labels_out, mask=label_mask
                 )
             else:
                 small_removed_segmented_out = labels_out
@@ -604,8 +601,7 @@ segmentation.""",
             if self.fill_holes:
                 label_mask = labels_out == 0
                 small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
-                    labels_out,
-                    mask=label_mask
+                    labels_out, mask=label_mask
                 )
             else:
                 small_removed_segmented_out = labels_out.copy()
@@ -638,8 +634,7 @@ segmentation.""",
             if self.fill_holes:
                 label_mask = labels_out == 0
                 small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
-                    labels_out,
-                    mask=label_mask
+                    labels_out, mask=label_mask
                 )
             else:
                 small_removed_segmented_out = labels_out.copy()
@@ -671,8 +666,7 @@ segmentation.""",
             if self.fill_holes:
                 label_mask = labels_out == 0
                 small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
-                    labels_out,
-                    mask=label_mask
+                    labels_out, mask=label_mask
                 )
             else:
                 small_removed_segmented_out = labels_out

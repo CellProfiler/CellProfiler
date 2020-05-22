@@ -209,8 +209,9 @@ order to keep from breaking up the object or breaking the hole.
             O_DIVIDE,
         ):
             shrunk_objects = self.do_labels(input_objects.small_removed_segmented)
-            output_objects.small_removed_segmented = numpy.where(input_objects.segmented > 0,
-                                                            output_objects.segmented, shrunk_objects)
+            output_objects.small_removed_segmented = numpy.where(
+                input_objects.segmented > 0, output_objects.segmented, shrunk_objects
+            )
 
         if input_objects.has_unedited_segmented and self.operation not in (
             O_EXPAND,
@@ -218,8 +219,9 @@ order to keep from breaking up the object or breaking the hole.
             O_DIVIDE,
         ):
             shrunk_objects = self.do_labels(input_objects.unedited_segmented)
-            output_objects.unedited_segmented = numpy.where(input_objects.segmented > 0,
-                                                            output_objects.segmented, shrunk_objects)
+            output_objects.unedited_segmented = numpy.where(
+                input_objects.segmented > 0, output_objects.segmented, shrunk_objects
+            )
 
         workspace.object_set.add_objects(output_objects, self.output_object_name.value)
 
@@ -249,8 +251,7 @@ order to keep from breaking up the object or breaking the hole.
         cmap = figure.return_cmap()
 
         figure.subplot_imshow_labels(
-            0, 0, input_objects_segmented, self.object_name.value,
-            colormap=cmap,
+            0, 0, input_objects_segmented, self.object_name.value, colormap=cmap,
         )
 
         figure.subplot_imshow_labels(
@@ -259,7 +260,7 @@ order to keep from breaking up the object or breaking the hole.
             output_objects_segmented,
             self.output_object_name.value,
             sharexy=figure.subplot(0, 0),
-            colormap=cmap
+            colormap=cmap,
         )
 
     def do_labels(self, labels):
@@ -320,9 +321,7 @@ order to keep from breaking up the object or breaking the hole.
 
         raise NotImplementedError("Unsupported operation: %s" % self.operation.value)
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             setting_values = setting_values[:-2]
 

@@ -23,10 +23,14 @@ def test_divide():
     expected = image / illum
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    input_module = cellprofiler_core.modules.injectimage.InjectImage("InputImage", image)
+    input_module = cellprofiler_core.modules.injectimage.InjectImage(
+        "InputImage", image
+    )
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
-    illum_module = cellprofiler_core.modules.injectimage.InjectImage("IllumImage", illum)
+    illum_module = cellprofiler_core.modules.injectimage.InjectImage(
+        "IllumImage", illum
+    )
     illum_module.set_module_num(2)
     pipeline.add_module(illum_module)
     module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
@@ -70,10 +74,14 @@ def test_subtract():
     expected[expected < 0] = 0
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    input_module = cellprofiler_core.modules.injectimage.InjectImage("InputImage", image)
+    input_module = cellprofiler_core.modules.injectimage.InjectImage(
+        "InputImage", image
+    )
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
-    illum_module = cellprofiler_core.modules.injectimage.InjectImage("IllumImage", illum)
+    illum_module = cellprofiler_core.modules.injectimage.InjectImage(
+        "IllumImage", illum
+    )
     illum_module.set_module_num(2)
     pipeline.add_module(illum_module)
     module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
@@ -118,10 +126,14 @@ def test_color_by_bw():
     expected[expected < 0] = 0
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    input_module = cellprofiler_core.modules.injectimage.InjectImage("InputImage", image)
+    input_module = cellprofiler_core.modules.injectimage.InjectImage(
+        "InputImage", image
+    )
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
-    illum_module = cellprofiler_core.modules.injectimage.InjectImage("IllumImage", illum)
+    illum_module = cellprofiler_core.modules.injectimage.InjectImage(
+        "IllumImage", illum
+    )
     illum_module.set_module_num(2)
     pipeline.add_module(illum_module)
     module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()
@@ -166,10 +178,14 @@ def test_color_by_color():
     expected[expected < 0] = 0
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    input_module = cellprofiler_core.modules.injectimage.InjectImage("InputImage", image)
+    input_module = cellprofiler_core.modules.injectimage.InjectImage(
+        "InputImage", image
+    )
     input_module.set_module_num(1)
     pipeline.add_module(input_module)
-    illum_module = cellprofiler_core.modules.injectimage.InjectImage("IllumImage", illum)
+    illum_module = cellprofiler_core.modules.injectimage.InjectImage(
+        "IllumImage", illum
+    )
     illum_module.set_module_num(2)
     pipeline.add_module(illum_module)
     module = cellprofiler.modules.correctilluminationapply.CorrectIlluminationApply()

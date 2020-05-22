@@ -438,15 +438,16 @@ controls how remaining objects are associated with their predecessors:
         # and the outlines of removed objects red.
         #
         final_outlines = outline(final_labels) > 0
-        original_color = np.array(cpprefs.get_secondary_outline_color()[0:3], float) / 255
+        original_color = (
+            np.array(cpprefs.get_secondary_outline_color()[0:3], float) / 255
+        )
         final_color = np.array(cpprefs.get_primary_outline_color()[0:3], float) / 255
         image[outlines, :] = original_color[np.newaxis, :]
         image[final_outlines, :] = final_color[np.newaxis, :]
 
         figure.set_subplots((2, 1))
         figure.subplot_imshow_labels(
-            0, 0, original_labels, title=self.object_name.value,
-            colormap=sm,
+            0, 0, original_labels, title=self.object_name.value, colormap=sm,
         )
         figure.subplot_imshow_color(
             1,
@@ -509,9 +510,7 @@ controls how remaining objects are associated with their predecessors:
         """Bypass Identify.validate_module"""
         pass
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Added "wants_inverted_mask"
             setting_values = setting_values + ["No"]

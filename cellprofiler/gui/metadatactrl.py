@@ -47,12 +47,16 @@ class MetadataControl(wx.Control):
 
         super(MetadataControl, self).__init__(*args, **kwargs)
         columns = pipeline.get_measurement_columns(module)
-        choices = [cellprofiler_core.measurement.C_SERIES, cellprofiler_core.measurement.C_FRAME]
+        choices = [
+            cellprofiler_core.measurement.C_SERIES,
+            cellprofiler_core.measurement.C_FRAME,
+        ]
         for column in columns:
             object_name, feature, coltype = column[:3]
             choice = feature[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
-            if object_name == cellprofiler_core.measurement.IMAGE and feature.startswith(
-                cellprofiler_core.measurement.C_METADATA
+            if (
+                object_name == cellprofiler_core.measurement.IMAGE
+                and feature.startswith(cellprofiler_core.measurement.C_METADATA)
             ):
                 choices.append(choice)
         self.__metadata_choices = choices

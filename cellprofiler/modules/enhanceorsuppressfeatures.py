@@ -581,9 +581,7 @@ Two methods can be used to enhance neurites:
 
         return self.__unmask(result, image.pixel_data, image.mask)
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings

@@ -1025,14 +1025,14 @@ def test_fly():
         #
         x.size_range.min = min_size
         for unclump_method in (
-                cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
-                cellprofiler.modules.identifyprimaryobjects.UN_SHAPE,
+            cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY,
+            cellprofiler.modules.identifyprimaryobjects.UN_SHAPE,
         ):
             x.unclump_method.value = unclump_method
             for watershed_method in (
-                    cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY,
-                    cellprofiler.modules.identifyprimaryobjects.WA_SHAPE,
-                    cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE,
+                cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY,
+                cellprofiler.modules.identifyprimaryobjects.WA_SHAPE,
+                cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE,
             ):
                 x.watershed_method.value = watershed_method
                 image_set_list = cellprofiler_core.image.ImageSetList()
@@ -1135,12 +1135,12 @@ def test_load_v10():
     assert module.exclude_size
     assert module.exclude_border_objects
     assert (
-            module.unclump_method
-            == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        module.unclump_method
+        == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     )
     assert (
-            module.watershed_method
-            == cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
+        module.watershed_method
+        == cellprofiler.modules.identifyprimaryobjects.WA_INTENSITY
     )
     assert module.automatic_smoothing
     assert module.smoothing_filter_size == 11
@@ -1148,12 +1148,15 @@ def test_load_v10():
     assert module.maxima_suppression_size == 9
     assert module.low_res_maxima
     assert (
-            module.fill_holes == cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING
+        module.fill_holes == cellprofiler.modules.identifyprimaryobjects.FH_THRESHOLDING
     )
     assert module.limit_choice == cellprofiler.modules.identifyprimaryobjects.LIMIT_NONE
     assert module.maximum_object_count == 499
     #
-    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_ADAPTIVE
+    assert (
+        module.threshold.threshold_scope
+        == cellprofiler_core.modules.identify.TS_ADAPTIVE
+    )
     assert module.threshold.local_operation.value == centrosome.threshold.TM_OTSU
     assert module.threshold.threshold_smoothing_scale == 1.3488
     assert round(abs(module.threshold.threshold_correction_factor.value - 0.80), 7) == 0
@@ -1161,7 +1164,10 @@ def test_load_v10():
     assert round(abs(module.threshold.threshold_range.max - 0.90), 7) == 0
     assert round(abs(module.threshold.manual_threshold.value - 0.03), 7) == 0
     assert module.threshold.thresholding_measurement == "Metadata_Threshold"
-    assert module.threshold.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
+    assert (
+        module.threshold.two_class_otsu
+        == cellprofiler_core.modules.identify.O_TWO_CLASS
+    )
     assert (
         module.threshold.assign_middle_to_foreground
         == cellprofiler_core.modules.identify.O_FOREGROUND
@@ -1177,25 +1183,28 @@ def test_load_v10():
     assert not module.exclude_size
     assert not module.exclude_border_objects
     assert (
-            module.unclump_method
-            == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
+        module.unclump_method
+        == cellprofiler.modules.identifyprimaryobjects.UN_INTENSITY
     )
     assert (
-            module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_NONE
+        module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_NONE
     )
     assert not module.automatic_smoothing
     assert not module.automatic_suppression
     assert not module.low_res_maxima
     assert module.fill_holes == cellprofiler.modules.identifyprimaryobjects.FH_NEVER
     assert (
-            module.limit_choice == cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
-    )
-    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
-    assert (
-            module.threshold.global_operation.value == cellprofiler.modules.threshold.TM_LI
+        module.limit_choice == cellprofiler.modules.identifyprimaryobjects.LIMIT_ERASE
     )
     assert (
-        module.threshold.two_class_otsu == cellprofiler_core.modules.identify.O_THREE_CLASS
+        module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
+    )
+    assert (
+        module.threshold.global_operation.value == cellprofiler.modules.threshold.TM_LI
+    )
+    assert (
+        module.threshold.two_class_otsu
+        == cellprofiler_core.modules.identify.O_THREE_CLASS
     )
     assert (
         module.threshold.assign_middle_to_foreground
@@ -1209,8 +1218,8 @@ def test_load_v10():
     )
     assert module.unclump_method == cellprofiler.modules.identifyprimaryobjects.UN_NONE
     assert (
-            module.watershed_method
-            == cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
+        module.watershed_method
+        == cellprofiler.modules.identifyprimaryobjects.WA_PROPAGATE
     )
     assert module.limit_choice == "None"
     assert module.threshold.global_operation.value == "None"
@@ -1223,9 +1232,11 @@ def test_load_v10():
     )
     assert module.unclump_method == cellprofiler.modules.identifyprimaryobjects.UN_SHAPE
     assert (
-            module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
+        module.watershed_method == cellprofiler.modules.identifyprimaryobjects.WA_SHAPE
     )
-    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
+    assert (
+        module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
+    )
     assert (
         module.threshold.global_operation.value
         == centrosome.threshold.TM_ROBUST_BACKGROUND
@@ -1233,9 +1244,13 @@ def test_load_v10():
     assert module.threshold.lower_outlier_fraction.value == 0.02
     assert module.threshold.upper_outlier_fraction.value == 0.02
     assert (
-        module.threshold.averaging_method.value == cellprofiler_core.modules.identify.RB_MODE
+        module.threshold.averaging_method.value
+        == cellprofiler_core.modules.identify.RB_MODE
     )
-    assert module.threshold.variance_method.value == cellprofiler_core.modules.identify.RB_SD
+    assert (
+        module.threshold.variance_method.value
+        == cellprofiler_core.modules.identify.RB_SD
+    )
     assert module.threshold.number_of_deviations.value == 0
     assert module.threshold.threshold_correction_factor.value == 1.6
     assert module.use_advanced.value
@@ -1246,8 +1261,8 @@ def test_load_v10():
     )
     assert module.threshold.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
     assert (
-            module.threshold.global_operation.value
-            == cellprofiler.modules.threshold.TM_MANUAL
+        module.threshold.global_operation.value
+        == cellprofiler.modules.threshold.TM_MANUAL
     )
     assert module.use_advanced.value
 
@@ -1257,8 +1272,8 @@ def test_load_v10():
     )
     assert module.threshold.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
     assert (
-            module.threshold.global_operation.value
-            == cellprofiler.modules.threshold.TM_MEASUREMENT
+        module.threshold.global_operation.value
+        == cellprofiler.modules.threshold.TM_MEASUREMENT
     )
     assert module.use_advanced.value
 
@@ -1273,7 +1288,9 @@ def test_load_v10():
     )
     assert module.threshold.lower_outlier_fraction == 0.05
     assert module.threshold.upper_outlier_fraction == 0.05
-    assert module.threshold.averaging_method == cellprofiler_core.modules.identify.RB_MEAN
+    assert (
+        module.threshold.averaging_method == cellprofiler_core.modules.identify.RB_MEAN
+    )
     assert module.threshold.variance_method == cellprofiler_core.modules.identify.RB_SD
     assert module.threshold.number_of_deviations == 2
     assert module.use_advanced.value
@@ -1980,7 +1997,9 @@ def test_threshold_smoothing_automatic():
     module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
     # MCT on this image is zero, so set the threshold at .225
     # with the threshold minimum (manual = no smoothing)
-    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = (
+        cellprofiler_core.modules.identify.TS_GLOBAL
+    )
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
     module.threshold.threshold_range.min = 0.225
     module.run(workspace)
@@ -2019,7 +2038,9 @@ def test_threshold_smoothing_manual():
     module.exclude_size.value = False
     module.unclump_method.value = cellprofiler.modules.identifyprimaryobjects.UN_NONE
     module.watershed_method.value = cellprofiler.modules.identifyprimaryobjects.WA_NONE
-    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = (
+        cellprofiler_core.modules.identify.TS_GLOBAL
+    )
     module.threshold.global_operation.value = cellprofiler.modules.threshold.TM_LI
     module.threshold.threshold_range.min = 0.125
     module.threshold.threshold_smoothing_scale.value = 3
@@ -2073,7 +2094,9 @@ def test_threshold_no_smoothing():
         module.threshold.global_operation.value = tm
         module.threshold.manual_threshold.value = 0.125
         module.threshold.thresholding_measurement.value = MEASUREMENT_NAME
-        workspace.measurements[cellprofiler_core.measurement.IMAGE, MEASUREMENT_NAME] = 0.125
+        workspace.measurements[
+            cellprofiler_core.measurement.IMAGE, MEASUREMENT_NAME
+        ] = 0.125
         module.threshold.threshold_smoothing_scale.value = 3
         module.run(workspace)
         labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented

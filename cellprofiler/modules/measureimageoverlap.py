@@ -804,9 +804,7 @@ the two images. Set this setting to “No” to assess no penalty.""",
             for feature in self.all_features()
         ]
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # no object choice before rev 2
             old_setting_values = setting_values

@@ -697,7 +697,9 @@ class CPFrame(wx.Frame):
             ID_EDIT_DELETE, "&Delete Selected Modules", "Delete selected modules"
         )
         self.menu_edit.Append(
-            ID_EDIT_DUPLICATE, "Duplicate Selected Modules", "Duplicate selected modules"
+            ID_EDIT_DUPLICATE,
+            "Duplicate Selected Modules",
+            "Duplicate selected modules",
         )
         self.menu_edit.Append(
             ID_EDIT_ENABLE_MODULE,
@@ -1108,7 +1110,11 @@ class CPFrame(wx.Frame):
     @staticmethod
     def __on_new_cp(event):
         if hasattr(sys, "frozen"):
-            os.system("open -na /Applications/CellProfiler-{}.app".format(cellprofiler.__version__))
+            os.system(
+                "open -na /Applications/CellProfiler-{}.app".format(
+                    cellprofiler.__version__
+                )
+            )
         else:
             os.system("python3 -m cellprofiler")
 

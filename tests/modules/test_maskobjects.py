@@ -36,7 +36,7 @@ def test_load_v1():
     assert module.masking_objects.value == "Wells"
     assert module.remaining_objects.value == "MaskedNuclei"
     assert (
-            module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
     )
     assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_MASK
     assert not module.wants_inverted_mask
@@ -58,7 +58,7 @@ def test_load_v1():
     assert module.masking_objects.value == "Cells"
     assert module.remaining_objects.value == "MaskedCytoplasm"
     assert (
-            module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
     )
     assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_REMOVE
     assert not module.wants_inverted_mask
@@ -70,11 +70,11 @@ def test_load_v1():
     assert module.masking_objects.value == "Cells"
     assert module.remaining_objects.value == "MaskedSpeckles"
     assert (
-            module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
     )
     assert (
-            module.overlap_choice.value
-            == cellprofiler.modules.maskobjects.P_REMOVE_PERCENTAGE
+        module.overlap_choice.value
+        == cellprofiler.modules.maskobjects.P_REMOVE_PERCENTAGE
     )
     assert round(abs(module.overlap_fraction.value - 0.3), 7) == 0
     assert not module.wants_inverted_mask
@@ -100,7 +100,7 @@ def test_load_v2():
     assert module.masking_objects.value == "Wells"
     assert module.remaining_objects.value == "MaskedNuclei"
     assert (
-            module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
+        module.retain_or_renumber.value == cellprofiler.modules.maskobjects.R_RENUMBER
     )
     assert module.overlap_choice.value == cellprofiler.modules.maskobjects.P_MASK
     assert module.wants_inverted_mask
@@ -270,9 +270,9 @@ def test_measurements():
         cellprofiler.modules.maskobjects.P_MASK,
         numpy.zeros((20, 10), int),
     )
-    ftr_count = (cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS).split(
-        "_", 1
-    )[1]
+    ftr_count = (
+        cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
+    ).split("_", 1)[1]
     d = {
         "Foo": {},
         cellprofiler_core.measurement.IMAGE: {
@@ -290,7 +290,10 @@ def test_measurements():
                 cellprofiler_core.measurement.FTR_OBJECT_NUMBER
             ],
         },
-        INPUT_OBJECTS: {"Foo": [], cellprofiler_core.measurement.C_CHILDREN: [ftr_count]},
+        INPUT_OBJECTS: {
+            "Foo": [],
+            cellprofiler_core.measurement.C_CHILDREN: [ftr_count],
+        },
     }
     for object_name in list(d.keys()):
         od = d[object_name]
@@ -322,7 +325,10 @@ def test_mask_nothing():
         (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_Y),
         (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER),
         (OUTPUT_OBJECTS, cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS),
-        (INPUT_OBJECTS, cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS),
+        (
+            INPUT_OBJECTS,
+            cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+        ),
     ):
         data = m.get_current_measurement(object_name, feature)
         assert len(data) == 0

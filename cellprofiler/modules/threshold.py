@@ -1042,9 +1042,7 @@ Often a good choice is some multiple of the largest expected object size.
 
         return []
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number < 7:
             raise NotImplementedError(
                 "Automatic upgrade for this module is not supported in CellProfiler 3.0."

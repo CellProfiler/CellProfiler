@@ -182,7 +182,9 @@ class DataToolFrame(wx.Frame):
         metadata_db = {}
         metadata_features = [
             x
-            for x in self.measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
+            for x in self.measurements.get_feature_names(
+                cellprofiler_core.measurement.IMAGE
+            )
             if x.startswith("Metadata")
         ]
         sel = None

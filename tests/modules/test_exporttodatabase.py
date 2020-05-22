@@ -51,7 +51,18 @@ GROUP_OBJ_FEATURE = "group_objmeasurement"
 MISSING_FROM_MEASUREMENTS = "Missing from measurements"
 MISSING_FROM_MODULE = "Missing from module"
 
-OBJ_MEASUREMENT, INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT, STRING_IMG_MEASUREMENT, LONG_IMG_MEASUREMENT, LONG_OBJ_MEASUREMENT, WIERD_IMG_MEASUREMENT, WIERD_OBJ_MEASUREMENT, GROUP_IMG_MEASUREMENT, GROUP_OBJ_MEASUREMENT = [
+(
+    OBJ_MEASUREMENT,
+    INT_IMG_MEASUREMENT,
+    FLOAT_IMG_MEASUREMENT,
+    STRING_IMG_MEASUREMENT,
+    LONG_IMG_MEASUREMENT,
+    LONG_OBJ_MEASUREMENT,
+    WIERD_IMG_MEASUREMENT,
+    WIERD_OBJ_MEASUREMENT,
+    GROUP_IMG_MEASUREMENT,
+    GROUP_OBJ_MEASUREMENT,
+) = [
     "_".join((M_CATEGORY, x))
     for x in (
         OBJ_FEATURE,
@@ -188,8 +199,8 @@ def test_00_write_load_test():
     # number change.
     #
     assert (
-            cellprofiler.modules.exporttodatabase.ExportToDatabase.variable_revision_number
-            == 27
+        cellprofiler.modules.exporttodatabase.ExportToDatabase.variable_revision_number
+        == 27
     )
 
 
@@ -286,7 +297,10 @@ def test_load_v15():
     assert not module.want_table_prefix
     assert module.table_prefix == "Ouch"
     assert module.sql_file_prefix == "LQS_"
-    assert module.directory.dir_choice == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+    assert (
+        module.directory.dir_choice
+        == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+    )
     assert module.directory.custom_path == "//achilles/red/shoes"
     assert not module.save_cpa_properties
     assert module.db_host == "Zeus"
@@ -302,8 +316,8 @@ def test_load_v15():
     assert module.objects_choice == cellprofiler.modules.exporttodatabase.O_ALL
     assert module.max_column_size == 62
     assert (
-            module.separate_object_tables
-            == cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
+        module.separate_object_tables
+        == cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
     )
     assert not module.wants_properties_image_url_prepend
 
@@ -328,9 +342,7 @@ def test_load_v22():
     assert module.table_prefix == "Delta_"
     assert module.sql_file_prefix == "Iota_"
     assert module.experiment_name == "Sigma"
-    assert (
-        module.directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
-    )
+    assert module.directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
     assert module.save_cpa_properties
     assert module.location_object == "Cells"
     assert module.properties_image_url_prepend == "http://server.university.edu"
@@ -431,9 +443,7 @@ def test_load_v23():
     assert module.table_prefix == "Delta_"
     assert module.sql_file_prefix == "Iota_"
     assert module.experiment_name == "Sigma"
-    assert (
-        module.directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
-    )
+    assert module.directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
     assert module.save_cpa_properties
     assert module.location_object == "Cells"
     assert module.properties_image_url_prepend == "http://server.university.edu"
@@ -536,9 +546,7 @@ def test_load_v24():
     assert module.table_prefix == "Delta_"
     assert module.sql_file_prefix == "Iota_"
     assert module.experiment_name == "Sigma"
-    assert (
-        module.directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
-    )
+    assert module.directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
     assert module.save_cpa_properties
     assert module.location_object == "Cells"
     assert module.properties_image_url_prepend == "http://server.university.edu"
@@ -620,7 +628,7 @@ def test_load_v24():
     assert g.filter_name == "Site1Filter"
     assert g.filter_statement == "Image_Metadata_Plate = '1'"
     assert (
-            module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
+        module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
     )
 
 
@@ -644,9 +652,7 @@ def test_load_v25():
     assert module.table_prefix == "Delta_"
     assert module.sql_file_prefix == "Iota_"
     assert module.experiment_name == "Sigma"
-    assert (
-        module.directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
-    )
+    assert module.directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
     assert module.save_cpa_properties
     assert module.location_object == "Cells"
     assert module.wants_properties_image_url_prepend
@@ -729,7 +735,7 @@ def test_load_v25():
     assert g.filter_name == "Site1Filter"
     assert g.filter_statement == "Image_Metadata_Plate = '1'"
     assert (
-            module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
+        module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
     )
 
 
@@ -753,9 +759,7 @@ def test_load_v26():
     assert module.table_prefix == "Delta_"
     assert module.sql_file_prefix == "Iota_"
     assert module.experiment_name == "Sigma"
-    assert (
-        module.directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
-    )
+    assert module.directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
     assert module.save_cpa_properties
     assert module.location_object == "Cells"
     assert not module.wants_properties_image_url_prepend
@@ -771,8 +775,8 @@ def test_load_v26():
     assert module.properties_class_table_name == "Hoopla"
     assert module.wants_relationship_table
     assert (
-            module.properties_classification_type
-            == cellprofiler.modules.exporttodatabase.CT_OBJECT
+        module.properties_classification_type
+        == cellprofiler.modules.exporttodatabase.CT_OBJECT
     )
     assert len(module.image_groups) == 2
     for image_group, input_image_name, output_image_name, color in (
@@ -842,7 +846,7 @@ def test_load_v26():
     assert g.filter_name == "Site1Filter"
     assert g.filter_statement == "Image_Metadata_Plate = '1'"
     assert (
-            module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
+        module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
     )
 
 
@@ -855,8 +859,8 @@ def test_load_v27():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
     assert (
-            module.properties_classification_type
-            == cellprofiler.modules.exporttodatabase.CT_IMAGE
+        module.properties_classification_type
+        == cellprofiler.modules.exporttodatabase.CT_IMAGE
     )
     assert len(module.workspace_measurement_groups) == 1
     g = module.workspace_measurement_groups[0]
@@ -889,7 +893,9 @@ def make_workspace(
 
         def create_settings(self):
             image_name = cellprofiler_core.setting.ImageNameProvider("Foo", IMAGE_NAME)
-            objects_name = cellprofiler_core.setting.ObjectNameProvider("Bar", OBJECT_NAME)
+            objects_name = cellprofiler_core.setting.ObjectNameProvider(
+                "Bar", OBJECT_NAME
+            )
             if alt_object:
                 altobjects_name = cellprofiler_core.setting.ObjectNameProvider(
                     "Baz", ALTOBJECT_NAME
@@ -936,7 +942,11 @@ def make_workspace(
                     cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
                     cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
-                (OBJECT_NAME, OBJ_MEASUREMENT, cellprofiler_core.measurement.COLTYPE_FLOAT),
+                (
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                ),
             ]
             if in_module(alt_object):
                 columns += [
@@ -1065,13 +1075,17 @@ def make_workspace(
                 ALTOBJECT_NAME,
             ):
                 return cellprofiler_core.measurement.FTR_OBJECT_NUMBER
-            elif category == "Count" and object_name == cellprofiler_core.measurement.IMAGE:
+            elif (
+                category == "Count"
+                and object_name == cellprofiler_core.measurement.IMAGE
+            ):
                 result = [OBJECT_NAME]
                 if in_module(alt_object):
                     result += [ALTOBJECT_NAME]
                 return result
             elif (
-                category == "Metadata" and object_name == cellprofiler_core.measurement.IMAGE
+                category == "Metadata"
+                and object_name == cellprofiler_core.measurement.IMAGE
             ):
                 return ["Plate", "Well"]
             return []
@@ -1203,7 +1217,10 @@ def load_database(output_dir, module, image_set_count=1):
                 output_dir, base_name + "_" + OBJECT_NAME + ".CSV"
             )
         else:
-            object_file = "%s_%s.CSV" % (base_name, cellprofiler_core.measurement.OBJECT)
+            object_file = "%s_%s.CSV" % (
+                base_name,
+                cellprofiler_core.measurement.OBJECT,
+            )
             object_file = os.path.join(output_dir, object_file)
         for filename in (sql_file, image_file, object_file):
             assert os.path.isfile(filename)
@@ -1221,8 +1238,8 @@ def load_database(output_dir, module, image_set_count=1):
 
 def tteesstt_no_relationships(module, cursor):
     for t in (
-            cellprofiler.modules.exporttodatabase.T_RELATIONSHIPS,
-            cellprofiler.modules.exporttodatabase.V_RELATIONSHIPS,
+        cellprofiler.modules.exporttodatabase.T_RELATIONSHIPS,
+        cellprofiler.modules.exporttodatabase.V_RELATIONSHIPS,
     ):
         statement = "select count('x') from %s" % module.get_table_name(t)
         cursor.execute(statement)
@@ -1358,8 +1375,8 @@ def test_write_mysql_db():
         #
         assert not module.wants_relationship_table
         for t in (
-                cellprofiler.modules.exporttodatabase.T_RELATIONSHIPS,
-                cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES,
+            cellprofiler.modules.exporttodatabase.T_RELATIONSHIPS,
+            cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES,
         ):
             statement = "select count('x') from INFORMATION_SCHEMA.TABLES "
             statement += "where table_schema=%s and table_name=%s"
@@ -2345,7 +2362,9 @@ def test_write_sqlite_direct():
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -4965,7 +4984,9 @@ def test_write_sqlite_relationships():
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -5131,7 +5152,9 @@ def test_add_relationship_id_sqlite():
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -5184,7 +5207,9 @@ def test_get_relationship_id_sqlite():
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE

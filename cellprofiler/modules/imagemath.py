@@ -663,9 +663,7 @@ is applied before other operations.""",
             "At least one of the operands must be an image", op.image_or_measurement
         )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # added image_or_measurement and measurement
             new_setting_values = setting_values[:FIXED_SETTING_COUNT_1]

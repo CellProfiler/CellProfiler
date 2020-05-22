@@ -246,15 +246,16 @@ available colormaps can be seen `here`_.
         )
 
         self.wants_excluded_objects = cps.Binary(
-           "Consider objects discarded for touching image border?",
-           True,
-           doc="""\
+            "Consider objects discarded for touching image border?",
+            True,
+            doc="""\
 When set to *{YES}*, objects which were previously discarded for touching
 the image borders will be considered as potential object neighbours in this
 analysis. You may want to disable this if using object sets which were
 further filtered, since those filters won't have been applied to the
 previously discarded objects.""".format(
-                **{"YES": "Yes"}),
+                **{"YES": "Yes"}
+            ),
         )
 
     def settings(self):
@@ -314,7 +315,8 @@ previously discarded objects.""".format(
             neighbor_has_pixels = has_pixels
         else:
             _, neighbor_numbers = neighbor_objects.relate_labels(
-                neighbor_labels, neighbor_objects.small_removed_segmented)
+                neighbor_labels, neighbor_objects.small_removed_segmented
+            )
             neighbor_has_pixels = np.bincount(neighbor_labels.ravel())[1:] > 0
         neighbor_count = np.zeros((nobjects,))
         pixel_count = np.zeros((nobjects,))
@@ -365,7 +367,9 @@ previously discarded objects.""".format(
             # nearest neighbors
             #
             ocenters = centers_of_labels(objects.small_removed_segmented).transpose()
-            ncenters = centers_of_labels(neighbor_objects.small_removed_segmented).transpose()
+            ncenters = centers_of_labels(
+                neighbor_objects.small_removed_segmented
+            ).transpose()
             areas = fix(scind.sum(np.ones(labels.shape), labels, object_indexes))
             perimeter_outlines = outline(labels)
             perimeters = fix(
@@ -534,9 +538,7 @@ previously discarded objects.""".format(
                         (patch != 0) & (patch != object_number), strel_touching
                     )
                 else:
-                    extended = scind.binary_dilation(
-                        (npatch != 0), strel_touching
-                    )
+                    extended = scind.binary_dilation((npatch != 0), strel_touching)
                 overlap = np.sum(outline_patch & extended)
                 pixel_count[index] = overlap
             if sum([len(x) for x in first_objects]) > 0:
@@ -889,9 +891,7 @@ previously discarded objects.""".format(
                 )
         return []
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Added neighbor objects
             # To upgrade, repeat object_name twice

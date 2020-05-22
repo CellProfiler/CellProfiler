@@ -38,9 +38,7 @@ class TreeCheckboxDialog(wx.Dialog):
         self.tree_ctrl.SetImageList(image_list)
         self.image_list = image_list
         image_index, selected_image_index = self.img_idx(d)
-        root_id = self.tree_ctrl.AddRoot(
-            "All", image_index, selected_image_index, d
-        )
+        root_id = self.tree_ctrl.AddRoot("All", image_index, selected_image_index, d)
         self.tree_ctrl.SetItemImage(root_id, image_index, wx.TreeItemIcon_Normal)
         self.tree_ctrl.SetItemImage(
             root_id, selected_image_index, wx.TreeItemIcon_Selected

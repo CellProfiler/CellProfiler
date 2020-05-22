@@ -268,8 +268,8 @@ def test_masked():
         value = measurements.get_current_image_measurement(mname)
         assert expected == value
     for feature in (
-            cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX,
-            cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX,
+        cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX,
+        cellprofiler.modules.measureimageoverlap.FTR_ADJUSTED_RAND_INDEX,
     ):
         mname = "_".join(
             (

@@ -41,7 +41,9 @@ YES          YES          NO
 )
 
 
-class ConvertImageToObjects(cellprofiler_core.module.image_segmentation.ImageSegmentation):
+class ConvertImageToObjects(
+    cellprofiler_core.module.image_segmentation.ImageSegmentation
+):
     category = "Object Processing"
 
     module_name = "ConvertImageToObjects"

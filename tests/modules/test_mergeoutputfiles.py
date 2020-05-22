@@ -85,10 +85,12 @@ def test_one():
         assert (
             round(
                 abs(
-                    result.get_all_measurements(cellprofiler_core.measurement.IMAGE, "foo")[
-                        i
-                    ]
-                    - m.get_all_measurements(cellprofiler_core.measurement.IMAGE, "foo")[i]
+                    result.get_all_measurements(
+                        cellprofiler_core.measurement.IMAGE, "foo"
+                    )[i]
+                    - m.get_all_measurements(
+                        cellprofiler_core.measurement.IMAGE, "foo"
+                    )[i]
                 ),
                 7,
             )

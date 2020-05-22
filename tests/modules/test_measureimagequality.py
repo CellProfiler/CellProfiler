@@ -292,7 +292,9 @@ def test_saturation():
         ("ImageQuality_PercentMaximal_my_image", 25),
         ("ImageQuality_PercentMinimal_my_image", 75),
     ):
-        assert m.has_current_measurements(cellprofiler_core.measurement.IMAGE, feature_name)
+        assert m.has_current_measurements(
+            cellprofiler_core.measurement.IMAGE, feature_name
+        )
         assert (
             round(
                 abs(
@@ -365,12 +367,16 @@ def test_saturation_mask():
         ("ImageQuality_PercentMaximal_my_image", 100.0 / 3),
         ("ImageQuality_PercentMinimal_my_image", 200.0 / 3),
     ):
-        assert m.has_current_measurements(cellprofiler_core.measurement.IMAGE, feature_name)
+        assert m.has_current_measurements(
+            cellprofiler_core.measurement.IMAGE, feature_name
+        )
         print(
             (
                 feature_name,
                 expected_value,
-                m.get_current_measurement(cellprofiler_core.measurement.IMAGE, feature_name),
+                m.get_current_measurement(
+                    cellprofiler_core.measurement.IMAGE, feature_name
+                ),
             )
         )
         assert (
@@ -454,7 +460,9 @@ def test_threshold():
         t.threshold_method.value = tm
         t.object_fraction.value = object_fraction
         t.two_class_otsu.value = cellprofiler_core.modules.identify.O_THREE_CLASS
-        t.assign_middle_to_foreground.value = cellprofiler_core.modules.identify.O_FOREGROUND
+        t.assign_middle_to_foreground.value = (
+            cellprofiler_core.modules.identify.O_FOREGROUND
+        )
         t.use_weighted_variance.value = (
             cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
         )
@@ -479,7 +487,9 @@ def test_threshold():
             feature_name = "ImageQuality_ThresholdMoG_my_image_20"
         else:
             feature_name = "ImageQuality_Threshold%s_my_image" % tm.split(" ")[0]
-        assert m.has_current_measurements(cellprofiler_core.measurement.IMAGE, feature_name)
+        assert m.has_current_measurements(
+            cellprofiler_core.measurement.IMAGE, feature_name
+        )
     features_and_columns_match(m, q)
 
 
@@ -606,7 +616,9 @@ def test_use_all_thresholding_methods():
         "ImageQuality_ThresholdKapur_my_image",
         "ImageQuality_ThresholdRidlerCalvard_my_image",
     ]:
-        assert m.has_current_measurements(cellprofiler_core.measurement.IMAGE, feature_name)
+        assert m.has_current_measurements(
+            cellprofiler_core.measurement.IMAGE, feature_name
+        )
     features_and_columns_match(m, q)
 
 
@@ -643,9 +655,13 @@ def test_load_v3():
     assert round(abs(thr.object_fraction.value - 0.2), 7) == 0
     assert thr.two_class_otsu == cellprofiler_core.modules.identify.O_THREE_CLASS
     assert (
-        thr.use_weighted_variance == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
+        thr.use_weighted_variance
+        == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
     )
-    assert thr.assign_middle_to_foreground == cellprofiler_core.modules.identify.O_FOREGROUND
+    assert (
+        thr.assign_middle_to_foreground
+        == cellprofiler_core.modules.identify.O_FOREGROUND
+    )
 
     group = module.image_groups[1]
     thr = group.threshold_groups[0]
@@ -658,7 +674,10 @@ def test_load_v3():
     assert round(abs(thr.object_fraction.value - 0.3), 7) == 0
     assert thr.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
     assert thr.use_weighted_variance == cellprofiler_core.modules.identify.O_ENTROPY
-    assert thr.assign_middle_to_foreground == cellprofiler_core.modules.identify.O_BACKGROUND
+    assert (
+        thr.assign_middle_to_foreground
+        == cellprofiler_core.modules.identify.O_BACKGROUND
+    )
 
 
 def test_load_v4():
@@ -714,7 +733,8 @@ def test_load_v4():
     thr = group.threshold_groups[0]
     assert thr.threshold_method == centrosome.threshold.TM_OTSU
     assert (
-        thr.use_weighted_variance == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
+        thr.use_weighted_variance
+        == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
     )
     assert thr.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
     group = module.image_groups[1]
@@ -729,16 +749,21 @@ def test_load_v4():
     thr = group.threshold_groups[0]
     assert thr.threshold_method == centrosome.threshold.TM_OTSU
     assert (
-        thr.use_weighted_variance == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
+        thr.use_weighted_variance
+        == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
     )
     assert thr.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
     thr = group.threshold_groups[1]
     assert thr.threshold_method == centrosome.threshold.TM_OTSU
     assert (
-        thr.use_weighted_variance == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
+        thr.use_weighted_variance
+        == cellprofiler_core.modules.identify.O_WEIGHTED_VARIANCE
     )
     assert thr.two_class_otsu == cellprofiler_core.modules.identify.O_THREE_CLASS
-    assert thr.assign_middle_to_foreground == cellprofiler_core.modules.identify.O_FOREGROUND
+    assert (
+        thr.assign_middle_to_foreground
+        == cellprofiler_core.modules.identify.O_FOREGROUND
+    )
 
 
 def test_intensity_image():
@@ -845,13 +870,17 @@ def test_images_to_process():
     pipeline = cellprofiler_core.pipeline.Pipeline()
     module1 = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
     module1.set_module_num(1)
-    module1.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    module1.assignment_method.value = (
+        cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
+    )
     module1.add_assignment()
     module1.add_assignment()
     module1.assignments[0].image_name.value = expected_names[0]
     module1.assignments[
         0
-    ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+    ].load_as_choice.value = (
+        cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+    )
     #
     # TO_DO: issue #652
     #    This test should fail at some later date when we can detect

@@ -64,7 +64,7 @@ def test_load_v2():
     assert module.object_name == "glia"
     assert module.neighbors_name == "neurites"
     assert (
-            module.distance_method == cellprofiler.modules.measureobjectneighbors.D_EXPAND
+        module.distance_method == cellprofiler.modules.measureobjectneighbors.D_EXPAND
     )
     assert module.distance == 2
     assert not module.wants_count_image
@@ -445,12 +445,12 @@ def test_get_measurement_columns():
     module.distance.value = 5
     for distance_method, scale in (
         (
-                cellprofiler.modules.measureobjectneighbors.D_EXPAND,
-                cellprofiler.modules.measureobjectneighbors.S_EXPANDED,
+            cellprofiler.modules.measureobjectneighbors.D_EXPAND,
+            cellprofiler.modules.measureobjectneighbors.S_EXPANDED,
         ),
         (
-                cellprofiler.modules.measureobjectneighbors.D_ADJACENT,
-                cellprofiler.modules.measureobjectneighbors.S_ADJACENT,
+            cellprofiler.modules.measureobjectneighbors.D_ADJACENT,
+            cellprofiler.modules.measureobjectneighbors.S_ADJACENT,
         ),
         (cellprofiler.modules.measureobjectneighbors.D_WITHIN, "5"),
     ):
@@ -473,12 +473,12 @@ def test_get_measurement_columns_neighbors():
     module.distance.value = 5
     for distance_method, scale in (
         (
-                cellprofiler.modules.measureobjectneighbors.D_EXPAND,
-                cellprofiler.modules.measureobjectneighbors.S_EXPANDED,
+            cellprofiler.modules.measureobjectneighbors.D_EXPAND,
+            cellprofiler.modules.measureobjectneighbors.S_EXPANDED,
         ),
         (
-                cellprofiler.modules.measureobjectneighbors.D_ADJACENT,
-                cellprofiler.modules.measureobjectneighbors.S_ADJACENT,
+            cellprofiler.modules.measureobjectneighbors.D_ADJACENT,
+            cellprofiler.modules.measureobjectneighbors.S_ADJACENT,
         ),
         (cellprofiler.modules.measureobjectneighbors.D_WITHIN, "5"),
     ):
@@ -649,7 +649,9 @@ def test_different_neighbors_touching():
         distance=0,
         neighbors_labels=nlabels,
     )
-    assert isinstance(module, cellprofiler.modules.measureobjectneighbors.MeasureObjectNeighbors)
+    assert isinstance(
+        module, cellprofiler.modules.measureobjectneighbors.MeasureObjectNeighbors
+    )
     module.run(workspace)
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
@@ -684,7 +686,7 @@ def test_different_neighbors_touching():
         ),
     )
     assert len(v) == 1
-    assert round(v[0], 7) == round(5**(.5), 7)
+    assert round(v[0], 7) == round(5 ** (0.5), 7)
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(

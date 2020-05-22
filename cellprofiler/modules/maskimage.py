@@ -228,9 +228,7 @@ This option reverses the foreground/background relationship of the mask.
                 sharexy=figure.subplot(0, 0),
             )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting_values to upgrade from a previous version
 
         """

@@ -65,8 +65,8 @@ def test_load_v3():
     assert module.wants_aggregate_medians
     assert not module.wants_aggregate_std
     assert (
-            module.directory.dir_choice
-            == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME
+        module.directory.dir_choice
+        == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME
     )
     assert module.directory.custom_path == r"./\<?Plate>"
     assert len(module.object_groups) == 2
@@ -101,8 +101,8 @@ def test_load_v4():
     assert not module.wants_aggregate_medians
     assert not module.wants_aggregate_std
     assert (
-            module.directory.dir_choice
-            == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
+        module.directory.dir_choice
+        == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
     )
     assert not module.wants_everything
     for group, object_name in zip(
@@ -140,8 +140,8 @@ def test_load_v5():
     )
     assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_TAB
     assert (
-            module.directory.dir_choice
-            == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
+        module.directory.dir_choice
+        == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
     )
     assert module.directory.custom_path == "//iodine/imaging_analysis/People/Lee"
     assert not module.add_metadata
@@ -205,8 +205,8 @@ def test_load_v6():
     )
     assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_TAB
     assert (
-            module.directory.dir_choice
-            == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
+        module.directory.dir_choice
+        == cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_FOLDER_NAME
     )
     assert module.directory.custom_path == "//iodine/imaging_analysis/People/Lee"
     assert not module.add_metadata
@@ -257,8 +257,8 @@ def test_load_v6():
     )
     assert module.delimiter == cellprofiler.modules.exporttospreadsheet.DELIMITER_COMMA
     assert (
-            module.directory.dir_choice
-            == cellprofiler.modules.exporttospreadsheet.DEFAULT_INPUT_FOLDER_NAME
+        module.directory.dir_choice
+        == cellprofiler.modules.exporttospreadsheet.DEFAULT_INPUT_FOLDER_NAME
     )
     assert module.directory.custom_path == "//iodine/imaging_analysis/People/Lee"
     assert module.add_metadata
@@ -274,9 +274,9 @@ def test_load_v6():
     for module, dir_choice in zip(
         pipeline.modules()[2:],
         (
-                cellprofiler.modules.exporttospreadsheet.DEFAULT_INPUT_SUBFOLDER_NAME,
-                cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME,
+            cellprofiler.modules.exporttospreadsheet.DEFAULT_INPUT_SUBFOLDER_NAME,
+            cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+            cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME,
         ),
     ):
         assert isinstance(
@@ -284,8 +284,8 @@ def test_load_v6():
         )
         assert module.directory.dir_choice == dir_choice
     assert (
-            module.nan_representation
-            == cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
+        module.nan_representation
+        == cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
     )
 
 
@@ -310,21 +310,21 @@ def test_load_v8():
     assert not module.wants_aggregate_means
     assert not module.wants_aggregate_medians
     assert (
-            module.directory.dir_choice
-            == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice
+        == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     assert module.directory.custom_path == "/imaging/analysis/2005Projects"
     assert not module.wants_genepattern_file
     assert (
-            module.how_to_specify_gene_name
-            == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
+        module.how_to_specify_gene_name
+        == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
     )
     assert module.use_which_image_for_gene_name == "GFP"
     assert module.gene_name_column == "Metadata_GeneName"
     assert module.wants_everything
     assert (
-            module.nan_representation
-            == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
+        module.nan_representation
+        == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
     )
     assert module.object_groups[0].name == "Nuclei"
     assert not module.object_groups[0].previous_file
@@ -353,21 +353,21 @@ def test_load_v9():
     assert not module.wants_aggregate_means
     assert not module.wants_aggregate_medians
     assert (
-            module.directory.dir_choice
-            == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice
+        == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     assert module.directory.custom_path == "/imaging/analysis/2005Projects"
     assert not module.wants_genepattern_file
     assert (
-            module.how_to_specify_gene_name
-            == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
+        module.how_to_specify_gene_name
+        == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
     )
     assert module.use_which_image_for_gene_name == "GFP"
     assert module.gene_name_column == "Metadata_GeneName"
     assert module.wants_everything
     assert (
-            module.nan_representation
-            == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
+        module.nan_representation
+        == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
     )
     assert module.object_groups[0].name == "Nuclei"
     assert not module.object_groups[0].previous_file
@@ -398,21 +398,21 @@ def test_load_v10():
     assert not module.wants_aggregate_means
     assert not module.wants_aggregate_medians
     assert (
-            module.directory.dir_choice
-            == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice
+        == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     assert module.directory.custom_path == "/imaging/analysis/2005Projects"
     assert not module.wants_genepattern_file
     assert (
-            module.how_to_specify_gene_name
-            == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
+        module.how_to_specify_gene_name
+        == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
     )
     assert module.use_which_image_for_gene_name == "GFP"
     assert module.gene_name_column == "Metadata_GeneName"
     assert module.wants_everything
     assert (
-            module.nan_representation
-            == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
+        module.nan_representation
+        == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
     )
     assert module.object_groups[0].name == "Nuclei"
     assert not module.object_groups[0].previous_file
@@ -444,21 +444,21 @@ def test_load_v11():
     assert not module.wants_aggregate_means
     assert not module.wants_aggregate_medians
     assert (
-            module.directory.dir_choice
-            == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice
+        == cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     assert module.directory.custom_path == "/imaging/analysis/2005Projects"
     assert not module.wants_genepattern_file
     assert (
-            module.how_to_specify_gene_name
-            == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
+        module.how_to_specify_gene_name
+        == cellprofiler.modules.exporttospreadsheet.GP_NAME_FILENAME
     )
     assert module.use_which_image_for_gene_name == "GFP"
     assert module.gene_name_column == "Metadata_GeneName"
     assert module.wants_everything
     assert (
-            module.nan_representation
-            == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
+        module.nan_representation
+        == cellprofiler.modules.exporttospreadsheet.NANS_AS_NULLS
     )
     assert module.object_groups[0].name == "Nuclei"
     assert not module.object_groups[0].previous_file
@@ -1004,7 +1004,10 @@ def test_nan_image_measurements(output_dir):
         OBJECTS_NAME, OBJ_MEAS, mvalues, image_set_number=1, data_type=numpy.float64
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 2, image_set_number=1
+        cellprofiler_core.measurement.IMAGE,
+        "Count_%s" % OBJECTS_NAME,
+        2,
+        image_set_number=1,
     )
     m.add_measurement(
         cellprofiler_core.measurement.IMAGE,
@@ -1014,7 +1017,10 @@ def test_nan_image_measurements(output_dir):
         data_type=numpy.float64,
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 0, image_set_number=2
+        cellprofiler_core.measurement.IMAGE,
+        "Count_%s" % OBJECTS_NAME,
+        0,
+        image_set_number=2,
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
@@ -1075,7 +1081,10 @@ def test_null_image_measurements(output_dir):
         OBJECTS_NAME, OBJ_MEAS, mvalues, image_set_number=1, data_type=numpy.float64
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 2, image_set_number=1
+        cellprofiler_core.measurement.IMAGE,
+        "Count_%s" % OBJECTS_NAME,
+        2,
+        image_set_number=1,
     )
     m.add_measurement(
         cellprofiler_core.measurement.IMAGE,
@@ -1085,7 +1094,10 @@ def test_null_image_measurements(output_dir):
         data_type=numpy.float64,
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE, "Count_%s" % OBJECTS_NAME, 0, image_set_number=2
+        cellprofiler_core.measurement.IMAGE,
+        "Count_%s" % OBJECTS_NAME,
+        0,
+        image_set_number=2,
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
@@ -1537,7 +1549,9 @@ def test_overwrite_files_everything(output_dir):
     module.set_module_num(2)
     pipeline.add_module(module)
 
-    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, module, m, None, m, None
+    )
     for object_name in (
         cellprofiler_core.measurement.EXPERIMENT,
         cellprofiler_core.measurement.IMAGE,
@@ -1578,7 +1592,9 @@ def test_overwrite_files_group(output_dir):
     module.set_module_num(2)
     pipeline.add_module(module)
 
-    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, module, m, None, m, None
+    )
 
     for image_number in m.get_image_numbers():
         file_name = module.make_objects_file_name(
@@ -2105,8 +2121,16 @@ def test_missing_column_measurements(output_dir):
     module.object_groups[0].wants_automatic_file_name.value = False
     module.add_metadata.value = False
     m = cellprofiler_core.measurement.Measurements()
-    m[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER, 1] = 1
-    m[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, 1] = 1
+    m[
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.GROUP_NUMBER,
+        1,
+    ] = 1
+    m[
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.GROUP_INDEX,
+        1,
+    ] = 1
     m[
         cellprofiler_core.measurement.IMAGE,
         "_".join((cellprofiler_core.measurement.C_COUNT, OBJECTS_NAME)),
@@ -2179,17 +2203,29 @@ def make_measurements_pipeline(m):
         for feature in m.get_feature_names(object_name):
             if object_name == cellprofiler_core.measurement.EXPERIMENT:
                 columns.append(
-                    (object_name, feature, cellprofiler_core.measurement.COLTYPE_VARCHAR)
+                    (
+                        object_name,
+                        feature,
+                        cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                    )
                 )
             elif image_number is not None:
                 data = m[object_name, feature, image_number]
                 if isinstance(data, six.string_types):
                     columns.append(
-                        (object_name, feature, cellprofiler_core.measurement.COLTYPE_VARCHAR)
+                        (
+                            object_name,
+                            feature,
+                            cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                        )
                     )
                 else:
                     columns.append(
-                        (object_name, feature, cellprofiler_core.measurement.COLTYPE_FLOAT)
+                        (
+                            object_name,
+                            feature,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                        )
                     )
 
     class MPipeline(cellprofiler_core.pipeline.Pipeline):
@@ -2423,7 +2459,9 @@ def test_test_overwrite_gct_file(output_dir):
     module.wants_prefix.value = False
     module.set_module_num(1)
     pipeline.add_module(module)
-    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, module, m, None, m, None
+    )
     assert output_csv_filename == module.make_gct_file_name(workspace, 1)
 
     assert module.prepare_run(workspace)
@@ -2475,7 +2513,12 @@ def test_relationships_file(output_dir):
     pipeline = make_measurements_pipeline(m)
     pipeline.add_module(module)
     workspace = cellprofiler_core.workspace.Workspace(
-        pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
+        pipeline,
+        module,
+        image_set,
+        cellprofiler_core.object.ObjectSet(),
+        m,
+        image_set_list,
     )
     fd = None
     try:
@@ -2546,7 +2589,9 @@ def test_test_overwrite_relationships_file(output_dir):
     module.set_module_num(1)
     pipeline.add_module(module)
 
-    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, module, m, None, m, None
+    )
     assert module.prepare_run(workspace)
     with open(output_csv_filename, "w") as fd:
         fd.write("Hello, world.\n")

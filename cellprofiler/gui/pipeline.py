@@ -23,7 +23,9 @@ class Pipeline(cellprofiler_core.pipeline.Pipeline):
             if dialog.ShowModal() != wx.ID_OK:
                 dialog.Destroy()
 
-                raise cellprofiler_core.pipeline.event.PipelineLoadCancelledException(message)
+                raise cellprofiler_core.pipeline.event.PipelineLoadCancelledException(
+                    message
+                )
 
             dialog.Destroy()
         else:

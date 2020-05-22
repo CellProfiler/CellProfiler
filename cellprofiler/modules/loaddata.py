@@ -978,7 +978,10 @@ safe to press it.""",
             else:
                 metadata_columns[column] = i
                 if category == cellprofiler_core.measurement.C_METADATA:
-                    if feature.lower() == cellprofiler_core.measurement.FTR_WELL.lower():
+                    if (
+                        feature.lower()
+                        == cellprofiler_core.measurement.FTR_WELL.lower()
+                    ):
                         well_well_column = i
                     elif cellprofiler_core.measurement.is_well_row_token(feature):
                         well_row_column = i
@@ -999,7 +1002,10 @@ safe to press it.""",
             #
             # Add synthetic object and image columns
             #
-            if self.image_directory.dir_choice == cellprofiler_core.setting.NO_FOLDER_NAME:
+            if (
+                self.image_directory.dir_choice
+                == cellprofiler_core.setting.NO_FOLDER_NAME
+            ):
                 path_base = ""
             else:
                 path_base = self.image_path
@@ -1149,10 +1155,14 @@ safe to press it.""",
             group_lengths = []
             for eachval in groupvals:
                 group_lengths += [len(eachval[1])] * len(eachval[1])
-            m.add_all_measurements(cellprofiler_core.measurement.IMAGE, "Group_Length", group_lengths)
+            m.add_all_measurements(
+                cellprofiler_core.measurement.IMAGE, "Group_Length", group_lengths
+            )
         else:
             group_lengths = [len(rows)] * len(rows)
-            m.add_all_measurements(cellprofiler_core.measurement.IMAGE, "Group_Length", group_lengths)
+            m.add_all_measurements(
+                cellprofiler_core.measurement.IMAGE, "Group_Length", group_lengths
+            )
 
         return True
 
@@ -1177,7 +1187,9 @@ safe to press it.""",
             m = workspace.measurements
             assert isinstance(m, cellprofiler_core.measurement.Measurements)
             image_numbers = m.get_image_numbers()
-            all_image_features = m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+            all_image_features = m.get_feature_names(
+                cellprofiler_core.measurement.IMAGE
+            )
             for url_category, file_category, path_category, names in (
                 (
                     cellprofiler_core.measurement.C_URL,
@@ -1247,11 +1259,15 @@ safe to press it.""",
             url_feature = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + name
             series_feature = cellprofiler_core.measurement.C_OBJECTS_SERIES + "_" + name
             frame_feature = cellprofiler_core.measurement.C_OBJECTS_FRAME + "_" + name
-        url = measurements.get_measurement(cellprofiler_core.measurement.IMAGE, url_feature)
+        url = measurements.get_measurement(
+            cellprofiler_core.measurement.IMAGE, url_feature
+        )
         url = url
         full_filename = loadimages.url2pathname(url)
         path, filename = os.path.split(full_filename)
-        if measurements.has_feature(cellprofiler_core.measurement.IMAGE, series_feature):
+        if measurements.has_feature(
+            cellprofiler_core.measurement.IMAGE, series_feature
+        ):
             series = measurements[cellprofiler_core.measurement.IMAGE, series_feature]
         else:
             series = None
@@ -1388,7 +1404,11 @@ safe to press it.""",
             return []
         previous_columns = pipeline.get_measurement_columns(self)
         previous_fields = set(
-            [x[1] for x in previous_columns if x[0] == cellprofiler_core.measurement.IMAGE]
+            [
+                x[1]
+                for x in previous_columns
+                if x[0] == cellprofiler_core.measurement.IMAGE
+            ]
         )
         already_output = [x in previous_fields for x in header]
         coltypes = [cellprofiler_core.measurement.COLTYPE_INTEGER] * len(header)
@@ -1529,7 +1549,9 @@ safe to press it.""",
                         cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME,
                     ),
                 ):
-                    mname = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + object_name
+                    mname = (
+                        cellprofiler_core.measurement.C_OBJECTS_URL + "_" + object_name
+                    )
                     result.append((cellprofiler_core.measurement.IMAGE, mname, coltype))
         #
         # Try to make a well column out of well row and well column
@@ -1630,9 +1652,7 @@ safe to press it.""",
             return True
         return False
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
 
         dir_default_image = "Default input folder"
         dir_default_output = "Default Output Folder"
@@ -1661,9 +1681,18 @@ safe to press it.""",
         if variable_revision_number == 3:
             # directory choice, custom directory merged
             # input_directory_choice, custom_input_directory merged
-            csv_directory_choice, csv_custom_directory, csv_file_name, wants_images, image_directory_choice, image_custom_directory, wants_rows, row_range, wants_image_groupings, metadata_fields = (
-                setting_values
-            )
+            (
+                csv_directory_choice,
+                csv_custom_directory,
+                csv_file_name,
+                wants_images,
+                image_directory_choice,
+                image_custom_directory,
+                wants_rows,
+                row_range,
+                wants_image_groupings,
+                metadata_fields,
+            ) = setting_values
             csv_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
                 csv_directory_choice, csv_custom_directory
             )
@@ -1685,17 +1714,27 @@ safe to press it.""",
         # Standardize input/output directory name references
         setting_values = list(setting_values)
         for index in (0, 3):
-            setting_values[index] = cellprofiler_core.setting.DirectoryPath.upgrade_setting(
+            setting_values[
+                index
+            ] = cellprofiler_core.setting.DirectoryPath.upgrade_setting(
                 setting_values[index]
             )
 
         if variable_revision_number == 4:
-            csv_directory, csv_file_name, wants_images, image_directory, wants_rows, row_range, wants_image_groupings, metadata_fields = (
-                setting_values
-            )
-            dir_choice, custom_dir = cellprofiler_core.setting.DirectoryPath.split_string(
-                csv_directory
-            )
+            (
+                csv_directory,
+                csv_file_name,
+                wants_images,
+                image_directory,
+                wants_rows,
+                row_range,
+                wants_image_groupings,
+                metadata_fields,
+            ) = setting_values
+            (
+                dir_choice,
+                custom_dir,
+            ) = cellprofiler_core.setting.DirectoryPath.split_string(csv_directory)
             if dir_choice == cellprofiler_core.preferences.URL_FOLDER_NAME:
                 csv_file_name = custom_dir + "/" + csv_file_name
                 csv_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(

@@ -15,8 +15,8 @@ def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
     module = cellprofiler.modules.graytocolor.GrayToColor()
     module.scheme_choice.value = scheme
     if scheme not in (
-            cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
-            cellprofiler.modules.graytocolor.SCHEME_STACK,
+        cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
+        cellprofiler.modules.graytocolor.SCHEME_STACK,
     ):
         image_names = [
             "image%d" % i

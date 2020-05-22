@@ -533,10 +533,7 @@ objects:
         )
         figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data, title)
         figure.subplot_imshow_bw(
-            1,
-            0,
-            cropped_pixel_data,
-            self.cropped_image_name.value,
+            1, 0, cropped_pixel_data, self.cropped_image_name.value,
         )
 
     def get_measurement_columns(self, pipeline):
@@ -940,9 +937,7 @@ objects:
             cropping[bottom:, :] = False
         return cropping
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Added ability to crop objects
             new_setting_values = list(setting_values)

@@ -40,7 +40,10 @@ def test_load_v2():
     assert not dv.log_transform
     assert dv.wants_save_figure
     assert dv.figure_name == "DoseResponsePlot"
-    assert dv.pathname.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+    assert (
+        dv.pathname.dir_choice
+        == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+    )
     assert dv.pathname.custom_path == "Test"
 
 
@@ -415,7 +418,12 @@ def make_workspace(mdict, controls_measurement, dose_measurements=[]):
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
     workspace = cellprofiler_core.workspace.Workspace(
-        pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
+        pipeline,
+        module,
+        image_set,
+        cellprofiler_core.object.ObjectSet(),
+        m,
+        image_set_list,
     )
     return workspace, module
 

@@ -326,7 +326,9 @@ degrees.
         )
         m.add_measurement(object_name, M_ANGLE, angles * 180 / np.pi)
         m.add_measurement(
-            object_name, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER, label_indexes
+            object_name,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            label_indexes,
         )
         m.add_image_measurement(
             cellprofiler_core.measurement.FF_COUNT % object_name, nlabels
@@ -653,7 +655,10 @@ degrees.
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == cellprofiler_core.measurement.C_COUNT:
+        if (
+            object_name == cpmeas.IMAGE
+            and category == cellprofiler_core.measurement.C_COUNT
+        ):
             return [self.object_name.value]
         elif object_name == self.object_name:
             if category == cellprofiler_core.measurement.C_LOCATION:
@@ -667,9 +672,7 @@ degrees.
                 return [F_ANGLE]
         return []
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Upgrade the settings from a previous revison"""
         if variable_revision_number == 1:
             setting_values = setting_values + ["Yes", 5, 30]

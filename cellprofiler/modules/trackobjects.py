@@ -1866,7 +1866,15 @@ Enter a name to give the color-coded image of tracked labels.""",
         assert isinstance(m, cpmeas.Measurements)
         image_numbers = self.get_group_image_numbers(workspace)
         object_name = self.object_name.value
-        label, object_numbers, a, b, Area, parent_object_numbers, parent_image_numbers = [
+        (
+            label,
+            object_numbers,
+            a,
+            b,
+            Area,
+            parent_object_numbers,
+            parent_image_numbers,
+        ) = [
             [
                 m.get_measurement(object_name, feature, i).astype(mtype)
                 for i in image_numbers
@@ -3625,9 +3633,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             return [str(self.pixel_radius.value)]
         return []
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             setting_values = setting_values + ["100", "100"]
             variable_revision_number = 2

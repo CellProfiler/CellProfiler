@@ -34,10 +34,10 @@ def feature_frac_at_d(bin, bin_count, image_name=IMAGE_NAME):
         )
 
     return (
-            cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY
-            + "_"
-            + cellprofiler.modules.measureobjectintensitydistribution.FF_FRAC_AT_D
-            % (image_name, bin, bin_count)
+        cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY
+        + "_"
+        + cellprofiler.modules.measureobjectintensitydistribution.FF_FRAC_AT_D
+        % (image_name, bin, bin_count)
     )
 
 
@@ -53,10 +53,10 @@ def feature_mean_frac(bin, bin_count, image_name=IMAGE_NAME):
         )
 
     return (
-            cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY
-            + "_"
-            + cellprofiler.modules.measureobjectintensitydistribution.FF_MEAN_FRAC
-            % (image_name, bin, bin_count)
+        cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY
+        + "_"
+        + cellprofiler.modules.measureobjectintensitydistribution.FF_MEAN_FRAC
+        % (image_name, bin, bin_count)
     )
 
 
@@ -72,10 +72,10 @@ def feature_radial_cv(bin, bin_count, image_name=IMAGE_NAME):
         )
 
     return (
-            cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY
-            + "_"
-            + cellprofiler.modules.measureobjectintensitydistribution.FF_RADIAL_CV
-            % (image_name, bin, bin_count)
+        cellprofiler.modules.measureobjectintensitydistribution.M_CATEGORY
+        + "_"
+        + cellprofiler.modules.measureobjectintensitydistribution.FF_RADIAL_CV
+        % (image_name, bin, bin_count)
     )
 
 
@@ -125,16 +125,16 @@ Maximum radius:50
     )
     assert module.object_count.value == 2
     assert module.bin_counts_count.value == 2
-    assert {'OrigBlue', 'EnhancedGreen'}.issubset(module.images_list.value)
+    assert {"OrigBlue", "EnhancedGreen"}.issubset(module.images_list.value)
     assert module.objects[0].object_name == "Nuclei"
     assert (
-            module.objects[0].center_choice
-            == cellprofiler.modules.measureobjectintensitydistribution.C_SELF
+        module.objects[0].center_choice
+        == cellprofiler.modules.measureobjectintensitydistribution.C_SELF
     )
     assert module.objects[0].center_object_name == "Cells"
     assert (
-            module.objects[1].center_choice
-            == cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER
+        module.objects[1].center_choice
+        == cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER
     )
     assert module.objects[1].center_object_name == "Cells"
     assert module.bin_counts[0].bin_count == 4
@@ -166,21 +166,21 @@ def test_load_v3():
     )
     assert module.object_count.value == 3
     assert module.bin_counts_count.value == 2
-    assert {'OrigBlue', 'EnhancedGreen'}.issubset(module.images_list.value)
+    assert {"OrigBlue", "EnhancedGreen"}.issubset(module.images_list.value)
     assert module.objects[0].object_name == "Nuclei"
     assert (
-            module.objects[0].center_choice
-            == cellprofiler.modules.measureobjectintensitydistribution.C_SELF
+        module.objects[0].center_choice
+        == cellprofiler.modules.measureobjectintensitydistribution.C_SELF
     )
     assert module.objects[0].center_object_name == "Cells"
     assert (
-            module.objects[1].center_choice
-            == cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER
+        module.objects[1].center_choice
+        == cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER
     )
     assert module.objects[1].center_object_name == "Cells"
     assert (
-            module.objects[2].center_choice
-            == cellprofiler.modules.measureobjectintensitydistribution.C_EDGES_OF_OTHER
+        module.objects[2].center_choice
+        == cellprofiler.modules.measureobjectintensitydistribution.C_EDGES_OF_OTHER
     )
     assert module.objects[2].center_object_name == "Cells"
     assert module.bin_counts[0].bin_count == 4
@@ -212,12 +212,12 @@ def test_load_v4():
         cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
     )
     assert (
-            module.wants_zernikes
-            == cellprofiler.modules.measureobjectintensitydistribution.Z_NONE
+        module.wants_zernikes
+        == cellprofiler.modules.measureobjectintensitydistribution.Z_NONE
     )
     assert module.zernike_degree == 9
     assert len(module.images_list.value) == 2
-    assert {'CropGreen', 'CropRed'}.issubset(module.images_list.value)
+    assert {"CropGreen", "CropRed"}.issubset(module.images_list.value)
     assert len(module.objects) == 2
     for group, (object_name, center_choice, center_object_name) in zip(
         module.objects,
@@ -316,12 +316,12 @@ def test_load_v5():
         cellprofiler.modules.measureobjectintensitydistribution.MeasureObjectIntensityDistribution,
     )
     assert (
-            module.wants_zernikes
-            == cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES
+        module.wants_zernikes
+        == cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES
     )
     assert module.zernike_degree == 7
     assert len(module.images_list.value) == 2
-    assert {'CropGreen', 'CropRed'}.issubset(module.images_list.value)
+    assert {"CropGreen", "CropRed"}.issubset(module.images_list.value)
     assert len(module.objects) == 2
     for group, (object_name, center_choice, center_object_name) in zip(
         module.objects,
@@ -401,8 +401,8 @@ def test_load_v5():
 
     module = pipeline.modules()[1]
     assert (
-            module.wants_zernikes
-            == cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE
+        module.wants_zernikes
+        == cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE
     )
 
 
@@ -470,16 +470,16 @@ def test_02_get_zernike_columns():
     )
     for wants_zernikes, ftrs in (
         (
-                cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES,
-                (
-                        cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
+            cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES,
+            (
+                cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
             ),
         ),
         (
-                cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE,
-                (
-                        cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
-                        cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_PHASE,
+            cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE,
+            (
+                cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
+                cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_PHASE,
             ),
         ),
     ):
@@ -590,16 +590,16 @@ def test_02_get_zernike_measurements():
     )
     for wants_zernikes, ftrs in (
         (
-                cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES,
-                (
-                        cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
+            cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES,
+            (
+                cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
             ),
         ),
         (
-                cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE,
-                (
-                        cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
-                        cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_PHASE,
+            cellprofiler.modules.measureobjectintensitydistribution.Z_MAGNITUDES_AND_PHASE,
+            (
+                cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
+                cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_PHASE,
             ),
         ),
     ):
@@ -734,16 +734,16 @@ def run_module(
     for i, (a, f) in enumerate(
         (
             (
-                    cellprofiler.modules.measureobjectintensitydistribution.A_FRAC_AT_D,
-                    cellprofiler.modules.measureobjectintensitydistribution.F_FRAC_AT_D,
+                cellprofiler.modules.measureobjectintensitydistribution.A_FRAC_AT_D,
+                cellprofiler.modules.measureobjectintensitydistribution.F_FRAC_AT_D,
             ),
             (
-                    cellprofiler.modules.measureobjectintensitydistribution.A_MEAN_FRAC,
-                    cellprofiler.modules.measureobjectintensitydistribution.F_MEAN_FRAC,
+                cellprofiler.modules.measureobjectintensitydistribution.A_MEAN_FRAC,
+                cellprofiler.modules.measureobjectintensitydistribution.F_MEAN_FRAC,
             ),
             (
-                    cellprofiler.modules.measureobjectintensitydistribution.A_RADIAL_CV,
-                    cellprofiler.modules.measureobjectintensitydistribution.F_RADIAL_CV,
+                cellprofiler.modules.measureobjectintensitydistribution.A_RADIAL_CV,
+                cellprofiler.modules.measureobjectintensitydistribution.F_RADIAL_CV,
             ),
         )
     ):
@@ -788,8 +788,8 @@ def test_zeros_self():
             data = m.get_current_measurement(OBJECT_NAME, feature)
             assert len(data) == 0
     for ftr in (
-            cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
-            cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_PHASE,
+        cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_MAGNITUDE,
+        cellprofiler.modules.measureobjectintensitydistribution.FF_ZERNIKE_PHASE,
     ):
         for n_, m_ in ((0, 0), (1, 1), (2, 0), (2, 2)):
             feature = "_".join(
@@ -1172,8 +1172,8 @@ def test_center_outside_of_object():
 
     image = numpy.random.uniform(size=labels.shape)
     for center_choice in (
-            cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER,
-            cellprofiler.modules.measureobjectintensitydistribution.C_EDGES_OF_OTHER,
+        cellprofiler.modules.measureobjectintensitydistribution.C_CENTERS_OF_OTHER,
+        cellprofiler.modules.measureobjectintensitydistribution.C_EDGES_OF_OTHER,
     ):
         m = run_module(
             image,

@@ -216,8 +216,8 @@ class NameSubscriberListBox(wx.Panel):
 
     def right_menu(self, evt):
         menu = wx.Menu()
-        sel_all = wx.MenuItem(menu, wx.NewId(), 'Select All')
-        sel_none = wx.MenuItem(menu, wx.NewId(), 'Select None')
+        sel_all = wx.MenuItem(menu, wx.NewId(), "Select All")
+        sel_none = wx.MenuItem(menu, wx.NewId(), "Select None")
         menu.Append(sel_all)
         menu.Append(sel_none)
         menu.Bind(wx.EVT_MENU, self.select_all, sel_all)
@@ -266,7 +266,7 @@ class NameSubscriberListBox(wx.Panel):
                     end = "(from %s #%02d)" % (module_name, module_num)
             else:
                 end = "(%s Missing!)" % self.nametype
-            whitespace = " "*max(10, (self.text_width - len(name) - len(end)))
+            whitespace = " " * max(10, (self.text_width - len(name) - len(end)))
             choice_label = "".join((name, whitespace, end))
             if choice_label in choice_labels:
                 # Name is duplicated
@@ -278,7 +278,7 @@ class NameSubscriberListBox(wx.Panel):
 
     def get_choice_names(self):
         choice_names = [choice[0] for choice in self.choices]
-        if self.checked != 'None':
+        if self.checked != "None":
             for item in self.checked:
                 if item not in choice_names:
                     choice_names.insert(0, item)

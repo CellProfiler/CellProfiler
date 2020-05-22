@@ -350,7 +350,9 @@ def test_no_ave_object_measurement():
         module.run(workspace)
         m = workspace.measurements
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert MEASUREMENT_NAME in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
@@ -377,7 +379,9 @@ def test_positive_ave_object_measurement():
         module.run(workspace)
         m = workspace.measurements
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert MEASUREMENT_NAME in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
@@ -404,7 +408,9 @@ def test_negative_ave_object_measurement():
         module.run(workspace)
         m = workspace.measurements
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert MEASUREMENT_NAME in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
 
@@ -429,7 +435,9 @@ def test_no_object_measurements():
         module.run(workspace)
         m = workspace.measurements
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert MEASUREMENT_NAME in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
@@ -454,7 +462,9 @@ def test_positive_object_measurement():
         module.run(workspace)
         m = workspace.measurements
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert MEASUREMENT_NAME in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 1
 
 
@@ -479,7 +489,9 @@ def test_negative_object_measurement():
         module.run(workspace)
         m = workspace.measurements
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert MEASUREMENT_NAME in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == 0
 
 
@@ -500,7 +512,9 @@ def test_two_measurements_any():
         module.run(workspace)
         m = workspace.measurements
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert MEASUREMENT_NAME in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
 
 
@@ -521,7 +535,9 @@ def test_two_measurements_all():
         module.run(workspace)
         m = workspace.measurements
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
-        assert MEASUREMENT_NAME in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert MEASUREMENT_NAME in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
 
 
@@ -550,7 +566,11 @@ def test_get_measurement_columns():
     assert "Foo" in categories
     assert "Hello" in categories
     assert (
-        len(module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "Whatever"))
+        len(
+            module.get_measurements(
+                None, cellprofiler_core.measurement.IMAGE, "Whatever"
+            )
+        )
         == 0
     )
     for category, feature in (("Foo", "Bar"), ("Hello", "World")):

@@ -616,9 +616,7 @@ above):
         new_labels[labels != 0] = new_indexes[labels[labels != 0]]
         return new_labels
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Added outline options
             setting_values += ["No", "RelabeledNucleiOutlines"]

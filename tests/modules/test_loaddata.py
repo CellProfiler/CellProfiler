@@ -116,7 +116,10 @@ def test_load_v5():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
     assert module.csv_file_name == "1049_Metadata.csv"
-    assert module.csv_directory.dir_choice == cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+    assert (
+        module.csv_directory.dir_choice
+        == cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+    )
     assert (
         module.csv_directory.custom_path
         == r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages"
@@ -151,7 +154,10 @@ def test_load_v6():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
     assert module.csv_file_name == "1049_Metadata.csv"
-    assert module.csv_directory.dir_choice == cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+    assert (
+        module.csv_directory.dir_choice
+        == cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+    )
     assert (
         module.csv_directory.custom_path
         == r"x:\projects\NightlyBuild\trunk\ExampleImages\ExampleSBSImages"
@@ -264,7 +270,9 @@ def test_metadata_row_and_column():
     )
     m = pipeline.run()
     features = module.get_measurements(
-        pipeline, cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_METADATA
+        pipeline,
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.C_METADATA,
     )
     for feature, expected in (("Row", "C"), ("Column", "03"), ("Well", "C03")):
         assert feature in features
@@ -306,7 +314,9 @@ def test_metadata_row_and_column_and_well():
     )
     m = pipeline.run()
     features = module.get_measurements(
-        pipeline, cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.C_METADATA
+        pipeline,
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.C_METADATA,
     )
     for feature, expected in (("Row", "C"), ("Column", "03"), ("Well", "B14")):
         assert feature in features
@@ -344,9 +354,13 @@ def test_load_file():
         assert c0_ran[0]
         hexdigest = m.get_current_image_measurement("MD5Digest_DNA")
         assert hexdigest == test_md5
-        assert "PathName_DNA" in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert "PathName_DNA" in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement("PathName_DNA") == test_path
-        assert "FileName_DNA" in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert "FileName_DNA" in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement("FileName_DNA") == test_filename
     finally:
         os.remove(filename)
@@ -449,7 +463,9 @@ def test_some_rows():
     module.row_range.max = 6
     m = pipeline.run()
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
-    data = m.get_all_measurements(cellprofiler_core.measurement.IMAGE, "Test_Measurement")
+    data = m.get_all_measurements(
+        cellprofiler_core.measurement.IMAGE, "Test_Measurement"
+    )
     assert numpy.all(data == numpy.arange(4, 7))
     os.remove(filename)
 
@@ -474,7 +490,9 @@ def test_img_717():
     module.row_range.max = 6
     m = pipeline.run()
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
-    data = m.get_all_measurements(cellprofiler_core.measurement.IMAGE, "Test_Measurement")
+    data = m.get_all_measurements(
+        cellprofiler_core.measurement.IMAGE, "Test_Measurement"
+    )
     assert numpy.all(data == numpy.arange(4, 7))
     os.remove(filename)
 
@@ -747,9 +765,13 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         assert c0_ran[0]
         hexdigest = m.get_current_image_measurement("MD5Digest_DAPI")
         assert hexdigest == test_md5
-        assert "PathName_DAPI" in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert "PathName_DAPI" in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement("PathName_DAPI") == test_path
-        assert "FileName_DAPI" in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert "FileName_DAPI" in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m.get_current_image_measurement("FileName_DAPI") == test_filename
     finally:
         os.remove(filename)
@@ -986,7 +1008,10 @@ def test_load_url():
     )
     path = m.get_measurement(cellprofiler_core.measurement.IMAGE, "PathName_DNA", 1)
     assert path == tests.modules.cp_logo_url_folder
-    assert m[cellprofiler_core.measurement.IMAGE, "URL_DNA", 1] == tests.modules.cp_logo_url
+    assert (
+        m[cellprofiler_core.measurement.IMAGE, "URL_DNA", 1]
+        == tests.modules.cp_logo_url
+    )
     assert (
         m[cellprofiler_core.measurement.IMAGE, "FileName_DNA", 2]
         == tests.modules.cp_logo_url_filename
@@ -1078,7 +1103,9 @@ def test_extra_lines():
         assert module.prepare_run(workspace)
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
         assert m.image_set_count == 1
-        assert "FileName_DNA" in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert "FileName_DNA" in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         assert m[cellprofiler_core.measurement.IMAGE, "FileName_DNA", 1] == file_name
     finally:
         os.remove(filename)
@@ -1122,8 +1149,12 @@ def test_extra_lines_skip_rows():
         assert module.prepare_run(workspace)
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
         assert m.image_set_count == 1
-        assert "FileName_DNA" in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
-        assert m[cellprofiler_core.measurement.IMAGE, "FileName_DNA", 1] == file_names[0]
+        assert "FileName_DNA" in m.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
+        assert (
+            m[cellprofiler_core.measurement.IMAGE, "FileName_DNA", 1] == file_names[0]
+        )
     finally:
         os.remove(filename)
 
@@ -1138,7 +1169,9 @@ def test_load_default_input_folder():
     pipeline, module, filename = make_pipeline(csv_text)
     try:
         assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
-        module.image_directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+        module.image_directory.dir_choice = (
+            cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+        )
         module.image_directory.custom_path = test_path
         m = cellprofiler_core.measurement.Measurements()
         workspace = cellprofiler_core.workspace.Workspace(
@@ -1154,7 +1187,9 @@ def test_load_default_input_folder():
             m.get_measurement(cellprofiler_core.measurement.IMAGE, "FileName_DNA", 1)
             == test_filename
         )
-        path_out = m.get_measurement(cellprofiler_core.measurement.IMAGE, "PathName_DNA", 1)
+        path_out = m.get_measurement(
+            cellprofiler_core.measurement.IMAGE, "PathName_DNA", 1
+        )
         assert test_path == path_out
         assert m.get_measurement(
             cellprofiler_core.measurement.IMAGE, "URL_DNA", 1

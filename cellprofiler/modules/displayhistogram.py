@@ -96,8 +96,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
                 measurements that would not easily be seen if the measurement is plotted
                 linearly.
                 """.format(
-                    LINEAR="linear",
-                    LOG_NATURAL="log",
+                    LINEAR="linear", LOG_NATURAL="log",
                 )
             ),
         )
@@ -116,8 +115,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
                 measurements that would not easily be seen if the measurement is plotted
                 linearly.
                 """.format(
-                    LINEAR="linear",
-                    LOG_NATURAL="log",
+                    LINEAR="linear", LOG_NATURAL="log",
                 )
             ),
         )
@@ -217,9 +215,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
                 title=workspace.display_data.title,
             )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Add bins=100 to second position
             setting_values.insert(2, 100)

@@ -100,7 +100,10 @@ def assert_features_and_columns_match(measurements, module):
         x
         for x in measurements.get_object_names()
         if x
-        not in (cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.EXPERIMENT)
+        not in (
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.EXPERIMENT,
+        )
     ]
 
     features = [
@@ -219,12 +222,12 @@ def test_zero(image, measurements, module, objects, workspace):
 
     for category, features in (
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS,
         ),
         (
-                cellprofiler_core.measurement.C_LOCATION,
-                cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS,
+            cellprofiler_core.measurement.C_LOCATION,
+            cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS,
         ),
     ):
         for meas_name in features:
@@ -288,84 +291,84 @@ def test_one(image, measurements, module, objects, workspace):
 
     for category, meas_name, value in (
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY,
-                9,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY,
+            9,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY,
-                1,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY,
+            1,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.STD_INTENSITY,
-                0,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.STD_INTENSITY,
+            0,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.MIN_INTENSITY,
-                1,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MIN_INTENSITY,
+            1,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.MAX_INTENSITY,
-                1,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MAX_INTENSITY,
+            1,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY_EDGE,
-                8,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.INTEGRATED_INTENSITY_EDGE,
+            8,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY_EDGE,
-                1,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MEAN_INTENSITY_EDGE,
+            1,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE,
-                0,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.STD_INTENSITY_EDGE,
+            0,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.MIN_INTENSITY_EDGE,
-                1,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MIN_INTENSITY_EDGE,
+            1,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.MAX_INTENSITY_EDGE,
-                1,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MAX_INTENSITY_EDGE,
+            1,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT,
-                0,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MASS_DISPLACEMENT,
+            0,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY,
-                1,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.LOWER_QUARTILE_INTENSITY,
+            1,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY,
-                1,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.MEDIAN_INTENSITY,
+            1,
         ),
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY,
-                1,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.UPPER_QUARTILE_INTENSITY,
+            1,
         ),
         (
-                cellprofiler_core.measurement.C_LOCATION,
-                cellprofiler.modules.measureobjectintensity.LOC_CMI_X,
-                3,
+            cellprofiler_core.measurement.C_LOCATION,
+            cellprofiler.modules.measureobjectintensity.LOC_CMI_X,
+            3,
         ),
         (
-                cellprofiler_core.measurement.C_LOCATION,
-                cellprofiler.modules.measureobjectintensity.LOC_CMI_Y,
-                2,
+            cellprofiler_core.measurement.C_LOCATION,
+            cellprofiler.modules.measureobjectintensity.LOC_CMI_Y,
+            2,
         ),
     ):
         feature_name = "%s_%s_%s" % (category, meas_name, "MyImage")
@@ -933,12 +936,12 @@ def test_ijv(image, module, objects, workspace):
 
     for cname, fnames in (
         (
-                cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS,
+            cellprofiler.modules.measureobjectintensity.INTENSITY,
+            cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS,
         ),
         (
-                cellprofiler_core.measurement.C_LOCATION,
-                cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS,
+            cellprofiler_core.measurement.C_LOCATION,
+            cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS,
         ),
     ):
         for fname in fnames:

@@ -84,14 +84,18 @@ class FlagImage(cpm.Module):
         self.add_flag_button = cps.DoSomething("", "Add another flag", self.add_flag)
         self.spacer_1 = cps.Divider()
         self.add_flag(can_delete=False)
-        self.ignore_flag_on_last = cps.Binary('Ignore flag skips on last cycle?', False, doc="""\
+        self.ignore_flag_on_last = cps.Binary(
+            "Ignore flag skips on last cycle?",
+            False,
+            doc="""\
 When set to *{YES}*, this option allows you to bypass skipping on the last
 cycle of an image group.  This behavior is usually not desired, but may be 
 useful when using SaveImages 'Save on last cycle' option for an image made
 by any other module than MakeProjection, CorrectIlluminationCalculate, and Tile.
 """.format(
-            **{"YES": "Yes"}),
-                                              )
+                **{"YES": "Yes"}
+            ),
+        )
 
     def add_flag(self, can_delete=True):
         group = cps.SettingsGroup()
@@ -720,7 +724,7 @@ image is not flagged.
         assert isinstance(m, cpmeas.Measurements)
         m.add_image_measurement(self.measurement_name(flag), 0 if ok else 1)
         if (not ok) and flag.wants_skip:
-            if self.ignore_flag_on_last and (m.group_length-m.group_index)==0:
+            if self.ignore_flag_on_last and (m.group_length - m.group_index) == 0:
                 workspace.disposition = cpw.DISPOSITION_CONTINUE
             else:
                 workspace.disposition = cpw.DISPOSITION_SKIP
@@ -860,9 +864,7 @@ image is not flagged.
             if flag.category.value == category
         ]
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             new_setting_values = [setting_values[0]]
             idx = 1

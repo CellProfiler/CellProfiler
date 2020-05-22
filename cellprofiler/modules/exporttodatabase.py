@@ -192,7 +192,11 @@ W_PLATEVIEWER = "PlateViewer"
 W_BOXPLOT = "BoxPlot"
 W_DISPLAY_ALL = [W_SCATTERPLOT, W_HISTOGRAM, W_PLATEVIEWER, W_DENSITYPLOT, W_BOXPLOT]
 W_INDEX = "Index"
-W_TYPE_ALL = [cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.OBJECT, W_INDEX]
+W_TYPE_ALL = [
+    cellprofiler_core.measurement.IMAGE,
+    cellprofiler_core.measurement.OBJECT,
+    W_INDEX,
+]
 W_INDEX_ALL = [C_IMAGE_NUMBER, cellprofiler_core.pipeline.GROUP_INDEX]
 
 ################################################
@@ -536,7 +540,9 @@ location.
             ),
         )
 
-        self.directory.dir_choice = cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        self.directory.dir_choice = (
+            cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        )
 
         self.save_cpa_properties = cellprofiler_core.setting.Binary(
             "Create a CellProfiler Analyst properties file?",
@@ -1209,11 +1215,7 @@ database. This will slow down the writing step, but will enable new
 functionality in CellProfiler Analyst such as quickly viewing images in
 the Plate Viewer tool by selecting “thumbnail” from the “Well display”
 dropdown.""".format(
-                **{
-                    "DB_MYSQL": DB_MYSQL,
-                    "DB_SQLITE": DB_SQLITE,
-                    "YES": "Yes",
-                }
+                **{"DB_MYSQL": DB_MYSQL, "DB_SQLITE": DB_SQLITE, "YES": "Yes",}
             ),
         )
 
@@ -1227,11 +1229,7 @@ database. This will slow down the writing step, but will enable new
 functionality in CellProfiler Analyst such as quickly viewing images in
 the Plate Viewer tool by selecting “thumbnail” from the “Well display”
 dropdown.""".format(
-                **{
-                    "DB_MYSQL": DB_MYSQL,
-                    "DB_SQLITE": DB_SQLITE,
-                    "YES": "Yes",
-                }
+                **{"DB_MYSQL": DB_MYSQL, "DB_SQLITE": DB_SQLITE, "YES": "Yes",}
             ),
         )
 
@@ -1245,11 +1243,7 @@ type and writing thumbnails is selected)*
 Select "*{YES}*" if you’d like to automatically rescale the thumbnail
 pixel intensities to the range 0-1, where 0 is black/unsaturated, and 1
 is white/saturated. """.format(
-                **{
-                    "DB_MYSQL": DB_MYSQL,
-                    "DB_SQLITE": DB_SQLITE,
-                    "YES": "Yes",
-                }
+                **{"DB_MYSQL": DB_MYSQL, "DB_SQLITE": DB_SQLITE, "YES": "Yes",}
             ),
         )
 
@@ -1587,9 +1581,7 @@ available:
         group.append(
             "x_object_name",
             cellprofiler_core.setting.ObjectNameSubscriber(
-                "Enter the object name",
-                "None",
-                doc=object_name_help(),
+                "Enter the object name", "None", doc=object_name_help(),
             ),
         )
 
@@ -1635,9 +1627,7 @@ available:
         group.append(
             "y_object_name",
             cellprofiler_core.setting.ObjectNameSubscriber(
-                "Enter the object name",
-                "None",
-                doc=object_name_help(),
+                "Enter the object name", "None", doc=object_name_help(),
             ),
         )
 
@@ -1685,8 +1675,9 @@ available:
         for column in columns:
             object_name, feature, coltype = column[:3]
             choice = feature[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
-            if object_name == cellprofiler_core.measurement.IMAGE and feature.startswith(
-                cellprofiler_core.measurement.C_METADATA
+            if (
+                object_name == cellprofiler_core.measurement.IMAGE
+                and feature.startswith(cellprofiler_core.measurement.C_METADATA)
             ):
                 choices.append(choice)
         return choices
@@ -1907,7 +1898,10 @@ available:
             result += [workspace_group.y_measurement_type]
             if workspace_group.y_measurement_type == W_INDEX:
                 result += [workspace_group.y_index_name]
-            elif workspace_group.y_measurement_type == cellprofiler_core.measurement.OBJECT:
+            elif (
+                workspace_group.y_measurement_type
+                == cellprofiler_core.measurement.OBJECT
+            ):
                 result += [
                     workspace_group.y_object_name,
                     workspace_group.y_measurement_name,
@@ -2220,9 +2214,7 @@ available:
                 selected_objs = self.objects_list.value.rsplit(",")
             elif self.objects_choice == O_ALL:
                 selected_objs = list(
-                    pipeline.get_provider_dictionary(
-                        "objectgroup"
-                    ).keys()
+                    pipeline.get_provider_dictionary("objectgroup").keys()
                 )
 
             if len(selected_objs) > 1:
@@ -2557,7 +2549,10 @@ available:
                     or pixels.dtype == numpy.bool
                 ):
                     factor = 255
-                    if self.auto_scale_thumbnail_intensities and pixels.dtype != numpy.bool:
+                    if (
+                        self.auto_scale_thumbnail_intensities
+                        and pixels.dtype != numpy.bool
+                    ):
                         pixels = (pixels - pixels.min()) / pixels.max()
                 else:
                     raise Exception(
@@ -3277,8 +3272,9 @@ CREATE TABLE %s (
         columns = self.get_pipeline_measurement_columns(pipeline, image_set_list)
         for column in columns:
             obname, feature, ftype = column[:3]
-            if obname == cellprofiler_core.measurement.IMAGE and not self.ignore_feature(
-                obname, feature
+            if (
+                obname == cellprofiler_core.measurement.IMAGE
+                and not self.ignore_feature(obname, feature)
             ):
                 if ftype.startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR):
                     ftype = "TEXT"
@@ -3873,7 +3869,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         image_filename = self.make_full_filename(
-            "%s_%s.CSV" % (self.base_name(workspace), cellprofiler_core.measurement.IMAGE),
+            "%s_%s.CSV"
+            % (self.base_name(workspace), cellprofiler_core.measurement.IMAGE),
             workspace,
         )
         fid_per_image = open(image_filename, "w")
@@ -4202,7 +4199,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     for j in range(max_count):
                         if not post_group:
                             object_row = [image_number]
-                            if table_object_name == cellprofiler_core.measurement.OBJECT:
+                            if (
+                                table_object_name
+                                == cellprofiler_core.measurement.OBJECT
+                            ):
                                 # the object number
                                 object_row.append(object_numbers[j])
                         else:
@@ -4453,7 +4453,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 (
                     lambda c: c[0] == cellprofiler_core.measurement.EXPERIMENT
                     and len(c) > 3
-                    and c[3].get(cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN, False)
+                    and c[3].get(
+                        cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN, False
+                    )
                 ),
                 columns,
             )
@@ -4659,7 +4661,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             image_thumbnail_cols = (
                 ",".join(
                     [
-                        "%s_%s_%s" % (cellprofiler_core.measurement.IMAGE, C_THUMBNAIL, name)
+                        "%s_%s_%s"
+                        % (cellprofiler_core.measurement.IMAGE, C_THUMBNAIL, name)
                         for name in self.thumbnail_image_names.get_selections()
                     ]
                 )
@@ -5293,9 +5296,7 @@ CP version : %d\n""" % int(
         self.db_name.value = "".join(["*"] * len(self.db_name.value))
         self.db_passwd.value = "".join(["*"] * len(self.db_passwd.value))
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
 
         DIR_DEFAULT_OUTPUT = "Default output folder"
         DIR_DEFAULT_IMAGE = "Default input folder"
@@ -5374,9 +5375,13 @@ CP version : %d\n""" % int(
             dir_choice, custom_directory = setting_values[5:7]
             if dir_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
                 if custom_directory.startswith("."):
-                    dir_choice = cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    dir_choice = (
+                        cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+                    )
                 elif custom_directory.startswith("&"):
-                    dir_choice = cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                    dir_choice = (
+                        cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
+                    )
                     custom_directory = "." + custom_directory[1:]
                 else:
                     dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME

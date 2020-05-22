@@ -59,17 +59,17 @@ def test_load_v4():
         pipeline.modules(),
         ("Measurements", "Overlap", "Distance"),
         (
-                cellprofiler.modules.trackobjects.M_BOTH,
-                cellprofiler.modules.trackobjects.M_RANDOM,
-                cellprofiler.modules.trackobjects.M_VELOCITY,
+            cellprofiler.modules.trackobjects.M_BOTH,
+            cellprofiler.modules.trackobjects.M_RANDOM,
+            cellprofiler.modules.trackobjects.M_VELOCITY,
         ),
         (True, False, True),
         (True, False, True),
         ("Slothfulness", "Prescience", "Trepidation"),
         (
-                cellprofiler.modules.trackobjects.DT_COLOR_AND_NUMBER,
-                cellprofiler.modules.trackobjects.DT_COLOR_ONLY,
-                cellprofiler.modules.trackobjects.DT_COLOR_AND_NUMBER,
+            cellprofiler.modules.trackobjects.DT_COLOR_AND_NUMBER,
+            cellprofiler.modules.trackobjects.DT_COLOR_ONLY,
+            cellprofiler.modules.trackobjects.DT_COLOR_AND_NUMBER,
         ),
     ):
         assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
@@ -260,7 +260,9 @@ def test_track_nothing():
 
     features = [
         feature
-        for feature in measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        for feature in measurements.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         if feature.startswith(cellprofiler.modules.trackobjects.F_PREFIX)
     ]
     assert all(
@@ -320,7 +322,7 @@ def test_track_one_distance():
     assert round(abs(m(cellprofiler.modules.trackobjects.F_TRAJECTORY_X) - 0), 7) == 0
     assert round(abs(m(cellprofiler.modules.trackobjects.F_TRAJECTORY_Y) - 0), 7) == 0
     assert (
-            round(abs(m(cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED) - 0), 7) == 0
+        round(abs(m(cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED) - 0), 7) == 0
     )
     assert (
         round(abs(m(cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE) - 0), 7)
@@ -439,9 +441,9 @@ def test_track_split():
         name = "_".join(
             (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "5")
         )
-        return measurements.get_all_measurements(cellprofiler_core.measurement.IMAGE, name)[
-            1
-        ]
+        return measurements.get_all_measurements(
+            cellprofiler_core.measurement.IMAGE, name
+        )[1]
 
     assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 0
     assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 0
@@ -710,7 +712,10 @@ def test_measurement_columns():
     )
     for object_name, features in (
         (OBJECT_NAME, cellprofiler.modules.trackobjects.F_ALL),
-        (cellprofiler_core.measurement.IMAGE, cellprofiler.modules.trackobjects.F_IMAGE_ALL),
+        (
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler.modules.trackobjects.F_IMAGE_ALL,
+        ),
     ):
         for feature in features:
             if object_name == OBJECT_NAME:
@@ -958,14 +963,14 @@ def test_measurement_columns_lap():
         ]
         for object_name, features in (
             (
-                    OBJECT_NAME,
-                    cellprofiler.modules.trackobjects.F_ALL
-                    + kalman_features
-                    + other_features,
+                OBJECT_NAME,
+                cellprofiler.modules.trackobjects.F_ALL
+                + kalman_features
+                + other_features,
             ),
             (
-                    cellprofiler_core.measurement.IMAGE,
-                    cellprofiler.modules.trackobjects.F_IMAGE_ALL,
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler.modules.trackobjects.F_IMAGE_ALL,
             ),
         ):
             for feature in features:
@@ -988,9 +993,12 @@ def test_measurement_columns_lap():
                 if wants or feature in second_phase:
                     assert len(column) == 4
                     assert (
-                        cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP in column[3]
+                        cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP
+                        in column[3]
                     )
-                    assert column[3][cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP]
+                    assert column[3][
+                        cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP
+                    ]
                 else:
                     assert (
                         (len(column) == 3)
@@ -1139,28 +1147,28 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
             i + 1,
         )
         for feature in (
-                cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED,
-                cellprofiler.modules.trackobjects.F_DISPLACEMENT,
-                cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE,
-                cellprofiler.modules.trackobjects.F_TRAJECTORY_X,
-                cellprofiler.modules.trackobjects.F_TRAJECTORY_Y,
-                cellprofiler.modules.trackobjects.F_LINEARITY,
-                cellprofiler.modules.trackobjects.F_LIFETIME,
-                cellprofiler.modules.trackobjects.F_FINAL_AGE,
-                cellprofiler.modules.trackobjects.F_LINKING_DISTANCE,
-                cellprofiler.modules.trackobjects.F_LINK_TYPE,
-                cellprofiler.modules.trackobjects.F_MOVEMENT_MODEL,
-                cellprofiler.modules.trackobjects.F_STANDARD_DEVIATION,
+            cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED,
+            cellprofiler.modules.trackobjects.F_DISPLACEMENT,
+            cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE,
+            cellprofiler.modules.trackobjects.F_TRAJECTORY_X,
+            cellprofiler.modules.trackobjects.F_TRAJECTORY_Y,
+            cellprofiler.modules.trackobjects.F_LINEARITY,
+            cellprofiler.modules.trackobjects.F_LIFETIME,
+            cellprofiler.modules.trackobjects.F_FINAL_AGE,
+            cellprofiler.modules.trackobjects.F_LINKING_DISTANCE,
+            cellprofiler.modules.trackobjects.F_LINK_TYPE,
+            cellprofiler.modules.trackobjects.F_MOVEMENT_MODEL,
+            cellprofiler.modules.trackobjects.F_STANDARD_DEVIATION,
         ):
             dtype = (
                 int
                 if feature
                 in (
-                       cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER,
-                       cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER,
-                       cellprofiler.modules.trackobjects.F_LIFETIME,
-                       cellprofiler.modules.trackobjects.F_LINK_TYPE,
-                       cellprofiler.modules.trackobjects.F_MOVEMENT_MODEL,
+                    cellprofiler.modules.trackobjects.F_PARENT_OBJECT_NUMBER,
+                    cellprofiler.modules.trackobjects.F_PARENT_IMAGE_NUMBER,
+                    cellprofiler.modules.trackobjects.F_LIFETIME,
+                    cellprofiler.modules.trackobjects.F_LINK_TYPE,
+                    cellprofiler.modules.trackobjects.F_MOVEMENT_MODEL,
                 )
                 else float
             )
@@ -1173,8 +1181,8 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
                 i + 1,
             )
         for feature in (
-                cellprofiler.modules.trackobjects.F_SPLIT_COUNT,
-                cellprofiler.modules.trackobjects.F_MERGE_COUNT,
+            cellprofiler.modules.trackobjects.F_SPLIT_COUNT,
+            cellprofiler.modules.trackobjects.F_MERGE_COUNT,
         ):
             m.add_measurement(
                 cellprofiler_core.measurement.IMAGE,
@@ -1230,7 +1238,12 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
     workspace = cellprofiler_core.workspace.Workspace(
-        pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
+        pipeline,
+        module,
+        image_set,
+        cellprofiler_core.object.ObjectSet(),
+        m,
+        image_set_list,
     )
     return workspace, module
 
@@ -1288,9 +1301,13 @@ def check_relationships(
         1, cellprofiler.modules.trackobjects.R_PARENT, OBJECT_NAME, OBJECT_NAME
     )
     actual_parent_image_numbers = r[cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER]
-    actual_parent_object_numbers = r[cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER]
+    actual_parent_object_numbers = r[
+        cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER
+    ]
     actual_child_image_numbers = r[cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER]
-    actual_child_object_numbers = r[cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER]
+    actual_child_object_numbers = r[
+        cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER
+    ]
     assert len(actual_parent_image_numbers) == len(expected_parent_image_numbers)
     #
     # Sort similarly
@@ -2625,7 +2642,9 @@ def test_neighbour_track_nothing():
 
     features = [
         feature
-        for feature in measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        for feature in measurements.get_feature_names(
+            cellprofiler_core.measurement.IMAGE
+        )
         if feature.startswith(cellprofiler.modules.trackobjects.F_PREFIX)
     ]
     assert all(
@@ -2690,7 +2709,7 @@ def test_neighbour_track_one_by_distance():
     assert round(abs(m(cellprofiler.modules.trackobjects.F_TRAJECTORY_X) - 0), 7) == 0
     assert round(abs(m(cellprofiler.modules.trackobjects.F_TRAJECTORY_Y) - 0), 7) == 0
     assert (
-            round(abs(m(cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED) - 0), 7) == 0
+        round(abs(m(cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED) - 0), 7) == 0
     )
     assert (
         round(abs(m(cellprofiler.modules.trackobjects.F_INTEGRATED_DISTANCE) - 0), 7)

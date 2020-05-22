@@ -1111,9 +1111,13 @@ should be processed.
                     del graph
                     del paths
                     all_path_coords += paths_selected
-        ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y = self.worm_descriptor_building(
-            all_path_coords, params, labels.shape
-        )
+        (
+            ijv,
+            all_lengths,
+            all_angles,
+            all_control_coords_x,
+            all_control_coords_y,
+        ) = self.worm_descriptor_building(all_path_coords, params, labels.shape)
         if self.show_window:
             workspace.display_data.input_image = image.pixel_data
         object_set = workspace.object_set
@@ -2080,9 +2084,10 @@ should be processed.
          o.segments - segment indices of the path
          o.branch_areas - branch area indices of the path"""
 
-        graph_struct.incident_branch_areas, graph_struct.incident_segments = self.build_incidence_lists(
-            graph_struct
-        )
+        (
+            graph_struct.incident_branch_areas,
+            graph_struct.incident_segments,
+        ) = self.build_incidence_lists(graph_struct)
         n = len(graph_struct.segments)
 
         graph_struct.segment_lengths = np.array(
@@ -2396,7 +2401,12 @@ should be processed.
         current_path_segment_matrix = path_segment_matrix.astype(int)
         current_path_choices = np.eye(len(costs), dtype=bool)
         for i in range(min(max_num_worms, len(costs))):
-            current_best_subset, current_best_cost, current_path_segment_matrix, current_path_choices = self.select_one_level(
+            (
+                current_best_subset,
+                current_best_cost,
+                current_path_segment_matrix,
+                current_path_choices,
+            ) = self.select_one_level(
                 costs,
                 path_segment_matrix,
                 segment_lengths,
@@ -2885,7 +2895,10 @@ should be processed.
         wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
         wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         result = []
-        if object_name == cpmeas.IMAGE and category == cellprofiler_core.measurement.C_COUNT:
+        if (
+            object_name == cpmeas.IMAGE
+            and category == cellprofiler_core.measurement.C_COUNT
+        ):
             if wants_overlapping:
                 result += [self.overlap_objects.value]
             if wants_nonoverlapping:
@@ -2939,9 +2952,7 @@ should be processed.
         self.training_set_directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Added complexity
             setting_values = setting_values + [C_ALL, "400"]

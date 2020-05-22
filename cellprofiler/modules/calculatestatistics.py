@@ -560,9 +560,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                 self.grouping_values,
             )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
 
         PC_DEFAULT = "Default output folder"
         PC_WITH_IMAGE = "Same folder as image"

@@ -305,13 +305,13 @@ def test_load_v3():
     assert module.ignore_mask
     assert module.output_image_name == "LogTransformed"
     assert (
-            module.images[0].image_or_measurement == cellprofiler.modules.imagemath.IM_IMAGE
+        module.images[0].image_or_measurement == cellprofiler.modules.imagemath.IM_IMAGE
     )
     assert module.images[0].image_name == "DNA"
     assert module.images[0].factor == 1.2
     assert (
-            module.images[1].image_or_measurement
-            == cellprofiler.modules.imagemath.IM_MEASUREMENT
+        module.images[1].image_or_measurement
+        == cellprofiler.modules.imagemath.IM_MEASUREMENT
     )
     assert module.images[1].measurement == "Count_Nuclei"
     assert module.images[1].factor == 1.5
@@ -339,13 +339,13 @@ def test_load_v4():
     assert module.ignore_mask
     assert module.output_image_name == "LogTransformed"
     assert (
-            module.images[0].image_or_measurement == cellprofiler.modules.imagemath.IM_IMAGE
+        module.images[0].image_or_measurement == cellprofiler.modules.imagemath.IM_IMAGE
     )
     assert module.images[0].image_name == "DNA"
     assert module.images[0].factor == 1.2
     assert (
-            module.images[1].image_or_measurement
-            == cellprofiler.modules.imagemath.IM_MEASUREMENT
+        module.images[1].image_or_measurement
+        == cellprofiler.modules.imagemath.IM_MEASUREMENT
     )
     assert module.images[1].measurement == "Count_Nuclei"
     assert module.images[1].factor == 1.5
@@ -840,7 +840,9 @@ def test_add_and_do_nothing():
     module.set_module_num(1)
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(module)
-    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, module, m, None, m, None
+    )
     module.run(workspace)
     numpy.testing.assert_array_almost_equal(
         pixel_data, m.get_image("inputimage").pixel_data
@@ -869,7 +871,9 @@ def test_invert_binary_invert():
     module.operation.value = cellprofiler.modules.imagemath.O_INVERT
     module.set_module_num(2)
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    workspace = cellprofiler_core.workspace.Workspace(pipeline, module, m, None, m, None)
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline, module, m, None, m, None
+    )
     for module in pipeline.modules():
         module.run(workspace)
     numpy.testing.assert_array_equal(

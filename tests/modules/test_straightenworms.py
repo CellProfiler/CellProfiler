@@ -36,10 +36,7 @@ def test_load_v1():
     assert module.objects_name == "OverlappingWorms"
     assert module.straightened_objects_name == "StraightenedWorms"
     assert module.width == 20
-    assert (
-        module.training_set_directory.dir_choice
-        == DEFAULT_OUTPUT_FOLDER_NAME
-    )
+    assert module.training_set_directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
     assert module.training_set_file_name == "TrainingSet.xml"
     assert module.image_count.value == 2
     for group, input_name, output_name in (
@@ -64,9 +61,9 @@ def test_load_v2():
     assert len(pipeline.modules()) == 3
     for alignment, module in zip(
         (
-                cellprofiler.modules.straightenworms.FLIP_TOP,
-                cellprofiler.modules.straightenworms.FLIP_BOTTOM,
-                cellprofiler.modules.straightenworms.FLIP_NONE,
+            cellprofiler.modules.straightenworms.FLIP_TOP,
+            cellprofiler.modules.straightenworms.FLIP_BOTTOM,
+            cellprofiler.modules.straightenworms.FLIP_NONE,
         ),
         pipeline.modules(),
     ):
@@ -74,10 +71,7 @@ def test_load_v2():
         assert module.objects_name == "OverlappingWorms"
         assert module.straightened_objects_name == "StraightenedWorms"
         assert module.width == 20
-        assert (
-            module.training_set_directory.dir_choice
-            == DEFAULT_INPUT_FOLDER_NAME
-        )
+        assert module.training_set_directory.dir_choice == DEFAULT_INPUT_FOLDER_NAME
         assert module.training_set_file_name == "TrainingSet.mat"
         assert len(module.images) == 1
         assert module.wants_measurements
@@ -114,7 +108,9 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
         def __init__(self):
             radii_from_training = radii
 
-    module.training_set_directory.dir_choice = cellprofiler_core.preferences.URL_FOLDER_NAME
+    module.training_set_directory.dir_choice = (
+        cellprofiler_core.preferences.URL_FOLDER_NAME
+    )
     module.training_set_directory.custom_path = "http://www.cellprofiler.org"
     module.training_set_file_name.value = "TrainingSet.xml"
     module.training_params = {"TrainingSet.xml": (P(), "URL")}
@@ -283,7 +279,8 @@ def test_straighten_nothing():
     assert (
         len(
             m.get_current_measurement(
-                STRAIGHTENED_OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_X
+                STRAIGHTENED_OBJECTS_NAME,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
             )
         )
         == 0
@@ -291,7 +288,8 @@ def test_straighten_nothing():
     assert (
         len(
             m.get_current_measurement(
-                STRAIGHTENED_OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_Y
+                STRAIGHTENED_OBJECTS_NAME,
+                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
             )
         )
         == 0
@@ -441,11 +439,16 @@ def test_get_measurement_columns():
     for object_name, feature_name in (
         (
             cellprofiler_core.measurement.IMAGE,
-            "_".join((cellprofiler_core.measurement.C_COUNT, STRAIGHTENED_OBJECTS_NAME)),
+            "_".join(
+                (cellprofiler_core.measurement.C_COUNT, STRAIGHTENED_OBJECTS_NAME)
+            ),
         ),
         (STRAIGHTENED_OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_X),
         (STRAIGHTENED_OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_Y),
-        (STRAIGHTENED_OBJECTS_NAME, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER),
+        (
+            STRAIGHTENED_OBJECTS_NAME,
+            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+        ),
     ):
         assert any([(o == object_name) and (f == feature_name) for o, f, t in columns])
 
@@ -469,7 +472,9 @@ def test_get_measurement_columns():
     assert f[0] == STRAIGHTENED_OBJECTS_NAME
 
     f = module.get_measurements(
-        workspace.pipeline, STRAIGHTENED_OBJECTS_NAME, cellprofiler_core.measurement.C_NUMBER
+        workspace.pipeline,
+        STRAIGHTENED_OBJECTS_NAME,
+        cellprofiler_core.measurement.C_NUMBER,
     )
     assert len(f) == 1
     assert f[0] == cellprofiler_core.measurement.FTR_OBJECT_NUMBER
@@ -546,8 +551,8 @@ def test_get_measurement_columns_wants_images_vertical():
     assert cellprofiler.modules.straightenworms.FTR_STD_INTENSITY in features
 
     for ftr in (
-            cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-            cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
+        cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
+        cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
     ):
         images = module.get_measurement_images(
             workspace.pipeline,
@@ -640,8 +645,8 @@ def test_get_measurement_columns_horizontal():
     assert cellprofiler.modules.straightenworms.FTR_STD_INTENSITY in features
 
     for ftr in (
-            cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-            cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
+        cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
+        cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
     ):
         images = module.get_measurement_images(
             workspace.pipeline,
@@ -690,8 +695,8 @@ def test_get_measurement_columns_both():
     hscales = (None, 0, 1, 2)
     for image in (STRAIGHTENED_IMAGE_NAME, AUX_STRAIGHTENED_IMAGE_NAME):
         for ftr in (
-                cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-                cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
+            cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
+            cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
         ):
             for vscale in vscales:
                 for hscale in hscales:
@@ -706,7 +711,11 @@ def test_get_measurement_columns_both():
                         )
                     )
                     expected_columns.append(
-                        (OBJECTS_NAME, meas, cellprofiler_core.measurement.COLTYPE_FLOAT)
+                        (
+                            OBJECTS_NAME,
+                            meas,
+                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                        )
                     )
     columns = module.get_measurement_columns(workspace.pipeline)
     columns = [column for column in columns if column[0] == OBJECTS_NAME]
@@ -725,8 +734,8 @@ def test_get_measurement_columns_both():
             ]
         )
     for ftr in (
-            cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-            cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
+        cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
+        cellprofiler.modules.straightenworms.FTR_STD_INTENSITY,
     ):
         for image in (STRAIGHTENED_IMAGE_NAME, AUX_STRAIGHTENED_IMAGE_NAME):
             scales = module.get_measurement_scales(
@@ -1084,8 +1093,8 @@ def test_measure_checkerboarded_worm():
         for segment in range(4):
             for ftr, expected in (
                 (
-                        cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
-                        expected_means,
+                    cellprofiler.modules.straightenworms.FTR_MEAN_INTENSITY,
+                    expected_means,
                 ),
                 (cellprofiler.modules.straightenworms.FTR_STD_INTENSITY, expected_sds),
             ):

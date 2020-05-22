@@ -518,7 +518,9 @@ be selected in a later **SaveImages** or other module.
     def validate_module(self, pipeline):
         images = set()
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError("No images selected", self.images_list)
+            raise cellprofiler_core.setting.ValidationError(
+                "No images selected", self.images_list
+            )
         for image_name in self.images_list.value:
             if image_name in images:
                 raise cellprofiler_core.setting.ValidationError(
@@ -693,7 +695,9 @@ be selected in a later **SaveImages** or other module.
                         output_pixels = heatmap_img
                     else:
                         if colormap == "Default":
-                            colormap = cellprofiler_core.preferences.get_default_colormap()
+                            colormap = (
+                                cellprofiler_core.preferences.get_default_colormap()
+                            )
 
                         cm = matplotlib.cm.ScalarMappable(cmap=colormap)
 
@@ -1396,9 +1400,7 @@ be selected in a later **SaveImages** or other module.
 
         return []
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             n_images, n_objects, n_bins = [
                 int(setting) for setting in setting_values[:3]
@@ -1457,9 +1459,9 @@ be selected in a later **SaveImages** or other module.
         if variable_revision_number == 5:
             n_images = int(setting_values[0])
             mid = setting_values[1:6]
-            end = setting_values[6+n_images:]
+            end = setting_values[6 + n_images :]
 
-            images_set = set(setting_values[6:6+n_images])
+            images_set = set(setting_values[6 : 6 + n_images])
             if "None" in images_set:
                 images_set.remove("None")
             images_string = ", ".join(map(str, images_set))

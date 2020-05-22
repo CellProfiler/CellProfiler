@@ -154,7 +154,7 @@ SaveImages:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:11|sho
     assert module.image_name.value == "DNA"
 
     assert (
-            module.file_name_method.value == cellprofiler.modules.saveimages.FN_FROM_IMAGE
+        module.file_name_method.value == cellprofiler.modules.saveimages.FN_FROM_IMAGE
     )
 
     assert module.file_image_name.value == "DNA"
@@ -493,36 +493,58 @@ def test_save_volume_npy(tmpdir, volume, module, workspace):
 
     numpy.testing.assert_array_equal(data, volume.pixel_data)
 
+
 @pytest.mark.parametrize(
     "volume,outshape",
-    [# an yxc image
-    (cellprofiler_core.image.Image(image=numpy.random.rand(100, 200, 8), dimensions=2),
-        (1, 100, 200, 8)),
-     # an zyx image
-    (cellprofiler_core.image.Image(image=numpy.random.rand(5, 100, 200), dimensions=3),
-        (5, 100, 200, 1)),
-     # an yx image
-    (cellprofiler_core.image.Image(image=numpy.random.rand(100, 200), dimensions=2),
-        (1, 100, 200, 1)),
-     # an zyxc image
-    (cellprofiler_core.image.Image(image=numpy.random.rand(5, 100, 200, 8), dimensions=3),
-        (5, 100, 200, 8))
-]
+    [  # an yxc image
+        (
+            cellprofiler_core.image.Image(
+                image=numpy.random.rand(100, 200, 8), dimensions=2
+            ),
+            (1, 100, 200, 8),
+        ),
+        # an zyx image
+        (
+            cellprofiler_core.image.Image(
+                image=numpy.random.rand(5, 100, 200), dimensions=3
+            ),
+            (5, 100, 200, 1),
+        ),
+        # an yx image
+        (
+            cellprofiler_core.image.Image(
+                image=numpy.random.rand(100, 200), dimensions=2
+            ),
+            (1, 100, 200, 1),
+        ),
+        # an zyxc image
+        (
+            cellprofiler_core.image.Image(
+                image=numpy.random.rand(5, 100, 200, 8), dimensions=3
+            ),
+            (5, 100, 200, 8),
+        ),
+    ],
 )
 @pytest.mark.parametrize(
     "bit_depth,dtype,convfun",
     [
-        (cellprofiler.modules.saveimages.BIT_DEPTH_16, numpy.uint16,
-         skimage.util.img_as_uint),
-        (cellprofiler.modules.saveimages.BIT_DEPTH_8, numpy.uint8,
-         skimage.util.img_as_ubyte),
-        (cellprofiler.modules.saveimages.BIT_DEPTH_FLOAT, numpy.float32,
-         lambda x: x)
-
-]
+        (
+            cellprofiler.modules.saveimages.BIT_DEPTH_16,
+            numpy.uint16,
+            skimage.util.img_as_uint,
+        ),
+        (
+            cellprofiler.modules.saveimages.BIT_DEPTH_8,
+            numpy.uint8,
+            skimage.util.img_as_ubyte,
+        ),
+        (cellprofiler.modules.saveimages.BIT_DEPTH_FLOAT, numpy.float32, lambda x: x),
+    ],
 )
-def test_save_hdf5_saving(tmpdir, volume, module, workspace,
-                              outshape, bit_depth, dtype, convfun):
+def test_save_hdf5_saving(
+    tmpdir, volume, module, workspace, outshape, bit_depth, dtype, convfun
+):
     directory = str(tmpdir.mkdir("images"))
     workspace.image_set.add("example_volume", volume)
 
@@ -546,12 +568,13 @@ def test_save_hdf5_saving(tmpdir, volume, module, workspace,
 
     assert os.path.exists(os.path.join(directory, "example_volume.h5"))
 
-    fn = (os.path.join(directory, "example_volume.h5"))
+    fn = os.path.join(directory, "example_volume.h5")
     data = get_h5_dataset(fn)
     assert data.dtype == dtype
-    numpy.testing.assert_array_equal(data, numpy.reshape(
-                                     convfun(volume.pixel_data),
-                                     outshape))
+    numpy.testing.assert_array_equal(
+        data, numpy.reshape(convfun(volume.pixel_data), outshape)
+    )
+
 
 def get_h5_dataset(fn):
     """
@@ -560,11 +583,13 @@ def get_h5_dataset(fn):
     Return the only dataset in the hdf5 file.
     If there's more than one, it's an error.
     """
-    with h5py.File(fn, 'r') as f:
+    with h5py.File(fn, "r") as f:
         dataset_names = []
         f.visit(dataset_names.append)
-        assert len(dataset_names) == 1, (
-            "Input HDF5 file should have exactly 1 dataset, but {} has {} datasets\n"
-                    .format(f.filename, len(dataset_names)))
+        assert (
+            len(dataset_names) == 1
+        ), "Input HDF5 file should have exactly 1 dataset, but {} has {} datasets\n".format(
+            f.filename, len(dataset_names)
+        )
         data = f[dataset_names[0]][:]
     return data

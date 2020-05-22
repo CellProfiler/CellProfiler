@@ -197,7 +197,10 @@ You can create a morphological skeleton with the
     def get_measurements(self, pipeline, object_name, category):
         name = self.skeleton_name.value
 
-        if object_name == cellprofiler_core.measurement.IMAGE and category == "Skeleton":
+        if (
+            object_name == cellprofiler_core.measurement.IMAGE
+            and category == "Skeleton"
+        ):
             return [
                 "Skeleton_Branches_{}".format(name),
                 "Skeleton_Endpoints_{}".format(name),

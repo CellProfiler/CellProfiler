@@ -24,7 +24,9 @@ def make_workspace(labels, parent_image=None):
     pipeline = cellprofiler_core.pipeline.Pipeline()
     module = cellprofiler.modules.measureimageareaoccupied.MeasureImageAreaOccupied()
     module.set_module_num(1)
-    module.operand_choice.value = cellprofiler.modules.measureimageareaoccupied.O_OBJECTS
+    module.operand_choice.value = (
+        cellprofiler.modules.measureimageareaoccupied.O_OBJECTS
+    )
     module.objects_list.value = OBJECTS_NAME
     pipeline.add_module(module)
     image_set_list = cellprofiler_core.image.ImageSetList()

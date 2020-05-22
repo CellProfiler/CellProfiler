@@ -75,8 +75,8 @@ def test_load_v7():
     assert module.thresholding_measurement.value == "Pony_Perimeter"
     assert module.two_class_otsu.value == cellprofiler.modules.threshold.O_TWO_CLASS
     assert (
-            module.assign_middle_to_foreground.value
-            == cellprofiler.modules.threshold.O_FOREGROUND
+        module.assign_middle_to_foreground.value
+        == cellprofiler.modules.threshold.O_FOREGROUND
     )
     assert module.adaptive_window_size.value == 13
 
@@ -102,8 +102,8 @@ def test_load_v8():
     assert module.thresholding_measurement == "None"
     assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
     assert (
-            module.assign_middle_to_foreground
-            == cellprofiler.modules.threshold.O_FOREGROUND
+        module.assign_middle_to_foreground
+        == cellprofiler.modules.threshold.O_FOREGROUND
     )
     assert module.adaptive_window_size == 50
 
@@ -129,8 +129,8 @@ def test_load_v9():
     assert module.thresholding_measurement == "None"
     assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
     assert (
-            module.assign_middle_to_foreground
-            == cellprofiler.modules.threshold.O_FOREGROUND
+        module.assign_middle_to_foreground
+        == cellprofiler.modules.threshold.O_FOREGROUND
     )
     assert module.adaptive_window_size == 50
 
@@ -168,8 +168,8 @@ def test_load_v10():
     assert module.thresholding_measurement == "None"
     assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
     assert (
-            module.assign_middle_to_foreground
-            == cellprofiler.modules.threshold.O_FOREGROUND
+        module.assign_middle_to_foreground
+        == cellprofiler.modules.threshold.O_FOREGROUND
     )
     assert module.adaptive_window_size == 50
     assert module.local_operation.value == centrosome.threshold.TM_OTSU
@@ -353,7 +353,8 @@ def test_adaptive_otsu_small():
     x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
     x.global_operation.value = centrosome.threshold.TM_OTSU
     threshold, global_threshold = x.get_threshold(
-        cellprofiler_core.image.Image(image, mask=numpy.ones_like(image, bool)), workspace
+        cellprofiler_core.image.Image(image, mask=numpy.ones_like(image, bool)),
+        workspace,
     )
     assert threshold[0, 0] != threshold[0, 109]
     assert threshold[0, 0] != threshold[119, 0]
@@ -381,7 +382,8 @@ def test_adaptive_otsu_small():
     x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
     x.global_operation.value = centrosome.threshold.TM_OTSU
     threshold, global_threshold = x.get_threshold(
-        cellprofiler_core.image.Image(image, mask=numpy.ones_like(image, bool)), workspace
+        cellprofiler_core.image.Image(image, mask=numpy.ones_like(image, bool)),
+        workspace,
     )
     assert threshold[0, 0] != threshold[0, 109]
     assert threshold[0, 0] != threshold[119, 0]
@@ -399,9 +401,9 @@ def test_small_images():
     ii, jj = ii.flatten(), jj.flatten()
 
     for threshold_method in (
-            cellprofiler.modules.threshold.TM_LI,
-            centrosome.threshold.TM_OTSU,
-            centrosome.threshold.TM_ROBUST_BACKGROUND,
+        cellprofiler.modules.threshold.TM_LI,
+        centrosome.threshold.TM_OTSU,
+        centrosome.threshold.TM_ROBUST_BACKGROUND,
     ):
         for i in range(11):
             mask = numpy.zeros(image.shape, bool)

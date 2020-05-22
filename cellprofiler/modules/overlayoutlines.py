@@ -405,9 +405,7 @@ maximal brightness already occurring in the image.
             constant_values=0,
         )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # Added line width

@@ -279,7 +279,9 @@ negative as clockwise."""
                 ):
                     angle = d[D_ANGLE]
                 else:
-                    angle = workspace.interaction_request(self, pixel_data, workspace.measurements.image_set_number)
+                    angle = workspace.interaction_request(
+                        self, pixel_data, workspace.measurements.image_set_number
+                    )
                 if self.how_often == IO_ONCE:
                     d[D_ANGLE] = angle
             else:
@@ -557,9 +559,7 @@ negative as clockwise."""
             return []
         return [self.output_name.value]
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Text for ROTATE_MOUSE changed from "mouse" to "Use mouse"
             if setting_values[3] == "Mouse":

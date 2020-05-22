@@ -321,7 +321,9 @@ SHAPE_DECLUMPING_ICON = cellprofiler.gui.help.content.image_resource(
 )
 
 
-class IdentifyPrimaryObjects(cellprofiler_core.module.image_segmentation.ImageSegmentation):
+class IdentifyPrimaryObjects(
+    cellprofiler_core.module.image_segmentation.ImageSegmentation
+):
     variable_revision_number = 14
 
     category = "Object Processing"
@@ -794,7 +796,6 @@ documentation for the previous setting for details.""",
             ),
         )
 
-
         self.maxima_color = cellprofiler_core.setting.Color(
             "Select maxima color",
             DEFAULT_MAXIMA_COLOR,
@@ -886,9 +887,7 @@ If "*{NO}*" is selected, the following settings are used:
 
         return settings + [self.threshold_setting_version] + threshold_settings
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number < 10:
             raise NotImplementedError(
                 "Automatic upgrade for this module is not supported in CellProfiler 3."
@@ -950,7 +949,10 @@ If "*{NO}*" is selected, the following settings are used:
 
             threshold_settings_version = 9
 
-        threshold_upgrade_settings, threshold_settings_version = self.threshold.upgrade_settings(
+        (
+            threshold_upgrade_settings,
+            threshold_settings_version,
+        ) = self.threshold.upgrade_settings(
             ["None", "None"] + threshold_setting_values[1:],
             threshold_settings_version,
             "Threshold",
@@ -1069,9 +1071,11 @@ If "*{NO}*" is selected, the following settings are used:
             binary_image, numpy.ones((3, 3), bool)
         )
 
-        labeled_image, object_count, maxima_suppression_size = self.separate_neighboring_objects(
-            workspace, labeled_image, object_count
-        )
+        (
+            labeled_image,
+            object_count,
+            maxima_suppression_size,
+        ) = self.separate_neighboring_objects(workspace, labeled_image, object_count)
 
         unedited_labels = labeled_image.copy()
 
@@ -1364,7 +1368,9 @@ If "*{NO}*" is selected, the following settings are used:
                 else numpy.int32
             )
             markers = numpy.zeros(watershed_image.shape, markers_dtype)
-            markers[self.labeled_maxima > 0] = -self.labeled_maxima[self.labeled_maxima > 0]
+            markers[self.labeled_maxima > 0] = -self.labeled_maxima[
+                self.labeled_maxima > 0
+            ]
 
             #
             # Some labels have only one maker in them, some have multiple and
@@ -1544,12 +1550,24 @@ If "*{NO}*" is selected, the following settings are used:
                     labels=[border_excluded_labeled_image],
                 ),
             ]
-            if self.unclump_method != UN_NONE and self.watershed_method != WA_NONE and self.want_plot_maxima:
+            if (
+                self.unclump_method != UN_NONE
+                and self.watershed_method != WA_NONE
+                and self.want_plot_maxima
+            ):
                 # Generate static colormap for alpha overlay
                 from matplotlib.colors import ListedColormap
+
                 cmap = ListedColormap(self.maxima_color.value)
-                cplabels.append(dict(name="Detected maxima", labels=[self.labeled_maxima],
-                                     mode="alpha", alpha_value=1, alpha_colormap=cmap))
+                cplabels.append(
+                    dict(
+                        name="Detected maxima",
+                        labels=[self.labeled_maxima],
+                        mode="alpha",
+                        alpha_value=1,
+                        alpha_colormap=cmap,
+                    )
+                )
             title = "%s outlines" % self.y_name.value
             figure.subplot_imshow_grayscale(
                 0, 1, image, title, cplabels=cplabels, sharexy=ax

@@ -87,10 +87,10 @@ class TestRelateObjects(unittest.TestCase):
         ]
         features = [
             [
-            feature
-            for feature in measurements.get_feature_names(object_name)
-            if feature not in (MEASUREMENT, IGNORED_MEASUREMENT)
-        ]
+                feature
+                for feature in measurements.get_feature_names(object_name)
+                if feature not in (MEASUREMENT, IGNORED_MEASUREMENT)
+            ]
             for object_name in object_names
         ]
         columns = [
@@ -258,8 +258,8 @@ class TestRelateObjects(unittest.TestCase):
             self.features_and_columns_match(workspace)
             meas = workspace.measurements
             for feature in (
-                    cellprofiler.modules.relateobjects.FF_CENTROID,
-                    cellprofiler.modules.relateobjects.FF_MINIMUM,
+                cellprofiler.modules.relateobjects.FF_CENTROID,
+                cellprofiler.modules.relateobjects.FF_MINIMUM,
             ):
                 m = feature % PARENT_OBJECTS
                 v = meas.get_current_measurement(CHILD_OBJECTS, m)
@@ -297,7 +297,8 @@ class TestRelateObjects(unittest.TestCase):
         self.features_and_columns_match(workspace)
         meas = workspace.measurements
         v = meas.get_current_measurement(
-            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS
+            CHILD_OBJECTS,
+            cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS,
         )
         assert v.shape[0] == 12
         assert numpy.all(numpy.abs(v - expected) < 0.0001)
@@ -324,11 +325,11 @@ class TestRelateObjects(unittest.TestCase):
         expected = [1, 4]
 
         actual = workspace.measurements.get_current_measurement(
-            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS
+            CHILD_OBJECTS,
+            cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS,
         )
 
         numpy.testing.assert_array_equal(actual, expected)
-
 
     def test_means_of_distances(self):
         #
@@ -377,21 +378,28 @@ class TestRelateObjects(unittest.TestCase):
         mcolumns = module.get_measurement_columns(workspace.pipeline)
         assert any([c[0] == PARENT_OBJECTS and c[1] == feat_mean for c in mcolumns])
         m = workspace.measurements
-        m[CHILD_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_X, 1] = child_centers[1]
-        m[CHILD_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, 1] = child_centers[0]
+        m[
+            CHILD_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_X, 1
+        ] = child_centers[1]
+        m[
+            CHILD_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, 1
+        ] = child_centers[0]
         module.run(workspace)
 
         v = m[PARENT_OBJECTS, feat_mean, 1]
 
         plabel = m[
-            CHILD_OBJECTS, "_".join((cellprofiler_core.measurement.C_PARENT, PARENT_OBJECTS)), 1
+            CHILD_OBJECTS,
+            "_".join((cellprofiler_core.measurement.C_PARENT, PARENT_OBJECTS)),
+            1,
         ]
 
         assert len(v) == 4
         for idx in range(4):
             if numpy.any(plabel == idx + 1):
-                assert round(abs(v[idx] - numpy.mean(expected[plabel == idx + 1])), 4) == 0
-
+                assert (
+                    round(abs(v[idx] - numpy.mean(expected[plabel == idx + 1])), 4) == 0
+                )
 
     def test_calculate_centroid_distances_volume(self):
         parents = numpy.zeros((9, 11, 11), dtype=numpy.uint8)
@@ -417,11 +425,11 @@ class TestRelateObjects(unittest.TestCase):
         expected = [3, numpy.sqrt(8)]
 
         actual = workspace.measurements.get_current_measurement(
-            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS
+            CHILD_OBJECTS,
+            cellprofiler.modules.relateobjects.FF_CENTROID % PARENT_OBJECTS,
         )
 
         numpy.testing.assert_array_equal(actual, expected)
-
 
     def test_calculate_minimum_distances_volume(self):
         parents = numpy.zeros((9, 11, 11), dtype=numpy.uint8)
@@ -445,11 +453,11 @@ class TestRelateObjects(unittest.TestCase):
         expected = [1, 2]
 
         actual = workspace.measurements.get_current_measurement(
-            CHILD_OBJECTS, cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS
+            CHILD_OBJECTS,
+            cellprofiler.modules.relateobjects.FF_MINIMUM % PARENT_OBJECTS,
         )
 
         numpy.testing.assert_array_equal(actual, expected)
-
 
     def test_relate_zeros_with_step_parent(self):
         # https://github.com/CellProfiler/CellProfiler/issues/2441
@@ -489,27 +497,24 @@ class TestRelateObjects(unittest.TestCase):
         numpy.testing.assert_array_equal(actual, expected)
 
     def test_relate_and_make_new_objects(self):
-        '''Relate one parent to one child, but save children as a new set'''
+        """Relate one parent to one child, but save children as a new set"""
         parent_labels = numpy.ones((10, 10), int)
         child_labels = numpy.zeros((10, 10), int)
         child_labels[3:5, 4:7] = 1
         workspace, module = self.make_workspace(parent_labels, child_labels)
         module.wants_child_objects_saved.value = True
-        module.output_child_objects_name.value = 'outputobjects'
+        module.output_child_objects_name.value = "outputobjects"
         module.wants_per_parent_means.value = False
         module.run(workspace)
         m = workspace.measurements
-        parents_of = m.get_current_measurement(CHILD_OBJECTS,
-                                               "Parent_%s" % PARENT_OBJECTS)
+        parents_of = m.get_current_measurement(
+            CHILD_OBJECTS, "Parent_%s" % PARENT_OBJECTS
+        )
         self.assertEqual(numpy.product(parents_of.shape), 1)
         self.assertEqual(parents_of[0], 1)
-        child_count = m.get_current_measurement(PARENT_OBJECTS,
-                                                "Children_%s_Count" %
-                                                CHILD_OBJECTS)
+        child_count = m.get_current_measurement(
+            PARENT_OBJECTS, "Children_%s_Count" % CHILD_OBJECTS
+        )
         self.assertEqual(numpy.product(child_count.shape), 1)
         self.assertEqual(child_count[0], 1)
         self.features_and_columns_match(workspace)
-
-
-
-

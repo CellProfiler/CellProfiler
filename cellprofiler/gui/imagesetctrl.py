@@ -124,13 +124,17 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                         is_key = True
                 elif feature.startswith(
                     cellprofiler_core.measurement.C_FILE_NAME
-                ) or feature.startswith(cellprofiler_core.measurement.C_OBJECTS_FILE_NAME):
+                ) or feature.startswith(
+                    cellprofiler_core.measurement.C_OBJECTS_FILE_NAME
+                ):
                     column_type = COL_FILENAME
                     channel = feature.split("_", 1)[1]
                     name = "%s File Name" % channel
                 elif feature.startswith(
                     cellprofiler_core.measurement.C_PATH_NAME
-                ) or feature.startswith(cellprofiler_core.measurement.C_OBJECTS_PATH_NAME):
+                ) or feature.startswith(
+                    cellprofiler_core.measurement.C_OBJECTS_PATH_NAME
+                ):
                     column_type = COL_PATHNAME
                     channel = feature.split("_", 1)[1]
                     name = "%s Path Name" % channel
@@ -235,7 +239,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         column = self.columns[col]
         value = self.cache[column.feature, image_set]
         if isinstance(value, bytes):
-            value = value.decode('unicode_escape')
+            value = value.decode("unicode_escape")
         if (
             column.column_type == COL_URL
             and self.display_mode == DISPLAY_MODE_SIMPLE
@@ -474,6 +478,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         n_imagesets = self.table.workspace.measurements.image_set_count
         if n_imagesets == 0:
             from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION
+
             wx.MessageBox(
                 "Sorry, your pipeline doesn't produce any valid image sets "
                 "as currently configured. Check your Input module settings, "
@@ -1587,7 +1592,11 @@ class FilterPanelDlg(wx.Dialog):
         """A filter function that applies the current filter to a URL"""
         modpath = cellprofiler_core.modules.images.Images.url_to_modpath(url)
         return self.filter_setting.evaluate(
-            (cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, None)
+            (
+                cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
+                modpath,
+                None,
+            )
         )
 
     def on_value_change(self, setting, panel, new_text, event, timeout):

@@ -98,9 +98,14 @@ def _display_error_dialog(
 
     if remote_exc_info:
         from_subprocess = True
-        exc_name, exc_message, traceback_text, filename, line_number, remote_debug_callback = (
-            remote_exc_info
-        )
+        (
+            exc_name,
+            exc_message,
+            traceback_text,
+            filename,
+            line_number,
+            remote_debug_callback,
+        ) = remote_exc_info
         if message is None:
             message = exc_message
     else:

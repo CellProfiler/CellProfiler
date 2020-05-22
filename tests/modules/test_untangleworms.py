@@ -327,11 +327,11 @@ def test_load_v2():
     for module, complexity in zip(
         pipeline.modules(),
         (
-                cellprofiler.modules.untangleworms.C_ALL,
-                cellprofiler.modules.untangleworms.C_MEDIUM,
-                cellprofiler.modules.untangleworms.C_HIGH,
-                cellprofiler.modules.untangleworms.C_VERY_HIGH,
-                cellprofiler.modules.untangleworms.C_CUSTOM,
+            cellprofiler.modules.untangleworms.C_ALL,
+            cellprofiler.modules.untangleworms.C_MEDIUM,
+            cellprofiler.modules.untangleworms.C_HIGH,
+            cellprofiler.modules.untangleworms.C_VERY_HIGH,
+            cellprofiler.modules.untangleworms.C_CUSTOM,
         ),
     ):
         assert module.complexity == complexity
@@ -369,7 +369,9 @@ def make_workspace(image, data=None, write_mode="wb"):
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, img)
-    module.training_set_directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+    module.training_set_directory.dir_choice = (
+        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+    )
     (
         module.training_set_directory.custom_path,
         module.training_set_file_name.value,
@@ -2139,7 +2141,10 @@ def test_recalculate_single_worm_control_points():
         )
     )
 
-    result, lengths = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points(
+    (
+        result,
+        lengths,
+    ) = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points(
         [l0, l1], 3
     )
     assert tuple(result.shape) == (4, 3, 2)
@@ -2155,7 +2160,10 @@ def test_recalculate_single_worm_control_points():
 
 def test_recalculate_single_worm_control_points_no_objects():
     # regression test of issue #930
-    result, lengths = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points(
+    (
+        result,
+        lengths,
+    ) = cellprofiler.modules.untangleworms.recalculate_single_worm_control_points(
         [numpy.zeros((10, 15), int)], 3
     )
     assert tuple(result.shape) == (0, 3, 2)

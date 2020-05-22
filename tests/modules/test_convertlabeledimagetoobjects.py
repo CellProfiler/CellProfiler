@@ -74,5 +74,6 @@ def test_run_labels(image, module, workspace):
         "labeled", cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER
     )
     assert measurements.has_current_measurements(
-        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.FF_COUNT % "labeled"
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.FF_COUNT % "labeled",
     )

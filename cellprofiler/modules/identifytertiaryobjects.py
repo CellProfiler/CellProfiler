@@ -400,12 +400,11 @@ but the results will be zero or not-a-number (NaN).
         # and the outlines
         #
         figure.set_subplots((2, 2))
-         
+
         cmap = figure.return_cmap()
 
         figure.subplot_imshow_labels(
-            0, 0, primary_labels, self.primary_objects_name.value,
-            colormap=cmap,
+            0, 0, primary_labels, self.primary_objects_name.value, colormap=cmap,
         )
         figure.subplot_imshow_labels(
             1,
@@ -453,9 +452,7 @@ but the results will be zero or not-a-number (NaN).
             ]
         return columns
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             setting_values = setting_values + ["Yes"]
             variable_revision_number = 2

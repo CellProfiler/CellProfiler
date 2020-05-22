@@ -383,7 +383,9 @@ class ModuleView(object):
             )
             settings = []
         try:
-            assert all([isinstance(s, cellprofiler_core.setting.Setting) for s in settings])
+            assert all(
+                [isinstance(s, cellprofiler_core.setting.Setting) for s in settings]
+            )
         except:
             wx.MessageBox(
                 "Module %s.visible_settings() returned something other than a list of Settings!\n  value: %s"
@@ -513,8 +515,13 @@ class ModuleView(object):
                         v, v.get_choices(), control_name, wx.CB_READONLY, control
                     )
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, (cellprofiler_core.setting.ListImageNameSubscriber,
-                                    cellprofiler_core.setting.ListObjectNameSubscriber)):
+                elif isinstance(
+                    v,
+                    (
+                        cellprofiler_core.setting.ListImageNameSubscriber,
+                        cellprofiler_core.setting.ListObjectNameSubscriber,
+                    ),
+                ):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_list_name_subscriber_control(
                         v, choices, control_name, control
@@ -544,9 +551,9 @@ class ModuleView(object):
                     control = self.make_callback_controls(v, control_name, control)
                 elif isinstance(v, cellprofiler_core.setting.IntegerOrUnboundedRange):
                     control = self.make_unbounded_range_control(v, control)
-                elif isinstance(v, cellprofiler_core.setting.IntegerRange) or isinstance(
-                    v, cellprofiler_core.setting.FloatRange
-                ):
+                elif isinstance(
+                    v, cellprofiler_core.setting.IntegerRange
+                ) or isinstance(v, cellprofiler_core.setting.FloatRange):
                     control = self.make_range_control(v, control)
                 elif isinstance(v, cellprofiler_core.setting.Coordinates):
                     control = self.make_coordinates_control(v, control)
@@ -783,7 +790,9 @@ class ModuleView(object):
             if self.__module is not None:
                 notes = self.module_notes_control.GetValue()
                 self.__module.notes = notes.split("\n")
-                self.notify(SettingEditedEvent("module_notes", self.__module, notes, event))
+                self.notify(
+                    SettingEditedEvent("module_notes", self.__module, notes, event)
+                )
 
         self.notes_panel.Bind(wx.EVT_TEXT, on_notes_changed, self.module_notes_control)
 
@@ -791,9 +800,7 @@ class ModuleView(object):
         """Make a checkbox control for a Binary setting"""
         if not control:
             control = wx.RadioBox(
-                self.__module_panel,
-                choices=["Yes", "No"],
-                name=control_name,
+                self.__module_panel, choices=["Yes", "No"], name=control_name,
             )
 
             def callback(event, setting=v, control=control):
@@ -845,13 +852,22 @@ class ModuleView(object):
         control_name - assign this name to the control
         """
         if not control:
-            namelabel = "Image" if isinstance(v, cellprofiler_core.setting.ListImageNameSubscriber) else "Object"
+            namelabel = (
+                "Image"
+                if isinstance(v, cellprofiler_core.setting.ListImageNameSubscriber)
+                else "Object"
+            )
             control = namesubscriber.NameSubscriberListBox(
-                self.__module_panel, checked=v.value, choices=choices, name=control_name, nametype=namelabel,
+                self.__module_panel,
+                checked=v.value,
+                choices=choices,
+                name=control_name,
+                nametype=namelabel,
             )
 
             def callback(event, setting=v, control=control):
                 self.__on_checklistbox_change(event, setting, control)
+
             control.add_callback(callback)
         else:
             if list(choices) != list(control.Items):
@@ -867,7 +883,11 @@ class ModuleView(object):
         style        - one of the CB_ styles
         """
         assert isinstance(
-            v, (cellprofiler_core.setting.Choice, cellprofiler_core.setting.FigureSubscriber)
+            v,
+            (
+                cellprofiler_core.setting.Choice,
+                cellprofiler_core.setting.FigureSubscriber,
+            ),
         )
         try:
             v.test_valid(self.__pipeline)
@@ -1424,7 +1444,9 @@ class ModuleView(object):
                 filename = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
                 try:
                     if setting.get_example_fn is None:
-                        path = cellprofiler_core.preferences.get_default_image_directory()
+                        path = (
+                            cellprofiler_core.preferences.get_default_image_directory()
+                        )
                         filenames = [
                             x
                             for x in os.listdir(path)
@@ -2269,7 +2291,13 @@ class ModuleView(object):
     def __on_checklistbox_change(self, event, setting, control):
         if not self.__handle_change:
             return
-        self.on_value_change(setting, control, control.GetChecked(), event, timeout=CHECK_TIMEOUT_SEC * 1000)
+        self.on_value_change(
+            setting,
+            control,
+            control.GetChecked(),
+            event,
+            timeout=CHECK_TIMEOUT_SEC * 1000,
+        )
 
     def __on_multichoice_change(self, event, setting, control):
         if not self.__handle_change:
@@ -2347,9 +2375,9 @@ class ModuleView(object):
         request_module_validation(self.__validation_request)
 
     def __on_pipeline_event(self, pipeline, event):
-        if isinstance(event, cellprofiler_core.pipeline.event.PipelineCleared) or isinstance(
-            event, cellprofiler_core.pipeline.event.PipelineLoaded
-        ):
+        if isinstance(
+            event, cellprofiler_core.pipeline.event.PipelineCleared
+        ) or isinstance(event, cellprofiler_core.pipeline.event.PipelineLoaded):
             if self.__module not in self.__pipeline.modules(False):
                 self.clear_selection()
         elif isinstance(event, cellprofiler_core.pipeline.event.ModuleEdited):
@@ -2568,19 +2596,13 @@ class FilterPanelController(object):
             key = None
         else:
             sizer.Add(
-                self.make_delete_button(address),
-                0,
-                wx.ALIGN_CENTER_VERTICAL,
+                self.make_delete_button(address), 0, wx.ALIGN_CENTER_VERTICAL,
             )
             sizer.Add(
-                self.make_add_rule_button(address),
-                0,
-                wx.ALIGN_CENTER_VERTICAL,
+                self.make_add_rule_button(address), 0, wx.ALIGN_CENTER_VERTICAL,
             )
             sizer.Add(
-                self.make_add_rules_button(address),
-                0,
-                wx.ALIGN_CENTER_VERTICAL,
+                self.make_add_rules_button(address), 0, wx.ALIGN_CENTER_VERTICAL,
             )
             key = tuple(address[:-1] + [address[-1] + 1])
             if key not in self.sizer_dict:
@@ -2788,7 +2810,9 @@ class FilterPanelController(object):
         #
         for index in range(index + 1, len(sequence)):
             if isinstance(sequence[index], six.string_types):
-                is_good = cellprofiler_core.setting.Filter.LITERAL_PREDICATE in predicates
+                is_good = (
+                    cellprofiler_core.setting.Filter.LITERAL_PREDICATE in predicates
+                )
             else:
                 matches = [p for p in predicates if sequence[index].symbol == p.symbol]
                 is_good = len(matches) == 1
@@ -3612,9 +3636,12 @@ class FileCollectionDisplayController(object):
             elif isinstance(file_tree[x], dict):
                 subtree = file_tree[x]
                 node_is_filtered = (not subtree[None]) or is_filtered
-                unfiltered_subfolders, filtered_subfolders, unfiltered_files, filtered_files = self.get_file_and_folder_counts(
-                    subtree
-                )
+                (
+                    unfiltered_subfolders,
+                    filtered_subfolders,
+                    unfiltered_files,
+                    filtered_files,
+                ) = self.get_file_and_folder_counts(subtree)
                 n_subfolders = unfiltered_subfolders + filtered_subfolders
                 n_files = unfiltered_files + filtered_files
                 if node_is_filtered and not show_filtered:
@@ -3680,10 +3707,14 @@ class FileCollectionDisplayController(object):
         return count
 
     def get_image_id_from_nodetype(self, node_type):
-        if node_type == cellprofiler_core.setting.FileCollectionDisplay.NODE_COLOR_IMAGE:
+        if (
+            node_type
+            == cellprofiler_core.setting.FileCollectionDisplay.NODE_COLOR_IMAGE
+        ):
             image_id = self.COLOR_IMAGE_INDEX
         elif (
-            node_type == cellprofiler_core.setting.FileCollectionDisplay.NODE_COMPOSITE_IMAGE
+            node_type
+            == cellprofiler_core.setting.FileCollectionDisplay.NODE_COMPOSITE_IMAGE
         ):
             image_id = self.IMAGE_PLANES_IMAGE_INDEX
         elif node_type in (
@@ -4886,9 +4917,7 @@ def validation_queue_handler():
             start = time.perf_counter()
             try:
                 validate_module(
-                    request.pipeline,
-                    request.module_num,
-                    request.callback,
+                    request.pipeline, request.module_num, request.callback,
                 )
             except:
                 pass

@@ -159,10 +159,7 @@ References
             "Name the output image",
             "ProjectionBlue",
             doc="Enter the name for the projected image.",
-            provided_attributes={
-                "aggregate_image": True,
-                "available_on_last": True,
-            },
+            provided_attributes={"aggregate_image": True, "available_on_last": True,},
         )
         self.frequency = cps.Float(
             "Frequency",
@@ -258,9 +255,7 @@ slices."""
                 sharexy=figure.subplot(0, 0),
             )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Added frequency
             setting_values = setting_values + ["6"]

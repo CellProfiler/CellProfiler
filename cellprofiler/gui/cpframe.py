@@ -695,7 +695,9 @@ class CPFrame(wx.Frame):
             ID_EDIT_DELETE, "&Delete Selected Modules", "Delete selected modules"
         )
         self.menu_edit.Append(
-            ID_EDIT_DUPLICATE, "Duplicate Selected Modules", "Duplicate selected modules"
+            ID_EDIT_DUPLICATE,
+            "Duplicate Selected Modules",
+            "Duplicate selected modules",
         )
         self.menu_edit.Append(
             ID_EDIT_ENABLE_MODULE,
@@ -1052,7 +1054,11 @@ class CPFrame(wx.Frame):
     @staticmethod
     def __on_new_cp(event):
         if hasattr(sys, "frozen"):
-            os.system("open -na /Applications/CellProfiler-{}.app".format(cellprofiler.__version__))
+            os.system(
+                "open -na /Applications/CellProfiler-{}.app".format(
+                    cellprofiler.__version__
+                )
+            )
         else:
             os.system("python3 -m cellprofiler")
 
@@ -1273,8 +1279,11 @@ class CPFrame(wx.Frame):
             self.__path_list_ctrl, self.__path_list_filter_checkbox
         )
         self.__module_view = cellprofiler.gui.moduleview.ModuleView(
-            self.__module_panel, self.__workspace, frame=self,
-            notes_panel=self.__notes_panel)
+            self.__module_panel,
+            self.__workspace,
+            frame=self,
+            notes_panel=self.__notes_panel,
+        )
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view(self.__module_view)
         self.__preferences_view = cellprofiler.gui.preferencesview.PreferencesView(

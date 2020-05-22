@@ -349,7 +349,14 @@ module.""".format(
             # Do the ellipse-related measurements
             #
             i, j, l = objects.ijv.transpose()
-            centers, eccentricity, major_axis_length, minor_axis_length, theta, compactness = centrosome.cpmorphology.ellipse_from_second_moments_ijv(
+            (
+                centers,
+                eccentricity,
+                major_axis_length,
+                minor_axis_length,
+                theta,
+                compactness,
+            ) = centrosome.cpmorphology.ellipse_from_second_moments_ijv(
                 i, j, 1, l, objects.indices, True
             )
             del i
@@ -395,9 +402,10 @@ module.""".format(
                 for labels, indices in objects.get_labels():
                     to_indices = indices - 1
                     distances = centrosome.cpmorphology.distance_to_edge(labels)
-                    mcenter_y[to_indices], mcenter_x[
-                        to_indices
-                    ] = centrosome.cpmorphology.maximum_position_of_labels(
+                    (
+                        mcenter_y[to_indices],
+                        mcenter_x[to_indices],
+                    ) = centrosome.cpmorphology.maximum_position_of_labels(
                         distances, labels, indices
                     )
                     max_radius[
@@ -455,7 +463,10 @@ module.""".format(
                 #
                 # Feret diameter
                 #
-                min_feret_diameter, max_feret_diameter = centrosome.cpmorphology.feret_diameter(
+                (
+                    min_feret_diameter,
+                    max_feret_diameter,
+                ) = centrosome.cpmorphology.feret_diameter(
                     chulls, chull_counts, objects.indices
                 )
 
@@ -632,9 +643,7 @@ module.""".format(
                 ]
         return cols
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting_values for older save file versions"""
         if variable_revision_number == 1:
             objects_list = setting_values[:-1]

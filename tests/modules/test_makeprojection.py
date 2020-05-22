@@ -91,7 +91,12 @@ def run_image_set(projection_type, images_and_masks, frequency=9, run_last=True)
     module.prepare_group(workspace, {}, [image_count + 1])
     image_set = image_set_list.get_image_set(image_count)
     w = cellprofiler_core.workspace.Workspace(
-        pipeline, module, image_set, cellprofiler_core.object.ObjectSet(), m, image_set_list
+        pipeline,
+        module,
+        image_set,
+        cellprofiler_core.object.ObjectSet(),
+        m,
+        image_set_list,
     )
     module.run(w)
     image_provider = image_set.get_image_provider(PROJECTED_IMAGE_NAME)

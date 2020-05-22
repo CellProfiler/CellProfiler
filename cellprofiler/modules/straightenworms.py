@@ -112,7 +112,11 @@ from cellprofiler_core.modules.identify import get_object_measurement_columns
 from scipy.interpolate import interp1d
 from scipy.ndimage import map_coordinates, extrema
 
-from cellprofiler.modules.untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
+from cellprofiler.modules.untangleworms import (
+    C_WORM,
+    F_CONTROL_POINT_X,
+    F_CONTROL_POINT_Y,
+)
 from cellprofiler.modules.untangleworms import F_LENGTH
 from cellprofiler.modules.untangleworms import read_params
 from cellprofiler.modules.untangleworms import recalculate_single_worm_control_points
@@ -1267,9 +1271,7 @@ of the straightened worms.""",
                 ]
         return result
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Modify the settings to match the current version
 
         This method takes the settings from a previous revision of

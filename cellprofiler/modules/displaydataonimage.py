@@ -514,13 +514,18 @@ color map.
                 )
                 axes.add_artist(text)
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
-            objects_or_image, objects_name, measurement, image_name, text_color, display_image, dpi, saved_image_contents = (
-                setting_values
-            )
+            (
+                objects_or_image,
+                objects_name,
+                measurement,
+                image_name,
+                text_color,
+                display_image,
+                dpi,
+                saved_image_contents,
+            ) = setting_values
             setting_values = [
                 objects_or_image,
                 objects_name,

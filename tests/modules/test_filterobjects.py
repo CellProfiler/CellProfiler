@@ -639,8 +639,8 @@ def test_load_v7():
     assert module.mode == cellprofiler.modules.filterobjects.MODE_MEASUREMENTS
     assert module.filter_choice == cellprofiler.modules.filterobjects.FI_LIMITS
     assert (
-            module.per_object_assignment
-            == cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
+        module.per_object_assignment
+        == cellprofiler.modules.filterobjects.PO_PARENT_WITH_MOST_OVERLAP
     )
     assert (
         module.rules_directory.dir_choice

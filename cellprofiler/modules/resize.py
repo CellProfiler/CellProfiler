@@ -433,36 +433,22 @@ resized with the same settings as the first image.""",
         ):
             if multichannel:
                 figure.subplot_imshow(
-                    0,
-                    i,
-                    input_image_pixels,
-                    title=input_image_name,
+                    0, i, input_image_pixels, title=input_image_name,
                 )
 
                 figure.subplot_imshow(
-                    1,
-                    i,
-                    output_image_pixels,
-                    title=output_image_name,
+                    1, i, output_image_pixels, title=output_image_name,
                 )
             else:
                 figure.subplot_imshow_bw(
-                    0,
-                    i,
-                    input_image_pixels,
-                    title=input_image_name,
+                    0, i, input_image_pixels, title=input_image_name,
                 )
 
                 figure.subplot_imshow_bw(
-                    1,
-                    i,
-                    output_image_pixels,
-                    title=output_image_name,
+                    1, i, output_image_pixels, title=output_image_name,
                 )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             if setting_values[2] == "Resize by a factor of the original size":
                 setting_values[2] = R_BY_FACTOR
@@ -479,9 +465,7 @@ resized with the same settings as the first image.""",
         if variable_revision_number == 3:
             # Add resizing to another image size
             setting_values = (
-                setting_values[:7]
-                + [C_MANUAL, "None"]
-                + setting_values[7:]
+                setting_values[:7] + [C_MANUAL, "None"] + setting_values[7:]
             )
             variable_revision_number = 4
 

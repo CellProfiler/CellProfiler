@@ -642,9 +642,7 @@ Select the name of the output grayscale image.""",
         while len(self.channels) < nchannels:
             self.add_channel()
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # Added rgb_or_channels at position # 2, added channel count

@@ -468,9 +468,7 @@ depending on the method chosen.
                 line = matplotlib.lines.Line2D(xc[:, i], yc[:, i], color="red")
                 axes.add_line(line)
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings

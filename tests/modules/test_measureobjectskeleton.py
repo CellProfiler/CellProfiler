@@ -64,10 +64,14 @@ def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=F
     m = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER, 1
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.GROUP_NUMBER,
+        1,
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX, 1
+        cellprofiler_core.measurement.IMAGE,
+        cellprofiler_core.measurement.GROUP_INDEX,
+        1,
     )
     image_set = m
     img = cellprofiler_core.image.Image(image, mask)
@@ -132,7 +136,7 @@ def test_empty():
         coltypes[expected_feature] = (
             cellprofiler_core.measurement.COLTYPE_FLOAT
             if expected
-               == cellprofiler.modules.measureobjectskeleton.F_TOTAL_OBJSKELETON_LENGTH
+            == cellprofiler.modules.measureobjectskeleton.F_TOTAL_OBJSKELETON_LENGTH
             else cellprofiler_core.measurement.COLTYPE_INTEGER
         )
     assert all([c[0] == OBJECT_NAME for c in columns])
@@ -226,8 +230,8 @@ def test_trunks():
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (
-                cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
-                [0, 0],
+            cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
+            [0, 0],
         ),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, [2, 1]),
     ):
@@ -368,8 +372,8 @@ def test_wrong_size():
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (
-                cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
-                [0, 0],
+            cellprofiler.modules.measureobjectskeleton.F_NUMBER_NON_TRUNK_BRANCHES,
+            [0, 0],
         ),
         (cellprofiler.modules.measureobjectskeleton.F_NUMBER_TRUNKS, [2, 1]),
     ):

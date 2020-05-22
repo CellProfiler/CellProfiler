@@ -571,7 +571,11 @@ first image.
             workspace.image_set.add(self.save_image_name.value, image)
 
     def get_background_image(self, workspace, gridding):
-        if self.auto_or_manual == AM_MANUAL and self.manual_choice == MAN_MOUSE and gridding is None:
+        if (
+            self.auto_or_manual == AM_MANUAL
+            and self.manual_choice == MAN_MOUSE
+            and gridding is None
+        ):
             image = workspace.image_set.get_image(self.manual_image.value).pixel_data
         elif self.display_image_name.value == "Leave blank":
             if gridding is None:
@@ -712,7 +716,10 @@ first image.
         #    status bar
         #
         figure = matplotlib.figure.Figure()
-        frame = wx.Dialog(wx.GetApp().TopWindow, title="Select grid cells, image cycle #%d:" % (image_set_number))
+        frame = wx.Dialog(
+            wx.GetApp().TopWindow,
+            title="Select grid cells, image cycle #%d:" % (image_set_number),
+        )
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         frame.SetSizer(top_sizer)
         canvas = backend.FigureCanvasWxAgg(frame, -1, figure)
@@ -1119,9 +1126,7 @@ first image.
                     self.second_spot_col,
                 )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings

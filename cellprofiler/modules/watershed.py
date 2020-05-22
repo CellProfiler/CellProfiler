@@ -299,9 +299,7 @@ the image is not downsampled.
 
             workspace.display_data.dimensions = dimensions
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
 
         if variable_revision_number == 1:
             # Last two items were moved down to add more options for seeded watershed

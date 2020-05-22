@@ -11,8 +11,8 @@ import cellprofiler_core.setting
 
 def test_test_load_version_9_please():
     assert (
-            cellprofiler.modules.createbatchfiles.CreateBatchFiles.variable_revision_number
-            == 8
+        cellprofiler.modules.createbatchfiles.CreateBatchFiles.variable_revision_number
+        == 8
     )
 
 

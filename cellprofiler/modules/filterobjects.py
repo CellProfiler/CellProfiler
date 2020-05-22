@@ -1082,9 +1082,7 @@ value will be retained.""".format(
         self.rules_directory.alter_for_create_batch_files(fn_alter_path)
         return True
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # Added CPA rules
@@ -1110,9 +1108,23 @@ value will be retained.""".format(
             # Allowed multiple measurements
             # Structure changed substantially.
             #
-            target_name, object_name, measurement, filter_choice, enclosing_objects, wants_minimum, minimum_value, wants_maximum, maximum_value, wants_outlines, outlines_name, rules_or_measurements, rules_directory_choice, rules_path_name, rules_file_name = setting_values[
-                :15
-            ]
+            (
+                target_name,
+                object_name,
+                measurement,
+                filter_choice,
+                enclosing_objects,
+                wants_minimum,
+                minimum_value,
+                wants_maximum,
+                maximum_value,
+                wants_outlines,
+                outlines_name,
+                rules_or_measurements,
+                rules_directory_choice,
+                rules_path_name,
+                rules_file_name,
+            ) = setting_values[:15]
             additional_object_settings = setting_values[15:]
             additional_object_count = len(additional_object_settings) / 4
 
@@ -1143,7 +1155,9 @@ value will be retained.""".format(
             rules_directory_choice = setting_values[7]
             rules_path_name = setting_values[8]
             if rules_directory_choice == DIR_CUSTOM:
-                rules_directory_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+                rules_directory_choice = (
+                    cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+                )
                 if rules_path_name.startswith("."):
                     rules_directory_choice = (
                         cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME

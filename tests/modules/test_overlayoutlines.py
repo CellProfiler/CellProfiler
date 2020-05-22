@@ -91,17 +91,17 @@ def test_load_v3():
     assert len(module.outlines) == 2
     for outline, name, color, choice, objects_name in (
         (
-                module.outlines[0],
+            module.outlines[0],
             "PrimaryOutlines",
             "Red",
-                cellprofiler.modules.overlayoutlines.FROM_IMAGES,
+            cellprofiler.modules.overlayoutlines.FROM_IMAGES,
             "Nuclei",
         ),
         (
-                module.outlines[1],
+            module.outlines[1],
             "SecondaryOutlines",
             "Green",
-                cellprofiler.modules.overlayoutlines.FROM_OBJECTS,
+            cellprofiler.modules.overlayoutlines.FROM_OBJECTS,
             "Cells",
         ),
     ):

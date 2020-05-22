@@ -1035,9 +1035,7 @@ example, to be saved by a **SaveImages** module).
             for group in self.single_measurements:
                 group.validate_group()
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust setting values if they came from a previous revision
 
         setting_values - a sequence of strings representing the settings

@@ -219,8 +219,14 @@ class KnimeBridgeServer(threading.Thread):
         pipeline, m, object_set = self.prepare_run(message, session_id)
         if pipeline is None:
             return
-        m[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER] = 1
-        m[cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_INDEX] = 1
+        m[
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.GROUP_NUMBER,
+        ] = 1
+        m[
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.measurement.GROUP_INDEX,
+        ] = 1
         input_modules, other_modules = self.split_pipeline(pipeline)
         for module in other_modules:
             workspace = cellprofiler_core.workspace.Workspace(
@@ -382,7 +388,9 @@ class KnimeBridgeServer(threading.Thread):
                 image_number,
             ] = image_number
         input_modules, other_modules = self.split_pipeline(pipeline)
-        workspace = cellprofiler_core.workspace.Workspace(pipeline, None, m, None, m, None)
+        workspace = cellprofiler_core.workspace.Workspace(
+            pipeline, None, m, None, m, None
+        )
         logger.info("Preparing group")
         for module in other_modules:
             module.prepare_group(
@@ -457,7 +465,9 @@ class KnimeBridgeServer(threading.Thread):
                 object_counts = [] * n_image_sets
             else:
                 object_numbers = m[
-                    object_name, cellprofiler_core.measurement.OBJECT_NUMBER, image_numbers
+                    object_name,
+                    cellprofiler_core.measurement.OBJECT_NUMBER,
+                    image_numbers,
                 ]
                 object_counts = [len(x) for x in object_numbers]
             for feature, data_type in features:

@@ -280,9 +280,7 @@ the output image.
             sharexy=figure.subplot(0, 0),
         )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             setting_values = setting_values + ["Yes"]
             variable_revision_number = 2

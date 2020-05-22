@@ -683,9 +683,7 @@ The file has the following columns:
         else:
             return []
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Provide backwards compatibility for old pipelines
 
         setting_values - the strings to be fed to settings

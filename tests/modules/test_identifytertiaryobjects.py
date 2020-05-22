@@ -69,7 +69,12 @@ def test_zeros():
     output_objects = workspace.object_set.get_objects(TERTIARY)
     assert numpy.all(output_objects.segmented == primary_labels)
     columns = module.get_measurement_columns(workspace.pipeline)
-    for object_name in (cellprofiler_core.measurement.IMAGE, PRIMARY, SECONDARY, TERTIARY):
+    for object_name in (
+        cellprofiler_core.measurement.IMAGE,
+        PRIMARY,
+        SECONDARY,
+        TERTIARY,
+    ):
         ocolumns = [x for x in columns if x[0] == object_name]
         features = measurements.get_feature_names(object_name)
         assert len(ocolumns) == len(features)
@@ -451,8 +456,12 @@ def test_relationships():
         for i in range(3):
             assert result[cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER][i] == 1
             assert result[cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER][i] == 1
-            assert result[cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER][i] == i + 1
-            assert result[cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER][i] == i + 1
+            assert (
+                result[cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER][i] == i + 1
+            )
+            assert (
+                result[cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER][i] == i + 1
+            )
 
 
 def test_load_v3():

@@ -31,7 +31,9 @@ import cellprofiler_core.object
 import cellprofiler_core.setting
 
 
-class ShrinkToObjectCenters(cellprofiler_core.module.image_segmentation.ObjectProcessing):
+class ShrinkToObjectCenters(
+    cellprofiler_core.module.image_segmentation.ObjectProcessing
+):
     module_name = "ShrinkToObjectCenters"
 
     category = "Advanced"

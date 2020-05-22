@@ -164,7 +164,9 @@ def test_measurements():
             "Foo": [],
         },
         INPUT_OBJECTS_NAME: {
-            cellprofiler_core.measurement.C_CHILDREN: ["%s_Count" % OUTPUT_OBJECTS_NAME],
+            cellprofiler_core.measurement.C_CHILDREN: [
+                "%s_Count" % OUTPUT_OBJECTS_NAME
+            ],
             "Foo": [],
         },
         OUTPUT_OBJECTS_NAME: {

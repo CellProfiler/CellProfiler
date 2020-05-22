@@ -79,7 +79,13 @@ MC_ALL = [MC_IMAGE, MC_OBJECT]
 
 C_MATH = "Math"
 
-ROUNDING = ["Not rounded", "Rounded to a specified number of decimal places", "Rounded down to the next-lowest integer", "Rounded up to the next-highest integer"]
+ROUNDING = [
+    "Not rounded",
+    "Rounded to a specified number of decimal places",
+    "Rounded down to the next-lowest integer",
+    "Rounded up to the next-highest integer",
+]
+
 
 class CalculateMath(cpm.Module):
     module_name = "CalculateMath"
@@ -308,26 +314,27 @@ Enter the power by which you would like to raise the result.
         )
 
         self.rounding = cps.Choice(
-            "How should the output value be rounded?", 
-           ROUNDING, 
-           doc="""\
+            "How should the output value be rounded?",
+            ROUNDING,
+            doc="""\
 Choose how the values should be rounded- not at all, to a specified number of decimal places, 
 to the next lowest integer ("floor rounding"), or to the next highest integer ("ceiling rounding").
 Note that for rounding to an arbitrary number of decimal places, Python uses "round to even" rounding,
 such that ties round to the nearest even number. Thus, 1.5 and 2.5 both round to to 2 at 0 decimal 
 places, 2.45 rounds to 2.4, 2.451 rounds to 2.5, and 2.55 rounds to 2.6 at 1 decimal place. See the 
 numpy documentation for more information.  
-""")
+""",
+        )
 
         self.rounding_digit = cps.Integer(
-            "Enter how many decimal places the value should be rounded to", 
-           0, 
-           doc="""\
+            "Enter how many decimal places the value should be rounded to",
+            0,
+            doc="""\
 Enter how many decimal places the value should be rounded to. 0 will round to an integer (e.g. 1, 2), 1 to 
 one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g. 10, 20), etc.
-""")
-     
-         
+""",
+        )
+
     def settings(self):
         result = [self.output_feature_name, self.operation]
         result += self.operands[0].settings() + self.operands[1].settings()
@@ -337,17 +344,14 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
             self.final_exponent,
             self.final_addend,
         ]
-        result += [
-           self.rounding, 
-           self.rounding_digit
-        ]
+        result += [self.rounding, self.rounding_digit]
         result += [
             self.constrain_lower_bound,
             self.lower_bound,
             self.constrain_upper_bound,
             self.upper_bound,
         ]
-         
+
         return result
 
     def post_pipeline_load(self, pipeline):
@@ -386,7 +390,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
         if self.constrain_upper_bound:
             result += [self.upper_bound]
             result += [self.upper_bound]
-            
+
         return result
 
     def run(self, workspace):
@@ -596,8 +600,8 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
             result = np.floor(result)
 
         elif self.rounding == ROUNDING[3]:
-            result = np.ceil(result)      
-      
+            result = np.ceil(result)
+
         if self.constrain_lower_bound:
             if np.isscalar(result):
                 if result < self.lower_bound.value:
@@ -632,7 +636,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
             0,
             workspace.display_data.statistics,
             col_labels=workspace.display_data.col_labels,
-            title="If per-object values were calculated, use an Export module to view their results"
+            title="If per-object values were calculated, use an Export module to view their results",
         )
 
     def get_operands(self):
@@ -707,9 +711,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
                         self.output_feature_name,
                     )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # Added a final addition number as well as options to constrain
             # the result to an upper and/or lower bound.
@@ -720,7 +722,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
             setting_values = setting_values[:-4]
             setting_values += ["Not rounded", 0]
             setting_values += clip_values
-            variable_revision_number = 3 
+            variable_revision_number = 3
         return setting_values, variable_revision_number
 
     def volumetric(self):

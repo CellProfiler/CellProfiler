@@ -49,9 +49,11 @@ def test_load_v9():
     assert not module.wants_discard_primary
     assert module.new_primary_objects_name == "FilteredChocolateChips"
     assert module.fill_holes
-    assert module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
     assert (
-            module.threshold.global_operation.value == cellprofiler.modules.threshold.TM_LI
+        module.threshold.threshold_scope == cellprofiler_core.modules.identify.TS_GLOBAL
+    )
+    assert (
+        module.threshold.global_operation.value == cellprofiler.modules.threshold.TM_LI
     )
     assert module.threshold.threshold_smoothing_scale.value == 1.3488
     assert module.threshold.threshold_correction_factor == 1
@@ -59,7 +61,10 @@ def test_load_v9():
     assert module.threshold.threshold_range.max == 1.0
     assert module.threshold.manual_threshold == 0.3
     assert module.threshold.thresholding_measurement == "Count_Cookies"
-    assert module.threshold.two_class_otsu == cellprofiler_core.modules.identify.O_TWO_CLASS
+    assert (
+        module.threshold.two_class_otsu
+        == cellprofiler_core.modules.identify.O_TWO_CLASS
+    )
     assert (
         module.threshold.assign_middle_to_foreground
         == cellprofiler_core.modules.identify.O_FOREGROUND
@@ -271,7 +276,9 @@ def test_propagation_wrong_size():
     labels[3:6, 3:6] = 1
     workspace, module = make_workspace(img, labels)
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = (
+        cellprofiler_core.modules.identify.TS_GLOBAL
+    )
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
     m = workspace.measurements
@@ -349,7 +356,9 @@ def test_one_object_watershed_gradient():
     module.y_name.value = OUTPUT_OBJECTS_NAME
     module.image_name.value = IMAGE_NAME
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
-    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = (
+        cellprofiler_core.modules.identify.TS_GLOBAL
+    )
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)
@@ -430,7 +439,9 @@ def test_watershed_gradient_wrong_size():
     labels[3:6, 3:6] = 1
     workspace, module = make_workspace(img, labels)
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
-    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = (
+        cellprofiler_core.modules.identify.TS_GLOBAL
+    )
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
     m = workspace.measurements
@@ -507,7 +518,9 @@ def test_one_object_watershed_image():
     module.image_name.value = IMAGE_NAME
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
     workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
-    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = (
+        cellprofiler_core.modules.identify.TS_GLOBAL
+    )
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)
@@ -580,7 +593,9 @@ def test_watershed_image_wrong_size():
     labels[3:6, 3:6] = 1
     workspace, module = make_workspace(img, labels)
     module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
-    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = (
+        cellprofiler_core.modules.identify.TS_GLOBAL
+    )
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
     m = workspace.measurements
@@ -777,14 +792,19 @@ def test_measurements_no_new_primary():
         assert all([any([x == y for x in features]) for y in threshold_features])
         for threshold_feature in threshold_features:
             objects = module.get_measurement_objects(
-                None, cellprofiler_core.measurement.IMAGE, "Threshold", threshold_feature
+                None,
+                cellprofiler_core.measurement.IMAGE,
+                "Threshold",
+                threshold_feature,
             )
             assert len(objects) == 1
             assert objects[0] == OUTPUT_OBJECTS_NAME
 
         features = module.get_measurements(None, INPUT_OBJECTS_NAME, "Children")
         assert len(features) == 1
-        assert features[0] == cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME
+        assert (
+            features[0] == cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS_NAME
+        )
 
         features = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Parent")
         assert len(features) == 1
@@ -887,7 +907,9 @@ def test_measurements_new_primary():
         ]
     )
 
-    features = module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "Count")
+    features = module.get_measurements(
+        None, cellprofiler_core.measurement.IMAGE, "Count"
+    )
     assert len(features) == 2
     assert OUTPUT_OBJECTS_NAME in features
     assert NEW_OBJECTS_NAME in features
@@ -965,7 +987,11 @@ def test_measurements_new_primary():
             (oname, "Location_Center_X", cellprofiler_core.measurement.COLTYPE_FLOAT),
             (oname, "Location_Center_Y", cellprofiler_core.measurement.COLTYPE_FLOAT),
             (oname, "Location_Center_Z", cellprofiler_core.measurement.COLTYPE_FLOAT),
-            (oname, "Number_Object_Number", cellprofiler_core.measurement.COLTYPE_INTEGER),
+            (
+                oname,
+                "Number_Object_Number",
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
+            ),
             (oname, "Parent_Primary", cellprofiler_core.measurement.COLTYPE_INTEGER),
         ]
     expected_columns += [
@@ -1042,7 +1068,9 @@ def test_filter_edge():
     module.set_module_num(1)
     p.add_module(module)
     workspace = cellprofiler_core.workspace.Workspace(p, module, i_s, o_s, m, i_l)
-    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = (
+        cellprofiler_core.modules.identify.TS_GLOBAL
+    )
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.run(workspace)
     object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
@@ -1122,7 +1150,9 @@ def test_filter_unedited():
     module.wants_discard_edge.value = True
     module.wants_discard_primary.value = True
     module.new_primary_objects_name.value = NEW_OBJECTS_NAME
-    module.threshold.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
+    module.threshold.threshold_scope.value = (
+        cellprofiler_core.modules.identify.TS_GLOBAL
+    )
     module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
     module.set_module_num(1)
     p.add_module(module)
@@ -1282,10 +1312,10 @@ def test_small_touching():
 def test_holes_no_holes():
     for wants_fill_holes in (True, False):
         for method in (
-                cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_B,
-                cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION,
-                cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G,
-                cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I,
+            cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_B,
+            cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION,
+            cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G,
+            cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I,
         ):
             labels = numpy.zeros((20, 10), int)
             labels[5, 5] = 1

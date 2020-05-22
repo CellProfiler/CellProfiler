@@ -81,41 +81,43 @@ def test_zeros():
         module.save_dilated_image.value = True
 
         for ea in (
-                cellprofiler.modules.correctilluminationcalculate.EA_EACH,
-                cellprofiler.modules.correctilluminationcalculate.EA_ALL_ACROSS,
-                cellprofiler.modules.correctilluminationcalculate.EA_ALL_FIRST,
+            cellprofiler.modules.correctilluminationcalculate.EA_EACH,
+            cellprofiler.modules.correctilluminationcalculate.EA_ALL_ACROSS,
+            cellprofiler.modules.correctilluminationcalculate.EA_ALL_FIRST,
         ):
             module.each_or_all.value = ea
             for intensity_choice in (
-                    cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND,
-                    cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
+                cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND,
+                cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
             ):
                 module.intensity_choice.value = intensity_choice
                 for dilate_objects in (True, False):
                     module.dilate_objects.value = dilate_objects
                     for rescale_option in (
-                            "Yes",
-                            "No",
-                            cellprofiler.modules.correctilluminationcalculate.RE_MEDIAN,
+                        "Yes",
+                        "No",
+                        cellprofiler.modules.correctilluminationcalculate.RE_MEDIAN,
                     ):
                         module.rescale_option.value = rescale_option
                         for smoothing_method in (
-                                cellprofiler.modules.correctilluminationcalculate.SM_NONE,
-                                cellprofiler.modules.correctilluminationcalculate.SM_FIT_POLYNOMIAL,
-                                cellprofiler.modules.correctilluminationcalculate.SM_GAUSSIAN_FILTER,
-                                cellprofiler.modules.correctilluminationcalculate.SM_MEDIAN_FILTER,
-                                cellprofiler.modules.correctilluminationcalculate.SM_TO_AVERAGE,
-                                cellprofiler.modules.correctilluminationcalculate.SM_SPLINES,
-                                cellprofiler.modules.correctilluminationcalculate.SM_CONVEX_HULL,
+                            cellprofiler.modules.correctilluminationcalculate.SM_NONE,
+                            cellprofiler.modules.correctilluminationcalculate.SM_FIT_POLYNOMIAL,
+                            cellprofiler.modules.correctilluminationcalculate.SM_GAUSSIAN_FILTER,
+                            cellprofiler.modules.correctilluminationcalculate.SM_MEDIAN_FILTER,
+                            cellprofiler.modules.correctilluminationcalculate.SM_TO_AVERAGE,
+                            cellprofiler.modules.correctilluminationcalculate.SM_SPLINES,
+                            cellprofiler.modules.correctilluminationcalculate.SM_CONVEX_HULL,
                         ):
                             module.smoothing_method.value = smoothing_method
                             for ow in (
-                                    cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC,
-                                    cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY,
-                                    cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
+                                cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC,
+                                cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY,
+                                cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
                             ):
                                 module.automatic_object_width.value = ow
-                                measurements = cellprofiler_core.measurement.Measurements()
+                                measurements = (
+                                    cellprofiler_core.measurement.Measurements()
+                                )
                                 image_set_list = cellprofiler_core.image.ImageSetList()
                                 workspace = cellprofiler_core.workspace.Workspace(
                                     pipeline,
@@ -173,32 +175,32 @@ def test_ones_image():
         module.rescale_option.value = "Yes"
 
         for ea in (
-                cellprofiler.modules.correctilluminationcalculate.EA_EACH,
-                cellprofiler.modules.correctilluminationcalculate.EA_ALL_ACROSS,
-                cellprofiler.modules.correctilluminationcalculate.EA_ALL_FIRST,
+            cellprofiler.modules.correctilluminationcalculate.EA_EACH,
+            cellprofiler.modules.correctilluminationcalculate.EA_ALL_ACROSS,
+            cellprofiler.modules.correctilluminationcalculate.EA_ALL_FIRST,
         ):
             module.each_or_all.value = ea
             for intensity_choice in (
-                    cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND,
-                    cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
+                cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND,
+                cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
             ):
                 module.intensity_choice.value = intensity_choice
                 for dilate_objects in (True, False):
                     module.dilate_objects.value = dilate_objects
                     for smoothing_method in (
-                            cellprofiler.modules.correctilluminationcalculate.SM_NONE,
-                            cellprofiler.modules.correctilluminationcalculate.SM_FIT_POLYNOMIAL,
-                            cellprofiler.modules.correctilluminationcalculate.SM_GAUSSIAN_FILTER,
-                            cellprofiler.modules.correctilluminationcalculate.SM_MEDIAN_FILTER,
-                            cellprofiler.modules.correctilluminationcalculate.SM_TO_AVERAGE,
-                            cellprofiler.modules.correctilluminationcalculate.SM_SPLINES,
-                            cellprofiler.modules.correctilluminationcalculate.SM_CONVEX_HULL,
+                        cellprofiler.modules.correctilluminationcalculate.SM_NONE,
+                        cellprofiler.modules.correctilluminationcalculate.SM_FIT_POLYNOMIAL,
+                        cellprofiler.modules.correctilluminationcalculate.SM_GAUSSIAN_FILTER,
+                        cellprofiler.modules.correctilluminationcalculate.SM_MEDIAN_FILTER,
+                        cellprofiler.modules.correctilluminationcalculate.SM_TO_AVERAGE,
+                        cellprofiler.modules.correctilluminationcalculate.SM_SPLINES,
+                        cellprofiler.modules.correctilluminationcalculate.SM_CONVEX_HULL,
                     ):
                         module.smoothing_method.value = smoothing_method
                         for ow in (
-                                cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC,
-                                cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY,
-                                cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
+                            cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC,
+                            cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY,
+                            cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
                         ):
                             module.automatic_object_width.value = ow
                             measurements = cellprofiler_core.measurement.Measurements()
@@ -262,29 +264,29 @@ def test_masked_image():
         module.dilate_objects.value = False
 
         for ea in (
-                cellprofiler.modules.correctilluminationcalculate.EA_EACH,
-                cellprofiler.modules.correctilluminationcalculate.EA_ALL_ACROSS,
-                cellprofiler.modules.correctilluminationcalculate.EA_ALL_FIRST,
+            cellprofiler.modules.correctilluminationcalculate.EA_EACH,
+            cellprofiler.modules.correctilluminationcalculate.EA_ALL_ACROSS,
+            cellprofiler.modules.correctilluminationcalculate.EA_ALL_FIRST,
         ):
             module.each_or_all.value = ea
             for intensity_choice in (
-                    cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND,
-                    cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
+                cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND,
+                cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
             ):
                 module.intensity_choice.value = intensity_choice
                 for smoothing_method in (
-                        cellprofiler.modules.correctilluminationcalculate.SM_NONE,
-                        cellprofiler.modules.correctilluminationcalculate.SM_FIT_POLYNOMIAL,
-                        cellprofiler.modules.correctilluminationcalculate.SM_GAUSSIAN_FILTER,
-                        cellprofiler.modules.correctilluminationcalculate.SM_MEDIAN_FILTER,
-                        cellprofiler.modules.correctilluminationcalculate.SM_TO_AVERAGE,
-                        cellprofiler.modules.correctilluminationcalculate.SM_CONVEX_HULL,
+                    cellprofiler.modules.correctilluminationcalculate.SM_NONE,
+                    cellprofiler.modules.correctilluminationcalculate.SM_FIT_POLYNOMIAL,
+                    cellprofiler.modules.correctilluminationcalculate.SM_GAUSSIAN_FILTER,
+                    cellprofiler.modules.correctilluminationcalculate.SM_MEDIAN_FILTER,
+                    cellprofiler.modules.correctilluminationcalculate.SM_TO_AVERAGE,
+                    cellprofiler.modules.correctilluminationcalculate.SM_CONVEX_HULL,
                 ):
                     module.smoothing_method.value = smoothing_method
                     for ow in (
-                            cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC,
-                            cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY,
-                            cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
+                        cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC,
+                        cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY,
+                        cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
                     ):
                         module.automatic_object_width.value = ow
                         measurements = cellprofiler_core.measurement.Measurements()
@@ -458,7 +460,9 @@ def test_no_smoothing():
     image_name = "InputImage"
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(
+        image_name, input_image
+    )
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -567,7 +571,9 @@ def test_gaussian_filter():
     expected_image = numpy.e ** (-(i ** 2 + j ** 2) / (2 * (10.0 / 2.35) ** 2))
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(
+        image_name, input_image
+    )
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -625,7 +631,9 @@ def test_median_filter():
     ] = 1
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(
+        image_name, input_image
+    )
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -675,7 +683,9 @@ def test_smooth_to_average():
     expected_image = numpy.ones((10, 10)) * input_image.mean()
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(
+        image_name, input_image
+    )
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -730,147 +740,147 @@ def test_splines():
         succeed,
     ) in (
         (
-                True,
-                cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
-                5,
-                2,
-                0.001,
-                0,
-                True,
-                False,
-                True,
+            True,
+            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            5,
+            2,
+            0.001,
+            0,
+            True,
+            False,
+            True,
         ),
         (
-                True,
-                cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
-                5,
-                2,
-                0.001,
-                0.7,
-                False,
-                True,
-                True,
+            True,
+            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            5,
+            2,
+            0.001,
+            0.7,
+            False,
+            True,
+            True,
         ),
         (
-                True,
-                cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
-                5,
-                2,
-                0.001,
-                0.5,
-                True,
-                True,
-                True,
+            True,
+            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            5,
+            2,
+            0.001,
+            0.5,
+            True,
+            True,
+            True,
         ),
         (
-                False,
-                cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
-                5,
-                2,
-                0.001,
-                0,
-                True,
-                False,
-                True,
+            False,
+            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            5,
+            2,
+            0.001,
+            0,
+            True,
+            False,
+            True,
         ),
         (
-                False,
-                cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
-                5,
-                2,
-                0.001,
-                0.7,
-                False,
-                True,
-                True,
+            False,
+            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            5,
+            2,
+            0.001,
+            0.7,
+            False,
+            True,
+            True,
         ),
         (
-                False,
-                cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
-                5,
-                2,
-                0.001,
-                0.5,
-                True,
-                True,
-                True,
+            False,
+            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            5,
+            2,
+            0.001,
+            0.5,
+            True,
+            True,
+            True,
         ),
         (
-                False,
-                cellprofiler.modules.correctilluminationcalculate.MODE_BRIGHT,
-                5,
-                2,
-                0.001,
-                0.7,
-                False,
-                True,
-                True,
+            False,
+            cellprofiler.modules.correctilluminationcalculate.MODE_BRIGHT,
+            5,
+            2,
+            0.001,
+            0.7,
+            False,
+            True,
+            True,
         ),
         (
-                False,
-                cellprofiler.modules.correctilluminationcalculate.MODE_DARK,
-                5,
-                2,
-                0.001,
-                0,
-                True,
-                False,
-                True,
+            False,
+            cellprofiler.modules.correctilluminationcalculate.MODE_DARK,
+            5,
+            2,
+            0.001,
+            0,
+            True,
+            False,
+            True,
         ),
         (
-                False,
-                cellprofiler.modules.correctilluminationcalculate.MODE_GRAY,
-                5,
-                2,
-                0.001,
-                0.5,
-                True,
-                True,
-                True,
+            False,
+            cellprofiler.modules.correctilluminationcalculate.MODE_GRAY,
+            5,
+            2,
+            0.001,
+            0.5,
+            True,
+            True,
+            True,
         ),
         (
-                False,
-                cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
-                7,
-                2,
-                0.001,
-                0,
-                True,
-                False,
-                True,
+            False,
+            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            7,
+            2,
+            0.001,
+            0,
+            True,
+            False,
+            True,
         ),
         (
-                False,
-                cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
-                4,
-                2,
-                0.001,
-                0,
-                True,
-                False,
-                True,
+            False,
+            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            4,
+            2,
+            0.001,
+            0,
+            True,
+            False,
+            True,
         ),
         (
-                False,
-                cellprofiler.modules.correctilluminationcalculate.MODE_DARK,
-                5,
-                2,
-                0.001,
-                0.7,
-                False,
-                True,
-                False,
+            False,
+            cellprofiler.modules.correctilluminationcalculate.MODE_DARK,
+            5,
+            2,
+            0.001,
+            0.7,
+            False,
+            True,
+            False,
         ),
         (
-                False,
-                cellprofiler.modules.correctilluminationcalculate.MODE_BRIGHT,
-                5,
-                2,
-                0.001,
-                0,
-                True,
-                False,
-                False,
+            False,
+            cellprofiler.modules.correctilluminationcalculate.MODE_BRIGHT,
+            5,
+            2,
+            0.001,
+            0,
+            True,
+            False,
+            False,
         ),
     ):
 
@@ -1170,7 +1180,9 @@ def test_rescale():
     expected_image = input_image * 2
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(
+        image_name, input_image
+    )
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -1222,7 +1234,9 @@ def test_rescale_outlier():
     expected_image[0, 0] = 1
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_listener(error_callback)
-    inj_module = cellprofiler_core.modules.injectimage.InjectImage(image_name, input_image)
+    inj_module = cellprofiler_core.modules.injectimage.InjectImage(
+        image_name, input_image
+    )
     inj_module.set_module_num(1)
     pipeline.add_module(inj_module)
     module = (
@@ -1437,23 +1451,23 @@ def test_load_v2():
     assert module.image_name == "Masked"
     assert module.illumination_image_name == "Illum"
     assert (
-            module.intensity_choice
-            == cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND
+        module.intensity_choice
+        == cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND
     )
     assert not module.dilate_objects
     assert module.object_dilation_radius == 2
     assert module.block_size == 55
     assert module.rescale_option == "No"
     assert (
-            module.each_or_all == cellprofiler.modules.correctilluminationcalculate.EA_EACH
+        module.each_or_all == cellprofiler.modules.correctilluminationcalculate.EA_EACH
     )
     assert (
-            module.smoothing_method
-            == cellprofiler.modules.correctilluminationcalculate.SM_SPLINES
+        module.smoothing_method
+        == cellprofiler.modules.correctilluminationcalculate.SM_SPLINES
     )
     assert (
-            module.automatic_object_width
-            == cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC
+        module.automatic_object_width
+        == cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC
     )
     assert module.object_width == 11
     assert module.size_of_smoothing_filter == 12
@@ -1463,8 +1477,8 @@ def test_load_v2():
     assert module.dilated_image_name == "IllumDilated"
     assert not module.automatic_splines
     assert (
-            module.spline_bg_mode
-            == cellprofiler.modules.correctilluminationcalculate.MODE_BRIGHT
+        module.spline_bg_mode
+        == cellprofiler.modules.correctilluminationcalculate.MODE_BRIGHT
     )
     assert module.spline_points == 4
     assert module.spline_threshold == 2
@@ -1477,9 +1491,9 @@ def test_load_v2():
     for module, spline_bg_mode in zip(
         pipeline.modules()[1:4],
         (
-                cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
-                cellprofiler.modules.correctilluminationcalculate.MODE_DARK,
-                cellprofiler.modules.correctilluminationcalculate.MODE_GRAY,
+            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            cellprofiler.modules.correctilluminationcalculate.MODE_DARK,
+            cellprofiler.modules.correctilluminationcalculate.MODE_GRAY,
         ),
     ):
         assert isinstance(
@@ -1490,6 +1504,6 @@ def test_load_v2():
 
     module = pipeline.modules()[4]
     assert (
-            module.smoothing_method
-            == cellprofiler.modules.correctilluminationcalculate.SM_CONVEX_HULL
+        module.smoothing_method
+        == cellprofiler.modules.correctilluminationcalculate.SM_CONVEX_HULL
     )

@@ -160,9 +160,7 @@ class MeasureObjectIntensity(cellprofiler_core.module.Module):
         result = [self.images_list, self.divider, self.objects_list]
         return result
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 2:
             num_imgs = setting_values.index("Do not use")
             setting_values = (
@@ -173,9 +171,12 @@ class MeasureObjectIntensity(cellprofiler_core.module.Module):
             variable_revision_number = 3
         if variable_revision_number == 3:
             num_imgs = int(setting_values[0])
-            images_list = setting_values[1:num_imgs+1]
-            objects_list = setting_values[num_imgs+1:]
-            setting_values = [", ".join(map(str, images_list)), ", ".join(map(str, objects_list))]
+            images_list = setting_values[1 : num_imgs + 1]
+            objects_list = setting_values[num_imgs + 1 :]
+            setting_values = [
+                ", ".join(map(str, images_list)),
+                ", ".join(map(str, objects_list)),
+            ]
             variable_revision_number = 4
         return setting_values, variable_revision_number
 
@@ -183,9 +184,13 @@ class MeasureObjectIntensity(cellprofiler_core.module.Module):
         """Make sure chosen objects and images are selected only once"""
         images = set()
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError("No images selected", self.images_list)
+            raise cellprofiler_core.setting.ValidationError(
+                "No images selected", self.images_list
+            )
         elif len(self.objects_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError("No objects selected", self.objects_list)
+            raise cellprofiler_core.setting.ValidationError(
+                "No objects selected", self.objects_list
+            )
         for image_name in self.images_list.value:
             if image_name in images:
                 raise cellprofiler_core.setting.ValidationError(
@@ -208,7 +213,10 @@ class MeasureObjectIntensity(cellprofiler_core.module.Module):
             for object_name in self.objects_list.value:
                 for category, features in (
                     (INTENSITY, ALL_MEASUREMENTS),
-                    (cellprofiler_core.measurement.C_LOCATION, ALL_LOCATION_MEASUREMENTS),
+                    (
+                        cellprofiler_core.measurement.C_LOCATION,
+                        ALL_LOCATION_MEASUREMENTS,
+                    ),
                 ):
                     for feature in features:
                         columns.append(
@@ -273,14 +281,16 @@ class MeasureObjectIntensity(cellprofiler_core.module.Module):
             )
             workspace.display_data.statistics = statistics = []
         if len(self.images_list.value) == 0 or len(self.objects_list.value) == 0:
-            raise ValueError("This module needs at least 1 image and object set selected")
-        for image_name in self.images_list.value:
-            image = workspace.image_set.get_image(
-                image_name, must_be_grayscale=True
+            raise ValueError(
+                "This module needs at least 1 image and object set selected"
             )
+        for image_name in self.images_list.value:
+            image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
             for object_name in self.objects_list.value:
                 if object_name not in workspace.object_set.object_names:
-                    raise ValueError("The %s objects are missing from the pipeline." % object_name)
+                    raise ValueError(
+                        "The %s objects are missing from the pipeline." % object_name
+                    )
                 # Need to refresh image after each iteration...
                 img = image.pixel_data
                 if image.has_mask:
@@ -325,7 +335,9 @@ class MeasureObjectIntensity(cellprofiler_core.module.Module):
                     if image.dimensions == 2:
                         labels = labels.reshape(1, *labels.shape)
 
-                    labels, img = cellprofiler_core.object.crop_labels_and_image(labels, img)
+                    labels, img = cellprofiler_core.object.crop_labels_and_image(
+                        labels, img
+                    )
                     _, masked_image = cellprofiler_core.object.crop_labels_and_image(
                         labels, masked_image
                     )

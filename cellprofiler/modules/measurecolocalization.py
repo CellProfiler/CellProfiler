@@ -132,7 +132,6 @@ class MeasureColocalization(cellprofiler_core.module.Module):
 Select the objects to be measured.""",
         )
 
-
         self.thr = cellprofiler_core.setting.Float(
             "Set threshold as percentage of maximum intensity for the images",
             15,
@@ -224,27 +223,28 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             ),
         )
 
-
     def settings(self):
         """Return the settings to be saved in the pipeline"""
-        result = [self.images_list,
-                  self.thr,
-                  self.images_or_objects,
-                  self.objects_list,
-                  self.do_all,
-                  self.do_corr_and_slope,
-                  self.do_manders,
-                  self.do_rwc,
-                  self.do_overlap,
-                  self.do_costes,
+        result = [
+            self.images_list,
+            self.thr,
+            self.images_or_objects,
+            self.objects_list,
+            self.do_all,
+            self.do_corr_and_slope,
+            self.do_manders,
+            self.do_rwc,
+            self.do_overlap,
+            self.do_costes,
         ]
         return result
 
     def visible_settings(self):
-        result = [self.images_list,
-                  self.spacer,
-                  self.thr,
-                  self.images_or_objects,
+        result = [
+            self.images_list,
+            self.spacer,
+            self.thr,
+            self.images_or_objects,
         ]
         if self.wants_objects():
             result += [self.objects_list]
@@ -315,7 +315,9 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
         else:
             helptext = None
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, statistics, workspace.display_data.col_labels, title=helptext)
+        figure.subplot_table(
+            0, 0, statistics, workspace.display_data.col_labels, title=helptext
+        )
 
     def run_image_pair_images(self, workspace, first_image_name, second_image_name):
         """Calculate the correlation between the pixels of two images"""
@@ -1392,7 +1394,9 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
 
         object_name - name of the measured object or cellprofiler_core.measurement.IMAGE
         """
-        if (object_name == cellprofiler_core.measurement.IMAGE and self.wants_images()) or (
+        if (
+            object_name == cellprofiler_core.measurement.IMAGE and self.wants_images()
+        ) or (
             (object_name != cellprofiler_core.measurement.IMAGE)
             and self.wants_objects()
             and (object_name in self.objects_list.value)
@@ -1443,9 +1447,7 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                     "No object sets selected", self.objects_list
                 )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting values for pipelines saved under old revisions"""
         if variable_revision_number < 2:
             raise NotImplementedError(
@@ -1466,8 +1468,8 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             div_img = 2 + num_images
             div_obj = div_img + 2 + num_objects
             images_set = set(setting_values[2:div_img])
-            thr_mode = setting_values[div_img:div_img + 2]
-            objects_set = set(setting_values[div_img + 2:div_obj])
+            thr_mode = setting_values[div_img : div_img + 2]
+            objects_set = set(setting_values[div_img + 2 : div_obj])
             other_settings = setting_values[div_obj:]
             if "None" in images_set:
                 images_set.remove("None")
@@ -1475,7 +1477,9 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 objects_set.remove("None")
             images_string = ", ".join(map(str, images_set))
             objects_string = ", ".join(map(str, objects_set))
-            setting_values = [images_string] + thr_mode + [objects_string] + other_settings
+            setting_values = (
+                [images_string] + thr_mode + [objects_string] + other_settings
+            )
             variable_revision_number = 4
         return setting_values, variable_revision_number
 

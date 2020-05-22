@@ -109,10 +109,7 @@ class CorrectIlluminationCalculate(cpm.Module):
             "Name the output image",
             "IllumBlue",
             doc="""Enter a name for the resultant illumination function.""",
-            provided_attributes={
-                "aggregate_image": True,
-                "available_on_last": False,
-            },
+            provided_attributes={"aggregate_image": True, "available_on_last": False,},
         )
 
         self.intensity_choice = cps.Choice(
@@ -1098,9 +1095,7 @@ fewer iterations, but less accuracy.
                 self.each_or_all,
             )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting values of old versions
 
         setting_values - sequence of strings that are the values for our settings

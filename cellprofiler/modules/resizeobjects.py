@@ -102,7 +102,13 @@ Enter the desired height of the final objects, in pixels.""",
     def settings(self):
         settings = super(ResizeObjects, self).settings()
 
-        settings += [self.method, self.factor, self.width, self.height, self.specific_image]
+        settings += [
+            self.method,
+            self.factor,
+            self.width,
+            self.height,
+            self.specific_image,
+        ]
 
         return settings
 
@@ -156,9 +162,9 @@ Enter the desired height of the final objects, in pixels.""",
     def add_measurements(
         self, workspace, input_object_name=None, output_object_name=None
     ):
-        super(cellprofiler_core.module.image_segmentation.ObjectProcessing, self).add_measurements(
-            workspace, self.y_name.value
-        )
+        super(
+            cellprofiler_core.module.image_segmentation.ObjectProcessing, self
+        ).add_measurements(workspace, self.y_name.value)
 
         labels = workspace.object_set.get_objects(self.y_name.value).segmented
 
@@ -179,9 +185,7 @@ Enter the desired height of the final objects, in pixels.""",
             unique_labels,
         )
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             setting_values += ["None"]
             variable_revision_number = 2
@@ -208,4 +212,3 @@ def rescale(data, factor):
         factor = (1,) + factor
 
     return scipy.ndimage.zoom(data, factor, order=0, mode="nearest")
-

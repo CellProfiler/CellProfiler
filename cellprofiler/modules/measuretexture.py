@@ -187,7 +187,12 @@ measurements, per-object measurements or both.
         )
 
     def settings(self):
-        settings = [self.images_list, self.objects_list, self.scale_count, self.images_or_objects]
+        settings = [
+            self.images_list,
+            self.objects_list,
+            self.scale_count,
+            self.images_or_objects,
+        ]
 
         for group in self.scale_groups:
             settings += [getattr(group, "scale")]
@@ -205,7 +210,11 @@ measurements, per-object measurements or both.
                 fn()
 
     def visible_settings(self):
-        visible_settings = [self.images_list, self.image_divider, self.images_or_objects]
+        visible_settings = [
+            self.images_list,
+            self.image_divider,
+            self.images_or_objects,
+        ]
 
         if self.wants_object_measurements():
             visible_settings += [self.objects_list]
@@ -267,7 +276,9 @@ measured and will result in a undefined value in the output file.
     def validate_module(self, pipeline):
         images = set()
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError("No images selected", self.images_list)
+            raise cellprofiler_core.setting.ValidationError(
+                "No images selected", self.images_list
+            )
         for image_name in self.images_list.value:
             if image_name in images:
                 raise cellprofiler_core.setting.ValidationError(
@@ -278,7 +289,9 @@ measured and will result in a undefined value in the output file.
         if self.wants_object_measurements():
             objects = set()
             if len(self.objects_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError("No objects selected", self.objects_list)
+                raise cellprofiler_core.setting.ValidationError(
+                    "No objects selected", self.objects_list
+                )
             for object_name in self.objects_list.value:
                 if object_name in objects:
                     raise cellprofiler_core.setting.ValidationError(
@@ -480,7 +493,9 @@ measured and will result in a undefined value in the output file.
 
             if numpy.any(~m1):
                 if image.has_mask:
-                    mask, m2 = cellprofiler_core.object.size_similarly(labels, image.mask)
+                    mask, m2 = cellprofiler_core.object.size_similarly(
+                        labels, image.mask
+                    )
                     mask[~m2] = False
                 else:
                     mask = m1
@@ -590,16 +605,12 @@ measured and will result in a undefined value in the output file.
 
         return [statistics]
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # Added "wants_gabor"
             #
-            setting_values = (
-                setting_values[:-1] + ["Yes"] + setting_values[-1:]
-            )
+            setting_values = setting_values[:-1] + ["Yes"] + setting_values[-1:]
 
             variable_revision_number = 2
 
@@ -668,7 +679,12 @@ measured and will result in a undefined value in the output file.
             objects_string = ", ".join(map(str, objects_set))
 
             module_mode = setting_values[-1]
-            setting_values = [images_string, objects_string, num_scales, module_mode] + scales_list
+            setting_values = [
+                images_string,
+                objects_string,
+                num_scales,
+                module_mode,
+            ] + scales_list
             variable_revision_number = 6
 
         return setting_values, variable_revision_number

@@ -1049,8 +1049,8 @@ def test_test_load_v3():
     assert module.y_name == "EnhancedTexture"
     assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
     assert (
-            module.enhance_method
-            == cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE
+        module.enhance_method
+        == cellprofiler.modules.enhanceorsuppressfeatures.E_TEXTURE
     )
     assert module.smoothing == 3.5
     assert module.object_size == 10
@@ -1059,7 +1059,7 @@ def test_test_load_v3():
     assert module.angle == 45
     assert module.decay == 0.9
     assert (
-            module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
     )
 
     module = pipeline.modules()[1]
@@ -1091,8 +1091,8 @@ def test_load_v4():
     assert module.y_name == "EnhancedDendrite"
     assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
     assert (
-            module.enhance_method
-            == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+        module.enhance_method
+        == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
     )
     assert module.smoothing == 2.0
     assert module.object_size == 10
@@ -1101,8 +1101,8 @@ def test_load_v4():
     assert module.angle == 0
     assert module.decay == 0.95
     assert (
-            module.neurite_choice
-            == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+        module.neurite_choice
+        == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
     )
 
     module = pipeline.modules()[1]
@@ -1110,8 +1110,8 @@ def test_load_v4():
         module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
     assert (
-            module.neurite_choice
-            == cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT
+        module.neurite_choice
+        == cellprofiler.modules.enhanceorsuppressfeatures.N_GRADIENT
     )
 
 
@@ -1137,8 +1137,8 @@ def test_load_v5():
     assert module.y_name == "EnhancedDendrite"
     assert module.method == cellprofiler.modules.enhanceorsuppressfeatures.ENHANCE
     assert (
-            module.enhance_method
-            == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
+        module.enhance_method
+        == cellprofiler.modules.enhanceorsuppressfeatures.E_NEURITES
     )
     assert module.smoothing == 2.0
     assert module.object_size == 10
@@ -1147,11 +1147,11 @@ def test_load_v5():
     assert module.angle == 0
     assert module.decay == 0.95
     assert (
-            module.neurite_choice
-            == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
+        module.neurite_choice
+        == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
     )
     assert (
-            module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
     )
 
     module = pipeline.modules()[1]
@@ -1159,5 +1159,5 @@ def test_load_v5():
         module, cellprofiler.modules.enhanceorsuppressfeatures.EnhanceOrSuppressFeatures
     )
     assert (
-            module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_FAST
+        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_FAST
     )

@@ -76,7 +76,8 @@ def test_defaults(module):
     "image",
     [
         pytest.param(
-            cellprofiler_core.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
+            cellprofiler_core.image.Image(numpy.random.rand(100, 100)),
+            id="grayscale_image",
         )
     ],
 )
@@ -124,7 +125,8 @@ def test_run_masks(image, module, image_set, workspace, object_set, tmpdir):
     "image",
     [
         pytest.param(
-            cellprofiler_core.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
+            cellprofiler_core.image.Image(numpy.random.rand(100, 100)),
+            id="grayscale_image",
         )
     ],
 )
@@ -173,7 +175,8 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
     "image",
     [
         pytest.param(
-            cellprofiler_core.image.Image(numpy.random.rand(100, 100)), id="grayscale_image"
+            cellprofiler_core.image.Image(numpy.random.rand(100, 100)),
+            id="grayscale_image",
         )
     ],
 )

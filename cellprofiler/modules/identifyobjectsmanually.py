@@ -153,9 +153,7 @@ refer to your objects in subsequent modules.""",
                 return None
             return dialog_box.labels[0]
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             setting_values = setting_values[:-2]
 

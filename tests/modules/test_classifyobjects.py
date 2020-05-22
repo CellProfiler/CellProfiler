@@ -395,14 +395,14 @@ def test_two():
     m2 = numpy.random.permutation(exps)
     for wants_custom_names in (False, True):
         for tm1 in (
+            cellprofiler.modules.classifyobjects.TM_MEAN,
+            cellprofiler.modules.classifyobjects.TM_MEDIAN,
+            cellprofiler.modules.classifyobjects.TM_CUSTOM,
+        ):
+            for tm2 in (
                 cellprofiler.modules.classifyobjects.TM_MEAN,
                 cellprofiler.modules.classifyobjects.TM_MEDIAN,
                 cellprofiler.modules.classifyobjects.TM_CUSTOM,
-        ):
-            for tm2 in (
-                    cellprofiler.modules.classifyobjects.TM_MEAN,
-                    cellprofiler.modules.classifyobjects.TM_MEDIAN,
-                    cellprofiler.modules.classifyobjects.TM_CUSTOM,
             ):
                 workspace, module = make_workspace(
                     labels,
@@ -464,14 +464,18 @@ def test_two():
                         )
                     else:
                         assert column[0] == OBJECTS_NAME
-                        assert column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
+                        assert (
+                            column[2] == cellprofiler_core.measurement.COLTYPE_INTEGER
+                        )
 
                 assert len(columns) == 12
                 assert (
                     len(set([column[1] for column in columns])) == 12
                 )  # no duplicates
 
-                categories = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
+                categories = module.get_categories(
+                    None, cellprofiler_core.measurement.IMAGE
+                )
                 assert len(categories) == 1
                 categories = module.get_categories(None, OBJECTS_NAME)
                 assert len(categories) == 1

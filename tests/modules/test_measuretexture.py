@@ -85,9 +85,9 @@ Number of angles to compute for Gabor:6
         module = pipeline.modules()[i]
         assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
         assert len(module.images_list.value) == 2
-        assert {'rawDNA', 'rawGFP'}.issubset(module.images_list.value)
+        assert {"rawDNA", "rawGFP"}.issubset(module.images_list.value)
         assert len(module.objects_list.value) == 2
-        assert {'Cells', 'Nuclei'}.issubset(module.objects_list.value)
+        assert {"Cells", "Nuclei"}.issubset(module.objects_list.value)
         assert len(module.scale_groups) == 2
         assert module.scale_groups[0].scale == 3
         assert module.scale_groups[1].scale == 5
@@ -140,9 +140,9 @@ Number of angles to compute for Gabor:6
         module = pipeline.modules()[i]
         assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
         assert len(module.images_list.value) == 2
-        assert {'rawDNA', 'rawGFP'}.issubset(module.images_list.value)
+        assert {"rawDNA", "rawGFP"}.issubset(module.images_list.value)
         assert len(module.objects_list.value) == 2
-        assert {'Cells', 'Nuclei'}.issubset(module.objects_list.value)
+        assert {"Cells", "Nuclei"}.issubset(module.objects_list.value)
         assert len(module.scale_groups) == 2
         assert module.scale_groups[0].scale == 3
         assert module.scale_groups[1].scale == 5
@@ -223,9 +223,9 @@ Measure images or objects?:Both
         module = pipeline.modules()[i]
         assert isinstance(module, cellprofiler.modules.measuretexture.MeasureTexture)
         assert len(module.images_list.value) == 2
-        assert {'rawDNA', 'rawGFP'}.issubset(module.images_list.value)
+        assert {"rawDNA", "rawGFP"}.issubset(module.images_list.value)
         assert len(module.objects_list.value) == 2
-        assert {'Cells', 'Nuclei'}.issubset(module.objects_list.value)
+        assert {"Cells", "Nuclei"}.issubset(module.objects_list.value)
         assert len(module.scale_groups) == 2
         assert module.scale_groups[0].scale == 3
         assert module.scale_groups[1].scale == 5

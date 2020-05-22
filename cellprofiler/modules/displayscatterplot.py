@@ -271,9 +271,7 @@ executed.
     def run_as_data_tool(self, workspace):
         self.run(workspace)
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting_values to upgrade from a previous version"""
         if variable_revision_number == 1:
             if setting_values[0] == cpmeas.IMAGE:

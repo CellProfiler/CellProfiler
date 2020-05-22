@@ -98,7 +98,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         Press this button to capture granularity measurements for objects, such as
         those identified by a prior **IdentifyPrimaryObjects** module.
         **MeasureGranularity** will measure the image’s granularity within each
-        object at the requested scales."""
+        object at the requested scales.""",
         )
 
         self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
@@ -112,11 +112,11 @@ class MeasureGranularity(cellprofiler_core.module.Module):
 
         self.divider_bottom = cellprofiler_core.setting.Divider(line=True)
         self.subsample_size = cellprofiler_core.setting.Float(
-                "Subsampling factor for granularity measurements",
-                0.25,
-                minval=np.finfo(float).eps,
-                maxval=1,
-                doc="""\
+            "Subsampling factor for granularity measurements",
+            0.25,
+            minval=np.finfo(float).eps,
+            maxval=1,
+            doc="""\
         If the textures of interest are larger than a few pixels, we recommend
         you subsample the image with a factor <1 to speed up the processing.
         Down sampling the image will let you detect larger structures with a
@@ -137,14 +137,14 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         slides 27-31, 49-50.
 
         .. _pdf: http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf""",
-            )
+        )
 
         self.image_sample_size = cellprofiler_core.setting.Float(
-                "Subsampling factor for background reduction",
-                0.25,
-                minval=np.finfo(float).eps,
-                maxval=1,
-                doc="""\
+            "Subsampling factor for background reduction",
+            0.25,
+            minval=np.finfo(float).eps,
+            maxval=1,
+            doc="""\
         It is important to remove low frequency image background variations as
         they will affect the final granularity measurement. Any method can be
         used as a pre-processing step prior to this module; we have chosen to
@@ -155,29 +155,29 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         background removal in the context of granulometry is that image volume
         at certain granular size is normalized by total image volume, which
         depends on how the background was removed.""",
-            )
+        )
 
         self.element_size = cellprofiler_core.setting.Integer(
-                "Radius of structuring element",
-                10,
-                minval=1,
-                doc="""\
+            "Radius of structuring element",
+            10,
+            minval=1,
+            doc="""\
         This radius should correspond to the radius of the textures of interest
         *after* subsampling; i.e., if textures in the original image scale have
         a radius of 40 pixels, and a subsampling factor of 0.25 is used, the
         structuring element size should be 10 or slightly smaller, and the range
         of the spectrum defined below will cover more sizes.""",
-            )
+        )
 
         self.granular_spectrum_length = cellprofiler_core.setting.Integer(
-                "Range of the granular spectrum",
-                16,
-                minval=1,
-                doc="""\
+            "Range of the granular spectrum",
+            16,
+            minval=1,
+            doc="""\
         You may need a trial run to see which granular
         spectrum range yields informative measurements. Start by using a wide spectrum and
         narrow it down to the informative range to save time.""",
-            )
+        )
 
     def validate_module(self, pipeline):
         """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
@@ -192,41 +192,46 @@ class MeasureGranularity(cellprofiler_core.module.Module):
                     "No object sets selected", self.objects_list
                 )
 
-
         measurements, sources = self.get_measurement_columns(
             pipeline, return_sources=True
         )
         d = {}
         for m, s in zip(measurements, sources):
             if m in d:
-                raise cellprofiler_core.setting.ValidationError("Measurement %s made twice." % (m[1]), s[0])
+                raise cellprofiler_core.setting.ValidationError(
+                    "Measurement %s made twice." % (m[1]), s[0]
+                )
             d[m] = True
 
     def settings(self):
-        result = [self.images_list,
-                  self.wants_objects,
-                  self.objects_list,
-                  self.subsample_size,
-                  self.image_sample_size,
-                  self.element_size,
-                  self.granular_spectrum_length,
-                  ]
+        result = [
+            self.images_list,
+            self.wants_objects,
+            self.objects_list,
+            self.subsample_size,
+            self.image_sample_size,
+            self.element_size,
+            self.granular_spectrum_length,
+        ]
         return result
 
     def visible_settings(self):
         result = [self.images_list, self.divider_top, self.wants_objects]
         if self.wants_objects.value:
             result += [self.objects_list]
-        result += [self.divider_bottom,
-                   self.subsample_size,
-                   self.image_sample_size,
-                   self.element_size,
-                   self.granular_spectrum_length
-                   ]
+        result += [
+            self.divider_bottom,
+            self.subsample_size,
+            self.image_sample_size,
+            self.element_size,
+            self.granular_spectrum_length,
+        ]
         return result
 
     def run(self, workspace):
-        col_labels = ["Image name"] + ["GS%d" % n for n in range(1, self.granular_spectrum_length.value + 1)]
+        col_labels = ["Image name"] + [
+            "GS%d" % n for n in range(1, self.granular_spectrum_length.value + 1)
+        ]
         statistics = []
         for image_name in self.images_list.value:
             statistic = self.run_on_image_setting(workspace, image_name)
@@ -239,9 +244,13 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         statistics = workspace.display_data.statistics
         col_labels = workspace.display_data.col_labels
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, statistics, col_labels=col_labels,
-                             title="If individual objects were measured, use an Export module to view their results"
-                             )
+        figure.subplot_table(
+            0,
+            0,
+            statistics,
+            col_labels=col_labels,
+            title="If individual objects were measured, use an Export module to view their results",
+        )
 
     def run_on_image_setting(self, workspace, image_name):
         assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
@@ -347,7 +356,9 @@ class MeasureGranularity(cellprofiler_core.module.Module):
                     )
                     self.start_mean = np.maximum(self.current_mean, np.finfo(float).eps)
 
-        object_records = [ObjectRecord(objects_name) for objects_name in self.objects_list.value]
+        object_records = [
+            ObjectRecord(objects_name) for objects_name in self.objects_list.value
+        ]
         #
         # Transcribed from the Matlab module: granspectr function
         #
@@ -435,7 +446,11 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             gslength = self.granular_spectrum_length.value
             for i in range(1, gslength + 1):
                 result += [
-                    (cellprofiler_core.measurement.IMAGE, self.granularity_feature(i, image_name), cellprofiler_core.measurement.COLTYPE_FLOAT)
+                    (
+                        cellprofiler_core.measurement.IMAGE,
+                        self.granularity_feature(i, image_name),
+                        cellprofiler_core.measurement.COLTYPE_FLOAT,
+                    )
                 ]
                 sources += [(image_name, self.granularity_feature(i, image_name))]
             for object_name in self.objects_list.value:
@@ -480,7 +495,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
     def get_measurements(self, pipeline, object_name, category):
         max_length = 0
         if category == "Granularity":
-                max_length = max(max_length, self.granular_spectrum_length.value)
+            max_length = max(max_length, self.granular_spectrum_length.value)
         return [str(i) for i in range(1, max_length + 1)]
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
@@ -500,9 +515,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
     def granularity_feature(self, length, image_name):
         return C_GRANULARITY % (length, image_name)
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             # changed to use cellprofiler_core.setting.SettingsGroup() but did not change the
             # ordering of any of the settings
@@ -528,10 +541,10 @@ class MeasureGranularity(cellprofiler_core.module.Module):
                 n_objects = int(grouplist[0])
                 images_list += [grouplist[1]]
                 setting_groups.append(tuple(grouplist[2:6]))
-                if grouplist[6:6+n_objects] != "None":
-                    objects_list += grouplist[6:6+n_objects]
-                if len(grouplist) > 6+n_objects:
-                    grouplist = grouplist[6+n_objects:]
+                if grouplist[6 : 6 + n_objects] != "None":
+                    objects_list += grouplist[6 : 6 + n_objects]
+                if len(grouplist) > 6 + n_objects:
+                    grouplist = grouplist[6 + n_objects :]
                 else:
                     grouplist = False
             images_set = set(images_list)
@@ -561,7 +574,9 @@ class MeasureGranularity(cellprofiler_core.module.Module):
                 wants_objects = False
             images_string = ", ".join(map(str, images_set))
             objects_string = ", ".join(map(str, objects_set))
-            setting_values = [images_string, wants_objects, objects_string] + list(setting_groups[0])
+            setting_values = [images_string, wants_objects, objects_string] + list(
+                setting_groups[0]
+            )
             variable_revision_number = 4
         return setting_values, variable_revision_number
 

@@ -391,7 +391,8 @@ def test_image_and_objects(image, measurements, module, objects, workspace):
 
     numpy.testing.assert_almost_equal(
         measurements.get_current_measurement(
-            cellprofiler_core.measurement.IMAGE, "Intensity_PercentMaximal_image_objects"
+            cellprofiler_core.measurement.IMAGE,
+            "Intensity_PercentMaximal_image_objects",
         ),
         400.0 / 64.0,
     )
@@ -522,6 +523,7 @@ def test_get_measurement_columns_whole_image_mode(module):
                 ]
             )
 
+
 def test_get_measurement_columns_object_mode(module):
     image_names = ["image%d" % i for i in range(3)]
 
@@ -546,40 +548,40 @@ def test_get_measurement_columns_object_mode(module):
     for expected_suffix in expected_suffixes:
         for feature, coltype in (
             (
-                    cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY,
-                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY,
-                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY,
-                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY,
-                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.measureimageintensity.F_TOTAL_AREA,
-                    cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler.modules.measureimageintensity.F_TOTAL_AREA,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
-                    cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL,
-                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY,
-                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE,
-                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                    cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE,
-                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
         ):
             # feature names are now formatting strings

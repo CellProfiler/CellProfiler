@@ -36,9 +36,11 @@ if sys.platform.startswith("win") and hasattr(sys, "frozen"):
             os.environ["JAVA_HOME"] = os.environ["CP_JAVA_HOME"]
         assert "JAVA_HOME" in os.environ
     except AssertionError:
-        print("CellProfiler Startup ERROR: Could not find path to Java environment directory.\n"
-              "Please set the CP_JAVA_HOME system environment variable.\n"
-              "Visit http://broad.io/cpjava for instructions.")
+        print(
+            "CellProfiler Startup ERROR: Could not find path to Java environment directory.\n"
+            "Please set the CP_JAVA_HOME system environment variable.\n"
+            "Visit http://broad.io/cpjava for instructions."
+        )
         os.system("pause")  # Keep console window open until keypress.
         os._exit(1)
 
@@ -75,7 +77,7 @@ def main(args=None):
         return exit_code
 
     options, args = parse_args(args)
-    
+
     if options.temp_dir is not None:
         if not os.path.exists(options.temp_dir):
             os.makedirs(options.temp_dir)
@@ -84,40 +86,49 @@ def main(args=None):
         )
 
     to_clean = []
-    
+
     if options.pipeline_filename:
         o = urlparse(options.pipeline_filename)
         if o[0] in ("ftp", "http", "https"):
             import urllib2
-            temp_pipe_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.cppipe',dir=temp_dir,delete=False)
+
+            temp_pipe_file = tempfile.NamedTemporaryFile(
+                mode="w+b", suffix=".cppipe", dir=temp_dir, delete=False
+            )
             downloaded_pipeline = urllib2.urlopen(options.pipeline_filename)
             for line in downloaded_pipeline:
                 temp_pipe_file.write(line)
             options.pipeline_filename = temp_pipe_file.name
             to_clean.append(os.path.join(temp_dir, temp_pipe_file.name))
-    
+
     if options.image_set_file:
         o = urlparse(options.image_set_file)
         if o[0] in ("ftp", "http", "https"):
             import urllib2
-            temp_set_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv',dir=temp_dir,delete=False)
+
+            temp_set_file = tempfile.NamedTemporaryFile(
+                mode="w+b", suffix=".csv", dir=temp_dir, delete=False
+            )
             downloaded_set_csv = urllib2.urlopen(options.image_set_file)
             for line in downloaded_set_csv:
                 temp_set_file.write(line)
             options.image_set_file = temp_set_file.name
             to_clean.append(os.path.join(temp_dir, temp_set_file.name))
-    
+
     if options.data_file:
         o = urlparse(options.data_file)
         if o[0] in ("ftp", "http", "https"):
             import urllib2
-            temp_data_file = tempfile.NamedTemporaryFile(mode='w+b',suffix='.csv',dir=temp_dir,delete=False)
+
+            temp_data_file = tempfile.NamedTemporaryFile(
+                mode="w+b", suffix=".csv", dir=temp_dir, delete=False
+            )
             downloaded_data_csv = urllib2.urlopen(options.data_file)
             for line in downloaded_data_csv:
                 temp_data_file.write(line)
             options.data_file = temp_data_file.name
             to_clean.append(os.path.join(temp_dir, temp_data_file.name))
-    
+
     if options.print_version:
         __version__(exit_code)
 
@@ -161,10 +172,14 @@ def main(args=None):
         if not os.path.exists(options.output_directory):
             os.makedirs(options.output_directory)
 
-        cellprofiler_core.preferences.set_default_output_directory(options.output_directory)
+        cellprofiler_core.preferences.set_default_output_directory(
+            options.output_directory
+        )
 
     if options.image_directory:
-        cellprofiler_core.preferences.set_default_image_directory(options.image_directory)
+        cellprofiler_core.preferences.set_default_image_directory(
+            options.image_directory
+        )
 
     if options.run_pipeline and not options.pipeline_filename:
         raise ValueError("You must specify a pipeline filename to run")
@@ -194,7 +209,9 @@ def main(args=None):
             import cellprofiler.gui.app
 
             if options.pipeline_filename:
-                if cellprofiler_core.workspace.is_workspace_file(options.pipeline_filename):
+                if cellprofiler_core.workspace.is_workspace_file(
+                    options.pipeline_filename
+                ):
                     workspace_path = os.path.expanduser(options.pipeline_filename)
 
                     pipeline_path = None
@@ -798,7 +815,9 @@ def run_pipeline_headless(options, args):
             #
 
             with h5py.File(options.pipeline_filename, "r") as src:
-                if cellprofiler_core.utilities.hdf5_dict.HDF5FileList.has_file_list(src):
+                if cellprofiler_core.utilities.hdf5_dict.HDF5FileList.has_file_list(
+                    src
+                ):
                     cellprofiler_core.utilities.hdf5_dict.HDF5FileList.copy(
                         src, initial_measurements.hdf5_dict.hdf5_file
                     )
@@ -871,7 +890,8 @@ def run_pipeline_headless(options, args):
 
     if options.done_file is not None:
         if measurements is not None and measurements.has_feature(
-            cellprofiler_core.measurement.EXPERIMENT, cellprofiler_core.pipeline.EXIT_STATUS
+            cellprofiler_core.measurement.EXPERIMENT,
+            cellprofiler_core.pipeline.EXIT_STATUS,
         ):
             done_text = measurements.get_experiment_measurement(
                 cellprofiler_core.pipeline.EXIT_STATUS

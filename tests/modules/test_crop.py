@@ -29,7 +29,9 @@ def make_workspace(input_pixels, crop_image=None, cropping=None, crop_objects=No
     if cropping is not None:
         image_set.add(
             CROPPING,
-            cellprofiler_core.image.Image(numpy.zeros(cropping.shape), crop_mask=cropping),
+            cellprofiler_core.image.Image(
+                numpy.zeros(cropping.shape), crop_mask=cropping
+            ),
         )
         module.cropping_mask_source.value = CROPPING
     object_set = cellprofiler_core.object.ObjectSet()

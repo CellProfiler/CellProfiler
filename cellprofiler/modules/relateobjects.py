@@ -680,7 +680,9 @@ parents or children of the parent object.""",
 
         sub_object_name = self.y_name.value
 
-        primary_parent_feature = cellprofiler_core.measurement.FF_PARENT % primary_parent
+        primary_parent_feature = (
+            cellprofiler_core.measurement.FF_PARENT % primary_parent
+        )
 
         if parent_feature in meas.get_feature_names(sub_object_name):
             parents_of = meas.get_current_measurement(sub_object_name, parent_feature)
@@ -834,13 +836,19 @@ parents or children of the parent object.""",
         if self.wants_child_objects_saved:
             columns = super(RelateObjects, self).get_measurement_columns(
                 pipeline,
-                additional_objects=[(self.y_name.value, self.output_child_objects_name.value)])
+                additional_objects=[
+                    (self.y_name.value, self.output_child_objects_name.value)
+                ],
+            )
             columns_to_return = []
             for column in columns:
-                if column[0] == self.output_child_objects_name.value or self.output_child_objects_name.value in column[1]:
+                if (
+                    column[0] == self.output_child_objects_name.value
+                    or self.output_child_objects_name.value in column[1]
+                ):
                     columns_to_return.append(column)
         return columns_to_return
-   
+
     def get_measurement_columns(self, pipeline):
         """Return the column definitions for this module's measurements"""
 
@@ -848,13 +856,13 @@ parents or children of the parent object.""",
             (
                 self.y_name.value,
                 cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
-                cellprofiler_core.measurement.COLTYPE_INTEGER
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 self.x_name.value,
                 cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
-                cellprofiler_core.measurement.COLTYPE_INTEGER
-            )
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
+            ),
         ]
 
         if self.wants_child_objects_saved:
@@ -982,9 +990,7 @@ parents or children of the parent object.""",
         for i in range(1, step_parent_count):
             self.add_step_parent()
 
-    def upgrade_settings(
-        self, setting_values, variable_revision_number, module_name
-    ):
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
             #
             # Added other distance parents
@@ -1014,9 +1020,7 @@ parents or children of the parent object.""",
             variable_revision_number = 3
 
         if variable_revision_number == 3:
-            setting_values = (
-                setting_values[:5] + ["No"] + setting_values[5:]
-            )
+            setting_values = setting_values[:5] + ["No"] + setting_values[5:]
 
             variable_revision_number = 5
 

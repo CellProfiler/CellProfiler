@@ -67,7 +67,7 @@ setuptools.setup(
         "numpy>=1.18.2",
         "pillow==7.0.0",
         "prokaryote==2.4.1",
-        "python-bioformats==1.5.2",
+        "python-bioformats>=1.5.2",
         "python-javabridge",
         "pyzmq==18.0.1",
         "raven>=6.10",

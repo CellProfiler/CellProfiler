@@ -40,6 +40,7 @@ import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
+from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
 import cellprofiler.gui.viewworkspace
 import cellprofiler.gui.workspace
 import cellprofiler.icons
@@ -357,6 +358,11 @@ class PipelineController(object):
             wx.EVT_MENU,
             self.on_hide_all_windows,
             id=cellprofiler.gui.cpframe.ID_WINDOW_HIDE_ALL_WINDOWS,
+        )
+
+        frame.Bind(
+            EVT_PLV_VALID_STEP_COLUMN_CLICKED,
+            self.on_step_from_specific_module,
         )
 
         from bioformats.formatreader import set_omero_login_hook
@@ -3984,6 +3990,13 @@ class PipelineController(object):
         active_module = self.__pipeline_list_view.get_active_module()
         self.__pipeline_list_view.set_current_debug_module(active_module)
         success = self.do_step(active_module)
+        if success:
+            self.next_debug_module()
+
+    def on_step_from_specific_module(self, event):
+        target_module = event.module
+        self.__pipeline_list_view.set_current_debug_module(target_module)
+        success = self.do_step(target_module)
         if success:
             self.next_debug_module()
 

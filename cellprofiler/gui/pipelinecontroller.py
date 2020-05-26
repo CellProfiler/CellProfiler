@@ -40,7 +40,7 @@ import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
-import cellprofiler.gui.viewworkspace
+import cellprofiler.gui.view_workspace
 import cellprofiler.gui.workspace
 import cellprofiler.icons
 import cellprofiler_core.analysis

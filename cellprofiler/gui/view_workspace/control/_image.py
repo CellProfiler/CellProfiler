@@ -2,7 +2,7 @@ import cellprofiler_core.preferences
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
-from cellprofiler.gui.view_workspace import bind_data_class
+from cellprofiler.gui.view_workspace.control import bind_data_class
 from cellprofiler.gui.view_workspace.control._control import Control
 
 

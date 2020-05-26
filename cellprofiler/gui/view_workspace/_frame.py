@@ -5,6 +5,7 @@ import wx
 import wx.lib.colourselect
 import wx.lib.scrolledpanel
 
+import cellprofiler.gui
 import cellprofiler.gui.artist
 import cellprofiler.gui.figure
 import cellprofiler.gui.help

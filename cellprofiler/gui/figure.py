@@ -945,7 +945,7 @@ class Figure(wx.Frame):
         else:
             if dimensions == 2:
                 self.subplots = numpy.zeros(subplots, dtype=object)
-                self.gridspec = matplotlib.gridspec.GridSpec(
+                self.__gridspec = matplotlib.gridspec.GridSpec(
                     subplots[1], subplots[0], figure=self.figure
                 )
             else:
@@ -965,10 +965,10 @@ class Figure(wx.Frame):
         if self.dimensions == 3:
             return None
         if not self.subplots[x, y]:
-            if self.gridspec:
+            if self.__gridspec:
                 # Add the plot to a premade subplot layout
                 plot = self.figure.add_subplot(
-                    self.gridspec[y, x], sharex=sharex, sharey=sharey,
+                    self.__gridspec[y, x], sharex=sharex, sharey=sharey,
                 )
             else:
                 rows, cols = self.subplots.shape

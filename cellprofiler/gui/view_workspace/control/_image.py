@@ -37,6 +37,12 @@ class Image(Control):
     def data(self):
         return self._data
 
+    @data.setter
+    def data(self, name):
+        image_set = self.frame.workspace.image_set
+        image = image_set.get_image(name)
+        self._data.pixel_data = image.pixel_data
+
     @property
     def names(self):
         return self.frame.workspace.image_set.names

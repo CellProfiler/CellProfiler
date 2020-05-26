@@ -736,16 +736,17 @@ class Figure(wx.Frame):
             diagonal = numpy.sqrt(
                 (xinterval[1] - xinterval[0]) ** 2 + (yinterval[1] - yinterval[0]) ** 2
             )
-            mutation_scale = min(int(length * 100 / diagonal), 20)
+            mutation_scale = max(min(int(length * 100 / diagonal), 20), 1)
             if self.length_arrow is not None:
                 self.length_arrow.set_positions(
                     (self.mouse_down[0], self.mouse_down[1]), (event.xdata, event.ydata)
                 )
+                self.length_arrow.set_mutation_scale(mutation_scale)
             else:
                 self.length_arrow = matplotlib.patches.FancyArrowPatch(
                     (self.mouse_down[0], self.mouse_down[1]),
                     (event.xdata, event.ydata),
-                    edgecolor="red",
+                    edgecolor="blue",
                     arrowstyle="<->",
                     mutation_scale=mutation_scale,
                 )

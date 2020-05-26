@@ -718,6 +718,9 @@ class Figure(wx.Frame):
             xi = int(event.xdata + 0.5)
             yi = int(event.ydata + 0.5)
             fields = self.get_fields(event, yi, xi, x1)
+        else:
+            # Mouse has moved off the plot, stop updating.
+            return
 
         # Calculate the length field if mouse is down
         if self.mouse_down is not None:

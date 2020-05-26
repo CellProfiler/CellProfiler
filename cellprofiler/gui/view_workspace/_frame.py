@@ -273,7 +273,7 @@ class Frame:
         vw_row = row_class(self, color, can_delete)
 
         grid_sizer.Add(vw_row.chooser, (row, self.C_CHOOSER), flag=wx.EXPAND)
-        grid_sizer.Add(vw_row.color_ctrl, (row, self.C_COLOR), flag=wx.EXPAND)
+        grid_sizer.Add(vw_row.colour_select, (row, self.C_COLOR), flag=wx.EXPAND)
         grid_sizer.Add(vw_row.show_check, (row, self.C_SHOW), flag=wx.ALIGN_CENTER)
         grid_sizer.Add(vw_row.remove_button, (row, self.C_REMOVE), flag=wx.ALIGN_CENTER)
         rows.append(vw_row)
@@ -299,7 +299,7 @@ class Frame:
             return
         for control in (
             vw_row.chooser,
-            vw_row.color_ctrl,
+            vw_row.colour_select,
             vw_row.show_check,
             vw_row.remove_button,
         ):
@@ -312,7 +312,7 @@ class Frame:
             for j, control in enumerate(
                 (
                     vw_row.chooser,
-                    vw_row.color_ctrl,
+                    vw_row.colour_select,
                     vw_row.show_check,
                     vw_row.remove_button,
                 )

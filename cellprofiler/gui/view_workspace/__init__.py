@@ -1,3 +1,5 @@
+from ._frame import Frame
+
 __the_workspace_viewer = None
 
 

@@ -138,10 +138,12 @@ ID_WINDOW = wx.NewId()
 ID_WINDOW_CLOSE_ALL = wx.NewId()
 ID_WINDOW_SHOW_ALL_WINDOWS = wx.NewId()
 ID_WINDOW_HIDE_ALL_WINDOWS = wx.NewId()
+ID_WINDOW_VIEW_WORKSPACE = wx.NewId()
 ID_WINDOW_ALL = (
     ID_WINDOW_CLOSE_ALL,
     ID_WINDOW_SHOW_ALL_WINDOWS,
     ID_WINDOW_HIDE_ALL_WINDOWS,
+    ID_WINDOW_VIEW_WORKSPACE,
 )
 
 window_ids = []
@@ -820,6 +822,9 @@ class CPFrame(wx.Frame):
             "Hide all module display windows for all modules during analysis",
         )
         self.__menu_window.AppendSeparator()
+        self.__menu_window.Append(
+            ID_WINDOW_VIEW_WORKSPACE, "View workspace", "View workspace"
+        )
 
         self.__menu_help = cellprofiler.gui.help.menu.Menu(self)
 

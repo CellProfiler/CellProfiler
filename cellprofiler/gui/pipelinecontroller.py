@@ -359,6 +359,12 @@ class PipelineController(object):
             id=cellprofiler.gui.cpframe.ID_WINDOW_HIDE_ALL_WINDOWS,
         )
 
+        frame.Bind(
+            wx.EVT_MENU,
+            self.on_view_workspace,
+            id=cellprofiler.gui.cpframe.ID_WINDOW_VIEW_WORKSPACE,
+        )
+
         from bioformats.formatreader import set_omero_login_hook
 
         set_omero_login_hook(self.omero_login)
@@ -4233,6 +4239,12 @@ class PipelineController(object):
         with self.__pipeline.undoable_action("Hide all windows"):
             for module in self.__pipeline.modules(exclude_disabled=False):
                 self.__pipeline.show_module_window(module, False)
+
+    def on_view_workspace(self, event):
+        with self.__pipeline.undoable_action("View workspace"):
+            cellprofiler.gui.view_workspace.show_workspace_viewer(
+                self.__frame, self.__workspace
+            )
 
     def run_pipeline(self):
         """Run the current pipeline, returning the measurements

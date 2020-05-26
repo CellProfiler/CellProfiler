@@ -7,7 +7,7 @@ import cellprofiler.gui
 import cellprofiler.gui.artist
 
 
-class Control:
+class Control(abc.ABC):
     """A control of controls and a data item"""
 
     def __init__(self, frame, color, can_delete):
@@ -59,18 +59,22 @@ class Control:
         return tuple([float(x) / 255 for x in self.colour_select.GetColour()])
 
     @property
+    @abc.abstractmethod
     def data(self):
         return self._data
 
     @data.setter
+    @abc.abstractmethod
     def data(self, value):
         self._data = value
 
     @property
+    @abc.abstractmethod
     def names(self):
         return self._names
 
     @names.setter
+    @abc.abstractmethod
     def names(self, value):
         self._names = value
 

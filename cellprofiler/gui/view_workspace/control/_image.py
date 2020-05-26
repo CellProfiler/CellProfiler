@@ -19,7 +19,7 @@ class Image(Control):
         else:
             normalization = cellprofiler.gui.artist.NORMALIZE_RAW
         alpha = 1.0 / (len(frame.image_rows) + 1.0)
-        self.data = self.bind(
+        self._data = self.bind(
             cellprofiler.gui.artist.ImageData, self.colour_select, frame.redraw
         )(
             name,
@@ -32,6 +32,10 @@ class Image(Control):
         )
         frame.image.add(self.data)
         self.last_mode = cellprofiler.gui.artist.MODE_COLORIZE
+
+    @property
+    def data(self):
+        return self._data
 
     @property
     def names(self):

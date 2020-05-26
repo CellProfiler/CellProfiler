@@ -927,7 +927,7 @@ Often a good choice is some multiple of the largest expected object size.
     def display(self, workspace, figure):
         dimensions = workspace.display_data.dimensions
 
-        figure.set_subplots((3, 1), dimensions=dimensions)
+        figure.set_subplots((2, 2), dimensions=dimensions)
 
         figure.subplot_imshow_grayscale(
             0,
@@ -945,7 +945,7 @@ Often a good choice is some multiple of the largest expected object size.
         )
 
         figure.subplot_table(
-            2, 0, workspace.display_data.statistics, workspace.display_data.col_labels
+            1, 1, workspace.display_data.statistics, workspace.display_data.col_labels
         )
 
     def get_measurement_objects_name(self):

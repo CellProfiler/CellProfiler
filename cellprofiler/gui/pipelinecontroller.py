@@ -3543,7 +3543,7 @@ class PipelineController(object):
             ):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
-            cellprofiler.gui.viewworkspace.update_workspace_viewer(workspace)
+            cellprofiler.gui.view_workspace.update_workspace_viewer(workspace)
         except Exception as instance:
             logger.error("Failed to run module %s", module.module_name, exc_info=True)
             event = cellprofiler_core.pipeline.event.RunException(instance, module)

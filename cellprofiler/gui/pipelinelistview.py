@@ -1368,7 +1368,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
         """Remove the item at the given index"""
         del self.items[index]
 
-        if self.active_item:
+        if self.active_item is not None:
             if self.active_item == index:
                 self.active_item = None
             elif self.active_item > index:

@@ -631,7 +631,7 @@ safe to press it.""",
 
     def visible_settings(self):
         result = [self.csv_directory, self.csv_file_name, self.browse_csv_button]
-        if self.csv_directory.dir_choice == cellprofiler_core.setting.URL_FOLDER_NAME:
+        if self.csv_directory.dir_choice == cellprofiler_core.preferences.URL_FOLDER_NAME:
             result += [self.clear_cache_button]
             self.csv_file_name.text = "URL of the file"
             self.csv_file_name.set_browsable(False)

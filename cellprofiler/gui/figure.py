@@ -406,7 +406,7 @@ class Figure(wx.Frame):
                 parent_menu_bar = None
             if parent_menu_bar is not None and isinstance(parent_menu_bar, wx.MenuBar):
                 for menu, label in parent_menu_bar.GetMenus():
-                    if label == "&Window":
+                    if label == "Window":
                         menu_ids = [menu_item.Id for menu_item in menu.MenuItems]
                         for window_id in window_ids + [None]:
                             if window_id not in menu_ids:
@@ -420,7 +420,7 @@ class Figure(wx.Frame):
                         def on_menu_command(event):
                             self.Raise()
 
-                        wx.EVT_MENU(parent, window_id, on_menu_command)
+                        parent.Bind(wx.EVT_MENU, on_menu_command, id=window_id)
                         self.remove_menu.append([menu, window_id])
 
     def create_menu(self, figure_help=cellprofiler.gui.help.content.FIGURE_HELP):

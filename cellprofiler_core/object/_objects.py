@@ -138,7 +138,7 @@ class Objects:
         """
         sparse = numpy.core.records.fromarrays(
             (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
-            [("y", ijv.dtype, 1), ("x", ijv.dtype, 1), ("label", ijv.dtype, 1)],
+            [("y", ijv.dtype), ("x", ijv.dtype), ("label", ijv.dtype)],
         )
         if shape is not None:
             shape = (1, 1, 1, shape[0], shape[1])

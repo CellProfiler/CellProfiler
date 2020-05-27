@@ -1,7 +1,7 @@
 Plate Viewer
 ============
 
-The plate viewer is a data tool that displays the images in your
+The plate viewer displays the images in your
 experiment in plate format. Your project must define an image set list
 with metadata annotations for the image’s well and, optionally its plate
 and site. The plate viewer will then group your images by well and

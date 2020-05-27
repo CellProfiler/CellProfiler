@@ -165,7 +165,13 @@ class MeasureTexture(cellprofiler_core.module.Module):
         self.add_scale(removable=False)
 
         self.add_scales = cellprofiler_core.setting.DoSomething(
-            callback=self.add_scale, label="Add another scale", text=""
+            callback=self.add_scale,
+            label="Add another scale",
+            text="",
+            doc="""\
+            Add an additional texture scale to measure. Useful when you
+            want to measure texture features of different sizes.
+            """,
         )
 
         self.images_or_objects = cellprofiler_core.setting.Choice(

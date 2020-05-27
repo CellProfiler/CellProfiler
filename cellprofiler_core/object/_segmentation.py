@@ -163,8 +163,8 @@ class Segmentation:
         else:
             labels = numpy.zeros(0, dense.dtype)
             labels_dtype = numpy.uint8
-        dtype = [(axis, coords_dtype, 1) for axis in axes]
-        dtype.append(("label", labels_dtype, 1))
+        dtype = [(axis, coords_dtype) for axis in axes]
+        dtype.append(("label", labels_dtype))
         sparse = numpy.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
         self.__sparse = sparse
         return sparse

@@ -10,6 +10,7 @@ import logging
 import os
 import sys
 import uuid
+from textwrap import fill
 
 import centrosome.cpmorphology
 import centrosome.outline
@@ -717,6 +718,9 @@ class Figure(wx.Frame):
             xi = int(event.xdata + 0.5)
             yi = int(event.ydata + 0.5)
             fields = self.get_fields(event, yi, xi, x1)
+        else:
+            # Mouse has moved off the plot, stop updating.
+            return
 
         # Calculate the length field if mouse is down
         if self.mouse_down is not None:
@@ -732,16 +736,17 @@ class Figure(wx.Frame):
             diagonal = numpy.sqrt(
                 (xinterval[1] - xinterval[0]) ** 2 + (yinterval[1] - yinterval[0]) ** 2
             )
-            mutation_scale = min(int(length * 100 / diagonal), 20)
+            mutation_scale = max(min(int(length * 100 / diagonal), 20), 1)
             if self.length_arrow is not None:
                 self.length_arrow.set_positions(
                     (self.mouse_down[0], self.mouse_down[1]), (event.xdata, event.ydata)
                 )
+                self.length_arrow.set_mutation_scale(mutation_scale)
             else:
                 self.length_arrow = matplotlib.patches.FancyArrowPatch(
                     (self.mouse_down[0], self.mouse_down[1]),
                     (event.xdata, event.ydata),
-                    edgecolor="red",
+                    edgecolor="blue",
                     arrowstyle="<->",
                     mutation_scale=mutation_scale,
                 )
@@ -944,7 +949,7 @@ class Figure(wx.Frame):
         else:
             if dimensions == 2:
                 self.subplots = numpy.zeros(subplots, dtype=object)
-                self.gridspec = matplotlib.gridspec.GridSpec(
+                self.__gridspec = matplotlib.gridspec.GridSpec(
                     subplots[1], subplots[0], figure=self.figure
                 )
             else:
@@ -964,10 +969,10 @@ class Figure(wx.Frame):
         if self.dimensions == 3:
             return None
         if not self.subplots[x, y]:
-            if self.gridspec:
+            if self.__gridspec:
                 # Add the plot to a premade subplot layout
                 plot = self.figure.add_subplot(
-                    self.gridspec[y, x], sharex=sharex, sharey=sharey,
+                    self.__gridspec[y, x], sharex=sharex, sharey=sharey,
                 )
             else:
                 rows, cols = self.subplots.shape
@@ -987,9 +992,8 @@ class Figure(wx.Frame):
         y - subplot's row
         """
         fontname = cellprofiler_core.preferences.get_title_font_name()
-
         self.subplot(x, y).set_title(
-            title,
+            fill(title, 30),
             fontname=fontname,
             fontsize=cellprofiler_core.preferences.get_title_font_size(),
         )
@@ -2318,7 +2322,7 @@ class Figure(wx.Frame):
         self.figure.set_facecolor((1, 1, 1))
         self.figure.set_edgecolor((1, 1, 1))
         values = numpy.array(values).flatten()
-        if xscale == LOG:
+        if xscale == "log":
             values = numpy.log(values[values > 0])
             xlabel = "Log(%s)" % (xlabel or "?")
         # hist apparently doesn't like nans, need to preen them out first
@@ -2338,7 +2342,7 @@ class Figure(wx.Frame):
             bins,
             facecolor=(0.0, 0.62, 1.0),
             edgecolor="none",
-            log=(yscale == LOG),
+            log=(yscale == "log"),
             alpha=0.75,
         )
         axes.set_xlabel(xlabel)

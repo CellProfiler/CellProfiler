@@ -181,7 +181,7 @@ class PipelineListView(object):
     def make_list(self):
         """Make the list control with the pipeline items in it"""
         self.list_ctrl = PipelineListCtrl(self.__panel)
-        self.__sizer.Add(self.list_ctrl, 1, wx.EXPAND)
+        self.__sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.TOP, border=2)
         #
         # Bind events
         #
@@ -1525,7 +1525,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
             width, height, _, _ = self.GetFullTextExtent(item.module_name)
             max_width = max(width, max_width)
         total_width = x0 + max_width + self.border * 2 + self.gap + self.text_gap
-        height = len(self.items) * self.line_height
+        height = max((len(self.items) - 1) * self.line_height, 0)
         return total_width, height
 
     def DoGetVirtualSize(self):

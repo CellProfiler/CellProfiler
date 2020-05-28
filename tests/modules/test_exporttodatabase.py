@@ -1090,7 +1090,7 @@ def make_workspace(
                 return ["Plate", "Well"]
             return []
 
-    m = cellprofiler_core.measurement.Measurements(can_overwrite=True)
+    m = cellprofiler_core.measurement.Measurements()
     for i in range(image_set_count):
         if i > 0:
             m.next_image_set()

@@ -219,6 +219,8 @@ class Module:
     # https://wiki.python.org/moin/reStructuredText
     @staticmethod
     def _rst_to_html_fragment(source):
+        if not isinstance(source, str):
+            return ""
         parts = docutils.core.publish_parts(source=source, writer_name="html")
 
         return parts["body_pre_docinfo"] + parts["fragment"]

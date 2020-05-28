@@ -10,8 +10,13 @@ To enter Test mode once you have built a pipeline, choose *Test > Start
 Test Mode* from the menu bar in the main window. At this point, you will
 see the following features appear:
 
--  A Pause icon |HelpContent_TestMode_image0|  will appear to the left of each module.
 -  The buttons available at the bottom of the pipeline panel change.
+-  A Pause icon |HelpContent_TestMode_image_pause|  will appear to the left
+   of each module.
+-  A Step icon |HelpContent_TestMode_image_step| will appear next to the
+   module which is due to be executed next. Once executed this icon will
+   change to be dimmer  |HelpContent_TestMode_image_stepped|. You can click on
+   these icons to jump back and execute these modules again.
 
 You can run your pipeline in Test mode by selecting *Test > Step to Next
 Module* or clicking the *Run* or *Step* buttons at the bottom of the
@@ -28,12 +33,14 @@ of your choice. The additional controls allow you to do the following:
    it reaches the end of the pipeline or it encounters a pause.
 -  *Pause:* Clicking the pause icon will cause the pipeline test run to
    halt execution when that module is reached (the paused module itself
-   is not executed). The icon changes from |HelpContent_TestMode_image1| to |HelpContent_TestMode_image2| to
-   indicate that a pause has been inserted at that point.
+   is not executed). The icon changes from |HelpContent_TestMode_image_pause|
+   to |HelpContent_TestMode_image_paused| to indicate that a pause has been
+   inserted at that point.
 -  *Run:* Execution of the pipeline will be started/resumed until the
    next module pause is reached. When all modules have been executed for
    a given image cycle, execution will stop.
--  *Step:* Execute the next module, as indicated by being underlined.
+-  *Step:* Execute the next module, as indicated by being underlined and having
+   the |HelpContent_TestMode_image_step| icon in front of it.
    If you click once on a module, for example to view or change its settings,
    the active module text (the one you're looking at in the GUI) is **bolded**.
 -  *Next Image:* Skip ahead to the next image cycle as determined by the
@@ -51,6 +58,7 @@ From the *Test* menu, you can choose additional options:
    module in the pipeline will automatically become active (**bolded**) and will run next (underlined).
 -  *Random Image Set:* Randomly select and jump to an image set in the
    current image group.
+-  *Random Image Group:* Randomly select and jump to an image group.
 -  *Choose Image Set:* Choose the image set to jump to. The first module
    in the pipeline will automatically become active (**bolded**) and will run next (underlined).
 -  *Choose Image Group:* Choose an image group to jump to. The first module
@@ -69,6 +77,7 @@ individual movie frame from that file.
 Please see the **Groups** module for more details on the proper use of
 metadata for grouping.
 
-.. |HelpContent_TestMode_image0| image:: ../images/IMG_GO.png
-.. |HelpContent_TestMode_image1| image:: ../images/IMG_GO.png
-.. |HelpContent_TestMode_image2| image:: ../images/IMG_PAUSE.png
+.. |HelpContent_TestMode_image_step| image:: ../images/IMG_ANALYZE_16.png
+.. |HelpContent_TestMode_image_stepped| image:: ../images/IMG_ANALYZED.png
+.. |HelpContent_TestMode_image_paused| image:: ../images/IMG_PAUSE.png
+.. |HelpContent_TestMode_image_pause| image:: ../images/IMG_GO_DIM.png

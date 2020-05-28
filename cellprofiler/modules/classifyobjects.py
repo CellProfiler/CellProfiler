@@ -425,15 +425,11 @@ for these objects.
             ),
         )
 
-        def min_upper_threshold():
-            return group.low_threshold.value + np.finfo(float).eps
-
         group.append(
             "high_threshold",
             cps.Float(
                 "Upper threshold",
                 1,
-                minval=cps.NumberConnector(min_upper_threshold),
                 doc="""\
 *(Used only if using a single measurement and "%(BC_EVEN)s" selected)*
 
@@ -606,6 +602,12 @@ example, to be saved by a **SaveImages** module).
                         "Custom thresholds must be a comma-separated list "
                         'of numbers (example: "1.0, 2.3, 4.5")',
                         group.custom_thresholds,
+                    )
+            elif group.bin_choice == BC_EVEN:
+                if group.low_threshold.value >= group.high_threshold.value:
+                    raise cps.ValidationError(
+                        "Lower Threshold must be smaller than Upper Threshold",
+                        group.low_threshold,
                     )
 
         group.validate_group = validate_group
@@ -896,6 +898,10 @@ example, to be saved by a **SaveImages** module).
         if group.bin_choice == BC_EVEN:
             low_threshold = group.low_threshold.value
             high_threshold = group.high_threshold.value
+            if low_threshold >= high_threshold:
+                raise ValueError(
+                    "Lower Threshold must be smaller than Upper Threshold"
+                )
             bin_count = group.bin_count.value
             thresholds = (
                 np.arange(bin_count + 1)

@@ -224,9 +224,7 @@ def make_temporary_file():
     )
 
 
-def load_measurements(
-    filename, dest_file=None, can_overwrite=False, run_name=None, image_numbers=None
-):
+def load_measurements(filename, dest_file=None, run_name=None, image_numbers=None):
     """Load measurements from an HDF5 file
 
     filename - path to file containing the measurements or file-like object
@@ -234,9 +232,6 @@ def load_measurements(
 
     dest_file - path to file to be created. This file is used as the backing
                 store for the measurements.
-
-    can_overwrite - True to allow overwriting of existing measurements (not
-                    supported any longer)
 
     run_name - name of the run (an HDF file can contain measurements
                from multiple runs). By default, takes the last.

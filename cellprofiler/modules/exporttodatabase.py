@@ -2963,7 +2963,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if coltype.startswith(cpmeas.COLTYPE_VARCHAR):
                     if isinstance(value, str) or isinstance(value, unicode):
                         value = '"' + MySQLdb.escape_string(value) + '"'
-                    elif value is None:
+                    elif value is None: #elif value is None or np.isnan(value):
                         value = "NULL"
                     else:
                         value = '"' + MySQLdb.escape_string(value) + '"'

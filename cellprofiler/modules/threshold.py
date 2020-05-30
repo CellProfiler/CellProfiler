@@ -20,6 +20,7 @@ YES          YES          YES
 
 import centrosome.threshold
 import numpy
+import scipy.interpolate
 import scipy.ndimage
 import skimage.filters
 import skimage.filters.rank
@@ -49,6 +50,7 @@ TM_MANUAL = "Manual"
 TM_MEASUREMENT = "Measurement"
 TM_LI = "Minimum cross entropy"
 TM_OTSU = "Otsu"
+TM_SAUVOLA = "Sauvola"
 
 
 TS_ALL = [TS_GLOBAL, TS_ADAPTIVE]
@@ -245,8 +247,10 @@ There are a number of methods for finding thresholds automatically:
 
         self.local_operation = cellprofiler_core.setting.Choice(
             "Thresholding method",
-            [centrosome.threshold.TM_OTSU],
-            value=centrosome.threshold.TM_OTSU,
+            [TM_LI,
+             TM_OTSU,
+             TM_SAUVOLA],
+            value=TM_OTSU,
             doc="""\
 *(Used only if "{TS_ADAPTIVE}" is selected for thresholding strategy)*
 
@@ -814,54 +818,151 @@ Often a good choice is some multiple of the largest expected object size.
             elif self.two_class_otsu.value == O_THREE_CLASS:
                 print("Running Otsu 3 class")
                 bin_wanted = 0 if self.assign_middle_to_foreground.value == "Foreground" else 1
-                threshold = skimage.filters.threshold_multiotsu(image_data)
+                threshold = skimage.filters.threshold_multiotsu(image_data, nbins=128)
                 threshold = threshold[bin_wanted]
         else:
             raise ValueError("Invalid thresholding settings")
         return self._correct_global_threshold(threshold)
 
-    def get_local_threshold(self, image, workspace, automatic=False):
-        image_data = image.pixel_data[image.mask]
+    def get_local_threshold(self, image, workspace):
         image_data = numpy.where(image.mask, image.pixel_data, numpy.nan)
-        adaptive_window = self.adaptive_window_size.value
-        if adaptive_window % 2 == 0:
-            adaptive_window += 1
 
         # Shortcuts - Check if image array is empty or all pixels are the same value.
         if len(image_data) == 0:
-            return 0.0
+            return numpy.zeros_like(image_data), 0.0
         elif numpy.all(image_data == image_data[0]):
-            return image_data[0]
+            return numpy.full_like(image_data, image_data[0]), 0
 
         if self.threshold_operation == TM_LI:
             print("Running Local MCE")
-            global_threshold = skimage.filters.threshold_li(image_data)
-            local_threshold = skimage.filters.threshold_local(image_data, block_size=adaptive_window,
-                                                        method='generic', param=skimage.filters.threshold_li)
+            guide_threshold = skimage.filters.threshold_li(image_data)
+            local_threshold = self._run_local_threshold(image_data, guide_threshold,
+                                                        method=skimage.filters.threshold_li)
         elif self.threshold_operation == TM_OTSU:
             if self.two_class_otsu.value == O_TWO_CLASS:
-                import time
                 print("Running local Otsu 2 class")
-                global_threshold = skimage.filters.threshold_li(image_data)
-                time0 = time.perf_counter()
-                local_threshold = self._threshold_local_otsu(image)
-                time1 = time.perf_counter() - time0
-                time0 = time.perf_counter()
-                local_threshold2 = skimage.filters.threshold_local(image_data, block_size=adaptive_window,
-                                                                  method='generic', param=skimage.filters.threshold_otsu)
+                guide_threshold = skimage.filters.threshold_otsu(image_data)
+                guide_threshold = self._correct_global_threshold(guide_threshold)
+                local_threshold = self._run_local_threshold(image_data, guide_threshold,
+                                                            method=skimage.filters.threshold_otsu)
 
-                time2 = time.perf_counter() - time0
-
-                #print("Orig: ", local_threshold)
-                #print("New: ", local_threshold2)
-                print("LThreshold original: ", "%.4fs" % time1)
-                print("LThreshold rewrite: ", "%.4fs" % time2)
-
+            elif self.two_class_otsu.value == O_THREE_CLASS:
+                print("Running local Otsu 3 class, middle =", self.assign_middle_to_foreground.value)
+                bin_wanted = 0 if self.assign_middle_to_foreground.value == "Foreground" else 1
+                guide_threshold = skimage.filters.threshold_multiotsu(image_data, nbins=128)
+                guide_threshold = self._correct_global_threshold(guide_threshold[bin_wanted])
+                local_threshold = self._run_local_threshold(image_data, guide_threshold,
+                                                            method=skimage.filters.threshold_multiotsu,
+                                                            volumetric=image.volumetric,
+                                                            nbins=128,
+                                                            )
+        elif self.threshold_operation == TM_SAUVOLA:
+            adaptive_window = self.adaptive_window_size.value
+            if adaptive_window % 2 == 0:
+                adaptive_window += 1
+            guide_threshold = skimage.filters.threshold_otsu(image_data)
+            guide_threshold = self._correct_global_threshold(guide_threshold)
+            local_threshold = skimage.filters.threshold_sauvola(image_data,
+                                                                window_size=adaptive_window)
 
         else:
             raise ValueError("Invalid thresholding settings")
-        return self._correct_local_threshold(local_threshold, global_threshold), global_threshold
+        return self._correct_local_threshold(local_threshold, guide_threshold), guide_threshold
 
+    def _run_local_threshold(self, image_data, t_global, method, volumetric=False, **kwargs):
+
+        if volumetric:
+            t_local = numpy.zeros_like(image_data)
+            for index, plane in enumerate(image_data):
+                t_local[index] = self._get_adaptive_threshold(plane, method, **kwargs)
+        else:
+            t_local = self._get_adaptive_threshold(image_data, method, **kwargs)
+
+        t_local = self._correct_local_threshold(t_local, t_global)
+
+        return skimage.img_as_float(t_local)
+
+    def _get_adaptive_threshold(self, image_data, threshold_method, **kwargs):
+        """Given a global threshold, compute a threshold per pixel
+
+        Break the image into blocks, computing the threshold per block.
+        Afterwards, constrain the block threshold to .7 T < t < 1.5 T.
+
+        Block sizes must be at least 50x50. Images > 500 x 500 get 10x10
+        blocks.
+        """
+        # for the X and Y direction, find the # of blocks, given the
+        # size constraints
+        bin_wanted = 0 if self.assign_middle_to_foreground.value == "Foreground" else 1
+        image_size = numpy.array(image_data.shape[:2], dtype=int)
+        nblocks = image_size // self.adaptive_window_size.value
+        if any(n < 2 for n in nblocks):
+            raise ValueError(
+                "Adaptive window cannot exceed 50%% of an image dimension.\n"
+                "Window of %dpx is too large for a %sx%s image" % (
+                    self.adaptive_window_size.value, image_size[1], image_size[0]
+                )
+            )
+        #
+        # Use a floating point block size to apportion the roundoff
+        # roughly equally to each block
+        #
+        increment = numpy.array(image_size, dtype=float) / numpy.array(nblocks, dtype=float)
+        #
+        # Put the answer here
+        #
+        thresh_out = numpy.zeros(image_size, image_data.dtype)
+        #
+        # Loop once per block, computing the "global" threshold within the
+        # block.
+        #
+        block_threshold = numpy.zeros([nblocks[0], nblocks[1]])
+        import time
+        for i in range(nblocks[0]):
+            i0 = int(i * increment[0])
+            i1 = int((i + 1) * increment[0])
+            for j in range(nblocks[1]):
+                j0 = int(j * increment[1])
+                j1 = int((j + 1) * increment[1])
+                block = image_data[i0:i1, j0:j1]
+                threshold_out = threshold_method(block, **kwargs)
+                if isinstance(threshold_out, numpy.ndarray):
+                    threshold_out = threshold_out[bin_wanted]
+                block_threshold[i, j] = threshold_out
+
+
+        #
+        # Use a cubic spline to blend the thresholds across the image to avoid image artifacts
+        #
+        spline_order = min(3, numpy.min(nblocks) - 1)
+        xStart = int(increment[0] / 2)
+        xEnd = int((nblocks[0] - 0.5) * increment[0])
+        yStart = int(increment[1] / 2)
+        yEnd = int((nblocks[1] - 0.5) * increment[1])
+        xtStart = 0.5
+        xtEnd = image_data.shape[0] - 0.5
+        ytStart = 0.5
+        ytEnd = image_data.shape[1] - 0.5
+        block_x_coords = numpy.linspace(xStart, xEnd, nblocks[0])
+        block_y_coords = numpy.linspace(yStart, yEnd, nblocks[1])
+        adaptive_interpolation = scipy.interpolate.RectBivariateSpline(
+            block_x_coords,
+            block_y_coords,
+            block_threshold,
+            bbox=(xtStart, xtEnd, ytStart, ytEnd),
+            kx=spline_order,
+            ky=spline_order,
+        )
+        thresh_out_x_coords = numpy.linspace(
+            0.5, int(nblocks[0] * increment[0]) - 0.5, thresh_out.shape[0]
+        )
+        thresh_out_y_coords = numpy.linspace(
+            0.5, int(nblocks[1] * increment[1]) - 0.5, thresh_out.shape[1]
+        )
+
+        thresh_out = adaptive_interpolation(thresh_out_x_coords, thresh_out_y_coords)
+
+        return thresh_out
 
     def _global_threshold(self, image, threshold_fn):
         data = image.pixel_data

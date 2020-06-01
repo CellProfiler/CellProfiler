@@ -691,20 +691,9 @@ Often a good choice is some multiple of the largest expected object size.
         dimensions = input.dimensions
         import time
         start = time.perf_counter()
-        local_threshold, global_threshold = self.get_threshold(input, workspace)
-        time1 = time.perf_counter() - start
-        start = time.perf_counter()
-        if self.threshold_operation in (TM_MANUAL, TM_MEASUREMENT):
-            final_threshold, orig_threshold = self.get_manual_threshold(input)
-        elif self.threshold_scope.value == TS_GLOBAL:
-            final_threshold, orig_threshold = self.get_global_threshold(input)
-        elif self.threshold_scope.value == TS_ADAPTIVE:
-            final_threshold, orig_threshold = self.get_local_threshold(input)
-        else:
-            raise ValueError("Invalid threshold settings")
+        final_threshold, orig_threshold = self.get_threshold(input, workspace, automatic=False)
         time2 = time.perf_counter() - start
-        print("Threshold original: ", "%.4f" % numpy.mean(numpy.atleast_1d(global_threshold)), " in ", "%.4fs" % time1)
-        print("Threshold rewrite: ", "%.4f" % numpy.mean(numpy.atleast_1d(final_threshold)), " in ", "%.4fs" % time2)
+        print("Threshold: ", "%.4f" % numpy.mean(numpy.atleast_1d(final_threshold)), " in ", "%.4fs" % time2)
 
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
@@ -713,7 +702,7 @@ Often a good choice is some multiple of the largest expected object size.
             orig_threshold,
         )
 
-        binary_image, _ = self.apply_threshold(input, local_threshold)
+        binary_image, _ = self.apply_threshold(input, final_threshold)
 
         self.add_fg_bg_measurements(
             self.get_measurement_objects_name(),
@@ -734,6 +723,8 @@ Often a good choice is some multiple of the largest expected object size.
             workspace.display_data.dimensions = dimensions
             statistics = workspace.display_data.statistics = []
             workspace.display_data.col_labels = ("Feature", "Value")
+            if self.threshold_scope == TS_ADAPTIVE:
+                workspace.display_data.threshold_image = final_threshold
 
             for column in self.get_measurement_columns(workspace.pipeline):
                 value = workspace.measurements.get_current_image_measurement(column[1])
@@ -765,35 +756,25 @@ Often a good choice is some multiple of the largest expected object size.
         return (blurred_image >= threshold) & mask, sigma
 
     def get_threshold(self, image, workspace, automatic=False):
-        if automatic or self.threshold_operation == TM_LI:
-            return self._threshold_li(image, automatic)
-
         if self.threshold_operation == TM_MANUAL:
             return self.manual_threshold.value, self.manual_threshold.value
 
-        if self.threshold_operation == TM_MEASUREMENT:
-            m = workspace.measurements
-
+        elif self.threshold_operation == TM_MEASUREMENT:
+            # m = workspace.measurements
             # Thresholds are stored as single element arrays.  Cast to float to extract the value.
-            t_global = float(
-                m.get_current_image_measurement(self.thresholding_measurement.value)
+            orig_threshold = float(
+                workspace.measurements.get_current_image_measurement(self.thresholding_measurement.value)
             )
+            return self._correct_global_threshold(orig_threshold), orig_threshold
 
-            t_local = t_global * self.threshold_correction_factor.value
+        elif self.threshold_scope.value == TS_GLOBAL or automatic:
+            return self.get_global_threshold(image, automatic=automatic)
 
-            return (
-                min(max(t_local, self.threshold_range.min), self.threshold_range.max),
-                t_global,
-            )
+        elif self.threshold_scope.value == TS_ADAPTIVE:
+            return self.get_local_threshold(image)
 
-        if self.threshold_operation == TM_ROBUST_BACKGROUND:
-            return self._threshold_robust_background(image)
-
-        if self.threshold_operation == TM_OTSU:
-            if self.two_class_otsu.value == O_TWO_CLASS:
-                return self._threshold_otsu(image)
-
-        return self._threshold_otsu3(image)
+        else:
+            raise ValueError("Invalid thresholding settings")
 
     def get_global_threshold(self, image, automatic=False):
         image_data = image.pixel_data[image.mask]
@@ -842,8 +823,19 @@ Often a good choice is some multiple of the largest expected object size.
         elif self.threshold_operation == TM_OTSU:
             if self.two_class_otsu.value == O_TWO_CLASS:
                 print("Running local Otsu 2 class")
+                import time
+                time1 = time.perf_counter()
+                local_threshold_orig = self._threshold_local_otsu(image)
+                timeo = time.perf_counter() - time1
+                time1 = time.perf_counter()
                 local_threshold = self._run_local_threshold(image_data,
                                                             method=skimage.filters.threshold_otsu)
+                timen = time.perf_counter() - time1
+                #print("Old: ", local_threshold_orig)
+                #print("New: ", local_threshold)
+                print("Old in ", timeo)
+                print("New in ", timen)
+
 
             elif self.two_class_otsu.value == O_THREE_CLASS:
                 print("Running local Otsu 3 class, middle =", self.assign_middle_to_foreground.value)
@@ -852,7 +844,6 @@ Often a good choice is some multiple of the largest expected object size.
                                                             volumetric=image.volumetric,
                                                             nbins=128,
                                                             )
-                # FIXME: Select bin
 
         elif self.threshold_operation == TM_ROBUST_BACKGROUND:
             local_threshold = self._run_local_threshold(image_data,
@@ -860,6 +851,7 @@ Often a good choice is some multiple of the largest expected object size.
                                                         )
 
         elif self.threshold_operation == TM_SAUVOLA:
+            image_data = numpy.where(image.mask, image.pixel_data, 0)
             adaptive_window = self.adaptive_window_size.value
             if adaptive_window % 2 == 0:
                 adaptive_window += 1
@@ -871,14 +863,12 @@ Often a good choice is some multiple of the largest expected object size.
         return self._correct_local_threshold(local_threshold, guide_threshold), local_threshold
 
     def _run_local_threshold(self, image_data, method, volumetric=False, **kwargs):
-
         if volumetric:
             t_local = numpy.zeros_like(image_data)
             for index, plane in enumerate(image_data):
                 t_local[index] = self._get_adaptive_threshold(plane, method, **kwargs)
         else:
             t_local = self._get_adaptive_threshold(image_data, method, **kwargs)
-
         return skimage.img_as_float(t_local)
 
     def _get_adaptive_threshold(self, image_data, threshold_method, **kwargs):
@@ -924,7 +914,10 @@ Often a good choice is some multiple of the largest expected object size.
                 j0 = int(j * increment[1])
                 j1 = int((j + 1) * increment[1])
                 block = image_data[i0:i1, j0:j1]
-                if numpy.all(block == block[0]):
+                block = block[~numpy.isnan(block)]
+                if len(block) == 0:
+                    threshold_out = 0
+                elif numpy.all(block == block[0]):
                     # Don't compute blocks with only 1 value.
                     threshold_out = block[0]
                 else:
@@ -967,26 +960,13 @@ Often a good choice is some multiple of the largest expected object size.
 
         return thresh_out
 
-    def _global_threshold(self, image, threshold_fn):
-        data = image.pixel_data
-
-        mask = image.mask
-
-        if len(data[mask]) == 0:
-            t_global = 0.0
-        elif numpy.all(data[mask] == data[mask][0]):
-            t_global = data[mask][0]
-        else:
-            t_global = threshold_fn(data[mask])
-
-        return t_global
-
     def _correct_global_threshold(self, threshold):
         threshold *= self.threshold_correction_factor.value
 
         return min(max(threshold, self.threshold_range.min), self.threshold_range.max)
 
-    def _correct_local_threshold(self, t_local, t_global):
+    def _correct_local_threshold(self, t_local_orig, t_global):
+        t_local = t_local_orig.copy()
         t_local *= self.threshold_correction_factor.value
 
         # Constrain the local threshold to be within [0.7, 1.5] * global_threshold. It's for the pretty common case
@@ -1004,29 +984,6 @@ Often a good choice is some multiple of the largest expected object size.
 
         return t_local
 
-    def _threshold_li(self, image, automatic=False):
-        threshold = self._global_threshold(image, skimage.filters.threshold_li)
-
-        if automatic:
-            return threshold, threshold
-
-        threshold = self._correct_global_threshold(threshold)
-
-        return threshold, threshold
-
-    def _threshold_otsu(self, image):
-        t_global = self._global_threshold(image, skimage.filters.threshold_otsu)
-
-        t_global = self._correct_global_threshold(t_global)
-
-        if self.threshold_scope.value == TS_ADAPTIVE:
-            t_local = self._threshold_local_otsu(image)
-
-            t_local = self._correct_local_threshold(t_local, t_global)
-
-            return t_local, t_global
-
-        return t_global, t_global
 
     def _threshold_local_otsu(self, image):
         data = skimage.img_as_ubyte(image.pixel_data)
@@ -1044,79 +1001,6 @@ Often a good choice is some multiple of the largest expected object size.
             t_local = skimage.filters.rank.otsu(data, selem, mask=image.mask)
 
         return skimage.img_as_float(t_local)
-
-    def _threshold_otsu3(self, image):
-        data = image.pixel_data
-
-        mask = image.mask
-
-        t_global = centrosome.threshold.get_otsu_threshold(
-            data,
-            mask,
-            two_class_otsu=False,
-            assign_middle_to_foreground=self.assign_middle_to_foreground.value
-            == O_FOREGROUND,
-        )
-
-        t_global = self._correct_global_threshold(t_global)
-
-        if self.threshold_scope.value == TS_ADAPTIVE:
-            if image.volumetric:
-                t_local = numpy.zeros_like(data)
-
-                for index, plane in enumerate(data):
-                    t_local[index] = centrosome.threshold.get_adaptive_threshold(
-                        centrosome.threshold.TM_OTSU,
-                        plane,
-                        t_global,
-                        mask=mask[index],
-                        adaptive_window_size=self.adaptive_window_size.value,
-                        two_class_otsu=False,
-                        assign_middle_to_foreground=self.assign_middle_to_foreground.value
-                        == O_FOREGROUND,
-                    )
-            else:
-                t_local = centrosome.threshold.get_adaptive_threshold(
-                    centrosome.threshold.TM_OTSU,
-                    data,
-                    t_global,
-                    mask=mask,
-                    adaptive_window_size=self.adaptive_window_size.value,
-                    two_class_otsu=False,
-                    assign_middle_to_foreground=self.assign_middle_to_foreground.value
-                    == O_FOREGROUND,
-                )
-
-            t_local = self._correct_local_threshold(t_local, t_global)
-
-            return t_local, t_global
-
-        return t_global, t_global
-
-    def _threshold_robust_background(self, image):
-        average_fn = {
-            RB_MEAN: numpy.mean,
-            RB_MEDIAN: numpy.median,
-            RB_MODE: centrosome.threshold.binned_mode,
-        }.get(self.averaging_method.value, numpy.mean)
-
-        variance_fn = {RB_SD: numpy.std, RB_MAD: centrosome.threshold.mad}.get(
-            self.variance_method.value, numpy.std
-        )
-
-        threshold = centrosome.threshold.get_robust_background_threshold(
-            image.pixel_data,
-            mask=image.mask,
-            lower_outlier_fraction=self.lower_outlier_fraction.value,
-            upper_outlier_fraction=self.upper_outlier_fraction.value,
-            deviations_above_average=self.number_of_deviations.value,
-            average_fn=average_fn,
-            variance_fn=variance_fn,
-        )
-
-        threshold = self._correct_global_threshold(threshold)
-
-        return threshold, threshold
 
     def get_threshold_robust_background(self, image_data):
         """Calculate threshold based on mean & standard deviation
@@ -1187,6 +1071,15 @@ Often a good choice is some multiple of the largest expected object size.
             sharexy=figure.subplot(0, 0),
         )
 
+        if self.threshold_scope == TS_ADAPTIVE:
+            figure.subplot_imshow_grayscale(
+                0,
+                1,
+                workspace.display_data.threshold_image,
+                title="Local threshold values",
+                sharexy=figure.subplot(0, 0),
+            )
+
         figure.subplot_table(
             1, 1, workspace.display_data.statistics, workspace.display_data.col_labels
         )
@@ -1199,7 +1092,6 @@ Often a good choice is some multiple of the largest expected object size.
     ):
         ave_final_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
         ave_orig_threshold = numpy.mean(numpy.atleast_1d(orig_threshold))
-
         measurements.add_measurement(
             cellprofiler_core.measurement.IMAGE,
             cellprofiler_core.measurement.FF_FINAL_THRESHOLD % objname,

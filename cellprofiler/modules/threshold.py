@@ -111,11 +111,11 @@ The choices for the threshold strategy are:
         self.global_operation = cellprofiler_core.setting.Choice(
             "Thresholding method",
             [
-                TM_MANUAL,
-                TM_MEASUREMENT,
                 TM_LI,
                 TM_OTSU,
                 TM_ROBUST_BACKGROUND,
+                TM_MEASUREMENT,
+                TM_MANUAL,
             ],
             value=TM_LI,
             doc="""\
@@ -252,7 +252,7 @@ There are a number of methods for finding thresholds automatically:
              TM_OTSU,
              TM_SAUVOLA,
              TM_ROBUST_BACKGROUND],
-            value=TM_OTSU,
+            value=TM_LI,
             doc="""\
 *(Used only if "{TS_ADAPTIVE}" is selected for thresholding strategy)*
 
@@ -686,12 +686,13 @@ Often a good choice is some multiple of the largest expected object size.
         ]
 
     def run(self, workspace):
-        input = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
-
-        dimensions = input.dimensions
+        input_image = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
+# Todo: Refactor names and upgrade settings
+# Todo: Documentation
+        dimensions = input_image.dimensions
         import time
         start = time.perf_counter()
-        final_threshold, orig_threshold = self.get_threshold(input, workspace, automatic=False)
+        final_threshold, orig_threshold = self.get_threshold(input_image, workspace, automatic=False)
         time2 = time.perf_counter() - start
         print("Threshold: ", "%.4f" % numpy.mean(numpy.atleast_1d(final_threshold)), " in ", "%.4fs" % time2)
 
@@ -702,23 +703,23 @@ Often a good choice is some multiple of the largest expected object size.
             orig_threshold,
         )
 
-        binary_image, _ = self.apply_threshold(input, final_threshold)
+        binary_image, _ = self.apply_threshold(input_image, final_threshold)
 
         self.add_fg_bg_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            input,
+            input_image,
             binary_image,
         )
 
         output = cellprofiler_core.image.Image(
-            binary_image, parent_image=input, dimensions=dimensions
+            binary_image, parent_image=input_image, dimensions=dimensions
         )
 
         workspace.image_set.add(self.y_name.value, output)
 
         if self.show_window:
-            workspace.display_data.input_pixel_data = input.pixel_data
+            workspace.display_data.input_pixel_data = input_image.pixel_data
             workspace.display_data.output_pixel_data = output.pixel_data
             workspace.display_data.dimensions = dimensions
             statistics = workspace.display_data.statistics = []
@@ -781,24 +782,21 @@ Often a good choice is some multiple of the largest expected object size.
 
         # Shortcuts - Check if image array is empty or all pixels are the same value.
         if len(image_data) == 0:
-            return 0.0
-        elif numpy.all(image_data == image_data[0]):
-            return image_data[0]
+            threshold = 0
 
-        if automatic or self.threshold_operation in (TM_LI, TM_SAUVOLA):
-            print("Running MCE")
+        elif numpy.all(image_data == image_data[0]):
+            threshold = image_data[0]
+
+        elif automatic or self.threshold_operation in (TM_LI, TM_SAUVOLA):
             threshold = skimage.filters.threshold_li(image_data)
 
         elif self.threshold_operation == TM_ROBUST_BACKGROUND:
-            print("Running robustbackground")
             threshold = self.get_threshold_robust_background(image_data)
 
         elif self.threshold_operation == TM_OTSU:
             if self.two_class_otsu.value == O_TWO_CLASS:
-                print("Running Otsu 2 class")
                 threshold = skimage.filters.threshold_otsu(image_data)
             elif self.two_class_otsu.value == O_THREE_CLASS:
-                print("Running Otsu 3 class")
                 bin_wanted = 0 if self.assign_middle_to_foreground.value == "Foreground" else 1
                 threshold = skimage.filters.threshold_multiotsu(image_data, nbins=128)
                 threshold = threshold[bin_wanted]
@@ -807,38 +805,24 @@ Often a good choice is some multiple of the largest expected object size.
         return self._correct_global_threshold(threshold), threshold
 
     def get_local_threshold(self, image):
-        image_data = numpy.where(image.mask, image.pixel_data, numpy.nan)
-        # Shortcuts - Check if image array is empty or all pixels are the same value.
-        if len(image_data) == 0:
-            return numpy.zeros_like(image_data), 0.0
-        elif numpy.all(image_data == image_data[0]):
-            return numpy.full_like(image_data, image_data[0]), image_data[0]
-
         guide_threshold, _ = self.get_global_threshold(image)
+        image_data = numpy.where(image.mask, image.pixel_data, numpy.nan)
 
-        if self.threshold_operation == TM_LI:
-            print("Running Local MCE")
+        if len(image_data) == 0 or numpy.all(image_data == numpy.nan):
+            local_threshold = numpy.zeros_like(image_data)
+
+        elif numpy.all(image_data == image_data[0]):
+            local_threshold = numpy.full_like(image_data, image_data[0])
+
+        elif self.threshold_operation == TM_LI:
             local_threshold = self._run_local_threshold(image_data,
                                                         method=skimage.filters.threshold_li)
         elif self.threshold_operation == TM_OTSU:
             if self.two_class_otsu.value == O_TWO_CLASS:
-                print("Running local Otsu 2 class")
-                import time
-                time1 = time.perf_counter()
-                local_threshold_orig = self._threshold_local_otsu(image)
-                timeo = time.perf_counter() - time1
-                time1 = time.perf_counter()
                 local_threshold = self._run_local_threshold(image_data,
                                                             method=skimage.filters.threshold_otsu)
-                timen = time.perf_counter() - time1
-                #print("Old: ", local_threshold_orig)
-                #print("New: ", local_threshold)
-                print("Old in ", timeo)
-                print("New in ", timen)
-
 
             elif self.two_class_otsu.value == O_THREE_CLASS:
-                print("Running local Otsu 3 class, middle =", self.assign_middle_to_foreground.value)
                 local_threshold = self._run_local_threshold(image_data,
                                                             method=skimage.filters.threshold_multiotsu,
                                                             volumetric=image.volumetric,
@@ -962,7 +946,6 @@ Often a good choice is some multiple of the largest expected object size.
 
     def _correct_global_threshold(self, threshold):
         threshold *= self.threshold_correction_factor.value
-
         return min(max(threshold, self.threshold_range.min), self.threshold_range.max)
 
     def _correct_local_threshold(self, t_local_orig, t_global):
@@ -975,32 +958,12 @@ Often a good choice is some multiple of the largest expected object size.
         # very crowded areas where there is zero background in the window. You want the foreground to be all
         # detected.
         t_min = max(self.threshold_range.min, t_global * 0.7)
-
         t_max = min(self.threshold_range.max, t_global * 1.5)
 
         t_local[t_local < t_min] = t_min
-
         t_local[t_local > t_max] = t_max
 
         return t_local
-
-
-    def _threshold_local_otsu(self, image):
-        data = skimage.img_as_ubyte(image.pixel_data)
-
-        selem = skimage.morphology.square(self.adaptive_window_size.value)
-
-        if image.volumetric:
-            t_local = numpy.zeros_like(data)
-
-            for index, plane in enumerate(data):
-                t_local[index] = skimage.filters.rank.otsu(
-                    plane, selem, mask=image.mask[index]
-                )
-        else:
-            t_local = skimage.filters.rank.otsu(data, selem, mask=image.mask)
-
-        return skimage.img_as_float(t_local)
 
     def get_threshold_robust_background(self, image_data):
         """Calculate threshold based on mean & standard deviation
@@ -1009,8 +972,6 @@ Often a good choice is some multiple of the largest expected object size.
            of the remaining image. The threshold is then set at 2 (empirical
            value) standard deviations above the mean.
 
-           image - the image to threshold
-           mask - mask of pixels to consider (default = all pixels)
            lower_outlier_fraction - after ordering the pixels by intensity, remove
                the pixels from 0 to len(image) * lower_outlier_fraction from
                the threshold calculation (default = .05).
@@ -1049,7 +1010,6 @@ Often a good choice is some multiple of the largest expected object size.
         mean = average_fn(im)
         sd = variance_fn(im)
         return mean + sd * self.number_of_deviations.value
-
 
     def display(self, workspace, figure):
         dimensions = workspace.display_data.dimensions

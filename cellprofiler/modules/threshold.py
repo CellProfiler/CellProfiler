@@ -340,7 +340,7 @@ threshold value.
    thresholding strategy, originally developed for text recognition. A
    threshold is determined for every individual pixel, based on the mean and
    standard deviation of the surrounding pixels within a square window. The
-   size of this window is set using the adaptive window parameter. 
+   size of this window is set using the adaptive window parameter.
 
    |image4| This thresholding method can be helpful when you want to use 
    a very small adaptive window size, which may be useful when trying to
@@ -353,6 +353,12 @@ threshold value.
    pixel seperately (no interpolation) without needing excessive computation
    time.
 
+   |image3| As regions are likely to contain no cells, adaptive thresholds are constrained
+   to ensure all pixel thresholds are between 0.7x and 1.5x a global threshold, termed the
+   "Guide Threshold". This guide is calculated using the global strategy using the same
+   method as selected for adaptive mode. The one exception to this is Sauvola thresholding,
+   which uses a Minimum Cross-Entropy global threshold as a guide (since Sauvola is only
+   available as a local threshold).
 
 **References**
 

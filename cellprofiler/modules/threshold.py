@@ -878,11 +878,15 @@ Often a good choice is some multiple of the largest expected object size.
 
         elif self.threshold_operation == TM_LI:
             local_threshold = self._run_local_threshold(image_data,
-                                                        method=skimage.filters.threshold_li)
+                                                        method=skimage.filters.threshold_li,
+                                                        volumetric=image.volumetric,
+                                                        )
         elif self.threshold_operation == TM_OTSU:
             if self.two_class_otsu.value == O_TWO_CLASS:
                 local_threshold = self._run_local_threshold(image_data,
-                                                            method=skimage.filters.threshold_otsu)
+                                                            method=skimage.filters.threshold_otsu,
+                                                            volumetric=image.volumetric,
+                                                            )
 
             elif self.two_class_otsu.value == O_THREE_CLASS:
                 local_threshold = self._run_local_threshold(image_data,
@@ -894,6 +898,7 @@ Often a good choice is some multiple of the largest expected object size.
         elif self.threshold_operation == TM_ROBUST_BACKGROUND:
             local_threshold = self._run_local_threshold(image_data,
                                                         method=self.get_threshold_robust_background,
+                                                        volumetric=image.volumetric,
                                                         )
 
         elif self.threshold_operation == TM_SAUVOLA:

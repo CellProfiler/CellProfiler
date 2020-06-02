@@ -750,11 +750,7 @@ Often a good choice is some multiple of the largest expected object size.
     def run(self, workspace):
         input_image = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
         dimensions = input_image.dimensions
-        import time
-        start = time.perf_counter()
         final_threshold, orig_threshold, guide_threshold = self.get_threshold(input_image, workspace, automatic=False)
-        time2 = time.perf_counter() - start
-        print("Threshold: ", "%.4f" % numpy.mean(numpy.atleast_1d(final_threshold)), " in ", "%.4fs" % time2)
 
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),

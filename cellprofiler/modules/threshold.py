@@ -750,7 +750,10 @@ Often a good choice is some multiple of the largest expected object size.
     def run(self, workspace):
         input_image = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
         dimensions = input_image.dimensions
-        final_threshold, orig_threshold, guide_threshold = self.get_threshold(input_image, workspace, automatic=False)
+        final_threshold, orig_threshold, guide_threshold = self.get_threshold(input_image,
+                                                                              workspace,
+                                                                              automatic=False,
+                                                                              )
 
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
@@ -846,6 +849,8 @@ Often a good choice is some multiple of the largest expected object size.
 
         elif automatic or self.threshold_operation in (TM_LI, TM_SAUVOLA):
             threshold = skimage.filters.threshold_li(image_data)
+            if automatic:
+                return threshold, threshold, None
 
         elif self.threshold_operation == TM_ROBUST_BACKGROUND:
             threshold = self.get_threshold_robust_background(image_data)

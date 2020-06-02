@@ -48,9 +48,9 @@ TS_GLOBAL = "Global"
 TS_ADAPTIVE = "Adaptive"
 TM_MANUAL = "Manual"
 TM_MEASUREMENT = "Measurement"
-TM_LI = "Minimum cross entropy"
+TM_LI = "Minimum Cross Entropy"
 TM_OTSU = "Otsu"
-TM_ROBUST_BACKGROUND = "RobustBackground"
+TM_ROBUST_BACKGROUND = "Robust Background"
 TM_SAUVOLA = "Sauvola"
 
 
@@ -64,7 +64,7 @@ TECH_NOTE_ICON = "gear.png"
 class Threshold(cellprofiler_core.module.ImageProcessing):
     module_name = "Threshold"
 
-    variable_revision_number = 10
+    variable_revision_number = 11
 
     def create_settings(self):
         super(Threshold, self).create_settings()
@@ -158,6 +158,14 @@ threshold value.
 
 There are a number of methods for finding thresholds automatically:
 
+-  *{TM_LI}:* The distributions of intensities that define foreground and background are
+   used as estimates for probability distributions that produce the intensities of foreground
+   and background pixels. For each possible threshold the cross-entropy between the foreground
+   and background distributions is calculated and the lowest cross-entropy value is chosen as
+   the final threshold. The lowest cross-entropy can be interpreted as the value where the information
+   shared between the two probability distributions is the highest. On average, given a pixel of an
+   arbitrary intensity, the likelihood it came from the foreground or background would be at its highest.
+
 -  *{TM_OTSU}:* This approach calculates the threshold separating the
    two classes of pixels (foreground and background) by minimizing the
    variance within the each class.
@@ -194,13 +202,10 @@ There are a number of methods for finding thresholds automatically:
    brightness, but the objects of interest are consistently *N* times
    brighter than the background level of the image.
 
--  *{TM_LI}:* The distributions of intensities that define foreground and background are
-   used as estimates for probability distributions that produce the intensities of foreground
-   and background pixels. For each possible threshold the cross-entropy between the foreground
-   and background distributions is calculated and the lowest cross-entropy value is chosen as
-   the final threshold. The lowest cross-entropy can be interpreted as the value where the information
-   shared between the two probability distributions is the highest. On average, given a pixel of an
-   arbitrary intensity, the likelihood it came from the foreground or background would be at its highest.
+-  *{TM_MEASUREMENT}:* Use a prior image measurement as the threshold.
+   The measurement should have values between zero and one. This
+   strategy can also be used to apply a pre-calculated threshold imported as
+   per-image metadata.
 
 -  *{TM_MANUAL}:* Enter a single value between zero and one that
    applies to all images and is thus independent of the input image.
@@ -212,10 +217,6 @@ There are a number of methods for finding thresholds automatically:
    where the foreground is 1 and the background is 0), a manual value of
    0.5 will identify the objects.
 
--  *{TM_MEASUREMENT}:* Use a prior image measurement as the threshold.
-   The measurement should have values between zero and one. This
-   strategy can also be used to apply a pre-calculated threshold imported as
-   per-image metadata.
 
 **References**
 
@@ -250,8 +251,9 @@ There are a number of methods for finding thresholds automatically:
             "Thresholding method",
             [TM_LI,
              TM_OTSU,
+             TM_ROBUST_BACKGROUND,
              TM_SAUVOLA,
-             TM_ROBUST_BACKGROUND],
+             ],
             value=TM_LI,
             doc="""\
 *(Used only if "{TS_ADAPTIVE}" is selected for thresholding strategy)*
@@ -630,8 +632,7 @@ Often a good choice is some multiple of the largest expected object size.
                 self.number_of_deviations,
             ]
 
-        if self.threshold_operation not in [TM_MEASUREMENT, TM_MANUAL]:
-            visible_settings += [self.threshold_smoothing_scale]
+        visible_settings += [self.threshold_smoothing_scale]
 
         if self.threshold_operation != TM_MANUAL:
             visible_settings += [self.threshold_correction_factor, self.threshold_range]
@@ -692,7 +693,7 @@ Often a good choice is some multiple of the largest expected object size.
         dimensions = input_image.dimensions
         import time
         start = time.perf_counter()
-        final_threshold, orig_threshold = self.get_threshold(input_image, workspace, automatic=False)
+        final_threshold, orig_threshold, guide_threshold = self.get_threshold(input_image, workspace, automatic=False)
         time2 = time.perf_counter() - start
         print("Threshold: ", "%.4f" % numpy.mean(numpy.atleast_1d(final_threshold)), " in ", "%.4fs" % time2)
 
@@ -701,6 +702,7 @@ Often a good choice is some multiple of the largest expected object size.
             workspace.measurements,
             final_threshold,
             orig_threshold,
+            guide_threshold,
         )
 
         binary_image, _ = self.apply_threshold(input_image, final_threshold)
@@ -736,7 +738,7 @@ Often a good choice is some multiple of the largest expected object size.
 
         mask = image.mask
 
-        if not automatic and self.threshold_operation in [TM_MEASUREMENT, TM_MANUAL]:
+        if not automatic and self.threshold_smoothing_scale.value == 0:
             return (data >= threshold) & mask, 0
 
         if automatic:
@@ -758,7 +760,7 @@ Often a good choice is some multiple of the largest expected object size.
 
     def get_threshold(self, image, workspace, automatic=False):
         if self.threshold_operation == TM_MANUAL:
-            return self.manual_threshold.value, self.manual_threshold.value
+            return self.manual_threshold.value, self.manual_threshold.value, None
 
         elif self.threshold_operation == TM_MEASUREMENT:
             # m = workspace.measurements
@@ -766,7 +768,7 @@ Often a good choice is some multiple of the largest expected object size.
             orig_threshold = float(
                 workspace.measurements.get_current_image_measurement(self.thresholding_measurement.value)
             )
-            return self._correct_global_threshold(orig_threshold), orig_threshold
+            return self._correct_global_threshold(orig_threshold), orig_threshold, None
 
         elif self.threshold_scope.value == TS_GLOBAL or automatic:
             return self.get_global_threshold(image, automatic=automatic)
@@ -802,10 +804,10 @@ Often a good choice is some multiple of the largest expected object size.
                 threshold = threshold[bin_wanted]
         else:
             raise ValueError("Invalid thresholding settings")
-        return self._correct_global_threshold(threshold), threshold
+        return self._correct_global_threshold(threshold), threshold, None
 
     def get_local_threshold(self, image):
-        guide_threshold, _ = self.get_global_threshold(image)
+        guide_threshold, _, _ = self.get_global_threshold(image)
         image_data = numpy.where(image.mask, image.pixel_data, numpy.nan)
 
         if len(image_data) == 0 or numpy.all(image_data == numpy.nan):
@@ -844,7 +846,7 @@ Often a good choice is some multiple of the largest expected object size.
 
         else:
             raise ValueError("Invalid thresholding settings")
-        return self._correct_local_threshold(local_threshold, guide_threshold), local_threshold
+        return self._correct_local_threshold(local_threshold, guide_threshold), local_threshold, guide_threshold
 
     def _run_local_threshold(self, image_data, method, volumetric=False, **kwargs):
         if volumetric:
@@ -948,7 +950,7 @@ Often a good choice is some multiple of the largest expected object size.
         threshold *= self.threshold_correction_factor.value
         return min(max(threshold, self.threshold_range.min), self.threshold_range.max)
 
-    def _correct_local_threshold(self, t_local_orig, t_global):
+    def _correct_local_threshold(self, t_local_orig, t_guide):
         t_local = t_local_orig.copy()
         t_local *= self.threshold_correction_factor.value
 
@@ -957,8 +959,8 @@ Often a good choice is some multiple of the largest expected object size.
         # using. Without a lower bound, you start having crazy threshold s that detect noise blobs. And same for
         # very crowded areas where there is zero background in the window. You want the foreground to be all
         # detected.
-        t_min = max(self.threshold_range.min, t_global * 0.7)
-        t_max = min(self.threshold_range.max, t_global * 1.5)
+        t_min = max(self.threshold_range.min, t_guide * 0.7)
+        t_max = min(self.threshold_range.max, t_guide * 1.5)
 
         t_local[t_local < t_min] = t_min
         t_local[t_local > t_max] = t_max
@@ -1038,6 +1040,9 @@ Often a good choice is some multiple of the largest expected object size.
                 workspace.display_data.threshold_image,
                 title="Local threshold values",
                 sharexy=figure.subplot(0, 0),
+                vmax=workspace.display_data.input_pixel_data.max(),
+                vmin=workspace.display_data.input_pixel_data.min(),
+                normalize=False,
             )
 
         figure.subplot_table(
@@ -1048,7 +1053,7 @@ Often a good choice is some multiple of the largest expected object size.
         return self.y_name.value
 
     def add_threshold_measurements(
-        self, objname, measurements, final_threshold, orig_threshold
+        self, objname, measurements, final_threshold, orig_threshold, guide_threshold=None
     ):
         ave_final_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
         ave_orig_threshold = numpy.mean(numpy.atleast_1d(orig_threshold))
@@ -1063,6 +1068,13 @@ Often a good choice is some multiple of the largest expected object size.
             cellprofiler_core.measurement.FF_ORIG_THRESHOLD % objname,
             ave_orig_threshold,
         )
+
+        if self.threshold_scope == TS_ADAPTIVE:
+            measurements.add_measurement(
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.measurement.FF_GUIDE_THRESHOLD % objname,
+                guide_threshold,
+            )
 
     def add_fg_bg_measurements(self, objname, measurements, image, binary_image):
         data = image.pixel_data
@@ -1089,7 +1101,7 @@ Often a good choice is some multiple of the largest expected object size.
         if object_name is None:
             object_name = self.y_name.value
 
-        return [
+        measures = [
             (
                 cellprofiler_core.measurement.IMAGE,
                 cellprofiler_core.measurement.FF_FINAL_THRESHOLD % object_name,
@@ -1100,6 +1112,16 @@ Often a good choice is some multiple of the largest expected object size.
                 cellprofiler_core.measurement.FF_ORIG_THRESHOLD % object_name,
                 cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
+            ]
+        if self.threshold_scope == TS_ADAPTIVE:
+            measures += [
+                (
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.FF_GUIDE_THRESHOLD % object_name,
+                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                )
+            ]
+        measures += [
             (
                 cellprofiler_core.measurement.IMAGE,
                 cellprofiler_core.measurement.FF_WEIGHTED_VARIANCE % object_name,
@@ -1111,6 +1133,7 @@ Often a good choice is some multiple of the largest expected object size.
                 cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
         ]
+        return measures
 
     def get_categories(self, pipeline, object_name):
         if object_name == cellprofiler_core.measurement.IMAGE:
@@ -1123,13 +1146,17 @@ Often a good choice is some multiple of the largest expected object size.
             object_name == cellprofiler_core.measurement.IMAGE
             and category == cellprofiler_core.measurement.C_THRESHOLD
         ):
-            return [
+            measures = [
                 cellprofiler_core.measurement.FTR_ORIG_THRESHOLD,
                 cellprofiler_core.measurement.FTR_FINAL_THRESHOLD,
+            ]
+            if self.threshold_scope == TS_ADAPTIVE:
+                measures += [cellprofiler_core.measurement.FTR_GUIDE_THRESHOLD]
+            measures += [
                 cellprofiler_core.measurement.FTR_SUM_OF_ENTROPIES,
                 cellprofiler_core.measurement.FTR_WEIGHTED_VARIANCE,
             ]
-
+            return measures
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
@@ -1177,7 +1204,14 @@ Often a good choice is some multiple of the largest expected object size.
                 setting_values += [setting_values[3]]
             else:
                 setting_values += [centrosome.threshold.TM_OTSU]
-
+            variable_revision_number = 10
+        if variable_revision_number == 10:
+            # Relabel method names
+            if setting_values[3] == "RobustBackground":
+                setting_values[3] = TM_ROBUST_BACKGROUND
+            elif setting_values[3] == "Minimum cross entropy":
+                setting_values[3] = TM_LI
+            variable_revision_number = 11
         return setting_values, variable_revision_number
 
     def upgrade_threshold_settings(self, setting_values):
@@ -1267,8 +1301,7 @@ Often a good choice is some multiple of the largest expected object size.
 
     def validate_module(self, pipeline):
         if (
-            self.threshold_scope in [TS_ADAPTIVE, TS_GLOBAL]
-            and self.global_operation.value == TM_ROBUST_BACKGROUND
+            self.threshold_operation == TM_ROBUST_BACKGROUND
             and self.lower_outlier_fraction.value + self.upper_outlier_fraction.value
             >= 1
         ):

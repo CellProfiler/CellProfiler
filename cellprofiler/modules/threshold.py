@@ -48,7 +48,7 @@ TS_GLOBAL = "Global"
 TS_ADAPTIVE = "Adaptive"
 TM_MANUAL = "Manual"
 TM_MEASUREMENT = "Measurement"
-TM_LI = "Minimum Cross Entropy"
+TM_LI = "Minimum Cross-Entropy"
 TM_OTSU = "Otsu"
 TM_ROBUST_BACKGROUND = "Robust Background"
 TM_SAUVOLA = "Sauvola"
@@ -188,6 +188,13 @@ There are a number of methods for finding thresholds automatically:
    are adapted from CellProfiler 2 and use two-class Otsu thresholding should be 
    checked when converting to CellProfiler 3 and beyond to make sure that method
    is still the most appropriate. 
+   
+   NOTE that from CellProfiler 4.0.0 and onwards the standard implementation will
+   be used for three-class Otsu thresholding as well. Results with three-class
+   Otsu thresholding are likely to be slight different from older versions, so
+   imported pipelines which use these methods should be checked when converting
+   to the latest version to ensure that settings are still appropriate.
+
 
 -  *{TM_ROBUST_BACKGROUND}:* This method assumes that the background
    distribution approximates a Gaussian by trimming the brightest and
@@ -262,17 +269,14 @@ The intensity threshold affects the decision of whether each pixel
 will be considered foreground (region(s) of interest) or background. A
 higher threshold value will result in only the brightest regions being
 identified, whereas a lower threshold value will include dim regions.
-When using the strategy "Global", you can have the threshold
-automatically calculated from a choice of several methods, however,
-when you choose "Adaptive" as the thresholding strategy, your only
-option is Otsu automatic thresholding. See the help for the Global
-thresholding strategy for more details, including advantages and
-disadvantages of the various thresholding options there.
+When in "Adaptive" mode, the source image is broken into 'blocks' equal
+to the size of the "Adaptive Window". A seperate threshold can then be
+calculated for each block and blended to create a gradient of different
+thresholds for each pixel in the image, determined by local intensity.
+A block's threshold can be calculated using many of the methods available
+when using the "Global" strategy.
 
 {HELP_ON_PIXEL_INTENSITIES}
-
-.. |image0| image:: {PROTIP_RECOMMEND_ICON}
-.. |image1| image:: {PROTIP_AVOID_ICON}
 
 The threshold that is used for each image is recorded as a per-image
 measurement, so if you are surprised by unusual measurements from one of
@@ -280,6 +284,14 @@ your images, you might check whether the automatically calculated
 threshold was unusually high or low compared to the other images. See
 the **FlagImage** module if you would like to flag an image based on the
 threshold value.
+
+-  *{TM_LI}:* The distributions of intensities that define foreground and background are
+   used as estimates for probability distributions that produce the intensities of foreground
+   and background pixels. For each possible threshold the cross-entropy between the foreground
+   and background distributions is calculated and the lowest cross-entropy value is chosen as
+   the final threshold. The lowest cross-entropy can be interpreted as the value where the information
+   shared between the two probability distributions is the highest. On average, given a pixel of an
+   arbitrary intensity, the likelihood it came from the foreground or background would be at its highest.
 
 -  *{TM_OTSU}:* This approach calculates the threshold separating the
    two classes of pixels (foreground and background) by minimizing the
@@ -303,9 +315,44 @@ threshold value.
    are adapted from CellProfiler 2 and use two-class Otsu thresholding should be 
    checked when converting to CellProfiler 3 and beyond to make sure that method
    is still the most appropriate. 
+   
+   NOTE that from CellProfiler 4.0.0 and onwards the standard implementation will
+   be used for three-class Otsu thresholding as well. Results with three-class
+   Otsu thresholding are likely to be slight different from older versions, so
+   imported pipelines which use these methods should be checked when converting
+   to the latest version to ensure that settings are still appropriate.
+   
 
-.. |image2| image:: {PROTIP_RECOMMEND_ICON}
-.. |image3| image:: {TECH_NOTE_ICON}
+-  *{TM_ROBUST_BACKGROUND}:* This method assumes that the background
+   distribution approximates a Gaussian by trimming the brightest and
+   dimmest X% of pixel intensities, where you choose a suitable percentage.
+   It then calculates the mean and
+   standard deviation of the remaining pixels and calculates the
+   threshold as the mean + N times the standard deviation, where again you
+   choose the number of standard deviations to suit your images.
+
+   |image4| This thresholding method can be helpful if the majority of the image
+   is background. It can also be helpful if your images vary in overall
+   brightness, but the objects of interest are consistently *N* times
+   brighter than the background level of the image.
+
+-  *{TM_SAUVOLA}:* This method is a modified variant of Niblack's per-pixel
+   thresholding strategy, originally developed for text recognition. A
+   threshold is determined for every individual pixel, based on the mean and
+   standard deviation of the surrounding pixels within a square window. The
+   size of this window is set using the adaptive window parameter. 
+
+   |image4| This thresholding method can be helpful when you want to use 
+   a very small adaptive window size, which may be useful when trying to
+   detect puncti or fine details.
+   
+   |image3| To improve speed and efficiency, most of these adaptive thresholding
+   methods divide the image into blocks, calculate a single threshold for each
+   block and interpolate the values between them. In contrast, the simplicity of
+   the Sauvola formula allows our implementation to calculate every individual
+   pixel seperately (no interpolation) without needing excessive computation
+   time.
+
 
 **References**
 
@@ -314,6 +361,11 @@ threshold value.
    Imaging*, 13(1), 146-165. (`link`_)
 
 .. _link: https://doi.org/10.1117/1.1631315
+.. |image0| image:: {PROTIP_RECOMMEND_ICON}
+.. |image1| image:: {PROTIP_AVOID_ICON}
+.. |image2| image:: {PROTIP_RECOMMEND_ICON}
+.. |image3| image:: {TECH_NOTE_ICON}
+.. |image4| image:: {PROTIP_RECOMMEND_ICON}
 """.format(
                 **{
                     "HELP_ON_PIXEL_INTENSITIES": _help.HELP_ON_PIXEL_INTENSITIES,
@@ -321,6 +373,9 @@ threshold value.
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                     "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
                     "TM_OTSU": TM_OTSU,
+                    "TM_LI": TM_LI,
+                    "TM_ROBUST_BACKGROUND": TM_ROBUST_BACKGROUND,
+                    "TM_SAUVOLA": TM_SAUVOLA,
                     "TS_ADAPTIVE": TS_ADAPTIVE,
                 }
             ),
@@ -688,8 +743,6 @@ Often a good choice is some multiple of the largest expected object size.
 
     def run(self, workspace):
         input_image = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
-# Todo: Refactor names and upgrade settings
-# Todo: Documentation
         dimensions = input_image.dimensions
         import time
         start = time.perf_counter()

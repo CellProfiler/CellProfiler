@@ -801,7 +801,7 @@ segmentation.""",
             self.y_name.value, workspace.measurements, image, binary_image
         )
 
-        return binary_image, orig_threshold, sigma
+        return binary_image, numpy.mean(numpy.atleast_1d(final_threshold)), sigma
 
     def display(self, workspace, figure):
         object_pct = workspace.display_data.object_pct

@@ -1205,7 +1205,7 @@ If "*{NO}*" is selected, the following settings are used:
             self.y_name.value, workspace.measurements, image, binary_image
         )
 
-        return binary_image, orig_threshold, sigma
+        return binary_image, numpy.mean(numpy.atleast_1d(final_threshold)), sigma
 
     def smooth_image(self, image, mask):
         """Apply the smoothing filter to the image"""

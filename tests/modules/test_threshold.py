@@ -141,7 +141,7 @@ def test_load_v9():
 
     module = pipeline.modules()[6]
     assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
-    assert module.global_operation.value == centrosome.threshold.TM_ROBUST_BACKGROUND
+    assert module.global_operation.value == cellprofiler.modules.threshold.TM_ROBUST_BACKGROUND
 
     module = pipeline.modules()[7]
     assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL

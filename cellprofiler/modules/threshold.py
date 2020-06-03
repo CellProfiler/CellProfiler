@@ -842,7 +842,7 @@ Often a good choice is some multiple of the largest expected object size.
 
         # Shortcuts - Check if image array is empty or all pixels are the same value.
         if len(image_data) == 0:
-            threshold = 0
+            threshold = 0.0
 
         elif numpy.all(image_data == image_data[0]):
             threshold = image_data[0]
@@ -967,7 +967,7 @@ Often a good choice is some multiple of the largest expected object size.
                 block = image_data[i0:i1, j0:j1]
                 block = block[~numpy.isnan(block)]
                 if len(block) == 0:
-                    threshold_out = 0
+                    threshold_out = 0.0
                 elif numpy.all(block == block[0]):
                     # Don't compute blocks with only 1 value.
                     threshold_out = block[0]

@@ -525,6 +525,68 @@ def test_threshold_li_image():
     numpy.testing.assert_almost_equal(t_global, expected)
 
 
+def test_threshold_li_adaptive_image():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10)
+
+    workspace, module = make_workspace(data)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+
+    module.local_operation.value = cellprofiler.modules.threshold.TM_LI
+
+    module.adaptive_window_size.value = 3
+
+    t_local, t_global, t_guide = module.get_threshold(image, workspace)
+
+    t_guide_expected = skimage.filters.threshold_li(data)
+
+    t_local_expected = module._get_adaptive_threshold(data,
+                                                      skimage.filters.threshold_li)
+
+    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_local, t_local_expected)
+
+
+def test_threshold_li_adaptive_image_masked():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10)
+
+    mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+    mask[1:3, 1:3] = True
+
+    workspace, module = make_workspace(data, mask)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+
+    module.local_operation.value = cellprofiler.modules.threshold.TM_LI
+
+    module.adaptive_window_size.value = 3
+
+    t_local, t_global, t_guide = module.get_threshold(image, workspace)
+
+    t_guide_expected = skimage.filters.threshold_li(data[mask])
+
+    t_local_expected = module._get_adaptive_threshold(numpy.where(mask, data, numpy.nan),
+                                                      skimage.filters.threshold_li)
+
+    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_local, t_local_expected)
+
+
 def test_threshold_li_image_automatic():
     numpy.random.seed(73)
 
@@ -721,6 +783,41 @@ def test_threshold_robust_background_mean_mad_volume():
     numpy.testing.assert_almost_equal(t_local, t_local_expected)
 
     numpy.testing.assert_almost_equal(t_global, t_global_expected)
+
+
+def test_threshold_robust_background_adaptive():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10)
+
+    workspace, module = make_workspace(data, dimensions=2)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+
+    module.adaptive_window_size.value = 3
+
+    module.local_operation.value = cellprofiler.modules.threshold.TM_ROBUST_BACKGROUND
+
+    module.averaging_method.value = cellprofiler.modules.threshold.RB_MEAN
+
+    module.variance_method.value = cellprofiler.modules.threshold.RB_SD
+
+    t_local, t_uncorrected, t_guide = module.get_threshold(image, workspace)
+
+    t_guide_expected = module.get_threshold_robust_background(data)
+
+    t_guide_expected = module._correct_global_threshold(t_guide_expected)
+
+    t_local_expected = module._get_adaptive_threshold(data,
+                                                      module.get_threshold_robust_background)
+
+    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_local, t_local_expected)
 
 
 def test_threshold_otsu_full_mask():
@@ -1019,3 +1116,93 @@ def test_threshold_otsu3_volume():
     assert t_local.ndim == 3
 
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
+
+
+def test_threshold_sauvola_image():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10)
+
+    workspace, module = make_workspace(data)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+
+    module.local_operation.value = cellprofiler.modules.threshold.TM_SAUVOLA
+
+    module.adaptive_window_size.value = 3
+
+    t_local, t_global, t_guide = module.get_threshold(image, workspace)
+
+    t_guide_expected = skimage.filters.threshold_li(data)
+
+    t_local_expected = skimage.filters.threshold_sauvola(data, window_size=3)
+
+    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_local, t_local_expected)
+
+
+def test_threshold_sauvola_image_masked():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10)
+
+    mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+    mask[1:3, 1:3] = True
+
+    workspace, module = make_workspace(data, mask)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+
+    module.local_operation.value = cellprofiler.modules.threshold.TM_SAUVOLA
+
+    module.adaptive_window_size.value = 3
+
+    t_local, t_global, t_guide = module.get_threshold(image, workspace)
+
+    t_guide_expected = skimage.filters.threshold_li(data[mask])
+
+    t_local_expected = skimage.filters.threshold_sauvola(numpy.where(mask, data, 0), window_size=3)
+
+    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_local, t_local_expected)
+
+
+def test_threshold_sauvola_volume():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10, 10)
+
+    workspace, module = make_workspace(data)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+
+    module.local_operation.value = cellprofiler.modules.threshold.TM_SAUVOLA
+
+    module.adaptive_window_size.value = 3
+
+    t_local, t_global, t_guide = module.get_threshold(image, workspace)
+
+    t_guide_expected = skimage.filters.threshold_li(data)
+
+    t_local_expected = skimage.filters.threshold_sauvola(data, window_size=3)
+
+    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+
+    assert t_local.ndim == 3
+
+    numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
+
+    numpy.testing.assert_almost_equal(t_local, t_local_expected)

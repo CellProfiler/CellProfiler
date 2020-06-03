@@ -782,7 +782,10 @@ def test_threshold_otsu_partial_mask_uniform_data():
 
     t_guide_expected = 0.2
 
-    t_local_expected = 0.7 * t_guide_expected * numpy.ones_like(data)
+    t_local_expected = module._get_adaptive_threshold(numpy.where(mask, data, numpy.nan),
+                                                      skimage.filters.threshold_otsu)
+
+    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
 
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
@@ -810,7 +813,7 @@ def test_threshold_otsu_uniform_data():
 
     t_global_expected = 0.2
 
-    t_local_expected = 0.7 * t_global_expected * numpy.ones_like(data)
+    t_local_expected = t_global_expected * numpy.ones_like(data)
 
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
@@ -832,15 +835,17 @@ def test_threshold_otsu_image():
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
-    module.global_operation.value = centrosome.threshold.TM_OTSU
+    module.global_operation.value = cellprofiler.modules.threshold.TM_OTSU
+
+    module.local_operation.value = cellprofiler.modules.threshold.TM_OTSU
 
     module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
 
     module.adaptive_window_size.value = 3
 
-    t_local, t_global, _ = module.get_threshold(image, workspace)
+    t_local, t_global, t_guide = module.get_threshold(image, workspace)
 
-    t_global_expected = skimage.filters.threshold_otsu(data[mask])
+    t_guide_expected = skimage.filters.threshold_otsu(data[mask])
 
     t_local_expected = skimage.filters.rank.otsu(
         skimage.img_as_ubyte(data), skimage.morphology.square(3), mask=mask
@@ -848,15 +853,15 @@ def test_threshold_otsu_image():
 
     t_local_expected = skimage.img_as_float(t_local_expected)
 
-    t_min = 0.7 * t_global_expected
+    t_min = 0.7 * t_guide_expected
 
-    t_max = min(1.0, 1.5 * t_global_expected)
+    t_max = min(1.0, 1.5 * t_guide_expected)
 
     t_local_expected[t_local_expected < t_min] = t_min
 
     t_local_expected[t_local_expected > t_max] = t_max
 
-    numpy.testing.assert_almost_equal(t_global, t_global_expected)
+    numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
@@ -876,7 +881,7 @@ def test_threshold_otsu_volume():
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
-    module.global_operation.value = centrosome.threshold.TM_OTSU
+    module.local_operation.value = cellprofiler.modules.threshold.TM_OTSU
 
     module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
 
@@ -935,20 +940,11 @@ def test_threshold_otsu3_full_mask():
 
     t_local, t_global, t_guide = module.get_threshold(image, workspace)
 
-    t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
-        centrosome.threshold.TM_OTSU,
-        cellprofiler.modules.threshold.TS_ADAPTIVE,
-        data,
-        mask=mask,
-        adaptive_window_size=3,
-        threshold_range_min=0.0,
-        threshold_range_max=1.0,
-        threshold_correction_factor=1.0,
-        two_class_otsu=False,
-        assign_middle_to_foreground=True,
-    )
+    t_local_expected = numpy.zeros_like(data)
 
-    numpy.testing.assert_almost_equal(t_guide, t_global_expected)
+    t_guide_expected = 0
+
+    numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
@@ -978,7 +974,7 @@ def test_threshold_otsu3_image():
 
     module.adaptive_window_size.value = 3
 
-    t_local, t_global, _ = module.get_threshold(image, workspace)
+    t_local, t_global, t_guide = module.get_threshold(image, workspace)
 
     t_local_expected, t_global_expected = centrosome.threshold.get_threshold(
         centrosome.threshold.TM_OTSU,

@@ -21,7 +21,6 @@ class Measurements:
 
     def __init__(
         self,
-        can_overwrite=False,
         image_set_start=None,
         filename=None,
         copy=None,
@@ -31,7 +30,6 @@ class Measurements:
     ):
         """Create a new measurements collection
 
-        can_overwrite - DEPRECATED and has no effect
         image_set_start - the index of the first image set in the image set list
                           or None to start at the beginning
         filename - store the measurement in an HDF5 file with this name
@@ -679,7 +677,6 @@ class Measurements:
         ObjectName - either the name of the labeled objects or "Image"
         FeatureName - the feature name, encoded with underbars for category/measurement/image/scale
         Data - the data item to be stored
-        can_overwrite - legacy / ignored
         image_set_number - write the measurement to this image set or if
                            a sequence of image sets, write the sequence of
                            data values to the sequence of image sets

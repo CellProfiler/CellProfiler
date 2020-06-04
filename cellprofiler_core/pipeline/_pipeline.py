@@ -451,22 +451,13 @@ class Pipeline:
                     if len(line.split(":", 1)) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
                     text, setting = line.split(":", 1)
-                    setting = setting.encode("utf-8").decode("unicode_escape")
-                    # TODO: remove en/decode when example cppipe no longer has \x__ characters
-                    # En/decode needed to read example cppipe format
-                    # setting = (
-                    #     setting.encode().decode("unicode_escape").replace("\\\\", "\\")
-                    # )
-                    #
-                    # if do_deprecated_utf16_decode:
-                    #     # decoding with 'unicode_escape' appears to be sufficient
-                    #     pass
-                    # elif do_utf16_decode:
-                    #     # Real hack-y way to do utf-16 decoding; was read as str so can't .decode('utf-16')
-                    #     setting = "".join(
-                    #         filter(lambda x: x in string.printable, setting)
-                    #     )
-
+                    if "\\x" in setting:
+                        try:
+                            setting = setting.encode("utf-8").decode("unicode_escape")
+                        except UnicodeDecodeError as e:
+                            setting = setting.encode("utf-8").decode("utf-8")
+                    if len(setting) > 1:
+                        setting = setting.replace("\x00", "").strip("ÿþ")
                     settings.append(setting)
 
                 module = self.setup_module(

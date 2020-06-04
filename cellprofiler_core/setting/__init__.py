@@ -18,7 +18,6 @@ from ._image_plane import *
 from ._joiner import *
 from ._measurement import *
 from ._multichoice import *
-from ._number_connector import *
 from ._path_list_display import *
 from ._regexp_text import *
 from ._setting import *

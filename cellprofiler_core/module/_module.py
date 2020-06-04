@@ -241,6 +241,17 @@ class Module:
             }
         )
 
+    def get_help_text(self):
+        """Return help text for a module as unformatted strings
+        """
+        settings_list = self.help_settings()
+        if len(settings_list):
+            settings_doc = [(setting.text, setting.doc) for setting in settings_list]
+        else:
+            settings_doc = ""
+        mod_doc = self.__doc__ if self.__doc__ else ""
+        return mod_doc, settings_doc
+
     def get_help(self):
         """Return help text for the module
 

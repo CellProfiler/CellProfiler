@@ -31,5 +31,6 @@ class Pipeline(cellprofiler_core.pipeline.Pipeline):
         else:
             super(Pipeline, self).respond_to_version_mismatch_error(message)
 
-    def save(self, fd_or_filename, format=FMT_NATIVE, save_image_plane_details=True):
-        super(Pipeline, self).save(fd_or_filename, format, save_image_plane_details)
+    def save(self, fd_or_filename, save_image_plane_details=True):
+        with open(fd_or_filename, "wt") as fd:
+            super(Pipeline, self).dump(fd, save_image_plane_details)

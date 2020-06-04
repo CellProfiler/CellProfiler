@@ -1385,6 +1385,15 @@ class PipelineController(object):
 
     def __on_export_image_sets(self, event):
         """Export the pipeline's image sets to a .csv file"""
+        if len(self.__pipeline.file_list) == 0:
+            wx.MessageBox(
+                "Unable to export image sets, file list is empty.",
+                "Export Image Sets",
+                wx.OK | wx.ICON_INFORMATION,
+                self.__frame,
+            )
+            return
+
         dlg = wx.FileDialog(
             self.__frame,
             "Export image sets",
@@ -1393,13 +1402,14 @@ class PipelineController(object):
         )
         try:
             dialog_response = dlg.ShowModal()
+            path = dlg.GetPath()
         finally:
             dlg.Destroy()
 
         if dialog_response == wx.ID_OK:
             try:
                 self.__workspace.refresh_image_set()
-                self.__workspace.measurements.write_image_sets(dlg.GetPath())
+                self.__workspace.measurements.write_image_sets(path)
 
                 # Show helpful message to guide in proper use (GithHub issue #688)
                 frame = wx.Frame(self.__frame, title="Image set listing saved")
@@ -1447,8 +1457,7 @@ class PipelineController(object):
                 frame.Fit()
                 frame.Show()
             except Exception as e:
-                error = cellprofiler.gui.dialog.Error("Error", e.message)
-
+                error = cellprofiler.gui.dialog.Error("Error", str(e))
                 if error.status is wx.ID_CANCEL:
                     cellprofiler_core.preferences.cancel_progress()
 

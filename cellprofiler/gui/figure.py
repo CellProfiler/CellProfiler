@@ -1161,9 +1161,6 @@ class Figure(wx.Frame):
 
         def change_contrast(evt):
             """Callback for Image contrast menu items"""
-            # Store zoom limits
-            xlims = self.subplot(x, y).get_xlim()
-            ylims = self.subplot(x, y).get_ylim()
             axes = self.subplot(x, y)
             if evt.Id == MENU_CONTRAST_RAW:
                 params["normalize"] = False
@@ -1179,11 +1176,7 @@ class Figure(wx.Frame):
                     self.figure.canvas.draw()
                     return
             else:
-                self.subplot_imshow(x, y, self.images[(x, y)], **params)
-                # Restore plot zoom
-                self.subplot(x, y).set_xlim(xlims[0], xlims[1])
-                self.subplot(x, y).set_ylim(ylims[0], ylims[1])
-                self.figure.canvas.draw()
+                refresh_figure()
 
         def adjust_gamma(evt):
             dlg = wx.TextEntryDialog(self, "Normalization factor", "Adjust gamma")
@@ -1203,6 +1196,15 @@ class Figure(wx.Frame):
 
             change_contrast(evt)
 
+        def refresh_figure():
+            xlims = self.subplot(x, y).get_xlim()
+            ylims = self.subplot(x, y).get_ylim()
+            self.subplot_imshow(x, y, self.images[(x, y)], **params)
+            # Restore plot zoom
+            self.subplot(x, y).set_xlim(xlims[0], xlims[1])
+            self.subplot(x, y).set_ylim(ylims[0], ylims[1])
+            self.figure.canvas.draw()
+
         def change_interpolation(evt):
             if evt.Id == MENU_INTERPOLATION_NEAREST:
                 params["interpolation"] = "nearest"
@@ -1218,13 +1220,41 @@ class Figure(wx.Frame):
                     self.figure.canvas.draw()
                     return
             else:
-                xlims = self.subplot(x, y).get_xlim()
-                ylims = self.subplot(x, y).get_ylim()
-                self.subplot_imshow(x, y, self.images[(x, y)], **params)
-                # Restore plot zoom
-                self.subplot(x, y).set_xlim(xlims[0], xlims[1])
-                self.subplot(x, y).set_ylim(ylims[0], ylims[1])
-                self.figure.canvas.draw()
+                refresh_figure()
+
+        def on_adjust_labels_alpha(labels):
+            with wx.Dialog(self, title="Adjust labels transparency") as dlg:
+                name = labels.get(CPLD_NAME, "Objects")
+                orig_alpha = int(labels[CPLD_ALPHA_VALUE] * 100 + 0.5)
+                dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+                sizer = wx.BoxSizer(wx.VERTICAL)
+                dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 8)
+                sizer.Add(
+                    wx.StaticText(dlg, label="%s transparency"),
+                    0,
+                    wx.ALIGN_CENTER_HORIZONTAL,
+                )
+                sizer.AddSpacer(4)
+                slider = wx.Slider(
+                    dlg,
+                    value=orig_alpha,
+                    minValue=0,
+                    maxValue=100,
+                    style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS,
+                )
+                sizer.Add(slider, 1, wx.EXPAND)
+                button_sizer = wx.StdDialogButtonSizer()
+                button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+                button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+                dlg.Sizer.Add(button_sizer)
+                button_sizer.Realize()
+
+                dlg.Layout()
+                if dlg.ShowModal() != wx.ID_OK:
+                    slider.SetValue(orig_alpha)
+                else:
+                    labels[CPLD_ALPHA_VALUE] = float(slider.GetValue()) / 100.0
+                    refresh_figure()
 
         if is_color_image(self.images[x, y]):
             submenu = wx.Menu()
@@ -1242,9 +1272,6 @@ class Figure(wx.Frame):
 
             def toggle_channels(evt):
                 """Callback for channel menu items."""
-                # Store zoom limits
-                xlims = self.subplot(x, y).get_xlim()
-                ylims = self.subplot(x, y).get_ylim()
                 if "rgb_mask" not in params:
                     params["rgb_mask"] = list(rgb_mask)
                 else:
@@ -1253,12 +1280,7 @@ class Figure(wx.Frame):
                 for idx, identifier in enumerate(ids):
                     if identifier == evt.Id:
                         params["rgb_mask"][idx] = not params["rgb_mask"][idx]
-                self.subplot_imshow(x, y, self.images[(x, y)], **params)
-                # Restore plot zoom
-                self.subplot(x, y).set_xlim(xlims[0], xlims[1])
-                self.subplot(x, y).set_ylim(ylims[0], ylims[1])
-                self.figure.canvas.draw()
-
+                refresh_figure()
             for identifier in ids:
                 self.Bind(wx.EVT_MENU, toggle_channels, id=identifier)
 
@@ -1295,7 +1317,7 @@ class Figure(wx.Frame):
                     def select_mode(event, cplabels=cplabels, mode=mode):
                         cplabels[CPLD_MODE] = mode
                         self.update_line_labels(self.subplot(x, y), params)
-                        self.figure.canvas.draw()
+                        refresh_figure()
 
                     self.Bind(wx.EVT_MENU, select_mode, id=menu_id)
                 if cplabels[CPLD_MODE] == CPLDM_ALPHA:
@@ -1307,7 +1329,7 @@ class Figure(wx.Frame):
                     )
                     self.Bind(
                         wx.EVT_MENU,
-                        lambda event, cplabels=cplabels: self.on_adjust_labels_alpha(
+                        lambda event, cplabels=cplabels: on_adjust_labels_alpha(
                             cplabels
                         ),
                         id=menu_id,
@@ -1329,45 +1351,6 @@ class Figure(wx.Frame):
             id=MENU_SAVE_SUBPLOT[(x, y)],
         )
         return popup
-
-    def on_adjust_labels_alpha(self, cplabels):
-        with wx.Dialog(self, title="Adjust labels transparency") as dlg:
-            name = cplabels.get(CPLD_NAME, "Objects")
-            orig_alpha = int(cplabels[CPLD_ALPHA_VALUE] * 100 + 0.5)
-            dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
-            sizer = wx.BoxSizer(wx.VERTICAL)
-            dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 8)
-            sizer.Add(
-                wx.StaticText(dlg, label="%s transparency"),
-                0,
-                wx.ALIGN_CENTER_HORIZONTAL,
-            )
-            sizer.AddSpacer(4)
-            slider = wx.Slider(
-                dlg,
-                value=orig_alpha,
-                minValue=0,
-                maxValue=100,
-                style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS,
-            )
-            sizer.Add(slider, 1, wx.EXPAND)
-            button_sizer = wx.StdDialogButtonSizer()
-            button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
-            button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
-            dlg.Sizer.Add(button_sizer)
-            button_sizer.Realize()
-
-            def on_slider(
-                event, cplabels=cplabels, draw_fn=self.figure.canvas.draw_idle
-            ):
-                cplabels[CPLD_ALPHA_VALUE] = float(slider.GetValue()) / 100.0
-                draw_fn()
-
-            dlg.Layout()
-            slider.Bind(wx.EVT_SLIDER, on_slider)
-            if dlg.ShowModal() != wx.ID_OK:
-                slider.SetValue(orig_alpha)
-                on_slider(None)
 
     def set_grids(self, shape):
         self.__gridspec = matplotlib.gridspec.GridSpec(*shape[::-1])

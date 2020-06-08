@@ -54,9 +54,9 @@ setuptools.setup(
     },
     install_requires=[
         "boto3>=1.12.28",
-        "cellprofiler-core==4.0.0rc6",
+        "cellprofiler-core==4.0.0rc7",
         "centrosome==1.1.7",
-        "docutils",
+        "docutils==0.15.2",
         "h5py>=2.9",
         "imageio>=2.5",
         "inflect>=2.1",

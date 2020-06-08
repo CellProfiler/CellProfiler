@@ -78,8 +78,7 @@ builtin_modules = [
     "align",
     "groups",
     "images",
-    "loadimages",
-    "loadsingleimage",
+    "loaddata",
     "metadata",
     "namesandtypes",
 ]

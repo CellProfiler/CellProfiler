@@ -56,8 +56,10 @@ def edit_regexp(parent, regexp, test_text, guesses=None):
     if guesses is None:
         guesses = RE_FILENAME_GUESSES
     frame = RegexpDialog(
-        parent, size=(500, 200), style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+        parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
     )
+    frame.SetMinSize((300, 200))
+    frame.SetSize((600, 200))
     frame.value = regexp
     frame.test_text = test_text
     frame.guesses = guesses
@@ -73,12 +75,9 @@ class RegexpDialog(wx.Dialog):
         self.__value = "Not initialized"
         self.__test_text = "Not initialized"
         self.__guesses = RE_FILENAME_GUESSES
-        self.font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT)
-        self.error_font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT)
-        temp = wx.ClientDC(self)
-        temp.SetFont(self.font)
-        edit_size = temp.GetTextExtent("                                        ")
-        temp.Destroy()
+        font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        self.font = font
+        self.error_font = font
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -149,13 +148,14 @@ class RegexpDialog(wx.Dialog):
         self.test_display.StyleSetFont(STYLE_ERROR, self.error_font)
         self.test_display.StyleSetForeground(STYLE_ERROR, wx.Colour(255, 0, 0, 255))
         self.test_display.Text = self.__test_text
-        self.test_display.ReadOnly = True
+        self.test_display.SetReadOnly(True)
         self.test_display.SetUseVerticalScrollBar(0)
         self.test_display.SetUseHorizontalScrollBar(0)
         self.test_display.SetMarginWidth(wx.stc.STC_MARGIN_NUMBER, 0)
         self.test_display.SetMarginWidth(wx.stc.STC_MARGIN_SYMBOL, 0)
         text_extent = self.test_display.GetFullTextExtent(self.__test_text)
-        self.test_display.SetSizeHints(100, text_extent[1], maxH=text_extent[1])
+        self.test_display.SetSizeHints(100, text_extent[1]+3, maxH=text_extent[1]+3)
+        self.test_display.Enable(False)
         sizer.Add(self.test_display, 0, wx.EXPAND | wx.ALL, 5)
 
         line = wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
@@ -267,7 +267,7 @@ class RegexpDialog(wx.Dialog):
             )
 
     def refresh_text(self):
-        self.test_display.ReadOnly = False
+        self.test_display.SetReadOnly(False)
         self.test_display.Text = self.__test_text
         try:
             parse(self.__value, RegexpState())
@@ -293,10 +293,6 @@ class RegexpDialog(wx.Dialog):
             self.test_display.StartStyling(0, 0xFF)
             self.test_display.SetStyling(len(self.test_display.GetText()), STYLE_ERROR)
         self.test_display.SetReadOnly(True)
-
-    def refresh_bitmap(self):
-        self.feedback.SetBitmap(self.get_bitmap())
-        self.Refresh()
 
     def get_value(self):
         return self.__value

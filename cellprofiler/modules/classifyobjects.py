@@ -606,7 +606,7 @@ example, to be saved by a **SaveImages** module).
             elif group.bin_choice == BC_EVEN:
                 if group.low_threshold.value >= group.high_threshold.value:
                     raise cps.ValidationError(
-                        "Lower Threshold must be smaller than Upper Threshold",
+                        "Lower Threshold must be less than Upper Threshold",
                         group.low_threshold,
                     )
 

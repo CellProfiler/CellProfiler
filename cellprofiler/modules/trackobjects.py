@@ -2727,21 +2727,18 @@ Enter a name to give the color-coded image of tracked labels.""",
                 object_name,
                 self.measurement_name(F_LABEL),
                 newlabel[i],
-                can_overwrite=True,
                 image_set_number=image_number,
             )
             m.add_measurement(
                 object_name,
                 self.measurement_name(F_PARENT_IMAGE_NUMBER),
                 parent_image_numbers[i],
-                can_overwrite=True,
                 image_set_number=image_number,
             )
             m.add_measurement(
                 object_name,
                 self.measurement_name(F_PARENT_OBJECT_NUMBER),
                 parent_object_numbers[i],
-                can_overwrite=True,
                 image_set_number=image_number,
             )
             is_fixups = fixups.get(image_number, None)
@@ -3045,7 +3042,6 @@ Enter a name to give the color-coded image of tracked labels.""",
                     self.feature_name,
                     val,
                     image_set_number=image_numbers[index],
-                    can_overwrite=True,
                 )
 
             def get_parent(self, index, no_parent=None):

@@ -764,19 +764,16 @@ store images in the subfolder, "*date*\/*plate-name*".""",
                 cellprofiler_core.measurement.IMAGE,
                 self.file_name_feature,
                 fn,
-                can_overwrite=True,
             )
             workspace.measurements.add_measurement(
                 cellprofiler_core.measurement.IMAGE,
                 self.path_name_feature,
                 pn,
-                can_overwrite=True,
             )
             workspace.measurements.add_measurement(
                 cellprofiler_core.measurement.IMAGE,
                 self.url_feature,
                 url,
-                can_overwrite=True,
             )
 
     @property

@@ -638,9 +638,7 @@ class ParameterSampleFrame(wx.Frame):
         better understanding of what exactly this does, but I'm pretty much
         using it as a black box for the time being.
         """
-        self.__measurements = cellprofiler_core.measurement.Measurements(
-            can_overwrite=True
-        )
+        self.__measurements = cellprofiler_core.measurement.Measurements()
         self.__object_set = cellprofiler_core.object.ObjectSet(can_overwrite=True)
         self.__image_set_list = cellprofiler_core.image.ImageSetList()
         workspace = cellprofiler.gui.workspace.Workspace(

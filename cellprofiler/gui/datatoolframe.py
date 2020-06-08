@@ -237,7 +237,7 @@ class DataToolFrame(wx.Frame):
 
     def load_measurements(self, measurements_file_name):
         self.measurements = cellprofiler_core.measurement.load_measurements(
-            measurements_file_name, can_overwrite=True
+            measurements_file_name
         )
         # Start on the first image
         self.measurements.next_image_set(1)

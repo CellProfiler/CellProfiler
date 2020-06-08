@@ -900,7 +900,7 @@ example, to be saved by a **SaveImages** module).
             high_threshold = group.high_threshold.value
             if low_threshold >= high_threshold:
                 raise ValueError(
-                    "Lower Threshold must be smaller than Upper Threshold"
+                    "Lower Threshold must be less than Upper Threshold"
                 )
             bin_count = group.bin_count.value
             thresholds = (

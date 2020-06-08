@@ -821,6 +821,14 @@ class CPFrame(wx.Frame):
         )
         self.__menu_window.AppendSeparator()
 
+        self.__menu_window.Append(
+            ID_FILE_PLATEVIEWER,
+            "Show Plate Viewer",
+            "Open the plate viewer to inspect the images in the current workspace",
+        )
+
+        self.__menu_window.AppendSeparator()
+
         self.__menu_help = cellprofiler.gui.help.menu.Menu(self)
 
         self.__menu_bar = wx.MenuBar()

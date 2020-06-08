@@ -40,7 +40,6 @@ builtin_modules = [
     "imagemath",
     "invertforprinting",
     "labelimages",
-    "loaddata",
     "makeprojection",
     "maskimage",
     "maskobjects",

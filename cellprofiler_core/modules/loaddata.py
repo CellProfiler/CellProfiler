@@ -1013,7 +1013,7 @@ safe to press it.""",
             #
             if (
                 self.image_directory.dir_choice
-                == cellprofiler_core.setting.NO_FOLDER_NAME
+                == cellprofiler_core.preferences.NO_FOLDER_NAME
             ):
                 path_base = ""
             else:

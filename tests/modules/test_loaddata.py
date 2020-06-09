@@ -7,12 +7,13 @@ import tempfile
 import bioformats
 import bioformats.formatreader
 import numpy
+import pytest
 import six
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler.modules.loaddata
+import cellprofiler_core.modules.loaddata
 import cellprofiler_core.modules.loadimages
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -33,6 +34,17 @@ test_filename = "image.tif"
 
 test_shape = (13, 15)
 
+
+def get_data_directory():
+    folder = os.path.dirname(cellprofiler_core.workspace.__file__)
+    return os.path.abspath(os.path.join(folder, "../..", "tests/data/"))
+
+
+@pytest.fixture
+def test_images_path():
+    return os.path.abspath(os.path.join(get_data_directory(), "modules/loadimages"))
+
+
 path = tests.modules.maybe_download_example_image(
     [test_folder], test_filename, shape=test_shape
 )
@@ -50,7 +62,7 @@ def make_pipeline(csv_text, name=None):
     fd.write(csv_text)
     fd.close()
     csv_path, csv_file = os.path.split(name)
-    module = cellprofiler.modules.loaddata.LoadText()
+    module = cellprofiler_core.modules.loaddata.LoadText()
     module.csv_directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.csv_directory.custom_path = csv_path
     module.csv_file_name.value = csv_file
@@ -67,11 +79,14 @@ def make_pipeline(csv_text, name=None):
 
 def test_revision():
     """Remember to update this and write another test on new revision"""
-    assert cellprofiler.modules.loaddata.LoadData().variable_revision_number == 6
+    assert cellprofiler_core.modules.loaddata.LoadData().variable_revision_number == 6
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/loaddata/v4.pipeline", "r") as fd:
+    test_pipeline_path = os.path.join(
+        get_data_directory(), "./modules/loaddata/v4.pipeline"
+    )
+    with open(test_pipeline_path, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -83,7 +98,7 @@ def test_load_v4():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+    assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
     assert module.csv_file_name == "1049_Metadata.csv"
     assert (
         module.csv_directory.dir_choice
@@ -100,7 +115,10 @@ def test_load_v4():
 
 
 def test_load_v5():
-    with open("./tests/resources/modules/loaddata/v5.pipeline", "r") as fd:
+    test_pipeline_path = os.path.join(
+        get_data_directory(), "./modules/loaddata/v5.pipeline"
+    )
+    with open(test_pipeline_path, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -112,7 +130,7 @@ def test_load_v5():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+    assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
     assert module.csv_file_name == "1049_Metadata.csv"
     assert (
         module.csv_directory.dir_choice
@@ -138,7 +156,10 @@ def test_load_v5():
 
 
 def test_load_v6():
-    with open("./tests/resources/modules/loaddata/v6.pipeline", "r") as fd:
+    test_pipeline_path = os.path.join(
+        get_data_directory(), "./modules/loaddata/v6.pipeline"
+    )
+    with open(test_pipeline_path, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -150,7 +171,7 @@ def test_load_v6():
     pipeline.load(io.StringIO(data))
     assert len(pipeline.modules()) == 1
     module = pipeline.modules()[0]
-    assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+    assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
     assert module.csv_file_name == "1049_Metadata.csv"
     assert (
         module.csv_directory.dir_choice
@@ -206,7 +227,7 @@ def test_int_image_measurement():
     pipeline, module, filename = make_pipeline(csv_text)
     m = pipeline.run()
     data = m.get_current_image_measurement("Test_Measurement")
-    assert isinstance(data, numpy.int), "data is type %s, not np.int" % (type(data))
+    assert isinstance(data, numpy.integer), "data is type %s, not np.int" % (type(data))
     assert data == 1
     os.remove(filename)
 
@@ -391,11 +412,9 @@ def test_dont_load_file():
         os.remove(filename)
 
 
-def test_load_planes():
+def test_load_planes(test_images_path):
     file_name = "RLM1 SSN3 300308 008015000.flex"
-    tests.modules.maybe_download_tesst_image(file_name)
-    path = tests.modules.testimages_directory()
-    pathname = os.path.join(path, file_name)
+    pathname = os.path.join(test_images_path, file_name)
     url = cellprofiler_core.modules.loadimages.pathname2url(pathname)
     ftrs = (
         cellprofiler_core.measurement.C_URL,
@@ -414,7 +433,7 @@ def test_load_planes():
         )
     csv_text = "\n".join(csv_lines)
     pipeline, module, filename = make_pipeline(csv_text)
-    assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+    assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
     m = cellprofiler_core.measurement.Measurements()
     image_set_list = cellprofiler_core.image.ImageSetList()
     try:
@@ -537,7 +556,7 @@ def test_get_measurement_columns():
                 8,2.3,"Bevakasha"
                 """
         % colnames
-    )
+    ).replace(" ", "")
     pipeline, module, filename = make_pipeline(csv_text)
     columns = module.get_measurement_columns(pipeline)
     for colname, coltype in zip(colnames, coltypes):
@@ -597,7 +616,7 @@ def test_long_integer_column():
                 1234567890123,2.3,"Bevakasha"
                 """
         % colnames
-    )
+    ).replace(" ", "")
     pipeline, module, filename = make_pipeline(csv_text)
     columns = module.get_measurement_columns(pipeline)
     fmt = "%15s %30s %20s"
@@ -670,7 +689,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
 
 def test_get_groupings():
     """Test the get_groupings method"""
-    dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
+    dir = os.path.join(get_data_directory(), "ExampleSBSImages")
     pattern = "Channel1-[0-9]{2}-(?P<ROW>[A-H])-(?P<COL>[0-9]{2})\\.tif"
     csv_text = '"Image_FileName_Cytoplasm","Image_PathName_Cytoplasm","Metadata_ROW","Metadata_COL"\n'
     for filename in os.listdir(dir):
@@ -683,7 +702,7 @@ def test_get_groupings():
                 match.group("COL"),
             )
     pipeline, module, filename = make_pipeline(csv_text)
-    assert isinstance(module, cellprofiler.modules.loaddata.LoadText)
+    assert isinstance(module, cellprofiler_core.modules.loaddata.LoadText)
     module.wants_images.value = True
     module.wants_image_groupings.value = True
     module.metadata_fields.value = "ROW"
@@ -772,7 +791,10 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         )
         assert m.get_current_image_measurement("FileName_DAPI") == test_filename
     finally:
-        os.remove(filename)
+        try:
+            os.remove(filename)
+        except PermissionError:
+            print("Temp file was still locked and could not be removed, sorry!")
 
 
 def test_scaling():
@@ -814,7 +836,7 @@ def test_load_objects():
     bioformats.write_image(name, labels, bioformats.PT_UINT8)
     os.close(handle)
     png_path, png_file = os.path.split(name)
-    sbs_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
+    sbs_dir = os.path.join(get_data_directory(), "ExampleSBSImages")
     csv_text = """%s_%s,%s_%s,%s_DNA,%s_DNA
 %s,%s,Channel2-01-A-01.tif,%s
 """ % (
@@ -830,7 +852,7 @@ def test_load_objects():
     )
     pipeline, module, csv_name = make_pipeline(csv_text)
     assert isinstance(pipeline, cellprofiler_core.pipeline.Pipeline)
-    assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+    assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
     module.wants_images.value = True
     try:
         image_set_list = cellprofiler_core.image.ImageSetList()
@@ -942,9 +964,9 @@ def test_load_filename():
                 "%s"
                 """
         % test_filename
-    )
+    ).replace(" ", "")
     pipeline, module, filename = make_pipeline(csv_text)
-    assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+    assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
     module.image_directory.dir_choice = (
         cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     )
@@ -991,7 +1013,7 @@ def test_load_url():
         }
     )
     pipeline, module, filename = make_pipeline(csv_text)
-    assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+    assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
     m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
@@ -1040,7 +1062,7 @@ def test_extra_fields():
         }
     )
     pipeline, module, filename = make_pipeline(csv_text)
-    assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+    assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
     m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
@@ -1090,7 +1112,7 @@ def test_extra_lines():
     )
     pipeline, module, filename = make_pipeline(csv_text)
     try:
-        assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+        assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
         m = cellprofiler_core.measurement.Measurements()
         workspace = cellprofiler_core.workspace.Workspace(
             pipeline,
@@ -1133,7 +1155,7 @@ def test_extra_lines_skip_rows():
     )
     pipeline, module, filename = make_pipeline(csv_text)
     try:
-        assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+        assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
         m = cellprofiler_core.measurement.Measurements()
         workspace = cellprofiler_core.workspace.Workspace(
             pipeline,
@@ -1168,7 +1190,7 @@ def test_load_default_input_folder():
     )
     pipeline, module, filename = make_pipeline(csv_text)
     try:
-        assert isinstance(module, cellprofiler.modules.loaddata.LoadData)
+        assert isinstance(module, cellprofiler_core.modules.loaddata.LoadData)
         module.image_directory.dir_choice = (
             cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         )
@@ -1215,4 +1237,4 @@ class C0(cellprofiler_core.module.Module):
         return []
 
     def run(self, workspace):
-        callback(workspace)
+        self.callback(workspace)

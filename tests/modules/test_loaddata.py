@@ -746,57 +746,6 @@ def test_get_groupings():
             assert row == match.group("ROW")
 
 
-def test_load_bcb_file():
-    csv_text = """ELN_RUN_ID,CBIP_RUN_ID,ASSAY_PLATE_BARCODE,\
-MX_PLATE_ID,ASSAY_WELL_POSITION,ASSAY_WELL_ROLE,SITE_X,SITE_Y,\
-MICROSCOPE,SOURCE_DESCRIPTION,DATE_CREATED,FILE_PATH,FILE_NAME,\
-CPD_PLATE_MAP_NAME,CPD_WELL_POSITION,BROAD_ID,\
-CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
-"4012-10-W01-01-02","4254","BR00021547","20777","N01","COMPOUND",\
-"2","2","GS IX Micro","DAPI","2010/03/19 06:01:12","%s",\
-"%s","C-4012-00-D80-001_Rev3","N01",\
-"BRD-K71194192-001-01-6","2.132352941","ChemBridge","",\
-"Oc1ccnc(SCC(=O)Nc2ccc(Oc3ccccc3)cc2)n1"
-""" % (
-        test_path,
-        test_filename,
-    )
-    pipeline, module, filename = make_pipeline(csv_text)
-    c0_ran = [False]
-
-    def callback(workspace):
-        imgset = workspace.image_set
-        image = imgset.get_image("DAPI")
-        pixels = image.pixel_data
-        assert pixels.shape[0] == test_shape[0]
-        c0_ran[0] = True
-
-    c0 = C0()
-    c0.callback = callback
-    c0.set_module_num(2)
-    pipeline.add_module(c0)
-
-    try:
-        m = pipeline.run()
-        assert isinstance(m, cellprofiler_core.measurement.Measurements)
-        assert c0_ran[0]
-        hexdigest = m.get_current_image_measurement("MD5Digest_DAPI")
-        assert hexdigest == test_md5
-        assert "PathName_DAPI" in m.get_feature_names(
-            cellprofiler_core.measurement.IMAGE
-        )
-        assert m.get_current_image_measurement("PathName_DAPI") == test_path
-        assert "FileName_DAPI" in m.get_feature_names(
-            cellprofiler_core.measurement.IMAGE
-        )
-        assert m.get_current_image_measurement("FileName_DAPI") == test_filename
-    finally:
-        try:
-            os.remove(filename)
-        except PermissionError:
-            print("Temp file was still locked and could not be removed, sorry!")
-
-
 def test_scaling():
     """Test loading an image scaled and unscaled"""
     folder = "loaddata"

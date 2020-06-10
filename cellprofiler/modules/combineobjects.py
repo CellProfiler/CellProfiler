@@ -2,16 +2,29 @@
 
 """
 CombineObjects
-=============
+==============
 
-**CombineObjects** allows you to merge two object sets into a single object set.
+**CombineObjects** allows you to combine two object sets into a single object set.
+
+This moduled is geared towards situations where a set of objects was identified
+using multiple instances of an Identify module, typically to account for large
+variability in size or intensity. Using this module will combine object sets to
+create a new set of objects which can be used in other modules.
+
+CellProfiler can only handle a single object in each location of an image, so
+it is important to carefully choose how to handle objects which would be
+overlapping.
+
+When performing operations, this module treats the first selected object set, termed
+"initial objects" as the starting point for a joined set. CellProfiler will try to add
+objects from the second selected set to the initial set.
 
 |
 
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO          NO
+YES          NO           NO
 ============ ============ ===============
 
 """
@@ -24,6 +37,7 @@ import skimage.segmentation
 import skimage.morphology
 from scipy.ndimage import distance_transform_edt
 
+
 class CombineObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     category = "Object Processing"
 
@@ -35,39 +49,37 @@ class CombineObjects(cellprofiler_core.module.image_segmentation.ObjectProcessin
         self.objects_x = cellprofiler_core.setting.ObjectNameSubscriber(
             "Select initial object set",
             "None",
-            doc="""\
-        Select the object sets which you want to merge.""",
+            doc="""Select an object set which you want to add objects to.""",
         )
 
         self.objects_y = cellprofiler_core.setting.ObjectNameSubscriber(
             "Select object set to combine",
             "None",
-            doc="""\
-        Select the object sets which you want to merge.""",
+            doc="""Select an object set which you want to add to the initial set.""",
         )
 
         self.merge_method = cellprofiler_core.setting.Choice(
             "Select how to handle overlapping objects",
             choices=["Merge", "Preserve", "Discard", "Segment"],
             doc="""\
-        When combining sets of objects, it is possible that both sets had an object in the
-        same location. Use this setting to choose how to handle objects which overlap with
-        eachother.
+When combining sets of objects, it is possible that both sets had an object in the
+same location. Use this setting to choose how to handle objects which overlap with
+eachother.
         
-        - Selecting "Merge" will make overlapping objects combine into a single object.
-        This can work well if you expect the same object to appear in both sets.
-        Note that this method is not suitable for combining dense object sets with multiple
-        overlapping neighbours.
+- Selecting "Merge" will make overlapping objects combine into a single object, taking
+  on the label of the object from the initial set. When more than two objects overlap,
+  each pixel of an added object will be assigned to the closest object from the initial
+  set. This is primarily useful when the same objects appear in both sets.
         
-        - Selecting "Preserve" will protect the initial object set. Any overlapping regions
-        from the second set will be cut out in favour of the object from the initial set.
+- Selecting "Preserve" will protect the initial object set. Any overlapping regions
+  from the second set will be ignored in favour of the object from the initial set.
         
-        - Selecting "Discard" will only add objects which do not have any overlap with objects
-        in the initial object set.
+- Selecting "Discard" will only add objects which do not have any overlap with objects
+  in the initial object set.
         
-        - Selecting "Segment" will combine both object sets and attempt to re-draw lines to
-        separate objects which overlapped. Note: This becomes less reliable when more than
-        two objects were overlapping. 
+- Selecting "Segment" will combine both object sets and attempt to re-draw segmentation to
+  separate objects which overlapped. Note: This is less reliable when more than
+  two objects were overlapping.      
          """
         )
 
@@ -98,12 +110,6 @@ subsequent modules.""",
         assert objects_x.shape == objects_y.shape,\
             "Objects sets must have the same dimensions"
 
-        overlay_matrix = numpy.zeros_like(objects_x.segmented)
-
-        overlay_matrix[objects_x.segmented > 0] += 1
-        overlay_matrix[objects_y.segmented > 0] += 1
-
-        # Ensure array Y's labels don't conflict with array X.
         labels_x = objects_x.segmented.copy()
         labels_y = objects_y.segmented.copy()
 
@@ -124,17 +130,23 @@ subsequent modules.""",
 
     def display(self, workspace, figure):
         figure.set_subplots((2, 2))
+        cmap = figure.return_cmap()
 
         # Display image 3 times w/ input object a, input object b, and merged output object:
         ax = figure.subplot_imshow_labels(0, 0, workspace.display_data.input_object_x,
-                                     workspace.display_data.input_object_x_name
+                                          workspace.display_data.input_object_x_name,
+                                          colormap=cmap,
                                           )
         figure.subplot_imshow_labels(1, 0, workspace.display_data.input_object_y,
                                      workspace.display_data.input_object_y_name,
-                                     sharexy=ax)
+                                     sharexy=ax,
+                                     colormap=cmap,
+                                     )
         figure.subplot_imshow_labels(0, 1, workspace.display_data.output_object,
                                      workspace.display_data.output_object_name,
-                                     sharexy=ax)
+                                     sharexy=ax,
+                                     colormap=cmap,
+                                     )
 
     def combine_arrays(self, labels_x, labels_y):
         output = numpy.zeros_like(labels_x)
@@ -148,60 +160,39 @@ subsequent modules.""",
         indices_y = numpy.unique(labels_y)
         indices_y = indices_y[indices_y > 0]
 
-        # Resolve non-conflicting and totally overlapped labels first
+        # Resolve non-conflicting labels first
         undisputed = numpy.logical_xor(labels_x > 0, labels_y > 0)
-        disputed = numpy.logical_and(labels_x > 0, labels_y > 0)
         for label in indices_x:
             mapped = labels_x == label
             if numpy.all(undisputed[mapped]):
-                # Only appeared in one object set
                 output[mapped] = label
                 labels_x[mapped] = 0
-                indices_x = indices_x[indices_x != label]
-            elif numpy.all(disputed[mapped]):
-                # Completely covered by objects in other set
-                labels_x[mapped] = 0
-                indices_x = indices_x[indices_x != label]
-        # Recalcualate overlapping areas
-        disputed = numpy.logical_and(labels_x > 0, labels_y > 0)
         for label in indices_y:
             mapped = labels_y == label
             if numpy.all(undisputed[mapped]):
                 output[mapped] = label
                 labels_y[mapped] = 0
-            elif numpy.all(disputed[mapped]):
-                labels_x[mapped] = 0
-                indices_x = indices_x[indices_x != label]
 
         # Resolve conflicting labels
-        if method == "Merge":
-            for x_label in indices_x:
-                mapped = labels_x == x_label
-                target_labels = numpy.unique(labels_y[mapped])
-                target_labels = target_labels[target_labels != 0]
-                output[mapped] = x_label
-                for y_label in target_labels:
-                    mask = labels_y == y_label
-                    output[mask] = x_label
-                    labels_y[mask] = 0
-                    labels_x[mask] = 0
+        if method == "Discard":
+            return numpy.where(labels_x > 0, labels_x, output)
 
-        elif method == "Discard":
-            print(True)
-            output2 = numpy.where(labels_x > 0, labels_x, labels_y)
-            print(True)
-
-        elif self.merge_method.value == "Segment":
+        elif method == "Segment":
             to_segment = numpy.logical_or(labels_x > 0, labels_y > 0)
-            undisputed = numpy.logical_xor(labels_x > 0, labels_y > 0)
+            disputed = numpy.logical_and(labels_x > 0, labels_y > 0)
             seeds = numpy.add(labels_x, labels_y)
-            seeds[~undisputed] = 0
-
+            seeds[disputed] = 0
             distances, (i, j) = distance_transform_edt(
-                ~undisputed, return_indices=True
+                disputed, return_indices=True
             )
-
             output[to_segment] = seeds[i[to_segment], j[to_segment]]
+
+        elif method == "Merge":
+            to_segment = numpy.logical_or(labels_x > 0, labels_y > 0)
+            distances, (i, j) = distance_transform_edt(
+                labels_x == 0, return_indices=True
+            )
+            output[to_segment] = labels_x[i[to_segment], j[to_segment]]
 
 
         return output

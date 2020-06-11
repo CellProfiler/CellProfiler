@@ -1189,23 +1189,23 @@ If "*{NO}*" is selected, the following settings are used:
     def _threshold_image(self, image_name, workspace, automatic=False):
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        local_threshold, global_threshold = self.threshold.get_threshold(
+        final_threshold, orig_threshold, guide_threshold = self.threshold.get_threshold(
             image, workspace, automatic
         )
 
         self.threshold.add_threshold_measurements(
-            self.y_name.value, workspace.measurements, local_threshold, global_threshold
+            self.y_name.value, workspace.measurements, final_threshold, orig_threshold, guide_threshold
         )
 
         binary_image, sigma = self.threshold.apply_threshold(
-            image, local_threshold, automatic
+            image, final_threshold, automatic
         )
 
         self.threshold.add_fg_bg_measurements(
             self.y_name.value, workspace.measurements, image, binary_image
         )
 
-        return binary_image, global_threshold, sigma
+        return binary_image, numpy.mean(numpy.atleast_1d(final_threshold)), sigma
 
     def smooth_image(self, image, mask):
         """Apply the smoothing filter to the image"""

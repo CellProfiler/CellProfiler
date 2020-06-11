@@ -821,7 +821,6 @@ Often a good choice is some multiple of the largest expected object size.
             return self.manual_threshold.value, self.manual_threshold.value, None
 
         elif self.threshold_operation == TM_MEASUREMENT:
-            # m = workspace.measurements
             # Thresholds are stored as single element arrays.  Cast to float to extract the value.
             orig_threshold = float(
                 workspace.measurements.get_current_image_measurement(self.thresholding_measurement.value)

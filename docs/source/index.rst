@@ -106,7 +106,6 @@ Instructions for navigating CellProfiler's menus.
    help/navigation_test_menu
    help/navigation_window_menu
    help/navigation_parameter_sampling_menu
-   help/navigation_data_tools_menu
 
 `(Jump to top)`_
 
@@ -191,7 +190,6 @@ Modules
    modules/imageprocessing
    modules/objectprocessing
    modules/measurement
-   modules/datatools
    modules/advanced
    modules/wormtoolbox
    modules/other

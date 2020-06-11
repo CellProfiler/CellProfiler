@@ -890,37 +890,6 @@ class CPFrame(wx.Frame):
         self.SetAcceleratorTable(accelerator_table)
         self.enable_launch_commands()
 
-    def data_tools_help(self):
-        """Create a help menu for the data tools"""
-        if not hasattr(self, "__data_tools_help_menu"):
-            self.__menu_data_tools_help_menu = wx.Menu()
-
-            def on_plate_viewer_help(event):
-                import cellprofiler.gui.htmldialog
-
-                dlg = cellprofiler.gui.htmldialog.HTMLDialog(
-                    self,
-                    "Help on plate viewer",
-                    cellprofiler.gui.help.content.read_content(
-                        "output_plateviewer.rst"
-                    ),
-                )
-                dlg.Show()
-
-            new_id = wx.NewId()
-            self.__menu_data_tools_help_menu.Append(new_id, "Plate viewer")
-            self.Bind(wx.EVT_MENU, on_plate_viewer_help, id=new_id)
-
-            for data_tool_name in cellprofiler_core.modules.get_data_tool_names():
-                new_id = wx.NewId()
-                self.__menu_data_tools_help_menu.Append(new_id, data_tool_name)
-
-                def on_data_tool_help(event, data_tool_name=data_tool_name):
-                    self.__on_data_tool_help(event, data_tool_name)
-
-                self.Bind(wx.EVT_MENU, on_data_tool_help, id=new_id)
-        return self.__menu_data_tools_help_menu
-
     #########################################################
     #
     # Handlers for ID_CUT / ID_COPY / ID_DELETE / ID_PASTE

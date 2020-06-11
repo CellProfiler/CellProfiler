@@ -34,6 +34,7 @@ import cellprofiler.gui.cpframe
 import cellprofiler.gui.dialog
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
+import cellprofiler.gui.html.utils
 import cellprofiler.gui.htmldialog
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.omerologin
@@ -1551,8 +1552,9 @@ class PipelineController(object):
             self.__pv_frame.Destroy()
         self.__pv_frame = wx.Frame(self.__frame, title="Plate viewer")
         self.__plate_viewer = pv.PlateViewer(self.__pv_frame, data)
-        self.__pv_frame.Fit()
-        self.__pv_frame.Show()
+        if not self.__plate_viewer.error:
+            self.__pv_frame.Fit()
+            self.__pv_frame.Show()
 
     def display_plate_viewer_help(self, message, caption):
         """Display a helpful dialog for a plate viewer config error
@@ -1590,8 +1592,10 @@ class PipelineController(object):
                 cellprofiler.gui.htmldialog.HTMLDialog(
                     self.__frame,
                     "Help for plate viewer",
+                    cellprofiler.gui.html.utils.rst_to_html_fragment(
                     cellprofiler.gui.help.content.read_content(
                         "output_plateviewer.rst"
+                    )
                     ),
                 ).Show()
 

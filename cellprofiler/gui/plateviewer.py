@@ -180,7 +180,7 @@ class PlateViewer(object):
         self.sr_panel.SetInitialSize((120, -1))
         self.sr_panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.plate_choice = wx.Choice(self.sr_panel)
-        self.sr_panel.Sizer.Add(self.plate_choice, 0, wx.LEFT | wx.ALL, 4)
+        self.sr_panel.Sizer.Add(self.plate_choice, 0, wx.LEFT | wx.ALL | wx.EXPAND, 4)
         self.plate_panel = wx.Panel(self.sr_panel)
         self.sr_panel.Sizer.Add(self.plate_panel, 1, wx.EXPAND)
         rows, cols = data.plate_layout
@@ -197,7 +197,7 @@ class PlateViewer(object):
         self.site_grid.CreateGrid(1, 2)
         self.site_grid.SetColLabelValue(0, "X")
         self.site_grid.SetColLabelValue(1, "Y")
-        control_sizer.Add(self.site_grid, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL, 5)
+        control_sizer.Add(self.site_grid, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL | wx.EXPAND, 5)
 
         self.channel_grid = wx.grid.Grid(self.canvas_panel)
         self.channel_grid.CreateGrid(1, 4)
@@ -208,7 +208,7 @@ class PlateViewer(object):
         self.channel_grid.SetDefaultEditor(wx.grid.GridCellNumberEditor())
         self.channel_grid.SetDefaultRenderer(wx.grid.GridCellNumberRenderer())
         control_sizer.Add(
-            self.channel_grid, 0, wx.ALIGN_RIGHT | wx.ALIGN_TOP | wx.ALL, 5
+            self.channel_grid, 0, wx.ALIGN_RIGHT | wx.ALIGN_TOP | wx.ALL | wx.EXPAND, 5
         )
         self.figure = matplotlib.figure.Figure()
         self.axes = self.figure.add_axes((0.05, 0.05, 0.9, 0.9))
@@ -278,7 +278,7 @@ class PlateViewer(object):
 
     def on_subcanvaspanel_size(self, event):
         assert isinstance(event, wx.SizeEvent)
-        tw, th = self.navtoolbar.GetSizeTuple()
+        tw, th = self.navtoolbar.GetSize()
         scw, sch = event.GetSize()
         ch = sch - th
         self.canvas.SetSize(wx.Size(scw, ch))
@@ -317,22 +317,37 @@ class PlateViewer(object):
                 self.plate_panel.SetToolTip(text)
 
     def on_update(self):
-        if tuple(sorted(self.plate_choice.GetItems())) != tuple(
-            sorted(self.data.get_plate_names())
-        ):
-            plate_names = self.data.get_plate_names()
-            self.plate_choice.SetItems(plate_names)
-            if len(plate_names) > 0:
-                self.plate_choice.SetSelection(0)
-        self.plate_name = self.plate_choice.GetStringSelection()
-        if self.plate_name in self.data.get_plate_names():
-            self.plate_data = self.data.get_plate(self.plate_name)
-        elif (
-            len(self.data.get_plate_names()) == 0 and None in self.data.plate_well_site
-        ):
-            self.plate_data = self.data.get_plate(None)
-        else:
+        self.error = False
+        try:
+            if tuple(sorted(self.plate_choice.GetItems())) != tuple(
+                sorted(self.data.get_plate_names())
+            ):
+                plate_names = self.data.get_plate_names()
+                self.plate_choice.SetItems(plate_names)
+                if len(plate_names) > 0:
+                    self.plate_choice.SetSelection(0)
+
+            self.plate_name = self.plate_choice.GetStringSelection()
+            if self.plate_name in self.data.get_plate_names():
+                self.plate_data = self.data.get_plate(self.plate_name)
+            elif (
+                len(self.data.get_plate_names()) == 0 and None in self.data.plate_well_site
+            ):
+                self.plate_data = self.data.get_plate(None)
+            else:
+                self.plate_data = None
+        except:
+            # Metadata was invalid.
+            wx.MessageBox(
+                "Failed to open plate viewer.\n"
+                "Plate metadata was invalid.\n"
+                "'Well' metadata must be in the format [Column][Row], e.g. 'A01'\n"
+                "Please see 'Help-->Using Your Output-->Plate Viewer' for guidance.",
+                caption="Plate Metadata Error",
+                )
             self.plate_data = None
+            self.error = True
+            return
         self.draw_plate()
         #
         # Set up the site grid size
@@ -462,7 +477,7 @@ class PlateViewer(object):
         dc.SetBackground(wx.Brush(self.plate_panel.GetBackgroundColour()))
         dc.Clear()
         gc = wx.GraphicsContext.Create(dc)
-        gc.SetFont(self.plate_panel.GetFont())
+        gc.SetFont(self.plate_panel.GetFont(), wx.Colour('black'))
         if self.plate_data is None:
             return
         side = self.get_well_side()

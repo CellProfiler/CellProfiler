@@ -66,7 +66,6 @@ class Module:
         self.__wants_pause = False
         self.__svn_version = "Unknown"
         self.__enabled = True
-        self.__as_data_tool = False
         self.shared_state = (
             {}
         )  # used for maintaining state between modules, see get_dictionary()
@@ -468,25 +467,6 @@ class Module:
         self.__enabled = enable
 
     enabled = property(get_enabled, set_enabled)
-
-    def get_use_as_data_tool(self):
-        """True if the module is being used as a data tool
-
-        This flag can be used to modify the visible_settings and other things
-        to make the module's behavior more appropriate for use as a data tool.
-        For instance, you shouldn't offer to show measurements as a color
-        map in DisplayDataOnImage if you don't have access to the segmentation
-        because you're running as a data tool.
-        """
-        return self.__as_data_tool
-
-    def set_use_as_data_tool(self, as_data_tool):
-        """Mark the module as being used as a data tool
-
-        """
-        self.__as_data_tool = as_data_tool
-
-    use_as_data_tool = property(get_use_as_data_tool, set_use_as_data_tool)
 
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

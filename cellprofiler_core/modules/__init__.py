@@ -87,8 +87,6 @@ all_modules = {}
 svn_revisions = {}
 pymodules = []
 badmodules = []
-datatools = []
-pure_datatools = {}
 
 do_not_override = ["set_settings", "create_from_handles", "test_valid", "module_class"]
 should_override = ["create_settings", "settings", "run"]
@@ -128,7 +126,6 @@ def find_cpmodule(m):
 def fill_modules():
     del pymodules[:]
     del badmodules[:]
-    del datatools[:]
     all_modules.clear()
     svn_revisions.clear()
 
@@ -156,16 +153,10 @@ def fill_modules():
             # attempt to instantiate
             if not hasattr(cp_module, "do_not_check"):
                 cp_module()
-            if hasattr(cp_module, "run_as_data_tool"):
-                datatools.append(name)
             if check_svn and hasattr(m, "__version__"):
                 match = re.match("^\$Revision: ([0-9]+) \$$", m.__version__)
                 if match is not None:
                     svn_revisions[name] = match.groups()[0]
-            if not hasattr(all_modules[name], "settings"):
-                # No settings = pure data tool
-                pure_datatools[name] = all_modules[name]
-                del all_modules[name]
         except Exception as e:
             logger.warning("Failed to load %s", name, exc_info=True)
             badmodules.append((mod, e))
@@ -200,7 +191,6 @@ def fill_modules():
         finally:
             sys.path = old_path
 
-    datatools.sort()
     if len(badmodules) > 0:
         logger.warning(
             "could not load these modules: %s", ",".join([x[0] for x in badmodules])
@@ -234,8 +224,6 @@ unimplemented_modules = ["LabelImages", "Restart", "SplitOrSpliceMovie"]
 def get_module_class(module_name):
     module_class = module_name.split(".")[-1]
     if module_class not in all_modules:
-        if module_class in pure_datatools:
-            return pure_datatools[module_class]
         if module_class in unimplemented_modules:
             raise ValueError(
                 (
@@ -276,10 +264,6 @@ def get_module_names():
     names = list(all_modules.keys())
     names.sort()
     return names
-
-
-def get_data_tool_names():
-    return datatools
 
 
 def reload_modules():

@@ -157,6 +157,9 @@ subsequent modules.""",
         output = numpy.zeros_like(labels_x)
         method = self.merge_method.value
 
+        # Ensure labels in each set are unique
+        labels_y[labels_y > 0] += labels_x.max()
+
         if method == "Preserve":
             return numpy.where(labels_x > 0, labels_x, labels_y)
 
@@ -188,7 +191,7 @@ subsequent modules.""",
             seeds = numpy.add(labels_x, labels_y)
             seeds[disputed] = 0
             distances, (i, j) = distance_transform_edt(
-                disputed, return_indices=True
+                seeds == 0, return_indices=True
             )
             output[to_segment] = seeds[i[to_segment], j[to_segment]]
 

@@ -19,6 +19,10 @@ When performing operations, this module treats the first selected object set, te
 "initial objects" as the starting point for a joined set. CellProfiler will try to add
 objects from the second selected set to the initial set.
 
+Object label numbers are re-assigned after merging the object sets. This can mean that
+if your settings result in one object being cut into two by another object, the divided
+segments will be reassigned as seperate objects.
+
 |
 
 ============ ============ ===============
@@ -67,9 +71,10 @@ same location. Use this setting to choose how to handle objects which overlap wi
 eachother.
         
 - Selecting "Merge" will make overlapping objects combine into a single object, taking
-  on the label of the object from the initial set. When more than two objects overlap,
-  each pixel of an added object will be assigned to the closest object from the initial
-  set. This is primarily useful when the same objects appear in both sets.
+  on the label of the object from the initial set. When an added object would overlap
+  with multiple objects from the initial set, each pixel of the added object will be
+  assigned to the closest object from the initial set. This is primarily useful when
+  the same objects appear in both sets.
         
 - Selecting "Preserve" will protect the initial object set. Any overlapping regions
   from the second set will be ignored in favour of the object from the initial set.
@@ -79,7 +84,8 @@ eachother.
         
 - Selecting "Segment" will combine both object sets and attempt to re-draw segmentation to
   separate objects which overlapped. Note: This is less reliable when more than
-  two objects were overlapping.      
+  two objects were overlapping. If two object sets genuinely occupy the same space
+  it may be better to consider them seperately.
          """
         )
 
@@ -87,7 +93,7 @@ eachother.
             "Name the combined object set",
             "CombinedObjects",
             doc="""\
-Enter the name for the combined object set. These objects will be available for use by
+Enter the name for the combined object set. These objects will be available for use in
 subsequent modules.""",
         )
 
@@ -132,7 +138,6 @@ subsequent modules.""",
         figure.set_subplots((2, 2))
         cmap = figure.return_cmap()
 
-        # Display image 3 times w/ input object a, input object b, and merged output object:
         ax = figure.subplot_imshow_labels(0, 0, workspace.display_data.input_object_x,
                                           workspace.display_data.input_object_x_name,
                                           colormap=cmap,
@@ -193,6 +198,5 @@ subsequent modules.""",
                 labels_x == 0, return_indices=True
             )
             output[to_segment] = labels_x[i[to_segment], j[to_segment]]
-
 
         return output

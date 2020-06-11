@@ -26,8 +26,10 @@ IMG_OK = cellprofiler.icons.get_builtin_image("check")
 IMG_ERROR = cellprofiler.icons.get_builtin_image("remove-sign")
 IMG_EYE = cellprofiler.icons.get_builtin_image("eye-open")
 IMG_CLOSED_EYE = cellprofiler.icons.get_builtin_image("eye-close")
+IMG_STEP = cellprofiler.icons.get_builtin_image("IMG_ANALYZE_16")
+IMG_STEPPED = cellprofiler.icons.get_builtin_image("IMG_ANALYZED")
 IMG_PAUSE = cellprofiler.icons.get_builtin_image("IMG_PAUSE")
-IMG_GO = cellprofiler.icons.get_builtin_image("IMG_GO")
+IMG_GO = cellprofiler.icons.get_builtin_image("IMG_GO_DIM")
 IMG_DISABLED = cellprofiler.icons.get_builtin_image("unchecked")
 IMG_UNAVAILABLE = cellprofiler.icons.get_builtin_image("IMG_UNAVAILABLE")
 IMG_SLIDER = cellprofiler.icons.get_builtin_image("IMG_SLIDER")
@@ -43,11 +45,12 @@ def plv_get_bitmap(data):
     return wx.Bitmap(data)
 
 
-PAUSE_COLUMN = 0
-EYE_COLUMN = 1
-ERROR_COLUMN = 2
-MODULE_NAME_COLUMN = 3
-NUM_COLUMNS = 4
+STEP_COLUMN = 0
+PAUSE_COLUMN = 1
+EYE_COLUMN = 2
+ERROR_COLUMN = 3
+MODULE_NAME_COLUMN = 4
+NUM_COLUMNS = 5
 INPUT_ERROR_COLUMN = 0
 INPUT_MODULE_NAME_COLUMN = 1
 NUM_INPUT_COLUMNS = 2
@@ -76,9 +79,11 @@ PLV_STATE_UNAVAILABLE = 4096
 PLV_STATE_PROCEED = 8192
 """Report that the slider has moved"""
 EVT_PLV_SLIDER_MOTION = wx.PyEventBinder(wx.NewEventType())
+EVT_PLV_STEP_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
 EVT_PLV_PAUSE_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
 EVT_PLV_EYE_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
 EVT_PLV_ERROR_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
+EVT_PLV_VALID_STEP_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
 
 ############################
 #
@@ -176,7 +181,7 @@ class PipelineListView(object):
     def make_list(self):
         """Make the list control with the pipeline items in it"""
         self.list_ctrl = PipelineListCtrl(self.__panel)
-        self.__sizer.Add(self.list_ctrl, 1, wx.EXPAND)
+        self.__sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.TOP, border=2)
         #
         # Bind events
         #
@@ -189,6 +194,9 @@ class PipelineListView(object):
             EVT_PLV_ERROR_COLUMN_CLICKED, self.__on_error_column_clicked
         )
         self.list_ctrl.Bind(EVT_PLV_EYE_COLUMN_CLICKED, self.__on_eye_column_clicked)
+        self.list_ctrl.Bind(
+            EVT_PLV_STEP_COLUMN_CLICKED, self.__on_step_column_clicked
+        )
         self.list_ctrl.Bind(
             EVT_PLV_PAUSE_COLUMN_CLICKED, self.__on_pause_column_clicked
         )
@@ -207,6 +215,7 @@ class PipelineListView(object):
 
     def make_input_panel(self):
         self.input_list_ctrl = PipelineListCtrl(self.__panel)
+        self.input_list_ctrl.set_show_step(False)
         self.input_list_ctrl.set_show_go_pause(False)
         self.input_list_ctrl.set_show_frame_column(False)
         self.input_list_ctrl.set_allow_disable(False)
@@ -562,6 +571,13 @@ class PipelineListView(object):
         name = cellprofiler.gui.figure.window_name(module)
         return cellprofiler.gui.figure.find_fig(name=name)
 
+    def __on_step_column_clicked(self, event):
+        module = self.get_event_module(event)
+        if self.get_current_debug_module().module_num >= module.module_num and module.enabled:
+            mod_evt = self.list_ctrl.make_event(EVT_PLV_VALID_STEP_COLUMN_CLICKED, index=None, module=module)
+            self.list_ctrl.GetEventHandler().ProcessEvent(mod_evt)
+        self.list_ctrl.Refresh(eraseBackground=False)
+
     def __on_pause_column_clicked(self, event):
         module = self.get_event_module(event)
         module.wants_pause = not module.wants_pause
@@ -636,7 +652,7 @@ class PipelineListView(object):
                             self.get_current_debug_module()
                         )
 
-                        if active_index <= debug_index:
+                        if active_index <= debug_index and module.enabled:
                             menu.Append(
                                 ID_DEBUG_RUN_FROM_THIS_MODULE,
                                 "&Run from {} (#{})".format(
@@ -1020,10 +1036,9 @@ class PipelineListView(object):
         setting = event.get_setting()
         module = event.get_module()
         list_ctrl, index = self.get_ctrl_and_index(module)
-        if not module.is_input_module() and (
-            not self.list_ctrl.running_item or self.list_ctrl.running_item > index
-        ):
-            self.list_ctrl.set_running_item(index)
+        if self.list_ctrl.running_item is not None:
+            if not module.is_input_module() and self.list_ctrl.running_item > index:
+                self.list_ctrl.set_running_item(index)
 
     def on_stop_debugging(self):
         self.list_ctrl.set_test_mode(False)
@@ -1173,6 +1188,8 @@ class PipelineListCtrl(wx.ScrolledWindow):
         self.bmp_error = plv_get_bitmap(IMG_ERROR)
         self.bmp_eye = plv_get_bitmap(IMG_EYE)
         self.bmp_closed_eye = plv_get_bitmap(IMG_CLOSED_EYE)
+        self.bmp_step = plv_get_bitmap(IMG_STEP)
+        self.bmp_stepped = plv_get_bitmap(IMG_STEPPED)
         self.bmp_go = plv_get_bitmap(IMG_GO)
         self.bmp_pause = plv_get_bitmap(IMG_PAUSE)
         self.bmp_unavailable = plv_get_bitmap(IMG_UNAVAILABLE)
@@ -1194,12 +1211,14 @@ class PipelineListCtrl(wx.ScrolledWindow):
         self.test_mode = False
         # True if allowed to disable a module
         self.allow_disable = True
+        # True to show the step column, false to hide
+        self.show_step = True
         # True to show the pause column, false to hide
         self.show_go_pause = True
         # True to show the eyeball column, false to hide it
         self.show_show_frame_column = True
         # Space reserved for test mode slider
-        self.slider_width = 20
+        self.slider_width = 10
         # The index at which a drop would take place, if dropping.
         self.drop_insert_point = None
         # Shading border around buttons
@@ -1277,12 +1296,14 @@ class PipelineListCtrl(wx.ScrolledWindow):
         column = int((x - x0) / self.column_width)
         if not (self.show_go_pause and self.test_mode) and column == PAUSE_COLUMN:
             return None, wx.LIST_HITTEST_NOWHERE, None
+        if not (self.show_go_pause and self.test_mode) and column == PAUSE_COLUMN:
+            return None, wx.LIST_HITTEST_NOWHERE, None
         if not self.show_show_frame_column and column == EYE_COLUMN:
             return None, wx.LIST_HITTEST_NOWHERE, None
         row = int(y / self.line_height)
         if row >= len(self.items):
             return None, wx.LIST_HITTEST_BELOW, None
-        if column < 3:
+        if column < 4:
             return row, wx.LIST_HITTEST_ONITEMICON, column
         return row, wx.LIST_HITTEST_ONITEMLABEL, MODULE_NAME_COLUMN
 
@@ -1367,7 +1388,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
         """Remove the item at the given index"""
         del self.items[index]
 
-        if self.active_item:
+        if self.active_item is not None:
             if self.active_item == index:
                 self.active_item = None
             elif self.active_item > index:
@@ -1457,6 +1478,15 @@ class PipelineListCtrl(wx.ScrolledWindow):
         self.AdjustScrollbars()
         self.Refresh(eraseBackground=False)
 
+    def set_show_step(self, state):
+        """Show or hide the go / pause test-mode icons
+
+        state - true to show them, false to hide them
+        """
+        self.show_step = state
+        self.AdjustScrollbars()
+        self.Refresh(eraseBackground=False)
+
     def set_show_go_pause(self, state):
         """Show or hide the go / pause test-mode icons
 
@@ -1494,7 +1524,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
             width, height, _, _ = self.GetFullTextExtent(item.module_name)
             max_width = max(width, max_width)
         total_width = x0 + max_width + self.border * 2 + self.gap + self.text_gap
-        height = len(self.items) * self.line_height
+        height = max((len(self.items) - 1) * self.line_height, 0)
         return total_width, height
 
     def DoGetVirtualSize(self):
@@ -1512,17 +1542,20 @@ class PipelineListCtrl(wx.ScrolledWindow):
             y0 = 0
         return wx.Rect(x0 + self.gap, y0 + idx * self.line_height, 16, 16)
 
-    def get_go_pause_rect(self, idx):
+    def get_step_rect(self, idx):
         return self.get_button_rect(0, idx)
 
-    def get_eye_rect(self, idx):
+    def get_go_pause_rect(self, idx):
         return self.get_button_rect(1, idx)
 
-    def get_error_rect(self, idx):
+    def get_eye_rect(self, idx):
         return self.get_button_rect(2, idx)
 
+    def get_error_rect(self, idx):
+        return self.get_button_rect(3, idx)
+
     def get_text_rect(self, index):
-        x0 = self.slider_width + self.column_width * 3 + self.text_gap
+        x0 = self.slider_width + self.column_width * 4 + self.text_gap
         return wx.Rect(
             x0 + self.gap,
             index * self.line_height,
@@ -1563,6 +1596,12 @@ class PipelineListCtrl(wx.ScrolledWindow):
             item_text_color = text_color
 
             dc.SetFont(self.Font)
+
+            if self.show_step and self.test_mode:
+                rectangle = self.get_step_rect(index)
+                bitmap = self.bmp_step if self.running_item == index else self.bmp_stepped
+                if self.running_item >= index and item.enabled:
+                    dc.DrawBitmap(bitmap, rectangle.GetLeft(), rectangle.GetTop(), True)
 
             if self.show_go_pause and self.test_mode:
                 rectangle = self.get_go_pause_rect(index)
@@ -1646,11 +1685,13 @@ class PipelineListCtrl(wx.ScrolledWindow):
 
             dc.DrawLine(0, y, self.GetSize()[0], y)
 
-    def make_event(self, py_event_binder, index=None):
+    def make_event(self, py_event_binder, index=None, module=None):
         event = wx.NotifyEvent(py_event_binder.evtType[0])
         event.SetEventObject(self)
         if index is not None:
             event.SetInt(index)
+        if module is not None:
+            event.module = module
         return event
 
     def on_left_down(self, event):
@@ -1754,6 +1795,8 @@ class PipelineListCtrl(wx.ScrolledWindow):
         if self.button_is_active and self.pressed_column is not None:
             if self.pressed_column == ERROR_COLUMN:
                 code = EVT_PLV_ERROR_COLUMN_CLICKED
+            elif self.pressed_column == STEP_COLUMN:
+                code = EVT_PLV_STEP_COLUMN_CLICKED
             elif self.pressed_column == PAUSE_COLUMN:
                 code = EVT_PLV_PAUSE_COLUMN_CLICKED
             else:

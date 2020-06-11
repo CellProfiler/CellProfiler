@@ -909,7 +909,7 @@ parents or children of the parent object.""",
         result = []
         if object_name == self.x_name.value:
             if self.wants_per_parent_means:
-                result += ["Mean_{}".format(self.y_name), "Children"]
+                result += ["Mean_{}".format(self.y_name.value), "Children"]
             else:
                 result += ["Children"]
         elif object_name == self.y_name.value:

@@ -21,7 +21,7 @@ from CellProfiler.
 
 `(Jump to top)`_
 
-.. automodule:: cellprofiler.modules.loaddata
+.. automodule:: cellprofiler_core.modules.loaddata
 
 `(Jump to top)`_
 

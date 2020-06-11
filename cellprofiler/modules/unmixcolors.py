@@ -53,6 +53,7 @@ See also **ColorToGray**.
 
 .. _Colour\_Deconvolution.java: http://imagej.net/Colour_Deconvolution
 """
+import math
 
 import numpy as np
 from scipy.linalg import lstsq
@@ -417,18 +418,22 @@ blue absorbance values from the image.
             workspace.display_data.outputs[image_name] = image
 
     def display(self, workspace, figure):
-        """Display all of the images in a figure"""
-        figure.set_subplots((len(self.outputs) + 1, 1))
+        """Display all of the images in a figure, use rows of 3 subplots"""
+        numcols = min(3, len(self.outputs) + 1)
+        numrows = math.ceil((len(self.outputs) + 1) / 3)
+        figure.set_subplots((numcols, numrows))
+        coordslist = [(x, y) for y in range(numrows) for x in range(numcols)][1:]
         input_image = workspace.display_data.input_image
         figure.subplot_imshow_color(
             0, 0, input_image, title=self.input_image_name.value
         )
         ax = figure.subplot(0, 0)
         for i, output in enumerate(self.outputs):
+            x, y = coordslist[i]
             image_name = output.image_name.value
             pixel_data = workspace.display_data.outputs[image_name]
             figure.subplot_imshow_grayscale(
-                i + 1, 0, pixel_data, title=image_name, sharexy=ax
+                x, y, pixel_data, title=image_name, sharexy=ax
             )
 
     def get_absorbances(self, output):

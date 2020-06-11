@@ -247,6 +247,16 @@ def __search_fn(html, text):
     ]
 
 
+def quick_search(module, text):
+    mod_doc, mod_settings = module.get_help_text()
+    if text in mod_doc.lower():
+        return True
+    for setting_name, setting_doc in mod_settings:
+        if text in setting_doc.lower():
+            return True
+    return False
+
+
 def search_module_help(text):
     """
     Search the help for a string
@@ -278,14 +288,14 @@ def search_module_help(text):
         if location == cellprofiler_core.preferences.get_plugin_directory():
             continue
 
-        help_text = module.get_help()
+        prelim_matches = quick_search(module, text.lower())
+        if prelim_matches:
+            help_text = module.get_help()
+            matches = __search_fn(help_text, text)
 
-        matches = __search_fn(help_text, text)
-
-        if len(matches) > 0:
-            matching_help.append((module_name, help_text, matches))
-
-            count += len(matches)
+            if len(matches) > 0:
+                matching_help.append((module_name, help_text, matches))
+                count += len(matches)
 
     if len(matching_help) == 0:
         return None

@@ -40,6 +40,7 @@ import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
+from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
 import cellprofiler.gui.viewworkspace
 import cellprofiler.gui.workspace
 import cellprofiler.icons
@@ -357,6 +358,11 @@ class PipelineController(object):
             wx.EVT_MENU,
             self.on_hide_all_windows,
             id=cellprofiler.gui.cpframe.ID_WINDOW_HIDE_ALL_WINDOWS,
+        )
+
+        frame.Bind(
+            EVT_PLV_VALID_STEP_COLUMN_CLICKED,
+            self.on_step_from_specific_module,
         )
 
         from bioformats.formatreader import set_omero_login_hook
@@ -1379,6 +1385,15 @@ class PipelineController(object):
 
     def __on_export_image_sets(self, event):
         """Export the pipeline's image sets to a .csv file"""
+        if len(self.__pipeline.file_list) == 0:
+            wx.MessageBox(
+                "Unable to export image sets, file list is empty.",
+                "Export Image Sets",
+                wx.OK | wx.ICON_INFORMATION,
+                self.__frame,
+            )
+            return
+
         dlg = wx.FileDialog(
             self.__frame,
             "Export image sets",
@@ -1387,13 +1402,14 @@ class PipelineController(object):
         )
         try:
             dialog_response = dlg.ShowModal()
+            path = dlg.GetPath()
         finally:
             dlg.Destroy()
 
         if dialog_response == wx.ID_OK:
             try:
                 self.__workspace.refresh_image_set()
-                self.__workspace.measurements.write_image_sets(dlg.GetPath())
+                self.__workspace.measurements.write_image_sets(path)
 
                 # Show helpful message to guide in proper use (GithHub issue #688)
                 frame = wx.Frame(self.__frame, title="Image set listing saved")
@@ -1441,8 +1457,7 @@ class PipelineController(object):
                 frame.Fit()
                 frame.Show()
             except Exception as e:
-                error = cellprofiler.gui.dialog.Error("Error", e.message)
-
+                error = cellprofiler.gui.dialog.Error("Error", str(e))
                 if error.status is wx.ID_CANCEL:
                     cellprofiler_core.preferences.cancel_progress()
 
@@ -4022,6 +4037,13 @@ class PipelineController(object):
         active_module = self.__pipeline_list_view.get_active_module()
         self.__pipeline_list_view.set_current_debug_module(active_module)
         success = self.do_step(active_module)
+        if success:
+            self.next_debug_module()
+
+    def on_step_from_specific_module(self, event):
+        target_module = event.module
+        self.__pipeline_list_view.set_current_debug_module(target_module)
+        success = self.do_step(target_module)
         if success:
             self.next_debug_module()
 

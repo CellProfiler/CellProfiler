@@ -286,6 +286,7 @@ class EditObjectsDialog(wx.Dialog):
 
         self.panel = CanvasPatch(self, -1, self.figure)
         self.toolbar = cellprofiler.gui.figure.NavigationToolbar(self.panel)
+        self.toolbar.set_message = self.discard_message
         self.sash_parent = wx.Panel(self)
         #
         # Need to reparent the canvas after instantiating the toolbar so
@@ -2168,3 +2169,8 @@ class EditObjectsDialog(wx.Dialog):
                 del self.artists[artist]
             if display:
                 self.display()
+
+    def discard_message(self, message):
+        # Matplotlib wants to update the status bar, but this window lacks one.
+        # So we ignore it. Matplotlib plan to remove this behaviour eventually.
+        return

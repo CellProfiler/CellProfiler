@@ -427,7 +427,7 @@ input for a measurement module."""
     def prepare_settings(self, setting_values):
         """Adjust the # of functions to match the # of setting values"""
         assert (len(setting_values) - 2) % FUNCTION_SETTING_COUNT == 0
-        function_count = (len(setting_values) - 2) / FUNCTION_SETTING_COUNT
+        function_count = (len(setting_values) - 2) // FUNCTION_SETTING_COUNT
         del self.functions[function_count:]
         while len(self.functions) < function_count:
             self.add_function()

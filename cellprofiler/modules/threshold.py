@@ -191,7 +191,7 @@ There are a number of methods for finding thresholds automatically:
    
    NOTE that from CellProfiler 4.0.0 and onwards the standard implementation will
    be used for three-class Otsu thresholding as well. Results with three-class
-   Otsu thresholding are likely to be slight different from older versions, so
+   Otsu thresholding are likely to be slightly different from older versions, so
    imported pipelines which use these methods should be checked when converting
    to the latest version to ensure that settings are still appropriate.
 

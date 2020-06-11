@@ -78,8 +78,7 @@ builtin_modules = [
     "align",
     "groups",
     "images",
-    "loadimages",
-    "loadsingleimage",
+    "loaddata",
     "metadata",
     "namesandtypes",
 ]
@@ -132,7 +131,6 @@ def fill_modules():
     del datatools[:]
     all_modules.clear()
     svn_revisions.clear()
-    cppath = None
 
     def add_module(mod, check_svn):
         try:
@@ -180,20 +178,16 @@ def fill_modules():
         add_module("cellprofiler_core.modules." + mod, True)
 
     # Import CellProfiler modules if CellProfiler is installed
+    cpinstalled = False
     try:
-        import cellprofiler
+        import cellprofiler.modules
 
-        cppath = os.path.join(os.path.dirname(cellprofiler.__file__), "modules")
+        cpinstalled = True
     except ImportError:
-        cellprofiler = None
         print("No CellProfiler installation detected, only base modules will be loaded")
-    finally:
-        if cppath:
-            old_path = sys.path
-            sys.path.insert(0, cppath)
-            for mod in plugin_list(cppath):
-                add_module(mod, True)
-            sys.path = old_path
+    if cpinstalled:
+        for mod in cellprofiler.modules.builtin_modules:
+            add_module("cellprofiler.modules." + mod, True)
 
     # Find and import plugins
     plugin_directory = cellprofiler_core.preferences.get_plugin_directory()

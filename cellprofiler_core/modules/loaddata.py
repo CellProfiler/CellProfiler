@@ -6,7 +6,6 @@ import logging
 import os
 from functools import reduce
 
-import matplotlib.mlab
 import numpy
 import six
 import six.moves.urllib.request
@@ -557,7 +556,10 @@ safe to press it.""",
     def validate_module(self, pipeline):
         csv_path = self.csv_path
 
-        if self.csv_directory.dir_choice != cellprofiler_core.setting.URL_FOLDER_NAME:
+        if (
+            self.csv_directory.dir_choice
+            != cellprofiler_core.preferences.URL_FOLDER_NAME
+        ):
             if not os.path.isfile(csv_path):
                 raise cellprofiler_core.setting.ValidationError(
                     "No such CSV file: %s" % csv_path, self.csv_file_name
@@ -631,7 +633,10 @@ safe to press it.""",
 
     def visible_settings(self):
         result = [self.csv_directory, self.csv_file_name, self.browse_csv_button]
-        if self.csv_directory.dir_choice == cellprofiler_core.setting.URL_FOLDER_NAME:
+        if (
+            self.csv_directory.dir_choice
+            == cellprofiler_core.preferences.URL_FOLDER_NAME
+        ):
             result += [self.clear_cache_button]
             self.csv_file_name.text = "URL of the file"
             self.csv_file_name.set_browsable(False)
@@ -660,91 +665,15 @@ safe to press it.""",
             result += [self.row_range]
         return result
 
-    def convert(self):
-        data = matplotlib.mlab.csv2rec(self.csv_path)
-        src_dsc = data["source_description"]
-
-        def uniquewaves(seq):
-            output = []
-            for x in seq:
-                if x not in output:
-                    output.append(x)
-            return output
-
-        waves = uniquewaves(src_dsc)
-
-        pathname = []
-        filename = []
-        wave_pnames = []
-        wave_fnames = []
-
-        for i in range(len(waves)):
-            mask = data["source_description"] == waves[i]
-            pathname.append(data[mask]["file_path"])
-            filename.append(data[mask]["file_name"])
-            wave_pnames.append("PathName_%s" % (waves[i].strip('"')))
-            wave_fnames.append("FileName_%s" % (waves[i].strip('"')))
-
-        for i in range(len(waves)):
-            if len(filename[i]) != len(filename[0]):
-                raise RuntimeError(
-                    "Image %s has %d files, but image %s has %d files"
-                    % (
-                        wave_fnames[i],
-                        len(filename[i]),
-                        wave_fnames[0],
-                        len(filename[0]),
-                    )
-                )
-
-        def metadatacols(header):
-            output = []
-            for h in header:
-                if not h.startswith("file_"):
-                    if isinstance(h, six.text_type):
-                        output.append(h)
-                    else:
-                        output.append(h)
-            return output
-
-        def data_for_one_wave(data):
-            mask = data["source_description"] == waves[0]
-            data_onewave = data[mask]
-            return data_onewave
-
-        header = data.dtype.names
-        metadata_names = metadatacols(header)
-
-        data_onewave = data_for_one_wave(data)
-        strdate = []
-        for date in data_onewave["date_created"]:
-            strdate += [str(date)]
-        metadata_names.remove("source_description")
-        metadata_names.remove("date_created")
-        data_onewave_nofilepaths = matplotlib.mlab.rec_keep_fields(
-            data_onewave, metadata_names
-        )
-        metadata_names = ["Metadata_" + m for m in metadata_names]
-        data_onewave_nofilepaths.dtype.names = metadata_names
-        final_data = data_onewave_nofilepaths
-        final_data = matplotlib.mlab.rec_append_fields(
-            final_data, "Metadata_date_created", strdate
-        )
-        for i in range(len(waves)):
-            final_data = matplotlib.mlab.rec_append_fields(
-                final_data, wave_pnames[i], pathname[i]
-            )
-            final_data = matplotlib.mlab.rec_append_fields(
-                final_data, wave_fnames[i], filename[i]
-            )
-        return final_data
-
     @property
     def csv_path(self):
         """The path and file name of the CSV file to be loaded"""
         if cellprofiler_core.preferences.get_data_file() is not None:
             return cellprofiler_core.preferences.get_data_file()
-        if self.csv_directory.dir_choice == cellprofiler_core.setting.URL_FOLDER_NAME:
+        if (
+            self.csv_directory.dir_choice
+            == cellprofiler_core.preferences.URL_FOLDER_NAME
+        ):
             return self.csv_file_name.value
 
         path = self.csv_directory.get_absolute_path()
@@ -847,12 +776,6 @@ safe to press it.""",
         reader = csv.reader(fd)
         header = next(reader)
         fd.close()
-        if header[0].startswith("ELN_RUN_ID"):
-            try:
-                data = self.convert()
-            except Exception as e:
-                raise RuntimeError("%s" % e)
-            header = data.dtype.names
         entry["header"] = [header_to_column(column) for column in header]
         return entry["header"]
 
@@ -915,9 +838,6 @@ safe to press it.""",
         fd = self.open_csv()
         reader = csv.reader(fd)
         header = [header_to_column(column) for column in next(reader)]
-        if header[0].startswith("ELN_RUN_ID"):
-            reader = self.convert()
-            header = list(reader.dtype.names)
         if self.wants_rows.value:
             # skip initial rows
             rows = []
@@ -1004,7 +924,7 @@ safe to press it.""",
             #
             if (
                 self.image_directory.dir_choice
-                == cellprofiler_core.setting.NO_FOLDER_NAME
+                == cellprofiler_core.preferences.NO_FOLDER_NAME
             ):
                 path_base = ""
             else:
@@ -1395,9 +1315,6 @@ safe to press it.""",
             fd = self.open_csv()
             reader = csv.reader(fd)
             header = [header_to_column(x) for x in next(reader)]
-            if header[0].startswith("ELN_RUN_ID"):
-                reader = self.convert()
-                header = reader.dtype.names
         except:
             if entry is not None:
                 entry["measurement_columns"] = []

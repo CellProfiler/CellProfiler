@@ -42,9 +42,6 @@ MENU_HELP = {
     "Troubleshooting Memory and Speed Issues": cellprofiler.gui.help.content.read_content(
         "other_troubleshooting.rst"
     ),
-    "Using the Data Tools Menu": cellprofiler.gui.help.content.read_content(
-        "navigation_data_tools_menu.rst"
-    ),
     "Using the Edit Menu": cellprofiler.gui.help.content.read_content(
         "navigation_file_menu.rst"
     ),

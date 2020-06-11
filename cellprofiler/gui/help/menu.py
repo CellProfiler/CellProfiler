@@ -179,13 +179,6 @@ class Menu(cellprofiler.gui.menu.Menu):
             ),
         )
 
-        navigation_menu.append(
-            "Using the Data Tools Menu",
-            contents=cellprofiler.gui.help.content.read_content(
-                "navigation_data_tools_menu.rst"
-            ),
-        )
-
         return navigation_menu
 
     @staticmethod

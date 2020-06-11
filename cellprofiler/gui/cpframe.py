@@ -17,7 +17,6 @@ import wx.lib.scrolledpanel
 
 import cellprofiler
 import cellprofiler.gui
-import cellprofiler.gui.datatoolframe
 import cellprofiler.gui.dialog
 import cellprofiler.gui.figure
 import cellprofiler.gui.help.content
@@ -147,7 +146,6 @@ ID_WINDOW_ALL = (
 window_ids = []
 
 ID_HELP_MODULE = wx.NewId()
-ID_HELP_DATATOOLS = wx.NewId()
 ID_HELP_SOURCE_CODE = wx.NewId()
 ID_HELP_ABOUT = wx.ID_ABOUT
 
@@ -835,7 +833,6 @@ class CPFrame(wx.Frame):
                 "Initialize sampling up to current module",
             )
             self.__menu_bar.Append(self.__menu_sample, "&Sample")
-        self.__menu_bar.Append(self.data_tools_menu(), "&Data Tools")
         self.__menu_bar.Append(self.__menu_window, "&Window")
         if wx.VERSION <= (2, 8, 10, 1, "") and wx.Platform == "__WXMAC__":
             self.__menu_bar.Append(self.__menu_help, "CellProfiler Help")
@@ -892,90 +889,6 @@ class CPFrame(wx.Frame):
         )
         self.SetAcceleratorTable(accelerator_table)
         self.enable_launch_commands()
-
-    def data_tools_help(self):
-        """Create a help menu for the data tools"""
-        if not hasattr(self, "__data_tools_help_menu"):
-            self.__menu_data_tools_help_menu = wx.Menu()
-
-            def on_plate_viewer_help(event):
-                import cellprofiler.gui.htmldialog
-
-                dlg = cellprofiler.gui.htmldialog.HTMLDialog(
-                    self,
-                    "Help on plate viewer",
-                    cellprofiler.gui.help.content.read_content(
-                        "output_plateviewer.rst"
-                    ),
-                )
-                dlg.Show()
-
-            new_id = wx.NewId()
-            self.__menu_data_tools_help_menu.Append(new_id, "Plate viewer")
-            self.Bind(wx.EVT_MENU, on_plate_viewer_help, id=new_id)
-
-            for data_tool_name in cellprofiler_core.modules.get_data_tool_names():
-                new_id = wx.NewId()
-                self.__menu_data_tools_help_menu.Append(new_id, data_tool_name)
-
-                def on_data_tool_help(event, data_tool_name=data_tool_name):
-                    self.__on_data_tool_help(event, data_tool_name)
-
-                self.Bind(wx.EVT_MENU, on_data_tool_help, id=new_id)
-        return self.__menu_data_tools_help_menu
-
-    def data_tools_menu(self):
-        """Create a menu of data tools"""
-
-        if not hasattr(self, "__data_tools_menu"):
-            self.__data_tools_menu = wx.Menu()
-
-            def on_data_tool_overview(event):
-                import cellprofiler.gui.html.utils
-                import cellprofiler.gui.htmldialog
-                import cellprofiler.gui.help.content
-
-                dlg = cellprofiler.gui.htmldialog.HTMLDialog(
-                    self,
-                    "Data Tool Overview",
-                    cellprofiler.gui.html.utils.rst_to_html_fragment(
-                        cellprofiler.gui.help.content.read_content(
-                            "navigation_data_tools_menu.rst"
-                        )
-                    ),
-                )
-                dlg.Show()
-
-            new_id = wx.NewId()
-            self.__data_tools_menu.Append(
-                new_id, "Data Tool Overview", "Overview of the Data Tools"
-            )
-            self.Bind(wx.EVT_MENU, on_data_tool_overview, id=new_id)
-
-            self.__data_tools_menu.AppendSeparator()
-
-            self.__data_tools_menu.Append(
-                ID_FILE_PLATEVIEWER,
-                "Plate Viewer",
-                "Open the plate viewer to inspect the images in the current workspace",
-            )
-
-            self.__data_tools_menu.AppendSeparator()
-
-            for data_tool_name in cellprofiler_core.modules.get_data_tool_names():
-                new_id = wx.NewId()
-                self.__data_tools_menu.Append(new_id, data_tool_name)
-
-                def on_data_tool(event, data_tool_name=data_tool_name):
-                    self.__on_data_tool(event, data_tool_name)
-
-                self.Bind(wx.EVT_MENU, on_data_tool, id=new_id)
-
-            self.__data_tools_menu.AppendSeparator()
-
-            self.__data_tools_menu.AppendSubMenu(self.data_tools_help(), "&Help")
-
-        return self.__data_tools_menu
 
     #########################################################
     #
@@ -1378,26 +1291,6 @@ class CPFrame(wx.Frame):
 
     def __set_icon(self):
         self.SetIcon(cellprofiler.gui.get_cp_icon())
-
-    def __on_data_tool(self, event, tool_name):
-        module = cellprofiler_core.modules.instantiate_module(tool_name)
-        args, varargs, varkw, vardef = inspect.getargspec(module.run_as_data_tool)
-        if len(args) + (0 if varargs is None else len(varargs)) == 1:
-            # Data tool doesn't need the data tool frame because it doesn't
-            # take the "workspace" argument
-            #
-            module.run_as_data_tool()
-            return
-        dlg = wx.FileDialog(
-            self,
-            "Choose data output file for %s data tool" % tool_name,
-            wildcard="Measurements file(*.mat,*.h5)|*.mat;*.h5",
-            style=(wx.FD_OPEN | wx.FD_FILE_MUST_EXIST),
-        )
-        if dlg.ShowModal() == wx.ID_OK:
-            cellprofiler.gui.datatoolframe.DataToolFrame(
-                self, module_name=tool_name, measurements_file_name=dlg.GetPath()
-            )
 
     def __on_data_tool_help(self, event, tool_name):
         module = cellprofiler_core.modules.instantiate_module(tool_name)

@@ -266,14 +266,11 @@ class ModuleView(object):
     gives the ui for editing the setting.
     """
 
-    def __init__(
-        self, top_panel, workspace, as_datatool=False, frame=None, notes_panel=None
-    ):
+    def __init__(self, top_panel, workspace, frame=None, notes_panel=None):
         """Constructor
 
         module_panel - the top-level panel used by the view
         workspace - the current workspace
-        as_datatool - True if module is being run as a data tool
         notes_panel - panel in which to construct the notes GUI
         """
         pipeline = workspace.pipeline
@@ -314,7 +311,6 @@ class ModuleView(object):
             self.make_notes_gui()
 
         self.__pipeline = pipeline
-        self.__as_datatool = as_datatool
         self.__listeners = []
         self.__value_listeners = []
         self.__inside_notify = False
@@ -661,11 +657,8 @@ class ModuleView(object):
                 sizer.Add(help_control, 0, wx.LEFT, 2)
         finally:
             self.__handle_change = True
-            if self.__as_datatool:
-                self.module_panel.Layout()
-                if self.DO_FREEZE:
-                    self.module_panel.Thaw()
-            elif self.__frame is not None:
+
+            if self.__frame is not None:
                 if self.__started:
                     self.__frame.show_module_ui(True)
                 if imageset_control is not None:

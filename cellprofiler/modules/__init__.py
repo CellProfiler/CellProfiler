@@ -59,7 +59,6 @@ builtin_modules = [
     "measureobjectskeleton",
     "measuretexture",
     "medianfilter",
-    "mergeoutputfiles",
     "morph",
     "morphologicalskeleton",
     "opening",

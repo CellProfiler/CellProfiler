@@ -2169,7 +2169,7 @@ def test_missing_column_measurements(output_dir):
 
 
 def make_pipeline(csv_text):
-    import cellprofiler.modules.loaddata as L
+    import cellprofiler_core.modules.loaddata as L
 
     handle, name = tempfile.mkstemp("csv")
     fd = os.fdopen(handle, "w")

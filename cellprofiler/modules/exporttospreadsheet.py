@@ -1109,7 +1109,7 @@ desired.
         image_set_numbers - the image sets whose data gets extracted
         workspace - workspace containing the measurements
         """
-        from cellprofiler.modules.loaddata import (
+        from cellprofiler_core.modules.loaddata import (
             is_path_name_feature,
             is_file_name_feature,
         )

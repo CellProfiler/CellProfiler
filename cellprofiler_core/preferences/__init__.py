@@ -207,7 +207,6 @@ def set_preferences_from_dict(d):
         "__default_colormap",
         "__default_image_directory",
         "__default_output_directory",
-        "__allow_output_file_overwrite",
         "__current_pipeline_path",
         "__has_reported_jvm_error",
         "__show_analysis_complete_dlg",
@@ -217,7 +216,6 @@ def set_preferences_from_dict(d):
         "__show_workspace_choice_dlg",
         "__use_more_figure_space",
         "__warn_about_old_pipeline",
-        "__write_MAT_files",
         "__workspace_file",
         "__omero_server",
         "__omero_port",
@@ -376,16 +374,13 @@ PRIMARY_OUTLINE_COLOR = "PrimaryOutlineColor"
 SECONDARY_OUTLINE_COLOR = "SecondaryOutlineColor"
 TERTIARY_OUTLINE_COLOR = "TertiaryOutlineColor"
 JVM_ERROR = "JVMError"
-ALLOW_OUTPUT_FILE_OVERWRITE = "AllowOutputFileOverwrite"
 PLUGIN_DIRECTORY = "PluginDirectory"
 SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
 SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
 SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
 SHOW_SAMPLING = "ShowSampling"
-WRITE_MAT = "WriteMAT"
 WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
-WRITE_HDF5 = "WriteHDF5"
 WORKSPACE_FILE = "WorkspaceFile"
 OMERO_SERVER = "OmeroServer"
 OMERO_PORT = "OmeroPort"
@@ -715,7 +710,6 @@ def recent_file(index, category=""):
 
 """All keys saved in the registry"""
 ALL_KEYS = [
-    ALLOW_OUTPUT_FILE_OVERWRITE,
     BACKGROUND_COLOR,
     COLORMAP,
     DEFAULT_IMAGE_DIRECTORY,
@@ -739,7 +733,6 @@ ALL_KEYS = [
     TITLE_FONT_NAME,
     TITLE_FONT_SIZE,
     WARN_ABOUT_OLD_PIPELINE,
-    WRITE_MAT,
     USE_MORE_FIGURE_SPACE,
     WORKSPACE_FILE,
     OMERO_SERVER,
@@ -1009,36 +1002,6 @@ def get_pixel_size():
 
 def set_pixel_size(pixel_size):
     config_write(PIXEL_SIZE, str(pixel_size))
-
-
-__output_filename = None
-__output_filename_listeners = []
-
-
-def get_output_file_name():
-    global __output_filename
-    if __output_filename is None:
-        return "DefaultOUT.mat"
-    return __output_filename
-
-
-def set_output_file_name(filename):
-    global __output_filename
-    filename = str(filename)
-    __output_filename = filename
-    for listener in __output_filename_listeners:
-        listener(PreferenceChangedEvent(filename))
-
-
-def add_output_file_name_listener(listener):
-    __output_filename_listeners.append(listener)
-
-
-def remove_output_file_name_listener(listener):
-    try:
-        __output_filename_listeners.remove(listener)
-    except:
-        logger.warning("File name listener doubly removed")
 
 
 def get_absolute_path(path, abspath_mode=ABSPATH_IMAGE):
@@ -1368,29 +1331,6 @@ def set_has_reported_jvm_error():
     __has_reported_jvm_error = True
 
 
-__allow_output_file_overwrite = None
-
-
-def get_allow_output_file_overwrite():
-    """Return true if the user wants to allow CP to overwrite the output file
-
-    This is the .MAT output file, typically Default_OUT.mat
-    """
-    global __allow_output_file_overwrite
-    if __allow_output_file_overwrite is not None:
-        return __allow_output_file_overwrite
-    if not config_exists(ALLOW_OUTPUT_FILE_OVERWRITE):
-        return False
-    return config_read(ALLOW_OUTPUT_FILE_OVERWRITE) == "True"
-
-
-def set_allow_output_file_overwrite(value):
-    """Allow overwrite of .MAT file if true, warn user if false"""
-    global __allow_output_file_overwrite
-    __allow_output_file_overwrite = value
-    config_write(ALLOW_OUTPUT_FILE_OVERWRITE, "True" if value else "False")
-
-
 # "Analysis complete" preference
 __show_analysis_complete_dlg = None
 
@@ -1452,37 +1392,6 @@ def set_show_report_bad_sizes_dlg(value):
     global __show_report_bad_sizes_dlg
     __show_report_bad_sizes_dlg = value
     config_write(SHOW_BAD_SIZES_DLG, "True" if value else "False")
-
-
-# Write .MAT files on output
-__write_MAT_files = None
-
-
-def get_write_MAT_files():
-    """Determine whether to write measurements in .MAT files, .h5 files or not at all
-
-    returns True to write .MAT, WRITE_HDF5 to write .h5 files, False to not write
-    """
-    global __write_MAT_files
-    if __write_MAT_files is not None:
-        return __write_MAT_files
-    if not config_exists(WRITE_MAT):
-        return False
-    value = config_read(WRITE_MAT)
-    if value == "True":
-        return True
-    if value == WRITE_HDF5:
-        return WRITE_HDF5
-    return False
-
-
-def set_write_MAT_files(value):
-    """Set the "Write MAT files" flag"""
-    global __write_MAT_files
-    __write_MAT_files = value
-    config_write(
-        WRITE_MAT, WRITE_HDF5 if value == WRITE_HDF5 else "True" if value else "False"
-    )
 
 
 __workspace_file = None

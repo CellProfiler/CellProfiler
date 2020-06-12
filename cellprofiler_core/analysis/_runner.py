@@ -64,17 +64,9 @@ class Runner:
     ]
 
     def __init__(
-        self,
-        analysis_id,
-        pipeline,
-        initial_measurements_buf,
-        output_path,
-        event_listener,
+        self, analysis_id, pipeline, initial_measurements_buf, event_listener,
     ):
         self.initial_measurements_buf = initial_measurements_buf
-
-        # for writing results
-        self.output_path = output_path
 
         self.analysis_id = analysis_id
         self.pipeline = pipeline.copy()
@@ -214,31 +206,25 @@ class Runner:
             self.pipeline.add_listener(lambda pipe, evt: self.post_event(evt))
 
             initial_measurements = None
-            if self.output_path is None:
-                # Caller wants a temporary measurements file.
-                fd, filename = tempfile.mkstemp(
-                    ".h5", dir=cellprofiler_core.preferences.get_temporary_directory()
+            # Make a temporary measurements file.
+            fd, filename = tempfile.mkstemp(
+                ".h5", dir=cellprofiler_core.preferences.get_temporary_directory()
+            )
+            try:
+                fd = os.fdopen(fd, "wb")
+                fd.write(self.initial_measurements_buf)
+                fd.close()
+                initial_measurements = cellprofiler_core.measurement.Measurements(
+                    filename=filename, mode="r"
                 )
-                try:
-                    fd = os.fdopen(fd, "wb")
-                    fd.write(self.initial_measurements_buf)
-                    fd.close()
-                    initial_measurements = cellprofiler_core.measurement.Measurements(
-                        filename=filename, mode="r"
-                    )
-                    measurements = cellprofiler_core.measurement.Measurements(
-                        image_set_start=None, copy=initial_measurements, mode="a"
-                    )
-                finally:
-                    if initial_measurements is not None:
-                        initial_measurements.close()
-                    os.unlink(filename)
-            else:
-                with open(self.output_path, "wb") as fd:
-                    fd.write(self.initial_measurements_buf)
                 measurements = cellprofiler_core.measurement.Measurements(
-                    image_set_start=None, filename=self.output_path, mode="a"
+                    image_set_start=None, copy=initial_measurements, mode="a"
                 )
+            finally:
+                if initial_measurements is not None:
+                    initial_measurements.close()
+                os.unlink(filename)
+
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
             workspace = cellprofiler_core.workspace.Workspace(

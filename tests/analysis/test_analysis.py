@@ -287,7 +287,7 @@ class TestAnalysis(unittest.TestCase):
                 )
         else:
             overwrite = True
-        self.analysis = cellprofiler_core.analysis.Analysis(pipeline, self.filename, m)
+        self.analysis = cellprofiler_core.analysis.Analysis(pipeline, m)
 
         self.analysis.start(
             self.analysis_event_handler, num_workers=0, overwrite=overwrite

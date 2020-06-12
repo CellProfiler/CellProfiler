@@ -838,17 +838,14 @@ def run_pipeline_headless(options, args):
     elif options.image_directory is not None:
         pathnames = []
 
-        os.path.walk(
-            os.path.abspath(options.image_directory),
-            lambda pathnames, dirname, fnames: pathnames.append(
+        for dirname, _, fnames in os.walk(os.path.abspath(options.image_directory)):
+            pathnames.append(
                 [
                     os.path.join(dirname, fname)
                     for fname in fnames
                     if os.path.isfile(os.path.join(dirname, fname))
                 ]
-            ),
-            pathnames,
-        )
+            )
 
         pathnames = sum(pathnames, [])
 

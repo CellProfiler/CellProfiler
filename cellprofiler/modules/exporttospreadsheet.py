@@ -1568,7 +1568,6 @@ desired.
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 7
         directory = setting_values[SLOT_DIRCHOICE]
-        directory = directory.encode("utf-8").decode("unicode_escape")
         directory = cps.DirectoryPath.upgrade_setting(directory)
         setting_values = (
             setting_values[:SLOT_DIRCHOICE]

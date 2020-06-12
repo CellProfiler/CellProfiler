@@ -766,7 +766,7 @@ def run_pipeline_headless(options, args):
         else:
             image_set_start = int(options.first_image_set)
     else:
-        image_set_start = None
+        image_set_start = 1
 
     image_set_numbers = None
 

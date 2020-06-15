@@ -210,16 +210,18 @@ OVERWRITE_DATA = "Data only"
 OVERWRITE_ALL = "Data and schema"
 
 """Offset of the image group count in the settings"""
-SETTING_IMAGE_GROUP_COUNT = 29
+SETTING_IMAGE_GROUP_COUNT = 28
 
 """Offset of the group specification group count in the settings"""
-SETTING_GROUP_FIELD_GROUP_COUNT = 30
+SETTING_GROUP_FIELD_GROUP_COUNT = 29
 
 """Offset of the filter specification group count in the settings"""
-SETTING_FILTER_FIELD_GROUP_COUNT = 31
+SETTING_FILTER_FIELD_GROUP_COUNT = 30
 
 """Offset of the workspace specification group count in the settings"""
-SETTING_WORKSPACE_GROUP_COUNT = 32
+SETTING_WORKSPACE_GROUP_COUNT = 31
+
+SETTING_WORKSPACE_GROUP_COUNT_PRE_V28 = 32
 
 SETTING_OFFSET_PROPERTIES_IMAGE_URL_PREPEND_V26 = 21
 
@@ -235,7 +237,7 @@ SETTING_FIXED_SETTING_COUNT_V25 = 38
 
 SETTING_FIXED_SETTING_COUNT_V26 = 39
 
-SETTING_FIXED_SETTING_COUNT = 39
+SETTING_FIXED_SETTING_COUNT = 38
 
 ##############################################
 #
@@ -385,16 +387,16 @@ class DBContext(object):
 
 class ExportToDatabase(cellprofiler_core.module.Module):
     module_name = "ExportToDatabase"
-    variable_revision_number = 27
+    variable_revision_number = 28
     category = ["File Processing", "Data Tools"]
 
     def create_settings(self):
         db_choices = (
-            [DB_MYSQL, DB_MYSQL_CSV, DB_SQLITE]
+            [DB_MYSQL, DB_SQLITE]
             if HAS_MYSQL_DB
-            else [DB_MYSQL_CSV, DB_SQLITE]
+            else [DB_SQLITE]
         )
-        default_db = DB_MYSQL if HAS_MYSQL_DB else DB_MYSQL_CSV
+        default_db = DB_MYSQL if HAS_MYSQL_DB else DB_SQLITE
         self.db_type = cellprofiler_core.setting.Choice(
             "Database type",
             db_choices,
@@ -405,12 +407,6 @@ Specify the type of database you want to use:
 -  *{DB_MYSQL}:* Writes the data directly to a MySQL database. MySQL
    is open-source software; you may require help from your local
    Information Technology group to set up a database server.
--  *{DB_MYSQL_CSV}:* Writes a script file that contains SQL
-   statements for creating a database and uploading the Per\_Image and
-   Per\_Object tables. This option will write out the Per\_Image and
-   Per\_Object table data to two CSV files; you can use these files
-   to import the data directly into an application that accepts
-   CSV data.
 -  *{DB_SQLITE}:* Writes SQLite files directly. SQLite is simpler to
    set up than MySQL and can more readily be run on your local computer
    rather than requiring a database server. More information about
@@ -431,7 +427,6 @@ considerations to note:
                 **{
                     "TECH_NOTE_ICON": _help.TECH_NOTE_ICON,
                     "DB_MYSQL": DB_MYSQL,
-                    "DB_MYSQL_CSV": DB_MYSQL_CSV,
                     "DB_SQLITE": DB_SQLITE,
                 }
             ),
@@ -496,18 +491,6 @@ Enter the table prefix you want to use.
 MySQL has a 64 character limit on the full name of the table. If the
 combination of the table name and prefix exceeds this limit, you will
 receive an error associated with this setting.""",
-        )
-
-        self.sql_file_prefix = cellprofiler_core.setting.Text(
-            "SQL file prefix",
-            "SQL_",
-            doc="""\
-*(Used if {DB_MYSQL_CSV} is selected as the database type)*
-
-Enter the prefix to be used to name the SQL file.
-""".format(
-                **{"DB_MYSQL_CSV": DB_MYSQL_CSV}
-            ),
         )
 
         self.directory = cellprofiler_core.setting.DirectoryPath(
@@ -975,7 +958,7 @@ WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);``
             "Calculate the per-well mean values of object measurements?",
             False,
             doc="""\
-*(Used only if {DB_MYSQL} or {DB_MYSQL_CSV} are selected as database type)*
+*(Used only if {DB_MYSQL} is selected as database type)*
 
 Select "*{YES}*" for **ExportToDatabase** to calculate statistics over
 all the objects in each well and store the results as columns in a
@@ -998,7 +981,6 @@ create the Per\_Well table, regardless of the option chosen above.
 """.format(
                 **{
                     "DB_MYSQL": DB_MYSQL,
-                    "DB_MYSQL_CSV": DB_MYSQL_CSV,
                     "YES": "Yes",
                     "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
                 }
@@ -1009,7 +991,7 @@ create the Per\_Well table, regardless of the option chosen above.
             "Calculate the per-well median values of object measurements?",
             False,
             doc="""\
-*(Used only if {DB_MYSQL} or {DB_MYSQL_CSV} are selected as database type)*
+*(Used only if {DB_MYSQL} is selected as database type)*
 
 Select "*{YES}*" for **ExportToDatabase** to calculate statistics over
 all the objects in each well and store the results as columns in a
@@ -1033,7 +1015,6 @@ create the Per\_Well table, regardless of the option chosen above.
 """.format(
                 **{
                     "DB_MYSQL": DB_MYSQL,
-                    "DB_MYSQL_CSV": DB_MYSQL_CSV,
                     "YES": "Yes",
                     "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
                 }
@@ -1044,7 +1025,7 @@ create the Per\_Well table, regardless of the option chosen above.
             "Calculate the per-well standard deviation values of object measurements?",
             False,
             doc="""\
-*(Used only if {DB_MYSQL} or {DB_MYSQL_CSV} are selected as database type)*
+*(Used only if {DB_MYSQL} is selected as database type)*
 
 Select "*{YES}*" for **ExportToDatabase** to calculate statistics over
 all the objects in each well and store the results as columns in a
@@ -1068,7 +1049,6 @@ create the Per\_Well table, regardless of the option chosen above.
 """.format(
                 **{
                     "DB_MYSQL": DB_MYSQL,
-                    "DB_MYSQL_CSV": DB_MYSQL_CSV,
                     "YES": "Yes",
                     "USING_METADATA_HELP_REF": _help.USING_METADATA_HELP_REF,
                 }
@@ -1742,15 +1722,9 @@ available:
             result += [self.db_user]
             result += [self.db_passwd]
             result += [self.test_connection_button]
-        elif self.db_type == DB_MYSQL_CSV:
-            result += [self.sql_file_prefix]
-            result += [self.db_name]
         elif self.db_type == DB_SQLITE:
             result += [self.sqlite_file]
-        elif self.db_type == DB_ORACLE:
-            result += [self.sql_file_prefix]
-        if self.db_type != DB_MYSQL_CSV:
-            result += [self.allow_overwrite]
+        result += [self.allow_overwrite]
         # # # # # # # # # # # # # # # # # #
         #
         # Table names
@@ -1870,7 +1844,7 @@ available:
         # # # # # # # # # # # # # # # # # #
 
         result += [self.max_column_size]
-        if self.db_type in (DB_MYSQL, DB_MYSQL_CSV, DB_SQLITE):
+        if self.db_type in (DB_MYSQL, DB_SQLITE):
             result += [self.want_image_thumbnails]
             if self.want_image_thumbnails:
                 result += [
@@ -1916,7 +1890,6 @@ available:
             self.db_name,
             self.want_table_prefix,
             self.table_prefix,
-            self.sql_file_prefix,
             self.directory,
             self.save_cpa_properties,
             self.db_host,
@@ -1998,7 +1971,6 @@ available:
             self.db_host,
             self.db_user,
             self.db_passwd,
-            self.sql_file_prefix,
             self.sqlite_file,
             self.allow_overwrite,
             self.want_table_prefix,
@@ -2071,11 +2043,6 @@ available:
             if not re.match("^[A-Za-z0-9_]+$", self.db_user.value):
                 raise cellprofiler_core.setting.ValidationError(
                     "The database user name has invalid characters", self.db_user
-                )
-        else:
-            if not re.match("^[A-Za-z][A-Za-z0-9_]+$", self.sql_file_prefix.value):
-                raise cellprofiler_core.setting.ValidationError(
-                    "Invalid SQL file prefix", self.sql_file_prefix
                 )
 
         if self.objects_choice == O_SELECT:
@@ -2518,17 +2485,12 @@ available:
         if not self.prepare_run(workspace, as_data_tool=True):
             return
         self.prepare_group(workspace, None, None)
-        if self.db_type != DB_MYSQL_CSV:
-            workspace.measurements.is_first_image = True
+        workspace.measurements.is_first_image = True
 
-            for i in range(workspace.measurements.image_set_count):
-                if i > 0:
-                    workspace.measurements.next_image_set()
-                self.run(workspace)
-        else:
-            workspace.measurements.image_set_number = (
-                workspace.measurements.image_set_count
-            )
+        for i in range(workspace.measurements.image_set_count):
+            if i > 0:
+                workspace.measurements.next_image_set()
+            self.run(workspace)
         self.post_run(workspace)
 
     def run(self, workspace):
@@ -2861,16 +2823,7 @@ available:
             self.write_properties_file(workspace)
         if self.create_workspace_file.value:
             self.write_workspace_file(workspace)
-        if self.db_type == DB_MYSQL_CSV:
-            path = self.directory.get_absolute_path(
-                None if workspace is None else workspace.measurements
-            )
-            if not os.path.isdir(path):
-                os.makedirs(path)
-            self.write_mysql_table_defs(workspace)
-            self.write_csv_data(workspace)
-        else:
-            self.write_post_run_measurements(workspace)
+        self.write_post_run_measurements(workspace)
 
     @property
     def wants_well_tables(self):
@@ -3135,7 +3088,7 @@ available:
 
     def get_experiment_table_statements(self, workspace):
         statements = []
-        if self.db_type in (DB_MYSQL_CSV, DB_MYSQL):
+        if self.db_type == DB_MYSQL:
             autoincrement = "AUTO_INCREMENT"
             need_text_size = True
         else:
@@ -3597,109 +3550,6 @@ CREATE TABLE %s (
                 )
         return rd[key]
 
-    def write_mysql_table_defs(self, workspace):
-        """Write the table definitions to the SETUP.SQL file
-
-        The column order here is the same as in get_pipeline_measurement_columns
-        with the aggregates following the regular image columns.
-        """
-
-        pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
-        measurements = workspace.measurements
-
-        m_cols = self.get_pipeline_measurement_columns(pipeline, image_set_list)
-        mappings = self.get_column_name_mappings(pipeline, image_set_list)
-
-        file_name_width, path_name_width = self.get_file_path_width(workspace)
-        metadata_name_width = 128
-        file_name = "%sSETUP.SQL" % self.sql_file_prefix
-        path_name = self.make_full_filename(file_name, workspace)
-        fid = open(path_name, "wt")
-        fid.write("CREATE DATABASE IF NOT EXISTS %s;\n" % self.db_name.value)
-        fid.write("USE %s;\n" % self.db_name.value)
-        fid.write(
-            self.get_create_image_table_statement(pipeline, image_set_list) + ";\n"
-        )
-        #
-        # Write out the per-object table
-        #
-        if self.objects_choice != O_NONE:
-            if self.separate_object_tables == OT_COMBINE:
-                data = [(None, cellprofiler_core.measurement.OBJECT)]
-            else:
-                data = [(x, x) for x in self.get_object_names(pipeline, image_set_list)]
-
-            for gcot_name, object_name in data:
-                fid.write(
-                    self.get_create_object_table_statement(
-                        gcot_name, pipeline, image_set_list
-                    )
-                    + ";\n"
-                )
-        else:
-            data = []
-        for statement in self.get_experiment_table_statements(workspace):
-            fid.write(statement + ";\n")
-        fid.write(
-            """
-LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s
-FIELDS TERMINATED BY ','
-OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
-"""
-            % (
-                self.base_name(workspace),
-                cellprofiler_core.measurement.IMAGE,
-                self.get_table_name(cellprofiler_core.measurement.IMAGE),
-            )
-        )
-
-        for gcot_name, object_name in data:
-            fid.write(
-                """
-LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s
-FIELDS TERMINATED BY ','
-OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
-"""
-                % (
-                    self.base_name(workspace),
-                    object_name,
-                    self.get_table_name(object_name),
-                )
-            )
-
-        if self.objects_choice != O_NONE and self.separate_object_tables == OT_VIEW:
-            fid.write(
-                "\n"
-                + self.get_create_object_view_statement(
-                    [object_name for gcot_name, object_name in data],
-                    pipeline,
-                    image_set_list,
-                )
-                + ";\n"
-            )
-
-        if self.wants_relationship_table:
-            for statement in self.get_create_relationships_table_statements(pipeline):
-                fid.write(statement + ";\n")
-            fid.write(
-                """
-LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s
-FIELDS TERMINATED BY ','
-OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
-"""
-                % (
-                    self.base_name(workspace),
-                    T_RELATIONSHIPS,
-                    self.get_table_name(T_RELATIONSHIPS),
-                )
-            )
-        if self.wants_well_tables:
-            self.write_mysql_table_per_well(
-                workspace.pipeline, workspace.image_set_list, fid
-            )
-        fid.close()
-
     def write_mysql_table_per_well(self, pipeline, image_set_list, fid=None):
         """Write SQL statements to generate a per-well table
 
@@ -3709,7 +3559,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
               should be written to a separate file.
         """
         if fid is None:
-            file_name = "%s_Per_Well_SETUP.SQL" % self.sql_file_prefix
+            file_name = "SQL__Per_Well_SETUP.SQL"
             path_name = self.make_full_filename(file_name)
             fid = open(path_name, "wt")
             needs_close = True
@@ -3849,163 +3699,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 
     def write_oracle_table_defs(self, workspace):
         raise NotImplementedError("Writing to an Oracle database is not yet supported")
-
-    def base_name(self, workspace):
-        """The base for the output file name"""
-        m = workspace.measurements
-        first = m.image_set_start_number
-        last = m.image_set_number
-        return "%s%d_%d" % (self.sql_file_prefix, first, last)
-
-    def write_csv_data(self, workspace):
-        """Write the data in the measurements out to the csv files
-        workspace - contains the measurements
-        """
-        if self.show_window:
-            disp_header = ["Table", "Filename"]
-            disp_columns = []
-
-        zeros_for_nan = False
-        measurements = workspace.measurements
-        pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
-        image_filename = self.make_full_filename(
-            "%s_%s.CSV"
-            % (self.base_name(workspace), cellprofiler_core.measurement.IMAGE),
-            workspace,
-        )
-        fid_per_image = open(image_filename, "w")
-        columns = self.get_pipeline_measurement_columns(
-            pipeline, image_set_list, remove_postgroup_key=True
-        )
-        agg_columns = self.get_aggregate_columns(pipeline, image_set_list)
-        for image_number in measurements.get_image_numbers():
-            image_row = [image_number]
-            for object_name, feature, coltype in columns:
-                if object_name != cellprofiler_core.measurement.IMAGE:
-                    continue
-                if self.ignore_feature(object_name, feature, measurements):
-                    continue
-                feature_name = "%s_%s" % (object_name, feature)
-                if not measurements.has_feature(
-                    cellprofiler_core.measurement.IMAGE, feature
-                ):
-                    value = numpy.NaN
-                else:
-                    value = measurements.get_measurement(
-                        cellprofiler_core.measurement.IMAGE, feature, image_number
-                    )
-                if isinstance(value, numpy.ndarray):
-                    value = value[0]
-                if coltype.startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR):
-                    if isinstance(value, six.string_types):
-                        value = '"' + MySQLdb.escape_string(value).decode() + '"'
-                    elif value is None:
-                        value = "NULL"
-                    else:
-                        value = '"' + MySQLdb.escape_string(value).decode() + '"'
-                elif numpy.isnan(value) or numpy.isinf(value):
-                    value = "NULL"
-
-                image_row.append(value)
-            #
-            # Add the aggregate measurements
-            #
-            agg_dict = measurements.compute_aggregate_measurements(
-                image_number, self.agg_names
-            )
-            image_row += [agg_dict[col[3]] for col in agg_columns]
-            fid_per_image.write(",".join([str(x) for x in image_row]) + "\n")
-        fid_per_image.close()
-        #
-        # Object tables
-        #
-        object_names = self.get_object_names(pipeline, image_set_list)
-        if len(object_names) == 0:
-            return
-
-        if self.separate_object_tables == OT_COMBINE:
-            data = [(cellprofiler_core.measurement.OBJECT, object_names)]
-        else:
-            data = [(object_name, [object_name]) for object_name in object_names]
-        for file_object_name, object_list in data:
-            file_name = "%s_%s.CSV" % (self.base_name(workspace), file_object_name)
-            file_name = self.make_full_filename(file_name)
-            fid = open(file_name, "w")
-            csv_writer = csv.writer(fid, lineterminator="\n")
-            for image_number in measurements.get_image_numbers():
-                max_count = 0
-                for object_name in object_list:
-                    count = measurements.get_measurement(
-                        cellprofiler_core.measurement.IMAGE,
-                        "Count_%s" % object_name,
-                        image_number,
-                    )
-                    max_count = max(max_count, int(count))
-                d = {}
-                for j in range(max_count):
-                    object_row = [image_number]
-                    if file_object_name == cellprofiler_core.measurement.OBJECT:
-                        # the object number
-                        object_row.append(j + 1)
-                    #
-                    # Write out in same order as in the column definition
-                    for object_name in object_list:
-                        for object_name_to_check, feature, coltype in columns:
-                            if object_name_to_check != object_name:
-                                continue
-                            key = (object_name, feature)
-                            if key not in d:
-                                if not measurements.has_feature(object_name, feature):
-                                    values = None
-                                else:
-                                    values = measurements.get_measurement(
-                                        object_name, feature, image_number
-                                    )
-                                d[key] = values
-                            else:
-                                values = d[key]
-                            if (
-                                values is None
-                                or len(values) <= j
-                                or numpy.isnan(values[j])
-                                or numpy.isinf(values[j])
-                            ):
-                                value = "NULL"
-                            else:
-                                value = values[j]
-                            object_row.append(value)
-                    csv_writer.writerow(object_row)
-            fid.close()
-            if self.show_window:
-                disp_columns.append((file_object_name, "Wrote %s" % file_name))
-        #
-        # Relationships table
-        #
-        # Note that the code here assumes that pipeline.get_object_relationships
-        # returns the rows in the same order every time it's called.
-        #
-        if self.wants_relationship_table:
-            file_name = "%s_%s.CSV" % (self.base_name(workspace), T_RELATIONSHIPS)
-            file_name = self.make_full_filename(file_name)
-            with open(file_name, "w") as fid:
-                csv_writer = csv.writer(fid, lineterminator="\n")
-                for (
-                    i,
-                    (module_num, relationship, object_number1, object_number2, when),
-                ) in enumerate(pipeline.get_object_relationships()):
-                    relationship_type_id = i + 1
-                    r = measurements.get_relationships(
-                        module_num, relationship, object_number1, object_number2
-                    )
-                    for i1, o1, i2, o2 in r:
-                        csv_writer.writerow((relationship_type_id, i1, o1, i2, o2))
-            if self.show_window:
-                disp_columns.append((T_RELATIONSHIPS, "Wrote %s" % file_name))
-
-        if self.show_window:
-            workspace.display_data.header = disp_header
-            workspace.display_data.columns = disp_columns
 
     @staticmethod
     def should_write(column, post_group):
@@ -4429,8 +4122,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         figure.set_subplots((1, 1))
         if workspace.pipeline.test_mode:
             figure.subplot_table(0, 0, [["Data not written to database in test mode"]])
-        elif self.db_type == DB_MYSQL_CSV:
-            figure.subplot_table(0, 0, [["CSV files will be written at the end of the run"]])
         else:
             figure.subplot_table(
                 0,
@@ -4605,13 +4296,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         elif self.db_type == DB_SQLITE:
             db_info = "db_type         = %(db_type)s\n" % (locals())
             db_info += "db_sqlite_file  = %(db_sqlite_file)s" % (locals())
-        elif self.db_type == DB_MYSQL_CSV:
-            db_info = "db_type      = mysql\n"
-            db_info += "db_port      = \n"
-            db_info += "db_host      = \n"
-            db_info += "db_name      = %(db_name)s\n" % (locals())
-            db_info += "db_user      = \n"
-            db_info += "db_passwd    = "
 
         spot_tables = "%sPer_Image" % (self.get_table_prefix())
         classification_type = (
@@ -5399,11 +5083,6 @@ CP version : %d\n""" % int(
             setting_values[OT_IDX], setting_values[OT_IDX]
         )
 
-        # Standardize input/output directory name references
-        SLOT_DIRCHOICE = 5
-        directory = setting_values[SLOT_DIRCHOICE]
-        directory = cellprofiler_core.setting.DirectoryPath.upgrade_setting(directory)
-        setting_values[SLOT_DIRCHOICE] = directory
 
         if variable_revision_number == 15:
             #
@@ -5465,9 +5144,9 @@ CP version : %d\n""" % int(
             # Added configuration of workspace file
             #
             setting_values = (
-                setting_values[:SETTING_WORKSPACE_GROUP_COUNT]
+                    setting_values[:SETTING_WORKSPACE_GROUP_COUNT_PRE_V28]
                 + ["1"]
-                + setting_values[SETTING_WORKSPACE_GROUP_COUNT:]
+                + setting_values[SETTING_WORKSPACE_GROUP_COUNT_PRE_V28:]
             )  # workspace_measurement_count
             setting_values += ["No"]  # create_workspace_file
             setting_values += [
@@ -5557,6 +5236,27 @@ CP version : %d\n""" % int(
                 + setting_values[SETTING_FIXED_SETTING_COUNT_V26:]
             )
             variable_revision_number = 27
+
+        if variable_revision_number == 27:
+            print("Upgrading setting ", setting_values[0])
+            #
+            # Removed MySQL/CSV Mode
+            #
+            del setting_values[4]
+            if setting_values[0] == DB_MYSQL_CSV:
+                setting_values[0] = DB_SQLITE
+                print("WARNING: ExportToDatabase MySQL/CSV mode has been "
+                      "deprecated and removed.\nThis module has been converted "
+                      "to produce an SQLite database.\n"
+                      "ExportToSpreadsheet should be used if you need to "
+                      "generate CSV files.")
+            variable_revision_number = 28
+
+        # Standardize input/output directory name references
+        SLOT_DIRCHOICE = 4
+        directory = setting_values[SLOT_DIRCHOICE]
+        directory = cellprofiler_core.setting.DirectoryPath.upgrade_setting(directory)
+        setting_values[SLOT_DIRCHOICE] = directory
 
         return setting_values, variable_revision_number
 

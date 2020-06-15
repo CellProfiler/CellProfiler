@@ -336,9 +336,15 @@ module.""".format(
             )
 
             workspace.display_data.statistics = []
-
+        import time
         for object_name in self.objects_list.value:
+            time0 = time.perf_counter()
             self.run_on_objects(object_name, workspace)
+            print("Original completed in: ", time.perf_counter() - time0)
+            time0 = time.perf_counter()
+            self.run_on_objects_revised(object_name, workspace)
+            print("Revised completed in: ", time.perf_counter() - time0)
+
 
     def run_on_objects(self, object_name, workspace):
         """Run, computing the area measurements for a single map of objects"""
@@ -558,6 +564,187 @@ module.""".format(
                     continue
 
                 self.record_measurement(workspace, object_name, feature, [numpy.nan])
+
+    def run_on_objects_revised(self, object_name, workspace):
+        """Run, computing the area measurements for a single map of objects"""
+        objects = workspace.get_objects(object_name)
+
+        if len(objects.shape) == 2:
+            labels = objects.segmented
+            if len(objects.indices) == 0:
+                nobjects = 0
+            else:
+                nobjects = numpy.max(objects.indices)
+            props = skimage.measure.regionprops(labels)
+
+            marea = numpy.zeros(nobjects)
+            meccentricity = numpy.zeros(nobjects)
+            mmajor_axis_length = numpy.zeros(nobjects)
+            mminor_axis_length = numpy.zeros(nobjects)
+            morientation = numpy.zeros(nobjects)
+            mcenter_x = numpy.zeros(nobjects)
+            mcenter_y = numpy.zeros(nobjects)
+            mextent = numpy.zeros(nobjects)
+            mperimeters = numpy.zeros(nobjects)
+            msolidity = numpy.zeros(nobjects)
+            euler = numpy.zeros(nobjects)
+            max_radius = numpy.zeros(nobjects)
+            median_radius = numpy.zeros(nobjects)
+            mean_radius = numpy.zeros(nobjects)
+            min_feret_diameter = numpy.zeros(nobjects)
+            max_feret_diameter = numpy.zeros(nobjects)
+            mconvex_area = numpy.zeros(nobjects)
+            mformfactor = numpy.zeros(nobjects)
+            zernike_numbers = self.get_zernike_numbers()
+            zf = {}
+            for n, m in zernike_numbers:
+                zf[(n, m)] = numpy.zeros(nobjects)
+
+            for region in props:
+                index = region.label - 1
+                marea[index] = region.area
+                meccentricity[index] = region.eccentricity
+                mmajor_axis_length[index] = region.major_axis_length
+                mminor_axis_length[index] = region.minor_axis_length
+                morientation[index] = region.orientation
+                mcenter_x[index], mcenter_y[index] = region.centroid
+                mextent[index] = region.extent
+                mperimeters[index] = region.perimeter
+                msolidity[index] = region.solidity
+                euler[index] = region.euler_number
+                mformfactor[index] = 4.0 * numpy.pi * region.area / region.perimeter ** 2
+                mconvex_area[index] = region.convex_area
+                mini_image = region.image.astype(int)
+                distances = centrosome.cpmorphology.distance_to_edge(mini_image)
+                max_radius[index] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                    scipy.ndimage.maximum(distances, mini_image)
+                )
+                mean_radius[index] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                    scipy.ndimage.mean(distances, mini_image)
+                )
+                median_radius[index] = centrosome.cpmorphology.median_of_labels(
+                    distances, mini_image, [0]
+                )
+
+            for labels, indices in objects.get_labels():
+                to_indices = indices - 1
+                #
+                # Zernike features
+                #
+                if self.calculate_zernikes.value:
+                    zf_l = centrosome.zernike.zernike(
+                        zernike_numbers, labels, indices
+                    )
+                    for (n, m), z in zip(zernike_numbers, zf_l.transpose()):
+                        zf[(n, m)][to_indices] = z
+
+            if nobjects > 0:
+                chulls, chull_counts = centrosome.cpmorphology.convex_hull_ijv(
+                    objects.ijv, objects.indices
+                )
+                #
+                # Feret diameter
+                #
+                (
+                    min_feret_diameter,
+                    max_feret_diameter,
+                ) = centrosome.cpmorphology.feret_diameter(
+                    chulls, chull_counts, objects.indices
+                )
+
+            for f, m in [
+                (F_AREA, marea),
+                (F_MAJOR_AXIS_LENGTH, mmajor_axis_length),
+                (F_MINOR_AXIS_LENGTH, mminor_axis_length),
+                (F_ECCENTRICITY, meccentricity),
+                (F_ORIENTATION, morientation),
+                (F_CENTER_X, mcenter_x),
+                (F_CENTER_Y, mcenter_y),
+                (F_CENTER_Z, numpy.ones_like(mcenter_x)),
+                (F_MAXIMUM_RADIUS, max_radius),
+                (F_MEAN_RADIUS, mean_radius),
+                (F_MEDIAN_RADIUS, median_radius),
+                (F_EXTENT, mextent),
+                (F_PERIMETER, mperimeters),
+                (F_SOLIDITY, msolidity),
+                (F_FORM_FACTOR, mformfactor),
+                (F_EULER_NUMBER, euler),
+                (F_MAXIMUM_RADIUS, max_radius),
+                (F_MEAN_RADIUS, mean_radius),
+                (F_MEDIAN_RADIUS, median_radius),
+                (F_MIN_FERET_DIAMETER, min_feret_diameter),
+                (F_MAX_FERET_DIAMETER, max_feret_diameter),
+            ] + [
+                (self.get_zernike_name((n, m)), zf[(n, m)]) for n, m in zernike_numbers
+            ]:
+                self.record_measurement(workspace, object_name, f, m)
+        else:
+            labels = objects.segmented
+
+            props = skimage.measure.regionprops(labels)
+
+            # Area
+            areas = [prop.area for prop in props]
+
+            self.record_measurement(workspace, object_name, F_VOLUME, areas)
+
+            # Extent
+            extents = [prop.extent for prop in props]
+
+            self.record_measurement(workspace, object_name, F_EXTENT, extents)
+
+            # Centers of mass
+            centers = objects.center_of_mass()
+
+            center_z, center_y, center_x = centers.transpose()
+
+            self.record_measurement(workspace, object_name, F_CENTER_X, center_x)
+
+            self.record_measurement(workspace, object_name, F_CENTER_Y, center_y)
+
+            self.record_measurement(workspace, object_name, F_CENTER_Z, center_z)
+
+            # SurfaceArea
+            surface_areas = []
+
+            for label in numpy.unique(labels):
+                if label == 0:
+                    continue
+
+                volume = numpy.zeros_like(labels, dtype="bool")
+
+                volume[labels == label] = True
+
+                verts, faces = skimage.measure.marching_cubes_classic(
+                    volume,
+                    spacing=objects.parent_image.spacing
+                    if objects.has_parent_image
+                    else (1.0,) * labels.ndim,
+                    level=0,
+                )
+
+                surface_areas += [skimage.measure.mesh_surface_area(verts, faces)]
+
+            if len(surface_areas) == 0:
+                self.record_measurement(workspace, object_name, F_SURFACE_AREA, [0])
+            else:
+                self.record_measurement(
+                    workspace, object_name, F_SURFACE_AREA, surface_areas
+                )
+
+            for feature in self.get_feature_names(workspace.pipeline):
+                if feature in [
+                    F_VOLUME,
+                    F_EXTENT,
+                    F_CENTER_X,
+                    F_CENTER_Y,
+                    F_CENTER_Z,
+                    F_SURFACE_AREA,
+                ]:
+                    continue
+
+                self.record_measurement(workspace, object_name, feature, [numpy.nan])
+
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

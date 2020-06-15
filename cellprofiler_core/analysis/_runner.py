@@ -187,7 +187,9 @@ class Runner:
         self.event_listener(evt)
 
     def post_run_display_handler(self, workspace, module):
-        event = DisplayPostRun(module.module_num, workspace.display_data)
+        event = cellprofiler_core.analysis.request.DisplayPostRun(
+            module.module_num, workspace.display_data
+        )
         self.event_listener(event)
 
     # XXX - catch and deal with exceptions in interface() and jobserver() threads

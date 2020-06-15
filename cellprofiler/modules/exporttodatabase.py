@@ -2274,7 +2274,7 @@ available:
         """Check to make sure the MySQL server is remotely accessible"""
         import wx
 
-        error = None
+        failed = False
         try:
             connection = connect_mysql(
                 self.db_host.value,
@@ -2283,6 +2283,7 @@ available:
                 self.db_name.value,
             )
         except MySQLdb.Error as error:
+            failed = True
             if error.args[0] == 1045:
                 msg = "Incorrect username or password"
             elif error.args[0] == 1049:
@@ -2293,7 +2294,7 @@ available:
                     % error.args[1]
                 )
 
-        if not error:
+        if not failed:
             wx.MessageBox("Connection to database host successful.")
         else:
             wx.MessageBox("%s. Please check your settings." % msg)

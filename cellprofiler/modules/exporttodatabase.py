@@ -4429,6 +4429,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         figure.set_subplots((1, 1))
         if workspace.pipeline.test_mode:
             figure.subplot_table(0, 0, [["Data not written to database in test mode"]])
+        elif self.db_type == DB_MYSQL_CSV:
+            figure.subplot_table(0, 0, [["CSV files will be written at the end of the run"]])
         else:
             figure.subplot_table(
                 0,

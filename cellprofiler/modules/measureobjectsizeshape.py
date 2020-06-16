@@ -575,47 +575,48 @@ module.""".format(
                 nobjects = 0
             else:
                 nobjects = numpy.max(objects.indices)
-            props = skimage.measure.regionprops(labels)
 
-            marea = numpy.zeros(nobjects)
-            meccentricity = numpy.zeros(nobjects)
-            mmajor_axis_length = numpy.zeros(nobjects)
-            mminor_axis_length = numpy.zeros(nobjects)
-            morientation = numpy.zeros(nobjects)
-            mcenter_x = numpy.zeros(nobjects)
-            mcenter_y = numpy.zeros(nobjects)
-            mextent = numpy.zeros(nobjects)
-            mperimeters = numpy.zeros(nobjects)
-            msolidity = numpy.zeros(nobjects)
-            euler = numpy.zeros(nobjects)
+            props = skimage.measure.regionprops_table(labels, properties=(
+                "label",
+                "image",
+                "area",
+                "perimeter",
+                "eccentricity",
+                "major_axis_length",
+                "minor_axis_length",
+                "orientation",
+                "centroid",
+                "extent",
+                "solidity",
+                "euler_number",
+            ))
+
+            images = props["image"]
+            marea = props["area"]
+            mperimeters = props["perimeter"]
+            meccentricity = props["eccentricity"]
+            mmajor_axis_length = props["major_axis_length"]
+            mminor_axis_length = props["minor_axis_length"]
+            morientation = props["orientation"]
+            mcenter_x = props["centroid-1"]
+            mcenter_y = props["centroid-0"]
+            mextent = props["extent"]
+            msolidity = props["solidity"]
+            euler = props["euler_number"]
+            mformfactor = 4.0 * numpy.pi * marea / mperimeters ** 2
+
             max_radius = numpy.zeros(nobjects)
             median_radius = numpy.zeros(nobjects)
             mean_radius = numpy.zeros(nobjects)
-            min_feret_diameter = numpy.zeros(nobjects)
-            max_feret_diameter = numpy.zeros(nobjects)
-            mconvex_area = numpy.zeros(nobjects)
-            mformfactor = numpy.zeros(nobjects)
+            #mconvex_area = numpy.zeros(nobjects)
             zernike_numbers = self.get_zernike_numbers()
+
             zf = {}
             for n, m in zernike_numbers:
                 zf[(n, m)] = numpy.zeros(nobjects)
 
-            for region in props:
-                index = region.label - 1
-                marea[index] = region.area
-                meccentricity[index] = region.eccentricity
-                mmajor_axis_length[index] = region.major_axis_length
-                mminor_axis_length[index] = region.minor_axis_length
-                morientation[index] = region.orientation
-                mcenter_x[index], mcenter_y[index] = region.centroid
-                mextent[index] = region.extent
-                mperimeters[index] = region.perimeter
-                msolidity[index] = region.solidity
-                euler[index] = region.euler_number
-                mformfactor[index] = 4.0 * numpy.pi * region.area / region.perimeter ** 2
-                mconvex_area[index] = region.convex_area
-                mini_image = region.image.astype(int)
-                distances = centrosome.cpmorphology.distance_to_edge(mini_image)
+            for index, mini_image in enumerate(images):
+                distances = scipy.ndimage.distance_transform_edt(mini_image)
                 max_radius[index] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
                     scipy.ndimage.maximum(distances, mini_image)
                 )
@@ -623,20 +624,18 @@ module.""".format(
                     scipy.ndimage.mean(distances, mini_image)
                 )
                 median_radius[index] = centrosome.cpmorphology.median_of_labels(
-                    distances, mini_image, [0]
+                    distances, mini_image.astype('int'), [1]
                 )
-
-            for labels, indices in objects.get_labels():
-                to_indices = indices - 1
                 #
                 # Zernike features
                 #
                 if self.calculate_zernikes.value:
                     zf_l = centrosome.zernike.zernike(
-                        zernike_numbers, labels, indices
+                        zernike_numbers, mini_image, index
                     )
                     for (n, m), z in zip(zernike_numbers, zf_l.transpose()):
-                        zf[(n, m)][to_indices] = z
+                        zf[(n, m)][index] = z
+
 
             if nobjects > 0:
                 chulls, chull_counts = centrosome.cpmorphology.convex_hull_ijv(
@@ -661,9 +660,6 @@ module.""".format(
                 (F_CENTER_X, mcenter_x),
                 (F_CENTER_Y, mcenter_y),
                 (F_CENTER_Z, numpy.ones_like(mcenter_x)),
-                (F_MAXIMUM_RADIUS, max_radius),
-                (F_MEAN_RADIUS, mean_radius),
-                (F_MEDIAN_RADIUS, median_radius),
                 (F_EXTENT, mextent),
                 (F_PERIMETER, mperimeters),
                 (F_SOLIDITY, msolidity),

@@ -179,12 +179,17 @@ F_EXTENT = "Extent"
 F_CENTER_X = "Center_X"
 F_CENTER_Y = "Center_Y"
 F_CENTER_Z = "Center_Z"
+F_MIN_X = "Minimum_X"
+F_MAX_X = "Maximum_X"
+F_MIN_Y = "Minimum_Y"
+F_MAX_Y = "Maximum_Y"
 F_EULER_NUMBER = "EulerNumber"
 F_FORM_FACTOR = "FormFactor"
 F_MAJOR_AXIS_LENGTH = "MajorAxisLength"
 F_MINOR_AXIS_LENGTH = "MinorAxisLength"
 F_ORIENTATION = "Orientation"
 F_COMPACTNESS = "Compactness"
+F_INERTIA = "InertiaTensor"
 F_MAXIMUM_RADIUS = "MaximumRadius"
 F_MEDIAN_RADIUS = "MedianRadius"
 F_MEAN_RADIUS = "MeanRadius"
@@ -582,6 +587,11 @@ module.""".format(
                 "area",
                 "perimeter",
                 "eccentricity",
+                "equivalent_diameter",
+                "inertia_tensor",
+                "bbox",
+                "moments",
+                "moments_central",
                 "major_axis_length",
                 "minor_axis_length",
                 "orientation",
@@ -592,6 +602,8 @@ module.""".format(
             ))
 
             formfactor = 4.0 * numpy.pi * props["area"] / props["perimeter"] ** 2
+            denom = [max(x, 1) for x in 4.0 * numpy.pi * props["area"]]
+            compactness = props["perimeter"] ** 2 / denom
 
             max_radius = numpy.zeros(nobjects)
             median_radius = numpy.zeros(nobjects)
@@ -648,9 +660,15 @@ module.""".format(
                 (F_CENTER_X, props["centroid-1"]),
                 (F_CENTER_Y, props["centroid-0"]),
                 (F_CENTER_Z, numpy.ones_like(props["centroid-0"])),
+                (F_MIN_X, props["bbox-1"]),
+                (F_MAX_X, props["bbox-3"]),
+                (F_MIN_Y, props["bbox-0"]),
+                (F_MAX_Y, props["bbox-2"]),
                 (F_EXTENT, props["extent"]),
                 (F_SOLIDITY, props["solidity"]),
                 (F_FORM_FACTOR, formfactor),
+                (F_COMPACTNESS, compactness),
+                #(F_INERTIA, props["inertia_tensor"]),
                 (F_EULER_NUMBER, props["euler_number"]),
                 (F_MAXIMUM_RADIUS, max_radius),
                 (F_MEAN_RADIUS, mean_radius),

@@ -687,6 +687,8 @@ module.""".format(
             max_radius = numpy.zeros(nobjects)
             median_radius = numpy.zeros(nobjects)
             mean_radius = numpy.zeros(nobjects)
+            min_feret_diameter = numpy.zeros(nobjects)
+            max_feret_diameter = numpy.zeros(nobjects)
             zernike_numbers = self.get_zernike_numbers()
 
             zf = {}

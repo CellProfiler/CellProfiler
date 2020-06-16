@@ -179,10 +179,13 @@ F_EXTENT = "Extent"
 F_CENTER_X = "Center_X"
 F_CENTER_Y = "Center_Y"
 F_CENTER_Z = "Center_Z"
-F_MIN_X = "Minimum_X"
-F_MAX_X = "Maximum_X"
-F_MIN_Y = "Minimum_Y"
-F_MAX_Y = "Maximum_Y"
+F_BBOX_AREA = "BoundingBoxArea"
+F_MIN_X = "BoundingBoxMinimum_X"
+F_MAX_X = "BoundingBoxMaximum_X"
+F_MIN_Y = "BoundingBoxMinimum_Y"
+F_MAX_Y = "BoundingBoxMaximum_Y"
+F_MIN_Z = "BoundingBoxMinimum_Z"
+F_MAX_Z = "BoundingBoxMaximum_Z"
 F_EULER_NUMBER = "EulerNumber"
 F_FORM_FACTOR = "FormFactor"
 F_MAJOR_AXIS_LENGTH = "MajorAxisLength"
@@ -195,6 +198,61 @@ F_MEDIAN_RADIUS = "MedianRadius"
 F_MEAN_RADIUS = "MeanRadius"
 F_MIN_FERET_DIAMETER = "MinFeretDiameter"
 F_MAX_FERET_DIAMETER = "MaxFeretDiameter"
+
+F_CENTRAL_MOMENT_0_0 = "CentralMoment_0_0"
+F_CENTRAL_MOMENT_0_1 = "CentralMoment_0_1"
+F_CENTRAL_MOMENT_0_2 = "CentralMoment_0_2"
+F_CENTRAL_MOMENT_0_3 = "CentralMoment_0_3"
+F_CENTRAL_MOMENT_1_0 = "CentralMoment_1_0"
+F_CENTRAL_MOMENT_1_1 = "CentralMoment_1_1"
+F_CENTRAL_MOMENT_1_2 = "CentralMoment_1_2"
+F_CENTRAL_MOMENT_1_3 = "CentralMoment_1_3"
+F_CENTRAL_MOMENT_2_0 = "CentralMoment_2_0"
+F_CENTRAL_MOMENT_2_1 = "CentralMoment_2_1"
+F_CENTRAL_MOMENT_2_2 = "CentralMoment_2_2"
+F_CENTRAL_MOMENT_2_3 = "CentralMoment_2_3"
+F_EQUIVALENT_DIAMETER = "EquivalentDiameter"
+F_HU_MOMENT_0 = "HuMoment_0"
+F_HU_MOMENT_1 = "HuMoment_1"
+F_HU_MOMENT_2 = "HuMoment_2"
+F_HU_MOMENT_3 = "HuMoment_3"
+F_HU_MOMENT_4 = "HuMoment_4"
+F_HU_MOMENT_5 = "HuMoment_5"
+F_HU_MOMENT_6 = "HuMoment_6"
+F_INERTIA_TENSOR_0_0 = "InertiaTensor_0_0"
+F_INERTIA_TENSOR_0_1 = "InertiaTensor_0_1"
+F_INERTIA_TENSOR_1_0 = "InertiaTensor_1_0"
+F_INERTIA_TENSOR_1_1 = "InertiaTensor_1_1"
+F_INERTIA_TENSOR_EIGENVALUES_0 = "InertiaTensorEigenvalues_0"
+F_INERTIA_TENSOR_EIGENVALUES_1 = "InertiaTensorEigenvalues_1"
+F_NORMALIZED_MOMENT_0_0 = "NormalizedMoment_0_0"
+F_NORMALIZED_MOMENT_0_1 = "NormalizedMoment_0_1"
+F_NORMALIZED_MOMENT_0_2 = "NormalizedMoment_0_2"
+F_NORMALIZED_MOMENT_0_3 = "NormalizedMoment_0_3"
+F_NORMALIZED_MOMENT_1_0 = "NormalizedMoment_1_0"
+F_NORMALIZED_MOMENT_1_1 = "NormalizedMoment_1_1"
+F_NORMALIZED_MOMENT_1_2 = "NormalizedMoment_1_2"
+F_NORMALIZED_MOMENT_1_3 = "NormalizedMoment_1_3"
+F_NORMALIZED_MOMENT_2_0 = "NormalizedMoment_2_0"
+F_NORMALIZED_MOMENT_2_1 = "NormalizedMoment_2_1"
+F_NORMALIZED_MOMENT_2_2 = "NormalizedMoment_2_2"
+F_NORMALIZED_MOMENT_2_3 = "NormalizedMoment_2_3"
+F_NORMALIZED_MOMENT_3_0 = "NormalizedMoment_3_0"
+F_NORMALIZED_MOMENT_3_1 = "NormalizedMoment_3_1"
+F_NORMALIZED_MOMENT_3_2 = "NormalizedMoment_3_2"
+F_NORMALIZED_MOMENT_3_3 = "NormalizedMoment_3_3"
+F_SPATIAL_MOMENT_0_0 = "SpatialMoment_0_0"
+F_SPATIAL_MOMENT_0_1 = "SpatialMoment_0_1"
+F_SPATIAL_MOMENT_0_2 = "SpatialMoment_0_2"
+F_SPATIAL_MOMENT_0_3 = "SpatialMoment_0_3"
+F_SPATIAL_MOMENT_1_0 = "SpatialMoment_1_0"
+F_SPATIAL_MOMENT_1_1 = "SpatialMoment_1_1"
+F_SPATIAL_MOMENT_1_2 = "SpatialMoment_1_2"
+F_SPATIAL_MOMENT_1_3 = "SpatialMoment_1_3"
+F_SPATIAL_MOMENT_2_0 = "SpatialMoment_2_0"
+F_SPATIAL_MOMENT_2_1 = "SpatialMoment_2_1"
+F_SPATIAL_MOMENT_2_2 = "SpatialMoment_2_2"
+F_SPATIAL_MOMENT_2_3 = "SpatialMoment_2_3"
 
 """The non-Zernike features"""
 F_STD_2D = [F_AREA, F_PERIMETER]
@@ -593,26 +651,34 @@ module.""".format(
                 nobjects = 0
             else:
                 nobjects = numpy.max(objects.indices)
-
-            props = skimage.measure.regionprops_table(labels, properties=(
+            desired_properties = [
                 "label",
                 "image",
                 "area",
                 "perimeter",
-                "eccentricity",
-                "equivalent_diameter",
-                "inertia_tensor",
                 "bbox",
-                "moments",
-                "moments_central",
+                "bbox_area",
                 "major_axis_length",
                 "minor_axis_length",
                 "orientation",
                 "centroid",
+                "equivalent_diameter",
                 "extent",
+                "eccentricity",
                 "solidity",
                 "euler_number",
-            ))
+            ]
+            if self.calculate_advanced.value:
+                desired_properties += [
+                "inertia_tensor",
+                "inertia_tensor_eigvals",
+                "moments",
+                "moments_central",
+                "moments_hu",
+                "moments_normalized",
+                ]
+
+            props = skimage.measure.regionprops_table(labels, properties=desired_properties)
 
             formfactor = 4.0 * numpy.pi * props["area"] / props["perimeter"] ** 2
             denom = [max(x, 1) for x in 4.0 * numpy.pi * props["area"]]
@@ -672,7 +738,7 @@ module.""".format(
                 (F_ORIENTATION, props["orientation"]),
                 (F_CENTER_X, props["centroid-1"]),
                 (F_CENTER_Y, props["centroid-0"]),
-                (F_CENTER_Z, numpy.ones_like(props["centroid-0"])),
+                (F_BBOX_AREA, props["bbox_area"]),
                 (F_MIN_X, props["bbox-1"]),
                 (F_MAX_X, props["bbox-3"]),
                 (F_MIN_Y, props["bbox-0"]),
@@ -687,10 +753,69 @@ module.""".format(
                 (F_MEDIAN_RADIUS, median_radius),
                 (F_MIN_FERET_DIAMETER, min_feret_diameter),
                 (F_MAX_FERET_DIAMETER, max_feret_diameter),
+                (F_EQUIVALENT_DIAMETER, props["equivalent_diameter"]),
             ]
             if self.calculate_advanced.value:
                 features_to_record += [
                     (F_COMPACTNESS, compactness),
+
+                    (F_INERTIA_TENSOR_0_0, props["inertia_tensor-0-0"]),
+                    (F_INERTIA_TENSOR_0_1, props["inertia_tensor-0-1"]),
+                    (F_INERTIA_TENSOR_1_0, props["inertia_tensor-1-0"]),
+                    (F_INERTIA_TENSOR_1_1, props["inertia_tensor-1-1"]),
+                    (F_INERTIA_TENSOR_EIGENVALUES_0, props["inertia_tensor_eigvals-0"]),
+                    (F_INERTIA_TENSOR_EIGENVALUES_1, props["inertia_tensor_eigvals-1"]),
+                    (F_SPATIAL_MOMENT_0_0, props["moments-0-0"]),
+                    (F_SPATIAL_MOMENT_0_1, props["moments-0-1"]),
+                    (F_SPATIAL_MOMENT_0_2, props["moments-0-2"]),
+                    (F_SPATIAL_MOMENT_0_3, props["moments-0-3"]),
+                    (F_SPATIAL_MOMENT_1_0, props["moments-1-0"]),
+                    (F_SPATIAL_MOMENT_1_1, props["moments-1-1"]),
+                    (F_SPATIAL_MOMENT_1_2, props["moments-1-2"]),
+                    (F_SPATIAL_MOMENT_1_3, props["moments-1-3"]),
+                    (F_SPATIAL_MOMENT_2_0, props["moments-2-0"]),
+                    (F_SPATIAL_MOMENT_2_1, props["moments-2-1"]),
+                    (F_SPATIAL_MOMENT_2_2, props["moments-2-2"]),
+                    (F_SPATIAL_MOMENT_2_3, props["moments-2-3"]),
+
+                    (F_CENTRAL_MOMENT_0_0, props["moments_central-0-0"]),
+                    (F_CENTRAL_MOMENT_0_1, props["moments_central-0-1"]),
+                    (F_CENTRAL_MOMENT_0_2, props["moments_central-0-2"]),
+                    (F_CENTRAL_MOMENT_0_3, props["moments_central-0-3"]),
+                    (F_CENTRAL_MOMENT_1_0, props["moments_central-1-0"]),
+                    (F_CENTRAL_MOMENT_1_1, props["moments_central-1-1"]),
+                    (F_CENTRAL_MOMENT_1_2, props["moments_central-1-2"]),
+                    (F_CENTRAL_MOMENT_1_3, props["moments_central-1-3"]),
+                    (F_CENTRAL_MOMENT_2_0, props["moments_central-2-0"]),
+                    (F_CENTRAL_MOMENT_2_1, props["moments_central-2-1"]),
+                    (F_CENTRAL_MOMENT_2_2, props["moments_central-2-2"]),
+                    (F_CENTRAL_MOMENT_2_3, props["moments_central-2-3"]),
+
+                    (F_HU_MOMENT_0, props["moments_hu-0"]),
+                    (F_HU_MOMENT_1, props["moments_hu-1"]),
+                    (F_HU_MOMENT_2, props["moments_hu-2"]),
+                    (F_HU_MOMENT_3, props["moments_hu-3"]),
+                    (F_HU_MOMENT_4, props["moments_hu-4"]),
+                    (F_HU_MOMENT_5, props["moments_hu-5"]),
+                    (F_HU_MOMENT_6, props["moments_hu-6"]),
+
+                    (F_NORMALIZED_MOMENT_0_0, props["moments_normalized-0-0"]),
+                    (F_NORMALIZED_MOMENT_0_1, props["moments_normalized-0-1"]),
+                    (F_NORMALIZED_MOMENT_0_2, props["moments_normalized-0-2"]),
+                    (F_NORMALIZED_MOMENT_0_3, props["moments_normalized-0-3"]),
+                    (F_NORMALIZED_MOMENT_1_0, props["moments_normalized-1-0"]),
+                    (F_NORMALIZED_MOMENT_1_1, props["moments_normalized-1-1"]),
+                    (F_NORMALIZED_MOMENT_1_2, props["moments_normalized-1-2"]),
+                    (F_NORMALIZED_MOMENT_1_3, props["moments_normalized-1-3"]),
+                    (F_NORMALIZED_MOMENT_2_0, props["moments_normalized-2-0"]),
+                    (F_NORMALIZED_MOMENT_2_1, props["moments_normalized-2-1"]),
+                    (F_NORMALIZED_MOMENT_2_2, props["moments_normalized-2-2"]),
+                    (F_NORMALIZED_MOMENT_2_3, props["moments_normalized-2-3"]),
+                    (F_NORMALIZED_MOMENT_3_0, props["moments_normalized-3-0"]),
+                    (F_NORMALIZED_MOMENT_3_1, props["moments_normalized-3-1"]),
+                    (F_NORMALIZED_MOMENT_3_2, props["moments_normalized-3-2"]),
+                    (F_NORMALIZED_MOMENT_3_3, props["moments_normalized-3-3"]),
+
                 ]
 
             if self.calculate_zernikes.value:

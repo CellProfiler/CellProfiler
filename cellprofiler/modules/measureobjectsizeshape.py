@@ -222,7 +222,7 @@ F_STANDARD = [
 
 class MeasureObjectSizeShape(cellprofiler_core.module.Module):
     module_name = "MeasureObjectSizeShape"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Measurement"
 
     def create_settings(self):
@@ -237,6 +237,19 @@ class MeasureObjectSizeShape(cellprofiler_core.module.Module):
             doc="""Select the object sets whose size and shape you want to measure.""",
         )
         self.spacer = cellprofiler_core.setting.Divider(line=True)
+
+        self.calculate_advanced = cellprofiler_core.setting.Binary(
+            text="Calculate the advanced features?",
+            value=True,
+            doc="""\
+Select *{YES}* to calculate additional statistics for object moments
+and intertia tensors. These features should not require much additional time
+to calculate, but do add many additional columns to the resulting output 
+files.""".format(
+                **{"YES": "Yes"}
+            ),
+        )
+
         self.calculate_zernikes = cellprofiler_core.setting.Binary(
             text="Calculate the Zernike features?",
             value=True,
@@ -252,12 +265,12 @@ module.""".format(
 
     def settings(self):
         """The settings as they appear in the save file"""
-        result = [self.objects_list, self.calculate_zernikes]
+        result = [self.objects_list, self.calculate_zernikes, self.calculate_advanced]
         return result
 
     def visible_settings(self):
         """The settings as they appear in the module viewer"""
-        result = [self.objects_list, self.spacer, self.calculate_zernikes]
+        result = [self.objects_list, self.spacer, self.calculate_zernikes, self.calculate_advanced]
         return result
 
     def validate_module(self, pipeline):
@@ -650,7 +663,7 @@ module.""".format(
                     chulls, chull_counts, objects.indices
                 )
 
-            for f, m in [
+            features_to_record = [
                 (F_AREA, props["area"]),
                 (F_PERIMETER, props["perimeter"]),
                 (F_MAJOR_AXIS_LENGTH, props["major_axis_length"]),
@@ -668,16 +681,24 @@ module.""".format(
                 (F_SOLIDITY, props["solidity"]),
                 (F_FORM_FACTOR, formfactor),
                 (F_COMPACTNESS, compactness),
-                #(F_INERTIA, props["inertia_tensor"]),
                 (F_EULER_NUMBER, props["euler_number"]),
                 (F_MAXIMUM_RADIUS, max_radius),
                 (F_MEAN_RADIUS, mean_radius),
                 (F_MEDIAN_RADIUS, median_radius),
                 (F_MIN_FERET_DIAMETER, min_feret_diameter),
                 (F_MAX_FERET_DIAMETER, max_feret_diameter),
-            ] + [
-                (self.get_zernike_name((n, m)), zf[(n, m)]) for n, m in zernike_numbers
-            ]:
+            ]
+            if self.calculate_advanced.value:
+                features_to_record += [
+                    (F_COMPACTNESS, compactness),
+                ]
+
+            if self.calculate_zernikes.value:
+                features_to_record += [
+                    (self.get_zernike_name((n, m)), zf[(n, m)]) for n, m in zernike_numbers
+                ]
+
+            for f, m in features_to_record:
                 self.record_measurement(workspace, object_name, f, m)
         else:
             labels = objects.segmented
@@ -837,6 +858,10 @@ module.""".format(
             objects_list = setting_values[:-1]
             setting_values = [", ".join(map(str, objects_list)), setting_values[-1]]
             variable_revision_number = 2
+        if variable_revision_number == 2:
+            # Add advanced features toggle
+            setting_values.append("Yes")
+            variable_revision_number = 3
         return setting_values, variable_revision_number
 
     def volumetric(self):

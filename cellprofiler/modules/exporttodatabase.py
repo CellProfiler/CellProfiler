@@ -54,7 +54,7 @@ a “Per\_Well” table, which aggregates object measurements across wells.
 This option will output a SQL file (regardless of whether you choose to
 write directly to the database) that can be used to create the Per\_Well
 table. **Note** that the “Per\_Well” mean/median/stdev values are only usable
-for database type MySQL (and CSV/MySQL), not SQLite.
+for database type MySQL, not SQLite.
 
 At the secure shell where you normally log in to MySQL, type the
 following, replacing the italics with references to your database and
@@ -84,7 +84,6 @@ See also
 See also **ExportToSpreadsheet**.
 """
 
-import csv
 import datetime
 import hashlib
 import logging
@@ -392,25 +391,25 @@ class ExportToDatabase(cellprofiler_core.module.Module):
 
     def create_settings(self):
         db_choices = (
-            [DB_MYSQL, DB_SQLITE]
+            [DB_SQLITE, DB_MYSQL]
             if HAS_MYSQL_DB
             else [DB_SQLITE]
         )
-        default_db = DB_MYSQL if HAS_MYSQL_DB else DB_SQLITE
         self.db_type = cellprofiler_core.setting.Choice(
             "Database type",
             db_choices,
-            default_db,
+            DB_SQLITE,
             doc="""\
 Specify the type of database you want to use:
 
--  *{DB_MYSQL}:* Writes the data directly to a MySQL database. MySQL
-   is open-source software; you may require help from your local
-   Information Technology group to set up a database server.
 -  *{DB_SQLITE}:* Writes SQLite files directly. SQLite is simpler to
    set up than MySQL and can more readily be run on your local computer
    rather than requiring a database server. More information about
    SQLite can be found `here`_.
+   
+-  *{DB_MYSQL}:* Writes the data directly to a MySQL database. MySQL
+   is open-source software; you may require help from your local
+   Information Technology group to set up a database server.
 
 |image0|  If running this module on a computing cluster, there are a few
 considerations to note:
@@ -503,10 +502,10 @@ receive an error associated with this setting.""",
                 cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
             ],
             doc="""\
-*(Used only when using a CSV or a SQLite database, and/or creating a
+*(Used only when using an SQLite database, and/or creating a
 properties or workspace file)*
 
-This setting determines where the CSV files or SQLite database are
+This setting determines where the SQLite database is
 saved if you decide to write measurements to files instead of writing
 them directly to a database. If you request a CellProfiler Analyst
 properties file or workspace file, it will also be saved to this

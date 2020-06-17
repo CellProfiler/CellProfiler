@@ -1826,8 +1826,8 @@ class Figure(wx.Frame):
         else:
             # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
-            if colormap == None:
-                colormap = self.return_cmap()
+            if colormap is None:
+                colormap = self.return_cmap(numpy.max(image))
             else:
                 colormap = colormap
 
@@ -1846,10 +1846,10 @@ class Figure(wx.Frame):
             colormap=colormap,
         )
 
-    def return_cmap(self):
+    def return_cmap(self, nindexes=None):
         # Get the colormap from the user preferences
         colormap = matplotlib.cm.get_cmap(
-            cellprofiler_core.preferences.get_default_colormap()
+            cellprofiler_core.preferences.get_default_colormap(), lut=nindexes,
         )
         # Initialize the colormap so we have access to the LUT
         colormap._init()

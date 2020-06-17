@@ -119,6 +119,7 @@ class AddModuleFrame(wx.Frame):
         )
         self.search_text.Bind(wx.EVT_TEXT, self.__on_search_modules)
         self.search_text.Bind(wx.EVT_TEXT_ENTER, self.__on_add_to_pipeline)
+        self.search_text.Bind(wx.EVT_CHAR_HOOK, self.__on_special_key)
         self.search_button.Bind(wx.EVT_BUTTON, self.__on_search_help)
         self.__get_module_files()
         self.__set_categories()
@@ -126,6 +127,7 @@ class AddModuleFrame(wx.Frame):
         self.__module_categories_list_box.Select(0)
         self.__on_category_selected(None)
         self.Fit()
+        self.search_text.SetFocus()
 
     def __on_close(self, event):
         self.Hide()
@@ -259,6 +261,26 @@ class AddModuleFrame(wx.Frame):
         else:
             self.__module_list_box.AppendItems("No matching modules")
             self.__module_list_box.Enable(False)
+
+    def __on_special_key(self, event):
+        # Capture keyboard shortcuts
+        key = event.GetKeyCode()
+        numitems = len(self.__module_list_box.Items)
+        if key == wx.WXK_ESCAPE:
+            self.Close()
+            return
+        elif numitems <= 1:
+            # No point moving selector
+            pass
+        elif key == wx.WXK_DOWN:
+            i = self.__module_list_box.GetSelection()
+            self.__module_list_box.Select(min(i + 1, numitems - 1))
+            return
+        elif key == wx.WXK_UP:
+            i = self.__module_list_box.GetSelection()
+            self.__module_list_box.Select(max(0, i - 1))
+            return
+        event.Skip()
 
     def __on_getting_started(self, event):
         import cellprofiler.gui.help.content

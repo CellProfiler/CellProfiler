@@ -695,7 +695,7 @@ class Runner:
             return
 
         try:
-            num = multiprocessing.cpu_count() if num is None else num
+            num = max(4, multiprocessing.cpu_count()//2) if num is None else num
         except NotImplementedError:
             num = 4
 

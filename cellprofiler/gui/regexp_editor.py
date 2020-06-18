@@ -40,7 +40,7 @@ RE_FILENAME_GUESSES = [
     r"^(?P<Row>[A-H]*) - (?P<Column>[0-9]*)\(fld (?P<Site>[0-9]*) wv (?P<Wavelength>.*) - (?P<Filter>.*)\)",
     # Phenix
     r"^r(?P<WellRow>\d{2})c(?P<WellColumn>\d{2})f(?P<Site>\d{2})p\d{2}-ch(?P<ChannelNumber>\d)",
-    # INCell
+    # GE InCell Analyzer 7.2
     r"^(?P<Row>[A-P])_(?P<Column>[0-9]*)_f(?P<Site>[0-9]*)_c(?P<Channel>[0-9]*)_x(?P<Wavelength>.*)_m("
     r"?P<Filter>.*)_z(?P<Slice>[0-9]*)_t(?P<Timepoint>[0-9]*)\.tif",
     # Please add more guesses below

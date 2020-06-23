@@ -1,4 +1,4 @@
-# -*- mode: python -*-
+# -*- mode: python ; coding: utf-8 -*-
 
 import os
 import os.path
@@ -26,9 +26,9 @@ datas += [
 hiddenimports = []
 
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
+hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler_core.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.utilities')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
-hiddenimports += PyInstaller.utils.hooks.collect_submodules('future')
 
 hiddenimports += [
     "scipy._lib.messagestream",
@@ -36,40 +36,36 @@ hiddenimports += [
     "sklearn.utils.sparsetools"
 ]
 
-a = Analysis(
-    [
-        'CellProfiler.py'
-    ],
-    binaries=binaries,
-    cipher=block_cipher,
-    datas=datas,
-    excludes=[],
-    hiddenimports=hiddenimports,
-    hookspath=[],
-    pathex=[
-        'CellProfiler'
-    ],
-    runtime_hooks=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False
-)
-
-pyz = PYZ(
-    a.pure,
-    a.zipped_data,
-    cipher=block_cipher
-)
-
-exe = EXE(
-    pyz,
-    a.scripts,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    console=True,
-    debug=False,
-    icon="./CellProfiler/cellprofiler/data/icons/CellProfiler.ico",
-    name="CellProfiler",
-    strip=False,
-    upx=True
-)
+a = Analysis(['CellProfiler.py'],
+             pathex=['CellProfiler'],
+             binaries=binaries,
+             datas=datas,
+             hiddenimports=hiddenimports,
+             hookspath=[],
+             runtime_hooks=[],
+             excludes=[],
+             win_no_prefer_redirects=False,
+             win_private_assemblies=False,
+             cipher=block_cipher,
+             noarchive=False)
+pyz = PYZ(a.pure, a.zipped_data,
+             cipher=block_cipher)
+exe = EXE(pyz,
+          a.scripts,
+          [],
+          exclude_binaries=True,
+          name='CellProfiler',
+          debug=False,
+          bootloader_ignore_signals=False,
+          strip=False,
+          upx=True,
+		  icon='./CellProfiler/cellprofiler/data/icons/CellProfiler.ico',
+          console=True )
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               upx_exclude=[],
+               name='CellProfiler')

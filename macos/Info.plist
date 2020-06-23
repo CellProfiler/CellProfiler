@@ -17,7 +17,7 @@
     <key>CFBundleName</key>
     <string>CellProfiler</string>
     <key>CFBundleVersion</key>
-    <string>3.0.0</string>
+    <string>4.0.0</string>
     <key>CFBundleDocumentTypes</key>
     <array>
         <dict>

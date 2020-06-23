@@ -10,20 +10,16 @@ SHELL := bash
 
 .SUFFIXES:
 
-identity = "Developer ID Application: Allen Goodman (MERWFR65Q3)"
+identity = "Apple Distribution: Allen Goodman (MERWFR65Q3)"
 
 CellProfiler:
 	git clone git@github.com:CellProfiler/CellProfiler.git $@
 
-	cd $@ && git checkout tags/v3.0.0
+	cd $@ && git checkout master
 
 .PHONY: dependencies
 dependencies: CellProfiler
-	pip2 install --upgrade cython
-	pip2 install --upgrade numpy
-	pip2 install --upgrade scipy
-
-	pip2 install --editable "CellProfiler[build, test]" --upgrade   
+	pip3 install --editable "CellProfiler[build, test]" --upgrade
 
 dist/CellProfiler.app: CellProfiler dependencies Info.plist
 	pyinstaller --noconfirm CellProfiler.spec
@@ -34,6 +30,10 @@ dist/CellProfiler.app: CellProfiler dependencies Info.plist
 
 	# xattr -lr $@
 	# xattr -cr $@
+
+.PHONY: sign
+sign:
+    codesign --force --verify --verbose --deep -s "Apple Distribution: Allen Goodman (MERWFR65Q3)" dist/CellProfiler.app
 
 CellProfiler.dmg: dist/CellProfiler.app
 	hdiutil create                  		\

@@ -56,7 +56,7 @@ Installation
 
 .. code:: sh
 
-    $ brew install python
+    $ brew install python@3.8
 
 UPX
 ~~~
@@ -71,20 +71,6 @@ Installation
 .. code:: sh
 
     $ brew install upx
-
-wxPython
-~~~~~~~~
-
-`wxPython`_ is a wrapper for the cross-platform GUI API (often referred to as 
-a “toolkit”) `wxWidgets`_ (which is written in C++) for the Python programming 
-language.
-
-Installation
-^^^^^^^^^^^^
-
-.. code:: sh
-
-    $ brew install wxpython
 
 Use
 ---

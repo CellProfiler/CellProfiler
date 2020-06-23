@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "CellProfiler"
-#define MyAppVersion "3.1.7"
+#define MyAppVersion "4.0.0rc5"
 #define MyAppPublisher "Broad Institute"
 #define MyAppURL "http://cellprofiler.org/"
 #define MyAppExeName "CellProfiler.exe"
@@ -36,8 +36,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "dist\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "C:\Program Files\Java\jdk-11.0.1\*"; DestDir: "{app}\java"; Flags: recursesubdirs
+Source: "dist\CellProfiler\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "dist\CellProfiler\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "C:\Program Files\Java\jdk-14.0.1\*"; DestDir: "{app}\java"; Flags: recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

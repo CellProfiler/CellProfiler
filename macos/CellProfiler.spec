@@ -31,6 +31,7 @@ hiddenimports += PyInstaller.utils.hooks.collect_submodules("scipy.special")
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("wx")
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.gui')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
+hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler_core.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
 
 hiddenimports += [

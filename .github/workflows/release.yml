@@ -8,14 +8,15 @@ jobs:
   macos:
     runs-on: macos-10.15
     steps:
-      - run: brew install python@3.8
-      - run: python3.8 --version
+      - run: python3 --version
+      - run: git clone https://github.com/CellProfiler/distribution.git
   ubuntu:
     runs-on: ubuntu-20.04
     steps:
-      - run: python3.8 --version
+      - run: python3 --version
+      - run: git clone https://github.com/CellProfiler/distribution.git
   windows:
     runs-on: windows-2019
     steps:
-      - run: choco install python --version=3.8.2
-      - run: python3.8 --version
+      - run: python3 --version
+      - run: git clone https://github.com/CellProfiler/distribution.git

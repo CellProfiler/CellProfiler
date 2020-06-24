@@ -20,4 +20,5 @@ jobs:
       - run: python --version
       - run: git clone https://github.com/CellProfiler/distribution.git
       - if: ${{ matrix.os == 'macos-10.15' }}
-        run: cd distribution && make
+        run: make
+        working-directory: ./distribution/macos

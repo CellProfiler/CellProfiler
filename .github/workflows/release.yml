@@ -18,6 +18,9 @@ jobs:
           architecture: x64
           python-version: ${{ matrix.python-version }}
       - run: python --version
+      - run: git clone https://github.com/CellProfiler/pyinstaller.git
+      - run: pip install --editable .
+        working-directory: pyinstaller
       - run: git clone https://github.com/CellProfiler/distribution.git
       - if: ${{ matrix.os == 'macos-10.15' }}
         run: make

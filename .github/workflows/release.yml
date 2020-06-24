@@ -1,0 +1,21 @@
+name: release
+on:
+  push:
+    branches: [ master ]
+#  release:
+#    types: [created]
+jobs:
+  macos:
+    runs-on: macos-10.15
+    steps:
+      - run: brew install python@3.8
+      - run: python3.8 --version
+  ubuntu:
+    runs-on: ubuntu-20.04
+    steps:
+      - run: python3.8 --version
+  windows:
+    runs-on: windows-2019
+    steps:
+      - run: choco install python --version=3.8.2
+      - run: python3.8 --version

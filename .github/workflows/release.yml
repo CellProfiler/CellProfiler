@@ -40,12 +40,13 @@ jobs:
         run: echo
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
-          echo "::set-env name=JAVA_HOME::C:\hostedtoolcache\windows\jdk\14.0.1\x64"
           echo %JAVA_HOME%
           #java -XshowSettings:properties -version
           #echo "Installing dependencies"
           pip install mysqlclient
           pip install -e .
+        env:
+          JAVA_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
           echo "Freezing CellProfiler"

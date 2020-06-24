@@ -33,8 +33,11 @@ jobs:
         run: echo
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
-          echo "trying the things on Windows"
+          echo "Installing dependencies"
           pip install mysqlclient
+          python setup.py
+      - if: ${{ matrix.os == 'windows-2019' }}
+        run: |
+          echo "Freezing CellProfiler"
           pyinstaller cellprofiler.spec
-          echo "imma done makin the program"
         working-directory: ./distribution/windows

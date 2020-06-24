@@ -34,8 +34,8 @@ jobs:
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
         if: ${{ matrix.os == 'macos-10.15' }}
-        run: |
-          pip install --editable .[build,test]
+        run: make
+        working-directory: ./distribution/macos
 #      - if: ${{ matrix.os == 'ubuntu-20.04' }}
 #        run: echo
 #      - if: ${{ matrix.os == 'windows-2019' }}

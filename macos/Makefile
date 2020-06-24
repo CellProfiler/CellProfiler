@@ -11,7 +11,7 @@ SHELL := bash
 .SUFFIXES:
 
 CellProfiler:
-	git clone git@github.com:CellProfiler/CellProfiler.git $@
+	git clone https://github.com/CellProfiler/CellProfiler.git
 
 	cd $@ && git checkout master
 

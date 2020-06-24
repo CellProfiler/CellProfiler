@@ -24,6 +24,8 @@ jobs:
       - run: git clone https://github.com/CellProfiler/distribution.git
       - run: pip install numpy
       - if: ${{ matrix.os == 'macos-10.15' }}
+        run: brew install mysql
+      - if: ${{ matrix.os == 'macos-10.15' }}
         run: make
         working-directory: ./distribution/macos
       - if: ${{ matrix.os == 'ubuntu-20.04' }}

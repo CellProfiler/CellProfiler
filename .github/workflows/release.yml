@@ -35,7 +35,7 @@ jobs:
         run: |
           echo "Installing dependencies"
           pip install mysqlclient
-          python setup.py
+          pip install -e .
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
           echo "Freezing CellProfiler"

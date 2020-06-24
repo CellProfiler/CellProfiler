@@ -5,18 +5,17 @@ on:
 #  release:
 #    types: [created]
 jobs:
-  macos:
-    runs-on: macos-10.15
+  release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: ['macos-10.15', 'ubuntu-20.04', 'windows-2019']
+        python-version: [ '3.8' ]
     steps:
-      - run: python3 --version
-      - run: git clone https://github.com/CellProfiler/distribution.git
-  ubuntu:
-    runs-on: ubuntu-20.04
-    steps:
-      - run: python3 --version
-      - run: git clone https://github.com/CellProfiler/distribution.git
-  windows:
-    runs-on: windows-2019
-    steps:
-      - run: python3 --version
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          architecture: x64
+          python-version: ${{ matrix.python-version }}
+      - run: python --version
       - run: git clone https://github.com/CellProfiler/distribution.git

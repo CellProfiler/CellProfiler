@@ -18,6 +18,7 @@ jobs:
           architecture: x64
           python-version: ${{ matrix.python-version }}
       - run: python --version
+      - run: pip install --upgrade pip setuptools wheel
       - run: git clone https://github.com/CellProfiler/pyinstaller.git
       - run: pip install --editable .
         working-directory: pyinstaller

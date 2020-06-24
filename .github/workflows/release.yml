@@ -32,5 +32,9 @@ jobs:
       - if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: echo
       - if: ${{ matrix.os == 'windows-2019' }}
-        run: cls
+        run: |
+          echo "trying the things on Windows"
+          pip install mysqlclient
+          pyinstaller cellprofiler.spec
+          echo "imma done makin the program"
         working-directory: ./distribution/windows

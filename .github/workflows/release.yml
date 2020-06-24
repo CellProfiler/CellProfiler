@@ -17,6 +17,11 @@ jobs:
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14.0.1' # The JDK version to make available on the path.
+          java-package: jdk
+          architecture: x64
       - run: python --version
       - run: pip install --upgrade pip setuptools wheel
       - run: git clone https://github.com/CellProfiler/pyinstaller.git

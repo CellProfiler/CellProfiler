@@ -34,21 +34,21 @@ jobs:
       - env:
           LDFLAGS: -L/usr/local/opt/mysql-client/lib
         if: ${{ matrix.os == 'macos-10.15' }}
-        run: make
-        working-directory: ./distribution/macos
-      - if: ${{ matrix.os == 'ubuntu-20.04' }}
-        run: echo
-      - if: ${{ matrix.os == 'windows-2019' }}
         run: |
-          echo %JAVA_HOME%
-          #java -XshowSettings:properties -version
-          #echo "Installing dependencies"
-          pip install mysqlclient
-          pip install -e .
-        env:
-          JAVA_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
-      - if: ${{ matrix.os == 'windows-2019' }}
-        run: |
-          echo "Freezing CellProfiler"
-          pyinstaller cellprofiler.spec
-        working-directory: ./distribution/windows
+          pip install --editable .[build,test]
+#      - if: ${{ matrix.os == 'ubuntu-20.04' }}
+#        run: echo
+#      - if: ${{ matrix.os == 'windows-2019' }}
+#        run: |
+#          echo %JAVA_HOME%
+#          #java -XshowSettings:properties -version
+#          #echo "Installing dependencies"
+#          pip install mysqlclient
+#          pip install -e .
+#        env:
+#          JAVA_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
+#      - if: ${{ matrix.os == 'windows-2019' }}
+#        run: |
+#          echo "Freezing CellProfiler"
+#          pyinstaller cellprofiler.spec
+#        working-directory: ./distribution/windows

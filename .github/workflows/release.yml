@@ -1,7 +1,7 @@
 name: release
 on:
   push:
-    branches: [ master ]
+    branches: [ features/release-actions ]
 #  release:
 #    types: [created]
 jobs:

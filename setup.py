@@ -63,7 +63,7 @@ setuptools.setup(
         "joblib>=0.13",
         "mahotas>=1.4",
         "matplotlib==3.1.3",
-        "mysqlclient==1.4.5",
+        "mysqlclient==1.4.6",
         "numpy>=1.18.2",
         "pillow==7.0.0",
         "prokaryote==2.4.1",

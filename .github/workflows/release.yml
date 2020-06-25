@@ -42,7 +42,7 @@ jobs:
         run: |
           echo "Installing dependencies"
           pip install cython
-          #pip install mysqlclient==1.4.6
+          pip install mysqlclient==1.4.6
           pip install -e .
         env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64

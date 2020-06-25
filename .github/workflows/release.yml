@@ -47,7 +47,4 @@ jobs:
         env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
       - if: ${{ matrix.os == 'windows-2019' }}
-        run: |
-          echo "Freezing CellProfiler"
-          pyinstaller cellprofiler.spec
-        working-directory: ./distribution/windows
+        run: pyinstaller distribution/windows/cellprofiler.spec

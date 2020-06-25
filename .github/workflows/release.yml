@@ -41,8 +41,8 @@ jobs:
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
           echo %JAVA_HOME%
-          #java -XshowSettings:properties -version
-          #echo "Installing dependencies"
+          echo $JAVA_HOME
+          echo "Installing dependencies"
           pip install mysqlclient
           pip install -e .
         env:

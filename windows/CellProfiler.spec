@@ -19,8 +19,8 @@ datas += PyInstaller.utils.hooks.collect_data_files("prokaryote")
 datas += PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
 
 datas += [
-    ("../../CellProfiler/cellprofiler/data/images/*", "cellprofiler/data/images"),
-    ("../../CellProfiler/cellprofiler/data/icons/*", "cellprofiler/data/icons")
+    ("../../cellprofiler/data/images/*", "cellprofiler/data/images"),
+    ("../../cellprofiler/data/icons/*", "cellprofiler/data/icons")
 ]
 
 hiddenimports = []
@@ -59,7 +59,7 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-		  icon='../../CellProfiler/cellprofiler/data/icons/CellProfiler.ico',
+		  icon='../../cellprofiler/data/icons/CellProfiler.ico',
           console=True )
 coll = COLLECT(exe,
                a.binaries,

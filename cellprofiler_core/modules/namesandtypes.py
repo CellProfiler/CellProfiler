@@ -268,7 +268,7 @@ You can specify how these images should be treated:
    immediately without needing to insert an **Identify** module to
    extract them first. See **IdentifyPrimaryObjects** for more details.
    This option can load objects created by using the **ConvertObjectsToImage**
-   module followed by the **SaveImages** module. These objects can take two
+   module followed by the **SaveImages** module. Loaded objects can take two
    forms, with different considerations for each:
 
    -  *Non-overlapping* objects are stored as a label matrix. This
@@ -276,7 +276,8 @@ You can specify how these images should be treated:
    -  *Overlapping objects* are stored in a multi-frame TIF, each frame
       of which consists of a grayscale label matrix. The frames are
       constructed so that objects that overlap are placed in different
-      frames.
+      frames. CellProfiler currently does not support saving of overlapping
+      objects, so these can only be used within the pipeline.
 """.format(
     **{
         "LOAD_AS_COLOR_IMAGE": LOAD_AS_COLOR_IMAGE,

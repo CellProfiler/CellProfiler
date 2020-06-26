@@ -12,8 +12,7 @@ training and labels the worms in the image, untangling them and
 associating all of a worm’s pieces together. The results of untangling
 the input image will be an object set that can be used with downstream
 measurement modules. If using the *overlapping* style of objects, these
-can be saved as images using **SaveImages** to create a multi-page TIF
-file by specifying “Objects” as the type of image to save.
+must be used within the pipeline as they cannot be saved.
 
 |
 

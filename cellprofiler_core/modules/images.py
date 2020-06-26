@@ -253,7 +253,7 @@ pass the current filter.
         )
 
     def help_settings(self):
-        return [self.filter, self.update_button]
+        return [self.filter_choice, self.filter, self.update_button]
 
     @staticmethod
     def modpath_to_url(modpath):

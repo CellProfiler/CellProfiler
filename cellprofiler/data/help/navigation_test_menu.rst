@@ -68,6 +68,7 @@ From the *Test* menu, you can choose additional options:
    code will be reflected immediately.
 -  *Break into debugger (enabled only if running from source code):*
    This option will allow you to open a debugger in the terminal window.
+-  *Pipeline Testing Help:* Displays help for the test menu.
 
 Note that if movies are being loaded, the individual movie is defined as
 a group automatically. Selecting *Choose Image Group* will allow you to

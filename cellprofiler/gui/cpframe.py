@@ -128,6 +128,7 @@ ID_DEBUG_RELOAD = wx.NewId()
 ID_DEBUG_PDB = wx.NewId()
 ID_DEBUG_RUN_FROM_THIS_MODULE = wx.NewId()
 ID_DEBUG_STEP_FROM_THIS_MODULE = wx.NewId()
+ID_DEBUG_HELP = wx.NewId()
 
 # ~*~
 ID_SAMPLE_INIT = wx.NewId()
@@ -793,6 +794,7 @@ class CPFrame(wx.Frame):
             #
             if os.environ.get("USERNAME", "").lower() == "leek":
                 self.__menu_debug.Append(ID_FILE_WIDGET_INSPECTOR, "Widget inspector")
+        self.__menu_debug.Append(ID_DEBUG_HELP, "Pipeline Testing Help")
         self.__menu_debug.Enable(ID_DEBUG_STEP, False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET, False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)
@@ -875,6 +877,7 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.__on_preferences, id=ID_OPTIONS_PREFERENCES)
         self.Bind(wx.EVT_MENU, self.__on_close_all, id=ID_WINDOW_CLOSE_ALL)
         self.Bind(wx.EVT_MENU, self.__debug_pdb, id=ID_DEBUG_PDB)
+        self.Bind(wx.EVT_MENU, self.__on_debug_help, id=ID_DEBUG_HELP)
 
         accelerator_table = wx.AcceleratorTable(
             [
@@ -1048,6 +1051,18 @@ class CPFrame(wx.Frame):
             cellprofiler.gui.html.utils.rst_to_html_fragment(HELP_ON_FILE_LIST),
         )
         dlg.Show()
+
+    def __on_debug_help(self, event):
+        import cellprofiler.gui.htmldialog
+        contents = cellprofiler.gui.help.content.read_content(
+                "navigation_test_menu.rst"
+            )
+        help_dialog = cellprofiler.gui.htmldialog.HTMLDialog(
+            self,
+            "Test Mode Help",
+            cellprofiler.gui.html.utils.rst_to_html_fragment(contents),
+        )
+        help_dialog.Show()
 
     @staticmethod
     def about(event):

@@ -669,7 +669,7 @@ class CPFrame(wx.Frame):
 
         self.recent_files = wx.Menu()
         self.recent_pipeline_files = wx.Menu()
-        self.__menu_file.Append(ID_FILE_EXIT, "E&xit\tctrl+Q", "Quit the application")
+        self.__menu_file.Append(ID_FILE_EXIT, "Q&uit\tctrl+Q", "Quit the application")
 
         self.menu_edit = wx.Menu()
         self.menu_edit.Append(wx.ID_UNDO, helpString="Undo last action")

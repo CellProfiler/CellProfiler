@@ -544,7 +544,7 @@ previously discarded objects.""".format(
                     else:
                         extended = scipy.signal.fftconvolve(extendme, strel_touching, mode='same') > 0.5
                 else:
-                    if distance <= 3:
+                    if distance <= 5:
                         extended = scind.binary_dilation((npatch != 0), strel_touching)
                     else:
                         extended = scipy.signal.fftconvolve((npatch != 0), strel_touching, mode='same') > 0.5

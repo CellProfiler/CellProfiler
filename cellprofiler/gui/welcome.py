@@ -438,7 +438,7 @@ WELCOME_MAIN = """\
                         <td align="center" width="100">
                             <b><font size="+1">Q&A Forum</font></b><br>
                             <br>
-                            <a href="http://forum.cellprofiler.org/"><img src=
+                            <a href="https://forum.image.sc/tags/cellprofiler"><img src=
                             "memory:welcomescreen_forum.png"></a><br>
                             <br>
                             Post a question online

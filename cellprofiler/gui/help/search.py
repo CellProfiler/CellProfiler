@@ -60,9 +60,6 @@ MENU_HELP = {
     "Using The Display Window Menu Bar": cellprofiler.gui.help.content.read_content(
         "display_menu_bar.rst"
     ),
-    "Using the Parameter Sampling Menu": cellprofiler.gui.help.content.read_content(
-        "navigation_parameter_sampling_menu.rst"
-    ),
     "Plate Viewer": cellprofiler.gui.help.content.read_content(
         "output_plateviewer.rst"
     ),

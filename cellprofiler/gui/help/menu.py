@@ -172,13 +172,6 @@ class Menu(cellprofiler.gui.menu.Menu):
             ),
         )
 
-        navigation_menu.append(
-            "Using the Parameter Sampling Menu",
-            contents=cellprofiler.gui.help.content.read_content(
-                "navigation_parameter_sampling_menu.rst"
-            ),
-        )
-
         return navigation_menu
 
     @staticmethod

@@ -48,8 +48,8 @@ of your choice. The additional controls allow you to do the following:
 
 From the *Test* menu, you can choose additional options:
 
--  *Exit Test Mode:* Exit *Test* mode. Loading a new pipeline or
-   adding/subtracting modules will also automatically exit test mode.
+-  *Start/Exit Test Mode:* Start or Exit *Test* mode. Loading a new pipeline or
+   subtracting modules will also automatically exit test mode.
 -  *Step to Next Module:* Execute the next module (as indicated by being
    underlined)
 -  *Next Image Set:* Step to the next image set in the current image

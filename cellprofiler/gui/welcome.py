@@ -3,9 +3,11 @@
 import glob
 import os.path
 
+import jinja2
 import pkg_resources
 import six.moves.urllib.parse
 import wx
+import wx.html2
 
 import cellprofiler
 import cellprofiler.gui.help.content
@@ -23,9 +25,7 @@ TEST_MODE_REF = six.moves.urllib.parse.quote("Using test mode")
 SELECTING_IMAGES_REF = six.moves.urllib.parse.quote("Selecting images")
 WELCOME_MAIN_REF = six.moves.urllib.parse.quote("Welcome")
 
-GO_BACK = """<p>Go <a href=help://{}>back</a> to the welcome screen.</p>""".format(
-    WELCOME_MAIN_REF
-)
+GO_BACK = """<p>Go <a href=help:welcome>back</a> to the welcome screen.</p>"""
 
 CONFIGURE_IMAGES_HELP = """\
 <!DOCTYPE html>
@@ -324,6 +324,46 @@ SELECTING_IMAGES_HELP = """\
 )
 
 WELCOME_MAIN = """\
+<body style = "font-family: sans-serif;">
+<p style="text-align: center;"><strong><span style="font-size: large;">Welcome to CellProfiler!</span></strong></p>
+<p>CellProfiler is automated image analysis software to measure biological phenotypes in images.</p>
+<table style="margin: auto; width: 100%; height: 300px;" border="3" cellspacing="5" cellpadding="3">
+<tbody>
+<tr style="height: 50%; vertical-align: middle;">
+<td style="width: 25%; border-width: 3; border-color: blue;" align="center"><strong><span style="font-size: small;">Example</span></strong><br /> <br /> <a href="loadexample:ExampleFly"><img src="data\images\welcomescreen_tutorials.png" /></a></td>
+<td style="width: 25%;" align="center"><strong><span style="font-size: small;">Tutorials</span></strong><br /> <br /> <a href="http://cellprofiler.org/tutorials.html"><img src="file:C:\\Program Files\\CellProfiler4\\cellprofiler\\data\\images\\welcomescreen_tutorials.png" /></a></td>
+<td style="width: 25%;" align="center"><strong><span style="font-size: small;">Tutorials</span></strong><br /> <br /> <a href="http://cellprofiler.org/tutorials.html"><img src="memory:welcomescreen_tutorials.png" /></a></td>
+<td style="width: 25%;" align="center"><strong><span style="font-size: small;">Q&amp;A Forum</span></strong><br /> <br /> <a href="http://forum.cellprofiler.org/"><img src="memory:welcomescreen_forum.png" /></a></td>
+</tr>
+<tr style="height: 50%; vertical-align: middle;">
+<td style="width: 25%;" align="center"><strong><span style="font-size: small;">Guided Tour<br /> <br /> <a href="http://cellprofiler.org/tutorials.html"><img src="memory:welcomescreen_tutorials.png" /></a></span></strong></td>
+<td style="width: 25%;" align="center">
+<strong><span style="font-size: small;">Built-In Help<br /> <br /> <a href="help://{IN_APP_HELP_REF}"><img src="file:welcome_screen_help.png" /></a></span></strong>
+</td>
+<td style="width: 25%;" align="center"><strong><span style="font-size: small;">Manual<br /> <br /> <a href="{MANUAL_URL}"> <img src="memory:welcomescreen_manual.png" /></a></span></strong></td>
+<td style="width: 25%;" align="center">
+<p><button onclick="location.href='pref:no_display'" type="button"> Don't show<br />this again</button></p>
+</td>
+</tr>
+</tbody>
+</table>
+<p style="text-align: center;">This page can be accessed from <em>Help &gt; Show Welcome Screen</em> at any time.</p>
+</body>
+""".format(
+    **{
+        "CONFIGURE_IMAGES_REF": CONFIGURE_IMAGES_REF,
+        "EXPORTING_RESULTS_REF": EXPORTING_RESULTS_REF,
+        "IDENTIFY_FEATUREES_REF": IDENTIFY_FEATUREES_REF,
+        "IN_APP_HELP_REF": IN_APP_HELP_REF,
+        "MAKING_MEASUREMENTS_REF": MAKING_MEASUREMENTS_REF,
+        "MANUAL_URL": cellprofiler.gui.help.content.MANUAL_URL,
+        "RUNNING_YOUR_PIPELINE_REF": RUNNING_YOUR_PIPELINE_REF,
+        "SELECTING_IMAGES_REF": SELECTING_IMAGES_REF,
+        "TEST_MODE_REF": TEST_MODE_REF,
+    }
+)
+
+WELCOME_MAIN_OLD = """\
 <!DOCTYPE html>
 <html>
 <head>
@@ -482,20 +522,122 @@ class Welcome(wx.Frame):
         self.SetIcon(cellprofiler.gui.get_cp_icon())
 
         self.Bind(wx.EVT_CLOSE, self.__on_close)
+        self.content = wx.html2.WebView.New(self)
+        self.content.EnableContextMenu(False)
+        self.__display_welcome()
 
-        self.content = Content(self)
-
-        self.content.SetPage(WELCOME_MAIN)
+        self.content.Bind(wx.html2.EVT_WEBVIEW_NAVIGATING, self._on_navigate)
 
         self.GetSizer().Add(self.content, 1, wx.EXPAND)
 
         self.Layout()
+
+        self.href_to_help = {
+            CONFIGURE_IMAGES_REF: CONFIGURE_IMAGES_HELP,
+            EXPORTING_RESULTS_REF: EXPORTING_RESULTS_HELP,
+            IDENTIFY_FEATUREES_REF: IDENTIFY_FEATUREES_HELP,
+            "inapphelp": "html/in_app_help.html",
+            MAKING_MEASUREMENTS_REF: MAKING_MEASUREMENTS_HELP,
+            RUNNING_YOUR_PIPELINE_REF: RUNNING_YOUR_PIPELINE_HELP,
+            TEST_MODE_REF: TEST_MODE_HELP,
+            SELECTING_IMAGES_REF: SELECTING_IMAGES_HELP,
+            "welcome": "html/welcome.html",
+        }
+
+    def __display_welcome(self):
+        with open(os.path.join(os.path.dirname(__file__), "html/welcome.html")) as fp:
+            template = jinja2.Template(fp.read())
+            self.content.SetPage(html=template.render(
+                MANUAL_URL=cellprofiler.gui.help.content.MANUAL_URL,
+                WELCOME_MANUAL=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_manual.png")),
+                WELCOME_FORUM=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_forum.png")),
+                WELCOME_PIPELINE=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_pipeline.png")),
+                WELCOME_TUTORIALS=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_tutorial.png")),
+                WELCOME_EXAMPLES=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_examples.png")),
+                WELCOME_TOUR=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_new.png")),
+                WELCOME_HELP=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_help.png")),
+            ),
+                                 baseUrl="welcome")
 
     @staticmethod
     def __on_close(event):
         event.EventObject.Hide()
 
         event.Veto()
+
+
+    def _on_navigate(self, event):
+        href = event.URL
+        print("Intercepted ", href)
+        if href.startswith("help:"):
+            self.__display_help(href[5:])
+        elif href.startswith("loadexample:"):
+            self.__load_example_pipeline(href[12:])
+        elif href.startswith("pref:"):
+            self.__set_startup_blurb()
+        event.Veto()
+
+    def __display_help(self, href):
+        if href == "welcome":
+            self.__display_welcome()
+            return
+        html_path = self.href_to_help[href]
+        with open(os.path.join(os.path.dirname(__file__), html_path)) as fp:
+            template = jinja2.Template(fp.read())
+            self.content.SetPage(html=template.render(
+                GO_BACK=GO_BACK,
+                MODULE_HELP_BUTTON=os.path.abspath(cellprofiler.gui.help.content.MODULE_HELP_BUTTON),
+            ), baseUrl="help")
+
+        #self.content.SetPage(html_str)
+
+    @staticmethod
+    def __load_example_pipeline(example_name):
+        example_dir = pkg_resources.resource_filename(
+            "cellprofiler", os.path.join("data", "examples", example_name)
+        )
+
+        pipeline_pathname = os.path.join(
+            example_dir, "{:s}.cppipe".format(example_name)
+        )
+
+        images_dir = os.path.join(example_dir, "images")
+
+        try:
+
+            def load(pathname=pipeline_pathname):
+                pipeline = wx.GetApp().frame.pipeline
+                pipeline.load(pathname)
+                pipeline.add_pathnames_to_file_list(
+                    glob.glob(os.path.join(images_dir, "*"))
+                )
+
+                wx.MessageBox(
+                    'Now that you have loaded an example pipeline, press the "Analyze images" button to access and'
+                    " process a small image set from the CellProfiler website so you can see how CellProfiler works.",
+                    "",
+                    wx.ICON_INFORMATION,
+                )
+
+            wx.CallAfter(load)
+        except:
+            wx.MessageBox(
+                "CellProfiler was unable to load {}".format(pipeline_pathname),
+                "Error loading pipeline",
+                style=wx.OK | wx.ICON_ERROR,
+            )
+
+    def __set_startup_blurb(self):
+        cellprofiler_core.preferences.set_startup_blurb(False)
+
+        parent = self.GetParent()
+
+        while parent is not None:
+            if parent.Name == "WelcomeScreenFrame":
+                parent.Close()
+                break
+            parent = parent.Parent
+
 
 
 class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):

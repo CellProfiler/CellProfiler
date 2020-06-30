@@ -453,6 +453,8 @@ def test_enhance_neurites_tubeness_positive(image, module, workspace):
 
     module.smoothing.value = 1.0
 
+    module.wants_rescale.value = True
+
     module.run(workspace)
 
     output = workspace.image_set.get_image("output")
@@ -486,6 +488,8 @@ def test_enhance_neurites_tubeness_negative(image, module, workspace):
     module.neurite_choice.value = "Tubeness"
 
     module.smoothing.value = 1.0
+
+    module.wants_rescale.value = True
 
     module.run(workspace)
 
@@ -522,6 +526,8 @@ def test_enhance_neurites_tubeness_positive_volume(image, module, workspace):
     module.neurite_choice.value = "Tubeness"
 
     module.smoothing.value = 1.0
+
+    module.wants_rescale.value = True
 
     module.run(workspace)
 
@@ -561,6 +567,8 @@ def test_enhance_neurites_tubeness_negative_volume(image, module, workspace):
     module.neurite_choice.value = "Tubeness"
 
     module.smoothing.value = 1.0
+
+    module.wants_rescale.value = True
 
     module.run(workspace)
 

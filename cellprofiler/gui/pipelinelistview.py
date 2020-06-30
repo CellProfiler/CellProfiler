@@ -920,7 +920,8 @@ class PipelineListView(object):
         module = pipeline.modules(False)[event.module_num - 1]
         self.__populate_row(module)
         self.__adjust_rows()
-        self.select_one_module(event.module_num)
+        if len(self.get_selected_modules()) <= 1:
+            self.select_one_module(event.module_num)
         self.request_validation(module)
         self.notify_has_file_list(self.__has_file_list)
 

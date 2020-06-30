@@ -40,6 +40,6 @@ repository!
 
 .. _repository: http://github.com/CellProfiler/CellProfiler-plugins
 .. _issues: http://github.com/CellProfiler/CellProfiler-plugins/issues
-.. _forum: http://forum.cellprofiler.org
+.. _forum: https://forum.image.sc/tags/cellprofiler
 .. _wiki: https://github.com/CellProfiler/CellProfiler/wiki
 .. _recommendations: http://github.com/CellProfiler/CellProfiler/wiki/Orientation-to-CellProfiler-code

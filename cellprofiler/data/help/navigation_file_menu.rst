@@ -36,7 +36,7 @@ and performing an analysis run.
 -  **Analyze Images:** Executes the current pipeline using the current
    pipeline and Default Input and Output folder settings.
 -  **Stop Analysis:** Stop the current analysis run.
--  **Open a New CP Window:** You can run multiple instances of
+-  **Open a New CP Window:** (Mac only) You can run multiple instances of
    CellProfiler simultaneously; this is how you launch a new instance.
 -  **Preferences…:** Displays the Preferences window, where you can
    change many options in CellProfiler.

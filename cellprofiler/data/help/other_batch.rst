@@ -150,9 +150,8 @@ CellProfiler, type``cellprofiler --help``.
 For additional help on batch processing, refer to our `wiki`_ if
 installing CellProfiler on a Unix system, our
 `wiki <http://github.com/CellProfiler/CellProfiler/wiki/Adapting-CellProfiler-to-a-LIMS-environment>`__ on adapting CellProfiler to a LIMS
-environment, or post your questions on the CellProfiler `CPCluster
-forum`_.
+environment, or post your questions on the CellProfiler `forum`_.
 
 .. _wiki: http://github.com/CellProfiler/CellProfiler/wiki/Source-installation-%28Linux%29
-.. _CPCluster forum: http://forum.cellprofiler.org/c/cellprofiler/cpcluster-help
-.. _blog post: http://blog.cellprofiler.org/2016/12/28/making-it-easier-to-run-image-analysis-in-the-cloud-announcing-distributed-cellprofiler/
+.. _forum: https://forum.image.sc/tags/cellprofiler
+.. _blog post: https://carpenterlab.broadinstitute.org/blog/making-it-easier-to-run-image-analysis-in-the-cloud-announcing-distributed-cellprofiler

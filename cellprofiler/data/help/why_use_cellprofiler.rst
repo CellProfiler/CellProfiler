@@ -1,4 +1,5 @@
 :orphan:
+
 Why Use CellProfiler?
 =====================
 
@@ -61,16 +62,21 @@ References
 
 For a full list of references, visit our `citation`_ page.
 
--  Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O,
-   Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM
-   (2006) “CellProfiler: image analysis software for identifying and
-   quantifying cell phenotypes” *Genome Biology* 7:R100 (`link`_)
+-  McQuin C, Goodman A, Chernyshev V, Kamentsky L, Cimini BA, Karhohs KW,
+   Doan M, Ding L, Rafelski SM, Thirstrup D, Wiegraebe W. (2018)
+   "CellProfiler 3.0: Next-generation image processing for biology."
+   *PLoS biology* 16(7), e2005970
+   (`link <https://doi.org/10.1371/journal.pbio.2005970>`__)
 -  Kamentsky L, Jones TR, Fraser A, Bray MA, Logan D, Madden K, Ljosa V,
    Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) “Improved
    structure, function, and compatibility for CellProfiler: modular
    high-throughput image analysis software” *Bioinformatics*
    27(8):1179-1180
    (`link <https://doi.org/10.1093/bioinformatics/btr095>`__)
+-  Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O,
+   Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM
+   (2006) “CellProfiler: image analysis software for identifying and
+   quantifying cell phenotypes” *Genome Biology* 7:R100 (`link`_)
 -  Lamprecht MR, Sabatini DM, Carpenter AE (2007) “CellProfiler: free,
    versatile software for automated biological image analysis”
    *Biotechniques* 42(1):71-75.

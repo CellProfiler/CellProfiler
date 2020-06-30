@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<body style = "font-family: sans-serif; font-size: small;">
+<h2 class="title">Identifying features</h2>
+
+    <p>A hallmark of most CellProfiler pipelines is the identification of
+    cellular features in your images, whether they are nuclei, organelles or
+    something else.</p>
+    <table cellpadding="0" width="75%">
+        <tr>
+            <td valign="top" width="75%">A number of modules are dedicated to
+            the purpose of detecting these features; the
+            <b>IdentifyPrimaryObjects</b> module is the one that is most
+            commonly used. The result of this module is a set of labeled
+            <i>objects</i>; we define an object as a collection of connected
+            pixels in an image which share the same label. The challenge here
+            is to find a combination of settings that best identify the objects
+            from the image, a task called <i>segmentation</i>. The typical
+            expectation is to end up with one object for each cellular feature
+            of interest (for example, each nucleus is assigned to a single
+            object in a DNA stained image). If this is not the case, the module
+            settings can be adjusted to make it so (or as close as possible).
+            In some cases, image processing modules must be used beforehand to
+            transform the image so it is more amenable to object
+            detection.</td>
+            <td align="center" width="25%"><img height="225" src=
+            "{{IMAGE_OBJECT_DATAFLOW}}" width="254"></td>
+        </tr>
+    </table>
+    <p>In brief, the workflow of finding objects using this module is to do the
+    following:</p>
+    <ul>
+        <li><i>Distinguish the foreground from background:</i> The foreground
+        is defined as that part of the image which contains the features of
+        interest, as opposed to the <i>background</i> which does not. The
+        module assumes that the foreground is brighter than the background,
+        which is the case for fluorescence images; for other types of images,
+        other modules can be used to first invert the image, turning dark
+        regions into bright regions and vice versa.</li>
+        <li><i>Identify the objects in each foreground region:</i> Each
+        foreground region may contain multiple objects of interest (for
+        example, touching nuclei in a DNA stained image). Recognizing the
+        presence of these objects is the objective of this step.</li>
+        <li><i>Splitting clusters of objects:</i> If objects are touching each
+        other, the final step is to separate them in a way that reflects the
+        actual boundaries as much as possible. This process is referred to as
+        "declumping."</li>
+    </ul>The module also contains additional settings for filtering the results
+    of this process on the basis of size, location, etc. to get the final
+    object set. At this point, the objects are ready for measurements to be
+    made, or for further manipulations as a means of extracting other features.
+    <p></p>
+    <p>Other modules are able to take the results of this module and use them
+    in combination with additional images (like
+    <b>IdentifySecondaryObjects</b>) or other objects (like
+    <b>IdentifyTertiaryObjects</b>) to define yet more objects.</p>
+    <p>For more information on these identification modules work and how to
+    configure them for best performance, please see the detailed help by
+    selecting the <b>IdentifyPrimaryObjects</b> module and clicking the
+    <img src="{{MODULE_HELP_BUTTON}}">&nbsp; button at the bottom of the
+    pipeline panel.</p>
+    {{GO_BACK}}
+</body>
+</html>

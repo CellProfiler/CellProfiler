@@ -79,8 +79,10 @@ WINDOW_PAN_BUTTON = image_resource("window_pan.png")
 WINDOW_ZOOMTORECT_BUTTON = image_resource("window_zoom_to_rect.png")
 WINDOW_SAVE_BUTTON = image_resource("window_filesave.png")
 ANALYZE_IMAGE_BUTTON = image_resource("IMG_ANALYZE_16.png")
-STOP_ANALYSIS_BUTTON = image_resource("stop.png")
+INACTIVE_STEP_BUTTON = image_resource("IMG_ANALYZED.png")
+STOP_ANALYSIS_BUTTON = image_resource("IMG_STOP.png")
 PAUSE_ANALYSIS_BUTTON = image_resource("IMG_PAUSE.png")
+INACTIVE_PAUSE_BUTTON = image_resource("IMG_GO_DIM.png")
 
 
 ####################

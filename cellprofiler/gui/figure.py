@@ -637,10 +637,11 @@ class Figure(wx.Frame):
     def on_button_press(self, event):
         if not hasattr(self, "subplots"):
             return
-
-        if event.inaxes in self.subplots.flatten():
-            self.mouse_down = (event.xdata, event.ydata)
-
+        if event.inaxes in self.subplots.flatten() or self.dimensions == 3:
+            if event.xdata is not None:
+                self.mouse_down = (event.xdata, event.ydata)
+            else:
+                self.mouse_down = None
             if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_mouse_down(event)
 

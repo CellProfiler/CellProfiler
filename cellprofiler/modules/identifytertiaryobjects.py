@@ -401,7 +401,7 @@ but the results will be zero or not-a-number (NaN).
         #
         figure.set_subplots((2, 2))
 
-        cmap = figure.return_cmap()
+        cmap = figure.return_cmap(np.max(primary_labels))
 
         figure.subplot_imshow_labels(
             0, 0, primary_labels, self.primary_objects_name.value, colormap=cmap,

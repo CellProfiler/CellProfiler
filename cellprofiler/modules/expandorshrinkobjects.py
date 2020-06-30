@@ -248,7 +248,7 @@ order to keep from breaking up the object or breaking the hole.
         output_objects_segmented = workspace.display_data.output_objects_segmented
 
         figure.set_subplots((2, 1))
-        cmap = figure.return_cmap()
+        cmap = figure.return_cmap(numpy.max(input_objects_segmented))
 
         figure.subplot_imshow_labels(
             0, 0, input_objects_segmented, self.object_name.value, colormap=cmap,

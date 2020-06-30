@@ -207,7 +207,8 @@ class TestBinaryImages(object):
     @staticmethod
     def test_subtract(image_a, image_b, module, workspace):
         operation = "Subtract"
-        expected = numpy.logical_xor(image_a.pixel_data, image_b.pixel_data)
+        expected = image_a.pixel_data.copy()
+        expected[image_b.pixel_data] = False
         run_operation(operation, expected, module, workspace)
 
     @staticmethod

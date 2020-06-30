@@ -22,15 +22,16 @@ def find_version(*pathnames):
     raise RuntimeError("Unable to find version string.")
 
 
-def find_resources(directory, subdirectory):
+def package_data():
     resources = []
-    for root, _, filenames in os.walk(os.path.join(directory, subdirectory)):
+
+    for root, _, filenames in os.walk(os.path.join("cellprofiler", "data")):
         resources += [
-            os.path.relpath(os.path.join(root, filename), directory)
+            os.path.relpath(os.path.join(root, filename), "cellprofiler")
             for filename in filenames
         ]
 
-    return resources
+    return {"cellprofiler": resources}
 
 
 setuptools.setup(
@@ -80,7 +81,7 @@ setuptools.setup(
     ],
     license="BSD",
     name="CellProfiler",
-    package_data={"cellprofiler": find_resources("cellprofiler", "data")},
+    package_data=package_data(),
     include_package_data=True,
     packages=setuptools.find_packages(exclude=["tests*"]),
     python_requires=">=3.8, <4.0",

@@ -18,14 +18,6 @@ import cellprofiler_core.preferences
 
 WELCOME_MESSAGE = ""
 
-WRITE_MAT_FILE = "MATLAB"
-WRITE_HDF_FILE = "HDF5"
-DO_NOT_WRITE_MEASUREMENTS = "Do not write measurements"
-
-WRITE_MAT_FILE_TEXT = WRITE_MAT_FILE
-WRITE_HDF_FILE_TEXT = WRITE_HDF_FILE
-DO_NOT_WRITE_MEASUREMENTS_TEXT = "Do not write MATLAB or HDF5 files"
-
 
 class PreferencesView(object):
     """View / controller for the preferences that get displayed in the main window
@@ -121,9 +113,6 @@ class PreferencesView(object):
         self.__status_panel.Layout()
 
     def close(self):
-        cellprofiler_core.preferences.remove_output_file_name_listener(
-            self.__on_preferences_output_filename_event
-        )
         cellprofiler_core.preferences.remove_image_directory_listener(
             self.__on_preferences_image_directory_event
         )
@@ -213,38 +202,6 @@ class PreferencesView(object):
 
     def __make_odds_and_ends_panel(self):
         panel = self.__odds_and_ends_panel
-        output_filename_text = wx.StaticText(panel, -1, "Output Filename:")
-        output_filename_edit_box = wx.TextCtrl(
-            panel, value=cellprofiler_core.preferences.get_output_file_name()
-        )
-        self.__output_filename_edit_box = output_filename_edit_box
-        allow_output_filename_overwrite_check_box = wx.CheckBox(
-            panel, label="Allow overwrite?"
-        )
-        allow_output_filename_overwrite_check_box.SetValue(
-            cellprofiler_core.preferences.get_allow_output_file_overwrite()
-        )
-        write_measurements_combo_box = wx.Choice(
-            panel,
-            choices=[
-                WRITE_HDF_FILE_TEXT,
-                WRITE_MAT_FILE_TEXT,
-                DO_NOT_WRITE_MEASUREMENTS_TEXT,
-            ],
-        )
-        # set measurements mode, then fake an event to update output
-        # filename and which controls are shown.
-        measurements_mode_idx = [
-            cellprofiler_core.preferences.WRITE_HDF5,
-            True,
-            False,
-        ].index(cellprofiler_core.preferences.get_write_MAT_files())
-        write_measurements_combo_box.SetSelection(measurements_mode_idx)
-        output_filename_help_button = wx.Button(panel, label="?", style=wx.BU_EXACTFIT)
-        output_file_format_text = wx.StaticText(panel, label="Output file format:")
-        cellprofiler_core.preferences.add_output_file_name_listener(
-            self.__on_preferences_output_filename_event
-        )
         cellprofiler_core.preferences.add_image_directory_listener(
             self.__on_preferences_image_directory_event
         )
@@ -255,96 +212,7 @@ class PreferencesView(object):
         cellprofiler_core.preferences.add_progress_callback(
             self.__hold_a_reference_to_progress_callback
         )
-
-        def on_output_filename_changed(event):
-            cellprofiler_core.preferences.set_output_file_name(
-                output_filename_edit_box.GetValue()
-            )
-
-        def on_allow_checkbox(event):
-            cellprofiler_core.preferences.set_allow_output_file_overwrite(
-                allow_output_filename_overwrite_check_box.GetValue()
-            )
-
-        def on_write_MAT_files_combo_box(event):
-            #
-            # Update the state to reflect the new measurement choice
-            #
-            sel = write_measurements_combo_box.GetStringSelection()
-            output_filename = output_filename_edit_box.GetValue()
-            if sel == WRITE_HDF_FILE_TEXT:
-                cellprofiler_core.preferences.set_write_MAT_files(
-                    cellprofiler_core.preferences.WRITE_HDF5
-                )
-                if output_filename.lower().endswith(".mat"):
-                    output_filename = output_filename[:-4] + ".h5"
-            elif sel == WRITE_MAT_FILE_TEXT:
-                cellprofiler_core.preferences.set_write_MAT_files(True)
-                if output_filename.lower().endswith(".h5"):
-                    output_filename = output_filename[:-3] + ".mat"
-            else:
-                cellprofiler_core.preferences.set_write_MAT_files(False)
-
-            if output_filename != output_filename_edit_box.GetValue():
-                output_filename_edit_box.SetValue(output_filename)
-                cellprofiler_core.preferences.set_output_file_name(
-                    output_filename_edit_box.GetValue()
-                )
-            #
-            # Reconstruct the sizers depending on whether we have one or two rows
-            #
-            if sel == DO_NOT_WRITE_MEASUREMENTS_TEXT:
-                show = False
-                output_sizer = wx.BoxSizer(wx.HORIZONTAL)
-                output_sizer.Add(output_filename_help_button, 0, wx.EXPAND)
-                output_sizer.Add(output_file_format_text, 0)
-                output_sizer.Add(write_measurements_combo_box, 0, wx.ALIGN_LEFT)
-            else:
-                show = True
-                output_sizer = wx.FlexGridSizer(2, 3, 2, 2)
-                output_sizer.SetFlexibleDirection(wx.HORIZONTAL)
-                output_sizer.AddGrowableCol(2)
-                output_filename_edit_box_sizer = wx.BoxSizer(wx.HORIZONTAL)
-                output_filename_edit_box_sizer.Add(
-                    output_filename_edit_box, 1, wx.EXPAND
-                )
-                output_filename_edit_box_sizer.AddSpacer(2)
-                output_filename_edit_box_sizer.Add(
-                    allow_output_filename_overwrite_check_box, 0, wx.ALIGN_CENTER
-                )
-                output_sizer.Add(output_filename_help_button, 0, wx.EXPAND)
-                output_sizer.Add(output_filename_text, 0, wx.ALIGN_RIGHT)
-                output_sizer.Add(output_filename_edit_box_sizer, 1, wx.EXPAND)
-
-                output_sizer.Add(wx.BoxSizer(), 0, wx.EXPAND)
-                output_sizer.Add(output_file_format_text, 0, wx.ALIGN_RIGHT)
-                output_sizer.Add(write_measurements_combo_box, 0, wx.ALIGN_LEFT)
-
-            panel.SetSizer(output_sizer)
-            for ctrl in (
-                output_filename_text,
-                output_filename_edit_box,
-                allow_output_filename_overwrite_check_box,
-            ):
-                ctrl.Show(show)
-
-            panel.GetParent().Layout()
-            panel.Layout()
-
-        write_measurements_combo_box.Bind(wx.EVT_CHOICE, on_write_MAT_files_combo_box)
-        allow_output_filename_overwrite_check_box.Bind(
-            wx.EVT_CHECKBOX, on_allow_checkbox
-        )
-        output_filename_help_button.Bind(
-            wx.EVT_BUTTON,
-            lambda event: self.__on_help(
-                event,
-                cellprofiler.gui.help.content.read_content("legacy_output_file.rst"),
-            ),
-        )
-        output_filename_edit_box.Bind(wx.EVT_TEXT, on_output_filename_changed)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
-        on_write_MAT_files_combo_box(None)
 
     def update_worker_count_info(self, n_workers):
         """Update the # of running workers in the progress UI
@@ -491,9 +359,6 @@ class PreferencesView(object):
         cellprofiler_core.preferences.remove_output_directory_listener(
             self.__on_preferences_output_directory_event
         )
-        cellprofiler_core.preferences.remove_output_file_name_listener(
-            self.__on_preferences_output_filename_event
-        )
 
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         self.__pipeline_list_view = pipeline_list_view
@@ -628,15 +493,6 @@ class PreferencesView(object):
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)
-
-    def __on_preferences_output_filename_event(self, event):
-        if (
-            self.__output_filename_edit_box.GetValue()
-            != cellprofiler_core.preferences.get_output_file_name()
-        ):
-            self.__output_filename_edit_box.SetValue(
-                cellprofiler_core.preferences.get_output_file_name()
-            )
 
     def __on_preferences_output_directory_event(self, event):
         old_selection = self.__output_edit_box.GetSelection()

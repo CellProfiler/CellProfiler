@@ -90,7 +90,6 @@ ID_FILE_EXPORT_PIPELINE_NOTES = wx.NewId()
 ID_FILE_IMPORT_FILE_LIST = wx.NewId()
 ID_FILE_ANALYZE_IMAGES = wx.NewId()
 ID_FILE_STOP_ANALYSIS = wx.NewId()
-ID_FILE_RESTART = wx.NewId()
 ID_FILE_PRINT = wx.NewId()
 ID_FILE_PLATEVIEWER = wx.NewId()
 ID_FILE_NEW_CP = wx.NewId()
@@ -652,11 +651,6 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
             ID_FILE_STOP_ANALYSIS, "Stop Analysis", "Stop running the pipeline"
         )
-        self.__menu_file.Append(
-            ID_FILE_RESTART,
-            "Resume Pipeline",
-            "Resume a pipeline from a saved measurements file.",
-        )
         self.__menu_file.AppendSeparator()
         if sys.platform == "darwin":
             self.__menu_file.Append(ID_FILE_NEW_CP, "Open A New CP Window")
@@ -984,7 +978,6 @@ class CPFrame(wx.Frame):
         """Enable or disable the debug commands (like ID_DEBUG_STEP)"""
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, False)
-        self.__menu_file.Enable(ID_FILE_RESTART, False)
 
         assert isinstance(startstop, wx.MenuItem)
         startstop.SetItemLabel("&Exit Test Mode\tF5")
@@ -1000,7 +993,6 @@ class CPFrame(wx.Frame):
         for cmd in self.debug_commands:
             self.__menu_debug.Enable(cmd, False)
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, True)
-        self.__menu_file.Enable(ID_FILE_RESTART, True)
         self.__menu_debug.Enable(ID_DEBUG_TOGGLE, True)
 
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, False)
@@ -1008,7 +1000,6 @@ class CPFrame(wx.Frame):
     def enable_analysis_commands(self):
         """Enable commands to pause or stop analysis"""
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, False)
-        self.__menu_file.Enable(ID_FILE_RESTART, False)
         self.__menu_debug.Enable(ID_DEBUG_TOGGLE, False)
 
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, True)

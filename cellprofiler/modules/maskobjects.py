@@ -422,7 +422,7 @@ controls how remaining objects are associated with their predecessors:
         #
         outlines = outline(original_labels) > 0
 
-        cm = figure.return_cmap()
+        cm = figure.return_cmap(np.max(original_labels))
         sm = matplotlib.cm.ScalarMappable(cmap=cm)
         #
         # Paint the labels in color

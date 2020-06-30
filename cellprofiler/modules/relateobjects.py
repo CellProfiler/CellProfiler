@@ -491,7 +491,7 @@ parents or children of the parent object.""",
 
         seed = numpy.random.randint(256)
 
-        cmap = figure.return_cmap()
+        cmap = figure.return_cmap(max_label)
 
         figure.subplot_imshow_labels(
             0,

@@ -171,12 +171,6 @@ PREFERENCES_DTYPE = make_cell_struct_dtype(
     ]
 )
 
-"""Save pipeline in Matlab format"""
-FMT_MATLAB = "Matlab"
-
-"""Save pipeline in native format"""
-FMT_NATIVE = "Native"
-
 """The current pipeline file format version"""
 NATIVE_VERSION = 5
 

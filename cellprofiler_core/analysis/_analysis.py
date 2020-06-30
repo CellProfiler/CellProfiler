@@ -34,7 +34,7 @@ class Analysis:
     Workers are managed by class variables in the AnalysisRunner.
     """
 
-    def __init__(self, pipeline, measurements_filename, initial_measurements=None):
+    def __init__(self, pipeline, initial_measurements=None):
         """create an Analysis applying pipeline to a set of images, writing out
         to measurements_filename, optionally starting with previous
         measurements."""
@@ -44,7 +44,6 @@ class Analysis:
         )
         self.initial_measurements_buf = initial_measurements.file_contents()
         initial_measurements.close()
-        self.output_path = measurements_filename
         self.debug_mode = False
         self.analysis_in_progress = False
         self.runner = None
@@ -70,7 +69,6 @@ class Analysis:
                 self.analysis_in_progress,
                 self.pipeline,
                 self.initial_measurements_buf,
-                self.output_path,
                 analysis_event_callback,
             )
             self.runner.start(num_workers=num_workers, overwrite=overwrite)

@@ -55,7 +55,7 @@ N_TUBENESS = "Tubeness"
 class EnhanceOrSuppressFeatures(cellprofiler_core.module.ImageProcessing):
     module_name = "EnhanceOrSuppressFeatures"
 
-    variable_revision_number = 6
+    variable_revision_number = 7
 
     def create_settings(self):
         super(EnhanceOrSuppressFeatures, self).create_settings()
@@ -303,6 +303,20 @@ Two methods can be used to enhance neurites:
             ),
         )
 
+        self.wants_rescale = cellprofiler_core.setting.Binary(
+            "Rescale result image",
+            False,
+            doc="""\
+*(Used only for the "{E_NEURITES}" method)*
+
+*{E_NEURITES}* can rescale the resulting values to use the 
+whole intensity range of the image (0-1). This can make 
+the output easier to display.
+""".format(
+                **{"E_NEURITES": E_NEURITES}
+            ),
+        )
+
     def settings(self):
         __settings__ = super(EnhanceOrSuppressFeatures, self).settings()
         return __settings__ + [
@@ -315,6 +329,7 @@ Two methods can be used to enhance neurites:
             self.decay,
             self.neurite_choice,
             self.speckle_accuracy,
+            self.wants_rescale,
         ]
 
     def visible_settings(self):
@@ -335,6 +350,7 @@ Two methods can be used to enhance neurites:
                     __settings__ += [self.object_size]
                 else:
                     __settings__ += [self.smoothing]
+                __settings__ += [self.wants_rescale]
             elif self.enhance_method == E_SPECKLES:
                 __settings__ += [self.object_size, self.speckle_accuracy]
                 self.object_size.min_value = 3
@@ -355,9 +371,9 @@ Two methods can be used to enhance neurites:
                     image, radius, self.speckle_accuracy.value
                 )
             elif self.enhance_method == E_NEURITES:
-                result = skimage.exposure.rescale_intensity(
-                    self.enhance_neurites(image, radius, self.neurite_choice.value)
-                )
+                result = self.enhance_neurites(image, radius, self.neurite_choice.value)
+                if self.wants_rescale.value:
+                    result = skimage.exposure.rescale_intensity(result)
             elif self.enhance_method == E_DARK_HOLES:
                 min_radius = max(1, int(self.hole_size.min / 2))
 
@@ -464,7 +480,7 @@ Two methods can be used to enhance neurites:
                     )
 
                     result[index] = (
-                        -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
+                            -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
                     )
             else:
                 hessian = centrosome.filter.hessian(
@@ -505,15 +521,15 @@ Two methods can be used to enhance neurites:
         )
 
         img_mean = (
-            skimage.filters.gaussian(data, sigma, mode="constant", multichannel=False)
-            / gmask
+                skimage.filters.gaussian(data, sigma, mode="constant", multichannel=False)
+                / gmask
         )
 
         img_squared = (
-            skimage.filters.gaussian(
-                data ** 2, sigma, mode="constant", multichannel=False
-            )
-            / gmask
+                skimage.filters.gaussian(
+                    data ** 2, sigma, mode="constant", multichannel=False
+                )
+                / gmask
         )
 
         result = img_squared - img_mean ** 2
@@ -620,6 +636,11 @@ Two methods can be used to enhance neurites:
                 setting_values[-1] = "Fast"
 
             variable_revision_number = 6
+
+        if variable_revision_number == 6:
+            # Add neurite rescaling option
+            setting_values.append("Yes")
+            variable_revision_number = 7
 
         return setting_values, variable_revision_number
 

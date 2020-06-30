@@ -205,7 +205,6 @@ in a future version of CellProfiler.
    :titlesonly:
 
    help/legacy_load_modules
-   help/legacy_output_file
    help/legacy_matlab_image
 
 `(Jump to top)`_

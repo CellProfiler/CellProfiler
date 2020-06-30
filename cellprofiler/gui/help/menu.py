@@ -126,13 +126,6 @@ class Menu(cellprofiler.gui.menu.Menu):
         )
 
         legacy_menu.append(
-            "Setting the Output Filename",
-            contents=cellprofiler.gui.help.content.read_content(
-                "legacy_output_file.rst"
-            ),
-        )
-
-        legacy_menu.append(
             "MATLAB format images",
             contents=cellprofiler.gui.help.content.read_content(
                 "legacy_matlab_image.rst"

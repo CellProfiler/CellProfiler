@@ -11,6 +11,11 @@ called *Plugins*, and you can find them in their own GitHub `repository`_.  They
 are often experimental and may be less likely to work, but you may find a use 
 for one or more of them!
 
+Note that if a plugin requires additional libraries which aren't packaged with
+CellProfiler, you'll need to build CellProfiler from source rather than using
+a pre-packaged version. Installation instructions for your platform can be found
+on the GitHub `wiki`_.
+
 You may download these modules individually by clicking on a module's name,  
 hitting the "Raw" button on GitHub, then using your browser's Save function.  
 You can also download the whole repository of pipelines by cloning the whole 
@@ -36,4 +41,5 @@ repository!
 .. _repository: http://github.com/CellProfiler/CellProfiler-plugins
 .. _issues: http://github.com/CellProfiler/CellProfiler-plugins/issues
 .. _forum: https://forum.image.sc/tags/cellprofiler
+.. _wiki: https://github.com/CellProfiler/CellProfiler/wiki
 .. _recommendations: http://github.com/CellProfiler/CellProfiler/wiki/Orientation-to-CellProfiler-code

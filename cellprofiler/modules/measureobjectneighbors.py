@@ -68,6 +68,7 @@ will be positive, but there may not be a corresponding
 import matplotlib.cm
 import numpy as np
 import scipy.ndimage as scind
+import scipy.signal
 import skimage.morphology
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import strel_disk, centers_of_labels
@@ -500,7 +501,10 @@ previously discarded objects.""".format(
                 # Find the neighbors
                 #
                 patch_mask = patch == (index + 1)
-                extended = scind.binary_dilation(patch_mask, strel)
+                if distance <= 5:
+                    extended = scind.binary_dilation(patch_mask, strel)
+                else:
+                    extended = scipy.signal.fftconvolve(patch_mask, strel, mode='same') > 0.5
                 neighbors = np.unique(npatch[extended])
                 neighbors = neighbors[neighbors != 0]
                 if self.neighbors_are_objects:
@@ -534,11 +538,16 @@ previously discarded objects.""".format(
                         == object_number
                     )
                 if self.neighbors_are_objects:
-                    extended = scind.binary_dilation(
-                        (patch != 0) & (patch != object_number), strel_touching
-                    )
+                    extendme = (patch != 0) & (patch != object_number)
+                    if distance <= 5:
+                        extended = scind.binary_dilation(extendme, strel_touching)
+                    else:
+                        extended = scipy.signal.fftconvolve(extendme, strel_touching, mode='same') > 0.5
                 else:
-                    extended = scind.binary_dilation((npatch != 0), strel_touching)
+                    if distance <= 5:
+                        extended = scind.binary_dilation((npatch != 0), strel_touching)
+                    else:
+                        extended = scipy.signal.fftconvolve((npatch != 0), strel_touching, mode='same') > 0.5
                 overlap = np.sum(outline_patch & extended)
                 pixel_count[index] = overlap
             if sum([len(x) for x in first_objects]) > 0:

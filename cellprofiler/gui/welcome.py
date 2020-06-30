@@ -27,24 +27,6 @@ WELCOME_MAIN_REF = six.moves.urllib.parse.quote("Welcome")
 
 GO_BACK = """<p>Go <a href=help:welcome>back</a> to the welcome screen.</p>"""
 
-CONFIGURE_IMAGES_HELP = """\
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Configure images</title>
-</head>
-<body>
-    {CONFIGURE_IMAGES_CONTENT}
-    {GO_BACK}
-</body>
-""".format(
-    **{
-        "GO_BACK": GO_BACK,
-        "CONFIGURE_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-            cellprofiler.gui.help.content.read_content("projects_configure_images.rst")
-        ),
-    }
-)
 
 EXPORTING_RESULTS_HELP = """\
 <!DOCTYPE html>
@@ -304,208 +286,6 @@ TEST_MODE_HELP = """\
     }
 )
 
-SELECTING_IMAGES_HELP = """\
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Selecting images</title>
-</head>
-<body>
-    {SELECTING_IMAGES_CONTENT}
-    {GO_BACK}
-</body>
-""".format(
-    **{
-        "GO_BACK": GO_BACK,
-        "SELECTING_IMAGES_CONTENT": cellprofiler.gui.html.utils.rst_to_html_fragment(
-            cellprofiler.gui.help.content.read_content("projects_selecting_images.rst")
-        ),
-    }
-)
-
-WELCOME_MAIN = """\
-<body style = "font-family: sans-serif;">
-<p style="text-align: center;"><strong><span style="font-size: large;">Welcome to CellProfiler!</span></strong></p>
-<p>CellProfiler is automated image analysis software to measure biological phenotypes in images.</p>
-<table style="margin: auto; width: 100%; height: 300px;" border="3" cellspacing="5" cellpadding="3">
-<tbody>
-<tr style="height: 50%; vertical-align: middle;">
-<td style="width: 25%; border-width: 3; border-color: blue;" align="center"><strong><span style="font-size: small;">Example</span></strong><br /> <br /> <a href="loadexample:ExampleFly"><img src="data\images\welcomescreen_tutorials.png" /></a></td>
-<td style="width: 25%;" align="center"><strong><span style="font-size: small;">Tutorials</span></strong><br /> <br /> <a href="http://cellprofiler.org/tutorials.html"><img src="file:C:\\Program Files\\CellProfiler4\\cellprofiler\\data\\images\\welcomescreen_tutorials.png" /></a></td>
-<td style="width: 25%;" align="center"><strong><span style="font-size: small;">Tutorials</span></strong><br /> <br /> <a href="http://cellprofiler.org/tutorials.html"><img src="memory:welcomescreen_tutorials.png" /></a></td>
-<td style="width: 25%;" align="center"><strong><span style="font-size: small;">Q&amp;A Forum</span></strong><br /> <br /> <a href="http://forum.cellprofiler.org/"><img src="memory:welcomescreen_forum.png" /></a></td>
-</tr>
-<tr style="height: 50%; vertical-align: middle;">
-<td style="width: 25%;" align="center"><strong><span style="font-size: small;">Guided Tour<br /> <br /> <a href="http://cellprofiler.org/tutorials.html"><img src="memory:welcomescreen_tutorials.png" /></a></span></strong></td>
-<td style="width: 25%;" align="center">
-<strong><span style="font-size: small;">Built-In Help<br /> <br /> <a href="help://{IN_APP_HELP_REF}"><img src="file:welcome_screen_help.png" /></a></span></strong>
-</td>
-<td style="width: 25%;" align="center"><strong><span style="font-size: small;">Manual<br /> <br /> <a href="{MANUAL_URL}"> <img src="memory:welcomescreen_manual.png" /></a></span></strong></td>
-<td style="width: 25%;" align="center">
-<p><button onclick="location.href='pref:no_display'" type="button"> Don't show<br />this again</button></p>
-</td>
-</tr>
-</tbody>
-</table>
-<p style="text-align: center;">This page can be accessed from <em>Help &gt; Show Welcome Screen</em> at any time.</p>
-</body>
-""".format(
-    **{
-        "CONFIGURE_IMAGES_REF": CONFIGURE_IMAGES_REF,
-        "EXPORTING_RESULTS_REF": EXPORTING_RESULTS_REF,
-        "IDENTIFY_FEATUREES_REF": IDENTIFY_FEATUREES_REF,
-        "IN_APP_HELP_REF": IN_APP_HELP_REF,
-        "MAKING_MEASUREMENTS_REF": MAKING_MEASUREMENTS_REF,
-        "MANUAL_URL": cellprofiler.gui.help.content.MANUAL_URL,
-        "RUNNING_YOUR_PIPELINE_REF": RUNNING_YOUR_PIPELINE_REF,
-        "SELECTING_IMAGES_REF": SELECTING_IMAGES_REF,
-        "TEST_MODE_REF": TEST_MODE_REF,
-    }
-)
-
-WELCOME_MAIN_OLD = """\
-<!DOCTYPE html>
-<html>
-<head>
-    <title></title>
-</head>
-<body>
-    <table border="0" cellpadding="4" width="100%">
-        <tr>
-            <td align="center" colspan="3"><b><font size="+3">Welcome to
-            CellProfiler!</font></b></td>
-        </tr>
-        <tr>
-            <td colspan="3">CellProfiler is automated image analysis software
-            to measure biological phenotypes in images.</td>
-        </tr>
-        <tr>
-            <td colspan="3"><b><font size="+2">See a pipeline in
-            action</font></b></td>
-        </tr>
-        <tr>
-            <td width="1">&nbsp;</td>
-            <td colspan="2">
-                <a href=
-                "loadexample:ExampleFly">
-                Load</a> an example pipeline, then click on the "Analyze
-                Images" button.
-            </td>
-        </tr>
-        <tr>
-            <td colspan="3"><b><font size="+2">Build your own
-            pipeline</font></b></td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td width="100"><font size="+2">1: Start</font></td>
-            <td>
-                <a href=
-                "http://www.cellprofiler.org/examples.html">Download</a> a
-                pipeline template from our website of examples. Load it with
-                <i>File &gt; Import &gt; Pipeline from File...</i>. Run it,
-                then modify it to suit your assay.
-            </td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td><i><font size="+2">2: Adjust</font></i></td>
-            <td>
-                Use the Input modules to <a href=
-                "help://{SELECTING_IMAGES_REF}">select</a> and <a href=
-                "help://{CONFIGURE_IMAGES_REF}">configure</a> your images for
-                analysis. Add Analysis modules to <a href=
-                "help://{IDENTIFY_FEATUREES_REF}">identify</a> image features,
-                make <a href=
-                "help://{MAKING_MEASUREMENTS_REF}">measurements</a> and
-                <a href="help://{EXPORTING_RESULTS_REF}">export</a> results.
-            </td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td><i><font size="+2">3: Test</font></i></td>
-            <td>
-                Click the "Start Test Mode" button to step through the pipeline
-                and <a href="help://{TEST_MODE_REF}">check</a> the module
-                settings on a few images.
-            </td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td><i><font size="+2">4: Analyze</font></i></td>
-            <td>
-                Click the "Analyze Images" button to <a href=
-                "help://{RUNNING_YOUR_PIPELINE_REF}">process</a> all of your
-                images with your pipeline.
-            </td>
-        </tr>
-    </table><br>
-    <table>
-        <tr>
-            <td colspan="3"><b><font size="+2">Need more help?</font></b></td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td colspan="2">
-                <table border="5" cellpadding="5" cellspacing="5">
-                    <tr>
-                        <td align="center" width="100">
-                            <b><font size="+1">In-App Help</font></b><br>
-                            <br>
-                            <a href="help://{IN_APP_HELP_REF}"><img src=
-                            "memory:welcome_screen_help.png"></a><br>
-                            <br>
-                            Click <b>?</b> buttons for detailed help
-                        </td>
-                        <td align="center" width="100">
-                            <b><font size="+1">Manual</font></b><br>
-                            <br>
-                            <a href=
-                            "{MANUAL_URL}">
-                            <img src="memory:welcomescreen_manual.png"></a><br>
-                            <br>
-                            Online version of In-App help
-                        </td>
-                        <td align="center" width="100">
-                            <b><font size="+1">Tutorials/Demos</font></b><br>
-                            <br>
-                            <a href=
-                            "http://cellprofiler.org/tutorials.html"><img src=
-                            "memory:welcomescreen_tutorials.png"></a><br>
-                            <br>
-                            For written and video guidance to image analysis
-                        </td>
-                        <td align="center" width="100">
-                            <b><font size="+1">Q&A Forum</font></b><br>
-                            <br>
-                            <a href="https://forum.image.sc/tags/cellprofiler"><img src=
-                            "memory:welcomescreen_forum.png"></a><br>
-                            <br>
-                            Post a question online
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-    <p>Click <a href="pref:no_display">here</a> to stop displaying this page
-    when CellProfiler starts. This page can be accessed from <i>Help &gt; Show
-    Welcome Screen</i> at any time.</p>
-</body>
-</html>
-""".format(
-    **{
-        "CONFIGURE_IMAGES_REF": CONFIGURE_IMAGES_REF,
-        "EXPORTING_RESULTS_REF": EXPORTING_RESULTS_REF,
-        "IDENTIFY_FEATUREES_REF": IDENTIFY_FEATUREES_REF,
-        "IN_APP_HELP_REF": IN_APP_HELP_REF,
-        "MAKING_MEASUREMENTS_REF": MAKING_MEASUREMENTS_REF,
-        "MANUAL_URL": cellprofiler.gui.help.content.MANUAL_URL,
-        "RUNNING_YOUR_PIPELINE_REF": RUNNING_YOUR_PIPELINE_REF,
-        "SELECTING_IMAGES_REF": SELECTING_IMAGES_REF,
-        "TEST_MODE_REF": TEST_MODE_REF,
-    }
-)
 
 
 class Welcome(wx.Frame):
@@ -533,14 +313,15 @@ class Welcome(wx.Frame):
         self.Layout()
 
         self.href_to_help = {
-            CONFIGURE_IMAGES_REF: CONFIGURE_IMAGES_HELP,
-            EXPORTING_RESULTS_REF: EXPORTING_RESULTS_HELP,
-            IDENTIFY_FEATUREES_REF: IDENTIFY_FEATUREES_HELP,
+            "configureimages": "html/configure_images_help.html",
+            "exportingresults": EXPORTING_RESULTS_HELP,
+            "identifyfeatures": IDENTIFY_FEATUREES_HELP,
             "inapphelp": "html/in_app_help.html",
-            MAKING_MEASUREMENTS_REF: MAKING_MEASUREMENTS_HELP,
+            "makingmeasurements": MAKING_MEASUREMENTS_HELP,
             RUNNING_YOUR_PIPELINE_REF: RUNNING_YOUR_PIPELINE_HELP,
             TEST_MODE_REF: TEST_MODE_HELP,
-            SELECTING_IMAGES_REF: SELECTING_IMAGES_HELP,
+            "selectingimages": "html/selecting_images_help.html",
+            "gettingstarted": "html/getting_started.html",
             "welcome": "html/welcome.html",
         }
 
@@ -575,6 +356,8 @@ class Welcome(wx.Frame):
             self.__load_example_pipeline(href[12:])
         elif href.startswith("pref:"):
             self.__set_startup_blurb()
+        elif href.startswith("http"):
+            wx.LaunchDefaultBrowser(href)
         event.Veto()
 
     def __display_help(self, href):
@@ -587,90 +370,16 @@ class Welcome(wx.Frame):
             self.content.SetPage(html=template.render(
                 GO_BACK=GO_BACK,
                 MODULE_HELP_BUTTON=os.path.abspath(cellprofiler.gui.help.content.MODULE_HELP_BUTTON),
-            ), baseUrl="help")
+                SELECTING_IMAGES_REF="help",
+                CONFIGURE_IMAGES_CONTENT=cellprofiler.gui.html.utils.rst_to_html_fragment(
+                    cellprofiler.gui.help.content.read_content("projects_configure_images.rst")),
+                SELECTING_IMAGES_HELP="help",
+                IDENTIFY_FEATUREES_REF="help",
+                MAKING_MEASUREMENTS_REF="help",
+                EXPORTING_RESULTS_REF="help",
+            ), baseUrl=html_path)
 
         #self.content.SetPage(html_str)
-
-    @staticmethod
-    def __load_example_pipeline(example_name):
-        example_dir = pkg_resources.resource_filename(
-            "cellprofiler", os.path.join("data", "examples", example_name)
-        )
-
-        pipeline_pathname = os.path.join(
-            example_dir, "{:s}.cppipe".format(example_name)
-        )
-
-        images_dir = os.path.join(example_dir, "images")
-
-        try:
-
-            def load(pathname=pipeline_pathname):
-                pipeline = wx.GetApp().frame.pipeline
-                pipeline.load(pathname)
-                pipeline.add_pathnames_to_file_list(
-                    glob.glob(os.path.join(images_dir, "*"))
-                )
-
-                wx.MessageBox(
-                    'Now that you have loaded an example pipeline, press the "Analyze images" button to access and'
-                    " process a small image set from the CellProfiler website so you can see how CellProfiler works.",
-                    "",
-                    wx.ICON_INFORMATION,
-                )
-
-            wx.CallAfter(load)
-        except:
-            wx.MessageBox(
-                "CellProfiler was unable to load {}".format(pipeline_pathname),
-                "Error loading pipeline",
-                style=wx.OK | wx.ICON_ERROR,
-            )
-
-    def __set_startup_blurb(self):
-        cellprofiler_core.preferences.set_startup_blurb(False)
-
-        parent = self.GetParent()
-
-        while parent is not None:
-            if parent.Name == "WelcomeScreenFrame":
-                parent.Close()
-                break
-            parent = parent.Parent
-
-
-
-class Content(cellprofiler.gui.html.htmlwindow.HtmlClickableWindow):
-    href_to_help = {
-        CONFIGURE_IMAGES_REF: CONFIGURE_IMAGES_HELP,
-        EXPORTING_RESULTS_REF: EXPORTING_RESULTS_HELP,
-        IDENTIFY_FEATUREES_REF: IDENTIFY_FEATUREES_HELP,
-        IN_APP_HELP_REF: IN_APP_HELP,
-        MAKING_MEASUREMENTS_REF: MAKING_MEASUREMENTS_HELP,
-        RUNNING_YOUR_PIPELINE_REF: RUNNING_YOUR_PIPELINE_HELP,
-        TEST_MODE_REF: TEST_MODE_HELP,
-        SELECTING_IMAGES_REF: SELECTING_IMAGES_HELP,
-        WELCOME_MAIN_REF: WELCOME_MAIN,
-    }
-
-    def __init__(self, parent):
-        super(Content, self).__init__(parent)
-
-    def OnLinkClicked(self, linkinfo):
-        href = linkinfo.Href
-
-        if href.startswith("help:"):
-            self.__display_help(href[7:])
-        elif href.startswith("loadexample:"):
-            self.__load_example_pipeline(href[12:])
-        elif href.startswith("pref:"):
-            self.__set_startup_blurb()
-        else:
-            super(Content, self).OnLinkClicked(linkinfo)
-
-    def __display_help(self, href):
-        html_str = self.href_to_help[href]
-        self.SetPage(html_str)
 
     @staticmethod
     def __load_example_pipeline(example_name):

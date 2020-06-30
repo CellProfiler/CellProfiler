@@ -79,9 +79,6 @@ MENU_HELP = {
         "navigation_test_menu.rst"
     ),
     "Using Plugins": cellprofiler.gui.help.content.read_content("other_plugins.rst"),
-    "Setting the Output Filename": cellprofiler.gui.help.content.read_content(
-        "legacy_output_file.rst"
-    ),
     "Why Use CellProfiler?": cellprofiler.gui.help.content.read_content(
         "why_use_cellprofiler.rst"
     ),

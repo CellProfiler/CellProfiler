@@ -69,8 +69,6 @@ RECENT_PIPELINE_FILE_MENU_ID = [
 RECENT_WORKSPACE_FILE_MENU_ID = [
     wx.NewId() for i in range(cellprofiler_core.preferences.RECENT_FILE_COUNT)
 ]
-WRITING_MAT_FILE = "Writing .MAT measurements file..."
-WROTE_MAT_FILE = ".MAT measurements file has been saved"
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
 ED_SKIP = "Skip"
@@ -200,9 +198,6 @@ class PipelineController(object):
             wx.EVT_MENU,
             self.on_stop_running,
             id=cellprofiler.gui.cpframe.ID_FILE_STOP_ANALYSIS,
-        )
-        frame.Bind(
-            wx.EVT_MENU, self.on_restart, id=cellprofiler.gui.cpframe.ID_FILE_RESTART
         )
 
         frame.Bind(wx.EVT_MENU, self.on_undo, id=cellprofiler.gui.cpframe.ID_EDIT_UNDO)
@@ -2804,9 +2799,6 @@ class PipelineController(object):
         cellprofiler_core.preferences.set_default_output_directory(
             pipeline_details.default_output_folder
         )
-        cellprofiler_core.preferences.set_output_file_name(
-            pipeline_details.measurements_file
-        )
         self.on_analyze_images(event)
 
     def on_analyze_images(self, event):
@@ -2862,14 +2854,6 @@ class PipelineController(object):
                     self.stop_running()
                     return
 
-            measurements_file_path = None
-
-            if (
-                cellprofiler_core.preferences.get_write_MAT_files()
-                == cellprofiler_core.preferences.WRITE_HDF5
-            ):
-                measurements_file_path = self.get_output_file_path()
-
             num_workers = min(
                 len(self.__workspace.measurements.get_image_numbers()),
                 cellprofiler_core.preferences.get_max_workers(),
@@ -2877,7 +2861,6 @@ class PipelineController(object):
 
             self.__analysis = cellprofiler_core.analysis.Analysis(
                 self.__pipeline,
-                measurements_file_path,
                 initial_measurements=self.__workspace.measurements,
             )
 
@@ -3267,60 +3250,6 @@ class PipelineController(object):
 
         wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
 
-    def on_restart(self, event):
-        """Restart a pipeline from a measurements file"""
-        dlg = wx.FileDialog(
-            self.__frame,
-            "Select measurements file",
-            wildcard="Measurements file (*.mat, *.h5)|*.mat;*.h5",
-            style=wx.FD_OPEN,
-        )
-        try:
-            if dlg.ShowModal() != wx.ID_OK:
-                return
-            path = dlg.GetPath()
-        finally:
-            dlg.Destroy()
-
-        ##################################
-        #
-        # Start the pipeline
-        #
-        ##################################
-
-        try:
-            measurements = cellprofiler_core.measurement.load_measurements(path)
-            pipeline_txt = measurements.get_experiment_measurement(
-                cellprofiler_core.pipeline.M_PIPELINE
-            )
-            self.__pipeline.loadtxt(io.StringIO(pipeline_txt))
-            self.__module_view.disable()
-            self.__pipeline_list_view.allow_editing(False)
-            self.__frame.preferences_view.on_analyze_images()
-            measurements_file_path = None
-            if (
-                cellprofiler_core.preferences.get_write_MAT_files()
-                == cellprofiler_core.preferences.WRITE_HDF5
-            ):
-                measurements_file_path = self.get_output_file_path()
-
-            self.__analysis = cellprofiler_core.analysis.Analysis(
-                self.__pipeline,
-                measurements_file_path,
-                initial_measurements=measurements,
-            )
-            self.__analysis.start(self.analysis_event_handler, overwrite=False)
-
-        except Exception as instance:
-            extended_message = "Failure in analysis startup"
-
-            error = cellprofiler.gui.dialog.Error("Error", extended_message)
-
-            if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
-
-            self.stop_running()
-
     def on_pause(self, event):
         self.__frame.preferences_view.pause(True)
         self.__pause_pipeline = True
@@ -3360,44 +3289,22 @@ class PipelineController(object):
 
         event - a cpanalysis.AnalysisFinished event
         """
-        try:
-            if cellprofiler_core.preferences.get_write_MAT_files() is True:
-                # The user wants to write a .mat file.
-                if event.cancelled:
-                    if event.measurements is None:
-                        return
-                    with wx.FileDialog(
-                        self.__frame,
-                        "Save measurements to a file",
-                        wildcard="CellProfiler measurements (*.mat)|*.mat",
-                        style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
-                    ) as dlg:
-                        if dlg.ShowModal() == wx.ID_OK:
-                            path = dlg.Path
-                        else:
-                            return
-                else:
-                    path = self.get_output_file_path()
-                    if path is None:
-                        return
-                self.__pipeline.save_measurements(path, event.measurements)
-        finally:
-            m = event.measurements
-            status = m[
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.analysis.Runner.STATUS,
-                m.get_image_numbers(),
-            ]
-            n_image_sets = sum(
-                [x == cellprofiler_core.analysis.Runner.STATUS_DONE for x in status]
-            )
-            self.stop_running()
-            if cellprofiler_core.preferences.get_wants_pony():
-                Sound(os.path.join(cellprofiler.icons.resources, "wantpony.wav")).Play()
-            if cellprofiler_core.preferences.get_show_analysis_complete_dlg():
-                self.show_analysis_complete(n_image_sets)
-            m.close()
-            self.run_next_pipeline(None)
+        m = event.measurements
+        status = m[
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.analysis.Runner.STATUS,
+            m.get_image_numbers(),
+        ]
+        n_image_sets = sum(
+            [x == cellprofiler_core.analysis.Runner.STATUS_DONE for x in status]
+        )
+        self.stop_running()
+        if cellprofiler_core.preferences.get_wants_pony():
+            Sound(os.path.join(cellprofiler.icons.resources, "wantpony.wav")).Play()
+        if cellprofiler_core.preferences.get_show_analysis_complete_dlg():
+            self.show_analysis_complete(n_image_sets)
+        m.close()
+        self.run_next_pipeline(None)
 
     def stop_running(self):
         if self.is_running():
@@ -4210,43 +4117,6 @@ class PipelineController(object):
                 cellprofiler_core.preferences.set_show_exiting_test_mode_dlg(False)
         finally:
             dlg.Destroy()
-
-    def get_output_file_path(self):
-        path = os.path.join(
-            cellprofiler_core.preferences.get_default_output_directory(),
-            cellprofiler_core.preferences.get_output_file_name(),
-        )
-        if (
-            os.path.exists(path)
-            and not cellprofiler_core.preferences.get_allow_output_file_overwrite()
-        ):
-            (first_part, ext) = os.path.splitext(path)
-            start = 1
-            match = re.match("^(.+)__([0-9]+)$", first_part)
-            if match:
-                first_part = match.groups()[0]
-                start = int(match.groups()[1])
-            for i in range(start, 1000):
-                alternate_name = "%(first_part)s__%(i)d%(ext)s" % (locals())
-                if not os.path.exists(alternate_name):
-                    break
-            result = wx.MessageDialog(
-                parent=self.__frame,
-                message="%s already exists. Would you like to create %s instead?"
-                % (path, alternate_name),
-                caption="Output file exists",
-                style=wx.YES_NO + wx.ICON_QUESTION,
-            )
-            user_choice = result.ShowModal()
-            result.Destroy()
-            if user_choice & wx.YES:
-                path = alternate_name
-                cellprofiler_core.preferences.set_output_file_name(
-                    os.path.split(alternate_name)[1]
-                )
-            else:
-                return None
-        return path
 
     def on_show_all_windows(self, event):
         """Turn "show_window" on for every module in the pipeline"""

@@ -500,7 +500,7 @@ is applied before other operations.""",
                 op = numpy.add
             elif opval == O_SUBTRACT:
                 if self.use_logical_operation(pixel_data):
-                    op = numpy.logical_xor
+                    output_pixel_data = pixel_data[0].copy()
                 else:
                     op = numpy.subtract
             elif opval == O_DIFFERENCE:
@@ -539,6 +539,8 @@ is applied before other operations.""",
                         pd = pd[:, :, numpy.newaxis]
                 if opval == O_EQUALS:
                     output_pixel_data = output_pixel_data & (comparitor == pd)
+                elif opval == O_SUBTRACT and self.use_logical_operation(pixel_data):
+                    output_pixel_data[pd] = False
                 else:
                     output_pixel_data = op(output_pixel_data, pd)
                 if self.ignore_mask:

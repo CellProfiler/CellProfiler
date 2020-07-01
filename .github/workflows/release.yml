@@ -12,6 +12,27 @@ jobs:
         os: [macos-10.15, ubuntu-20.04, windows-2019]
         python-version: [ '3.8' ]
     steps:
+      - uses: actions/cache@v2
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - uses: actions/cache@v2
+        if: ${{ matrix.os == 'windows-2019' }}
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - uses: actions/cache@v2
+        if: ${{ matrix.os == 'macos-10.15' }}
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
@@ -22,7 +43,6 @@ jobs:
           java-version: '14.0.1' # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
-      - run: python --version
       - run: pip install --upgrade pip setuptools wheel
       - run: git clone https://github.com/CellProfiler/pyinstaller.git
       - run: pip install --editable .
@@ -32,22 +52,47 @@ jobs:
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
         if: ${{ matrix.os == 'macos-10.15' }}
+        name: Packaging for Mac
         run: |
           brew install mysql
           make
         working-directory: ./distribution/macos
       - if: ${{ matrix.os == 'ubuntu-20.04' }}
+        name: Packaging for Linux
         run: echo
       - if: ${{ matrix.os == 'windows-2019' }}
+        name: Installing Windows dependencies
         run: |
-          echo "Installing dependencies"
           pip install cython
           pip install mysqlclient==1.4.6
           pip install -e .
         env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
       - if: ${{ matrix.os == 'windows-2019' }}
+        name: Packaging for Windows
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
           choco install innosetup
           iscc /dMyAppVersion="4.0.0rc5" "distribution/windows/cellprofiler.iss"
+      - name: Create Release
+        if: ${{ matrix.os == 'windows-2019' }}
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: true
+      - name: Upload Release Asset
+        if: ${{ matrix.os == 'windows-2019' }}
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./distribution/windows/Output/CellProfiler.exe
+          asset_name: CellProfiler.exe
+          asset_content_type: application/exe

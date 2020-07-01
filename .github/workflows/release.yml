@@ -12,27 +12,6 @@ jobs:
         os: [macos-10.15, ubuntu-20.04, windows-2019]
         python-version: [ '3.8' ]
     steps:
-      - uses: actions/cache@v2
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - uses: actions/cache@v2
-        if: ${{ matrix.os == 'windows-2019' }}
-        with:
-          path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - uses: actions/cache@v2
-        if: ${{ matrix.os == 'macos-10.15' }}
-        with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
@@ -68,6 +47,27 @@ jobs:
           pip install -e .
         env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
+      - uses: actions/cache@v2
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - uses: actions/cache@v2
+        if: ${{ matrix.os == 'windows-2019' }}
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - uses: actions/cache@v2
+        if: ${{ matrix.os == 'macos-10.15' }}
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - if: ${{ matrix.os == 'windows-2019' }}
         name: Packaging for Windows
         run: |

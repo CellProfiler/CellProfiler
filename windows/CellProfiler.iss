@@ -2,7 +2,6 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "CellProfiler"
-#define MyAppVersion "4.0.0rc5"
 #define MyAppPublisher "Broad Institute"
 #define MyAppURL "http://cellprofiler.org/"
 #define MyAppExeName "CellProfiler.exe"
@@ -21,9 +20,9 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf64}\{#MyAppName}
 DisableProgramGroupPage=yes
-LicenseFile=.\CellProfiler\LICENSE
+LicenseFile=..\..\CellProfiler\LICENSE
 OutputBaseFilename=CellProfiler
-SetupIconFile=.\CellProfiler\cellprofiler\data\icons\CellProfiler.ico
+SetupIconFile=..\..\CellProfiler\cellprofiler\data\icons\CellProfiler.ico
 Compression=lzma
 SolidCompression=yes
 DisableDirPage=no

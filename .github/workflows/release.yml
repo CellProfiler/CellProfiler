@@ -47,4 +47,7 @@ jobs:
         env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
       - if: ${{ matrix.os == 'windows-2019' }}
-        run: pyinstaller distribution/windows/cellprofiler.spec
+        run: |
+          pyinstaller distribution/windows/cellprofiler.spec
+          choco install innosetup
+          iscc /dMyAppVersion="4.0.0rc5" "distribution/windows/cellprofiler.iss"

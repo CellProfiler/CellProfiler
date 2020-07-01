@@ -12,41 +12,6 @@ jobs:
         os: [macos-10.15, ubuntu-20.04, windows-2019]
         python-version: [ '3.8' ]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          architecture: x64
-          python-version: ${{ matrix.python-version }}
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '14.0.1' # The JDK version to make available on the path.
-          java-package: jdk
-          architecture: x64
-      - run: pip install --upgrade pip setuptools wheel
-      - run: git clone https://github.com/CellProfiler/pyinstaller.git
-      - run: pip install --editable .
-        working-directory: pyinstaller
-      - run: git clone https://github.com/CellProfiler/distribution.git
-      - run: pip install numpy
-      - env:
-          LDFLAGS: -L/usr/local/opt/openssl/lib
-        if: ${{ matrix.os == 'macos-10.15' }}
-        name: Packaging for Mac
-        run: |
-          brew install mysql
-          make
-        working-directory: ./distribution/macos
-      - if: ${{ matrix.os == 'ubuntu-20.04' }}
-        name: Packaging for Linux
-        run: echo
-      - if: ${{ matrix.os == 'windows-2019' }}
-        name: Installing Windows dependencies
-        run: |
-          pip install cython
-          pip install mysqlclient==1.4.6
-          pip install -e .
-        env:
-          JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
       - uses: actions/cache@v2
         if: ${{ matrix.os == 'ubuntu-20.04' }}
         with:
@@ -68,11 +33,50 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        name: Install Python
+        with:
+          architecture: x64
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-java@v1
+        name: Install Java
+        with:
+          java-version: '14.0.1' # The JDK version to make available on the path.
+          java-package: jdk
+          architecture: x64
+      - name: Clone repos
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install numpy
+          git clone https://github.com/CellProfiler/distribution.git
+          git clone https://github.com/CellProfiler/pyinstaller.git
+      - run: pip install --editable .
+        name: Install Pyintaller
+        working-directory: pyinstaller
+      - env:
+          LDFLAGS: -L/usr/local/opt/openssl/lib
+        if: ${{ matrix.os == 'macos-10.15' }}
+        name: Package for Mac
+        run: |
+          brew install mysql
+          make
+        working-directory: ./distribution/macos
+      - if: ${{ matrix.os == 'ubuntu-20.04' }}
+        name: Package for Linux
+        run: echo
       - if: ${{ matrix.os == 'windows-2019' }}
-        name: Packaging for Windows
+        name: Install Windows dependencies
+        run: |
+          pip install cython
+          pip install mysqlclient==1.4.6
+          pip install -e .
+        env:
+          JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
+      - if: ${{ matrix.os == 'windows-2019' }}
+        name: Package for Windows
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
-          choco install innosetup
           iscc /dMyAppVersion="4.0.0rc5" "distribution/windows/cellprofiler.iss"
       - name: Create Release
         if: ${{ matrix.os == 'windows-2019' }}

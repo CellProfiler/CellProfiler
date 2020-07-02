@@ -64,6 +64,7 @@ class Welcome(wx.Frame):
                 WELCOME_EXAMPLES=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_examples.png")),
                 WELCOME_START=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_start.png")),
                 WELCOME_HELP=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_help.png")),
+                WELCOME_NEW=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_new.png")),
             ),
                                  baseUrl="welcome")
 
@@ -144,4 +145,11 @@ class Welcome(wx.Frame):
 
     def __set_startup_blurb(self):
         cellprofiler_core.preferences.set_startup_blurb(False)
+        wx.MessageBox(
+            'This page can be accessed from "Help --> Show Welcome Screen" at any time.\n'
+            '',
+            "Welcome screen will no longer display on startup.",
+            wx.ICON_INFORMATION,
+        )
+
         self.Close()

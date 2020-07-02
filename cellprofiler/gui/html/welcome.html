@@ -5,9 +5,8 @@
     <title>Welcome Screen</title>
 </head>
 <body style = "font-family: sans-serif;">
-<p style="text-align: center;"><strong><span style="font-size: large;">Welcome to CellProfiler!</span></strong></p>
-<p><span style="font-size: small;">CellProfiler is automated image analysis software to measure biological phenotypes in images.</span></p>
-<table style="margin: auto; width: 100%; height: 275px;" border="3" cellspacing="5" cellpadding="3">
+<p style="text-align: center;"><strong><span style="font-size: larger;">Welcome to CellProfiler!</span></strong></p>
+<table style="margin: auto; width: 100%; height: 290px;" border="3" cellspacing="5" cellpadding="3">
 <tbody>
 <tr style="height: 50%; vertical-align: middle;">
     <td style="width: 25%; border-width: 3; border-color: blue;" align="center"><strong><span style="font-size: small;">Load Example</span></strong><br /> <a href="loadexample:ExampleFly"><img src="{{WELCOME_PIPELINE}}" border="" /></a></td>
@@ -20,10 +19,11 @@
     <td style="width: 25%;" align="center"><strong><span style="font-size: small;">Q&amp;A Forum</span></strong><br /> <a href="https://forum.image.sc/tag/cellprofiler"><img src="{{WELCOME_FORUM}}" border="" /></a></td>
     <td style="width: 25%;" align="center"><strong><span style="font-size: small;">Built-In Help<br /> <a href="help:inapphelp"><img src="{{WELCOME_HELP}}" border="" /></a></span></strong></td>
     <td style="width: 25%;" align="center"><strong><span style="font-size: small;">Manual<br /> <a href="{{MANUAL_URL}}"> <img src="{{WELCOME_MANUAL}}" border="" /></a></span></strong></td>
-    <td style="width: 25%;" align="center"><p><button onclick="location.href='pref:no_display'" type="button"> Don't show<br />this again</button></p></td>
+    <td style="width: 25%;" align="center"><strong><span style="font-size: small;">What's New<br /> <a href="http://cellprofiler.org/whatsnew.html"> <img src="{{WELCOME_NEW}}" border="" /></a></span></td>
 </tr>
 </tbody>
 </table>
-<p style="text-align: center;"><span style="font-size: small;">This page can be accessed from <em>Help &gt; Show Welcome Screen</em> at any time.</span></p>
+<p style="text-align: center;"><button onclick="location.href='pref:no_display'" type="button"> Don't show this again</button></p>
+<p style="text-align: center;"><span style="font-size: small;"></span></p>
 </body>
 </html>

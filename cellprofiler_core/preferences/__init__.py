@@ -22,6 +22,7 @@ import weakref
 import pkg_resources
 
 import cellprofiler_core.utilities.utf16encode
+import cellprofiler_core.utilities
 
 logger = logging.getLogger(__name__)
 
@@ -33,24 +34,6 @@ ABSPATH_IMAGE = "abspath_image"
 
 __python_root = os.path.split(str(cellprofiler_core.__path__[0]))[0]
 __cp_root = os.path.split(__python_root)[0]
-
-
-def image_resource(filename):
-    relpath = os.path.relpath(
-        pkg_resources.resource_filename(
-            "cellprofiler_core", os.path.join("data", "images", filename)
-        )
-    )
-
-    # With this specific relative path we are probably building the documentation
-    # in sphinx The path separator used by sphinx is "/" on all platforms.
-    if relpath == os.path.join("..", "cellprofiler_core", "data", "images", filename):
-        return "../images/{}".format(filename)
-
-    # Otherwise, if you're rendering in the GUI, relative paths are fine
-    # Note: the HTML renderer requires to paths to use '/' so we replace
-    # the windows default '\\' here
-    return relpath.replace("\\", "/")
 
 
 class HeadlessConfig:
@@ -485,8 +468,12 @@ created according to the pathname you have typed.
 .. |image1| image:: {CREATE_BUTTON}\
 """.format(
     **{
-        "CREATE_BUTTON": image_resource("folder_create.png"),
-        "BROWSE_BUTTON": image_resource("folder_browse.png"),
+        "CREATE_BUTTON": cellprofiler_core.utilities.image_resource(
+            "folder_create.png"
+        ),
+        "BROWSE_BUTTON": cellprofiler_core.utilities.image_resource(
+            "folder_browse.png"
+        ),
     }
 )
 

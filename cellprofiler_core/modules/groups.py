@@ -12,6 +12,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.setting
 import cellprofiler_core.measurement
+import cellprofiler_core.utilities
 
 __doc__ = """\
 Groups

@@ -6,21 +6,18 @@ import pkg_resources
 
 
 def image_resource(filename):
-    relpath = os.path.relpath(
-        pkg_resources.resource_filename(
-            "cellprofiler_core", os.path.join("data", "images", filename)
+    try:
+        abspath = os.path.abspath(
+            pkg_resources.resource_filename(
+                "cellprofiler", os.path.join("data", "images", filename)
+            )
         )
-    )
-
-    # With this specific relative path we are probably building the documentation
-    # in sphinx The path separator used by sphinx is "/" on all platforms.
-    if relpath == os.path.join("..", "cellprofiler_core", "data", "images", filename):
-        return "../images/{}".format(filename)
-
-    # Otherwise, if you're rendering in the GUI, relative paths are fine
-    # Note: the HTML renderer requires to paths to use '/' so we replace
-    # the windows default '\\' here
-    return relpath.replace("\\", "/")
+        return abspath.replace("\\", "/")
+    except ModuleNotFoundError:
+        # CellProfiler is not installed so the assets are missing.
+        # In theory an icon should never be called without the GUI anyway
+        print("CellProfiler image assets were not found")
+    return ""
 
 
 def generate_presigned_url(url):

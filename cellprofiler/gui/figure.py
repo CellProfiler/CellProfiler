@@ -1828,7 +1828,7 @@ class Figure(wx.Frame):
             # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
             if not colormap:
-                colormap = self.return_cmap(numpy.max(image))
+                colormap = self.return_cmap(numpy.max(image) if numpy.max(image) > 255 else None)
             else:
                 colormap = colormap
 

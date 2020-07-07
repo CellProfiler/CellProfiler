@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<body style = "font-family: sans-serif; font-size: small;">
+<h2 class="title">Using Test Mode</h2>
+
+<p>Before starting an analysis run, you can test the pipeline settings on a
+selected image cycle using the <em>Test</em> mode option on the main menu. Test
+mode allows you to run the pipeline on a selected image, preview the
+results and adjust the module settings on the fly.</p>
+<p>To enter Test mode once you have built a pipeline, choose <em>Test &gt; Start
+Test Mode</em> from the menu bar in the main window. At this point, you will
+see the following features appear:</p>
+<ul class="simple">
+<li>The buttons available at the bottom of the pipeline panel change.</li>
+<li>A Pause icon <img src="{{PAUSE_BUTTON_DIM}}" />  will appear to the left
+of each module.</li>
+<li>A Step icon <img src="{{ANALYZE_BUTTON}}" /> will appear next to the
+module which is due to be executed next. Once executed this icon will
+change to be dimmer  <img alt="HelpContent_TestMode_image_stepped" src="{{STEP_BUTTON_DIM}}" />. You can click on
+these icons to jump back and execute these modules again.</li>
+</ul>
+<p>You can run your pipeline in Test mode by selecting <em>Test &gt; Step to Next
+Module</em> or clicking the <em>Run</em> or <em>Step</em> buttons at the bottom of the
+pipeline panel. The pipeline will execute normally, but you will be able
+to back up to a previous module or jump to a downstream module, change
+module settings to see the results, or execute the pipeline on the image
+of your choice. The additional controls allow you to do the following:</p>
+<ul class="simple">
+<li><em>Run from module N:</em> Start or resume execution of the pipeline at any
+time from a selected module. Right-click the module
+and select &quot;Run from module N&quot;, where &quot;N&quot; is the module number.
+This menu option is only available from modules which have already been
+run in test mode, or from the current module. Test mode will run until
+it reaches the end of the pipeline or it encounters a pause.</li>
+<li><em>Pause:</em> Clicking the pause icon will cause the pipeline test run to
+halt execution when that module is reached (the paused module itself
+is not executed). The icon changes from <img src="{{PAUSE_BUTTON_DIM}}" />
+to <img src="{{PAUSE_BUTTON}}" /> to indicate that a pause has been
+inserted at that point.</li>
+<li><em>Run:</em> Execution of the pipeline will be started/resumed until the
+next module pause is reached. When all modules have been executed for
+a given image cycle, execution will stop.</li>
+<li><em>Step:</em> Execute the next module, as indicated by being underlined and having
+the <img src="{{ANALYZE_BUTTON}}" /> icon in front of it.
+If you click once on a module, for example to view or change its settings,
+the active module text (the one you're looking at in the GUI) is <strong>bolded</strong>.</li>
+<li><em>Next Image:</em> Skip ahead to the next image cycle as determined by the
+image order in the Input modules. The first module in the pipeline will automatically become active (<strong>bolded</strong>) and will run next (underlined).</li>
+</ul>
+<p>From the <em>Test</em> menu, you can choose additional options:</p>
+<ul class="simple">
+<li><em>Exit Test Mode:</em> Exit <em>Test</em> mode. Loading a new pipeline or
+adding/subtracting modules will also automatically exit test mode.</li>
+<li><em>Step to Next Module:</em> Execute the next module (as indicated by being
+underlined)</li>
+<li><em>Next Image Set:</em> Step to the next image set in the current image
+group.</li>
+<li><em>Next Image Group:</em> Step to the next group in the image set. The first
+module in the pipeline will automatically become active (<strong>bolded</strong>) and will run next (underlined).</li>
+<li><em>Random Image Set:</em> Randomly select and jump to an image set in the
+current image group.</li>
+<li><em>Random Image Group:</em> Randomly select and jump to an image group.</li>
+<li><em>Choose Image Set:</em> Choose the image set to jump to. The first module
+in the pipeline will automatically become active (<strong>bolded</strong>) and will run next (underlined).</li>
+<li><em>Choose Image Group:</em> Choose an image group to jump to. The first module
+in the pipeline will automatically become active (<strong>bolded</strong>) and will run next (underlined).</li>
+<li><em>Reload Modules Source (enabled only if running from source code):</em>
+This option will reload the module source code, so any changes to the
+code will be reflected immediately.</li>
+<li><em>Break into debugger (enabled only if running from source code):</em>
+This option will allow you to open a debugger in the terminal window.</li>
+</ul>
+<p>Note that if movies are being loaded, the individual movie is defined as
+a group automatically. Selecting <em>Choose Image Group</em> will allow you to
+choose the movie file, and <em>Choose Image Set</em> will let you choose the
+individual movie frame from that file.</p>
+<p>Please see the <strong>Groups</strong> module for more details on the proper use of
+metadata for grouping.</p>
+
+{{GO_BACK}}
+
+</body>
+</html>

@@ -5,6 +5,7 @@ from cellprofiler_core.module.image_segmentation import (
     ImageSegmentation,
 )
 from cellprofiler_core.module._image_processing import ImageProcessing
+import cellprofiler_core.utilities
 
 
 DEFINITION_OBJECT = """\
@@ -90,7 +91,7 @@ conditions you want to include.
 {REGEXP_HELP_REF}
 """.format(
     **{
-        "IMAGES_USING_RULES_ICON": cellprofiler_core.preferences.image_resource(
+        "IMAGES_USING_RULES_ICON": cellprofiler_core.utilities.image_resource(
             "Images_UsingRules.png"
         ),
         "REGEXP_HELP_REF": REGEXP_HELP_REF,
@@ -223,7 +224,7 @@ overlay outlines or objects, respectively, on a base image.
 The resulting image can also be saved with the **SaveImages** module.
 """
 
-StrelImage = cellprofiler_core.preferences.image_resource("structuringelement.png")
+StrelImage = cellprofiler_core.utilities.image_resource("structuringelement.png")
 
 HELP_FOR_STREL = """\
 The structuring element is the shape that will be applied in any morphological
@@ -239,8 +240,8 @@ pixel diameter with various structuring elements.
     **{"StrelImage": StrelImage}
 )
 
-PROTIP_RECOMMEND_ICON = cellprofiler_core.preferences.image_resource("thumb-up.png")
+PROTIP_RECOMMEND_ICON = cellprofiler_core.utilities.image_resource("thumb-up.png")
 
-PROTIP_AVOID_ICON = cellprofiler_core.preferences.image_resource("thumb-down.png")
+PROTIP_AVOID_ICON = cellprofiler_core.utilities.image_resource("thumb-down.png")
 
-TECH_NOTE_ICON = cellprofiler_core.preferences.image_resource("gear.png")
+TECH_NOTE_ICON = cellprofiler_core.utilities.image_resource("gear.png")

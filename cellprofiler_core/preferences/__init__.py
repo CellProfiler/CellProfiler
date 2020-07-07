@@ -8,9 +8,9 @@
 """
 
 import logging
-import multiprocessing
 import os
 import os.path
+import psutil
 import sys
 import tempfile
 import threading
@@ -1499,10 +1499,7 @@ def set_omero_session_id(omero_session_id, globally=True):
 
 
 def default_max_workers():
-    try:
-        return multiprocessing.cpu_count()
-    except:
-        return 4
+    return psutil.cpu_count(logical=False)
 
 
 __max_workers = None

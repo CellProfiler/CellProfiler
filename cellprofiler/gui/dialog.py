@@ -1,6 +1,5 @@
 # coding=utf-8
 
-import raven
 import wx
 import wx.adv
 
@@ -15,7 +14,7 @@ class AboutDialogInfo(wx.adv.AboutDialogInfo):
 
         self.SetName("CellProfiler")
 
-        self.SetVersion(raven.fetch_package_version("cellprofiler"))
+        self.SetVersion("4.0.0rc5")
 
 
 class Error(wx.MessageDialog):

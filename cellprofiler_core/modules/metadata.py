@@ -1127,25 +1127,38 @@ not being applied, your choice on this setting may be the culprit.
             | wx.PD_ELAPSED_TIME
             | wx.PD_REMAINING_TIME,
         ) as dlg:
+            errorcount = 0
             for i, url in enumerate(urls):
-                if i > 0:
-                    keep_going, _ = dlg.Update(i, msg(url))
-                    if not keep_going:
-                        break
-                if group.filter_choice == F_FILTERED_IMAGES:
-                    match = group.filter.evaluate(
-                        (
-                            cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
-                            cellprofiler_core.modules.images.Images.url_to_modpath(url),
-                            self,
+                try:
+                    if i > 0:
+                        keep_going, _ = dlg.Update(i, msg(url))
+                        if not keep_going:
+                            break
+                    if group.filter_choice == F_FILTERED_IMAGES:
+                        match = group.filter.evaluate(
+                            (
+                                cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
+                                cellprofiler_core.modules.images.Images.url_to_modpath(
+                                    url
+                                ),
+                                self,
+                            )
                         )
-                    )
-                    if not match:
-                        continue
-                metadata = filelist.get_metadata(url)
-                if metadata is None:
-                    metadata = get_omexml_metadata(url=url)
-                    filelist.add_metadata(url, metadata)
+                        if not match:
+                            continue
+                    metadata = filelist.get_metadata(url)
+                    if metadata is None:
+                        metadata = get_omexml_metadata(url=url)
+                        filelist.add_metadata(url, metadata)
+                except:
+                    print("Metadata extraction failed for %s" % url)
+                    errorcount += 1
+            if errorcount > 0:
+                wx.MessageBox(
+                    "Metadata extraction completed with %i error(s).\n"
+                    "File(s) may be in an incompatible format or "
+                    "corrupted." % errorcount
+                )
         group.metadata_autoextracted.value = True
 
     def on_activated(self, workspace):

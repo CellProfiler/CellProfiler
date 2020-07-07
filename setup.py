@@ -72,7 +72,7 @@ setuptools.setup(
         "python-bioformats>=1.5.2",
         "python-javabridge",
         "pyzmq==18.0.1",
-        "raven>=6.10",
+        "sentry-sdk>=0.16.0",
         "requests>=2.22",
         "scikit-image==0.16.2",
         "scikit-learn>=0.20",

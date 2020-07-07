@@ -1,10 +1,10 @@
 import collections
 import logging
-import multiprocessing
 import subprocess
 import tempfile
 
 import numpy
+import psutil
 import six.moves
 import zmq
 
@@ -694,10 +694,8 @@ class Runner:
         if cls.workers:
             return
 
-        try:
-            num = max(4, multiprocessing.cpu_count()//2) if num is None else num
-        except NotImplementedError:
-            num = 4
+        if num is None:
+            num = psutil.cpu_count(logical=False)
 
         cls.work_announce_address = get_announcer_address()
         logger.info("Starting workers on address %s" % cls.work_announce_address)

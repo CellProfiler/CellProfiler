@@ -399,13 +399,6 @@ class PreferencesDlg(wx.Dialog):
                 cellprofiler_core.preferences.TEMP_DIR_HELP,
             ],
             [
-                "Maximum memory for Java (MB)",
-                cellprofiler_core.preferences.get_jvm_heap_mb,
-                cellprofiler_core.preferences.set_jvm_heap_mb,
-                IntegerPreference(128, 64000),
-                cellprofiler_core.preferences.JVM_HEAP_HELP,
-            ],
-            [
                 "Save pipeline and/or file list in addition to project",
                 cellprofiler_core.preferences.get_save_pipeline_with_project,
                 cellprofiler_core.preferences.set_save_pipeline_with_project,

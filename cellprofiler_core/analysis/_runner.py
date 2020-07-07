@@ -729,8 +729,6 @@ class Runner:
                 "--plugins-directory",
                 cellprofiler_core.preferences.get_plugin_directory(),
             ]
-            jvm_arg = "%dm" % cellprofiler_core.preferences.get_jvm_heap_mb()
-            aw_args.append("--jvm-heap-size=%s" % jvm_arg)
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
             if hasattr(sys, "frozen"):

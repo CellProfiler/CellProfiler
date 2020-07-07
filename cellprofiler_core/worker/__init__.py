@@ -86,10 +86,7 @@ def aw_parse_args():
     )
 
     options, args = parser.parse_args()
-    if options.jvm_heap_size is not None:
-        from cellprofiler_core.preferences import set_jvm_heap_mb
 
-        set_jvm_heap_mb(options.jvm_heap_size, False)
     logging.root.setLevel(options.log_level)
     if len(logging.root.handlers) == 0:
         logging.root.addHandler(logging.StreamHandler())

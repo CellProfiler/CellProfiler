@@ -1624,51 +1624,7 @@ def set_intensity_mode(value):
     __intensity_mode = value
     config_write(INTENSITY_MODE, value)
 
-
-__jvm_heap_mb = None
-
-
-def get_jvm_heap_mb():
-    """Get the JVM heap size"""
-    global __jvm_heap_mb
-    if __jvm_heap_mb is not None:
-        return __jvm_heap_mb
-    if config_exists(JVM_HEAP_MB):
-        jvm_heap_config = config_read(JVM_HEAP_MB)
-        try:
-            __jvm_heap_mb = int(jvm_heap_config)
-        except:
-            __jvm_heap_mb = DEFAULT_JVM_HEAP_MB
-    else:
-        __jvm_heap_mb = DEFAULT_JVM_HEAP_MB
-    return __jvm_heap_mb
-
-
-def set_jvm_heap_mb(value, save_config=True):
-    """Set the JVM heap size
-
-    value - value in megabytes or as a string with a K/ M or G postifx
-    save_config - True to save the value in the configuration, False to set locally
-    """
-    global __jvm_heap_mb
-    try:
-        value_mb = int(value)
-    except:
-        if value.lower().endswith("k"):
-            value_mb = int(value[:-1]) / 1000
-        elif value.lower().endswith("m"):
-            value_mb = int(value[:-1])
-        elif value.lower().endswith("g"):
-            value_mb = int(value[:-1]) * 1000
-        else:
-            raise
-    __jvm_heap_mb = value_mb
-    if save_config:
-        config_write(JVM_HEAP_MB, str(value_mb))
-
-
 __save_pipeline_with_project = None
-
 
 def get_save_pipeline_with_project():
     global __save_pipeline_with_project

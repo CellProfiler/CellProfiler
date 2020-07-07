@@ -105,7 +105,6 @@ def start_java():
         logger.debug("JVM will be started with AWT in headless mode")
         args.append("-Djava.awt.headless=true")
 
-    heap_size = str(cellprofiler_core.preferences.get_jvm_heap_mb()) + "m"
     if "CP_JDWP_PORT" in os.environ:
         args.append(
             (
@@ -114,7 +113,7 @@ def start_java():
             )
             % os.environ["CP_JDWP_PORT"]
         )
-    javabridge.start_vm(args=args, class_path=class_path, max_heap_size=heap_size)
+    javabridge.start_vm(args=args, class_path=class_path)
     #
     # Enable Bio-Formats directory cacheing
     #

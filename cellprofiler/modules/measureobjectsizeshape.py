@@ -450,16 +450,12 @@ module.""".format(
 
             workspace.display_data.statistics = []
         for object_name in self.objects_list.value:
-            import time
-            time0 = time.perf_counter()
             self.run_on_objects(object_name, workspace)
-            print("Analysed in ", time.perf_counter() - time0)
 
     def run_on_objects(self, object_name, workspace):
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
         labels = objects.segmented
-
 
         if len(objects.shape) == 2:
             desired_properties = [

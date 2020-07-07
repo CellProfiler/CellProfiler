@@ -256,7 +256,7 @@ def test_non_contiguous():
     module.run(workspace)
     values = measurements.get_current_measurement("SomeObjects", "AreaShape_Perimeter")
     assert len(values) == 1
-    assert values[0] == 54
+    assert values[0] == 46
 
 
 def test_zernikes_are_different():

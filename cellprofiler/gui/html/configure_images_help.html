@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<body style = "font-family: sans-serif; font-size: small;">
+<h2 class="title">Configuring Images for Analysis</h2>
+<p>Once you have used the <strong>Images</strong> module to produce a list of images to
+be analyzed, you can use the other Input modules to define how images
+are related to one another, give them a memorable name for future
+reference, attach additional image information about the experiment,
+among other things.</p>
+<p>After <strong>Images</strong>, you can use the following Input modules:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="4%" />
+<col width="12%" />
+<col width="4%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head"><strong>Module</strong></th>
+<th class="head"><strong>Description</strong></th>
+<th class="head"><strong>Use required?</strong></th>
+<th class="head"><strong>Usage notes</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td><strong>Metadata</strong></td>
+<td>Associate image information (metadata) with the images</td>
+<td>No</td>
+<td>With this module, you can extract metadata from various sources and append it to the measurements that your pipeline will collect, or use it to define how the images are related to each other. The metadata can come from the image filename or location, or from a spreadsheet that you provide. If your assay does not require or have such information, this module can be skipped.</td>
+</tr>
+<tr><td><strong>NamesAndTypes</strong></td>
+<td>Assign names to images and/or channels and define their relationship.</td>
+<td>Yes</td>
+<td>This module gives each image a meaningful name by which modules in the analysis pipeline will refer to it. The most common usage for this module is to define a collection of channels that represent a single field of view. By using this module, each of these channels will be loaded and processed together for each field of view.</td>
+</tr>
+<tr><td><strong>Groups</strong></td>
+<td>Define sub-divisions between groups of images for processing.</td>
+<td>No</td>
+<td>For some assays, you will need the option of further sub-dividing an image set into <em>groups</em> that share a common feature. An example of this is a time-lapse movie that consists of individual files; each group of files that define a single movie needs to be processed independently of the others. This module allows you to specify what distinguishes one group of images from another. If your assay does not require this sort of behavior, this module can be skipped.</td>
+</tr>
+</tbody>
+</table>
+<p>For more information on these modules and how to configure them for the
+best performance, please see the detailed help by selecting the module
+and clicking the <img src={{MODULE_HELP_BUTTON}}> button at the bottom of the pipeline panel, or
+check out the Input module tutorials on our <a class="reference external" href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
+
+{{GO_BACK}}
+</body>
+</html>

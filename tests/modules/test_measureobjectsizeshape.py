@@ -496,7 +496,7 @@ def test_run_volume():
         ),
     )[0]
 
-    assert center_x == 29.5
+    assert center_x == 29
 
     center_y = workspace.measurements.get_current_measurement(
         OBJECTS_NAME,
@@ -508,7 +508,7 @@ def test_run_volume():
         ),
     )[0]
 
-    assert center_y == 9.5
+    assert center_y == 9
 
 
 # https://github.com/CellProfiler/CellProfiler/issues/2813

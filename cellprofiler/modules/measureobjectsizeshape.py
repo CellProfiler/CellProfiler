@@ -505,6 +505,8 @@ module.""".format(
                 zf[(n, m)] = numpy.zeros(nobjects)
 
             for index, mini_image in enumerate(props["image"]):
+                # Pad image to assist distance tranform
+                mini_image = numpy.pad(mini_image, 1)
                 distances = scipy.ndimage.distance_transform_edt(mini_image)
                 max_radius[index] = centrosome.cpmorphology.fixup_scipy_ndimage_result(
                     scipy.ndimage.maximum(distances, mini_image)

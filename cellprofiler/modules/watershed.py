@@ -9,10 +9,7 @@ different objects in an image. For more information please visit
 the `scikit-image documentation`_ on the **Watershed** implementation that 
 CellProfiler uses.
 
-Note, when using marker-based **Watershed** that it is typical to use the input binary image
-as the mask. Otherwise, if the mask is *None*, the background will be interpreted as an object
-and **Watershed** may yield unexpected results.
-
+.. _skimage label: http://scikit-image.org/docs/dev/api/skimage.measure.html#label
 |
 
 ============ ============ ===============
@@ -21,7 +18,52 @@ Supports 2D? Supports 3D? Respects masks?
 YES          YES          YES
 ============ ============ ===============
 
-.. _scikit-image documentation: http://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
+Select a method of inputs for the watershed algorithm:
+
+-  *{O_DISTANCE}* (default): This is classical nuclei segmentation using
+   watershed. Your “Input” image should be a binary image. Markers and other 
+   inputs for the watershed algorithm will be automatically generated.
+   
+   **Footprint** defines dimentions of the window used to scan
+   the input image for local maximum. The footprint can be interpreted as a region,
+   window, structring element or volume that subsamples the input image. 
+   The distance transform will create local maximum from a binary image that 
+   will be at the centers of objects. A large footprint will suppress local maximum 
+   that are close together into a single maximum, but this will require more memory 
+   and time to run. Large footprint could result in a blockier segmentation. 
+   A small footprint will preserve local maximum that are close together,
+   but this can lead to oversegmentation. If speed and memory are issues, 
+   choosing a lower footprint can be offset by downsampling the input image. 
+   See `mahotas regmax`_ for more information.
+   
+   .. _mahotas regmax: http://mahotas.readthedocs.io/en/latest/api.html?highlight=regmax#mahotas.regmax
+   
+   **Downsample** an n-dimensional image by local averaging. If the downsampling factor 
+   is 1, the image is not downsampled. To downsample more, increase the number from 1. 
+   
+-  *{O_MARKERS}*: Similar to the IdentifySecondaryObjects in 2D, use manually 
+   generated markers and supply an optional mask for watershed. Watershed works best 
+   when the “Input” image has high intensity surrounding regions of interest 
+   and low intensity inside regions of interest. 
+   
+   **Connectivity** is the maximum number of orthogonal hops to consider 
+   a pixel/voxel as a neighbor. Accepted values are ranging from 1 
+   to the number of dimensions.
+   Two pixels are connected when they are neighbors and have the same value. 
+   In 2D, they can be neighbors either in a 1- or 2-connected sense. The value 
+   refers to the maximum number of orthogonal hops to consider a pixel/voxel a neighbor.
+   See `skimage label`_ for more information.
+   
+   .. _scikit-image documentation: http://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
+   
+   Note, when using marker-based **Watershed** that it is typical to use the input 
+   binary image as the mask. Otherwise, if the mask is *None*, the background will be 
+   interpreted as an object and **Watershed** may yield unexpected results.
+   
+   **Compactness**, use `compact watershed`_ with given compactness parameter. 
+   Higher values result in more regularly-shaped watershed basins. 
+   
+   .. _compact watershed: http://scikit-image.org/docs/0.13.x/api/skimage.morphology.html#r395
 """
 
 import mahotas
@@ -61,14 +103,14 @@ class Watershed(cellprofiler_core.module.image_segmentation.ImageSegmentation):
 Select a method of inputs for the watershed algorithm:
 
 -  *{O_DISTANCE}* (default): This is classical nuclei segmentation using
-   watershed. Your “Input” image should be a binary image. Markers and
-   other inputs for the watershed algorithm will be automatically
-   generated.
--  *{O_MARKERS}*: Use manually generated markers and supply an optional mask
-   for watershed. Watershed works best when the “Input” image has high
-   intensity surrounding regions of interest and low intensity inside
-   regions of interest. Refer to the documentation for the other
-   available options for more information.
+   watershed. Your “Input” image should be a binary image. Markers and other 
+   inputs for the watershed algorithm will be automatically generated.
+-  *{O_MARKERS}*: Similar to the IdentifySecondaryObjects in 2D, use manually 
+   generated markers and supply an optional mask for watershed. 
+   Watershed works best when the “Input” image has high intensity 
+   surrounding regions of interest and low intensity inside
+   regions of interest. 
+   
 """.format(
                 **{"O_DISTANCE": O_DISTANCE, "O_MARKERS": O_MARKERS}
             ),
@@ -128,17 +170,17 @@ to touch. The line has the same label as the background.
 
         self.footprint = cellprofiler_core.setting.Integer(
             doc="""\
-The connectivity defines the dimensions of the footprint used to scan
+The **Footprint** defines the dimensions of the window used to scan
 the input image for local maximum. The footprint can be interpreted as a
 region, window, structuring element or volume that subsamples the input
 image. The distance transform will create local maximum from a binary
-image that will be at the centers of objects. A large connectivity will
+image that will be at the centers of objects. A large footprint will
 suppress local maximum that are close together into a single maximum, but this will require
-more memory and time to run. A small connectivity will preserve local
-maximum that are close together, but this can lead to oversegmentation.
-If speed and memory are issues, choosing a lower connectivity can be
-offset by downsampling the input image. See `mahotas regmax`_ for more
-information.
+more memory and time to run. Large footprint could also result in a blockier segmentation.
+A small footprint will preserve local maximum that are close together, 
+but this can lead to oversegmentation. If speed and memory are issues,
+choosing a lower connectivity can be offset by downsampling the input image. 
+See `mahotas regmax`_ for more information.
 
 .. _mahotas regmax: http://mahotas.readthedocs.io/en/latest/api.html?highlight=regmax#mahotas.regmax
 """,

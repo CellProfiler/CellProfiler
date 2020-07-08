@@ -809,15 +809,4 @@ module.""".format(
             self.record_measurement(workspace, object_name, feature_name, empty_measure)
 
 
-def form_factor(objects):
-    """FormFactor = 4/pi*Area/Perimeter^2, equals 1 for a perfectly circular"""
-    if len(objects.indices) > 0:
-        perimeter = objects.fn_of_label_and_index(
-            centrosome.cpmorphology.calculate_perimeters
-        )
-        return 4.0 * numpy.pi * objects.areas / perimeter ** 2
-    else:
-        return numpy.zeros((0,))
-
-
 MeasureObjectAreaShape = MeasureObjectSizeShape

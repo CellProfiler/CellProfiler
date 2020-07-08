@@ -276,7 +276,7 @@ color map.
         if self.objects_or_image == OI_OBJECTS:
             result += [self.objects_name]
         result += [self.measurement, self.wants_image, self.image_name]
-        if self.objects_or_image == OI_OBJECTS and not self.use_as_data_tool:
+        if self.objects_or_image == OI_OBJECTS:
             result += [self.color_or_text]
         if self.use_color_map():
             result += [self.colormap, self.color_map_scale_choice]
@@ -292,7 +292,6 @@ color map.
         return (
             self.objects_or_image == OI_OBJECTS
             and self.color_or_text == CT_COLOR
-            and not self.use_as_data_tool
         )
 
     def run(self, workspace):

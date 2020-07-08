@@ -456,7 +456,11 @@ module.""".format(
         """Run, computing the area measurements for a single map of objects"""
         objects = workspace.get_objects(object_name)
         labels = objects.segmented
-
+        nobjects = len(objects.indices)
+        if len(objects.indices) == 0:
+            # No objects to process
+            self.measurements_without_objects(workspace, object_name)
+            return
         if len(objects.shape) == 2:
             desired_properties = [
                 "label",
@@ -490,8 +494,6 @@ module.""".format(
             formfactor = 4.0 * numpy.pi * props["area"] / props["perimeter"] ** 2
             denom = [max(x, 1) for x in 4.0 * numpy.pi * props["area"]]
             compactness = props["perimeter"] ** 2 / denom
-
-            nobjects = len(props['label'])
 
             max_radius = numpy.zeros(nobjects)
             median_radius = numpy.zeros(nobjects)
@@ -798,6 +800,13 @@ module.""".format(
 
     def volumetric(self):
         return True
+
+    def measurements_without_objects(self, workspace, object_name):
+        # Create column headers even if there were no objects in a set.
+        features_to_record = self.get_feature_names(workspace.pipeline)
+        empty_measure = numpy.zeros((0,))
+        for feature_name in features_to_record:
+            self.record_measurement(workspace, object_name, feature_name, empty_measure)
 
 
 def form_factor(objects):

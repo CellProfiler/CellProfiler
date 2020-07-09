@@ -11,6 +11,9 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 
+import os
+import tests.modules
+
 INPUT_IMAGE_NAME = "MyImage"
 OUTPUT_IMAGE_NAME = "MyResult"
 AVERAGE_IMAGE_NAME = "Ave"
@@ -1279,9 +1282,8 @@ def test_rescale_outlier():
 
 
 def test_load_v1():
-    with open(
-        "./tests/resources/modules/correctilluminationcalculate/v1.pipeline", "r"
-    ) as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "correctilluminationcalculate/v1.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1430,9 +1432,8 @@ def test_load_v1():
 
 
 def test_load_v2():
-    with open(
-        "./tests/resources/modules/correctilluminationcalculate/v2.pipeline", "r"
-    ) as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "correctilluminationcalculate/v2.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

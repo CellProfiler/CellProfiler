@@ -12,6 +12,7 @@ import numpy
 import pytest
 import six.moves
 
+import tests.modules
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
@@ -205,7 +206,8 @@ def test_00_write_load_test():
 
 
 def test_load_v11():
-    with open("./tests/resources/modules/exporttodatabase/v11.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v11.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -229,7 +231,8 @@ def test_load_v11():
 
 
 def test_load_v12():
-    with open("./tests/resources/modules/exporttodatabase/v12.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v12.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -254,7 +257,8 @@ def test_load_v12():
 
 
 def test_load_v13():
-    with open("./tests/resources/modules/exporttodatabase/v13.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v13.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -279,7 +283,8 @@ def test_load_v13():
 
 
 def test_load_v15():
-    with open("./tests/resources/modules/exporttodatabase/v15.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v15.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -323,7 +328,8 @@ def test_load_v15():
 
 
 def test_load_v22():
-    with open("./tests/resources/modules/exporttodatabase/v22.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v22.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -424,7 +430,8 @@ def test_load_v22():
 
 
 def test_load_v23():
-    with open("./tests/resources/modules/exporttodatabase/v23.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v23.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -527,7 +534,8 @@ def test_load_v23():
 
 
 def test_load_v24():
-    with open("./tests/resources/modules/exporttodatabase/v24.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v24.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -633,7 +641,8 @@ def test_load_v24():
 
 
 def test_load_v25():
-    with open("./tests/resources/modules/exporttodatabase/v25.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v25.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -740,7 +749,8 @@ def test_load_v25():
 
 
 def test_load_v26():
-    with open("./tests/resources/modules/exporttodatabase/v26.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v26.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -851,7 +861,8 @@ def test_load_v26():
 
 
 def test_load_v27():
-    with open("./tests/resources/modules/exporttodatabase/v27.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v27.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -892,18 +903,18 @@ def make_workspace(
         variable_revision_number = 1
 
         def create_settings(self):
-            image_name = cellprofiler_core.setting.ImageNameProvider("Foo", IMAGE_NAME)
-            objects_name = cellprofiler_core.setting.ObjectNameProvider(
+            self.image_name = cellprofiler_core.setting.ImageNameProvider("Foo", IMAGE_NAME)
+            self.objects_name = cellprofiler_core.setting.ObjectNameProvider(
                 "Bar", OBJECT_NAME
             )
             if alt_object:
-                altobjects_name = cellprofiler_core.setting.ObjectNameProvider(
+                self.altobjects_name = cellprofiler_core.setting.ObjectNameProvider(
                     "Baz", ALTOBJECT_NAME
                 )
 
         def settings(self):
-            return [image_name, objects_name] + (
-                [altobjects_name] if alt_object else []
+            return [self.image_name, self.objects_name] + (
+                [self.altobjects_name] if alt_object else []
             )
 
         @staticmethod

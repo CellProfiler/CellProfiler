@@ -8,6 +8,7 @@ import pytest
 import six
 import six.moves
 
+import tests.modules
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
@@ -43,7 +44,8 @@ def output_dir():
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/exporttospreadsheet/v3.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttospreadsheet/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -79,7 +81,8 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/exporttospreadsheet/v4.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttospreadsheet/v4.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -123,7 +126,8 @@ def test_load_v4():
 
 
 def test_load_v5():
-    with open("./tests/resources/modules/exporttospreadsheet/v5.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttospreadsheet/v5.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -188,7 +192,8 @@ def test_load_v5():
 
 
 def test_load_v6():
-    with open("./tests/resources/modules/exporttospreadsheet/v6.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttospreadsheet/v6.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -290,7 +295,8 @@ def test_load_v6():
 
 
 def test_load_v8():
-    with open("./tests/resources/modules/exporttospreadsheet/v8.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttospreadsheet/v8.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -333,7 +339,8 @@ def test_load_v8():
 
 
 def test_load_v9():
-    with open("./tests/resources/modules/exporttospreadsheet/v9.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttospreadsheet/v9.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -378,7 +385,8 @@ def test_load_v9():
 
 
 def test_load_v10():
-    with open("./tests/resources/modules/exporttospreadsheet/v10.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttospreadsheet/v10.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -424,7 +432,8 @@ def test_load_v10():
 
 
 def test_load_v11():
-    with open("./tests/resources/modules/exporttospreadsheet/v11.pipeline", "r") as fd:
+    file = os.path.join(tests.modules.test_resources_directory(), "exporttospreadsheet/v11.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

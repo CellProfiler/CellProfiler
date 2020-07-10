@@ -12,6 +12,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
+import tests.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -20,7 +21,8 @@ OUTPUT_IMAGE_NAME = "output"
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/resize/v3.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("resize/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

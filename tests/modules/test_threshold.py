@@ -18,6 +18,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
+import tests.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -56,7 +57,8 @@ def test_write_a_test_for_the_new_variable_revision_please():
 
 
 def test_load_v7():
-    with open("./tests/resources/modules/threshold/v7.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("threshold/v7.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     fd = io.StringIO(data)
@@ -83,7 +85,8 @@ def test_load_v7():
 
 
 def test_load_v8():
-    with open("./tests/resources/modules/threshold/v8.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("threshold/v8.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     fd = io.StringIO(data)
@@ -110,7 +113,8 @@ def test_load_v8():
 
 
 def test_load_v9():
-    with open("./tests/resources/modules/threshold/v9.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("threshold/v9.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     fd = io.StringIO(data)
@@ -149,7 +153,8 @@ def test_load_v9():
 
 
 def test_load_v10():
-    with open("./tests/resources/modules/threshold/v10.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("threshold/v10.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     fd = io.StringIO(data)

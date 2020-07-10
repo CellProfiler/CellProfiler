@@ -1,5 +1,6 @@
 import numpy
 import six.moves
+import os
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -7,6 +8,7 @@ import cellprofiler.modules.graytocolor
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+import tests.modules
 
 OUTPUT_IMAGE_NAME = "outputimage"
 
@@ -94,7 +96,8 @@ def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/graytocolor/v3.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("graytocolor/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

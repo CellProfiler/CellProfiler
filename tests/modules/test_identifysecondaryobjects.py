@@ -3,6 +3,7 @@ import io
 import centrosome.threshold
 import numpy
 
+import tests.modules
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
@@ -23,9 +24,8 @@ THRESHOLD_IMAGE_NAME = "threshold"
 
 
 def test_load_v9():
-    with open(
-        "./tests/resources/modules/identifysecondaryobjects/v9.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory("identifysecondaryobjects/v9.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -73,9 +73,8 @@ def test_load_v9():
 
 
 def test_load_v10():
-    with open(
-        "./tests/resources/modules/identifysecondaryobjects/v10.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory("identifysecondaryobjects/v10.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

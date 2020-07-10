@@ -8,6 +8,7 @@ import cellprofiler.modules.splitormergeobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+import tests.modules
 
 INPUT_OBJECTS_NAME = "inputobjects"
 OUTPUT_OBJECTS_NAME = "outputobjects"
@@ -16,7 +17,8 @@ OUTLINE_NAME = "outlines"
 
 
 def test_load_v5():
-    with open("./tests/resources/modules/splitormergeobjects/v5.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("splitormergeobjects/v5.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -42,7 +44,8 @@ def test_load_v5():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/splitormergeobjects/v4.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("splitormergeobjects/v4.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

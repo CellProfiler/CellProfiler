@@ -15,6 +15,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
+import tests.modules
 
 IMAGE_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
@@ -1112,9 +1113,8 @@ def test_maxima_suppression_zero():
 def test_load_v10():
     # Sorry about this overly-long pipeline, it seemed like we need to
     # revisit many of the choices.
-    with open(
-        "./tests/resources/modules/identifyprimaryobjects/v10.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory("identifyprimaryobjects/v10.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1239,7 +1239,7 @@ def test_load_v10():
     )
     assert (
         module.threshold.global_operation.value
-        == centrosome.threshold.TM_ROBUST_BACKGROUND
+        == cellprofiler.modules.threshold.TM_ROBUST_BACKGROUND
     )
     assert module.threshold.lower_outlier_fraction.value == 0.02
     assert module.threshold.upper_outlier_fraction.value == 0.02
@@ -1284,7 +1284,7 @@ def test_load_v10():
     assert module.threshold.threshold_scope == "None"
     assert (
         module.threshold.global_operation.value
-        == centrosome.threshold.TM_ROBUST_BACKGROUND
+        == cellprofiler.modules.threshold.TM_ROBUST_BACKGROUND
     )
     assert module.threshold.lower_outlier_fraction == 0.05
     assert module.threshold.upper_outlier_fraction == 0.05
@@ -1300,10 +1300,8 @@ def test_01_load_new_robust_background():
     #
     # Test custom robust background parameters.
     #
-    with open(
-        "./tests/resources/modules/identifyprimaryobjects/robust_background.pipeline",
-        "r",
-    ) as fd:
+    file = tests.modules.test_resources_directory("identifyprimaryobjects/robust_background.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

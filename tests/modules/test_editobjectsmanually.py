@@ -13,7 +13,7 @@ OUTPUT_OBJECTS_NAME = "outputobjects"
 
 
 def test_load_v1():
-    file = os.path.join(tests.modules.test_resources_directory(), "editobjectsmanually/v1.pipeline")
+    file = tests.modules.test_resources_directory("editobjectsmanually/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -36,7 +36,7 @@ def test_load_v1():
 
 
 def test_load_v2():
-    file = os.path.join(tests.modules.test_resources_directory(), "editobjectsmanually/v2.pipeline")
+    file = tests.modules.test_resources_directory("editobjectsmanually/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -61,7 +61,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    file = os.path.join(tests.modules.test_resources_directory(), "editobjectsmanually/v3.pipeline")
+    file = tests.modules.test_resources_directory("editobjectsmanually/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -86,7 +86,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = os.path.join(tests.modules.test_resources_directory(), "editobjectsmanually/v4.pipeline")
+    file = tests.modules.test_resources_directory("editobjectsmanually/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

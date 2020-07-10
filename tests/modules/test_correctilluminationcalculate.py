@@ -1282,7 +1282,7 @@ def test_rescale_outlier():
 
 
 def test_load_v1():
-    file = os.path.join(tests.modules.test_resources_directory(), "correctilluminationcalculate/v1.pipeline")
+    file = tests.modules.test_resources_directory("correctilluminationcalculate/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -1432,7 +1432,7 @@ def test_load_v1():
 
 
 def test_load_v2():
-    file = os.path.join(tests.modules.test_resources_directory(), "correctilluminationcalculate/v2.pipeline")
+    file = tests.modules.test_resources_directory("correctilluminationcalculate/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

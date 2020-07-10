@@ -5,6 +5,7 @@ import tempfile
 import numpy
 import six.moves
 
+import tests.modules
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.flagimage
@@ -33,7 +34,8 @@ MEASUREMENT_NAME = "_".join((MEASUREMENT_CATEGORY, MEASUREMENT_FEATURE))
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/flagimages/v2.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("flagimages/v2.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -90,7 +92,8 @@ def test_load_v2():
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/flagimages/v3.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("flagimages/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -149,7 +152,8 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/flagimages/v4.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("flagimages/v4.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

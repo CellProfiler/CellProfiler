@@ -12,6 +12,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
+import tests.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -43,9 +44,8 @@ def make_workspace(labels):
 
 
 def test_01_load_v1():
-    with open(
-        "./tests/resources/modules/measureobjectsizeshape/v1.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory("measureobjectsizeshape/v1.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -61,8 +61,8 @@ def test_01_load_v1():
         module, cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape
     )
     assert len(module.objects_list.value) == 2
-    for og, expected in zip(module.objects_list.value, ("Nuclei", "Cells")):
-        assert og.name == expected
+    for object_name in module.objects_list.value:
+        assert object_name in ("Nuclei", "Cells")
     assert module.calculate_zernikes
 
 

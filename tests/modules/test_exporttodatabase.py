@@ -206,7 +206,7 @@ def test_00_write_load_test():
 
 
 def test_load_v11():
-    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v11.pipeline")
+    file = tests.modules.test_resources_directory("exporttodatabase/v11.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -231,7 +231,7 @@ def test_load_v11():
 
 
 def test_load_v12():
-    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v12.pipeline")
+    file = tests.modules.test_resources_directory("exporttodatabase/v12.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -257,7 +257,7 @@ def test_load_v12():
 
 
 def test_load_v13():
-    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v13.pipeline")
+    file = tests.modules.test_resources_directory("exporttodatabase/v13.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -283,7 +283,7 @@ def test_load_v13():
 
 
 def test_load_v15():
-    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v15.pipeline")
+    file = tests.modules.test_resources_directory("exporttodatabase/v15.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -328,7 +328,7 @@ def test_load_v15():
 
 
 def test_load_v22():
-    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v22.pipeline")
+    file = tests.modules.test_resources_directory("exporttodatabase/v22.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -430,7 +430,7 @@ def test_load_v22():
 
 
 def test_load_v23():
-    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v23.pipeline")
+    file = tests.modules.test_resources_directory("exporttodatabase/v23.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -534,7 +534,7 @@ def test_load_v23():
 
 
 def test_load_v24():
-    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v24.pipeline")
+    file = tests.modules.test_resources_directory("exporttodatabase/v24.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -641,7 +641,7 @@ def test_load_v24():
 
 
 def test_load_v25():
-    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v25.pipeline")
+    file = tests.modules.test_resources_directory("exporttodatabase/v25.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -749,7 +749,7 @@ def test_load_v25():
 
 
 def test_load_v26():
-    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v26.pipeline")
+    file = tests.modules.test_resources_directory("exporttodatabase/v26.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -861,7 +861,7 @@ def test_load_v26():
 
 
 def test_load_v27():
-    file = os.path.join(tests.modules.test_resources_directory(), "exporttodatabase/v27.pipeline")
+    file = tests.modules.test_resources_directory("exporttodatabase/v27.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

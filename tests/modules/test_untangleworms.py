@@ -11,11 +11,13 @@ import scipy.ndimage
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+import cellprofiler_core.modules
 import cellprofiler.modules.untangleworms
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
+import tests.modules
 
 cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
 
@@ -267,7 +269,8 @@ A02_image = bioformats.load_image(path, rescale=False)[:, :, 0] > 0
 
 
 def test_load_v1():
-    with open("./tests/resources/modules/untangleworms/v1.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("untangleworms/v1.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -302,7 +305,8 @@ def test_load_v1():
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/untangleworms/v2.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("untangleworms/v2.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

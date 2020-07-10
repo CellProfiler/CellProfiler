@@ -470,7 +470,7 @@ def test_renumber_other():
 
 
 def test_load_v3():
-    file = os.path.join(tests.modules.test_resources_directory(), "filterobjects/v3.pipeline")
+    file = tests.modules.test_resources_directory("filterobjects/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -497,7 +497,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = os.path.join(tests.modules.test_resources_directory(), "filterobjects/v4.pipeline")
+    file = tests.modules.test_resources_directory("filterobjects/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -539,7 +539,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    file = os.path.join(tests.modules.test_resources_directory(), "filterobjects/v5.pipeline")
+    file = tests.modules.test_resources_directory("filterobjects/v5.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -582,7 +582,7 @@ def test_load_v5():
 
 
 def test_load_v6():
-    file = os.path.join(tests.modules.test_resources_directory(), "filterobjects/v6.pipeline")
+    file = tests.modules.test_resources_directory("filterobjects/v6.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -626,7 +626,7 @@ def test_load_v6():
 
 
 def test_load_v7():
-    file = os.path.join(tests.modules.test_resources_directory(), "filterobjects/v7.pipeline")
+    file = tests.modules.test_resources_directory("filterobjects/v7.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -1146,10 +1146,10 @@ class FakeClassifier(object):
 
         classes - a vector of class numbers to be used to populate classes_
         """
-        answers_ = answers
-        classes_ = classes
+        self.answers_ = answers
+        self.classes_ = classes
 
-    def predict(*args, **kwargs):
+    def predict(self, *args, **kwargs):
         return self.answers_
 
 

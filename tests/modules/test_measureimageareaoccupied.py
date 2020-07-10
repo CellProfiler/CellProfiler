@@ -8,6 +8,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
+import tests.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -207,9 +208,8 @@ def test_image_volume():
 
 
 def test_load_v3():
-    with open(
-        "./tests/resources/modules/measureimageareaoccupied/v3.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory("measureimageareaoccupied/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     def callback(caller, event):

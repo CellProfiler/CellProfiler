@@ -58,6 +58,7 @@ def workspace(image_a, image_b, module):
 
 def run_operation(operation, expected, module, workspace):
     module.operation.value = operation
+    module.replace_nan.value = False
     module.run(workspace)
     output = workspace.image_set.get_image("output")
     actual = output.pixel_data

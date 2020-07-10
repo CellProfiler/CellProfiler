@@ -223,4 +223,5 @@ def test_load_v3():
 
     assert module.operand_choice.value == "Both"
     assert module.images_list.value_text == "DNA"
-    assert module.objects_list.value_text == "Nuclei, Cells"
+    assert len(module.objects_list.value) == 2
+    assert set(module.objects_list.value) == {"Nuclei", "Cells"}

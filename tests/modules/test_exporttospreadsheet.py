@@ -2186,7 +2186,7 @@ def make_pipeline(csv_text):
     fd.close()
     csv_path, csv_file = os.path.split(name)
     module = L.LoadText()
-    module.csv_directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+    module.csv_directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.csv_directory.custom_path = csv_path
     module.csv_file_name.value = csv_file
     module.set_module_num(1)

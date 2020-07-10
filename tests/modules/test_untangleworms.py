@@ -15,6 +15,7 @@ import cellprofiler_core.modules
 import cellprofiler.modules.untangleworms
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 import tests.modules
@@ -374,7 +375,7 @@ def make_workspace(image, data=None, write_mode="wb"):
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, img)
     module.training_set_directory.dir_choice = (
-        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+        cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     )
     (
         module.training_set_directory.custom_path,

@@ -93,7 +93,7 @@ def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=F
         module.intensity_image_name.value = INTENSITY_IMAGE_NAME
     if wants_graph:
         module.wants_objskeleton_graph.value = True
-        module.directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = temp_dir
         module.edge_file_name.value = EDGE_FILE
         module.vertex_file_name.value = VERTEX_FILE

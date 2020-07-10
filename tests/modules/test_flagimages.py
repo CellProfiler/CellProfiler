@@ -761,7 +761,7 @@ def test_batch():
 
     module = cellprofiler.modules.flagimage.FlagImage()
     rd = module.flags[0].measurement_settings[0].rules_directory
-    rd.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+    rd.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     rd.custom_path = orig_path
     module.prepare_to_create_batch(None, fn_alter_path)
     assert rd.custom_path == "/imaging/analysis"

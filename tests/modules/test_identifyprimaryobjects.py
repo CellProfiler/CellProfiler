@@ -2094,7 +2094,7 @@ def test_threshold_no_smoothing():
         workspace.measurements[
             cellprofiler_core.measurement.IMAGE, MEASUREMENT_NAME
         ] = 0.125
-        module.threshold.threshold_smoothing_scale.value = 3
+        module.threshold.threshold_smoothing_scale.value = 0
         module.run(workspace)
         labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
         numpy.testing.assert_array_equal(expected, labels)

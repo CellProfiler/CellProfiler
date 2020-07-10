@@ -992,9 +992,8 @@ def test_propagate():
 
 def test_fly():
     """Run identify on the fly image"""
-    with open(
-        "./tests/resources/modules/identifyprimaryobjects/fly.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory("identifyprimaryobjects/fly.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

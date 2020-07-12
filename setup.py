@@ -60,11 +60,11 @@ setuptools.setup(
     },
     install_requires=[
         "boto3",
-        "centrosome",
+        "centrosome==1.1.6",
         "docutils",
         "h5py",
         "inflect",
-        "javabridge",
+        "javabridge==1.0.18",
         "joblib",
         "mahotas",
         "matplotlib>=2.0.0, !=2.1.0",

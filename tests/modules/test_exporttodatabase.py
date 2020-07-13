@@ -220,7 +220,7 @@ def test_load_v11():
     assert len(pipeline.modules()) == 2
     module = pipeline.modules()[-1]
     assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
-    assert module.db_type == cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
+    assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_MYSQL_CSV
     assert (
         module.directory.dir_choice
         == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
@@ -959,7 +959,7 @@ def make_workspace(
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
                 ),
             ]
-            if in_module(alt_object):
+            if self.in_module(alt_object):
                 columns += [
                     (
                         cellprofiler_core.measurement.IMAGE,
@@ -977,7 +977,7 @@ def make_workspace(
                         cellprofiler_core.measurement.COLTYPE_FLOAT,
                     ),
                 ]
-            if in_module(long_measurement):
+            if self.in_module(long_measurement):
                 columns += [
                     (
                         cellprofiler_core.measurement.IMAGE,
@@ -990,7 +990,7 @@ def make_workspace(
                         cellprofiler_core.measurement.COLTYPE_FLOAT,
                     ),
                 ]
-            if in_module(wierd_measurement):
+            if self.in_module(wierd_measurement):
                 columns += [
                     (
                         cellprofiler_core.measurement.IMAGE,
@@ -1003,7 +1003,7 @@ def make_workspace(
                         cellprofiler_core.measurement.COLTYPE_FLOAT,
                     ),
                 ]
-            if in_module(well_metadata):
+            if self.in_module(well_metadata):
                 columns += [
                     (
                         cellprofiler_core.measurement.IMAGE,
@@ -1016,7 +1016,7 @@ def make_workspace(
                         cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 3,
                     ),
                 ]
-            if in_module(group_measurement):
+            if self.in_module(group_measurement):
                 d = {cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP: True}
                 columns += [
                     (

@@ -2512,7 +2512,7 @@ should be processed.
         order = order[mask[order]]
         if len(order) * len(costs) > MAX_CONSIDERED:
             # Limit # to consider at next level
-            order = order[: (1 + MAX_CONSIDERED / len(costs))]
+            order = order[: (1 + MAX_CONSIDERED // len(costs))]
         current_path_segment_matrix = current_path_segment_matrix[:, order]
         current_path_choices = current_path_choices[:, order]
         #

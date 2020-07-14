@@ -1544,7 +1544,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             t = t + 1
             t = np.column_stack((t, x))
             a = np.arange(len(old_i)) + 2
-            x = np.searchsorted(t[0 : (t.size / 2), 0], a)
+            x = np.searchsorted(t[0: (t.size // 2), 0], a)
             a = np.arange(len(old_i)) + 1
             b = np.arange(len(old_i)) + len(new_i) + 1
             c = np.zeros(len(old_i)) + costDie
@@ -2093,7 +2093,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         merge_off = gap_end
         if len(P1) > 0:
             # Do the initial winnowing in chunks of 10m pairs
-            lchunk_size = 10000000 / len(P1)
+            lchunk_size = 10000000 // len(P1)
             chunks = []
             for lstart in range(0, len(L), lchunk_size):
                 lend = min(len(L), lstart + lchunk_size)
@@ -2161,7 +2161,7 @@ Enter a name to give the color-coded image of tracked labels.""",
 
         split_off = merge_end
         if len(P2) > 0:
-            lchunk_size = 10000000 / len(P2)
+            lchunk_size = 10000000 // len(P2)
             chunks = []
             for fstart in range(0, len(L), lchunk_size):
                 fend = min(len(L), fstart + lchunk_size)
@@ -2697,29 +2697,25 @@ Enter a name to give the color-coded image of tracked labels.""",
                 cpmeas.IMAGE,
                 self.image_measurement_name(F_LOST_OBJECT_COUNT),
                 lost_object_count[i],
-                True,
-                image_number,
+                image_set_number=image_number,
             )
             m.add_measurement(
                 cpmeas.IMAGE,
                 self.image_measurement_name(F_NEW_OBJECT_COUNT),
                 new_object_count[i],
-                True,
-                image_number,
+                image_set_number=image_number,
             )
             m.add_measurement(
                 cpmeas.IMAGE,
                 self.image_measurement_name(F_MERGE_COUNT),
                 merge_count[i],
-                True,
-                image_number,
+                image_set_number=image_number,
             )
             m.add_measurement(
                 cpmeas.IMAGE,
                 self.image_measurement_name(F_SPLIT_COUNT),
                 split_count[i],
-                True,
-                image_number,
+                image_set_number=image_number,
             )
             if n_objects == 0:
                 continue

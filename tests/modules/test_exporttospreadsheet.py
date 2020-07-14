@@ -1,3 +1,4 @@
+import ast
 import base64
 import csv
 import os
@@ -14,6 +15,7 @@ import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler.modules
 import cellprofiler.modules.exporttospreadsheet
+import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -1175,12 +1177,13 @@ def test_blob_image_measurements(output_dir):
         d = dict([(h, i) for i, h in enumerate(header)])
         assert IMG_MEAS in d
         row = next(reader)
-        data = base64.b64decode(row[d[IMG_MEAS]])
+        stringbytes = ast.literal_eval(row[d[IMG_MEAS]])
+        data = base64.b64decode(stringbytes)
         value = numpy.frombuffer(data, numpy.uint8)
         numpy.testing.assert_array_equal(value, my_blob)
 
 
-def test_blob_experiment_measurements():
+def test_blob_experiment_measurements(output_dir):
     path = os.path.join(output_dir, "my_file.csv")
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
@@ -1213,6 +1216,7 @@ def test_blob_experiment_measurements():
         header = next(reader)
         for feature, value in reader:
             if feature == IMG_MEAS:
+                value = ast.literal_eval(value)
                 data = base64.b64decode(value)
                 value = numpy.frombuffer(data, numpy.uint8)
                 numpy.testing.assert_array_equal(value, my_blob)
@@ -1531,7 +1535,7 @@ def test_unicode_image_metadata(output_dir):
         assert header[1] == "my_measurement"
         row = next(reader)
         assert row[0] == "1"
-        assert row[1].decode("utf8") == metadata_value
+        assert row[1] == metadata_value
         with pytest.raises(StopIteration):
             reader.__next__()
     finally:
@@ -1551,9 +1555,7 @@ def test_overwrite_files_everything(output_dir):
 
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.wants_everything.value = True
-    module.directory.dir_choice = (
-        cellprofiler.modules.exporttospreadsheet.cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-    )
+    module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.directory.custom_path = output_dir
     module.set_module_num(2)
     pipeline.add_module(module)
@@ -1590,9 +1592,7 @@ def test_overwrite_files_group(output_dir):
 
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.wants_everything.value = False
-    module.directory.dir_choice = (
-        cellprofiler.modules.exporttospreadsheet.cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-    )
+    module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.directory.custom_path = output_dir
     g = module.object_groups[0]
     g.name.value = OBJECTS_NAME
@@ -2305,9 +2305,9 @@ def test_basic_gct_check():
     )
     csv_text = (
         """"%s","%s","%s"
-                "Channel1-01-A-01.tif","%s","Hi"
-                "Channel1-02-A-02.tif","%s","Hello"
-                """
+"Channel1-01-A-01.tif","%s","Hi"
+"Channel1-02-A-02.tif","%s","Hello"
+"""
         % info
     )
     pipeline, module, input_filename = make_pipeline(csv_text)
@@ -2366,9 +2366,9 @@ def test_make_gct_file_with_filename():
     )
     csv_text = (
         """"%s","%s","%s"
-                "Channel1-01-A-01.tif","%s","Hi"
-                "Channel1-02-A-02.tif","%s","Hello"
-                """
+"Channel1-01-A-01.tif","%s","Hi"
+"Channel1-02-A-02.tif","%s","Hello"
+"""
         % info
     )
     pipeline, module, input_filename = make_pipeline(csv_text)
@@ -2418,9 +2418,9 @@ def test_make_gct_file_with_metadata():
     )
     csv_text = (
         """"%s","%s","%s"
-                "Channel1-01-A-01.tif","%s","Hi"
-                "Channel1-02-A-02.tif","%s","Hello"
-                """
+"Channel1-01-A-01.tif","%s","Hi"
+"Channel1-02-A-02.tif","%s","Hello"
+"""
         % info
     )
     pipeline, module, input_filename = make_pipeline(csv_text)
@@ -2461,9 +2461,7 @@ def test_test_overwrite_gct_file(output_dir):
     pipeline = make_measurements_pipeline(m)
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.wants_genepattern_file.value = True
-    module.directory.dir_choice = (
-        cellprofiler.modules.exporttospreadsheet.cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-    )
+    module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.directory.custom_path = output_dir
     module.wants_prefix.value = False
     module.set_module_num(1)
@@ -2585,9 +2583,7 @@ def test_test_overwrite_relationships_file(output_dir):
     m = make_measurements()
     pipeline = make_measurements_pipeline(m)
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
-    module.directory.dir_choice = (
-        cellprofiler.modules.exporttospreadsheet.cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-    )
+    module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     module.directory.custom_path = output_dir
     module.wants_prefix.value = False
     module.wants_everything.value = False

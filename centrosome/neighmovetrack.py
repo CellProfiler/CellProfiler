@@ -308,7 +308,7 @@ class NeighbourMovementTracking(object):
         """
         all_cells = [c for c in all_cells if c != cell]
 
-        sorted_cells = sorted([(cell.distance(c), c) for c in all_cells])
+        sorted_cells = sorted([(cell.distance(c), c) for c in all_cells], key=lambda sc: sc[0])
 
         return [sc[1] for sc in sorted_cells[:k] if sc[0] <= max_dist]
 

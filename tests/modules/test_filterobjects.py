@@ -8,6 +8,7 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+import cellprofiler_core.modules
 import cellprofiler.modules.filterobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline

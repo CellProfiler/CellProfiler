@@ -604,6 +604,12 @@ def test_img_887_no_experiment_file(output_dir):
     ExportToSpreadsheet shouldn't generate an experiment file if
     the only measurements are Exit_Status or Complete.
     """
+    # Cleanup any output files made by previous tests
+    for file in ("Experiment.csv", "Image.csv"):
+        oldfile = os.path.join(output_dir, file)
+        if os.path.exists(oldfile):
+            os.remove(oldfile)
+            print("Removed ", oldfile)
     numpy.random.seed(14887)
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
@@ -2471,6 +2477,7 @@ def test_test_overwrite_gct_file(output_dir):
     )
     assert output_csv_filename == module.make_gct_file_name(workspace, 1)
 
+    module.wants_overwrite_without_warning.value = True
     assert module.prepare_run(workspace)
     with open(output_csv_filename, "w") as fd:
         fd.write("Hello, world.\n")

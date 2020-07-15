@@ -500,6 +500,8 @@ class Pipeline:
             or attribute_string[-1] != "]"
         ):
             raise ValueError("Invalid format for attributes: %s" % attribute_string)
+        # Fix for array dtypes which contain split separator
+        attribute_string = attribute_string.replace("dtype='|S", "dtype='S")
         attribute_strings = attribute_string[1:-1].split("|")
         variable_revision_number = None
         # make batch_state decodable from text pipelines
@@ -512,7 +514,6 @@ class Pipeline:
             if len(a.split(":", 1)) != 2:
                 raise ValueError("Invalid attribute string: %s" % a)
             attribute, value = a.split(":", 1)
-            # FIXME: This is naughty
             value = eval(value)
             if attribute in skip_attributes:
                 continue

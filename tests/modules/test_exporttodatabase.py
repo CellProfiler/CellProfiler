@@ -191,9 +191,9 @@ class TestExportToDatabase(unittest.TestCase):
         file_name = os.path.join(
             module.directory.get_absolute_path(), module.sqlite_file.value
         )
-        connection = sqlite3.connect(file_name)
-        cursor = connection.cursor()
-        return cursor, connection
+        self.connection = sqlite3.connect(file_name)
+        self.cursor = self.connection.cursor()
+        return self.cursor, self.connection
 
     def test_00_write_load_test(self):
         #

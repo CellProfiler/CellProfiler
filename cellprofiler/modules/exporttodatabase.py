@@ -3710,7 +3710,7 @@ CREATE TABLE %s (
         """
         if len(column) == 3:
             return not post_group
-        if not hasattr(column[3], "has_key"):
+        if not isinstance(column[3], dict):
             return not post_group
         if cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP not in column[3]:
             return not post_group

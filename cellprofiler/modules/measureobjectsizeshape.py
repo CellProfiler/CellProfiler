@@ -268,6 +268,7 @@ F_STD_2D = [F_AREA,
             F_FORM_FACTOR,
             F_SOLIDITY,
             F_BBOX_AREA,
+            F_COMPACTNESS,
             ]
 F_STD_3D = [F_VOLUME,
             F_SURFACE_AREA,
@@ -276,7 +277,7 @@ F_STD_3D = [F_VOLUME,
             F_MIN_Z,
             F_MAX_Z,
             ]
-F_ADV_2D = [F_COMPACTNESS,
+F_ADV_2D = [
             F_INERTIA_TENSOR_0_0,F_INERTIA_TENSOR_0_1, F_INERTIA_TENSOR_1_0, F_INERTIA_TENSOR_1_1,
             F_INERTIA_TENSOR_EIGENVALUES_0, F_INERTIA_TENSOR_EIGENVALUES_1,
 
@@ -453,14 +454,17 @@ module.""".format(
             self.run_on_objects(object_name, workspace)
 
     def run_on_objects(self, object_name, workspace):
-        """Run, computing the area measurements for a single map of objects"""
+        """Determine desired measurements and pass in object arrays for analysis"""
         objects = workspace.get_objects(object_name)
-        labels = objects.segmented
-        nobjects = len(objects.indices)
+
+        # Don't analyse if there are no objects at all.
+
         if len(objects.indices) == 0:
             # No objects to process
             self.measurements_without_objects(workspace, object_name)
             return
+
+        # Determine which properties we're measuring.
         if len(objects.shape) == 2:
             desired_properties = [
                 "label",
@@ -488,7 +492,55 @@ module.""".format(
                     "moments_hu",
                     "moments_normalized",
                 ]
+        else:
+            desired_properties = [
+                "label",
+                "image",
+                "area",
+                "centroid",
+                "bbox",
+                "bbox_area",
+                "major_axis_length",
+                "minor_axis_length",
+                "extent",
+                "equivalent_diameter",
+                "euler_number",
+            ]
+            if self.calculate_advanced.value:
+                desired_properties += [
+                    "solidity",
+                ]
 
+        # Check for overlapping object sets
+        try:
+            hasattr(objects, 'segmented')
+            features_to_record = self.analyse_objects(objects, desired_properties)
+        except AssertionError:
+            # Objects are overlapping, process as single arrays
+            coords_array = objects.ijv
+            features_to_record = []
+            for label in objects.indices:
+                omap = numpy.zeros(objects.shape)
+                ocoords = coords_array[coords_array[:, 2] == label, 0:2]
+                numpy.put(omap, numpy.ravel_multi_index(ocoords.T, omap.shape), 1)
+                tempobject = cellprofiler_core.object.Objects()
+                tempobject.segmented = omap
+                buffer = self.analyse_objects(tempobject, desired_properties)
+                existing_measures = [item[0] for item in features_to_record]
+                for f, m in buffer:
+                    if f in existing_measures:
+                        index = existing_measures.index(f)
+                        features_to_record[index] = (f, numpy.concatenate((features_to_record[index][1], m)))
+                    else:
+                        features_to_record.append((f, m))
+        for f, m in features_to_record:
+            self.record_measurement(workspace, object_name, f, m)
+
+    def analyse_objects(self, objects, desired_properties):
+        """Computing the measurements for a single map of objects"""
+        labels = objects.segmented
+        nobjects = len(objects.indices)
+        if len(objects.shape) == 2:
             props = skimage.measure.regionprops_table(labels, properties=desired_properties)
 
             formfactor = 4.0 * numpy.pi * props["area"] / props["perimeter"] ** 2
@@ -571,7 +623,6 @@ module.""".format(
             ]
             if self.calculate_advanced.value:
                 features_to_record += [
-                    (F_COMPACTNESS, compactness),
 
                     (F_INERTIA_TENSOR_0_0, props["inertia_tensor-0-0"]),
                     (F_INERTIA_TENSOR_0_1, props["inertia_tensor-0-1"]),
@@ -639,24 +690,6 @@ module.""".format(
 
         else:
 
-            desired_properties = [
-                "label",
-                "image",
-                "area",
-                "centroid",
-                "bbox",
-                "bbox_area",
-                "major_axis_length",
-                "minor_axis_length",
-                "extent",
-                "equivalent_diameter",
-                "euler_number",
-            ]
-            if self.calculate_advanced.value:
-                desired_properties += [
-                    "solidity",
-                ]
-
             props = skimage.measure.regionprops_table(labels, properties=desired_properties)
 
             # SurfaceArea
@@ -696,11 +729,7 @@ module.""".format(
                 features_to_record += [
                     (F_SOLIDITY, props["solidity"]),
                 ]
-
-        for f, m in features_to_record:
-            self.record_measurement(workspace, object_name, f, m)
-
-
+        return features_to_record
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

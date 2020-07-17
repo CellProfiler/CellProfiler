@@ -512,10 +512,9 @@ module.""".format(
                 ]
 
         # Check for overlapping object sets
-        try:
-            hasattr(objects, 'segmented')
+        if not objects.overlapping():
             features_to_record = self.analyse_objects(objects, desired_properties)
-        except AssertionError:
+        else:
             # Objects are overlapping, process as single arrays
             coords_array = objects.ijv
             features_to_record = {}

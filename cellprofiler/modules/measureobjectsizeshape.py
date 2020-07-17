@@ -518,7 +518,7 @@ module.""".format(
         except AssertionError:
             # Objects are overlapping, process as single arrays
             coords_array = objects.ijv
-            features_to_record = []
+            features_to_record = {}
             for label in objects.indices:
                 omap = numpy.zeros(objects.shape)
                 ocoords = coords_array[coords_array[:, 2] == label, 0:2]
@@ -526,14 +526,12 @@ module.""".format(
                 tempobject = cellprofiler_core.object.Objects()
                 tempobject.segmented = omap
                 buffer = self.analyse_objects(tempobject, desired_properties)
-                existing_measures = [item[0] for item in features_to_record]
-                for f, m in buffer:
-                    if f in existing_measures:
-                        index = existing_measures.index(f)
-                        features_to_record[index] = (f, numpy.concatenate((features_to_record[index][1], m)))
+                for f, m in buffer.items():
+                    if f in features_to_record:
+                        features_to_record[f] = numpy.concatenate((features_to_record[f], m))
                     else:
-                        features_to_record.append((f, m))
-        for f, m in features_to_record:
+                        features_to_record[f] = m
+        for f, m in features_to_record.items():
             self.record_measurement(workspace, object_name, f, m)
 
     def analyse_objects(self, objects, desired_properties):
@@ -595,98 +593,96 @@ module.""".format(
                     chulls, chull_counts, objects.indices
                 )
 
-            features_to_record = [
-                (F_AREA, props["area"]),
-                (F_PERIMETER, props["perimeter"]),
-                (F_MAJOR_AXIS_LENGTH, props["major_axis_length"]),
-                (F_MINOR_AXIS_LENGTH, props["minor_axis_length"]),
-                (F_ECCENTRICITY, props["eccentricity"]),
-                (F_ORIENTATION, props["orientation"]),
-                (F_CENTER_X, props["centroid-1"]),
-                (F_CENTER_Y, props["centroid-0"]),
-                (F_BBOX_AREA, props["bbox_area"]),
-                (F_MIN_X, props["bbox-1"]),
-                (F_MAX_X, props["bbox-3"]),
-                (F_MIN_Y, props["bbox-0"]),
-                (F_MAX_Y, props["bbox-2"]),
-                (F_EXTENT, props["extent"]),
-                (F_SOLIDITY, props["solidity"]),
-                (F_FORM_FACTOR, formfactor),
-                (F_COMPACTNESS, compactness),
-                (F_EULER_NUMBER, props["euler_number"]),
-                (F_MAXIMUM_RADIUS, max_radius),
-                (F_MEAN_RADIUS, mean_radius),
-                (F_MEDIAN_RADIUS, median_radius),
-                (F_MIN_FERET_DIAMETER, min_feret_diameter),
-                (F_MAX_FERET_DIAMETER, max_feret_diameter),
-                (F_EQUIVALENT_DIAMETER, props["equivalent_diameter"]),
-            ]
+            features_to_record = {
+                F_AREA: props["area"],
+                F_PERIMETER: props["perimeter"],
+                F_MAJOR_AXIS_LENGTH: props["major_axis_length"],
+                F_MINOR_AXIS_LENGTH: props["minor_axis_length"],
+                F_ECCENTRICITY: props["eccentricity"],
+                F_ORIENTATION: props["orientation"],
+                F_CENTER_X: props["centroid-1"],
+                F_CENTER_Y: props["centroid-0"],
+                F_BBOX_AREA: props["bbox_area"],
+                F_MIN_X: props["bbox-1"],
+                F_MAX_X: props["bbox-3"],
+                F_MIN_Y: props["bbox-0"],
+                F_MAX_Y: props["bbox-2"],
+                F_EXTENT: props["extent"],
+                F_SOLIDITY: props["solidity"],
+                F_FORM_FACTOR: formfactor,
+                F_COMPACTNESS: compactness,
+                F_EULER_NUMBER: props["euler_number"],
+                F_MAXIMUM_RADIUS: max_radius,
+                F_MEAN_RADIUS: mean_radius,
+                F_MEDIAN_RADIUS: median_radius,
+                F_MIN_FERET_DIAMETER: min_feret_diameter,
+                F_MAX_FERET_DIAMETER: max_feret_diameter,
+                F_EQUIVALENT_DIAMETER: props["equivalent_diameter"],
+            }
             if self.calculate_advanced.value:
-                features_to_record += [
+                features_to_record.update({
 
-                    (F_INERTIA_TENSOR_0_0, props["inertia_tensor-0-0"]),
-                    (F_INERTIA_TENSOR_0_1, props["inertia_tensor-0-1"]),
-                    (F_INERTIA_TENSOR_1_0, props["inertia_tensor-1-0"]),
-                    (F_INERTIA_TENSOR_1_1, props["inertia_tensor-1-1"]),
-                    (F_INERTIA_TENSOR_EIGENVALUES_0, props["inertia_tensor_eigvals-0"]),
-                    (F_INERTIA_TENSOR_EIGENVALUES_1, props["inertia_tensor_eigvals-1"]),
-                    (F_SPATIAL_MOMENT_0_0, props["moments-0-0"]),
-                    (F_SPATIAL_MOMENT_0_1, props["moments-0-1"]),
-                    (F_SPATIAL_MOMENT_0_2, props["moments-0-2"]),
-                    (F_SPATIAL_MOMENT_0_3, props["moments-0-3"]),
-                    (F_SPATIAL_MOMENT_1_0, props["moments-1-0"]),
-                    (F_SPATIAL_MOMENT_1_1, props["moments-1-1"]),
-                    (F_SPATIAL_MOMENT_1_2, props["moments-1-2"]),
-                    (F_SPATIAL_MOMENT_1_3, props["moments-1-3"]),
-                    (F_SPATIAL_MOMENT_2_0, props["moments-2-0"]),
-                    (F_SPATIAL_MOMENT_2_1, props["moments-2-1"]),
-                    (F_SPATIAL_MOMENT_2_2, props["moments-2-2"]),
-                    (F_SPATIAL_MOMENT_2_3, props["moments-2-3"]),
+                    F_INERTIA_TENSOR_0_0: props["inertia_tensor-0-0"],
+                    F_INERTIA_TENSOR_0_1: props["inertia_tensor-0-1"],
+                    F_INERTIA_TENSOR_1_0: props["inertia_tensor-1-0"],
+                    F_INERTIA_TENSOR_1_1: props["inertia_tensor-1-1"],
+                    F_INERTIA_TENSOR_EIGENVALUES_0: props["inertia_tensor_eigvals-0"],
+                    F_INERTIA_TENSOR_EIGENVALUES_1: props["inertia_tensor_eigvals-1"],
+                    F_SPATIAL_MOMENT_0_0: props["moments-0-0"],
+                    F_SPATIAL_MOMENT_0_1: props["moments-0-1"],
+                    F_SPATIAL_MOMENT_0_2: props["moments-0-2"],
+                    F_SPATIAL_MOMENT_0_3: props["moments-0-3"],
+                    F_SPATIAL_MOMENT_1_0: props["moments-1-0"],
+                    F_SPATIAL_MOMENT_1_1: props["moments-1-1"],
+                    F_SPATIAL_MOMENT_1_2: props["moments-1-2"],
+                    F_SPATIAL_MOMENT_1_3: props["moments-1-3"],
+                    F_SPATIAL_MOMENT_2_0: props["moments-2-0"],
+                    F_SPATIAL_MOMENT_2_1: props["moments-2-1"],
+                    F_SPATIAL_MOMENT_2_2: props["moments-2-2"],
+                    F_SPATIAL_MOMENT_2_3: props["moments-2-3"],
 
-                    (F_CENTRAL_MOMENT_0_0, props["moments_central-0-0"]),
-                    (F_CENTRAL_MOMENT_0_1, props["moments_central-0-1"]),
-                    (F_CENTRAL_MOMENT_0_2, props["moments_central-0-2"]),
-                    (F_CENTRAL_MOMENT_0_3, props["moments_central-0-3"]),
-                    (F_CENTRAL_MOMENT_1_0, props["moments_central-1-0"]),
-                    (F_CENTRAL_MOMENT_1_1, props["moments_central-1-1"]),
-                    (F_CENTRAL_MOMENT_1_2, props["moments_central-1-2"]),
-                    (F_CENTRAL_MOMENT_1_3, props["moments_central-1-3"]),
-                    (F_CENTRAL_MOMENT_2_0, props["moments_central-2-0"]),
-                    (F_CENTRAL_MOMENT_2_1, props["moments_central-2-1"]),
-                    (F_CENTRAL_MOMENT_2_2, props["moments_central-2-2"]),
-                    (F_CENTRAL_MOMENT_2_3, props["moments_central-2-3"]),
+                    F_CENTRAL_MOMENT_0_0: props["moments_central-0-0"],
+                    F_CENTRAL_MOMENT_0_1: props["moments_central-0-1"],
+                    F_CENTRAL_MOMENT_0_2: props["moments_central-0-2"],
+                    F_CENTRAL_MOMENT_0_3: props["moments_central-0-3"],
+                    F_CENTRAL_MOMENT_1_0: props["moments_central-1-0"],
+                    F_CENTRAL_MOMENT_1_1: props["moments_central-1-1"],
+                    F_CENTRAL_MOMENT_1_2: props["moments_central-1-2"],
+                    F_CENTRAL_MOMENT_1_3: props["moments_central-1-3"],
+                    F_CENTRAL_MOMENT_2_0: props["moments_central-2-0"],
+                    F_CENTRAL_MOMENT_2_1: props["moments_central-2-1"],
+                    F_CENTRAL_MOMENT_2_2: props["moments_central-2-2"],
+                    F_CENTRAL_MOMENT_2_3: props["moments_central-2-3"],
 
-                    (F_HU_MOMENT_0, props["moments_hu-0"]),
-                    (F_HU_MOMENT_1, props["moments_hu-1"]),
-                    (F_HU_MOMENT_2, props["moments_hu-2"]),
-                    (F_HU_MOMENT_3, props["moments_hu-3"]),
-                    (F_HU_MOMENT_4, props["moments_hu-4"]),
-                    (F_HU_MOMENT_5, props["moments_hu-5"]),
-                    (F_HU_MOMENT_6, props["moments_hu-6"]),
+                    F_HU_MOMENT_0: props["moments_hu-0"],
+                    F_HU_MOMENT_1: props["moments_hu-1"],
+                    F_HU_MOMENT_2: props["moments_hu-2"],
+                    F_HU_MOMENT_3: props["moments_hu-3"],
+                    F_HU_MOMENT_4: props["moments_hu-4"],
+                    F_HU_MOMENT_5: props["moments_hu-5"],
+                    F_HU_MOMENT_6: props["moments_hu-6"],
 
-                    (F_NORMALIZED_MOMENT_0_0, props["moments_normalized-0-0"]),
-                    (F_NORMALIZED_MOMENT_0_1, props["moments_normalized-0-1"]),
-                    (F_NORMALIZED_MOMENT_0_2, props["moments_normalized-0-2"]),
-                    (F_NORMALIZED_MOMENT_0_3, props["moments_normalized-0-3"]),
-                    (F_NORMALIZED_MOMENT_1_0, props["moments_normalized-1-0"]),
-                    (F_NORMALIZED_MOMENT_1_1, props["moments_normalized-1-1"]),
-                    (F_NORMALIZED_MOMENT_1_2, props["moments_normalized-1-2"]),
-                    (F_NORMALIZED_MOMENT_1_3, props["moments_normalized-1-3"]),
-                    (F_NORMALIZED_MOMENT_2_0, props["moments_normalized-2-0"]),
-                    (F_NORMALIZED_MOMENT_2_1, props["moments_normalized-2-1"]),
-                    (F_NORMALIZED_MOMENT_2_2, props["moments_normalized-2-2"]),
-                    (F_NORMALIZED_MOMENT_2_3, props["moments_normalized-2-3"]),
-                    (F_NORMALIZED_MOMENT_3_0, props["moments_normalized-3-0"]),
-                    (F_NORMALIZED_MOMENT_3_1, props["moments_normalized-3-1"]),
-                    (F_NORMALIZED_MOMENT_3_2, props["moments_normalized-3-2"]),
-                    (F_NORMALIZED_MOMENT_3_3, props["moments_normalized-3-3"]),
+                    F_NORMALIZED_MOMENT_0_0: props["moments_normalized-0-0"],
+                    F_NORMALIZED_MOMENT_0_1: props["moments_normalized-0-1"],
+                    F_NORMALIZED_MOMENT_0_2: props["moments_normalized-0-2"],
+                    F_NORMALIZED_MOMENT_0_3: props["moments_normalized-0-3"],
+                    F_NORMALIZED_MOMENT_1_0: props["moments_normalized-1-0"],
+                    F_NORMALIZED_MOMENT_1_1: props["moments_normalized-1-1"],
+                    F_NORMALIZED_MOMENT_1_2: props["moments_normalized-1-2"],
+                    F_NORMALIZED_MOMENT_1_3: props["moments_normalized-1-3"],
+                    F_NORMALIZED_MOMENT_2_0: props["moments_normalized-2-0"],
+                    F_NORMALIZED_MOMENT_2_1: props["moments_normalized-2-1"],
+                    F_NORMALIZED_MOMENT_2_2: props["moments_normalized-2-2"],
+                    F_NORMALIZED_MOMENT_2_3: props["moments_normalized-2-3"],
+                    F_NORMALIZED_MOMENT_3_0: props["moments_normalized-3-0"],
+                    F_NORMALIZED_MOMENT_3_1: props["moments_normalized-3-1"],
+                    F_NORMALIZED_MOMENT_3_2: props["moments_normalized-3-2"],
+                    F_NORMALIZED_MOMENT_3_3: props["moments_normalized-3-3"],
 
-                ]
+                })
 
             if self.calculate_zernikes.value:
-                features_to_record += [
-                    (self.get_zernike_name((n, m)), zf[(n, m)]) for n, m in zernike_numbers
-                ]
+                features_to_record.update({self.get_zernike_name((n, m)): zf[(n, m)] for n, m in zernike_numbers})
 
         else:
 
@@ -706,29 +702,27 @@ module.""".format(
                 )
                 surface_areas[index] = skimage.measure.mesh_surface_area(verts, faces)
 
-            features_to_record = [
-                (F_VOLUME, props["area"]),
-                (F_SURFACE_AREA, surface_areas),
-                (F_MAJOR_AXIS_LENGTH, props["major_axis_length"]),
-                (F_MINOR_AXIS_LENGTH, props["minor_axis_length"]),
-                (F_CENTER_X, props["centroid-2"]),
-                (F_CENTER_Y, props["centroid-1"]),
-                (F_CENTER_Z, props["centroid-0"]),
-                (F_BBOX_VOLUME, props["bbox_area"]),
-                (F_MIN_X, props["bbox-2"]),
-                (F_MAX_X, props["bbox-5"]),
-                (F_MIN_Y, props["bbox-1"]),
-                (F_MAX_Y, props["bbox-4"]),
-                (F_MIN_Z, props["bbox-0"]),
-                (F_MAX_Z, props["bbox-3"]),
-                (F_EXTENT, props["extent"]),
-                (F_EULER_NUMBER, props["euler_number"]),
-                (F_EQUIVALENT_DIAMETER, props["equivalent_diameter"]),
-            ]
+            features_to_record = {
+                F_VOLUME: props["area"],
+                F_SURFACE_AREA: surface_areas,
+                F_MAJOR_AXIS_LENGTH: props["major_axis_length"],
+                F_MINOR_AXIS_LENGTH: props["minor_axis_length"],
+                F_CENTER_X: props["centroid-2"],
+                F_CENTER_Y: props["centroid-1"],
+                F_CENTER_Z: props["centroid-0"],
+                F_BBOX_VOLUME: props["bbox_area"],
+                F_MIN_X: props["bbox-2"],
+                F_MAX_X: props["bbox-5"],
+                F_MIN_Y: props["bbox-1"],
+                F_MAX_Y: props["bbox-4"],
+                F_MIN_Z: props["bbox-0"],
+                F_MAX_Z: props["bbox-3"],
+                F_EXTENT: props["extent"],
+                F_EULER_NUMBER: props["euler_number"],
+                F_EQUIVALENT_DIAMETER: props["equivalent_diameter"],
+            }
             if self.calculate_advanced.value:
-                features_to_record += [
-                    (F_SOLIDITY, props["solidity"]),
-                ]
+                features_to_record[F_SOLIDITY] = props["solidity"]
         return features_to_record
 
     def display(self, workspace, figure):

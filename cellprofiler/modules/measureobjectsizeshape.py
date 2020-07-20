@@ -361,9 +361,12 @@ class MeasureObjectSizeShape(cellprofiler_core.module.Module):
             value=False,
             doc="""\
 Select *{YES}* to calculate additional statistics for object moments
-and intertia tensors. These features should not require much additional time
+and intertia tensors in **2D mode**. These features should not require much additional time
 to calculate, but do add many additional columns to the resulting output 
-files.""".format(
+files.
+
+In **3D mode** this setting enables the Solidity measurement, which can be time-consuming
+to calculate.""".format(
                 **{"YES": "Yes"}
             ),
         )
@@ -483,7 +486,7 @@ module.""".format(
         """Determine desired measurements and pass in object arrays for analysis"""
         objects = workspace.get_objects(object_name)
 
-        # Don't analyse if there are no objects at all.
+        # Don't analyze if there are no objects at all.
 
         if len(objects.indices) == 0:
             # No objects to process
@@ -539,7 +542,7 @@ module.""".format(
 
         # Check for overlapping object sets
         if not objects.overlapping():
-            features_to_record = self.analyse_objects(objects, desired_properties)
+            features_to_record = self.analyze_objects(objects, desired_properties)
         else:
             # Objects are overlapping, process as single arrays
             coords_array = objects.ijv
@@ -550,7 +553,7 @@ module.""".format(
                 numpy.put(omap, numpy.ravel_multi_index(ocoords.T, omap.shape), 1)
                 tempobject = cellprofiler_core.object.Objects()
                 tempobject.segmented = omap
-                buffer = self.analyse_objects(tempobject, desired_properties)
+                buffer = self.analyze_objects(tempobject, desired_properties)
                 for f, m in buffer.items():
                     if f in features_to_record:
                         features_to_record[f] = numpy.concatenate((features_to_record[f], m))
@@ -559,7 +562,7 @@ module.""".format(
         for f, m in features_to_record.items():
             self.record_measurement(workspace, object_name, f, m)
 
-    def analyse_objects(self, objects, desired_properties):
+    def analyze_objects(self, objects, desired_properties):
         """Computing the measurements for a single map of objects"""
         labels = objects.segmented
         nobjects = len(objects.indices)

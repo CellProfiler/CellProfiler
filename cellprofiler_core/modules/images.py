@@ -151,6 +151,8 @@ particular wavelength.
     }
 )
 
+import cellprofiler_core.utilities.image
+
 import cellprofiler_core.utilities.pathname
 
 FILTER_CHOICE_NONE = "No filtering"
@@ -274,7 +276,7 @@ pass the current filter.
                     )
                 )
         path = os.path.join(*modpath)
-        return cellprofiler_core.utilities.pathname.pathname2url(path)
+        return cellprofiler_core.utilities.image.pathname2url(path)
 
     @staticmethod
     def url_to_modpath(url):

@@ -1,7 +1,6 @@
 from ._load_images_image_provider import LoadImagesImageProvider
 
 
-
 class LoadImagesMovieFrameProvider(LoadImagesImageProvider):
     """Provide an image by filename:frame, loading the file as it is requested
     """

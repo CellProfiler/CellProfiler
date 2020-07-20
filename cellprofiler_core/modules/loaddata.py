@@ -974,7 +974,7 @@ safe to press it.""",
                                     row_path_name, row[file_name_column]
                                 )
                                 row[path_name_column] = row_path_name
-                            url = cellprofiler_core.utilities.pathname.pathname2url(
+                            url = cellprofiler_core.utilities.image.pathname2url(
                                 fullname
                             )
                             row.append(url)
@@ -1136,13 +1136,13 @@ safe to press it.""",
                     for image_number, url in zip(image_numbers, urls):
                         url = url
                         if url.lower().startswith("file:"):
-                            fullname = cellprofiler_core.utilities.pathname.url2pathname(
+                            fullname = cellprofiler_core.utilities.image.url2pathname(
                                 url
                             )
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
                             url = str(
-                                cellprofiler_core.utilities.pathname.pathname2url(
+                                cellprofiler_core.utilities.image.pathname2url(
                                     fullname
                                 )
                             )
@@ -1185,7 +1185,7 @@ safe to press it.""",
             cellprofiler_core.measurement.IMAGE, url_feature
         )
         url = url
-        full_filename = cellprofiler_core.utilities.pathname.url2pathname(url)
+        full_filename = cellprofiler_core.utilities.image.url2pathname(url)
         path, filename = os.path.split(full_filename)
         if measurements.has_feature(
             cellprofiler_core.measurement.IMAGE, series_feature

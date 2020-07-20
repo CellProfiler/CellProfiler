@@ -69,10 +69,15 @@ from cellprofiler_core.modules import (
     SUB_ALL,
     SUB_SOME,
 )
-from cellprofiler_core.utilities.image import convert_image_to_objects, default_cpimage_name, well_metadata_tokens, \
-    needs_well_metadata, is_image, is_movie
+from cellprofiler_core.utilities.image import (
+    convert_image_to_objects,
+    default_cpimage_name,
+    well_metadata_tokens,
+    needs_well_metadata,
+    is_image,
+    is_movie, pathname2url, url2pathname,
+)
 from cellprofiler_core.modules.loaddata import bad_sizes_warning
-from cellprofiler_core.utilities.pathname import pathname2url, url2pathname
 
 """
 LoadImages

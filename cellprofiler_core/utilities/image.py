@@ -9,7 +9,6 @@ import six.moves
 
 import cellprofiler_core.measurement
 from cellprofiler_core.utilities import generate_presigned_url
-from cellprofiler_core.utilities.pathname import url2pathname
 
 UIC1_TAG = 33628
 UIC2_TAG = 33629
@@ -131,8 +130,8 @@ def convert_image_to_objects(image):
     if image.ndim == 2:
         unique_indices = numpy.unique(image.ravel())
         if len(unique_indices) * 2 > max(numpy.max(unique_indices), 254) and numpy.all(
-                numpy.abs(numpy.round(unique_indices, 1) - unique_indices)
-                <= numpy.finfo(float).eps
+            numpy.abs(numpy.round(unique_indices, 1) - unique_indices)
+            <= numpy.finfo(float).eps
         ):
             # Heuristic: reinterpret only if sparse and roughly integer
             return numpy.round(image).astype(int)
@@ -144,7 +143,7 @@ def convert_image_to_objects(image):
             return image.ravel()[i0] != image.ravel()[i1]
 
     else:
-        i, j = numpy.mgrid[0: image.shape[0], 0: image.shape[1]]
+        i, j = numpy.mgrid[0 : image.shape[0], 0 : image.shape[1]]
 
         def sorting(x):
             return [x[:, :, 2], x[:, :, 1], x[:, :, 0]]
@@ -281,3 +280,21 @@ def urlpathname(url):
         return six.moves.urllib.unquote(path.rsplit("/", 1)[0])
     else:
         return six.moves.urllib.unquote(path)
+
+
+def pathname2url(path):
+    """Convert the unicode path to a file: url"""
+    utf8_path = six.text_type(path)
+    if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
+        return utf8_path
+    return FILE_SCHEME + six.moves.urllib.request.pathname2url(utf8_path)
+
+
+def url2pathname(url):
+    if isinstance(url, six.text_type):
+        url = url
+    if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
+        return url
+    assert is_file_url(url)
+    utf8_url = six.moves.urllib.request.url2pathname(url[len(FILE_SCHEME) :])
+    return utf8_url

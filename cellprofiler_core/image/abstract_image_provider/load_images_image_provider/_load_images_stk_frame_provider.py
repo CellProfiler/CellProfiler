@@ -1,7 +1,6 @@
 from ._load_images_image_provider import LoadImagesImageProvider
 
 
-
 class LoadImagesSTKFrameProvider(LoadImagesImageProvider):
     """Provide an image by filename:frame from an STK file"""
 

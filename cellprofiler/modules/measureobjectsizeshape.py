@@ -63,18 +63,22 @@ ellipse with the same second-moments as each object.
    each region in the image.
 -  *FormFactor:* *(2D only)* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
    for a perfectly circular object.
--  *Solidity:* *(2D only)* The proportion of the pixels in the convex hull that are
+-  *Solidity:* The proportion of the pixels in the convex hull that are
    also in the object, i.e., *ObjectArea/ConvexHullArea*.
 -  *Extent:* The proportion of the pixels (2D) or voxels (3D) in the bounding box
    that are also in the region. Computed as the area/volume of the object divided
    by the area/volume of the bounding box.
--  *EulerNumber:* *(2D only)* The number of objects in the region minus the number
+-  *EulerNumber:* The number of objects in the region minus the number
    of holes in those objects, assuming 8-connectivity.
 -  *Center\_X, Center\_Y, Center\_Z:* The *x*-, *y*-, and (for 3D objects) *z-*
    coordinates of the point farthest away from any object edge (the *centroid*).
    Note that this is not the same as the *Location-X* and *-Y* measurements
    produced by the **Identify** or **Watershed**
    modules or the *Location-Z* measurement produced by the **Watershed** module.
+-  *BoundingBoxMinimum/Maximum\_X/Y/Z:* The minimum/maximum *x*-, *y*-, and (for 3D objects)
+   *z-* coordinates of the object.
+-  *BoundingBoxArea:* *(2D only)* The area of a box containing the object.
+-  *BoundingBoxVolume:* *(3D only)* The volume of a box containing the object.
 -  *Eccentricity:* *(2D only)* The eccentricity of the ellipse that has the same
    second-moments as the region. The eccentricity is the ratio of the
    distance between the foci of the ellipse and its major axis length.
@@ -85,12 +89,14 @@ ellipse with the same second-moments as each object.
     |MOSS_image0|
 
 
--  *MajorAxisLength:* *(2D only)* The length (in pixels) of the major axis of the
+-  *MajorAxisLength:* The length (in pixels) of the major axis of the
    ellipse that has the same normalized second central moments as the
    region.
--  *MinorAxisLength:* *(2D only)* The length (in pixels) of the minor axis of the
+-  *MinorAxisLength:* The length (in pixels) of the minor axis of the
    ellipse that has the same normalized second central moments as the
    region.
+-  *EquivalentDiameter:* The diameter of a circle or sphere with the same area
+   as the object.
 -  *Orientation:* *(2D only)* The angle (in degrees ranging from -90 to 90 degrees)
    between the x-axis and the major axis of the ellipse that has the
    same second-moments as the region.
@@ -119,6 +125,23 @@ ellipse with the same second-moments as each object.
    While there is no limit to the order which can be calculated (and
    indeed you could add more by adjusting the code), the higher order
    polynomials carry less information.
+-  *Spatial Moment features:* *(2D only)* A series of weighted averages 
+   representing the shape, size, rotation and location of the object.
+-  *Central Moment features:* *(2D only)* Similar to spatial moments, but
+   normalised to the object's centroid. These are therefore not influenced
+   by an object's location within an image.
+-  *Normalized Moment features:* *(2D only)* Similar to central moments,
+   but further normalised to be scale invariant. These moments are therefore
+   not impacted by an object's size (or location).
+-  *Hu Moment features:* *(2D only)* Hu's set of image moment features. These
+   are not altered by the object's location, size or rotation. This means that
+   they primarily describe the shape of the object.
+-  *Inertia Tensor features:* *(2D only)* A representation of rotational
+   inertia of the object relative to it's center.
+-  *Inertia Tensor Eigenvalues features:* *(2D only)* Values describing 
+   the movement of the Inertia Tensor array.
+
+
 
 Technical notes
 ^^^^^^^^^^^^^^^
@@ -151,9 +174,12 @@ References
 -  Chrystal P (1885), “On the problem to construct the minimum circle
    enclosing n given points in a plane”, *Proceedings of the Edinburgh
    Mathematical Society*, vol 3, p. 30
+-  Hu MK (1962), “Visual pattern recognition by moment invariants”, *IRE
+   transactions on information theory*, 8(2), pp.179-187 `(link)`_
 
 .. _(pdf): http://sibgrapi.sid.inpe.br/col/sid.inpe.br/banon/2002/10.23.11.34/doc/35.pdf
 .. _Section 2.4.3 - Statistical shape properties: http://www.scribd.com/doc/58004056/Principles-of-Digital-Image-Processing#page=49
+.. _(link): https://ieeexplore.ieee.org/abstract/document/1057692
 .. |MOSS_image0| image:: {ECCENTRICITY_ICON}
 """.format(
     **{
@@ -267,8 +293,8 @@ F_STD_2D = [F_AREA,
             F_ECCENTRICITY,
             F_FORM_FACTOR,
             F_SOLIDITY,
-            F_BBOX_AREA,
             F_COMPACTNESS,
+            F_BBOX_AREA,
             ]
 F_STD_3D = [F_VOLUME,
             F_SURFACE_AREA,
@@ -278,9 +304,6 @@ F_STD_3D = [F_VOLUME,
             F_MAX_Z,
             ]
 F_ADV_2D = [
-            F_INERTIA_TENSOR_0_0,F_INERTIA_TENSOR_0_1, F_INERTIA_TENSOR_1_0, F_INERTIA_TENSOR_1_1,
-            F_INERTIA_TENSOR_EIGENVALUES_0, F_INERTIA_TENSOR_EIGENVALUES_1,
-
             F_SPATIAL_MOMENT_0_0, F_SPATIAL_MOMENT_0_1, F_SPATIAL_MOMENT_0_2, F_SPATIAL_MOMENT_0_3,
             F_SPATIAL_MOMENT_1_0, F_SPATIAL_MOMENT_1_1, F_SPATIAL_MOMENT_1_2, F_SPATIAL_MOMENT_1_3,
             F_SPATIAL_MOMENT_2_0, F_SPATIAL_MOMENT_2_1, F_SPATIAL_MOMENT_2_2, F_SPATIAL_MOMENT_2_3,
@@ -289,13 +312,16 @@ F_ADV_2D = [
             F_CENTRAL_MOMENT_1_0, F_CENTRAL_MOMENT_1_1, F_CENTRAL_MOMENT_1_2, F_CENTRAL_MOMENT_1_3,
             F_CENTRAL_MOMENT_2_0, F_CENTRAL_MOMENT_2_1, F_CENTRAL_MOMENT_2_2, F_CENTRAL_MOMENT_2_3,
 
-            F_HU_MOMENT_0, F_HU_MOMENT_1, F_HU_MOMENT_2, F_HU_MOMENT_3, F_HU_MOMENT_4, F_HU_MOMENT_5, F_HU_MOMENT_6,
-
             F_NORMALIZED_MOMENT_0_0, F_NORMALIZED_MOMENT_0_1, F_NORMALIZED_MOMENT_0_2, F_NORMALIZED_MOMENT_0_3,
             F_NORMALIZED_MOMENT_1_0, F_NORMALIZED_MOMENT_1_1, F_NORMALIZED_MOMENT_1_2, F_NORMALIZED_MOMENT_1_3,
             F_NORMALIZED_MOMENT_2_0, F_NORMALIZED_MOMENT_2_1, F_NORMALIZED_MOMENT_2_2, F_NORMALIZED_MOMENT_2_3,
             F_NORMALIZED_MOMENT_3_0, F_NORMALIZED_MOMENT_3_1, F_NORMALIZED_MOMENT_3_2, F_NORMALIZED_MOMENT_3_3,
-            ]
+
+            F_HU_MOMENT_0, F_HU_MOMENT_1, F_HU_MOMENT_2, F_HU_MOMENT_3, F_HU_MOMENT_4, F_HU_MOMENT_5, F_HU_MOMENT_6,
+
+            F_INERTIA_TENSOR_0_0, F_INERTIA_TENSOR_0_1, F_INERTIA_TENSOR_1_0, F_INERTIA_TENSOR_1_1,
+            F_INERTIA_TENSOR_EIGENVALUES_0, F_INERTIA_TENSOR_EIGENVALUES_1,
+]
 F_ADV_3D = [F_SOLIDITY]
 F_STANDARD = [
     F_EXTENT,
@@ -606,9 +632,9 @@ module.""".format(
                 F_MAX_X: props["bbox-3"],
                 F_MIN_Y: props["bbox-0"],
                 F_MAX_Y: props["bbox-2"],
+                F_FORM_FACTOR: formfactor,
                 F_EXTENT: props["extent"],
                 F_SOLIDITY: props["solidity"],
-                F_FORM_FACTOR: formfactor,
                 F_COMPACTNESS: compactness,
                 F_EULER_NUMBER: props["euler_number"],
                 F_MAXIMUM_RADIUS: max_radius,
@@ -620,13 +646,6 @@ module.""".format(
             }
             if self.calculate_advanced.value:
                 features_to_record.update({
-
-                    F_INERTIA_TENSOR_0_0: props["inertia_tensor-0-0"],
-                    F_INERTIA_TENSOR_0_1: props["inertia_tensor-0-1"],
-                    F_INERTIA_TENSOR_1_0: props["inertia_tensor-1-0"],
-                    F_INERTIA_TENSOR_1_1: props["inertia_tensor-1-1"],
-                    F_INERTIA_TENSOR_EIGENVALUES_0: props["inertia_tensor_eigvals-0"],
-                    F_INERTIA_TENSOR_EIGENVALUES_1: props["inertia_tensor_eigvals-1"],
                     F_SPATIAL_MOMENT_0_0: props["moments-0-0"],
                     F_SPATIAL_MOMENT_0_1: props["moments-0-1"],
                     F_SPATIAL_MOMENT_0_2: props["moments-0-2"],
@@ -653,14 +672,6 @@ module.""".format(
                     F_CENTRAL_MOMENT_2_2: props["moments_central-2-2"],
                     F_CENTRAL_MOMENT_2_3: props["moments_central-2-3"],
 
-                    F_HU_MOMENT_0: props["moments_hu-0"],
-                    F_HU_MOMENT_1: props["moments_hu-1"],
-                    F_HU_MOMENT_2: props["moments_hu-2"],
-                    F_HU_MOMENT_3: props["moments_hu-3"],
-                    F_HU_MOMENT_4: props["moments_hu-4"],
-                    F_HU_MOMENT_5: props["moments_hu-5"],
-                    F_HU_MOMENT_6: props["moments_hu-6"],
-
                     F_NORMALIZED_MOMENT_0_0: props["moments_normalized-0-0"],
                     F_NORMALIZED_MOMENT_0_1: props["moments_normalized-0-1"],
                     F_NORMALIZED_MOMENT_0_2: props["moments_normalized-0-2"],
@@ -677,6 +688,21 @@ module.""".format(
                     F_NORMALIZED_MOMENT_3_1: props["moments_normalized-3-1"],
                     F_NORMALIZED_MOMENT_3_2: props["moments_normalized-3-2"],
                     F_NORMALIZED_MOMENT_3_3: props["moments_normalized-3-3"],
+
+                    F_HU_MOMENT_0: props["moments_hu-0"],
+                    F_HU_MOMENT_1: props["moments_hu-1"],
+                    F_HU_MOMENT_2: props["moments_hu-2"],
+                    F_HU_MOMENT_3: props["moments_hu-3"],
+                    F_HU_MOMENT_4: props["moments_hu-4"],
+                    F_HU_MOMENT_5: props["moments_hu-5"],
+                    F_HU_MOMENT_6: props["moments_hu-6"],
+
+                    F_INERTIA_TENSOR_0_0: props["inertia_tensor-0-0"],
+                    F_INERTIA_TENSOR_0_1: props["inertia_tensor-0-1"],
+                    F_INERTIA_TENSOR_1_0: props["inertia_tensor-1-0"],
+                    F_INERTIA_TENSOR_1_1: props["inertia_tensor-1-1"],
+                    F_INERTIA_TENSOR_EIGENVALUES_0: props["inertia_tensor_eigvals-0"],
+                    F_INERTIA_TENSOR_EIGENVALUES_1: props["inertia_tensor_eigvals-1"],
 
                 })
 

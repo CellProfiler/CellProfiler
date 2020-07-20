@@ -1,6 +1,5 @@
 import base64
 import glob
-import hashlib
 import io
 import os
 import re
@@ -22,6 +21,8 @@ import pytest
 import skimage.io
 
 import cellprofiler_core.image
+import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider
+import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.loadimages
 import cellprofiler_core.modules.namesandtypes
@@ -31,6 +32,7 @@ import cellprofiler_core.pipeline.event._load_exception
 import cellprofiler_core.pipeline.event.run_exception._run_exception
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
 import tests.modules
 
@@ -100,7 +102,7 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
     m2 = cellprofiler_core.measurement.Measurements()
     w2 = cellprofiler_core.workspace.Workspace(pipeline, m, m2, None, m2, None)
     urls = [
-        cellprofiler_core.modules.loadimages.pathname2url(
+        cellprofiler_core.utilities.pathname.pathname2url(
             os.path.join(directory, filename)
         )
         for filename in os.listdir(directory)
@@ -164,9 +166,9 @@ def convtester(pipeline_text, directory, fn_filter=(lambda x: True)):
         elif f1.startswith("URL") or f1.startswith("ObjectsURL"):
             for p1, p2 in zip(v1, v2):
                 assert os.path.normcase(
-                    cellprofiler_core.modules.loadimages.url2pathname(p1)
+                    cellprofiler_core.utilities.pathname.url2pathname(p1)
                 ) == os.path.normcase(
-                    cellprofiler_core.modules.loadimages.url2pathname(p2)
+                    cellprofiler_core.utilities.pathname.url2pathname(p2)
                 )
         else:
             numpy.testing.assert_array_equal(v1, v2)
@@ -205,7 +207,7 @@ def error_callback(calller, event):
 
 
 def test_load_url():
-    lip = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
+    lip = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider(
         "broad",
         tests.modules.cp_logo_url_folder,
         tests.modules.cp_logo_url_filename,
@@ -218,7 +220,7 @@ def test_load_url():
 
 def test_load_Nikon_tif():
     """This is the Nikon format TIF file from IMG-838"""
-    lip = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
+    lip = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider(
         "nikon",
         os.path.join(get_data_directory(), "modules/loadimages"),
         "NikonTIF.tif",
@@ -234,7 +236,7 @@ def test_load_Metamorph_tif():
 
     This file generated a null-pointer exception in the MetamorphReader
     """
-    lip = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
+    lip = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider(
         "nikon",
         os.path.join(get_data_directory(), "modules/loadimages"),
         "MetamorphImage.tif",
@@ -1259,7 +1261,8 @@ def test_get_groupings():
             )
             provider = image_set.get_image_provider("MyImage")
             assert isinstance(
-                provider, cellprofiler_core.modules.loadimages.LoadImagesImageProvider
+                provider,
+                cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider
             )
             match = re.search(
                 module.images[0].file_metadata.value, provider.get_filename()
@@ -2062,8 +2065,8 @@ def test_batch_images(image_name):
     orig_path = os.path.abspath(os.path.join(get_data_directory(), "ExampleSBSImages"))
     module.location.custom_path = orig_path
     target_path = orig_path.replace("ExampleSBSImages", "ExampleTrackObjects")
-    url_path = cellprofiler_core.modules.loadimages.url2pathname(
-        cellprofiler_core.modules.loadimages.pathname2url(orig_path)
+    url_path = cellprofiler_core.utilities.pathname.url2pathname(
+        cellprofiler_core.utilities.pathname.pathname2url(orig_path)
     )
 
     file_regexp = "^Channel1-[0-9]{2}-[A-P]-[0-9]{2}.tif$"
@@ -2111,7 +2114,7 @@ def test_batch_images(image_name):
         url = m.get_measurement(
             "Image", "URL" + "_" + image_name, image_set_number=image_number,
         )
-        assert url == cellprofiler_core.modules.loadimages.pathname2url(
+        assert url == cellprofiler_core.utilities.pathname.pathname2url(
             os.path.join(path, file_name)
         )
 
@@ -2124,12 +2127,12 @@ def test_batch_movies(test_images_path, image_name):
     orig_path = os.path.abspath(test_images_path)
     module.location.custom_path = orig_path
     target_path = orig_path
-    orig_url = cellprofiler_core.modules.loadimages.pathname2url(orig_path)
+    orig_url = cellprofiler_core.utilities.pathname.pathname2url(orig_path)
     # Can switch cases in Windows.
-    orig_url_path = cellprofiler_core.modules.loadimages.url2pathname(orig_url)
+    orig_url_path = cellprofiler_core.utilities.pathname.url2pathname(orig_url)
 
     file_name = "DrosophilaEmbryo_GFPHistone.avi"
-    target_url = cellprofiler_core.modules.loadimages.pathname2url(
+    target_url = cellprofiler_core.utilities.pathname.pathname2url(
         os.path.join(target_path, file_name)
     )
     module.images[0].common_text.value = file_name
@@ -2187,14 +2190,14 @@ def test_batch_flex(test_images_path, image_name):
     module.location.dir_choice = "Elsewhere..."
     module.file_types.value = cellprofiler_core.modules.loadimages.FF_OTHER_MOVIES
     orig_path = os.path.abspath(test_images_path)
-    orig_url = cellprofiler_core.modules.loadimages.pathname2url(orig_path)
+    orig_url = cellprofiler_core.utilities.pathname.pathname2url(orig_path)
     module.location.custom_path = orig_path
     target_path = os.path.join(orig_path, "Images")
     # Can switch cases in Windows.
-    orig_url_path = cellprofiler_core.modules.loadimages.url2pathname(orig_url)
+    orig_url_path = cellprofiler_core.utilities.pathname.url2pathname(orig_url)
 
     file_name = "RLM1 SSN3 300308 008015000.flex"
-    target_url = cellprofiler_core.modules.loadimages.pathname2url(
+    target_url = cellprofiler_core.utilities.pathname.pathname2url(
         os.path.join(orig_path, file_name)
     )
     module.images[0].common_text.value = file_name
@@ -2870,7 +2873,7 @@ Rescale intensities?:Yes
 def test_provide_volume():
     path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data"))
 
-    provider = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
+    provider = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider(
         name="ball",
         pathname=path,
         filename="ball.tif",
@@ -2896,7 +2899,7 @@ def test_provide_npy():
         os.path.join(os.path.dirname(__file__), "..", "data")
     )
 
-    provider = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
+    provider = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider(
         name="neurite",
         pathname=resource_directory,
         filename="neurite.npy",
@@ -2915,7 +2918,7 @@ def test_provide_npy_volume():
         os.path.join(os.path.dirname(__file__), "..", "data")
     )
 
-    provider = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
+    provider = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider(
         name="volume",
         pathname=resource_directory,
         filename="volume.npy",
@@ -2934,7 +2937,7 @@ class TestLoadImagesImageProviderURL:
     def test_provide_volume(self):
         path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data"))
 
-        provider = cellprofiler_core.modules.loadimages.LoadImagesImageProviderURL(
+        provider = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL(
             name="ball",
             url="file:/" + os.path.join(path, "ball.tif"),
             volume=True,
@@ -2960,7 +2963,7 @@ class TestLoadImagesImageProviderURL:
 
         name = os.path.splitext(os.path.basename(path))[0]
 
-        provider = cellprofiler_core.modules.loadimages.LoadImagesImageProviderURL(
+        provider = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL(
             name=name, url="file:/" + path, volume=True, spacing=(0.3, 0.7, 0.7)
         )
 

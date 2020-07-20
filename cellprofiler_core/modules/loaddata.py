@@ -10,6 +10,7 @@ import numpy
 import six
 import six.moves.urllib.request
 
+import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider
 import cellprofiler_core.measurement
 import cellprofiler.misc
 import cellprofiler_core.module
@@ -17,6 +18,8 @@ import cellprofiler_core.object
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 from cellprofiler.modules import _help
+
+import cellprofiler_core.utilities.pathname
 from cellprofiler_core.modules import identify, loadimages
 
 logger = logging.getLogger(__name__)
@@ -980,7 +983,7 @@ safe to press it.""",
                                     row_path_name, row[file_name_column]
                                 )
                                 row[path_name_column] = row_path_name
-                            url = loadimages.pathname2url(fullname)
+                            url = cellprofiler_core.utilities.pathname.pathname2url(fullname)
                             row.append(url)
                         if path_name_column is None:
                             #
@@ -1140,10 +1143,10 @@ safe to press it.""",
                     for image_number, url in zip(image_numbers, urls):
                         url = url
                         if url.lower().startswith("file:"):
-                            fullname = loadimages.url2pathname(url)
+                            fullname = cellprofiler_core.utilities.pathname.url2pathname(url)
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = str(loadimages.pathname2url(fullname))
+                            url = str(cellprofiler_core.utilities.pathname.pathname2url(fullname))
                             m.add_measurement(
                                 cellprofiler_core.measurement.IMAGE,
                                 url_feature,
@@ -1183,7 +1186,7 @@ safe to press it.""",
             cellprofiler_core.measurement.IMAGE, url_feature
         )
         url = url
-        full_filename = loadimages.url2pathname(url)
+        full_filename = cellprofiler_core.utilities.pathname.url2pathname(url)
         path, filename = os.path.split(full_filename)
         if measurements.has_feature(
             cellprofiler_core.measurement.IMAGE, series_feature
@@ -1195,7 +1198,7 @@ safe to press it.""",
             frame = measurements[cellprofiler_core.measurement.IMAGE, frame_feature]
         else:
             frame = None
-        return loadimages.LoadImagesImageProvider(
+        return cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider(
             name,
             path,
             filename,
@@ -1228,18 +1231,18 @@ safe to press it.""",
                 image = image_set.get_image(image_name)
                 pixel_data = image.pixel_data
                 m.add_image_measurement(
-                    "_".join((loadimages.C_MD5_DIGEST, image_name)),
+                    "_".join((cellprofiler_core.modules.C_MD5_DIGEST, image_name)),
                     provider.get_md5_hash(m),
                 )
                 m.add_image_measurement(
-                    "_".join((loadimages.C_SCALING, image_name)), image.scale
+                    "_".join((cellprofiler_core.modules.C_SCALING, image_name)), image.scale
                 )
                 m.add_image_measurement(
-                    "_".join((loadimages.C_HEIGHT, image_name)),
+                    "_".join((cellprofiler_core.modules.C_HEIGHT, image_name)),
                     int(pixel_data.shape[0]),
                 )
                 m.add_image_measurement(
-                    "_".join((loadimages.C_WIDTH, image_name)), int(pixel_data.shape[1])
+                    "_".join((cellprofiler_core.modules.C_WIDTH, image_name)), int(pixel_data.shape[1])
                 )
                 if image_size is None:
                     image_size = tuple(pixel_data.shape[:2])
@@ -1434,12 +1437,12 @@ safe to press it.""",
                     cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME,
                 ),
                 (
-                    loadimages.C_MD5_DIGEST,
+                    cellprofiler_core.modules.C_MD5_DIGEST,
                     cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                 ),
-                (loadimages.C_SCALING, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (loadimages.C_HEIGHT, cellprofiler_core.measurement.COLTYPE_INTEGER),
-                (loadimages.C_WIDTH, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                (cellprofiler_core.modules.C_SCALING, cellprofiler_core.measurement.COLTYPE_FLOAT),
+                (cellprofiler_core.modules.C_HEIGHT, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                (cellprofiler_core.modules.C_WIDTH, cellprofiler_core.measurement.COLTYPE_INTEGER),
             ):
                 for image_name in image_names:
                     measurement = feature + "_" + image_name

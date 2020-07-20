@@ -1,6 +1,6 @@
 import numpy
 
-from ._abstract_image_provider import (
+from cellprofiler_core.image.abstract_image_provider._abstract_image_provider import (
     AbstractImageProvider,
     CallbackImageProvider,
     VanillaImageProvider,

@@ -10,6 +10,8 @@ import numpy
 import skimage.color
 
 import cellprofiler_core.image
+import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider
+import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.module
@@ -2704,13 +2706,14 @@ class MetadataPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
         )
 
 
-class ColorImageProvider(loadimages.LoadImagesImageProviderURL):
+class ColorImageProvider(
+    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL):
     """Provide a color image, tripling a monochrome plane if needed"""
 
     def __init__(
         self, name, url, series, index, rescale=True, volume=False, spacing=None
     ):
-        loadimages.LoadImagesImageProviderURL.__init__(
+        cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.__init__(
             self,
             name,
             url,
@@ -2722,7 +2725,7 @@ class ColorImageProvider(loadimages.LoadImagesImageProviderURL):
         )
 
     def provide_image(self, image_set):
-        image = loadimages.LoadImagesImageProviderURL.provide_image(self, image_set)
+        image = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.provide_image(self, image_set)
 
         if image.pixel_data.ndim == image.dimensions:
             image.pixel_data = skimage.color.gray2rgb(image.pixel_data, alpha=False)
@@ -2730,7 +2733,8 @@ class ColorImageProvider(loadimages.LoadImagesImageProviderURL):
         return image
 
 
-class MonochromeImageProvider(loadimages.LoadImagesImageProviderURL):
+class MonochromeImageProvider(
+    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL):
     """Provide a monochrome image, combining RGB if needed"""
 
     def __init__(
@@ -2744,7 +2748,7 @@ class MonochromeImageProvider(loadimages.LoadImagesImageProviderURL):
         volume=False,
         spacing=None,
     ):
-        loadimages.LoadImagesImageProviderURL.__init__(
+        cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.__init__(
             self,
             name,
             url,
@@ -2757,7 +2761,7 @@ class MonochromeImageProvider(loadimages.LoadImagesImageProviderURL):
         )
 
     def provide_image(self, image_set):
-        image = loadimages.LoadImagesImageProviderURL.provide_image(self, image_set)
+        image = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.provide_image(self, image_set)
 
         if image.pixel_data.ndim == image.dimensions + 1:
             image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
@@ -2788,11 +2792,12 @@ class MaskImageProvider(MonochromeImageProvider):
         return image
 
 
-class ObjectsImageProvider(loadimages.LoadImagesImageProviderURL):
+class ObjectsImageProvider(
+    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL):
     """Provide a multi-plane integer image, interpreting an image file as objects"""
 
     def __init__(self, name, url, series, index):
-        loadimages.LoadImagesImageProviderURL.__init__(
+        cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.__init__(
             self, name, url, rescale=False, series=series, index=index, volume=False
         )
 

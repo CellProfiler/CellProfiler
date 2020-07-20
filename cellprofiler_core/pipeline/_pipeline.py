@@ -1998,7 +1998,8 @@ class Pipeline:
         path - a path to a file or a URL
         """
         if isinstance(path_or_fd, six.string_types):
-            from cellprofiler_core.modules.loadimages import url2pathname, FILE_SCHEME
+            from cellprofiler_core.modules.loadimages import FILE_SCHEME
+            from cellprofiler_core.utilities.pathname import url2pathname
 
             pathname = path_or_fd
 
@@ -2033,7 +2034,7 @@ class Pipeline:
 
     def add_pathnames_to_file_list(self, pathnames, add_undo=True):
         """Add a sequence of paths or URLs to the file list"""
-        from cellprofiler_core.modules.loadimages import pathname2url
+        from cellprofiler_core.utilities.pathname import pathname2url
 
         urls = []
         for pathname in pathnames:

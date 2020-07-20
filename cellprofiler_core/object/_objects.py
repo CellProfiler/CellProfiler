@@ -480,3 +480,9 @@ class Objects:
         return numpy.array(
             scipy.ndimage.center_of_mass(numpy.ones_like(labels), labels, index)
         )
+
+    def overlapping(self):
+        if not isinstance(self.__segmented, cellprofiler_core.object.Segmentation):
+            return False
+        dense, indices = self.__segmented.get_dense()
+        return len(dense) != 1

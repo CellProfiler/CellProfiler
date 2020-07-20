@@ -33,12 +33,48 @@ from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.
 from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_stk_frame_provider import (
     LoadImagesSTKFrameProvider,
 )
-from cellprofiler_core.modules import identify, convert_image_to_objects, C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH, \
-    MS_EXACT_MATCH, MS_REGEXP, MS_ORDER, FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_AVI_MOVIES_OLD, \
-    FF_OTHER_MOVIES, FF_OTHER_MOVIES_OLD, IO_IMAGES, IO_OBJECTS, IO_ALL, IMAGE_FOR_OBJECTS_F, \
-    SUPPORTED_IMAGE_EXTENSIONS, SUPPORTED_MOVIE_EXTENSIONS, FF, M_NONE, M_FILE_NAME, M_PATH, M_BOTH, M_Z, M_T, C_SERIES, \
-    C_FRAME, I_INTERLEAVED, I_SEPARATED, SUB_NONE, SUB_ALL, SUB_SOME, default_cpimage_name, well_metadata_tokens, \
-    needs_well_metadata, is_image, is_movie
+from cellprofiler_core.modules import (
+    identify,
+    convert_image_to_objects,
+    C_MD5_DIGEST,
+    C_SCALING,
+    C_HEIGHT,
+    C_WIDTH,
+    MS_EXACT_MATCH,
+    MS_REGEXP,
+    MS_ORDER,
+    FF_INDIVIDUAL_IMAGES,
+    FF_STK_MOVIES,
+    FF_AVI_MOVIES,
+    FF_AVI_MOVIES_OLD,
+    FF_OTHER_MOVIES,
+    FF_OTHER_MOVIES_OLD,
+    IO_IMAGES,
+    IO_OBJECTS,
+    IO_ALL,
+    IMAGE_FOR_OBJECTS_F,
+    SUPPORTED_IMAGE_EXTENSIONS,
+    SUPPORTED_MOVIE_EXTENSIONS,
+    FF,
+    M_NONE,
+    M_FILE_NAME,
+    M_PATH,
+    M_BOTH,
+    M_Z,
+    M_T,
+    C_SERIES,
+    C_FRAME,
+    I_INTERLEAVED,
+    I_SEPARATED,
+    SUB_NONE,
+    SUB_ALL,
+    SUB_SOME,
+    default_cpimage_name,
+    well_metadata_tokens,
+    needs_well_metadata,
+    is_image,
+    is_movie,
+)
 from cellprofiler_core.modules.loaddata import bad_sizes_warning
 from cellprofiler_core.utilities.pathname import pathname2url, url2pathname
 

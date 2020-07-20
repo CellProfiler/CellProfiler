@@ -64,6 +64,7 @@ overlapped_objects_data_masks = [
     for offi, offj in ((10, 10), (10, 15))
 ]
 
+
 def md(keys_and_counts):
     """Generate metadata dictionaries for the given metadata shape
 

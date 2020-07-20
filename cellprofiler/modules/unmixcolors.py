@@ -472,7 +472,7 @@ blue absorbance values from the image.
         Returns a 3-tuple of the R/G/B absorbances
         """
 
-        from cellprofiler_core.modules.loadimages import LoadImagesImageProvider
+        from cellprofiler_core.image import LoadImagesImageProvider
         import wx
 
         dlg = wx.FileDialog(

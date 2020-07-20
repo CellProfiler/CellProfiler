@@ -1114,7 +1114,7 @@ desired.
             is_file_name_feature,
         )
         from cellprofiler_core.measurement import C_PATH_NAME, C_FILE_NAME, C_URL
-        from cellprofiler_core.modules.loadimages import (
+        from cellprofiler_core.modules import (
             C_MD5_DIGEST,
             C_SCALING,
             C_HEIGHT,

@@ -43,9 +43,9 @@ import skimage.util
 
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.preferences as cpprefs
 import cellprofiler_core.setting
+import cellprofiler_core.utilities.pathname
 from cellprofiler.modules import _help
 
 IF_IMAGE = "Image"
@@ -759,7 +759,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
                 workspace, make_dirs=False, check_overwrite=False
             )
             pn, fn = os.path.split(filename)
-            url = cellprofiler_core.modules.loadimages.pathname2url(filename)
+            url = cellprofiler_core.utilities.pathname.pathname2url(filename)
             workspace.measurements.add_measurement(
                 cellprofiler_core.measurement.IMAGE,
                 self.file_name_feature,

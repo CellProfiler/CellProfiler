@@ -101,7 +101,6 @@ import cellprofiler
 import cellprofiler.icons
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting

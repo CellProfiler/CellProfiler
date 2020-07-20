@@ -407,15 +407,16 @@ color map.
         # Note: workspace.measurements.image_set_number contains the image
         #    number that should be displayed.
         import wx
-        from cellprofiler_core.modules import loadimages as LI
+        from cellprofiler_core.modules import C_PATH_NAME, C_FILE_NAME
+        from cellprofiler_core.image import LoadImagesImageProvider
         import os.path
 
         im_id = self.image_name.value
 
         m = workspace.measurements
         image_name = self.image_name.value
-        pathname_feature = "_".join((LI.C_PATH_NAME, image_name))
-        filename_feature = "_".join((LI.C_FILE_NAME, image_name))
+        pathname_feature = "_".join((C_PATH_NAME, image_name))
+        filename_feature = "_".join((C_FILE_NAME, image_name))
         if not all(
             [
                 m.has_feature(cellprofiler_core.measurement.IMAGE, f)
@@ -438,7 +439,7 @@ color map.
         # Add the image to the workspace ImageSetList
         image_set_list = workspace.image_set_list
         image_set = image_set_list.get_image_set(0)
-        ip = LI.LoadImagesImageProvider(im_id, pathname, filename)
+        ip = LoadImagesImageProvider(im_id, pathname, filename)
         image_set.providers.append(ip)
 
         self.run(workspace)

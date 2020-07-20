@@ -52,13 +52,12 @@ import cellprofiler_core.analysis.request
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler_core.modules.loadimages
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.utilities.legacy
+import cellprofiler_core.utilities.pathname
 import cellprofiler_core.utilities.zmq
 import cellprofiler_core.workspace
 
@@ -1956,7 +1955,7 @@ class PipelineController(object):
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
         from cellprofiler.gui.figure import show_image
-        from cellprofiler_core.modules.loadimages import url2pathname
+        from cellprofiler_core.utilities.pathname import url2pathname
 
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY
@@ -2096,7 +2095,7 @@ class PipelineController(object):
                     message[0] = "Processing " + pathname
                     if os.path.isfile(pathname):
                         urls.append(
-                            cellprofiler_core.modules.loadimages.pathname2url(pathname)
+                            cellprofiler_core.utilities.pathname.pathname2url(pathname)
                         )
                         if len(urls) > 100:
                             queue.put(urls)
@@ -2108,7 +2107,7 @@ class PipelineController(object):
                                     break
                                 path = os.path.join(dirpath, filename)
                                 urls.append(
-                                    cellprofiler_core.modules.loadimages.pathname2url(
+                                    cellprofiler_core.utilities.pathname.pathname2url(
                                         path
                                     )
                                 )
@@ -2236,7 +2235,7 @@ class PipelineController(object):
 
         hdf_file_list = self.__workspace.get_file_list()
         file_list = [
-            cellprofiler_core.modules.loadimages.pathname2url(
+            cellprofiler_core.utilities.pathname.pathname2url(
                 os.path.join(dirpath, filename)
             )
             for filename in filenames

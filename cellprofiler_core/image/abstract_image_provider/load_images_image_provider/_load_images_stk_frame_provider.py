@@ -1,6 +1,5 @@
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider import (
-    LoadImagesImageProvider,
-)
+from ._load_images_image_provider import LoadImagesImageProvider
+
 
 
 class LoadImagesSTKFrameProvider(LoadImagesImageProvider):

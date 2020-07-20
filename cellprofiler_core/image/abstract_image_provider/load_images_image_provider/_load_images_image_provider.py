@@ -4,8 +4,9 @@ import tempfile
 
 import six
 
-import cellprofiler_core.image
+from cellprofiler_core.image._image import Image
 import cellprofiler_core.preferences
+from .._abstract_image_provider import AbstractImageProvider
 from cellprofiler_core.modules import (
     FILE_SCHEME,
     PASSTHROUGH_SCHEMES,
@@ -19,7 +20,7 @@ from cellprofiler_core.utilities.pathname import pathname2url, url2pathname
 from cellprofiler_core.utilities import generate_presigned_url
 
 
-class LoadImagesImageProvider(cellprofiler_core.image.AbstractImageProvider):
+class LoadImagesImageProvider(AbstractImageProvider):
     """Base for image providers: handle pathname and filename & URLs"""
 
     def __init__(
@@ -309,7 +310,7 @@ class LoadImagesImageProvider(cellprofiler_core.image.AbstractImageProvider):
         if isinstance(self.rescale, float):
             # Apply a manual rescale
             img = img.astype(numpy.float32) / self.rescale
-        self.__image = cellprofiler_core.image.Image(
+        self.__image = Image(
             img,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),
@@ -346,7 +347,7 @@ class LoadImagesImageProvider(cellprofiler_core.image.AbstractImageProvider):
         else:
             self.scale = 1
 
-        self.__image = cellprofiler_core.image.Image(
+        self.__image = Image(
             image=data,
             path_name=self.get_pathname(),
             file_name=self.get_filename(),

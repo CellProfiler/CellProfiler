@@ -1,4 +1,4 @@
-from cellprofiler_core.image import AbstractImageProvider
+from ..abstract_image_provider._abstract_image_provider import AbstractImageProvider
 
 
 class CallbackImageProvider(AbstractImageProvider):

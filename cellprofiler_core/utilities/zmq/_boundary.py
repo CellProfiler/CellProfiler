@@ -232,7 +232,7 @@ class Boundary:
                                 q.put([self, self.NOTIFY_REQUEST, req])
                                 break
                         else:
-                            logger.warn(
+                            logger.warning(
                                 "Received a request that wasn't an AnalysisRequest: %s"
                                 % str(type(req))
                             )
@@ -240,7 +240,7 @@ class Boundary:
                         continue
                     if s != request_socket:
                         # Request is on the external socket
-                        logger.warn("Received a request on the external socket")
+                        logger.warning("Received a request on the external socket")
                         req.reply(BoundaryExited())
                         continue
                     #

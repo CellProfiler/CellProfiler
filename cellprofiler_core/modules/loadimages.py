@@ -34,7 +34,8 @@ from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.
     LoadImagesFlexFrameProvider
 from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_stk_frame_provider import \
     LoadImagesSTKFrameProvider
-from cellprofiler_core.modules import identify
+from cellprofiler_core.modules import identify, convert_image_to_objects
+from cellprofiler_core.modules.loaddata import bad_sizes_warning
 from cellprofiler_core.utilities import generate_presigned_url
 from cellprofiler_core.utilities.pathname import pathname2url, url2pathname
 
@@ -4134,74 +4135,6 @@ def load_data_file(pathname_or_url, load_fn):
         return img
 
     return load_fn(pathname_or_url)
-
-
-def convert_image_to_objects(image):
-    """Interpret an image as object indices
-
-    image - a grayscale or color image, assumes zero == background
-
-    returns - a similarly shaped integer array with zero representing background
-              and other values representing the indices of the associated object.
-    """
-    assert isinstance(image, numpy.ndarray)
-    if image.ndim == 2:
-        unique_indices = numpy.unique(image.ravel())
-        if len(unique_indices) * 2 > max(numpy.max(unique_indices), 254) and numpy.all(
-            numpy.abs(numpy.round(unique_indices, 1) - unique_indices)
-            <= numpy.finfo(float).eps
-        ):
-            # Heuristic: reinterpret only if sparse and roughly integer
-            return numpy.round(image).astype(int)
-
-        def sorting(x):
-            return [x]
-
-        def comparison(i0, i1):
-            return image.ravel()[i0] != image.ravel()[i1]
-
-    else:
-        i, j = numpy.mgrid[0 : image.shape[0], 0 : image.shape[1]]
-
-        def sorting(x):
-            return [x[:, :, 2], x[:, :, 1], x[:, :, 0]]
-
-        def comparison(i0, i1):
-            return numpy.any(
-                image[i.ravel()[i0], j.ravel()[i0], :]
-                != image[i.ravel()[i1], j.ravel()[i1], :],
-                1,
-            )
-
-    order = numpy.lexsort([x.ravel() for x in sorting(image)])
-    different = numpy.hstack([[False], comparison(order[:-1], order[1:])])
-    index = numpy.cumsum(different)
-    image = numpy.zeros(image.shape[:2], index.dtype)
-    image.ravel()[order] = index
-    return image
-
-
-def bad_sizes_warning(first_size, first_filename, second_size, second_filename):
-    """Return a warning message about sizes being wrong
-
-    first_size: tuple of height / width of first image
-    first_filename: file name of first image
-    second_size: tuple of height / width of second image
-    second_filename: file name of second image
-    """
-    warning = (
-        "Warning: loading image files of different dimensions.\n\n"
-        "%s: width = %d, height = %d\n"
-        "%s: width = %d, height = %d"
-    ) % (
-        first_filename,
-        first_size[1],
-        first_size[0],
-        second_filename,
-        second_size[1],
-        second_size[0],
-    )
-    return warning
 
 
 FILE_SCHEME = "file:"

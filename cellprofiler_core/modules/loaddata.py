@@ -14,6 +14,7 @@ import cellprofiler_core.image.abstract_image_provider.load_images_image_provide
 import cellprofiler_core.measurement
 import cellprofiler.misc
 import cellprofiler_core.module
+import cellprofiler_core.modules
 import cellprofiler_core.object
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
@@ -610,17 +611,6 @@ safe to press it.""",
                     "Consider combining the CSV files from all of your\n"
                     "LoadData modules into one and using only a single\n"
                     "LoadData module",
-                    self.csv_file_name,
-                )
-            if isinstance(module, loadimages.LoadImages):
-                raise cellprofiler_core.setting.ValidationError(
-                    "Your pipeline has a LoadImages and LoadData module.\n"
-                    "The best practice is to have only a single LoadImages\n"
-                    "or LoadData module. This LoadData module will match its\n"
-                    "metadata against that of the previous LoadImages module\n"
-                    "in an attempt to reconcile the two modules' image\n"
-                    "set lists and this can result in image sets with\n"
-                    "missing images or metadata.",
                     self.csv_file_name,
                 )
 
@@ -1248,7 +1238,7 @@ safe to press it.""",
                     image_size = tuple(pixel_data.shape[:2])
                     first_filename = image.file_name
                 elif tuple(pixel_data.shape[:2]) != image_size:
-                    warning = loadimages.bad_sizes_warning(
+                    warning = bad_sizes_warning(
                         image_size, first_filename, pixel_data.shape, image.file_name
                     )
                     if self.show_window:
@@ -1262,7 +1252,7 @@ safe to press it.""",
             for objects_name in objects_names:
                 provider = self.fetch_provider(objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
-                pixel_data = loadimages.convert_image_to_objects(image.pixel_data)
+                pixel_data = cellprofiler_core.modules.convert_image_to_objects(image.pixel_data)
                 o = cellprofiler_core.object.Objects()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
@@ -1742,3 +1732,26 @@ def get_loaddata_type(x):
             return cellprofiler_core.measurement.COLTYPE_FLOAT
         except:
             return cellprofiler_core.measurement.COLTYPE_VARCHAR
+
+
+def bad_sizes_warning(first_size, first_filename, second_size, second_filename):
+    """Return a warning message about sizes being wrong
+
+    first_size: tuple of height / width of first image
+    first_filename: file name of first image
+    second_size: tuple of height / width of second image
+    second_filename: file name of second image
+    """
+    warning = (
+        "Warning: loading image files of different dimensions.\n\n"
+        "%s: width = %d, height = %d\n"
+        "%s: width = %d, height = %d"
+    ) % (
+        first_filename,
+        first_size[1],
+        first_size[0],
+        second_filename,
+        second_size[1],
+        second_size[0],
+    )
+    return warning

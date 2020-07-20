@@ -15,6 +15,7 @@ import cellprofiler_core.image.abstract_image_provider.load_images_image_provide
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.module
+import cellprofiler_core.modules
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -2041,17 +2042,17 @@ requests an object selection.
         name = provider.get_name()
         img = provider.provide_image(m)
         m[
-            cellprofiler_core.measurement.IMAGE, loadimages.C_MD5_DIGEST + "_" + name
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.modules.C_MD5_DIGEST + "_" + name
         ] = NamesAndTypes.get_file_hash(provider, m)
         m[
-            cellprofiler_core.measurement.IMAGE, loadimages.C_WIDTH + "_" + name
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.modules.C_WIDTH + "_" + name
         ] = img.pixel_data.shape[1]
         m[
-            cellprofiler_core.measurement.IMAGE, loadimages.C_HEIGHT + "_" + name
+            cellprofiler_core.measurement.IMAGE, cellprofiler_core.modules.C_HEIGHT + "_" + name
         ] = img.pixel_data.shape[0]
         if image_or_objects == cellprofiler_core.measurement.IMAGE:
             m[
-                cellprofiler_core.measurement.IMAGE, loadimages.C_SCALING + "_" + name
+                cellprofiler_core.measurement.IMAGE, cellprofiler_core.modules.C_SCALING + "_" + name
             ] = provider.scale
 
     @staticmethod
@@ -2224,20 +2225,20 @@ requests an object selection.
                         cellprofiler_core.measurement.COLTYPE_VARCHAR_PATH_NAME,
                     ),
                     (
-                        loadimages.C_MD5_DIGEST,
+                        cellprofiler_core.modules.C_MD5_DIGEST,
                         cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                     ),
-                    (loadimages.C_SCALING, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                    (loadimages.C_WIDTH, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                    (cellprofiler_core.modules.C_SCALING, cellprofiler_core.measurement.COLTYPE_FLOAT),
+                    (cellprofiler_core.modules.C_WIDTH, cellprofiler_core.measurement.COLTYPE_INTEGER),
                     (
-                        loadimages.C_HEIGHT,
+                        cellprofiler_core.modules.C_HEIGHT,
                         cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
                     (
-                        loadimages.C_SERIES,
+                        cellprofiler_core.modules.C_SERIES,
                         cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
-                    (loadimages.C_FRAME, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                    (cellprofiler_core.modules.C_FRAME, cellprofiler_core.measurement.COLTYPE_INTEGER),
                 )
             ]
         for object_name in object_names:
@@ -2265,12 +2266,12 @@ requests an object selection.
                         cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
                     (
-                        loadimages.C_MD5_DIGEST,
+                        cellprofiler_core.modules.C_MD5_DIGEST,
                         cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                     ),
-                    (loadimages.C_WIDTH, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                    (cellprofiler_core.modules.C_WIDTH, cellprofiler_core.measurement.COLTYPE_INTEGER),
                     (
-                        loadimages.C_HEIGHT,
+                        cellprofiler_core.modules.C_HEIGHT,
                         cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
                     (
@@ -2314,12 +2315,12 @@ requests an object selection.
                     cellprofiler_core.measurement.C_COUNT,
                 ]
             result += [
-                loadimages.C_MD5_DIGEST,
-                loadimages.C_SCALING,
-                loadimages.C_HEIGHT,
-                loadimages.C_WIDTH,
-                loadimages.C_SERIES,
-                loadimages.C_FRAME,
+                cellprofiler_core.modules.C_MD5_DIGEST,
+                cellprofiler_core.modules.C_SCALING,
+                cellprofiler_core.modules.C_HEIGHT,
+                cellprofiler_core.modules.C_WIDTH,
+                cellprofiler_core.modules.C_SERIES,
+                cellprofiler_core.modules.C_FRAME,
             ]
         elif object_name in self.get_object_names():
             result += [
@@ -2347,12 +2348,12 @@ requests an object selection.
             elif category == cellprofiler_core.measurement.C_COUNT:
                 return object_names
             elif category in (
-                loadimages.C_MD5_DIGEST,
-                loadimages.C_SCALING,
-                loadimages.C_HEIGHT,
-                loadimages.C_WIDTH,
-                loadimages.C_SERIES,
-                loadimages.C_FRAME,
+                cellprofiler_core.modules.C_MD5_DIGEST,
+                cellprofiler_core.modules.C_SCALING,
+                cellprofiler_core.modules.C_HEIGHT,
+                cellprofiler_core.modules.C_WIDTH,
+                cellprofiler_core.modules.C_SERIES,
+                cellprofiler_core.modules.C_FRAME,
             ):
                 return list(image_names) + list(object_names)
         elif object_name in self.get_object_names():
@@ -2834,7 +2835,7 @@ class ObjectsImageProvider(
             img = bioformats.load_image(
                 self.get_full_name(), rescale=False, **properties
             ).astype(int)
-            img = loadimages.convert_image_to_objects(img).astype(numpy.int32)
+            img = cellprofiler_core.modules.convert_image_to_objects(img).astype(numpy.int32)
             img[img != 0] += offset
             offset += numpy.max(img)
             planes.append(img)

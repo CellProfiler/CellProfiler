@@ -1,4 +1,5 @@
 import six
+import six.moves.urllib
 
 from cellprofiler_core.utilities.image import PASSTHROUGH_SCHEMES, FILE_SCHEME, is_file_url
 

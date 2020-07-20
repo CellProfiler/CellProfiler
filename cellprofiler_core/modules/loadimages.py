@@ -35,7 +35,6 @@ from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.
 )
 from cellprofiler_core.modules import (
     identify,
-    convert_image_to_objects,
     C_MD5_DIGEST,
     C_SCALING,
     C_HEIGHT,
@@ -69,12 +68,9 @@ from cellprofiler_core.modules import (
     SUB_NONE,
     SUB_ALL,
     SUB_SOME,
-    default_cpimage_name,
-    well_metadata_tokens,
-    needs_well_metadata,
-    is_image,
-    is_movie,
 )
+from cellprofiler_core.utilities.image import convert_image_to_objects, default_cpimage_name, well_metadata_tokens, \
+    needs_well_metadata, is_image, is_movie
 from cellprofiler_core.modules.loaddata import bad_sizes_warning
 from cellprofiler_core.utilities.pathname import pathname2url, url2pathname
 

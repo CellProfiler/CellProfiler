@@ -20,6 +20,7 @@ import cellprofiler_core.preferences
 import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
+import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 from cellprofiler_core.modules import identify
 
@@ -1262,7 +1263,7 @@ safe to press it.""",
             for objects_name in objects_names:
                 provider = self.fetch_provider(objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
-                pixel_data = cellprofiler_core.modules.convert_image_to_objects(
+                pixel_data = cellprofiler_core.utilities.image.convert_image_to_objects(
                     image.pixel_data
                 )
                 o = cellprofiler_core.object.Objects()

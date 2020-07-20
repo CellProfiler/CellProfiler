@@ -20,6 +20,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.utilities.image
 from cellprofiler_core.modules import identify, images
 
 logger = logging.getLogger(__name__)
@@ -2858,7 +2859,7 @@ class ObjectsImageProvider(
             img = bioformats.load_image(
                 self.get_full_name(), rescale=False, **properties
             ).astype(int)
-            img = cellprofiler_core.modules.convert_image_to_objects(img).astype(
+            img = cellprofiler_core.utilities.image.convert_image_to_objects(img).astype(
                 numpy.int32
             )
             img[img != 0] += offset

@@ -10,12 +10,9 @@ from .._abstract_image_provider import AbstractImageProvider
 from ....modules import (
     FILE_SCHEME,
     PASSTHROUGH_SCHEMES,
-    is_numpy_file,
-    is_matlab_file,
     logger,
-    load_data_file,
-    loadmat,
 )
+from ....utilities.image import is_numpy_file, is_matlab_file, loadmat, load_data_file
 
 from cellprofiler_core.utilities.pathname import pathname2url, url2pathname
 from cellprofiler_core.utilities import generate_presigned_url

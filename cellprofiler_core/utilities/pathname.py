@@ -3,8 +3,8 @@ import six
 from cellprofiler_core.modules import (
     PASSTHROUGH_SCHEMES,
     FILE_SCHEME,
-    is_file_url,
 )
+from cellprofiler_core.utilities.image import is_file_url
 
 
 def pathname2url(path):

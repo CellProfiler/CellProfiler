@@ -1483,8 +1483,8 @@ class Measurements:
         is_image - True to load as an image, False to load as objects
         fn_later_path - call this function to alter the path for batch processing
         """
-        from cellprofiler_core.utilities.image import url2pathname
-        from cellprofiler_core.utilities.image import pathname2url
+        from cellprofiler_core.utilities.pathname import url2pathname
+        from cellprofiler_core.utilities.pathname import pathname2url
 
         if is_image:
             path_feature = cellprofiler_core.measurement.C_PATH_NAME
@@ -1594,7 +1594,7 @@ class Measurements:
                 cellprofiler_core.measurement.M_PATH_MAPPINGS
             )
         )
-        os_url2pathname = cellprofiler_core.utilities.image.url2pathname
+        os_url2pathname = cellprofiler_core.utilities.pathname.url2pathname
         full_name = os_url2pathname(url[5:])
         full_name_c = (
             full_name

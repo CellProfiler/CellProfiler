@@ -1488,7 +1488,7 @@ def run_workspace(
     n.module_num = 1
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(n)
-    url = cellprofiler_core.utilities.image.pathname2url(path)
+    url = cellprofiler_core.utilities.pathname.pathname2url(path)
     pathname, filename = os.path.split(path)
     m = cellprofiler_core.measurement.Measurements()
     if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
@@ -1568,7 +1568,7 @@ def run_workspace(
         si.rescale.value = rescaled
         si.manual_rescale.value = manual_rescale
 
-        url = cellprofiler_core.utilities.image.pathname2url(path)
+        url = cellprofiler_core.utilities.pathname.pathname2url(path)
         pathname, filename = os.path.split(path)
         if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
             url_feature = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + name

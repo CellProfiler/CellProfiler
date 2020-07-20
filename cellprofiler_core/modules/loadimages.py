@@ -75,8 +75,8 @@ from cellprofiler_core.utilities.image import (
     well_metadata_tokens,
     needs_well_metadata,
     is_image,
-    is_movie, pathname2url, url2pathname,
-)
+    is_movie, )
+from cellprofiler_core.utilities.pathname import pathname2url, url2pathname
 from cellprofiler_core.modules.loaddata import bad_sizes_warning
 
 """

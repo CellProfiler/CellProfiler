@@ -1176,7 +1176,7 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
             "ABCDEFGH"[int((i - 1) / 12)],
             ((i - 1) % 12) + 1,
         )
-        url = cellprofiler_core.utilities.image.pathname2url(
+        url = cellprofiler_core.utilities.pathname.pathname2url(
             os.path.join(path, filename)
         )
         m[

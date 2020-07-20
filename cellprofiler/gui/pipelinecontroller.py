@@ -2618,7 +2618,7 @@ class PipelineController(object):
             # legacy pipeline
             #
             message = (
-                "%s is a legacy input module that is incompatible\n"
+                "%s is an alternative input module that is incompatible\n"
                 "with the Images, Metadata, NamesAndTypes, and Groups\n"
                 "input modules. Do you want to remove these input\n"
                 "modules and use %s instead?"
@@ -2626,7 +2626,7 @@ class PipelineController(object):
             if (
                 wx.MessageBox(
                     message,
-                    caption="Use legacy input module, %s" % module.module_name,
+                    caption="Use alternative input module, %s" % module.module_name,
                     style=wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION,
                     parent=self.__frame,
                 )

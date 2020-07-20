@@ -86,7 +86,8 @@ class MetadataControl(wx.Control):
 
         def on_show(event):
             if event:
-                self.make_caret()
+                if isinstance(event.EventObject, MetadataControl):
+                    self.make_caret()
             else:
                 del self.__caret
                 self.__caret = None

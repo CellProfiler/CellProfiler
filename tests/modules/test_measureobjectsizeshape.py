@@ -552,3 +552,51 @@ def test_run_with_zernikes():
     ]
 
     assert len(zernikes) > 0
+
+
+def test_run_without_advanced():
+    cells_resource = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), "..", "resources", "cells.tiff")
+    )
+
+    workspace, module = make_workspace(skimage.io.imread(cells_resource))
+
+    module.calculate_advanced.value = False
+    module.calculate_zernikes.value = False
+
+    module.run(workspace)
+
+    measurements = workspace.measurements
+
+    standard = [f"AreaShape_{name}" for name in cellprofiler.modules.measureobjectsizeshape.F_STANDARD +
+                cellprofiler.modules.measureobjectsizeshape.F_STD_2D]
+    advanced = [f"AreaShape_{name}" for name in cellprofiler.modules.measureobjectsizeshape.F_ADV_2D]
+    measures = measurements.get_feature_names(OBJECTS_NAME)
+    for feature in standard:
+        assert feature in measures
+    for feature in advanced:
+        assert feature not in measures
+
+
+def test_run_with_advanced():
+    cells_resource = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), "..", "resources", "cells.tiff")
+    )
+
+    workspace, module = make_workspace(skimage.io.imread(cells_resource))
+
+    module.calculate_advanced.value = True
+    module.calculate_zernikes.value = False
+
+    module.run(workspace)
+
+    measurements = workspace.measurements
+
+    allfeatures = [
+        f"AreaShape_{name}" for name in cellprofiler.modules.measureobjectsizeshape.F_STANDARD +
+                                        cellprofiler.modules.measureobjectsizeshape.F_STD_2D +
+                                        cellprofiler.modules.measureobjectsizeshape.F_ADV_2D
+    ]
+    measures = measurements.get_feature_names(OBJECTS_NAME)
+    for feature in allfeatures:
+        assert feature in measures

@@ -2,7 +2,9 @@ import os
 import shutil
 import tempfile
 
+import numpy
 import six
+import six.moves
 
 import cellprofiler_core.measurement
 from cellprofiler_core.utilities import generate_presigned_url

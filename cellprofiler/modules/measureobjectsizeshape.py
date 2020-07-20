@@ -358,7 +358,7 @@ class MeasureObjectSizeShape(cellprofiler_core.module.Module):
 
         self.calculate_advanced = cellprofiler_core.setting.Binary(
             text="Calculate the advanced features?",
-            value=True,
+            value=False,
             doc="""\
 Select *{YES}* to calculate additional statistics for object moments
 and intertia tensors. These features should not require much additional time
@@ -842,7 +842,7 @@ module.""".format(
             variable_revision_number = 2
         if variable_revision_number == 2:
             # Add advanced features toggle
-            setting_values.append("Yes")
+            setting_values.append("No")
             variable_revision_number = 3
         return setting_values, variable_revision_number
 

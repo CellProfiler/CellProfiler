@@ -2151,6 +2151,7 @@ class Figure(wx.Frame):
             elif title == "short":
                 title = "Per-image means"
             ystart += 0.1
+            height -= 0.1
             axes = self.subplot(x, y)
             if not self.figure.get_constrained_layout():
                 self.figure.tight_layout()

@@ -1262,7 +1262,7 @@ def test_get_groupings():
             provider = image_set.get_image_provider("MyImage")
             assert isinstance(
                 provider,
-                cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider
+                cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider,
             )
             match = re.search(
                 module.images[0].file_metadata.value, provider.get_filename()

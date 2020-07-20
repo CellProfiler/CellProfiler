@@ -1608,7 +1608,9 @@ def set_intensity_mode(value):
     __intensity_mode = value
     config_write(INTENSITY_MODE, value)
 
+
 __save_pipeline_with_project = None
+
 
 def get_save_pipeline_with_project():
     global __save_pipeline_with_project

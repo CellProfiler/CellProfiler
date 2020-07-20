@@ -973,7 +973,9 @@ safe to press it.""",
                                     row_path_name, row[file_name_column]
                                 )
                                 row[path_name_column] = row_path_name
-                            url = cellprofiler_core.utilities.pathname.pathname2url(fullname)
+                            url = cellprofiler_core.utilities.pathname.pathname2url(
+                                fullname
+                            )
                             row.append(url)
                         if path_name_column is None:
                             #
@@ -1133,10 +1135,16 @@ safe to press it.""",
                     for image_number, url in zip(image_numbers, urls):
                         url = url
                         if url.lower().startswith("file:"):
-                            fullname = cellprofiler_core.utilities.pathname.url2pathname(url)
+                            fullname = cellprofiler_core.utilities.pathname.url2pathname(
+                                url
+                            )
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = str(cellprofiler_core.utilities.pathname.pathname2url(fullname))
+                            url = str(
+                                cellprofiler_core.utilities.pathname.pathname2url(
+                                    fullname
+                                )
+                            )
                             m.add_measurement(
                                 cellprofiler_core.measurement.IMAGE,
                                 url_feature,
@@ -1225,14 +1233,16 @@ safe to press it.""",
                     provider.get_md5_hash(m),
                 )
                 m.add_image_measurement(
-                    "_".join((cellprofiler_core.modules.C_SCALING, image_name)), image.scale
+                    "_".join((cellprofiler_core.modules.C_SCALING, image_name)),
+                    image.scale,
                 )
                 m.add_image_measurement(
                     "_".join((cellprofiler_core.modules.C_HEIGHT, image_name)),
                     int(pixel_data.shape[0]),
                 )
                 m.add_image_measurement(
-                    "_".join((cellprofiler_core.modules.C_WIDTH, image_name)), int(pixel_data.shape[1])
+                    "_".join((cellprofiler_core.modules.C_WIDTH, image_name)),
+                    int(pixel_data.shape[1]),
                 )
                 if image_size is None:
                     image_size = tuple(pixel_data.shape[:2])
@@ -1252,7 +1262,9 @@ safe to press it.""",
             for objects_name in objects_names:
                 provider = self.fetch_provider(objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
-                pixel_data = cellprofiler_core.modules.convert_image_to_objects(image.pixel_data)
+                pixel_data = cellprofiler_core.modules.convert_image_to_objects(
+                    image.pixel_data
+                )
                 o = cellprofiler_core.object.Objects()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
@@ -1430,9 +1442,18 @@ safe to press it.""",
                     cellprofiler_core.modules.C_MD5_DIGEST,
                     cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                 ),
-                (cellprofiler_core.modules.C_SCALING, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (cellprofiler_core.modules.C_HEIGHT, cellprofiler_core.measurement.COLTYPE_INTEGER),
-                (cellprofiler_core.modules.C_WIDTH, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                (
+                    cellprofiler_core.modules.C_SCALING,
+                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                ),
+                (
+                    cellprofiler_core.modules.C_HEIGHT,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
+                ),
+                (
+                    cellprofiler_core.modules.C_WIDTH,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
+                ),
             ):
                 for image_name in image_names:
                     measurement = feature + "_" + image_name

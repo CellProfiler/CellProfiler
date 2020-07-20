@@ -27,13 +27,18 @@ import cellprofiler_core.preferences
 import cellprofiler_core.setting
 
 # import cellprofiler_core.modules
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider import LoadImagesImageProvider
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_movie_frame_provider import \
-    LoadImagesMovieFrameProvider
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_flex_frame_provider import \
-    LoadImagesFlexFrameProvider
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_stk_frame_provider import \
-    LoadImagesSTKFrameProvider
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider import (
+    LoadImagesImageProvider,
+)
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_movie_frame_provider import (
+    LoadImagesMovieFrameProvider,
+)
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_flex_frame_provider import (
+    LoadImagesFlexFrameProvider,
+)
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_stk_frame_provider import (
+    LoadImagesSTKFrameProvider,
+)
 from cellprofiler_core.modules import identify, convert_image_to_objects
 from cellprofiler_core.modules.loaddata import bad_sizes_warning
 from cellprofiler_core.utilities import generate_presigned_url

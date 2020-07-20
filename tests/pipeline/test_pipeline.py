@@ -1169,7 +1169,7 @@ HasImagePlaneDetails:False"""
         assert len(p.file_list) == 2
         for path in paths:
             assert (
-                    cellprofiler_core.utilities.pathname.pathname2url(path) in p.file_list
+                cellprofiler_core.utilities.pathname.pathname2url(path) in p.file_list
             )
 
     def test_read_file_list_urls(self):

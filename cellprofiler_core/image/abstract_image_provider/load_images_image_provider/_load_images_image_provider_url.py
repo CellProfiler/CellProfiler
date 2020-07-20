@@ -1,7 +1,8 @@
 import os
 
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider import \
-    LoadImagesImageProvider
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider import (
+    LoadImagesImageProvider,
+)
 from cellprofiler_core.utilities.pathname import url2pathname
 
 

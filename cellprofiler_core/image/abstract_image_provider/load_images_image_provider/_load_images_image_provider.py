@@ -6,7 +6,15 @@ import six
 
 import cellprofiler_core.image
 import cellprofiler_core.preferences
-from cellprofiler_core.modules.loadimages import FILE_SCHEME, PASSTHROUGH_SCHEMES, is_numpy_file, is_matlab_file, logger, load_data_file, loadmat
+from cellprofiler_core.modules.loadimages import (
+    FILE_SCHEME,
+    PASSTHROUGH_SCHEMES,
+    is_numpy_file,
+    is_matlab_file,
+    logger,
+    load_data_file,
+    loadmat,
+)
 from cellprofiler_core.utilities.pathname import pathname2url, url2pathname
 from cellprofiler_core.utilities import generate_presigned_url
 

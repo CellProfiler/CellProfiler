@@ -2042,17 +2042,21 @@ requests an object selection.
         name = provider.get_name()
         img = provider.provide_image(m)
         m[
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.modules.C_MD5_DIGEST + "_" + name
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.modules.C_MD5_DIGEST + "_" + name,
         ] = NamesAndTypes.get_file_hash(provider, m)
         m[
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.modules.C_WIDTH + "_" + name
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.modules.C_WIDTH + "_" + name,
         ] = img.pixel_data.shape[1]
         m[
-            cellprofiler_core.measurement.IMAGE, cellprofiler_core.modules.C_HEIGHT + "_" + name
+            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.modules.C_HEIGHT + "_" + name,
         ] = img.pixel_data.shape[0]
         if image_or_objects == cellprofiler_core.measurement.IMAGE:
             m[
-                cellprofiler_core.measurement.IMAGE, cellprofiler_core.modules.C_SCALING + "_" + name
+                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.modules.C_SCALING + "_" + name,
             ] = provider.scale
 
     @staticmethod
@@ -2228,8 +2232,14 @@ requests an object selection.
                         cellprofiler_core.modules.C_MD5_DIGEST,
                         cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                     ),
-                    (cellprofiler_core.modules.C_SCALING, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                    (cellprofiler_core.modules.C_WIDTH, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                    (
+                        cellprofiler_core.modules.C_SCALING,
+                        cellprofiler_core.measurement.COLTYPE_FLOAT,
+                    ),
+                    (
+                        cellprofiler_core.modules.C_WIDTH,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                    ),
                     (
                         cellprofiler_core.modules.C_HEIGHT,
                         cellprofiler_core.measurement.COLTYPE_INTEGER,
@@ -2238,7 +2248,10 @@ requests an object selection.
                         cellprofiler_core.modules.C_SERIES,
                         cellprofiler_core.measurement.COLTYPE_INTEGER,
                     ),
-                    (cellprofiler_core.modules.C_FRAME, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                    (
+                        cellprofiler_core.modules.C_FRAME,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                    ),
                 )
             ]
         for object_name in object_names:
@@ -2269,7 +2282,10 @@ requests an object selection.
                         cellprofiler_core.modules.C_MD5_DIGEST,
                         cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                     ),
-                    (cellprofiler_core.modules.C_WIDTH, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                    (
+                        cellprofiler_core.modules.C_WIDTH,
+                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                    ),
                     (
                         cellprofiler_core.modules.C_HEIGHT,
                         cellprofiler_core.measurement.COLTYPE_INTEGER,
@@ -2708,7 +2724,8 @@ class MetadataPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
 
 
 class ColorImageProvider(
-    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL):
+    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL
+):
     """Provide a color image, tripling a monochrome plane if needed"""
 
     def __init__(
@@ -2726,7 +2743,9 @@ class ColorImageProvider(
         )
 
     def provide_image(self, image_set):
-        image = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.provide_image(self, image_set)
+        image = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.provide_image(
+            self, image_set
+        )
 
         if image.pixel_data.ndim == image.dimensions:
             image.pixel_data = skimage.color.gray2rgb(image.pixel_data, alpha=False)
@@ -2735,7 +2754,8 @@ class ColorImageProvider(
 
 
 class MonochromeImageProvider(
-    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL):
+    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL
+):
     """Provide a monochrome image, combining RGB if needed"""
 
     def __init__(
@@ -2762,7 +2782,9 @@ class MonochromeImageProvider(
         )
 
     def provide_image(self, image_set):
-        image = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.provide_image(self, image_set)
+        image = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.provide_image(
+            self, image_set
+        )
 
         if image.pixel_data.ndim == image.dimensions + 1:
             image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
@@ -2794,7 +2816,8 @@ class MaskImageProvider(MonochromeImageProvider):
 
 
 class ObjectsImageProvider(
-    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL):
+    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL
+):
     """Provide a multi-plane integer image, interpreting an image file as objects"""
 
     def __init__(self, name, url, series, index):
@@ -2835,7 +2858,9 @@ class ObjectsImageProvider(
             img = bioformats.load_image(
                 self.get_full_name(), rescale=False, **properties
             ).astype(int)
-            img = cellprofiler_core.modules.convert_image_to_objects(img).astype(numpy.int32)
+            img = cellprofiler_core.modules.convert_image_to_objects(img).astype(
+                numpy.int32
+            )
             img[img != 0] += offset
             offset += numpy.max(img)
             planes.append(img)

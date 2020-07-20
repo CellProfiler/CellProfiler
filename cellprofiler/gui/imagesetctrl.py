@@ -1004,7 +1004,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
     ###############################
 
     def on_grid_begin_drag(self, event):
-        from cellprofiler_core.modules.loadimages import url2pathname
+        from cellprofiler_core.utilities.pathname import url2pathname
 
         selections = self.get_selected_cells()
         if len(selections) > 0:

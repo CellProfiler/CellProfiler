@@ -52,13 +52,12 @@ import cellprofiler_core.analysis.request
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler_core.modules.loadimages
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.utilities.legacy
+import cellprofiler_core.utilities.pathname
 import cellprofiler_core.utilities.zmq
 import cellprofiler_core.workspace
 
@@ -1128,100 +1127,6 @@ class PipelineController(object):
                 self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()
-            self.__pipeline.fix_legacy_pipeline()
-            if self.__pipeline.can_convert_legacy_input_modules():
-                # Note: the length of the longest line of text also
-                #       controls the size of the directory entry text box
-                text = (
-                    "Your pipeline contains the legacy module LoadImages, and legacy references\n"
-                    "to the Default Input Folder. CellProfiler can convert this pipeline by:\n\n"
-                    "\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
-                    "\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
-                    "If you choose to convert the pipeline, you should then make sure of the \n"
-                    "following:\n"
-                    "\u2022 Images module: Provide your original images and/or folders as input.\n"
-                    "\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
-                    "\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
-                    "   color images under the 'Select the image type' setting.\n"
-                    "\u2022 Groups: Confirm that that the expected number of images per group are present."
-                )
-                CONVERT = 1
-                DONT_CONVERT = 2
-
-                with wx.Dialog(self.__frame, title="Convert legacy pipeline?") as dlg:
-                    import wx.lib.filebrowsebutton as filebrowse
-
-                    #
-                    # Structure:
-                    #
-                    # dialog sizer (vertical)
-                    #    sizer (horizontal)
-                    #        static bitmap
-                    #        vsizer (vertical)
-                    #            static text
-                    #            default input folder dirbrowser
-                    # stddlgbuttonsizer
-                    #     Convert button
-                    #     Don't convert button
-                    #
-                    dlg.SetSizer(wx.BoxSizer(wx.VERTICAL))
-                    sizer = wx.BoxSizer(wx.HORIZONTAL)
-                    dlg.GetSizer().Add(sizer, 0, wx.EXPAND | wx.ALL, 10)
-                    bmp = wx.ArtProvider.GetBitmap(wx.ART_QUESTION, wx.ART_CMN_DIALOG)
-                    sizer.Add(
-                        wx.StaticBitmap(dlg, bitmap=bmp),
-                        0,
-                        wx.ALIGN_LEFT | wx.ALIGN_TOP,
-                    )
-                    sizer.AddSpacer(8)
-                    vsizer = wx.BoxSizer(wx.VERTICAL)
-                    sizer.Add(vsizer, 1, wx.EXPAND | wx.ALL)
-                    vsizer.Add(
-                        wx.StaticText(dlg, label=text), 0, wx.ALIGN_LEFT | wx.ALIGN_TOP
-                    )
-                    vsizer.AddSpacer(8)
-                    dir_ctrl = filebrowse.DirBrowseButton(
-                        dlg,
-                        labelText="Folder",
-                        dialogTitle="Browse for default input folder",
-                        startDirectory=cellprofiler_core.preferences.get_default_image_directory(),
-                    )
-                    dir_ctrl.SetValue(
-                        cellprofiler_core.preferences.get_default_image_directory()
-                    )
-                    vsizer.Add(dir_ctrl, 1, wx.EXPAND)
-                    dlg.Sizer.AddSpacer(8)
-                    btn_sizer = wx.StdDialogButtonSizer()
-                    dlg.Sizer.Add(btn_sizer, 0, wx.ALIGN_RIGHT | wx.ALL, 6)
-                    convert_button = wx.Button(dlg, label="Convert")
-                    btn_sizer.AddButton(convert_button)
-                    btn_sizer.SetAffirmativeButton(convert_button)
-                    dont_convert_button = wx.Button(dlg, label="Don't Convert")
-                    btn_sizer.AddButton(dont_convert_button)
-                    btn_sizer.SetNegativeButton(dont_convert_button)
-                    btn_sizer.Realize()
-                    #
-                    dlg.action = DONT_CONVERT
-
-                    def on_convert_pressed(event):
-                        dlg.action = CONVERT
-                        dlg.EndModal(CONVERT)
-
-                    def on_dont_convert_pressed(event):
-                        dlg.action = DONT_CONVERT
-                        dlg.EndModal(DONT_CONVERT)
-
-                    convert_button.Bind(wx.EVT_BUTTON, on_convert_pressed)
-                    dont_convert_button.Bind(wx.EVT_BUTTON, on_dont_convert_pressed)
-                    dlg.Fit()
-                    convert_button.SetFocus()
-                    dlg.ShowModal()
-                    if dlg.action == CONVERT:
-                        self.__pipeline.convert_legacy_input_modules()
-                        self.__pipeline.convert_default_input_folder(
-                            dir_ctrl.GetValue()
-                        )
-
             self.__workspace.save_pipeline_to_measurements()
             self.display_pipeline_message_for_user()
             target_project_path = (
@@ -2050,7 +1955,7 @@ class PipelineController(object):
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
         from cellprofiler.gui.figure import show_image
-        from cellprofiler_core.modules.loadimages import url2pathname
+        from cellprofiler_core.utilities.pathname import url2pathname
 
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY
@@ -2190,7 +2095,7 @@ class PipelineController(object):
                     message[0] = "Processing " + pathname
                     if os.path.isfile(pathname):
                         urls.append(
-                            cellprofiler_core.modules.loadimages.pathname2url(pathname)
+                            cellprofiler_core.utilities.pathname.pathname2url(pathname)
                         )
                         if len(urls) > 100:
                             queue.put(urls)
@@ -2202,7 +2107,7 @@ class PipelineController(object):
                                     break
                                 path = os.path.join(dirpath, filename)
                                 urls.append(
-                                    cellprofiler_core.modules.loadimages.pathname2url(
+                                    cellprofiler_core.utilities.pathname.pathname2url(
                                         path
                                     )
                                 )
@@ -2330,7 +2235,7 @@ class PipelineController(object):
 
         hdf_file_list = self.__workspace.get_file_list()
         file_list = [
-            cellprofiler_core.modules.loadimages.pathname2url(
+            cellprofiler_core.utilities.pathname.pathname2url(
                 os.path.join(dirpath, filename)
             )
             for filename in filenames
@@ -2713,7 +2618,7 @@ class PipelineController(object):
             # legacy pipeline
             #
             message = (
-                "%s is a legacy input module that is incompatible\n"
+                "%s is an alternative input module that is incompatible\n"
                 "with the Images, Metadata, NamesAndTypes, and Groups\n"
                 "input modules. Do you want to remove these input\n"
                 "modules and use %s instead?"
@@ -2721,7 +2626,7 @@ class PipelineController(object):
             if (
                 wx.MessageBox(
                     message,
-                    caption="Use legacy input module, %s" % module.module_name,
+                    caption="Use alternative input module, %s" % module.module_name,
                     style=wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION,
                     parent=self.__frame,
                 )

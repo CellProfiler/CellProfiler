@@ -1230,7 +1230,7 @@ class CPFrame(wx.Frame):
             style=wx.FD_OPEN,
         )
         if dlg.ShowModal() == wx.ID_OK:
-            from cellprofiler_core.modules.loadimages import LoadImagesImageProvider
+            from cellprofiler_core.image import LoadImagesImageProvider
             from cellprofiler.gui.figure import Figure
 
             lip = LoadImagesImageProvider("dummy", "", dlg.GetPath())

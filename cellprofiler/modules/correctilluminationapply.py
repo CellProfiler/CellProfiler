@@ -90,7 +90,7 @@ class CorrectIlluminationApply(cpm.Module):
 Select the illumination correction function image that will be used to
 carry out the correction. This image is usually produced by another
 module or loaded as a .mat or .npy format image using the **Images** module
-or a **Load** module, most commonly **LoadSingleImage**.
+or a **LoadData** module.
 
 Note that loading .mat format images is deprecated and will be removed in
 a future version of CellProfiler. You can export .mat format images as

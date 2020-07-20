@@ -6,7 +6,6 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
-import cellprofiler_core.modules.loadsingleimage
 import cellprofiler.modules.measureimagequality
 import cellprofiler_core.modules.namesandtypes
 import cellprofiler.modules.smooth

@@ -27,9 +27,6 @@ MENU_HELP = {
     "Introduction to Projects": cellprofiler.gui.help.content.read_content(
         "projects_introduction.rst"
     ),
-    "Load Modules": cellprofiler.gui.help.content.read_content(
-        "legacy_load_modules.rst"
-    ),
     "Loading Image Stacks and Movies": cellprofiler.gui.help.content.read_content(
         "projects_image_sequences.rst"
     ),

@@ -7,11 +7,6 @@ import six
 from cellprofiler_core.image._image import Image
 import cellprofiler_core.preferences
 from .._abstract_image_provider import AbstractImageProvider
-from ....modules import (
-    FILE_SCHEME,
-    PASSTHROUGH_SCHEMES,
-    logger,
-)
 from ....utilities.image import is_numpy_file, is_matlab_file, loadmat, load_data_file
 
 from cellprofiler_core.utilities.pathname import pathname2url, url2pathname

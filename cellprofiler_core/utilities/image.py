@@ -3,6 +3,7 @@ import shutil
 import tempfile
 
 import numpy
+import scipy.io
 import six
 import six.moves
 

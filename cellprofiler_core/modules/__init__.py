@@ -212,10 +212,12 @@ __all__ = [
 ]
 
 replaced_modules = {
-    "LoadImageDirectory": ["LoadImages", "LoadData"],
-    "GroupMovieFrames": ["LoadImages"],
+    "LoadImageDirectory": ["LoadData"],
+    "GroupMovieFrames": ["LoadData"],
     "IdentifyPrimLoG": ["IdentifyPrimaryObjects"],
-    "FileNameMetadata": ["LoadImages"],
+    "FileNameMetadata": ["LoadData"],
+    "LoadSingleImage": ["LoadData"],
+    "LoadImages": ["LoadData"],
 }
 depricated_modules = ["CorrectIllumination_Calculate_kate", "SubtractBackground"]
 unimplemented_modules = ["LabelImages", "Restart", "SplitOrSpliceMovie"]
@@ -237,7 +239,7 @@ def get_module_class(module_name):
             raise ValueError(
                 (
                     "The %s module has been deprecated and will "
-                    "not be implemented in CellProfiler 2.0."
+                    "not be implemented in CellProfiler 4.0."
                 )
                 % module_class
             )

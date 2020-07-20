@@ -136,9 +136,9 @@ Choose the shape into which you would like to crop:
 -  *{SH_IMAGE}:* Cropping will occur based on a binary image you
    specify. A choice box with available images will appear from which
    you can select an image. To crop into an arbitrary shape that you
-   define, choose *{SH_IMAGE}* and use the **LoadSingleImage** module
-   to load a black and white image that you have already prepared from a
-   file. If you have created this image in a program such as Photoshop,
+   define, choose *{SH_IMAGE}* and use a black and white image that you
+   have already prepared from a file.
+   If you have created this image in a program such as Photoshop,
    this binary image should contain only the values 0 and 255, with
    zeros (black) for the parts you want to remove and 255 (white) for
    the parts you want to retain. Alternately, you may have previously

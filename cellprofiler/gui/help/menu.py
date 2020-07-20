@@ -119,13 +119,6 @@ class Menu(cellprofiler.gui.menu.Menu):
         legacy_menu = cellprofiler.gui.menu.Menu(self.frame)
 
         legacy_menu.append(
-            "Load Modules",
-            contents=cellprofiler.gui.help.content.read_content(
-                "legacy_load_modules.rst"
-            ),
-        )
-
-        legacy_menu.append(
             "MATLAB format images",
             contents=cellprofiler.gui.help.content.read_content(
                 "legacy_matlab_image.rst"

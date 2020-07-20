@@ -13,6 +13,8 @@ import six.moves.urllib
 import cellprofiler_core.measurement
 import cellprofiler_core.utilities
 import cellprofiler_core.utilities.hdf5_dict
+import cellprofiler_core.utilities.image
+import cellprofiler_core.utilities.pathname
 
 
 class Measurements:
@@ -1481,7 +1483,8 @@ class Measurements:
         is_image - True to load as an image, False to load as objects
         fn_later_path - call this function to alter the path for batch processing
         """
-        from cellprofiler_core.modules.loadimages import url2pathname, pathname2url
+        from cellprofiler_core.utilities.pathname import url2pathname
+        from cellprofiler_core.utilities.pathname import pathname2url
 
         if is_image:
             path_feature = cellprofiler_core.measurement.C_PATH_NAME
@@ -1591,9 +1594,7 @@ class Measurements:
                 cellprofiler_core.measurement.M_PATH_MAPPINGS
             )
         )
-        os_url2pathname = __import__(
-            d[cellprofiler_core.measurement.K_URL2PATHNAME_PACKAGE_NAME]
-        ).url2pathname
+        os_url2pathname = cellprofiler_core.utilities.pathname.url2pathname
         full_name = os_url2pathname(url[5:])
         full_name_c = (
             full_name
@@ -1680,7 +1681,9 @@ class Measurements:
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
         """
-        from cellprofiler_core.modules.loadimages import LoadImagesImageProviderURL
+        from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url import (
+            LoadImagesImageProviderURL,
+        )
         from cellprofiler_core.image import GrayscaleImage, RGBImage
 
         name = str(name)

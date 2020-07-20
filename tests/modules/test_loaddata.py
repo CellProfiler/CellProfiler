@@ -14,11 +14,12 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.modules.loaddata
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.utilities.image
+import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
 import tests.modules
 
@@ -415,7 +416,7 @@ def test_dont_load_file():
 def test_load_planes(test_images_path):
     file_name = "RLM1 SSN3 300308 008015000.flex"
     pathname = os.path.join(test_images_path, file_name)
-    url = cellprofiler_core.modules.loadimages.pathname2url(pathname)
+    url = cellprofiler_core.utilities.pathname.pathname2url(pathname)
     ftrs = (
         cellprofiler_core.measurement.C_URL,
         cellprofiler_core.measurement.C_SERIES,
@@ -938,7 +939,7 @@ def test_load_filename():
     assert path == test_path
     assert m.get_measurement(
         cellprofiler_core.measurement.IMAGE, "URL_DNA", 1
-    ) == cellprofiler_core.modules.loadimages.pathname2url(
+    ) == cellprofiler_core.utilities.pathname.pathname2url(
         os.path.join(test_path, test_filename)
     )
     module.prepare_group(workspace, {}, [1])
@@ -1164,7 +1165,7 @@ def test_load_default_input_folder():
         assert test_path == path_out
         assert m.get_measurement(
             cellprofiler_core.measurement.IMAGE, "URL_DNA", 1
-        ) == cellprofiler_core.modules.loadimages.pathname2url(
+        ) == cellprofiler_core.utilities.pathname.pathname2url(
             os.path.join(test_path, test_filename)
         )
         module.prepare_group(workspace, {}, [1])

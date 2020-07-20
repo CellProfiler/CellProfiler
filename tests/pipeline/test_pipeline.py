@@ -20,12 +20,13 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.modules
 import cellprofiler_core.modules.injectimage
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.modules.measurementfixture
 import cellprofiler_core.pipeline
 import cellprofiler_core.pipeline.dependency
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.utilities.image
+import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
 import tests.modules
 
@@ -1168,12 +1169,12 @@ HasImagePlaneDetails:False"""
         assert len(p.file_list) == 2
         for path in paths:
             assert (
-                cellprofiler_core.modules.loadimages.pathname2url(path) in p.file_list
+                    cellprofiler_core.utilities.pathname.pathname2url(path) in p.file_list
             )
 
     def test_read_file_list_urls(self):
         root = os.path.split(__file__)[0]
-        file_url = cellprofiler_core.modules.loadimages.pathname2url(
+        file_url = cellprofiler_core.utilities.pathname.pathname2url(
             os.path.join(root, "foo.tif")
         )
         urls = [

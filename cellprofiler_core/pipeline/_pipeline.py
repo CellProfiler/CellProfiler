@@ -611,107 +611,6 @@ class Pipeline:
                     result.append(setting.value)
         return result
 
-    def can_convert_legacy_input_modules(self):
-        """Can legacy modules like LoadImages be converted to modern form?
-
-        Returns True if all legacy input modules can be converted to
-        Images / Metadata / NamesAndTypes / Groups.
-        """
-        needs_conversion = False
-        try:
-            for module in self.__modules:
-                if module.needs_conversion():
-                    needs_conversion = True
-            return needs_conversion
-        except:
-            return False
-
-    def convert_legacy_input_modules(self):
-        """Convert a pipeline from legacy to using Images, NamesAndTypes etc"""
-        if not self.can_convert_legacy_input_modules():
-            return
-        from cellprofiler_core.modules.images import Images, FILTER_CHOICE_NONE
-        from cellprofiler_core.modules.metadata import Metadata
-        from cellprofiler_core.modules.namesandtypes import NamesAndTypes
-        from cellprofiler_core.modules.groups import Groups
-
-        with self.undoable_action("Legacy modules converted"):
-            images, metadata, namesandtypes, groups = (
-                Images(),
-                Metadata(),
-                NamesAndTypes(),
-                Groups(),
-            )
-            images.filter_choice.value = FILTER_CHOICE_NONE
-            for i, module in enumerate((images, metadata, namesandtypes, groups)):
-                module.set_module_num(i + 1)
-                module.show_window = cellprofiler_core.preferences.get_headless()
-                if module.notes:
-                    module.notes += ["---"]
-                module.notes += ["Settings converted from legacy pipeline."]
-                self.add_module(module)
-            for module in list(self.__modules):
-                if module.needs_conversion():
-                    module.convert(self, metadata, namesandtypes, groups)
-                    self.remove_module(module.module_num)
-            self.notify_listeners(cellprofiler_core.pipeline.event.PipelineLoaded())
-
-    def convert_default_input_folder(self, path):
-        """Convert all references to the default input folder to abolute paths
-
-        path - the path to use in place of the default input folder
-        """
-        with self.undoable_action("Convert default input folder"):
-            for module in self.modules(False):
-                was_edited = False
-                for setting in module.settings():
-                    if isinstance(setting, cellprofiler_core.setting.DirectoryPath):
-                        if (
-                            setting.dir_choice
-                            == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
-                        ):
-                            setting.dir_choice = (
-                                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-                            )
-                            setting.custom_path = path
-                            was_edited = True
-                        elif (
-                            setting.dir_choice
-                            == cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
-                        ):
-                            subpath = os.path.join(path, setting.custom_path)
-                            setting.dir_choice = (
-                                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-                            )
-                            setting.custom_path = subpath
-                if was_edited:
-                    self.edit_module(module.module_num, True)
-            self.notify_listeners(cellprofiler_core.pipeline.event.PipelineLoaded())
-
-    def fix_legacy_pipeline(self):
-        """Perform inter-module fixes needed for some legacy pipelines"""
-        from cellprofiler_core.modules.loadsingleimage import LoadSingleImage
-
-        #
-        # LoadSingleImage used to work if placed before LoadImages or
-        # LoadData, but doesn't any more
-        #
-        while True:
-            for i, module in enumerate(self.modules()):
-                if isinstance(module, LoadSingleImage):
-                    for other_module in self.modules()[(i + 1) :]:
-                        if other_module.is_load_module():
-                            self.move_module(
-                                other_module.module_num,
-                                cellprofiler_core.pipeline.DIRECTION_UP,
-                            )
-                            break
-                    else:
-                        continue
-                    break  # Rerun from start
-            else:
-                break
-
     def requires_aggregation(self):
         """Return True if the pipeline requires aggregation across image sets
 
@@ -2099,7 +1998,8 @@ class Pipeline:
         path - a path to a file or a URL
         """
         if isinstance(path_or_fd, six.string_types):
-            from cellprofiler_core.modules.loadimages import url2pathname, FILE_SCHEME
+            from cellprofiler_core.modules import FILE_SCHEME
+            from cellprofiler_core.utilities.pathname import url2pathname
 
             pathname = path_or_fd
 
@@ -2134,7 +2034,7 @@ class Pipeline:
 
     def add_pathnames_to_file_list(self, pathnames, add_undo=True):
         """Add a sequence of paths or URLs to the file list"""
-        from cellprofiler_core.modules.loadimages import pathname2url
+        from cellprofiler_core.utilities.pathname import pathname2url
 
         urls = []
         for pathname in pathnames:
@@ -2251,7 +2151,7 @@ class Pipeline:
         self.__available_metadata_keys = available_metadata_keys
         self.__image_plane_details_metadata_settings = self.get_module_state(module)
 
-    LEGACY_LOAD_MODULES = ["LoadImages", "LoadData", "LoadSingleImage"]
+    LEGACY_LOAD_MODULES = ["LoadData"]
 
     def has_legacy_loaders(self):
         return any(m.module_name in self.LEGACY_LOAD_MODULES for m in self.modules())

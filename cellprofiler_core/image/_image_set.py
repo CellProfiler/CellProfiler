@@ -3,6 +3,7 @@ import logging
 import numpy
 
 import cellprofiler_core.image
+import cellprofiler_core.image.abstract_image_provider._vanilla_image_provider
 
 logger = logging.getLogger(__name__)
 
@@ -142,5 +143,7 @@ class ImageSet:
             self.clear_image(name)
         for provider in old_providers:
             self.providers.remove(provider)
-        provider = cellprofiler_core.image.VanillaImageProvider(name, image)
+        provider = cellprofiler_core.image.abstract_image_provider._vanilla_image_provider.VanillaImageProvider(
+            name, image
+        )
         self.providers.append(provider)

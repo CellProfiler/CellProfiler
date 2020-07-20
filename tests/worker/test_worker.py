@@ -11,10 +11,11 @@ import uuid
 import cellprofiler_core.analysis
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.modules.namesandtypes
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
+import cellprofiler_core.utilities.image
+import cellprofiler_core.utilities.pathname
 import cellprofiler_core.utilities.zmq
 import cellprofiler_core.worker
 import javabridge
@@ -1175,7 +1176,7 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
             "ABCDEFGH"[int((i - 1) / 12)],
             ((i - 1) % 12) + 1,
         )
-        url = cellprofiler_core.modules.loadimages.pathname2url(
+        url = cellprofiler_core.utilities.pathname.pathname2url(
             os.path.join(path, filename)
         )
         m[

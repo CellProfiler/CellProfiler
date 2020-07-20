@@ -11,11 +11,11 @@ import pytest
 import six
 
 import cellprofiler_core.measurement
-import cellprofiler.modules.createbatchfiles
 import cellprofiler_core.modules.namesandtypes
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
+import cellprofiler_core.utilities.image
+import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
 import tests.modules
 
@@ -27,6 +27,43 @@ ALT_IMAGE_NAME = "altimagename"
 OBJECTS_NAME = "objectsname"
 ALT_OBJECTS_NAME = "altobjectsname"
 OUTLINES_NAME = "outlines"
+
+"""A two-channel tif containing two overlapped objects"""
+overlapped_objects_data = zlib.decompress(
+    base64.b64decode(
+        "eJztlU9oI1Ucx1/abau7KO7irq6u8BwQqnYymfTfNiRZ2NRAILsJNMVuQfBl"
+        "5iV5dOa9MPPGtJ487UkUBL148uTdkxc9CZ48efIuIp48CZ7qdyaTbbs0DXHL"
+        "itAXPplvXn7f937z5pdfarW3yDOEkGuEZGZJBuomyKT6RTCT6hfAbKpj5o/p"
+        "5zMzxJgj5MYVQq5mLiW+38D1YzE3MD/SL6Uxa/jwchoTj5upPjwk5JXMXKIf"
+        "4u3VVH+Ct1tpzAxYTPUssJHDVVy/wMTWsX0/RV5fQ/wCrsBUAgp8BX4GczCv"
+        "AwG+BD+BQ2BfIsQBn4Mfwd/gbaz1HsiT8yUev88eXeuNSo3eFcqsqsBnOiT/"
+        "h5E58ZouerLr9PizPNM6xseP81w4zud8x43pHdPX1Wmu/248eRseZT9qw/78"
+        "5Db83fzkNvzcwlEbvr4wuQ2/tnCyDccji7n3wWfgB/AXWMS/zy74GHwP/gTG"
+        "s4S0wEPwLfgD3LpMyH3wEfgG/Hr5og1PGDMnXtNFT3adHn+WZ1rH+PhxngvH"
+        "+ZzvuDG9Y/q6Os31tEfxzr7v0Q94EAolS4adzRmUS0e5QnZLxnarat42aKiZ"
+        "dJmnJC8ZUhl3ysXXTZO+ywKJqALVPRFSR/k+l5pCMkkb994xd+7Vqc81c5lm"
+        "tO0pZ2+JDnrC6SFWaiYkTEHkCOZRV8AbZwDdZwGDDRlhIZcq3eMBFX5fBchC"
+        "P1oxS5seZyGn3BWaOizSQkWhd0AXRYcyTZnnvbmUrNBmzh6N+kiTUxWIroh3"
+        "GSbFOyrg1FW4DRqqLEX3o348JWQnaYRIaYmGnCfm+KZatWqVDnibhkLzAu1p"
+        "3S9YlvK5iXPMqqBrDcSesBo+b4lOJ0tNs1yEj+JbGZaMNH4wGGRVn0tfOIEK"
+        "HdU/SKxbTo/7LLRgsPI52zZza8bQWdgPxQn3YDlx5HM528JBD50mzhSH5HCD"
+        "bm/XNktGFMhCFAm3YHdW2RpfXjHzTsc2Vzba6+bGqp0z83lnvbN8e4VvrOLB"
+        "Y5NCmKxUV05y8/8iYzq1Iz6+7H7oGuVizWddTuPUhezjkcYfCw08tLtexLMa"
+        "R4qgptjnXkg3R0XTCFwelIydB5XdlnG2mW6JD3mlZOSHqoWKH6odzK0O5QPI"
+        "3FDuJt+3Dvoo/EhIba9h+0qPScm9xzeqszayesOFk/l9j4dNHiSZxmuUi3XR"
+        "7ekm0z2rXLTSJc53rbjgNuOyroog1LhJ3EQiW0dyN5G16mZybXpM8oqKpB6u"
+        "GxcN4jx+H7/AkvHYuU9VTEUrXgzpjbI6JT/7zPzsp52fNawriKQKcUWNlsk/"
+        "8nHpyw=="
+    )
+)
+
+"""The two objects that were used to generate the above TIF"""
+overlapped_objects_data_masks = [
+    numpy.arange(-offi, 20 - offi)[:, numpy.newaxis] ** 2
+    + numpy.arange(-offj, 25 - offj)[numpy.newaxis, :] ** 2
+    < 64
+    for offi, offj in ((10, 10), (10, 15))
+]
 
 
 def md(keys_and_counts):
@@ -1451,7 +1488,7 @@ def run_workspace(
     n.module_num = 1
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.add_module(n)
-    url = cellprofiler_core.modules.loadimages.pathname2url(path)
+    url = cellprofiler_core.utilities.pathname.pathname2url(path)
     pathname, filename = os.path.split(path)
     m = cellprofiler_core.measurement.Measurements()
     if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
@@ -1531,7 +1568,7 @@ def run_workspace(
         si.rescale.value = rescaled
         si.manual_rescale.value = manual_rescale
 
-        url = cellprofiler_core.modules.loadimages.pathname2url(path)
+        url = cellprofiler_core.utilities.pathname.pathname2url(path)
         pathname, filename = os.path.split(path)
         if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
             url_feature = cellprofiler_core.measurement.C_OBJECTS_URL + "_" + name
@@ -1607,21 +1644,21 @@ def test_load_color():
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.modules.loadimages.C_MD5_DIGEST + "_" + IMAGE_NAME,
+            cellprofiler_core.modules.C_MD5_DIGEST + "_" + IMAGE_NAME,
         ]
         == md5
     )
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.modules.loadimages.C_HEIGHT + "_" + IMAGE_NAME,
+            cellprofiler_core.modules.C_HEIGHT + "_" + IMAGE_NAME,
         ]
         == 21
     )
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.modules.loadimages.C_WIDTH + "_" + IMAGE_NAME,
+            cellprofiler_core.modules.C_WIDTH + "_" + IMAGE_NAME,
         ]
         == 31
     )
@@ -1766,23 +1803,20 @@ def test_load_objects():
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.modules.loadimages.C_MD5_DIGEST + "_" + OBJECTS_NAME,
+            cellprofiler_core.modules.C_MD5_DIGEST + "_" + OBJECTS_NAME,
         ]
         == md5
     )
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.modules.loadimages.C_WIDTH + "_" + OBJECTS_NAME,
+            cellprofiler_core.modules.C_WIDTH + "_" + OBJECTS_NAME,
         ]
         == target.shape[1]
     )
 
 
 def test_load_overlapped_objects():
-    from .test_loadimages import overlapped_objects_data
-    from .test_loadimages import overlapped_objects_data_masks
-
     fd, path = tempfile.mkstemp(".tif")
     f = os.fdopen(fd, "wb")
     f.write(overlapped_objects_data)
@@ -1904,14 +1938,14 @@ def test_load_single_object():
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.modules.loadimages.C_MD5_DIGEST + "_lsi",
+            cellprofiler_core.modules.C_MD5_DIGEST + "_lsi",
         ]
         == md5
     )
     assert (
         m[
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.modules.loadimages.C_WIDTH + "_lsi",
+            cellprofiler_core.modules.C_WIDTH + "_lsi",
         ]
         == target.shape[1]
     )
@@ -1941,10 +1975,10 @@ def test_get_measurement_columns():
         cellprofiler_core.measurement.C_FILE_NAME,
         cellprofiler_core.measurement.C_PATH_NAME,
         cellprofiler_core.measurement.C_URL,
-        cellprofiler_core.modules.loadimages.C_MD5_DIGEST,
-        cellprofiler_core.modules.loadimages.C_SCALING,
-        cellprofiler_core.modules.loadimages.C_HEIGHT,
-        cellprofiler_core.modules.loadimages.C_WIDTH,
+        cellprofiler_core.modules.C_MD5_DIGEST,
+        cellprofiler_core.modules.C_SCALING,
+        cellprofiler_core.modules.C_HEIGHT,
+        cellprofiler_core.modules.C_WIDTH,
         cellprofiler_core.measurement.C_SERIES,
         cellprofiler_core.measurement.C_FRAME,
     ):
@@ -1959,10 +1993,10 @@ def test_get_measurement_columns():
     for ftr in (
         cellprofiler_core.measurement.C_OBJECTS_FILE_NAME,
         cellprofiler_core.measurement.C_OBJECTS_PATH_NAME,
-        cellprofiler_core.modules.loadimages.C_MD5_DIGEST,
+        cellprofiler_core.modules.C_MD5_DIGEST,
         cellprofiler_core.measurement.C_OBJECTS_URL,
-        cellprofiler_core.modules.loadimages.C_HEIGHT,
-        cellprofiler_core.modules.loadimages.C_WIDTH,
+        cellprofiler_core.modules.C_HEIGHT,
+        cellprofiler_core.modules.C_WIDTH,
         cellprofiler_core.measurement.C_OBJECTS_SERIES,
         cellprofiler_core.measurement.C_OBJECTS_FRAME,
         cellprofiler_core.measurement.C_COUNT,
@@ -2001,10 +2035,10 @@ def test_get_categories():
     assert cellprofiler_core.measurement.C_FILE_NAME in categories
     assert cellprofiler_core.measurement.C_PATH_NAME in categories
     assert cellprofiler_core.measurement.C_URL in categories
-    assert cellprofiler_core.modules.loadimages.C_MD5_DIGEST in categories
-    assert cellprofiler_core.modules.loadimages.C_SCALING in categories
-    assert cellprofiler_core.modules.loadimages.C_WIDTH in categories
-    assert cellprofiler_core.modules.loadimages.C_HEIGHT in categories
+    assert cellprofiler_core.modules.C_MD5_DIGEST in categories
+    assert cellprofiler_core.modules.C_SCALING in categories
+    assert cellprofiler_core.modules.C_WIDTH in categories
+    assert cellprofiler_core.modules.C_HEIGHT in categories
     assert cellprofiler_core.measurement.C_SERIES in categories
     assert cellprofiler_core.measurement.C_FRAME in categories
     m.add_assignment()
@@ -2057,10 +2091,10 @@ def test_get_measurements():
         assert mnames[0] == OBJECTS_NAME
 
     for cname in (
-        cellprofiler_core.modules.loadimages.C_MD5_DIGEST,
-        cellprofiler_core.modules.loadimages.C_SCALING,
-        cellprofiler_core.modules.loadimages.C_HEIGHT,
-        cellprofiler_core.modules.loadimages.C_WIDTH,
+        cellprofiler_core.modules.C_MD5_DIGEST,
+        cellprofiler_core.modules.C_SCALING,
+        cellprofiler_core.modules.C_HEIGHT,
+        cellprofiler_core.modules.C_WIDTH,
         cellprofiler_core.measurement.C_SERIES,
         cellprofiler_core.measurement.C_FRAME,
     ):

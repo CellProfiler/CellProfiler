@@ -599,14 +599,6 @@ class Module:
         """
         return False
 
-    def needs_conversion(self):
-        """Return True if the module needs to be converted from legacy
-
-        A module can throw an exception if it is impossible to convert - for
-        instance, LoadData.
-        """
-        return False
-
     def convert(self, pipeline, metadata, namesandtypes, groups):
         """Convert the input processing of this module from the legacy format
 

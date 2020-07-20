@@ -8,6 +8,7 @@ import re
 import sys
 import types
 
+import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.preferences
 
@@ -212,10 +213,12 @@ __all__ = [
 ]
 
 replaced_modules = {
-    "LoadImageDirectory": ["LoadImages", "LoadData"],
-    "GroupMovieFrames": ["LoadImages"],
+    "LoadImageDirectory": ["LoadData"],
+    "GroupMovieFrames": ["LoadData"],
     "IdentifyPrimLoG": ["IdentifyPrimaryObjects"],
-    "FileNameMetadata": ["LoadImages"],
+    "FileNameMetadata": ["LoadData"],
+    "LoadSingleImage": ["LoadData"],
+    "LoadImages": ["LoadData"],
 }
 depricated_modules = ["CorrectIllumination_Calculate_kate", "SubtractBackground"]
 unimplemented_modules = ["LabelImages", "Restart", "SplitOrSpliceMovie"]
@@ -237,7 +240,7 @@ def get_module_class(module_name):
             raise ValueError(
                 (
                     "The %s module has been deprecated and will "
-                    "not be implemented in CellProfiler 2.0."
+                    "not be implemented in CellProfiler 4.0."
                 )
                 % module_class
             )

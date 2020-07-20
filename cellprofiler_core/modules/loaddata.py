@@ -10,14 +10,19 @@ import numpy
 import six
 import six.moves.urllib.request
 
+import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider
 import cellprofiler_core.measurement
 import cellprofiler.misc
 import cellprofiler_core.module
+import cellprofiler_core.modules
 import cellprofiler_core.object
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 from cellprofiler.modules import _help
-from cellprofiler_core.modules import identify, loadimages
+
+import cellprofiler_core.utilities.image
+import cellprofiler_core.utilities.pathname
+from cellprofiler_core.modules import identify
 
 logger = logging.getLogger(__name__)
 from io import StringIO
@@ -609,17 +614,6 @@ safe to press it.""",
                     "LoadData module",
                     self.csv_file_name,
                 )
-            if isinstance(module, loadimages.LoadImages):
-                raise cellprofiler_core.setting.ValidationError(
-                    "Your pipeline has a LoadImages and LoadData module.\n"
-                    "The best practice is to have only a single LoadImages\n"
-                    "or LoadData module. This LoadData module will match its\n"
-                    "metadata against that of the previous LoadImages module\n"
-                    "in an attempt to reconcile the two modules' image\n"
-                    "set lists and this can result in image sets with\n"
-                    "missing images or metadata.",
-                    self.csv_file_name,
-                )
 
         # check that user has selected fields for grouping if grouping is turned on
         if self.wants_image_groupings.value and (
@@ -980,7 +974,9 @@ safe to press it.""",
                                     row_path_name, row[file_name_column]
                                 )
                                 row[path_name_column] = row_path_name
-                            url = loadimages.pathname2url(fullname)
+                            url = cellprofiler_core.utilities.pathname.pathname2url(
+                                fullname
+                            )
                             row.append(url)
                         if path_name_column is None:
                             #
@@ -1140,10 +1136,16 @@ safe to press it.""",
                     for image_number, url in zip(image_numbers, urls):
                         url = url
                         if url.lower().startswith("file:"):
-                            fullname = loadimages.url2pathname(url)
+                            fullname = cellprofiler_core.utilities.pathname.url2pathname(
+                                url
+                            )
                             fullname = fn_alter_path(fullname)
                             path, filename = os.path.split(fullname)
-                            url = str(loadimages.pathname2url(fullname))
+                            url = str(
+                                cellprofiler_core.utilities.pathname.pathname2url(
+                                    fullname
+                                )
+                            )
                             m.add_measurement(
                                 cellprofiler_core.measurement.IMAGE,
                                 url_feature,
@@ -1183,7 +1185,7 @@ safe to press it.""",
             cellprofiler_core.measurement.IMAGE, url_feature
         )
         url = url
-        full_filename = loadimages.url2pathname(url)
+        full_filename = cellprofiler_core.utilities.pathname.url2pathname(url)
         path, filename = os.path.split(full_filename)
         if measurements.has_feature(
             cellprofiler_core.measurement.IMAGE, series_feature
@@ -1195,7 +1197,7 @@ safe to press it.""",
             frame = measurements[cellprofiler_core.measurement.IMAGE, frame_feature]
         else:
             frame = None
-        return loadimages.LoadImagesImageProvider(
+        return cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider(
             name,
             path,
             filename,
@@ -1228,24 +1230,26 @@ safe to press it.""",
                 image = image_set.get_image(image_name)
                 pixel_data = image.pixel_data
                 m.add_image_measurement(
-                    "_".join((loadimages.C_MD5_DIGEST, image_name)),
+                    "_".join((cellprofiler_core.modules.C_MD5_DIGEST, image_name)),
                     provider.get_md5_hash(m),
                 )
                 m.add_image_measurement(
-                    "_".join((loadimages.C_SCALING, image_name)), image.scale
+                    "_".join((cellprofiler_core.modules.C_SCALING, image_name)),
+                    image.scale,
                 )
                 m.add_image_measurement(
-                    "_".join((loadimages.C_HEIGHT, image_name)),
+                    "_".join((cellprofiler_core.modules.C_HEIGHT, image_name)),
                     int(pixel_data.shape[0]),
                 )
                 m.add_image_measurement(
-                    "_".join((loadimages.C_WIDTH, image_name)), int(pixel_data.shape[1])
+                    "_".join((cellprofiler_core.modules.C_WIDTH, image_name)),
+                    int(pixel_data.shape[1]),
                 )
                 if image_size is None:
                     image_size = tuple(pixel_data.shape[:2])
                     first_filename = image.file_name
                 elif tuple(pixel_data.shape[:2]) != image_size:
-                    warning = loadimages.bad_sizes_warning(
+                    warning = bad_sizes_warning(
                         image_size, first_filename, pixel_data.shape, image.file_name
                     )
                     if self.show_window:
@@ -1259,7 +1263,9 @@ safe to press it.""",
             for objects_name in objects_names:
                 provider = self.fetch_provider(objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
-                pixel_data = loadimages.convert_image_to_objects(image.pixel_data)
+                pixel_data = cellprofiler_core.utilities.image.convert_image_to_objects(
+                    image.pixel_data
+                )
                 o = cellprofiler_core.object.Objects()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
@@ -1434,12 +1440,21 @@ safe to press it.""",
                     cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME,
                 ),
                 (
-                    loadimages.C_MD5_DIGEST,
+                    cellprofiler_core.modules.C_MD5_DIGEST,
                     cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                 ),
-                (loadimages.C_SCALING, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (loadimages.C_HEIGHT, cellprofiler_core.measurement.COLTYPE_INTEGER),
-                (loadimages.C_WIDTH, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                (
+                    cellprofiler_core.modules.C_SCALING,
+                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                ),
+                (
+                    cellprofiler_core.modules.C_HEIGHT,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
+                ),
+                (
+                    cellprofiler_core.modules.C_WIDTH,
+                    cellprofiler_core.measurement.COLTYPE_INTEGER,
+                ),
             ):
                 for image_name in image_names:
                     measurement = feature + "_" + image_name
@@ -1739,3 +1754,26 @@ def get_loaddata_type(x):
             return cellprofiler_core.measurement.COLTYPE_FLOAT
         except:
             return cellprofiler_core.measurement.COLTYPE_VARCHAR
+
+
+def bad_sizes_warning(first_size, first_filename, second_size, second_filename):
+    """Return a warning message about sizes being wrong
+
+    first_size: tuple of height / width of first image
+    first_filename: file name of first image
+    second_size: tuple of height / width of second image
+    second_filename: file name of second image
+    """
+    warning = (
+        "Warning: loading image files of different dimensions.\n\n"
+        "%s: width = %d, height = %d\n"
+        "%s: width = %d, height = %d"
+    ) % (
+        first_filename,
+        first_size[1],
+        first_size[0],
+        second_filename,
+        second_size[1],
+        second_size[0],
+    )
+    return warning

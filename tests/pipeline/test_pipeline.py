@@ -20,7 +20,6 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.modules
 import cellprofiler_core.modules.injectimage
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.modules.measurementfixture
 import cellprofiler_core.pipeline
 import cellprofiler_core.pipeline.dependency

@@ -20,7 +20,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-from cellprofiler_core.modules import identify, images, loadimages
+from cellprofiler_core.modules import identify, images
 
 logger = logging.getLogger(__name__)
 

@@ -11,7 +11,6 @@ import six.moves.urllib.request
 import cellprofiler_core.module
 import cellprofiler_core.module
 import cellprofiler_core.modules
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.utilities.hdf5_dict

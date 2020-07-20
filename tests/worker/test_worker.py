@@ -11,7 +11,6 @@ import uuid
 import cellprofiler_core.analysis
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.modules.namesandtypes
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences

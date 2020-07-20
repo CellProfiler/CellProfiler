@@ -21,7 +21,7 @@ import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 import cellprofiler_core.utilities.pathname
-from cellprofiler_core.modules import identify, loadimages
+from cellprofiler_core.modules import identify
 
 logger = logging.getLogger(__name__)
 from io import StringIO

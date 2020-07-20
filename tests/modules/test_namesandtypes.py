@@ -11,9 +11,7 @@ import pytest
 import six
 
 import cellprofiler_core.measurement
-import cellprofiler.modules.createbatchfiles
 import cellprofiler_core.modules.namesandtypes
-import cellprofiler_core.modules.loadimages
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.utilities.pathname

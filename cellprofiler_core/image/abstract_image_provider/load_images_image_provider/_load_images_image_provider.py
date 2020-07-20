@@ -6,7 +6,7 @@ import six
 
 import cellprofiler_core.image
 import cellprofiler_core.preferences
-from cellprofiler_core.modules.loadimages import (
+from cellprofiler_core.modules import (
     FILE_SCHEME,
     PASSTHROUGH_SCHEMES,
     is_numpy_file,

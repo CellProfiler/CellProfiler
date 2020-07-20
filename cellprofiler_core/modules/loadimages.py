@@ -4,16 +4,10 @@ import logging
 import os
 import os.path
 import re
-import shutil
 import sys
-import tempfile
 
 import centrosome.outline
 import numpy
-import scipy.io.matlab.mio
-import six
-import six.moves.urllib.parse
-import six.moves.urllib.request
 
 import cellprofiler_core.image
 import cellprofiler_core.image
@@ -39,9 +33,13 @@ from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.
 from cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_stk_frame_provider import (
     LoadImagesSTKFrameProvider,
 )
-from cellprofiler_core.modules import identify, convert_image_to_objects
+from cellprofiler_core.modules import identify, convert_image_to_objects, C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH, \
+    MS_EXACT_MATCH, MS_REGEXP, MS_ORDER, FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_AVI_MOVIES_OLD, \
+    FF_OTHER_MOVIES, FF_OTHER_MOVIES_OLD, IO_IMAGES, IO_OBJECTS, IO_ALL, IMAGE_FOR_OBJECTS_F, \
+    SUPPORTED_IMAGE_EXTENSIONS, SUPPORTED_MOVIE_EXTENSIONS, FF, M_NONE, M_FILE_NAME, M_PATH, M_BOTH, M_Z, M_T, C_SERIES, \
+    C_FRAME, I_INTERLEAVED, I_SEPARATED, SUB_NONE, SUB_ALL, SUB_SOME, default_cpimage_name, well_metadata_tokens, \
+    needs_well_metadata, is_image, is_movie
 from cellprofiler_core.modules.loaddata import bad_sizes_warning
-from cellprofiler_core.utilities import generate_presigned_url
 from cellprofiler_core.utilities.pathname import pathname2url, url2pathname
 
 """
@@ -113,99 +111,24 @@ logger = logging.getLogger(__name__)
 cached_file_lists = {}
 
 """STK TIFF Tag UIC1 - for MetaMorph internal use"""
-UIC1_TAG = 33628
 """STK TIFF Tag UIC2 - stack z distance, creation time..."""
-UIC2_TAG = 33629
 """STK TIFF TAG UIC3 - wavelength"""
-UIC3_TAG = 33630
 """STK TIFF TAG UIC4 - internal"""
-UIC4_TAG = 33631
 
 """The MD5 digest measurement category"""
-C_MD5_DIGEST = "MD5Digest"
 
 """The intensity scaling metadata for this file"""
-C_SCALING = "Scaling"
 
 """The dimension metadata for the image"""
-C_HEIGHT = "Height"
-C_WIDTH = "Width"
 
 # strings for choice variables
-MS_EXACT_MATCH = "Text-Exact match"
-MS_REGEXP = "Text-Regular expressions"
-MS_ORDER = "Order"
-
-FF_INDIVIDUAL_IMAGES = "individual images"
-FF_STK_MOVIES = "stk movies"
-FF_AVI_MOVIES = "avi,mov movies"
-FF_AVI_MOVIES_OLD = ["avi movies"]
-FF_OTHER_MOVIES = "tif,tiff,flex,zvi movies"
-FF_OTHER_MOVIES_OLD = ["tif,tiff,flex movies", "tif,tiff,flex movies, zvi movies"]
 
 """Tag for loading images as images"""
-IO_IMAGES = "Images"
 """Tag for loading images as segmentation results"""
-IO_OBJECTS = "Objects"
-IO_ALL = (IO_IMAGES, IO_OBJECTS)
 
 """The format string for naming the image for some objects"""
-IMAGE_FOR_OBJECTS_F = "IMAGE_FOR_%s"
 
 # The following is a list of extensions supported by PIL 1.1.7
-SUPPORTED_IMAGE_EXTENSIONS = {
-    ".ppm",
-    ".grib",
-    ".im",
-    ".rgba",
-    ".rgb",
-    ".pcd",
-    ".h5",
-    ".jpe",
-    ".jfif",
-    ".jpg",
-    ".fli",
-    ".sgi",
-    ".gbr",
-    ".pcx",
-    ".mpeg",
-    ".jpeg",
-    ".ps",
-    ".flc",
-    ".tif",
-    ".hdf",
-    ".icns",
-    ".gif",
-    ".palm",
-    ".mpg",
-    ".fits",
-    ".pgm",
-    ".mic",
-    ".fit",
-    ".xbm",
-    ".eps",
-    ".emf",
-    ".dcx",
-    ".bmp",
-    ".bw",
-    ".pbm",
-    ".dib",
-    ".ras",
-    ".cur",
-    ".fpx",
-    ".png",
-    ".msp",
-    ".iim",
-    ".wmf",
-    ".tga",
-    ".bufr",
-    ".ico",
-    ".psd",
-    ".xpm",
-    ".arg",
-    ".pdf",
-    ".tiff",
-}
 SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 SUPPORTED_IMAGE_EXTENSIONS.add(".npy")
 # The following is a list of the extensions as gathered from Bio-formats
@@ -389,18 +312,7 @@ SUPPORTED_IMAGE_EXTENSIONS.update(
         ".zvi",
     ]
 )
-SUPPORTED_MOVIE_EXTENSIONS = {
-    ".avi",
-    ".mpeg",
-    ".stk",
-    ".flex",
-    ".mov",
-    ".tif",
-    ".tiff",
-    ".zvi",
-}
 
-FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 SUPPORTED_IMAGE_EXTENSIONS.update(
     [
         ".1sc",
@@ -439,54 +351,27 @@ SUPPORTED_MOVIE_EXTENSIONS.update(["mng"])
 # M_FILE_NAME - extract metadata from the file name
 # M_PATH_NAME - extract metadata from the subdirectory path
 # M_BOTH      - extract metadata from both the file name and path
-M_NONE = "None"
-M_FILE_NAME = "File name"
-M_PATH = "Path"
-M_BOTH = "Both"
 
 #
 # FLEX metadata
 #
-M_Z = "Z"
-M_T = "T"
 """For formats like TIF, the series is the image stack index"""
-C_SERIES = "Series"
 """The frame is the frame number in a movie or in a TIF image stack"""
-C_FRAME = "Frame"
 
 """The provider name for the image file image provider"""
-P_IMAGES = "LoadImagesImageProvider"
 """The version number for the __init__ method of the image file image provider"""
-V_IMAGES = 1
 
 """The provider name for the movie file image provider"""
-P_MOVIES = "LoadImagesMovieProvider"
 """The version number for the __init__ method of the movie file image provider"""
-V_MOVIES = 2
 
 """The provider name for the flex file image provider"""
-P_FLEX = "LoadImagesFlexFrameProvider"
 """The version number for the __init__ method of the flex file image provider"""
-V_FLEX = 1
 
 """Interleaved movies"""
-I_INTERLEAVED = "Interleaved"
 
 """Separated movies"""
-I_SEPARATED = "Separated"
 
 """Subfolder choosing options"""
-SUB_NONE = "None"
-SUB_ALL = "All"
-SUB_SOME = "Some"
-
-
-def default_cpimage_name(index):
-    # the usual suspects
-    names = ["DNA", "Actin", "Protein"]
-    if index < len(names):
-        return names[index]
-    return "Channel%d" % (index + 1)
 
 
 class LoadImages(cellprofiler_core.module.Module):
@@ -4066,118 +3951,3 @@ to store the image.
             )
         for module in edited_modules:
             pipeline.edit_module(module.module_num, True)
-
-
-def well_metadata_tokens(tokens):
-    """Return the well row and well column tokens out of a set of metadata tokens"""
-
-    well_row_token = None
-    well_column_token = None
-    for token in tokens:
-        if cellprofiler_core.measurement.is_well_row_token(token):
-            well_row_token = token
-        if cellprofiler_core.measurement.is_well_column_token(token):
-            well_column_token = token
-    return well_row_token, well_column_token
-
-
-def needs_well_metadata(tokens):
-    """Return true if, based on a set of metadata tokens, we need a well token
-
-    Check for a row and column token and the absence of the well token.
-    """
-    if cellprofiler_core.measurement.FTR_WELL.lower() in [x.lower() for x in tokens]:
-        return False
-    well_row_token, well_column_token = well_metadata_tokens(tokens)
-    return (well_row_token is not None) and (well_column_token is not None)
-
-
-def is_image(filename):
-    """Determine if a filename is a potential image file based on extension"""
-    ext = os.path.splitext(filename)[1].lower()
-    return ext in SUPPORTED_IMAGE_EXTENSIONS
-
-
-def is_movie(filename):
-    ext = os.path.splitext(filename)[1].lower()
-    return ext in SUPPORTED_MOVIE_EXTENSIONS
-
-
-def is_numpy_file(filename):
-    return os.path.splitext(filename)[-1].lower() == ".npy"
-
-
-def is_matlab_file(filename):
-    return os.path.splitext(filename)[-1].lower() == ".mat"
-
-
-def loadmat(path):
-    imgdata = scipy.io.matlab.mio.loadmat(path, struct_as_record=True)
-    img = imgdata["Image"]
-
-    return img
-
-
-def load_data_file(pathname_or_url, load_fn):
-    ext = os.path.splitext(pathname_or_url)[-1].lower()
-
-    if any([pathname_or_url.startswith(scheme) for scheme in PASSTHROUGH_SCHEMES]):
-        url = generate_presigned_url(pathname_or_url)
-
-        try:
-            src = six.moves.urllib.urlopen(url)
-            fd, path = tempfile.mkstemp(suffix=ext)
-            with os.fdopen(fd, mode="wb") as dest:
-                shutil.copyfileobj(src, dest)
-            img = load_fn(path)
-        finally:
-            try:
-                src.close()
-                os.remove(path)
-            except NameError:
-                pass
-
-        return img
-
-    return load_fn(pathname_or_url)
-
-
-FILE_SCHEME = "file:"
-PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3")
-
-
-def is_file_url(url):
-    return url.lower().startswith(FILE_SCHEME)
-
-
-def urlfilename(url):
-    """Return just the file part of a URL
-
-    For instance http://nucleus.org/linked_files/file%20has%20spaces.txt
-    has a file part of "file has spaces.txt"
-    """
-    if is_file_url(url):
-        return os.path.split(url2pathname(url))[1]
-    path = six.moves.urllib.parse.urlparse(url)[2]
-    if "/" in path:
-        return six.moves.urllib.unquote(path.rsplit("/", 1)[1])
-    else:
-        return six.moves.urllib.unquote(path)
-
-
-def urlpathname(url):
-    """Return the path part of a URL
-
-    For instance, http://nucleus.org/Comma%2Cseparated/foo.txt
-    has a path of http://nucleus.org/Comma,separated
-
-    A file url has the normal sort of path that you'd expect.
-    """
-    if is_file_url(url):
-        return os.path.split(url2pathname(url))[0]
-    scheme, netloc, path = six.moves.urllib.parse.urlparse(url)[:3]
-    path = six.moves.urllib.parse.urlunparse([scheme, netloc, path, "", "", ""])
-    if "/" in path:
-        return six.moves.urllib.unquote(path.rsplit("/", 1)[0])
-    else:
-        return six.moves.urllib.unquote(path)

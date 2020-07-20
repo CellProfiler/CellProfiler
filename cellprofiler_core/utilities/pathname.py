@@ -1,6 +1,6 @@
 import six
 
-from cellprofiler_core.modules.loadimages import (
+from cellprofiler_core.modules import (
     PASSTHROUGH_SCHEMES,
     FILE_SCHEME,
     is_file_url,

@@ -1,10 +1,14 @@
 import numpy
 
-from cellprofiler_core.image.abstract_image_provider._abstract_image_provider import (
-    AbstractImageProvider,
-    CallbackImageProvider,
-    VanillaImageProvider,
-)
+from .abstract_image_provider import AbstractImageProvider
+from .abstract_image_provider import CallbackImageProvider
+from .abstract_image_provider import LoadImagesFlexFrameProvider
+from .abstract_image_provider import LoadImagesImageProvider
+from .abstract_image_provider import LoadImagesImageProviderURL
+from .abstract_image_provider import LoadImagesMovieFrameProvider
+from .abstract_image_provider import LoadImagesSTKFrameProvider
+from .abstract_image_provider import VanillaImageProvider
+
 from ._grayscale_image import GrayscaleImage
 from ._image import Image
 from ._image_set import ImageSet

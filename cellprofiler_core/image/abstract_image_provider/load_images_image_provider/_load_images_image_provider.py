@@ -7,7 +7,7 @@ import six
 from cellprofiler_core.image._image import Image
 import cellprofiler_core.preferences
 from .._abstract_image_provider import AbstractImageProvider
-from cellprofiler_core.modules import (
+from ....modules import (
     FILE_SCHEME,
     PASSTHROUGH_SCHEMES,
     is_numpy_file,
@@ -16,6 +16,7 @@ from cellprofiler_core.modules import (
     load_data_file,
     loadmat,
 )
+
 from cellprofiler_core.utilities.pathname import pathname2url, url2pathname
 from cellprofiler_core.utilities import generate_presigned_url
 

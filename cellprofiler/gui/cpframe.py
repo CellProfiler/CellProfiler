@@ -519,22 +519,30 @@ class CPFrame(wx.Frame):
         try:
             self.__workspace.measurements.flush()
         except:
-            logger.warn(
+            logger.warning(
                 "Failed to flush temporary measurements file during close",
+                exc_info=True,
+            )
+        try:
+            from bioformats.formatreader import clear_image_reader_cache
+            clear_image_reader_cache()
+        except:
+            logger.warning(
+                "Failed to clear bioformats reader cache during close",
                 exc_info=True,
             )
         try:
             self.__preferences_view.close()
         except:
-            logger.warn("Failed during close", exc_info=True)
+            logger.warning("Failed during close", exc_info=True)
         try:
             self.pipeline_controller.on_close()
         except:
-            logger.warn("Failed to close the pipeline controller", exc_info=True)
+            logger.warning("Failed to close the pipeline controller", exc_info=True)
         try:
             cellprofiler.gui.moduleview.stop_validation_queue_thread()
         except:
-            logger.warn("Failed to stop pipeline validation thread", exc_info=True)
+            logger.warning("Failed to stop pipeline validation thread", exc_info=True)
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):

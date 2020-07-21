@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: |
-        sudo apt install libgtk2.0-dev
+        sudo apt-get install --yes gtk+-3.0
     - name: Setup Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:

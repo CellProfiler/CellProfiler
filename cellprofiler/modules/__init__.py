@@ -4,6 +4,7 @@ builtin_modules = [
     "classifyobjects",
     "closing",
     "colortogray",
+    "combineobjects",
     "convertimagetoobjects",
     "convertobjectstoimage",
     "correctilluminationcalculate",

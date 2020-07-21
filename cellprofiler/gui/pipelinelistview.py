@@ -715,7 +715,7 @@ class PipelineListView(object):
         drop_source = wx.DropSource(self.list_ctrl)
         drop_source.SetData(data_object)
         self.drag_underway = False
-        self.drag_start = self.list_ctrl.ScreenToClient(wx.GetMousePosition())
+        self.drag_start = None
         self.drag_time = time.time()
         selected_module_ids = [m.id for m in self.get_selected_modules()]
         self.__pipeline.start_undoable_action()
@@ -754,6 +754,9 @@ class PipelineListView(object):
         the cursor 10 pixels. Drop at drag site is not
         allowed.
         """
+        if self.drag_start is None:
+            self.drag_start = (x, y)
+            return False
         if not self.__allow_editing:
             return False
         index = self.where_to_drop(x, y)
@@ -775,7 +778,7 @@ class PipelineListView(object):
             self.drag_underway = True
         if self.drag_start is not None:
             start_index = self.list_ctrl.HitTest(self.drag_start)
-            if start_index == index:
+            if start_index[0] == index:
                 return False
         return True
 

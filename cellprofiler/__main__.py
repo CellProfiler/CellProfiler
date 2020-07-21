@@ -766,7 +766,7 @@ def run_pipeline_headless(options, args):
         else:
             image_set_start = int(options.first_image_set)
     else:
-        image_set_start = None
+        image_set_start = 1
 
     image_set_numbers = None
 
@@ -838,17 +838,14 @@ def run_pipeline_headless(options, args):
     elif options.image_directory is not None:
         pathnames = []
 
-        os.path.walk(
-            os.path.abspath(options.image_directory),
-            lambda pathnames, dirname, fnames: pathnames.append(
+        for dirname, _, fnames in os.walk(os.path.abspath(options.image_directory)):
+            pathnames.append(
                 [
                     os.path.join(dirname, fname)
                     for fname in fnames
                     if os.path.isfile(os.path.join(dirname, fname))
                 ]
-            ),
-            pathnames,
-        )
+            )
 
         pathnames = sum(pathnames, [])
 

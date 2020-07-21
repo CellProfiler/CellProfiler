@@ -4,10 +4,6 @@ Advanced
 --------
 Advanced modules include computer vision algorithms.
 
-.. automodule:: cellprofiler.modules.clearborder
-
-`(Jump to top)`_
-
 .. automodule:: cellprofiler.modules.closing
 
 `(Jump to top)`_

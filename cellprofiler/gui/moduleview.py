@@ -1435,7 +1435,7 @@ class ModuleView(object):
             sizer.Add(bitmap_button, 0, wx.EXPAND)
 
             def on_cell_change(event, setting=v, control=text_ctrl):
-                self.__on_cell_change(event, setting, control)
+                self.__on_cell_change(event, setting, control, timeout=False)
 
             def on_button_pressed(event, setting=v, control=text_ctrl):
                 #
@@ -2307,12 +2307,13 @@ class ModuleView(object):
         proposed_value = ",".join([control.Items[i] for i in control.Selections])
         self.on_value_change(setting, control, proposed_value, event)
 
-    def __on_cell_change(self, event, setting, control):
+    def __on_cell_change(self, event, setting, control, timeout=True):
         if not self.__handle_change:
             return
         proposed_value = six.text_type(control.GetValue())
+        timeout_sec = EDIT_TIMEOUT_SEC * 1000 if timeout else False
         self.on_value_change(
-            setting, control, proposed_value, event, EDIT_TIMEOUT_SEC * 1000
+            setting, control, proposed_value, event, timeout_sec
         )
 
     def on_value_change(self, setting, control, proposed_value, event, timeout=None):

@@ -364,6 +364,7 @@ desired behavior.
         return result
 
     def visible_settings(self):
+        self.update_tables()
         result = [self.wants_groups]
         if self.wants_groups:
             for group in self.grouping_metadata:

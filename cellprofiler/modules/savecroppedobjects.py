@@ -4,9 +4,10 @@
 SaveCroppedObjects
 ==================
 
-**SaveCroppedObjects** exports each object as a binary image. Pixels corresponding to an exported object are assigned
-the value 255. All other pixels (i.e., background pixels and pixels corresponding to other objects) are assigned the
-value 0. The dimensions of each image are the same as the original image.
+**SaveCroppedObjects** exports each object as an individual image. Pixels corresponding to an exported object are
+assigned the value from the input image. All other pixels (i.e., background pixels and pixels corresponding to other
+objects) are assigned the value 0. The dimensions of each image are the same as the original image. Multi-channel color
+images will be represented as 3-channel RGB images when saved with this module (not available in 3D mode).
 
 The filename for an exported image is formatted as "{object name}_{label index}.{image_format}", where *object name*
 is the name of the exported objects, *label index* is the integer label of the object exported in the image (starting

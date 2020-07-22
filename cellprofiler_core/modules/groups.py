@@ -364,9 +364,10 @@ desired behavior.
         return result
 
     def visible_settings(self):
-        self.update_tables()
         result = [self.wants_groups]
         if self.wants_groups:
+            if self.metadata_keys and len(self.metadata_keys) > 0:
+                self.update_tables()
             for group in self.grouping_metadata:
                 result += [group.metadata_choice]
                 if group.can_remove:

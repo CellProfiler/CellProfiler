@@ -126,21 +126,21 @@ The choices are:
                     directory, "{}_{}.{}".format(self.objects_name.value, label, O_PNG)
                 )
 
-                skimage.io.imsave(filename, skimage.img_as_ubyte(mask))
+                skimage.io.imsave(filename, skimage.img_as_ubyte(mask), check_contrast=False)
 
             elif self.file_format.value == O_TIFF_8:
                 filename = os.path.join(
                     directory, "{}_{}.{}".format(self.objects_name.value, label, "tiff")
                 )
 
-                skimage.io.imsave(filename, skimage.img_as_ubyte(mask), compress=6)
+                skimage.io.imsave(filename, skimage.img_as_ubyte(mask), compress=6, check_contrast=False)
 
             elif self.file_format.value == O_TIFF_16:
                 filename = os.path.join(
                     directory, "{}_{}.{}".format(self.objects_name.value, label, "tiff")
                 )
 
-                skimage.io.imsave(filename, skimage.img_as_uint(mask), compress=6)
+                skimage.io.imsave(filename, skimage.img_as_uint(mask), compress=6, check_contrast=False)
 
             filenames.append(filename)
 

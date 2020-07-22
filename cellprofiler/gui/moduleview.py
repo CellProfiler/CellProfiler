@@ -1478,6 +1478,7 @@ class ModuleView(object):
                 # in process. Doing so may have adverse effects (e.g. disappearing textboxes)
                 if self.__module is not None and self.__handle_change:
                     self.set_selection(self.__module.module_num)
+                event.Skip()
 
             self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, text_ctrl)
             self.__module_panel.Bind(wx.EVT_BUTTON, on_button_pressed, bitmap_button)

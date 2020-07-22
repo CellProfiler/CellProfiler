@@ -109,17 +109,19 @@ The choices are:
 
         filenames = []
 
+        if self.export_option == SAVE_PER_OBJECT:
+            images = workspace.image_set
+            x = images.get_image(self.image_name.value)
+            if len(x.pixel_data.shape) == len(labels.shape) + 1 and not x.volumetric:
+                # Color 2D image, repeat mask for all channels
+                labels = numpy.repeat(labels[:, :, numpy.newaxis], x.pixel_data.shape[-1], axis=2)
+
         for label in unique_labels:
             if self.export_option == SAVE_MASK:
                 mask = labels == label
 
             elif self.export_option == SAVE_PER_OBJECT:
                 mask_in = labels == label
-                images = workspace.image_set
-                x = images.get_image(self.image_name.value)
-                if len(x.pixel_data.shape) == len(mask_in.shape) + 1 and not x.volumetric:
-                    # Color 2D image, repeat mask for all channels
-                    mask_in = numpy.repeat(mask_in[:, :, numpy.newaxis], x.pixel_data.shape[-1], axis=2)
                 properties = skimage.measure.regionprops(
                     mask_in.astype(int), intensity_image=x.pixel_data
                 )

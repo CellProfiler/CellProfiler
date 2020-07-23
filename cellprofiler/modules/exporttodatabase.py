@@ -5236,7 +5236,6 @@ CP version : %d\n""" % int(
             variable_revision_number = 27
 
         if variable_revision_number == 27:
-            print("Upgrading setting ", setting_values[0])
             #
             # Removed MySQL/CSV Mode
             #

@@ -16,7 +16,7 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-import cellprofiler_core.image
+import cellprofiler_core.utilities.image
 from cellprofiler_core.modules import identify
 
 __doc__ = """\
@@ -793,7 +793,7 @@ to the foreground pixels or the background pixels.
                         (
                             cellprofiler_core.measurement.IMAGE,
                             "{}_{}_{}".format(
-                                C_IMAGE_QUALITY, cellprofiler_core.image.C_SCALING, image_name
+                                C_IMAGE_QUALITY, cellprofiler_core.utilities.image.C_SCALING, image_name
                             ),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         )
@@ -945,7 +945,7 @@ to the foreground pixels or the background pixels.
         ):
             result = []
             if self.any_scaling():
-                result += [cellprofiler_core.image.C_SCALING]
+                result += [cellprofiler_core.utilities.image.C_SCALING]
             if self.any_blur():
                 result += [
                     F_FOCUS_SCORE,
@@ -1117,7 +1117,7 @@ to the foreground pixels or the background pixels.
         result = []
         for image_name in self.images_to_process(image_group, workspace):
             feature = "{}_{}_{}".format(
-                C_IMAGE_QUALITY, cellprofiler_core.image.C_SCALING, image_name
+                C_IMAGE_QUALITY, cellprofiler_core.utilities.image.C_SCALING, image_name
             )
             value = workspace.image_set.get_image(image_name).scale
             if not value:  # Set to NaN if not defined, such as for derived images

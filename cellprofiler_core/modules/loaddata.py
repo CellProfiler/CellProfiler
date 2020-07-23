@@ -1230,19 +1230,21 @@ safe to press it.""",
                 image = image_set.get_image(image_name)
                 pixel_data = image.pixel_data
                 m.add_image_measurement(
-                    "_".join((cellprofiler_core.modules.C_MD5_DIGEST, image_name)),
+                    "_".join(
+                        (cellprofiler_core.utilities.image.C_MD5_DIGEST, image_name)
+                    ),
                     provider.get_md5_hash(m),
                 )
                 m.add_image_measurement(
-                    "_".join((cellprofiler_core.modules.C_SCALING, image_name)),
+                    "_".join((cellprofiler_core.utilities.image.C_SCALING, image_name)),
                     image.scale,
                 )
                 m.add_image_measurement(
-                    "_".join((cellprofiler_core.modules.C_HEIGHT, image_name)),
+                    "_".join((cellprofiler_core.utilities.image.C_HEIGHT, image_name)),
                     int(pixel_data.shape[0]),
                 )
                 m.add_image_measurement(
-                    "_".join((cellprofiler_core.modules.C_WIDTH, image_name)),
+                    "_".join((cellprofiler_core.utilities.image.C_WIDTH, image_name)),
                     int(pixel_data.shape[1]),
                 )
                 if image_size is None:
@@ -1440,19 +1442,19 @@ safe to press it.""",
                     cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME,
                 ),
                 (
-                    cellprofiler_core.modules.C_MD5_DIGEST,
+                    cellprofiler_core.utilities.image.C_MD5_DIGEST,
                     cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                 ),
                 (
-                    cellprofiler_core.modules.C_SCALING,
+                    cellprofiler_core.utilities.image.C_SCALING,
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
                 ),
                 (
-                    cellprofiler_core.modules.C_HEIGHT,
+                    cellprofiler_core.utilities.image.C_HEIGHT,
                     cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
                 (
-                    cellprofiler_core.modules.C_WIDTH,
+                    cellprofiler_core.utilities.image.C_WIDTH,
                     cellprofiler_core.measurement.COLTYPE_INTEGER,
                 ),
             ):

@@ -2224,9 +2224,24 @@ class ModuleView(object):
             label = kwargs.pop("label", "Update")
             tooltip = kwargs.pop("tooltip", "Update this table")
             wx.grid.Grid.__init__(self, *args, **kwargs)
+            self.sort_reverse = False
+            self.Bind(wx.grid.EVT_GRID_COL_SORT, self.sort_cols)
             cornerbuttonmixin.CornerButtonMixin.__init__(
                 self, fn_clicked, label, tooltip
             )
+
+        def sort_cols(self, event):
+            if len(self.GetSelectedCols()) != 1:
+                return
+            tgtcolumn = event.GetCol()
+            if self.GetSortingColumn() != tgtcolumn:
+                self.sort_reverse = False
+            else:
+                self.sort_reverse = not self.sort_reverse
+            tab = self.GetTable()
+            tab.v.data.sort(key=lambda thedata: thedata[tgtcolumn], reverse=self.sort_reverse)
+            self.SetSortingColumn(tgtcolumn)
+            self.ClearSelection()
 
     def make_table_control(self, v, control):
         if control is None:

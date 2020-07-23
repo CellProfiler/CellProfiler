@@ -630,8 +630,15 @@ desired behavior.
         if not self.wants_groups:
             return True
 
+        for group in self.grouping_metadata:
+            if group.metadata_choice.value == "None":
+                return False
+
         if len(workspace.measurements.get_image_numbers()) == 0:
-            return False
+            # Refresh image set to make sure it's actually empty
+            workspace.refresh_image_set()
+            if len(workspace.measurements.get_image_numbers()) == 0:
+                return False
 
         result = self.get_groupings(workspace)
         if result is None:

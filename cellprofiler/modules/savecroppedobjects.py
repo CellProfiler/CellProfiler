@@ -4,9 +4,10 @@
 SaveCroppedObjects
 ==================
 
-**SaveCroppedObjects** exports each object as a binary image. Pixels corresponding to an exported object are assigned
-the value 255. All other pixels (i.e., background pixels and pixels corresponding to other objects) are assigned the
-value 0. The dimensions of each image are the same as the original image.
+**SaveCroppedObjects** exports each object as an individual image. Pixels corresponding to an exported object are
+assigned the value from the input image. All other pixels (i.e., background pixels and pixels corresponding to other
+objects) are assigned the value 0. The dimensions of each image are the same as the original image. Multi-channel color
+images will be represented as 3-channel RGB images when saved with this module (not available in 3D mode).
 
 The filename for an exported image is formatted as "{object name}_{label index}.{image_format}", where *object name*
 is the name of the exported objects, *label index* is the integer label of the object exported in the image (starting
@@ -108,14 +109,19 @@ The choices are:
 
         filenames = []
 
+        if self.export_option == SAVE_PER_OBJECT:
+            images = workspace.image_set
+            x = images.get_image(self.image_name.value)
+            if len(x.pixel_data.shape) == len(labels.shape) + 1 and not x.volumetric:
+                # Color 2D image, repeat mask for all channels
+                labels = numpy.repeat(labels[:, :, numpy.newaxis], x.pixel_data.shape[-1], axis=2)
+
         for label in unique_labels:
             if self.export_option == SAVE_MASK:
                 mask = labels == label
 
             elif self.export_option == SAVE_PER_OBJECT:
                 mask_in = labels == label
-                images = workspace.image_set
-                x = images.get_image(self.image_name.value)
                 properties = skimage.measure.regionprops(
                     mask_in.astype(int), intensity_image=x.pixel_data
                 )
@@ -126,21 +132,21 @@ The choices are:
                     directory, "{}_{}.{}".format(self.objects_name.value, label, O_PNG)
                 )
 
-                skimage.io.imsave(filename, skimage.img_as_ubyte(mask))
+                skimage.io.imsave(filename, skimage.img_as_ubyte(mask), check_contrast=False)
 
             elif self.file_format.value == O_TIFF_8:
                 filename = os.path.join(
                     directory, "{}_{}.{}".format(self.objects_name.value, label, "tiff")
                 )
 
-                skimage.io.imsave(filename, skimage.img_as_ubyte(mask), compress=6)
+                skimage.io.imsave(filename, skimage.img_as_ubyte(mask), compress=6, check_contrast=False)
 
             elif self.file_format.value == O_TIFF_16:
                 filename = os.path.join(
                     directory, "{}_{}.{}".format(self.objects_name.value, label, "tiff")
                 )
 
-                skimage.io.imsave(filename, skimage.img_as_uint(mask), compress=6)
+                skimage.io.imsave(filename, skimage.img_as_uint(mask), compress=6, check_contrast=False)
 
             filenames.append(filename)
 

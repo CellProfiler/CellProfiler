@@ -1,4 +1,5 @@
 import numpy
+import os
 import six.moves
 
 import cellprofiler_core.image
@@ -253,7 +254,8 @@ def test_load_split():
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/colortogray/v2.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("colortogray/v2.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -301,7 +303,8 @@ def test_load_v3():
     Thus it can be easily checked via the new image name, if the channel
     number is correctly parsed.
     """
-    with open("./tests/resources/modules/colortogray/v3.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("colortogray/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

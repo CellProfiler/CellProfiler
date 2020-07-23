@@ -8,11 +8,13 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+import cellprofiler_core.modules
 import cellprofiler.modules.filterobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
+import tests.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -469,7 +471,8 @@ def test_renumber_other():
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/filterobjects/v3.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("filterobjects/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -495,7 +498,8 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/filterobjects/v4.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("filterobjects/v4.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -536,7 +540,8 @@ def test_load_v4():
 
 
 def test_load_v5():
-    with open("./tests/resources/modules/filterobjects/v5.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("filterobjects/v5.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -578,7 +583,8 @@ def test_load_v5():
 
 
 def test_load_v6():
-    with open("./tests/resources/modules/filterobjects/v6.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("filterobjects/v6.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -621,7 +627,8 @@ def test_load_v6():
 
 
 def test_load_v7():
-    with open("./tests/resources/modules/filterobjects/v7.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("filterobjects/v7.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1140,10 +1147,10 @@ class FakeClassifier(object):
 
         classes - a vector of class numbers to be used to populate classes_
         """
-        answers_ = answers
-        classes_ = classes
+        self.answers_ = answers
+        self.classes_ = classes
 
-    def predict(*args, **kwargs):
+    def predict(self, *args, **kwargs):
         return self.answers_
 
 

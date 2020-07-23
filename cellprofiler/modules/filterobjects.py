@@ -1126,7 +1126,7 @@ value will be retained.""".format(
                 rules_file_name,
             ) = setting_values[:15]
             additional_object_settings = setting_values[15:]
-            additional_object_count = len(additional_object_settings) / 4
+            additional_object_count = len(additional_object_settings) // 4
 
             setting_values = [
                 target_name,

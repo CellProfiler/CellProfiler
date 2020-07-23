@@ -45,6 +45,7 @@ import numpy as np
 
 import cellprofiler_core.measurement as cpmeas
 import cellprofiler_core.module as cpm
+import cellprofiler_core.preferences as cpprefs
 import cellprofiler_core.setting as cps
 import cellprofiler.utilities.rules as cprules
 import cellprofiler_core.workspace as cpw
@@ -906,7 +907,7 @@ image is not flagged.
                         (idx + 1) : (idx + N_SETTINGS_PER_MEASUREMENT_V2)
                     ] + [
                         cps.DirectoryPath.static_join_string(
-                            DEFAULT_INPUT_FOLDER_NAME, "None"
+                            cpprefs.DEFAULT_INPUT_FOLDER_NAME, "None"
                         ),
                         "rules.txt",
                     ]

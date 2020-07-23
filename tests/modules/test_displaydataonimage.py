@@ -9,6 +9,9 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 
+import os
+import tests.modules
+
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 OBJECTS_NAME = "objects"
@@ -16,7 +19,8 @@ MEASUREMENT_NAME = "measurement"
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/displaydataonimage/v4.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("displaydataonimage/v4.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -47,7 +51,8 @@ def test_load_v4():
 
 
 def test_load_v5():
-    with open("./tests/resources/modules/displaydataonimage/v5.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("displaydataonimage/v5.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -84,7 +89,8 @@ def test_load_v5():
 
 
 def test_load_v6():
-    with open("./tests/resources/modules/displaydataonimage/v6.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("displaydataonimage/v6.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -121,7 +127,7 @@ def test_load_v6():
     assert module.color_map_scale.max == 1.5
     module = pipeline.modules()[1]
     assert (
-        module.color_map_scale_choice
+        module.color_map_scale_choice.value
         == cellprofiler.modules.displaydataonimage.CMS_USE_MEASUREMENT_RANGE
     )
 

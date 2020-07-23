@@ -13,6 +13,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
+import tests.modules
 
 
 IMAGE_NAME = "MyImage"
@@ -39,7 +40,8 @@ def tearDown():
 
 
 def test_load_v1():
-    with open("./tests/resources/modules/measureobjectskeleton/v1.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("measureobjectskeleton/v1.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -91,7 +93,7 @@ def make_workspace(labels, image, mask=None, intensity_image=None, wants_graph=F
         module.intensity_image_name.value = INTENSITY_IMAGE_NAME
     if wants_graph:
         module.wants_objskeleton_graph.value = True
-        module.directory.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+        module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = temp_dir
         module.edge_file_name.value = EDGE_FILE
         module.vertex_file_name.value = VERTEX_FILE

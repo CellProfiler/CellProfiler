@@ -16,7 +16,7 @@ Supports 2D? Supports 3D? Respects masks?
 YES          YES           NO
 ============ ============ ===============
 
-.. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/xx_applications/plot_morphology.html#closing
+.. _this tutorial: https://scikit-image.org/docs/dev/auto_examples/applications/plot_morphology.html#closing
 
 """
 

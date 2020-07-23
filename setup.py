@@ -24,7 +24,7 @@ setuptools.setup(
         "matplotlib>=3.1.3",
         "numpy>=1.18.2",
         "prokaryote==2.4.1",
-        "python-bioformats>=1.5.2",
+        "python-bioformats==4.0.0rc4",
         "scikit-image>=0.16.2",
         "scipy>=1.4.1",
     ],

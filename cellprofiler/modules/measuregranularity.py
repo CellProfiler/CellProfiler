@@ -10,8 +10,20 @@ Image granularity is a texture measurement that tries to fit a series of
 structure elements of increasing size into the texture of the image and outputs a spectrum of measures
 based on how well they fit.
 Granularity is measured as described by Ilya Ravkin (references below).
-The size of the starting structure element as well as the range of the
-spectrum is given as input.
+
+Basically, MeasureGranularity:
+1 - Downsamples the image (if you tell it to). This is set in
+**Subsampling factor for granularity measurements** or **Subsampling factor for background reduction**.
+2 - Background subtracts anything larger than the radius in pixels set in
+**Radius of structuring element.**
+3 - For as many times as you set in **Range of the granular spectrum**, it gets rid of bright areas
+that are only 1 pixel across, reports how much signal was lost by doing that, then repeats.
+i.e. The first time it removes one pixel from all bright areas in the image,
+(effectively deleting those that are only 1 pixel in size) and then reports what % of the signal was lost.
+It then takes the first-iteration image and repeats the removal and reporting (effectively reporting
+the amount of signal that is two pixels in size). etc.
+
+|MeasureGranularity_example|
 
 As of **CellProfiler 4.0** the settings for this module have been changed to simplify
 configuration. A single set of parameters is now applied to all images and objects within the module,
@@ -33,7 +45,7 @@ Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Granularity:* The module returns one measurement for each instance
-   of the granularity spectrum.
+   of the granularity spectrum set in **Range of the granular spectrum**.
 
 References
 ^^^^^^^^^^
@@ -51,7 +63,16 @@ References
 -  Ravkin I, Temov V. (1988) “Bit representation techniques and image
    processing”, *Applied Informatics*, v.14, pp. 41-90, Finances and
    Statistics, Moskow, (in Russian)
-"""
+
+.. |MeasureGranularity_example| image:: {MEASUREGRANULARITY_EXAMPLE}
+""".format(
+    **{
+        "MEASUREGRANULARITY_EXAMPLE": cellprofiler.gui.help.content.image_resource(
+            "MeasureGranularity_example.png"
+        )
+    }
+)
+
 import logging
 
 import numpy as np
@@ -119,7 +140,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             doc="""\
         If the textures of interest are larger than a few pixels, we recommend
         you subsample the image with a factor <1 to speed up the processing.
-        Down sampling the image will let you detect larger structures with a
+        Downsampling the image will let you detect larger structures with a
         smaller sized structure element. A factor >1 might increase the accuracy
         but also require more processing time. Images are typically of higher
         resolution than is required for granularity measurements, so the default

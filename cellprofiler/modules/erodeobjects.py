@@ -11,7 +11,7 @@ with two major distinctions-
 1. **ErodeObjects** supports 3D objects, unlike **ExpandOrShrinkObjects**.
 2. In **ExpandOrShrinkObjects**, a small object will only ever be shrunk down to a
    single pixel. In this module, an object smaller than the structuring element will
-   be removed entirely.
+   be removed entirely unless 'Prevent object removal' is enabled.
 
 |
 
@@ -29,6 +29,10 @@ import cellprofiler_core.setting
 import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 
+import numpy
+import scipy.ndimage
+import skimage.measure
+import skimage.morphology
 
 class ErodeObjects(cellprofiler_core.module.ObjectProcessing):
     category = "Advanced"
@@ -44,18 +48,68 @@ class ErodeObjects(cellprofiler_core.module.ObjectProcessing):
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 
+        self.preserve_midpoints = cellprofiler_core.setting.Binary(
+            "Prevent object removal",
+            True,
+            doc="""
+If set to "Yes", the central pixels for each object will not be eroded. This ensures that 
+objects are not lost. The preserved pixels are those furtherst from the object's edge, so 
+in some objects this may be a cluster of pixels with equal distance to the edge.
+If set to "No", erosion can completely remove smaller objects."""
+        )
+
+        self.relabel_objects = cellprofiler_core.setting.Binary(
+            "Relabel resulting objects",
+            False,
+            doc="""
+Large erosion filters can sometimes remove a small object or cause an irregularly shaped object 
+to be split into two. This can cause problems in some other modules. Selecting "Yes" will assign 
+new label numbers to resulting objects. This will ensure that there are no 'missing' labels 
+(if object '3' is gone, object '4' will be reassigned to that number). However, this also means 
+that parts of objects which were split and are no longer touching will be given new, individual 
+label numbers."""
+        )
+
     def settings(self):
         __settings__ = super(ErodeObjects, self).settings()
 
-        return __settings__ + [self.structuring_element]
+        return __settings__ + [self.structuring_element, self.preserve_midpoints, self.relabel_objects]
 
     def visible_settings(self):
         __settings__ = super(ErodeObjects, self).settings()
 
-        return __settings__ + [self.structuring_element]
+        return __settings__ + [self.structuring_element, self.preserve_midpoints, self.relabel_objects]
 
     def run(self, workspace):
-        self.function = cellprofiler.utilities.morphology.erosion
+        x_name = self.x_name.value
+        y_name = self.y_name.value
+        objects = workspace.object_set
+        x = objects.get_objects(x_name)
+        dimensions = x.dimensions
+        x_data = x.segmented
 
-        super(ErodeObjects, self).run(workspace)
+        props = skimage.measure.regionprops(x_data)  # , properties=('label', 'centroid'))
+        y_data = numpy.zeros_like(x_data)
+        for region in props:
+            label = region.label
+            binary = x_data == label
+            eroded = cellprofiler.utilities.morphology.binary_erosion(binary, self.structuring_element.value)
+            y_data[eroded] = label
+            if self.preserve_midpoints.value:
+                if label not in y_data:
+                    midpoint = scipy.ndimage.morphology.distance_transform_edt(binary)
+                    y_data[midpoint == numpy.max(midpoint)] = label
 
+        if self.relabel_objects.value:
+            y_data = skimage.morphology.label(y_data)
+
+        y = cellprofiler_core.object.Objects()
+        y.segmented = y_data
+        y.parent_image = x.parent_image
+        objects.add_objects(y, y_name)
+        self.add_measurements(workspace)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+            workspace.display_data.y_data = y_data
+            workspace.display_data.dimensions = dimensions

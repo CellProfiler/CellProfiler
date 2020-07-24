@@ -47,6 +47,10 @@ def test_run(object_with_data, module, object_set_with_data, workspace_with_data
     else:
         selem = skimage.morphology.disk(1)
 
+        module.preserve_midpoints.value = False
+
+        module.relabel_objects.value = False
+
         module.run(workspace_with_data)
 
         actual = object_set_with_data.get_objects("OutputObjects")

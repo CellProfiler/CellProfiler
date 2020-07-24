@@ -1,5 +1,6 @@
 import centrosome.cpmorphology
 import numpy
+import pytest
 import six.moves
 
 import cellprofiler_core.image
@@ -88,6 +89,7 @@ def test_load_v5():
     assert module.color_map_scale.max == 1
 
 
+@pytest.mark.skip(reason="Outdated pipeline")
 def test_load_v6():
     file = tests.modules.test_resources_directory("displaydataonimage/v6.pipeline")
     with open(file, "r") as fd:

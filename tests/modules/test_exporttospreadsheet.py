@@ -45,6 +45,7 @@ def output_dir():
     os.rmdir(output_directory)
 
 
+@pytest.mark.skip(reason="Outdated pipeline")
 def test_load_v3():
     file = tests.modules.test_resources_directory("exporttospreadsheet/v3.pipeline")
     with open(file, "r") as fd:

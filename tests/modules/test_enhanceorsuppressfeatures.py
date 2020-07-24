@@ -1156,7 +1156,7 @@ def test_load_v5():
         == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
     )
     assert (
-        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+        module.speckle_accuracy.value == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
     )
 
     module = pipeline.modules()[1]

@@ -115,7 +115,7 @@ What do I get as output?
 
 A set of primary objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations. See
-the section `"Measurements made by this module" <#Measurements_made_by_thismodule>`__ below
+the section "Measurements made by this module" below
 for the measurements that are produced directly by this module. Once the module
 has finished processing, the module display window will show the
 following panels:
@@ -789,7 +789,7 @@ documentation for the previous setting for details.""",
 
             Local maxima are small cluster of pixels from which objects are 'grown' during segmentation.
             Each object in a declumped segmentation will have a single maxima.
-            
+
             For example, for intensity-based declumping, maxima should appear at the brightest points in an object.
             If obvious intensity peaks are missing they were probably removed by the filters set above.""".format(
                 **{"YES": "Yes"}

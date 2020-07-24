@@ -265,7 +265,7 @@ import cellprofiler_core.module as cpm
 import cellprofiler_core.setting as cps
 import cellprofiler_core.image as cpi
 import centrosome.cpmorphology as morph
-from centrosome.filter import poisson_equation
+from centrosome.filter import poisson_equation, granulometry_filter
 
 F_BRANCHPOINTS = "branchpoints"
 F_BRIDGE = "bridge"
@@ -275,6 +275,7 @@ F_DIAG = "diag"
 F_DISTANCE = "distance"
 F_ENDPOINTS = "endpoints"
 F_FILL = "fill"
+F_GRANULOMETRY = "granulometry"
 F_HBREAK = "hbreak"
 F_MAJORITY = "majority"
 F_OPENLINES = "openlines"
@@ -294,6 +295,7 @@ F_ALL = [
     F_DISTANCE,
     F_ENDPOINTS,
     F_FILL,
+    F_GRANULOMETRY,
     F_HBREAK,
     F_MAJORITY,
     F_OPENLINES,
@@ -314,13 +316,14 @@ R_ALL = [R_ONCE, R_FOREVER, R_CUSTOM]
 FUNCTION_SETTING_COUNT_V1 = 3
 FUNCTION_SETTING_COUNT_V2 = 4
 FUNCTION_SETTING_COUNT_V3 = 11
-FUNCTION_SETTING_COUNT = 4
+FUNCTION_SETTING_COUNT_V6 = 4
+FUNCTION_SETTING_COUNT = 5
 
 
 class Morph(cpm.Module):
     module_name = "Morph"
     category = "Image Processing"
-    variable_revision_number = 5
+    variable_revision_number = 7
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
@@ -415,6 +418,21 @@ input for a measurement module."""
             ),
         )
 
+        group.append(
+            "range",
+            cps.IntegerRange(
+                "Minimum and maximum granule radius",
+                value=(0, 5),
+                minval=0,
+                doc="""\
+        *(Used only for the "%(F_GRANULOMETRY)s" operation).*
+
+        These values specify the minimum and maximum radius of the holes
+        which this filter will aim to enhance."""
+                    % globals(),
+            ),
+        )
+
         if can_remove:
             group.append(
                 "remove",
@@ -441,6 +459,7 @@ input for a measurement module."""
                 function.repeats_choice,
                 function.custom_repeats,
                 function.rescale_values,
+                function.range,
             ]
         return result
 
@@ -453,6 +472,8 @@ input for a measurement module."""
             result.append(function.function)
             if function.function == F_DISTANCE:
                 result.append(function.rescale_values)
+            elif function.function == F_GRANULOMETRY:
+                result.append(function.range)
             elif function.function == F_OPENLINES:
                 function.custom_repeats.text = "Line length"
                 function.custom_repeats.doc = (
@@ -568,6 +589,7 @@ input for a measurement module."""
             F_DISTANCE,
             F_ENDPOINTS,
             F_FILL,
+            F_GRANULOMETRY,
             F_HBREAK,
             F_MAJORITY,
             F_REMOVE,
@@ -603,6 +625,8 @@ input for a measurement module."""
                 return morph.endpoints(pixel_data, mask)
             elif function_name == F_FILL:
                 return morph.fill(pixel_data, mask, count)
+            elif function_name == F_GRANULOMETRY:
+                return granulometry_filter(pixel_data, function.range.get_min(), function.range.get_max(), mask=mask)
             elif function_name == F_HBREAK:
                 return morph.hbreak(pixel_data, mask, count)
             elif function_name == F_MAJORITY:
@@ -639,7 +663,7 @@ input for a measurement module."""
         if variable_revision_number == 1:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V1):
-                new_setting_values += setting_values[i : i + FUNCTION_SETTING_COUNT_V1]
+                new_setting_values += setting_values[i: i + FUNCTION_SETTING_COUNT_V1]
                 new_setting_values += ["3"]
             setting_values = new_setting_values
             variable_revision_number = 2
@@ -647,7 +671,7 @@ input for a measurement module."""
         if variable_revision_number == 2:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V2):
-                new_setting_values += setting_values[i : i + FUNCTION_SETTING_COUNT_V2]
+                new_setting_values += setting_values[i: i + FUNCTION_SETTING_COUNT_V2]
                 new_setting_values += ["disk", "1", "1", "0", "3", "3", "3,3,111111111"]
             setting_values = new_setting_values
             variable_revision_number = 3
@@ -655,7 +679,7 @@ input for a measurement module."""
         if variable_revision_number == 3:
             new_setting_values = setting_values[:2]
             for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT_V3):
-                new_setting_values += setting_values[i : i + FUNCTION_SETTING_COUNT_V3]
+                new_setting_values += setting_values[i: i + FUNCTION_SETTING_COUNT_V3]
                 new_setting_values += ["Yes"]
             setting_values = new_setting_values
             variable_revision_number = 4
@@ -679,12 +703,20 @@ input for a measurement module."""
 
         if variable_revision_number == 5:
             # Removed "life" operation
-            logger.warn(
+            logger.warning(
                 "Morph's 'Life' option has been removed, this pipeline might "
                 "not be compatible with the current version of CellProfiler."
             )
 
             variable_revision_number = 6
+
+        if variable_revision_number == 6:
+            new_setting_values = setting_values[:2]
+            for i in range(2, len(setting_values), FUNCTION_SETTING_COUNT):
+                new_setting_values += setting_values[i: i + FUNCTION_SETTING_COUNT]
+                new_setting_values += ["0, 5"]
+            setting_values = new_setting_values
+            variable_revision_number = 7
 
         return setting_values, variable_revision_number
 

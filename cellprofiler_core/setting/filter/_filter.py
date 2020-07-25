@@ -1,7 +1,7 @@
 import re
 
-from . import _setting
-from ._validation_error import ValidationError
+from cellprofiler_core.setting import _setting
+from cellprofiler_core.setting._validation_error import ValidationError
 
 
 class Filter(_setting.Setting):

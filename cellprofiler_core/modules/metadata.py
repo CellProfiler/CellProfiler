@@ -16,6 +16,9 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.setting.do_something._remove_setting_button
+import cellprofiler_core.setting.filter._directory_predicate
+import cellprofiler_core.setting.filter._extension_predicate
+import cellprofiler_core.setting.filter._file_predicate
 import cellprofiler_core.utilities
 
 logger = logging.getLogger(__name__)
@@ -548,9 +551,9 @@ There are two choices:
             cellprofiler_core.setting.Filter(
                 "Select the filtering criteria",
                 [
-                    cpmi.FilePredicate(),
-                    cpmi.DirectoryPredicate(),
-                    cpmi.ExtensionPredicate(),
+                    cellprofiler_core.setting.filter._file_predicate.FilePredicate(),
+                    cellprofiler_core.setting.filter._directory_predicate.DirectoryPredicate(),
+                    cellprofiler_core.setting.filter._extension_predicate.ExtensionPredicate(),
                 ],
                 'and (file does contain "")',
                 doc="""\

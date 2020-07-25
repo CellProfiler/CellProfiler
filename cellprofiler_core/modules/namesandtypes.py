@@ -19,9 +19,16 @@ import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.setting.do_something._image_set_display
 import cellprofiler_core.setting.do_something._remove_setting_button
+import cellprofiler_core.setting.filter._directory_predicate
+import cellprofiler_core.setting.filter._extension_predicate
+import cellprofiler_core.setting.filter._file_predicate
+import cellprofiler_core.setting.filter._image_predicate
 import cellprofiler_core.utilities.image
 from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._color_image_provider import (
     ColorImageProvider,
+)
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._mask_image_provider import (
+    MaskImageProvider,
 )
 from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._monochrome_image_provider import (
     MonochromeImageProvider,
@@ -29,7 +36,8 @@ from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.
 from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._objects_image_provider import (
     ObjectsImageProvider,
 )
-from cellprofiler_core.modules import identify, images
+from cellprofiler_core.module import identify
+from cellprofiler_core.setting.filter._metadata_predicate import MetadataPredicate
 
 logger = logging.getLogger(__name__)
 
@@ -682,10 +690,10 @@ You can match corresponding channels to each other in one of two ways:
             cellprofiler_core.setting.Filter(
                 "Select the rule criteria",
                 [
-                    images.FilePredicate(),
-                    images.DirectoryPredicate(),
-                    images.ExtensionPredicate(),
-                    images.ImagePredicate(),
+                    cellprofiler_core.setting.filter._file_predicate.FilePredicate(),
+                    cellprofiler_core.setting.filter._directory_predicate.DirectoryPredicate(),
+                    cellprofiler_core.setting.filter._extension_predicate.ExtensionPredicate(),
+                    cellprofiler_core.setting.filter._image_predicate.ImagePredicate(),
                     mp,
                 ],
                 'and (file does contain "")',
@@ -2665,94 +2673,3 @@ requests an object selection.
         else:
             metadata_columns = [cellprofiler_core.measurement.IMAGE_NUMBER]
         return metadata_columns
-
-
-class MetadataPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
-    """A predicate that compares an ifd against a metadata key and value"""
-
-    SYMBOL = "metadata"
-
-    def __init__(self, display_name, display_fmt="%s", **kwargs):
-        subpredicates = [
-            cellprofiler_core.setting.Filter.DoesPredicate([]),
-            cellprofiler_core.setting.Filter.DoesNotPredicate([]),
-        ]
-
-        super(self.__class__, self).__init__(
-            self.SYMBOL,
-            display_name,
-            MetadataPredicate.do_filter,
-            subpredicates,
-            **kwargs,
-        )
-        self.display_fmt = display_fmt
-
-    def set_metadata_keys(self, keys):
-        """Define the possible metadata keys to be matched against literal values
-
-        keys - a list of keys
-        """
-        sub_subpredicates = [
-            cellprofiler_core.setting.Filter.FilterPredicate(
-                key,
-                self.display_fmt % key,
-                lambda ipd, match, key=key: key in ipd.metadata
-                and ipd.metadata[key] == match,
-                [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
-            )
-            for key in keys
-        ]
-        #
-        # The subpredicates are "Does" and "Does not", so we add one level
-        # below that.
-        #
-        for subpredicate in self.subpredicates:
-            subpredicate.subpredicates = sub_subpredicates
-
-    @classmethod
-    def do_filter(cls, arg, *vargs):
-        """Perform the metadata predicate's filter function
-
-        The metadata predicate has subpredicates that look up their
-        metadata key in the ipd and compare it against a literal.
-        """
-        node_type, modpath, resolver = arg
-        ipd = resolver.get_image_plane_details(modpath)
-        return vargs[0](ipd, *vargs[1:])
-
-    def test_valid(self, pipeline, *args):
-        modpath = ["imaging", "image.png"]
-        ipd = cellprofiler_core.pipeline.ImagePlane(
-            "/imaging/image.png", None, None, None
-        )
-        self(
-            (
-                cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
-                modpath,
-                NamesAndTypes.FakeModpathResolver(modpath, ipd),
-            ),
-            *args,
-        )
-
-
-class MaskImageProvider(MonochromeImageProvider):
-    """Provide a boolean image, converting nonzero to True, zero to False if needed"""
-
-    def __init__(self, name, url, series, index, channel, volume=False, spacing=None):
-        MonochromeImageProvider.__init__(
-            self,
-            name,
-            url,
-            rescale=True,
-            series=series,
-            index=index,
-            channel=channel,
-            volume=volume,
-            spacing=spacing,
-        )
-
-    def provide_image(self, image_set):
-        image = MonochromeImageProvider.provide_image(self, image_set)
-        if image.pixel_data.dtype.kind != "b":
-            image.pixel_data = image.pixel_data != 0
-        return image

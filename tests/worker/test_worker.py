@@ -10,7 +10,7 @@ import unittest
 import uuid
 import cellprofiler_core.analysis
 import cellprofiler_core.measurement
-import cellprofiler_core.modules.identify
+import cellprofiler_core.module.identify
 import cellprofiler_core.modules.namesandtypes
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences

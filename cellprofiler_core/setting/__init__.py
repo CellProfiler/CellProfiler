@@ -8,7 +8,7 @@ from ._divider import *
 from ._do_things import *
 from ._figure_subscriber import *
 from ._file_collection_display import *
-from ._filter import *
+from cellprofiler_core.setting.filter._filter import *
 from ._hidden_count import *
 from ._html_text import *
 from ._image_plane import *

@@ -3,15 +3,13 @@
 import logging
 import re
 
-import bioformats
-import bioformats.omexml
 import javabridge
 import numpy
-import skimage.color
 
 import cellprofiler_core.image
 import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider
-import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url
+import \
+    cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._load_images_image_provider_url
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.module
@@ -23,6 +21,12 @@ import cellprofiler_core.setting
 import cellprofiler_core.setting.do_something._image_set_display
 import cellprofiler_core.setting.do_something._remove_setting_button
 import cellprofiler_core.utilities.image
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._color_image_provider import \
+    ColorImageProvider
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._monochrome_image_provider import \
+    MonochromeImageProvider
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._objects_image_provider import \
+    ObjectsImageProvider
 from cellprofiler_core.modules import identify, images
 
 logger = logging.getLogger(__name__)
@@ -2729,75 +2733,6 @@ class MetadataPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
         )
 
 
-class ColorImageProvider(
-    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL
-):
-    """Provide a color image, tripling a monochrome plane if needed"""
-
-    def __init__(
-        self, name, url, series, index, rescale=True, volume=False, spacing=None
-    ):
-        cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.__init__(
-            self,
-            name,
-            url,
-            rescale=rescale,
-            series=series,
-            index=index,
-            volume=volume,
-            spacing=spacing,
-        )
-
-    def provide_image(self, image_set):
-        image = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.provide_image(
-            self, image_set
-        )
-
-        if image.pixel_data.ndim == image.dimensions:
-            image.pixel_data = skimage.color.gray2rgb(image.pixel_data, alpha=False)
-
-        return image
-
-
-class MonochromeImageProvider(
-    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL
-):
-    """Provide a monochrome image, combining RGB if needed"""
-
-    def __init__(
-        self,
-        name,
-        url,
-        series,
-        index,
-        channel,
-        rescale=True,
-        volume=False,
-        spacing=None,
-    ):
-        cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.__init__(
-            self,
-            name,
-            url,
-            rescale=rescale,
-            series=series,
-            index=index,
-            channel=channel,
-            volume=volume,
-            spacing=spacing,
-        )
-
-    def provide_image(self, image_set):
-        image = cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.provide_image(
-            self, image_set
-        )
-
-        if image.pixel_data.ndim == image.dimensions + 1:
-            image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
-
-        return image
-
-
 class MaskImageProvider(MonochromeImageProvider):
     """Provide a boolean image, converting nonzero to True, zero to False if needed"""
 
@@ -2818,63 +2753,4 @@ class MaskImageProvider(MonochromeImageProvider):
         image = MonochromeImageProvider.provide_image(self, image_set)
         if image.pixel_data.dtype.kind != "b":
             image.pixel_data = image.pixel_data != 0
-        return image
-
-
-class ObjectsImageProvider(
-    cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL
-):
-    """Provide a multi-plane integer image, interpreting an image file as objects"""
-
-    def __init__(self, name, url, series, index):
-        cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider_url.LoadImagesImageProviderURL.__init__(
-            self, name, url, rescale=False, series=series, index=index, volume=False
-        )
-
-    def provide_image(self, image_set):
-        """Load an image from a pathname
-        """
-        self.cache_file()
-        filename = self.get_filename()
-        channel_names = []
-        url = self.get_url()
-        properties = {}
-        if self.index is None:
-            metadata = bioformats.get_omexml_metadata(self.get_full_name())
-
-            ometadata = bioformats.omexml.OMEXML(metadata)
-            pixel_metadata = ometadata.image(
-                0 if self.series is None else self.series
-            ).Pixels
-            nplanes = pixel_metadata.SizeC * pixel_metadata.SizeZ * pixel_metadata.SizeT
-            indexes = list(range(nplanes))
-        elif numpy.isscalar(self.index):
-            indexes = [self.index]
-        else:
-            indexes = self.index
-        planes = []
-        offset = 0
-        for i, index in enumerate(indexes):
-            properties["index"] = str(index)
-            if self.series is not None:
-                if numpy.isscalar(self.series):
-                    properties["series"] = self.series
-                else:
-                    properties["series"] = self.series[i]
-            img = bioformats.load_image(
-                self.get_full_name(), rescale=False, **properties
-            ).astype(int)
-            img = cellprofiler_core.utilities.image.convert_image_to_objects(
-                img
-            ).astype(numpy.int32)
-            img[img != 0] += offset
-            offset += numpy.max(img)
-            planes.append(img)
-
-        image = cellprofiler_core.image.Image(
-            numpy.dstack(planes),
-            path_name=self.get_pathname(),
-            file_name=self.get_filename(),
-            convert=False,
-        )
         return image

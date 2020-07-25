@@ -25,6 +25,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.pipeline.dependency
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.setting.text.alphanumeric.name._label
 import cellprofiler_core.setting.text.alphanumeric.name.image._image
 import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
@@ -846,7 +847,7 @@ HasImagePlaneDetails:False"""
 
     def test_get_provider_dictionary_object(self):
         pipeline = get_empty_pipeline()
-        my_setting = cellprofiler_core.setting.ObjectNameProvider("foo", OBJECT_NAME)
+        my_setting = cellprofiler_core.setting.text.alphanumeric.name._label.Label("foo", OBJECT_NAME)
         module = ATestModule([my_setting])
         module.set_module_num(1)
         pipeline.add_module(module)
@@ -903,7 +904,7 @@ HasImagePlaneDetails:False"""
         image_setting = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
             "foo", IMAGE_NAME
         )
-        object_setting = cellprofiler_core.setting.ObjectNameProvider(
+        object_setting = cellprofiler_core.setting.text.alphanumeric.name._label.Label(
             "foo", OBJECT_NAME
         )
         measurement_columns = [
@@ -968,7 +969,7 @@ HasImagePlaneDetails:False"""
         my_image_setting_2 = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
             "foo", IMAGE_NAME
         )
-        my_object_setting = cellprofiler_core.setting.ObjectNameProvider(
+        my_object_setting = cellprofiler_core.setting.text.alphanumeric.name._label.Label(
             "foo", OBJECT_NAME
         )
         module1 = ATestModule(settings=[my_image_setting_1])
@@ -1061,7 +1062,7 @@ HasImagePlaneDetails:False"""
         for i, module in enumerate(
             (
                 ATestModule(
-                    [cellprofiler_core.setting.ObjectNameProvider("foo", OBJECT_NAME)]
+                    [cellprofiler_core.setting.text.alphanumeric.name._label.Label("foo", OBJECT_NAME)]
                 ),
                 ATestModule(
                     [

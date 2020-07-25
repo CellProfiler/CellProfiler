@@ -1,11 +1,6 @@
 import logging
 
-import cellprofiler_core.measurement
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
-import cellprofiler_core.utilities.legacy
 from cellprofiler_core.setting._setting import Setting
-from cellprofiler_core.setting._validation_error import ValidationError
 from cellprofiler_core.setting.text.alphanumeric.name._name import Name
 
 logger = logging.getLogger(__name__)
@@ -21,25 +16,6 @@ class Text(Setting):
         self.multiline_display = kwargs.pop("multiline", False)
         self.metadata_display = kwargs.pop("metadata", False)
         super(Text, self).__init__(text, value, *args, **kwargs)
-
-
-class ObjectNameProvider(Name):
-    """A setting that provides an image name
-    """
-
-    def __init__(self, text, value="Do not use", *args, **kwargs):
-        super(ObjectNameProvider, self).__init__(
-            text, "objectgroup", value, *args, **kwargs
-        )
-
-    def test_valid(self, pipeline):
-        if self.value_text in cellprofiler_core.measurement.disallowed_object_names:
-            raise ValidationError(
-                "Object names may not be any of %s"
-                % (", ".join(cellprofiler_core.measurement.disallowed_object_names)),
-                self,
-            )
-        super(ObjectNameProvider, self).test_valid(pipeline)
 
 
 def filter_duplicate_names(name_list):

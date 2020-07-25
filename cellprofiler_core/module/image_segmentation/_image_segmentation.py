@@ -3,6 +3,7 @@ import numpy
 import cellprofiler_core.measurement
 import cellprofiler_core.object
 import cellprofiler_core.setting
+import cellprofiler_core.setting.text.alphanumeric.name._label
 from .._module import Module
 
 
@@ -56,7 +57,7 @@ class ImageSegmentation(Module):
             "Select the input image", doc="Select the image you want to use."
         )
 
-        self.y_name = cellprofiler_core.setting.ObjectNameProvider(
+        self.y_name = cellprofiler_core.setting.text.alphanumeric.name._label.Label(
             "Name the output object",
             self.__class__.__name__,
             doc="Enter the name you want to call the object produced by this module.",

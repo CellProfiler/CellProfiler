@@ -23,6 +23,7 @@ import cellprofiler_core.setting.filter._directory_predicate
 import cellprofiler_core.setting.filter._extension_predicate
 import cellprofiler_core.setting.filter._file_predicate
 import cellprofiler_core.setting.filter._image_predicate
+import cellprofiler_core.setting.text.alphanumeric.name._label
 import cellprofiler_core.setting.text.alphanumeric.name.image._file
 import cellprofiler_core.setting.text.number._float
 import cellprofiler_core.utilities.image
@@ -722,7 +723,7 @@ by ASCII letters, underbars or digits.
 
         group.append(
             "object_name",
-            cellprofiler_core.setting.ObjectNameProvider(
+            cellprofiler_core.setting.text.alphanumeric.name._label.Label(
                 "Name to assign these objects",
                 unique_object_name,
                 doc="""\
@@ -889,7 +890,7 @@ requests an image selection.
 
         group.append(
             "object_name",
-            cellprofiler_core.setting.ObjectNameProvider(
+            cellprofiler_core.setting.text.alphanumeric.name._label.Label(
                 "Name to assign these objects",
                 unique_object_name,
                 doc="""\

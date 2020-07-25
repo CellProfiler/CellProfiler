@@ -1,6 +1,7 @@
 def filter_duplicate_names(name_list):
     """remove any repeated names from a list of (name, ...) keeping the last occurrence."""
     name_dict = dict(list(zip((n[0] for n in name_list), name_list)))
+
     return [name_dict[n[0]] for n in name_list]
 
 
@@ -14,11 +15,14 @@ def get_name_providers(pipeline, last_setting):
     from ..setting.text.alphanumeric.name import Name
 
     choices = []
+
     for module in pipeline.modules(False):
         module_choices = []
+
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 return choices
+
             if (
                 isinstance(setting, Name)
                 and setting != "Do not use"
@@ -27,7 +31,9 @@ def get_name_providers(pipeline, last_setting):
                 and setting.value == last_setting.value
             ):
                 module_choices.append(setting)
+
         choices += module_choices
+
     assert False, "Setting not among visible settings in pipeline"
 
 
@@ -39,7 +45,10 @@ def get_name_provider_choices(pipeline, last_setting, group):
     group - the name of the group of providers to scan
     returns a list of tuples, each with (provider name, module name, module number)
     """
+    from ..setting.text.alphanumeric.name import Name
+
     choices = []
+
     for module in pipeline.modules(False):
         module_choices = [
             (
@@ -50,9 +59,11 @@ def get_name_provider_choices(pipeline, last_setting, group):
             )
             for other_name in module.other_providers(group)
         ]
+
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 return filter_duplicate_names(choices)
+
             if (
                 isinstance(setting, Name)
                 and module.enabled
@@ -67,5 +78,7 @@ def get_name_provider_choices(pipeline, last_setting, group):
                         module.is_input_module(),
                     )
                 )
+
         choices += module_choices
+
     assert False, "Setting not among visible settings in pipeline"

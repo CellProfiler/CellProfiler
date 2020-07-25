@@ -1,8 +1,6 @@
 import functools
 import os
 
-import six
-
 from cellprofiler_core.setting.text import get_name_provider_choices, DirectoryPath
 from . import _setting
 from ._validation_error import ValidationError
@@ -27,7 +25,7 @@ class MultiChoice(_setting.Setting):
     def parse_value(value):
         if value is None:
             return ""
-        elif isinstance(value, six.string_types):
+        elif isinstance(value, str):
             return value
         elif hasattr(value, "__getitem__"):
             return ",".join(value)

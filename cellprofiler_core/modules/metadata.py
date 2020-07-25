@@ -6,8 +6,6 @@ import re
 import time
 
 import javabridge
-import six
-import six.moves
 
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -729,7 +727,7 @@ not being applied, your choice on this setting may be the culprit.
         try:
             if group.csv_location.is_url():
                 url = cellprofiler_core.utilities.generate_presigned_url(csv_path)
-                fd = six.moves.urllib.urlopen(url)
+                fd = urllib.request.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
             group.imported_metadata_header_line = fd.readline()
@@ -964,7 +962,7 @@ not being applied, your choice on this setting may be the culprit.
             if url.startswith("s3:"):
                 url = url.replace(" ", "+")
 
-            if isinstance(url, six.text_type):
+            if isinstance(url, str):
                 ourl = env.new_string(url)
             else:
                 ourl = env.new_string_utf(url)
@@ -1358,7 +1356,7 @@ not being applied, your choice on this setting may be the culprit.
 
     def get_data_type(self, key):
         """Get the data type for a particular metadata key"""
-        if isinstance(key, six.string_types):
+        if isinstance(key, str):
             return self.get_data_type([key]).get(
                 key, cellprofiler_core.measurement.COLTYPE_VARCHAR
             )
@@ -1508,7 +1506,7 @@ not being applied, your choice on this setting may be the culprit.
             # Allow metadata CSVs to be loaded from default io directories.
             groups = []
             n_groups = int(setting_values[3])
-            for group_idx in six.moves.xrange(n_groups):
+            for group_idx in range(n_groups):
                 # group offset: 4
                 # no. group settings: 9
                 group = setting_values[4 + (group_idx * 9) : 4 + ((group_idx + 1) * 9)]
@@ -1538,7 +1536,7 @@ not being applied, your choice on this setting may be the culprit.
             new_setting_values = setting_values
             groups = []
             n_groups = int(setting_values[3])
-            for group_idx in six.moves.xrange(n_groups):
+            for group_idx in range(n_groups):
                 # group offset: 4
                 # no. group settings: 10
                 group = setting_values[

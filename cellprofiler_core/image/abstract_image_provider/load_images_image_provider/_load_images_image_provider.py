@@ -2,19 +2,22 @@ import hashlib
 import os
 import tempfile
 
-import skimage
 import numpy
-import six
-import six.moves
-import six.moves.urllib
+import skimage
 
-from cellprofiler_core.image._image import Image
 import cellprofiler_core.preferences
-from .._abstract_image_provider import AbstractImageProvider
-from ....utilities.image import is_numpy_file, is_matlab_file, loadmat, load_data_file, FILE_SCHEME, PASSTHROUGH_SCHEMES
-from ....utilities.pathname import pathname2url, url2pathname
-
+from cellprofiler_core.image._image import Image
 from cellprofiler_core.utilities import generate_presigned_url
+from .._abstract_image_provider import AbstractImageProvider
+from ....utilities.image import (
+    is_numpy_file,
+    is_matlab_file,
+    loadmat,
+    load_data_file,
+    FILE_SCHEME,
+    PASSTHROUGH_SCHEMES,
+)
+from ....utilities.pathname import pathname2url, url2pathname
 
 
 class LoadImagesImageProvider(AbstractImageProvider):
@@ -138,14 +141,14 @@ class LoadImagesImageProvider(AbstractImageProvider):
             filename = self.get_filename()
             if os.path.exists(filename):
                 return False
-            parsed_path = six.moves.urllib.parse.urlparse(filename)
+            parsed_path = urllib.parse.urlparse(filename)
             url = filename
             if len(parsed_path.scheme) < 2:
                 raise IOError("Test for access to file failed. File: %s" % filename)
         elif os.path.exists(path):
             return False
         else:
-            parsed_path = six.moves.urllib.parse.urlparse(path)
+            parsed_path = urllib.parse.urlparse(path)
             url = "/".join((path, self.get_filename()))
             #
             # Scheme length == 0 means no scheme
@@ -167,7 +170,7 @@ class LoadImagesImageProvider(AbstractImageProvider):
             self.__cached_file = temppath
             try:
                 url = generate_presigned_url(url)
-                self.__cached_file, headers = six.moves.urllib.urlretrieve(
+                self.__cached_file, headers = urllib.request.urlretrieve(
                     url, filename=temppath
                 )
             finally:

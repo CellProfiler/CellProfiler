@@ -4,22 +4,20 @@
 import csv
 import logging
 import os
+import urllib.request
 from functools import reduce
 
+import cellprofiler.misc
 import numpy
-import six
-import six.moves.urllib.request
+from cellprofiler.modules import _help
 
 import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider
 import cellprofiler_core.measurement
-import cellprofiler.misc
 import cellprofiler_core.module
 import cellprofiler_core.modules
 import cellprofiler_core.object
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-from cellprofiler.modules import _help
-
 import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 from cellprofiler_core.modules import identify
@@ -713,7 +711,7 @@ safe to press it.""",
                     raise RuntimeError("Need to fetch URL manually.")
                 try:
                     url = cellprofiler.misc.generate_presigned_url(self.csv_path)
-                    url_fd = six.moves.urllib.request.urlopen(url)
+                    url_fd = urllib.request.urlopen(url)
                 except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e
@@ -1703,7 +1701,7 @@ def best_cast(sequence, coltype=None):
     Try casting all elements to integer and float, returning a numpy
     array of values. If all fail, return a numpy array of strings.
     """
-    if isinstance(coltype, six.string_types) and coltype.startswith(
+    if isinstance(coltype, str) and coltype.startswith(
         cellprofiler_core.measurement.COLTYPE_VARCHAR
     ):
         # Cast columns already defined as strings as same

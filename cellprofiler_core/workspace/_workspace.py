@@ -5,7 +5,6 @@ import logging
 import os
 
 import h5py
-import six.moves
 
 import cellprofiler_core.measurement
 import cellprofiler_core.utilities.hdf5_dict
@@ -392,11 +391,11 @@ class Workspace:
                         .decode("unicode_escape")
                         .replace("ÿþ", "")
                     )
-                self.pipeline.load(six.moves.StringIO(pipeline_txt))
+                self.pipeline.load(io.StringIO(pipeline_txt))
             elif load_pipeline:
                 self.pipeline.clear()
             else:
-                fd = six.moves.StringIO()
+                fd = io.StringIO()
                 self.pipeline.dump(fd, save_image_plane_details=False)
                 self.__measurements.add_experiment_measurement(
                     M_PIPELINE, fd.getvalue()
@@ -481,7 +480,7 @@ class Workspace:
     def save_pipeline_to_measurements(self):
         from cellprofiler_core.pipeline import M_PIPELINE
 
-        fd = six.moves.StringIO()
+        fd = io.StringIO()
         self.pipeline.dump(fd, save_image_plane_details=False)
         self.measurements.add_experiment_measurement(M_PIPELINE, fd.getvalue())
         self.measurements.flush()

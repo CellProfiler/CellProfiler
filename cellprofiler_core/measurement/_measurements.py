@@ -6,9 +6,6 @@ import warnings
 
 import h5py
 import numpy
-import six
-import six.moves
-import six.moves.urllib
 
 import cellprofiler_core.measurement
 import cellprofiler_core.utilities
@@ -334,8 +331,8 @@ class Measurements:
 
         Experiment measurements have one value per experiment
         """
-        if isinstance(data, six.string_types):
-            data = six.text_type(data)
+        if isinstance(data, str):
+            data = str(data)
         self.hdf5_dict.add_all(
             cellprofiler_core.measurement.EXPERIMENT, feature_name, [data], [0]
         )
@@ -387,7 +384,7 @@ class Measurements:
         image_numbers = self.get_image_numbers()
         values = [
             [
-                six.text_type(x)
+                str(x)
                 for x in self.get_measurement(
                     cellprofiler_core.measurement.IMAGE, feature, image_numbers
                 )
@@ -853,7 +850,7 @@ class Measurements:
 
     @staticmethod
     def wrap_string(v):
-        if isinstance(v, six.string_types):
+        if isinstance(v, str):
             if getattr(v, "__class__") == str:
                 v = v
             return v
@@ -1231,7 +1228,7 @@ class Measurements:
         # more loosely matched.
         #
         def cast(x):
-            if isinstance(x, six.string_types) and x.isdigit():
+            if isinstance(x, str) and x.isdigit():
                 return int(x)
             return x
 
@@ -1350,7 +1347,7 @@ class Measurements:
 
         stop - stop loading when this line is reached.
         """
-        if isinstance(fd_or_file, six.string_types):
+        if isinstance(fd_or_file, str):
             with open(fd_or_file, "r") as fd:
                 return self.load_image_sets(fd, start, stop)
         import csv
@@ -1405,7 +1402,7 @@ class Measurements:
                 )
 
     def write_image_sets(self, fd_or_file, start=None, stop=None):
-        if isinstance(fd_or_file, six.string_types):
+        if isinstance(fd_or_file, str):
             with open(fd_or_file, "w") as fd:
                 return self.write_image_sets(fd, start, stop)
 
@@ -1464,8 +1461,8 @@ class Measurements:
                 field = column[i]
                 if field is numpy.NaN or field is None:
                     field = ""
-                if isinstance(field, six.string_types):
-                    if isinstance(field, six.text_type):
+                if isinstance(field, str):
+                    if isinstance(field, str):
                         field = field
                     field = '"' + field.replace('"', '""') + '"'
                 else:
@@ -1564,7 +1561,7 @@ class Measurements:
             cellprofiler_core.measurement.K_PATH_MAPPINGS: tuple(
                 [tuple(m) for m in mappings]
             ),
-            cellprofiler_core.measurement.K_URL2PATHNAME_PACKAGE_NAME: six.moves.urllib.request.url2pathname.__module__,
+            cellprofiler_core.measurement.K_URL2PATHNAME_PACKAGE_NAME: urllib.request.url2pathname.__module__,
         }
         s = json.dumps(d)
         self.add_experiment_measurement(
@@ -1614,8 +1611,8 @@ class Measurements:
             else:
                 if full_name_c.startswith(local_directory.lower()):
                     full_name = remote_directory + full_name[len(local_directory) :]
-        url = "file:" + six.moves.urllib.request.pathname2url(full_name)
-        if isinstance(url, six.text_type):
+        url = "file:" + urllib.request.pathname2url(full_name)
+        if isinstance(url, str):
             url = url
         return url
 

@@ -1,5 +1,5 @@
-from .communicable.reply.upstream_exit import BoundaryExited
 from .communicable import Communicable
+from .communicable.reply.upstream_exit import BoundaryExited
 
 
 class AnalysisContext:

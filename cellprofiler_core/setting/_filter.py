@@ -1,7 +1,5 @@
 import re
 
-import six
-
 from . import _setting
 from ._validation_error import ValidationError
 
@@ -341,10 +339,8 @@ class Filter(_setting.Setting):
         s = []
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
-                s.append(
-                    cls.FilterPredicate.encode_symbol(six.text_type(element.symbol))
-                )
-            elif isinstance(element, six.string_types):
+                s.append(cls.FilterPredicate.encode_symbol(str(element.symbol)))
+            elif isinstance(element, str):
                 s.append('"' + cls.encode_literal(element) + '"')
             else:
                 s.append("(" + cls.build_string(element) + ")")

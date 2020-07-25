@@ -1,15 +1,15 @@
 import logging
+import queue
 import socket
 import threading
 
-import six
 import zmq
 
 import cellprofiler_core.utilities.zmq
+from cellprofiler_core.utilities.zmq._analysis_context import AnalysisContext
+from .communicable import Communicable
 from .communicable.reply.upstream_exit import BoundaryExited
 from .communicable.request import AnalysisRequest, Request
-from .communicable import Communicable
-from cellprofiler_core.utilities.zmq._analysis_context import AnalysisContext
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +41,7 @@ class Boundary:
         self.request_dictionary = {}
         self.zmq_context = zmq.Context()
         # The downward queue is used to feed replies to the socket thread
-        self.downward_queue = six.moves.queue.Queue()
+        self.downward_queue = queue.Queue()
 
         # socket for handling downward notifications
         self.selfnotify_socket = self.zmq_context.socket(zmq.SUB)
@@ -124,7 +124,7 @@ class Boundary:
             self.analysis_dictionary[analysis_id] = AnalysisContext(
                 analysis_id, upward_queue, self.analysis_dictionary_lock
             )
-        response_queue = six.moves.queue.Queue()
+        response_queue = queue.Queue()
         self.send_to_boundary_thread(
             self.NOTIFY_REGISTER_ANALYSIS, (analysis_id, response_queue)
         )
@@ -158,7 +158,7 @@ class Boundary:
             if self.analysis_dictionary[analysis_id].cancelled:
                 return
             self.analysis_dictionary[analysis_id].cancel()
-        response_queue = six.moves.queue.Queue()
+        response_queue = queue.Queue()
         self.send_to_boundary_thread(
             self.NOTIFY_CANCEL_ANALYSIS, (analysis_id, response_queue)
         )
@@ -209,7 +209,7 @@ class Boundary:
                             self.handle_register_analysis(analysis_id, response_queue)
                         elif notification == self.NOTIFY_STOP:
                             received_stop = True
-                except six.moves.queue.Empty:
+                except queue.Empty:
                     pass
                 #
                 # Then process the poll result
@@ -271,7 +271,7 @@ class Boundary:
                     # which may be a thread instance. If so, join to the
                     # thread so there will be an orderly shutdown.
                     #
-                    response_queue = six.moves.queue.Queue()
+                    response_queue = queue.Queue()
                     request_class_queue.put([self, self.NOTIFY_STOP, response_queue])
                     thread = response_queue.get()
                     if isinstance(thread, threading.Thread):

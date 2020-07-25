@@ -3,8 +3,6 @@ import os
 import re
 import sys
 
-import six
-
 import cellprofiler_core.measurement
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
@@ -399,7 +397,7 @@ class Number(Text):
     """
 
     def __init__(self, text, value=0, minval=None, maxval=None, *args, **kwargs):
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             text_value = value
             value = self.str_to_value(value)
         else:
@@ -427,11 +425,7 @@ class Number(Text):
     def set_value(self, value):
         """Convert integer to string
         """
-        str_value = (
-            six.text_type(value)
-            if isinstance(value, six.string_types)
-            else self.value_to_str(value)
-        )
+        str_value = str(value) if isinstance(value, str) else self.value_to_str(value)
         self.set_value_text(str_value)
 
     def get_value(self, reraise=False):

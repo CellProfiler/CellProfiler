@@ -1,25 +1,24 @@
 import collections
-import logging
+import io
+import queue
 import subprocess
 import tempfile
 
 import numpy
 import psutil
-import six.moves
 import zmq
 
+import cellprofiler_core.analysis.event
+import cellprofiler_core.analysis.reply
+import cellprofiler_core.analysis.request
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 from cellprofiler_core.analysis import *
-from .reply._image_set_success_with_dictionary import ImageSetSuccessWithDictionary
 from ..utilities.zmq import get_announcer_address, register_analysis
 from ..utilities.zmq.communicable.reply._reply import Reply
-import cellprofiler_core.analysis.event
-import cellprofiler_core.analysis.reply
-import cellprofiler_core.analysis.request
 
 logger = logging.getLogger(__name__)
 
@@ -77,9 +76,9 @@ class Runner:
         self.paused = False
         self.cancelled = False
 
-        self.work_queue = six.moves.queue.Queue()
-        self.in_process_queue = six.moves.queue.Queue()
-        self.finished_queue = six.moves.queue.Queue()
+        self.work_queue = queue.Queue()
+        self.in_process_queue = queue.Queue()
+        self.finished_queue = queue.Queue()
 
         # We use a queue size of 10 because we keep measurements in memory (as
         # their HDF5 file contents) until they get merged into the full
@@ -88,7 +87,7 @@ class Runner:
         # than interface() doing so.  Currently, passing measurements in this
         # way seems like it might be buggy:
         # http://code.google.com/p/h5py/issues/detail?id=244
-        self.received_measurements_queue = six.moves.queue.Queue(maxsize=10)
+        self.received_measurements_queue = queue.Queue(maxsize=10)
 
         self.shared_dicts = None
 
@@ -524,7 +523,7 @@ class Runner:
         # all the requests from workers, of which there might be several.
 
         # start the zmqrequest Boundary
-        request_queue = six.moves.queue.Queue()
+        request_queue = queue.Queue()
         boundary = register_analysis(analysis_id, request_queue)
         #
         # The boundary is announcing our analysis at this point. Workers
@@ -556,7 +555,7 @@ class Runner:
 
             try:
                 req = request_queue.get(timeout=0.25)
-            except six.moves.queue.Empty:
+            except queue.Empty:
                 continue
 
             if isinstance(req, cellprofiler_core.analysis.request.PipelinePreferences):
@@ -670,7 +669,7 @@ class Runner:
             self.interface_work_cv.notify()
 
     def pipeline_as_string(self):
-        s = six.moves.StringIO()
+        s = io.StringIO()
         cellprofiler_core.pipeline.dump(self.pipeline, s, version=5)
         return s.getvalue()
 

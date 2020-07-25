@@ -1,7 +1,5 @@
 import uuid
 
-import six
-
 from ._validation_error import ValidationError
 
 
@@ -95,7 +93,7 @@ class Setting:
         override this to do things like compare whether an integer
         setting's value matches a given number
         """
-        return self.value == six.text_type(x)
+        return self.value == str(x)
 
     def __ne__(self, x):
         return not self.__eq__(x)
@@ -135,7 +133,7 @@ class Setting:
 
         NOTE: strings are deprecated, use unicode_value instead.
         """
-        if isinstance(self.__value, six.text_type):
+        if isinstance(self.__value, str):
             return str(self.__value)
         if not isinstance(self.__value, str):
             raise ValidationError("%s was not a string" % self.__value, self)
@@ -146,4 +144,4 @@ class Setting:
         return self.get_unicode_value()
 
     def get_unicode_value(self):
-        return six.text_type(self.value_text)
+        return str(self.value_text)

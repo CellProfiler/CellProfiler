@@ -4,10 +4,6 @@ import re
 
 import future.standard_library
 import numpy
-import six
-import six.moves
-import six.moves.urllib.parse
-import six.moves.urllib.request
 
 import cellprofiler_core
 import cellprofiler_core.image
@@ -18,48 +14,48 @@ import cellprofiler_core.setting
 import cellprofiler_core.utilities.legacy
 import cellprofiler_core.utilities.utf16encode
 import cellprofiler_core.workspace
-from cellprofiler_core.pipeline.io import dump
+from cellprofiler_core.pipeline._image_plane import ImagePlane
+from cellprofiler_core.pipeline._image_set_channel_descriptor import (
+    ImageSetChannelDescriptor,
+)
+from cellprofiler_core.pipeline._listener import Listener
+from cellprofiler_core.pipeline._pipeline import Pipeline
+from cellprofiler_core.pipeline.dependency._dependency import Dependency
+from cellprofiler_core.pipeline.dependency._image_dependency import ImageDependency
+from cellprofiler_core.pipeline.dependency._measurement_dependency import (
+    MeasurementDependency,
+)
+from cellprofiler_core.pipeline.dependency._object_dependency import ObjectDependency
+from cellprofiler_core.pipeline.event._end_run import EndRun
 from cellprofiler_core.pipeline.event._event import (
     Event,
     CancelledException,
     PipelineLoadCancelledException,
 )
+from cellprofiler_core.pipeline.event._file_walk_ended import FileWalkEnded
+from cellprofiler_core.pipeline.event._file_walk_started import FileWalkStarted
+from cellprofiler_core.pipeline.event._ipd_load_exception import IPDLoadException
+from cellprofiler_core.pipeline.event._load_exception import LoadException
+from cellprofiler_core.pipeline.event._module_added import ModuleAdded
+from cellprofiler_core.pipeline.event._module_disabled import ModuleDisabled
+from cellprofiler_core.pipeline.event._module_edited import ModuleEdited
+from cellprofiler_core.pipeline.event._module_enabled import ModuleEnabled
+from cellprofiler_core.pipeline.event._module_moved import ModuleMoved
+from cellprofiler_core.pipeline.event._module_removed import ModuleRemoved
+from cellprofiler_core.pipeline.event._module_show_window import ModuleShowWindow
+from cellprofiler_core.pipeline.event._pipeline_cleared import PipelineCleared
+from cellprofiler_core.pipeline.event._pipeline_loaded import PipelineLoaded
+from cellprofiler_core.pipeline.event._prepare_run_error import PrepareRunError
+from cellprofiler_core.pipeline.event._urls_added import URLsAdded
+from cellprofiler_core.pipeline.event._urls_removed import URLsRemoved
 from cellprofiler_core.pipeline.event.run_exception._post_run_exception import (
     PostRunException,
 )
 from cellprofiler_core.pipeline.event.run_exception._prepare_run_exception import (
     PrepareRunException,
 )
-from cellprofiler_core.pipeline.event._end_run import EndRun
-from cellprofiler_core.pipeline.event._module_enabled import ModuleEnabled
-from cellprofiler_core.pipeline.event._module_disabled import ModuleDisabled
-from cellprofiler_core.pipeline.event._module_show_window import ModuleShowWindow
-from cellprofiler_core.pipeline.event._urls_removed import URLsRemoved
-from cellprofiler_core.pipeline.event._urls_added import URLsAdded
-from cellprofiler_core.pipeline.event._load_exception import LoadException
-from cellprofiler_core.pipeline.event._prepare_run_error import PrepareRunError
 from cellprofiler_core.pipeline.event.run_exception._run_exception import RunException
-from cellprofiler_core.pipeline.event._ipd_load_exception import IPDLoadException
-from cellprofiler_core.pipeline.event._file_walk_ended import FileWalkEnded
-from cellprofiler_core.pipeline.event._file_walk_started import FileWalkStarted
-from cellprofiler_core.pipeline.event._module_edited import ModuleEdited
-from cellprofiler_core.pipeline.event._module_removed import ModuleRemoved
-from cellprofiler_core.pipeline.event._pipeline_cleared import PipelineCleared
-from cellprofiler_core.pipeline.event._module_moved import ModuleMoved
-from cellprofiler_core.pipeline.event._module_added import ModuleAdded
-from cellprofiler_core.pipeline.event._pipeline_loaded import PipelineLoaded
-from cellprofiler_core.pipeline.dependency._measurement_dependency import (
-    MeasurementDependency,
-)
-from cellprofiler_core.pipeline.dependency._image_dependency import ImageDependency
-from cellprofiler_core.pipeline.dependency._object_dependency import ObjectDependency
-from cellprofiler_core.pipeline.dependency._dependency import Dependency
-from cellprofiler_core.pipeline._image_plane import ImagePlane
-from cellprofiler_core.pipeline._pipeline import Pipeline
-from cellprofiler_core.pipeline._image_set_channel_descriptor import (
-    ImageSetChannelDescriptor,
-)
-from cellprofiler_core.pipeline._listener import Listener
+from cellprofiler_core.pipeline.io import dump
 
 future.standard_library.install_aliases()
 
@@ -457,7 +453,7 @@ def read_file_list(file_or_fd):
     "file:///imaging/analysis/singleplane.tif",,,
     """
 
-    if isinstance(file_or_fd, six.string_types):
+    if isinstance(file_or_fd, str):
         needs_close = True
         fd = open(file_or_fd, "r")
     else:
@@ -498,7 +494,7 @@ def write_file_list(file_or_fd, file_list):
     file_list - collection of URLs to be output
 
     """
-    if isinstance(file_or_fd, six.string_types):
+    if isinstance(file_or_fd, str):
         fd = open(file_or_fd, "w")
         needs_close = True
     else:
@@ -511,7 +507,7 @@ def write_file_list(file_or_fd, file_list):
         )
         fd.write('"' + '","'.join([H_URL, H_SERIES, H_INDEX, H_CHANNEL]) + '"\n')
         for url in file_list:
-            if isinstance(url, six.text_type):
+            if isinstance(url, str):
                 url = url
             # url = url.encode("string_escape").replace('"', r"\"")
             line = '"%s",,,\n' % url

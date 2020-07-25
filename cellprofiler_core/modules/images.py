@@ -1,11 +1,10 @@
 # coding=utf-8
 
 import os
+import urllib.parse
+import urllib.request
 
 import javabridge
-import six.moves.urllib
-import six.moves.urllib.parse
-import six.moves.urllib.request
 
 # import cellprofiler_core.icons
 import cellprofiler_core.module
@@ -271,9 +270,7 @@ pass the current filter.
                     + ":"
                     + modpath[1]
                     + "/"
-                    + "/".join(
-                        [six.moves.urllib.parse.quote(part) for part in modpath[2:]]
-                    )
+                    + "/".join([urllib.parse.quote(part) for part in modpath[2:]])
                 )
         path = os.path.join(*modpath)
         return cellprofiler_core.utilities.pathname.pathname2url(path)
@@ -285,11 +282,9 @@ pass the current filter.
                 url
             )
             return (
-                [schema]
-                + rest[0:1]
-                + [six.moves.urllib.parse.unquote(part) for part in rest[1:]]
+                [schema] + rest[0:1] + [urllib.parse.unquote(part) for part in rest[1:]]
             )
-        path = six.moves.urllib.request.url2pathname(url[5:])
+        path = urllib.request.url2pathname(url[5:])
         parts = []
         while True:
             new_path, part = os.path.split(path)
@@ -362,7 +357,7 @@ pass the current filter.
                 if url.startswith("s3:"):
                     url = url.replace(" ", "+")
 
-                if isinstance(url, six.text_type):
+                if isinstance(url, str):
                     ourl = env.new_string(url)
                 else:
                     ourl = env.new_string_utf(url)

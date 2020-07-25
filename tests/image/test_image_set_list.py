@@ -54,9 +54,7 @@ class TestImageSetList:
             ), "Callback was not called with the correct image provider"
             return img
 
-        z = cellprofiler_core.image.abstract._callback.Callback(
-            "TestImageProvider", fn
-        )
+        z = cellprofiler_core.image.abstract._callback.Callback("TestImageProvider", fn)
         y.providers.append(z)
         assert img == y.get_image("TestImageProvider")
 
@@ -76,14 +74,10 @@ class TestImageSetList:
             return img2
 
         y.providers.append(
-            cellprofiler_core.image.abstract._callback.Callback(
-                "IP1", fn1
-            )
+            cellprofiler_core.image.abstract._callback.Callback("IP1", fn1)
         )
         y.providers.append(
-            cellprofiler_core.image.abstract._callback.Callback(
-                "IP2", fn2
-            )
+            cellprofiler_core.image.abstract._callback.Callback("IP2", fn2)
         )
         assert img1 == y.get_image("IP1"), "Failed to get correct first image"
         assert img2 == y.get_image("IP2"), "Failed to get correct second image"

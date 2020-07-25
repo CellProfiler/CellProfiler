@@ -143,7 +143,5 @@ class ImageSet:
             self.clear_image(name)
         for provider in old_providers:
             self.providers.remove(provider)
-        provider = cellprofiler_core.image.abstract._vanilla.Vanilla(
-            name, image
-        )
+        provider = cellprofiler_core.image.abstract._vanilla.Vanilla(name, image)
         self.providers.append(provider)

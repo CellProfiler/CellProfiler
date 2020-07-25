@@ -1679,9 +1679,7 @@ class Measurements:
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
         """
-        from cellprofiler_core.image.abstract.file.url._url import (
-            URL,
-        )
+        from cellprofiler_core.image.abstract.file.url._url import URL
         from cellprofiler_core.image import Grayscale, RGB
 
         name = str(name)

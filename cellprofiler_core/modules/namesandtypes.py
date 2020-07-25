@@ -24,18 +24,10 @@ import cellprofiler_core.setting.filter._extension_predicate
 import cellprofiler_core.setting.filter._file_predicate
 import cellprofiler_core.setting.filter._image_predicate
 import cellprofiler_core.utilities.image
-from cellprofiler_core.image.abstract.file.url._color import (
-    Color,
-)
-from cellprofiler_core.image.abstract.file.url._mask import (
-    Mask,
-)
-from cellprofiler_core.image.abstract.file.url._monochrome import (
-    Monochrome,
-)
-from cellprofiler_core.image.abstract.file.url._objects import (
-    Objects,
-)
+from cellprofiler_core.image.abstract.file.url._color import Color
+from cellprofiler_core.image.abstract.file.url._mask import Mask
+from cellprofiler_core.image.abstract.file.url._monochrome import Monochrome
+from cellprofiler_core.image.abstract.file.url._objects import Objects
 from cellprofiler_core.module import identify
 from cellprofiler_core.setting.filter._metadata_predicate import MetadataPredicate
 

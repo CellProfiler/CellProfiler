@@ -208,7 +208,9 @@ def test_image_volume():
 
 
 def test_load_v3():
-    file = tests.modules.test_resources_directory("measureimageareaoccupied/v3.pipeline")
+    file = tests.modules.test_resources_directory(
+        "measureimageareaoccupied/v3.pipeline"
+    )
     with open(file, "r") as fd:
         data = fd.read()
 

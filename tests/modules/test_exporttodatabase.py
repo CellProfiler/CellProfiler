@@ -25,6 +25,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
+
 ogmc = cellprofiler.modules.exporttodatabase.ExportToDatabase.get_measurement_columns
 
 if hasattr(unittest, "SkipTest"):
@@ -114,7 +115,6 @@ RTEST_DUPLICATE = 2
 
 
 class TestExportToDatabase(unittest.TestCase):
-
     def setUp(self):
         self.cursor = None
         self.connection = None
@@ -123,12 +123,14 @@ class TestExportToDatabase(unittest.TestCase):
             if MYSQL_HOST.endswith("broadinstitute.org"):
                 fqdn = socket.getfqdn().lower()
                 if (
-                        ("broadinstitute" in fqdn)
-                        or fqdn.endswith("broad.mit.edu")
-                        or fqdn.endswith("broad")
+                    ("broadinstitute" in fqdn)
+                    or fqdn.endswith("broad.mit.edu")
+                    or fqdn.endswith("broad")
                 ):
                     self.test_mysql = True
-                elif socket.gethostbyaddr(socket.gethostname())[-1][0].startswith("69.173"):
+                elif socket.gethostbyaddr(socket.gethostname())[-1][0].startswith(
+                    "69.173"
+                ):
                     self.test_mysql = True
                 else:
                     self.test_mysql = False
@@ -187,7 +189,9 @@ class TestExportToDatabase(unittest.TestCase):
     def get_sqlite_cursor(self, module):
         import sqlite3
 
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         file_name = os.path.join(
             module.directory.get_absolute_path(), module.sqlite_file.value
         )
@@ -201,8 +205,8 @@ class TestExportToDatabase(unittest.TestCase):
         # number change.
         #
         assert (
-                cellprofiler.modules.exporttodatabase.ExportToDatabase.variable_revision_number
-                == 27
+            cellprofiler.modules.exporttodatabase.ExportToDatabase.variable_revision_number
+            == 27
         )
 
     def test_load_v11(self):
@@ -219,11 +223,13 @@ class TestExportToDatabase(unittest.TestCase):
         pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 2
         module = pipeline.modules()[-1]
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_SQLITE
         assert (
-                module.directory.dir_choice
-                == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+            module.directory.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
         )
         assert module.directory.custom_path == r"./\g<Plate>"
         assert module.db_name == "DefaultDB"
@@ -242,11 +248,13 @@ class TestExportToDatabase(unittest.TestCase):
         pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 2
         module = pipeline.modules()[-1]
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_MYSQL
         assert (
-                module.directory.dir_choice
-                == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+            module.directory.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
         )
         assert module.directory.custom_path == r"./\g<Plate>"
         assert module.db_name == "DefaultDB"
@@ -266,11 +274,13 @@ class TestExportToDatabase(unittest.TestCase):
         pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 2
         module = pipeline.modules()[-1]
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_MYSQL
         assert (
-                module.directory.dir_choice
-                == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
+            module.directory.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
         )
         assert module.directory.custom_path == r"./\g<Plate>"
         assert module.db_name == "DefaultDB"
@@ -290,14 +300,16 @@ class TestExportToDatabase(unittest.TestCase):
         pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_SQLITE
         assert module.db_name == "Heel"
         assert not module.want_table_prefix
         assert module.table_prefix == "Ouch"
         assert (
-                module.directory.dir_choice
-                == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice
+            == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         )
         assert module.directory.custom_path == "//achilles/red/shoes"
         assert not module.save_cpa_properties
@@ -314,8 +326,8 @@ class TestExportToDatabase(unittest.TestCase):
         assert module.objects_choice == cellprofiler.modules.exporttodatabase.O_ALL
         assert module.max_column_size == 62
         assert (
-                module.separate_object_tables
-                == cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
+            module.separate_object_tables
+            == cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
         )
         assert not module.wants_properties_image_url_prepend
 
@@ -333,13 +345,18 @@ class TestExportToDatabase(unittest.TestCase):
         pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_MYSQL
         assert module.db_name == "Gamma"
         assert module.want_table_prefix
         assert module.table_prefix == "Delta_"
         assert module.experiment_name == "Sigma"
-        assert module.directory.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        assert (
+            module.directory.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        )
         assert module.save_cpa_properties
         assert module.location_object == "Cells"
         assert module.properties_image_url_prepend == "http://server.university.edu"
@@ -353,8 +370,8 @@ class TestExportToDatabase(unittest.TestCase):
         assert module.create_workspace_file
         assert len(module.image_groups) == 2
         for image_group, input_image_name, output_image_name, color in (
-                (module.image_groups[0], "DNA", "NucleicAcid", "green"),
-                (module.image_groups[1], "Actin", "Protein", "blue"),
+            (module.image_groups[0], "DNA", "NucleicAcid", "green"),
+            (module.image_groups[1], "Actin", "Protein", "blue"),
         ):
             assert not image_group.wants_automatic_image_name
             assert image_group.image_cols == input_image_name
@@ -368,41 +385,41 @@ class TestExportToDatabase(unittest.TestCase):
 
         assert len(module.workspace_measurement_groups) == 2
         for (
-                g,
-                measurement_display,
-                x_measurement_type,
-                x_object_name,
-                x_measurement_name,
-                x_index_name,
-                y_measurement_type,
-                y_object_name,
-                y_measurement_name,
-                y_index_name,
+            g,
+            measurement_display,
+            x_measurement_type,
+            x_object_name,
+            x_measurement_name,
+            x_index_name,
+            y_measurement_type,
+            y_object_name,
+            y_measurement_name,
+            y_index_name,
         ) in (
-                (
-                        module.workspace_measurement_groups[0],
-                        "ScatterPlot",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Mitochondria",
-                        "Width_DNA",
-                        "ImageNumber",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Nuclei",
-                        "Height_DNA",
-                        "ImageNumber",
-                ),
-                (
-                        module.workspace_measurement_groups[1],
-                        "PlateViewer",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Cells",
-                        "Height_Actin",
-                        "ImageNumber",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Speckles",
-                        "Width_Actin",
-                        "ImageNumber",
-                ),
+            (
+                module.workspace_measurement_groups[0],
+                "ScatterPlot",
+                cellprofiler_core.measurement.IMAGE,
+                "Mitochondria",
+                "Width_DNA",
+                "ImageNumber",
+                cellprofiler_core.measurement.IMAGE,
+                "Nuclei",
+                "Height_DNA",
+                "ImageNumber",
+            ),
+            (
+                module.workspace_measurement_groups[1],
+                "PlateViewer",
+                cellprofiler_core.measurement.IMAGE,
+                "Cells",
+                "Height_Actin",
+                "ImageNumber",
+                cellprofiler_core.measurement.IMAGE,
+                "Speckles",
+                "Width_Actin",
+                "ImageNumber",
+            ),
         ):
             assert g.measurement_display == measurement_display
             assert g.x_measurement_type == x_measurement_type
@@ -433,13 +450,18 @@ class TestExportToDatabase(unittest.TestCase):
         pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_MYSQL
         assert module.db_name == "Gamma"
         assert module.want_table_prefix
         assert module.table_prefix == "Delta_"
         assert module.experiment_name == "Sigma"
-        assert module.directory.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        assert (
+            module.directory.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        )
         assert module.save_cpa_properties
         assert module.location_object == "Cells"
         assert module.properties_image_url_prepend == "http://server.university.edu"
@@ -455,8 +477,8 @@ class TestExportToDatabase(unittest.TestCase):
         assert not module.wants_relationship_table
         assert len(module.image_groups) == 2
         for image_group, input_image_name, output_image_name, color in (
-                (module.image_groups[0], "DNA", "NucleicAcid", "green"),
-                (module.image_groups[1], "Actin", "Protein", "blue"),
+            (module.image_groups[0], "DNA", "NucleicAcid", "green"),
+            (module.image_groups[1], "Actin", "Protein", "blue"),
         ):
             assert not image_group.wants_automatic_image_name
             assert image_group.image_cols == input_image_name
@@ -470,41 +492,41 @@ class TestExportToDatabase(unittest.TestCase):
 
         assert len(module.workspace_measurement_groups) == 2
         for (
-                g,
-                measurement_display,
-                x_measurement_type,
-                x_object_name,
-                x_measurement_name,
-                x_index_name,
-                y_measurement_type,
-                y_object_name,
-                y_measurement_name,
-                y_index_name,
+            g,
+            measurement_display,
+            x_measurement_type,
+            x_object_name,
+            x_measurement_name,
+            x_index_name,
+            y_measurement_type,
+            y_object_name,
+            y_measurement_name,
+            y_index_name,
         ) in (
-                (
-                        module.workspace_measurement_groups[0],
-                        "ScatterPlot",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Mitochondria",
-                        "Width_DNA",
-                        "ImageNumber",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Nuclei",
-                        "Height_DNA",
-                        "ImageNumber",
-                ),
-                (
-                        module.workspace_measurement_groups[1],
-                        "PlateViewer",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Cells",
-                        "Height_Actin",
-                        "ImageNumber",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Speckles",
-                        "Width_Actin",
-                        "ImageNumber",
-                ),
+            (
+                module.workspace_measurement_groups[0],
+                "ScatterPlot",
+                cellprofiler_core.measurement.IMAGE,
+                "Mitochondria",
+                "Width_DNA",
+                "ImageNumber",
+                cellprofiler_core.measurement.IMAGE,
+                "Nuclei",
+                "Height_DNA",
+                "ImageNumber",
+            ),
+            (
+                module.workspace_measurement_groups[1],
+                "PlateViewer",
+                cellprofiler_core.measurement.IMAGE,
+                "Cells",
+                "Height_Actin",
+                "ImageNumber",
+                cellprofiler_core.measurement.IMAGE,
+                "Speckles",
+                "Width_Actin",
+                "ImageNumber",
+            ),
         ):
             assert g.measurement_display == measurement_display
             assert g.x_measurement_type == x_measurement_type
@@ -535,13 +557,18 @@ class TestExportToDatabase(unittest.TestCase):
         pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_MYSQL
         assert module.db_name == "Gamma"
         assert module.want_table_prefix
         assert module.table_prefix == "Delta_"
         assert module.experiment_name == "Sigma"
-        assert module.directory.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        assert (
+            module.directory.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        )
         assert module.save_cpa_properties
         assert module.location_object == "Cells"
         assert module.properties_image_url_prepend == "http://server.university.edu"
@@ -557,8 +584,8 @@ class TestExportToDatabase(unittest.TestCase):
         assert module.wants_relationship_table
         assert len(module.image_groups) == 2
         for image_group, input_image_name, output_image_name, color in (
-                (module.image_groups[0], "DNA", "NucleicAcid", "green"),
-                (module.image_groups[1], "Actin", "Protein", "blue"),
+            (module.image_groups[0], "DNA", "NucleicAcid", "green"),
+            (module.image_groups[1], "Actin", "Protein", "blue"),
         ):
             assert not image_group.wants_automatic_image_name
             assert image_group.image_cols == input_image_name
@@ -572,41 +599,41 @@ class TestExportToDatabase(unittest.TestCase):
 
         assert len(module.workspace_measurement_groups) == 2
         for (
-                g,
-                measurement_display,
-                x_measurement_type,
-                x_object_name,
-                x_measurement_name,
-                x_index_name,
-                y_measurement_type,
-                y_object_name,
-                y_measurement_name,
-                y_index_name,
+            g,
+            measurement_display,
+            x_measurement_type,
+            x_object_name,
+            x_measurement_name,
+            x_index_name,
+            y_measurement_type,
+            y_object_name,
+            y_measurement_name,
+            y_index_name,
         ) in (
-                (
-                        module.workspace_measurement_groups[0],
-                        "ScatterPlot",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Mitochondria",
-                        "Width_DNA",
-                        "ImageNumber",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Nuclei",
-                        "Height_DNA",
-                        "ImageNumber",
-                ),
-                (
-                        module.workspace_measurement_groups[1],
-                        "PlateViewer",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Cells",
-                        "Height_Actin",
-                        "ImageNumber",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Speckles",
-                        "Width_Actin",
-                        "ImageNumber",
-                ),
+            (
+                module.workspace_measurement_groups[0],
+                "ScatterPlot",
+                cellprofiler_core.measurement.IMAGE,
+                "Mitochondria",
+                "Width_DNA",
+                "ImageNumber",
+                cellprofiler_core.measurement.IMAGE,
+                "Nuclei",
+                "Height_DNA",
+                "ImageNumber",
+            ),
+            (
+                module.workspace_measurement_groups[1],
+                "PlateViewer",
+                cellprofiler_core.measurement.IMAGE,
+                "Cells",
+                "Height_Actin",
+                "ImageNumber",
+                cellprofiler_core.measurement.IMAGE,
+                "Speckles",
+                "Width_Actin",
+                "ImageNumber",
+            ),
         ):
             assert g.measurement_display == measurement_display
             assert g.x_measurement_type == x_measurement_type
@@ -623,7 +650,8 @@ class TestExportToDatabase(unittest.TestCase):
         assert g.filter_name == "Site1Filter"
         assert g.filter_statement.value == "Image_Metadata_Plate = '1'"
         assert (
-                module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
+            module.allow_overwrite
+            == cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
         )
 
     def test_load_v25(self):
@@ -640,13 +668,18 @@ class TestExportToDatabase(unittest.TestCase):
         pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_MYSQL
         assert module.db_name == "Gamma"
         assert module.want_table_prefix
         assert module.table_prefix == "Delta_"
         assert module.experiment_name == "Sigma"
-        assert module.directory.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        assert (
+            module.directory.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        )
         assert module.save_cpa_properties
         assert module.location_object == "Cells"
         assert module.wants_properties_image_url_prepend
@@ -663,8 +696,8 @@ class TestExportToDatabase(unittest.TestCase):
         assert module.wants_relationship_table
         assert len(module.image_groups) == 2
         for image_group, input_image_name, output_image_name, color in (
-                (module.image_groups[0], "DNA", "NucleicAcid", "green"),
-                (module.image_groups[1], "Actin", "Protein", "blue"),
+            (module.image_groups[0], "DNA", "NucleicAcid", "green"),
+            (module.image_groups[1], "Actin", "Protein", "blue"),
         ):
             assert not image_group.wants_automatic_image_name
             assert image_group.image_cols == input_image_name
@@ -678,41 +711,41 @@ class TestExportToDatabase(unittest.TestCase):
 
         assert len(module.workspace_measurement_groups) == 2
         for (
-                g,
-                measurement_display,
-                x_measurement_type,
-                x_object_name,
-                x_measurement_name,
-                x_index_name,
-                y_measurement_type,
-                y_object_name,
-                y_measurement_name,
-                y_index_name,
+            g,
+            measurement_display,
+            x_measurement_type,
+            x_object_name,
+            x_measurement_name,
+            x_index_name,
+            y_measurement_type,
+            y_object_name,
+            y_measurement_name,
+            y_index_name,
         ) in (
-                (
-                        module.workspace_measurement_groups[0],
-                        "ScatterPlot",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Mitochondria",
-                        "Width_DNA",
-                        "ImageNumber",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Nuclei",
-                        "Height_DNA",
-                        "ImageNumber",
-                ),
-                (
-                        module.workspace_measurement_groups[1],
-                        "PlateViewer",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Cells",
-                        "Height_Actin",
-                        "ImageNumber",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Speckles",
-                        "Width_Actin",
-                        "ImageNumber",
-                ),
+            (
+                module.workspace_measurement_groups[0],
+                "ScatterPlot",
+                cellprofiler_core.measurement.IMAGE,
+                "Mitochondria",
+                "Width_DNA",
+                "ImageNumber",
+                cellprofiler_core.measurement.IMAGE,
+                "Nuclei",
+                "Height_DNA",
+                "ImageNumber",
+            ),
+            (
+                module.workspace_measurement_groups[1],
+                "PlateViewer",
+                cellprofiler_core.measurement.IMAGE,
+                "Cells",
+                "Height_Actin",
+                "ImageNumber",
+                cellprofiler_core.measurement.IMAGE,
+                "Speckles",
+                "Width_Actin",
+                "ImageNumber",
+            ),
         ):
             assert g.measurement_display == measurement_display
             assert g.x_measurement_type == x_measurement_type
@@ -729,7 +762,8 @@ class TestExportToDatabase(unittest.TestCase):
         assert g.filter_name == "Site1Filter"
         assert g.filter_statement.value == "Image_Metadata_Plate = '1'"
         assert (
-                module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
+            module.allow_overwrite
+            == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
         )
 
     def test_load_v26(self):
@@ -746,13 +780,18 @@ class TestExportToDatabase(unittest.TestCase):
         pipeline.load(six.moves.StringIO(data))
         assert len(pipeline.modules()) == 1
         module = pipeline.modules()[-1]
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_MYSQL
         assert module.db_name == "Gamma"
         assert module.want_table_prefix
         assert module.table_prefix == "Delta_"
         assert module.experiment_name == "Sigma"
-        assert module.directory.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        assert (
+            module.directory.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+        )
         assert module.save_cpa_properties
         assert module.location_object == "Cells"
         assert not module.wants_properties_image_url_prepend
@@ -768,13 +807,13 @@ class TestExportToDatabase(unittest.TestCase):
         assert module.properties_class_table_name == "Hoopla"
         assert module.wants_relationship_table
         assert (
-                module.properties_classification_type
-                == cellprofiler.modules.exporttodatabase.CT_OBJECT
+            module.properties_classification_type
+            == cellprofiler.modules.exporttodatabase.CT_OBJECT
         )
         assert len(module.image_groups) == 2
         for image_group, input_image_name, output_image_name, color in (
-                (module.image_groups[0], "DNA", "NucleicAcid", "green"),
-                (module.image_groups[1], "Actin", "Protein", "blue"),
+            (module.image_groups[0], "DNA", "NucleicAcid", "green"),
+            (module.image_groups[1], "Actin", "Protein", "blue"),
         ):
             assert not image_group.wants_automatic_image_name
             assert image_group.image_cols == input_image_name
@@ -788,41 +827,41 @@ class TestExportToDatabase(unittest.TestCase):
 
         assert len(module.workspace_measurement_groups) == 2
         for (
-                g,
-                measurement_display,
-                x_measurement_type,
-                x_object_name,
-                x_measurement_name,
-                x_index_name,
-                y_measurement_type,
-                y_object_name,
-                y_measurement_name,
-                y_index_name,
+            g,
+            measurement_display,
+            x_measurement_type,
+            x_object_name,
+            x_measurement_name,
+            x_index_name,
+            y_measurement_type,
+            y_object_name,
+            y_measurement_name,
+            y_index_name,
         ) in (
-                (
-                        module.workspace_measurement_groups[0],
-                        "ScatterPlot",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Mitochondria",
-                        "Width_DNA",
-                        "ImageNumber",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Nuclei",
-                        "Height_DNA",
-                        "ImageNumber",
-                ),
-                (
-                        module.workspace_measurement_groups[1],
-                        "PlateViewer",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Cells",
-                        "Height_Actin",
-                        "ImageNumber",
-                        cellprofiler_core.measurement.IMAGE,
-                        "Speckles",
-                        "Width_Actin",
-                        "ImageNumber",
-                ),
+            (
+                module.workspace_measurement_groups[0],
+                "ScatterPlot",
+                cellprofiler_core.measurement.IMAGE,
+                "Mitochondria",
+                "Width_DNA",
+                "ImageNumber",
+                cellprofiler_core.measurement.IMAGE,
+                "Nuclei",
+                "Height_DNA",
+                "ImageNumber",
+            ),
+            (
+                module.workspace_measurement_groups[1],
+                "PlateViewer",
+                cellprofiler_core.measurement.IMAGE,
+                "Cells",
+                "Height_Actin",
+                "ImageNumber",
+                cellprofiler_core.measurement.IMAGE,
+                "Speckles",
+                "Width_Actin",
+                "ImageNumber",
+            ),
         ):
             assert g.measurement_display == measurement_display
             assert g.x_measurement_type == x_measurement_type
@@ -839,7 +878,8 @@ class TestExportToDatabase(unittest.TestCase):
         assert g.filter_name == "Site1Filter"
         assert g.filter_statement.value == "Image_Metadata_Plate = '1'"
         assert (
-                module.allow_overwrite == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
+            module.allow_overwrite
+            == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
         )
 
     def test_load_v27(self):
@@ -850,27 +890,29 @@ class TestExportToDatabase(unittest.TestCase):
         pipeline = cellprofiler_core.pipeline.Pipeline()
         pipeline.load(six.moves.StringIO(data))
         module = pipeline.modules()[0]
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert (
-                module.properties_classification_type
-                == cellprofiler.modules.exporttodatabase.CT_IMAGE
+            module.properties_classification_type
+            == cellprofiler.modules.exporttodatabase.CT_IMAGE
         )
         assert len(module.workspace_measurement_groups) == 1
         g = module.workspace_measurement_groups[0]
         assert g.y_object_name == "MyObjects"
 
     def make_workspace(
-            self,
-            wants_files,
-            alt_object=False,
-            long_measurement=False,
-            wierd_measurement=False,
-            well_metadata=False,
-            image_set_count=1,
-            group_measurement=False,
-            relationship_type=None,
-            relationship_test_type=None,
-            post_run_test=False,
+        self,
+        wants_files,
+        alt_object=False,
+        long_measurement=False,
+        wierd_measurement=False,
+        well_metadata=False,
+        image_set_count=1,
+        group_measurement=False,
+        relationship_type=None,
+        relationship_test_type=None,
+        post_run_test=False,
     ):
         """Make a measurements structure with image and object measurements"""
 
@@ -880,7 +922,9 @@ class TestExportToDatabase(unittest.TestCase):
             variable_revision_number = 1
 
             def create_settings(self):
-                self.image_name = cellprofiler_core.setting.ImageNameProvider("Foo", IMAGE_NAME)
+                self.image_name = cellprofiler_core.setting.ImageNameProvider(
+                    "Foo", IMAGE_NAME
+                )
                 self.objects_name = cellprofiler_core.setting.ObjectNameProvider(
                     "Bar", OBJECT_NAME
                 )
@@ -1015,7 +1059,9 @@ class TestExportToDatabase(unittest.TestCase):
                             cellprofiler_core.measurement.EXPERIMENT,
                             STRING_IMG_MEASUREMENT,
                             cellprofiler_core.measurement.COLTYPE_VARCHAR,
-                            {cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN: True},
+                            {
+                                cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN: True
+                            },
                         )
                     ]
                 return columns
@@ -1023,8 +1069,18 @@ class TestExportToDatabase(unittest.TestCase):
             def get_object_relationships(self, pipeline):
                 if relationship_type is not None:
                     return [
-                        (RELATIONSHIP_NAME, OBJECT_NAME, ALTOBJECT_NAME, relationship_type),
-                        (RELATIONSHIP_NAME, ALTOBJECT_NAME, OBJECT_NAME, relationship_type),
+                        (
+                            RELATIONSHIP_NAME,
+                            OBJECT_NAME,
+                            ALTOBJECT_NAME,
+                            relationship_type,
+                        ),
+                        (
+                            RELATIONSHIP_NAME,
+                            ALTOBJECT_NAME,
+                            OBJECT_NAME,
+                            relationship_type,
+                        ),
                     ]
                 return []
 
@@ -1032,8 +1088,8 @@ class TestExportToDatabase(unittest.TestCase):
                 return (
                     [M_CATEGORY, cellprofiler_core.measurement.C_NUMBER]
                     if (
-                            object_name == OBJECT_NAME
-                            or ((object_name == ALTOBJECT_NAME) and in_module(alt_object))
+                        object_name == OBJECT_NAME
+                        or ((object_name == ALTOBJECT_NAME) and in_module(alt_object))
                     )
                     else [M_CATEGORY, "Count", "Metadata"]
                     if object_name == cellprofiler_core.measurement.IMAGE
@@ -1058,22 +1114,22 @@ class TestExportToDatabase(unittest.TestCase):
                             if in_module(wierd_measurement)
                             else []
                         )
-                elif category == cellprofiler_core.measurement.C_NUMBER and object_name in (
-                        OBJECT_NAME,
-                        ALTOBJECT_NAME,
+                elif (
+                    category == cellprofiler_core.measurement.C_NUMBER
+                    and object_name in (OBJECT_NAME, ALTOBJECT_NAME,)
                 ):
                     return cellprofiler_core.measurement.FTR_OBJECT_NUMBER
                 elif (
-                        category == "Count"
-                        and object_name == cellprofiler_core.measurement.IMAGE
+                    category == "Count"
+                    and object_name == cellprofiler_core.measurement.IMAGE
                 ):
                     result = [OBJECT_NAME]
                     if in_module(alt_object):
                         result += [ALTOBJECT_NAME]
                     return result
                 elif (
-                        category == "Metadata"
-                        and object_name == cellprofiler_core.measurement.IMAGE
+                    category == "Metadata"
+                    and object_name == cellprofiler_core.measurement.IMAGE
                 ):
                     return ["Plate", "Well"]
                 return []
@@ -1119,11 +1175,11 @@ class TestExportToDatabase(unittest.TestCase):
         if relationship_test_type == RTEST_SOME:
             n = 10
             i1, o1 = [
-                x.flatten() for x in numpy.mgrid[1: (image_set_count + 1), 1: (n + 1)]
+                x.flatten() for x in numpy.mgrid[1 : (image_set_count + 1), 1 : (n + 1)]
             ]
             for o1name, o2name in (
-                    (OBJECT_NAME, ALTOBJECT_NAME),
-                    (ALTOBJECT_NAME, OBJECT_NAME),
+                (OBJECT_NAME, ALTOBJECT_NAME),
+                (ALTOBJECT_NAME, OBJECT_NAME),
             ):
                 i2 = r.permutation(i1)
                 o2 = r.permutation(o1)
@@ -1134,7 +1190,9 @@ class TestExportToDatabase(unittest.TestCase):
 
         image_set_list = cellprofiler_core.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.add(IMAGE_NAME, cellprofiler_core.image.Image(r.uniform(size=(512, 512))))
+        image_set.add(
+            IMAGE_NAME, cellprofiler_core.image.Image(r.uniform(size=(512, 512)))
+        )
         object_set = cellprofiler_core.object.ObjectSet()
         objects = cellprofiler_core.object.Objects()
         objects.segmented = numpy.array([[0, 1, 2, 3], [0, 1, 2, 3]])
@@ -1168,13 +1226,15 @@ class TestExportToDatabase(unittest.TestCase):
         )
         for column in pipeline.get_measurement_columns():
             if column[1].startswith("ModuleError_") or column[1].startswith(
-                    "ExecutionTime_"
+                "ExecutionTime_"
             ):
                 m.add_image_measurement(column[1], 0)
         m.next_image_set(image_set_count)
         if wants_files or well_metadata:
             output_dir = tempfile.mkdtemp()
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
 
             def finally_fn():
@@ -1187,18 +1247,21 @@ class TestExportToDatabase(unittest.TestCase):
 
     def load_database(self, output_dir, module, image_set_count=1):
         """Load a database written by DB_MYSQL_CSV"""
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         curdir = os.path.abspath(os.curdir)
         os.chdir(output_dir)
         try:
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_%d" % image_set_count
             image_file = os.path.join(
-                output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
+                output_dir,
+                base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV",
             )
             if (
-                    module.separate_object_tables
-                    == cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
+                module.separate_object_tables
+                == cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
             ):
                 object_file = os.path.join(
                     output_dir, base_name + "_" + OBJECT_NAME + ".CSV"
@@ -1224,8 +1287,8 @@ class TestExportToDatabase(unittest.TestCase):
 
     def tteesstt_no_relationships(self, module, cursor):
         for t in (
-                cellprofiler.modules.exporttodatabase.T_RELATIONSHIPS,
-                cellprofiler.modules.exporttodatabase.V_RELATIONSHIPS,
+            cellprofiler.modules.exporttodatabase.T_RELATIONSHIPS,
+            cellprofiler.modules.exporttodatabase.V_RELATIONSHIPS,
         ):
             statement = "select count('x') from %s" % module.get_table_name(t)
             cursor.execute(statement)
@@ -1236,29 +1299,29 @@ class TestExportToDatabase(unittest.TestCase):
             cellprofiler.modules.exporttodatabase.V_RELATIONSHIPS
         )
         statement = (
-                        "select count('x') from %s "
-                        "where %s=%d and %s='%s' and %s='%%s' and %s='%%s' "
-                        "and %s = %%d and %s = %%d and %s = %%d and %s = %%d"
-                    ) % (
-                        v_name,
-                        cellprofiler.modules.exporttodatabase.COL_MODULE_NUMBER,
-                        1,
-                        cellprofiler.modules.exporttodatabase.COL_RELATIONSHIP,
-                        RELATIONSHIP_NAME,
-                        cellprofiler.modules.exporttodatabase.COL_OBJECT_NAME1,
-                        cellprofiler.modules.exporttodatabase.COL_OBJECT_NAME2,
-                        cellprofiler.modules.exporttodatabase.COL_IMAGE_NUMBER1,
-                        cellprofiler.modules.exporttodatabase.COL_OBJECT_NUMBER1,
-                        cellprofiler.modules.exporttodatabase.COL_IMAGE_NUMBER2,
-                        cellprofiler.modules.exporttodatabase.COL_OBJECT_NUMBER2,
-                    )
+            "select count('x') from %s "
+            "where %s=%d and %s='%s' and %s='%%s' and %s='%%s' "
+            "and %s = %%d and %s = %%d and %s = %%d and %s = %%d"
+        ) % (
+            v_name,
+            cellprofiler.modules.exporttodatabase.COL_MODULE_NUMBER,
+            1,
+            cellprofiler.modules.exporttodatabase.COL_RELATIONSHIP,
+            RELATIONSHIP_NAME,
+            cellprofiler.modules.exporttodatabase.COL_OBJECT_NAME1,
+            cellprofiler.modules.exporttodatabase.COL_OBJECT_NAME2,
+            cellprofiler.modules.exporttodatabase.COL_IMAGE_NUMBER1,
+            cellprofiler.modules.exporttodatabase.COL_OBJECT_NUMBER1,
+            cellprofiler.modules.exporttodatabase.COL_IMAGE_NUMBER2,
+            cellprofiler.modules.exporttodatabase.COL_OBJECT_NUMBER2,
+        )
         for rk in measurements.get_relationship_groups():
             module_num = rk.module_number
             relationship = rk.relationship
             object_name1 = rk.object_name1
             object_name2 = rk.object_name2
             for i1, o1, i2, o2 in measurements.get_relationships(
-                    module_num, relationship, object_name1, object_name2
+                module_num, relationship, object_name1, object_name2
             ):
                 cursor.execute(statement % (object_name1, object_name2, i1, o1, i2, o2))
                 assert cursor.fetchall()[0][0] == 1
@@ -1270,14 +1333,18 @@ class TestExportToDatabase(unittest.TestCase):
         try:
             for info_table, thing in (("VIEWS", "view"), ("TABLES", "table")):
                 statement = (
-                                "select table_name from INFORMATION_SCHEMA.%s "
-                                "where table_schema='%s' "
-                                "and table_name like '%s%%'"
-                            ) % (info_table, module.db_name.value, module.table_prefix.value)
+                    "select table_name from INFORMATION_SCHEMA.%s "
+                    "where table_schema='%s' "
+                    "and table_name like '%s%%'"
+                ) % (info_table, module.db_name.value, module.table_prefix.value)
                 cursor.execute(statement)
                 for (table_name,) in cursor.fetchall():
                     assert table_name.startswith(module.table_prefix.value)
-                    statement = "drop %s %s.%s" % (thing, module.db_name.value, table_name)
+                    statement = "drop %s %s.%s" % (
+                        thing,
+                        module.db_name.value,
+                        table_name,
+                    )
                     try:
                         cursor.execute(statement)
                     except Exception:
@@ -1307,7 +1374,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -1319,15 +1388,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
@@ -1340,9 +1409,9 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 self.cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
             self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -1358,12 +1427,14 @@ class TestExportToDatabase(unittest.TestCase):
             #
             assert not module.wants_relationship_table
             for t in (
-                    cellprofiler.modules.exporttodatabase.T_RELATIONSHIPS,
-                    cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES,
+                cellprofiler.modules.exporttodatabase.T_RELATIONSHIPS,
+                cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES,
             ):
                 statement = "select count('x') from INFORMATION_SCHEMA.TABLES "
                 statement += "where table_schema=%s and table_name=%s"
-                self.cursor.execute(statement, (module.db_name.value, module.get_table_name(t)))
+                self.cursor.execute(
+                    statement, (module.db_name.value, module.get_table_name(t))
+                )
                 assert self.cursor.fetchall()[0][0] == 0
         finally:
             os.chdir(output_dir)
@@ -1383,7 +1454,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_SELECT
             module.objects_list.choices = [OBJECT_NAME, ALTOBJECT_NAME]
             module.objects_list.value = OBJECT_NAME
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -1392,9 +1465,13 @@ class TestExportToDatabase(unittest.TestCase):
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(
-                output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
+                output_dir,
+                base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV",
             )
-            object_file = "%s_%s.CSV" % (base_name, cellprofiler_core.measurement.OBJECT)
+            object_file = "%s_%s.CSV" % (
+                base_name,
+                cellprofiler_core.measurement.OBJECT,
+            )
             object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
                 assert os.path.isfile(filename), "Can't find %s" % filename
@@ -1411,15 +1488,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             self.cursor.execute(statement)
             row = self.cursor.fetchone()
@@ -1432,15 +1509,15 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 self.cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s, %s_%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (
-                        OBJECT_NAME,
-                        OBJ_MEASUREMENT,
-                        OBJECT_NAME,
-                        cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                        module.table_prefix.value,
-                    )
+                "select ImageNumber, ObjectNumber, %s_%s, %s_%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    OBJECT_NAME,
+                    cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+                    module.table_prefix.value,
+                )
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -1468,7 +1545,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -1477,9 +1556,13 @@ class TestExportToDatabase(unittest.TestCase):
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(
-                output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
+                output_dir,
+                base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV",
             )
-            object_file = "%s_%s.CSV" % (base_name, cellprofiler_core.measurement.OBJECT)
+            object_file = "%s_%s.CSV" % (
+                base_name,
+                cellprofiler_core.measurement.OBJECT,
+            )
             object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
                 assert os.path.isfile(filename), "No such file: " + filename
@@ -1496,17 +1579,17 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, "
-                    "Image_Count_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        ALTOBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                "Image_Count_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    ALTOBJECT_NAME,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -1520,20 +1603,20 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s, %s_%s, "
-                    "%s_%s, %s_%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (
-                        OBJECT_NAME,
-                        OBJ_MEASUREMENT,
-                        OBJECT_NAME,
-                        cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                        ALTOBJECT_NAME,
-                        OBJ_MEASUREMENT,
-                        ALTOBJECT_NAME,
-                        cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                        module.table_prefix.value,
-                    )
+                "select ImageNumber, ObjectNumber, %s_%s, %s_%s, "
+                "%s_%s, %s_%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    OBJECT_NAME,
+                    cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+                    ALTOBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    ALTOBJECT_NAME,
+                    cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+                    module.table_prefix.value,
+                )
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -1584,15 +1667,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_Group_Number, Image_Group_Index, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_Group_Number, Image_Group_Index, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -1607,9 +1690,9 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -1648,25 +1731,25 @@ class TestExportToDatabase(unittest.TestCase):
             long_obj_column = mappings["%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
             long_aggregate_obj_column = mappings[
                 "Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)
-                ]
+            ]
 
             #
             # Now read the image file from the database
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s,"
-                    "Image_Count_%s, %s, %s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        long_img_column,
-                        long_aggregate_obj_column,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s,"
+                "Image_Count_%s, %s, %s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    long_img_column,
+                    long_aggregate_obj_column,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -1681,9 +1764,14 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s,%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, long_obj_column, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s,%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    long_obj_column,
+                    module.table_prefix.value,
+                )
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -1715,7 +1803,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -1731,25 +1821,25 @@ class TestExportToDatabase(unittest.TestCase):
             long_obj_column = mappings["%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
             long_aggregate_obj_column = mappings[
                 "Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)
-                ]
+            ]
 
             #
             # Now read the image file from the database
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s,"
-                    "Image_Count_%s, %s, %s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        long_img_column,
-                        long_aggregate_obj_column,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s,"
+                "Image_Count_%s, %s, %s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    long_img_column,
+                    long_aggregate_obj_column,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -1764,9 +1854,14 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s,%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, long_obj_column, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s,%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    long_obj_column,
+                    module.table_prefix.value,
+                )
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -1791,7 +1886,11 @@ class TestExportToDatabase(unittest.TestCase):
         #
         m = workspace.measurements
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
+            cellprofiler_core.measurement.IMAGE,
+            FLOAT_IMG_MEASUREMENT,
+            numpy.NaN,
+            True,
+            1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
         om[0] = numpy.NaN
@@ -1805,7 +1904,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -1814,9 +1915,13 @@ class TestExportToDatabase(unittest.TestCase):
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(
-                output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
+                output_dir,
+                base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV",
             )
-            object_file = "%s_%s.CSV" % (base_name, cellprofiler_core.measurement.OBJECT)
+            object_file = "%s_%s.CSV" % (
+                base_name,
+                cellprofiler_core.measurement.OBJECT,
+            )
             object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
                 assert os.path.isfile(filename)
@@ -1833,18 +1938,18 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, "
-                    "Image_Count_%s, Mean_%s_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        OBJECT_NAME,
-                        OBJ_MEASUREMENT,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                "Image_Count_%s, Mean_%s_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -1858,9 +1963,9 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -1888,7 +1993,11 @@ class TestExportToDatabase(unittest.TestCase):
         #
         m = workspace.measurements
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.inf, True, 1
+            cellprofiler_core.measurement.IMAGE,
+            FLOAT_IMG_MEASUREMENT,
+            numpy.inf,
+            True,
+            1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
         om[0] = numpy.inf
@@ -1902,7 +2011,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -1911,9 +2022,13 @@ class TestExportToDatabase(unittest.TestCase):
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(
-                output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
+                output_dir,
+                base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV",
             )
-            object_file = "%s_%s.CSV" % (base_name, cellprofiler_core.measurement.OBJECT)
+            object_file = "%s_%s.CSV" % (
+                base_name,
+                cellprofiler_core.measurement.OBJECT,
+            )
             object_file = os.path.join(output_dir, object_file)
             for filename in (sql_file, image_file, object_file):
                 assert os.path.isfile(filename)
@@ -1930,18 +2045,18 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, "
-                    "Image_Count_%s, Mean_%s_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        OBJECT_NAME,
-                        OBJ_MEASUREMENT,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                "Image_Count_%s, Mean_%s_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -1956,9 +2071,9 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -1986,7 +2101,11 @@ class TestExportToDatabase(unittest.TestCase):
         #
         m = workspace.measurements
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
+            cellprofiler_core.measurement.IMAGE,
+            FLOAT_IMG_MEASUREMENT,
+            numpy.NaN,
+            True,
+            1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
         om[0] = numpy.NaN
@@ -2011,18 +2130,18 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, "
-                    "Image_Count_%s, Mean_%s_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        OBJECT_NAME,
-                        OBJ_MEASUREMENT,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                "Image_Count_%s, Mean_%s_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -2036,9 +2155,9 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -2081,17 +2200,17 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s,"
-                    "Image_Count_%s, %s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        wierd_img_column,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s,"
+                "Image_Count_%s, %s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    wierd_img_column,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -2105,14 +2224,14 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s,%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (
-                        OBJECT_NAME,
-                        OBJ_MEASUREMENT,
-                        wierd_obj_column,
-                        module.table_prefix.value,
-                    )
+                "select ImageNumber, ObjectNumber, %s_%s,%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    wierd_obj_column,
+                    module.table_prefix.value,
+                )
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -2158,17 +2277,17 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s,"
-                    "Image_Count_%s, %s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        long_img_column,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s,"
+                "Image_Count_%s, %s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    long_img_column,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -2182,9 +2301,14 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s,%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, long_obj_column, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s,%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    long_obj_column,
+                    module.table_prefix.value,
+                )
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -2207,7 +2331,9 @@ class TestExportToDatabase(unittest.TestCase):
         """
         backslash_string = "\\Why worry?"
         workspace, module = self.make_workspace(False)
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_NONE
         m = workspace.measurements
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
@@ -2255,15 +2381,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_Group_Number, Image_Group_Index, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_Group_Number, Image_Group_Index, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             for i in range(2):
@@ -2279,9 +2405,9 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ImageNumber, ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ImageNumber, ObjectNumber"
+                % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for j in range(2):
@@ -2330,7 +2456,9 @@ class TestExportToDatabase(unittest.TestCase):
                 module.wants_agg_mean.value = False
                 module.wants_agg_median.value = False
                 module.wants_agg_std_dev.value = False
-                module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
+                module.objects_choice.value = (
+                    cellprofiler.modules.exporttodatabase.O_ALL
+                )
                 module.directory.dir_choice = (
                     cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
                 )
@@ -2349,15 +2477,15 @@ class TestExportToDatabase(unittest.TestCase):
                 #
                 image_table = module.table_prefix.value + "Per_Image"
                 statement = (
-                        "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                        "from %s"
-                        % (
-                            INT_IMG_MEASUREMENT,
-                            FLOAT_IMG_MEASUREMENT,
-                            STRING_IMG_MEASUREMENT,
-                            OBJECT_NAME,
-                            image_table,
-                        )
+                    "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                    "from %s"
+                    % (
+                        INT_IMG_MEASUREMENT,
+                        FLOAT_IMG_MEASUREMENT,
+                        STRING_IMG_MEASUREMENT,
+                        OBJECT_NAME,
+                        image_table,
+                    )
                 )
                 cursor.execute(statement)
                 row = cursor.fetchone()
@@ -2370,9 +2498,9 @@ class TestExportToDatabase(unittest.TestCase):
                 with pytest.raises(StopIteration):
                     cursor.__next__()
                 statement = (
-                        "select ImageNumber, ObjectNumber, %s_%s "
-                        "from %sPer_Object order by ImageNumber, ObjectNumber"
-                        % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
+                    "select ImageNumber, ObjectNumber, %s_%s "
+                    "from %sPer_Object order by ImageNumber, ObjectNumber"
+                    % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
                 )
                 cursor.execute(statement)
                 for i, value in enumerate(OBJ_VALUE):
@@ -2411,7 +2539,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_NONE
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
@@ -2421,7 +2551,10 @@ class TestExportToDatabase(unittest.TestCase):
             # Now read the image file from the database
             #
             image_table = module.table_prefix.value + "Per_Image"
-            statement = "select Image_%s from %s" % (STRING_IMG_MEASUREMENT, image_table)
+            statement = "select Image_%s from %s" % (
+                STRING_IMG_MEASUREMENT,
+                image_table,
+            )
             cursor.execute(statement)
             row = cursor.fetchone()
             assert len(row) == 1
@@ -2467,7 +2600,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -2481,15 +2616,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -2502,9 +2637,9 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ObjectNumber"
+                % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
@@ -2527,7 +2662,9 @@ class TestExportToDatabase(unittest.TestCase):
             finally_fn()
 
     def test_sqlite_data_tool(self):
-        workspace, module, output_dir, finally_fn = self.make_workspace(True, image_set_count=2)
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, image_set_count=2
+        )
         cursor = None
         connection = None
         try:
@@ -2542,7 +2679,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -2556,15 +2695,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             for i in range(2):
@@ -2578,9 +2717,9 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ImageNumber, ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ImageNumber, ObjectNumber"
+                % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for j in range(2):
@@ -2606,18 +2745,22 @@ class TestExportToDatabase(unittest.TestCase):
     def test_stable_column_mapper(self):
         """Make sure the column mapper always yields the same output"""
         mapping = cellprofiler.modules.exporttodatabase.ColumnNameMapping()
-        k1 = "abcdefghijkABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC"
-        k2 = "ebcdefghijkABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC"
+        k1 = (
+            "abcdefghijkABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC"
+        )
+        k2 = (
+            "ebcdefghijkABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC"
+        )
         mapping.add(k1)
         mapping.add(k2)
         mapping.do_mapping()
         assert (
-                mapping[k1]
-                == "bABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC"
+            mapping[k1]
+            == "bABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABCDEFGHIJABC"
         )
         assert (
-                mapping[k2]
-                == "ebcdefghijkABCDFHIJABCDEFGHIJABCFGHIACDEFGHJABCDEFHIJABCDEFIJABC"
+            mapping[k2]
+            == "ebcdefghijkABCDFHIJABCDEFGHIJABCFGHIACDEFGHJABCDEFHIJABCDEFIJABC"
         )
 
     def test_leave_start_intact(self):
@@ -2635,22 +2778,24 @@ class TestExportToDatabase(unittest.TestCase):
         """Return a statement that will select the given fields from the table"""
         field_string = ", ".join(
             [
-                field if field.startswith(object_name) else "%s_%s" % (object_name, field)
+                field
+                if field.startswith(object_name)
+                else "%s_%s" % (object_name, field)
                 for field in fields
             ]
         )
         statement = (
-                "select ImageNumber, %s_%s, %s "
-                "from %sPer_%s order by ImageNumber, %s_%s"
-                % (
-                    object_name,
-                    cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                    field_string,
-                    module.table_prefix.value,
-                    object_name,
-                    object_name,
-                    cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                )
+            "select ImageNumber, %s_%s, %s "
+            "from %sPer_%s order by ImageNumber, %s_%s"
+            % (
+                object_name,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+                field_string,
+                module.table_prefix.value,
+                object_name,
+                object_name,
+                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            )
         )
         return statement
 
@@ -2668,12 +2813,12 @@ class TestExportToDatabase(unittest.TestCase):
             cursor.__next__()
         assert len(row) == 3
         for feature, value in zip(
-                (
-                        cellprofiler_core.pipeline.M_PIPELINE,
-                        cellprofiler_core.pipeline.M_VERSION,
-                        cellprofiler_core.pipeline.M_TIMESTAMP,
-                ),
-                row,
+            (
+                cellprofiler_core.pipeline.M_PIPELINE,
+                cellprofiler_core.pipeline.M_VERSION,
+                cellprofiler_core.pipeline.M_TIMESTAMP,
+            ),
+            row,
         ):
             assert cellprofiler.utilities.legacy.equals(
                 value, m.get_experiment_measurement(feature)
@@ -2691,7 +2836,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
@@ -2704,15 +2851,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -2724,7 +2871,9 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
                 cursor.__next__()
-            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
@@ -2752,7 +2901,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_SELECT
             module.objects_list.choices = [OBJECT_NAME, ALTOBJECT_NAME]
             module.objects_list.value = OBJECT_NAME
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
@@ -2761,9 +2912,12 @@ class TestExportToDatabase(unittest.TestCase):
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(
-                output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
+                output_dir,
+                base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV",
             )
-            object_file = os.path.join(output_dir, base_name + "_" + OBJECT_NAME + ".CSV")
+            object_file = os.path.join(
+                output_dir, base_name + "_" + OBJECT_NAME + ".CSV"
+            )
             for filename in (sql_file, image_file, object_file):
                 assert os.path.isfile(filename)
             fd = open(sql_file, "rt")
@@ -2779,15 +2933,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -2799,7 +2953,9 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
                 cursor.__next__()
-            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
@@ -2838,15 +2994,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -2858,7 +3014,9 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
                 cursor.__next__()
-            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
@@ -2900,17 +3058,17 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s,"
-                    "Image_Count_%s, %s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        long_img_column,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s,"
+                "Image_Count_%s, %s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    long_img_column,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -2947,7 +3105,11 @@ class TestExportToDatabase(unittest.TestCase):
         #
         m = workspace.measurements
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
+            cellprofiler_core.measurement.IMAGE,
+            FLOAT_IMG_MEASUREMENT,
+            numpy.NaN,
+            True,
+            1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
         om[0] = numpy.NaN
@@ -2961,7 +3123,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
@@ -2970,9 +3134,12 @@ class TestExportToDatabase(unittest.TestCase):
             sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
             base_name = "SQL_1_1"
             image_file = os.path.join(
-                output_dir, base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV"
+                output_dir,
+                base_name + "_" + cellprofiler_core.measurement.IMAGE + ".CSV",
             )
-            object_file = os.path.join(output_dir, "%s_%s.CSV" % (base_name, OBJECT_NAME))
+            object_file = os.path.join(
+                output_dir, "%s_%s.CSV" % (base_name, OBJECT_NAME)
+            )
             for filename in (sql_file, image_file, object_file):
                 assert os.path.isfile(filename)
             fd = open(sql_file, "rt")
@@ -2988,18 +3155,18 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, "
-                    "Image_Count_%s, Mean_%s_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        OBJECT_NAME,
-                        OBJ_MEASUREMENT,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                "Image_Count_%s, Mean_%s_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -3012,7 +3179,9 @@ class TestExportToDatabase(unittest.TestCase):
             assert round(abs(row[5] - numpy.mean(om[~numpy.isnan(om)])), 7) == 0
             with pytest.raises(StopIteration):
                 cursor.__next__()
-            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
@@ -3039,7 +3208,11 @@ class TestExportToDatabase(unittest.TestCase):
         #
         m = workspace.measurements
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
+            cellprofiler_core.measurement.IMAGE,
+            FLOAT_IMG_MEASUREMENT,
+            numpy.NaN,
+            True,
+            1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
         om[:] = numpy.NaN
@@ -3064,18 +3237,18 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, "
-                    "Image_Count_%s, Mean_%s_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        OBJECT_NAME,
-                        OBJ_MEASUREMENT,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                "Image_Count_%s, Mean_%s_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -3088,7 +3261,9 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[5] is None
             with pytest.raises(StopIteration):
                 cursor.__next__()
-            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
@@ -3110,7 +3285,11 @@ class TestExportToDatabase(unittest.TestCase):
         #
         m = workspace.measurements
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE, FLOAT_IMG_MEASUREMENT, numpy.NaN, True, 1
+            cellprofiler_core.measurement.IMAGE,
+            FLOAT_IMG_MEASUREMENT,
+            numpy.NaN,
+            True,
+            1,
         )
         om = m.get_measurement(OBJECT_NAME, OBJ_MEASUREMENT, 1)
         om[:] = numpy.inf
@@ -3135,18 +3314,18 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, "
-                    "Image_Count_%s, Mean_%s_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        OBJECT_NAME,
-                        OBJ_MEASUREMENT,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, "
+                "Image_Count_%s, Mean_%s_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -3159,7 +3338,9 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[5] is None
             with pytest.raises(StopIteration):
                 cursor.__next__()
-            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
@@ -3201,17 +3382,17 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s,"
-                    "Image_Count_%s, %s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        wierd_img_column,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s,"
+                "Image_Count_%s, %s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    wierd_img_column,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -3271,17 +3452,17 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s,"
-                    "Image_Count_%s, %s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        long_img_column,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s,"
+                "Image_Count_%s, %s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    long_img_column,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -3332,7 +3513,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             # Read from one object table
             #
-            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
@@ -3345,7 +3528,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             # Read from the other table
             #
-            statement = self.per_object_statement(module, ALTOBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, ALTOBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i in range(len(ALTOBJ_VALUE)):
                 row = cursor.fetchone()
@@ -3362,7 +3547,9 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_02_write_two_object_tables_csv(self):
         """Write two object tables using OT_PER_OBJECT"""
-        workspace, module, output_dir, finally_fn = self.make_workspace(True, alt_object=True)
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, alt_object=True
+        )
         try:
             assert isinstance(
                 module, cellprofiler.modules.exporttodatabase.ExportToDatabase
@@ -3373,7 +3560,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
             module.max_column_size.value = 50
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
@@ -3387,7 +3576,9 @@ class TestExportToDatabase(unittest.TestCase):
             # Read from one object table
             #
 
-            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
@@ -3400,7 +3591,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             # Read from the other table
             #
-            statement = self.per_object_statement(module, ALTOBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, ALTOBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i in range(len(ALTOBJ_VALUE)):
                 row = cursor.fetchone()
@@ -3419,7 +3612,9 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_write_mysql_db_as_data_tool(self):
         """Multiple objects / write - per-object tables"""
-        workspace, module, output_dir, finally_fn = self.make_workspace(True, image_set_count=2)
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, image_set_count=2
+        )
         try:
             assert isinstance(
                 module, cellprofiler.modules.exporttodatabase.ExportToDatabase
@@ -3429,7 +3624,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
@@ -3441,15 +3638,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s order by ImageNumber"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s order by ImageNumber"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             for j in range(2):
@@ -3462,7 +3659,9 @@ class TestExportToDatabase(unittest.TestCase):
                 assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
                 cursor.__next__()
-            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
@@ -3525,9 +3724,9 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ImageNumber, ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ImageNumber, ObjectNumber"
+                % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for j in range(2):
@@ -3596,9 +3795,14 @@ class TestExportToDatabase(unittest.TestCase):
             with pytest.raises(StopIteration):
                 cursor.__next__()
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s, %s "
-                    "from %sPer_Object order by ImageNumber, ObjectNumber"
-                    % (OBJECT_NAME, OBJ_MEASUREMENT, long_obj_col, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s, %s "
+                "from %sPer_Object order by ImageNumber, ObjectNumber"
+                % (
+                    OBJECT_NAME,
+                    OBJ_MEASUREMENT,
+                    long_obj_col,
+                    module.table_prefix.value,
+                )
             )
             cursor.execute(statement)
             for j in range(2):
@@ -3628,7 +3832,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
@@ -3642,15 +3848,15 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                    "from %s"
-                    % (
-                        INT_IMG_MEASUREMENT,
-                        FLOAT_IMG_MEASUREMENT,
-                        STRING_IMG_MEASUREMENT,
-                        OBJECT_NAME,
-                        image_table,
-                    )
+                "select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                "from %s"
+                % (
+                    INT_IMG_MEASUREMENT,
+                    FLOAT_IMG_MEASUREMENT,
+                    STRING_IMG_MEASUREMENT,
+                    OBJECT_NAME,
+                    image_table,
+                )
             )
             cursor.execute(statement)
             row = cursor.fetchone()
@@ -3662,7 +3868,9 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
                 cursor.__next__()
-            statement = self.per_object_statement(module, OBJECT_NAME, [OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
                 row = cursor.fetchone()
@@ -3698,8 +3906,8 @@ class TestExportToDatabase(unittest.TestCase):
     def select_well_agg(module, aggname, fields):
         field_string = ", ".join(["%s_%s" % (aggname, field) for field in fields])
         statement = (
-                "select Image_Metadata_Plate, Image_Metadata_Well, %s "
-                "from %sPer_Well_%s" % (field_string, module.table_prefix.value, aggname)
+            "select Image_Metadata_Plate, Image_Metadata_Well, %s "
+            "from %sPer_Well_%s" % (field_string, module.table_prefix.value, aggname)
         )
         return statement
 
@@ -3740,7 +3948,9 @@ class TestExportToDatabase(unittest.TestCase):
             image_numbers = m.get_image_numbers()
 
             for aggname, aggfn in aggs:
-                fields = ["%s_%s" % (object_name, feature) for object_name, feature in meas]
+                fields = [
+                    "%s_%s" % (object_name, feature) for object_name, feature in meas
+                ]
                 statement = select_well_agg(module, aggname, fields)
                 cursor.execute(statement)
                 rows = cursor.fetchall()
@@ -3799,7 +4009,9 @@ class TestExportToDatabase(unittest.TestCase):
             m = workspace.measurements
             image_numbers = m.get_image_numbers()
             for aggname, aggfn in aggs:
-                fields = ["%s_%s" % (object_name, feature) for object_name, feature in meas]
+                fields = [
+                    "%s_%s" % (object_name, feature) for object_name, feature in meas
+                ]
                 statement = select_well_agg(module, aggname, fields)
                 cursor.execute(statement)
                 rows = cursor.fetchall()
@@ -3875,7 +4087,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_NONE
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -3915,7 +4129,9 @@ class TestExportToDatabase(unittest.TestCase):
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
         )
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
         measurements = workspace.measurements
         assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
@@ -3954,9 +4170,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             object_table = module.table_prefix.value + "Per_Object"
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ImageNumber, ObjectNumber"
-                    % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ImageNumber, ObjectNumber"
+                % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i in range(count):
@@ -3991,9 +4207,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             object_table = module.table_prefix.value + "Per_Object"
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ImageNumber, ObjectNumber"
-                    % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ImageNumber, ObjectNumber"
+                % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i in range(count):
@@ -4014,7 +4230,9 @@ class TestExportToDatabase(unittest.TestCase):
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
         )
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
         measurements = workspace.measurements
         assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
@@ -4037,8 +4255,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                            "select ImageNumber, Image_%s, Mean_%s_%s " "from %s order by ImageNumber"
-                        ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
+                "select ImageNumber, Image_%s, Mean_%s_%s "
+                "from %s order by ImageNumber"
+            ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
             cursor.execute(statement)
             for i in range(count):
                 row = cursor.fetchone()
@@ -4053,9 +4272,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             object_table = module.table_prefix.value + "Per_Object"
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ImageNumber, ObjectNumber"
-                    % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ImageNumber, ObjectNumber"
+                % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i in range(count):
@@ -4074,8 +4293,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.post_group(workspace, {})
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                            "select ImageNumber, Image_%s, Mean_%s_%s " "from %s order by ImageNumber"
-                        ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
+                "select ImageNumber, Image_%s, Mean_%s_%s "
+                "from %s order by ImageNumber"
+            ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
             cursor.execute(statement)
             for i in range(count):
                 row = cursor.fetchone()
@@ -4090,9 +4310,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             object_table = module.table_prefix.value + "Per_Object"
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ImageNumber, ObjectNumber"
-                    % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ImageNumber, ObjectNumber"
+                % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i in range(count):
@@ -4113,7 +4333,9 @@ class TestExportToDatabase(unittest.TestCase):
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
         )
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
         measurements = workspace.measurements
         assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
@@ -4150,7 +4372,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             # Read the object data too
             #
-            statement = self.per_object_statement(module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
@@ -4182,7 +4406,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             # Read the object data
             #
-            statement = self.per_object_statement(module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
@@ -4202,7 +4428,9 @@ class TestExportToDatabase(unittest.TestCase):
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
         )
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
         measurements = workspace.measurements
         assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
@@ -4225,8 +4453,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                            "select ImageNumber, Image_%s, Mean_%s_%s " "from %s order by ImageNumber"
-                        ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
+                "select ImageNumber, Image_%s, Mean_%s_%s "
+                "from %s order by ImageNumber"
+            ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
             cursor.execute(statement)
             for i in range(count):
                 row = cursor.fetchone()
@@ -4239,7 +4468,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             # Read the object data too
             #
-            statement = self.per_object_statement(module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
@@ -4257,8 +4488,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.post_group(workspace, {})
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                            "select ImageNumber, Image_%s, Mean_%s_%s " "from %s order by ImageNumber"
-                        ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
+                "select ImageNumber, Image_%s, Mean_%s_%s "
+                "from %s order by ImageNumber"
+            ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
             cursor.execute(statement)
             for i in range(count):
                 row = cursor.fetchone()
@@ -4271,7 +4503,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             # Read the object data
             #
-            statement = self.per_object_statement(module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT])
+            statement = self.per_object_statement(
+                module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
+            )
             cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
@@ -4303,7 +4537,9 @@ class TestExportToDatabase(unittest.TestCase):
             measurements = workspace.measurements
             assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
             module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
@@ -4326,9 +4562,9 @@ class TestExportToDatabase(unittest.TestCase):
                 # It should be null.
                 #
                 image_table = module.table_prefix.value + "Per_Image"
-                statement = "select ImageNumber, Image_%s from %s order by ImageNumber" % (
-                    GROUP_IMG_MEASUREMENT,
-                    image_table,
+                statement = (
+                    "select ImageNumber, Image_%s from %s order by ImageNumber"
+                    % (GROUP_IMG_MEASUREMENT, image_table,)
                 )
                 cursor.execute(statement)
                 for i in range(count):
@@ -4343,9 +4579,9 @@ class TestExportToDatabase(unittest.TestCase):
                 #
                 object_table = module.table_prefix.value + "Per_Object"
                 statement = (
-                        "select ImageNumber, ObjectNumber, %s_%s "
-                        "from %sPer_Object order by ImageNumber, ObjectNumber"
-                        % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
+                    "select ImageNumber, ObjectNumber, %s_%s "
+                    "from %sPer_Object order by ImageNumber, ObjectNumber"
+                    % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
                 )
                 cursor.execute(statement)
                 for i in range(count):
@@ -4380,9 +4616,9 @@ class TestExportToDatabase(unittest.TestCase):
                 #
                 object_table = module.table_prefix.value + "Per_Object"
                 statement = (
-                        "select ImageNumber, ObjectNumber, %s_%s "
-                        "from %sPer_Object order by ImageNumber, ObjectNumber"
-                        % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
+                    "select ImageNumber, ObjectNumber, %s_%s "
+                    "from %sPer_Object order by ImageNumber, ObjectNumber"
+                    % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
                 )
                 cursor.execute(statement)
                 for i in range(count):
@@ -4406,7 +4642,9 @@ class TestExportToDatabase(unittest.TestCase):
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
         )
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
         measurements = workspace.measurements
         assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
@@ -4445,9 +4683,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             object_table = module.table_prefix.value + "Per_Object"
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ImageNumber, ObjectNumber"
-                    % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ImageNumber, ObjectNumber"
+                % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i in range(count):
@@ -4482,9 +4720,9 @@ class TestExportToDatabase(unittest.TestCase):
             #
             object_table = module.table_prefix.value + "Per_Object"
             statement = (
-                    "select ImageNumber, ObjectNumber, %s_%s "
-                    "from %sPer_Object order by ImageNumber, ObjectNumber"
-                    % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
+                "select ImageNumber, ObjectNumber, %s_%s "
+                "from %sPer_Object order by ImageNumber, ObjectNumber"
+                % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
             cursor.execute(statement)
             for i in range(count):
@@ -4500,8 +4738,8 @@ class TestExportToDatabase(unittest.TestCase):
             # Finally, confirm that the Per_Object item is a view
             #
             statement = (
-                    "SELECT * FROM information_schema.views WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
-                    % (module.db_name.value, object_table)
+                "SELECT * FROM information_schema.views WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
+                % (module.db_name.value, object_table)
             )
             cursor.execute(statement)
             assert len(cursor.fetchall()) != 0
@@ -4509,29 +4747,34 @@ class TestExportToDatabase(unittest.TestCase):
             self.drop_tables(module, ["Per_Image"])
             self.drop_views(module, ["Per_Object"])
 
-
-
     def test_properties_file(self):
-
-        def patched_get_measurement_columns(module, pipeline, old_get_measurement_columns=ogmc):
+        def patched_get_measurement_columns(
+            module, pipeline, old_get_measurement_columns=ogmc
+        ):
             result = [
-                         (
-                             cellprofiler_core.measurement.IMAGE,
-                             cellprofiler_core.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
-                             cellprofiler_core.measurement.COLTYPE_VARCHAR,
-                         ),
-                         (
-                             cellprofiler_core.measurement.IMAGE,
-                             cellprofiler_core.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
-                             cellprofiler_core.measurement.COLTYPE_VARCHAR,
-                         ),
-                     ] + old_get_measurement_columns(module, pipeline)
+                (
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.C_FILE_NAME + "_" + IMAGE_NAME,
+                    cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                ),
+                (
+                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.measurement.C_PATH_NAME + "_" + IMAGE_NAME,
+                    cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                ),
+            ] + old_get_measurement_columns(module, pipeline)
             return result
 
-        cellprofiler.modules.exporttodatabase.ExportToDatabase.get_measurement_columns = patched_get_measurement_columns
+        cellprofiler.modules.exporttodatabase.ExportToDatabase.get_measurement_columns = (
+            patched_get_measurement_columns
+        )
 
-        workspace, module, output_dir, finally_fn = self.make_workspace(True, alt_object=True)
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, alt_object=True
+        )
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         file_name = "%s_%s.properties" % (DB_NAME, module.get_table_prefix())
         path = os.path.join(output_dir, file_name)
         #
@@ -4561,7 +4804,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -4584,41 +4829,43 @@ class TestExportToDatabase(unittest.TestCase):
                     v = v.strip()
                     dictionary[k] = v
             for k, v in (
-                    ("db_type", "mysql"),
-                    ("db_port", "3306"),  # The CSV file has nulls in lots of places
-                    ("db_host", DB_HOST),
-                    ("db_name", DB_NAME),
-                    ("db_user", DB_USER),
-                    ("db_passwd", DB_PASSWORD),
-                    ("image_table", "%sPer_Image" % module.get_table_prefix()),
-                    ("object_table", "%sPer_Object" % module.get_table_prefix()),
-                    ("image_id", "ImageNumber"),
-                    ("object_id", "ObjectNumber"),
-                    ("cell_x_loc", "%s_Location_Center_X" % OBJECT_NAME),
-                    ("cell_y_loc", "%s_Location_Center_Y" % OBJECT_NAME),
-                    (
-                            "image_path_cols",
-                            "%s_%s_%s"
-                            % (
-                                    cellprofiler_core.measurement.IMAGE,
-                                    cellprofiler_core.measurement.C_PATH_NAME,
-                                    IMAGE_NAME,
-                            ),
+                ("db_type", "mysql"),
+                ("db_port", "3306"),  # The CSV file has nulls in lots of places
+                ("db_host", DB_HOST),
+                ("db_name", DB_NAME),
+                ("db_user", DB_USER),
+                ("db_passwd", DB_PASSWORD),
+                ("image_table", "%sPer_Image" % module.get_table_prefix()),
+                ("object_table", "%sPer_Object" % module.get_table_prefix()),
+                ("image_id", "ImageNumber"),
+                ("object_id", "ObjectNumber"),
+                ("cell_x_loc", "%s_Location_Center_X" % OBJECT_NAME),
+                ("cell_y_loc", "%s_Location_Center_Y" % OBJECT_NAME),
+                (
+                    "image_path_cols",
+                    "%s_%s_%s"
+                    % (
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.C_PATH_NAME,
+                        IMAGE_NAME,
                     ),
-                    (
-                            "image_file_cols",
-                            "%s_%s_%s"
-                            % (
-                                    cellprofiler_core.measurement.IMAGE,
-                                    cellprofiler_core.measurement.C_FILE_NAME,
-                                    IMAGE_NAME,
-                            ),
+                ),
+                (
+                    "image_file_cols",
+                    "%s_%s_%s"
+                    % (
+                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.measurement.C_FILE_NAME,
+                        IMAGE_NAME,
                     ),
+                ),
             ):
                 assert k in dictionary
                 assert dictionary[k] == v
         finally:
-            cellprofiler.modules.exporttodatabase.ExportToDatabase.get_measurement_columns = ogmc
+            cellprofiler.modules.exporttodatabase.ExportToDatabase.get_measurement_columns = (
+                ogmc
+            )
             os.chdir(output_dir)
             if os.path.exists(path):
                 os.unlink(path)
@@ -4650,10 +4897,10 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    """
+                """
                                 select max(experiment_id) from Experiment_Properties
                                 where field = 'image_table' and value = '%s'"""
-                    % image_table
+                % image_table
             )
             cursor.execute(statement)
             experiment_id = int(cursor.fetchone()[0])
@@ -4703,10 +4950,10 @@ class TestExportToDatabase(unittest.TestCase):
             #
             image_table = module.table_prefix.value + "Per_Image"
             statement = (
-                    """
+                """
                                 select max(experiment_id) from Experiment_Properties
                                 where field = 'image_table' and value = '%s'"""
-                    % image_table
+                % image_table
             )
             cursor.execute(statement)
             experiment_id = int(cursor.fetchone()[0])
@@ -4737,7 +4984,8 @@ class TestExportToDatabase(unittest.TestCase):
         if not self.test_mysql:
             skipTest("Skipping actual DB work, not at the Broad.")
         workspace, module, output_dir, finally_fn = self.make_workspace(
-            True, relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE
+            True,
+            relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
         )
         try:
             assert isinstance(
@@ -4748,7 +4996,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -4766,7 +5016,8 @@ class TestExportToDatabase(unittest.TestCase):
             skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(
-            False, relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE
+            False,
+            relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
         )
         try:
             assert isinstance(
@@ -4793,7 +5044,8 @@ class TestExportToDatabase(unittest.TestCase):
             skipTest("Skipping actual DB work, not at the Broad.")
 
         workspace, module, output_dir, finally_fn = self.make_workspace(
-            True, relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE
+            True,
+            relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
         )
         cursor = None
         try:
@@ -4805,7 +5057,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -4843,7 +5097,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -4904,7 +5160,9 @@ class TestExportToDatabase(unittest.TestCase):
                 module.wants_agg_mean.value = False
                 module.wants_agg_median.value = False
                 module.wants_agg_std_dev.value = False
-                module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
+                module.objects_choice.value = (
+                    cellprofiler.modules.exporttodatabase.O_ALL
+                )
                 module.directory.dir_choice = (
                     cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
                 )
@@ -4946,7 +5204,9 @@ class TestExportToDatabase(unittest.TestCase):
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = (
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
@@ -5068,7 +5328,9 @@ class TestExportToDatabase(unittest.TestCase):
                 module.wants_agg_mean.value = False
                 module.wants_agg_median.value = False
                 module.wants_agg_std_dev.value = False
-                module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
+                module.objects_choice.value = (
+                    cellprofiler.modules.exporttodatabase.O_ALL
+                )
                 module.directory.dir_choice = (
                     cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
                 )
@@ -5079,8 +5341,8 @@ class TestExportToDatabase(unittest.TestCase):
                 module.prepare_run(workspace)
                 module.prepare_group(workspace, {}, [1])
                 with cellprofiler.modules.exporttodatabase.DBContext(module) as (
-                        connection,
-                        cursor,
+                    connection,
+                    cursor,
                 ):
                     cursor.execute(
                         "delete from %s"
@@ -5093,8 +5355,8 @@ class TestExportToDatabase(unittest.TestCase):
                 ] = {}
                 module.run(workspace)
                 with cellprofiler.modules.exporttodatabase.DBContext(module) as (
-                        connection,
-                        cursor,
+                    connection,
+                    cursor,
                 ):
                     self.tteesstt_relate(workspace.measurements, module, cursor)
             finally:
@@ -5122,7 +5384,9 @@ class TestExportToDatabase(unittest.TestCase):
                 module.wants_agg_mean.value = False
                 module.wants_agg_median.value = False
                 module.wants_agg_std_dev.value = False
-                module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
+                module.objects_choice.value = (
+                    cellprofiler.modules.exporttodatabase.O_ALL
+                )
                 module.directory.dir_choice = (
                     cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
                 )
@@ -5159,7 +5423,8 @@ class TestExportToDatabase(unittest.TestCase):
             skipTest("Skipping actual DB work, no database configured.")
 
         workspace, module = self.make_workspace(
-            False, relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE
+            False,
+            relationship_type=cellprofiler_core.measurement.MCA_AVAILABLE_EACH_CYCLE,
         )
         try:
             assert isinstance(
@@ -5301,11 +5566,15 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_sqlite_no_overwrite(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
-        module.allow_overwrite.value = cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
+        module.allow_overwrite.value = (
+            cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
+        )
         module.wants_agg_mean.value = False
         module.wants_agg_median.value = False
         module.wants_agg_std_dev.value = False
@@ -5321,9 +5590,13 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_sqlite_keep_schema(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
-        module.allow_overwrite.value = cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
+        module.allow_overwrite.value = (
+            cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
+        )
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.wants_agg_mean.value = False
@@ -5364,9 +5637,13 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_sqlite_drop_schema(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        assert isinstance(module, cellprofiler.modules.exporttodatabase.ExportToDatabase)
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
         module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
-        module.allow_overwrite.value = cellprofiler.modules.exporttodatabase.OVERWRITE_ALL
+        module.allow_overwrite.value = (
+            cellprofiler.modules.exporttodatabase.OVERWRITE_ALL
+        )
         module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
         module.directory.custom_path = output_dir
         module.wants_agg_mean.value = False
@@ -5413,8 +5690,8 @@ class TestExportToDatabase(unittest.TestCase):
         module.db_passwd.value = MYSQL_PASSWORD
         module.db_name.value = MYSQL_DATABASE
         with cellprofiler.modules.exporttodatabase.DBContext(module) as (
-                connection,
-                cursor,
+            connection,
+            cursor,
         ):
             cursor.execute("select 1")
             result = cursor.fetchall()
@@ -5426,11 +5703,13 @@ class TestExportToDatabase(unittest.TestCase):
         try:
             module = cellprofiler.modules.exporttodatabase.ExportToDatabase()
             module.db_type.value = cellprofiler.modules.exporttodatabase.DB_SQLITE
-            module.directory.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            module.directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
             module.directory.custom_path = output_dir
             with cellprofiler.modules.exporttodatabase.DBContext(module) as (
-                    connection,
-                    cursor,
+                connection,
+                cursor,
             ):
                 cursor.execute("select 1")
                 result = cursor.fetchall()
@@ -5488,5 +5767,3 @@ class TestExportToDatabase(unittest.TestCase):
             assert cursor.fetchall()[0][0] == STRING_VALUE
         finally:
             self.drop_tables(module)
-
-

@@ -480,7 +480,7 @@ the output easier to display.
                     )
 
                     result[index] = (
-                            -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
+                        -hessian[:, :, 0] * (hessian[:, :, 0] < 0) * (sigma ** 2)
                     )
             else:
                 hessian = centrosome.filter.hessian(
@@ -521,15 +521,15 @@ the output easier to display.
         )
 
         img_mean = (
-                skimage.filters.gaussian(data, sigma, mode="constant", multichannel=False)
-                / gmask
+            skimage.filters.gaussian(data, sigma, mode="constant", multichannel=False)
+            / gmask
         )
 
         img_squared = (
-                skimage.filters.gaussian(
-                    data ** 2, sigma, mode="constant", multichannel=False
-                )
-                / gmask
+            skimage.filters.gaussian(
+                data ** 2, sigma, mode="constant", multichannel=False
+            )
+            / gmask
         )
 
         result = img_squared - img_mean ** 2

@@ -2529,7 +2529,7 @@ class MonkeyPatchedDelete(object):
         numpy.delete = self.old_delete
 
     def monkey_patched_delete(self, array, indices, axis):
-        #__test.assertTrue(numpy.all(indices >= 0))
+        # __test.assertTrue(numpy.all(indices >= 0))
         return self.old_delete(array, indices, axis)
 
 

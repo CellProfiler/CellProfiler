@@ -899,9 +899,7 @@ example, to be saved by a **SaveImages** module).
             low_threshold = group.low_threshold.value
             high_threshold = group.high_threshold.value
             if low_threshold >= high_threshold:
-                raise ValueError(
-                    "Lower Threshold must be less than Upper Threshold"
-                )
+                raise ValueError("Lower Threshold must be less than Upper Threshold")
             bin_count = group.bin_count.value
             thresholds = (
                 np.arange(bin_count + 1)

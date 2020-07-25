@@ -2240,7 +2240,9 @@ class ModuleView(object):
             else:
                 self.sort_reverse = not self.sort_reverse
             tab = self.GetTable()
-            tab.v.data.sort(key=lambda thedata: thedata[tgtcolumn], reverse=self.sort_reverse)
+            tab.v.data.sort(
+                key=lambda thedata: thedata[tgtcolumn], reverse=self.sort_reverse
+            )
             self.SetSortingColumn(tgtcolumn)
             self.ClearSelection()
 
@@ -2327,9 +2329,7 @@ class ModuleView(object):
             return
         proposed_value = six.text_type(control.GetValue())
         timeout_sec = EDIT_TIMEOUT_SEC * 1000 if timeout else False
-        self.on_value_change(
-            setting, control, proposed_value, event, timeout_sec
-        )
+        self.on_value_change(setting, control, proposed_value, event, timeout_sec)
 
     def on_value_change(self, setting, control, proposed_value, event, timeout=None):
         """Handle a change in value to a setting

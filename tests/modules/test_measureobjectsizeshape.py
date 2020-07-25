@@ -568,9 +568,15 @@ def test_run_without_advanced():
 
     measurements = workspace.measurements
 
-    standard = [f"AreaShape_{name}" for name in cellprofiler.modules.measureobjectsizeshape.F_STANDARD +
-                cellprofiler.modules.measureobjectsizeshape.F_STD_2D]
-    advanced = [f"AreaShape_{name}" for name in cellprofiler.modules.measureobjectsizeshape.F_ADV_2D]
+    standard = [
+        f"AreaShape_{name}"
+        for name in cellprofiler.modules.measureobjectsizeshape.F_STANDARD
+        + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+    ]
+    advanced = [
+        f"AreaShape_{name}"
+        for name in cellprofiler.modules.measureobjectsizeshape.F_ADV_2D
+    ]
     measures = measurements.get_feature_names(OBJECTS_NAME)
     for feature in standard:
         assert feature in measures
@@ -593,9 +599,10 @@ def test_run_with_advanced():
     measurements = workspace.measurements
 
     allfeatures = [
-        f"AreaShape_{name}" for name in cellprofiler.modules.measureobjectsizeshape.F_STANDARD +
-                                        cellprofiler.modules.measureobjectsizeshape.F_STD_2D +
-                                        cellprofiler.modules.measureobjectsizeshape.F_ADV_2D
+        f"AreaShape_{name}"
+        for name in cellprofiler.modules.measureobjectsizeshape.F_STANDARD
+        + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+        + cellprofiler.modules.measureobjectsizeshape.F_ADV_2D
     ]
     measures = measurements.get_feature_names(OBJECTS_NAME)
     for feature in allfeatures:

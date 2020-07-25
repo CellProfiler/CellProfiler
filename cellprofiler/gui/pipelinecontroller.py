@@ -356,8 +356,7 @@ class PipelineController(object):
         )
 
         frame.Bind(
-            EVT_PLV_VALID_STEP_COLUMN_CLICKED,
-            self.on_step_from_specific_module,
+            EVT_PLV_VALID_STEP_COLUMN_CLICKED, self.on_step_from_specific_module,
         )
 
         from bioformats.formatreader import set_omero_login_hook
@@ -1493,9 +1492,9 @@ class PipelineController(object):
                     self.__frame,
                     "Help for plate viewer",
                     cellprofiler.gui.html.utils.rst_to_html_fragment(
-                    cellprofiler.gui.help.content.read_content(
-                        "output_plateviewer.rst"
-                    )
+                        cellprofiler.gui.help.content.read_content(
+                            "output_plateviewer.rst"
+                        )
                     ),
                 ).Show()
 
@@ -2765,8 +2764,7 @@ class PipelineController(object):
             )
 
             self.__analysis = cellprofiler_core.analysis.Analysis(
-                self.__pipeline,
-                initial_measurements=self.__workspace.measurements,
+                self.__pipeline, initial_measurements=self.__workspace.measurements,
             )
 
             self.__analysis.start(self.analysis_event_handler, num_workers)

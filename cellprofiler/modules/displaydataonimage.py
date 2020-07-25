@@ -289,10 +289,7 @@ color map.
 
     def use_color_map(self):
         """True if the measurement values are rendered using a color map"""
-        return (
-            self.objects_or_image == OI_OBJECTS
-            and self.color_or_text == CT_COLOR
-        )
+        return self.objects_or_image == OI_OBJECTS and self.color_or_text == CT_COLOR
 
     def run(self, workspace):
         import matplotlib

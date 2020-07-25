@@ -51,7 +51,9 @@ def example_images_directory():
 
 def test_resources_directory(file):
     folder = os.path.dirname(cellprofiler.utilities.__file__)
-    return os.path.abspath(os.path.join(folder, "../..", "tests/resources/modules", file))
+    return os.path.abspath(
+        os.path.join(folder, "../..", "tests/resources/modules", file)
+    )
 
 
 def svn_mirror_url():

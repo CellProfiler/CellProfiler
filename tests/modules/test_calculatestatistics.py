@@ -489,7 +489,9 @@ def test_make_path():
     try:
         dose_group = module.dose_values[0]
         dose_group.wants_save_figure.value = True
-        dose_group.pathname.dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+        dose_group.pathname.dir_choice = (
+            cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+        )
         dose_group.pathname.custom_path = my_subdir
         dose_group.figure_name.value = FIGURE_NAME
         module.post_run(workspace)

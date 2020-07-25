@@ -504,7 +504,9 @@ previously discarded objects.""".format(
                 if distance <= 5:
                     extended = scind.binary_dilation(patch_mask, strel)
                 else:
-                    extended = scipy.signal.fftconvolve(patch_mask, strel, mode='same') > 0.5
+                    extended = (
+                        scipy.signal.fftconvolve(patch_mask, strel, mode="same") > 0.5
+                    )
                 neighbors = np.unique(npatch[extended])
                 neighbors = neighbors[neighbors != 0]
                 if self.neighbors_are_objects:
@@ -542,12 +544,22 @@ previously discarded objects.""".format(
                     if distance <= 5:
                         extended = scind.binary_dilation(extendme, strel_touching)
                     else:
-                        extended = scipy.signal.fftconvolve(extendme, strel_touching, mode='same') > 0.5
+                        extended = (
+                            scipy.signal.fftconvolve(
+                                extendme, strel_touching, mode="same"
+                            )
+                            > 0.5
+                        )
                 else:
                     if distance <= 5:
                         extended = scind.binary_dilation((npatch != 0), strel_touching)
                     else:
-                        extended = scipy.signal.fftconvolve((npatch != 0), strel_touching, mode='same') > 0.5
+                        extended = (
+                            scipy.signal.fftconvolve(
+                                (npatch != 0), strel_touching, mode="same"
+                            )
+                            > 0.5
+                        )
                 overlap = np.sum(outline_patch & extended)
                 pixel_count[index] = overlap
             if sum([len(x) for x in first_objects]) > 0:

@@ -525,11 +525,11 @@ class CPFrame(wx.Frame):
             )
         try:
             from bioformats.formatreader import clear_image_reader_cache
+
             clear_image_reader_cache()
         except:
             logger.warning(
-                "Failed to clear bioformats reader cache during close",
-                exc_info=True,
+                "Failed to clear bioformats reader cache during close", exc_info=True,
             )
         try:
             self.__preferences_view.close()
@@ -1053,9 +1053,10 @@ class CPFrame(wx.Frame):
 
     def __on_debug_help(self, event):
         import cellprofiler.gui.htmldialog
+
         contents = cellprofiler.gui.help.content.read_content(
-                "navigation_test_menu.rst"
-            )
+            "navigation_test_menu.rst"
+        )
         help_dialog = cellprofiler.gui.htmldialog.HTMLDialog(
             self,
             "Test Mode Help",

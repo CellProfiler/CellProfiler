@@ -74,7 +74,9 @@ def workspace(images, objects_x, objects_y, measurements, module, objects, pipel
     module.objects_y.value = "n"
     module.output_object.value = "merged"
 
-    return cellprofiler_core.workspace.Workspace(pipeline, module, images, objects, measurements, None)
+    return cellprofiler_core.workspace.Workspace(
+        pipeline, module, images, objects, measurements, None
+    )
 
 
 class TestCombineObjects:
@@ -91,7 +93,9 @@ class TestCombineObjects:
                 output_objects = workspace.object_set.get_objects(method)
                 assert len(output_objects.segmented[output_objects.segmented > 0]) == 0
 
-        def test_one_object_first_image(self, objects_x, module, workspace, merge_methods):
+        def test_one_object_first_image(
+            self, objects_x, module, workspace, merge_methods
+        ):
             # Test merge methods with one object in initial set
             segment = numpy.zeros((10, 10))
             segment[2][2] = 1
@@ -107,7 +111,9 @@ class TestCombineObjects:
                 module.run(workspace)
                 assert (workspace.get_objects(method).segmented == segment).all()
 
-        def test_one_object_second_image(self, objects_y, module, workspace, merge_methods):
+        def test_one_object_second_image(
+            self, objects_y, module, workspace, merge_methods
+        ):
             # Test merge methods with one object in target set
             segment = numpy.zeros((10, 10))
             segment[2][2] = 1
@@ -140,7 +146,9 @@ class TestCombineObjects:
                 module.run(workspace)
                 assert (workspace.get_objects(method).segmented == segment).all()
 
-        def test_not_touching(self, objects_x, objects_y, module, workspace, merge_methods):
+        def test_not_touching(
+            self, objects_x, objects_y, module, workspace, merge_methods
+        ):
             # Test merge methods with two distinct objects
             segment_x = numpy.zeros((10, 10))
             segment_x[2][2] = 1
@@ -162,9 +170,11 @@ class TestCombineObjects:
                 module.run(workspace)
                 combined = workspace.get_objects(method)
                 assert len(combined.indices) == 2
-                assert (combined.segmented == segment_x + 2*segment_y).all()
+                assert (combined.segmented == segment_x + 2 * segment_y).all()
 
-        def test_for_inappropriate_merge(self, objects_x, objects_y, module, workspace, merge_methods):
+        def test_for_inappropriate_merge(
+            self, objects_x, objects_y, module, workspace, merge_methods
+        ):
             # Test that adjacent objects in the source set aren't merged inappropriately.
             segmentation_x = numpy.zeros((10, 10))
             segmentation_x[2][2] = 1

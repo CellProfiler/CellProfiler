@@ -145,7 +145,10 @@ def test_load_v9():
 
     module = pipeline.modules()[6]
     assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
-    assert module.global_operation.value == cellprofiler.modules.threshold.TM_ROBUST_BACKGROUND
+    assert (
+        module.global_operation.value
+        == cellprofiler.modules.threshold.TM_ROBUST_BACKGROUND
+    )
 
     module = pipeline.modules()[7]
     assert module.threshold_scope.value == cellprofiler.modules.threshold.TS_GLOBAL
@@ -549,10 +552,13 @@ def test_threshold_li_adaptive_image():
 
     t_guide_expected = skimage.filters.threshold_li(data)
 
-    t_local_expected = module._get_adaptive_threshold(data,
-                                                      skimage.filters.threshold_li)
+    t_local_expected = module._get_adaptive_threshold(
+        data, skimage.filters.threshold_li
+    )
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
@@ -582,10 +588,13 @@ def test_threshold_li_adaptive_image_masked():
 
     t_guide_expected = skimage.filters.threshold_li(data[mask])
 
-    t_local_expected = module._get_adaptive_threshold(numpy.where(mask, data, numpy.nan),
-                                                      skimage.filters.threshold_li)
+    t_local_expected = module._get_adaptive_threshold(
+        numpy.where(mask, data, numpy.nan), skimage.filters.threshold_li
+    )
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
@@ -815,10 +824,13 @@ def test_threshold_robust_background_adaptive():
 
     t_guide_expected = module._correct_global_threshold(t_guide_expected)
 
-    t_local_expected = module._get_adaptive_threshold(data,
-                                                      module.get_threshold_robust_background)
+    t_local_expected = module._get_adaptive_threshold(
+        data, module.get_threshold_robust_background
+    )
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
@@ -884,10 +896,13 @@ def test_threshold_otsu_partial_mask_uniform_data():
 
     t_guide_expected = 0.2
 
-    t_local_expected = module._get_adaptive_threshold(numpy.where(mask, data, numpy.nan),
-                                                      skimage.filters.threshold_otsu)
+    t_local_expected = module._get_adaptive_threshold(
+        numpy.where(mask, data, numpy.nan), skimage.filters.threshold_otsu
+    )
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
@@ -915,10 +930,13 @@ def test_threshold_otsu_uniform_data():
 
     t_guide_expected = 0.2
 
-    t_local_expected = module._get_adaptive_threshold(data,
-                                                      skimage.filters.threshold_otsu)
+    t_local_expected = module._get_adaptive_threshold(
+        data, skimage.filters.threshold_otsu
+    )
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
@@ -950,11 +968,13 @@ def test_threshold_otsu_image():
 
     t_guide_expected = skimage.filters.threshold_otsu(data[mask])
 
-    t_local_expected = module._get_adaptive_threshold(numpy.where(mask, data, numpy.nan),
-                                                      skimage.filters.threshold_otsu,)
+    t_local_expected = module._get_adaptive_threshold(
+        numpy.where(mask, data, numpy.nan), skimage.filters.threshold_otsu,
+    )
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
-
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
@@ -991,10 +1011,13 @@ def test_threshold_otsu_volume():
     t_local_expected = numpy.zeros_like(data)
 
     for index, plane in enumerate(data):
-        t_local_expected[index] = module._get_adaptive_threshold(plane,
-                                                                 skimage.filters.threshold_otsu)
+        t_local_expected[index] = module._get_adaptive_threshold(
+            plane, skimage.filters.threshold_otsu
+        )
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
@@ -1064,12 +1087,15 @@ def test_threshold_otsu3_image():
 
     t_guide_expected = skimage.filters.threshold_multiotsu(data[mask], nbins=128)[0]
 
-    t_local_expected = module._get_adaptive_threshold(numpy.where(mask, data, numpy.nan),
-                                                      skimage.filters.threshold_multiotsu,
-                                                      nbins=128,
-                                                      )
+    t_local_expected = module._get_adaptive_threshold(
+        numpy.where(mask, data, numpy.nan),
+        skimage.filters.threshold_multiotsu,
+        nbins=128,
+    )
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
@@ -1108,13 +1134,12 @@ def test_threshold_otsu3_volume():
     t_local_expected = numpy.zeros_like(data)
     masked = numpy.where(mask, data, numpy.nan)
     for index, plane in enumerate(masked):
-        t_local_expected[index] = module._get_adaptive_threshold(plane,
-                                                                 skimage.filters.threshold_multiotsu,
-                                                                 nbins=128,
-                                                                 )
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
-
-
+        t_local_expected[index] = module._get_adaptive_threshold(
+            plane, skimage.filters.threshold_multiotsu, nbins=128,
+        )
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
@@ -1144,7 +1169,9 @@ def test_threshold_sauvola_image():
 
     t_local_expected = skimage.filters.threshold_sauvola(data, window_size=3)
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
@@ -1174,9 +1201,13 @@ def test_threshold_sauvola_image_masked():
 
     t_guide_expected = skimage.filters.threshold_li(data[mask])
 
-    t_local_expected = skimage.filters.threshold_sauvola(numpy.where(mask, data, 0), window_size=3)
+    t_local_expected = skimage.filters.threshold_sauvola(
+        numpy.where(mask, data, 0), window_size=3
+    )
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
@@ -1204,7 +1235,9 @@ def test_threshold_sauvola_volume():
 
     t_local_expected = skimage.filters.threshold_sauvola(data, window_size=3)
 
-    t_local_expected = module._correct_local_threshold(t_local_expected, t_guide_expected)
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     assert t_local.ndim == 3
 

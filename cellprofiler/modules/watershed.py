@@ -85,8 +85,8 @@ This module has two operating modes:
        
        .. _compact watershed: http://scikit-image.org/docs/0.13.x/api/skimage.morphology.html#r395
 """.format(
-                **{"O_DISTANCE": O_DISTANCE, "O_MARKERS": O_MARKERS}
-            )
+    **{"O_DISTANCE": O_DISTANCE, "O_MARKERS": O_MARKERS}
+)
 
 
 class Watershed(cellprofiler_core.module.image_segmentation.ImageSegmentation):

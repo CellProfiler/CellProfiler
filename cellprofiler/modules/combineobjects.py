@@ -86,7 +86,7 @@ eachother.
   separate objects which overlapped. Note: This is less reliable when more than
   two objects were overlapping. If two object sets genuinely occupy the same space
   it may be better to consider them seperately.
-         """
+         """,
         )
 
         self.output_object = cellprofiler_core.setting.ObjectNameProvider(
@@ -113,8 +113,9 @@ subsequent modules.""",
 
         objects_y = workspace.object_set.get_objects(self.objects_y.value)
 
-        assert objects_x.shape == objects_y.shape,\
-            "Objects sets must have the same dimensions"
+        assert (
+            objects_x.shape == objects_y.shape
+        ), "Objects sets must have the same dimensions"
 
         labels_x = objects_x.segmented.copy()
         labels_y = objects_y.segmented.copy()
@@ -138,20 +139,29 @@ subsequent modules.""",
         figure.set_subplots((2, 2))
         cmap = figure.return_cmap()
 
-        ax = figure.subplot_imshow_labels(0, 0, workspace.display_data.input_object_x,
-                                          workspace.display_data.input_object_x_name,
-                                          colormap=cmap,
-                                          )
-        figure.subplot_imshow_labels(1, 0, workspace.display_data.input_object_y,
-                                     workspace.display_data.input_object_y_name,
-                                     sharexy=ax,
-                                     colormap=cmap,
-                                     )
-        figure.subplot_imshow_labels(0, 1, workspace.display_data.output_object,
-                                     workspace.display_data.output_object_name,
-                                     sharexy=ax,
-                                     colormap=cmap,
-                                     )
+        ax = figure.subplot_imshow_labels(
+            0,
+            0,
+            workspace.display_data.input_object_x,
+            workspace.display_data.input_object_x_name,
+            colormap=cmap,
+        )
+        figure.subplot_imshow_labels(
+            1,
+            0,
+            workspace.display_data.input_object_y,
+            workspace.display_data.input_object_y_name,
+            sharexy=ax,
+            colormap=cmap,
+        )
+        figure.subplot_imshow_labels(
+            0,
+            1,
+            workspace.display_data.output_object,
+            workspace.display_data.output_object_name,
+            sharexy=ax,
+            colormap=cmap,
+        )
 
     def combine_arrays(self, labels_x, labels_y):
         output = numpy.zeros_like(labels_x)
@@ -190,9 +200,7 @@ subsequent modules.""",
             disputed = numpy.logical_and(labels_x > 0, labels_y > 0)
             seeds = numpy.add(labels_x, labels_y)
             seeds[disputed] = 0
-            distances, (i, j) = distance_transform_edt(
-                seeds == 0, return_indices=True
-            )
+            distances, (i, j) = distance_transform_edt(seeds == 0, return_indices=True)
             output[to_segment] = seeds[i[to_segment], j[to_segment]]
 
         elif method == "Merge":

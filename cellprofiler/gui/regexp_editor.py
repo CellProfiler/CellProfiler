@@ -58,9 +58,7 @@ RE_FOLDER_GUESSES = [
 def edit_regexp(parent, regexp, test_text, guesses=None):
     if guesses is None:
         guesses = RE_FILENAME_GUESSES
-    frame = RegexpDialog(
-        parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-    )
+    frame = RegexpDialog(parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
     frame.SetMinSize((300, 200))
     frame.SetSize((600, 200))
     frame.value = regexp
@@ -78,7 +76,9 @@ class RegexpDialog(wx.Dialog):
         self.__value = "Not initialized"
         self.__test_text = "Not initialized"
         self.__guesses = RE_FILENAME_GUESSES
-        font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        font = wx.Font(
+            10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL
+        )
         self.font = font
         self.error_font = font
 
@@ -157,7 +157,7 @@ class RegexpDialog(wx.Dialog):
         self.test_display.SetMarginWidth(wx.stc.STC_MARGIN_NUMBER, 0)
         self.test_display.SetMarginWidth(wx.stc.STC_MARGIN_SYMBOL, 0)
         text_extent = self.test_display.GetFullTextExtent(self.__test_text)
-        self.test_display.SetSizeHints(100, text_extent[1]+3, maxH=text_extent[1]+3)
+        self.test_display.SetSizeHints(100, text_extent[1] + 3, maxH=text_extent[1] + 3)
         self.test_display.Enable(False)
         sizer.Add(self.test_display, 0, wx.EXPAND | wx.ALL, 5)
 

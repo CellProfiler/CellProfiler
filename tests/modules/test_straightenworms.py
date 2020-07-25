@@ -39,7 +39,10 @@ def test_load_v1():
     assert module.objects_name == "OverlappingWorms"
     assert module.straightened_objects_name == "StraightenedWorms"
     assert module.width == 20
-    assert module.training_set_directory.dir_choice == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+    assert (
+        module.training_set_directory.dir_choice
+        == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+    )
     assert module.training_set_file_name == "TrainingSet.xml"
     assert module.image_count.value == 2
     for group, input_name, output_name in (
@@ -75,7 +78,10 @@ def test_load_v2():
         assert module.objects_name == "OverlappingWorms"
         assert module.straightened_objects_name == "StraightenedWorms"
         assert module.width == 20
-        assert module.training_set_directory.dir_choice == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
+        assert (
+            module.training_set_directory.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
+        )
         assert module.training_set_file_name == "TrainingSet.mat"
         assert len(module.images) == 1
         assert module.wants_measurements

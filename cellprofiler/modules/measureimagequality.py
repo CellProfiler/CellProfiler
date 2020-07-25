@@ -793,7 +793,9 @@ to the foreground pixels or the background pixels.
                         (
                             cellprofiler_core.measurement.IMAGE,
                             "{}_{}_{}".format(
-                                C_IMAGE_QUALITY, cellprofiler_core.utilities.image.C_SCALING, image_name
+                                C_IMAGE_QUALITY,
+                                cellprofiler_core.utilities.image.C_SCALING,
+                                image_name,
                             ),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         )

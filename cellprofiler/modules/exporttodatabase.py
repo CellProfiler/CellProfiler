@@ -389,11 +389,7 @@ class ExportToDatabase(cellprofiler_core.module.Module):
     category = ["File Processing", "Data Tools"]
 
     def create_settings(self):
-        db_choices = (
-            [DB_SQLITE, DB_MYSQL]
-            if HAS_MYSQL_DB
-            else [DB_SQLITE]
-        )
+        db_choices = [DB_SQLITE, DB_MYSQL] if HAS_MYSQL_DB else [DB_SQLITE]
         self.db_type = cellprofiler_core.setting.Choice(
             "Database type",
             db_choices,
@@ -5081,7 +5077,6 @@ CP version : %d\n""" % int(
             setting_values[OT_IDX], setting_values[OT_IDX]
         )
 
-
         if variable_revision_number == 15:
             #
             # Added 3 new args: url_prepend and thumbnail options
@@ -5142,7 +5137,7 @@ CP version : %d\n""" % int(
             # Added configuration of workspace file
             #
             setting_values = (
-                    setting_values[:SETTING_WORKSPACE_GROUP_COUNT_PRE_V28]
+                setting_values[:SETTING_WORKSPACE_GROUP_COUNT_PRE_V28]
                 + ["1"]
                 + setting_values[SETTING_WORKSPACE_GROUP_COUNT_PRE_V28:]
             )  # workspace_measurement_count
@@ -5242,11 +5237,13 @@ CP version : %d\n""" % int(
             del setting_values[4]
             if setting_values[0] == DB_MYSQL_CSV:
                 setting_values[0] = DB_SQLITE
-                print("WARNING: ExportToDatabase MySQL/CSV mode has been "
-                      "deprecated and removed.\nThis module has been converted "
-                      "to produce an SQLite database.\n"
-                      "ExportToSpreadsheet should be used if you need to "
-                      "generate CSV files.")
+                print(
+                    "WARNING: ExportToDatabase MySQL/CSV mode has been "
+                    "deprecated and removed.\nThis module has been converted "
+                    "to produce an SQLite database.\n"
+                    "ExportToSpreadsheet should be used if you need to "
+                    "generate CSV files."
+                )
             variable_revision_number = 28
 
         # Standardize input/output directory name references

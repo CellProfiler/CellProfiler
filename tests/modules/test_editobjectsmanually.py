@@ -2,6 +2,7 @@ import six.moves
 import os
 
 import tests.modules
+
 # Need to import modules before a manual identify module
 import cellprofiler_core.modules
 import cellprofiler_core.measurement

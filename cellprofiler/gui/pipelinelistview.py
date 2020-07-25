@@ -194,9 +194,7 @@ class PipelineListView(object):
             EVT_PLV_ERROR_COLUMN_CLICKED, self.__on_error_column_clicked
         )
         self.list_ctrl.Bind(EVT_PLV_EYE_COLUMN_CLICKED, self.__on_eye_column_clicked)
-        self.list_ctrl.Bind(
-            EVT_PLV_STEP_COLUMN_CLICKED, self.__on_step_column_clicked
-        )
+        self.list_ctrl.Bind(EVT_PLV_STEP_COLUMN_CLICKED, self.__on_step_column_clicked)
         self.list_ctrl.Bind(
             EVT_PLV_PAUSE_COLUMN_CLICKED, self.__on_pause_column_clicked
         )
@@ -573,8 +571,13 @@ class PipelineListView(object):
 
     def __on_step_column_clicked(self, event):
         module = self.get_event_module(event)
-        if self.get_current_debug_module().module_num >= module.module_num and module.enabled:
-            mod_evt = self.list_ctrl.make_event(EVT_PLV_VALID_STEP_COLUMN_CLICKED, index=None, module=module)
+        if (
+            self.get_current_debug_module().module_num >= module.module_num
+            and module.enabled
+        ):
+            mod_evt = self.list_ctrl.make_event(
+                EVT_PLV_VALID_STEP_COLUMN_CLICKED, index=None, module=module
+            )
             self.list_ctrl.GetEventHandler().ProcessEvent(mod_evt)
         self.list_ctrl.Refresh(eraseBackground=False)
 
@@ -1603,7 +1606,9 @@ class PipelineListCtrl(wx.ScrolledWindow):
 
             if self.show_step and self.test_mode:
                 rectangle = self.get_step_rect(index)
-                bitmap = self.bmp_step if self.running_item == index else self.bmp_stepped
+                bitmap = (
+                    self.bmp_step if self.running_item == index else self.bmp_stepped
+                )
                 if self.running_item >= index and item.enabled:
                     dc.DrawBitmap(bitmap, rectangle.GetLeft(), rectangle.GetTop(), True)
 

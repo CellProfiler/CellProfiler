@@ -1544,7 +1544,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             t = t + 1
             t = np.column_stack((t, x))
             a = np.arange(len(old_i)) + 2
-            x = np.searchsorted(t[0: (t.size // 2), 0], a)
+            x = np.searchsorted(t[0 : (t.size // 2), 0], a)
             a = np.arange(len(old_i)) + 1
             b = np.arange(len(old_i)) + len(new_i) + 1
             c = np.zeros(len(old_i)) + costDie

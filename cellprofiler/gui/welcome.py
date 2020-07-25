@@ -55,18 +55,48 @@ class Welcome(wx.Frame):
     def __display_welcome(self):
         with open(os.path.join(os.path.dirname(__file__), "html/welcome.html")) as fp:
             template = jinja2.Template(fp.read())
-            self.content.SetPage(html=template.render(
-                MANUAL_URL=cellprofiler.gui.help.content.MANUAL_URL,
-                WELCOME_MANUAL=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_manual.png")),
-                WELCOME_FORUM=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_forum.png")),
-                WELCOME_PIPELINE=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_pipeline.png")),
-                WELCOME_TUTORIALS=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_tutorial.png")),
-                WELCOME_EXAMPLES=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_examples.png")),
-                WELCOME_START=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_start.png")),
-                WELCOME_HELP=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_help.png")),
-                WELCOME_NEW=os.path.abspath(cellprofiler.gui.help.content.image_resource("welcome_new.png")),
-            ),
-                                 baseUrl="welcome")
+            self.content.SetPage(
+                html=template.render(
+                    MANUAL_URL=cellprofiler.gui.help.content.MANUAL_URL,
+                    WELCOME_MANUAL=os.path.abspath(
+                        cellprofiler.gui.help.content.image_resource(
+                            "welcome_manual.png"
+                        )
+                    ),
+                    WELCOME_FORUM=os.path.abspath(
+                        cellprofiler.gui.help.content.image_resource(
+                            "welcome_forum.png"
+                        )
+                    ),
+                    WELCOME_PIPELINE=os.path.abspath(
+                        cellprofiler.gui.help.content.image_resource(
+                            "welcome_pipeline.png"
+                        )
+                    ),
+                    WELCOME_TUTORIALS=os.path.abspath(
+                        cellprofiler.gui.help.content.image_resource(
+                            "welcome_tutorial.png"
+                        )
+                    ),
+                    WELCOME_EXAMPLES=os.path.abspath(
+                        cellprofiler.gui.help.content.image_resource(
+                            "welcome_examples.png"
+                        )
+                    ),
+                    WELCOME_START=os.path.abspath(
+                        cellprofiler.gui.help.content.image_resource(
+                            "welcome_start.png"
+                        )
+                    ),
+                    WELCOME_HELP=os.path.abspath(
+                        cellprofiler.gui.help.content.image_resource("welcome_help.png")
+                    ),
+                    WELCOME_NEW=os.path.abspath(
+                        cellprofiler.gui.help.content.image_resource("welcome_new.png")
+                    ),
+                ),
+                baseUrl="welcome",
+            )
 
     @staticmethod
     def __on_close(event):
@@ -93,19 +123,39 @@ class Welcome(wx.Frame):
         html_path = self.href_to_help[href]
         with open(os.path.join(os.path.dirname(__file__), html_path)) as fp:
             template = jinja2.Template(fp.read())
-            self.content.SetPage(html=template.render(
-                GO_BACK="""<p>Go <a href=help:gettingstarted>back</a> to the previous screen.</p>""",
-                GO_HOME="""<p>Go <a href=help:welcome>back</a> to the welcome screen.</p>""",
-                MODULE_HELP_BUTTON=os.path.abspath(cellprofiler.gui.help.content.MODULE_HELP_BUTTON),
-                MODULE_ADD_BUTTON=os.path.abspath(cellprofiler.gui.help.content.MODULE_ADD_BUTTON),
-                ANALYZE_BUTTON=os.path.abspath(cellprofiler.gui.help.content.ANALYZE_IMAGE_BUTTON),
-                PAUSE_BUTTON=os.path.abspath(cellprofiler.gui.help.content.PAUSE_ANALYSIS_BUTTON),
-                PAUSE_BUTTON_DIM=os.path.abspath(cellprofiler.gui.help.content.INACTIVE_PAUSE_BUTTON),
-                STEP_BUTTON_DIM=os.path.abspath(cellprofiler.gui.help.content.INACTIVE_STEP_BUTTON),
-                STOP_BUTTON=os.path.abspath(cellprofiler.gui.help.content.STOP_ANALYSIS_BUTTON),
-                IMAGE_OBJECT_DATAFLOW=os.path.abspath(cellprofiler.gui.help.content.image_resource(
-                    "image_to_object_dataflow.png")),
-            ), baseUrl=html_path)
+            self.content.SetPage(
+                html=template.render(
+                    GO_BACK="""<p>Go <a href=help:gettingstarted>back</a> to the previous screen.</p>""",
+                    GO_HOME="""<p>Go <a href=help:welcome>back</a> to the welcome screen.</p>""",
+                    MODULE_HELP_BUTTON=os.path.abspath(
+                        cellprofiler.gui.help.content.MODULE_HELP_BUTTON
+                    ),
+                    MODULE_ADD_BUTTON=os.path.abspath(
+                        cellprofiler.gui.help.content.MODULE_ADD_BUTTON
+                    ),
+                    ANALYZE_BUTTON=os.path.abspath(
+                        cellprofiler.gui.help.content.ANALYZE_IMAGE_BUTTON
+                    ),
+                    PAUSE_BUTTON=os.path.abspath(
+                        cellprofiler.gui.help.content.PAUSE_ANALYSIS_BUTTON
+                    ),
+                    PAUSE_BUTTON_DIM=os.path.abspath(
+                        cellprofiler.gui.help.content.INACTIVE_PAUSE_BUTTON
+                    ),
+                    STEP_BUTTON_DIM=os.path.abspath(
+                        cellprofiler.gui.help.content.INACTIVE_STEP_BUTTON
+                    ),
+                    STOP_BUTTON=os.path.abspath(
+                        cellprofiler.gui.help.content.STOP_ANALYSIS_BUTTON
+                    ),
+                    IMAGE_OBJECT_DATAFLOW=os.path.abspath(
+                        cellprofiler.gui.help.content.image_resource(
+                            "image_to_object_dataflow.png"
+                        )
+                    ),
+                ),
+                baseUrl=html_path,
+            )
 
     @staticmethod
     def __load_example_pipeline(example_name):
@@ -147,7 +197,7 @@ class Welcome(wx.Frame):
         cellprofiler_core.preferences.set_startup_blurb(False)
         wx.MessageBox(
             'This page can be accessed from "Help --> Show Welcome Screen" at any time.\n'
-            '',
+            "",
             "Welcome screen will no longer display on startup.",
             wx.ICON_INFORMATION,
         )

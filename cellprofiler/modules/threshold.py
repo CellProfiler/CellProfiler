@@ -110,13 +110,7 @@ The choices for the threshold strategy are:
 
         self.global_operation = cellprofiler_core.setting.Choice(
             "Thresholding method",
-            [
-                TM_LI,
-                TM_OTSU,
-                TM_ROBUST_BACKGROUND,
-                TM_MEASUREMENT,
-                TM_MANUAL,
-            ],
+            [TM_LI, TM_OTSU, TM_ROBUST_BACKGROUND, TM_MEASUREMENT, TM_MANUAL,],
             value=TM_LI,
             doc="""\
 *(Used only if "{TS_GLOBAL}" is selected for thresholding strategy)*
@@ -256,11 +250,7 @@ There are a number of methods for finding thresholds automatically:
 
         self.local_operation = cellprofiler_core.setting.Choice(
             "Thresholding method",
-            [TM_LI,
-             TM_OTSU,
-             TM_ROBUST_BACKGROUND,
-             TM_SAUVOLA,
-             ],
+            [TM_LI, TM_OTSU, TM_ROBUST_BACKGROUND, TM_SAUVOLA,],
             value=TM_LI,
             doc="""\
 *(Used only if "{TS_ADAPTIVE}" is selected for thresholding strategy)*
@@ -748,12 +738,13 @@ Often a good choice is some multiple of the largest expected object size.
         ]
 
     def run(self, workspace):
-        input_image = workspace.image_set.get_image(self.x_name.value, must_be_grayscale=True)
+        input_image = workspace.image_set.get_image(
+            self.x_name.value, must_be_grayscale=True
+        )
         dimensions = input_image.dimensions
-        final_threshold, orig_threshold, guide_threshold = self.get_threshold(input_image,
-                                                                              workspace,
-                                                                              automatic=False,
-                                                                              )
+        final_threshold, orig_threshold, guide_threshold = self.get_threshold(
+            input_image, workspace, automatic=False,
+        )
 
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
@@ -823,7 +814,9 @@ Often a good choice is some multiple of the largest expected object size.
         elif self.threshold_operation == TM_MEASUREMENT:
             # Thresholds are stored as single element arrays.  Cast to float to extract the value.
             orig_threshold = float(
-                workspace.measurements.get_current_image_measurement(self.thresholding_measurement.value)
+                workspace.measurements.get_current_image_measurement(
+                    self.thresholding_measurement.value
+                )
             )
             return self._correct_global_threshold(orig_threshold), orig_threshold, None
 
@@ -858,7 +851,9 @@ Often a good choice is some multiple of the largest expected object size.
             if self.two_class_otsu.value == O_TWO_CLASS:
                 threshold = skimage.filters.threshold_otsu(image_data)
             elif self.two_class_otsu.value == O_THREE_CLASS:
-                bin_wanted = 0 if self.assign_middle_to_foreground.value == "Foreground" else 1
+                bin_wanted = (
+                    0 if self.assign_middle_to_foreground.value == "Foreground" else 1
+                )
                 threshold = skimage.filters.threshold_multiotsu(image_data, nbins=128)
                 threshold = threshold[bin_wanted]
         else:
@@ -876,41 +871,50 @@ Often a good choice is some multiple of the largest expected object size.
             local_threshold = numpy.full_like(image_data, image_data[0])
 
         elif self.threshold_operation == TM_LI:
-            local_threshold = self._run_local_threshold(image_data,
-                                                        method=skimage.filters.threshold_li,
-                                                        volumetric=image.volumetric,
-                                                        )
+            local_threshold = self._run_local_threshold(
+                image_data,
+                method=skimage.filters.threshold_li,
+                volumetric=image.volumetric,
+            )
         elif self.threshold_operation == TM_OTSU:
             if self.two_class_otsu.value == O_TWO_CLASS:
-                local_threshold = self._run_local_threshold(image_data,
-                                                            method=skimage.filters.threshold_otsu,
-                                                            volumetric=image.volumetric,
-                                                            )
+                local_threshold = self._run_local_threshold(
+                    image_data,
+                    method=skimage.filters.threshold_otsu,
+                    volumetric=image.volumetric,
+                )
 
             elif self.two_class_otsu.value == O_THREE_CLASS:
-                local_threshold = self._run_local_threshold(image_data,
-                                                            method=skimage.filters.threshold_multiotsu,
-                                                            volumetric=image.volumetric,
-                                                            nbins=128,
-                                                            )
+                local_threshold = self._run_local_threshold(
+                    image_data,
+                    method=skimage.filters.threshold_multiotsu,
+                    volumetric=image.volumetric,
+                    nbins=128,
+                )
 
         elif self.threshold_operation == TM_ROBUST_BACKGROUND:
-            local_threshold = self._run_local_threshold(image_data,
-                                                        method=self.get_threshold_robust_background,
-                                                        volumetric=image.volumetric,
-                                                        )
+            local_threshold = self._run_local_threshold(
+                image_data,
+                method=self.get_threshold_robust_background,
+                volumetric=image.volumetric,
+            )
 
         elif self.threshold_operation == TM_SAUVOLA:
             image_data = numpy.where(image.mask, image.pixel_data, 0)
             adaptive_window = self.adaptive_window_size.value
             if adaptive_window % 2 == 0:
                 adaptive_window += 1
-            local_threshold = skimage.filters.threshold_sauvola(image_data,
-                                                                window_size=adaptive_window)
+            local_threshold = skimage.filters.threshold_sauvola(
+                image_data, window_size=adaptive_window
+            )
 
         else:
             raise ValueError("Invalid thresholding settings")
-        return self._correct_local_threshold(local_threshold, guide_threshold), local_threshold, guide_threshold
+        return (
+            self._correct_local_threshold(local_threshold, guide_threshold),
+            local_threshold,
+            guide_threshold,
+        )
 
     def _run_local_threshold(self, image_data, method, volumetric=False, **kwargs):
         if volumetric:
@@ -933,21 +937,24 @@ Often a good choice is some multiple of the largest expected object size.
         # for the X and Y direction, find the # of blocks, given the
         # size constraints
         if self.threshold_operation == TM_OTSU:
-            bin_wanted = 0 if self.assign_middle_to_foreground.value == "Foreground" else 1
+            bin_wanted = (
+                0 if self.assign_middle_to_foreground.value == "Foreground" else 1
+            )
         image_size = numpy.array(image_data.shape[:2], dtype=int)
         nblocks = image_size // self.adaptive_window_size.value
         if any(n < 2 for n in nblocks):
             raise ValueError(
                 "Adaptive window cannot exceed 50%% of an image dimension.\n"
-                "Window of %dpx is too large for a %sx%s image" % (
-                    self.adaptive_window_size.value, image_size[1], image_size[0]
-                )
+                "Window of %dpx is too large for a %sx%s image"
+                % (self.adaptive_window_size.value, image_size[1], image_size[0])
             )
         #
         # Use a floating point block size to apportion the roundoff
         # roughly equally to each block
         #
-        increment = numpy.array(image_size, dtype=float) / numpy.array(nblocks, dtype=float)
+        increment = numpy.array(image_size, dtype=float) / numpy.array(
+            nblocks, dtype=float
+        )
         #
         # Put the answer here
         #
@@ -1117,7 +1124,12 @@ Often a good choice is some multiple of the largest expected object size.
         return self.y_name.value
 
     def add_threshold_measurements(
-        self, objname, measurements, final_threshold, orig_threshold, guide_threshold=None
+        self,
+        objname,
+        measurements,
+        final_threshold,
+        orig_threshold,
+        guide_threshold=None,
     ):
         ave_final_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
         ave_orig_threshold = numpy.mean(numpy.atleast_1d(orig_threshold))
@@ -1176,7 +1188,7 @@ Often a good choice is some multiple of the largest expected object size.
                 cellprofiler_core.measurement.FF_ORIG_THRESHOLD % object_name,
                 cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
-            ]
+        ]
         if self.threshold_scope == TS_ADAPTIVE:
             measures += [
                 (

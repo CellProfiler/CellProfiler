@@ -1194,7 +1194,11 @@ If "*{NO}*" is selected, the following settings are used:
         )
 
         self.threshold.add_threshold_measurements(
-            self.y_name.value, workspace.measurements, final_threshold, orig_threshold, guide_threshold
+            self.y_name.value,
+            workspace.measurements,
+            final_threshold,
+            orig_threshold,
+            guide_threshold,
         )
 
         binary_image, sigma = self.threshold.apply_threshold(

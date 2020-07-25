@@ -1299,7 +1299,9 @@ def test_01_load_new_robust_background():
     #
     # Test custom robust background parameters.
     #
-    file = tests.modules.test_resources_directory("identifyprimaryobjects/robust_background.pipeline")
+    file = tests.modules.test_resources_directory(
+        "identifyprimaryobjects/robust_background.pipeline"
+    )
     with open(file, "r") as fd:
         data = fd.read()
 

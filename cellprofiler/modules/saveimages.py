@@ -761,19 +761,13 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             pn, fn = os.path.split(filename)
             url = cellprofiler_core.utilities.pathname.pathname2url(filename)
             workspace.measurements.add_measurement(
-                cellprofiler_core.measurement.IMAGE,
-                self.file_name_feature,
-                fn,
+                cellprofiler_core.measurement.IMAGE, self.file_name_feature, fn,
             )
             workspace.measurements.add_measurement(
-                cellprofiler_core.measurement.IMAGE,
-                self.path_name_feature,
-                pn,
+                cellprofiler_core.measurement.IMAGE, self.path_name_feature, pn,
             )
             workspace.measurements.add_measurement(
-                cellprofiler_core.measurement.IMAGE,
-                self.url_feature,
-                url,
+                cellprofiler_core.measurement.IMAGE, self.url_feature, url,
             )
 
     @property

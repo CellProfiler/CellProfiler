@@ -1282,6 +1282,7 @@ class Figure(wx.Frame):
                     if identifier == evt.Id:
                         params["rgb_mask"][idx] = not params["rgb_mask"][idx]
                 refresh_figure()
+
             for identifier in ids:
                 self.Bind(wx.EVT_MENU, toggle_channels, id=identifier)
 
@@ -1828,7 +1829,9 @@ class Figure(wx.Frame):
             # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
             if not colormap:
-                colormap = self.return_cmap(numpy.max(image) if numpy.max(image) > 255 else None)
+                colormap = self.return_cmap(
+                    numpy.max(image) if numpy.max(image) > 255 else None
+                )
             else:
                 colormap = colormap
 

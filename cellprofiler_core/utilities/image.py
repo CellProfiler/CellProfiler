@@ -3,6 +3,7 @@ import shutil
 import tempfile
 import urllib.request
 
+import javabridge
 import numpy
 import scipy.io
 
@@ -246,3 +247,9 @@ def load_data_file(pathname_or_url, load_fn):
 
 def is_file_url(url):
     return url.lower().startswith(FILE_SCHEME)
+
+
+def is_image_extension(suffix):
+    """Return True if the extension is one of those recongized by bioformats"""
+    extensions = javabridge.get_collection_wrapper(javabridge.static_call("org/cellprofiler/imageset/filter/IsImagePredicate", "getImageSuffixes", "()Ljava/util/Set;"))
+    return extensions.contains(suffix.lower())

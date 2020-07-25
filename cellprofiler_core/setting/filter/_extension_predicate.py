@@ -1,10 +1,10 @@
 import os
 
-import cellprofiler_core.setting
-from cellprofiler_core.modules.images import is_image_extension
+from ...utilities.image import is_image_extension
 from ._filter_predicate import FilterPredicate
 from ._does_predicate import DoesPredicate
 from ._does_not_predicate import DoesNotPredicate
+from .._file_collection_display import FileCollectionDisplay
 
 IS_TIF_PREDICATE = FilterPredicate(
     "istif",
@@ -83,7 +83,7 @@ class ExtensionPredicate(FilterPredicate):
         all possible extension parsings.
         """
         (node_type, modpath, module) = node_type__modpath__module
-        if node_type == cellprofiler_core.setting.FileCollectionDisplay.NODE_DIRECTORY:
+        if node_type == FileCollectionDisplay.NODE_DIRECTORY:
             return None
         elif isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             filename = modpath[-2]
@@ -100,11 +100,4 @@ class ExtensionPredicate(FilterPredicate):
                 return True
 
     def test_valid(self, pipeline, *args):
-        self(
-            (
-                cellprofiler_core.setting.FileCollectionDisplay.NODE_FILE,
-                ["/imaging", "test.tif"],
-                None,
-            ),
-            *args,
-        )
+        self((FileCollectionDisplay.NODE_FILE, ["/imaging", "test.tif"], None,), *args)

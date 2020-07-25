@@ -1,9 +1,9 @@
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
+from ..module import Module
+from ..object import Objects
+from ..setting import ObjectNameProvider
 
 
-class InjectObjects(cellprofiler_core.module.Module):
+class InjectObjects(Module):
     """Inject objects with labels into the pipeline"""
 
     module_name = "InjectObjects"
@@ -26,9 +26,7 @@ class InjectObjects(cellprofiler_core.module.Module):
                                   same as segmented
         """
         super(InjectObjects, self).__init__()
-        self.object_name = cellprofiler_core.setting.ObjectNameProvider(
-            "text", object_name
-        )
+        self.object_name = ObjectNameProvider("text", object_name)
         self.__segmented = segmented
         self.__unedited_segmented = unedited_segmented
         self.__small_removed_segmented = small_removed_segmented
@@ -37,7 +35,7 @@ class InjectObjects(cellprofiler_core.module.Module):
         return [self.object_name]
 
     def run(self, workspace):
-        my_objects = cellprofiler_core.object.Objects()
+        my_objects = Objects()
         my_objects.segmented = self.__segmented
         if self.__unedited_segmented is not None:
             my_objects.unedited_segmented = self.__unedited_segmented

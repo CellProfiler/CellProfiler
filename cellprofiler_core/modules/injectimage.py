@@ -1,22 +1,12 @@
-# coding=utf-8
-
-"""
-InjectImage.py - for testing, this module injects a single image into the image set
-"""
-
 import hashlib
 
 import numpy
 
-import cellprofiler_core.image
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
+from ..module import Module
+from ..setting import NameProvider
 
 
-class InjectImage(cellprofiler_core.module.Module):
+class InjectImage(Module):
     """This module is intended for testing. It injects an image into the
     image set.
     """
@@ -41,7 +31,7 @@ class InjectImage(cellprofiler_core.module.Module):
         self.__image_name = image_name
         self.__image = image
         self.__mask = mask
-        self.image_name = cellprofiler_core.setting.NameProvider(
+        self.image_name = NameProvider(
             "Hardwired image name", "imagegroup", image_name
         )
         self.__release_image = release_image
@@ -73,12 +63,8 @@ class InjectImage(cellprofiler_core.module.Module):
         digest = hashlib.md5()
         digest.update(numpy.ascontiguousarray(self.__image).data)
 
-        workspace.measurements.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
-            "MD5Digest_%s" % self.__image_name,
-            1,
-            image_set_number=1,
-        )
+        workspace.measurements.add_measurement("Image", "MD5Digest_%s" % self.__image_name, 1, image_set_number=1,)
+
         return True
 
     def run(self, workspace):
@@ -97,7 +83,7 @@ class InjectImage(cellprofiler_core.module.Module):
             mask = self.__mask[workspace.image_set.image_number - 1]
         else:
             mask = self.__mask
-        image = cellprofiler_core.image.Image(image, mask)
+        image = Image(image, mask)
         workspace.image_set.add(self.__image_name, image)
 
     def post_run(self, workspace):

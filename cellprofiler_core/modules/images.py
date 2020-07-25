@@ -154,9 +154,9 @@ particular wavelength.
 import cellprofiler_core.utilities.image
 
 import cellprofiler_core.utilities.pathname
-from cellprofiler_core.setting.filter._directory_predicate import DirectoryPredicate
-from cellprofiler_core.setting.filter._extension_predicate import ExtensionPredicate
-from cellprofiler_core.setting.filter._file_predicate import FilePredicate
+from ..setting.filter import DirectoryPredicate
+from ..setting.filter import ExtensionPredicate
+from ..setting.filter import FilePredicate
 
 FILTER_CHOICE_NONE = "No filtering"
 FILTER_CHOICE_IMAGES = "Images only"
@@ -402,15 +402,3 @@ pass the current filter.
 
     def volumetric(self):
         return True
-
-
-def is_image_extension(suffix):
-    """Return True if the extension is one of those recongized by bioformats"""
-    extensions = javabridge.get_collection_wrapper(
-        javabridge.static_call(
-            "org/cellprofiler/imageset/filter/IsImagePredicate",
-            "getImageSuffixes",
-            "()Ljava/util/Set;",
-        )
-    )
-    return extensions.contains(suffix.lower())

@@ -11,7 +11,7 @@ import cellprofiler.misc
 import numpy
 from cellprofiler.modules import _help
 
-import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider
+import cellprofiler_core.image.abstract.file._file
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.modules
@@ -1195,7 +1195,7 @@ safe to press it.""",
             frame = measurements[cellprofiler_core.measurement.IMAGE, frame_feature]
         else:
             frame = None
-        return cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider.LoadImagesImageProvider(
+        return cellprofiler_core.image.abstract.file._file.File(
             name,
             path,
             filename,

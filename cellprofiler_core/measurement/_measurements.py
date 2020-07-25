@@ -1679,10 +1679,10 @@ class Measurements:
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
         """
-        from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._load_images_image_provider_url import (
-            LoadImagesImageProviderURL,
+        from cellprofiler_core.image.abstract.file.url._url import (
+            URL,
         )
-        from cellprofiler_core.image import GrayscaleImage, RGBImage
+        from cellprofiler_core.image import Grayscale, RGB
 
         name = str(name)
         if name in self.__images:
@@ -1729,7 +1729,7 @@ class Measurements:
                 #             and stored in the measurements.
                 #
                 rescale = True
-                provider = LoadImagesImageProviderURL(name, url, rescale, series, index)
+                provider = URL(name, url, rescale, series, index)
                 self.__image_providers.append(provider)
                 matching_providers.append(provider)
             image = matching_providers[0].provide_image(self)
@@ -1750,7 +1750,7 @@ class Measurements:
                     and numpy.all(pd[0] == pd[1])
                     and numpy.all(pd[0] == pd[2])
                 ):
-                    return GrayscaleImage(image)
+                    return Grayscale(image)
 
                 raise ValueError("Image must be grayscale, but it was color")
 
@@ -1766,7 +1766,7 @@ class Measurements:
                         "Discarding alpha channel."
                     )
 
-                    return RGBImage(image)
+                    return RGB(image)
 
             return image
 
@@ -1774,7 +1774,7 @@ class Measurements:
             raise ValueError("Image was not binary")
 
         if must_be_grayscale and image.pixel_data.dtype.kind == "b":
-            return GrayscaleImage(image)
+            return Grayscale(image)
 
         if must_be_rgb:
             raise ValueError("Image must be RGB, but it was grayscale")
@@ -1827,7 +1827,7 @@ class Measurements:
     names = property(get_names)
 
     def add(self, name, image):
-        from cellprofiler_core.image import VanillaImageProvider
+        from cellprofiler_core.image import Vanilla
 
         old_providers = [
             provider for provider in self.providers if provider.name == name
@@ -1836,7 +1836,7 @@ class Measurements:
             self.clear_image(name)
         for provider in old_providers:
             self.providers.remove(provider)
-        provider = VanillaImageProvider(name, image)
+        provider = Vanilla(name, image)
         self.providers.append(provider)
         self.__images[name] = image
 

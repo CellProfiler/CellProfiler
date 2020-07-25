@@ -3,7 +3,7 @@ import skimage.color
 import cellprofiler_core.image
 
 
-class MonochromeImageProvider(cellprofiler_core.image.LoadImagesImageProviderURL):
+class Monochrome(cellprofiler_core.image.URL):
     """Provide a monochrome image, combining RGB if needed"""
 
     def __init__(
@@ -17,7 +17,7 @@ class MonochromeImageProvider(cellprofiler_core.image.LoadImagesImageProviderURL
         volume=False,
         spacing=None,
     ):
-        cellprofiler_core.image.LoadImagesImageProviderURL.__init__(
+        cellprofiler_core.image.URL.__init__(
             self,
             name,
             url,
@@ -30,7 +30,7 @@ class MonochromeImageProvider(cellprofiler_core.image.LoadImagesImageProviderURL
         )
 
     def provide_image(self, image_set):
-        image = cellprofiler_core.image.LoadImagesImageProviderURL.provide_image(
+        image = cellprofiler_core.image.URL.provide_image(
             self, image_set
         )
 

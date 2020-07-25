@@ -1,7 +1,7 @@
-from ._load_images_image_provider import LoadImagesImageProvider
+from ._file import File
 
 
-class LoadImagesSTKFrameProvider(LoadImagesImageProvider):
+class STKFrame(File):
     """Provide an image by filename:frame from an STK file"""
 
     def __init__(self, name, pathname, filename, frame, rescale):
@@ -12,6 +12,6 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProvider):
         filename - name of the file
         frame - # of the frame to provide
         """
-        super(LoadImagesSTKFrameProvider, self).__init__(
+        super(STKFrame, self).__init__(
             name, pathname, filename, rescale=rescale, index=frame
         )

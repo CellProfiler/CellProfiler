@@ -1,11 +1,11 @@
-from ._load_images_image_provider import LoadImagesImageProvider
+from ._file import File
 
 
-class LoadImagesFlexFrameProvider(LoadImagesImageProvider):
+class FlexFrame(File):
     """Provide an image by filename:frame, loading the file as it is requested
     """
 
     def __init__(self, name, pathname, filename, series, index, rescale):
-        super(LoadImagesFlexFrameProvider, self).__init__(
+        super(FlexFrame, self).__init__(
             name, pathname, filename, rescale=rescale, series=series, index=index
         )

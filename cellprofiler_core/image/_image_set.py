@@ -3,7 +3,7 @@ import logging
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler_core.image.abstract_image_provider._vanilla_image_provider
+import cellprofiler_core.image.abstract._vanilla
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class ImageSet:
                     and numpy.all(pd[0] == pd[1])
                     and numpy.all(pd[0] == pd[2])
                 ):
-                    return cellprofiler_core.image.GrayscaleImage(image)
+                    return cellprofiler_core.image.Grayscale(image)
 
                 raise ValueError("Image must be grayscale, but it was color")
 
@@ -80,7 +80,7 @@ class ImageSet:
                 if image.pixel_data.shape[-1] == 4:
                     logger.warning("Discarding alpha channel.")
 
-                    return cellprofiler_core.image.RGBImage(image)
+                    return cellprofiler_core.image.RGB(image)
 
             return image
 
@@ -88,7 +88,7 @@ class ImageSet:
             raise ValueError("Image was not binary")
 
         if must_be_grayscale and image.pixel_data.dtype.kind == "b":
-            return cellprofiler_core.image.GrayscaleImage(image)
+            return cellprofiler_core.image.Grayscale(image)
 
         if must_be_rgb:
             raise ValueError("Image must be RGB, but it was grayscale")
@@ -143,7 +143,7 @@ class ImageSet:
             self.clear_image(name)
         for provider in old_providers:
             self.providers.remove(provider)
-        provider = cellprofiler_core.image.abstract_image_provider._vanilla_image_provider.VanillaImageProvider(
+        provider = cellprofiler_core.image.abstract._vanilla.Vanilla(
             name, image
         )
         self.providers.append(provider)

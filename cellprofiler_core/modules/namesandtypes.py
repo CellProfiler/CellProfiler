@@ -7,8 +7,8 @@ import javabridge
 import numpy
 
 import cellprofiler_core.image
-import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider
-import cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._load_images_image_provider_url
+import cellprofiler_core.image.abstract.file._file
+import cellprofiler_core.image.abstract.file.url._url
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.module
@@ -24,17 +24,17 @@ import cellprofiler_core.setting.filter._extension_predicate
 import cellprofiler_core.setting.filter._file_predicate
 import cellprofiler_core.setting.filter._image_predicate
 import cellprofiler_core.utilities.image
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._color_image_provider import (
-    ColorImageProvider,
+from cellprofiler_core.image.abstract.file.url._color import (
+    Color,
 )
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._mask_image_provider import (
-    MaskImageProvider,
+from cellprofiler_core.image.abstract.file.url._mask import (
+    Mask,
 )
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._monochrome_image_provider import (
-    MonochromeImageProvider,
+from cellprofiler_core.image.abstract.file.url._monochrome import (
+    Monochrome,
 )
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._objects_image_provider import (
-    ObjectsImageProvider,
+from cellprofiler_core.image.abstract.file.url._objects import (
+    Objects,
 )
 from cellprofiler_core.module import identify
 from cellprofiler_core.setting.filter._metadata_predicate import MetadataPredicate
@@ -2021,11 +2021,11 @@ requests an object selection.
         spacing = (self.z.value, self.x.value, self.y.value) if volume else None
 
         if load_choice == LOAD_AS_COLOR_IMAGE:
-            provider = ColorImageProvider(
+            provider = Color(
                 name, url, series, index, rescale, volume=volume, spacing=spacing
             )
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
-            provider = MonochromeImageProvider(
+            provider = Monochrome(
                 name,
                 url,
                 series,
@@ -2036,11 +2036,11 @@ requests an object selection.
                 spacing=spacing,
             )
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
-            provider = MonochromeImageProvider(
+            provider = Monochrome(
                 name, url, series, index, channel, False, volume=volume, spacing=spacing
             )
         elif load_choice == LOAD_AS_MASK:
-            provider = MaskImageProvider(
+            provider = Mask(
                 name, url, series, index, channel, volume=volume, spacing=spacing
             )
 
@@ -2137,7 +2137,7 @@ requests an object selection.
                 url = ipds[0].url
 
         url = workspace.measurements.alter_url_post_create_batch(url)
-        provider = ObjectsImageProvider(name, url, series, index)
+        provider = Objects(name, url, series, index)
         self.add_provider_measurements(
             provider, workspace.measurements, cellprofiler_core.measurement.OBJECT
         )

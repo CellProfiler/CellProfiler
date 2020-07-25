@@ -4,14 +4,14 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.utilities
 import cellprofiler_core.utilities.image
-from cellprofiler_core.image import LoadImagesImageProviderURL
+from cellprofiler_core.image import URL
 
 
-class ObjectsImageProvider(LoadImagesImageProviderURL):
+class Objects(URL):
     """Provide a multi-plane integer image, interpreting an image file as objects"""
 
     def __init__(self, name, url, series, index):
-        cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._load_images_image_provider_url.LoadImagesImageProviderURL.__init__(
+        cellprofiler_core.image.abstract.file.url._url.URL.__init__(
             self, name, url, rescale=False, series=series, index=index, volume=False
         )
 

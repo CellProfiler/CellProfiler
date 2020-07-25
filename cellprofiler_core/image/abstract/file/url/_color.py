@@ -1,16 +1,15 @@
 import skimage.color
 
-import cellprofiler_core.image
-from cellprofiler_core.image import LoadImagesImageProviderURL
+from cellprofiler_core.image import URL
 
 
-class ColorImageProvider(LoadImagesImageProviderURL):
+class Color(URL):
     """Provide a color image, tripling a monochrome plane if needed"""
 
     def __init__(
         self, name, url, series, index, rescale=True, volume=False, spacing=None
     ):
-        LoadImagesImageProviderURL.__init__(
+        URL.__init__(
             self,
             name,
             url,
@@ -22,7 +21,7 @@ class ColorImageProvider(LoadImagesImageProviderURL):
         )
 
     def provide_image(self, image_set):
-        image = LoadImagesImageProviderURL.provide_image(self, image_set)
+        image = URL.provide_image(self, image_set)
 
         if image.pixel_data.ndim == image.dimensions:
             image.pixel_data = skimage.color.gray2rgb(image.pixel_data, alpha=False)

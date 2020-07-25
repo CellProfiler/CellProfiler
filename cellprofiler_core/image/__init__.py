@@ -1,11 +1,11 @@
 import numpy
 
-from ._grayscale_image import GrayscaleImage
+from ._grayscale import Grayscale
 from ._image import Image
 from ._image_set import ImageSet
 from ._image_set_list import ImageSetList
-from ._rgb_image import RGBImage
-from .abstract_image_provider import *
+from ._rgb import RGB
+from .abstract import *
 
 
 def crop_image(image, crop_mask, crop_internal=False):

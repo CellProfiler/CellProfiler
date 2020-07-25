@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class AbstractImageProvider:
+class Abstract:
     """Represents an image provider that returns images
     """
 

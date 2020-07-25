@@ -1,10 +1,10 @@
 import os
 
 from cellprofiler_core.utilities.pathname import url2pathname
-from .._load_images_image_provider import LoadImagesImageProvider
+from .._file import File
 
 
-class LoadImagesImageProviderURL(LoadImagesImageProvider):
+class URL(File):
     """Reference an image via a URL"""
 
     def __init__(
@@ -24,12 +24,12 @@ class LoadImagesImageProviderURL(LoadImagesImageProvider):
         else:
             pathname = ""
             filename = url
-        super(LoadImagesImageProviderURL, self).__init__(
+        super(URL, self).__init__(
             name, pathname, filename, rescale, series, index, channel, volume, spacing
         )
         self.url = url
 
     def get_url(self):
         if self.cache_file():
-            return super(LoadImagesImageProviderURL, self).get_url()
+            return super(URL, self).get_url()
         return self.url

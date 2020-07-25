@@ -8,7 +8,7 @@ import skimage
 import cellprofiler_core.preferences
 from cellprofiler_core.image._image import Image
 from cellprofiler_core.utilities import generate_presigned_url
-from .._abstract_image_provider import AbstractImageProvider
+from .._abstract import Abstract
 from ....utilities.image import (
     is_numpy_file,
     is_matlab_file,
@@ -20,7 +20,7 @@ from ....utilities.image import (
 from ....utilities.pathname import pathname2url, url2pathname
 
 
-class LoadImagesImageProvider(AbstractImageProvider):
+class File(Abstract):
     """Base for image providers: handle pathname and filename & URLs"""
 
     def __init__(

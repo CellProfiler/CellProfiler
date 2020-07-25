@@ -1,7 +1,7 @@
 import numpy
 
 
-class GrayscaleImage:
+class Grayscale:
     """A wrapper around a non-grayscale image
 
     This is meant to be used if the image is 3-d but all channels

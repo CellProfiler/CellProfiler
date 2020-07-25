@@ -5,6 +5,7 @@ class Name(Alphanumeric):
     """
     A setting that provides a named object
     """
+
     def __init__(self, text, group, value="Do not use", *args, **kwargs):
         self.__provided_attributes = {"group": group}
         kwargs = kwargs.copy()

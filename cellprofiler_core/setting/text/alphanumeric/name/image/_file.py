@@ -5,6 +5,7 @@ class File(Image):
     """
     A setting that provides an image name where the image has an associated file
     """
+
     def __init__(self, text, value="Do not use", *args, **kwargs):
         kwargs = kwargs.copy()
 

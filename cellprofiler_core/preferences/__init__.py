@@ -10,7 +10,6 @@
 import logging
 import os
 import os.path
-import psutil
 import sys
 import tempfile
 import threading
@@ -19,10 +18,10 @@ import traceback
 import uuid
 import weakref
 
-import pkg_resources
+import psutil
 
-import cellprofiler_core.utilities.utf16encode
 import cellprofiler_core.utilities
+import cellprofiler_core.utilities.utf16encode
 
 logger = logging.getLogger(__name__)
 

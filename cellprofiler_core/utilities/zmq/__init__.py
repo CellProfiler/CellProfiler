@@ -2,15 +2,12 @@ import errno
 import json
 import logging
 import os
-import subprocess
 import sys
 import threading
 import uuid
 
 import cellprofiler.grid
 import numpy
-import six
-import six.moves
 import zmq
 
 from cellprofiler_core.utilities.zmq._boundary import Boundary
@@ -100,7 +97,7 @@ def make_sendable_dictionary(d):
     result = {}
     fake_key_idx = 1
     for k, v in list(d.items()):
-        if (isinstance(k, six.string_types) and k.startswith("_")) or callable(d[k]):
+        if (isinstance(k, str) and k.startswith("_")) or callable(d[k]):
             continue
         if isinstance(v, dict):
             v = make_sendable_dictionary(v)
@@ -245,7 +242,7 @@ def join_to_the_boundary():
         the_boundary = None
 
 
-__lock_queue = six.moves.queue.Queue()
+__lock_queue = queue.Queue()
 __lock_thread = None
 LOCK_REQUEST = "Lock request"
 UNLOCK_REQUEST = "Unlock request"
@@ -359,7 +356,7 @@ def lock_file(path, timeout=3):
     #
     # The coast is clear to lock
     #
-    q = six.moves.queue.Queue()
+    q = queue.Queue()
     start_lock_thread()
     __lock_queue.put((None, LOCK_REQUEST, (uid, path), q))
     q.get()
@@ -370,7 +367,7 @@ def unlock_file(path):
     """Unlock the file at the given path"""
     if the_boundary is None:
         return
-    q = six.moves.queue.Queue()
+    q = queue.Queue()
     start_lock_thread()
     __lock_queue.put((None, UNLOCK_REQUEST, path, q))
     result = q.get()

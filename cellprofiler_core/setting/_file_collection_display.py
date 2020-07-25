@@ -1,7 +1,5 @@
 import json
 
-import six
-
 from . import _setting
 
 
@@ -178,7 +176,7 @@ class FileCollectionDisplay(_setting.Setting):
         or 3-tuples representing image planes within an image file. Branches
         are two-tuples composed of a path part and more branches / leaves
         """
-        return len(mod) != 2 or not isinstance(mod[0], six.string_types)
+        return len(mod) != 2 or not isinstance(mod[0], str)
 
     def node_count(self, file_tree=None):
         """Count the # of nodes (leaves + directories) in the tree"""

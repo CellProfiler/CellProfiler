@@ -1,5 +1,5 @@
-import cellprofiler_core.worker
 import cellprofiler_core.pipeline
+import cellprofiler_core.worker
 
 
 class PipelineEventListener:

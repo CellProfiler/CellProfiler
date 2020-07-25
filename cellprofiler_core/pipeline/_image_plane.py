@@ -1,7 +1,7 @@
 import json
+import urllib.request
 
 import javabridge
-import six.moves.urllib
 
 
 class ImagePlane:
@@ -42,7 +42,7 @@ class ImagePlane:
     def path(self):
         """The file path if a file: URL, otherwise the URL"""
         if self.url.startswith("file:"):
-            return six.moves.urllib.request.url2pathname(self.url[5:])
+            return urllib.request.url2pathname(self.url[5:])
         return self.url
 
     @property

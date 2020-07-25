@@ -15,13 +15,11 @@ import uuid
 
 import h5py
 import numpy
-import six
 from future.standard_library import install_aliases
 
 import cellprofiler_core.utilities.legacy
 
 install_aliases()
-import six.moves.urllib.parse
 
 logger = logging.getLogger(__name__)
 
@@ -411,8 +409,8 @@ class HDF5Dict(object):
         assert isinstance(
             idxs, tuple
         ), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name[, integer])"
-        assert isinstance(idxs[0], six.string_types) and isinstance(
-            idxs[1], six.string_types
+        assert isinstance(idxs[0], str) and isinstance(
+            idxs[1], str
         ), "First two indices must be of type str."
 
         object_name, feature_name, num_idx = idxs
@@ -550,8 +548,8 @@ class HDF5Dict(object):
         assert isinstance(
             idxs, tuple
         ), "Assigning to HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
-        assert isinstance(idxs[0], six.string_types) and isinstance(
-            idxs[1], six.string_types
+        assert isinstance(idxs[0], str) and isinstance(
+            idxs[1], str
         ), "First two indices must be of type str."
         assert not numpy.isscalar(idxs[2]) or self.__is_positive_int(
             idxs[2]
@@ -709,8 +707,8 @@ class HDF5Dict(object):
         assert isinstance(
             idxs, tuple
         ), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
-        assert isinstance(idxs[0], six.string_types) and isinstance(
-            idxs[1], six.string_types
+        assert isinstance(idxs[0], str) and isinstance(
+            idxs[1], str
         ), "First two indices must be of type str."
         if len(idxs) == 3:
             assert (
@@ -1142,13 +1140,13 @@ class HDF5FileList(object):
 
         returns a two tuple of schema + path part sequence
         """
-        if isinstance(url, six.text_type):
+        if isinstance(url, str):
             url = url
         else:
             url = str(url)
         import urllib.parse, urllib.error
 
-        schema, rest = urllib.parse.splittype(six.text_type(url))
+        schema, rest = urllib.parse.splittype(str(url))
         if schema is not None and schema.lower() == "omero":
             return schema, [rest]
         #
@@ -2145,7 +2143,7 @@ class VStringArray(object):
                 self.index[idx, :] = (self.VS_NULL, 0)
                 return
 
-            elif isinstance(value, six.text_type):
+            elif isinstance(value, str):
                 value = value.encode("utf-8")
 
             if idx >= self.index.shape[0]:
@@ -2222,7 +2220,7 @@ class VStringArray(object):
         """Store the strings passed, overwriting any previously stored data"""
         nulls = numpy.array([s is None for s in strings])
         strings = [
-            "" if s is None else s if isinstance(s, six.text_type) else str(s)
+            "" if s is None else s if isinstance(s, str) else str(s)
             for s in strings
         ]
         with self.lock:
@@ -2329,7 +2327,7 @@ class VStringArray(object):
             return
         nulls = numpy.array([s is None for s in strings])
         strings = [
-            "" if s is None else s if isinstance(s, six.text_type) else str(s)
+            "" if s is None else s if isinstance(s, str) else str(s)
             for s in strings
         ]
         with self.lock:
@@ -2365,7 +2363,7 @@ class VStringArray(object):
         """Return the insertion point for s, assuming the array is sorted"""
         if s is None:
             return 0
-        elif isinstance(s, six.text_type):
+        elif isinstance(s, str):
             s = s
         else:
             s = str(s)
@@ -2575,7 +2573,7 @@ class StringReferencer(object):
     @staticmethod
     def string_to_uint8(s):
         """Convert a utf-8 encoded string to a np.uint8 array"""
-        if isinstance(s, six.text_type):
+        if isinstance(s, str):
             s = s
         elif not isinstance(s, str):
             s = str(s)

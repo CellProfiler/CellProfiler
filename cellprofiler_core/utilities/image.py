@@ -1,11 +1,10 @@
 import os
 import shutil
 import tempfile
+import urllib.request
 
 import numpy
 import scipy.io
-import six
-import six.moves
 
 import cellprofiler_core.measurement
 from cellprofiler_core.utilities import generate_presigned_url
@@ -228,7 +227,7 @@ def load_data_file(pathname_or_url, load_fn):
         url = generate_presigned_url(pathname_or_url)
 
         try:
-            src = six.moves.urllib.urlopen(url)
+            src = urllib.request.urlopen(url)
             fd, path = tempfile.mkstemp(suffix=ext)
             with os.fdopen(fd, mode="wb") as dest:
                 shutil.copyfileobj(src, dest)

@@ -3,7 +3,6 @@ import uuid
 
 import docutils.core
 import numpy
-import six
 
 import cellprofiler_core.image
 import cellprofiler_core.image
@@ -297,7 +296,7 @@ class Module:
     def save_to_handles(self, handles):
         module_idx = self.module_num - 1
         setting = handles[cellprofiler_core.pipeline.SETTINGS][0, 0]
-        setting[cellprofiler_core.pipeline.MODULE_NAMES][0, module_idx] = six.text_type(
+        setting[cellprofiler_core.pipeline.MODULE_NAMES][0, module_idx] = str(
             self.module_class()
         )
         setting[cellprofiler_core.pipeline.MODULE_NOTES][0, module_idx] = numpy.ndarray(
@@ -319,11 +318,11 @@ class Module:
             if isinstance(variable, cellprofiler_core.setting.NameProvider):
                 setting[cellprofiler_core.pipeline.VARIABLE_INFO_TYPES][
                     module_idx, i
-                ] = six.text_type("%s indep" % variable.group)
+                ] = str("%s indep" % variable.group)
             elif isinstance(variable, cellprofiler_core.setting.NameSubscriber):
                 setting[cellprofiler_core.pipeline.VARIABLE_INFO_TYPES][
                     module_idx, i
-                ] = six.text_type(variable.group)
+                ] = str(variable.group)
         setting[cellprofiler_core.pipeline.VARIABLE_REVISION_NUMBERS][
             0, module_idx
         ] = self.variable_revision_number

@@ -1,5 +1,3 @@
-import six
-
 from . import _setting
 
 
@@ -38,4 +36,4 @@ class HiddenCount(_setting.Setting):
         return str(len(self.__sequence))
 
     def get_unicode_value(self):
-        return six.text_type(len(self.__sequence))
+        return str(len(self.__sequence))

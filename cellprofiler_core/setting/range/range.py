@@ -1,7 +1,5 @@
 import logging
 
-import six
-
 from cellprofiler_core.setting._setting import Setting
 from cellprofiler_core.setting._validation_error import ValidationError
 
@@ -44,7 +42,7 @@ class Range(Setting):
 
     def set_value(self, value):
         """Set the value of this range using either a string or a two-tuple"""
-        if isinstance(value, six.string_types):
+        if isinstance(value, str):
             self.set_value_text(value)
         elif hasattr(value, "__getitem__") and len(value) == 2:
             self.set_value_text(",".join([self.value_to_str(v) for v in value]))

@@ -9,9 +9,6 @@ import sys
 import threading
 
 import cellprofiler
-import six
-import six.moves
-import six.moves.queue
 
 from cellprofiler_core.analysis._analysis import Analysis
 from cellprofiler_core.analysis._runner import Runner
@@ -56,7 +53,7 @@ def find_worker_env(idx):
     if hasattr(sys, "frozen"):
         if sys.platform == "darwin":
             # http://mail.python.org/pipermail/pythonmac-sig/2005-April/013852.html
-            added_paths += [p for p in sys.path if isinstance(p, six.string_types)]
+            added_paths += [p for p in sys.path if isinstance(p, str)]
     if "PYTHONPATH" in newenv:
         added_paths.insert(0, newenv["PYTHONPATH"])
     newenv["PYTHONPATH"] = os.pathsep.join([x for x in added_paths])
@@ -67,7 +64,7 @@ def find_worker_env(idx):
         newenv["CP_JDWP_PORT"] = port
         del newenv["AW_JDWP_PORT"]
     for key in newenv:
-        if isinstance(newenv[key], six.text_type):
+        if isinstance(newenv[key], str):
             newenv[key] = newenv[key]
     return newenv
 

@@ -7,19 +7,19 @@ import traceback
 
 import javabridge as J
 import zmq
-from cellprofiler_core.analysis import reply
-from cellprofiler_core.analysis import request
 
+import cellprofiler_core.worker
 from cellprofiler_core import (
     preferences as cpprefs,
     measurement as cpmeas,
     workspace as cpw,
 )
+from cellprofiler_core.analysis import reply
+from cellprofiler_core.analysis import request
 from cellprofiler_core.pipeline import CancelledException
 from cellprofiler_core.utilities.zmq.communicable.reply.upstream_exit._upstream_exit import (
     UpstreamExit,
 )
-import cellprofiler_core.worker
 from cellprofiler_core.worker._pipeline_event_listener import PipelineEventListener
 
 

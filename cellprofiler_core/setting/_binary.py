@@ -1,5 +1,3 @@
-import six
-
 from . import _setting
 
 
@@ -20,7 +18,7 @@ class Binary(_setting.Setting):
 
     def set_value(self, value):
         """When setting, translate true and false into yes and no"""
-        if value in ("Yes", "No") or isinstance(value, six.string_types):
+        if value in ("Yes", "No") or isinstance(value, str):
             super(Binary, self).set_value(value)
         else:
             str_value = (value and "Yes") or "No"

@@ -1,7 +1,6 @@
 import bisect
 import datetime
 import hashlib
-import io
 import logging
 import os
 import os.path
@@ -10,13 +9,11 @@ import sys
 import tempfile
 import timeit
 import urllib.request
+import urllib.request
 import uuid
 
 import bioformats.formatreader
 import numpy
-import six.moves
-import six.moves.urllib.parse
-import six.moves.urllib.request
 
 import cellprofiler_core
 import cellprofiler_core.image
@@ -94,7 +91,7 @@ class Pipeline:
 
     def copy(self, save_image_plane_details=True):
         """Create a copy of the pipeline modules and settings"""
-        fd = six.moves.StringIO()
+        fd = io.StringIO()
         self.dump(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
         fd.seek(0)
@@ -136,12 +133,12 @@ class Pipeline:
         # clear previously seen errors on reload
         import cellprofiler_core.modules
 
-        six.moves.reload_module(cellprofiler_core.modules)
+        importlib.reload(cellprofiler_core.modules)
         cellprofiler_core.modules.reload_modules()
         # attempt to reinstantiate pipeline with new modules
         try:
             self.copy()  # if this fails, we probably can't reload
-            fd = six.moves.StringIO()
+            fd = io.StringIO()
             self.dump(fd)
             fd.seek(0)
             self.loadtxt(fd, raise_on_error=True)
@@ -192,7 +189,7 @@ class Pipeline:
         elif hasattr(fd_or_filename, "read") and hasattr(fd_or_filename, "url"):
             # This is a URL file descriptor. Read into a StringIO so that
             # seek is available.
-            fd = six.moves.StringIO()
+            fd = io.StringIO()
             while True:
                 text = fd_or_filename.read()
                 if len(text) == 0:
@@ -206,10 +203,10 @@ class Pipeline:
             filename = fd_or_filename
         else:
             # Assume is string URL
-            parsed_path = six.moves.urllib.parse.urlparse(fd_or_filename)
+            parsed_path = urllib.parse.urlparse(fd_or_filename)
             if len(parsed_path.scheme) < 2:
                 raise IOError("Could not find file, " + fd_or_filename)
-            fd = six.moves.urllib.request.urlopen(fd_or_filename)
+            fd = urllib.request.urlopen(fd_or_filename)
             return self.load(fd)
 
         if Pipeline.is_pipeline_txt_fd(fd):
@@ -236,7 +233,7 @@ class Pipeline:
                 cellprofiler_core.pipeline.M_PIPELINE
             )
             pipeline_text = pipeline_text
-            self.load(six.moves.StringIO(pipeline_text))
+            self.load(io.StringIO(pipeline_text))
             return
 
     @staticmethod
@@ -271,7 +268,7 @@ class Pipeline:
     def parse_pipeline(self, fd, raise_on_error, count=sys.maxsize):
         header = readline(fd)
         # FIXME:
-        if not self.is_pipeline_txt_fd(six.moves.StringIO(header)):
+        if not self.is_pipeline_txt_fd(io.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
         checksum, details, count, version = self.validate_pipeline_file(fd, count)
         new_modules = self.setup_modules(fd, count, raise_on_error)
@@ -424,7 +421,7 @@ class Pipeline:
         new_modules = []
         module_number = 1
         skip_attributes = ["svn_version", "module_num"]
-        for i in six.moves.xrange(module_count):
+        for i in range(module_count):
             line = readline(fd)
             if line is None:
                 break
@@ -567,7 +564,7 @@ class Pipeline:
                         created by CreateBatchFiles.
         """
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
-        fd = six.moves.StringIO()
+        fd = io.StringIO()
         self.dump(fd, save_image_plane_details=False)
         m.add_measurement(
             cellprofiler_core.measurement.EXPERIMENT,
@@ -1897,12 +1894,12 @@ class Pipeline:
         n = len(urls)
         for i, url in enumerate(urls):
             if i % 100 == 0:
-                path = six.moves.urllib.parse.urlparse(url).path
+                path = urllib.parse.urlparse(url).path
                 if "/" in path:
                     filename = path.rsplit("/", 1)[1]
                 else:
                     filename = path
-                filename = six.moves.urllib.request.url2pathname(filename)
+                filename = urllib.request.url2pathname(filename)
                 cellprofiler_core.preferences.report_progress(
                     uid, float(i) / n, "Adding %s" % filename
                 )
@@ -1997,7 +1994,7 @@ class Pipeline:
 
         path - a path to a file or a URL
         """
-        if isinstance(path_or_fd, six.string_types):
+        if isinstance(path_or_fd, str):
             from cellprofiler_core.utilities.image import FILE_SCHEME
             from cellprofiler_core.utilities.pathname import url2pathname
 
@@ -2054,7 +2051,7 @@ class Pipeline:
         returns an object that represents the state of the first instance
         of the named module or None if not in pipeline
         """
-        if isinstance(module_name_or_module, six.string_types):
+        if isinstance(module_name_or_module, str):
             modules = [
                 module
                 for module in self.modules()
@@ -2478,14 +2475,14 @@ class Pipeline:
         ipds = []
         for filename in filenames:
             path = os.path.join(dirpath, filename)
-            url = "file:" + six.moves.urllib.request.pathname2url(path)
+            url = "file:" + urllib.request.pathname2url(path)
             ipd = cellprofiler_core.pipeline.ImagePlane(url, None, None, None)
             ipds.append(ipd)
         self.add_image_plane_details(ipds)
 
     def wp_add_image_metadata(self, path, metadata):
         self.add_image_metadata(
-            "file:" + six.moves.urllib.request.pathname2url(path), metadata
+            "file:" + urllib.request.pathname2url(path), metadata
         )
 
     def add_image_metadata(self, url, metadata, ipd=None):

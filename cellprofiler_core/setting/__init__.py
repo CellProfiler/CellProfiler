@@ -1,13 +1,10 @@
 from ._binary import *
 from ._binary_matrix import *
-from cellprofiler_core.setting.change_setting_event._change_setting_event import *
-from cellprofiler_core.setting.choice._choice import *
 from ._color import *
 from ._coordinates import *
 from ._data_types import *
 from ._delete_setting_event import *
 from ._divider import *
-from cellprofiler_core.setting.do_something._do_something import *
 from ._do_things import *
 from ._figure_subscriber import *
 from ._file_collection_display import *
@@ -17,7 +14,6 @@ from ._html_text import *
 from ._image_plane import *
 from ._joiner import *
 from ._measurement import *
-from cellprofiler_core.setting.multichoice._multichoice import *
 from ._path_list_display import *
 from ._regexp_text import *
 from ._setting import *
@@ -26,7 +22,10 @@ from ._structuring_element import *
 from ._table import *
 from ._tree_choice import *
 from ._validation_error import *
-
+from .change_setting_event import *
+from .choice import *
+from .do_something import *
+from .multichoice import *
 from .name_subscriber import *
 from .range import *
 from .text import *

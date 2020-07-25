@@ -58,6 +58,7 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.setting
+import cellprofiler_core.setting.do_something._remove_setting_button
 
 M_MUTUAL_INFORMATION = "Mutual Information"
 M_CROSS_CORRELATION = "Normalized Cross Correlation"
@@ -230,7 +231,7 @@ a separate alignment to the first image can be calculated:
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
+                cellprofiler_core.setting.do_something._remove_setting_button.RemoveSettingButton(
                     "", "Remove above image", self.additional_images, group
                 ),
             )

@@ -1,6 +1,7 @@
 # coding=utf-8
 import logging
 
+import cellprofiler_core.setting.do_something._remove_setting_button
 
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -341,7 +342,7 @@ desired behavior.
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
+                cellprofiler_core.setting.do_something._remove_setting_button.RemoveSettingButton(
                     "", "Remove this metadata item", self.grouping_metadata, group
                 ),
             )

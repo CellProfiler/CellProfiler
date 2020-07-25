@@ -14,6 +14,7 @@ import cellprofiler_core.modules.images as cpmi
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.setting.do_something._remove_setting_button
 import cellprofiler_core.utilities
 
 logger = logging.getLogger(__name__)
@@ -700,7 +701,7 @@ not being applied, your choice on this setting may be the culprit.
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
+                cellprofiler_core.setting.do_something._remove_setting_button.RemoveSettingButton(
                     "", "Remove this extraction method", self.extraction_methods, group
                 ),
             )

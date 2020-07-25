@@ -20,6 +20,8 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.setting.do_something._image_set_display
+import cellprofiler_core.setting.do_something._remove_setting_button
 import cellprofiler_core.utilities.image
 from cellprofiler_core.modules import identify, images
 
@@ -647,7 +649,7 @@ You can match corresponding channels to each other in one of two ways:
 
         self.join = cellprofiler_core.setting.Joiner("Match metadata")
 
-        self.imageset_setting = cellprofiler_core.setting.ImageSetDisplay(
+        self.imageset_setting = cellprofiler_core.setting.do_something._image_set_display.ImageSetDisplay(
             "", "Update image set table"
         )
 
@@ -787,7 +789,7 @@ times.
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
+                cellprofiler_core.setting.do_something._remove_setting_button.RemoveSettingButton(
                     "", "Remove this image", self.assignments, group
                 ),
             )
@@ -934,7 +936,7 @@ requests an object selection.
         group.can_remove = True
         group.append(
             "remover",
-            cellprofiler_core.setting.RemoveSettingButton(
+            cellprofiler_core.setting.do_something._remove_setting_button.RemoveSettingButton(
                 "", "Remove this image", self.single_images, group
             ),
         )
@@ -1126,7 +1128,10 @@ requests an object selection.
         """
         if setting is self.add_assignment_button:
             return True
-        if isinstance(setting, cellprofiler_core.setting.RemoveSettingButton):
+        if isinstance(
+            setting,
+            cellprofiler_core.setting.do_something._remove_setting_button.RemoveSettingButton,
+        ):
             return True
         return setting in self.settings()
 

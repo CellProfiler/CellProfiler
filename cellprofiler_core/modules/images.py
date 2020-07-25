@@ -12,6 +12,7 @@ import cellprofiler_core.module
 import cellprofiler_core.modules
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
+import cellprofiler_core.setting.do_something._path_list_refresh_button
 import cellprofiler_core.utilities.hdf5_dict
 
 __doc__ = """\
@@ -243,7 +244,7 @@ Specify a set of rules to narrow down the files to be analyzed.
             ),
         )
 
-        self.update_button = cellprofiler_core.setting.PathListRefreshButton(
+        self.update_button = cellprofiler_core.setting.do_something._path_list_refresh_button.PathListRefreshButton(
             "Apply filters to the file list",
             "Apply filters to the file list",
             doc="""\

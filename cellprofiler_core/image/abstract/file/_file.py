@@ -1,14 +1,16 @@
 import hashlib
 import os
 import tempfile
+import urllib.parse
+import urllib.request
 
 import numpy
 import skimage
 
 import cellprofiler_core.preferences
-from cellprofiler_core.image._image import Image
 from cellprofiler_core.utilities import generate_presigned_url
 from .._abstract import Abstract
+from ..._image import Image
 from ....utilities.image import (
     is_numpy_file,
     is_matlab_file,

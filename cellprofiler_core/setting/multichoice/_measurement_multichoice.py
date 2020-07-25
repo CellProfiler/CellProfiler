@@ -1,4 +1,4 @@
-from cellprofiler_core.setting import MultiChoice
+from ._multichoice import MultiChoice
 
 
 class MeasurementMultiChoice(MultiChoice):

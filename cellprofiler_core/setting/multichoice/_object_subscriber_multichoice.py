@@ -1,4 +1,4 @@
-from cellprofiler_core.setting import SubscriberMultiChoice
+from ._subscriber_multichoice import SubscriberMultiChoice
 
 
 class ObjectSubscriberMultiChoice(SubscriberMultiChoice):

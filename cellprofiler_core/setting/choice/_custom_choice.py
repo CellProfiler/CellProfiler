@@ -1,4 +1,5 @@
-from cellprofiler_core.setting import Choice, _setting
+from ._choice import Choice
+from .._setting import Setting
 
 
 class CustomChoice(Choice):
@@ -19,4 +20,4 @@ class CustomChoice(Choice):
 
     def set_value(self, value):
         """Bypass the check in "Choice"."""
-        _setting.Setting.set_value(self, value)
+        Setting.set_value(self, value)

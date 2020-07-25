@@ -1,10 +1,10 @@
 import functools
 
-from cellprofiler_core.setting import _setting
-from cellprofiler_core.setting._validation_error import ValidationError
+from .._validation_error import ValidationError
+from .._setting import Setting
 
 
-class MultiChoice(_setting.Setting):
+class MultiChoice(Setting):
     """A setting that represents selection of multiple choices from a list"""
 
     def __init__(self, text, choices, value=None, *args, **kwargs):

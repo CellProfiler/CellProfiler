@@ -1,4 +1,4 @@
-from cellprofiler_core.setting import DoSomething
+from ._do_something import DoSomething
 
 
 class RemoveSettingButton(DoSomething):

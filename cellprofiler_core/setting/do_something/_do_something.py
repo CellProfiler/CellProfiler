@@ -1,7 +1,7 @@
-from cellprofiler_core.setting import _setting
+from .._setting import Setting
 
 
-class DoSomething(_setting.Setting):
+class DoSomething(Setting):
     """Do something in response to a button press
     """
 

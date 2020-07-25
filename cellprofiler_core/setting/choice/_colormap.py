@@ -1,6 +1,6 @@
 import matplotlib.cm
 
-from cellprofiler_core.setting import Choice
+from ._choice import Choice
 
 
 class Colormap(Choice):

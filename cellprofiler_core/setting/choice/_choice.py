@@ -1,8 +1,8 @@
-from cellprofiler_core.setting import _setting
-from cellprofiler_core.setting._validation_error import ValidationError
+from .._setting import Setting
+from .._validation_error import ValidationError
 
 
-class Choice(_setting.Setting):
+class Choice(Setting):
     """A setting that displays a drop-down set of choices
 
     """

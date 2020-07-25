@@ -1,6 +1,3 @@
-from cellprofiler_core.setting.subscriber import Image
-
-
 class File(Image):
     """A setting that provides image names loaded from files"""
 

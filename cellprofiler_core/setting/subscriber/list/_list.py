@@ -1,6 +1,3 @@
-from cellprofiler_core.setting.subscriber import Subscriber
-
-
 class List(Subscriber):
     """Stores name provider names as a list"""
 

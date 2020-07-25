@@ -1,7 +1,4 @@
-from cellprofiler_core.setting.subscriber import Subscriber
-
-
-class ObjectNameSubscriber(Subscriber):
+class Label(Subscriber):
     """A setting that subscribes to the list of available object names
     """
 
@@ -14,6 +11,6 @@ class ObjectNameSubscriber(Subscriber):
         *args,
         **kwargs,
     ):
-        super(ObjectNameSubscriber, self).__init__(
+        super(Label, self).__init__(
             text, "objectgroup", value, can_be_blank, blank_text, *args, **kwargs
         )

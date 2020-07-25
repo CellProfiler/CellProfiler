@@ -1,6 +1,3 @@
-from cellprofiler_core.setting.subscriber import Subscriber
-
-
 class Grid(Subscriber):
     """A setting that subscribes to grid information providers
     """

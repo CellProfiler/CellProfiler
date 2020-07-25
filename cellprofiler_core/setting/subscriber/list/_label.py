@@ -1,4 +1,4 @@
-class ListObjectNameSubscriber(List):
+class Label(List):
     """
     A setting that provides an image name
     """
@@ -12,6 +12,6 @@ class ListObjectNameSubscriber(List):
         *args,
         **kwargs,
     ):
-        super(ListObjectNameSubscriber, self).__init__(
+        super(Label, self).__init__(
             text, "objectgroup", value, can_be_blank, blank_text, *args, **kwargs
         )

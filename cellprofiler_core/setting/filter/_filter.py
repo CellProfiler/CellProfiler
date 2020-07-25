@@ -2,6 +2,60 @@ import re
 
 from cellprofiler_core.setting import _setting
 from cellprofiler_core.setting._validation_error import ValidationError
+from ._compound_filter_predicate import CompoundFilterPredicate
+from ._filter_predicate import FilterPredicate
+from ._regexp_filter_predicate import RegexpFilterPredicate
+
+AND_PREDICATE = CompoundFilterPredicate(
+    "and",
+    "All",
+    lambda x, *l: Filter.eval_list(all, x, *l),
+    list,
+    doc="All subordinate rules must be satisfied",
+)
+OR_PREDICATE = CompoundFilterPredicate(
+    "or",
+    "Any",
+    lambda x, *l: Filter.eval_list(any, x, *l),
+    list,
+    doc="Any one of the subordinate rules must be satisfied",
+)
+LITERAL_PREDICATE = FilterPredicate(
+    "literal", "Custom value", None, [], doc="Enter the rule's text"
+)
+CONTAINS_PREDICATE = FilterPredicate(
+    "contain",
+    "Contain",
+    lambda x, y: x.find(y) >= 0,
+    [LITERAL_PREDICATE],
+    doc="The element must contain the text that you enter to the right",
+)
+STARTS_WITH_PREDICATE = FilterPredicate(
+    "startwith",
+    "Start with",
+    lambda x, y: x.startswith(y),
+    [LITERAL_PREDICATE],
+    doc="The element must start with the text that you enter to the right",
+)
+ENDSWITH_PREDICATE = FilterPredicate(
+    "endwith",
+    "End with",
+    lambda x, y: x.endswith(y),
+    [LITERAL_PREDICATE],
+    doc="The element must end with the text that you enter to the right",
+)
+
+CONTAINS_REGEXP_PREDICATE = RegexpFilterPredicate(
+    "Contain regular expression", [LITERAL_PREDICATE]
+)
+
+EQ_PREDICATE = FilterPredicate(
+    "eq",
+    "Exactly match",
+    lambda x, y: x == y,
+    [LITERAL_PREDICATE],
+    doc="Must exactly match the text that you enter to the right",
+)
 
 
 class Filter(_setting.Setting):
@@ -30,153 +84,12 @@ class Filter(_setting.Setting):
     "and", "or" and "literal".
     """
 
-    class FilterPredicate(object):
-        def __init__(self, symbol, display_name, function, subpredicates, doc=None):
-            self.symbol = symbol
-            self.display_name = display_name
-            self.function = function
-            self.subpredicates = subpredicates
-            self.doc = doc
-
-        def __call__(self, *args, **kwargs):
-            return self.function(*args, **kwargs)
-
-        def test_valid(self, pipeline, *args):
-            """Try running the filter on a test string"""
-            self("", *args)
-
-        @classmethod
-        def encode_symbol(cls, symbol):
-            """Escape encode an abritrary symbol name
-
-            The parser needs to have special characters escaped. These are
-            backslash, open and close parentheses, space and double quote.
-            """
-            return re.escape(symbol)
-
-        @classmethod
-        def decode_symbol(cls, symbol):
-            """Decode an escape-encoded symbol"""
-            s = ""
-            in_escape = False
-            for c in symbol:
-                if in_escape:
-                    in_escape = False
-                    s += c
-                elif c == "\\":
-                    in_escape = True
-                else:
-                    s += c
-            return s
-
-    class CompoundFilterPredicate(FilterPredicate):
-        def test_valid(self, pipeline, *args):
-            for subexp in args:
-                subexp[0].test_valid(pipeline, *subexp[1:])
-
     @classmethod
     def eval_list(cls, fn, x, *args):
         results = [v for v in [arg[0](x, *arg[1:]) for arg in args] if v is not None]
         if len(results) == 0:
             return None
         return fn(results)
-
-    AND_PREDICATE = CompoundFilterPredicate(
-        "and",
-        "All",
-        lambda x, *l: Filter.eval_list(all, x, *l),
-        list,
-        doc="All subordinate rules must be satisfied",
-    )
-    OR_PREDICATE = CompoundFilterPredicate(
-        "or",
-        "Any",
-        lambda x, *l: Filter.eval_list(any, x, *l),
-        list,
-        doc="Any one of the subordinate rules must be satisfied",
-    )
-    LITERAL_PREDICATE = FilterPredicate(
-        "literal", "Custom value", None, [], doc="Enter the rule's text"
-    )
-    CONTAINS_PREDICATE = FilterPredicate(
-        "contain",
-        "Contain",
-        lambda x, y: x.find(y) >= 0,
-        [LITERAL_PREDICATE],
-        doc="The element must contain the text that you enter to the right",
-    )
-    STARTS_WITH_PREDICATE = FilterPredicate(
-        "startwith",
-        "Start with",
-        lambda x, y: x.startswith(y),
-        [LITERAL_PREDICATE],
-        doc="The element must start with the text that you enter to the right",
-    )
-    ENDSWITH_PREDICATE = FilterPredicate(
-        "endwith",
-        "End with",
-        lambda x, y: x.endswith(y),
-        [LITERAL_PREDICATE],
-        doc="The element must end with the text that you enter to the right",
-    )
-
-    class RegexpFilterPredicate(FilterPredicate):
-        def __init__(self, display_name, subpredicates):
-            super(self.__class__, self).__init__(
-                "containregexp",
-                display_name,
-                self.regexp_fn,
-                subpredicates,
-                doc="The element must contain a match for the regular expression that you enter to the right",
-            )
-
-        def regexp_fn(self, x, y):
-            try:
-                pattern = re.compile(y)
-            except:
-                raise ValueError("Badly formatted regular expression: %s" % y)
-            return pattern.search(x) is not None
-
-    CONTAINS_REGEXP_PREDICATE = RegexpFilterPredicate(
-        "Contain regular expression", [LITERAL_PREDICATE]
-    )
-    EQ_PREDICATE = FilterPredicate(
-        "eq",
-        "Exactly match",
-        lambda x, y: x == y,
-        [LITERAL_PREDICATE],
-        doc="Must exactly match the text that you enter to the right",
-    )
-
-    class DoesPredicate(FilterPredicate):
-        """Pass the arguments through (no-op)"""
-
-        SYMBOL = "does"
-
-        def __init__(
-            self,
-            subpredicates,
-            text="Does",
-            doc="The rule passes if the condition to the right holds",
-        ):
-            super(self.__class__, self).__init__(
-                self.SYMBOL, text, lambda x, f, *l: f(x, *l), subpredicates, doc=doc
-            )
-
-    class DoesNotPredicate(FilterPredicate):
-        """Negate the result of the arguments"""
-
-        SYMBOL = "doesnot"
-
-        def __init__(
-            self,
-            subpredicates,
-            text="Does not",
-            doc="The rule fails if the condition to the right holds",
-        ):
-            super(self.__class__, self).__init__(
-                self.SYMBOL, text, lambda x, f, *l: not f(x, *l), subpredicates, doc=doc
-            )
 
     def __init__(self, text, predicates, value="", **kwargs):
         super(self.__class__, self).__init__(text, value, **kwargs)
@@ -267,7 +180,7 @@ class Filter(_setting.Setting):
                 elif s[i] == "\\":
                     escape_next = True
                 elif s[i] == '"':
-                    return result, s[(i + 1) :], []
+                    return result, s[(i + 1):], []
                 else:
                     result += s[i]
             raise ValueError("Unterminated literal")
@@ -282,7 +195,7 @@ class Filter(_setting.Setting):
             rest = ""
         else:
             kwd, rest = match.groups()
-        kwd = Filter.FilterPredicate.decode_symbol(kwd)
+        kwd = FilterPredicate.decode_symbol(kwd)
         if kwd == cls.AND_PREDICATE.symbol:
             match = cls.AND_PREDICATE
         elif kwd == cls.OR_PREDICATE.symbol:
@@ -338,8 +251,8 @@ class Filter(_setting.Setting):
         """
         s = []
         for element in structure:
-            if isinstance(element, Filter.FilterPredicate):
-                s.append(cls.FilterPredicate.encode_symbol(str(element.symbol)))
+            if isinstance(element, FilterPredicate):
+                s.append(FilterPredicate.encode_symbol(str(element.symbol)))
             elif isinstance(element, str):
                 s.append('"' + cls.encode_literal(element) + '"')
             else:

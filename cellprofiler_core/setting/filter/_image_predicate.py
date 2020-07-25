@@ -2,12 +2,13 @@ import cellprofiler_core.module
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 from cellprofiler_core.modules.images import Images
+from ._filter_predicate import FilterPredicate
 
 
-class ImagePredicate(cellprofiler_core.setting.Filter.FilterPredicate):
+class ImagePredicate(FilterPredicate):
     """A predicate that applies subpredicates to image plane details"""
 
-    IS_COLOR_PREDICATE = cellprofiler_core.setting.Filter.FilterPredicate(
+    IS_COLOR_PREDICATE = FilterPredicate(
         "iscolor",
         "Color",
         lambda x: (
@@ -19,7 +20,7 @@ class ImagePredicate(cellprofiler_core.setting.Filter.FilterPredicate):
         doc="The image is an interleaved color image (for example, a PNG image)",
     )
 
-    IS_MONOCHROME_PREDICATE = cellprofiler_core.setting.Filter.FilterPredicate(
+    IS_MONOCHROME_PREDICATE = FilterPredicate(
         "ismonochrome",
         "Monochrome",
         lambda x: (
@@ -45,7 +46,7 @@ class ImagePredicate(cellprofiler_core.setting.Filter.FilterPredicate):
             return True
         return False
 
-    IS_STACK_PREDICATE = cellprofiler_core.setting.Filter.FilterPredicate(
+    IS_STACK_PREDICATE = FilterPredicate(
         "isstack",
         "Stack",
         lambda x: ImagePredicate.is_stack(x),
@@ -53,7 +54,7 @@ class ImagePredicate(cellprofiler_core.setting.Filter.FilterPredicate):
         doc="The image is a Z-stack or movie",
     )
 
-    IS_STACK_FRAME_PREDICATE = cellprofiler_core.setting.Filter.FilterPredicate(
+    IS_STACK_FRAME_PREDICATE = FilterPredicate(
         "isstackframe",
         "Stack frame",
         lambda x: x.index is not None,
@@ -75,7 +76,8 @@ class ImagePredicate(cellprofiler_core.setting.Filter.FilterPredicate):
                 (cellprofiler_core.setting.Filter.DoesNotPredicate, "Is not"),
             )
         ]
-        cellprofiler_core.setting.Filter.FilterPredicate.__init__(
+
+        FilterPredicate.__init__(
             self,
             "image",
             "Image",

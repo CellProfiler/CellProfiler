@@ -4,7 +4,7 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.utilities
 import cellprofiler_core.utilities.image
-from cellprofiler_core.image import URL
+from ._url import URL
 
 
 class Objects(URL):

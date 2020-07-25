@@ -1,9 +1,10 @@
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 from cellprofiler_core.modules.namesandtypes import NamesAndTypes
+from ._filter_predicate import FilterPredicate
 
 
-class MetadataPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
+class MetadataPredicate(FilterPredicate):
     """A predicate that compares an ifd against a metadata key and value"""
 
     SYMBOL = "metadata"
@@ -29,11 +30,11 @@ class MetadataPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
         keys - a list of keys
         """
         sub_subpredicates = [
-            cellprofiler_core.setting.Filter.FilterPredicate(
+            FilterPredicate(
                 key,
                 self.display_fmt % key,
                 lambda ipd, match, key=key: key in ipd.metadata
-                and ipd.metadata[key] == match,
+                                            and ipd.metadata[key] == match,
                 [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
             )
             for key in keys

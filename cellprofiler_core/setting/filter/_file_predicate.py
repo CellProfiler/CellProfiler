@@ -1,22 +1,32 @@
 import cellprofiler_core.setting
+from ._filter_predicate import FilterPredicate
+from ._does_predicate import DoesPredicate
+from ._does_not_predicate import DoesNotPredicate
+from ._filter import CONTAINS_PREDICATE
+from ._filter import CONTAINS_REGEXP_PREDICATE
+from ._filter import STARTS_WITH_PREDICATE
+from ._filter import ENDSWITH_PREDICATE
+from ._filter import EQ_PREDICATE
 
 
-class FilePredicate(cellprofiler_core.setting.Filter.FilterPredicate):
+class FilePredicate(FilterPredicate):
     """A predicate that only filters files"""
 
     def __init__(self):
         subpredicates = (
-            cellprofiler_core.setting.Filter.CONTAINS_PREDICATE,
-            cellprofiler_core.setting.Filter.CONTAINS_REGEXP_PREDICATE,
-            cellprofiler_core.setting.Filter.STARTS_WITH_PREDICATE,
-            cellprofiler_core.setting.Filter.ENDSWITH_PREDICATE,
-            cellprofiler_core.setting.Filter.EQ_PREDICATE,
+            CONTAINS_PREDICATE,
+            CONTAINS_REGEXP_PREDICATE,
+            STARTS_WITH_PREDICATE,
+            ENDSWITH_PREDICATE,
+            EQ_PREDICATE,
         )
+
         predicates = [
-            cellprofiler_core.setting.Filter.DoesPredicate(subpredicates),
-            cellprofiler_core.setting.Filter.DoesNotPredicate(subpredicates),
+            DoesPredicate(subpredicates),
+            DoesNotPredicate(subpredicates),
         ]
-        cellprofiler_core.setting.Filter.FilterPredicate.__init__(
+
+        FilterPredicate.__init__(
             self,
             "file",
             "File",

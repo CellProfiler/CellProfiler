@@ -1,4 +1,4 @@
-from cellprofiler_core.image.abstract.file.url._monochrome import Monochrome
+from ._monochrome import Monochrome
 
 
 class Mask(Monochrome):

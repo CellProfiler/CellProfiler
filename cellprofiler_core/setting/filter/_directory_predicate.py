@@ -1,24 +1,26 @@
 import os
 
-import cellprofiler_core.setting
+from ._file_predicate import FilePredicate
+from .. import FileCollectionDisplay
+from ._filter_predicate import FilterPredicate
 
 
-class DirectoryPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
+class DirectoryPredicate(FilePredicate):
     """A predicate that only filters directories"""
 
     def __init__(self):
         subpredicates = (
-            cellprofiler_core.setting.Filter.CONTAINS_PREDICATE,
-            cellprofiler_core.setting.Filter.CONTAINS_REGEXP_PREDICATE,
-            cellprofiler_core.setting.Filter.STARTS_WITH_PREDICATE,
-            cellprofiler_core.setting.Filter.ENDSWITH_PREDICATE,
-            cellprofiler_core.setting.Filter.EQ_PREDICATE,
+            CONTAINS_PREDICATE,
+            CONTAINS_REGEXP_PREDICATE,
+            STARTS_WITH_PREDICATE,
+            ENDSWITH_PREDICATE,
+            EQ_PREDICATE,
         )
         predicates = [
-            cellprofiler_core.setting.Filter.DoesPredicate(subpredicates),
-            cellprofiler_core.setting.Filter.DoesNotPredicate(subpredicates),
+            DoesPredicate(subpredicates),
+            DoesNotPredicate(subpredicates),
         ]
-        cellprofiler_core.setting.Filter.FilterPredicate.__init__(
+        FilterPredicate.__init__(
             self,
             "directory",
             "Directory",
@@ -47,7 +49,7 @@ class DirectoryPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
     def test_valid(self, pipeline, *args):
         self(
             (
-                cellprofiler_core.setting.FileCollectionDisplay.NODE_FILE,
+                FileCollectionDisplay.NODE_FILE,
                 ["/imaging", "image.tif"],
                 None,
             ),

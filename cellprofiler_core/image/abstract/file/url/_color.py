@@ -1,6 +1,6 @@
 import skimage.color
 
-from cellprofiler_core.image import URL
+from ._url import URL
 
 
 class Color(URL):

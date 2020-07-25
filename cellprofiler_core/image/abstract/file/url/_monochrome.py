@@ -1,9 +1,9 @@
 import skimage.color
 
-import cellprofiler_core.image
+from ._url import URL
 
 
-class Monochrome(cellprofiler_core.image.URL):
+class Monochrome(URL):
     """Provide a monochrome image, combining RGB if needed"""
 
     def __init__(
@@ -17,7 +17,7 @@ class Monochrome(cellprofiler_core.image.URL):
         volume=False,
         spacing=None,
     ):
-        cellprofiler_core.image.URL.__init__(
+        URL.__init__(
             self,
             name,
             url,
@@ -30,7 +30,7 @@ class Monochrome(cellprofiler_core.image.URL):
         )
 
     def provide_image(self, image_set):
-        image = cellprofiler_core.image.URL.provide_image(self, image_set)
+        image = URL.provide_image(self, image_set)
 
         if image.pixel_data.ndim == image.dimensions + 1:
             image.pixel_data = skimage.color.rgb2gray(image.pixel_data)

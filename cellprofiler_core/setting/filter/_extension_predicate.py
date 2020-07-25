@@ -2,47 +2,48 @@ import os
 
 import cellprofiler_core.setting
 from cellprofiler_core.modules.images import is_image_extension
+from ._filter_predicate import FilterPredicate
 
 
-class ExtensionPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
+class ExtensionPredicate(FilterPredicate):
     """A predicate that operates on file extensions"""
 
-    IS_TIF_PREDICATE = cellprofiler_core.setting.Filter.FilterPredicate(
+    IS_TIF_PREDICATE = FilterPredicate(
         "istif",
         '"tif", "tiff", "ome.tif" or "ome.tiff"',
         lambda x: x.lower() in ("tif", "tiff", "ome.tif", "ome.tiff"),
         [],
         doc="The extension is associated with TIFF image files",
     )
-    IS_JPEG_PREDICATE = cellprofiler_core.setting.Filter.FilterPredicate(
+    IS_JPEG_PREDICATE = FilterPredicate(
         "isjpeg",
         '"jpg" or "jpeg"',
         lambda x: x.lower() in ("jpg", "jpeg"),
         [],
         doc="The extension is associated with JPEG image files",
     )
-    IS_PNG_PREDICATE = cellprofiler_core.setting.Filter.FilterPredicate(
+    IS_PNG_PREDICATE = FilterPredicate(
         "ispng",
         '"png"',
         lambda x: x.lower() == "png",
         [],
         doc="The extension is associated with PNG image files",
     )
-    IS_IMAGE_PREDICATE = cellprofiler_core.setting.Filter.FilterPredicate(
+    IS_IMAGE_PREDICATE = FilterPredicate(
         "isimage",
         "the extension of an image file",
         is_image_extension,
         [],
         "Is an extension commonly associated with image files",
     )
-    IS_FLEX_PREDICATE = cellprofiler_core.setting.Filter.FilterPredicate(
+    IS_FLEX_PREDICATE = FilterPredicate(
         "isflex",
         '"flex"',
         lambda x: x.lower() == "flex",
         [],
         doc="The extension is associated with .flex files",
     )
-    IS_MOVIE_PREDICATE = cellprofiler_core.setting.Filter.FilterPredicate(
+    IS_MOVIE_PREDICATE = FilterPredicate(
         "ismovie",
         '"mov" or "avi"',
         lambda x: x.lower() in ("mov", "avi"),
@@ -63,7 +64,7 @@ class ExtensionPredicate(cellprofiler_core.setting.Filter.FilterPredicate):
             cellprofiler_core.setting.Filter.DoesPredicate(subpredicates, "Is"),
             cellprofiler_core.setting.Filter.DoesNotPredicate(subpredicates, "Is not"),
         ]
-        cellprofiler_core.setting.Filter.FilterPredicate.__init__(
+        FilterPredicate.__init__(
             self,
             "extension",
             "Extension",

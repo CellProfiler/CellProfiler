@@ -2220,8 +2220,7 @@ class VStringArray(object):
         """Store the strings passed, overwriting any previously stored data"""
         nulls = numpy.array([s is None for s in strings])
         strings = [
-            "" if s is None else s if isinstance(s, str) else str(s)
-            for s in strings
+            "" if s is None else s if isinstance(s, str) else str(s) for s in strings
         ]
         with self.lock:
             target_len = len(strings)
@@ -2327,8 +2326,7 @@ class VStringArray(object):
             return
         nulls = numpy.array([s is None for s in strings])
         strings = [
-            "" if s is None else s if isinstance(s, str) else str(s)
-            for s in strings
+            "" if s is None else s if isinstance(s, str) else str(s) for s in strings
         ]
         with self.lock:
             old_len = len(self)

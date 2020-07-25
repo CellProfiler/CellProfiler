@@ -425,11 +425,7 @@ class Number(Text):
     def set_value(self, value):
         """Convert integer to string
         """
-        str_value = (
-            str(value)
-            if isinstance(value, str)
-            else self.value_to_str(value)
-        )
+        str_value = str(value) if isinstance(value, str) else self.value_to_str(value)
         self.set_value_text(str_value)
 
     def get_value(self, reraise=False):

@@ -2481,9 +2481,7 @@ class Pipeline:
         self.add_image_plane_details(ipds)
 
     def wp_add_image_metadata(self, path, metadata):
-        self.add_image_metadata(
-            "file:" + urllib.request.pathname2url(path), metadata
-        )
+        self.add_image_metadata("file:" + urllib.request.pathname2url(path), metadata)
 
     def add_image_metadata(self, url, metadata, ipd=None):
         if metadata.image_count == 1:

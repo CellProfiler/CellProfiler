@@ -9,7 +9,14 @@ import cellprofiler_core.preferences
 from cellprofiler_core.image._image import Image
 from cellprofiler_core.utilities import generate_presigned_url
 from .._abstract_image_provider import AbstractImageProvider
-from ....utilities.image import is_numpy_file, is_matlab_file, loadmat, load_data_file, FILE_SCHEME, PASSTHROUGH_SCHEMES
+from ....utilities.image import (
+    is_numpy_file,
+    is_matlab_file,
+    loadmat,
+    load_data_file,
+    FILE_SCHEME,
+    PASSTHROUGH_SCHEMES,
+)
 from ....utilities.pathname import pathname2url, url2pathname
 
 

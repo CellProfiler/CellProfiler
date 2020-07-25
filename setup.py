@@ -35,4 +35,3 @@ setuptools.setup(
     url="https://github.com/CellProfiler/core",
     version="4.0.0rc8",
 )
-

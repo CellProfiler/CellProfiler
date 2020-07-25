@@ -270,9 +270,7 @@ pass the current filter.
                     + ":"
                     + modpath[1]
                     + "/"
-                    + "/".join(
-                        [urllib.parse.quote(part) for part in modpath[2:]]
-                    )
+                    + "/".join([urllib.parse.quote(part) for part in modpath[2:]])
                 )
         path = os.path.join(*modpath)
         return cellprofiler_core.utilities.pathname.pathname2url(path)
@@ -284,9 +282,7 @@ pass the current filter.
                 url
             )
             return (
-                [schema]
-                + rest[0:1]
-                + [urllib.parse.unquote(part) for part in rest[1:]]
+                [schema] + rest[0:1] + [urllib.parse.unquote(part) for part in rest[1:]]
             )
         path = urllib.request.url2pathname(url[5:])
         parts = []

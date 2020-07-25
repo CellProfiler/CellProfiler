@@ -8,8 +8,7 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.image.abstract_image_provider.load_images_image_provider._load_images_image_provider
-import \
-    cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._load_images_image_provider_url
+import cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._load_images_image_provider_url
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.module
@@ -21,12 +20,15 @@ import cellprofiler_core.setting
 import cellprofiler_core.setting.do_something._image_set_display
 import cellprofiler_core.setting.do_something._remove_setting_button
 import cellprofiler_core.utilities.image
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._color_image_provider import \
-    ColorImageProvider
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._monochrome_image_provider import \
-    MonochromeImageProvider
-from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._objects_image_provider import \
-    ObjectsImageProvider
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._color_image_provider import (
+    ColorImageProvider,
+)
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._monochrome_image_provider import (
+    MonochromeImageProvider,
+)
+from cellprofiler_core.image.abstract_image_provider.load_images_image_provider.load_images_image_provider_url._objects_image_provider import (
+    ObjectsImageProvider,
+)
 from cellprofiler_core.modules import identify, images
 
 logger = logging.getLogger(__name__)

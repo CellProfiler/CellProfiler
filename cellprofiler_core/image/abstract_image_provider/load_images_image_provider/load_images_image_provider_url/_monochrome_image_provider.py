@@ -30,7 +30,9 @@ class MonochromeImageProvider(cellprofiler_core.image.LoadImagesImageProviderURL
         )
 
     def provide_image(self, image_set):
-        image = cellprofiler_core.image.LoadImagesImageProviderURL.provide_image(self, image_set)
+        image = cellprofiler_core.image.LoadImagesImageProviderURL.provide_image(
+            self, image_set
+        )
 
         if image.pixel_data.ndim == image.dimensions + 1:
             image.pixel_data = skimage.color.rgb2gray(image.pixel_data)

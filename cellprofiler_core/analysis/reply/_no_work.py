@@ -1,5 +1,5 @@
-import cellprofiler_core.utilities.zmq.communicable.reply._reply
+from cellprofiler_core.utilities.zmq.communicable.reply import Reply
 
 
-class NoWork(cellprofiler_core.utilities.zmq.communicable.reply._reply.Reply):
+class NoWork(Reply):
     pass

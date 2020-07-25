@@ -1,8 +1,6 @@
-import cellprofiler_core.utilities.zmq.communicable.reply._reply
+from cellprofiler_core.utilities.zmq.communicable.reply import Reply
 
 
-class OmeroLogin(cellprofiler_core.utilities.zmq.communicable.reply._reply.Reply):
+class OmeroLogin(Reply):
     def __init__(self, credentials):
-        cellprofiler_core.utilities.zmq.communicable.reply._reply.Reply.__init__(
-            self, credentials=credentials
-        )
+        Reply.__init__(self, credentials=credentials)

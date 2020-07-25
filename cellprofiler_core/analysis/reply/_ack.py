@@ -1,8 +1,6 @@
-import cellprofiler_core.utilities.zmq.communicable.reply._reply
+from cellprofiler_core.utilities.zmq.communicable.reply import Reply
 
 
-class Ack(cellprofiler_core.utilities.zmq.communicable.reply._reply.Reply):
+class Ack(Reply):
     def __init__(self, message="THANKS"):
-        cellprofiler_core.utilities.zmq.communicable.reply._reply.Reply.__init__(
-            self, message=message
-        )
+        Reply.__init__(self, message=message)

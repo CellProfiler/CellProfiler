@@ -1,10 +1,6 @@
-import cellprofiler_core.utilities.zmq.communicable.reply._reply
+from cellprofiler_core.utilities.zmq.communicable.reply import Reply
 
 
-class ExceptionPleaseDebug(
-    cellprofiler_core.utilities.zmq.communicable.reply._reply.Reply
-):
+class ExceptionPleaseDebug(Reply):
     def __init__(self, disposition, verification_hash=None):
-        cellprofiler_core.utilities.zmq.communicable.reply._reply.Reply.__init__(
-            self, disposition=disposition, verification_hash=verification_hash
-        )
+        Reply.__init__(self, disposition=disposition, verification_hash=verification_hash)

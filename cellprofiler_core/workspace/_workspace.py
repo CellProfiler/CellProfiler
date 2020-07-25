@@ -1,6 +1,7 @@
 """_workspace.py - the workspace for an imageset
 """
 
+import io
 import logging
 import os
 

@@ -18,7 +18,7 @@ import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 from cellprofiler_core.analysis import *
 from ..utilities.zmq import get_announcer_address, register_analysis
-from ..utilities.zmq.communicable.reply._reply import Reply
+from ..utilities.zmq.communicable.reply import Reply
 
 logger = logging.getLogger(__name__)
 

@@ -1,3 +1,6 @@
+from cellprofiler_core.setting import SubscriberMultiChoice
+
+
 class ObjectSubscriberMultiChoice(SubscriberMultiChoice):
     """A multi-choice setting that displays objects
 

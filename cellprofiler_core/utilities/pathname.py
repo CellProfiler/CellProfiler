@@ -1,3 +1,5 @@
+import urllib.request
+
 from cellprofiler_core.utilities.image import (
     PASSTHROUGH_SCHEMES,
     FILE_SCHEME,

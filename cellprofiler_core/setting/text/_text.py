@@ -1,9 +1,6 @@
 import logging
 
-from cellprofiler_core.setting._setting import Setting
-from cellprofiler_core.setting.text.alphanumeric.name._name import Name
-
-logger = logging.getLogger(__name__)
+from .._setting import Setting
 
 
 class Text(Setting):

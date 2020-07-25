@@ -1,4 +1,5 @@
-from cellprofiler_core.setting import Integer, ValidationError
+from ._integer import Integer
+from ...._validation_error import ValidationError
 
 
 class OddInteger(Integer):

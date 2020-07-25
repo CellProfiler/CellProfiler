@@ -1,8 +1,10 @@
-from cellprofiler_core.setting import Number
+from ._number import Number
 
 
 class Float(Number):
-    """A class that only allows floating point input"""
+    """
+    A class that only allows floating point input
+    """
 
     def str_to_value(self, str_value):
         return float(str_value)

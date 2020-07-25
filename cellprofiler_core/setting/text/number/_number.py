@@ -1,4 +1,7 @@
-from cellprofiler_core.setting import Text, logger, ValidationError
+import logging
+
+from .._text import Text
+from ..._validation_error import ValidationError
 
 
 class Number(Text):
@@ -48,7 +51,7 @@ class Number(Text):
             self.test_valid(None)
             self.__default = self.str_to_value(value_text)
         except:
-            logger.debug("Number set to illegal value: %s" % value_text)
+            logging.debug("Number set to illegal value: %s" % value_text)
 
     def set_min_value(self, minval):
         """Programatically set the minimum value allowed"""

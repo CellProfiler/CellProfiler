@@ -1,10 +1,10 @@
-from cellprofiler_core.setting import Alphanumeric
+from .._alphanumeric import Alphanumeric
 
 
 class Name(Alphanumeric):
-    """A setting that provides a named object
     """
-
+    A setting that provides a named object
+    """
     def __init__(self, text, group, value="Do not use", *args, **kwargs):
         self.__provided_attributes = {"group": group}
         kwargs = kwargs.copy()
@@ -15,7 +15,8 @@ class Name(Alphanumeric):
         super(Name, self).__init__(text, value, *args, **kwargs)
 
     def get_group(self):
-        """This setting provides a name to this group
+        """
+        This setting provides a name to this group
 
         Returns a group name, e.g., imagegroup or objectgroup
         """
@@ -25,7 +26,8 @@ class Name(Alphanumeric):
 
     @property
     def provided_attributes(self):
-        """Return the dictionary of attributes of this provider
+        """
+        Return the dictionary of attributes of this provider
 
         These are things like the group ("objectgroup" for instance) and
         hints about the thing itself, such as that it is an image

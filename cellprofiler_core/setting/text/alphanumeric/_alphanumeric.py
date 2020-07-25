@@ -1,6 +1,7 @@
 import re
 
-from cellprofiler_core.setting import Text, ValidationError
+from .._text import Text
+from ..._validation_error import ValidationError
 
 
 class Alphanumeric(Text):

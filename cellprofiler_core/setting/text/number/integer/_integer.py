@@ -1,8 +1,9 @@
-from cellprofiler_core.setting import Number
+from .._number import Number
 
 
 class Integer(Number):
-    """A setting that allows only integer input
+    """
+    A setting that allows only integer input
 
     Initializer:
     text - explanatory text for setting

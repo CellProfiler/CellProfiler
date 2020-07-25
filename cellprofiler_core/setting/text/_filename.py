@@ -1,4 +1,4 @@
-from cellprofiler_core.setting import Text
+from ._text import Text
 
 
 class Filename(Text):

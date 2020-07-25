@@ -1,9 +1,9 @@
-from cellprofiler_core.setting import Pathname
+from ._pathname import Pathname
 
 
 class URL(Pathname):
-    """A setting that displays a path name or URL
-
+    """
+    A setting that displays a path name or URL
     """
 
     def is_url(self):

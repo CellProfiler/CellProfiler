@@ -24,12 +24,12 @@ import cellprofiler_core.setting.filter._extension_predicate
 import cellprofiler_core.setting.filter._file_predicate
 import cellprofiler_core.setting.filter._image_predicate
 import cellprofiler_core.utilities.image
-from cellprofiler_core.image.abstract.file.url._color import Color
-from cellprofiler_core.image.abstract.file.url._mask import Mask
-from cellprofiler_core.image.abstract.file.url._monochrome import Monochrome
-from cellprofiler_core.image.abstract.file.url._objects import Objects
-from cellprofiler_core.module import identify
-from cellprofiler_core.setting.filter._metadata_predicate import MetadataPredicate
+from ..image.abstract.file.url import Color
+from ..image.abstract.file.url import Mask
+from ..image.abstract.file.url import Monochrome
+from ..image.abstract.file.url import Objects
+from ..module import identify
+from ..setting.filter import MetadataPredicate
 
 logger = logging.getLogger(__name__)
 
@@ -2613,18 +2613,6 @@ requests an object selection.
 
     def volumetric(self):
         return True
-
-    class FakeModpathResolver(object):
-        """Resolve one modpath to one ipd"""
-
-        def __init__(self, modpath, ipd):
-            self.modpath = modpath
-            self.ipd = ipd
-
-        def get_image_plane_details(self, modpath):
-            assert len(modpath) == len(self.modpath)
-            assert all([m1 == m2 for m1, m2 in zip(self.modpath, modpath)])
-            return self.ipd
 
     def update_joiner(self):
         """Update the joiner setting's entities"""

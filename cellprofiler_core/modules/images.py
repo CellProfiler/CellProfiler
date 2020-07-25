@@ -154,6 +154,7 @@ particular wavelength.
 import cellprofiler_core.utilities.image
 
 import cellprofiler_core.utilities.pathname
+from ..setting import FileCollectionDisplay
 from ..setting.filter import DirectoryPredicate
 from ..setting.filter import ExtensionPredicate
 from ..setting.filter import FilePredicate
@@ -174,7 +175,7 @@ class Images(cellprofiler_core.module.Module):
     category = "File Processing"
 
     MI_SHOW_IMAGE = "Show image"
-    MI_REMOVE = cellprofiler_core.setting.FileCollectionDisplay.DeleteMenuItem(
+    MI_REMOVE = FileCollectionDisplay.DeleteMenuItem(
         "Remove from list"
     )
     MI_REFRESH = "Refresh"

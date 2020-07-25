@@ -2,6 +2,11 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 from cellprofiler_core.modules.namesandtypes import NamesAndTypes
 from ._filter_predicate import FilterPredicate
+from ._does_not_predicate import DoesNotPredicate
+from ._does_predicate import DoesPredicate
+from ._filter import LITERAL_PREDICATE
+from .. import FileCollectionDisplay
+from ...pipeline import ImagePlane
 
 
 class MetadataPredicate(FilterPredicate):
@@ -10,10 +15,7 @@ class MetadataPredicate(FilterPredicate):
     SYMBOL = "metadata"
 
     def __init__(self, display_name, display_fmt="%s", **kwargs):
-        subpredicates = [
-            cellprofiler_core.setting.Filter.DoesPredicate([]),
-            cellprofiler_core.setting.Filter.DoesNotPredicate([]),
-        ]
+        subpredicates = [DoesPredicate([]), DoesNotPredicate([]), ]
 
         super(self.__class__, self).__init__(
             self.SYMBOL,
@@ -35,7 +37,7 @@ class MetadataPredicate(FilterPredicate):
                 self.display_fmt % key,
                 lambda ipd, match, key=key: key in ipd.metadata
                                             and ipd.metadata[key] == match,
-                [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
+                [LITERAL_PREDICATE],
             )
             for key in keys
         ]
@@ -58,15 +60,18 @@ class MetadataPredicate(FilterPredicate):
         return vargs[0](ipd, *vargs[1:])
 
     def test_valid(self, pipeline, *args):
+        class FakeModpathResolver(object):
+            """Resolve one modpath to one ipd"""
+
+            def __init__(self, modpath, ipd):
+                self.modpath = modpath
+                self.ipd = ipd
+
+            def get_image_plane_details(self, modpath):
+                assert len(modpath) == len(self.modpath)
+                assert all([m1 == m2 for m1, m2 in zip(self.modpath, modpath)])
+                return self.ipd
+
         modpath = ["imaging", "image.png"]
-        ipd = cellprofiler_core.pipeline.ImagePlane(
-            "/imaging/image.png", None, None, None
-        )
-        self(
-            (
-                cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
-                modpath,
-                NamesAndTypes.FakeModpathResolver(modpath, ipd),
-            ),
-            *args,
-        )
+        ipd = ImagePlane("/imaging/image.png", None, None, None)
+        self((FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, FakeModpathResolver(modpath, ipd),), *args,)

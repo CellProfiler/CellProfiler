@@ -3,10 +3,10 @@ import io
 import queue
 import subprocess
 import tempfile
+from typing import List, Any
 
 import numpy
 import psutil
-import zmq
 
 import cellprofiler_core.analysis.event
 import cellprofiler_core.analysis.reply
@@ -17,6 +17,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 from cellprofiler_core.analysis import *
+from ._worker_runner import WorkerRunner
 from ..utilities.zmq import get_announcer_address, register_analysis
 from ..utilities.zmq.communicable.reply import Reply
 
@@ -46,8 +47,8 @@ class Runner:
     """
 
     # worker pool - shared by all instances
-    workers = []
-    deadman_switches = []
+    workers: List[WorkerRunner] = []
+    deadman_switches: List[Any] = []
 
     # measurement status
     STATUS = "ProcessingStatus"
@@ -690,24 +691,6 @@ class Runner:
             from cellprofiler_core.worker import Worker, NOTIFY_ADDR, NOTIFY_STOP
             from cellprofiler_core.pipeline.event import CancelledException
 
-            class WorkerRunner(threading.Thread):
-                def __init__(self, work_announce_address):
-                    threading.Thread.__init__(self)
-                    self.work_announce_address = work_announce_address
-                    self.notify_socket = zmq.Context.instance().socket(zmq.PUB)
-                    self.notify_socket.bind(NOTIFY_ADDR)
-
-                def run(self):
-                    with Worker(self.work_announce_address) as aw:
-                        try:
-                            aw.run()
-                        except CancelledException:
-                            logger.info("Exiting debug worker thread")
-
-                def wait(self):
-                    self.notify_socket.send(NOTIFY_STOP)
-                    self.join()
-
             thread = WorkerRunner(cls.work_announce_address)
             thread.setDaemon(True)
             thread.start()
@@ -783,7 +766,9 @@ class Runner:
     def stop_workers(cls):
         for deadman_switch in cls.deadman_switches:
             deadman_switch.close()
+
         for worker in cls.workers:
             worker.wait()
+
         cls.workers = []
         cls.deadman_switches = []

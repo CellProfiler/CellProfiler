@@ -1,3 +1,6 @@
+from ._subscriber_multichoice import SubscriberMultiChoice
+
+
 class ImageNameSubscriberMultiChoice(SubscriberMultiChoice):
     """A multi-choice setting that displays images
 

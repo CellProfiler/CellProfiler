@@ -84,10 +84,10 @@ builtin_modules = [
     "namesandtypes",
 ]
 
-all_modules = {}
-svn_revisions = {}
-pymodules = []
-badmodules = []
+all_modules: dict = {}
+svn_revisions: dict = {}
+pymodules: list = []
+badmodules: list = []
 
 do_not_override = ["set_settings", "create_from_handles", "test_valid", "module_class"]
 should_override = ["create_settings", "settings", "run"]

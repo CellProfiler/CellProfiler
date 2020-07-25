@@ -5,6 +5,7 @@ import os
 import sys
 import threading
 import uuid
+import queue
 
 import cellprofiler.grid
 import numpy
@@ -242,7 +243,7 @@ def join_to_the_boundary():
         the_boundary = None
 
 
-__lock_queue = queue.Queue()
+__lock_queue: queue.Queue = queue.Queue()
 __lock_thread = None
 LOCK_REQUEST = "Lock request"
 UNLOCK_REQUEST = "Unlock request"

@@ -17,7 +17,6 @@ class DataTypes(_setting.Setting):
     DT_NONE = "none"
 
     def __init__(self, text, value="{}", name_fn=None, *args, **kwargs):
-        # type: (object, object, object, object, object) -> object
         """Initializer
 
         text - description of the setting

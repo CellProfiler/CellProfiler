@@ -140,7 +140,7 @@ np.seterr(all="ignore")
 
 # to guarantee closing of measurements, we store all of them in a WeakSet, and
 # close them on exit.
-all_measurements = WeakSet()
+all_measurements: WeakSet = WeakSet()
 
 DEADMAN_START_ADDR = b"inproc://deadmanstart"
 DEADMAN_START_MSG = b"STARTED"

@@ -31,7 +31,7 @@ ABSPATH_OUTPUT = "abspath_output"
 """get_absolute_path - mode = image. Assume "." is the default input dir"""
 ABSPATH_IMAGE = "abspath_image"
 
-__python_root = os.path.split(str(cellprofiler_core.__path__[0]))[0]
+__python_root = os.path.split(os.path.dirname(cellprofiler_core.__file__))[0]
 __cp_root = os.path.split(__python_root)[0]
 
 
@@ -207,7 +207,7 @@ def set_preferences_from_dict(d):
         globals()[cache_var] = None
 
 
-__cached_values = {}
+__cached_values: dict = {}
 
 
 def config_read(key):
@@ -1099,7 +1099,7 @@ def set_show_sampling(value):
     __show_sampling = bool(value)
 
 
-__recent_files = {}
+__recent_files: dict = {}
 
 
 def get_recent_files(category=""):

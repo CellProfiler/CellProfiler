@@ -18,6 +18,8 @@ import cellprofiler_core.modules
 import cellprofiler_core.object
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.setting.text._directory
+import cellprofiler_core.setting.text._filename
 import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 from cellprofiler_core.module import identify
@@ -379,7 +381,7 @@ class LoadData(cellprofiler_core.module.Module):
     variable_revision_number = 6
 
     def create_settings(self):
-        self.csv_directory = cellprofiler_core.setting.DirectoryPath(
+        self.csv_directory = cellprofiler_core.setting._text._directory.Directory(
             "Input data file location",
             allow_metadata=False,
             support_urls=True,
@@ -398,7 +400,7 @@ Select the folder containing the CSV file to be loaded. {IO_FOLDER_CHOICE_HELP_T
             dir_choice, custom_path = self.csv_directory.get_parts_from_path(path)
             self.csv_directory.join_parts(dir_choice, custom_path)
 
-        self.csv_file_name = cellprofiler_core.setting.FilenameText(
+        self.csv_file_name = cellprofiler_core.setting._text._filename.Filename(
             "Name of the file",
             "None",
             doc="""Provide the file name of the CSV file containing the data you want to load.""",
@@ -447,7 +449,7 @@ intensity value of the image file format.
             ),
         )
 
-        self.image_directory = cellprofiler_core.setting.DirectoryPath(
+        self.image_directory = cellprofiler_core.setting._text._directory.Directory(
             "Base image location",
             dir_choices=DIR_ALL,
             allow_metadata=False,
@@ -1625,10 +1627,10 @@ safe to press it.""",
                 wants_image_groupings,
                 metadata_fields,
             ) = setting_values
-            csv_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
+            csv_directory = cellprofiler_core.setting._text._directory.Directory.static_join_string(
                 csv_directory_choice, csv_custom_directory
             )
-            image_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
+            image_directory = cellprofiler_core.setting._text._directory.Directory.static_join_string(
                 image_directory_choice, image_custom_directory
             )
             setting_values = [
@@ -1648,7 +1650,7 @@ safe to press it.""",
         for index in (0, 3):
             setting_values[
                 index
-            ] = cellprofiler_core.setting.DirectoryPath.upgrade_setting(
+            ] = cellprofiler_core.setting._text._directory.Directory.upgrade_setting(
                 setting_values[index]
             )
 
@@ -1666,10 +1668,12 @@ safe to press it.""",
             (
                 dir_choice,
                 custom_dir,
-            ) = cellprofiler_core.setting.DirectoryPath.split_string(csv_directory)
+            ) = cellprofiler_core.setting._text._directory.Directory.split_string(
+                csv_directory
+            )
             if dir_choice == cellprofiler_core.preferences.URL_FOLDER_NAME:
                 csv_file_name = custom_dir + "/" + csv_file_name
-                csv_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
+                csv_directory = cellprofiler_core.setting._text._directory.Directory.static_join_string(
                     dir_choice, ""
                 )
             setting_values = [

@@ -1,7 +1,8 @@
 import io
 import pickle
 
-import cellprofiler_core.image
+from ._image_set import ImageSet
+from ..utilities.image import make_dictionary_key
 
 
 class ImageSetList:
@@ -54,7 +55,7 @@ class ImageSetList:
         d = {}
         for i in range(self.count()):
             image_set = self.get_image_set(i)
-            assert isinstance(image_set, cellprofiler_core.image.ImageSet)
+            assert isinstance(image_set, ImageSet)
             key_values = tuple([str(image_set.keys[key]) for key in keys])
             if key_values not in d:
                 d[key_values] = []
@@ -71,10 +72,10 @@ class ImageSetList:
             number = keys_or_number
             if self.__associating_by_key is None:
                 self.__associating_by_key = False
-            k = cellprofiler_core.image.make_dictionary_key(keys)
+            k = make_dictionary_key(keys)
         else:
             keys = keys_or_number
-            k = cellprofiler_core.image.make_dictionary_key(keys)
+            k = make_dictionary_key(keys)
             if k in self.__image_sets_by_key:
                 number = self.__image_sets_by_key[k].number
             else:
@@ -83,13 +84,11 @@ class ImageSetList:
         if number >= len(self.__image_sets):
             self.__image_sets += [None] * (number - len(self.__image_sets) + 1)
         if self.__image_sets[number] is None:
-            image_set = cellprofiler_core.image.ImageSet(
-                number, keys, self.legacy_fields
-            )
+            image_set = ImageSet(number, keys, self.legacy_fields)
             self.__image_sets[number] = image_set
             self.__image_sets_by_key[k] = image_set
             if self.__associating_by_key:
-                k = cellprofiler_core.image.make_dictionary_key(dict(number=number))
+                k = make_dictionary_key(dict(number=number))
                 self.__image_sets_by_key[k] = image_set
         else:
             image_set = self.__image_sets[number]
@@ -136,7 +135,7 @@ class ImageSetList:
         pickle.dump(self.count(), f)
         for i in range(self.count()):
             image_set = self.get_image_set(i)
-            assert isinstance(image_set, cellprofiler_core.image.ImageSet)
+            assert isinstance(image_set, ImageSet)
             assert (
                 len(image_set.providers) == 0
             ), "An image set cannot have providers while saving its state"

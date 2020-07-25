@@ -19,6 +19,8 @@ import cellprofiler_core.setting.do_something._remove_setting_button
 import cellprofiler_core.setting.filter._directory_predicate
 import cellprofiler_core.setting.filter._extension_predicate
 import cellprofiler_core.setting.filter._file_predicate
+import cellprofiler_core.setting.text._directory
+import cellprofiler_core.setting.text._filename
 import cellprofiler_core.utilities
 
 logger = logging.getLogger(__name__)
@@ -572,7 +574,7 @@ extraction.
 
         group.append(
             "csv_location",
-            cellprofiler_core.setting.DirectoryPath(
+            cellprofiler_core.setting._text._directory.Directory(
                 "Metadata file location",
                 support_urls=True,
                 doc="""\
@@ -602,7 +604,7 @@ the file as “Windows CSV” or “Windows Comma Separated”.
 
         group.append(
             "csv_filename",
-            cellprofiler_core.setting.FilenameText(
+            cellprofiler_core.setting._text._filename.Filename(
                 "Metadata file name",
                 "None",
                 browse_msg="Choose CSV file",

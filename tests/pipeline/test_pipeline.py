@@ -25,6 +25,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.pipeline.dependency
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.setting.text.alphanumeric.name.image._image
 import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
@@ -826,7 +827,9 @@ HasImagePlaneDetails:False"""
 
     def test_get_provider_dictionary_image(self):
         pipeline = get_empty_pipeline()
-        my_setting = cellprofiler_core.setting.ImageNameProvider("foo", IMAGE_NAME)
+        my_setting = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+            "foo", IMAGE_NAME
+        )
         module = ATestModule([my_setting])
         module.set_module_num(1)
         pipeline.add_module(module)
@@ -897,7 +900,9 @@ HasImagePlaneDetails:False"""
 
     def test_get_provider_dictionary_combo(self):
         pipeline = get_empty_pipeline()
-        image_setting = cellprofiler_core.setting.ImageNameProvider("foo", IMAGE_NAME)
+        image_setting = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+            "foo", IMAGE_NAME
+        )
         object_setting = cellprofiler_core.setting.ObjectNameProvider(
             "foo", OBJECT_NAME
         )
@@ -957,10 +962,10 @@ HasImagePlaneDetails:False"""
         # Test disambiguation of the sources
         #
         pipeline = get_empty_pipeline()
-        my_image_setting_1 = cellprofiler_core.setting.ImageNameProvider(
+        my_image_setting_1 = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
             "foo", IMAGE_NAME
         )
-        my_image_setting_2 = cellprofiler_core.setting.ImageNameProvider(
+        my_image_setting_2 = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
             "foo", IMAGE_NAME
         )
         my_object_setting = cellprofiler_core.setting.ObjectNameProvider(
@@ -1000,7 +1005,11 @@ HasImagePlaneDetails:False"""
             ATestModule(),
             ATestModule([cellprofiler_core.setting.Choice("foo", ["Hello", "World"])]),
             ATestModule(
-                [cellprofiler_core.setting.ImageNameProvider("foo", IMAGE_NAME)]
+                [
+                    cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+                        "foo", IMAGE_NAME
+                    )
+                ]
             ),
             ATestModule(
                 [cellprofiler_core.setting.ImageNameSubscriber("foo", IMAGE_NAME)]
@@ -1017,10 +1026,18 @@ HasImagePlaneDetails:False"""
         for i, module in enumerate(
             (
                 ATestModule(
-                    [cellprofiler_core.setting.ImageNameProvider("foo", IMAGE_NAME)]
+                    [
+                        cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+                            "foo", IMAGE_NAME
+                        )
+                    ]
                 ),
                 ATestModule(
-                    [cellprofiler_core.setting.ImageNameProvider("foo", ALT_IMAGE_NAME)]
+                    [
+                        cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+                            "foo", ALT_IMAGE_NAME
+                        )
+                    ]
                 ),
                 ATestModule(
                     [cellprofiler_core.setting.ImageNameSubscriber("foo", IMAGE_NAME)]
@@ -1047,7 +1064,11 @@ HasImagePlaneDetails:False"""
                     [cellprofiler_core.setting.ObjectNameProvider("foo", OBJECT_NAME)]
                 ),
                 ATestModule(
-                    [cellprofiler_core.setting.ImageNameProvider("foo", IMAGE_NAME)]
+                    [
+                        cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+                            "foo", IMAGE_NAME
+                        )
+                    ]
                 ),
                 ATestModule(
                     [cellprofiler_core.setting.ObjectNameSubscriber("foo", OBJECT_NAME)]
@@ -1078,7 +1099,11 @@ HasImagePlaneDetails:False"""
             (
                 ATestModule(measurement_columns=measurement_columns),
                 ATestModule(
-                    [cellprofiler_core.setting.ImageNameProvider("foo", ALT_IMAGE_NAME)]
+                    [
+                        cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+                            "foo", ALT_IMAGE_NAME
+                        )
+                    ]
                 ),
                 ATestModule([measurement_setting]),
             )

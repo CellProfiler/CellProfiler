@@ -1,9 +1,9 @@
 import os
 
-from cellprofiler_core.setting import MultiChoice, DirectoryPath, ValidationError
+from cellprofiler_core.setting import MultiChoice, ValidationError
+from ..text._directory import Directory
 from ._multichoice import MultiChoice
 from .._validation_error import ValidationError
-
 
 
 class SubdirectoryFilter(MultiChoice):
@@ -25,7 +25,7 @@ class SubdirectoryFilter(MultiChoice):
                          to find the root of the subdirectory tree.
         """
         super(SubdirectoryFilter, self).__init__(text, value, **kwargs)
-        assert (directory_path is None) or isinstance(directory_path, DirectoryPath)
+        assert (directory_path is None) or isinstance(directory_path, Directory)
         self.directory_path = directory_path
 
     @staticmethod

@@ -3,16 +3,23 @@ import unittest
 import cellprofiler_core.setting
 import pytest
 
+import cellprofiler_core.setting.text.number._float
+import cellprofiler_core.setting.text.number.integer._integer
+
 
 class TestIntegerSetting(unittest.TestCase):
     def test_01_01_default(self):
-        s = cellprofiler_core.setting.Integer("foo", value=5)
+        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+            "foo", value=5
+        )
         assert s == 5
         assert s.value_text == "5"
         s.test_valid(None)
 
     def test_01_02_set_value(self):
-        s = cellprofiler_core.setting.Integer("foo", value=5)
+        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+            "foo", value=5
+        )
         for test_case in ("06", "-1"):
             s.value_text = test_case
             assert s == int(test_case)
@@ -20,33 +27,43 @@ class TestIntegerSetting(unittest.TestCase):
             s.test_valid(None)
 
     def test_01_03_set_bad(self):
-        s = cellprofiler_core.setting.Integer("foo", value=5)
+        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+            "foo", value=5
+        )
         s.value_text = "bad"
         assert s == 5
         with pytest.raises(cellprofiler_core.setting.ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_01_good_min(self):
-        s = cellprofiler_core.setting.Integer("foo", value=5, minval=0)
+        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+            "foo", value=5, minval=0
+        )
         for test_case in ("0", "1"):
             s.value_text = test_case
             s.test_valid(None)
 
     def test_02_02_bad_min(self):
-        s = cellprofiler_core.setting.Integer("foo", value=5, minval=0)
+        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+            "foo", value=5, minval=0
+        )
         s.value_text = "-1"
         assert s == 5
         with pytest.raises(cellprofiler_core.setting.ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_03_good_max(self):
-        s = cellprofiler_core.setting.Integer("foo", value=5, maxval=10)
+        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+            "foo", value=5, maxval=10
+        )
         for test_case in ("9", "10"):
             s.value_text = test_case
             s.test_valid(None)
 
     def test_02_04_bad_max(self):
-        s = cellprofiler_core.setting.Integer("foo", value=5, maxval=10)
+        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+            "foo", value=5, maxval=10
+        )
         s.value_text = "11"
         assert s.value == 5
         with pytest.raises(cellprofiler_core.setting.ValidationError):
@@ -56,13 +73,13 @@ class TestIntegerSetting(unittest.TestCase):
 class TestFloatSetting(unittest.TestCase):
     def test_01_01_default(self):
         for value in (5, "5.0"):
-            s = cellprofiler_core.setting.Float("foo", value=value)
+            s = cellprofiler_core.setting._text.number._float.Float("foo", value=value)
             assert s == 5
             assert s.value_text == "5.0"
             s.test_valid(None)
 
     def test_01_02_set_value(self):
-        s = cellprofiler_core.setting.Float("foo", value=5)
+        s = cellprofiler_core.setting._text.number._float.Float("foo", value=5)
         for test_case in ("6.00", "-1.75"):
             s.value_text = test_case
             assert s == float(test_case)
@@ -70,39 +87,47 @@ class TestFloatSetting(unittest.TestCase):
             s.test_valid(None)
 
     def test_01_03_set_bad(self):
-        s = cellprofiler_core.setting.Float("foo", value=5)
+        s = cellprofiler_core.setting._text.number._float.Float("foo", value=5)
         s.value_text = "bad"
         assert s == 5
         with pytest.raises(cellprofiler_core.setting.ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_01_04_set_text_value(self):
-        s = cellprofiler_core.setting.Float("foo", value=5)
+        s = cellprofiler_core.setting._text.number._float.Float("foo", value=5)
         s.value = "6.00"
         assert s == 6
         assert s.value_text == "6.00"
 
     def test_02_01_good_min(self):
-        s = cellprofiler_core.setting.Float("foo", value=5, minval=0)
+        s = cellprofiler_core.setting._text.number._float.Float(
+            "foo", value=5, minval=0
+        )
         for test_case in ("0", "1"):
             s.value_text = test_case
             s.test_valid(None)
 
     def test_02_02_bad_min(self):
-        s = cellprofiler_core.setting.Float("foo", value=5, minval=0)
+        s = cellprofiler_core.setting._text.number._float.Float(
+            "foo", value=5, minval=0
+        )
         s.value_text = "-1"
         assert s == 5
         with pytest.raises(cellprofiler_core.setting.ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_03_good_max(self):
-        s = cellprofiler_core.setting.Float("foo", value=5, maxval=10)
+        s = cellprofiler_core.setting._text.number._float.Float(
+            "foo", value=5, maxval=10
+        )
         for test_case in ("9", "10"):
             s.value_text = test_case
             s.test_valid(None)
 
     def test_02_04_bad_max(self):
-        s = cellprofiler_core.setting.Float("foo", value=5, maxval=10)
+        s = cellprofiler_core.setting._text.number._float.Float(
+            "foo", value=5, maxval=10
+        )
         s.value_text = "11"
         assert s == 5
         with pytest.raises(cellprofiler_core.setting.ValidationError):

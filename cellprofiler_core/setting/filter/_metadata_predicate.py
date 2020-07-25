@@ -15,7 +15,10 @@ class MetadataPredicate(FilterPredicate):
     SYMBOL = "metadata"
 
     def __init__(self, display_name, display_fmt="%s", **kwargs):
-        subpredicates = [DoesPredicate([]), DoesNotPredicate([]), ]
+        subpredicates = [
+            DoesPredicate([]),
+            DoesNotPredicate([]),
+        ]
 
         super(self.__class__, self).__init__(
             self.SYMBOL,
@@ -36,7 +39,7 @@ class MetadataPredicate(FilterPredicate):
                 key,
                 self.display_fmt % key,
                 lambda ipd, match, key=key: key in ipd.metadata
-                                            and ipd.metadata[key] == match,
+                and ipd.metadata[key] == match,
                 [LITERAL_PREDICATE],
             )
             for key in keys
@@ -74,4 +77,11 @@ class MetadataPredicate(FilterPredicate):
 
         modpath = ["imaging", "image.png"]
         ipd = ImagePlane("/imaging/image.png", None, None, None)
-        self((FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, FakeModpathResolver(modpath, ipd),), *args,)
+        self(
+            (
+                FileCollectionDisplay.NODE_IMAGE_PLANE,
+                modpath,
+                FakeModpathResolver(modpath, ipd),
+            ),
+            *args,
+        )

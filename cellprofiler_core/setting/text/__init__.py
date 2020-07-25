@@ -1,1 +1,1 @@
-from .text import *
+from ._text import *

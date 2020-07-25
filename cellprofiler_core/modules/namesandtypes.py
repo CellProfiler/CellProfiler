@@ -23,6 +23,8 @@ import cellprofiler_core.setting.filter._directory_predicate
 import cellprofiler_core.setting.filter._extension_predicate
 import cellprofiler_core.setting.filter._file_predicate
 import cellprofiler_core.setting.filter._image_predicate
+import cellprofiler_core.setting.text.alphanumeric.name.image._file
+import cellprofiler_core.setting.text.number._float
 import cellprofiler_core.utilities.image
 from ..image.abstract.file.url import Color
 from ..image.abstract.file.url import Mask
@@ -414,7 +416,7 @@ two-dimensional images.
             callback=lambda value: self.pipeline.set_volumetric(value),
         )
 
-        self.x = cellprofiler_core.setting.Float(
+        self.x = cellprofiler_core.setting._text.number._float.Float(
             text="Relative pixel spacing in X",
             value=1.0,
             minval=0.0,
@@ -434,7 +436,7 @@ as set here in **NamesAndTypes**.
 """,
         )
 
-        self.y = cellprofiler_core.setting.Float(
+        self.y = cellprofiler_core.setting._text.number._float.Float(
             text="Relative pixel spacing in Y",
             value=1.0,
             minval=0.0,
@@ -446,7 +448,7 @@ See help for *Relative pixel spacing in X* for details.
 """,
         )
 
-        self.z = cellprofiler_core.setting.Float(
+        self.z = cellprofiler_core.setting._text.number._float.Float(
             text="Relative pixel spacing in Z",
             value=1.0,
             minval=0.0,
@@ -458,7 +460,7 @@ See help for *Relative pixel spacing in X* for details.
 """,
         )
 
-        self.single_image_provider = cellprofiler_core.setting.FileImageNameProvider(
+        self.single_image_provider = cellprofiler_core.setting._text.alphanumeric.name.image._file.File(
             "Name to assign these images", IMAGE_NAMES[0]
         )
 
@@ -469,7 +471,7 @@ See help for *Relative pixel spacing in X* for details.
             doc=RESCALING_HELP_TEXT,
         )
 
-        self.manual_rescale = cellprofiler_core.setting.Float(
+        self.manual_rescale = cellprofiler_core.setting._text.number._float.Float(
             MANUAL_INTENSITY_LABEL,
             DEFAULT_MANUAL_RESCALE,
             minval=numpy.finfo(numpy.float32).eps,
@@ -703,7 +705,7 @@ Specify a filter using rules to narrow down the files to be analyzed.
 
         group.append(
             "image_name",
-            cellprofiler_core.setting.FileImageNameProvider(
+            cellprofiler_core.setting._text.alphanumeric.name.image._file.File(
                 "Name to assign these images",
                 unique_image_name,
                 doc="""\
@@ -754,7 +756,7 @@ by ASCII letters, underbars or digits.
 
         group.append(
             "manual_rescale",
-            cellprofiler_core.setting.Float(
+            cellprofiler_core.setting._text.number._float.Float(
                 MANUAL_INTENSITY_LABEL,
                 value=DEFAULT_MANUAL_RESCALE,
                 minval=numpy.finfo(numpy.float32).eps,
@@ -873,7 +875,7 @@ select an existing image from the file list.
         )
         group.append(
             "image_name",
-            cellprofiler_core.setting.FileImageNameProvider(
+            cellprofiler_core.setting._text.alphanumeric.name.image._file.File(
                 "Name to assign this image",
                 unique_image_name,
                 doc="""\
@@ -918,7 +920,7 @@ requests an object selection.
 
         group.append(
             "manual_rescale",
-            cellprofiler_core.setting.Float(
+            cellprofiler_core.setting._text.number._float.Float(
                 MANUAL_INTENSITY_LABEL,
                 value=DEFAULT_MANUAL_RESCALE,
                 minval=numpy.finfo(numpy.float32).eps,

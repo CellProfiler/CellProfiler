@@ -1,6 +1,7 @@
 import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler_core.setting
+import cellprofiler_core.setting.text.alphanumeric.name.image._image
 from cellprofiler_core.module._module import Module
 
 
@@ -12,7 +13,7 @@ class ImageProcessing(Module):
             "Select the input image", doc="Select the image you want to use."
         )
 
-        self.y_name = cellprofiler_core.setting.ImageNameProvider(
+        self.y_name = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
             "Name the output image",
             self.__class__.__name__,
             doc="Enter the name you want to call the image produced by this module.",

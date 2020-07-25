@@ -55,10 +55,5 @@ class DirectoryPredicate(FilePredicate):
 
     def test_valid(self, pipeline, *args):
         self(
-            (
-                FileCollectionDisplay.NODE_FILE,
-                ["/imaging", "image.tif"],
-                None,
-            ),
-            *args,
+            (FileCollectionDisplay.NODE_FILE, ["/imaging", "image.tif"], None,), *args,
         )

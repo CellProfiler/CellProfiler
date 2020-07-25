@@ -175,9 +175,7 @@ class Images(cellprofiler_core.module.Module):
     category = "File Processing"
 
     MI_SHOW_IMAGE = "Show image"
-    MI_REMOVE = FileCollectionDisplay.DeleteMenuItem(
-        "Remove from list"
-    )
+    MI_REMOVE = FileCollectionDisplay.DeleteMenuItem("Remove from list")
     MI_REFRESH = "Refresh"
 
     def create_settings(self):

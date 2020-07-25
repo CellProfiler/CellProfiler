@@ -3,7 +3,7 @@ import hashlib
 import numpy
 
 from ..module import Module
-from ..setting import NameProvider
+from ..setting.text.alphanumeric.name._name import Name
 
 
 class InjectImage(Module):
@@ -31,9 +31,7 @@ class InjectImage(Module):
         self.__image_name = image_name
         self.__image = image
         self.__mask = mask
-        self.image_name = NameProvider(
-            "Hardwired image name", "imagegroup", image_name
-        )
+        self.image_name = Name("Hardwired image name", "imagegroup", image_name)
         self.__release_image = release_image
 
     def settings(self):
@@ -63,7 +61,9 @@ class InjectImage(Module):
         digest = hashlib.md5()
         digest.update(numpy.ascontiguousarray(self.__image).data)
 
-        workspace.measurements.add_measurement("Image", "MD5Digest_%s" % self.__image_name, 1, image_set_number=1,)
+        workspace.measurements.add_measurement(
+            "Image", "MD5Digest_%s" % self.__image_name, 1, image_set_number=1,
+        )
 
         return True
 

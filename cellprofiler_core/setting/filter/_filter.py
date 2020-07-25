@@ -180,7 +180,7 @@ class Filter(_setting.Setting):
                 elif s[i] == "\\":
                     escape_next = True
                 elif s[i] == '"':
-                    return result, s[(i + 1):], []
+                    return result, s[(i + 1) :], []
                 else:
                     result += s[i]
             raise ValueError("Unterminated literal")

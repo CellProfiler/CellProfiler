@@ -26,6 +26,8 @@ import cellprofiler_core.pipeline.dependency
 import cellprofiler_core.pipeline.event
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import cellprofiler_core.setting.text.alphanumeric.name._name
+import cellprofiler_core.setting.text.alphanumeric.name.image._external
 import cellprofiler_core.utilities.legacy
 import cellprofiler_core.utilities.utf16encode
 import cellprofiler_core.workspace
@@ -595,7 +597,8 @@ class Pipeline:
         for module in self.modules():
             for setting in module.settings():
                 if isinstance(
-                    setting, cellprofiler_core.setting.ExternalImageNameProvider
+                    setting,
+                    cellprofiler_core.setting._text.alphanumeric.name.image._external.External,
                 ):
                     result.append(setting.value)
         return result
@@ -2501,7 +2504,9 @@ class Pipeline:
                     cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT
                 ] = cellprofiler_core.pipeline.ImagePlane.MD_MONOCHROME
                 channel = pixels.Channel(0)
-                channel_name = channel.Name
+                channel_name = (
+                    cellprofiler_core.setting._text.alphanumeric.name._name.Name
+                )
                 if channel_name is not None:
                     m[
                         cellprofiler_core.pipeline.ImagePlane.MD_CHANNEL_NAME
@@ -2541,7 +2546,9 @@ class Pipeline:
                     m[cellprofiler_core.pipeline.ImagePlane.MD_Z] = plane.TheZ
                     if pixels.channel_count > c:
                         channel = pixels.Channel(c)
-                        channel_name = channel.Name
+                        channel_name = (
+                            cellprofiler_core.setting._text.alphanumeric.name._name.Name
+                        )
                         if channel_name is not None:
                             m[
                                 cellprofiler_core.pipeline.ImagePlane.MD_CHANNEL_NAME
@@ -2612,7 +2619,9 @@ class Pipeline:
                         cellprofiler_core.pipeline.ImagePlane.MD_SIZE_T: 1,
                         cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT: color_format,
                     }
-                    channel_name = channel.Name
+                    channel_name = (
+                        cellprofiler_core.setting._text.alphanumeric.name._name.Name
+                    )
                     if channel_name is not None and len(channel_name) > 0:
                         metadata[
                             cellprofiler_core.pipeline.ImagePlane.MD_CHANNEL_NAME
@@ -2825,7 +2834,10 @@ class Pipeline:
                     result[k].append((module, None))
             for setting in module.visible_settings():
                 if (
-                    isinstance(setting, cellprofiler_core.setting.NameProvider)
+                    isinstance(
+                        setting,
+                        cellprofiler_core.setting._text.alphanumeric.name._name.Name,
+                    )
                     and setting.get_group() == groupname
                 ):
                     name = setting.value

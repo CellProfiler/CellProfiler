@@ -35,5 +35,5 @@ setuptools.setup(
     python_requires=">=3.8, <4",
     url="https://github.com/CellProfiler/core",
     version="4.0.0rc8",
-    zip_safe=False
+    zip_safe=False,
 )

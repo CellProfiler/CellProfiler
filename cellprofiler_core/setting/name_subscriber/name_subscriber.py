@@ -1,9 +1,7 @@
 from cellprofiler_core.setting._setting import Setting
 from cellprofiler_core.setting._validation_error import ValidationError
-from cellprofiler_core.setting.text import (
-    get_name_provider_choices,
-    OutlineNameProvider,
-)
+from cellprofiler_core.setting.text import get_name_provider_choices
+from cellprofiler_core.setting.text.alphanumeric.name.image._outline import Outline
 
 
 class NameSubscriber(Setting):
@@ -190,7 +188,7 @@ class OutlineNameSubscriber(ImageNameSubscriber):
 
     def matches(self, setting):
         """Only match OutlineNameProvider variables"""
-        return isinstance(setting, OutlineNameProvider)
+        return isinstance(setting, Outline)
 
 
 class GridNameSubscriber(NameSubscriber):

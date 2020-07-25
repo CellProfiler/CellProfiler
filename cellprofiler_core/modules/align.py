@@ -59,6 +59,7 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.setting
 import cellprofiler_core.setting.do_something._remove_setting_button
+import cellprofiler_core.setting.text.alphanumeric.name.image._image
 
 M_MUTUAL_INFORMATION = "Mutual Information"
 M_CROSS_CORRELATION = "Normalized Cross Correlation"
@@ -89,7 +90,7 @@ class Align(cellprofiler_core.module.Module):
 Specify the name of the first image to align.""",
         )
 
-        self.first_output_image = cellprofiler_core.setting.ImageNameProvider(
+        self.first_output_image = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
             "Name the first output image",
             "AlignedRed",
             doc="""\
@@ -104,7 +105,7 @@ Enter the name of the first aligned image.""",
 Specify the name of the second image to align.""",
         )
 
-        self.second_output_image = cellprofiler_core.setting.ImageNameProvider(
+        self.second_output_image = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
             "Name the second output image",
             "AlignedGreen",
             doc="""\
@@ -201,7 +202,7 @@ excluded from analysis. There are three choices for cropping:
 
         group.append(
             "output_image_name",
-            cellprofiler_core.setting.ImageNameProvider(
+            cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
                 "Name the output image",
                 "AlignedBlue",
                 doc="""

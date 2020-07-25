@@ -10,6 +10,9 @@ import cellprofiler_core.measurement
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
+import cellprofiler_core.setting.text._directory
+import cellprofiler_core.setting.text.alphanumeric.name._name
+import cellprofiler_core.setting.text.alphanumeric.name.image._file
 
 
 class Module:
@@ -315,7 +318,9 @@ class Module:
                 setting[cellprofiler_core.pipeline.VARIABLE_VALUES][
                     module_idx, i
                 ] = variable.get_unicode_value()
-            if isinstance(variable, cellprofiler_core.setting.NameProvider):
+            if isinstance(
+                variable, cellprofiler_core.setting._text.alphanumeric.name._name.Name
+            ):
                 setting[cellprofiler_core.pipeline.VARIABLE_INFO_TYPES][
                     module_idx, i
                 ] = str("%s indep" % variable.group)
@@ -873,7 +878,10 @@ class Module:
         """Return True if this module loads this image name from a file."""
         for setting in self.settings():
             if (
-                isinstance(setting, cellprofiler_core.setting.FileImageNameProvider)
+                isinstance(
+                    setting,
+                    cellprofiler_core.setting._text.alphanumeric.name.image._file.File,
+                )
                 and setting.value == image_name
             ):
                 return True
@@ -901,7 +909,9 @@ class Module:
         that uses the DirectoryPath setting.
         """
         for setting in self.visible_settings():
-            if isinstance(setting, cellprofiler_core.setting.DirectoryPath):
+            if isinstance(
+                setting, cellprofiler_core.setting._text._directory.Directory
+            ):
                 return True
         return False
 

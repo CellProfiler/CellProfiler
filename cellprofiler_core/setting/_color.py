@@ -1,7 +1,7 @@
-from . import _setting
+from ._setting import Setting
 
 
-class Color(_setting.Setting):
+class Color(Setting):
     """Represents a choice of color
 
     These are coded in hex unless a valid HTML name is available.

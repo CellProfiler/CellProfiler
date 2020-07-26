@@ -1,9 +1,9 @@
 import json
 
-from . import _setting
+from ._setting import Setting
 
 
-class DataTypes(_setting.Setting):
+class DataTypes(Setting):
     """The DataTypes setting assigns data types to measurement names
 
     Imported or extracted metadata might be textual or numeric and

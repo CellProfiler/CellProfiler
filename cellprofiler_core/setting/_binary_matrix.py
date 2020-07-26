@@ -1,7 +1,7 @@
-from . import _setting
+from ._setting import Setting
 
 
-class BinaryMatrix(_setting.Setting):
+class BinaryMatrix(Setting):
     """A setting that allows editing of a 2D matrix of binary values
     """
 
@@ -11,7 +11,7 @@ class BinaryMatrix(_setting.Setting):
         initial_value_text = self.to_value(
             [[default_value] * default_width] * default_height
         )
-        _setting.Setting.__init__(self, text, initial_value_text, **kwargs)
+        Setting.__init__(self, text, initial_value_text, **kwargs)
 
     @staticmethod
     def to_value(matrix):

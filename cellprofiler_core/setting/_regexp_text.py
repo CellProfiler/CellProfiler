@@ -1,10 +1,10 @@
 import re
 
-from . import _setting
+from ._setting import Setting
 from ._validation_error import ValidationError
 
 
-class RegexpText(_setting.Setting):
+class RegexpText(Setting):
     """A setting with a regexp button on the side
     """
 

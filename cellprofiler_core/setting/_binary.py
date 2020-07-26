@@ -1,7 +1,7 @@
-from . import _setting
+from ._setting import Setting
 
 
-class Binary(_setting.Setting):
+class Binary(Setting):
     """A setting that is represented as either true or false
     The underlying value stored in the settings slot is "Yes" or "No"
     for historical reasons.

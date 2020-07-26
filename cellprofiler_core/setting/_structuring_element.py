@@ -1,10 +1,10 @@
 import skimage.morphology
 
-from . import _setting
+from ._setting import Setting
 from ._validation_error import ValidationError
 
 
-class StructuringElement(_setting.Setting):
+class StructuringElement(Setting):
     def __init__(
         self,
         text="Structuring element",

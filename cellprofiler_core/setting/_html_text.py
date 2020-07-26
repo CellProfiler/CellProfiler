@@ -1,7 +1,7 @@
-from . import _setting
+from ._setting import Setting
 
 
-class HTMLText(_setting.Setting):
+class HTMLText(Setting):
     """The HTMLText setting displays a HTML control with content
 
     """

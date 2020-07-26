@@ -1,9 +1,9 @@
 import json
 
-from . import _setting
+from ._setting import Setting
 
 
-class FileCollectionDisplay(_setting.Setting):
+class FileCollectionDisplay(Setting):
     """A setting to be used to display directories and their files
 
     The FileCollectionDisplay shows directory trees with mechanisms to

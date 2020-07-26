@@ -1,8 +1,8 @@
 import cellprofiler_core.utilities.legacy
-from . import _setting
+from  ._setting import Setting
 
 
-class Table(_setting.Setting):
+class Table(Setting):
     """The Table setting displays a table of values"""
 
     ATTR_ERROR = "Error"

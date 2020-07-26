@@ -1,7 +1,7 @@
-from . import _setting
+from ._setting import Setting
 
 
-class HiddenCount(_setting.Setting):
+class HiddenCount(Setting):
     """A setting meant only for saving an item count
 
     The HiddenCount setting should never be in the visible settings.

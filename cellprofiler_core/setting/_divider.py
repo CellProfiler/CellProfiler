@@ -1,7 +1,7 @@
-from . import _setting
+from ._setting import Setting
 
 
-class Divider(_setting.Setting):
+class Divider(Setting):
     """The divider setting inserts a vertical space, possibly with a horizontal line, in the GUI"""
 
     save_to_pipeline = False

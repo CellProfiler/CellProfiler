@@ -1,8 +1,8 @@
-from . import _setting
+from ._setting import Setting
 from ._validation_error import ValidationError
 
 
-class Joiner(_setting.Setting):
+class Joiner(Setting):
     """The joiner setting defines a joining condition between conceptual tables
 
     You might want to join several tables by specifying the columns that match

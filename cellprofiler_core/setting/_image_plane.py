@@ -1,12 +1,12 @@
 import logging
 
-from . import _setting
+from ._setting import Setting
 from ._validation_error import ValidationError
 
 logger = logging.getLogger(__name__)
 
 
-class ImagePlane(_setting.Setting):
+class ImagePlane(Setting):
     """A setting that specifies an image plane
 
     This setting lets the user pick an image plane. This might be an image

@@ -1,12 +1,12 @@
-from . import _setting
+from ._setting import Setting
 
 
-class FigureSubscriber(_setting.Setting):
+class FigureSubscriber(Setting):
     """A setting that subscribes to a figure indicator provider
     """
 
     def __init(self, text, value="Do not use", *args, **kwargs):
-        super(_setting.Setting, self).__init(text, value, *args, **kwargs)
+        super(Setting, self).__init(text, value, *args, **kwargs)
 
     def get_choices(self, pipeline):
         choices = []

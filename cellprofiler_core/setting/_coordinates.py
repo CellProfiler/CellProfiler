@@ -1,8 +1,8 @@
-from . import _setting
+from ._setting import Setting
 from ._validation_error import ValidationError
 
 
-class Coordinates(_setting.Setting):
+class Coordinates(Setting):
     """A setting representing X and Y coordinates on an image
     """
 

@@ -1,8 +1,8 @@
-from . import _setting
+from ._setting import Setting
 from ._validation_error import ValidationError
 
 
-class Measurement(_setting.Setting):
+class Measurement(Setting):
     """A measurement done on a class of objects (or Experiment or Image)
 
     A measurement represents a fully-qualified name of a measurement taken

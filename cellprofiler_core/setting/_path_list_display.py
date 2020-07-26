@@ -1,7 +1,7 @@
-from . import _setting
+from ._setting import Setting
 
 
-class PathListDisplay(_setting.Setting):
+class PathListDisplay(Setting):
     """This setting's only purpose is to signal that the path list should be shown
 
     Set self.using_filter to True if the module knows that the path list will

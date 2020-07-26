@@ -23,7 +23,6 @@ import psutil
 import cellprofiler_core.utilities
 import cellprofiler_core.utilities.utf16encode
 
-logger = logging.getLogger(__name__)
 
 """get_absolute_path - mode = output. Assume "." is the default output dir"""
 ABSPATH_OUTPUT = "abspath_output"
@@ -153,12 +152,12 @@ def get_config():
             try:
                 preferences_version_number = int(config_read(PREFERENCES_VERSION))
                 if preferences_version_number != PREFERENCES_VERSION_NUMBER:
-                    logger.warning(
+                    logging.warning(
                         "Preferences version mismatch: expected %d, at %d"
                         % (PREFERENCES_VERSION_NUMBER, preferences_version_number)
                     )
             except:
-                logger.warning(
+                logging.warning(
                     "Preferences version was %s, not a number. Resetting to current version"
                     % preferences_version_number
                 )
@@ -769,10 +768,10 @@ def get_default_image_directory():
             __default_image_directory = os.path.normcase(default_image_directory)
             return __default_image_directory
     except:
-        logger.error(
+        logging.error(
             "Unknown failure when retrieving the default image directory", exc_info=True
         )
-    logger.warning(
+    logging.warning(
         "Warning: current path of %s is not a valid directory. Switching to home directory."
         % (default_image_directory.encode("ascii", "replace"))
     )
@@ -839,11 +838,11 @@ def get_default_output_directory():
             __default_output_directory = os.path.normcase(default_output_directory)
             return __default_output_directory
     except:
-        logger.error(
+        logging.error(
             "Unknown failure when retrieving the default output directory",
             exc_info=True,
         )
-    logger.warning(
+    logging.warning(
         "Warning: current path of %s is not a valid directory. Switching to home directory."
         % (default_output_directory.encode("ascii", "replace"))
     )

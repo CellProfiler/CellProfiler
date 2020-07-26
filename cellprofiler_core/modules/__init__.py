@@ -12,8 +12,6 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.preferences
 
-logger = logging.getLogger(__name__)
-
 
 def plugin_list(plugin_dir):
     if plugin_dir is not None and os.path.isdir(plugin_dir):
@@ -136,14 +134,14 @@ def fill_modules():
             cp_module = find_cpmodule(m)
             name = cp_module.module_name
         except Exception as e:
-            logger.warning("Could not load %s", mod, exc_info=True)
+            logging.warning("Could not load %s", mod, exc_info=True)
             badmodules.append((mod, e))
             return
 
         try:
             pymodules.append(m)
             if name in all_modules:
-                logger.warning(
+                logging.warning(
                     "Multiple definitions of module %s\n\told in %s\n\tnew in %s",
                     name,
                     sys.modules[all_modules[name].__module__].__file__,
@@ -159,7 +157,7 @@ def fill_modules():
                 if match is not None:
                     svn_revisions[name] = match.groups()[0]
         except Exception as e:
-            logger.warning("Failed to load %s", name, exc_info=True)
+            logging.warning("Failed to load %s", name, exc_info=True)
             badmodules.append((mod, e))
             if name in all_modules:
                 del all_modules[name]
@@ -193,7 +191,7 @@ def fill_modules():
             sys.path = old_path
 
     if len(badmodules) > 0:
-        logger.warning(
+        logging.warning(
             "could not load these modules: %s", ",".join([x[0] for x in badmodules])
         )
 

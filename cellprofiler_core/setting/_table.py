@@ -1,5 +1,5 @@
 import cellprofiler_core.utilities.legacy
-from  ._setting import Setting
+from ._setting import Setting
 
 
 class Table(Setting):

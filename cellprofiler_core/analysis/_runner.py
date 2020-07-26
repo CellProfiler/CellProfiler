@@ -21,8 +21,6 @@ from ._worker_runner import WorkerRunner
 from ..utilities.zmq import get_announcer_address, register_analysis
 from ..utilities.zmq.communicable.reply import Reply
 
-logger = logging.getLogger(__name__)
-
 
 class Runner:
     """The Runner manages two threads (per instance) and all of the
@@ -152,17 +150,17 @@ class Runner:
 
     def cancel(self):
         """cancel the analysis run"""
-        logger.debug("Stopping workers")
+        logging.debug("Stopping workers")
         self.stop_workers()
-        logger.debug("Canceling run")
+        logging.debug("Canceling run")
         self.cancelled = True
         self.paused = False
         self.notify_threads()
-        logger.debug("Waiting on interface thread")
+        logging.debug("Waiting on interface thread")
         self.interface_thread.join()
-        logger.debug("Waiting on jobserver thread")
+        logging.debug("Waiting on jobserver thread")
         self.jobserver_thread.join()
-        logger.debug("Cancel complete")
+        logging.debug("Cancel complete")
 
     def pause(self):
         """pause the analysis run"""
@@ -560,23 +558,23 @@ class Runner:
                 continue
 
             if isinstance(req, cellprofiler_core.analysis.request.PipelinePreferences):
-                logger.debug("Received pipeline preferences request")
+                logging.debug("Received pipeline preferences request")
                 req.reply(
                     Reply(
                         pipeline_blob=numpy.array(self.pipeline_as_string()),
                         preferences=cellprofiler_core.preferences.preferences_as_dict(),
                     )
                 )
-                logger.debug("Replied to pipeline preferences request")
+                logging.debug("Replied to pipeline preferences request")
             elif isinstance(
                 req, cellprofiler_core.analysis.request.InitialMeasurements
             ):
-                logger.debug("Received initial measurements request")
+                logging.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
-                logger.debug("Replied to initial measurements request")
+                logging.debug("Replied to initial measurements request")
             elif isinstance(req, cellprofiler_core.analysis.request.Work):
                 if not self.work_queue.empty():
-                    logger.debug("Received work request")
+                    logging.debug("Received work request")
                     (
                         job,
                         worker_runs_post_group,
@@ -590,7 +588,7 @@ class Runner:
                         )
                     )
                     self.queue_dispatched_job(job)
-                    logger.debug(
+                    logging.debug(
                         "Dispatched job: image sets=%s"
                         % ",".join([str(i) for i in job])
                     )
@@ -601,25 +599,25 @@ class Runner:
             elif isinstance(req, cellprofiler_core.analysis.reply.ImageSetSuccess):
                 # interface() is responsible for replying, to allow it to
                 # request the shared_state dictionary if needed.
-                logger.debug("Received ImageSetSuccess")
+                logging.debug("Received ImageSetSuccess")
                 self.queue_imageset_finished(req)
-                logger.debug("Enqueued ImageSetSuccess")
+                logging.debug("Enqueued ImageSetSuccess")
             elif isinstance(req, cellprofiler_core.analysis.request.SharedDictionary):
-                logger.debug("Received shared dictionary request")
+                logging.debug("Received shared dictionary request")
                 req.reply(
                     cellprofiler_core.analysis.reply.SharedDictionary(
                         dictionaries=self.shared_dicts
                     )
                 )
-                logger.debug("Sent shared dictionary reply")
+                logging.debug("Sent shared dictionary reply")
             elif isinstance(req, cellprofiler_core.analysis.request.MeasurementsReport):
-                logger.debug("Received measurements report")
+                logging.debug("Received measurements report")
                 self.queue_received_measurements(req.image_set_numbers, req.buf)
                 req.reply(cellprofiler_core.analysis.reply.Ack())
-                logger.debug("Acknowledged measurements report")
+                logging.debug("Acknowledged measurements report")
             elif isinstance(req, cellprofiler_core.analysis.request.AnalysisCancel):
                 # Signal the interface that we are cancelling
-                logger.debug("Received analysis worker cancel request")
+                logging.debug("Received analysis worker cancel request")
                 with self.interface_work_cv:
                     self.cancelled = True
                     self.interface_work_cv.notify()
@@ -636,13 +634,13 @@ class Runner:
                     cellprofiler_core.analysis.request.OmeroLogin,
                 ),
             ):
-                logger.debug("Enqueueing interactive request")
+                logging.debug("Enqueueing interactive request")
                 # bump upward
                 self.post_event(req)
-                logger.debug("Interactive request enqueued")
+                logging.debug("Interactive request enqueued")
             else:
                 msg = "Unknown request from worker: %s of type %s" % (req, type(req))
-                logger.error(msg)
+                logging.error(msg)
                 raise ValueError(msg)
 
         # stop the ZMQ-boundary thread - will also deal with any requests waiting on replies
@@ -684,7 +682,7 @@ class Runner:
             num = psutil.cpu_count(logical=False)
 
         cls.work_announce_address = get_announcer_address()
-        logger.info("Starting workers on address %s" % cls.work_announce_address)
+        logging.info("Starting workers on address %s" % cls.work_announce_address)
         if "CP_DEBUG_WORKER" in os.environ:
             if os.environ["CP_DEBUG_WORKER"] == "NOT_INPROC":
                 return
@@ -751,7 +749,7 @@ class Runner:
                         line = line.decode("utf-8")
                         if not line:
                             break
-                        logger.info("Worker %d: %s", widx, line.rstrip())
+                        logging.info("Worker %d: %s", widx, line.rstrip())
                     except:
                         break
 

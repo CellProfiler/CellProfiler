@@ -67,9 +67,6 @@ try:
 except:
     has_mat_read_error = False
 
-logger = logging.getLogger(__name__)
-
-pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 
 """The measurement name of the image number"""
 IMAGE_NUMBER = cellprofiler_core.measurement.IMAGE_NUMBER

@@ -6,8 +6,6 @@ from ._grayscale import Grayscale
 from ._rgb import RGB
 from .abstract._vanilla import Vanilla
 
-logger = logging.getLogger(__name__)
-
 
 class ImageSet:
     """Represents the images for a particular iteration of a pipeline
@@ -79,7 +77,7 @@ class ImageSet:
                     )
 
                 if image.pixel_data.shape[-1] == 4:
-                    logger.warning("Discarding alpha channel.")
+                    logging.warning("Discarding alpha channel.")
 
                     return RGB(image)
 

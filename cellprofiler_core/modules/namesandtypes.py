@@ -34,8 +34,6 @@ from ..image.abstract.file.url import Objects
 from ..module import identify
 from ..setting.filter import MetadataPredicate
 
-logger = logging.getLogger(__name__)
-
 
 __doc__ = """\
 NamesAndTypes
@@ -1748,7 +1746,7 @@ requests an object selection.
             )
             echannel = javabridge.call(error, "getChannelName", "()Ljava/lang/String;")
             message = javabridge.call(error, "getMessage", "()Ljava/lang/String;")
-            logger.warning(
+            logging.warning(
                 "Error for image set, channel=%s, metadata=%s: %s"
                 % (str(key), echannel, message)
             )

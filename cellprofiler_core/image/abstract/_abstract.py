@@ -1,7 +1,5 @@
 import logging
 
-logger = logging.getLogger(__name__)
-
 
 class Abstract:
     """Represents an image provider that returns images
@@ -24,7 +22,7 @@ class Abstract:
 
     def release_memory(self):
         """Release whatever memory is associated with the image"""
-        logger.warning(
+        logging.warning(
             "Warning: no memory release function implemented for %s image",
             self.get_name(),
         )

@@ -4,7 +4,7 @@ import re
 import sys
 import urllib.request
 import warnings
-
+import logging
 import h5py
 import numpy
 
@@ -61,13 +61,9 @@ class Measurements:
             is_temporary = True
             import traceback
 
-            cellprofiler_core.measurement.logger.debug(
-                "Created temporary file %s" % filename
-            )
+            logging.debug("Created temporary file %s" % filename)
             for frame in traceback.extract_stack():
-                cellprofiler_core.measurement.logger.debug(
-                    "{}: ({} {}): {}".format(*frame)
-                )
+                logging.debug("{}: ({} {}): {}".format(*frame))
 
         else:
             is_temporary = False
@@ -159,7 +155,7 @@ class Measurements:
             try:
                 os.remove(self.__image_cache_path)
             except:
-                cellprofiler_core.measurement.logger.warn(
+                logging.warn(
                     "So sorry: Failed to delete temporary file, %s"
                     % self.__image_cache_path,
                     exc_info=True,
@@ -1373,7 +1369,7 @@ class Measurements:
                 column.append(field)
             last_image_number = image_number
         if last_image_number == 0:
-            cellprofiler_core.measurement.logger.warn("No image sets were loaded")
+            logging.warn("No image sets were loaded")
             return
         if start is None:
             image_numbers = list(range(1, last_image_number + 1))
@@ -1760,9 +1756,7 @@ class Measurements:
                     )
 
                 if image.pixel_data.shape[-1] == 4:
-                    cellprofiler_core.measurement.logger.warning(
-                        "Discarding alpha channel."
-                    )
+                    logging.warning("Discarding alpha channel.")
 
                     return RGB(image)
 

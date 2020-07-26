@@ -27,7 +27,6 @@ import pkg_resources
 
 from cellprofiler_core.worker._worker import Worker
 
-logger = logging.getLogger(__name__)
 
 """Set the log level through the environment by specifying AW_LOG_LEVEL"""
 AW_LOG_LEVEL = "AW_LOG_LEVEL"
@@ -103,7 +102,7 @@ def aw_parse_args():
     if options.plugins_directory is not None:
         set_plugin_directory(options.plugins_directory, globally=False)
     else:
-        logger.warning("Plugins directory not set")
+        logging.warning("Plugins directory not set")
 
 
 if __name__ == "__main__":
@@ -198,7 +197,7 @@ def main():
     try:
         stop_java()
     except:
-        logger.warning("Failed to stop the JVM", exc_info=True)
+        logging.warning("Failed to stop the JVM", exc_info=True)
 
 
 __the_notify_pub_socket = None

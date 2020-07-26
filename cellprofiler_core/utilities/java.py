@@ -11,8 +11,6 @@ import prokaryote
 
 import cellprofiler_core.preferences
 
-logger = logging.getLogger(__name__)
-
 
 def get_jars():
     """
@@ -46,7 +44,7 @@ def get_jars():
             tools_jar = os.path.join(jdk_path, "lib", "tools.jar")
             class_path.append(tools_jar)
         else:
-            logger.warning("Failed to find tools.jar")
+            logging.warning("Failed to find tools.jar")
     return class_path
 
 
@@ -102,7 +100,7 @@ def start_java():
     class_path = get_jars()
     awt_headless = cellprofiler_core.preferences.get_awt_headless()
     if awt_headless:
-        logger.debug("JVM will be started with AWT in headless mode")
+        logging.debug("JVM will be started with AWT in headless mode")
         args.append("-Djava.awt.headless=true")
 
     if "CP_JDWP_PORT" in os.environ:
@@ -120,7 +118,7 @@ def start_java():
 
     c_location = javabridge.JClassWrapper("loci.common.Location")
     c_location.cacheDirectoryListings(True)
-    logger.debug("Enabled Bio-formats directory cacheing")
+    logging.debug("Enabled Bio-formats directory cacheing")
 
 
 def stop_java():

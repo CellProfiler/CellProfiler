@@ -11,8 +11,6 @@ import cellprofiler_core.measurement
 import cellprofiler_core.utilities.hdf5_dict
 import cellprofiler_core.workspace
 
-logger = logging.getLogger(__name__)
-
 
 class Workspace:
     """The workspace contains the processing information and state for
@@ -537,7 +535,7 @@ class Workspace:
                 result = self.pipeline.prepare_run(self, stop_module)
                 return result
             except:
-                logger.error("Failed during prepare_run", exc_info=1)
+                logging.error("Failed during prepare_run", exc_info=1)
                 return False
             finally:
                 if no_image_set_list:
@@ -562,7 +560,7 @@ class Workspace:
             try:
                 callback(event)
             except:
-                logger.error("Notification callback threw an exception", exc_info=1)
+                logging.error("Notification callback threw an exception", exc_info=1)
 
     def __on_file_list_changed(self):
         self.notify(self.WorkspaceFileListNotification(self))

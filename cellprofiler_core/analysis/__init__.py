@@ -17,8 +17,6 @@ from cellprofiler_core.utilities.zmq.communicable.reply.upstream_exit._upstream_
     UpstreamExit,
 )
 
-logger = logging.getLogger(__name__)
-
 use_analysis = True
 
 DEBUG = "DEBUG"

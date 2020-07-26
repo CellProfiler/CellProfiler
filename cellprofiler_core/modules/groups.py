@@ -3,7 +3,6 @@ import logging
 
 import cellprofiler_core.setting.do_something._remove_setting_button
 
-logger = logging.getLogger(__name__)
 import numpy as np
 
 import cellprofiler_core.modules

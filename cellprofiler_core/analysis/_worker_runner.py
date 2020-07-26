@@ -1,9 +1,9 @@
 import threading
-
+import logging
 import zmq
 
 from cellprofiler_core.pipeline import CancelledException
-from ..worker import NOTIFY_ADDR, Worker, logger, NOTIFY_STOP
+from ..worker import NOTIFY_ADDR, Worker, NOTIFY_STOP
 
 
 class WorkerRunner(threading.Thread):
@@ -18,7 +18,7 @@ class WorkerRunner(threading.Thread):
             try:
                 aw.run()
             except CancelledException:
-                logger.info("Exiting debug worker thread")
+                logging.info("Exiting debug worker thread")
 
     def wait(self):
         self.notify_socket.send(NOTIFY_STOP)

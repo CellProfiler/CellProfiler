@@ -3,7 +3,7 @@ import os
 import tempfile
 import urllib.parse
 import urllib.request
-
+import logging
 import numpy
 import skimage
 
@@ -238,7 +238,7 @@ class File(Abstract):
                 try:
                     os.remove(self.__cached_file)
                 except:
-                    logger.warning(
+                    logging.warning(
                         "Could not delete file %s", self.__cached_file, exc_info=True
                     )
             else:

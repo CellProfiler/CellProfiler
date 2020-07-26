@@ -106,7 +106,7 @@ class Worker(object):
                         self.work_request_address,
                     ) = self.get_announcement()
                     if t0 is None or time.time() - t0 > 30:
-                        cellprofiler_core.worker.logger.debug(
+                        logging.debug(
                             "Connecting at address %s" % self.work_request_address
                         )
                         t0 = time.time()
@@ -139,31 +139,27 @@ class Worker(object):
         try:
             send_dictionary = job.wants_dictionary
 
-            cellprofiler_core.worker.logger.info("Starting job")
+            logging.info("Starting job")
             # Fetch the pipeline and preferences for this analysis if we don't have it
             current_pipeline, current_preferences = self.pipelines_and_preferences.get(
                 self.current_analysis_id, (None, None)
             )
             if not current_pipeline:
-                cellprofiler_core.worker.logger.debug(
-                    "Fetching pipeline and preferences"
-                )
+                logging.debug("Fetching pipeline and preferences")
                 rep = self.send(request.PipelinePreferences(self.current_analysis_id))
-                cellprofiler_core.worker.logger.debug(
-                    "Received pipeline and preferences response"
-                )
+                logging.debug("Received pipeline and preferences response")
                 preferences_dict = rep.preferences
                 # update preferences to match remote values
                 cpprefs.set_preferences_from_dict(preferences_dict)
 
-                cellprofiler_core.worker.logger.debug("Loading pipeline")
+                logging.debug("Loading pipeline")
 
                 current_pipeline = cpp.Pipeline()
                 pipeline_chunks = rep.pipeline_blob.tolist()
                 pipeline_io = io.StringIO("".join(pipeline_chunks))
                 current_pipeline.loadtxt(pipeline_io, raise_on_error=True)
 
-                cellprofiler_core.worker.logger.debug("Pipeline loaded")
+                logging.debug("Pipeline loaded")
                 current_pipeline.add_listener(self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
                 self.pipelines_and_preferences[self.current_analysis_id] = (
@@ -176,22 +172,20 @@ class Worker(object):
 
             # Reset the listener's state
             self.pipeline_listener.reset()
-            cellprofiler_core.worker.logger.debug("Getting initial measurements")
+            logging.debug("Getting initial measurements")
             # Fetch the path to the intial measurements if needed.
             current_measurements = self.initial_measurements.get(
                 self.current_analysis_id
             )
             if current_measurements is None:
-                cellprofiler_core.worker.logger.debug(
-                    "Sending initial measurements request"
-                )
+                logging.debug("Sending initial measurements request")
                 rep = self.send(request.InitialMeasurements(self.current_analysis_id))
-                cellprofiler_core.worker.logger.debug("Got initial measurements")
+                logging.debug("Got initial measurements")
                 current_measurements = self.initial_measurements[
                     self.current_analysis_id
                 ] = cpmeas.load_measurements_from_buffer(rep.buf)
             else:
-                cellprofiler_core.worker.logger.debug("Has initial measurements")
+                logging.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
             current_measurements = cpmeas.Measurements(copy=current_measurements)
             cellprofiler_core.worker.all_measurements.add(current_measurements)
@@ -200,9 +194,7 @@ class Worker(object):
             successful_image_set_numbers = []
             image_set_numbers = job.image_set_numbers
             worker_runs_post_group = job.worker_runs_post_group
-            cellprofiler_core.worker.logger.info(
-                "Doing job: " + ",".join(map(str, image_set_numbers))
-            )
+            logging.info("Doing job: " + ",".join(map(str, image_set_numbers)))
 
             self.pipeline_listener.image_set_number = image_set_numbers[0]
 
@@ -441,7 +433,7 @@ class Worker(object):
         """
         from cellprofiler_core.pipeline.event import CancelledException
 
-        cellprofiler_core.worker.logger.debug(msg)
+        logging.debug(msg)
         self.cancelled = True
         if self.current_analysis_id in self.initial_measurements:
             self.initial_measurements[self.current_analysis_id].close()

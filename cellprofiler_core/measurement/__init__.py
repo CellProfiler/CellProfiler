@@ -14,8 +14,6 @@ from ._measurements import Measurements
 from ._metadata_group import MetadataGroup
 from ._relationship_key import RelationshipKey
 
-logger = logging.getLogger(__name__)
-
 AGG_MEAN = "Mean"
 AGG_STD_DEV = "StDev"
 AGG_MEDIAN = "Median"

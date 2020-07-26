@@ -23,7 +23,6 @@ import cellprofiler_core.setting.text._directory
 import cellprofiler_core.setting.text._filename
 import cellprofiler_core.utilities
 
-logger = logging.getLogger(__name__)
 
 __doc__ = """\
 Metadata

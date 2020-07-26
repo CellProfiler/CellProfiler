@@ -11,8 +11,6 @@ from .communicable import Communicable
 from .communicable.reply.upstream_exit import BoundaryExited
 from .communicable.request import AnalysisRequest, Request
 
-logger = logging.getLogger(__name__)
-
 
 class Boundary:
     """This object serves as the interface between a ZMQ socket passing
@@ -232,7 +230,7 @@ class Boundary:
                                 q.put([self, self.NOTIFY_REQUEST, req])
                                 break
                         else:
-                            logger.warning(
+                            logging.warning(
                                 "Received a request that wasn't an AnalysisRequest: %s"
                                 % str(type(req))
                             )
@@ -240,7 +238,7 @@ class Boundary:
                         continue
                     if s != request_socket:
                         # Request is on the external socket
-                        logger.warning("Received a request on the external socket")
+                        logging.warning("Received a request on the external socket")
                         req.reply(BoundaryExited())
                         continue
                     #
@@ -278,13 +276,13 @@ class Boundary:
                         thread.join()
 
             self.request_socket.close()
-            logger.info("Exiting the boundary thread")
+            logging.info("Exiting the boundary thread")
         except:
             #
             # Pretty bad - a logic error or something extremely unexpected
             #              We're close to hosed here, best to die an ugly death.
             #
-            logger.critical("Unhandled exception in boundary thread.", exc_info=10)
+            logging.critical("Unhandled exception in boundary thread.", exc_info=10)
             import os
 
             os._exit(-1)

@@ -13,6 +13,7 @@ import timeit
 import urllib.request
 import urllib.request
 import uuid
+import logging
 
 import bioformats.formatreader
 import numpy
@@ -31,8 +32,6 @@ import cellprofiler_core.setting.text.alphanumeric.name.image._external
 import cellprofiler_core.utilities.legacy
 import cellprofiler_core.utilities.utf16encode
 import cellprofiler_core.workspace
-
-logger = logging.getLogger(__name__)
 
 
 def _is_fp(x):
@@ -172,7 +171,7 @@ class Pipeline:
         if header.startswith("CellProfiler Pipeline: http://www.cellprofiler.org"):
             return True
         if re.search(cellprofiler_core.pipeline.SAD_PROOFPOINT_COOKIE, header):
-            logger.info('print_emoji(":cat_crying_because_of_proofpoint:")')
+            logging.info('print_emoji(":cat_crying_because_of_proofpoint:")')
             return True
         return False
 
@@ -881,9 +880,7 @@ class Pipeline:
 
             last_image_number = None
 
-            cellprofiler_core.pipeline.pipeline_stats_logger.info(
-                "Times reported are CPU and Wall-clock times for each module"
-            )
+            logging.info("Times reported are CPU and Wall-clock times for each module")
 
             __group = self.group(
                 grouping,
@@ -992,7 +989,7 @@ class Pipeline:
                     try:
                         self.run_module(module, workspace)
                     except Exception as instance:
-                        logger.error(
+                        logging.error(
                             "Error detected during run of module %s",
                             module.module_name,
                             exc_info=True,
@@ -1011,7 +1008,7 @@ class Pipeline:
                     cpu_delta_sec = max(0, cpu_t1 - cpu_t0)
                     wall_delta_sec = max(0, wall_t1 - wall_t0)
 
-                    cellprofiler_core.pipeline.pipeline_stats_logger.info(
+                    logging.info(
                         "%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs"
                         % (
                             start_time.ctime(),
@@ -1031,7 +1028,7 @@ class Pipeline:
 
                             fig.Refresh()
                         except Exception as instance:
-                            logger.error(
+                            logging.error(
                                 "Failed to display results for module %s",
                                 module.module_name,
                                 exc_info=True,
@@ -1200,7 +1197,7 @@ class Pipeline:
                 # the UI has cancelled the run. Forward exception upward.
                 raise
             except Exception as exception:
-                logger.error(
+                logging.error(
                     "Error detected during run of module %s#%d",
                     module.module_name,
                     module.module_num,
@@ -1224,7 +1221,7 @@ class Pipeline:
             cpu_t1 = sum(os_times[:-1])
             cpu_delta_secs = max(0, cpu_t1 - cpu_t0)
             wall_delta_secs = max(0, wall_t1 - wall_t0)
-            cellprofiler_core.pipeline.pipeline_stats_logger.info(
+            logging.info(
                 "%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs"
                 % (
                     start_time.ctime(),
@@ -1565,7 +1562,7 @@ class Pipeline:
                 workspace.set_module(module)
                 module.prepare_to_create_batch(workspace, fn_alter_path)
             except Exception as instance:
-                logger.error(
+                logging.error(
                     "Failed to collect batch information for module %s",
                     module.module_name,
                     exc_info=True,
@@ -1674,7 +1671,7 @@ class Pipeline:
             try:
                 module.prepare_group(workspace, grouping, image_numbers)
             except Exception as instance:
-                logger.error(
+                logging.error(
                     "Failed to prepare group in module %s",
                     module.module_name,
                     exc_info=True,
@@ -1834,7 +1831,7 @@ class Pipeline:
     def enable_module(self, module):
         """Enable a module = make it executable"""
         if module.enabled:
-            logger.warning(
+            logging.warning(
                 "Asked to enable module %s, but it was already enabled"
                 % module.module_name
             )
@@ -1851,7 +1848,7 @@ class Pipeline:
     def disable_module(self, module):
         """Disable a module = prevent it from being executed"""
         if not module.enabled:
-            logger.warning(
+            logging.warning(
                 "Asked to disable module %s, but it was already disabled"
                 % module.module_name
             )
@@ -1979,7 +1976,7 @@ class Pipeline:
         try:
             urls = file_list.get_filelist()
         except Exception as instance:
-            logger.error("Failed to get file list from workspace", exc_info=True)
+            logging.error("Failed to get file list from workspace", exc_info=True)
             x = cellprofiler_core.pipeline.event.IPDLoadException(
                 "Failed to get file list from workspace"
             )

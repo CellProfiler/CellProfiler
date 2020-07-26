@@ -21,7 +21,6 @@ import cellprofiler_core.utilities.legacy
 
 install_aliases()
 
-logger = logging.getLogger(__name__)
 
 version_number = 1
 VERSION = "Version"
@@ -167,7 +166,7 @@ class HDF5Dict(object):
         self.is_temporary = is_temporary and (hdf5_filename is not None)
         self.filename = hdf5_filename
         self.top_level_group_name = top_level_group_name
-        logger.debug(
+        logging.debug(
             "HDF5Dict.__init__(): %s, temporary=%s, copy=%s, mode=%s",
             self.filename,
             self.is_temporary,
@@ -342,12 +341,12 @@ class HDF5Dict(object):
                                     )
             self.hdf5_file.flush()
         except Exception as e:
-            logger.exception("Failed during initial processing of %s" % self.filename)
+            logging.exception("Failed during initial processing of %s" % self.filename)
             self.hdf5_file.close()
             raise
 
     def __del__(self):
-        logger.debug(
+        logging.debug(
             "HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary
         )
         self.close()
@@ -363,7 +362,7 @@ class HDF5Dict(object):
                 self.hdf5_file.close()
                 os.unlink(self.filename)
             except Exception as e:
-                logger.warning(
+                logging.warning(
                     "So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now."
                     % self.filename
                 )
@@ -374,7 +373,7 @@ class HDF5Dict(object):
         del self.top_group
 
     def flush(self):
-        logger.debug(
+        logging.debug(
             "HDF5Dict.flush(): %s, temporary=%s", self.filename, self.is_temporary
         )
         # 2012-06-29: Ray is seeing a bug where file_contents() returns an

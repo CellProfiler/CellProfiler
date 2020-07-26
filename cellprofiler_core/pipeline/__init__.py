@@ -1,62 +1,41 @@
 import bisect
 import re
 
-import future.standard_library
 import numpy
 
-import cellprofiler_core
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.object
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
-import cellprofiler_core.utilities.legacy
-import cellprofiler_core.utilities.utf16encode
-import cellprofiler_core.workspace
-from cellprofiler_core.pipeline._image_plane import ImagePlane
-from cellprofiler_core.pipeline._image_set_channel_descriptor import (
-    ImageSetChannelDescriptor,
-)
-from cellprofiler_core.pipeline._listener import Listener
-from cellprofiler_core.pipeline._pipeline import Pipeline
-from cellprofiler_core.pipeline.dependency._dependency import Dependency
-from cellprofiler_core.pipeline.dependency._image_dependency import ImageDependency
-from cellprofiler_core.pipeline.dependency._measurement_dependency import (
-    MeasurementDependency,
-)
-from cellprofiler_core.pipeline.dependency._object_dependency import ObjectDependency
-from cellprofiler_core.pipeline.event._end_run import EndRun
-from cellprofiler_core.pipeline.event._event import (
-    Event,
-    CancelledException,
-    PipelineLoadCancelledException,
-)
-from cellprofiler_core.pipeline.event._file_walk_ended import FileWalkEnded
-from cellprofiler_core.pipeline.event._file_walk_started import FileWalkStarted
-from cellprofiler_core.pipeline.event._ipd_load_exception import IPDLoadException
-from cellprofiler_core.pipeline.event._load_exception import LoadException
-from cellprofiler_core.pipeline.event._module_added import ModuleAdded
-from cellprofiler_core.pipeline.event._module_disabled import ModuleDisabled
-from cellprofiler_core.pipeline.event._module_edited import ModuleEdited
-from cellprofiler_core.pipeline.event._module_enabled import ModuleEnabled
-from cellprofiler_core.pipeline.event._module_moved import ModuleMoved
-from cellprofiler_core.pipeline.event._module_removed import ModuleRemoved
-from cellprofiler_core.pipeline.event._module_show_window import ModuleShowWindow
-from cellprofiler_core.pipeline.event._pipeline_cleared import PipelineCleared
-from cellprofiler_core.pipeline.event._pipeline_loaded import PipelineLoaded
-from cellprofiler_core.pipeline.event._prepare_run_error import PrepareRunError
-from cellprofiler_core.pipeline.event._urls_added import URLsAdded
-from cellprofiler_core.pipeline.event._urls_removed import URLsRemoved
-from cellprofiler_core.pipeline.event.run_exception._post_run_exception import (
-    PostRunException,
-)
-from cellprofiler_core.pipeline.event.run_exception._prepare_run_exception import (
-    PrepareRunException,
-)
-from cellprofiler_core.pipeline.event.run_exception._run_exception import RunException
-from cellprofiler_core.pipeline.io import dump
-
-future.standard_library.install_aliases()
+from ._image_plane import ImagePlane
+from ._image_set_channel_descriptor import ImageSetChannelDescriptor
+from ._listener import Listener
+from ._pipeline import Pipeline
+from .dependency import Dependency
+from .dependency import ImageDependency
+from .dependency import MeasurementDependency
+from .dependency import ObjectDependency
+from .event import EndRun
+from .event import Event
+from .event import CancelledException
+from .event import PipelineLoadCancelledException
+from .event import FileWalkEnded
+from .event import FileWalkStarted
+from .event import IPDLoadException
+from .event import LoadException
+from .event import ModuleAdded
+from .event import ModuleDisabled
+from .event import ModuleEdited
+from .event import ModuleEnabled
+from .event import ModuleMoved
+from .event import ModuleRemoved
+from .event import ModuleShowWindow
+from .event import PipelineCleared
+from .event import PipelineLoaded
+from .event import PrepareRunError
+from .event import URLsAdded
+from .event import URLsRemoved
+from .event.run_exception import PostRunException
+from .event.run_exception import PrepareRunException
+from .event.run_exception import RunException
+from .io import dump
+from ..utilities.legacy import cmp
 
 try:
     # implemented in scipy.io.matlab.miobase.py@5582
@@ -68,9 +47,9 @@ except:
 
 
 """The measurement name of the image number"""
-IMAGE_NUMBER = cellprofiler_core.measurement.IMAGE_NUMBER
-GROUP_NUMBER = cellprofiler_core.measurement.GROUP_NUMBER
-GROUP_INDEX = cellprofiler_core.measurement.GROUP_INDEX
+IMAGE_NUMBER = "ImageNumber"
+GROUP_NUMBER = "Group_Number"
+GROUP_INDEX = "Group_Index"
 CURRENT = "Current"
 NUMBER_OF_IMAGE_SETS = "NumberOfImageSets"
 NUMBER_OF_MODULES = "NumberOfModules"
@@ -384,7 +363,7 @@ def add_all_measurements(handles, measurements):
     has_image_number = numpy.zeros(max_image_number + 1, bool)
     has_image_number[image_numbers] = True
     for object_name in object_names:
-        if object_name == cellprofiler_core.measurement.EXPERIMENT:
+        if object_name == "Experiment":
             continue
         mapping = map_feature_names(measurements.get_feature_names(object_name))
         object_dtype = make_cell_struct_dtype(list(mapping.keys()))
@@ -405,13 +384,13 @@ def add_all_measurements(handles, measurements):
                     feature_measurements[0, i - 1] = ddata
                 else:
                     feature_measurements[0, i - 1] = numpy.zeros(0)
-    if cellprofiler_core.measurement.EXPERIMENT in measurements.object_names:
+    if "Experiment" in measurements.object_names:
         mapping = map_feature_names(
-            measurements.get_feature_names(cellprofiler_core.measurement.EXPERIMENT)
+            measurements.get_feature_names("Experiment")
         )
         object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         experiment_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
-        npy_measurements[cellprofiler_core.measurement.EXPERIMENT][
+        npy_measurements["Experiment"][
             0, 0
         ] = experiment_measurements
         for field, feature_name in list(mapping.items()):
@@ -578,7 +557,7 @@ def find_image_plane_details(exemplar, ipds):
     Returns the match or None if not found
     """
     pos = bisect.bisect_left(ipds, exemplar)
-    if pos == len(ipds) or cellprofiler_core.utilities.legacy.cmp(ipds[pos], exemplar):
+    if pos == len(ipds) or cmp(ipds[pos], exemplar):
         return None
     return ipds[pos]
 

@@ -215,7 +215,8 @@ HasImagePlaneDetails:False"""
             [
                 len(columns) > 3
                 and column[0] == cellprofiler_core.measurement.EXPERIMENT
-                and column[1] == cellprofiler_core.constants.pipeline.M_MODIFICATION_TIMESTAMP
+                and column[1]
+                == cellprofiler_core.constants.pipeline.M_MODIFICATION_TIMESTAMP
                 and column[3][cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN]
                 for column in columns
             ]

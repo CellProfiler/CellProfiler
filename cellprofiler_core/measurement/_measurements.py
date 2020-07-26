@@ -680,8 +680,8 @@ class Measurements:
 
         # some code adds ImageNumber and ObjectNumber measurements explicitly
         if feature_name in (
-                cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
-                cellprofiler_core.measurement.OBJECT_NUMBER,
+            cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
+            cellprofiler_core.measurement.OBJECT_NUMBER,
         ):
             return
 
@@ -733,7 +733,7 @@ class Measurements:
             ):
                 if not self.hdf5_dict.has_data(
                     cellprofiler_core.measurement.IMAGE,
-                        cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
+                    cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
                     n,
                 ):
                     self.hdf5_dict[
@@ -747,7 +747,9 @@ class Measurements:
                     )
                 ) and (d is not None):
                     self.hdf5_dict[
-                        object_name, cellprofiler_core.constants.pipeline.IMAGE_NUMBER, n
+                        object_name,
+                        cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
+                        n,
                     ] = [n] * len(d)
                 self.hdf5_dict[
                     object_name, cellprofiler_core.measurement.OBJECT_NUMBER, n
@@ -1113,7 +1115,7 @@ class Measurements:
         """
         if self.has_feature(
             cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.constants.pipeline.GROUP_NUMBER,
+            cellprofiler_core.constants.pipeline.GROUP_NUMBER,
         ):
             image_numbers = self.get_image_numbers()
             if len(image_numbers) > 0:
@@ -1635,7 +1637,9 @@ class Measurements:
         #              then use it to look up the values per image set
         #              and cache.
         #
-        return {cellprofiler_core.constants.pipeline.IMAGE_NUMBER: str(self.image_number)}
+        return {
+            cellprofiler_core.constants.pipeline.IMAGE_NUMBER: str(self.image_number)
+        }
 
     def get_grouping_keys(self):
         """Get a key, value dictionary that uniquely defines the group

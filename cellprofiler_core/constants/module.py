@@ -86,9 +86,7 @@ conditions you want to include.
 {REGEXP_HELP_REF}
 """.format(
     **{
-        "IMAGES_USING_RULES_ICON": image_resource(
-            "Images_UsingRules.png"
-        ),
+        "IMAGES_USING_RULES_ICON": image_resource("Images_UsingRules.png"),
         "REGEXP_HELP_REF": REGEXP_HELP_REF,
     }
 )

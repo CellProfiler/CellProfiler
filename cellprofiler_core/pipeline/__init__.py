@@ -82,7 +82,7 @@ def add_all_images(handles, image_set, object_set):
         if objects.has_small_removed_segmented():
             images[
                 "SmallRemovedSegmented" + object_name
-                ] = objects.small_removed_segmented
+            ] = objects.small_removed_segmented
 
     npy_images = numpy.ndarray(
         (1, 1), dtype=make_cell_struct_dtype(list(images.keys()))
@@ -235,14 +235,10 @@ def add_all_measurements(handles, measurements):
                 else:
                     feature_measurements[0, i - 1] = numpy.zeros(0)
     if "Experiment" in measurements.object_names:
-        mapping = map_feature_names(
-            measurements.get_feature_names("Experiment")
-        )
+        mapping = map_feature_names(measurements.get_feature_names("Experiment"))
         object_dtype = make_cell_struct_dtype(list(mapping.keys()))
         experiment_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
-        npy_measurements["Experiment"][
-            0, 0
-        ] = experiment_measurements
+        npy_measurements["Experiment"][0, 0] = experiment_measurements
         for field, feature_name in list(mapping.items()):
             feature_measurements = numpy.ndarray((1, 1), dtype="object")
             feature_measurements[0, 0] = measurements.get_experiment_measurement(

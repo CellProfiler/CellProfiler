@@ -89,9 +89,7 @@ class Module:
         self.create_settings()
 
     def __setattr__(self, slot, value):
-        if hasattr(self, slot) and isinstance(
-            getattr(self, slot), Setting
-        ):
+        if hasattr(self, slot) and isinstance(getattr(self, slot), Setting):
             assert isinstance(value, Setting), (
                 "Overwriting %s's %s existing Setting with value of type %s.\nUse __dict__['%s'] = ... to override."
                 % (self.module_name, slot, type(value), slot)
@@ -137,21 +135,13 @@ class Module:
                         x = x[0]
                 self.__notes.append(x)
         if SHOW_WINDOW in settings.dtype.fields:
-            self.__show_window = (
-                    settings[SHOW_WINDOW][0, idx] != 0
-            )
+            self.__show_window = settings[SHOW_WINDOW][0, idx] != 0
         if BATCH_STATE in settings.dtype.fields:
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
-            self.batch_state = numpy.array(
-                settings[BATCH_STATE][0, idx].tostring()
-            )
-        setting_count = settings[NUMBERS_OF_VARIABLES][
-            0, idx
-        ]
-        variable_revision_number = settings[
-            VARIABLE_REVISION_NUMBERS
-        ][0, idx]
+            self.batch_state = numpy.array(settings[BATCH_STATE][0, idx].tostring())
+        setting_count = settings[NUMBERS_OF_VARIABLES][0, idx]
+        variable_revision_number = settings[VARIABLE_REVISION_NUMBERS][0, idx]
         module_name = settings[MODULE_NAMES][0, idx][0]
         for i in range(0, setting_count):
             value_cell = settings[VARIABLE_VALUES][idx, i]
@@ -306,48 +296,34 @@ class Module:
     def save_to_handles(self, handles):
         module_idx = self.module_num - 1
         setting = handles[SETTINGS][0, 0]
-        setting[MODULE_NAMES][0, module_idx] = str(
-            self.module_class()
-        )
+        setting[MODULE_NAMES][0, module_idx] = str(self.module_class())
         setting[MODULE_NOTES][0, module_idx] = numpy.ndarray(
             shape=(len(self.notes), 1), dtype="object"
         )
         for i in range(0, len(self.notes)):
-            setting[MODULE_NOTES][0, module_idx][
-                i, 0
-            ] = self.notes[i]
-        setting[NUMBERS_OF_VARIABLES][0, module_idx] = len(
-            self.settings()
-        )
+            setting[MODULE_NOTES][0, module_idx][i, 0] = self.notes[i]
+        setting[NUMBERS_OF_VARIABLES][0, module_idx] = len(self.settings())
         for i in range(0, len(self.settings())):
             variable = self.settings()[i]
             if len(str(variable)) > 0:
-                setting[VARIABLE_VALUES][
-                    module_idx, i
-                ] = variable.get_unicode_value()
-            if isinstance(
-                variable, Name
-            ):
-                setting[VARIABLE_INFO_TYPES][
-                    module_idx, i
-                ] = str("%s indep" % variable.group)
+                setting[VARIABLE_VALUES][module_idx, i] = variable.get_unicode_value()
+            if isinstance(variable, Name):
+                setting[VARIABLE_INFO_TYPES][module_idx, i] = str(
+                    "%s indep" % variable.group
+                )
             elif isinstance(variable, Subscriber):
-                setting[VARIABLE_INFO_TYPES][
-                    module_idx, i
-                ] = str(variable.group)
+                setting[VARIABLE_INFO_TYPES][module_idx, i] = str(variable.group)
         setting[VARIABLE_REVISION_NUMBERS][
             0, module_idx
         ] = self.variable_revision_number
         setting[MODULE_REVISION_NUMBERS][0, module_idx] = 0
-        setting[SHOW_WINDOW][0, module_idx] = (
-            1 if self.show_window else 0
-        )
+        setting[SHOW_WINDOW][0, module_idx] = 1 if self.show_window else 0
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[BATCH_STATE][
-            0, module_idx
-        ] = numpy.fromstring(self.batch_state.tostring(), numpy.uint8)
+        setting[BATCH_STATE][0, module_idx] = numpy.fromstring(
+            self.batch_state.tostring(), numpy.uint8
+        )
 
     @staticmethod
     def in_batch_mode():
@@ -916,9 +892,7 @@ class Module:
         that uses the DirectoryPath setting.
         """
         for setting in self.visible_settings():
-            if isinstance(
-                setting, Directory
-            ):
+            if isinstance(setting, Directory):
                 return True
         return False
 

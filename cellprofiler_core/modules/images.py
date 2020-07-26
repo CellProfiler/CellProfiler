@@ -147,12 +147,8 @@ particular wavelength.
 .. _“lossless”: http://www.techterms.com/definition/lossless
 """.format(
     **{
-        "IMG_PANEL_BLANK": image_resource(
-            "Images_FilelistPanel_Blank.png"
-        ),
-        "IMG_PANEL_FILLED": image_resource(
-            "Images_FilelistPanel_Filled.png"
-        ),
+        "IMG_PANEL_BLANK": image_resource("Images_FilelistPanel_Blank.png"),
+        "IMG_PANEL_FILLED": image_resource("Images_FilelistPanel_Filled.png"),
     }
 )
 
@@ -238,9 +234,7 @@ Specify a set of rules to narrow down the files to be analyzed.
 
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
-                **{
-                    "FILTER_RULES_BUTTONS_HELP": FILTER_RULES_BUTTONS_HELP
-                }
+                **{"FILTER_RULES_BUTTONS_HELP": FILTER_RULES_BUTTONS_HELP}
             ),
         )
 
@@ -279,9 +273,7 @@ pass the current filter.
     @staticmethod
     def url_to_modpath(url):
         if not url.lower().startswith("file:"):
-            schema, rest = HDF5FileList.split_url(
-                url
-            )
+            schema, rest = HDF5FileList.split_url(url)
             return (
                 [schema] + rest[0:1] + [urllib.parse.unquote(part) for part in rest[1:]]
             )

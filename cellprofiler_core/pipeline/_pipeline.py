@@ -157,7 +157,9 @@ class Pipeline:
         fd.seek(0)
         if header.startswith("CellProfiler Pipeline: http://www.cellprofiler.org"):
             return True
-        if re.search(cellprofiler_core.constants.pipeline.SAD_PROOFPOINT_COOKIE, header):
+        if re.search(
+            cellprofiler_core.constants.pipeline.SAD_PROOFPOINT_COOKIE, header
+        ):
             logging.info('print_emoji(":cat_crying_because_of_proofpoint:")')
             return True
         return False
@@ -317,8 +319,8 @@ class Pipeline:
                 elif version == 5:
                     pass
             elif kwd in (
-                    cellprofiler_core.constants.pipeline.H_SVN_REVISION,
-                    cellprofiler_core.constants.pipeline.H_DATE_REVISION,
+                cellprofiler_core.constants.pipeline.H_SVN_REVISION,
+                cellprofiler_core.constants.pipeline.H_DATE_REVISION,
             ):
                 pipeline_version = int(value)
                 cellprofiler_core.pipeline.CURRENT_VERSION = int(
@@ -849,7 +851,7 @@ class Pipeline:
 
             if len(to_remove) > 0 and measurements.has_feature(
                 cellprofiler_core.measurement.IMAGE,
-                    cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
+                cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
             ):
                 for image_number in numpy.unique(to_remove):
                     measurements.remove_measurement(
@@ -1063,9 +1065,9 @@ class Pipeline:
                         )
 
                     while (
-                            workspace.disposition
-                            == cellprofiler_core.constants.workspace.DISPOSITION_PAUSE
-                            and frame is not None
+                        workspace.disposition
+                        == cellprofiler_core.constants.workspace.DISPOSITION_PAUSE
+                        and frame is not None
                     ):
                         # try to leave measurements temporary file in a readable state
                         measurements.flush()
@@ -1078,8 +1080,8 @@ class Pipeline:
                     ):
                         break
                     elif (
-                            workspace.disposition
-                            == cellprofiler_core.constants.workspace.DISPOSITION_CANCEL
+                        workspace.disposition
+                        == cellprofiler_core.constants.workspace.DISPOSITION_CANCEL
                     ):
                         measurements.add_experiment_measurement(
                             cellprofiler_core.constants.pipeline.EXIT_STATUS, "Failure"
@@ -1233,7 +1235,10 @@ class Pipeline:
                 ] = cpu_delta_secs
 
             measurements.flush()
-            if workspace.disposition == cellprofiler_core.constants.workspace.DISPOSITION_SKIP:
+            if (
+                workspace.disposition
+                == cellprofiler_core.constants.workspace.DISPOSITION_SKIP
+            ):
                 break
         return cellprofiler_core.workspace.Workspace(
             self, None, measurements, object_set, measurements, None, outlines=outlines
@@ -1321,10 +1326,12 @@ class Pipeline:
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(
-            cellprofiler_core.constants.pipeline.M_VERSION, cellprofiler_core.__version__
+            cellprofiler_core.constants.pipeline.M_VERSION,
+            cellprofiler_core.__version__,
         )
         m.add_experiment_measurement(
-            cellprofiler_core.constants.pipeline.M_TIMESTAMP, datetime.datetime.now().isoformat()
+            cellprofiler_core.constants.pipeline.M_TIMESTAMP,
+            datetime.datetime.now().isoformat(),
         )
         m.flush()
 
@@ -1414,7 +1421,7 @@ class Pipeline:
 
         if not m.has_feature(
             cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.constants.pipeline.GROUP_NUMBER,
+            cellprofiler_core.constants.pipeline.GROUP_NUMBER,
         ):
             # Legacy pipelines don't populate group # or index
             key_names, groupings = self.get_groupings(workspace)

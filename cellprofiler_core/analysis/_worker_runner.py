@@ -3,9 +3,10 @@ import threading
 
 import zmq
 
-from cellprofiler_core.pipeline import CancelledException
+from ..constants.worker import NOTIFY_ADDR
+from ..constants.worker import NOTIFY_STOP
+from ..pipeline import CancelledException
 from ..worker import Worker
-from ..constants.worker import NOTIFY_ADDR, NOTIFY_STOP
 
 
 class WorkerRunner(threading.Thread):

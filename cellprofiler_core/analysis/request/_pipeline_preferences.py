@@ -1,7 +1,5 @@
-import cellprofiler_core.utilities.zmq.communicable.request._analysis_request
+from ...utilities.zmq.communicable.request import AnalysisRequest
 
 
-class PipelinePreferences(
-    cellprofiler_core.utilities.zmq.communicable.request._analysis_request.AnalysisRequest
-):
+class PipelinePreferences(AnalysisRequest):
     pass

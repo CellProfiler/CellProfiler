@@ -1,8 +1,8 @@
 import threading
 import uuid
 
-import cellprofiler_core.measurement
 from ._runner import Runner
+from ..measurement import Measurements
 
 
 class Analysis:
@@ -39,7 +39,7 @@ class Analysis:
         to measurements_filename, optionally starting with previous
         measurements."""
         self.pipeline = pipeline
-        initial_measurements = cellprofiler_core.measurement.Measurements(
+        initial_measurements = Measurements(
             copy=initial_measurements
         )
         self.initial_measurements_buf = initial_measurements.file_contents()

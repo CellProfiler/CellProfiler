@@ -1,15 +1,13 @@
-import cellprofiler_core.utilities.zmq.communicable.request._analysis_request
+from ...utilities.zmq.communicable.request import AnalysisRequest
 
 
-class DisplayPostGroup(
-    cellprofiler_core.utilities.zmq.communicable.request._analysis_request.AnalysisRequest
-):
+class DisplayPostGroup(AnalysisRequest):
     """Request a post-group display
 
     This is a message sent to the UI from the analysis worker"""
 
     def __init__(self, analysis_id, module_num, display_data, image_set_number):
-        cellprofiler_core.utilities.zmq.communicable.request._analysis_request.AnalysisRequest.__init__(
+        AnalysisRequest.__init__(
             self,
             analysis_id,
             module_num=module_num,

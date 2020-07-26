@@ -8,7 +8,6 @@ import traceback
 import javabridge
 import zmq
 
-from ..constants.worker import all_measurements
 from ._pipeline_event_listener import PipelineEventListener
 from ..analysis.reply import ImageSetSuccess
 from ..analysis.reply import ImageSetSuccessWithDictionary
@@ -26,6 +25,7 @@ from ..analysis.request import Work
 from ..constants.worker import ED_STOP
 from ..constants.worker import NOTIFY_ADDR
 from ..constants.worker import NOTIFY_STOP
+from ..constants.worker import all_measurements
 from ..constants.worker import the_zmq_context
 from ..measurement import Measurements
 from ..measurement import load_measurements_from_buffer

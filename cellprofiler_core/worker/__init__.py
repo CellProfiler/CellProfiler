@@ -18,7 +18,6 @@ the analysis worker runs three threads:
                    stops the main thread's run loop.
 """
 
-
 import logging
 import os
 import sys
@@ -143,6 +142,7 @@ import numpy as np
 
 np.seterr(all="ignore")
 
+
 # to guarantee closing of measurements, we store all of them in a WeakSet, and
 # close them on exit.
 
@@ -181,7 +181,7 @@ def main():
         worker_thread.setDaemon(True)
         worker_thread.start()
         with KnimeBridgeServer(
-            the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
+                the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
         ):
             worker_thread.join()
 

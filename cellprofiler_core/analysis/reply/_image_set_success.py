@@ -1,4 +1,4 @@
-from cellprofiler_core.utilities.zmq.communicable.request import AnalysisRequest
+from ...utilities.zmq.communicable.request import AnalysisRequest
 
 
 class ImageSetSuccess(AnalysisRequest):

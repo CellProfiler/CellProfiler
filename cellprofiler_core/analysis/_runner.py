@@ -1,25 +1,57 @@
 import collections
 import io
+import logging
+import os
 import queue
 import subprocess
+import sys
 import tempfile
+import threading
 from typing import List, Any
 
 import numpy
 import psutil
 
-import cellprofiler_core.analysis.event
-import cellprofiler_core.analysis.reply
-import cellprofiler_core.analysis.request
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
-import cellprofiler_core.workspace
-from cellprofiler_core.analysis import *
+from . import ImageSetSuccess
 from ._worker_runner import WorkerRunner
-from ..utilities.zmq import get_announcer_address, register_analysis
+from .event import Finished
+from .event import Paused
+from .event import Progress
+from .event import Resumed
+from .event import Started
+from .reply import Ack
+from .reply import ImageSetSuccessWithDictionary
+from .reply import Interaction
+from .reply import NoWork
+from .reply import OmeroLogin
+from .reply import SharedDictionary
+from .reply import Work
+from .request import AnalysisCancel
+from .request import DebugComplete
+from .request import DebugWaiting
+from .request import Display
+from .request import DisplayPostGroup
+from .request import DisplayPostRun
+from .request import ExceptionReport
+from .request import InitialMeasurements
+from .request import MeasurementsReport
+from .request import PipelinePreferences
+from ..image import ImageSetList
+from ..measurement import Measurements
+from ..measurement import load_measurements_from_buffer
+from ..pipeline import dump
+from ..preferences import get_plugin_directory
+from ..preferences import get_temporary_directory
+from ..preferences import preferences_as_dict
+from ..utilities.analysis import close_all_on_exec
+from ..utilities.analysis import find_analysis_worker_source
+from ..utilities.analysis import find_python
+from ..utilities.analysis import find_worker_env
+from ..utilities.zmq import get_announcer_address
+from ..utilities.zmq import register_analysis
 from ..utilities.zmq.communicable.reply import Reply
+from ..worker import start_daemon_thread
+from ..workspace import Workspace
 
 
 class Runner:
@@ -112,7 +144,7 @@ class Runner:
         self.stop_workers()
 
         start_signal = threading.Semaphore(0)
-        self.interface_thread = cellprofiler_core.analysis.start_daemon_thread(
+        self.interface_thread = start_daemon_thread(
             target=self.interface,
             args=(start_signal,),
             kwargs=dict(overwrite=overwrite),
@@ -122,7 +154,7 @@ class Runner:
         # Wait for signal on interface started.
         #
         start_signal.acquire()
-        self.jobserver_thread = cellprofiler_core.analysis.start_daemon_thread(
+        self.jobserver_thread = start_daemon_thread(
             target=self.jobserver,
             args=(self.analysis_id, start_signal),
             name="AnalysisRunner.jobserver",
@@ -177,7 +209,7 @@ class Runner:
         self.event_listener(evt)
 
     def post_run_display_handler(self, workspace, module):
-        event = cellprofiler_core.analysis.request.DisplayPostRun(
+        event = DisplayPostRun(
             module.module_num, workspace.display_data
         )
         self.event_listener(event)
@@ -208,16 +240,16 @@ class Runner:
             initial_measurements = None
             # Make a temporary measurements file.
             fd, filename = tempfile.mkstemp(
-                ".h5", dir=cellprofiler_core.preferences.get_temporary_directory()
+                ".h5", dir=get_temporary_directory()
             )
             try:
                 fd = os.fdopen(fd, "wb")
                 fd.write(self.initial_measurements_buf)
                 fd.close()
-                initial_measurements = cellprofiler_core.measurement.Measurements(
+                initial_measurements = Measurements(
                     filename=filename, mode="r"
                 )
-                measurements = cellprofiler_core.measurement.Measurements(
+                measurements = Measurements(
                     image_set_start=None, copy=initial_measurements, mode="a"
                 )
             finally:
@@ -227,13 +259,13 @@ class Runner:
 
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
-            workspace = cellprofiler_core.workspace.Workspace(
+            workspace = Workspace(
                 self.pipeline,
                 None,
                 None,
                 None,
                 measurements,
-                cellprofiler_core.image.ImageSetList(),
+                ImageSetList(),
             )
 
             if image_set_end is None:
@@ -245,7 +277,7 @@ class Runner:
                 )
             )
 
-            self.post_event(cellprofiler_core.analysis.event.Started())
+            self.post_event(Started())
             posted_analysis_started = True
 
             # reset the status of every image set that needs to be processed
@@ -254,19 +286,19 @@ class Runner:
                 overwrite = True
             if has_groups and not overwrite:
                 if not measurements.has_feature(
-                    cellprofiler_core.measurement.IMAGE, self.STATUS
+                    "Image", self.STATUS
                 ):
                     overwrite = True
                 else:
                     group_status = {}
                     for image_number in measurements.get_image_numbers():
                         group_number = measurements[
-                            cellprofiler_core.measurement.IMAGE,
-                            cellprofiler_core.measurement.GROUP_NUMBER,
+                            "Image",
+                            "Group_Number",
                             image_number,
                         ]
                         status = measurements[
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             self.STATUS,
                             image_number,
                         ]
@@ -282,14 +314,14 @@ class Runner:
                     overwrite
                     or (
                         not measurements.has_measurements(
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             self.STATUS,
                             image_set_number,
                         )
                     )
                     or (
                         measurements[
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             self.STATUS,
                             image_set_number,
                         ]
@@ -299,15 +331,15 @@ class Runner:
                     needs_reset = True
                 elif has_groups:
                     group_number = measurements[
-                        cellprofiler_core.measurement.IMAGE,
-                        cellprofiler_core.measurement.GROUP_NUMBER,
+                        "Image",
+                        "Group_Number",
                         image_set_number,
                     ]
                     if group_status[group_number] != self.STATUS_DONE:
                         needs_reset = True
                 if needs_reset:
                     measurements[
-                        cellprofiler_core.measurement.IMAGE,
+                        "Image",
                         self.STATUS,
                         image_set_number,
                     ] = self.STATUS_UNPROCESSED
@@ -321,13 +353,13 @@ class Runner:
                 job_groups = {}
                 for image_set_number in image_sets_to_process:
                     group_number = measurements[
-                        cellprofiler_core.measurement.IMAGE,
-                        cellprofiler_core.measurement.GROUP_NUMBER,
+                        "Image",
+                        "Group_Number",
                         image_set_number,
                     ]
                     group_index = measurements[
-                        cellprofiler_core.measurement.IMAGE,
-                        cellprofiler_core.measurement.GROUP_INDEX,
+                        "Image",
+                        "Group_Index",
                         image_set_number,
                     ]
                     job_groups[group_number] = job_groups.get(group_number, []) + [
@@ -369,7 +401,7 @@ class Runner:
                 while not self.received_measurements_queue.empty():
                     image_numbers, buf = self.received_measurements_queue.get()
                     image_numbers = [int(i) for i in image_numbers]
-                    recd_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
+                    recd_measurements = load_measurements_from_buffer(
                         buf
                     )
                     self.copy_recieved_measurements(
@@ -383,7 +415,7 @@ class Runner:
                     image_set_numbers = self.in_process_queue.get()
                     for image_set_number in image_set_numbers:
                         measurements[
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             self.STATUS,
                             int(image_set_number),
                         ] = self.STATUS_IN_PROCESS
@@ -392,14 +424,14 @@ class Runner:
                 while not self.finished_queue.empty():
                     finished_req = self.finished_queue.get()
                     measurements[
-                        cellprofiler_core.measurement.IMAGE,
+                        "Image",
                         self.STATUS,
                         int(finished_req.image_set_number),
                     ] = self.STATUS_FINISHED_WAITING
                     if waiting_for_first_imageset:
                         assert isinstance(
                             finished_req,
-                            cellprofiler_core.analysis.reply.ImageSetSuccessWithDictionary,
+                            ImageSetSuccessWithDictionary,
                         )
                         self.shared_dicts = finished_req.shared_dicts
                         waiting_for_first_imageset = False
@@ -408,18 +440,18 @@ class Runner:
                         # queue them now that the shared state is available.
                         for job in job_groups:
                             self.work_queue.put((job, worker_runs_post_group, False))
-                    finished_req.reply(cellprofiler_core.analysis.reply.Ack())
+                    finished_req.reply(Ack())
 
                 # check progress and report
                 counts = collections.Counter(
                     measurements[
-                        cellprofiler_core.measurement.IMAGE,
+                        "Image",
                         self.STATUS,
                         image_set_number,
                     ]
                     for image_set_number in image_sets_to_process
                 )
-                self.post_event(cellprofiler_core.analysis.event.Progress(counts))
+                self.post_event(Progress(counts))
 
                 # Are we finished?
                 if counts[self.STATUS_DONE] == len(image_sets_to_process):
@@ -428,7 +460,7 @@ class Runner:
                     if not worker_runs_post_group:
                         self.pipeline.post_group(workspace, {})
 
-                    workspace = cellprofiler_core.workspace.Workspace(
+                    workspace = Workspace(
                         self.pipeline, None, None, None, measurements, None, None
                     )
                     workspace.post_run_display_handler = self.post_run_display_handler
@@ -455,7 +487,7 @@ class Runner:
             if posted_analysis_started:
                 was_cancelled = self.cancelled
                 self.post_event(
-                    cellprofiler_core.analysis.event.Finished(
+                    Finished(
                         measurements, was_cancelled
                     )
                 )
@@ -475,22 +507,22 @@ class Runner:
         """
         measurements.copy_relationships(recd_measurements)
         for o in recd_measurements.get_object_names():
-            if o == cellprofiler_core.measurement.EXPERIMENT:
+            if o == "Experiment":
                 continue  # Written during prepare_run / post_run
-            elif o == cellprofiler_core.measurement.IMAGE:
+            elif o == "Image":
                 # Some have been previously written. It's worth the time
                 # to check values and only write changes
                 for feature in recd_measurements.get_feature_names(o):
                     if not measurements.has_feature(
-                        cellprofiler_core.measurement.IMAGE, feature
+                        "Image", feature
                     ):
                         f_image_numbers = image_numbers
                     else:
                         local_values = measurements[
-                            cellprofiler_core.measurement.IMAGE, feature, image_numbers
+                            "Image", feature, image_numbers
                         ]
                         remote_values = recd_measurements[
-                            cellprofiler_core.measurement.IMAGE, feature, image_numbers
+                            "Image", feature, image_numbers
                         ]
                         f_image_numbers = [
                             i
@@ -514,7 +546,7 @@ class Runner:
                     ]
         for image_set_number in image_numbers:
             measurements[
-                cellprofiler_core.measurement.IMAGE, self.STATUS, image_set_number
+                "Image", self.STATUS, image_set_number
             ] = self.STATUS_DONE
 
     def jobserver(self, analysis_id, start_signal):
@@ -540,7 +572,7 @@ class Runner:
 
             with self.jobserver_work_cv:
                 if self.paused and not i_was_paused_before:
-                    self.post_event(cellprofiler_core.analysis.event.Paused())
+                    self.post_event(Paused())
                     i_was_paused_before = True
                 if self.paused or request_queue.empty():
                     self.jobserver_work_cv.wait(
@@ -549,7 +581,7 @@ class Runner:
                     continue  # back to while... check that we're still running
 
             if i_was_paused_before:
-                self.post_event(cellprofiler_core.analysis.event.Resumed())
+                self.post_event(Resumed())
                 i_was_paused_before = False
 
             try:
@@ -557,22 +589,22 @@ class Runner:
             except queue.Empty:
                 continue
 
-            if isinstance(req, cellprofiler_core.analysis.request.PipelinePreferences):
+            if isinstance(req, PipelinePreferences):
                 logging.debug("Received pipeline preferences request")
                 req.reply(
                     Reply(
                         pipeline_blob=numpy.array(self.pipeline_as_string()),
-                        preferences=cellprofiler_core.preferences.preferences_as_dict(),
+                        preferences=preferences_as_dict(),
                     )
                 )
                 logging.debug("Replied to pipeline preferences request")
             elif isinstance(
-                req, cellprofiler_core.analysis.request.InitialMeasurements
+                req, InitialMeasurements
             ):
                 logging.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
                 logging.debug("Replied to initial measurements request")
-            elif isinstance(req, cellprofiler_core.analysis.request.Work):
+            elif isinstance(req, Work):
                 if not self.work_queue.empty():
                     logging.debug("Received work request")
                     (
@@ -581,7 +613,7 @@ class Runner:
                         wants_dictionary,
                     ) = self.work_queue.get()
                     req.reply(
-                        cellprofiler_core.analysis.reply.Work(
+                        Work(
                             image_set_numbers=job,
                             worker_runs_post_group=worker_runs_post_group,
                             wants_dictionary=wants_dictionary,
@@ -595,43 +627,43 @@ class Runner:
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
-                    req.reply(cellprofiler_core.analysis.reply.NoWork())
-            elif isinstance(req, cellprofiler_core.analysis.reply.ImageSetSuccess):
+                    req.reply(NoWork())
+            elif isinstance(req, ImageSetSuccess):
                 # interface() is responsible for replying, to allow it to
                 # request the shared_state dictionary if needed.
                 logging.debug("Received ImageSetSuccess")
                 self.queue_imageset_finished(req)
                 logging.debug("Enqueued ImageSetSuccess")
-            elif isinstance(req, cellprofiler_core.analysis.request.SharedDictionary):
+            elif isinstance(req, SharedDictionary):
                 logging.debug("Received shared dictionary request")
                 req.reply(
-                    cellprofiler_core.analysis.reply.SharedDictionary(
+                    SharedDictionary(
                         dictionaries=self.shared_dicts
                     )
                 )
                 logging.debug("Sent shared dictionary reply")
-            elif isinstance(req, cellprofiler_core.analysis.request.MeasurementsReport):
+            elif isinstance(req, MeasurementsReport):
                 logging.debug("Received measurements report")
                 self.queue_received_measurements(req.image_set_numbers, req.buf)
-                req.reply(cellprofiler_core.analysis.reply.Ack())
+                req.reply(Ack())
                 logging.debug("Acknowledged measurements report")
-            elif isinstance(req, cellprofiler_core.analysis.request.AnalysisCancel):
+            elif isinstance(req, AnalysisCancel):
                 # Signal the interface that we are cancelling
                 logging.debug("Received analysis worker cancel request")
                 with self.interface_work_cv:
                     self.cancelled = True
                     self.interface_work_cv.notify()
-                req.reply(cellprofiler_core.analysis.reply.Ack())
+                req.reply(Ack())
             elif isinstance(
                 req,
                 (
-                    cellprofiler_core.analysis.request.Interaction,
-                    cellprofiler_core.analysis.request.Display,
-                    cellprofiler_core.analysis.request.DisplayPostGroup,
-                    cellprofiler_core.analysis.request.ExceptionReport,
-                    cellprofiler_core.analysis.request.DebugWaiting,
-                    cellprofiler_core.analysis.request.DebugComplete,
-                    cellprofiler_core.analysis.request.OmeroLogin,
+                    Interaction,
+                    Display,
+                    DisplayPostGroup,
+                    ExceptionReport,
+                    DebugWaiting,
+                    DebugComplete,
+                    OmeroLogin,
                 ),
             ):
                 logging.debug("Enqueueing interactive request")
@@ -669,7 +701,7 @@ class Runner:
 
     def pipeline_as_string(self):
         s = io.StringIO()
-        cellprofiler_core.pipeline.dump(self.pipeline, s, version=5)
+        dump(self.pipeline, s, version=5)
         return s.getvalue()
 
     # Class methods for managing the worker pool
@@ -697,13 +729,13 @@ class Runner:
         # start workers
         for idx in range(num):
             if sys.platform == "darwin":
-                cellprofiler_core.analysis.close_all_on_exec()
+                close_all_on_exec()
 
             aw_args = [
                 "--work-announce",
                 cls.work_announce_address,
                 "--plugins-directory",
-                cellprofiler_core.preferences.get_plugin_directory(),
+                get_plugin_directory(),
             ]
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
@@ -719,7 +751,7 @@ class Runner:
 
                 worker = subprocess.Popen(
                     args,
-                    env=cellprofiler_core.analysis.find_worker_env(idx),
+                    env=find_worker_env(idx),
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -728,12 +760,12 @@ class Runner:
             else:
                 worker = subprocess.Popen(
                     [
-                        cellprofiler_core.analysis.find_python(),
+                        find_python(),
                         "-u",
-                        cellprofiler_core.analysis.find_analysis_worker_source(),
+                        find_analysis_worker_source(),
                     ]  # unbuffered
                     + aw_args,
-                    env=cellprofiler_core.analysis.find_worker_env(idx),
+                    env=find_worker_env(idx),
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -751,7 +783,7 @@ class Runner:
                     except:
                         break
 
-            cellprofiler_core.analysis.start_daemon_thread(
+            start_daemon_thread(
                 target=run_logger, args=(worker, idx), name="worker stdout logger"
             )
 

@@ -22,6 +22,7 @@ import psutil
 
 import cellprofiler_core.utilities
 import cellprofiler_core.utilities.utf16encode
+from cellprofiler_core.preferences._headless_configuration import HeadlessConfiguration
 
 """get_absolute_path - mode = output. Assume "." is the default output dir"""
 ABSPATH_OUTPUT = "abspath_output"
@@ -32,48 +33,8 @@ ABSPATH_IMAGE = "abspath_image"
 __python_root = os.path.split(os.path.dirname(cellprofiler_core.__file__))[0]
 __cp_root = os.path.split(__python_root)[0]
 
-
-class HeadlessConfig:
-    """
-    This class functions as a configuration set for headless runs.
-    The default config class is wx-based, which means we have to replace it
-    here with this psuedo-replacement that has the same interface
-    """
-
-    def __init__(self):
-        self.__preferences = {}
-
-    def Read(self, kwd):
-        return self.__preferences[kwd]
-
-    def ReadInt(self, kwd, default=0):
-        return int(self.__preferences.get(kwd, default))
-
-    def ReadBool(self, kwd, default=False):
-        return bool(self.__preferences.get(kwd, default))
-
-    def Write(self, kwd, value):
-        self.__preferences[kwd] = value
-
-    # wx implements these for their own version of the "Config" object
-    # Because this class is a mock config object without wx, we need to
-    # make its interface the same
-    WriteInt = Write
-    WriteBool = Write
-
-    def Exists(self, kwd):
-        return kwd in self.__preferences
-
-    def GetEntryType(self, kwd):
-        """Get the data type of the registry key.
-
-        Returns wx.Config.Type_String = 1
-        """
-        return 1
-
-
 __is_headless = False
-__headless_config = HeadlessConfig()
+__headless_config = HeadlessConfiguration()
 
 
 def set_headless():

@@ -9,6 +9,7 @@ import traceback
 import unittest
 import uuid
 import cellprofiler_core.analysis
+import cellprofiler_core.analysis.reply._server_exited
 import cellprofiler_core.constants.worker
 import cellprofiler_core.measurement
 import cellprofiler_core.module.identify
@@ -295,7 +296,7 @@ class TestAnalysisWorker(unittest.TestCase):
 
         self.awthread.ex(send_something)
         req = self.awthread.recv(self.work_socket)
-        req.reply(cellprofiler_core.analysis.ServerExited())
+        req.reply(cellprofiler_core.analysis.reply._server_exited.ServerExited())
         self.assertRaises(
             cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute
         )
@@ -389,7 +390,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Cancel and check for exit
         #
-        req.reply(cellprofiler_core.analysis.ServerExited())
+        req.reply(cellprofiler_core.analysis.reply._server_exited.ServerExited())
         self.assertRaises(
             cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute
         )
@@ -471,7 +472,7 @@ class TestAnalysisWorker(unittest.TestCase):
             #
             # Cancel and check for exit
             #
-            req.reply(cellprofiler_core.analysis.ServerExited())
+            req.reply(cellprofiler_core.analysis.reply._server_exited.ServerExited())
             self.assertRaises(
                 cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute
             )

@@ -4,16 +4,22 @@ import uuid
 import docutils.core
 import numpy
 
-import cellprofiler_core.constants.pipeline
-import cellprofiler_core.image
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.object
-import cellprofiler_core.pipeline
-import cellprofiler_core.setting
-import cellprofiler_core.setting.text._directory
-import cellprofiler_core.setting.text.alphanumeric.name._name
-import cellprofiler_core.setting.text.alphanumeric.name.image._file
+from ..constants.pipeline import BATCH_STATE
+from ..constants.pipeline import MODULE_NAMES
+from ..constants.pipeline import MODULE_NOTES
+from ..constants.pipeline import MODULE_REVISION_NUMBERS
+from ..constants.pipeline import NUMBERS_OF_VARIABLES
+from ..constants.pipeline import SETTINGS
+from ..constants.pipeline import SHOW_WINDOW
+from ..constants.pipeline import VARIABLE_INFO_TYPES
+from ..constants.pipeline import VARIABLE_REVISION_NUMBERS
+from ..constants.pipeline import VARIABLE_VALUES
+from ..setting import HiddenCount
+from ..setting import Setting
+from ..setting import ValidationError
+from ..setting.subscriber import Subscriber
+from ..setting.text import Directory
+from ..setting.text.alphanumeric.name import Name
 
 
 class Module:
@@ -84,9 +90,9 @@ class Module:
 
     def __setattr__(self, slot, value):
         if hasattr(self, slot) and isinstance(
-            getattr(self, slot), cellprofiler_core.setting.Setting
+            getattr(self, slot), Setting
         ):
-            assert isinstance(value, cellprofiler_core.setting.Setting), (
+            assert isinstance(value, Setting), (
                 "Overwriting %s's %s existing Setting with value of type %s.\nUse __dict__['%s'] = ... to override."
                 % (self.module_name, slot, type(value), slot)
             )
@@ -115,14 +121,14 @@ class Module:
         """
         self.__module_num = module_num
         idx = module_num - 1
-        settings = handles[cellprofiler_core.constants.pipeline.SETTINGS][0, 0]
+        settings = handles[SETTINGS][0, 0]
         setting_values = []
         self.__notes = []
         if (
-            cellprofiler_core.constants.pipeline.MODULE_NOTES in settings.dtype.fields
-            and settings[cellprofiler_core.constants.pipeline.MODULE_NOTES].shape[1] > idx
+            MODULE_NOTES in settings.dtype.fields
+            and settings[MODULE_NOTES].shape[1] > idx
         ):
-            n = settings[cellprofiler_core.constants.pipeline.MODULE_NOTES][0, idx].flatten()
+            n = settings[MODULE_NOTES][0, idx].flatten()
             for x in n:
                 if isinstance(x, numpy.ndarray):
                     if len(x) == 0:
@@ -130,25 +136,25 @@ class Module:
                     else:
                         x = x[0]
                 self.__notes.append(x)
-        if cellprofiler_core.constants.pipeline.SHOW_WINDOW in settings.dtype.fields:
+        if SHOW_WINDOW in settings.dtype.fields:
             self.__show_window = (
-                    settings[cellprofiler_core.constants.pipeline.SHOW_WINDOW][0, idx] != 0
+                    settings[SHOW_WINDOW][0, idx] != 0
             )
-        if cellprofiler_core.constants.pipeline.BATCH_STATE in settings.dtype.fields:
+        if BATCH_STATE in settings.dtype.fields:
             # convert from uint8 to array of one string to avoid long
             # arrays, which get truncated by numpy repr()
             self.batch_state = numpy.array(
-                settings[cellprofiler_core.constants.pipeline.BATCH_STATE][0, idx].tostring()
+                settings[BATCH_STATE][0, idx].tostring()
             )
-        setting_count = settings[cellprofiler_core.constants.pipeline.NUMBERS_OF_VARIABLES][
+        setting_count = settings[NUMBERS_OF_VARIABLES][
             0, idx
         ]
         variable_revision_number = settings[
-            cellprofiler_core.constants.pipeline.VARIABLE_REVISION_NUMBERS
+            VARIABLE_REVISION_NUMBERS
         ][0, idx]
-        module_name = settings[cellprofiler_core.constants.pipeline.MODULE_NAMES][0, idx][0]
+        module_name = settings[MODULE_NAMES][0, idx][0]
         for i in range(0, setting_count):
-            value_cell = settings[cellprofiler_core.constants.pipeline.VARIABLE_VALUES][idx, i]
+            value_cell = settings[VARIABLE_VALUES][idx, i]
             if isinstance(value_cell, numpy.ndarray):
                 if numpy.product(value_cell.shape) == 0:
                     setting_values.append("")
@@ -228,7 +234,7 @@ class Module:
         return parts["body_pre_docinfo"] + parts["fragment"]
 
     def _get_setting_help(self, setting):
-        if isinstance(setting, cellprofiler_core.setting.HiddenCount):
+        if isinstance(setting, HiddenCount):
             return ""
 
         return """\
@@ -299,47 +305,47 @@ class Module:
 
     def save_to_handles(self, handles):
         module_idx = self.module_num - 1
-        setting = handles[cellprofiler_core.constants.pipeline.SETTINGS][0, 0]
-        setting[cellprofiler_core.constants.pipeline.MODULE_NAMES][0, module_idx] = str(
+        setting = handles[SETTINGS][0, 0]
+        setting[MODULE_NAMES][0, module_idx] = str(
             self.module_class()
         )
-        setting[cellprofiler_core.constants.pipeline.MODULE_NOTES][0, module_idx] = numpy.ndarray(
+        setting[MODULE_NOTES][0, module_idx] = numpy.ndarray(
             shape=(len(self.notes), 1), dtype="object"
         )
         for i in range(0, len(self.notes)):
-            setting[cellprofiler_core.constants.pipeline.MODULE_NOTES][0, module_idx][
+            setting[MODULE_NOTES][0, module_idx][
                 i, 0
             ] = self.notes[i]
-        setting[cellprofiler_core.constants.pipeline.NUMBERS_OF_VARIABLES][0, module_idx] = len(
+        setting[NUMBERS_OF_VARIABLES][0, module_idx] = len(
             self.settings()
         )
         for i in range(0, len(self.settings())):
             variable = self.settings()[i]
             if len(str(variable)) > 0:
-                setting[cellprofiler_core.constants.pipeline.VARIABLE_VALUES][
+                setting[VARIABLE_VALUES][
                     module_idx, i
                 ] = variable.get_unicode_value()
             if isinstance(
-                variable, cellprofiler_core.setting._text.alphanumeric.name._name.Name
+                variable, Name
             ):
-                setting[cellprofiler_core.constants.pipeline.VARIABLE_INFO_TYPES][
+                setting[VARIABLE_INFO_TYPES][
                     module_idx, i
                 ] = str("%s indep" % variable.group)
-            elif isinstance(variable, cellprofiler_core.setting.NameSubscriber):
-                setting[cellprofiler_core.constants.pipeline.VARIABLE_INFO_TYPES][
+            elif isinstance(variable, Subscriber):
+                setting[VARIABLE_INFO_TYPES][
                     module_idx, i
                 ] = str(variable.group)
-        setting[cellprofiler_core.constants.pipeline.VARIABLE_REVISION_NUMBERS][
+        setting[VARIABLE_REVISION_NUMBERS][
             0, module_idx
         ] = self.variable_revision_number
-        setting[cellprofiler_core.constants.pipeline.MODULE_REVISION_NUMBERS][0, module_idx] = 0
-        setting[cellprofiler_core.constants.pipeline.SHOW_WINDOW][0, module_idx] = (
+        setting[MODULE_REVISION_NUMBERS][0, module_idx] = 0
+        setting[SHOW_WINDOW][0, module_idx] = (
             1 if self.show_window else 0
         )
         # convert from single-element array with a long string to an
         # array of uint8, to avoid string encoding isues in .MAT
         # format.
-        setting[cellprofiler_core.constants.pipeline.BATCH_STATE][
+        setting[BATCH_STATE][
             0, module_idx
         ] = numpy.fromstring(self.batch_state.tostring(), numpy.uint8)
 
@@ -380,10 +386,10 @@ class Module:
             for setting in self.visible_settings():
                 setting.test_valid(pipeline)
             self.validate_module(pipeline)
-        except cellprofiler_core.setting.ValidationError as instance:
+        except ValidationError as instance:
             raise instance
         except Exception as e:
-            raise cellprofiler_core.setting.ValidationError(
+            raise ValidationError(
                 "Exception in cpmodule.test_valid %s" % e, self.visible_settings()[0]
             )
 
@@ -398,10 +404,10 @@ class Module:
             for setting in self.visible_settings():
                 setting.test_setting_warnings(pipeline)
             self.validate_module_warnings(pipeline)
-        except cellprofiler_core.setting.ValidationError as instance:
+        except ValidationError as instance:
             raise instance
         except Exception as e:
-            raise cellprofiler_core.setting.ValidationError(
+            raise ValidationError(
                 "Exception in cpmodule.test_valid %s" % e, self.visible_settings()[0]
             )
 
@@ -911,7 +917,7 @@ class Module:
         """
         for setting in self.visible_settings():
             if isinstance(
-                setting, cellprofiler_core.setting._text._directory.Directory
+                setting, Directory
             ):
                 return True
         return False

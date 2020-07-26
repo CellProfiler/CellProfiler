@@ -6,7 +6,7 @@ import urllib.request
 
 import javabridge
 
-from ..module import FILTER_RULES_BUTTONS_HELP
+from ..constants.module import FILTER_RULES_BUTTONS_HELP
 from ..module import Module
 from ..setting import Choice
 from ..setting import FileCollectionDisplay

@@ -7,6 +7,7 @@ import urllib.request
 
 import javabridge
 
+import cellprofiler_core.constants.module
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.modules
@@ -387,7 +388,7 @@ extraction method” button to add more.
                         "X_AUTOMATIC_EXTRACTION": X_AUTOMATIC_EXTRACTION,
                         "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
                         "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION,
-                        "PROTIP_RECOMMEND_ICON": cellprofiler_core.module.PROTIP_RECOMMEND_ICON,
+                        "PROTIP_RECOMMEND_ICON": cellprofiler_core.constants.module.PROTIP_RECOMMEND_ICON,
                     }
                 ),
             ),
@@ -562,7 +563,7 @@ extraction.
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
                     **{
-                        "FILTER_RULES_BUTTONS_HELP": cellprofiler_core.module.FILTER_RULES_BUTTONS_HELP,
+                        "FILTER_RULES_BUTTONS_HELP": cellprofiler_core.constants.module.FILTER_RULES_BUTTONS_HELP,
                         "YES": "Yes",
                     }
                 ),
@@ -672,7 +673,7 @@ not being applied, your choice on this setting may be the culprit.
                     **{
                         "NO": "No",
                         "YES": "Yes",
-                        "PROTIP_RECOMMEND_ICON": cellprofiler_core.module.PROTIP_RECOMMEND_ICON,
+                        "PROTIP_RECOMMEND_ICON": cellprofiler_core.constants.module.PROTIP_RECOMMEND_ICON,
                     }
                 ),
             ),

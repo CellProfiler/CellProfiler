@@ -6,6 +6,7 @@ import re
 import javabridge
 import numpy
 
+import cellprofiler_core.constants.module
 import cellprofiler_core.image
 import cellprofiler_core.image.abstract.file._file
 import cellprofiler_core.image.abstract.file.url._url
@@ -648,7 +649,7 @@ You can match corresponding channels to each other in one of two ways:
                 **{
                     "MATCH_BY_METADATA": MATCH_BY_METADATA,
                     "MATCH_BY_ORDER": MATCH_BY_ORDER,
-                    "USING_METADATA_HELP_REF": cellprofiler_core.module.USING_METADATA_HELP_REF,
+                    "USING_METADATA_HELP_REF": cellprofiler_core.constants.module.USING_METADATA_HELP_REF,
                 }
             ),
         )
@@ -695,7 +696,7 @@ Specify a filter using rules to narrow down the files to be analyzed.
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
                     **{
-                        "FILTER_RULES_BUTTONS_HELP": cellprofiler_core.module.FILTER_RULES_BUTTONS_HELP
+                        "FILTER_RULES_BUTTONS_HELP": cellprofiler_core.constants.module.FILTER_RULES_BUTTONS_HELP
                     }
                 ),
             ),
@@ -784,7 +785,7 @@ times.
 .. |NAT_CopyAssignment_image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(
                     **{
-                        "PROTIP_RECOMMEND_ICON": cellprofiler_core.module.PROTIP_RECOMMEND_ICON
+                        "PROTIP_RECOMMEND_ICON": cellprofiler_core.constants.module.PROTIP_RECOMMEND_ICON
                     }
                 ),
             ),

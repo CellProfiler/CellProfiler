@@ -1,3 +1,4 @@
+import cellprofiler_core.constants.worker
 import cellprofiler_core.pipeline
 import cellprofiler_core.worker
 
@@ -23,10 +24,10 @@ class PipelineEventListener:
                 module_name=event.module.module_name,
                 exc_info=(type(event.error), event.error, event.tb),
             )
-            if disposition == cellprofiler_core.worker.ED_STOP:
+            if disposition == cellprofiler_core.constants.worker.ED_STOP:
                 self.should_abort = True
                 event.cancel_run = True
-            elif disposition == cellprofiler_core.worker.ED_SKIP:
+            elif disposition == cellprofiler_core.constants.worker.ED_SKIP:
                 self.should_skip = True
                 event.cancel_run = False
                 event.skip_thisset = True

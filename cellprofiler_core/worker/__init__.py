@@ -25,6 +25,8 @@ import sys
 
 import pkg_resources
 
+from cellprofiler_core.constants.worker import DEADMAN_START_ADDR, DEADMAN_START_MSG, NOTIFY_ADDR, NOTIFY_STOP, \
+    the_zmq_context, all_measurements
 from cellprofiler_core.worker._worker import Worker
 
 """Set the log level through the environment by specifying AW_LOG_LEVEL"""
@@ -127,7 +129,6 @@ if __name__ == "__main__":
 import time
 import threading
 import zmq
-from weakref import WeakSet
 
 #
 # CellProfiler expects NaN as a result during calculation
@@ -138,18 +139,6 @@ np.seterr(all="ignore")
 
 # to guarantee closing of measurements, we store all of them in a WeakSet, and
 # close them on exit.
-all_measurements: WeakSet = WeakSet()
-
-DEADMAN_START_ADDR = b"inproc://deadmanstart"
-DEADMAN_START_MSG = b"STARTED"
-NOTIFY_ADDR = b"inproc://notify"
-NOTIFY_STOP = b"STOP"
-
-ED_STOP = b"Stop"
-ED_CONTINUE = b"Continue"
-ED_SKIP = b"Skip"
-
-the_zmq_context = zmq.Context.instance()
 
 
 def main():
@@ -186,7 +175,7 @@ def main():
         worker_thread.setDaemon(True)
         worker_thread.start()
         with KnimeBridgeServer(
-            the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
+                the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
         ):
             worker_thread.join()
 

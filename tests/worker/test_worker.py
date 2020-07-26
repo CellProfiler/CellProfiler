@@ -9,6 +9,7 @@ import traceback
 import unittest
 import uuid
 import cellprofiler_core.analysis
+import cellprofiler_core.constants.worker
 import cellprofiler_core.measurement
 import cellprofiler_core.module.identify
 import cellprofiler_core.modules.namesandtypes
@@ -27,7 +28,7 @@ import zmq
 class TestAnalysisWorker(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.zmq_context = cellprofiler_core.worker.the_zmq_context
+        cls.zmq_context = cellprofiler_core.constants.worker.the_zmq_context
         cls.notify_pub_socket = cellprofiler_core.worker.get_the_notify_pub_socket()
         #
         # Install a bogus display_post_group method in FlipAndRotate
@@ -45,7 +46,7 @@ class TestAnalysisWorker(unittest.TestCase):
         cls.notify_pub_socket.close()
 
     def cancel(self):
-        self.notify_pub_socket.send(cellprofiler_core.worker.NOTIFY_STOP)
+        self.notify_pub_socket.send(cellprofiler_core.constants.worker.NOTIFY_STOP)
 
     def setUp(self):
         self.out_dir = tempfile.mkdtemp()
@@ -85,7 +86,7 @@ class TestAnalysisWorker(unittest.TestCase):
             self.setName("Analysis worker thread")
             self.up_queue = six.moves.queue.Queue()
             self.notify_addr = "inproc://" + uuid.uuid4().hex
-            self.up_queue_recv_socket = cellprofiler_core.worker.the_zmq_context.socket(
+            self.up_queue_recv_socket = cellprofiler_core.constants.worker.the_zmq_context.socket(
                 zmq.SUB
             )
             self.up_queue_recv_socket.setsockopt(zmq.SUBSCRIBE, b"")
@@ -95,7 +96,7 @@ class TestAnalysisWorker(unittest.TestCase):
             self.up_queue.get()
 
         def run(self):
-            up_queue_send_socket = cellprofiler_core.worker.the_zmq_context.socket(
+            up_queue_send_socket = cellprofiler_core.constants.worker.the_zmq_context.socket(
                 zmq.PUB
             )
             up_queue_send_socket.connect(self.notify_addr)
@@ -197,7 +198,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.analysis_id = uuid.uuid4().hex
 
         def do_set_work_socket(aw):
-            aw.work_socket = cellprofiler_core.worker.the_zmq_context.socket(zmq.REQ)
+            aw.work_socket = cellprofiler_core.constants.worker.the_zmq_context.socket(zmq.REQ)
             aw.work_socket.connect(self.work_addr)
             aw.work_request_address = self.work_addr
             aw.current_analysis_id = self.analysis_id

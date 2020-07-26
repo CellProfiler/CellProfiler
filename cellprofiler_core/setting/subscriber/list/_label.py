@@ -1,3 +1,6 @@
+from ._list import List
+
+
 class Label(List):
     """
     A setting that provides an image name

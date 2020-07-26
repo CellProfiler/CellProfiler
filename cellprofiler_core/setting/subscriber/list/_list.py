@@ -1,15 +1,21 @@
+from .._subscriber import Subscriber
+from ..._validation_error import ValidationError
+
+
 class List(Subscriber):
-    """Stores name provider names as a list"""
+    """
+    Stores name provider names as a list
+    """
 
     def __init__(
-        self,
-        text,
-        group,
-        value=None,
-        can_be_blank=False,
-        blank_text="Leave blank",
-        *args,
-        **kwargs,
+            self,
+            text,
+            group,
+            value=None,
+            can_be_blank=False,
+            blank_text="Leave blank",
+            *args,
+            **kwargs,
     ):
         if value is None:
             value = ""

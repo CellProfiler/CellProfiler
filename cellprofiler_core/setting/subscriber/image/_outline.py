@@ -1,3 +1,6 @@
+from ._image import Image
+
+
 class Outline(Image):
     """A setting that subscribes to the list of available object outline names
     """

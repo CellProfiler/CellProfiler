@@ -1,3 +1,6 @@
+from ._image import Image
+
+
 class External(Image):
     """A setting that provides image names loaded externally (eg: from Java)"""
 

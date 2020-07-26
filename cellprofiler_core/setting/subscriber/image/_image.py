@@ -1,3 +1,6 @@
+from .._subscriber import Subscriber
+
+
 class Image(Subscriber):
     """A setting that provides an image name
     """

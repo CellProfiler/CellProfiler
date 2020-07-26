@@ -1,5 +1,9 @@
+from ._subscriber import Subscriber
+
+
 class Label(Subscriber):
-    """A setting that subscribes to the list of available object names
+    """
+    A setting that subscribes to the list of available object names
     """
 
     def __init__(

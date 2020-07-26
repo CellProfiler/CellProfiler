@@ -1,5 +1,9 @@
+from ._subscriber import Subscriber
+
+
 class Grid(Subscriber):
-    """A setting that subscribes to grid information providers
+    """
+    A setting that subscribes to grid information providers
     """
 
     def __init__(

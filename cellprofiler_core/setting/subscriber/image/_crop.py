@@ -1,3 +1,6 @@
+from ._image import Image
+
+
 class Crop(Image):
     """A setting that provides image names that have cropping masks"""
 

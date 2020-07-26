@@ -1,5 +1,9 @@
+from ._list import List
+
+
 class ListImageNameSubscriber(List):
-    """A setting that provides an image name
+    """
+    A setting that provides an image name
     """
 
     def __init__(

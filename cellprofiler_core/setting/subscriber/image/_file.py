@@ -1,3 +1,6 @@
+from ._image import Image
+
+
 class File(Image):
     """A setting that provides image names loaded from files"""
 

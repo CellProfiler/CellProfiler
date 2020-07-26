@@ -1,3 +1,5 @@
+import os.path
+
 from .._text import Text
 from ..._validation_error import ValidationError
 

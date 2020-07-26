@@ -1,7 +1,7 @@
 from ._list import List
 
 
-class ListImageNameSubscriber(List):
+class Image(List):
     """
     A setting that provides an image name
     """
@@ -15,6 +15,6 @@ class ListImageNameSubscriber(List):
         *args,
         **kwargs,
     ):
-        super(ListImageNameSubscriber, self).__init__(
+        super(Image, self).__init__(
             text, "imagegroup", value, can_be_blank, blank_text, *args, **kwargs
         )

@@ -1,5 +1,5 @@
-from cellprofiler_core.setting import get_name_provider_choices
 from ._multichoice import MultiChoice
+from ...constants.setting import get_name_provider_choices
 
 
 class SubscriberMultiChoice(MultiChoice):

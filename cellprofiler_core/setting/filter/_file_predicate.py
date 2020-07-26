@@ -1,12 +1,12 @@
 import cellprofiler_core.setting
-from ._filter_predicate import FilterPredicate
-from ._does_predicate import DoesPredicate
 from ._does_not_predicate import DoesNotPredicate
+from ._does_predicate import DoesPredicate
 from ._filter import CONTAINS_PREDICATE
 from ._filter import CONTAINS_REGEXP_PREDICATE
-from ._filter import STARTS_WITH_PREDICATE
 from ._filter import ENDSWITH_PREDICATE
 from ._filter import EQ_PREDICATE
+from ._filter import STARTS_WITH_PREDICATE
+from ._filter_predicate import FilterPredicate
 
 
 class FilePredicate(FilterPredicate):

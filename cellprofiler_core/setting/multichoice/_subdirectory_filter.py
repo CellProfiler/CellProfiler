@@ -1,9 +1,8 @@
 import os
 
-from cellprofiler_core.setting import MultiChoice, ValidationError
-from ..text._directory import Directory
 from ._multichoice import MultiChoice
 from .._validation_error import ValidationError
+from ..text import Directory
 
 
 class SubdirectoryFilter(MultiChoice):

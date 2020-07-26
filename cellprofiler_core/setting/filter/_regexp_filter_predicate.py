@@ -1,4 +1,5 @@
 import re
+
 from ._filter_predicate import FilterPredicate
 
 

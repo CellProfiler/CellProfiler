@@ -4,8 +4,8 @@ from ._does_not_predicate import DoesNotPredicate
 from ._does_predicate import DoesPredicate
 from ._extension_predicate import ExtensionPredicate
 from ._file_predicate import FilePredicate
-from ._filter import Filter
 from ._file_predicate import FilterPredicate
+from ._filter import Filter
 from ._image_predicate import ImagePredicate
 from ._metadata_predicate import MetadataPredicate
 from ._regexp_filter_predicate import RegexpFilterPredicate

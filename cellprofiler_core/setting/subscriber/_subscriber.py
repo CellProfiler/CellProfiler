@@ -1,5 +1,6 @@
 from .._setting import Setting
 from .._validation_error import ValidationError
+from ...constants.setting import get_name_provider_choices
 
 
 class Subscriber(Setting):

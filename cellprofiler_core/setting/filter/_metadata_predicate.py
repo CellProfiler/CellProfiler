@@ -1,11 +1,8 @@
-import cellprofiler_core.pipeline
-import cellprofiler_core.setting
-from cellprofiler_core.modules.namesandtypes import NamesAndTypes
-from ._filter_predicate import FilterPredicate
 from ._does_not_predicate import DoesNotPredicate
 from ._does_predicate import DoesPredicate
 from ._filter import LITERAL_PREDICATE
-from .. import FileCollectionDisplay
+from ._filter_predicate import FilterPredicate
+from .._file_collection_display import FileCollectionDisplay
 from ...pipeline import ImagePlane
 
 

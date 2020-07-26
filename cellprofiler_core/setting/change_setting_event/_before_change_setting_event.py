@@ -1,4 +1,4 @@
-from cellprofiler_core.setting import ChangeSettingEvent
+from ._change_setting_event import ChangeSettingEvent
 
 
 class BeforeChangeSettingEvent(ChangeSettingEvent):

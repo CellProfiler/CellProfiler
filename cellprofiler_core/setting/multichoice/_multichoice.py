@@ -1,7 +1,7 @@
 import functools
 
-from .._validation_error import ValidationError
 from .._setting import Setting
+from .._validation_error import ValidationError
 
 
 class MultiChoice(Setting):

@@ -1,5 +1,6 @@
-import threading
 import logging
+import threading
+
 import zmq
 
 from cellprofiler_core.pipeline import CancelledException

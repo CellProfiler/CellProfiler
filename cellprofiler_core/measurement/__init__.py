@@ -1,7 +1,6 @@
 """Measurements.py - storage for image and object measurements
 """
 
-import logging
 import os
 import os.path
 import re

@@ -23,7 +23,6 @@ import psutil
 import cellprofiler_core.utilities
 import cellprofiler_core.utilities.utf16encode
 
-
 """get_absolute_path - mode = output. Assume "." is the default output dir"""
 ABSPATH_OUTPUT = "abspath_output"
 

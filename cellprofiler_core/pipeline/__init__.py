@@ -1,5 +1,4 @@
 import bisect
-import logging
 import re
 
 import future.standard_library

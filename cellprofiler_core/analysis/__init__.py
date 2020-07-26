@@ -2,7 +2,6 @@
 Run pipelines on imagesets to produce measurements.
 """
 
-import logging
 import os
 import os.path
 import sys

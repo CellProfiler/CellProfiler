@@ -34,7 +34,6 @@ from ..image.abstract.file.url import Objects
 from ..module import identify
 from ..setting.filter import MetadataPredicate
 
-
 __doc__ = """\
 NamesAndTypes
 =============

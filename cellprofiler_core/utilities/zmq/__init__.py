@@ -2,10 +2,10 @@ import errno
 import json
 import logging
 import os
+import queue
 import sys
 import threading
 import uuid
-import queue
 
 import cellprofiler.grid
 import numpy

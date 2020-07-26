@@ -1,10 +1,11 @@
 import json
+import logging
 import os
 import re
 import sys
 import urllib.request
 import warnings
-import logging
+
 import h5py
 import numpy
 

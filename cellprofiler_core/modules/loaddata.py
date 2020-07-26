@@ -2,10 +2,10 @@
 
 
 import csv
-import logging
 import os
 import urllib.request
 from functools import reduce
+from io import StringIO
 
 import cellprofiler.misc
 import numpy
@@ -23,8 +23,6 @@ import cellprofiler_core.setting.text._filename
 import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 from cellprofiler_core.module import identify
-
-from io import StringIO
 
 __doc__ = """\
 LoadData

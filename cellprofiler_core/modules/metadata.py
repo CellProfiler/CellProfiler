@@ -1,6 +1,5 @@
 # coding=utf-8
 
-import logging
 import os
 import re
 import time
@@ -22,7 +21,6 @@ import cellprofiler_core.setting.filter._file_predicate
 import cellprofiler_core.setting.text._directory
 import cellprofiler_core.setting.text._filename
 import cellprofiler_core.utilities
-
 
 __doc__ = """\
 Metadata

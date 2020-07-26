@@ -13,7 +13,6 @@ import timeit
 import urllib.request
 import urllib.request
 import uuid
-import logging
 
 import bioformats.formatreader
 import numpy

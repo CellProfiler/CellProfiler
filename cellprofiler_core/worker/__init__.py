@@ -27,7 +27,6 @@ import pkg_resources
 
 from cellprofiler_core.worker._worker import Worker
 
-
 """Set the log level through the environment by specifying AW_LOG_LEVEL"""
 AW_LOG_LEVEL = "AW_LOG_LEVEL"
 

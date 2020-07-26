@@ -1,9 +1,10 @@
 import hashlib
+import logging
 import os
 import tempfile
 import urllib.parse
 import urllib.request
-import logging
+
 import numpy
 import skimage
 

@@ -1,16 +1,14 @@
 # coding=utf-8
-import logging
-
-import cellprofiler_core.setting.do_something._remove_setting_button
 
 import numpy as np
 
-import cellprofiler_core.modules
+import cellprofiler_core.measurement
 import cellprofiler_core.module
+import cellprofiler_core.modules
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.setting
-import cellprofiler_core.measurement
+import cellprofiler_core.setting.do_something._remove_setting_button
 import cellprofiler_core.utilities
 
 __doc__ = """\

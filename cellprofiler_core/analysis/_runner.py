@@ -686,8 +686,6 @@ class Runner:
         if "CP_DEBUG_WORKER" in os.environ:
             if os.environ["CP_DEBUG_WORKER"] == "NOT_INPROC":
                 return
-            from cellprofiler_core.worker import Worker, NOTIFY_ADDR, NOTIFY_STOP
-            from cellprofiler_core.pipeline.event import CancelledException
 
             thread = WorkerRunner(cls.work_announce_address)
             thread.setDaemon(True)

@@ -7,6 +7,7 @@ import urllib.request
 
 import javabridge
 
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.constants.module
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -756,8 +757,8 @@ not being applied, your choice on this setting may be the culprit.
         """
         key_pairs = []
         dt_numeric = (
-            cellprofiler_core.measurement.COLTYPE_FLOAT,
-            cellprofiler_core.measurement.COLTYPE_INTEGER,
+            cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+            cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
         )
         kp_cls = "org/cellprofiler/imageset/MetadataKeyPair"
         kp_sig = "(Ljava/lang/String;Ljava/lang/String;)L%s;" % kp_cls
@@ -1318,7 +1319,7 @@ not being applied, your choice on this setting may be the culprit.
                 ):
                     if token.upper() in [
                         reservedtag.upper()
-                        for reservedtag in cellprofiler_core.measurement.RESERVED_METADATA_TAGS
+                        for reservedtag in cellprofiler_core.constants.measurement.RESERVED_METADATA_TAGS
                     ]:
                         raise cellprofiler_core.setting.ValidationError(
                             'The metadata tag, "%s", is reserved for use by CellProfiler.'
@@ -1355,15 +1356,15 @@ not being applied, your choice on this setting may be the culprit.
         cellprofiler_core.pipeline.ImagePlane.MD_SIZE_Z,
         cellprofiler_core.pipeline.ImagePlane.MD_SIZE_X,
         cellprofiler_core.pipeline.ImagePlane.MD_SIZE_Y,
-        cellprofiler_core.measurement.C_SERIES,
-        cellprofiler_core.measurement.C_FRAME,
+        cellprofiler_core.constants.measurement.C_SERIES,
+        cellprofiler_core.constants.measurement.C_FRAME,
     )
 
     def get_data_type(self, key):
         """Get the data type for a particular metadata key"""
         if isinstance(key, str):
             return self.get_data_type([key]).get(
-                key, cellprofiler_core.measurement.COLTYPE_VARCHAR
+                key, cellprofiler_core.constants.measurement.COLTYPE_VARCHAR
             )
         result = {}
         if self.data_type_choice == DTC_CHOOSE:
@@ -1372,17 +1373,17 @@ not being applied, your choice on this setting may be the culprit.
             )
         for k in key:
             if k in self.NUMERIC_DATA_TYPES:
-                result[k] = cellprofiler_core.measurement.COLTYPE_INTEGER
+                result[k] = cellprofiler_core.constants.measurement.COLTYPE_INTEGER
             elif self.data_type_choice == DTC_CHOOSE:
                 dt = data_types.get(k, cellprofiler_core.setting.DataTypes.DT_TEXT)
                 if dt == cellprofiler_core.setting.DataTypes.DT_TEXT:
-                    result[k] = cellprofiler_core.measurement.COLTYPE_VARCHAR
+                    result[k] = cellprofiler_core.constants.measurement.COLTYPE_VARCHAR
                 elif dt == cellprofiler_core.setting.DataTypes.DT_INTEGER:
-                    result[k] = cellprofiler_core.measurement.COLTYPE_INTEGER
+                    result[k] = cellprofiler_core.constants.measurement.COLTYPE_INTEGER
                 elif dt == cellprofiler_core.setting.DataTypes.DT_FLOAT:
-                    result[k] = cellprofiler_core.measurement.COLTYPE_FLOAT
+                    result[k] = cellprofiler_core.constants.measurement.COLTYPE_FLOAT
             else:
-                result[k] = cellprofiler_core.measurement.COLTYPE_VARCHAR
+                result[k] = cellprofiler_core.constants.measurement.COLTYPE_VARCHAR
 
         return result
 
@@ -1419,17 +1420,17 @@ not being applied, your choice on this setting may be the culprit.
                 if data_type == cellprofiler_core.setting.DataTypes.DT_NONE:
                     continue
                 elif data_type == cellprofiler_core.setting.DataTypes.DT_INTEGER:
-                    data_type = cellprofiler_core.measurement.COLTYPE_INTEGER
+                    data_type = cellprofiler_core.constants.measurement.COLTYPE_INTEGER
                 elif data_type == cellprofiler_core.setting.DataTypes.DT_FLOAT:
-                    data_type = cellprofiler_core.measurement.COLTYPE_FLOAT
+                    data_type = cellprofiler_core.constants.measurement.COLTYPE_FLOAT
                 else:
-                    data_type = cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME
+                    data_type = cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME
             else:
-                data_type = cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME
+                data_type = cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME
             result.append(
                 (
-                    cellprofiler_core.measurement.IMAGE,
-                    "_".join((cellprofiler_core.measurement.C_METADATA, key)),
+                    cellprofiler_core.constants.measurement.IMAGE,
+                    "_".join((cellprofiler_core.constants.measurement.C_METADATA, key)),
                     data_type,
                 )
             )
@@ -1438,16 +1439,16 @@ not being applied, your choice on this setting may be the culprit.
     def get_categories(self, pipeline, object_name):
         """Return the measurement categories for a particular object"""
         if (
-            object_name == cellprofiler_core.measurement.IMAGE
+            object_name == cellprofiler_core.constants.measurement.IMAGE
             and len(self.get_metadata_keys()) > 0
         ):
-            return [cellprofiler_core.measurement.C_METADATA]
+            return [cellprofiler_core.constants.measurement.C_METADATA]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == cellprofiler_core.measurement.C_METADATA
+            object_name == cellprofiler_core.constants.measurement.IMAGE
+            and category == cellprofiler_core.constants.measurement.C_METADATA
         ):
             keys = self.get_metadata_keys()
             return keys

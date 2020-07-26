@@ -6,6 +6,7 @@ import re
 import javabridge
 import numpy
 
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.constants.module
 import cellprofiler_core.image
 import cellprofiler_core.image.abstract.file._file
@@ -1156,15 +1157,15 @@ requests an object selection.
                 if all([k[column_name] is not None for k in md_keys]):
                     for k in md_keys:
                         if k[column_name] in (
-                            cellprofiler_core.measurement.C_FRAME,
-                            cellprofiler_core.measurement.C_SERIES,
+                                cellprofiler_core.constants.measurement.C_FRAME,
+                                cellprofiler_core.constants.measurement.C_SERIES,
                         ):
                             result.append("_".join((k[column_name], column_name)))
                         else:
                             result.append(
                                 "_".join(
                                     (
-                                        cellprofiler_core.measurement.C_METADATA,
+                                        cellprofiler_core.constants.measurement.C_METADATA,
                                         k[column_name],
                                     )
                                 )
@@ -1194,8 +1195,8 @@ requests an object selection.
         if len(image_numbers) == 0:
             return False
         m.add_all_measurements(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.IMAGE_NUMBER,
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.IMAGE_NUMBER,
             image_numbers,
         )
 
@@ -1209,7 +1210,7 @@ requests an object selection.
             if self.matching_method == MATCH_BY_METADATA:
                 m.set_metadata_tags(self.get_metadata_features())
             else:
-                m.set_metadata_tags([cellprofiler_core.measurement.IMAGE_NUMBER])
+                m.set_metadata_tags([cellprofiler_core.constants.measurement.IMAGE_NUMBER])
 
         image_set_channel_descriptor = (
             cellprofiler_core.pipeline.ImageSetChannelDescriptor
@@ -1256,7 +1257,7 @@ requests an object selection.
             ),
         )
         m.add_all_measurements(
-            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.IMAGE,
             M_IMAGE_SET,
             [
                 env.get_byte_array_elements(x)
@@ -1272,19 +1273,19 @@ requests an object selection.
         for i, iscd in enumerate(iscds):
             image_set_column_idx = channel_map[column_names[i]]
             if iscd.channel_type == image_set_channel_descriptor.CT_OBJECTS:
-                url_category = cellprofiler_core.measurement.C_OBJECTS_URL
-                path_name_category = cellprofiler_core.measurement.C_OBJECTS_PATH_NAME
-                file_name_category = cellprofiler_core.measurement.C_OBJECTS_FILE_NAME
-                series_category = cellprofiler_core.measurement.C_OBJECTS_SERIES
-                frame_category = cellprofiler_core.measurement.C_OBJECTS_FRAME
-                channel_category = cellprofiler_core.measurement.C_OBJECTS_CHANNEL
+                url_category = cellprofiler_core.constants.measurement.C_OBJECTS_URL
+                path_name_category = cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME
+                file_name_category = cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME
+                series_category = cellprofiler_core.constants.measurement.C_OBJECTS_SERIES
+                frame_category = cellprofiler_core.constants.measurement.C_OBJECTS_FRAME
+                channel_category = cellprofiler_core.constants.measurement.C_OBJECTS_CHANNEL
             else:
-                url_category = cellprofiler_core.measurement.C_URL
-                path_name_category = cellprofiler_core.measurement.C_PATH_NAME
-                file_name_category = cellprofiler_core.measurement.C_FILE_NAME
-                series_category = cellprofiler_core.measurement.C_SERIES
-                frame_category = cellprofiler_core.measurement.C_FRAME
-                channel_category = cellprofiler_core.measurement.C_CHANNEL
+                url_category = cellprofiler_core.constants.measurement.C_URL
+                path_name_category = cellprofiler_core.constants.measurement.C_PATH_NAME
+                file_name_category = cellprofiler_core.constants.measurement.C_FILE_NAME
+                series_category = cellprofiler_core.constants.measurement.C_SERIES
+                frame_category = cellprofiler_core.constants.measurement.C_FRAME
+                channel_category = cellprofiler_core.constants.measurement.C_CHANNEL
             (
                 url_feature,
                 path_name_feature,
@@ -1313,7 +1314,7 @@ requests an object selection.
                     for x in env.get_object_array_elements(jarray[image_set_column_idx])
                 ]
                 m.add_all_measurements(
-                    cellprofiler_core.measurement.IMAGE, ftr, col_values
+                    cellprofiler_core.constants.measurement.IMAGE, ftr, col_values
                 )
                 del col_values
 
@@ -1326,7 +1327,7 @@ requests an object selection.
                     env.get_int_array_elements(jarray[image_set_column_idx])
                 )
                 m.add_all_measurements(
-                    cellprofiler_core.measurement.IMAGE, ftr, col_values
+                    cellprofiler_core.constants.measurement.IMAGE, ftr, col_values
                 )
 
         #
@@ -1372,7 +1373,7 @@ requests an object selection.
         env = javabridge.get_env()
         mc = workspace.pipeline.get_measurement_columns(self)
         type_dict = dict(
-            [(c[1], c[2]) for c in mc if c[0] == cellprofiler_core.measurement.IMAGE]
+            [(c[1], c[2]) for c in mc if c[0] == cellprofiler_core.constants.measurement.IMAGE]
         )
 
         def get_string_utf(x):
@@ -1382,21 +1383,21 @@ requests an object selection.
             [
                 (x[1], x[2])
                 for x in mc
-                if x[1].startswith(cellprofiler_core.measurement.C_METADATA)
+                if x[1].startswith(cellprofiler_core.constants.measurement.C_METADATA)
             ]
         )
         for name in javabridge.iterate_collection(md_dict.keySet(), get_string_utf):
-            feature_name = "_".join((cellprofiler_core.measurement.C_METADATA, name))
+            feature_name = "_".join((cellprofiler_core.constants.measurement.C_METADATA, name))
             values = javabridge.iterate_collection(md_dict[name], get_string_utf)
             data_type = type_dict.get(
-                feature_name, cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME
+                feature_name, cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME
             )
-            if data_type == cellprofiler_core.measurement.COLTYPE_INTEGER:
+            if data_type == cellprofiler_core.constants.measurement.COLTYPE_INTEGER:
                 values = [int(v) for v in values]
-            elif data_type == cellprofiler_core.measurement.COLTYPE_FLOAT:
+            elif data_type == cellprofiler_core.constants.measurement.COLTYPE_FLOAT:
                 values = [float(v) for v in values]
             m.add_all_measurements(
-                cellprofiler_core.measurement.IMAGE, feature_name, values
+                cellprofiler_core.constants.measurement.IMAGE, feature_name, values
             )
             if feature_name in promised:
                 del promised[feature_name]
@@ -1408,14 +1409,14 @@ requests an object selection.
             values = [None] * len(image_sets)
             for feature_name in promised:
                 coltype = promised[feature_name]
-                if coltype == cellprofiler_core.measurement.COLTYPE_INTEGER:
+                if coltype == cellprofiler_core.constants.measurement.COLTYPE_INTEGER:
                     data_type = int
-                elif coltype == cellprofiler_core.measurement.COLTYPE_FLOAT:
+                elif coltype == cellprofiler_core.constants.measurement.COLTYPE_FLOAT:
                     data_type = float
                 else:
                     data_type = None
                 m.add_all_measurements(
-                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.constants.measurement.IMAGE,
                     feature_name,
                     values,
                     data_type=data_type,
@@ -1504,8 +1505,8 @@ requests an object selection.
         """Get a Java Comparator<String> for a metadata key"""
         pipeline = workspace.pipeline
         if pipeline.get_available_metadata_keys().get(key) in (
-            cellprofiler_core.measurement.COLTYPE_FLOAT,
-            cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
         ):
             script = """importPackage(Packages.org.cellprofiler.imageset);
                 MetadataKeyPair.getNumericComparator();
@@ -1790,7 +1791,7 @@ requests an object selection.
         m = workspace.measurements
         np_d = javabridge.get_env().get_byte_array_elements(cd)
         m[
-            cellprofiler_core.measurement.EXPERIMENT,
+            cellprofiler_core.constants.measurement.EXPERIMENT,
             M_IMAGE_SET_ZIP_DICTIONARY,
             0,
             numpy.uint8,
@@ -1802,9 +1803,9 @@ requests an object selection.
         """Returns the imageset dictionary as a Java byte array"""
         m = workspace.measurements
         if m.has_feature(
-            cellprofiler_core.measurement.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY
+                cellprofiler_core.constants.measurement.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY
         ):
-            d = m[cellprofiler_core.measurement.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY]
+            d = m[cellprofiler_core.constants.measurement.EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY]
             return javabridge.get_env().make_byte_array(d.astype(numpy.uint8))
         return None
 
@@ -1812,7 +1813,7 @@ requests an object selection.
         """Get the Java ImageSet for the current image number"""
         compression_dictionary = self.get_imageset_dictionary(workspace)
         m = workspace.measurements
-        blob = m[cellprofiler_core.measurement.IMAGE, M_IMAGE_SET]
+        blob = m[cellprofiler_core.constants.measurement.IMAGE, M_IMAGE_SET]
         if blob is None:
             return None
         jblob = javabridge.get_env().make_byte_array(blob)
@@ -2039,7 +2040,7 @@ requests an object selection.
 
         workspace.image_set.providers.append(provider)
 
-        self.add_provider_measurements(provider, m, cellprofiler_core.measurement.IMAGE)
+        self.add_provider_measurements(provider, m, cellprofiler_core.constants.measurement.IMAGE)
 
     @staticmethod
     def add_provider_measurements(provider, m, image_or_objects):
@@ -2055,20 +2056,20 @@ requests an object selection.
         name = provider.get_name()
         img = provider.provide_image(m)
         m[
-            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.IMAGE,
             cellprofiler_core.utilities.image.C_MD5_DIGEST + "_" + name,
         ] = NamesAndTypes.get_file_hash(provider, m)
         m[
-            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.IMAGE,
             cellprofiler_core.utilities.image.C_WIDTH + "_" + name,
         ] = img.pixel_data.shape[1]
         m[
-            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.IMAGE,
             cellprofiler_core.utilities.image.C_HEIGHT + "_" + name,
         ] = img.pixel_data.shape[0]
-        if image_or_objects == cellprofiler_core.measurement.IMAGE:
+        if image_or_objects == cellprofiler_core.constants.measurement.IMAGE:
             m[
-                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.IMAGE,
                 cellprofiler_core.utilities.image.C_SCALING + "_" + name,
             ] = provider.scale
 
@@ -2132,7 +2133,7 @@ requests an object selection.
         url = workspace.measurements.alter_url_post_create_batch(url)
         provider = Objects(name, url, series, index)
         self.add_provider_measurements(
-            provider, workspace.measurements, cellprofiler_core.measurement.OBJECT
+            provider, workspace.measurements, cellprofiler_core.constants.measurement.OBJECT
         )
         image = provider.provide_image(workspace.image_set)
         o = cellprofiler_core.object.Objects()
@@ -2224,101 +2225,101 @@ requests an object selection.
         for image_name in image_names:
             result += [
                 (
-                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.constants.measurement.IMAGE,
                     "_".join([category, image_name]),
                     coltype,
                 )
                 for category, coltype in (
                     (
-                        cellprofiler_core.measurement.C_FILE_NAME,
-                        cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME,
+                        cellprofiler_core.constants.measurement.C_FILE_NAME,
+                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME,
                     ),
                     (
-                        cellprofiler_core.measurement.C_PATH_NAME,
-                        cellprofiler_core.measurement.COLTYPE_VARCHAR_PATH_NAME,
+                        cellprofiler_core.constants.measurement.C_PATH_NAME,
+                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_PATH_NAME,
                     ),
                     (
-                        cellprofiler_core.measurement.C_URL,
-                        cellprofiler_core.measurement.COLTYPE_VARCHAR_PATH_NAME,
+                        cellprofiler_core.constants.measurement.C_URL,
+                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_PATH_NAME,
                     ),
                     (
                         cellprofiler_core.utilities.image.C_MD5_DIGEST,
-                        cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 32,
+                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                     ),
                     (
                         cellprofiler_core.utilities.image.C_SCALING,
-                        cellprofiler_core.measurement.COLTYPE_FLOAT,
+                        cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
                     ),
                     (
                         cellprofiler_core.utilities.image.C_WIDTH,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                     ),
                     (
                         cellprofiler_core.utilities.image.C_HEIGHT,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                     ),
                     (
                         cellprofiler_core.utilities.image.C_SERIES,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                     ),
                     (
                         cellprofiler_core.utilities.image.C_FRAME,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                     ),
                 )
             ]
         for object_name in object_names:
             result += [
                 (
-                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.constants.measurement.IMAGE,
                     "_".join([category, object_name]),
                     coltype,
                 )
                 for category, coltype in (
                     (
-                        cellprofiler_core.measurement.C_OBJECTS_FILE_NAME,
-                        cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME,
+                        cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
+                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME,
                     ),
                     (
-                        cellprofiler_core.measurement.C_OBJECTS_PATH_NAME,
-                        cellprofiler_core.measurement.COLTYPE_VARCHAR_PATH_NAME,
+                        cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
+                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_PATH_NAME,
                     ),
                     (
-                        cellprofiler_core.measurement.C_OBJECTS_URL,
-                        cellprofiler_core.measurement.COLTYPE_VARCHAR_PATH_NAME,
+                        cellprofiler_core.constants.measurement.C_OBJECTS_URL,
+                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_PATH_NAME,
                     ),
                     (
-                        cellprofiler_core.measurement.C_COUNT,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.constants.measurement.C_COUNT,
+                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                     ),
                     (
                         cellprofiler_core.utilities.image.C_MD5_DIGEST,
-                        cellprofiler_core.measurement.COLTYPE_VARCHAR_FORMAT % 32,
+                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                     ),
                     (
                         cellprofiler_core.utilities.image.C_WIDTH,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                     ),
                     (
                         cellprofiler_core.utilities.image.C_HEIGHT,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                     ),
                     (
-                        cellprofiler_core.measurement.C_OBJECTS_SERIES,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.constants.measurement.C_OBJECTS_SERIES,
+                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                     ),
                     (
-                        cellprofiler_core.measurement.C_OBJECTS_FRAME,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
+                        cellprofiler_core.constants.measurement.C_OBJECTS_FRAME,
+                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                     ),
                 )
             ]
             result += _identify.get_object_measurement_columns(object_name)
         result += [
             (
-                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.IMAGE,
                 ftr,
-                cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                cellprofiler_core.constants.measurement.COLTYPE_VARCHAR,
             )
             for ftr in self.get_metadata_features()
         ]
@@ -2327,21 +2328,21 @@ requests an object selection.
 
     def get_categories(self, pipeline, object_name):
         result = []
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == cellprofiler_core.constants.measurement.IMAGE:
             has_images = any(self.get_image_names())
             has_objects = any(self.get_object_names())
             if has_images:
                 result += [
-                    cellprofiler_core.measurement.C_FILE_NAME,
-                    cellprofiler_core.measurement.C_PATH_NAME,
-                    cellprofiler_core.measurement.C_URL,
+                    cellprofiler_core.constants.measurement.C_FILE_NAME,
+                    cellprofiler_core.constants.measurement.C_PATH_NAME,
+                    cellprofiler_core.constants.measurement.C_URL,
                 ]
             if has_objects:
                 result += [
-                    cellprofiler_core.measurement.C_OBJECTS_FILE_NAME,
-                    cellprofiler_core.measurement.C_OBJECTS_PATH_NAME,
-                    cellprofiler_core.measurement.C_OBJECTS_URL,
-                    cellprofiler_core.measurement.C_COUNT,
+                    cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
+                    cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
+                    cellprofiler_core.constants.measurement.C_OBJECTS_URL,
+                    cellprofiler_core.constants.measurement.C_COUNT,
                 ]
             result += [
                 cellprofiler_core.utilities.image.C_MD5_DIGEST,
@@ -2353,28 +2354,28 @@ requests an object selection.
             ]
         elif object_name in self.get_object_names():
             result += [
-                cellprofiler_core.measurement.C_LOCATION,
-                cellprofiler_core.measurement.C_NUMBER,
+                cellprofiler_core.constants.measurement.C_LOCATION,
+                cellprofiler_core.constants.measurement.C_NUMBER,
             ]
         return result
 
     def get_measurements(self, pipeline, object_name, category):
         image_names = self.get_image_names()
         object_names = self.get_object_names()
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == cellprofiler_core.constants.measurement.IMAGE:
             if category in (
-                cellprofiler_core.measurement.C_FILE_NAME,
-                cellprofiler_core.measurement.C_PATH_NAME,
-                cellprofiler_core.measurement.C_URL,
+                    cellprofiler_core.constants.measurement.C_FILE_NAME,
+                    cellprofiler_core.constants.measurement.C_PATH_NAME,
+                    cellprofiler_core.constants.measurement.C_URL,
             ):
                 return image_names
             elif category in (
-                cellprofiler_core.measurement.C_OBJECTS_FILE_NAME,
-                cellprofiler_core.measurement.C_OBJECTS_PATH_NAME,
-                cellprofiler_core.measurement.C_OBJECTS_URL,
+                    cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
+                    cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
+                    cellprofiler_core.constants.measurement.C_OBJECTS_URL,
             ):
                 return object_names
-            elif category == cellprofiler_core.measurement.C_COUNT:
+            elif category == cellprofiler_core.constants.measurement.C_COUNT:
                 return object_names
             elif category in (
                 cellprofiler_core.utilities.image.C_MD5_DIGEST,
@@ -2386,12 +2387,12 @@ requests an object selection.
             ):
                 return list(image_names) + list(object_names)
         elif object_name in self.get_object_names():
-            if category == cellprofiler_core.measurement.C_NUMBER:
-                return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
-            elif category == cellprofiler_core.measurement.C_LOCATION:
+            if category == cellprofiler_core.constants.measurement.C_NUMBER:
+                return [cellprofiler_core.constants.measurement.FTR_OBJECT_NUMBER]
+            elif category == cellprofiler_core.constants.measurement.C_LOCATION:
                 return [
-                    cellprofiler_core.measurement.FTR_CENTER_X,
-                    cellprofiler_core.measurement.FTR_CENTER_Y,
+                    cellprofiler_core.constants.measurement.FTR_CENTER_X,
+                    cellprofiler_core.constants.measurement.FTR_CENTER_Y,
                 ]
         return []
 
@@ -2652,5 +2653,5 @@ requests an object selection.
                 for join in joins
             ]
         else:
-            metadata_columns = [cellprofiler_core.measurement.IMAGE_NUMBER]
+            metadata_columns = [cellprofiler_core.constants.measurement.IMAGE_NUMBER]
         return metadata_columns

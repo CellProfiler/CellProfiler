@@ -3,6 +3,7 @@ import os
 
 import numpy
 
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.groups
 import cellprofiler_core.pipeline
@@ -121,7 +122,7 @@ def make_image_sets(key_metadata, channel_metadata):
     m = cellprofiler_core.measurement.Measurements()
     m.set_metadata_tags(
         [
-            "_".join((cellprofiler_core.measurement.C_METADATA, k))
+            "_".join((cellprofiler_core.constants.measurement.C_METADATA, k))
             for k in image_set_key_names
         ]
     )
@@ -130,18 +131,18 @@ def make_image_sets(key_metadata, channel_metadata):
         image_number = i + 1
         for (file_name, metadata), iscd in zip(ipds, iscds):
             for feature, value in (
-                (cellprofiler_core.measurement.C_FILE_NAME, file_name),
-                (cellprofiler_core.measurement.C_PATH_NAME, os.pathsep + "images"),
-                (cellprofiler_core.measurement.C_URL, "file://images/" + file_name),
+                (cellprofiler_core.constants.measurement.C_FILE_NAME, file_name),
+                (cellprofiler_core.constants.measurement.C_PATH_NAME, os.pathsep + "images"),
+                (cellprofiler_core.constants.measurement.C_URL, "file://images/" + file_name),
             ):
                 m[
-                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.constants.measurement.IMAGE,
                     feature + "_" + iscd.name,
                     image_number,
                 ] = value
             for key, value in list(metadata.items()):
-                feature = "_".join((cellprofiler_core.measurement.C_METADATA, key))
-                m[cellprofiler_core.measurement.IMAGE, feature, image_number] = value
+                feature = "_".join((cellprofiler_core.constants.measurement.C_METADATA, key))
+                m[cellprofiler_core.constants.measurement.IMAGE, feature, image_number] = value
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
     module = cellprofiler_core.modules.groups.Groups()
@@ -181,15 +182,15 @@ def test_compute_no_groups():
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
     image_numbers = m.get_image_numbers()
     expected_file_names = m[
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.measurement.C_FILE_NAME + "_" + "DNA",
+        cellprofiler_core.constants.measurement.IMAGE,
+        cellprofiler_core.constants.measurement.C_FILE_NAME + "_" + "DNA",
         image_numbers,
     ]
     assert groups.prepare_run(workspace)
     assert len(image_numbers) == 2 * 3 * 4
     output_file_names = m[
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.measurement.C_FILE_NAME + "_" + "DNA",
+        cellprofiler_core.constants.measurement.IMAGE,
+        cellprofiler_core.constants.measurement.C_FILE_NAME + "_" + "DNA",
         image_numbers,
     ]
     assert list(expected_file_names) == list(output_file_names)
@@ -228,16 +229,16 @@ def test_group_on_one():
     numpy.testing.assert_array_equal(
         numpy.hstack([numpy.ones(12, int), numpy.ones(12, int) * 2]),
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_NUMBER,
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.GROUP_NUMBER,
             image_numbers,
         ],
     )
     numpy.testing.assert_array_equal(
         numpy.hstack([numpy.arange(1, 13)] * 2),
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_INDEX,
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.GROUP_INDEX,
             image_numbers,
         ],
     )
@@ -259,9 +260,9 @@ def test_group_on_one():
         )
         for image_number in range(1 + (group_number - 1) * 12, 1 + group_number * 12):
             for image_name in ("DNA", "GFP"):
-                ftr = "_".join((cellprofiler_core.measurement.C_FILE_NAME, image_name))
+                ftr = "_".join((cellprofiler_core.constants.measurement.C_FILE_NAME, image_name))
                 assert m[
-                    cellprofiler_core.measurement.IMAGE, ftr, image_number
+                    cellprofiler_core.constants.measurement.IMAGE, ftr, image_number
                 ].startswith(plate)
 
 
@@ -312,9 +313,9 @@ def test_group_on_two():
             assert grouping["Metadata_Plate"] == plate
             assert grouping["Metadata_Site"] == site
             assert len(image_set_list) == 3
-            ftr = "_".join((cellprofiler_core.measurement.C_FILE_NAME, "DNA"))
+            ftr = "_".join((cellprofiler_core.constants.measurement.C_FILE_NAME, "DNA"))
             for image_number in image_set_list:
-                file_name = m[cellprofiler_core.measurement.IMAGE, ftr, image_number]
+                file_name = m[cellprofiler_core.constants.measurement.IMAGE, ftr, image_number]
                 p, w, s, rest = file_name.split("_")
                 assert p == plate
                 assert s == site
@@ -346,15 +347,15 @@ def test_get_measurement_columns_groups():
     columns = groups.get_measurement_columns(None)
     assert len(columns) == 4
     column = columns[0]
-    assert column[0] == cellprofiler_core.measurement.EXPERIMENT
-    assert column[1] == cellprofiler_core.measurement.M_GROUPING_TAGS
-    assert column[2].startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR)
+    assert column[0] == cellprofiler_core.constants.measurement.EXPERIMENT
+    assert column[1] == cellprofiler_core.constants.measurement.M_GROUPING_TAGS
+    assert column[2].startswith(cellprofiler_core.constants.measurement.COLTYPE_VARCHAR)
     column_metadata = []
     for column in columns[1:]:
-        assert column[0] == cellprofiler_core.measurement.IMAGE
-        assert column[2] == cellprofiler_core.measurement.COLTYPE_VARCHAR
+        assert column[0] == cellprofiler_core.constants.measurement.IMAGE
+        assert column[2] == cellprofiler_core.constants.measurement.COLTYPE_VARCHAR
         column_metadata.append(column[1])
     for choice in choices:
         assert (
-            cellprofiler_core.measurement.C_METADATA + "_" + choice in column_metadata
+                cellprofiler_core.constants.measurement.C_METADATA + "_" + choice in column_metadata
         )

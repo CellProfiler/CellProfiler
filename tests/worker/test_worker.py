@@ -10,6 +10,7 @@ import unittest
 import uuid
 import cellprofiler_core.analysis
 import cellprofiler_core.analysis.reply._server_exited
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.constants.worker
 import cellprofiler_core.measurement
 import cellprofiler_core.module._identify
@@ -655,12 +656,12 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         self.assertTrue(
             m.has_feature(
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.C_COUNT + "_Nuclei",
+                cellprofiler_core.constants.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
             )
         )
         self.assertTrue(
-            m.has_feature("Nuclei", cellprofiler_core.measurement.M_LOCATION_CENTER_X)
+            m.has_feature("Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X)
         )
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cellprofiler_core.analysis.reply.Ack())
@@ -756,12 +757,12 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         self.assertTrue(
             m.has_feature(
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.C_COUNT + "_Nuclei",
+                cellprofiler_core.constants.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
             )
         )
         self.assertTrue(
-            m.has_feature("Nuclei", cellprofiler_core.measurement.M_LOCATION_CENTER_X)
+            m.has_feature("Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X)
         )
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cellprofiler_core.analysis.reply.Ack())
@@ -816,7 +817,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
         m = get_measurements_for_good_pipeline(nimages=3)
         m[
-            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.IMAGE,
             cellprofiler_core.modules.namesandtypes.M_IMAGE_SET,
             2,
         ] = numpy.zeros(100, numpy.uint8)
@@ -871,29 +872,29 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         self.assertTrue(
             m.has_feature(
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.C_COUNT + "_Nuclei",
+                cellprofiler_core.constants.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
             )
         )
         self.assertTrue(
-            m.has_feature("Nuclei", cellprofiler_core.measurement.M_LOCATION_CENTER_X)
+            m.has_feature("Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X)
         )
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         #
         # The count for the skipped image should be None
         #
         count = m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.C_COUNT + "_Nuclei",
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
             2,
         ]
         self.assertIsNone(count)
         count = m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.C_COUNT + "_Nuclei",
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
             3,
         ]
-        center_x = m["Nuclei", cellprofiler_core.measurement.M_LOCATION_CENTER_X, 3]
+        center_x = m["Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X, 3]
         self.assertEqual(count, len(center_x))
         req.reply(cellprofiler_core.analysis.reply.Ack())
         self.awthread.ecute()
@@ -1184,28 +1185,28 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
             os.path.join(path, filename)
         )
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.C_FILE_NAME + "_DNA",
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.C_FILE_NAME + "_DNA",
             i,
         ] = filename
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.C_PATH_NAME + "_DNA",
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.C_PATH_NAME + "_DNA",
             i,
         ] = path
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.C_URL + "_DNA",
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.C_URL + "_DNA",
             i,
         ] = url
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_NUMBER,
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.GROUP_NUMBER,
             i,
         ] = group_numbers[i - 1]
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_INDEX,
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.GROUP_INDEX,
             i,
         ] = group_indexes[i - 1]
         jblob = javabridge.run_script(
@@ -1228,7 +1229,7 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
         )
         blob = javabridge.get_env().get_byte_array_elements(jblob)
         m[
-            cellprofiler_core.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.IMAGE,
             cellprofiler_core.modules.namesandtypes.M_IMAGE_SET,
             i,
             blob.dtype,

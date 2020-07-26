@@ -1,5 +1,6 @@
 import numpy
 
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -16,9 +17,9 @@ class TestImageSegmentation:
 
         module.x_name.value = "Image"
 
-        actual = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
+        actual = module.get_categories(None, cellprofiler_core.constants.measurement.IMAGE)
 
-        expected = [cellprofiler_core.measurement.C_COUNT]
+        expected = [cellprofiler_core.constants.measurement.C_COUNT]
 
         assert actual == expected
 
@@ -32,8 +33,8 @@ class TestImageSegmentation:
         actual = module.get_categories(None, "ImageSegmentation")
 
         expected = [
-            cellprofiler_core.measurement.C_LOCATION,
-            cellprofiler_core.measurement.C_NUMBER,
+            cellprofiler_core.constants.measurement.C_LOCATION,
+            cellprofiler_core.constants.measurement.C_NUMBER,
         ]
 
         assert actual == expected
@@ -63,28 +64,28 @@ class TestImageSegmentation:
         expected = [
             (
                 "ImageSegmentation",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ImageSegmentation",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ImageSegmentation",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ImageSegmentation",
-                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.FF_COUNT % "ImageSegmentation",
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.FF_COUNT % "ImageSegmentation",
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
         ]
 
@@ -99,8 +100,8 @@ class TestImageSegmentation:
 
         actual = module.get_measurements(
             None,
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.C_COUNT,
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.C_COUNT,
         )
 
         expected = ["ImageSegmentation"]
@@ -115,7 +116,7 @@ class TestImageSegmentation:
         module.x_name.value = "Image"
 
         actual = module.get_measurements(
-            None, cellprofiler_core.measurement.IMAGE, "foo"
+            None, cellprofiler_core.constants.measurement.IMAGE, "foo"
         )
 
         expected = []
@@ -130,13 +131,13 @@ class TestImageSegmentation:
         module.x_name.value = "Image"
 
         actual = module.get_measurements(
-            None, "ImageSegmentation", cellprofiler_core.measurement.C_LOCATION
+            None, "ImageSegmentation", cellprofiler_core.constants.measurement.C_LOCATION
         )
 
         expected = [
-            cellprofiler_core.measurement.FTR_CENTER_X,
-            cellprofiler_core.measurement.FTR_CENTER_Y,
-            cellprofiler_core.measurement.FTR_CENTER_Z,
+            cellprofiler_core.constants.measurement.FTR_CENTER_X,
+            cellprofiler_core.constants.measurement.FTR_CENTER_Y,
+            cellprofiler_core.constants.measurement.FTR_CENTER_Z,
         ]
 
         assert actual == expected
@@ -149,10 +150,10 @@ class TestImageSegmentation:
         module.x_name.value = "Image"
 
         actual = module.get_measurements(
-            None, "ImageSegmentation", cellprofiler_core.measurement.C_NUMBER
+            None, "ImageSegmentation", cellprofiler_core.constants.measurement.C_NUMBER
         )
 
-        expected = [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
+        expected = [cellprofiler_core.constants.measurement.FTR_OBJECT_NUMBER]
 
         assert actual == expected
 
@@ -229,7 +230,7 @@ class TestImageSegmentation:
         expected_center_x = [7.0, 22.0]
 
         actual_center_x = measurements.get_measurement(
-            "ImageSegmentation", cellprofiler_core.measurement.M_LOCATION_CENTER_X
+            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
         )
 
         numpy.testing.assert_array_equal(actual_center_x, expected_center_x)
@@ -237,7 +238,7 @@ class TestImageSegmentation:
         expected_center_y = [15.0, 15.0]
 
         actual_center_y = measurements.get_measurement(
-            "ImageSegmentation", cellprofiler_core.measurement.M_LOCATION_CENTER_Y
+            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y
         )
 
         numpy.testing.assert_array_equal(actual_center_y, expected_center_y)
@@ -245,7 +246,7 @@ class TestImageSegmentation:
         expected_center_z = [0.0, 0.0]
 
         actual_center_z = measurements.get_measurement(
-            "ImageSegmentation", cellprofiler_core.measurement.M_LOCATION_CENTER_Z
+            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z
         )
 
         numpy.testing.assert_array_equal(actual_center_z, expected_center_z)
@@ -253,7 +254,7 @@ class TestImageSegmentation:
         expected_object_number = [1.0, 2.0]
 
         actual_object_number = measurements.get_measurement(
-            "ImageSegmentation", cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER
+            "ImageSegmentation", cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER
         )
 
         numpy.testing.assert_array_equal(actual_object_number, expected_object_number)
@@ -261,8 +262,8 @@ class TestImageSegmentation:
         expected_count = [2.0]
 
         actual_count = measurements.get_measurement(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.FF_COUNT % "ImageSegmentation",
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.FF_COUNT % "ImageSegmentation",
         )
 
         numpy.testing.assert_array_equal(actual_count, expected_count)
@@ -300,22 +301,22 @@ class TestImageSegmentation:
         module.run(workspace)
 
         assert measurements.has_feature(
-            "ImageSegmentation", cellprofiler_core.measurement.M_LOCATION_CENTER_X
+            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
         )
 
         assert measurements.has_feature(
-            "ImageSegmentation", cellprofiler_core.measurement.M_LOCATION_CENTER_Y
+            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y
         )
 
         assert measurements.has_feature(
-            "ImageSegmentation", cellprofiler_core.measurement.M_LOCATION_CENTER_Z
+            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z
         )
 
         assert measurements.has_feature(
-            "ImageSegmentation", cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER
+            "ImageSegmentation", cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER
         )
 
         assert measurements.has_feature(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.FF_COUNT % "ImageSegmentation",
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.FF_COUNT % "ImageSegmentation",
         )

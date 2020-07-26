@@ -1,3 +1,4 @@
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.object
@@ -29,13 +30,13 @@ class ObjectProcessing(ImageSegmentation):
 
         workspace.measurements.add_measurement(
             input_object_name,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % output_object_name,
+            cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % output_object_name,
             children_per_parent,
         )
 
         workspace.measurements.add_measurement(
             output_object_name,
-            cellprofiler_core.measurement.FF_PARENT % input_object_name,
+            cellprofiler_core.constants.measurement.FF_PARENT % input_object_name,
             parents_of_children,
         )
 
@@ -67,12 +68,12 @@ class ObjectProcessing(ImageSegmentation):
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.x_name.value:
-            return [cellprofiler_core.measurement.C_CHILDREN]
+            return [cellprofiler_core.constants.measurement.C_CHILDREN]
 
         categories = super(ObjectProcessing, self).get_categories(pipeline, object_name)
 
         if object_name == self.y_name.value:
-            return categories + [cellprofiler_core.measurement.C_PARENT]
+            return categories + [cellprofiler_core.constants.measurement.C_PARENT]
 
         return categories
 
@@ -88,14 +89,14 @@ class ObjectProcessing(ImageSegmentation):
             + [
                 (
                     input_object_name,
-                    cellprofiler_core.measurement.FF_CHILDREN_COUNT
+                    cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT
                     % output_object_name,
-                    cellprofiler_core.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                 ),
                 (
                     output_object_name,
-                    cellprofiler_core.measurement.FF_PARENT % input_object_name,
-                    cellprofiler_core.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.constants.measurement.FF_PARENT % input_object_name,
+                    cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                 ),
             ]
             for (input_object_name, output_object_name) in object_names
@@ -106,15 +107,15 @@ class ObjectProcessing(ImageSegmentation):
     def get_measurements(self, pipeline, object_name, category):
         if (
             object_name == self.x_name.value
-            and category == cellprofiler_core.measurement.C_CHILDREN
+            and category == cellprofiler_core.constants.measurement.C_CHILDREN
         ):
-            return [cellprofiler_core.measurement.FF_COUNT % self.y_name.value]
+            return [cellprofiler_core.constants.measurement.FF_COUNT % self.y_name.value]
 
         if object_name == self.y_name.value:
-            if category == cellprofiler_core.measurement.C_NUMBER:
-                return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
+            if category == cellprofiler_core.constants.measurement.C_NUMBER:
+                return [cellprofiler_core.constants.measurement.FTR_OBJECT_NUMBER]
 
-            if category == cellprofiler_core.measurement.C_PARENT:
+            if category == cellprofiler_core.constants.measurement.C_PARENT:
                 return [self.x_name.value]
 
         return super(ObjectProcessing, self).get_measurements(

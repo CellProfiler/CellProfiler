@@ -1,3 +1,4 @@
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.setting
@@ -22,7 +23,7 @@ class MeasurementFixture(cellprofiler_core.module.Module):
     def get_measurement_columns(self, pipeline):
         return [
             (
-                cellprofiler_core.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.IMAGE,
                 self.my_variable.value,
                 "varchar(255)",
             )

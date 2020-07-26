@@ -7,6 +7,7 @@ import javabridge
 import numpy
 import scipy.io
 
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.measurement
 from cellprofiler_core.utilities import generate_presigned_url
 
@@ -189,7 +190,7 @@ def needs_well_metadata(tokens):
 
     Check for a row and column token and the absence of the well token.
     """
-    if cellprofiler_core.measurement.FTR_WELL.lower() in [x.lower() for x in tokens]:
+    if cellprofiler_core.constants.measurement.FTR_WELL.lower() in [x.lower() for x in tokens]:
         return False
     well_row_token, well_column_token = well_metadata_tokens(tokens)
     return (well_row_token is not None) and (well_column_token is not None)

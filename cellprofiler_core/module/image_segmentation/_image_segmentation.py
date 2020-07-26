@@ -1,5 +1,6 @@
 import numpy
 
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.object
 import cellprofiler_core.setting
@@ -29,26 +30,26 @@ class ImageSegmentation(Module):
                 center_y, center_x = centers.transpose()
 
         workspace.measurements.add_measurement(
-            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_X, center_x
+            object_name, cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X, center_x
         )
 
         workspace.measurements.add_measurement(
-            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, center_y
+            object_name, cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y, center_y
         )
 
         workspace.measurements.add_measurement(
-            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_Z, center_z
+            object_name, cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z, center_z
         )
 
         workspace.measurements.add_measurement(
             object_name,
-            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
             numpy.arange(1, objects.count + 1),
         )
 
         workspace.measurements.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.FF_COUNT % object_name,
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.FF_COUNT % object_name,
             numpy.array([objects.count], dtype=float),
         )
 
@@ -88,13 +89,13 @@ class ImageSegmentation(Module):
         )
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
-            return [cellprofiler_core.measurement.C_COUNT]
+        if object_name == cellprofiler_core.constants.measurement.IMAGE:
+            return [cellprofiler_core.constants.measurement.C_COUNT]
 
         if object_name == self.y_name.value:
             return [
-                cellprofiler_core.measurement.C_LOCATION,
-                cellprofiler_core.measurement.C_NUMBER,
+                cellprofiler_core.constants.measurement.C_LOCATION,
+                cellprofiler_core.constants.measurement.C_NUMBER,
             ]
 
         return []
@@ -106,48 +107,48 @@ class ImageSegmentation(Module):
         return [
             (
                 object_name,
-                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 object_name,
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 object_name,
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 object_name,
-                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.FF_COUNT % object_name,
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.FF_COUNT % object_name,
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
         ]
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == cellprofiler_core.measurement.C_COUNT
+            object_name == cellprofiler_core.constants.measurement.IMAGE
+            and category == cellprofiler_core.constants.measurement.C_COUNT
         ):
             return [self.y_name.value]
 
         if object_name == self.y_name.value:
-            if category == cellprofiler_core.measurement.C_LOCATION:
+            if category == cellprofiler_core.constants.measurement.C_LOCATION:
                 return [
-                    cellprofiler_core.measurement.FTR_CENTER_X,
-                    cellprofiler_core.measurement.FTR_CENTER_Y,
-                    cellprofiler_core.measurement.FTR_CENTER_Z,
+                    cellprofiler_core.constants.measurement.FTR_CENTER_X,
+                    cellprofiler_core.constants.measurement.FTR_CENTER_Y,
+                    cellprofiler_core.constants.measurement.FTR_CENTER_Z,
                 ]
 
-            if category == cellprofiler_core.measurement.C_NUMBER:
-                return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
+            if category == cellprofiler_core.constants.measurement.C_NUMBER:
+                return [cellprofiler_core.constants.measurement.FTR_OBJECT_NUMBER]
 
         return []
 

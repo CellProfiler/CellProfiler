@@ -54,6 +54,7 @@ import scipy.sparse
 from centrosome.filter import stretch
 from scipy.fftpack import fft2, ifft2
 
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -687,12 +688,12 @@ a separate alignment to the first image can be calculated:
         return offsets.tolist(), shapes.tolist()
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == cellprofiler_core.constants.measurement.IMAGE:
             return [C_ALIGN]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cellprofiler_core.measurement.IMAGE and category == C_ALIGN:
+        if object_name == cellprofiler_core.constants.measurement.IMAGE and category == C_ALIGN:
             return ["Xshift", "Yshift"]
         return []
 
@@ -714,9 +715,9 @@ a separate alignment to the first image can be calculated:
         for axis in ("X", "Y"):
             columns += [
                 (
-                    cellprofiler_core.measurement.IMAGE,
+                    cellprofiler_core.constants.measurement.IMAGE,
                     MEASUREMENT_FORMAT % (axis, target),
-                    cellprofiler_core.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                 )
                 for target in targets
             ]

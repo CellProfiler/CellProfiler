@@ -2,6 +2,7 @@
 
 import numpy as np
 
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.modules
@@ -466,16 +467,16 @@ desired behavior.
                 if group.metadata_choice.value != "None"
             ]
             metadata_feature_names = [
-                "_".join((cellprofiler_core.measurement.C_METADATA, key))
+                "_".join((cellprofiler_core.constants.measurement.C_METADATA, key))
                 for key in metadata_key_names
             ]
             metadata_key_names = [
-                x[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
+                x[(len(cellprofiler_core.constants.measurement.C_METADATA) + 1):]
                 for x in metadata_feature_names
             ]
             image_set_feature_names = [
-                cellprofiler_core.measurement.GROUP_NUMBER,
-                cellprofiler_core.measurement.GROUP_INDEX,
+                                          cellprofiler_core.constants.measurement.GROUP_NUMBER,
+                                          cellprofiler_core.constants.measurement.GROUP_INDEX,
             ] + metadata_feature_names
             self.image_set_list.insert_column(0, "Group number")
             self.image_set_list.insert_column(1, "Group index")
@@ -488,19 +489,19 @@ desired behavior.
 
             image_numbers = m.get_image_numbers()
             group_indexes = m[
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.GROUP_INDEX,
-                image_numbers,
+                                cellprofiler_core.constants.measurement.IMAGE,
+                                cellprofiler_core.constants.measurement.GROUP_INDEX,
+                                image_numbers,
             ][:]
             group_numbers = m[
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.GROUP_NUMBER,
-                image_numbers,
+                                cellprofiler_core.constants.measurement.IMAGE,
+                                cellprofiler_core.constants.measurement.GROUP_NUMBER,
+                                image_numbers,
             ][:]
             counts = np.bincount(group_numbers)
             first_indexes = np.argwhere(group_indexes == 1).flatten()
             group_keys = [
-                m[cellprofiler_core.measurement.IMAGE, feature, image_numbers]
+                m[cellprofiler_core.constants.measurement.IMAGE, feature, image_numbers]
                 for feature in metadata_feature_names
             ]
             k_count = sorted(
@@ -527,25 +528,25 @@ desired behavior.
                 self.image_set_list.insert_column(idx + 1, "File: %s" % image_name)
                 if iscd.channel_type == iscd.CT_OBJECTS:
                     image_set_feature_names.append(
-                        cellprofiler_core.measurement.C_OBJECTS_PATH_NAME
+                        cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME
                         + "_"
                         + iscd.name
                     )
                     image_set_feature_names.append(
-                        cellprofiler_core.measurement.C_OBJECTS_FILE_NAME
+                        cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME
                         + "_"
                         + iscd.name
                     )
                 else:
                     image_set_feature_names.append(
-                        cellprofiler_core.measurement.C_PATH_NAME + "_" + iscd.name
+                        cellprofiler_core.constants.measurement.C_PATH_NAME + "_" + iscd.name
                     )
                     image_set_feature_names.append(
-                        cellprofiler_core.measurement.C_FILE_NAME + "_" + iscd.name
+                        cellprofiler_core.constants.measurement.C_FILE_NAME + "_" + iscd.name
                     )
 
             all_features = [
-                m[cellprofiler_core.measurement.IMAGE, ftr, image_numbers]
+                m[cellprofiler_core.constants.measurement.IMAGE, ftr, image_numbers]
                 for ftr in image_set_feature_names
             ]
             order = np.lexsort((group_indexes, group_numbers))
@@ -574,9 +575,9 @@ desired behavior.
         key_list = self.get_grouping_tags()
         m = workspace.measurements
         for key in key_list:
-            if key not in m.get_feature_names(cellprofiler_core.measurement.IMAGE):
-                if key.startswith(cellprofiler_core.measurement.C_METADATA):
-                    key = key[len(cellprofiler_core.measurement.C_METADATA) + 1 :]
+            if key not in m.get_feature_names(cellprofiler_core.constants.measurement.IMAGE):
+                if key.startswith(cellprofiler_core.constants.measurement.C_METADATA):
+                    key = key[len(cellprofiler_core.constants.measurement.C_METADATA) + 1:]
                 workspace.pipeline.report_prepare_run_error(
                     self,
                     (
@@ -595,7 +596,7 @@ desired behavior.
             return None
         return [
             "_".join(
-                (cellprofiler_core.measurement.C_METADATA, g.metadata_choice.value)
+                (cellprofiler_core.constants.measurement.C_METADATA, g.metadata_choice.value)
             )
             for g in self.grouping_metadata
         ]
@@ -668,13 +669,13 @@ desired behavior.
         new_image_numbers[image_numbers[order]] = np.arange(len(image_numbers)) + 1
         m.reorder_image_measurements(new_image_numbers)
         m.add_all_measurements(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_NUMBER,
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.GROUP_NUMBER,
             group_numbers,
         )
         m.add_all_measurements(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_INDEX,
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.GROUP_INDEX,
             group_indexes,
         )
         m.set_grouping_tags(self.get_grouping_tags())
@@ -692,9 +693,9 @@ desired behavior.
         if self.wants_groups:
             result.append(
                 (
-                    cellprofiler_core.measurement.EXPERIMENT,
-                    cellprofiler_core.measurement.M_GROUPING_TAGS,
-                    cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                    cellprofiler_core.constants.measurement.EXPERIMENT,
+                    cellprofiler_core.constants.measurement.M_GROUPING_TAGS,
+                    cellprofiler_core.constants.measurement.COLTYPE_VARCHAR,
                 )
             )
             #
@@ -705,9 +706,9 @@ desired behavior.
             for ftr in self.get_grouping_tags():
                 result.append(
                     (
-                        cellprofiler_core.measurement.IMAGE,
+                        cellprofiler_core.constants.measurement.IMAGE,
                         ftr,
-                        cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR,
                     )
                 )
         return result

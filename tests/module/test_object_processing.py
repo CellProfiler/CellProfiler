@@ -1,5 +1,6 @@
 import numpy
 
+import cellprofiler_core.constants.measurement
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -17,9 +18,9 @@ class TestObjectProcessing:
 
         module.x_name.value = "Objects"
 
-        actual = module.get_categories(None, cellprofiler_core.measurement.IMAGE)
+        actual = module.get_categories(None, cellprofiler_core.constants.measurement.IMAGE)
 
-        expected = [cellprofiler_core.measurement.C_COUNT]
+        expected = [cellprofiler_core.constants.measurement.C_COUNT]
 
         assert actual == expected
 
@@ -32,7 +33,7 @@ class TestObjectProcessing:
 
         actual = module.get_categories(None, "Objects")
 
-        expected = [cellprofiler_core.measurement.C_CHILDREN]
+        expected = [cellprofiler_core.constants.measurement.C_CHILDREN]
 
         assert actual == expected
 
@@ -46,9 +47,9 @@ class TestObjectProcessing:
         actual = module.get_categories(None, "ObjectProcessing")
 
         expected = [
-            cellprofiler_core.measurement.C_LOCATION,
-            cellprofiler_core.measurement.C_NUMBER,
-            cellprofiler_core.measurement.C_PARENT,
+            cellprofiler_core.constants.measurement.C_LOCATION,
+            cellprofiler_core.constants.measurement.C_NUMBER,
+            cellprofiler_core.constants.measurement.C_PARENT,
         ]
 
         assert actual == expected
@@ -78,38 +79,38 @@ class TestObjectProcessing:
         expected = [
             (
                 "ObjectProcessing",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing",
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.FF_COUNT % "ObjectProcessing",
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
                 "Objects",
-                cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
                 "ObjectProcessing",
-                cellprofiler_core.measurement.FF_PARENT % "Objects",
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.FF_PARENT % "Objects",
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
         ]
 
@@ -129,73 +130,73 @@ class TestObjectProcessing:
         expected = [
             (
                 "ObjectProcessing",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "ObjectProcessing",
-                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing",
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.FF_COUNT % "ObjectProcessing",
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
                 "Objects",
-                cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
                 "ObjectProcessing",
-                cellprofiler_core.measurement.FF_PARENT % "Objects",
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.FF_PARENT % "Objects",
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
                 "additional_output",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "additional_output",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "additional_output",
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
             ),
             (
                 "additional_output",
-                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.FF_COUNT % "additional_output",
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.FF_COUNT % "additional_output",
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
                 "additional_input",
-                cellprofiler_core.measurement.FF_CHILDREN_COUNT % "additional_output",
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % "additional_output",
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
                 "additional_output",
-                cellprofiler_core.measurement.FF_PARENT % "additional_input",
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.constants.measurement.FF_PARENT % "additional_input",
+                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
         ]
 
@@ -210,8 +211,8 @@ class TestObjectProcessing:
 
         actual = module.get_measurements(
             None,
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.C_COUNT,
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.C_COUNT,
         )
 
         expected = ["ObjectProcessing"]
@@ -226,7 +227,7 @@ class TestObjectProcessing:
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, cellprofiler_core.measurement.IMAGE, "foo"
+            None, cellprofiler_core.constants.measurement.IMAGE, "foo"
         )
 
         expected = []
@@ -241,10 +242,10 @@ class TestObjectProcessing:
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, "Objects", cellprofiler_core.measurement.C_CHILDREN
+            None, "Objects", cellprofiler_core.constants.measurement.C_CHILDREN
         )
 
-        expected = [cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing"]
+        expected = [cellprofiler_core.constants.measurement.FF_COUNT % "ObjectProcessing"]
 
         assert actual == expected
 
@@ -269,13 +270,13 @@ class TestObjectProcessing:
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, "ObjectProcessing", cellprofiler_core.measurement.C_LOCATION
+            None, "ObjectProcessing", cellprofiler_core.constants.measurement.C_LOCATION
         )
 
         expected = [
-            cellprofiler_core.measurement.FTR_CENTER_X,
-            cellprofiler_core.measurement.FTR_CENTER_Y,
-            cellprofiler_core.measurement.FTR_CENTER_Z,
+            cellprofiler_core.constants.measurement.FTR_CENTER_X,
+            cellprofiler_core.constants.measurement.FTR_CENTER_Y,
+            cellprofiler_core.constants.measurement.FTR_CENTER_Z,
         ]
 
         assert actual == expected
@@ -288,10 +289,10 @@ class TestObjectProcessing:
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, "ObjectProcessing", cellprofiler_core.measurement.C_NUMBER
+            None, "ObjectProcessing", cellprofiler_core.constants.measurement.C_NUMBER
         )
 
-        expected = [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
+        expected = [cellprofiler_core.constants.measurement.FTR_OBJECT_NUMBER]
 
         assert actual == expected
 
@@ -303,7 +304,7 @@ class TestObjectProcessing:
         module.x_name.value = "Objects"
 
         actual = module.get_measurements(
-            None, "ObjectProcessing", cellprofiler_core.measurement.C_PARENT
+            None, "ObjectProcessing", cellprofiler_core.constants.measurement.C_PARENT
         )
 
         expected = ["Objects"]
@@ -386,7 +387,7 @@ class TestObjectProcessing:
         expected_center_x = [7.0, 22.0]
 
         actual_center_x = measurements.get_measurement(
-            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_X
+            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
         )
 
         numpy.testing.assert_array_equal(actual_center_x, expected_center_x)
@@ -394,7 +395,7 @@ class TestObjectProcessing:
         expected_center_y = [15.0, 15.0]
 
         actual_center_y = measurements.get_measurement(
-            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_Y
+            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y
         )
 
         numpy.testing.assert_array_equal(actual_center_y, expected_center_y)
@@ -402,7 +403,7 @@ class TestObjectProcessing:
         expected_center_z = [0.0, 0.0]
 
         actual_center_z = measurements.get_measurement(
-            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_Z
+            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z
         )
 
         numpy.testing.assert_array_equal(actual_center_z, expected_center_z)
@@ -410,7 +411,7 @@ class TestObjectProcessing:
         expected_object_number = [1.0, 2.0]
 
         actual_object_number = measurements.get_measurement(
-            "ObjectProcessing", cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER
+            "ObjectProcessing", cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER
         )
 
         numpy.testing.assert_array_equal(actual_object_number, expected_object_number)
@@ -418,8 +419,8 @@ class TestObjectProcessing:
         expected_count = [2.0]
 
         actual_count = measurements.get_measurement(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing",
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.FF_COUNT % "ObjectProcessing",
         )
 
         numpy.testing.assert_array_equal(actual_count, expected_count)
@@ -428,7 +429,7 @@ class TestObjectProcessing:
 
         actual_children_count = measurements.get_measurement(
             "Objects",
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+            cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
         )
 
         numpy.testing.assert_array_equal(actual_children_count, expected_children_count)
@@ -436,7 +437,7 @@ class TestObjectProcessing:
         expected_parents = [1, 1]
 
         actual_parents = measurements.get_measurement(
-            "ObjectProcessing", cellprofiler_core.measurement.FF_PARENT % "Objects"
+            "ObjectProcessing", cellprofiler_core.constants.measurement.FF_PARENT % "Objects"
         )
 
         numpy.testing.assert_array_equal(actual_parents, expected_parents)
@@ -472,31 +473,31 @@ class TestObjectProcessing:
         module.run(workspace)
 
         assert measurements.has_feature(
-            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_X
+            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_Y
+            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", cellprofiler_core.measurement.M_LOCATION_CENTER_Z
+            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER
+            "ObjectProcessing", cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER
         )
 
         assert measurements.has_feature(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.FF_COUNT % "ObjectProcessing",
+            cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.FF_COUNT % "ObjectProcessing",
         )
 
         assert measurements.has_feature(
             "Objects",
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+            cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", cellprofiler_core.measurement.FF_PARENT % "Objects"
+            "ObjectProcessing", cellprofiler_core.constants.measurement.FF_PARENT % "Objects"
         )

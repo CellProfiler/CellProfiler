@@ -370,7 +370,7 @@ class Workspace:
             )
             self.__file_list.add_notification_callback(self.__on_file_list_changed)
             if load_pipeline and self.__measurements.has_feature(
-                cellprofiler_core.measurement.EXPERIMENT, M_PIPELINE
+                    cellprofiler_core.constants.measurement.EXPERIMENT, M_PIPELINE
             ):
                 pipeline_txt = self.__measurements.get_experiment_measurement(
                     M_PIPELINE
@@ -399,10 +399,10 @@ class Workspace:
                 (M_DEFAULT_OUTPUT_FOLDER, set_default_output_directory),
             ):
                 if self.measurements.has_feature(
-                    cellprofiler_core.measurement.EXPERIMENT, feature
+                        cellprofiler_core.constants.measurement.EXPERIMENT, feature
                 ):
                     path = self.measurements[
-                        cellprofiler_core.measurement.EXPERIMENT, feature
+                        cellprofiler_core.constants.measurement.EXPERIMENT, feature
                     ]
                     if os.path.isdir(path):
                         function(path)

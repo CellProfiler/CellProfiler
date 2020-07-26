@@ -181,7 +181,7 @@ def main():
         worker_thread.setDaemon(True)
         worker_thread.start()
         with KnimeBridgeServer(
-                the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
+            the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
         ):
             worker_thread.join()
 

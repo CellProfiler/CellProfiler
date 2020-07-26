@@ -39,9 +39,7 @@ class Analysis:
         to measurements_filename, optionally starting with previous
         measurements."""
         self.pipeline = pipeline
-        initial_measurements = Measurements(
-            copy=initial_measurements
-        )
+        initial_measurements = Measurements(copy=initial_measurements)
         self.initial_measurements_buf = initial_measurements.file_contents()
         initial_measurements.close()
         self.debug_mode = False

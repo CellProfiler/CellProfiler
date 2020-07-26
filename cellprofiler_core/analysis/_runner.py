@@ -209,9 +209,7 @@ class Runner:
         self.event_listener(evt)
 
     def post_run_display_handler(self, workspace, module):
-        event = DisplayPostRun(
-            module.module_num, workspace.display_data
-        )
+        event = DisplayPostRun(module.module_num, workspace.display_data)
         self.event_listener(event)
 
     # XXX - catch and deal with exceptions in interface() and jobserver() threads
@@ -239,16 +237,12 @@ class Runner:
 
             initial_measurements = None
             # Make a temporary measurements file.
-            fd, filename = tempfile.mkstemp(
-                ".h5", dir=get_temporary_directory()
-            )
+            fd, filename = tempfile.mkstemp(".h5", dir=get_temporary_directory())
             try:
                 fd = os.fdopen(fd, "wb")
                 fd.write(self.initial_measurements_buf)
                 fd.close()
-                initial_measurements = Measurements(
-                    filename=filename, mode="r"
-                )
+                initial_measurements = Measurements(filename=filename, mode="r")
                 measurements = Measurements(
                     image_set_start=None, copy=initial_measurements, mode="a"
                 )
@@ -260,12 +254,7 @@ class Runner:
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
             workspace = Workspace(
-                self.pipeline,
-                None,
-                None,
-                None,
-                measurements,
-                ImageSetList(),
+                self.pipeline, None, None, None, measurements, ImageSetList(),
             )
 
             if image_set_end is None:
@@ -285,22 +274,16 @@ class Runner:
             if self.pipeline.requires_aggregation():
                 overwrite = True
             if has_groups and not overwrite:
-                if not measurements.has_feature(
-                    "Image", self.STATUS
-                ):
+                if not measurements.has_feature("Image", self.STATUS):
                     overwrite = True
                 else:
                     group_status = {}
                     for image_number in measurements.get_image_numbers():
                         group_number = measurements[
-                            "Image",
-                            "Group_Number",
-                            image_number,
+                            "Image", "Group_Number", image_number,
                         ]
                         status = measurements[
-                            "Image",
-                            self.STATUS,
-                            image_number,
+                            "Image", self.STATUS, image_number,
                         ]
                         if status != self.STATUS_DONE:
                             group_status[group_number] = self.STATUS_UNPROCESSED
@@ -314,34 +297,24 @@ class Runner:
                     overwrite
                     or (
                         not measurements.has_measurements(
-                            "Image",
-                            self.STATUS,
-                            image_set_number,
+                            "Image", self.STATUS, image_set_number,
                         )
                     )
                     or (
-                        measurements[
-                            "Image",
-                            self.STATUS,
-                            image_set_number,
-                        ]
+                        measurements["Image", self.STATUS, image_set_number,]
                         != self.STATUS_DONE
                     )
                 ):
                     needs_reset = True
                 elif has_groups:
                     group_number = measurements[
-                        "Image",
-                        "Group_Number",
-                        image_set_number,
+                        "Image", "Group_Number", image_set_number,
                     ]
                     if group_status[group_number] != self.STATUS_DONE:
                         needs_reset = True
                 if needs_reset:
                     measurements[
-                        "Image",
-                        self.STATUS,
-                        image_set_number,
+                        "Image", self.STATUS, image_set_number,
                     ] = self.STATUS_UNPROCESSED
                     new_image_sets_to_process.append(image_set_number)
             image_sets_to_process = new_image_sets_to_process
@@ -353,14 +326,10 @@ class Runner:
                 job_groups = {}
                 for image_set_number in image_sets_to_process:
                     group_number = measurements[
-                        "Image",
-                        "Group_Number",
-                        image_set_number,
+                        "Image", "Group_Number", image_set_number,
                     ]
                     group_index = measurements[
-                        "Image",
-                        "Group_Index",
-                        image_set_number,
+                        "Image", "Group_Index", image_set_number,
                     ]
                     job_groups[group_number] = job_groups.get(group_number, []) + [
                         (group_index, image_set_number)
@@ -401,9 +370,7 @@ class Runner:
                 while not self.received_measurements_queue.empty():
                     image_numbers, buf = self.received_measurements_queue.get()
                     image_numbers = [int(i) for i in image_numbers]
-                    recd_measurements = load_measurements_from_buffer(
-                        buf
-                    )
+                    recd_measurements = load_measurements_from_buffer(buf)
                     self.copy_recieved_measurements(
                         recd_measurements, measurements, image_numbers
                     )
@@ -415,24 +382,17 @@ class Runner:
                     image_set_numbers = self.in_process_queue.get()
                     for image_set_number in image_set_numbers:
                         measurements[
-                            "Image",
-                            self.STATUS,
-                            int(image_set_number),
+                            "Image", self.STATUS, int(image_set_number),
                         ] = self.STATUS_IN_PROCESS
 
                 # check for finished jobs that haven't returned measurements, yet
                 while not self.finished_queue.empty():
                     finished_req = self.finished_queue.get()
                     measurements[
-                        "Image",
-                        self.STATUS,
-                        int(finished_req.image_set_number),
+                        "Image", self.STATUS, int(finished_req.image_set_number),
                     ] = self.STATUS_FINISHED_WAITING
                     if waiting_for_first_imageset:
-                        assert isinstance(
-                            finished_req,
-                            ImageSetSuccessWithDictionary,
-                        )
+                        assert isinstance(finished_req, ImageSetSuccessWithDictionary,)
                         self.shared_dicts = finished_req.shared_dicts
                         waiting_for_first_imageset = False
                         assert len(self.shared_dicts) == len(self.pipeline.modules())
@@ -444,11 +404,7 @@ class Runner:
 
                 # check progress and report
                 counts = collections.Counter(
-                    measurements[
-                        "Image",
-                        self.STATUS,
-                        image_set_number,
-                    ]
+                    measurements["Image", self.STATUS, image_set_number,]
                     for image_set_number in image_sets_to_process
                 )
                 self.post_event(Progress(counts))
@@ -486,11 +442,7 @@ class Runner:
                 start_signal.release()
             if posted_analysis_started:
                 was_cancelled = self.cancelled
-                self.post_event(
-                    Finished(
-                        measurements, was_cancelled
-                    )
-                )
+                self.post_event(Finished(measurements, was_cancelled))
             self.stop_workers()
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
@@ -513,14 +465,10 @@ class Runner:
                 # Some have been previously written. It's worth the time
                 # to check values and only write changes
                 for feature in recd_measurements.get_feature_names(o):
-                    if not measurements.has_feature(
-                        "Image", feature
-                    ):
+                    if not measurements.has_feature("Image", feature):
                         f_image_numbers = image_numbers
                     else:
-                        local_values = measurements[
-                            "Image", feature, image_numbers
-                        ]
+                        local_values = measurements["Image", feature, image_numbers]
                         remote_values = recd_measurements[
                             "Image", feature, image_numbers
                         ]
@@ -545,9 +493,7 @@ class Runner:
                         o, feature, image_numbers
                     ]
         for image_set_number in image_numbers:
-            measurements[
-                "Image", self.STATUS, image_set_number
-            ] = self.STATUS_DONE
+            measurements["Image", self.STATUS, image_set_number] = self.STATUS_DONE
 
     def jobserver(self, analysis_id, start_signal):
         # this server subthread should be very lightweight, as it has to handle
@@ -598,9 +544,7 @@ class Runner:
                     )
                 )
                 logging.debug("Replied to pipeline preferences request")
-            elif isinstance(
-                req, InitialMeasurements
-            ):
+            elif isinstance(req, InitialMeasurements):
                 logging.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
                 logging.debug("Replied to initial measurements request")
@@ -636,11 +580,7 @@ class Runner:
                 logging.debug("Enqueued ImageSetSuccess")
             elif isinstance(req, SharedDictionary):
                 logging.debug("Received shared dictionary request")
-                req.reply(
-                    SharedDictionary(
-                        dictionaries=self.shared_dicts
-                    )
-                )
+                req.reply(SharedDictionary(dictionaries=self.shared_dicts))
                 logging.debug("Sent shared dictionary reply")
             elif isinstance(req, MeasurementsReport):
                 logging.debug("Received measurements report")
@@ -759,11 +699,7 @@ class Runner:
                 )
             else:
                 worker = subprocess.Popen(
-                    [
-                        find_python(),
-                        "-u",
-                        find_analysis_worker_source(),
-                    ]  # unbuffered
+                    [find_python(), "-u", find_analysis_worker_source(),]  # unbuffered
                     + aw_args,
                     env=find_worker_env(idx),
                     stdin=subprocess.PIPE,

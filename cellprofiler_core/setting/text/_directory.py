@@ -39,9 +39,7 @@ class Directory(Text):
     ):
         if dir_choices is None:
             dir_choices = Directory.DIR_ALL
-        if support_urls and not (
-            URL_FOLDER_NAME in dir_choices
-        ):
+        if support_urls and not (URL_FOLDER_NAME in dir_choices):
             dir_choices = dir_choices + [URL_FOLDER_NAME]
         if value is None:
             value = Directory.static_join_string(dir_choices[0], "")
@@ -79,9 +77,7 @@ class Directory(Text):
     @staticmethod
     def upgrade_setting(value):
         dir_choice, custom_path = Directory.split_string(value)
-        dir_choice = standardize_default_folder_names(
-            [dir_choice], 0
-        )[0]
+        dir_choice = standardize_default_folder_names([dir_choice], 0)[0]
         return Directory.static_join_string(dir_choice, custom_path)
 
     def get_dir_choice(self):
@@ -125,18 +121,10 @@ class Directory(Text):
             return get_default_image_directory()
         if self.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME:
             return get_default_output_directory()
-        if (
-            self.dir_choice
-            == DEFAULT_INPUT_SUBFOLDER_NAME
-        ):
+        if self.dir_choice == DEFAULT_INPUT_SUBFOLDER_NAME:
             root_directory = get_default_image_directory()
-        elif (
-            self.dir_choice
-            == DEFAULT_OUTPUT_SUBFOLDER_NAME
-        ):
-            root_directory = (
-                get_default_output_directory()
-            )
+        elif self.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME:
+            root_directory = get_default_output_directory()
         elif self.dir_choice == ABSOLUTE_FOLDER_NAME:
             root_directory = os.curdir
         elif self.dir_choice == URL_FOLDER_NAME:
@@ -207,33 +195,23 @@ class Directory(Text):
 
         if self.dir_choice == DEFAULT_INPUT_FOLDER_NAME:
             pass
-        elif (
-            self.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
-        ):
+        elif self.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME:
             pass
         elif self.dir_choice == ABSOLUTE_FOLDER_NAME:
             self.custom_path = fn_alter_path(
                 self.custom_path, regexp_substitution=self.allow_metadata
             )
-        elif (
-            self.dir_choice
-            == DEFAULT_INPUT_SUBFOLDER_NAME
-        ):
+        elif self.dir_choice == DEFAULT_INPUT_SUBFOLDER_NAME:
             self.custom_path = fn_alter_path(
                 self.custom_path, regexp_substitution=self.allow_metadata
             )
-        elif (
-            self.dir_choice
-            == DEFAULT_OUTPUT_SUBFOLDER_NAME
-        ):
+        elif self.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME:
             self.custom_path = fn_alter_path(
                 self.custom_path, regexp_substitution=self.allow_metadata
             )
 
     def test_valid(self, pipeline):
-        if self.dir_choice not in self.dir_choices + [
-            NO_FOLDER_NAME
-        ]:
+        if self.dir_choice not in self.dir_choices + [NO_FOLDER_NAME]:
             raise ValidationError(
                 "Unsupported directory choice: %s" % self.dir_choice, self
             )

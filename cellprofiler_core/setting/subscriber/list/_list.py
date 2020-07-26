@@ -8,14 +8,14 @@ class List(Subscriber):
     """
 
     def __init__(
-            self,
-            text,
-            group,
-            value=None,
-            can_be_blank=False,
-            blank_text="Leave blank",
-            *args,
-            **kwargs,
+        self,
+        text,
+        group,
+        value=None,
+        can_be_blank=False,
+        blank_text="Leave blank",
+        *args,
+        **kwargs,
     ):
         if value is None:
             value = ""

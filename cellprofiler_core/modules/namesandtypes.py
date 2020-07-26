@@ -31,7 +31,7 @@ from ..image.abstract.file.url import Color
 from ..image.abstract.file.url import Mask
 from ..image.abstract.file.url import Monochrome
 from ..image.abstract.file.url import Objects
-from ..module import identify
+from ..module import _identify
 from ..setting.filter import MetadataPredicate
 
 __doc__ = """\
@@ -2137,7 +2137,7 @@ requests an object selection.
         o = cellprofiler_core.object.Objects()
         if image.pixel_data.shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
-            identify.add_object_location_measurements(
+            _identify.add_object_location_measurements(
                 workspace.measurements, name, o.segmented, o.count
             )
         else:
@@ -2150,10 +2150,10 @@ requests an object selection.
                     (ijv, numpy.column_stack([x[plane != 0] for x in (i, j, plane)]))
                 )
             o.set_ijv(ijv, shape)
-            identify.add_object_location_measurements_ijv(
+            _identify.add_object_location_measurements_ijv(
                 workspace.measurements, name, o.ijv, o.count
             )
-        identify.add_object_count_measurements(workspace.measurements, name, o.count)
+        _identify.add_object_count_measurements(workspace.measurements, name, o.count)
         workspace.object_set.add_objects(o, name)
 
     def on_activated(self, workspace):
@@ -2312,7 +2312,7 @@ requests an object selection.
                     ),
                 )
             ]
-            result += identify.get_object_measurement_columns(object_name)
+            result += _identify.get_object_measurement_columns(object_name)
         result += [
             (
                 cellprofiler_core.measurement.IMAGE,

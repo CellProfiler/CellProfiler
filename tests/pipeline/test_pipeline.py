@@ -15,6 +15,7 @@ import numpy.lib.index_tricks
 import six
 import six.moves
 
+import cellprofiler_core.constants.pipeline
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -192,21 +193,21 @@ HasImagePlaneDetails:False"""
         assert any(
             [
                 column[0] == cellprofiler_core.measurement.EXPERIMENT
-                and column[1] == cellprofiler_core.pipeline.M_PIPELINE
+                and column[1] == cellprofiler_core.constants.pipeline.M_PIPELINE
                 for column in columns
             ]
         )
         assert any(
             [
                 column[0] == cellprofiler_core.measurement.EXPERIMENT
-                and column[1] == cellprofiler_core.pipeline.M_VERSION
+                and column[1] == cellprofiler_core.constants.pipeline.M_VERSION
                 for column in columns
             ]
         )
         assert any(
             [
                 column[0] == cellprofiler_core.measurement.EXPERIMENT
-                and column[1] == cellprofiler_core.pipeline.M_TIMESTAMP
+                and column[1] == cellprofiler_core.constants.pipeline.M_TIMESTAMP
                 for column in columns
             ]
         )
@@ -214,7 +215,7 @@ HasImagePlaneDetails:False"""
             [
                 len(columns) > 3
                 and column[0] == cellprofiler_core.measurement.EXPERIMENT
-                and column[1] == cellprofiler_core.pipeline.M_MODIFICATION_TIMESTAMP
+                and column[1] == cellprofiler_core.constants.pipeline.M_MODIFICATION_TIMESTAMP
                 and column[3][cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN]
                 for column in columns
             ]

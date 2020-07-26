@@ -1,4 +1,4 @@
-from ..abstract._abstract import Abstract
+from ._abstract import Abstract
 
 
 class Vanilla(Abstract):

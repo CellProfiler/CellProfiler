@@ -5,9 +5,6 @@ import functools
 import numpy
 import scipy.ndimage
 
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
 

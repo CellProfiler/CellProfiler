@@ -1,8 +1,3 @@
-import cellprofiler_core.object
-
-from cellprofiler_core.object import *
-
-
 class ObjectSet:
     """A set of objects.Objects instances.
 

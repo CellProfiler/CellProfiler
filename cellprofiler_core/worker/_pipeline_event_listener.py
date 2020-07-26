@@ -1,8 +1,3 @@
-import cellprofiler_core.constants.worker
-import cellprofiler_core.pipeline
-import cellprofiler_core.worker
-
-
 class PipelineEventListener:
     """listen for pipeline events, communicate them as necessary to the
     analysis manager."""

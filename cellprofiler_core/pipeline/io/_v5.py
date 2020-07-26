@@ -1,5 +1,6 @@
 import re
 
+import cellprofiler_core.constants.pipeline
 import cellprofiler_core.measurement
 import cellprofiler_core.pipeline
 
@@ -12,7 +13,7 @@ def dump(pipeline, fp, save_image_plane_details):
     module_count = len(pipeline.modules(False))
 
     fp.write("CellProfiler Pipeline: http://www.cellprofiler.org\n")
-    fp.write(f"Version:{cellprofiler_core.pipeline.NATIVE_VERSION:d}\n")
+    fp.write(f"Version:{cellprofiler_core.constants.pipeline.NATIVE_VERSION :d}\n")
     fp.write(f"DateRevision:{date_revision:d}\n")
     fp.write(f"GitHash:{''}\n")
     fp.write(f"ModuleCount:{module_count:d}\n")

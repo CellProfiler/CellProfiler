@@ -3,9 +3,6 @@ import centrosome.outline
 import scipy.ndimage
 import scipy.sparse
 
-import cellprofiler_core.object
-from cellprofiler_core.object import *
-
 
 class Objects:
     """Represents a segmentation of an image.

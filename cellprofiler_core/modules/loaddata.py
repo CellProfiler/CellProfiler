@@ -22,7 +22,7 @@ import cellprofiler_core.setting.text._directory
 import cellprofiler_core.setting.text._filename
 import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
-from cellprofiler_core.module import identify
+from cellprofiler_core.module import _identify
 
 __doc__ = """\
 LoadData
@@ -1268,8 +1268,8 @@ safe to press it.""",
                 o = cellprofiler_core.object.Objects()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
-                identify.add_object_count_measurements(m, objects_name, o.count)
-                identify.add_object_location_measurements(m, objects_name, pixel_data)
+                _identify.add_object_count_measurements(m, objects_name, o.count)
+                _identify.add_object_location_measurements(m, objects_name, pixel_data)
 
         for feature_name in sorted(features):
             value = m.get_measurement(cellprofiler_core.measurement.IMAGE, feature_name)
@@ -1465,7 +1465,7 @@ safe to press it.""",
             # Add the object features
             #
             for object_name in self.get_object_names():
-                result += identify.get_object_measurement_columns(object_name)
+                result += _identify.get_object_measurement_columns(object_name)
                 for feature, coltype in (
                     (
                         cellprofiler_core.measurement.C_OBJECTS_URL,

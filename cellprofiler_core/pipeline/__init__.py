@@ -35,6 +35,19 @@ from .event.run_exception import PostRunException
 from .event.run_exception import PrepareRunException
 from .event.run_exception import RunException
 from .io import dump
+from ..constants.pipeline import MEASUREMENTS
+from ..constants.pipeline import PIPELINE
+from ..constants.pipeline import IMAGE_PLANE_DESCRIPTOR_VERSION
+from ..constants.pipeline import H_PLANE_COUNT
+from ..constants.pipeline import H_URL
+from ..constants.pipeline import H_SERIES
+from ..constants.pipeline import H_INDEX
+from ..constants.pipeline import H_CHANNEL
+from ..constants.pipeline import RF_STATE_PREQUOTE
+from ..constants.pipeline import RF_STATE_FIELD
+from ..constants.pipeline import RF_STATE_BACKSLASH_ESCAPE
+from ..constants.pipeline import RF_STATE_SEPARATOR
+from ..constants.pipeline import make_cell_struct_dtype
 from ..utilities.legacy import cmp
 
 try:
@@ -45,170 +58,7 @@ try:
 except:
     has_mat_read_error = False
 
-
 """The measurement name of the image number"""
-IMAGE_NUMBER = "ImageNumber"
-GROUP_NUMBER = "Group_Number"
-GROUP_INDEX = "Group_Index"
-CURRENT = "Current"
-NUMBER_OF_IMAGE_SETS = "NumberOfImageSets"
-NUMBER_OF_MODULES = "NumberOfModules"
-SET_BEING_ANALYZED = "SetBeingAnalyzed"
-SAVE_OUTPUT_HOW_OFTEN = "SaveOutputHowOften"
-TIME_STARTED = "TimeStarted"
-STARTING_IMAGE_SET = "StartingImageSet"
-STARTUP_DIRECTORY = "StartupDirectory"
-DEFAULT_MODULE_DIRECTORY = "DefaultModuleDirectory"
-DEFAULT_IMAGE_DIRECTORY = "DefaultImageDirectory"
-DEFAULT_OUTPUT_DIRECTORY = "DefaultOutputDirectory"
-IMAGE_TOOLS_FILENAMES = "ImageToolsFilenames"
-IMAGE_TOOL_HELP = "ImageToolHelp"
-PREFERENCES = "Preferences"
-PIXEL_SIZE = "PixelSize"
-SKIP_ERRORS = "SkipErrors"
-INTENSITY_COLOR_MAP = "IntensityColorMap"
-LABEL_COLOR_MAP = "LabelColorMap"
-STRIP_PIPELINE = "StripPipeline"
-DISPLAY_MODE_VALUE = "DisplayModeValue"
-DISPLAY_WINDOWS = "DisplayWindows"
-FONT_SIZE = "FontSize"
-IMAGES = "Images"
-MEASUREMENTS = "Measurements"
-PIPELINE = "Pipeline"
-SETTINGS = "Settings"
-VARIABLE_VALUES = "VariableValues"
-VARIABLE_INFO_TYPES = "VariableInfoTypes"
-MODULE_NAMES = "ModuleNames"
-NUMBERS_OF_VARIABLES = "NumbersOfVariables"
-VARIABLE_REVISION_NUMBERS = "VariableRevisionNumbers"
-MODULE_REVISION_NUMBERS = "ModuleRevisionNumbers"
-MODULE_NOTES = "ModuleNotes"
-CURRENT_MODULE_NUMBER = "CurrentModuleNumber"
-SHOW_WINDOW = "ShowFrame"
-BATCH_STATE = "BatchState"
-EXIT_STATUS = "Exit_Status"
-SETTINGS_DTYPE = numpy.dtype(
-    [
-        (VARIABLE_VALUES, "|O4"),
-        (VARIABLE_INFO_TYPES, "|O4"),
-        (MODULE_NAMES, "|O4"),
-        (NUMBERS_OF_VARIABLES, "|O4"),
-        (PIXEL_SIZE, "|O4"),
-        (VARIABLE_REVISION_NUMBERS, "|O4"),
-        (MODULE_REVISION_NUMBERS, "|O4"),
-        (MODULE_NOTES, "|O4"),
-        (SHOW_WINDOW, "|O4"),
-        (BATCH_STATE, "|O4"),
-    ]
-)
-
-
-def make_cell_struct_dtype(fields):
-    """Makes the dtype of a struct composed of cells
-
-    fields - the names of the fields in the struct
-    """
-    return numpy.dtype([(str(x), "|O4") for x in fields])
-
-
-CURRENT_DTYPE = make_cell_struct_dtype(
-    [
-        NUMBER_OF_IMAGE_SETS,
-        SET_BEING_ANALYZED,
-        NUMBER_OF_MODULES,
-        SAVE_OUTPUT_HOW_OFTEN,
-        TIME_STARTED,
-        STARTING_IMAGE_SET,
-        STARTUP_DIRECTORY,
-        DEFAULT_OUTPUT_DIRECTORY,
-        DEFAULT_IMAGE_DIRECTORY,
-        IMAGE_TOOLS_FILENAMES,
-        IMAGE_TOOL_HELP,
-    ]
-)
-PREFERENCES_DTYPE = make_cell_struct_dtype(
-    [
-        PIXEL_SIZE,
-        DEFAULT_MODULE_DIRECTORY,
-        DEFAULT_OUTPUT_DIRECTORY,
-        DEFAULT_IMAGE_DIRECTORY,
-        INTENSITY_COLOR_MAP,
-        LABEL_COLOR_MAP,
-        STRIP_PIPELINE,
-        SKIP_ERRORS,
-        DISPLAY_MODE_VALUE,
-        FONT_SIZE,
-        DISPLAY_WINDOWS,
-    ]
-)
-
-"""The current pipeline file format version"""
-NATIVE_VERSION = 5
-
-"""The version of the image plane descriptor section"""
-IMAGE_PLANE_DESCRIPTOR_VERSION = 1
-
-H_SVN_REVISION = "SVNRevision"
-H_DATE_REVISION = "DateRevision"
-"""The GIT hash of the revision"""
-H_GIT_HASH = "GitHash"
-
-"""The number of image planes in the file"""
-H_PLANE_COUNT = "PlaneCount"
-
-"""URL column header"""
-H_URL = "URL"
-
-"""Series column header"""
-H_SERIES = "Series"
-
-"""Index column header"""
-H_INDEX = "Index"
-
-"""Channel column header"""
-H_CHANNEL = "Channel"
-
-"""The number of modules in the pipeline"""
-H_MODULE_COUNT = "ModuleCount"
-
-"""Indicates whether the pipeline has an image plane details section"""
-H_HAS_IMAGE_PLANE_DETAILS = "HasImagePlaneDetails"
-
-"""A message for a user, to be displayed when pipeline is loaded"""
-H_MESSAGE_FOR_USER = "MessageForUser"
-
-"""The cookie that identifies a file as a CellProfiler pipeline"""
-COOKIE = "CellProfiler Pipeline: http://www.nucleus.org"
-
-"""Sad proofpoint cookie: see issue #1318"""
-SAD_PROOFPOINT_COOKIE = r"CellProfiler Pipeline: https?://\S+.proofpoint.com.+http-3A__www.cellprofiler\.org"
-
-"""HDF5 file header according to the specification
-
-see http://www.hdfgroup.org/HDF5/doc/H5.format.html#FileMetaData
-"""
-HDF5_HEADER = (
-    chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) + chr(26) + chr(10)
-)
-C_PIPELINE = "Pipeline"
-C_CELLPROFILER = "CellProfiler"
-F_PIPELINE = "Pipeline"
-F_USER_PIPELINE = "UserPipeline"
-M_PIPELINE = "_".join((C_PIPELINE, F_PIPELINE))
-M_USER_PIPELINE = "_".join((C_PIPELINE, F_USER_PIPELINE))
-F_VERSION = "Version"
-M_VERSION = "_".join((C_CELLPROFILER, F_VERSION))
-C_RUN = "Run"
-C_MODIFICATION = "Modification"
-F_TIMESTAMP = "Timestamp"
-M_TIMESTAMP = "_".join((C_RUN, F_TIMESTAMP))
-M_MODIFICATION_TIMESTAMP = "_".join((C_MODIFICATION, F_TIMESTAMP))
-
-"""Default input folder measurement"""
-M_DEFAULT_INPUT_FOLDER = "Default_InputFolder"
-
-"""Default output folder measurement"""
-M_DEFAULT_OUTPUT_FOLDER = "Default_OutputFolder"
 
 
 def add_all_images(handles, image_set, object_set):
@@ -232,7 +82,7 @@ def add_all_images(handles, image_set, object_set):
         if objects.has_small_removed_segmented():
             images[
                 "SmallRemovedSegmented" + object_name
-            ] = objects.small_removed_segmented
+                ] = objects.small_removed_segmented
 
     npy_images = numpy.ndarray(
         (1, 1), dtype=make_cell_struct_dtype(list(images.keys()))
@@ -492,12 +342,6 @@ def write_file_list(file_or_fd, file_list):
             fd.close()
 
 
-RF_STATE_PREQUOTE = 0
-RF_STATE_FIELD = 1
-RF_STATE_BACKSLASH_ESCAPE = 2
-RF_STATE_SEPARATOR = 3
-
-
 def read_fields(line):
     state = RF_STATE_PREQUOTE
     kv = False
@@ -560,10 +404,6 @@ def find_image_plane_details(exemplar, ipds):
     if pos == len(ipds) or cmp(ipds[pos], exemplar):
         return None
     return ipds[pos]
-
-
-DIRECTION_UP = "up"
-DIRECTION_DOWN = "down"
 
 
 def new_string_cell_array(shape):

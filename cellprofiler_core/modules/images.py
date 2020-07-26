@@ -6,14 +6,19 @@ import urllib.request
 
 import javabridge
 
-# import cellprofiler_core.icons
-import cellprofiler_core.module
-import cellprofiler_core.module
-import cellprofiler_core.modules
-import cellprofiler_core.pipeline
-import cellprofiler_core.setting
-import cellprofiler_core.setting.do_something._path_list_refresh_button
-import cellprofiler_core.utilities.hdf5_dict
+from ..module import FILTER_RULES_BUTTONS_HELP
+from ..module import Module
+from ..setting import Choice
+from ..setting import FileCollectionDisplay
+from ..setting import Filter
+from ..setting import PathListDisplay
+from ..setting import PathListRefreshButton
+from ..setting.filter import DirectoryPredicate
+from ..setting.filter import ExtensionPredicate
+from ..setting.filter import FilePredicate
+from ..utilities import image_resource
+from ..utilities.hdf5_dict import HDF5FileList
+from ..utilities.pathname import pathname2url
 
 __doc__ = """\
 Images
@@ -142,22 +147,15 @@ particular wavelength.
 .. _“lossless”: http://www.techterms.com/definition/lossless
 """.format(
     **{
-        "IMG_PANEL_BLANK": cellprofiler_core.utilities.image_resource(
+        "IMG_PANEL_BLANK": image_resource(
             "Images_FilelistPanel_Blank.png"
         ),
-        "IMG_PANEL_FILLED": cellprofiler_core.utilities.image_resource(
+        "IMG_PANEL_FILLED": image_resource(
             "Images_FilelistPanel_Filled.png"
         ),
     }
 )
 
-import cellprofiler_core.utilities.image
-
-import cellprofiler_core.utilities.pathname
-from ..setting import FileCollectionDisplay
-from ..setting.filter import DirectoryPredicate
-from ..setting.filter import ExtensionPredicate
-from ..setting.filter import FilePredicate
 
 FILTER_CHOICE_NONE = "No filtering"
 FILTER_CHOICE_IMAGES = "Images only"
@@ -169,7 +167,7 @@ FILTER_DEFAULT = (
 )
 
 
-class Images(cellprofiler_core.module.Module):
+class Images(Module):
     variable_revision_number = 2
     module_name = "Images"
     category = "File Processing"
@@ -188,10 +186,10 @@ class Images(cellprofiler_core.module.Module):
         ]
         self.set_notes([" ".join(module_explanation)])
 
-        self.path_list_display = cellprofiler_core.setting.PathListDisplay()
+        self.path_list_display = PathListDisplay()
         predicates = [FilePredicate(), DirectoryPredicate(), ExtensionPredicate()]
 
-        self.filter_choice = cellprofiler_core.setting.Choice(
+        self.filter_choice = Choice(
             "Filter images?",
             FILTER_CHOICE_ALL,
             value=FILTER_CHOICE_IMAGES,
@@ -231,7 +229,7 @@ Several options are available for this setting:
             ),
         )
 
-        self.filter = cellprofiler_core.setting.Filter(
+        self.filter = Filter(
             "Select the rule criteria",
             predicates,
             FILTER_DEFAULT,
@@ -241,12 +239,12 @@ Specify a set of rules to narrow down the files to be analyzed.
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
                 **{
-                    "FILTER_RULES_BUTTONS_HELP": cellprofiler_core.module.FILTER_RULES_BUTTONS_HELP
+                    "FILTER_RULES_BUTTONS_HELP": FILTER_RULES_BUTTONS_HELP
                 }
             ),
         )
 
-        self.update_button = cellprofiler_core.setting.do_something._path_list_refresh_button.PathListRefreshButton(
+        self.update_button = PathListRefreshButton(
             "Apply filters to the file list",
             "Apply filters to the file list",
             doc="""\
@@ -276,12 +274,12 @@ pass the current filter.
                     + "/".join([urllib.parse.quote(part) for part in modpath[2:]])
                 )
         path = os.path.join(*modpath)
-        return cellprofiler_core.utilities.pathname.pathname2url(path)
+        return pathname2url(path)
 
     @staticmethod
     def url_to_modpath(url):
         if not url.lower().startswith("file:"):
-            schema, rest = cellprofiler_core.utilities.hdf5_dict.HDF5FileList.split_url(
+            schema, rest = HDF5FileList.split_url(
                 url
             )
             return (

@@ -2,9 +2,6 @@ import math
 
 import numpy
 
-import cellprofiler_core.image
-import cellprofiler_core.utilities.image
-
 
 class Image:
     """

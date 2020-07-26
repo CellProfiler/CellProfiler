@@ -7,9 +7,9 @@ import os
 
 import h5py
 
-import cellprofiler_core.measurement
-import cellprofiler_core.utilities.hdf5_dict
-import cellprofiler_core.workspace
+from ._disposition_changed_event import DispositionChangedEvent
+from ..constants.workspace import DISPOSITION_CONTINUE
+from ..utilities.hdf5_dict import HDF5FileList
 
 
 class Workspace:
@@ -55,7 +55,7 @@ class Workspace:
         self.__windows_used = []
         self.__create_new_window = create_new_window
         self.__grid = {}
-        self.__disposition = cellprofiler_core.workspace.DISPOSITION_CONTINUE
+        self.__disposition = DISPOSITION_CONTINUE
         self.__disposition_listeners = []
         self.__in_background = (
             False  # controls checks for calls to create_or_find_figure()
@@ -64,11 +64,7 @@ class Workspace:
         self.__file_list = None
         self.__loading = False
         if measurements is not None:
-            self.set_file_list(
-                cellprofiler_core.utilities.hdf5_dict.HDF5FileList(
-                    measurements.hdf5_dict.hdf5_file
-                )
-            )
+            self.set_file_list(HDF5FileList(measurements.hdf5_dict.hdf5_file))
         self.__notification_callbacks = []
 
         self.interaction_handler = None
@@ -316,7 +312,7 @@ class Workspace:
 
     def set_disposition(self, disposition):
         self.__disposition = disposition
-        event = cellprofiler_core.workspace.DispositionChangedEvent(disposition)
+        event = DispositionChangedEvent(disposition)
         for listener in self.__disposition_listeners:
             listener(event)
 
@@ -337,11 +333,9 @@ class Workspace:
                         use the current pipeline.
         """
         import shutil
-        from cellprofiler_core.pipeline import (
-            M_PIPELINE,
-            M_DEFAULT_INPUT_FOLDER,
-            M_DEFAULT_OUTPUT_FOLDER,
-        )
+        from ..constants.pipeline import M_DEFAULT_OUTPUT_FOLDER
+        from ..constants.pipeline import M_DEFAULT_INPUT_FOLDER
+        from ..constants.pipeline import M_PIPELINE
         import cellprofiler_core.measurement
         from cellprofiler_core.preferences import (
             set_default_image_directory,
@@ -435,9 +429,7 @@ class Workspace:
         os.close(fd)
         if self.__file_list is not None:
             self.__file_list.remove_notification_callback(self.__on_file_list_changed)
-        self.__file_list = cellprofiler_core.utilities.hdf5_dict.HDF5FileList(
-            self.measurements.hdf5_dict.hdf5_file
-        )
+        self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
         self.__file_list.add_notification_callback(self.__on_file_list_changed)
         self.notify(self.WorkspaceCreatedEvent(self))
 
@@ -477,7 +469,7 @@ class Workspace:
             os.unlink(self.__filename)
 
     def save_pipeline_to_measurements(self):
-        from cellprofiler_core.pipeline import M_PIPELINE
+        from ..constants.pipeline import M_PIPELINE
 
         fd = io.StringIO()
         self.pipeline.dump(fd, save_image_plane_details=False)
@@ -485,8 +477,8 @@ class Workspace:
         self.measurements.flush()
 
     def save_default_folders_to_measurements(self):
-        from cellprofiler_core.pipeline import M_DEFAULT_INPUT_FOLDER
-        from cellprofiler_core.pipeline import M_DEFAULT_OUTPUT_FOLDER
+        from ..constants.pipeline import M_DEFAULT_INPUT_FOLDER
+        from ..constants.pipeline import M_DEFAULT_OUTPUT_FOLDER
         from cellprofiler_core.preferences import get_default_image_directory
         from cellprofiler_core.preferences import get_default_output_directory
 

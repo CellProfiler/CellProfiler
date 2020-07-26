@@ -9,11 +9,7 @@ import warnings
 import h5py
 import numpy
 
-import cellprofiler_core.measurement
-import cellprofiler_core.utilities
-import cellprofiler_core.utilities.hdf5_dict
-import cellprofiler_core.utilities.image
-import cellprofiler_core.utilities.pathname
+import cellprofiler_core.constants.pipeline
 
 
 class Measurements:
@@ -338,12 +334,12 @@ class Measurements:
     def get_group_number(self):
         """The number of the group currently being processed"""
         return self.get_current_image_measurement(
-            cellprofiler_core.measurement.GROUP_NUMBER
+            cellprofiler_core.constants.pipeline.GROUP_NUMBER
         )
 
     def set_group_number(self, group_number):
         self.add_image_measurement(
-            cellprofiler_core.measurement.GROUP_NUMBER, group_number
+            cellprofiler_core.constants.pipeline.GROUP_NUMBER, group_number
         )
 
     group_number = property(get_group_number, set_group_number)
@@ -351,12 +347,12 @@ class Measurements:
     def get_group_index(self):
         """The within-group index of the current image set"""
         return self.get_current_image_measurement(
-            cellprofiler_core.measurement.GROUP_INDEX
+            cellprofiler_core.constants.pipeline.GROUP_INDEX
         )
 
     def set_group_index(self, group_index):
         self.add_image_measurement(
-            cellprofiler_core.measurement.GROUP_INDEX, group_index
+            cellprofiler_core.constants.pipeline.GROUP_INDEX, group_index
         )
 
     group_index = property(get_group_index, set_group_index)
@@ -684,8 +680,8 @@ class Measurements:
 
         # some code adds ImageNumber and ObjectNumber measurements explicitly
         if feature_name in (
-            cellprofiler_core.measurement.IMAGE_NUMBER,
-            cellprofiler_core.measurement.OBJECT_NUMBER,
+                cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
+                cellprofiler_core.measurement.OBJECT_NUMBER,
         ):
             return
 
@@ -719,11 +715,11 @@ class Measurements:
             ] = data
             for n in image_set_number:
                 if not self.hdf5_dict.has_data(
-                    object_name, cellprofiler_core.measurement.IMAGE_NUMBER, n
+                    object_name, cellprofiler_core.constants.pipeline.IMAGE_NUMBER, n
                 ):
                     self.hdf5_dict[
                         cellprofiler_core.measurement.IMAGE,
-                        cellprofiler_core.measurement.IMAGE_NUMBER,
+                        cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
                         n,
                     ] = n
         else:
@@ -737,12 +733,12 @@ class Measurements:
             ):
                 if not self.hdf5_dict.has_data(
                     cellprofiler_core.measurement.IMAGE,
-                    cellprofiler_core.measurement.IMAGE_NUMBER,
+                        cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
                     n,
                 ):
                     self.hdf5_dict[
                         cellprofiler_core.measurement.IMAGE,
-                        cellprofiler_core.measurement.IMAGE_NUMBER,
+                        cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
                         n,
                     ] = n
                 if (
@@ -751,7 +747,7 @@ class Measurements:
                     )
                 ) and (d is not None):
                     self.hdf5_dict[
-                        object_name, cellprofiler_core.measurement.IMAGE_NUMBER, n
+                        object_name, cellprofiler_core.constants.pipeline.IMAGE_NUMBER, n
                     ] = [n] * len(d)
                 self.hdf5_dict[
                     object_name, cellprofiler_core.measurement.OBJECT_NUMBER, n
@@ -800,7 +796,7 @@ class Measurements:
             list(
                 self.hdf5_dict.get_indices(
                     cellprofiler_core.measurement.IMAGE,
-                    cellprofiler_core.measurement.IMAGE_NUMBER,
+                    cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
                 ).keys()
             ),
             int,
@@ -1016,13 +1012,13 @@ class Measurements:
         if (
             not self.hdf5_dict.has_feature(
                 cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.IMAGE_NUMBER,
+                cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
             )
         ) or (numpy.max(self.get_image_numbers()) < len(values)):
             image_numbers = numpy.arange(1, len(values) + 1)
             self.hdf5_dict.add_all(
                 cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.IMAGE_NUMBER,
+                cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
                 image_numbers,
             )
         else:
@@ -1117,13 +1113,13 @@ class Measurements:
         """
         if self.has_feature(
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_NUMBER,
+                cellprofiler_core.constants.pipeline.GROUP_NUMBER,
         ):
             image_numbers = self.get_image_numbers()
             if len(image_numbers) > 0:
                 group_numbers = self.get_measurement(
                     cellprofiler_core.measurement.IMAGE,
-                    cellprofiler_core.measurement.GROUP_NUMBER,
+                    cellprofiler_core.constants.pipeline.GROUP_NUMBER,
                     image_set_number=image_numbers,
                 )
                 return len(numpy.unique(group_numbers)) > 1
@@ -1378,7 +1374,7 @@ class Measurements:
             image_numbers = list(range(start, last_image_number + 1))
         self.hdf5_dict.add_all(
             cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.IMAGE_NUMBER,
+            cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
             image_numbers,
             image_numbers,
         )
@@ -1407,8 +1403,8 @@ class Measurements:
         fd = fd_or_file
 
         to_save = [
-            cellprofiler_core.measurement.GROUP_NUMBER,
-            cellprofiler_core.measurement.GROUP_INDEX,
+            cellprofiler_core.constants.pipeline.GROUP_NUMBER,
+            cellprofiler_core.constants.pipeline.GROUP_INDEX,
         ]
         to_save_prefixes = [
             cellprofiler_core.measurement.C_URL,
@@ -1639,7 +1635,7 @@ class Measurements:
         #              then use it to look up the values per image set
         #              and cache.
         #
-        return {cellprofiler_core.measurement.IMAGE_NUMBER: str(self.image_number)}
+        return {cellprofiler_core.constants.pipeline.IMAGE_NUMBER: str(self.image_number)}
 
     def get_grouping_keys(self):
         """Get a key, value dictionary that uniquely defines the group
@@ -1654,8 +1650,8 @@ class Measurements:
               them for matches. Now, we just return { GROUP_NUMBER: value }
         """
         return {
-            cellprofiler_core.measurement.GROUP_NUMBER: self.get_current_image_measurement(
-                cellprofiler_core.measurement.GROUP_NUMBER
+            cellprofiler_core.constants.pipeline.GROUP_NUMBER: self.get_current_image_measurement(
+                cellprofiler_core.constants.pipeline.GROUP_NUMBER
             )
         }
 
@@ -1905,7 +1901,7 @@ class Measurements:
         if cellprofiler_core.measurement.M_METADATA_TAGS not in self.get_feature_names(
             cellprofiler_core.measurement.EXPERIMENT
         ):
-            return [cellprofiler_core.measurement.IMAGE_NUMBER]
+            return [cellprofiler_core.constants.pipeline.IMAGE_NUMBER]
         return json.loads(
             self.get_experiment_measurement(
                 cellprofiler_core.measurement.M_METADATA_TAGS

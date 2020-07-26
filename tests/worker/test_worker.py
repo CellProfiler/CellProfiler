@@ -12,7 +12,7 @@ import cellprofiler_core.analysis
 import cellprofiler_core.analysis.reply._server_exited
 import cellprofiler_core.constants.worker
 import cellprofiler_core.measurement
-import cellprofiler_core.module.identify
+import cellprofiler_core.module._identify
 import cellprofiler_core.modules.namesandtypes
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences

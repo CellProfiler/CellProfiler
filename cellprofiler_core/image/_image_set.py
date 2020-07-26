@@ -4,7 +4,7 @@ import numpy
 
 from ._grayscale import Grayscale
 from ._rgb import RGB
-from .abstract._vanilla import Vanilla
+from .abstract import Vanilla
 
 
 class ImageSet:

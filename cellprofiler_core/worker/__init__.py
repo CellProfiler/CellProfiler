@@ -25,8 +25,14 @@ import sys
 
 import pkg_resources
 
-from cellprofiler_core.constants.worker import DEADMAN_START_ADDR, DEADMAN_START_MSG, NOTIFY_ADDR, NOTIFY_STOP, \
-    the_zmq_context, all_measurements
+from cellprofiler_core.constants.worker import (
+    DEADMAN_START_ADDR,
+    DEADMAN_START_MSG,
+    NOTIFY_ADDR,
+    NOTIFY_STOP,
+    the_zmq_context,
+    all_measurements,
+)
 from cellprofiler_core.worker._worker import Worker
 
 """Set the log level through the environment by specifying AW_LOG_LEVEL"""
@@ -175,7 +181,7 @@ def main():
         worker_thread.setDaemon(True)
         worker_thread.start()
         with KnimeBridgeServer(
-                the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
+            the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
         ):
             worker_thread.join()
 

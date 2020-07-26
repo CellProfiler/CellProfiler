@@ -123,9 +123,7 @@ class Worker:
                             "Connecting at address %s" % self.work_request_address
                         )
                         t0 = time.time()
-                    self.work_socket = the_zmq_context.socket(
-                        zmq.REQ
-                    )
+                    self.work_socket = the_zmq_context.socket(zmq.REQ)
                     self.work_socket.connect(self.work_request_address)
                     # fetch a job
                     the_request = Work(self.current_analysis_id)
@@ -213,7 +211,9 @@ class Worker:
 
             if not worker_runs_post_group:
                 # Get the shared state from the first imageset in this run.
-                shared_dicts = self.send(SharedDictionary(self.current_analysis_id)).dictionaries
+                shared_dicts = self.send(
+                    SharedDictionary(self.current_analysis_id)
+                ).dictionaries
                 assert len(shared_dicts) == len(current_pipeline.modules())
                 for module, new_dict in zip(current_pipeline.modules(), shared_dicts):
                     module.set_dictionary_for_worker(new_dict)
@@ -534,8 +534,7 @@ class Worker:
                     def pc(port):
                         print("GOT PORT ", port)
                         debug_reply[0] = self.send(
-                            DebugWaiting(self.current_analysis_id, port),
-                            report_socket,
+                            DebugWaiting(self.current_analysis_id, port), report_socket,
                         )
 
                     print("HASH", reply.verification_hash)

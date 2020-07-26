@@ -198,7 +198,9 @@ class TestAnalysisWorker(unittest.TestCase):
         self.analysis_id = uuid.uuid4().hex
 
         def do_set_work_socket(aw):
-            aw.work_socket = cellprofiler_core.constants.worker.the_zmq_context.socket(zmq.REQ)
+            aw.work_socket = cellprofiler_core.constants.worker.the_zmq_context.socket(
+                zmq.REQ
+            )
             aw.work_socket.connect(self.work_addr)
             aw.work_request_address = self.work_addr
             aw.current_analysis_id = self.analysis_id

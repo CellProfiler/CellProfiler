@@ -12,7 +12,6 @@ from typing import List, Any
 import numpy
 import psutil
 
-from . import ImageSetSuccess
 from ._worker_runner import WorkerRunner
 from .event import Finished
 from .event import Paused
@@ -20,6 +19,7 @@ from .event import Progress
 from .event import Resumed
 from .event import Started
 from .reply import Ack
+from .reply import ImageSetSuccess
 from .reply import ImageSetSuccessWithDictionary
 from .reply import Interaction
 from .reply import NoWork

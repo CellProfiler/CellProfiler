@@ -1,15 +1,17 @@
 import unittest
 
-import cellprofiler_core.setting
 import pytest
 
-import cellprofiler_core.setting.text.number._float
-import cellprofiler_core.setting.text.number.integer._integer
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.filter import Filter, FilterPredicate
+from cellprofiler_core.setting.filter._filter import LITERAL_PREDICATE, OR_PREDICATE
+from cellprofiler_core.setting.range import IntegerOrUnboundedRange, FloatRange, IntegerRange
+from cellprofiler_core.setting.text import Float, Integer
 
 
 class TestIntegerSetting(unittest.TestCase):
     def test_01_01_default(self):
-        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+        s = Integer(
             "foo", value=5
         )
         assert s == 5
@@ -17,7 +19,7 @@ class TestIntegerSetting(unittest.TestCase):
         s.test_valid(None)
 
     def test_01_02_set_value(self):
-        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+        s = Integer(
             "foo", value=5
         )
         for test_case in ("06", "-1"):
@@ -27,16 +29,16 @@ class TestIntegerSetting(unittest.TestCase):
             s.test_valid(None)
 
     def test_01_03_set_bad(self):
-        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+        s = Integer(
             "foo", value=5
         )
         s.value_text = "bad"
         assert s == 5
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_01_good_min(self):
-        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+        s = Integer(
             "foo", value=5, minval=0
         )
         for test_case in ("0", "1"):
@@ -44,16 +46,16 @@ class TestIntegerSetting(unittest.TestCase):
             s.test_valid(None)
 
     def test_02_02_bad_min(self):
-        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+        s = Integer(
             "foo", value=5, minval=0
         )
         s.value_text = "-1"
         assert s == 5
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_03_good_max(self):
-        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+        s = Integer(
             "foo", value=5, maxval=10
         )
         for test_case in ("9", "10"):
@@ -61,25 +63,25 @@ class TestIntegerSetting(unittest.TestCase):
             s.test_valid(None)
 
     def test_02_04_bad_max(self):
-        s = cellprofiler_core.setting._text.number.integer._integer.Integer(
+        s = Integer(
             "foo", value=5, maxval=10
         )
         s.value_text = "11"
         assert s.value == 5
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
 
 class TestFloatSetting(unittest.TestCase):
     def test_01_01_default(self):
         for value in (5, "5.0"):
-            s = cellprofiler_core.setting._text.number._float.Float("foo", value=value)
+            s = Float("foo", value=value)
             assert s == 5
             assert s.value_text == "5.0"
             s.test_valid(None)
 
     def test_01_02_set_value(self):
-        s = cellprofiler_core.setting._text.number._float.Float("foo", value=5)
+        s = Float("foo", value=5)
         for test_case in ("6.00", "-1.75"):
             s.value_text = test_case
             assert s == float(test_case)
@@ -87,20 +89,20 @@ class TestFloatSetting(unittest.TestCase):
             s.test_valid(None)
 
     def test_01_03_set_bad(self):
-        s = cellprofiler_core.setting._text.number._float.Float("foo", value=5)
+        s = Float("foo", value=5)
         s.value_text = "bad"
         assert s == 5
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_01_04_set_text_value(self):
-        s = cellprofiler_core.setting._text.number._float.Float("foo", value=5)
+        s = Float("foo", value=5)
         s.value = "6.00"
         assert s == 6
         assert s.value_text == "6.00"
 
     def test_02_01_good_min(self):
-        s = cellprofiler_core.setting._text.number._float.Float(
+        s = Float(
             "foo", value=5, minval=0
         )
         for test_case in ("0", "1"):
@@ -108,16 +110,16 @@ class TestFloatSetting(unittest.TestCase):
             s.test_valid(None)
 
     def test_02_02_bad_min(self):
-        s = cellprofiler_core.setting._text.number._float.Float(
+        s = Float(
             "foo", value=5, minval=0
         )
         s.value_text = "-1"
         assert s == 5
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_03_good_max(self):
-        s = cellprofiler_core.setting._text.number._float.Float(
+        s = Float(
             "foo", value=5, maxval=10
         )
         for test_case in ("9", "10"):
@@ -125,18 +127,18 @@ class TestFloatSetting(unittest.TestCase):
             s.test_valid(None)
 
     def test_02_04_bad_max(self):
-        s = cellprofiler_core.setting._text.number._float.Float(
+        s = Float(
             "foo", value=5, maxval=10
         )
         s.value_text = "11"
         assert s == 5
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
 
 class TestIntegerRange(unittest.TestCase):
     def test_01_01_default(self):
-        s = cellprofiler_core.setting.IntegerRange("foo", (1, 15))
+        s = IntegerRange("foo", (1, 15))
         assert s.min == 1
         assert s.max == 15
         assert s.min_text == "1"
@@ -144,7 +146,7 @@ class TestIntegerRange(unittest.TestCase):
         s.test_valid(None)
 
     def test_01_02_set_min(self):
-        s = cellprofiler_core.setting.IntegerRange("foo", (1, 15))
+        s = IntegerRange("foo", (1, 15))
         s.value_text = s.compose_min_text("02")
         assert s.min == 2
         assert s.max == 15
@@ -153,17 +155,17 @@ class TestIntegerRange(unittest.TestCase):
         s.test_valid(None)
 
     def test_01_03_set_min_bad(self):
-        s = cellprofiler_core.setting.IntegerRange("foo", (1, 15))
+        s = IntegerRange("foo", (1, 15))
         s.value_text = s.compose_min_text("a2")
         assert s.min == 1
         assert s.max == 15
         assert s.min_text == "a2"
         assert s.max_text == "15"
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_01_04_set_max(self):
-        s = cellprofiler_core.setting.IntegerRange("foo", (1, 15))
+        s = IntegerRange("foo", (1, 15))
         s.value_text = s.compose_max_text("016")
         assert s.min == 1
         assert s.max == 16
@@ -172,47 +174,47 @@ class TestIntegerRange(unittest.TestCase):
         s.test_valid(None)
 
     def test_01_05_set_max_bad(self):
-        s = cellprofiler_core.setting.IntegerRange("foo", (1, 15))
+        s = IntegerRange("foo", (1, 15))
         s.value_text = s.compose_max_text("a2")
         assert s.min == 1
         assert s.max == 15
         assert s.min_text == "1"
         assert s.max_text == "a2"
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_01_good_min(self):
-        s = cellprofiler_core.setting.IntegerRange("foo", (1, 15), minval=0)
+        s = IntegerRange("foo", (1, 15), minval=0)
         for test_case in ("2", "0"):
             s.value_text = s.compose_min_text(test_case)
             s.test_valid(None)
 
     def test_02_02_bad_min(self):
-        s = cellprofiler_core.setting.IntegerRange("foo", (1, 15), minval=0)
+        s = IntegerRange("foo", (1, 15), minval=0)
         s.value_text = s.compose_min_text("-1")
         assert s.min == 0
         assert s.min_text == "-1"
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_03_good_max(self):
-        s = cellprofiler_core.setting.IntegerRange("foo", (1, 15), maxval=20)
+        s = IntegerRange("foo", (1, 15), maxval=20)
         for test_case in ("18", "20"):
             s.value_text = s.compose_max_text(test_case)
             s.test_valid(None)
 
     def test_02_04_bad_max(self):
-        s = cellprofiler_core.setting.IntegerRange("foo", (1, 15), maxval=20)
+        s = IntegerRange("foo", (1, 15), maxval=20)
         s.value_text = s.compose_max_text("21")
         assert s.max == 20
         assert s.max_text == "21"
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
 
 class TestFloatRange(unittest.TestCase):
     def test_01_01_default(self):
-        s = cellprofiler_core.setting.FloatRange("foo", (1, 15))
+        s = FloatRange("foo", (1, 15))
         assert s.min == 1
         assert s.max == 15
         assert s.min_text == "1.0"
@@ -220,7 +222,7 @@ class TestFloatRange(unittest.TestCase):
         s.test_valid(None)
 
     def test_01_02_set_min(self):
-        s = cellprofiler_core.setting.FloatRange("foo", (1, 15))
+        s = FloatRange("foo", (1, 15))
         s.value_text = s.compose_min_text("2.10")
         assert s.min == 2.1
         assert s.max == 15
@@ -229,17 +231,17 @@ class TestFloatRange(unittest.TestCase):
         s.test_valid(None)
 
     def test_01_03_set_min_bad(self):
-        s = cellprofiler_core.setting.FloatRange("foo", (1, 15))
+        s = FloatRange("foo", (1, 15))
         s.value_text = s.compose_min_text("a2")
         assert s.min == 1
         assert s.max == 15
         assert s.min_text == "a2"
         assert s.max_text == "15.0"
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_01_04_set_max(self):
-        s = cellprofiler_core.setting.FloatRange("foo", (1, 15))
+        s = FloatRange("foo", (1, 15))
         s.value_text = s.compose_max_text("016")
         assert s.min == 1
         assert s.max == 16
@@ -248,31 +250,31 @@ class TestFloatRange(unittest.TestCase):
         s.test_valid(None)
 
     def test_01_05_set_max_bad(self):
-        s = cellprofiler_core.setting.FloatRange("foo", (1, 15))
+        s = FloatRange("foo", (1, 15))
         s.value_text = s.compose_max_text("a2")
         assert s.min == 1
         assert s.max == 15
         assert s.min_text == "1.0"
         assert s.max_text == "a2"
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_01_good_min(self):
-        s = cellprofiler_core.setting.FloatRange("foo", (1, 15), minval=0)
+        s = FloatRange("foo", (1, 15), minval=0)
         for test_case in ("2", "0"):
             s.value_text = s.compose_min_text(test_case)
             s.test_valid(None)
 
     def test_02_02_bad_min(self):
-        s = cellprofiler_core.setting.FloatRange("foo", (1, 15), minval=0)
+        s = FloatRange("foo", (1, 15), minval=0)
         s.value_text = s.compose_min_text("-1")
         assert s.min == 0
         assert s.min_text == "-1"
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_03_good_max(self):
-        s = cellprofiler_core.setting.FloatRange("foo", (1, 15), maxval=20)
+        s = FloatRange("foo", (1, 15), maxval=20)
         for test_case in ("18", "20.00"):
             s.value_text = s.compose_max_text(test_case)
             assert s.max == float(test_case)
@@ -280,32 +282,32 @@ class TestFloatRange(unittest.TestCase):
             s.test_valid(None)
 
     def test_02_04_bad_max(self):
-        s = cellprofiler_core.setting.FloatRange("foo", (1, 15), maxval=20)
+        s = FloatRange("foo", (1, 15), maxval=20)
         s.value_text = s.compose_max_text("21")
         assert s.max == 20
         assert s.max_text == "21"
-        with pytest.raises(cellprofiler_core.setting.ValidationError):
+        with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
 
 class TestIntegerOrUnboundedRange(unittest.TestCase):
     def test_01_01_default(self):
         for (
-            minval,
-            maxval,
-            expected_min,
-            expected_min_text,
-            expected_max,
-            expected_max_text,
-            expected_unbounded_max,
-            expected_abs,
+                minval,
+                maxval,
+                expected_min,
+                expected_min_text,
+                expected_max,
+                expected_max_text,
+                expected_unbounded_max,
+                expected_abs,
         ) in (
-            (0, "end", 0, "0", "end", "end", True, True),
-            ("begin", 15, 0, "begin", 15, "15", False, True),
-            (0, -15, 0, "0", -15, "15", False, False),
-            (0, "-" + "end", 0, "0", "end", "end", True, False),
+                (0, "end", 0, "0", "end", "end", True, True),
+                ("begin", 15, 0, "begin", 15, "15", False, True),
+                (0, -15, 0, "0", -15, "15", False, False),
+                (0, "-" + "end", 0, "0", "end", "end", True, False),
         ):
-            s = cellprofiler_core.setting.IntegerOrUnboundedRange(
+            s = IntegerOrUnboundedRange(
                 "foo", (minval, maxval)
             )
             assert s.min == expected_min
@@ -316,44 +318,44 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
             s.test_valid(None)
 
     def test_01_02_set_min(self):
-        s = cellprofiler_core.setting.IntegerOrUnboundedRange("foo")
+        s = IntegerOrUnboundedRange("foo")
         s.value_text = s.compose_min_text("01")
         assert s.min == 1
         assert s.display_min == "01"
 
     def test_01_03_set_max(self):
-        s = cellprofiler_core.setting.IntegerOrUnboundedRange("foo")
+        s = IntegerOrUnboundedRange("foo")
         s.value_text = s.compose_max_text("015")
         assert s.max == 15
         assert s.display_max == "015"
 
     def test_01_04_set_end(self):
-        s = cellprofiler_core.setting.IntegerOrUnboundedRange("foo", (0, 15))
+        s = IntegerOrUnboundedRange("foo", (0, 15))
         s.value_text = s.compose_max_text("end")
         assert s.max == "end"
 
     def test_01_05_set_abs(self):
-        s = cellprofiler_core.setting.IntegerOrUnboundedRange("foo", (0, -15))
+        s = IntegerOrUnboundedRange("foo", (0, -15))
         assert not s.is_abs()
         s.value_text = s.compose_abs()
         assert s.is_abs()
         assert s.max == 15
 
     def test_01_06_set_abs_end(self):
-        s = cellprofiler_core.setting.IntegerOrUnboundedRange("foo", (0, "-" + "end"))
+        s = IntegerOrUnboundedRange("foo", (0, "-" + "end"))
         assert not s.is_abs()
         s.value_text = s.compose_abs()
         assert s.is_abs()
         assert s.max == "end"
 
     def test_01_07_set_rel(self):
-        s = cellprofiler_core.setting.IntegerOrUnboundedRange("foo", (0, 15))
+        s = IntegerOrUnboundedRange("foo", (0, 15))
         s.value_text = s.compose_rel()
         assert not s.is_abs()
         assert s.max == -15
 
     def test_01_06_set_rel_end(self):
-        s = cellprofiler_core.setting.IntegerOrUnboundedRange("foo", (0, "end"))
+        s = IntegerOrUnboundedRange("foo", (0, "end"))
         s.value_text = s.compose_rel()
         assert not s.is_abs()
         assert s.max == "end"
@@ -362,132 +364,132 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
 class TestFilterSetting(unittest.TestCase):
     def test_01_01_simple(self):
         filters = [
-            cellprofiler_core.setting.Filter.FilterPredicate(
+            FilterPredicate(
                 "foo", "Foo", lambda a: a == "x", []
             )
         ]
-        f = cellprofiler_core.setting.Filter("", filters, "foo")
+        f = Filter("", filters, "foo")
         assert f.evaluate("x")
         assert not f.evaluate("y")
 
     def test_01_02_compound(self):
-        f2 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f2 = FilterPredicate(
             "bar", "Bar", lambda: "y", []
         )
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             "foo", "Foo", lambda a, b: a == b(), [f2]
         )
-        f = cellprofiler_core.setting.Filter("", [f1], "foo bar")
+        f = Filter("", [f1], "foo bar")
         assert not f.evaluate("x")
         assert f.evaluate("y")
 
     def test_01_03_literal(self):
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             "foo",
             "Foo",
             lambda a, b: a == b,
-            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
+            [LITERAL_PREDICATE],
         )
-        f = cellprofiler_core.setting.Filter("", [f1], 'foo "x"')
+        f = Filter("", [f1], 'foo "x"')
         assert f.evaluate("x")
         assert not f.evaluate("y")
-        f = cellprofiler_core.setting.Filter("", [f1], 'foo "y"')
+        f = Filter("", [f1], 'foo "y"')
         assert f.evaluate("y")
         assert not f.evaluate("x")
 
     def test_01_04_escaped_literal(self):
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             "foo",
             "Foo",
             lambda a, b: a == b,
-            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
+            [LITERAL_PREDICATE],
         )
-        f = cellprofiler_core.setting.Filter("", [f1], 'foo "\\\\"')
+        f = Filter("", [f1], 'foo "\\\\"')
         assert f.evaluate("\\")
         assert not f.evaluate("/")
 
     def test_01_05_literal_with_quote(self):
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             "foo",
             "Foo",
             lambda a, b: a == b,
-            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
+            [LITERAL_PREDICATE],
         )
-        f = cellprofiler_core.setting.Filter("", [f1], 'foo "\\""')
+        f = Filter("", [f1], 'foo "\\""')
         assert f.evaluate('"')
         assert not f.evaluate("/")
 
     def test_01_06_parentheses(self):
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             "eq",
             "Foo",
             lambda a, b: a == b,
-            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
+            [LITERAL_PREDICATE],
         )
-        f2 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f2 = FilterPredicate(
             "ne",
             "Bar",
             lambda a, b: a != b,
-            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
+            [LITERAL_PREDICATE],
         )
-        f = cellprofiler_core.setting.Filter("", [f1, f2], 'and (eq "x") (ne "y")')
+        f = Filter("", [f1, f2], 'and (eq "x") (ne "y")')
         assert f.evaluate("x")
         assert not f.evaluate("y")
         assert not f.evaluate("z")
 
     def test_01_07_or(self):
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             "eq",
             "Foo",
             lambda a, b: a == b,
-            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
+            [LITERAL_PREDICATE],
         )
 
-        f = cellprofiler_core.setting.Filter("", [f1], 'or (eq "x") (eq "y")')
+        f = Filter("", [f1], 'or (eq "x") (eq "y")')
         assert f.evaluate("x")
         assert f.evaluate("y")
         assert not f.evaluate("z")
 
     def test_02_01_build_one(self):
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             "foo", "Foo", lambda a: a == "foo", []
         )
-        f = cellprofiler_core.setting.Filter("", [f1])
+        f = Filter("", [f1])
         f.build([f1])
         assert f.value == "foo"
 
     def test_02_02_build_literal(self):
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             "foo",
             "Foo",
             lambda a, b: a == b,
-            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
+            [LITERAL_PREDICATE],
         )
-        f = cellprofiler_core.setting.Filter("", [f1])
+        f = Filter("", [f1])
         f.build([f1, "bar"])
         assert f.value == 'foo "bar"'
 
     def test_02_03_build_nested(self):
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             "foo",
             "Foo",
             lambda a, b: a == b,
-            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
+            [LITERAL_PREDICATE],
         )
-        f = cellprofiler_core.setting.Filter("", [f1])
+        f = Filter("", [f1])
         f.build(
-            [cellprofiler_core.setting.Filter.OR_PREDICATE, [f1, "bar"], [f1, "baz"]]
+            [OR_PREDICATE, [f1, "bar"], [f1, "baz"]]
         )
         assert f.value == 'or (foo "bar") (foo "baz")'
 
     def test_02_04_build_escaped_literal(self):
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             "foo",
             "Foo",
             lambda a, b: a == b,
-            [cellprofiler_core.setting.Filter.LITERAL_PREDICATE],
+            [LITERAL_PREDICATE],
         )
-        f = cellprofiler_core.setting.Filter("", [f1])
+        f = Filter("", [f1])
         f.build([f1, '"12\\'])
         assert f.value == 'foo "\\"12\\\\"'
         tokens = f.parse()
@@ -496,20 +498,20 @@ class TestFilterSetting(unittest.TestCase):
     def test_02_05_build_escaped_symbol(self):
         ugly = '(\\")'
         expected = '\\(\\\\\\"\\)'
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             ugly, "Foo", lambda a, b: a == b, []
         )
-        f = cellprofiler_core.setting.Filter("", [f1])
+        f = Filter("", [f1])
         f.build([f1])
         assert f.value == '\\(\\\\"\\)'
 
     def test_02_06_parse_escaped_symbol(self):
         ugly = '(\\")'
         encoded_ugly = '\\(\\\\\\"\\)'
-        f1 = cellprofiler_core.setting.Filter.FilterPredicate(
+        f1 = FilterPredicate(
             ugly, "Foo", lambda a, b: a == b, []
         )
-        f = cellprofiler_core.setting.Filter("", [f1], encoded_ugly)
+        f = Filter("", [f1], encoded_ugly)
         result = f.parse()
         assert len(result) == 1
         assert result[0].symbol == ugly

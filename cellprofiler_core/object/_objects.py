@@ -4,7 +4,7 @@ import numpy
 import scipy.ndimage
 import scipy.sparse
 
-from . import Segmentation
+from ._segmentation import Segmentation
 from ..utilities.core.object import downsample_labels
 
 

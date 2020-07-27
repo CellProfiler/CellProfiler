@@ -3,22 +3,20 @@ import re
 
 import numpy
 
-from cellprofiler_core.constants.pipeline import (
-    make_cell_struct_dtype,
-    PIPELINE,
-    MEASUREMENTS,
-    IMAGE_PLANE_DESCRIPTOR_VERSION,
-    H_PLANE_COUNT,
-    H_URL,
-    H_SERIES,
-    H_INDEX,
-    H_CHANNEL,
-    RF_STATE_PREQUOTE,
-    RF_STATE_FIELD,
-    RF_STATE_BACKSLASH_ESCAPE,
-    RF_STATE_SEPARATOR,
-)
-from cellprofiler_core.utilities.legacy import cmp
+from ...constants.pipeline import make_cell_struct_dtype
+from ...constants.pipeline import PIPELINE
+from ...constants.pipeline import MEASUREMENTS
+from ...constants.pipeline import IMAGE_PLANE_DESCRIPTOR_VERSION
+from ...constants.pipeline import H_PLANE_COUNT
+from ...constants.pipeline import H_URL
+from ...constants.pipeline import H_SERIES
+from ...constants.pipeline import H_INDEX
+from ...constants.pipeline import H_CHANNEL
+from ...constants.pipeline import RF_STATE_PREQUOTE
+from ...constants.pipeline import RF_STATE_FIELD
+from ...constants.pipeline import RF_STATE_BACKSLASH_ESCAPE
+from ...constants.pipeline import RF_STATE_SEPARATOR
+from ..legacy import cmp
 
 
 def add_all_images(handles, image_set, object_set):

@@ -8,8 +8,24 @@ import bioformats
 import bioformats.formatreader
 import numpy
 import pytest
-import six
 
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
+from cellprofiler_core.constants.measurement import COLTYPE_VARCHAR_FORMAT
+from cellprofiler_core.constants.measurement import C_COUNT
+from cellprofiler_core.constants.measurement import C_FILE_NAME
+from cellprofiler_core.constants.measurement import C_FRAME
+from cellprofiler_core.constants.measurement import C_METADATA
+from cellprofiler_core.constants.measurement import C_OBJECTS_FILE_NAME
+from cellprofiler_core.constants.measurement import C_OBJECTS_PATH_NAME
+from cellprofiler_core.constants.measurement import C_OBJECTS_URL
+from cellprofiler_core.constants.measurement import C_PATH_NAME
+from cellprofiler_core.constants.measurement import C_SERIES
+from cellprofiler_core.constants.measurement import C_URL
+from cellprofiler_core.constants.measurement import FF_COUNT
+from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X
+from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y
+from cellprofiler_core.constants.measurement import M_NUMBER_OBJECT_NUMBER
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -22,9 +38,6 @@ import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
 import tests.modules
-from cellprofiler_core.constants.measurement import C_METADATA, C_URL, C_SERIES, C_FRAME, COLTYPE_INTEGER, \
-    COLTYPE_FLOAT, COLTYPE_VARCHAR_FORMAT, C_OBJECTS_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_COUNT, \
-    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER, C_FILE_NAME, C_PATH_NAME, FF_COUNT
 
 cellprofiler_core.preferences.set_headless()
 
@@ -244,7 +257,7 @@ def test_long_int_image_measurement():
     m = pipeline.run()
     data = m.get_current_image_measurement("Test_Measurement")
     assert isinstance(
-        data, six.text_type
+        data, str
     ), "Expected <type 'six.text_type'> got %s" % type(data)
     assert data == "1234567890123"
     os.remove(filename)

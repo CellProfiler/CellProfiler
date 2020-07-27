@@ -6,4 +6,6 @@ class MovieFrameImage(FileImage):
     """
 
     def __init__(self, name, pathname, filename, frame, rescale):
-        super(MovieFrameImage, self).__init__(name, pathname, filename, rescale, index=frame)
+        super(MovieFrameImage, self).__init__(
+            name, pathname, filename, rescale, index=frame
+        )

@@ -47,9 +47,7 @@ class ObjectsImage(URLImage):
             img = bioformats.load_image(
                 self.get_full_name(), rescale=False, **properties
             ).astype(int)
-            img = convert_image_to_objects(
-                img
-            ).astype(numpy.int32)
+            img = convert_image_to_objects(img).astype(numpy.int32)
             img[img != 0] += offset
             offset += numpy.max(img)
             planes.append(img)

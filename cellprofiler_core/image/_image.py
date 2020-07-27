@@ -1,6 +1,7 @@
 import math
-
 import numpy
+
+from ..utilities.image import crop_image
 
 
 class Image:
@@ -311,9 +312,7 @@ class Image:
                 "Images are of different size and no crop mask available.\n"
                 "Use the Crop and Align modules to match images of different sizes."
             )
-        cropped_image = cellprofiler_core.utilities.image.crop_image(
-            image, self.crop_mask
-        )
+        cropped_image = crop_image(image, self.crop_mask)
         if cropped_image.shape[0:2] != self.pixel_data.shape[0:2]:
             raise ValueError(
                 "Cropped image is not the same size as the reference image: %s vs %s"

@@ -1,6 +1,6 @@
 author = "Allen Goodman"
 
-copyright = "2020, Allen Goodman"
+copyright = "Copyright © 2003 - 2020 Broad Institute, Inc. All rights reserved."
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 

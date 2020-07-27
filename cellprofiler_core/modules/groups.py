@@ -1,16 +1,31 @@
 # coding=utf-8
 
-import numpy as np
+import numpy
 
-import cellprofiler_core.constants.measurement
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.modules
-import cellprofiler_core.pipeline
-import cellprofiler_core.setting
-import cellprofiler_core.setting
-import cellprofiler_core.setting.do_something._remove_setting_button
-import cellprofiler_core.utilities
+from ..constants.measurement import COLTYPE_VARCHAR
+from ..constants.measurement import C_FILE_NAME
+from ..constants.measurement import C_METADATA
+from ..constants.measurement import C_OBJECTS_FILE_NAME
+from ..constants.measurement import C_OBJECTS_PATH_NAME
+from ..constants.measurement import C_PATH_NAME
+from ..constants.measurement import EXPERIMENT
+from ..constants.measurement import GROUP_INDEX
+from ..constants.measurement import GROUP_NUMBER
+from ..constants.measurement import M_GROUPING_TAGS
+from ..measurement import Measurements
+from ..module import Module
+from ..pipeline import ImageSetChannelDescriptor
+from ..pipeline import Pipeline
+from ..setting import Binary
+from ..setting import Divider
+from ..setting import HTMLText
+from ..setting import HiddenCount
+from ..setting import SettingsGroup
+from ..setting import Table
+from ..setting.choice import Choice
+from ..setting.do_something import DoSomething
+from ..setting.do_something import RemoveSettingButton
+from ..utilities.image import image_resource
 
 __doc__ = """\
 Groups
@@ -141,17 +156,11 @@ you may have multiple workers created (as set under the Preferences),
 but only a subset of them may actually be active, depending on the
 number of groups you have.
 """.format(
-    **{
-        "GROUPS_DISPLAY_TABLE": cellprofiler_core.utilities.image.image_resource(
-            "Groups_ExampleDisplayTable.png"
-        )
-    }
+    **{"GROUPS_DISPLAY_TABLE": image_resource("Groups_ExampleDisplayTable.png")}
 )
 
-import cellprofiler_core.utilities.image
 
-
-class Groups(cellprofiler_core.module.Module):
+class Groups(Module):
     variable_revision_number = 2
     module_name = "Groups"
     category = "File Processing"
@@ -170,7 +179,7 @@ class Groups(cellprofiler_core.module.Module):
         ]
         self.set_notes([" ".join(module_explanation)])
 
-        self.wants_groups = cellprofiler_core.setting.Binary(
+        self.wants_groups = Binary(
             "Do you want to group your images?",
             False,
             doc="""\
@@ -182,7 +191,7 @@ See the main module help for more details.
             ),
         )
 
-        self.grouping_text = cellprofiler_core.setting.HTMLText(
+        self.grouping_text = HTMLText(
             "",
             content="Each unique metadata value (or combination of values) will be defined as a group",
             size=(30, 2),
@@ -190,17 +199,17 @@ See the main module help for more details.
 
         self.grouping_metadata = []
 
-        self.grouping_metadata_count = cellprofiler_core.setting.HiddenCount(
+        self.grouping_metadata_count = HiddenCount(
             self.grouping_metadata, "grouping metadata count"
         )
 
         self.add_grouping_metadata(can_remove=False)
 
-        self.add_grouping_metadata_button = cellprofiler_core.setting.DoSomething(
+        self.add_grouping_metadata_button = DoSomething(
             "", "Add another metadata item", self.add_grouping_metadata
         )
 
-        self.grouping_list = cellprofiler_core.setting.Table(
+        self.grouping_list = Table(
             "Grouping list",
             min_size=(300, 100),
             doc="""\
@@ -216,7 +225,7 @@ each.
 """,
         )
 
-        self.image_set_list = cellprofiler_core.setting.Table(
+        self.image_set_list = Table(
             "Image sets",
             doc="""\
 This list displays the file name and location of each of the image sets
@@ -228,7 +237,7 @@ wells/plate ×2 sites/well = 2304 rows.
         )
 
     def add_grouping_metadata(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
         self.grouping_metadata.append(group)
 
         def get_group_metadata_choices(pipeline):
@@ -244,7 +253,7 @@ wells/plate ×2 sites/well = 2304 rows.
 
         group.append(
             "metadata_choice",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Metadata category",
                 choices,
                 choices_fn=get_group_metadata_choices,
@@ -335,14 +344,14 @@ desired behavior.
             ),
         )
 
-        group.append("divider", cellprofiler_core.setting.Divider())
+        group.append("divider", Divider())
 
         group.can_remove = can_remove
 
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.do_something._remove_setting_button.RemoveSettingButton(
+                RemoveSettingButton(
                     "", "Remove this metadata item", self.grouping_metadata, group
                 ),
             )
@@ -398,7 +407,7 @@ desired behavior.
     def on_activated(self, workspace):
         self.pipeline = workspace.pipeline
         self.workspace = workspace
-        assert isinstance(self.pipeline, cellprofiler_core.pipeline.Pipeline)
+        assert isinstance(self.pipeline, Pipeline)
         if self.wants_groups:
             self.metadata_keys = []
             self.image_sets_initialized = workspace.refresh_image_set()
@@ -456,7 +465,7 @@ desired behavior.
             except:
                 return
             m = self.workspace.measurements
-            assert isinstance(m, cellprofiler_core.measurement.Measurements)
+            assert isinstance(m, Measurements)
             channel_descriptors = m.get_channel_descriptors()
 
             self.grouping_list.clear_columns()
@@ -469,16 +478,14 @@ desired behavior.
                 if group.metadata_choice.value != "None"
             ]
             metadata_feature_names = [
-                "_".join((cellprofiler_core.constants.measurement.C_METADATA, key))
-                for key in metadata_key_names
+                "_".join((C_METADATA, key)) for key in metadata_key_names
             ]
             metadata_key_names = [
-                x[(len(cellprofiler_core.constants.measurement.C_METADATA) + 1) :]
-                for x in metadata_feature_names
+                x[(len(C_METADATA) + 1) :] for x in metadata_feature_names
             ]
             image_set_feature_names = [
-                cellprofiler_core.constants.measurement.GROUP_NUMBER,
-                cellprofiler_core.constants.measurement.GROUP_INDEX,
+                GROUP_NUMBER,
+                GROUP_INDEX,
             ] + metadata_feature_names
             self.image_set_list.insert_column(0, "Group number")
             self.image_set_list.insert_column(1, "Group index")
@@ -490,21 +497,12 @@ desired behavior.
             self.grouping_list.insert_column(len(metadata_key_names), "Count")
 
             image_numbers = m.get_image_numbers()
-            group_indexes = m[
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.measurement.GROUP_INDEX,
-                image_numbers,
-            ][:]
-            group_numbers = m[
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.measurement.GROUP_NUMBER,
-                image_numbers,
-            ][:]
-            counts = np.bincount(group_numbers)
-            first_indexes = np.argwhere(group_indexes == 1).flatten()
+            group_indexes = m["Image", GROUP_INDEX, image_numbers,][:]
+            group_numbers = m["Image", GROUP_NUMBER, image_numbers,][:]
+            counts = numpy.bincount(group_numbers)
+            first_indexes = numpy.argwhere(group_indexes == 1).flatten()
             group_keys = [
-                m[cellprofiler_core.constants.measurement.IMAGE, feature, image_numbers]
-                for feature in metadata_feature_names
+                m["Image", feature, image_numbers] for feature in metadata_feature_names
             ]
             k_count = sorted(
                 [
@@ -521,41 +519,26 @@ desired behavior.
                 self.grouping_list.data.append(row)
 
             for i, iscd in enumerate(channel_descriptors):
-                assert isinstance(
-                    iscd, cellprofiler_core.pipeline.ImageSetChannelDescriptor
-                )
+                assert isinstance(iscd, ImageSetChannelDescriptor)
                 image_name = iscd.name
                 idx = len(image_set_feature_names)
                 self.image_set_list.insert_column(idx, "Path: %s" % image_name)
                 self.image_set_list.insert_column(idx + 1, "File: %s" % image_name)
                 if iscd.channel_type == iscd.CT_OBJECTS:
                     image_set_feature_names.append(
-                        cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME
-                        + "_"
-                        + iscd.name
+                        C_OBJECTS_PATH_NAME + "_" + iscd.name
                     )
                     image_set_feature_names.append(
-                        cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME
-                        + "_"
-                        + iscd.name
+                        C_OBJECTS_FILE_NAME + "_" + iscd.name
                     )
                 else:
-                    image_set_feature_names.append(
-                        cellprofiler_core.constants.measurement.C_PATH_NAME
-                        + "_"
-                        + iscd.name
-                    )
-                    image_set_feature_names.append(
-                        cellprofiler_core.constants.measurement.C_FILE_NAME
-                        + "_"
-                        + iscd.name
-                    )
+                    image_set_feature_names.append(C_PATH_NAME + "_" + iscd.name)
+                    image_set_feature_names.append(C_FILE_NAME + "_" + iscd.name)
 
             all_features = [
-                m[cellprofiler_core.constants.measurement.IMAGE, ftr, image_numbers]
-                for ftr in image_set_feature_names
+                m["Image", ftr, image_numbers] for ftr in image_set_feature_names
             ]
-            order = np.lexsort((group_indexes, group_numbers))
+            order = numpy.lexsort((group_indexes, group_numbers))
 
             for idx in order:
                 row = [str(x[idx]) for x in all_features]
@@ -581,13 +564,9 @@ desired behavior.
         key_list = self.get_grouping_tags()
         m = workspace.measurements
         for key in key_list:
-            if key not in m.get_feature_names(
-                cellprofiler_core.constants.measurement.IMAGE
-            ):
-                if key.startswith(cellprofiler_core.constants.measurement.C_METADATA):
-                    key = key[
-                        len(cellprofiler_core.constants.measurement.C_METADATA) + 1 :
-                    ]
+            if key not in m.get_feature_names("Image"):
+                if key.startswith(C_METADATA):
+                    key = key[len(C_METADATA) + 1 :]
                 workspace.pipeline.report_prepare_run_error(
                     self,
                     (
@@ -605,12 +584,7 @@ desired behavior.
         if not self.wants_groups:
             return None
         return [
-            "_".join(
-                (
-                    cellprofiler_core.constants.measurement.C_METADATA,
-                    g.metadata_choice.value,
-                )
-            )
+            "_".join((C_METADATA, g.metadata_choice.value,))
             for g in self.grouping_metadata
         ]
 
@@ -658,38 +632,36 @@ desired behavior.
         #
         # Create arrays of group number, group_index and image_number
         #
-        group_numbers = np.hstack(
+        group_numbers = numpy.hstack(
             [
-                np.ones(len(image_numbers), int) * (i + 1)
+                numpy.ones(len(image_numbers), int) * (i + 1)
                 for i, (keys, image_numbers) in enumerate(groupings)
             ]
         )
-        group_indexes = np.hstack(
-            [np.arange(len(image_numbers)) + 1 for keys, image_numbers in groupings]
+        group_indexes = numpy.hstack(
+            [numpy.arange(len(image_numbers)) + 1 for keys, image_numbers in groupings]
         )
-        image_numbers = np.hstack([image_numbers for keys, image_numbers in groupings])
-        order = np.lexsort((group_indexes, group_numbers))
+        image_numbers = numpy.hstack(
+            [image_numbers for keys, image_numbers in groupings]
+        )
+        order = numpy.lexsort((group_indexes, group_numbers))
         group_numbers = group_numbers[order]
         group_indexes = group_indexes[order]
 
         m = workspace.measurements
-        assert isinstance(m, cellprofiler_core.measurement.Measurements)
+        assert isinstance(m, Measurements)
         #
         # Downstream processing requires that image sets be ordered by
         # increasing group number, then increasing group index.
         #
-        new_image_numbers = np.zeros(np.max(image_numbers) + 1, int)
-        new_image_numbers[image_numbers[order]] = np.arange(len(image_numbers)) + 1
+        new_image_numbers = numpy.zeros(numpy.max(image_numbers) + 1, int)
+        new_image_numbers[image_numbers[order]] = numpy.arange(len(image_numbers)) + 1
         m.reorder_image_measurements(new_image_numbers)
         m.add_all_measurements(
-            cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.measurement.GROUP_NUMBER,
-            group_numbers,
+            "Image", GROUP_NUMBER, group_numbers,
         )
         m.add_all_measurements(
-            cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.measurement.GROUP_INDEX,
-            group_indexes,
+            "Image", GROUP_INDEX, group_indexes,
         )
         m.set_grouping_tags(self.get_grouping_tags())
         return True
@@ -704,26 +676,14 @@ desired behavior.
         """
         result = []
         if self.wants_groups:
-            result.append(
-                (
-                    cellprofiler_core.constants.measurement.EXPERIMENT,
-                    cellprofiler_core.constants.measurement.M_GROUPING_TAGS,
-                    cellprofiler_core.constants.measurement.COLTYPE_VARCHAR,
-                )
-            )
+            result.append((EXPERIMENT, M_GROUPING_TAGS, COLTYPE_VARCHAR,))
             #
             # These are bound to be produced elsewhere, but it is quite
             # computationally expensive to find that out. If they are
             # duplicated by another module, no big deal.
             #
             for ftr in self.get_grouping_tags():
-                result.append(
-                    (
-                        cellprofiler_core.constants.measurement.IMAGE,
-                        ftr,
-                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR,
-                    )
-                )
+                result.append(("Image", ftr, COLTYPE_VARCHAR,))
         return result
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):

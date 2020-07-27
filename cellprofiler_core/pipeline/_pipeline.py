@@ -37,6 +37,7 @@ from .event import ModuleEnabled
 from .event import ModuleMoved
 from .event import ModuleRemoved
 from .event import ModuleShowWindow
+from .event import PipelineCleared
 from .event import PipelineLoaded
 from .event import PostRunException
 from .event import PrepareRunError

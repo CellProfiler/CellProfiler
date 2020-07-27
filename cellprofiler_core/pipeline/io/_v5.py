@@ -3,6 +3,7 @@ import re
 import cellprofiler_core.constants.pipeline
 import cellprofiler_core.measurement
 import cellprofiler_core.pipeline
+import cellprofiler_core.utilities.core.pipeline
 
 
 def dump(pipeline, fp, save_image_plane_details):
@@ -48,4 +49,6 @@ def dump(pipeline, fp, save_image_plane_details):
     if save_image_plane_details:
         fp.write("\n")
 
-        cellprofiler_core.pipeline.write_file_list(fp, pipeline.file_list)
+        cellprofiler_core.utilities.core.pipeline.write_file_list(
+            fp, pipeline.file_list
+        )

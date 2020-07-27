@@ -17,8 +17,9 @@ import uuid
 import bioformats.formatreader
 import numpy
 
-import cellprofiler_core.utilities.modules._modules
-from . import read_file_list
+import cellprofiler_core.utilities.core.modules
+import cellprofiler_core.utilities.core.pipeline
+from ..utilities.core.pipeline import read_file_list
 from ._image_plane import ImagePlane
 from ._listener import Listener
 from .dependency import ImageDependency
@@ -188,9 +189,7 @@ class Pipeline:
     def instantiate_module(module_name):
         import cellprofiler_core.modules
 
-        return cellprofiler_core.utilities.modules._modules.instantiate_module(
-            module_name
-        )
+        return cellprofiler_core.utilities.core.modules.instantiate_module(module_name)
 
     def reload_modules(self):
         """Reload modules from source, and attempt to update pipeline to new versions.
@@ -201,7 +200,7 @@ class Pipeline:
         import cellprofiler_core.modules
 
         importlib.reload(cellprofiler_core.modules)
-        cellprofiler_core.utilities.modules._modules.reload_modules()
+        cellprofiler_core.utilities.core.modules.reload_modules()
         # attempt to reinstantiate pipeline with new modules
         try:
             self.copy()  # if this fails, we probably can't reload
@@ -1442,10 +1441,10 @@ class Pipeline:
                 iii = indexes[group_image_numbers]
                 group_numbers[iii] = i + 1
                 group_indexes[iii] = numpy.arange(len(iii)) + 1
-            m.add_all_measurements(
+            cellprofiler_core.utilities.core.pipeline.add_all_measurements(
                 "Image", GROUP_NUMBER, group_numbers,
             )
-            m.add_all_measurements(
+            cellprofiler_core.utilities.core.pipeline.add_all_measurements(
                 "Image", GROUP_INDEX, group_indexes,
             )
             #

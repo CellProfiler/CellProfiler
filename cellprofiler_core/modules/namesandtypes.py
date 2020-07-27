@@ -28,13 +28,13 @@ import cellprofiler_core.setting.filter._image_predicate
 import cellprofiler_core.setting.text.alphanumeric.name._label_name
 import cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name
 import cellprofiler_core.setting.text.number._float
+import cellprofiler_core.utilities.core.pipeline
 import cellprofiler_core.utilities.image
-import cellprofiler_core.utilities.module._identify
+import cellprofiler_core.utilities.core.module._identify
 from ..image.abstract.file.url import Color
 from ..image.abstract.file.url import Mask
 from ..image.abstract.file.url import Monochrome
 from ..image.abstract.file.url import Objects
-from ..module import _identify
 from ..setting.filter import MetadataPredicate
 
 __doc__ = """\
@@ -1878,7 +1878,7 @@ requests an object selection.
         """Get an image plane descriptor for this single_image group"""
         if single_image.image_plane.url is None:
             raise ValueError("Single image is not yet specified")
-        ipd = cellprofiler_core.pipeline.find_image_plane_details(
+        ipd = cellprofiler_core.utilities.core.pipeline.find_image_plane_details(
             cellprofiler_core.pipeline.ImagePlane(
                 single_image.image_plane.url,
                 single_image.image_plane.series,
@@ -2165,7 +2165,7 @@ requests an object selection.
         o = cellprofiler_core.object.Objects()
         if image.pixel_data.shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
-            cellprofiler_core.utilities.module._identify.add_object_location_measurements(
+            cellprofiler_core.utilities.core.module._identify.add_object_location_measurements(
                 workspace.measurements, name, o.segmented, o.count
             )
         else:
@@ -2178,10 +2178,10 @@ requests an object selection.
                     (ijv, numpy.column_stack([x[plane != 0] for x in (i, j, plane)]))
                 )
             o.set_ijv(ijv, shape)
-            cellprofiler_core.utilities.module._identify.add_object_location_measurements_ijv(
+            cellprofiler_core.utilities.core.module._identify.add_object_location_measurements_ijv(
                 workspace.measurements, name, o.ijv, o.count
             )
-        cellprofiler_core.utilities.module._identify.add_object_count_measurements(
+        cellprofiler_core.utilities.core.module._identify.add_object_count_measurements(
             workspace.measurements, name, o.count
         )
         workspace.object_set.add_objects(o, name)
@@ -2344,7 +2344,7 @@ requests an object selection.
                     ),
                 )
             ]
-            result += cellprofiler_core.utilities.module._identify.get_object_measurement_columns(
+            result += cellprofiler_core.utilities.core.module._identify.get_object_measurement_columns(
                 object_name
             )
         result += [

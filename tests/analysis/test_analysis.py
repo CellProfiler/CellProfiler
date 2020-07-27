@@ -32,8 +32,6 @@ import cellprofiler_core.measurement
 import cellprofiler_core.utilities.zmq
 import cellprofiler_core.utilities.zmq.communicable.reply.upstream_exit
 
-from tests.modules import example_images_directory, testimages_directory
-
 IMAGE_NAME = "imagename"
 OBJECTS_NAME = "objectsname"
 IMAGE_FEATURE = "imagefeature"
@@ -202,7 +200,7 @@ class TestAnalysis(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.zmq_context = zmq.Context()
-        from cellprofiler_core.utilities.modules._modules import fill_modules
+        from cellprofiler_core.utilities.core.modules import fill_modules
 
         fill_modules()
 

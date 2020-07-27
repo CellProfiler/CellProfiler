@@ -4,8 +4,8 @@ import os
 import re
 import sys
 
-from ...module import Module
-from ...constants.modules import (
+from cellprofiler_core.module import Module
+from cellprofiler_core.constants.modules import (
     builtin_modules,
     all_modules,
     svn_revisions,
@@ -17,7 +17,7 @@ from ...constants.modules import (
     depricated_modules,
     unimplemented_modules,
 )
-from ...preferences import get_plugin_directory
+from cellprofiler_core.preferences import get_plugin_directory
 
 
 def plugin_list(plugin_dir):

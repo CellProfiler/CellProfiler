@@ -30,8 +30,9 @@ import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.setting.text.alphanumeric.name._label_name
 import cellprofiler_core.setting.text.alphanumeric.name.image_name._image_name
+import cellprofiler_core.utilities.core.pipeline
 import cellprofiler_core.utilities.image
-import cellprofiler_core.utilities.modules._modules
+import cellprofiler_core.utilities.core.modules
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
 import tests.modules
@@ -569,7 +570,7 @@ HasImagePlaneDetails:False"""
 
     def test_img_286(self):
         """Regression test for img-286: module name in class"""
-        cellprofiler_core.utilities.modules._modules.fill_modules()
+        cellprofiler_core.utilities.core.modules.fill_modules()
         success = True
         all_keys = list(cellprofiler_core.constants.modules.all_modules.keys())
         all_keys.sort()
@@ -584,10 +585,8 @@ HasImagePlaneDetails:False"""
 
     def test_dump(self):
         pipeline = get_empty_pipeline()
-        cellprofiler_core.utilities.modules._modules.fill_modules()
-        module = cellprofiler_core.utilities.modules._modules.instantiate_module(
-            "Align"
-        )
+        cellprofiler_core.utilities.core.modules.fill_modules()
+        module = cellprofiler_core.utilities.core.modules.instantiate_module("Align")
         module.set_module_num(1)
         pipeline.add_module(module)
         fd = six.moves.StringIO()
@@ -712,7 +711,7 @@ HasImagePlaneDetails:False"""
         #
         # Put "ModuleWithMeasurement" into the module list
         #
-        cellprofiler_core.utilities.modules._modules.fill_modules()
+        cellprofiler_core.utilities.core.modules.fill_modules()
         cellprofiler_core.constants.modules.all_modules[
             cellprofiler_core.modules.measurementfixture.MeasurementFixture.module_name
         ] = cellprofiler_core.modules.measurementfixture.MeasurementFixture
@@ -1189,7 +1188,7 @@ HasImagePlaneDetails:False"""
             s += "\n".join(body_lines) + "\n"
 
             with io.StringIO(s) as fd:
-                result = cellprofiler_core.pipeline.read_file_list(fd)
+                result = cellprofiler_core.utilities.core.pipeline.read_file_list(fd)
 
             assert len(result) == len(expected)
 
@@ -1201,11 +1200,11 @@ HasImagePlaneDetails:False"""
 
         fd = six.moves.StringIO()
 
-        cellprofiler_core.pipeline.write_file_list(fd, test_data)
+        cellprofiler_core.utilities.core.pipeline.write_file_list(fd, test_data)
 
         fd.seek(0)
 
-        result = cellprofiler_core.pipeline.read_file_list(fd)
+        result = cellprofiler_core.utilities.core.pipeline.read_file_list(fd)
 
         for x, y in zip(result, test_data):
             if not isinstance(y, str):
@@ -1487,7 +1486,7 @@ class GroupModule(cellprofiler_core.module.Module):
 
 class TestUtils(unittest.TestCase):
     def test_EncapsulateUnicode(self):
-        a = cellprofiler_core.pipeline.encapsulate_string("Hello")
+        a = cellprofiler_core.utilities.core.pipeline.encapsulate_string("Hello")
         assert a.shape == (1,)
         assert a.dtype.kind == "U"
         assert a[0] == "Hello"
@@ -1495,14 +1494,14 @@ class TestUtils(unittest.TestCase):
     def test_EncapsulateCell(self):
         cell = numpy.ndarray((1, 1), dtype=object)
         cell[0, 0] = "Hello, world"
-        cellprofiler_core.pipeline.encapsulate_strings_in_arrays(cell)
+        cellprofiler_core.utilities.core.pipeline.encapsulate_strings_in_arrays(cell)
         assert isinstance(cell[0, 0], numpy.ndarray)
         assert cell[0, 0][0] == "Hello, world"
 
     def test_EncapsulateStruct(self):
         struct = numpy.ndarray((1, 1), dtype=[("foo", object)])
         struct["foo"][0, 0] = "Hello, world"
-        cellprofiler_core.pipeline.encapsulate_strings_in_arrays(struct)
+        cellprofiler_core.utilities.core.pipeline.encapsulate_strings_in_arrays(struct)
         assert isinstance(struct["foo"][0, 0], numpy.ndarray)
         assert struct["foo"][0, 0][0] == "Hello, world"
 
@@ -1511,7 +1510,7 @@ class TestUtils(unittest.TestCase):
         cell = numpy.ndarray((1, 1), dtype=object)
         cell[0, 0] = "Hello, world"
         struct["foo"][0, 0] = cell
-        cellprofiler_core.pipeline.encapsulate_strings_in_arrays(struct)
+        cellprofiler_core.utilities.core.pipeline.encapsulate_strings_in_arrays(struct)
         assert isinstance(cell[0, 0], numpy.ndarray)
         assert cell[0, 0][0] == "Hello, world"
 
@@ -1520,6 +1519,6 @@ class TestUtils(unittest.TestCase):
         cell = numpy.ndarray((1, 1), dtype=object)
         cell[0, 0] = struct
         struct["foo"][0, 0] = "Hello, world"
-        cellprofiler_core.pipeline.encapsulate_strings_in_arrays(cell)
+        cellprofiler_core.utilities.core.pipeline.encapsulate_strings_in_arrays(cell)
         assert isinstance(struct["foo"][0, 0], numpy.ndarray)
         assert struct["foo"][0, 0][0] == "Hello, world"

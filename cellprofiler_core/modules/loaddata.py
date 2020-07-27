@@ -35,7 +35,7 @@ from ..constants.modules.load_data import IMAGE_CATEGORIES
 from ..constants.modules.load_data import OBJECTS_CATEGORIES
 from ..constants.modules.load_data import PATH_PADDING
 from ..image import FileImage
-from ..image import Objects
+from ..image import ObjectsImage
 from ..measurement import Measurements
 from ..module import Module
 from ..preferences import NO_FOLDER_NAME
@@ -1120,7 +1120,7 @@ safe to press it.""",
                 provider = self.fetch_provider(objects_name, m, is_image_name=False)
                 image = provider.provide_image(workspace.image_set)
                 pixel_data = convert_image_to_objects(image.pixel_data)
-                o = Objects()
+                o = ObjectsImage()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
                 add_object_count_measurements(m, objects_name, o.count)

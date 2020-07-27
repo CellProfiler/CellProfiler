@@ -7,7 +7,7 @@ from ...constants.measurement import FF_CHILDREN_COUNT
 from ...constants.measurement import FF_COUNT
 from ...constants.measurement import FF_PARENT
 from ...constants.measurement import FTR_OBJECT_NUMBER
-from ...image import Objects
+from ...image import ObjectsImage
 from ...setting.text import LabelName
 
 
@@ -134,7 +134,7 @@ class ObjectProcessing(ImageSegmentation):
 
         y_data = self.function(x_data, *args)
 
-        y = Objects()
+        y = ObjectsImage()
 
         y.segmented = y_data
 

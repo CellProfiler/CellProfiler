@@ -41,7 +41,7 @@ from ..constants.module import USING_METADATA_HELP_REF
 from ..image.abstract_image.file.url import ColorImage
 from ..image.abstract_image.file.url import MaskImage
 from ..image.abstract_image.file.url import MonochromeImage
-from ..image.abstract_image.file.url import Objects
+from ..image.abstract_image.file.url import ObjectsImage
 from ..measurement import Measurements
 from ..module import Module
 from ..pipeline import ImageSetChannelDescriptor
@@ -2096,12 +2096,12 @@ requests an object selection.
                 url = ipds[0].url
 
         url = workspace.measurements.alter_url_post_create_batch(url)
-        provider = Objects(name, url, series, index)
+        provider = ObjectsImage(name, url, series, index)
         self.add_provider_measurements(
             provider, workspace.measurements, "Object",
         )
         image = provider.provide_image(workspace.image_set)
-        o = Objects()
+        o = ObjectsImage()
         if image.pixel_data.shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
             add_object_location_measurements(

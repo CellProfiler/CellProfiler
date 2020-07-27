@@ -16,7 +16,7 @@ from ...constants.measurement import M_LOCATION_CENTER_X
 from ...constants.measurement import M_LOCATION_CENTER_Y
 from ...constants.measurement import M_LOCATION_CENTER_Z
 from ...constants.measurement import M_NUMBER_OBJECT_NUMBER
-from ...image import Objects
+from ...image import ObjectsImage
 from ...setting.subscriber import ImageSubscriber
 from ...setting.text import LabelName
 
@@ -155,7 +155,7 @@ class ImageSegmentation(Module):
 
         y_data = self.function(x_data, *args)
 
-        y = Objects()
+        y = ObjectsImage()
 
         y.segmented = y_data
 

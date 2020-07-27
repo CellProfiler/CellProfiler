@@ -1,3 +1,6 @@
+from cellprofiler_core.object import Objects
+
+
 class ObjectSet:
     """A set of objects.Objects instances.
 
@@ -20,7 +23,7 @@ class ObjectSet:
 
     def add_objects(self, objects, name):
         assert isinstance(
-            objects, cellprofiler_core.object.Objects
+            objects, Objects
         ), "objects must be an instance of CellProfiler.Objects"
         assert (
             name not in list(self.__objects_by_name.keys())

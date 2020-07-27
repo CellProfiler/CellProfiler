@@ -1,14 +1,16 @@
 import bioformats
 import numpy
 
+from .... import Image
+from .....utilities.image import convert_image_to_objects
 from ._url_image import URLImage
 
 
-class Objects(URLImage):
+class ObjectsImage(URLImage):
     """Provide a multi-plane integer image, interpreting an image file as objects"""
 
     def __init__(self, name, url, series, index):
-        cellprofiler_core.image.abstract_image.file.url._url_image.URLImage.__init__(
+        URLImage.__init__(
             self, name, url, rescale=False, series=series, index=index, volume=False
         )
 
@@ -45,14 +47,14 @@ class Objects(URLImage):
             img = bioformats.load_image(
                 self.get_full_name(), rescale=False, **properties
             ).astype(int)
-            img = cellprofiler_core.utilities.image.convert_image_to_objects(
+            img = convert_image_to_objects(
                 img
             ).astype(numpy.int32)
             img[img != 0] += offset
             offset += numpy.max(img)
             planes.append(img)
 
-        image = cellprofiler_core.image.Image(
+        image = Image(
             numpy.dstack(planes),
             path_name=self.get_pathname(),
             file_name=self.get_filename(),

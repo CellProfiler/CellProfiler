@@ -4,8 +4,7 @@ import os
 import re
 import sys
 
-from cellprofiler_core.module import Module
-from cellprofiler_core.constants.modules import (
+from ...constants.modules import (
     builtin_modules,
     all_modules,
     svn_revisions,
@@ -17,7 +16,7 @@ from cellprofiler_core.constants.modules import (
     depricated_modules,
     unimplemented_modules,
 )
-from cellprofiler_core.preferences import get_plugin_directory
+from ...preferences import get_plugin_directory
 
 
 def plugin_list(plugin_dir):
@@ -32,6 +31,8 @@ def plugin_list(plugin_dir):
 
 
 def check_module(module, name):
+    from ...module import Module
+
     if hasattr(module, "do_not_check"):
         return
     assert (
@@ -54,6 +55,8 @@ def find_cpmodule(m):
 
     returns the CPModule class
     """
+    from ...module import Module
+
     for v, val in list(m.__dict__.items()):
         if isinstance(val, type) and issubclass(val, Module):
             return val

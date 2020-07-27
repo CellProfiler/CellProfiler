@@ -14,12 +14,8 @@ from ..constants.pipeline import SHOW_WINDOW
 from ..constants.pipeline import VARIABLE_INFO_TYPES
 from ..constants.pipeline import VARIABLE_REVISION_NUMBERS
 from ..constants.pipeline import VARIABLE_VALUES
-from ..setting import Directory
-from ..setting import FileImageSubscriber
 from ..setting import HiddenCount
-from ..setting import Name
 from ..setting import Setting
-from ..setting import Subscriber
 from ..setting import ValidationError
 
 
@@ -295,6 +291,9 @@ class Module:
         )
 
     def save_to_handles(self, handles):
+        from ..setting import Name
+        from ..setting import Subscriber
+
         module_idx = self.module_num - 1
         setting = handles[SETTINGS][0, 0]
         setting[MODULE_NAMES][0, module_idx] = str(self.module_class())
@@ -860,6 +859,8 @@ class Module:
 
     def is_image_from_file(self, image_name):
         """Return True if this module loads this image name from a file."""
+        from ..setting import FileImageSubscriber
+
         for setting in self.settings():
             if (
                 isinstance(setting, FileImageSubscriber,)
@@ -889,6 +890,8 @@ class Module:
         Legacy modules might need the default image folder as does any module
         that uses the DirectoryPath setting.
         """
+        from ..setting import Directory
+
         for setting in self.visible_settings():
             if isinstance(setting, Directory):
                 return True

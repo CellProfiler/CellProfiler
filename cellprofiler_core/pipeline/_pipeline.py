@@ -10,16 +10,16 @@ import re
 import sys
 import tempfile
 import timeit
-import urllib.request
+import urllib.parse
 import urllib.request
 import uuid
 
 import bioformats.formatreader
 import numpy
 
-import cellprofiler_core.utilities.core.modules
-import cellprofiler_core.utilities.core.pipeline
-from ..utilities.core.pipeline import read_file_list
+from .io import dump as dumpit
+from ..utilities.core.modules import instantiate_module, reload_modules
+from ..utilities.core.pipeline import read_file_list, add_all_measurements
 from ._image_plane import ImagePlane
 from ._listener import Listener
 from .dependency import ImageDependency
@@ -86,11 +86,14 @@ from ..measurement import Measurements
 from ..object import ObjectSet
 from ..preferences import get_headless
 from ..preferences import report_progress
-from ..setting import ExternalImageSubscriber
-from ..setting import ImageSubscriber
-from ..setting import Name
+from ..setting.subscriber import ExternalImageSubscriber
+from ..setting import Measurement
+from ..setting.subscriber import ImageSubscriber
+from ..setting.text import Name
 from ..utilities.measurement import load_measurements
 from ..workspace import Workspace
+
+from cellprofiler_core import __version__
 
 
 def _is_fp(x):
@@ -189,7 +192,7 @@ class Pipeline:
     def instantiate_module(module_name):
         import cellprofiler_core.modules
 
-        return cellprofiler_core.utilities.core.modules.instantiate_module(module_name)
+        return instantiate_module(module_name)
 
     def reload_modules(self):
         """Reload modules from source, and attempt to update pipeline to new versions.
@@ -200,7 +203,7 @@ class Pipeline:
         import cellprofiler_core.modules
 
         importlib.reload(cellprofiler_core.modules)
-        cellprofiler_core.utilities.core.modules.reload_modules()
+        reload_modules()
         # attempt to reinstantiate pipeline with new modules
         try:
             self.copy()  # if this fails, we probably can't reload
@@ -358,7 +361,7 @@ class Pipeline:
         do_utf16_decode = False
         has_image_plane_details = False
         git_hash = None
-        pipeline_version = cellprofiler_core.__version__
+        pipeline_version = __version__
         cellprofiler_core.pipeline.CURRENT_VERSION = None
         while True:
             line = readline(fd)
@@ -391,7 +394,7 @@ class Pipeline:
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION,):
                 pipeline_version = int(value)
                 cellprofiler_core.pipeline.CURRENT_VERSION = int(
-                    re.sub(r"\.|rc\d", "", cellprofiler_core.__version__)
+                    re.sub(r"\.|rc\d", "", __version__)
                 )
             elif kwd == H_MODULE_COUNT:
                 module_count = int(value)
@@ -589,7 +592,7 @@ class Pipeline:
         return module
 
     def dump(self, fp, save_image_plane_details=True):
-        dump(self, fp, save_image_plane_details)
+        dumpit(self, fp, save_image_plane_details)
 
     def save_pipeline_notes(self, fd, indent=2):
         """Save pipeline notes to a text file
@@ -1342,7 +1345,7 @@ class Pipeline:
         assert isinstance(m, Measurements)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(
-            M_VERSION, cellprofiler_core.__version__,
+            M_VERSION, __version__,
         )
         m.add_experiment_measurement(
             M_TIMESTAMP, datetime.datetime.now().isoformat(),
@@ -1441,10 +1444,10 @@ class Pipeline:
                 iii = indexes[group_image_numbers]
                 group_numbers[iii] = i + 1
                 group_indexes[iii] = numpy.arange(len(iii)) + 1
-            cellprofiler_core.utilities.core.pipeline.add_all_measurements(
+            add_all_measurements(
                 "Image", GROUP_NUMBER, group_numbers,
             )
-            cellprofiler_core.utilities.core.pipeline.add_all_measurements(
+            add_all_measurements(
                 "Image", GROUP_INDEX, group_indexes,
             )
             #
@@ -2698,13 +2701,7 @@ class Pipeline:
                         result[k] = []
                     result[k].append((module, None))
             for setting in module.visible_settings():
-                if (
-                    isinstance(
-                        setting,
-                        cellprofiler_core.setting._text.alphanumeric.name._name.Name,
-                    )
-                    and setting.get_group() == groupname
-                ):
+                if isinstance(setting, Name,) and setting.get_group() == groupname:
                     name = setting.value
                     if name == "Do not use":
                         continue
@@ -2737,7 +2734,7 @@ class Pipeline:
         result = []
         for module in self.modules():
             for setting in module.visible_settings():
-                if isinstance(setting, cellprofiler_core.setting.NameSubscriber):
+                if isinstance(setting, Name):
                     group = setting.get_group()
                     name = setting.value
                     if group in providers and name in providers[group]:

@@ -27,9 +27,7 @@ class PluginImporter(object):
             mod = types.ModuleType(fullname)
             sys.modules[fullname] = mod
             mod.__loader__ = self
-            mod.__file__ = os.path.join(
-                cellprofiler_core.preferences.get_plugin_directory(), modname + ".py"
-            )
+            mod.__file__ = os.path.join(get_plugin_directory(), modname + ".py")
 
             contents = open(mod.__file__, "r").read()
             exec(compile(contents, mod.__file__, "exec"), mod.__dict__)

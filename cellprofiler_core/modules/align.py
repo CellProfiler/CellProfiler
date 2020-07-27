@@ -54,13 +54,12 @@ import scipy.sparse
 from centrosome.filter import stretch
 from scipy.fftpack import fft2, ifft2
 
-import cellprofiler_core.constants.measurement
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
-import cellprofiler_core.setting.do_something._remove_setting_button
-import cellprofiler_core.setting.text.alphanumeric.name.image_name._image_name
+from ..module import Module
+from ..setting import Divider, SettingsGroup
+from ..setting.choice import Choice
+from ..setting.do_something import DoSomething
+from ..setting.subscriber import ImageSubscriber
+from ..setting.text import ImageName
 
 M_MUTUAL_INFORMATION = "Mutual Information"
 M_CROSS_CORRELATION = "Normalized Cross Correlation"
@@ -78,48 +77,46 @@ C_ALIGN = "Align"
 MEASUREMENT_FORMAT = C_ALIGN + "_%sshift_%s"
 
 
-class Align(cellprofiler_core.module.Module):
+class Align(Module):
     module_name = "Align"
     category = "Image Processing"
     variable_revision_number = 3
 
     def create_settings(self):
-        self.first_input_image = cellprofiler_core.setting.ImageNameSubscriber(
+        self.first_input_image = ImageSubscriber(
             "Select the first input image",
             "None",
             doc="""\
 Specify the name of the first image to align.""",
         )
 
-        self.first_output_image = cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
+        self.first_output_image = ImageName(
             "Name the first output image",
             "AlignedRed",
             doc="""\
 Enter the name of the first aligned image.""",
         )
 
-        self.separator_1 = cellprofiler_core.setting.Divider(line=False)
-        self.second_input_image = cellprofiler_core.setting.ImageNameSubscriber(
+        self.separator_1 = Divider(line=False)
+        self.second_input_image = ImageSubscriber(
             "Select the second input image",
             "None",
             doc="""\
 Specify the name of the second image to align.""",
         )
 
-        self.second_output_image = cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
+        self.second_output_image = ImageName(
             "Name the second output image",
             "AlignedGreen",
             doc="""\
 Enter the name of the second aligned image.""",
         )
 
-        self.separator_2 = cellprofiler_core.setting.Divider(line=False)
+        self.separator_2 = Divider(line=False)
         self.additional_images = []
-        self.add_button = cellprofiler_core.setting.DoSomething(
-            "", "Add another image", self.add_image
-        )
+        self.add_button = DoSomething("", "Add another image", self.add_image)
 
-        self.alignment_method = cellprofiler_core.setting.Choice(
+        self.alignment_method = Choice(
             "Select the alignment method",
             M_ALL,
             doc="""\
@@ -148,7 +145,7 @@ Two options for the alignment method are available:
             % globals(),
         )
 
-        self.crop_mode = cellprofiler_core.setting.Choice(
+        self.crop_mode = Choice(
             "Crop mode",
             [C_CROP, C_PAD, C_SAME_SIZE],
             doc="""\
@@ -187,7 +184,7 @@ excluded from analysis. There are three choices for cropping:
 
     def add_image(self, can_remove=True):
         """Add an image + associated questions and buttons"""
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
         if can_remove:
             group.append("divider", cellprofiler_core.setting.Divider(line=False))
 

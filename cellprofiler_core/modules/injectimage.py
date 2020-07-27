@@ -4,7 +4,7 @@ import numpy
 
 from ..image import Image
 from ..module import Module
-from ..setting import Name
+from ..setting.text import Name
 
 
 class InjectImage(Module):

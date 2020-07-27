@@ -8,11 +8,11 @@ import javabridge
 
 from ..constants.module import FILTER_RULES_BUTTONS_HELP
 from ..module import Module
-from ..setting import Choice
+from ..setting.choice import Choice
 from ..setting import FileCollectionDisplay
-from ..setting import Filter
+from ..setting.filter import Filter
 from ..setting import PathListDisplay
-from ..setting import PathListRefreshButton
+from ..setting.do_something import PathListRefreshButton
 from ..setting.filter import DirectoryPredicate
 from ..setting.filter import ExtensionPredicate
 from ..setting.filter import FilePredicate

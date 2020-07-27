@@ -54,10 +54,12 @@ import scipy.sparse
 from centrosome.filter import stretch
 from scipy.fftpack import fft2, ifft2
 
+from ..constants.measurement import COLTYPE_INTEGER
+from ..image import Image
 from ..module import Module
 from ..setting import Divider, SettingsGroup
 from ..setting.choice import Choice
-from ..setting.do_something import DoSomething
+from ..setting.do_something import DoSomething, RemoveSettingButton
 from ..setting.subscriber import ImageSubscriber
 from ..setting.text import ImageName
 
@@ -186,11 +188,11 @@ excluded from analysis. There are three choices for cropping:
         """Add an image + associated questions and buttons"""
         group = SettingsGroup()
         if can_remove:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
+            group.append("divider", Divider(line=False))
 
         group.append(
             "input_image_name",
-            cellprofiler_core.setting.ImageNameSubscriber(
+            ImageSubscriber(
                 "Select the additional image",
                 "None",
                 doc="""
@@ -200,7 +202,7 @@ excluded from analysis. There are three choices for cropping:
 
         group.append(
             "output_image_name",
-            cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
+            ImageName(
                 "Name the output image",
                 "AlignedBlue",
                 doc="""
@@ -210,7 +212,7 @@ excluded from analysis. There are three choices for cropping:
 
         group.append(
             "align_choice",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Select how the alignment is to be applied",
                 [A_SIMILARLY, A_SEPARATELY],
                 doc="""\
@@ -230,7 +232,7 @@ a separate alignment to the first image can be calculated:
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.do_something._remove_setting_button.RemoveSettingButton(
+                RemoveSettingButton(
                     "", "Remove above image", self.additional_images, group
                 ),
             )
@@ -631,7 +633,7 @@ a separate alignment to the first image can be calculated:
         p1[:, :] = True
         if np.all(crop_mask):
             crop_mask = None
-        output_image = cellprofiler_core.image.Image(
+        output_image = Image(
             output_pixels, mask=output_mask, crop_mask=crop_mask, parent_image=image
         )
         workspace.image_set.add(output_image_name, output_image)
@@ -685,15 +687,12 @@ a separate alignment to the first image can be calculated:
         return offsets.tolist(), shapes.tolist()
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.constants.measurement.IMAGE:
+        if object_name == "Image":
             return [C_ALIGN]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cellprofiler_core.constants.measurement.IMAGE
-            and category == C_ALIGN
-        ):
+        if object_name == "Image" and category == C_ALIGN:
             return ["Xshift", "Yshift"]
         return []
 
@@ -714,11 +713,7 @@ a separate alignment to the first image can be calculated:
         columns = []
         for axis in ("X", "Y"):
             columns += [
-                (
-                    cellprofiler_core.constants.measurement.IMAGE,
-                    MEASUREMENT_FORMAT % (axis, target),
-                    cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
-                )
+                ("Image", MEASUREMENT_FORMAT % (axis, target), COLTYPE_INTEGER,)
                 for target in targets
             ]
         return columns

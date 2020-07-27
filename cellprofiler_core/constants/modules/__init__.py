@@ -1,7 +1,10 @@
 pymodule_to_cpmodule = {
     "align": "Align",
+    "groups": "Groups",
     "images": "Images",
-    "loadimages": "LoadImages",
+    "loaddata": "LoadData",
+    "metadata": "Metadata",
+    "namesandtypes": "NamesAndTypes",
     "measurementfixture": "MeasurementFixture",
 }
 builtin_modules = [

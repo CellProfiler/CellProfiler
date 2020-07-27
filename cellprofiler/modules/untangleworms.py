@@ -93,35 +93,44 @@ References
 import logging
 import os
 import re
-import xml.dom.minidom as DOM
 
+import cellprofiler_core.measurement
 import matplotlib.mlab as mlab
-import numpy as np
-import scipy.ndimage as scind
+import numpy
+import scipy.ndimage
 import six.moves.urllib.request
+import xml.dom.minidom as DOM
 from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from scipy.sparse import coo
 
-import cellprofiler_core.measurement
-
 logger = logging.getLogger(__name__)
 import cellprofiler
-import cellprofiler_core.module as cpm
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.image as cpi
-import cellprofiler_core.object as cpo
-import cellprofiler_core.setting as cps
-import centrosome.cpmorphology as morph
-import cellprofiler_core.preferences as cpprefs
+from cellprofiler_core.module import Module
+from cellprofiler_core.measurement import IMAGE
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.measurement import COLTYPE_FLOAT
+from cellprofiler_core.image import Image
+from cellprofiler_core.object import Objects
+from cellprofiler_core.object import ObjectSet
+from cellprofiler_core.setting import Integer
+from cellprofiler_core.setting import Float
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import OutlineNameProvider
+from cellprofiler_core.setting import DirectoryPath
+from cellprofiler_core.setting import FilenameText
+from cellprofiler_core.setting import Colormap
+from cellprofiler_core.setting import ObjectNameProvider
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import ValidationError
+import centrosome.cpmorphology
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.preferences import URL_FOLDER_NAME
 from cellprofiler_core.modules import identify as I
 from centrosome.propagate import propagate
 from centrosome.outline import outline
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
-from cellprofiler.modules._help import (
-    USING_METADATA_GROUPING_HELP_REF,
-    IO_FOLDER_CHOICE_HELP_TEXT,
-)
 
 RETAINING_OUTLINES_HELP = """\
 Select *{YES}* to retain the outlines of the new objects for later use
@@ -202,7 +211,7 @@ T_VALUES = "values"
 T_VALUE = "value"
 
 C_ALL = "Process all clusters"
-C_ALL_VALUE = np.iinfo(int).max
+C_ALL_VALUE = numpy.iinfo(int).max
 C_MEDIUM = "Medium"
 C_MEDIUM_VALUE = 200
 C_HIGH = "High"
@@ -219,14 +228,14 @@ complexity_limits = {
 }
 
 
-class UntangleWorms(cpm.Module):
+class UntangleWorms(Module):
     variable_revision_number = 2
     category = ["Worm Toolbox"]
     module_name = "UntangleWorms"
 
     def create_settings(self):
         """Create the settings that parameterize the module"""
-        self.mode = cps.Choice(
+        self.mode = Choice(
             "Train or untangle worms?",
             [MODE_UNTANGLE, MODE_TRAIN],
             doc="""\
@@ -243,7 +252,7 @@ class UntangleWorms(cpm.Module):
             % globals(),
         )
 
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageNameSubscriber(
             "Select the input binary image",
             "None",
             doc="""\
@@ -252,7 +261,7 @@ shapes. The binary image can be produced by the **ApplyThreshold**
 module.""",
         )
 
-        self.overlap = cps.Choice(
+        self.overlap = Choice(
             "Overlap style",
             [OO_BOTH, OO_WITH_OVERLAP, OO_WITHOUT_OVERLAP],
             doc="""\
@@ -268,7 +277,7 @@ worms or excluding the overlapping regions from both worms.
             % globals(),
         )
 
-        self.overlap_objects = cps.ObjectNameProvider(
+        self.overlap_objects = ObjectNameProvider(
             "Name the output overlapping worm objects",
             "OverlappingWorms",
             provided_attributes={ATTR_WORM_MEASUREMENTS: True},
@@ -285,7 +294,7 @@ measurements of both worms.
             % globals(),
         )
 
-        self.wants_overlapping_outlines = cps.Binary(
+        self.wants_overlapping_outlines = Binary(
             "Retain outlines of the overlapping objects?",
             False,
             doc="""\
@@ -297,7 +306,7 @@ measurements of both worms.
             % globals(),
         )
 
-        self.overlapping_outlines_colormap = cps.Colormap(
+        self.overlapping_outlines_colormap = Colormap(
             "Outline colormap?",
             doc="""\
 *(Used only if “%(MODE_UNTANGLE)s” mode, “%(OO_BOTH)s” or
@@ -311,7 +320,7 @@ group of overlapping worms
             % globals(),
         )
 
-        self.overlapping_outlines_name = cps.OutlineNameProvider(
+        self.overlapping_outlines_name = OutlineNameProvider(
             "Name the overlapped outline image",
             "OverlappedWormOutlines",
             doc="""\
@@ -323,7 +332,7 @@ This is the name of the outlines of the overlapped worms.
             % globals(),
         )
 
-        self.nonoverlapping_objects = cps.ObjectNameProvider(
+        self.nonoverlapping_objects = ObjectNameProvider(
             "Name the output non-overlapping worm objects",
             "NonOverlappingWorms",
             provided_attributes={ATTR_WORM_MEASUREMENTS: True},
@@ -340,7 +349,7 @@ be a part of the measurements of either worm.
             % globals(),
         )
 
-        self.wants_nonoverlapping_outlines = cps.Binary(
+        self.wants_nonoverlapping_outlines = Binary(
             "Retain outlines of the non-overlapping worms?",
             False,
             doc="""\
@@ -352,7 +361,7 @@ be a part of the measurements of either worm.
             % globals(),
         )
 
-        self.nonoverlapping_outlines_name = cps.OutlineNameProvider(
+        self.nonoverlapping_outlines_name = OutlineNameProvider(
             "Name the non-overlapped outlines image",
             "NonoverlappedWormOutlines",
             doc="""\
@@ -365,7 +374,7 @@ overlapping sections removed.
             % globals(),
         )
 
-        self.training_set_directory = cps.DirectoryPath(
+        self.training_set_directory = DirectoryPath(
             "Training set file location",
             support_urls=True,
             allow_metadata=False,
@@ -396,7 +405,7 @@ An additional option is the following:
             )
             self.training_set_directory.join_parts(dir_choice, custom_path)
 
-        self.training_set_file_name = cps.FilenameText(
+        self.training_set_file_name = FilenameText(
             "Training set file name",
             "TrainingSet.xml",
             doc="""This is the name of the training set file.""",
@@ -406,7 +415,7 @@ An additional option is the following:
             exts=[("Worm training set (*.xml)", "*.xml"), ("All files (*.*)", "*.*")],
         )
 
-        self.wants_training_set_weights = cps.Binary(
+        self.wants_training_set_weights = Binary(
             "Use training set weights?",
             True,
             doc="""\
@@ -418,7 +427,7 @@ Select "*No*" to override these weights with user-specified values.
             % globals(),
         )
 
-        self.override_overlap_weight = cps.Float(
+        self.override_overlap_weight = Float(
             "Overlap weight",
             5,
             0,
@@ -437,7 +446,7 @@ region times the overlap weight.
 """,
         )
 
-        self.override_leftover_weight = cps.Float(
+        self.override_leftover_weight = Float(
             "Leftover weight",
             10,
             0,
@@ -457,7 +466,7 @@ times the leftover weight.
 """,
         )
 
-        self.min_area_percentile = cps.Float(
+        self.min_area_percentile = Float(
             "Minimum area percentile",
             1,
             0,
@@ -473,7 +482,7 @@ minimum area allowed as this worm’s area times the minimum area factor.
             % globals(),
         )
 
-        self.min_area_factor = cps.Float(
+        self.min_area_factor = Float(
             "Minimum area factor",
             0.85,
             0,
@@ -487,7 +496,7 @@ percentile*.
             % globals(),
         )
 
-        self.max_area_percentile = cps.Float(
+        self.max_area_percentile = Float(
             "Maximum area percentile",
             90,
             0,
@@ -506,7 +515,7 @@ the *Maximum area factor* (see below) to get the maximum area
             % globals(),
         )
 
-        self.max_area_factor = cps.Float(
+        self.max_area_factor = Float(
             "Maximum area factor",
             1.0,
             0,
@@ -519,7 +528,7 @@ described above in *Maximum area percentile*.
             % globals(),
         )
 
-        self.min_length_percentile = cps.Float(
+        self.min_length_percentile = Float(
             "Minimum length percentile",
             1,
             0,
@@ -537,7 +546,7 @@ length.
             % globals(),
         )
 
-        self.min_length_factor = cps.Float(
+        self.min_length_factor = Float(
             "Minimum length factor",
             0.9,
             0,
@@ -551,7 +560,7 @@ above for *Minimum length percentile*
             % globals(),
         )
 
-        self.max_length_percentile = cps.Float(
+        self.max_length_percentile = Float(
             "Maximum length percentile",
             99,
             0,
@@ -568,7 +577,7 @@ worm’s length by the *Maximum length factor* to get the maximum length
             % globals(),
         )
 
-        self.max_length_factor = cps.Float(
+        self.max_length_factor = Float(
             "Maximum length factor",
             1.1,
             0,
@@ -581,7 +590,7 @@ described in *Maximum length percentile* above
             % globals(),
         )
 
-        self.max_cost_percentile = cps.Float(
+        self.max_cost_percentile = Float(
             "Maximum cost percentile",
             90,
             0,
@@ -600,7 +609,7 @@ the cost threshold.
             % globals(),
         )
 
-        self.max_cost_factor = cps.Float(
+        self.max_cost_factor = Float(
             "Maximum cost factor",
             1.9,
             0,
@@ -613,7 +622,7 @@ described in *Maximum cost percentile* above.
             % globals(),
         )
 
-        self.num_control_points = cps.Integer(
+        self.num_control_points = Integer(
             "Number of control points",
             21,
             3,
@@ -627,7 +636,7 @@ when constructing a worm shape from its skeleton.
             % globals(),
         )
 
-        self.max_radius_percentile = cps.Float(
+        self.max_radius_percentile = Float(
             "Maximum radius percentile",
             90,
             0,
@@ -644,7 +653,7 @@ to compute the maximum radius.
             % globals(),
         )
 
-        self.max_radius_factor = cps.Float(
+        self.max_radius_factor = Float(
             "Maximum radius factor",
             1,
             0,
@@ -657,7 +666,7 @@ described in *Maximum radius percentile* above.
             % globals(),
         )
 
-        self.complexity = cps.Choice(
+        self.complexity = Choice(
             "Maximum complexity",
             [C_MEDIUM, C_HIGH, C_VERY_HIGH, C_ALL, C_CUSTOM],
             value=C_HIGH,
@@ -682,7 +691,7 @@ the first or last crossing point. The choices are:
             % globals(),
         )
 
-        self.custom_complexity = cps.Integer(
+        self.custom_complexity = Integer(
             "Custom complexity",
             400,
             20,
@@ -876,18 +885,22 @@ should be processed.
         image_set = workspace.image_set
         image = image_set.get_image(image_name, must_be_binary=True)
         num_control_points = self.ncontrol_points()
-        labels, count = scind.label(image.pixel_data, morph.eight_connect)
-        skeleton = morph.skeletonize(image.pixel_data)
-        distances = scind.distance_transform_edt(image.pixel_data)
+        labels, count = scipy.ndimage.label(
+            image.pixel_data, centrosome.cpmorphology.eight_connect
+        )
+        skeleton = centrosome.cpmorphology.skeletonize(image.pixel_data)
+        distances = scipy.ndimage.distance_transform_edt(image.pixel_data)
         worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
-        areas = np.bincount(labels.ravel())
+        areas = numpy.bincount(labels.ravel())
         if self.show_window:
             dworms = workspace.display_data.worms = []
             workspace.display_data.input_image = image.pixel_data
         for i in range(1, count + 1):
             mask = labels == i
             graph = self.get_graph_from_binary(image.pixel_data & mask, skeleton & mask)
-            path_coords, path = self.get_longest_path_coords(graph, np.iinfo(int).max)
+            path_coords, path = self.get_longest_path_coords(
+                graph, numpy.iinfo(int).max
+            )
             if len(path_coords) == 0:
                 continue
             cumul_lengths = self.calculate_cumulative_lengths(path_coords)
@@ -900,11 +913,11 @@ should be processed.
             #
             # Interpolate in 2-d when looking up the distances
             #
-            fi, fj = (control_points - np.floor(control_points)).transpose()
+            fi, fj = (control_points - numpy.floor(control_points)).transpose()
             ci, cj = control_points.astype(int).transpose()
-            ci1 = np.minimum(ci + 1, labels.shape[0] - 1)
-            cj1 = np.minimum(cj + 1, labels.shape[1] - 1)
-            radial_profile = np.zeros(num_control_points)
+            ci1 = numpy.minimum(ci + 1, labels.shape[0] - 1)
+            cj1 = numpy.minimum(cj + 1, labels.shape[1] - 1)
+            radial_profile = numpy.zeros(num_control_points)
             for ii, jj, f in (
                 (ci, cj, (1 - fi) * (1 - fj)),
                 (ci1, cj, fi * (1 - fj)),
@@ -936,10 +949,10 @@ should be processed.
                 this = UntangleWorms()
             nworms = len(worms)
             num_control_points = self.ncontrol_points()
-            areas = np.zeros(nworms)
-            lengths = np.zeros(nworms)
-            radial_profiles = np.zeros((num_control_points, nworms))
-            angles = np.zeros((num_control_points - 2, nworms))
+            areas = numpy.zeros(nworms)
+            lengths = numpy.zeros(nworms)
+            radial_profiles = numpy.zeros((num_control_points, nworms))
+            angles = numpy.zeros((num_control_points - 2, nworms))
             for i, training_data in enumerate(worms):
                 areas[i] = training_data.area
                 lengths[i] = training_data.skel_length
@@ -953,7 +966,7 @@ should be processed.
             max_area = this.max_area_factor.value * mlab.prctile(
                 areas, this.max_area_percentile.value
             )
-            median_area = np.median(areas)
+            median_area = numpy.median(areas)
             min_length = this.min_length_factor.value * mlab.prctile(
                 lengths, this.min_length_percentile.value
             )
@@ -964,20 +977,20 @@ should be processed.
             max_radius = this.max_radius_factor.value * mlab.prctile(
                 radial_profiles.flatten(), this.max_radius_percentile.value
             )
-            mean_radial_profile = np.mean(radial_profiles, 1)
+            mean_radial_profile = numpy.mean(radial_profiles, 1)
             #
             # Mirror the angles by negating them. Flip heads and tails
             # because they are arbitrary.
             #
-            angles = np.hstack((angles, -angles, angles[::-1, :], -angles[::-1, :]))
-            lengths = np.hstack([lengths] * 4)
-            feat_vectors = np.vstack((angles, lengths[np.newaxis, :]))
-            mean_angles_length = np.mean(feat_vectors, 1)
-            fv_adjusted = feat_vectors - mean_angles_length[:, np.newaxis]
-            angles_covariance_matrix = np.cov(fv_adjusted)
-            inv_angles_covariance_matrix = np.linalg.inv(angles_covariance_matrix)
+            angles = numpy.hstack((angles, -angles, angles[::-1, :], -angles[::-1, :]))
+            lengths = numpy.hstack([lengths] * 4)
+            feat_vectors = numpy.vstack((angles, lengths[numpy.newaxis, :]))
+            mean_angles_length = numpy.mean(feat_vectors, 1)
+            fv_adjusted = feat_vectors - mean_angles_length[:, numpy.newaxis]
+            angles_covariance_matrix = numpy.cov(fv_adjusted)
+            inv_angles_covariance_matrix = numpy.linalg.inv(angles_covariance_matrix)
             angle_costs = [
-                np.dot(np.dot(fv, inv_angles_covariance_matrix), fv)
+                numpy.dot(numpy.dot(fv, inv_angles_covariance_matrix), fv)
                 for fv in fv_adjusted.transpose()
             ]
             max_cost = this.max_cost_factor.value * mlab.prctile(
@@ -989,7 +1002,7 @@ should be processed.
             if workspace.pipeline.test_mode:
                 return
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, Measurements)
             path = self.training_set_directory.get_absolute_path(m)
             file_name = m.apply_metadata(self.training_set_file_name.value)
             fd = open(os.path.join(path, file_name), "w")
@@ -1053,7 +1066,9 @@ should be processed.
         image_name = self.image_name.value
         image_set = workspace.image_set
         image = image_set.get_image(image_name, must_be_binary=True)
-        labels, count = scind.label(image.pixel_data, morph.eight_connect)
+        labels, count = scipy.ndimage.label(
+            image.pixel_data, centrosome.cpmorphology.eight_connect
+        )
         #
         # Skeletonize once, then remove any points in the skeleton
         # that are adjacent to the edge of the image, then skeletonize again.
@@ -1064,16 +1079,18 @@ should be processed.
         #      *   *   *
         #    * * * * * * * *
         #
-        skeleton = morph.skeletonize(image.pixel_data)
-        eroded = scind.binary_erosion(image.pixel_data, morph.eight_connect)
-        skeleton = morph.skeletonize(skeleton & eroded)
+        skeleton = centrosome.cpmorphology.skeletonize(image.pixel_data)
+        eroded = scipy.ndimage.binary_erosion(
+            image.pixel_data, centrosome.cpmorphology.eight_connect
+        )
+        skeleton = centrosome.cpmorphology.skeletonize(skeleton & eroded)
         #
         # The path skeletons
         #
         all_path_coords = []
-        if count != 0 and np.sum(skeleton) != 0:
-            areas = np.bincount(labels.flatten())
-            skeleton_areas = np.bincount(labels[skeleton])
+        if count != 0 and numpy.sum(skeleton) != 0:
+            areas = numpy.bincount(labels.flatten())
+            skeleton_areas = numpy.bincount(labels[skeleton])
             current_index = 1
             for i in range(1, count + 1):
                 if (
@@ -1120,13 +1137,13 @@ should be processed.
         if self.show_window:
             workspace.display_data.input_image = image.pixel_data
         object_set = workspace.object_set
-        assert isinstance(object_set, cpo.ObjectSet)
+        assert isinstance(object_set, ObjectSet)
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, Measurements)
 
         object_names = []
         if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
-            o = cpo.Objects()
+            o = Objects()
             o.ijv = ijv
             o.parent_image = image
             name = self.overlap_objects.value
@@ -1139,11 +1156,11 @@ should be processed.
                 ]
 
             if o.count == 0:
-                center_x = np.zeros(0)
-                center_y = np.zeros(0)
+                center_x = numpy.zeros(0)
+                center_y = numpy.zeros(0)
             else:
-                center_x = np.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
-                center_y = np.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
+                center_x = numpy.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
+                center_y = numpy.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
             measurements.add_measurement(
                 name, cellprofiler_core.measurement.M_LOCATION_CENTER_X, center_x
             )
@@ -1161,15 +1178,15 @@ should be processed.
 
                 colormap = self.overlapping_outlines_colormap.value
                 if colormap == "Default":
-                    colormap = cpprefs.get_default_colormap()
+                    colormap = get_default_colormap()
                 if len(ijv) == 0:
                     ishape = image.pixel_data.shape
-                    outline_pixels = np.zeros((ishape[0], ishape[1], 3))
+                    outline_pixels = numpy.zeros((ishape[0], ishape[1], 3))
                 else:
                     my_map = ScalarMappable(cmap=colormap)
-                    colors = my_map.to_rgba(np.unique(ijv[:, 2]))
+                    colors = my_map.to_rgba(numpy.unique(ijv[:, 2]))
                     outline_pixels = o.make_ijv_outlines(colors[:, :3])
-                outline_image = cpi.Image(outline_pixels, parent_image=image)
+                outline_image = Image(outline_pixels, parent_image=image)
                 image_set.add(self.overlapping_outlines_name.value, outline_image)
 
         if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
@@ -1177,14 +1194,14 @@ should be processed.
             # Sum up the number of overlaps using a sparse matrix
             #
             overlap_hits = coo.coo_matrix(
-                (np.ones(len(ijv)), (ijv[:, 0], ijv[:, 1])), image.pixel_data.shape
+                (numpy.ones(len(ijv)), (ijv[:, 0], ijv[:, 1])), image.pixel_data.shape
             )
             overlap_hits = overlap_hits.toarray()
             mask = overlap_hits == 1
             labels = coo.coo_matrix((ijv[:, 2], (ijv[:, 0], ijv[:, 1])), mask.shape)
             labels = labels.toarray()
             labels[~mask] = 0
-            o = cpo.Objects()
+            o = Objects()
             o.segmented = labels
             o.parent_image = image
             name = self.nonoverlapping_objects.value
@@ -1199,7 +1216,7 @@ should be processed.
 
             if self.wants_nonoverlapping_outlines:
                 outline_pixels = outline(labels) > 0
-                outline_image = cpi.Image(outline_pixels, parent_image=image)
+                outline_image = Image(outline_pixels, parent_image=image)
                 image_set.add(self.nonoverlapping_outlines_name.value, outline_image)
         for name in object_names:
             measurements.add_measurement(
@@ -1282,7 +1299,7 @@ should be processed.
             a.set_title("Lengths")
             a = f.add_subplot(1, 4, 3)
             a.set_position((Bbox([[0.30, 0.1], [0.60, 0.9]])))
-            a.boxplot(feat_vectors[:-1, :].transpose() * 180 / np.pi)
+            a.boxplot(feat_vectors[:-1, :].transpose() * 180 / numpy.pi)
             a.set_title("Angles")
             a = f.add_subplot(1, 4, 4)
             a.set_position((Bbox([[0.65, 0.1], [1, 0.45]])))
@@ -1376,7 +1393,7 @@ should be processed.
            area will be chosen as starting end. (Even though in this case, the
            "positive direction" of the segment cannot be determined from the
            information in graph_struct.segments.)"""
-        branch_areas_binary = morph.branchpoints(skeleton)
+        branch_areas_binary = centrosome.cpmorphology.branchpoints(skeleton)
         if max_radius is not None:
             #
             # Add any points that are more than the worm diameter to
@@ -1392,20 +1409,22 @@ should be processed.
             #
             # * * * * * * * * * *
             #
-            strel = morph.strel_disk(max_radius)
-            far = scind.binary_erosion(binary_im, strel)
-            far = scind.binary_opening(far, structure=morph.eight_connect)
-            far_labels, count = scind.label(far)
-            far_counts = np.bincount(far_labels.ravel(), branch_areas_binary.ravel())
+            strel = centrosome.cpmorphology.strel_disk(max_radius)
+            far = scipy.ndimage.binary_erosion(binary_im, strel)
+            far = scipy.ndimage.binary_opening(
+                far, structure=centrosome.cpmorphology.eight_connect
+            )
+            far_labels, count = scipy.ndimage.label(far)
+            far_counts = numpy.bincount(far_labels.ravel(), branch_areas_binary.ravel())
             far[far_counts[far_labels] < 2] = False
             branch_areas_binary |= far
             del far
             del far_labels
-        branch_areas_binary = scind.binary_dilation(
-            branch_areas_binary, structure=morph.eight_connect
+        branch_areas_binary = scipy.ndimage.binary_dilation(
+            branch_areas_binary, structure=centrosome.cpmorphology.eight_connect
         )
         segments_binary = skeleton & ~branch_areas_binary
-        if max_skel_length is not None and np.sum(segments_binary) > 0:
+        if max_skel_length is not None and numpy.sum(segments_binary) > 0:
             max_skel_length = max(int(max_skel_length), 2)  # paranoia
             i, j, labels, order, distance, num_segments = self.trace_segments(
                 segments_binary
@@ -1413,11 +1432,11 @@ should be processed.
             #
             # Put breakpoints every max_skel_length, but not at end
             #
-            max_order = np.array(
-                scind.maximum(order, labels, np.arange(num_segments + 1))
+            max_order = numpy.array(
+                scipy.ndimage.maximum(order, labels, numpy.arange(num_segments + 1))
             )
             big_segment = max_order >= max_skel_length
-            segment_count = np.maximum(
+            segment_count = numpy.maximum(
                 (max_order + max_skel_length - 1) / max_skel_length, 1
             ).astype(int)
             segment_length = ((max_order + 1) / segment_count).astype(int)
@@ -1426,10 +1445,10 @@ should be processed.
                 & (order != max_order[labels])
                 & (big_segment[labels])
             )
-            new_branch_areas_binary = np.zeros(segments_binary.shape, bool)
+            new_branch_areas_binary = numpy.zeros(segments_binary.shape, bool)
             new_branch_areas_binary[i[new_bp_mask], j[new_bp_mask]] = True
-            new_branch_areas_binary = scind.binary_dilation(
-                new_branch_areas_binary, structure=morph.eight_connect
+            new_branch_areas_binary = scipy.ndimage.binary_dilation(
+                new_branch_areas_binary, structure=centrosome.cpmorphology.eight_connect
             )
             branch_areas_binary |= new_branch_areas_binary
             segments_binary &= ~new_branch_areas_binary
@@ -1455,33 +1474,35 @@ should be processed.
         # Break long skeletons into pieces whose maximum length
         # is max_skel_length.
         #
-        segments_labeled, num_segments = scind.label(
-            segments_binary, structure=morph.eight_connect
+        segments_labeled, num_segments = scipy.ndimage.label(
+            segments_binary, structure=centrosome.cpmorphology.eight_connect
         )
         if num_segments == 0:
             return (
-                np.array([], int),
-                np.array([], int),
-                np.array([], int),
-                np.array([], int),
-                np.array([]),
+                numpy.array([], int),
+                numpy.array([], int),
+                numpy.array([], int),
+                numpy.array([], int),
+                numpy.array([]),
                 0,
             )
         #
         # Get one endpoint per segment
         #
-        endpoints = morph.endpoints(segments_binary)
+        endpoints = centrosome.cpmorphology.endpoints(segments_binary)
         #
         # Use a consistent order: pick with lowest i, then j.
         # If a segment loops upon itself, we pick an arbitrary point.
         #
-        order = np.arange(np.prod(segments_binary.shape))
+        order = numpy.arange(numpy.prod(segments_binary.shape))
         order.shape = segments_binary.shape
-        order[~endpoints] += np.prod(segments_binary.shape)
-        labelrange = np.arange(num_segments + 1).astype(int)
-        endpoint_loc = scind.minimum_position(order, segments_labeled, labelrange)
-        endpoint_loc = np.array(endpoint_loc, int)
-        endpoint_labels = np.zeros(segments_labeled.shape, np.int16)
+        order[~endpoints] += numpy.prod(segments_binary.shape)
+        labelrange = numpy.arange(num_segments + 1).astype(int)
+        endpoint_loc = scipy.ndimage.minimum_position(
+            order, segments_labeled, labelrange
+        )
+        endpoint_loc = numpy.array(endpoint_loc, int)
+        endpoint_labels = numpy.zeros(segments_labeled.shape, numpy.int16)
         endpoint_labels[endpoint_loc[:, 0], endpoint_loc[:, 1]] = segments_labeled[
             endpoint_loc[:, 0], endpoint_loc[:, 1]
         ]
@@ -1491,17 +1512,17 @@ should be processed.
         # it won't trace in that direction
         #
         loops = ~endpoints[endpoint_loc[1:, 0], endpoint_loc[1:, 1]]
-        if np.any(loops):
+        if numpy.any(loops):
             # Consider all points around the endpoint, finding the one
             # which is numbered last
-            dilated_ep_labels = morph.grey_dilation(
-                endpoint_labels, footprint=np.ones((3, 3), bool)
+            dilated_ep_labels = centrosome.cpmorphology.grey_dilation(
+                endpoint_labels, footprint=numpy.ones((3, 3), bool)
             )
             dilated_ep_labels[dilated_ep_labels != segments_labeled] = 0
-            loop_endpoints = scind.maximum_position(
+            loop_endpoints = scipy.ndimage.maximum_position(
                 order, dilated_ep_labels.astype(int), labelrange[1:][loops]
             )
-            loop_endpoints = np.array(loop_endpoints, int)
+            loop_endpoints = numpy.array(loop_endpoints, int)
             segments_binary_temp = segments_binary.copy()
             segments_binary_temp[loop_endpoints[:, 0], loop_endpoints[:, 1]] = False
         else:
@@ -1510,20 +1531,20 @@ should be processed.
         # Now propagate from the endpoints to get distances
         #
         _, distances = propagate(
-            np.zeros(segments_binary.shape), endpoint_labels, segments_binary_temp, 1
+            numpy.zeros(segments_binary.shape), endpoint_labels, segments_binary_temp, 1
         )
-        if np.any(loops):
+        if numpy.any(loops):
             # set the end-of-loop distances to be very large
-            distances[loop_endpoints[:, 0], loop_endpoints[:, 1]] = np.inf
+            distances[loop_endpoints[:, 0], loop_endpoints[:, 1]] = numpy.inf
         #
         # Order points by label # and distance
         #
-        i, j = np.mgrid[0 : segments_binary.shape[0], 0 : segments_binary.shape[1]]
+        i, j = numpy.mgrid[0 : segments_binary.shape[0], 0 : segments_binary.shape[1]]
         i = i[segments_binary]
         j = j[segments_binary]
         labels = segments_labeled[segments_binary]
         distances = distances[segments_binary]
-        order = np.lexsort((distances, labels))
+        order = numpy.lexsort((distances, labels))
         i = i[order]
         j = j[order]
         labels = labels[order]
@@ -1534,9 +1555,9 @@ should be processed.
         # of each point's label from each point to get the order relative
         # to the first index of the label.
         #
-        segment_order = np.arange(len(i))
-        areas = np.bincount(labels.flatten())
-        indexes = np.cumsum(areas) - areas
+        segment_order = numpy.arange(len(i))
+        areas = numpy.bincount(labels.flatten())
+        indexes = numpy.cumsum(areas) - areas
         segment_order -= indexes[labels]
         return i, j, labels, segment_order, distances, num_segments
 
@@ -1556,27 +1577,29 @@ should be processed.
         Output is same format as get_graph_from_binary(), so for details, see
         get_graph_from_binary
         """
-        branch_areas_labeled, num_branch_areas = scind.label(
-            branch_areas_binary, morph.eight_connect
+        branch_areas_labeled, num_branch_areas = scipy.ndimage.label(
+            branch_areas_binary, centrosome.cpmorphology.eight_connect
         )
 
         i, j, labels, order, distance, num_segments = self.trace_segments(
             segments_binary
         )
 
-        ooo = np.lexsort((order, labels))
+        ooo = numpy.lexsort((order, labels))
         i = i[ooo]
         j = j[ooo]
         labels = labels[ooo]
         order = order[ooo]
         distance = distance[ooo]
         counts = (
-            np.zeros(0, int) if len(labels) == 0 else np.bincount(labels.flatten())[1:]
+            numpy.zeros(0, int)
+            if len(labels) == 0
+            else numpy.bincount(labels.flatten())[1:]
         )
 
-        branch_ij = np.argwhere(branch_areas_binary)
+        branch_ij = numpy.argwhere(branch_areas_binary)
         if len(branch_ij) > 0:
-            ooo = np.lexsort(
+            ooo = numpy.lexsort(
                 [
                     branch_ij[:, 0],
                     branch_ij[:, 1],
@@ -1585,15 +1608,15 @@ should be processed.
             )
             branch_ij = branch_ij[ooo]
             branch_labels = branch_areas_labeled[branch_ij[:, 0], branch_ij[:, 1]]
-            branch_counts = np.bincount(branch_areas_labeled.flatten())[1:]
+            branch_counts = numpy.bincount(branch_areas_labeled.flatten())[1:]
         else:
-            branch_labels = np.zeros(0, int)
-            branch_counts = np.zeros(0, int)
+            branch_labels = numpy.zeros(0, int)
+            branch_counts = numpy.zeros(0, int)
         #
         # "find" the segment starts
         #
         starts = order == 0
-        start_labels = np.zeros(segments_binary.shape, int)
+        start_labels = numpy.zeros(segments_binary.shape, int)
         start_labels[i[starts], j[starts]] = labels[starts]
         #
         # incidence_directions = True for starts
@@ -1604,8 +1627,8 @@ should be processed.
         #
         # Get the incidence matrix for the ends
         #
-        ends = np.cumsum(counts) - 1
-        end_labels = np.zeros(segments_binary.shape, int)
+        ends = numpy.cumsum(counts) - 1
+        end_labels = numpy.zeros(segments_binary.shape, int)
         end_labels[i[ends], j[ends]] = labels[ends]
         incidence_matrix = self.make_incidence_matrix(
             branch_areas_labeled, num_branch_areas, end_labels, num_segments
@@ -1649,8 +1672,8 @@ should be processed.
                 incidence_directions,
             ):
                 self.image_size = tuple(branch_areas_binary.shape)
-                self.segment_coords = np.column_stack((i, j))
-                self.segment_indexes = np.cumsum(counts) - counts
+                self.segment_coords = numpy.column_stack((i, j))
+                self.segment_indexes = numpy.cumsum(counts) - counts
                 self.segment_counts = counts
                 self.segment_order = order
                 self.segments = [
@@ -1670,7 +1693,7 @@ should be processed.
                 ]
 
                 self.branch_areas = branch_ij
-                self.branch_area_indexes = np.cumsum(branch_counts) - branch_counts
+                self.branch_area_indexes = numpy.cumsum(branch_counts) - branch_counts
                 self.branch_area_counts = branch_counts
                 self.incidence_matrix = incidence_matrix
                 self.incidence_directions = incidence_directions
@@ -1704,9 +1727,9 @@ should be processed.
         #
         L = L1.copy()
         L[L2 != 0] = L2[L2 != 0] + N1
-        neighbor_count, neighbor_index, n2 = morph.find_neighbors(L)
-        if np.all(neighbor_count == 0):
-            return np.zeros((N1, N2), bool)
+        neighbor_count, neighbor_index, n2 = centrosome.cpmorphology.find_neighbors(L)
+        if numpy.all(neighbor_count == 0):
+            return numpy.zeros((N1, N2), bool)
         #
         # Keep the neighbors of L1 / discard neighbors of L2
         #
@@ -1716,7 +1739,7 @@ should be processed.
         #
         # Get rid of blanks
         #
-        label = np.arange(N1)[neighbor_count > 0]
+        label = numpy.arange(N1)[neighbor_count > 0]
         neighbor_index = neighbor_index[neighbor_count > 0]
         neighbor_count = neighbor_count[neighbor_count > 0]
         #
@@ -1727,12 +1750,12 @@ should be processed.
         #
         # Create runs of n1 labels
         #
-        n1 = np.zeros(len(n2), int)
+        n1 = numpy.zeros(len(n2), int)
         n1[0] = label[0]
         n1[neighbor_index[1:]] = label[1:] - label[:-1]
-        n1 = np.cumsum(n1)
+        n1 = numpy.cumsum(n1)
         incidence = coo.coo_matrix(
-            (np.ones(n1.shape), (n1, n2)), shape=(N1, N2)
+            (numpy.ones(n1.shape), (n1, n2)), shape=(N1, N2)
         ).toarray()
         return incidence != 0
 
@@ -1808,23 +1831,25 @@ should be processed.
         for branch_area, segment in zip(path.branch_areas, path.segments[1:]):
             direction = not graph_struct.incidence_directions[branch_area, segment]
             result.append(graph_struct.segments[segment][direction])
-        return np.vstack(result)
+        return numpy.vstack(result)
 
     def calculate_path_length(self, path_coords):
         """Return the path length, given path coordinates as Nx2"""
         if len(path_coords) < 2:
             return 0
-        return np.sum(np.sqrt(np.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1)))
+        return numpy.sum(
+            numpy.sqrt(numpy.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1))
+        )
 
     def calculate_cumulative_lengths(self, path_coords):
         """return a cumulative length vector given Nx2 path coordinates"""
         if len(path_coords) < 2:
-            return np.array([0] * len(path_coords))
-        return np.hstack(
+            return numpy.array([0] * len(path_coords))
+        return numpy.hstack(
             (
                 [0],
-                np.cumsum(
-                    np.sqrt(np.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1))
+                numpy.cumsum(
+                    numpy.sqrt(numpy.sum((path_coords[:-1] - path_coords[1:]) ** 2, 1))
                 ),
             )
         )
@@ -1900,31 +1925,31 @@ should be processed.
         #
         path_coords = path_coords.astype(float)
         cumul_lengths = cumul_lengths.astype(float)
-        mask = np.hstack(([True], cumul_lengths[1:] != cumul_lengths[:-1]))
+        mask = numpy.hstack(([True], cumul_lengths[1:] != cumul_lengths[:-1]))
         path_coords = path_coords[mask]
         #
         # Create a function that maps control point index to distance
         #
 
         ncoords = len(path_coords)
-        f = interp1d(cumul_lengths, np.linspace(0.0, float(ncoords - 1), ncoords))
+        f = interp1d(cumul_lengths, numpy.linspace(0.0, float(ncoords - 1), ncoords))
         #
         # Sample points from f (for the ones in the middle)
         #
         first = float(cumul_lengths[-1]) / float(num_control_points - 1)
         last = float(cumul_lengths[-1]) - first
-        findices = f(np.linspace(first, last, num_control_points - 2))
+        findices = f(numpy.linspace(first, last, num_control_points - 2))
         indices = findices.astype(int)
         assert indices[-1] < ncoords - 1
         fracs = findices - indices
         sampled = (
-            path_coords[indices, :] * (1 - fracs[:, np.newaxis])
-            + path_coords[(indices + 1), :] * fracs[:, np.newaxis]
+            path_coords[indices, :] * (1 - fracs[:, numpy.newaxis])
+            + path_coords[(indices + 1), :] * fracs[:, numpy.newaxis]
         )
         #
         # Tack on first and last
         #
-        sampled = np.vstack((path_coords[:1, :], sampled, path_coords[-1:, :]))
+        sampled = numpy.vstack((path_coords[:1, :], sampled, path_coords[-1:, :]))
         return sampled
 
     def calculate_angle_shape_cost(
@@ -1981,8 +2006,8 @@ should be processed.
         angles between the line segments as such."""
 
         angles = self.get_angles(control_coords)
-        feat_vec = np.hstack((angles, [total_length])) - mean_angles
-        return np.dot(np.dot(feat_vec, inv_angles_covariance_matrix), feat_vec)
+        feat_vec = numpy.hstack((angles, [total_length])) - mean_angles
+        return numpy.dot(numpy.dot(feat_vec, inv_angles_covariance_matrix), feat_vec)
 
     def get_angles(self, control_coords):
         """Extract the angles at each interior control point
@@ -1992,13 +2017,13 @@ should be processed.
         returns an N-2 vector of angles between -pi and pi
         """
         segments_delta = control_coords[1:] - control_coords[:-1]
-        segment_bearings = np.arctan2(segments_delta[:, 0], segments_delta[:, 1])
+        segment_bearings = numpy.arctan2(segments_delta[:, 0], segments_delta[:, 1])
         angles = segment_bearings[1:] - segment_bearings[:-1]
         #
         # Constrain the angles to -pi <= angle <= pi
         #
-        angles[angles > np.pi] -= 2 * np.pi
-        angles[angles < -np.pi] += 2 * np.pi
+        angles[angles > numpy.pi] -= 2 * numpy.pi
+        angles[angles < -numpy.pi] += 2 * numpy.pi
         return angles
 
     def cluster_graph_building(self, workspace, labels, i, skeleton, params):
@@ -2089,7 +2114,7 @@ should be processed.
         ) = self.build_incidence_lists(graph_struct)
         n = len(graph_struct.segments)
 
-        graph_struct.segment_lengths = np.array(
+        graph_struct.segment_lengths = numpy.array(
             [self.calculate_path_length(x[0]) for x in graph_struct.segments]
         )
         for j in range(n):
@@ -2125,10 +2150,10 @@ should be processed.
         m = graph_struct.incidence_matrix.shape[1]
         n = graph_struct.incidence_matrix.shape[0]
         incident_segments = [
-            np.arange(m)[graph_struct.incidence_matrix[i, :]] for i in range(n)
+            numpy.arange(m)[graph_struct.incidence_matrix[i, :]] for i in range(n)
         ]
         incident_branch_areas = [
-            np.arange(n)[graph_struct.incidence_matrix[:, i]] for i in range(m)
+            numpy.arange(n)[graph_struct.incidence_matrix[:, i]] for i in range(m)
         ]
         return incident_branch_areas, incident_segments
 
@@ -2162,7 +2187,7 @@ should be processed.
                     continue  # segment already in the path
                 direction = not graph.incidence_directions[end_branch_area, j]
                 first_coord = graph.segments[j][int(direction)][0]
-                gap_length = np.sqrt(np.sum((last_coord - first_coord) ** 2))
+                gap_length = numpy.sqrt(numpy.sum((last_coord - first_coord) ** 2))
                 next_length = current_length + gap_length + graph.segment_lengths[j]
                 if next_length > max_length:
                     continue
@@ -2308,7 +2333,7 @@ should be processed.
         inv_angles_covariance_matrix = params.inv_angles_covariance_matrix
 
         component = labels == i
-        max_num_worms = int(np.ceil(np.sum(component) / median_worm_area))
+        max_num_worms = int(numpy.ceil(numpy.sum(component) / median_worm_area))
 
         # First, filter out based on path length
         # Simultaneously build a vector of shape costs and a vector of
@@ -2339,7 +2364,7 @@ should be processed.
         if len(paths_and_costs) == 0:
             return []
 
-        path_segment_matrix = np.zeros(
+        path_segment_matrix = numpy.zeros(
             (len(graph.segments), len(paths_and_costs)), bool
         )
         for i, (path, cost) in enumerate(paths_and_costs):
@@ -2349,8 +2374,8 @@ should be processed.
         #
         # Sort by increasing cost
         #
-        costs = np.array([cost for path, cost in paths_and_costs])
-        order = np.lexsort([costs])
+        costs = numpy.array([cost for path, cost in paths_and_costs])
+        order = numpy.lexsort([costs])
         if len(order) > MAX_PATHS:
             order = order[:MAX_PATHS]
         costs = costs[order]
@@ -2395,10 +2420,10 @@ should be processed.
         max_num_worms - maximum # of worms allowed in returned match.
         """
         current_best_subset = []
-        current_best_cost = np.sum(segment_lengths) * leftover_weight
+        current_best_cost = numpy.sum(segment_lengths) * leftover_weight
         current_costs = costs
         current_path_segment_matrix = path_segment_matrix.astype(int)
-        current_path_choices = np.eye(len(costs), dtype=bool)
+        current_path_choices = numpy.eye(len(costs), dtype=bool)
         for i in range(min(max_num_worms, len(costs))):
             (
                 current_best_subset,
@@ -2416,7 +2441,7 @@ should be processed.
                 overlap_weight,
                 leftover_weight,
             )
-            if np.prod(current_path_choices.shape) == 0:
+            if numpy.prod(current_path_choices.shape) == 0:
                 break
         return current_best_subset, current_best_cost
 
@@ -2466,14 +2491,14 @@ should be processed.
             #
             # The sum of the individual costs of the chosen paths
             #
-            np.sum(costs[:, np.newaxis] * current_path_choices, 0)
+            numpy.sum(costs[:, numpy.newaxis] * current_path_choices, 0)
             +
             #
             # The sum of the multiply-covered segment lengths * penalty
             #
-            np.sum(
-                np.maximum(current_path_segment_matrix - 1, 0)
-                * segment_lengths[:, np.newaxis],
+            numpy.sum(
+                numpy.maximum(current_path_segment_matrix - 1, 0)
+                * segment_lengths[:, numpy.newaxis],
                 0,
             )
             * overlap_weight
@@ -2484,30 +2509,30 @@ should be processed.
             #
             # The sum of the uncovered segments * the penalty
             #
-            np.sum(
+            numpy.sum(
                 (current_path_segment_matrix[:, :] == 0)
-                * segment_lengths[:, np.newaxis],
+                * segment_lengths[:, numpy.newaxis],
                 0,
             )
             * leftover_weight
         )
 
-        order = np.lexsort([total_costs])
+        order = numpy.lexsort([total_costs])
         if total_costs[order[0]] < current_best_cost:
             current_best_subset = (
-                np.argwhere(current_path_choices[:, order[0]]).flatten().tolist()
+                numpy.argwhere(current_path_choices[:, order[0]]).flatten().tolist()
             )
             current_best_cost = total_costs[order[0]]
         #
         # Weed out any that can't possibly be better
         #
         mask = partial_costs < current_best_cost
-        if not np.any(mask):
+        if not numpy.any(mask):
             return (
                 current_best_subset,
                 current_best_cost,
-                np.zeros((len(costs), 0), int),
-                np.zeros((len(costs), 0), bool),
+                numpy.zeros((len(costs), 0), int),
+                numpy.zeros((len(costs), 0), bool),
             )
         order = order[mask[order]]
         if len(order) * len(costs) > MAX_CONSIDERED:
@@ -2519,13 +2544,13 @@ should be processed.
         # Create a matrix of disallowance - you can only add a path
         # that's higher than any existing path
         #
-        i, j = np.mgrid[0 : len(costs), 0 : len(costs)]
+        i, j = numpy.mgrid[0 : len(costs), 0 : len(costs)]
         disallow = i >= j
-        allowed = np.dot(disallow, current_path_choices) == 0
-        if np.any(allowed):
-            i, j = np.argwhere(allowed).transpose()
+        allowed = numpy.dot(disallow, current_path_choices) == 0
+        if numpy.any(allowed):
+            i, j = numpy.argwhere(allowed).transpose()
             current_path_choices = (
-                np.eye(len(costs), dtype=bool)[:, i] | current_path_choices[:, j]
+                numpy.eye(len(costs), dtype=bool)[:, i] | current_path_choices[:, j]
             )
             current_path_segment_matrix = (
                 path_segment_matrix[:, i] + current_path_segment_matrix[:, j]
@@ -2540,8 +2565,8 @@ should be processed.
             return (
                 current_best_subset,
                 current_best_cost,
-                np.zeros((len(costs), 0), int),
-                np.zeros((len(costs), 0), bool),
+                numpy.zeros((len(costs), 0), int),
+                numpy.zeros((len(costs), 0), bool),
             )
 
     def search_recur(
@@ -2584,7 +2609,7 @@ should be processed.
         covered by paths in current_subset."""
 
         # The cost of current_subset, including the leftover cost term
-        this_cost = current_cost + leftover_weight * np.sum(
+        this_cost = current_cost + leftover_weight * numpy.sum(
             segment_lengths[~current_segment_coverings]
         )
         if this_cost < current_best_cost:
@@ -2598,19 +2623,19 @@ should be processed.
         # to current_cost upon adding that path to the current_subset.
         current_overlapped_costs = (
             path_raw_costs[last_chosen:]
-            + np.sum(
-                current_segment_coverings[:, np.newaxis]
-                * segment_lengths[:, np.newaxis]
+            + numpy.sum(
+                current_segment_coverings[:, numpy.newaxis]
+                * segment_lengths[:, numpy.newaxis]
                 * path_segment_matrix[:, last_chosen:],
                 0,
             )
             * overlap_weight
         )
-        order = np.lexsort([current_overlapped_costs])
+        order = numpy.lexsort([current_overlapped_costs])
         #
         # limit to number of branches allowed at this level
         #
-        order = order[np.arange(len(order)) + 1 < this_branch_factor]
+        order = order[numpy.arange(len(order)) + 1 < this_branch_factor]
         for index in order:
             new_cost = current_cost + current_overlapped_costs[index]
             if new_cost >= current_best_cost:
@@ -2658,11 +2683,11 @@ should be processed.
         num_control_points = params.num_control_points
         if len(all_path_coords) == 0:
             return (
-                np.zeros((0, 3), int),
-                np.zeros(0),
-                np.zeros((0, num_control_points - 2)),
-                np.zeros((0, num_control_points)),
-                np.zeros((0, num_control_points)),
+                numpy.zeros((0, 3), int),
+                numpy.zeros(0),
+                numpy.zeros((0, num_control_points - 2)),
+                numpy.zeros((0, num_control_points)),
+                numpy.zeros((0, num_control_points)),
             )
 
         worm_radii = params.radii_from_training
@@ -2686,19 +2711,19 @@ should be processed.
             all_angles.append(self.get_angles(control_coords))
             all_control_coords_x.append(control_coords[:, 1])
             all_control_coords_y.append(control_coords[:, 0])
-        ijv = np.column_stack(
+        ijv = numpy.column_stack(
             (
-                np.hstack(all_i),
-                np.hstack(all_j),
-                np.hstack(
-                    [np.ones(len(ii), int) * (i + 1) for i, ii in enumerate(all_i)]
+                numpy.hstack(all_i),
+                numpy.hstack(all_j),
+                numpy.hstack(
+                    [numpy.ones(len(ii), int) * (i + 1) for i, ii in enumerate(all_i)]
                 ),
             )
         )
-        all_lengths = np.array(all_lengths)
-        all_angles = np.vstack(all_angles)
-        all_control_coords_x = np.vstack(all_control_coords_x)
-        all_control_coords_y = np.vstack(all_control_coords_y)
+        all_lengths = numpy.array(all_lengths)
+        all_angles = numpy.vstack(all_angles)
+        all_control_coords_x = numpy.vstack(all_control_coords_x)
+        all_control_coords_y = numpy.vstack(all_control_coords_y)
         return ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y
 
     def rebuild_worm_from_control_points_approx(
@@ -2724,7 +2749,7 @@ should be processed.
 
         Outputs:
         The coordinates of all pixels in the worm in an N x 2 array"""
-        index, count, i, j = morph.get_line_pts(
+        index, count, i, j = centrosome.cpmorphology.get_line_pts(
             control_coords[:-1, 0],
             control_coords[:-1, 1],
             control_coords[1:, 0],
@@ -2734,9 +2759,9 @@ should be processed.
         # Get rid of the last point for the middle elements - these are
         # duplicated by the first point in the next line
         #
-        i = np.delete(i, index[1:])
-        j = np.delete(j, index[1:])
-        index = index - np.arange(len(index))
+        i = numpy.delete(i, index[1:])
+        j = numpy.delete(j, index[1:])
+        index = index - numpy.arange(len(index))
         count -= 1
         #
         # Get rid of all segments that are 1 long. Those will be joined
@@ -2746,20 +2771,20 @@ should be processed.
         #
         # Find the control point and within-control-point index of each point
         #
-        label = np.zeros(len(i), int)
+        label = numpy.zeros(len(i), int)
         label[index[1:]] = 1
-        label = np.cumsum(label)
-        order = np.arange(len(i)) - index[label]
+        label = numpy.cumsum(label)
+        order = numpy.arange(len(i)) - index[label]
         frac = order.astype(float) / count[label].astype(float)
         radius = worm_radii[label] * (1 - frac) + worm_radii[label + 1] * frac
-        iworm_radius = int(np.max(np.ceil(radius)))
+        iworm_radius = int(numpy.max(numpy.ceil(radius)))
         #
         # Get dilation coordinates
         #
-        ii, jj = np.mgrid[
+        ii, jj = numpy.mgrid[
             -iworm_radius : iworm_radius + 1, -iworm_radius : iworm_radius + 1
         ]
-        dd = np.sqrt((ii * ii + jj * jj).astype(float))
+        dd = numpy.sqrt((ii * ii + jj * jj).astype(float))
         mask = ii * ii + jj * jj <= iworm_radius * iworm_radius
         ii = ii[mask]
         jj = jj[mask]
@@ -2767,22 +2792,22 @@ should be processed.
         #
         # All points (with repeats)
         #
-        i = (i[:, np.newaxis] + ii[np.newaxis, :]).flatten()
-        j = (j[:, np.newaxis] + jj[np.newaxis, :]).flatten()
+        i = (i[:, numpy.newaxis] + ii[numpy.newaxis, :]).flatten()
+        j = (j[:, numpy.newaxis] + jj[numpy.newaxis, :]).flatten()
         #
         # We further mask out any dilation coordinates outside of
         # the radius at our point in question
         #
-        m = (radius[:, np.newaxis] >= dd[np.newaxis, :]).flatten()
+        m = (radius[:, numpy.newaxis] >= dd[numpy.newaxis, :]).flatten()
         i = i[m]
         j = j[m]
         #
         # Find repeats by sorting and comparing against next
         #
-        order = np.lexsort((i, j))
+        order = numpy.lexsort((i, j))
         i = i[order]
         j = j[order]
-        mask = np.hstack([[True], (i[:-1] != i[1:]) | (j[:-1] != j[1:])])
+        mask = numpy.hstack([[True], (i[:-1] != i[1:]) | (j[:-1] != j[1:])])
         i = i[mask]
         j = j[mask]
         mask = (i >= 0) & (j >= 0) & (i < shape[0]) & (j < shape[1])
@@ -2800,13 +2825,13 @@ should be processed.
 
     def validate_module(self, pipeline):
         if self.mode == MODE_UNTANGLE:
-            if self.training_set_directory.dir_choice != cpprefs.URL_FOLDER_NAME:
+            if self.training_set_directory.dir_choice != URL_FOLDER_NAME:
                 path = os.path.join(
                     self.training_set_directory.get_absolute_path(),
                     self.training_set_file_name.value,
                 )
                 if not os.path.exists(path):
-                    raise cps.ValidationError(
+                    raise ValidationError(
                         "Can't find file %s" % self.training_set_file_name.value,
                         self.training_set_file_name,
                     )
@@ -2814,7 +2839,7 @@ should be processed.
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
         if pipeline.test_mode and self.mode == MODE_TRAIN:
-            raise cps.ValidationError(
+            raise ValidationError(
                 "UntangleWorms will not produce training set output in Test Mode",
                 self.training_set_file_name,
             )
@@ -2837,7 +2862,7 @@ should be processed.
                     + self.control_point_features(False)
                 )
                 result += [
-                    (object_name, "_".join((C_WORM, f)), cpmeas.COLTYPE_FLOAT)
+                    (object_name, "_".join((C_WORM, f)), COLTYPE_FLOAT)
                     for f in all_features
                 ]
         return result
@@ -2874,7 +2899,7 @@ should be processed.
             return []
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cpmeas.IMAGE:
+        if object_name == IMAGE:
             return [cellprofiler_core.measurement.C_COUNT]
         if (
             object_name == self.overlap_objects.value
@@ -2894,10 +2919,7 @@ should be processed.
         wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
         wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         result = []
-        if (
-            object_name == cpmeas.IMAGE
-            and category == cellprofiler_core.measurement.C_COUNT
-        ):
+        if object_name == IMAGE and category == cellprofiler_core.measurement.C_COUNT:
             if wants_overlapping:
                 result += [self.overlap_objects.value]
             if wants_nonoverlapping:
@@ -3032,7 +3054,7 @@ def read_params(training_set_directory, training_set_file_name, d):
         ):
             return d[file_name][0]
 
-    if training_set_directory.dir_choice == cpprefs.URL_FOLDER_NAME:
+    if training_set_directory.dir_choice == URL_FOLDER_NAME:
         url = file_name
         fd_or_file = six.moves.urllib.request.urlopen(url)
         is_url = True
@@ -3078,7 +3100,7 @@ def read_params(training_set_directory, training_set_file_name, d):
         elements = doc.documentElement.getElementsByTagName(T_MEAN_ANGLES)
         assert len(elements) == 1
         element = elements[0]
-        result.mean_angles = np.zeros(result.num_control_points - 1)
+        result.mean_angles = numpy.zeros(result.num_control_points - 1)
         for index, value_element in enumerate(element.getElementsByTagName(T_VALUE)):
             text = "".join(
                 [
@@ -3091,7 +3113,7 @@ def read_params(training_set_directory, training_set_file_name, d):
         elements = doc.documentElement.getElementsByTagName(T_RADII_FROM_TRAINING)
         assert len(elements) == 1
         element = elements[0]
-        result.radii_from_training = np.zeros(result.num_control_points)
+        result.radii_from_training = numpy.zeros(result.num_control_points)
         for index, value_element in enumerate(element.getElementsByTagName(T_VALUE)):
             text = "".join(
                 [
@@ -3101,7 +3123,7 @@ def read_params(training_set_directory, training_set_file_name, d):
                 ]
             )
             result.radii_from_training[index] = float(text.strip())
-        result.inv_angles_covariance_matrix = np.zeros(
+        result.inv_angles_covariance_matrix = numpy.zeros(
             [result.num_control_points - 1] * 2
         )
         elements = doc.documentElement.getElementsByTagName(
@@ -3159,8 +3181,10 @@ def read_params(training_set_directory, training_set_file_name, d):
             elif kind == VECTOR:
                 # Work-around for OS/X Numpy bug
                 # Copy a possibly mis-aligned buffer
-                b = np.array([v for v in np.frombuffer(x.data, np.uint8)], np.uint8)
-                return np.frombuffer(b, x.dtype)
+                b = numpy.array(
+                    [v for v in numpy.frombuffer(x.data, numpy.uint8)], numpy.uint8
+                )
+                return numpy.frombuffer(b, x.dtype)
             return x
 
         result.min_worm_area = mp(INITIAL_FILTER, "min_worm_area")
@@ -3207,10 +3231,10 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     """
 
     all_object_numbers = [
-        list(filter((lambda n: n > 0), np.unique(l))) for l in all_labels
+        list(filter((lambda n: n > 0), numpy.unique(l))) for l in all_labels
     ]
     if all([len(object_numbers) == 0 for object_numbers in all_object_numbers]):
-        return np.zeros((0, ncontrolpoints, 2), int), np.zeros(0, int)
+        return numpy.zeros((0, ncontrolpoints, 2), int), numpy.zeros(0, int)
     module = UntangleWorms()
     module.create_settings()
     module.num_control_points.value = ncontrolpoints
@@ -3220,15 +3244,17 @@ def recalculate_single_worm_control_points(all_labels, ncontrolpoints):
     #
     module.mode.value = MODE_TRAIN
 
-    nobjects = np.max(np.hstack(all_object_numbers))
-    result = np.ones((nobjects, ncontrolpoints, 2)) * np.nan
-    lengths = np.zeros(nobjects)
+    nobjects = numpy.max(numpy.hstack(all_object_numbers))
+    result = numpy.ones((nobjects, ncontrolpoints, 2)) * numpy.nan
+    lengths = numpy.zeros(nobjects)
     for object_numbers, labels in zip(all_object_numbers, all_labels):
         for object_number in object_numbers:
             mask = labels == object_number
-            skeleton = morph.skeletonize(mask)
+            skeleton = centrosome.cpmorphology.skeletonize(mask)
             graph = module.get_graph_from_binary(mask, skeleton)
-            path_coords, path = module.get_longest_path_coords(graph, np.iinfo(int).max)
+            path_coords, path = module.get_longest_path_coords(
+                graph, numpy.iinfo(int).max
+            )
             if len(path_coords) == 0:
                 # return NaN for the control points
                 continue

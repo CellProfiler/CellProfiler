@@ -39,10 +39,11 @@ See also
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-import numpy as np
+import numpy
 
-import cellprofiler_core.object as cpo
-import cellprofiler_core.setting as cps
+from cellprofiler_core.object import Objects
+from cellprofiler_core.setting import ObjectNameProvider
+from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.modules import identify as I
 
 TOOL_OUTLINE = "Outline"
@@ -56,13 +57,13 @@ class IdentifyObjectsManually(I.Identify):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageNameSubscriber(
             "Select the input image",
             "None",
             doc="""Choose the name of the image to display in the object selection user interface.""",
         )
 
-        self.objects_name = cps.ObjectNameProvider(
+        self.objects_name = ObjectNameProvider(
             "Name the objects to be identified",
             "Cells",
             doc="""\
@@ -94,8 +95,8 @@ refer to your objects in subsequent modules.""",
         if labels is None:
             # User cancelled. Soldier on as best we can.
             workspace.cancel_request()
-            labels = np.zeros(pixel_data.shape[:2], int)
-        objects = cpo.Objects()
+            labels = numpy.zeros(pixel_data.shape[:2], int)
+        objects = Objects()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, objects_name)
 
@@ -107,7 +108,7 @@ refer to your objects in subsequent modules.""",
         #
         # The object count
         #
-        object_count = np.max(labels)
+        object_count = numpy.max(labels)
         I.add_object_count_measurements(m, objects_name, object_count)
         #
         # The object locations
@@ -146,7 +147,7 @@ refer to your objects in subsequent modules.""",
         title += 'Press "F" to being freehand drawing.\n'
         title += "Click Help for full instructions."
         with EditObjectsDialog(
-            pixel_data, [np.zeros(pixel_data.shape[:2], np.uint32)], False, title
+            pixel_data, [numpy.zeros(pixel_data.shape[:2], numpy.uint32)], False, title
         ) as dialog_box:
             result = dialog_box.ShowModal()
             if result != OK:

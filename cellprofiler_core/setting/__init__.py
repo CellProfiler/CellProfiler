@@ -74,6 +74,7 @@ from .text import GridName
 from .text import ImageName
 from .text import Integer
 from .text import LabelName
+from .text import Name
 from .text import Number
 from .text import OddInteger
 from .text import OutlineImageName

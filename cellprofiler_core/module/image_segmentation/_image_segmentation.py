@@ -1,11 +1,23 @@
 import numpy
 
-import cellprofiler_core.constants.measurement
-import cellprofiler_core.measurement
-import cellprofiler_core.object
-import cellprofiler_core.setting
-import cellprofiler_core.setting.text.alphanumeric.name._label_name
 from .._module import Module
+from ...constants.measurement import COLTYPE_FLOAT
+from ...constants.measurement import COLTYPE_INTEGER
+from ...constants.measurement import C_COUNT
+from ...constants.measurement import C_LOCATION
+from ...constants.measurement import C_NUMBER
+from ...constants.measurement import FF_COUNT
+from ...constants.measurement import FTR_CENTER_X
+from ...constants.measurement import FTR_CENTER_Y
+from ...constants.measurement import FTR_CENTER_Z
+from ...constants.measurement import FTR_OBJECT_NUMBER
+from ...constants.measurement import IMAGE
+from ...constants.measurement import M_LOCATION_CENTER_X
+from ...constants.measurement import M_LOCATION_CENTER_Y
+from ...constants.measurement import M_LOCATION_CENTER_Z
+from ...constants.measurement import M_NUMBER_OBJECT_NUMBER
+from ...image import Objects
+from ...setting import ImageSubscriber, LabelName
 
 
 class ImageSegmentation(Module):
@@ -31,40 +43,40 @@ class ImageSegmentation(Module):
 
         workspace.measurements.add_measurement(
             object_name,
-            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+            M_LOCATION_CENTER_X,
             center_x,
         )
 
         workspace.measurements.add_measurement(
             object_name,
-            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+            M_LOCATION_CENTER_Y,
             center_y,
         )
 
         workspace.measurements.add_measurement(
             object_name,
-            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
+            M_LOCATION_CENTER_Z,
             center_z,
         )
 
         workspace.measurements.add_measurement(
             object_name,
-            cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
+            M_NUMBER_OBJECT_NUMBER,
             numpy.arange(1, objects.count + 1),
         )
 
         workspace.measurements.add_measurement(
-            cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.measurement.FF_COUNT % object_name,
+            IMAGE,
+            FF_COUNT % object_name,
             numpy.array([objects.count], dtype=float),
         )
 
     def create_settings(self):
-        self.x_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.x_name = ImageSubscriber(
             "Select the input image", doc="Select the image you want to use."
         )
 
-        self.y_name = cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName(
+        self.y_name = LabelName(
             "Name the output object",
             self.__class__.__name__,
             doc="Enter the name you want to call the object produced by this module.",
@@ -95,13 +107,13 @@ class ImageSegmentation(Module):
         )
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.constants.measurement.IMAGE:
-            return [cellprofiler_core.constants.measurement.C_COUNT]
+        if object_name == IMAGE:
+            return [C_COUNT]
 
         if object_name == self.y_name.value:
             return [
-                cellprofiler_core.constants.measurement.C_LOCATION,
-                cellprofiler_core.constants.measurement.C_NUMBER,
+                C_LOCATION,
+                C_NUMBER,
             ]
 
         return []
@@ -113,48 +125,48 @@ class ImageSegmentation(Module):
         return [
             (
                 object_name,
-                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
-                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+                M_LOCATION_CENTER_X,
+                COLTYPE_FLOAT,
             ),
             (
                 object_name,
-                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
-                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+                M_LOCATION_CENTER_Y,
+                COLTYPE_FLOAT,
             ),
             (
                 object_name,
-                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
-                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+                M_LOCATION_CENTER_Z,
+                COLTYPE_FLOAT,
             ),
             (
                 object_name,
-                cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
-                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
+                M_NUMBER_OBJECT_NUMBER,
+                COLTYPE_INTEGER,
             ),
             (
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.measurement.FF_COUNT % object_name,
-                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
+                IMAGE,
+                FF_COUNT % object_name,
+                COLTYPE_INTEGER,
             ),
         ]
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler_core.constants.measurement.IMAGE
-            and category == cellprofiler_core.constants.measurement.C_COUNT
+            object_name == IMAGE
+            and category == C_COUNT
         ):
             return [self.y_name.value]
 
         if object_name == self.y_name.value:
-            if category == cellprofiler_core.constants.measurement.C_LOCATION:
+            if category == C_LOCATION:
                 return [
-                    cellprofiler_core.constants.measurement.FTR_CENTER_X,
-                    cellprofiler_core.constants.measurement.FTR_CENTER_Y,
-                    cellprofiler_core.constants.measurement.FTR_CENTER_Z,
+                    FTR_CENTER_X,
+                    FTR_CENTER_Y,
+                    FTR_CENTER_Z,
                 ]
 
-            if category == cellprofiler_core.constants.measurement.C_NUMBER:
-                return [cellprofiler_core.constants.measurement.FTR_OBJECT_NUMBER]
+            if category == C_NUMBER:
+                return [FTR_OBJECT_NUMBER]
 
         return []
 
@@ -175,7 +187,7 @@ class ImageSegmentation(Module):
 
         y_data = self.function(x_data, *args)
 
-        y = cellprofiler_core.object.Objects()
+        y = Objects()
 
         y.segmented = y_data
 

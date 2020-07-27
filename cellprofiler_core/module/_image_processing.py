@@ -1,16 +1,18 @@
 from ._module import Module
-from .. import image
+from ..image import Image
+from ..setting import ImageName
+from ..setting import ImageSubscriber
 
 
 class ImageProcessing(Module):
     category = "Image Processing"
 
     def create_settings(self):
-        self.x_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.x_name = ImageSubscriber(
             "Select the input image", doc="Select the image you want to use."
         )
 
-        self.y_name = cellprofiler_core.setting._text.alphanumeric.name.image._image.ImageSubscriber(
+        self.y_name = ImageName(
             "Name the output image",
             self.__class__.__name__,
             doc="Enter the name you want to call the image produced by this module.",
@@ -59,7 +61,7 @@ class ImageProcessing(Module):
 
         y_data = self.function(x_data, *args)
 
-        y = image.Image(
+        y = Image(
             dimensions=dimensions, image=y_data, parent_image=x, convert=False
         )
 

@@ -14,12 +14,13 @@ from ..constants.pipeline import SHOW_WINDOW
 from ..constants.pipeline import VARIABLE_INFO_TYPES
 from ..constants.pipeline import VARIABLE_REVISION_NUMBERS
 from ..constants.pipeline import VARIABLE_VALUES
+from ..setting import Directory
+from ..setting import FileImageSubscriber
 from ..setting import HiddenCount
+from ..setting import Name
 from ..setting import Setting
+from ..setting import Subscriber
 from ..setting import ValidationError
-from ..setting.subscriber import Subscriber
-from ..setting.text import Directory
-from ..setting.text.alphanumeric.name import Name
 
 
 class Module:
@@ -863,7 +864,7 @@ class Module:
             if (
                 isinstance(
                     setting,
-                    cellprofiler_core.setting._text.alphanumeric.name.image._file.FileImageSubscriber,
+                    FileImageSubscriber,
                 )
                 and setting.value == image_name
             ):

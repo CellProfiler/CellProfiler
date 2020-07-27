@@ -8,12 +8,13 @@ from .alphanumeric import FileImageName
 from .alphanumeric import GridName
 from .alphanumeric import ImageName
 from .alphanumeric import LabelName
+from .alphanumeric import Name
 from .alphanumeric import OutlineImageName
-from .pathname import Pathname
-from .pathname import URL
 from .number import Float
-from .number import Number
 from .number import Integer
+from .number import Number
 from .number import OddInteger
 from .pathname import Pathname
+from .pathname import Pathname
+from .pathname import URL
 from .pathname import URL

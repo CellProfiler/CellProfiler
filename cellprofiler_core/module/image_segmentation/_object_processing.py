@@ -1,9 +1,14 @@
-import cellprofiler_core.constants.measurement
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
 from ._image_segmentation import ImageSegmentation
+from ...constants.measurement import COLTYPE_INTEGER
+from ...constants.measurement import C_CHILDREN
+from ...constants.measurement import C_NUMBER
+from ...constants.measurement import C_PARENT
+from ...constants.measurement import FF_CHILDREN_COUNT
+from ...constants.measurement import FF_COUNT
+from ...constants.measurement import FF_PARENT
+from ...constants.measurement import FTR_OBJECT_NUMBER
+from ...image import Objects
+from ...setting import LabelName
 
 
 class ObjectProcessing(ImageSegmentation):
@@ -30,21 +35,21 @@ class ObjectProcessing(ImageSegmentation):
 
         workspace.measurements.add_measurement(
             input_object_name,
-            cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT
+            FF_CHILDREN_COUNT
             % output_object_name,
             children_per_parent,
         )
 
         workspace.measurements.add_measurement(
             output_object_name,
-            cellprofiler_core.constants.measurement.FF_PARENT % input_object_name,
+            FF_PARENT % input_object_name,
             parents_of_children,
         )
 
     def create_settings(self):
         super(ObjectProcessing, self).create_settings()
 
-        self.x_name = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.x_name = LabelName(
             "Select the input object", doc="Select the object you want to use."
         )
 
@@ -69,12 +74,12 @@ class ObjectProcessing(ImageSegmentation):
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.x_name.value:
-            return [cellprofiler_core.constants.measurement.C_CHILDREN]
+            return [C_CHILDREN]
 
         categories = super(ObjectProcessing, self).get_categories(pipeline, object_name)
 
         if object_name == self.y_name.value:
-            return categories + [cellprofiler_core.constants.measurement.C_PARENT]
+            return categories + [C_PARENT]
 
         return categories
 
@@ -90,15 +95,15 @@ class ObjectProcessing(ImageSegmentation):
             + [
                 (
                     input_object_name,
-                    cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT
+                    FF_CHILDREN_COUNT
                     % output_object_name,
-                    cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
+                    COLTYPE_INTEGER,
                 ),
                 (
                     output_object_name,
-                    cellprofiler_core.constants.measurement.FF_PARENT
+                    FF_PARENT
                     % input_object_name,
-                    cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
+                    COLTYPE_INTEGER,
                 ),
             ]
             for (input_object_name, output_object_name) in object_names
@@ -109,17 +114,17 @@ class ObjectProcessing(ImageSegmentation):
     def get_measurements(self, pipeline, object_name, category):
         if (
             object_name == self.x_name.value
-            and category == cellprofiler_core.constants.measurement.C_CHILDREN
+            and category == C_CHILDREN
         ):
             return [
-                cellprofiler_core.constants.measurement.FF_COUNT % self.y_name.value
+                FF_COUNT % self.y_name.value
             ]
 
         if object_name == self.y_name.value:
-            if category == cellprofiler_core.constants.measurement.C_NUMBER:
-                return [cellprofiler_core.constants.measurement.FTR_OBJECT_NUMBER]
+            if category == C_NUMBER:
+                return [FTR_OBJECT_NUMBER]
 
-            if category == cellprofiler_core.constants.measurement.C_PARENT:
+            if category == C_PARENT:
                 return [self.x_name.value]
 
         return super(ObjectProcessing, self).get_measurements(
@@ -143,7 +148,7 @@ class ObjectProcessing(ImageSegmentation):
 
         y_data = self.function(x_data, *args)
 
-        y = cellprofiler_core.object.Objects()
+        y = Objects()
 
         y.segmented = y_data
 

@@ -218,7 +218,9 @@ HasImagePlaneDetails:False"""
                 and column[0] == cellprofiler_core.constants.measurement.EXPERIMENT
                 and column[1]
                 == cellprofiler_core.constants.pipeline.M_MODIFICATION_TIMESTAMP
-                and column[3][cellprofiler_core.constants.measurement.MCA_AVAILABLE_POST_RUN]
+                and column[3][
+                    cellprofiler_core.constants.measurement.MCA_AVAILABLE_POST_RUN
+                ]
                 for column in columns
             ]
         )
@@ -871,7 +873,11 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
         module = ATestModule(
             measurement_columns=[
-                (OBJECT_NAME, FEATURE_NAME, cellprofiler_core.constants.measurement.COLTYPE_FLOAT)
+                (
+                    OBJECT_NAME,
+                    FEATURE_NAME,
+                    cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+                )
             ]
         )
         module.set_module_num(1)
@@ -913,7 +919,11 @@ HasImagePlaneDetails:False"""
             "foo", OBJECT_NAME
         )
         measurement_columns = [
-            (OBJECT_NAME, FEATURE_NAME, cellprofiler_core.constants.measurement.COLTYPE_FLOAT)
+            (
+                OBJECT_NAME,
+                FEATURE_NAME,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+            )
         ]
         other_providers = {"imagegroup": [ALT_IMAGE_NAME]}
         module = ATestModule(
@@ -1100,7 +1110,11 @@ HasImagePlaneDetails:False"""
     def test_get_dependency_graph_measurement(self):
         pipeline = cellprofiler_core.pipeline.Pipeline()
         measurement_columns = [
-            (OBJECT_NAME, FEATURE_NAME, cellprofiler_core.constants.measurement.COLTYPE_FLOAT)
+            (
+                OBJECT_NAME,
+                FEATURE_NAME,
+                cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+            )
         ]
         measurement_setting = cellprofiler_core.setting.Measurement(
             "text", lambda: OBJECT_NAME, FEATURE_NAME

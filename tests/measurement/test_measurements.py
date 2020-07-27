@@ -165,7 +165,9 @@ class TestMeasurements:
                 vals[image_number - 1],
                 image_set_number=image_number,
             )
-        result = m.get_all_measurements(cellprofiler_core.constants.measurement.IMAGE, "Feature")
+        result = m.get_all_measurements(
+            cellprofiler_core.constants.measurement.IMAGE, "Feature"
+        )
         numpy.testing.assert_equal(result, vals)
 
     def test_04_01b_get_all_image_measurements_float_arrayinterface(self):
@@ -175,13 +177,15 @@ class TestMeasurements:
         vals = r.uniform(size=100)
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m[cellprofiler_core.constants.measurement.IMAGE, "Feature", image_number] = vals[
-                image_number - 1
-            ]
+            m[
+                cellprofiler_core.constants.measurement.IMAGE, "Feature", image_number
+            ] = vals[image_number - 1]
         result = m[cellprofiler_core.constants.measurement.IMAGE, "Feature", :]
         numpy.testing.assert_equal(result, vals)
         for image_number in bad_order:
-            result = m[cellprofiler_core.constants.measurement.IMAGE, "Feature", image_number]
+            result = m[
+                cellprofiler_core.constants.measurement.IMAGE, "Feature", image_number
+            ]
             numpy.testing.assert_equal(result, vals[image_number - 1])
 
     def test_04_02_get_all_image_measurements_string(self):
@@ -197,7 +201,9 @@ class TestMeasurements:
                 six.text_type(vals[image_number - 1]),
                 image_set_number=image_number,
             )
-        result = m.get_all_measurements(cellprofiler_core.constants.measurement.IMAGE, "Feature")
+        result = m.get_all_measurements(
+            cellprofiler_core.constants.measurement.IMAGE, "Feature"
+        )
         assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
     def test_04_02b_get_all_image_measurements_string_arrayinterface(self):
@@ -226,7 +232,9 @@ class TestMeasurements:
                 vals[image_number - 1],
                 image_set_number=image_number,
             )
-        result = m.get_all_measurements(cellprofiler_core.constants.measurement.IMAGE, "Feature")
+        result = m.get_all_measurements(
+            cellprofiler_core.constants.measurement.IMAGE, "Feature"
+        )
         assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
     def test_04_03b_get_all_image_measurements_unicode_arrayinterface(self):
@@ -236,9 +244,9 @@ class TestMeasurements:
         vals = ["\\u2211" + str(r.uniform()) for _ in range(100)]
         bad_order = r.permutation(numpy.arange(1, 101))
         for image_number in bad_order:
-            m[cellprofiler_core.constants.measurement.IMAGE, "Feature", image_number] = vals[
-                image_number - 1
-            ]
+            m[
+                cellprofiler_core.constants.measurement.IMAGE, "Feature", image_number
+            ] = vals[image_number - 1]
         result = m[cellprofiler_core.constants.measurement.IMAGE, "Feature", :]
         assert all([r == six.text_type(v) for r, v in zip(result, vals)])
 
@@ -321,7 +329,9 @@ class TestMeasurements:
         r = numpy.random.RandomState(408)
         test = r.randint(0, 255, 10).astype(numpy.uint8)
         m = cellprofiler_core.measurement.Measurements()
-        m[cellprofiler_core.constants.measurement.IMAGE, "Feature", 1, numpy.uint8] = test
+        m[
+            cellprofiler_core.constants.measurement.IMAGE, "Feature", 1, numpy.uint8
+        ] = test
         numpy.testing.assert_array_equal(
             test, m[cellprofiler_core.constants.measurement.IMAGE, "Feature", 1]
         )
@@ -338,9 +348,14 @@ class TestMeasurements:
         m = cellprofiler_core.measurement.Measurements()
         image_numbers = numpy.arange(1, len(test) + 1)
         m[
-            cellprofiler_core.constants.measurement.IMAGE, "Feature", image_numbers, numpy.uint8
+            cellprofiler_core.constants.measurement.IMAGE,
+            "Feature",
+            image_numbers,
+            numpy.uint8,
         ] = test
-        result = m[cellprofiler_core.constants.measurement.IMAGE, "Feature", image_numbers]
+        result = m[
+            cellprofiler_core.constants.measurement.IMAGE, "Feature", image_numbers
+        ]
         assert result[0] is None
         numpy.testing.assert_array_equal(test[1], result[1])
 
@@ -548,14 +563,26 @@ class TestMeasurements:
     def test_10_01_remove_image_measurement(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(
-            cellprofiler_core.constants.measurement.IMAGE, "M", "Hello", image_set_number=1
+            cellprofiler_core.constants.measurement.IMAGE,
+            "M",
+            "Hello",
+            image_set_number=1,
         )
         m.add_measurement(
-            cellprofiler_core.constants.measurement.IMAGE, "M", "World", image_set_number=2
+            cellprofiler_core.constants.measurement.IMAGE,
+            "M",
+            "World",
+            image_set_number=2,
         )
         m.remove_measurement(cellprofiler_core.constants.measurement.IMAGE, "M", 1)
-        assert m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "M", 1) is None
-        assert m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "M", 2) == "World"
+        assert (
+            m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "M", 1)
+            is None
+        )
+        assert (
+            m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "M", 2)
+            == "World"
+        )
 
     def test_10_02_remove_object_measurement(self):
         m = cellprofiler_core.measurement.Measurements()
@@ -570,10 +597,16 @@ class TestMeasurements:
     def test_10_03_remove_image_number(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(
-            cellprofiler_core.constants.measurement.IMAGE, "M", "Hello", image_set_number=1
+            cellprofiler_core.constants.measurement.IMAGE,
+            "M",
+            "Hello",
+            image_set_number=1,
         )
         m.add_measurement(
-            cellprofiler_core.constants.measurement.IMAGE, "M", "World", image_set_number=2
+            cellprofiler_core.constants.measurement.IMAGE,
+            "M",
+            "World",
+            image_set_number=2,
         )
         numpy.testing.assert_equal(
             numpy.array(m.get_image_numbers()), numpy.arange(1, 3)
@@ -709,8 +742,12 @@ class TestMeasurements:
         """Regression test - don't return Relationships"""
         m = cellprofiler_core.measurement.Measurements()
         try:
-            m.add_image_measurement(cellprofiler_core.constants.measurement.GROUP_NUMBER, 1)
-            m.add_image_measurement(cellprofiler_core.constants.measurement.GROUP_INDEX, 0)
+            m.add_image_measurement(
+                cellprofiler_core.constants.measurement.GROUP_NUMBER, 1
+            )
+            m.add_image_measurement(
+                cellprofiler_core.constants.measurement.GROUP_INDEX, 0
+            )
             m.add_measurement(OBJECT_NAME, "Foo", numpy.zeros(3))
             m.add_relate_measurement(
                 1,
@@ -785,8 +822,14 @@ class TestMeasurements:
             d = m.compute_aggregate_measurements(1)
             for agg_name, expected in (
                 (cellprofiler_core.constants.measurement.AGG_MEAN, numpy.mean(values)),
-                (cellprofiler_core.constants.measurement.AGG_MEDIAN, numpy.median(values)),
-                (cellprofiler_core.constants.measurement.AGG_STD_DEV, numpy.std(values)),
+                (
+                    cellprofiler_core.constants.measurement.AGG_MEDIAN,
+                    numpy.median(values),
+                ),
+                (
+                    cellprofiler_core.constants.measurement.AGG_STD_DEV,
+                    numpy.std(values),
+                ),
             ):
                 feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
                 assert feature in d
@@ -838,8 +881,14 @@ class TestMeasurements:
             d = m.compute_aggregate_measurements(1)
             for agg_name, expected in (
                 (cellprofiler_core.constants.measurement.AGG_MEAN, numpy.mean(values)),
-                (cellprofiler_core.constants.measurement.AGG_MEDIAN, numpy.median(values)),
-                (cellprofiler_core.constants.measurement.AGG_STD_DEV, numpy.std(values)),
+                (
+                    cellprofiler_core.constants.measurement.AGG_MEDIAN,
+                    numpy.median(values),
+                ),
+                (
+                    cellprofiler_core.constants.measurement.AGG_STD_DEV,
+                    numpy.std(values),
+                ),
             ):
                 feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
                 assert feature in d
@@ -971,7 +1020,9 @@ class TestMeasurements:
         m = cellprofiler_core.measurement.Measurements()
         try:
             m.load_image_sets(six.moves.StringIO(data))
-            features = m.get_feature_names(cellprofiler_core.constants.measurement.IMAGE)
+            features = m.get_feature_names(
+                cellprofiler_core.constants.measurement.IMAGE
+            )
 
             unittest.TestCase().assertCountEqual(features, expected_features)
 
@@ -1030,7 +1081,9 @@ class TestMeasurements:
             ["Something", None, "SomethingElse"],
         )
         m.add_all_measurements(
-            cellprofiler_core.constants.measurement.IMAGE, "Dont_copy", ["do", "not", "copy"]
+            cellprofiler_core.constants.measurement.IMAGE,
+            "Dont_copy",
+            ["do", "not", "copy"],
         )
         fd = six.moves.StringIO()
         m.write_image_sets(fd)
@@ -1039,7 +1092,9 @@ class TestMeasurements:
         mdest.load_image_sets(fd)
         expected_features = [
             feature_name
-            for feature_name in m.get_feature_names(cellprofiler_core.constants.measurement.IMAGE)
+            for feature_name in m.get_feature_names(
+                cellprofiler_core.constants.measurement.IMAGE
+            )
             if feature_name != "Dont_copy"
         ]
         unittest.TestCase().assertCountEqual(
@@ -1049,10 +1104,14 @@ class TestMeasurements:
         image_numbers = m.get_image_numbers()
         for feature_name in expected_features:
             src = m.get_measurement(
-                cellprofiler_core.constants.measurement.IMAGE, feature_name, image_numbers
+                cellprofiler_core.constants.measurement.IMAGE,
+                feature_name,
+                image_numbers,
             )
             dest = mdest.get_measurement(
-                cellprofiler_core.constants.measurement.IMAGE, feature_name, image_numbers
+                cellprofiler_core.constants.measurement.IMAGE,
+                feature_name,
+                image_numbers,
             )
             unittest.TestCase().assertCountEqual(list(src), list(dest))
 

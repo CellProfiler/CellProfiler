@@ -354,7 +354,10 @@ class Workspace:
             #
             # Copy the file to a temporary location before opening
             #
-            fd, self.__filename = cellprofiler_core.utilities.measurement.make_temporary_file()
+            (
+                fd,
+                self.__filename,
+            ) = cellprofiler_core.utilities.measurement.make_temporary_file()
             os.close(fd)
 
             shutil.copyfile(filename, self.__filename)
@@ -371,7 +374,7 @@ class Workspace:
             )
             self.__file_list.add_notification_callback(self.__on_file_list_changed)
             if load_pipeline and self.__measurements.has_feature(
-                    cellprofiler_core.constants.measurement.EXPERIMENT, M_PIPELINE
+                cellprofiler_core.constants.measurement.EXPERIMENT, M_PIPELINE
             ):
                 pipeline_txt = self.__measurements.get_experiment_measurement(
                     M_PIPELINE
@@ -400,7 +403,7 @@ class Workspace:
                 (M_DEFAULT_OUTPUT_FOLDER, set_default_output_directory),
             ):
                 if self.measurements.has_feature(
-                        cellprofiler_core.constants.measurement.EXPERIMENT, feature
+                    cellprofiler_core.constants.measurement.EXPERIMENT, feature
                 ):
                     path = self.measurements[
                         cellprofiler_core.constants.measurement.EXPERIMENT, feature

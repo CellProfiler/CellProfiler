@@ -693,7 +693,10 @@ a separate alignment to the first image can be calculated:
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cellprofiler_core.constants.measurement.IMAGE and category == C_ALIGN:
+        if (
+            object_name == cellprofiler_core.constants.measurement.IMAGE
+            and category == C_ALIGN
+        ):
             return ["Xshift", "Yshift"]
         return []
 

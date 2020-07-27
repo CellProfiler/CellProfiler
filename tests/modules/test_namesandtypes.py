@@ -755,21 +755,34 @@ def do_teest(module, channels, expected_tags, expected_metadata, additional=None
             image_number = i + 1
             if iscd.channel_type == iscd.CT_OBJECTS:
                 url_ftr = "_".join(
-                    (cellprofiler_core.constants.measurement.C_OBJECTS_URL, channel_name)
+                    (
+                        cellprofiler_core.constants.measurement.C_OBJECTS_URL,
+                        channel_name,
+                    )
                 )
             else:
-                url_ftr = "_".join((cellprofiler_core.constants.measurement.C_URL, channel_name))
+                url_ftr = "_".join(
+                    (cellprofiler_core.constants.measurement.C_URL, channel_name)
+                )
             assert (
                 expected_url
-                == m[cellprofiler_core.constants.measurement.IMAGE, url_ftr, image_number]
+                == m[
+                    cellprofiler_core.constants.measurement.IMAGE, url_ftr, image_number
+                ]
             )
             for key, channel in expected_metadata:
                 if channel != channel_name:
                     continue
-                md_ftr = "_".join((cellprofiler_core.constants.measurement.C_METADATA, key))
+                md_ftr = "_".join(
+                    (cellprofiler_core.constants.measurement.C_METADATA, key)
+                )
                 assert (
                     metadata[key]
-                    == m[cellprofiler_core.constants.measurement.IMAGE, md_ftr, image_number]
+                    == m[
+                        cellprofiler_core.constants.measurement.IMAGE,
+                        md_ftr,
+                        image_number,
+                    ]
                 )
     return workspace
 
@@ -810,7 +823,9 @@ def test_01_all():
     n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_ALL
     n.single_image_provider.value = C0
     data = {C0: [("images/1.jpg", {M0: "1"})]}
-    do_teest(n, data, [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)], [(M0, C0)])
+    do_teest(
+        n, data, [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)], [(M0, C0)]
+    )
 
 
 def test_one():
@@ -828,7 +843,9 @@ def test_one():
             ("images/3.jpg", {M0: "k2"}),
         ]
     }
-    do_teest(n, data, [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)], [(M0, C0)])
+    do_teest(
+        n, data, [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)], [(M0, C0)]
+    )
 
 
 def test_match_one_same_key():
@@ -1050,7 +1067,10 @@ def test_by_order():
         C1: [("%s%d" % (C1, i + 1), m) for i, m in enumerate(md([(M1, 2)]))],
     }
     do_teest(
-        n, data, [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)]
+        n,
+        data,
+        [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)],
+        [(C0, M0), (C1, M1)],
     )
 
 
@@ -1074,7 +1094,10 @@ def test_by_order_bad():
     }
     additional = [("%sBad" % C0, {})]
     do_teest(
-        n, data, [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)]
+        n,
+        data,
+        [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)],
+        [(C0, M0), (C1, M1)],
     )
 
 
@@ -1100,7 +1123,10 @@ def test_single_image_by_order():
         C2: [("illum.tif", {}) for i, m in enumerate(md([(M1, 2)]))],
     }
     workspace = do_teest(
-        n, data, [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)]
+        n,
+        data,
+        [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)],
+        [(C0, M0), (C1, M1)],
     )
     m = workspace.measurements
     image_numbers = m.get_image_numbers()
@@ -1223,18 +1249,22 @@ def test_prepare_to_create_batch_multiple():
     for feature, name, values in (
         (cellprofiler_core.constants.measurement.C_FILE_NAME, IMAGE_NAME, filenames),
         (
-                cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
-                OBJECTS_NAME,
-                reversed(filenames),
+            cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
+            OBJECTS_NAME,
+            reversed(filenames),
         ),
         (cellprofiler_core.constants.measurement.C_PATH_NAME, IMAGE_NAME, pathnames),
         (
-                cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
-                OBJECTS_NAME,
-                reversed(pathnames),
+            cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
+            OBJECTS_NAME,
+            reversed(pathnames),
         ),
         (cellprofiler_core.constants.measurement.C_URL, IMAGE_NAME, urlnames),
-        (cellprofiler_core.constants.measurement.C_OBJECTS_URL, OBJECTS_NAME, reversed(urlnames)),
+        (
+            cellprofiler_core.constants.measurement.C_OBJECTS_URL,
+            OBJECTS_NAME,
+            reversed(urlnames),
+        ),
     ):
         m.add_all_measurements(
             cellprofiler_core.constants.measurement.IMAGE, feature + "_" + name, values
@@ -1244,23 +1274,31 @@ def test_prepare_to_create_batch_multiple():
     workspace = cellprofiler_core.workspace.Workspace(pipeline, n, m, None, m, None)
     n.prepare_to_create_batch(workspace, lambda x: x.replace("foo", "bar"))
     for feature, name, expected in (
-        (cellprofiler_core.constants.measurement.C_FILE_NAME, IMAGE_NAME, expected_filenames),
         (
-                cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
-                OBJECTS_NAME,
-                reversed(expected_filenames),
+            cellprofiler_core.constants.measurement.C_FILE_NAME,
+            IMAGE_NAME,
+            expected_filenames,
         ),
-        (cellprofiler_core.constants.measurement.C_PATH_NAME, IMAGE_NAME, expected_pathnames),
         (
-                cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
-                OBJECTS_NAME,
-                reversed(expected_pathnames),
+            cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
+            OBJECTS_NAME,
+            reversed(expected_filenames),
+        ),
+        (
+            cellprofiler_core.constants.measurement.C_PATH_NAME,
+            IMAGE_NAME,
+            expected_pathnames,
+        ),
+        (
+            cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
+            OBJECTS_NAME,
+            reversed(expected_pathnames),
         ),
         (cellprofiler_core.constants.measurement.C_URL, IMAGE_NAME, expected_urlnames),
         (
-                cellprofiler_core.constants.measurement.C_OBJECTS_URL,
-                OBJECTS_NAME,
-                reversed(expected_urlnames),
+            cellprofiler_core.constants.measurement.C_OBJECTS_URL,
+            OBJECTS_NAME,
+            reversed(expected_urlnames),
         ),
     ):
         values = m.get_measurement(
@@ -1302,11 +1340,27 @@ def test_prepare_to_create_batch_single_image():
 
     for feature, name, values in (
         (cellprofiler_core.constants.measurement.C_FILE_NAME, IMAGE_NAME, filenames),
-        (cellprofiler_core.constants.measurement.C_FILE_NAME, si_names[0], filenames[:1] * 2),
-        (cellprofiler_core.constants.measurement.C_FILE_NAME, si_names[1], filenames[1:] * 2),
+        (
+            cellprofiler_core.constants.measurement.C_FILE_NAME,
+            si_names[0],
+            filenames[:1] * 2,
+        ),
+        (
+            cellprofiler_core.constants.measurement.C_FILE_NAME,
+            si_names[1],
+            filenames[1:] * 2,
+        ),
         (cellprofiler_core.constants.measurement.C_PATH_NAME, IMAGE_NAME, pathnames),
-        (cellprofiler_core.constants.measurement.C_PATH_NAME, si_names[0], pathnames[:1] * 2),
-        (cellprofiler_core.constants.measurement.C_PATH_NAME, si_names[1], pathnames[1:] * 2),
+        (
+            cellprofiler_core.constants.measurement.C_PATH_NAME,
+            si_names[0],
+            pathnames[:1] * 2,
+        ),
+        (
+            cellprofiler_core.constants.measurement.C_PATH_NAME,
+            si_names[1],
+            pathnames[1:] * 2,
+        ),
         (cellprofiler_core.constants.measurement.C_URL, IMAGE_NAME, urlnames),
         (cellprofiler_core.constants.measurement.C_URL, si_names[0], urlnames[:1] * 2),
         (cellprofiler_core.constants.measurement.C_URL, si_names[1], urlnames[1:] * 2),
@@ -1319,31 +1373,47 @@ def test_prepare_to_create_batch_single_image():
     workspace = cellprofiler_core.workspace.Workspace(pipeline, n, m, None, m, None)
     n.prepare_to_create_batch(workspace, lambda x: x.replace("foo", "bar"))
     for feature, name, expected in (
-        (cellprofiler_core.constants.measurement.C_FILE_NAME, IMAGE_NAME, expected_filenames),
         (
-                cellprofiler_core.constants.measurement.C_FILE_NAME,
-                si_names[0],
+            cellprofiler_core.constants.measurement.C_FILE_NAME,
+            IMAGE_NAME,
+            expected_filenames,
+        ),
+        (
+            cellprofiler_core.constants.measurement.C_FILE_NAME,
+            si_names[0],
             expected_filenames[:1] * 2,
         ),
         (
-                cellprofiler_core.constants.measurement.C_FILE_NAME,
-                si_names[1],
+            cellprofiler_core.constants.measurement.C_FILE_NAME,
+            si_names[1],
             expected_filenames[1:] * 2,
         ),
-        (cellprofiler_core.constants.measurement.C_PATH_NAME, IMAGE_NAME, expected_pathnames),
         (
-                cellprofiler_core.constants.measurement.C_PATH_NAME,
-                si_names[0],
+            cellprofiler_core.constants.measurement.C_PATH_NAME,
+            IMAGE_NAME,
+            expected_pathnames,
+        ),
+        (
+            cellprofiler_core.constants.measurement.C_PATH_NAME,
+            si_names[0],
             expected_pathnames[:1] * 2,
         ),
         (
-                cellprofiler_core.constants.measurement.C_PATH_NAME,
-                si_names[1],
+            cellprofiler_core.constants.measurement.C_PATH_NAME,
+            si_names[1],
             expected_pathnames[1:] * 2,
         ),
         (cellprofiler_core.constants.measurement.C_URL, IMAGE_NAME, expected_urlnames),
-        (cellprofiler_core.constants.measurement.C_URL, si_names[0], expected_urlnames[:1] * 2),
-        (cellprofiler_core.constants.measurement.C_URL, si_names[1], expected_urlnames[1:] * 2),
+        (
+            cellprofiler_core.constants.measurement.C_URL,
+            si_names[0],
+            expected_urlnames[:1] * 2,
+        ),
+        (
+            cellprofiler_core.constants.measurement.C_URL,
+            si_names[1],
+            expected_urlnames[1:] * 2,
+        ),
     ):
         values = m.get_measurement(
             cellprofiler_core.constants.measurement.IMAGE,
@@ -1495,42 +1565,72 @@ def run_workspace(
     pathname, filename = os.path.split(path)
     m = cellprofiler_core.measurement.Measurements()
     if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
-        url_feature = cellprofiler_core.constants.measurement.C_OBJECTS_URL + "_" + OBJECTS_NAME
+        url_feature = (
+            cellprofiler_core.constants.measurement.C_OBJECTS_URL + "_" + OBJECTS_NAME
+        )
         path_feature = (
-                cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
+            cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME
+            + "_"
+            + OBJECTS_NAME
         )
         file_feature = (
-                cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME
+            cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME
+            + "_"
+            + OBJECTS_NAME
         )
         series_feature = (
-                cellprofiler_core.constants.measurement.C_OBJECTS_SERIES + "_" + OBJECTS_NAME
+            cellprofiler_core.constants.measurement.C_OBJECTS_SERIES
+            + "_"
+            + OBJECTS_NAME
         )
         frame_feature = (
-                cellprofiler_core.constants.measurement.C_OBJECTS_FRAME + "_" + OBJECTS_NAME
+            cellprofiler_core.constants.measurement.C_OBJECTS_FRAME + "_" + OBJECTS_NAME
         )
         channel_feature = (
-                cellprofiler_core.constants.measurement.C_OBJECTS_CHANNEL + "_" + OBJECTS_NAME
+            cellprofiler_core.constants.measurement.C_OBJECTS_CHANNEL
+            + "_"
+            + OBJECTS_NAME
         )
         names = javabridge.make_list([OBJECTS_NAME])
     else:
         url_feature = cellprofiler_core.constants.measurement.C_URL + "_" + IMAGE_NAME
-        path_feature = cellprofiler_core.constants.measurement.C_PATH_NAME + "_" + IMAGE_NAME
-        file_feature = cellprofiler_core.constants.measurement.C_FILE_NAME + "_" + IMAGE_NAME
-        series_feature = cellprofiler_core.constants.measurement.C_SERIES + "_" + IMAGE_NAME
-        frame_feature = cellprofiler_core.constants.measurement.C_FRAME + "_" + IMAGE_NAME
-        channel_feature = cellprofiler_core.constants.measurement.C_CHANNEL + "_" + IMAGE_NAME
+        path_feature = (
+            cellprofiler_core.constants.measurement.C_PATH_NAME + "_" + IMAGE_NAME
+        )
+        file_feature = (
+            cellprofiler_core.constants.measurement.C_FILE_NAME + "_" + IMAGE_NAME
+        )
+        series_feature = (
+            cellprofiler_core.constants.measurement.C_SERIES + "_" + IMAGE_NAME
+        )
+        frame_feature = (
+            cellprofiler_core.constants.measurement.C_FRAME + "_" + IMAGE_NAME
+        )
+        channel_feature = (
+            cellprofiler_core.constants.measurement.C_CHANNEL + "_" + IMAGE_NAME
+        )
         names = javabridge.make_list([IMAGE_NAME])
 
     m.image_set_number = 1
     m.add_measurement(cellprofiler_core.constants.measurement.IMAGE, url_feature, url)
-    m.add_measurement(cellprofiler_core.constants.measurement.IMAGE, path_feature, pathname)
-    m.add_measurement(cellprofiler_core.constants.measurement.IMAGE, file_feature, filename)
+    m.add_measurement(
+        cellprofiler_core.constants.measurement.IMAGE, path_feature, pathname
+    )
+    m.add_measurement(
+        cellprofiler_core.constants.measurement.IMAGE, file_feature, filename
+    )
     if series is not None:
-        m.add_measurement(cellprofiler_core.constants.measurement.IMAGE, series_feature, series)
+        m.add_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, series_feature, series
+        )
     if index is not None:
-        m.add_measurement(cellprofiler_core.constants.measurement.IMAGE, frame_feature, index)
+        m.add_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, frame_feature, index
+        )
     if channel is not None:
-        m.add_measurement(cellprofiler_core.constants.measurement.IMAGE, channel_feature, channel)
+        m.add_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, channel_feature, channel
+        )
     m.add_measurement(
         cellprofiler_core.constants.measurement.IMAGE,
         cellprofiler_core.constants.measurement.GROUP_NUMBER,
@@ -1574,28 +1674,48 @@ def run_workspace(
         url = cellprofiler_core.utilities.pathname.pathname2url(path)
         pathname, filename = os.path.split(path)
         if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
-            url_feature = cellprofiler_core.constants.measurement.C_OBJECTS_URL + "_" + name
+            url_feature = (
+                cellprofiler_core.constants.measurement.C_OBJECTS_URL + "_" + name
+            )
             path_feature = (
-                    cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME + "_" + name
+                cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME + "_" + name
             )
             file_feature = (
-                    cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME + "_" + name
+                cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME + "_" + name
             )
-            series_feature = cellprofiler_core.constants.measurement.C_OBJECTS_SERIES + "_" + name
-            frame_feature = cellprofiler_core.constants.measurement.C_OBJECTS_FRAME + "_" + name
+            series_feature = (
+                cellprofiler_core.constants.measurement.C_OBJECTS_SERIES + "_" + name
+            )
+            frame_feature = (
+                cellprofiler_core.constants.measurement.C_OBJECTS_FRAME + "_" + name
+            )
             channel_feature = (
-                    cellprofiler_core.constants.measurement.C_OBJECTS_CHANNEL + "_" + name
+                cellprofiler_core.constants.measurement.C_OBJECTS_CHANNEL + "_" + name
             )
         else:
             url_feature = cellprofiler_core.constants.measurement.C_URL + "_" + name
-            path_feature = cellprofiler_core.constants.measurement.C_PATH_NAME + "_" + name
-            file_feature = cellprofiler_core.constants.measurement.C_FILE_NAME + "_" + name
-            series_feature = cellprofiler_core.constants.measurement.C_SERIES + "_" + name
+            path_feature = (
+                cellprofiler_core.constants.measurement.C_PATH_NAME + "_" + name
+            )
+            file_feature = (
+                cellprofiler_core.constants.measurement.C_FILE_NAME + "_" + name
+            )
+            series_feature = (
+                cellprofiler_core.constants.measurement.C_SERIES + "_" + name
+            )
             frame_feature = cellprofiler_core.constants.measurement.C_FRAME + "_" + name
-            channel_feature = cellprofiler_core.constants.measurement.C_CHANNEL + "_" + name
-        m.add_measurement(cellprofiler_core.constants.measurement.IMAGE, url_feature, url)
-        m.add_measurement(cellprofiler_core.constants.measurement.IMAGE, path_feature, pathname)
-        m.add_measurement(cellprofiler_core.constants.measurement.IMAGE, file_feature, filename)
+            channel_feature = (
+                cellprofiler_core.constants.measurement.C_CHANNEL + "_" + name
+            )
+        m.add_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, url_feature, url
+        )
+        m.add_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, path_feature, pathname
+        )
+        m.add_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, file_feature, filename
+        )
         ipds.add(make_ipd(url, {}).jipd)
 
     script = (
@@ -1975,15 +2095,15 @@ def test_get_measurement_columns():
     columns = m.get_measurement_columns(p)
 
     for ftr in (
-            cellprofiler_core.constants.measurement.C_FILE_NAME,
-            cellprofiler_core.constants.measurement.C_PATH_NAME,
-            cellprofiler_core.constants.measurement.C_URL,
-            cellprofiler_core.utilities.image.C_MD5_DIGEST,
-            cellprofiler_core.utilities.image.C_SCALING,
-            cellprofiler_core.utilities.image.C_HEIGHT,
-            cellprofiler_core.utilities.image.C_WIDTH,
-            cellprofiler_core.constants.measurement.C_SERIES,
-            cellprofiler_core.constants.measurement.C_FRAME,
+        cellprofiler_core.constants.measurement.C_FILE_NAME,
+        cellprofiler_core.constants.measurement.C_PATH_NAME,
+        cellprofiler_core.constants.measurement.C_URL,
+        cellprofiler_core.utilities.image.C_MD5_DIGEST,
+        cellprofiler_core.utilities.image.C_SCALING,
+        cellprofiler_core.utilities.image.C_HEIGHT,
+        cellprofiler_core.utilities.image.C_WIDTH,
+        cellprofiler_core.constants.measurement.C_SERIES,
+        cellprofiler_core.constants.measurement.C_FRAME,
     ):
         mname = "_".join((ftr, IMAGE_NAME))
         assert any(
@@ -1994,15 +2114,15 @@ def test_get_measurement_columns():
         )
 
     for ftr in (
-            cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
-            cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
-            cellprofiler_core.utilities.image.C_MD5_DIGEST,
-            cellprofiler_core.constants.measurement.C_OBJECTS_URL,
-            cellprofiler_core.utilities.image.C_HEIGHT,
-            cellprofiler_core.utilities.image.C_WIDTH,
-            cellprofiler_core.constants.measurement.C_OBJECTS_SERIES,
-            cellprofiler_core.constants.measurement.C_OBJECTS_FRAME,
-            cellprofiler_core.constants.measurement.C_COUNT,
+        cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
+        cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
+        cellprofiler_core.utilities.image.C_MD5_DIGEST,
+        cellprofiler_core.constants.measurement.C_OBJECTS_URL,
+        cellprofiler_core.utilities.image.C_HEIGHT,
+        cellprofiler_core.utilities.image.C_WIDTH,
+        cellprofiler_core.constants.measurement.C_OBJECTS_SERIES,
+        cellprofiler_core.constants.measurement.C_OBJECTS_FRAME,
+        cellprofiler_core.constants.measurement.C_COUNT,
     ):
         mname = "_".join((ftr, OBJECTS_NAME))
         assert any(
@@ -2013,8 +2133,8 @@ def test_get_measurement_columns():
         )
 
     for mname in (
-            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
-            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+        cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+        cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
     ):
         assert any([c[0] == OBJECTS_NAME and c[1] == mname for c in columns])
 
@@ -2032,8 +2152,12 @@ def test_get_categories():
     m.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     m.assignments[0].image_name.value = IMAGE_NAME
     categories = m.get_categories(p, cellprofiler_core.constants.measurement.IMAGE)
-    assert not (cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME in categories)
-    assert not (cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME in categories)
+    assert not (
+        cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME in categories
+    )
+    assert not (
+        cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME in categories
+    )
     assert not (cellprofiler_core.constants.measurement.C_OBJECTS_URL in categories)
     assert cellprofiler_core.constants.measurement.C_FILE_NAME in categories
     assert cellprofiler_core.constants.measurement.C_PATH_NAME in categories
@@ -2075,21 +2199,25 @@ def test_get_measurements():
     ].load_as_choice.value = cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS
     m.assignments[1].object_name.value = OBJECTS_NAME
     for cname in (
-            cellprofiler_core.constants.measurement.C_FILE_NAME,
-            cellprofiler_core.constants.measurement.C_PATH_NAME,
-            cellprofiler_core.constants.measurement.C_URL,
+        cellprofiler_core.constants.measurement.C_FILE_NAME,
+        cellprofiler_core.constants.measurement.C_PATH_NAME,
+        cellprofiler_core.constants.measurement.C_URL,
     ):
-        mnames = m.get_measurements(p, cellprofiler_core.constants.measurement.IMAGE, cname)
+        mnames = m.get_measurements(
+            p, cellprofiler_core.constants.measurement.IMAGE, cname
+        )
         assert len(mnames) == 1
         assert mnames[0] == IMAGE_NAME
 
     for cname in (
-            cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
-            cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
-            cellprofiler_core.constants.measurement.C_OBJECTS_URL,
-            cellprofiler_core.constants.measurement.C_COUNT,
+        cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
+        cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
+        cellprofiler_core.constants.measurement.C_OBJECTS_URL,
+        cellprofiler_core.constants.measurement.C_COUNT,
     ):
-        mnames = m.get_measurements(p, cellprofiler_core.constants.measurement.IMAGE, cname)
+        mnames = m.get_measurements(
+            p, cellprofiler_core.constants.measurement.IMAGE, cname
+        )
         assert len(mnames) == 1
         assert mnames[0] == OBJECTS_NAME
 
@@ -2101,7 +2229,9 @@ def test_get_measurements():
         cellprofiler_core.constants.measurement.C_SERIES,
         cellprofiler_core.constants.measurement.C_FRAME,
     ):
-        mnames = m.get_measurements(p, cellprofiler_core.constants.measurement.IMAGE, cname)
+        mnames = m.get_measurements(
+            p, cellprofiler_core.constants.measurement.IMAGE, cname
+        )
         assert len(mnames) == 2
         assert all([x in mnames for x in (IMAGE_NAME, OBJECTS_NAME)])
 
@@ -2112,8 +2242,8 @@ def test_get_measurements():
         [
             x in mnames
             for x in (
-            cellprofiler_core.constants.measurement.FTR_CENTER_X,
-            cellprofiler_core.constants.measurement.FTR_CENTER_Y,
+                cellprofiler_core.constants.measurement.FTR_CENTER_X,
+                cellprofiler_core.constants.measurement.FTR_CENTER_Y,
             )
         ]
     )

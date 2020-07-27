@@ -753,7 +753,9 @@ class Pipeline:
                 ):
                     group_number, group_index = [
                         initial_measurements[
-                            cellprofiler_core.constants.measurement.IMAGE, f, image_number
+                            cellprofiler_core.constants.measurement.IMAGE,
+                            f,
+                            image_number,
                         ]
                         for f in (
                             cellprofiler_core.constants.pipeline.GROUP_NUMBER,
@@ -852,7 +854,7 @@ class Pipeline:
                         to_remove += list(grouping_image_numbers)
 
             if len(to_remove) > 0 and measurements.has_feature(
-                    cellprofiler_core.constants.measurement.IMAGE,
+                cellprofiler_core.constants.measurement.IMAGE,
                 cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
             ):
                 for image_number in numpy.unique(to_remove):
@@ -1422,7 +1424,7 @@ class Pipeline:
             return False
 
         if not m.has_feature(
-                cellprofiler_core.constants.measurement.IMAGE,
+            cellprofiler_core.constants.measurement.IMAGE,
             cellprofiler_core.constants.pipeline.GROUP_NUMBER,
         ):
             # Legacy pipelines don't populate group # or index
@@ -1624,10 +1626,14 @@ class Pipeline:
             object_name, feature, coltype = column[:3]
             if (
                 object_name == cellprofiler_core.constants.measurement.IMAGE
-                and feature.startswith(cellprofiler_core.constants.measurement.C_METADATA)
+                and feature.startswith(
+                    cellprofiler_core.constants.measurement.C_METADATA
+                )
             ):
                 current_metadata.append(
-                    feature[(len(cellprofiler_core.constants.measurement.C_METADATA) + 1):]
+                    feature[
+                        (len(cellprofiler_core.constants.measurement.C_METADATA) + 1) :
+                    ]
                 )
 
         m = re.findall("\\(\\?[<](.+?)[>]\\)", pattern)
@@ -1641,8 +1647,8 @@ class Pipeline:
                             [
                                 x.startswith(y)
                                 for y in (
-                                cellprofiler_core.constants.measurement.C_SERIES,
-                                cellprofiler_core.constants.measurement.C_FRAME,
+                                    cellprofiler_core.constants.measurement.C_SERIES,
+                                    cellprofiler_core.constants.measurement.C_FRAME,
                                 )
                             ]
                         )
@@ -2207,7 +2213,9 @@ class Pipeline:
                 return iscds, metadata_key_names, {}
             metadata_columns = [
                 temp_measurements.get_measurement(
-                    cellprofiler_core.constants.measurement.IMAGE, feature, all_image_numbers
+                    cellprofiler_core.constants.measurement.IMAGE,
+                    feature,
+                    all_image_numbers,
                 )
                 for feature in metadata_key_names
             ]
@@ -2219,7 +2227,7 @@ class Pipeline:
                     category = image_category
                 feature_name = "_".join((category, iscd.name))
                 if feature_name in temp_measurements.get_feature_names(
-                        cellprofiler_core.constants.measurement.IMAGE
+                    cellprofiler_core.constants.measurement.IMAGE
                 ):
                     return temp_measurements.get_measurement(
                         cellprofiler_core.constants.measurement.IMAGE,

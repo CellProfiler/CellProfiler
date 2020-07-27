@@ -132,8 +132,14 @@ def make_image_sets(key_metadata, channel_metadata):
         for (file_name, metadata), iscd in zip(ipds, iscds):
             for feature, value in (
                 (cellprofiler_core.constants.measurement.C_FILE_NAME, file_name),
-                (cellprofiler_core.constants.measurement.C_PATH_NAME, os.pathsep + "images"),
-                (cellprofiler_core.constants.measurement.C_URL, "file://images/" + file_name),
+                (
+                    cellprofiler_core.constants.measurement.C_PATH_NAME,
+                    os.pathsep + "images",
+                ),
+                (
+                    cellprofiler_core.constants.measurement.C_URL,
+                    "file://images/" + file_name,
+                ),
             ):
                 m[
                     cellprofiler_core.constants.measurement.IMAGE,
@@ -141,8 +147,12 @@ def make_image_sets(key_metadata, channel_metadata):
                     image_number,
                 ] = value
             for key, value in list(metadata.items()):
-                feature = "_".join((cellprofiler_core.constants.measurement.C_METADATA, key))
-                m[cellprofiler_core.constants.measurement.IMAGE, feature, image_number] = value
+                feature = "_".join(
+                    (cellprofiler_core.constants.measurement.C_METADATA, key)
+                )
+                m[
+                    cellprofiler_core.constants.measurement.IMAGE, feature, image_number
+                ] = value
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
     module = cellprofiler_core.modules.groups.Groups()
@@ -260,7 +270,9 @@ def test_group_on_one():
         )
         for image_number in range(1 + (group_number - 1) * 12, 1 + group_number * 12):
             for image_name in ("DNA", "GFP"):
-                ftr = "_".join((cellprofiler_core.constants.measurement.C_FILE_NAME, image_name))
+                ftr = "_".join(
+                    (cellprofiler_core.constants.measurement.C_FILE_NAME, image_name)
+                )
                 assert m[
                     cellprofiler_core.constants.measurement.IMAGE, ftr, image_number
                 ].startswith(plate)
@@ -315,7 +327,9 @@ def test_group_on_two():
             assert len(image_set_list) == 3
             ftr = "_".join((cellprofiler_core.constants.measurement.C_FILE_NAME, "DNA"))
             for image_number in image_set_list:
-                file_name = m[cellprofiler_core.constants.measurement.IMAGE, ftr, image_number]
+                file_name = m[
+                    cellprofiler_core.constants.measurement.IMAGE, ftr, image_number
+                ]
                 p, w, s, rest = file_name.split("_")
                 assert p == plate
                 assert s == site
@@ -357,5 +371,6 @@ def test_get_measurement_columns_groups():
         column_metadata.append(column[1])
     for choice in choices:
         assert (
-                cellprofiler_core.constants.measurement.C_METADATA + "_" + choice in column_metadata
+            cellprofiler_core.constants.measurement.C_METADATA + "_" + choice
+            in column_metadata
         )

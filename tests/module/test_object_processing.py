@@ -18,7 +18,9 @@ class TestObjectProcessing:
 
         module.x_name.value = "Objects"
 
-        actual = module.get_categories(None, cellprofiler_core.constants.measurement.IMAGE)
+        actual = module.get_categories(
+            None, cellprofiler_core.constants.measurement.IMAGE
+        )
 
         expected = [cellprofiler_core.constants.measurement.C_COUNT]
 
@@ -104,7 +106,8 @@ class TestObjectProcessing:
             ),
             (
                 "Objects",
-                cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+                cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT
+                % "ObjectProcessing",
                 cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
@@ -155,7 +158,8 @@ class TestObjectProcessing:
             ),
             (
                 "Objects",
-                cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+                cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT
+                % "ObjectProcessing",
                 cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
@@ -190,7 +194,8 @@ class TestObjectProcessing:
             ),
             (
                 "additional_input",
-                cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % "additional_output",
+                cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT
+                % "additional_output",
                 cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
             ),
             (
@@ -245,7 +250,9 @@ class TestObjectProcessing:
             None, "Objects", cellprofiler_core.constants.measurement.C_CHILDREN
         )
 
-        expected = [cellprofiler_core.constants.measurement.FF_COUNT % "ObjectProcessing"]
+        expected = [
+            cellprofiler_core.constants.measurement.FF_COUNT % "ObjectProcessing"
+        ]
 
         assert actual == expected
 
@@ -387,7 +394,8 @@ class TestObjectProcessing:
         expected_center_x = [7.0, 22.0]
 
         actual_center_x = measurements.get_measurement(
-            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
+            "ObjectProcessing",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
         )
 
         numpy.testing.assert_array_equal(actual_center_x, expected_center_x)
@@ -395,7 +403,8 @@ class TestObjectProcessing:
         expected_center_y = [15.0, 15.0]
 
         actual_center_y = measurements.get_measurement(
-            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y
+            "ObjectProcessing",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
         )
 
         numpy.testing.assert_array_equal(actual_center_y, expected_center_y)
@@ -403,7 +412,8 @@ class TestObjectProcessing:
         expected_center_z = [0.0, 0.0]
 
         actual_center_z = measurements.get_measurement(
-            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z
+            "ObjectProcessing",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
         )
 
         numpy.testing.assert_array_equal(actual_center_z, expected_center_z)
@@ -411,7 +421,8 @@ class TestObjectProcessing:
         expected_object_number = [1.0, 2.0]
 
         actual_object_number = measurements.get_measurement(
-            "ObjectProcessing", cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER
+            "ObjectProcessing",
+            cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
         )
 
         numpy.testing.assert_array_equal(actual_object_number, expected_object_number)
@@ -429,7 +440,8 @@ class TestObjectProcessing:
 
         actual_children_count = measurements.get_measurement(
             "Objects",
-            cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+            cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT
+            % "ObjectProcessing",
         )
 
         numpy.testing.assert_array_equal(actual_children_count, expected_children_count)
@@ -437,7 +449,8 @@ class TestObjectProcessing:
         expected_parents = [1, 1]
 
         actual_parents = measurements.get_measurement(
-            "ObjectProcessing", cellprofiler_core.constants.measurement.FF_PARENT % "Objects"
+            "ObjectProcessing",
+            cellprofiler_core.constants.measurement.FF_PARENT % "Objects",
         )
 
         numpy.testing.assert_array_equal(actual_parents, expected_parents)
@@ -473,19 +486,23 @@ class TestObjectProcessing:
         module.run(workspace)
 
         assert measurements.has_feature(
-            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
+            "ObjectProcessing",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y
+            "ObjectProcessing",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z
+            "ObjectProcessing",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER
+            "ObjectProcessing",
+            cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
         )
 
         assert measurements.has_feature(
@@ -495,9 +512,11 @@ class TestObjectProcessing:
 
         assert measurements.has_feature(
             "Objects",
-            cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % "ObjectProcessing",
+            cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT
+            % "ObjectProcessing",
         )
 
         assert measurements.has_feature(
-            "ObjectProcessing", cellprofiler_core.constants.measurement.FF_PARENT % "Objects"
+            "ObjectProcessing",
+            cellprofiler_core.constants.measurement.FF_PARENT % "Objects",
         )

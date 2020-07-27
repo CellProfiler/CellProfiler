@@ -30,7 +30,8 @@ class ObjectProcessing(ImageSegmentation):
 
         workspace.measurements.add_measurement(
             input_object_name,
-            cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT % output_object_name,
+            cellprofiler_core.constants.measurement.FF_CHILDREN_COUNT
+            % output_object_name,
             children_per_parent,
         )
 
@@ -95,7 +96,8 @@ class ObjectProcessing(ImageSegmentation):
                 ),
                 (
                     output_object_name,
-                    cellprofiler_core.constants.measurement.FF_PARENT % input_object_name,
+                    cellprofiler_core.constants.measurement.FF_PARENT
+                    % input_object_name,
                     cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                 ),
             ]
@@ -109,7 +111,9 @@ class ObjectProcessing(ImageSegmentation):
             object_name == self.x_name.value
             and category == cellprofiler_core.constants.measurement.C_CHILDREN
         ):
-            return [cellprofiler_core.constants.measurement.FF_COUNT % self.y_name.value]
+            return [
+                cellprofiler_core.constants.measurement.FF_COUNT % self.y_name.value
+            ]
 
         if object_name == self.y_name.value:
             if category == cellprofiler_core.constants.measurement.C_NUMBER:

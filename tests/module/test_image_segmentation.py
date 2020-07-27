@@ -17,7 +17,9 @@ class TestImageSegmentation:
 
         module.x_name.value = "Image"
 
-        actual = module.get_categories(None, cellprofiler_core.constants.measurement.IMAGE)
+        actual = module.get_categories(
+            None, cellprofiler_core.constants.measurement.IMAGE
+        )
 
         expected = [cellprofiler_core.constants.measurement.C_COUNT]
 
@@ -131,7 +133,9 @@ class TestImageSegmentation:
         module.x_name.value = "Image"
 
         actual = module.get_measurements(
-            None, "ImageSegmentation", cellprofiler_core.constants.measurement.C_LOCATION
+            None,
+            "ImageSegmentation",
+            cellprofiler_core.constants.measurement.C_LOCATION,
         )
 
         expected = [
@@ -230,7 +234,8 @@ class TestImageSegmentation:
         expected_center_x = [7.0, 22.0]
 
         actual_center_x = measurements.get_measurement(
-            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
+            "ImageSegmentation",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
         )
 
         numpy.testing.assert_array_equal(actual_center_x, expected_center_x)
@@ -238,7 +243,8 @@ class TestImageSegmentation:
         expected_center_y = [15.0, 15.0]
 
         actual_center_y = measurements.get_measurement(
-            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y
+            "ImageSegmentation",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
         )
 
         numpy.testing.assert_array_equal(actual_center_y, expected_center_y)
@@ -246,7 +252,8 @@ class TestImageSegmentation:
         expected_center_z = [0.0, 0.0]
 
         actual_center_z = measurements.get_measurement(
-            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z
+            "ImageSegmentation",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
         )
 
         numpy.testing.assert_array_equal(actual_center_z, expected_center_z)
@@ -254,7 +261,8 @@ class TestImageSegmentation:
         expected_object_number = [1.0, 2.0]
 
         actual_object_number = measurements.get_measurement(
-            "ImageSegmentation", cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER
+            "ImageSegmentation",
+            cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
         )
 
         numpy.testing.assert_array_equal(actual_object_number, expected_object_number)
@@ -301,19 +309,23 @@ class TestImageSegmentation:
         module.run(workspace)
 
         assert measurements.has_feature(
-            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
+            "ImageSegmentation",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
         )
 
         assert measurements.has_feature(
-            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y
+            "ImageSegmentation",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
         )
 
         assert measurements.has_feature(
-            "ImageSegmentation", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z
+            "ImageSegmentation",
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
         )
 
         assert measurements.has_feature(
-            "ImageSegmentation", cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER
+            "ImageSegmentation",
+            cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
         )
 
         assert measurements.has_feature(

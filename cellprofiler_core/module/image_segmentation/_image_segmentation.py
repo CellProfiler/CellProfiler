@@ -30,15 +30,21 @@ class ImageSegmentation(Module):
                 center_y, center_x = centers.transpose()
 
         workspace.measurements.add_measurement(
-            object_name, cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X, center_x
+            object_name,
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+            center_x,
         )
 
         workspace.measurements.add_measurement(
-            object_name, cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y, center_y
+            object_name,
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+            center_y,
         )
 
         workspace.measurements.add_measurement(
-            object_name, cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z, center_z
+            object_name,
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Z,
+            center_z,
         )
 
         workspace.measurements.add_measurement(

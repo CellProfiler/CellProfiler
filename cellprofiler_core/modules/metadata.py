@@ -1316,7 +1316,9 @@ not being applied, your choice on this setting may be the culprit.
                     if group.source == XM_FILE_NAME
                     else group.folder_regexp
                 )
-                for token in cellprofiler_core.utilities.measurement.find_metadata_tokens(
+                for (
+                    token
+                ) in cellprofiler_core.utilities.measurement.find_metadata_tokens(
                     re_setting.value
                 ):
                     if token.upper() in [
@@ -1426,9 +1428,13 @@ not being applied, your choice on this setting may be the culprit.
                 elif data_type == cellprofiler_core.setting.DataTypes.DT_FLOAT:
                     data_type = cellprofiler_core.constants.measurement.COLTYPE_FLOAT
                 else:
-                    data_type = cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME
+                    data_type = (
+                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME
+                    )
             else:
-                data_type = cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME
+                data_type = (
+                    cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME
+                )
             result.append(
                 (
                     cellprofiler_core.constants.measurement.IMAGE,

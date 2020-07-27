@@ -173,7 +173,9 @@ def add_object_location_measurements(
         location_center_y,
     )
     measurements.add_measurement(
-        object_name, cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER, number
+        object_name,
+        cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
+        number,
     )
 
 
@@ -193,10 +195,14 @@ def add_object_location_measurements_ijv(
         center_x = numpy.bincount(ijv[:, 2], ijv[:, 1])[1:] / areas
         center_y = numpy.bincount(ijv[:, 2], ijv[:, 0])[1:] / areas
     measurements.add_measurement(
-        object_name, cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X, center_x
+        object_name,
+        cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+        center_x,
     )
     measurements.add_measurement(
-        object_name, cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y, center_y
+        object_name,
+        cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+        center_y,
     )
     measurements.add_measurement(
         object_name,

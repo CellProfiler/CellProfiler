@@ -651,7 +651,9 @@ class TestAnalysisWorker(unittest.TestCase):
             req, cellprofiler_core.analysis.request.MeasurementsReport
         )
         self.assertSequenceEqual(req.image_set_numbers, [1])
-        m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(req.buf)
+        m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
+            req.buf
+        )
         #
         # Spot check for some expected stuff
         #
@@ -662,7 +664,9 @@ class TestAnalysisWorker(unittest.TestCase):
             )
         )
         self.assertTrue(
-            m.has_feature("Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X)
+            m.has_feature(
+                "Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
+            )
         )
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cellprofiler_core.analysis.reply.Ack())
@@ -752,7 +756,9 @@ class TestAnalysisWorker(unittest.TestCase):
             req, cellprofiler_core.analysis.request.MeasurementsReport
         )
         self.assertSequenceEqual(req.image_set_numbers, [2, 3])
-        m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(req.buf)
+        m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
+            req.buf
+        )
         #
         # Spot check for some expected stuff
         #
@@ -763,7 +769,9 @@ class TestAnalysisWorker(unittest.TestCase):
             )
         )
         self.assertTrue(
-            m.has_feature("Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X)
+            m.has_feature(
+                "Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
+            )
         )
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         req.reply(cellprofiler_core.analysis.reply.Ack())
@@ -867,7 +875,9 @@ class TestAnalysisWorker(unittest.TestCase):
             req, cellprofiler_core.analysis.request.MeasurementsReport
         )
         self.assertSequenceEqual(req.image_set_numbers, [2, 3])
-        m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(req.buf)
+        m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
+            req.buf
+        )
         #
         # Spot check for some expected stuff
         #
@@ -878,7 +888,9 @@ class TestAnalysisWorker(unittest.TestCase):
             )
         )
         self.assertTrue(
-            m.has_feature("Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X)
+            m.has_feature(
+                "Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
+            )
         )
         self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
         #
@@ -895,7 +907,9 @@ class TestAnalysisWorker(unittest.TestCase):
             cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
             3,
         ]
-        center_x = m["Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X, 3]
+        center_x = m[
+            "Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X, 3
+        ]
         self.assertEqual(count, len(center_x))
         req.reply(cellprofiler_core.analysis.reply.Ack())
         self.awthread.ecute()

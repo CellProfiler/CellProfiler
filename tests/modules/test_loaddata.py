@@ -565,9 +565,9 @@ def test_get_measurement_columns():
         assert any(
             [
                 (
-                        column[0] == cellprofiler_core.constants.measurement.IMAGE
-                        and column[1] == colname
-                        and column[2] == coltype
+                    column[0] == cellprofiler_core.constants.measurement.IMAGE
+                    and column[1] == colname
+                    and column[2] == coltype
                 )
                 for column in columns
             ]
@@ -629,9 +629,9 @@ def test_long_integer_column():
         assert any(
             [
                 (
-                        column[0] == cellprofiler_core.constants.measurement.IMAGE
-                        and column[1] == colname
-                        and column[2] == coltype
+                    column[0] == cellprofiler_core.constants.measurement.IMAGE
+                    and column[1] == colname
+                    and column[2] == coltype
                 )
                 for column in columns
             ]
@@ -657,11 +657,15 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
         ),
         (
             cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME,
+            cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME
+            + "_"
+            + OBJECTS_NAME,
         ),
         (
             cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME,
+            cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME
+            + "_"
+            + OBJECTS_NAME,
         ),
         (
             cellprofiler_core.constants.measurement.IMAGE,
@@ -830,9 +834,9 @@ def test_load_objects():
             == 9
         )
         for feature in (
-                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
-                cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
-                cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+            cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
         ):
             value = measurements.get_current_measurement(OBJECTS_NAME, feature)
             assert len(value) == 9
@@ -933,10 +937,14 @@ def test_load_filename():
     )
     assert module.prepare_run(workspace)
     assert (
-        m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1)
+        m.get_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1
+        )
         == test_filename
     )
-    path = m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 1)
+    path = m.get_measurement(
+        cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 1
+    )
     assert path == test_path
     assert m.get_measurement(
         cellprofiler_core.constants.measurement.IMAGE, "URL_DNA", 1
@@ -976,10 +984,14 @@ def test_load_url():
     )
     assert module.prepare_run(workspace)
     assert (
-        m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1)
+        m.get_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1
+        )
         == tests.modules.cp_logo_url_filename
     )
-    path = m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 1)
+    path = m.get_measurement(
+        cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 1
+    )
     assert path == tests.modules.cp_logo_url_folder
     assert (
         m[cellprofiler_core.constants.measurement.IMAGE, "URL_DNA", 1]
@@ -989,8 +1001,13 @@ def test_load_url():
         m[cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 2]
         == tests.modules.cp_logo_url_filename
     )
-    assert m[cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 2] == "http:"
-    assert m[cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 3] == "bogusurl.png"
+    assert (
+        m[cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 2] == "http:"
+    )
+    assert (
+        m[cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 3]
+        == "bogusurl.png"
+    )
     assert m[cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 3] == ""
     module.prepare_group(workspace, {}, [1])
     module.run(workspace)
@@ -1025,10 +1042,14 @@ def test_extra_fields():
     )
     assert module.prepare_run(workspace)
     assert (
-        m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1)
+        m.get_measurement(
+            cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1
+        )
         == tests.modules.cp_logo_url_filename
     )
-    path = m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 1)
+    path = m.get_measurement(
+        cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 1
+    )
     assert path == tests.modules.cp_logo_url_folder
     assert (
         m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "URL_DNA", 1)
@@ -1038,8 +1059,13 @@ def test_extra_fields():
         m[cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 2]
         == tests.modules.cp_logo_url_filename
     )
-    assert m[cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 2] == "http:"
-    assert m[cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 3] == "bogusurl.png"
+    assert (
+        m[cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 2] == "http:"
+    )
+    assert (
+        m[cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 3]
+        == "bogusurl.png"
+    )
     assert m[cellprofiler_core.constants.measurement.IMAGE, "PathName_DNA", 3] == ""
     module.prepare_group(workspace, {}, [1])
     module.run(workspace)
@@ -1079,7 +1105,10 @@ def test_extra_lines():
         assert "FileName_DNA" in m.get_feature_names(
             cellprofiler_core.constants.measurement.IMAGE
         )
-        assert m[cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1] == file_name
+        assert (
+            m[cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1]
+            == file_name
+        )
     finally:
         os.remove(filename)
 
@@ -1126,7 +1155,8 @@ def test_extra_lines_skip_rows():
             cellprofiler_core.constants.measurement.IMAGE
         )
         assert (
-                m[cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1] == file_names[0]
+            m[cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1]
+            == file_names[0]
         )
     finally:
         os.remove(filename)
@@ -1157,7 +1187,9 @@ def test_load_default_input_folder():
         )
         assert module.prepare_run(workspace)
         assert (
-            m.get_measurement(cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1)
+            m.get_measurement(
+                cellprofiler_core.constants.measurement.IMAGE, "FileName_DNA", 1
+            )
             == test_filename
         )
         path_out = m.get_measurement(

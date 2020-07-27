@@ -85,6 +85,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constants.html">Constants</a></li>
 <li class="toctree-l1"><a class="reference internal" href="image.html">Image</a></li>
 <li class="toctree-l1"><a class="reference internal" href="measurement.html">Measurement</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Module</a></li>
@@ -163,6 +164,840 @@
             
   <div class="section" id="module-cellprofiler_core.module">
 <span id="module"></span><h1>Module<a class="headerlink" href="#module-cellprofiler_core.module" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="cellprofiler_core.module.Identify">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.module.</code><code class="sig-name descname">Identify</code><a class="headerlink" href="#cellprofiler_core.module.Identify" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="cellprofiler_core.module.Identify.get_object_categories">
+<em class="property">static </em><code class="sig-name descname">get_object_categories</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">object_dictionary</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Identify.get_object_categories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get categories related to creating new children</p>
+<p>pipeline - the pipeline being run (not used)
+object_name - the base object of the measurement: “Image” or an object
+object_dictionary - a dictionary where each key is the name of</p>
+<blockquote>
+<div><p>an object created by this module and each
+value is a list of names of parents.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Identify.get_object_measurements">
+<em class="property">static </em><code class="sig-name descname">get_object_measurements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipleline</span></em>, <em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">category</span></em>, <em class="sig-param"><span class="n">object_dictionary</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Identify.get_object_measurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get measurements related to creating new children</p>
+<p>pipeline - the pipeline being run (not used)
+object_name - the base object of the measurement: “Image” or an object
+object_dictionary - a dictionary where each key is the name of</p>
+<blockquote>
+<div><p>an object created by this module and each
+value is a list of names of parents.</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.module.ImageProcessing">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.module.</code><code class="sig-name descname">ImageProcessing</code><a class="headerlink" href="#cellprofiler_core.module.ImageProcessing" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="cellprofiler_core.module.ImageProcessing.create_settings">
+<code class="sig-name descname">create_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.ImageProcessing.create_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create your settings by subclassing this function</p>
+<p>create_settings is called at the end of initialization.</p>
+<dl class="simple">
+<dt>You should create the setting variables for your module here:</dt><dd><p># Ask the user for the input image
+self.image_name = cellprofiler_core.settings.ImageNameSubscriber(…)
+# Ask the user for the name of the output image
+self.output_image = cellprofiler_core.settings.ImageNameProvider(…)
+# Ask the user for a parameter
+self.smoothing_size = cellprofiler_core.settings.Float(…)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.ImageProcessing.display">
+<code class="sig-name descname">display</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em>, <em class="sig-param"><span class="n">figure</span></em>, <em class="sig-param"><span class="n">cmap</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.ImageProcessing.display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the results, and possibly intermediate results, as
+appropriate for this module.  This method will be called after
+run() is finished if self.show_window is True.</p>
+<p>The run() method should store whatever data display() needs in
+workspace.display_data.  The module is given a CPFigure to use for
+display in the third argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.ImageProcessing.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.ImageProcessing.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the module (abstract method)</p>
+<dl>
+<dt>workspace    - The workspace contains</dt><dd><p>pipeline     - instance of cpp for this run
+image_set    - the images in the image set being processed
+object_set   - the objects (labeled masks) in this image set
+measurements - the measurements for this run
+frame        - the parent frame to whatever frame is created.</p>
+<blockquote>
+<div><p>None means don’t draw.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>display_data - the run() module should store anything to be</dt><dd><p>displayed in this attribute, which will be used in
+display()</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>run() should not attempt to display any data, but should communicate it
+to display() via the workspace.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.ImageProcessing.settings">
+<code class="sig-name descname">settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.ImageProcessing.settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the settings to be loaded or saved to/from the pipeline</p>
+<p>These are the settings (from cellprofiler_core.settings) that are
+either read from the strings in the pipeline or written out
+to the pipeline. The settings should appear in a consistent
+order so they can be matched to the strings in the pipeline.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.ImageProcessing.visible_settings">
+<code class="sig-name descname">visible_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.ImageProcessing.visible_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>The settings that are visible in the UI</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.module.Module">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.module.</code><code class="sig-name descname">Module</code><a class="headerlink" href="#cellprofiler_core.module.Module" title="Permalink to this definition">¶</a></dt>
+<dd><p>Derive from the abstract module class to create your own module in Python</p>
+<p>You need to implement the following in the derived class:
+create_settings - create the settings that configure the module.
+settings - return the settings that will be loaded or saved from/to the</p>
+<blockquote>
+<div><p>pipeline.</p>
+</div></blockquote>
+<p>run - to run the module, producing measurements, etc.</p>
+<p>These methods are optional:
+prepare_settings - adjust the internal state of a module to accept a set of</p>
+<blockquote>
+<div><p>stored settings, (e.g., to create the right number of image
+entries in the module’s settings.)</p>
+</div></blockquote>
+<dl class="simple">
+<dt>visible_settings - return the settings that will be displayed on the UI</dt><dd><p>(default is to use the output of settings())</p>
+</dd>
+<dt>upgrade_settings - rewrite a group of settings from a previous version to</dt><dd><p>be compatible with the latest version of a module.</p>
+</dd>
+</dl>
+<p>Implement these if you produce measurements:
+get_categories - The category of measurement produced, for instance AreaShape
+get_measurements - The measurements produced by a category
+get_measurement_images - The images measured for a particular measurement
+get_measurement_scales - the scale at which a measurement was taken
+get_measurement_columns - the measurements stored in the database</p>
+<p>The pipeline calls hooks in the module before and after runs and groups.
+The hooks are:
+prepare_run - before run: useful for setting up image sets
+prepare_group - before group: useful for initializing aggregation
+post_group - after group: useful for calculating final aggregation steps</p>
+<blockquote>
+<div><p>and for writing out results.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>post_run - use this to perform operations on the results of the experiment,</dt><dd><p>for instance on all measurements</p>
+</dd>
+<dt>post_pipeline_load - use this to update any settings that require the pipeline</dt><dd><p>to be available before they can be adjusted.</p>
+</dd>
+</dl>
+<p>If your module requires state across image_sets, think of storing
+information in the module shared_state dictionary (fetched by
+get_dictionary()).</p>
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.change_causes_prepare_run">
+<code class="sig-name descname">change_causes_prepare_run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">setting</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.change_causes_prepare_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check to see if changing the given setting means you have to restart</p>
+<p>Some settings, esp in modules like LoadImages, affect more than
+the current image set when changed. For instance, if you change
+the name specification for files, you have to reload your image_set_list.
+Override this and return True if changing the given setting means
+that you’ll have to call “prepare_run”.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.convert">
+<code class="sig-name descname">convert</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">metadata</span></em>, <em class="sig-param"><span class="n">namesandtypes</span></em>, <em class="sig-param"><span class="n">groups</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.convert" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the input processing of this module from the legacy format</p>
+<p>Legacy modules like LoadImages should copy their settings into
+the Metadata, NamesAndTypes and Groups modules when this call is made.</p>
+<p>pipeline - the pipeline being converted</p>
+<p>metadata - the pipeline’s Metadata module</p>
+<p>namesandtypes - the pipeline’s NamesAndTypes module</p>
+<p>groups - the pipeline’s Groups module</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.create_from_handles">
+<code class="sig-name descname">create_from_handles</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">handles</span></em>, <em class="sig-param"><span class="n">module_num</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.create_from_handles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fill a module with the information stored in the handles structure for module # ModuleNum</p>
+<p>Returns a module with the settings decanted from the handles.
+If the revision is old, a different and compatible module can be returned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.create_settings">
+<code class="sig-name descname">create_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.create_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create your settings by subclassing this function</p>
+<p>create_settings is called at the end of initialization.</p>
+<dl class="simple">
+<dt>You should create the setting variables for your module here:</dt><dd><p># Ask the user for the input image
+self.image_name = cellprofiler_core.settings.ImageNameSubscriber(…)
+# Ask the user for the name of the output image
+self.output_image = cellprofiler_core.settings.ImageNameProvider(…)
+# Ask the user for a parameter
+self.smoothing_size = cellprofiler_core.settings.Float(…)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.display">
+<code class="sig-name descname">display</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em>, <em class="sig-param"><span class="n">figure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the results, and possibly intermediate results, as
+appropriate for this module.  This method will be called after
+run() is finished if self.show_window is True.</p>
+<p>The run() method should store whatever data display() needs in
+workspace.display_data.  The module is given a CPFigure to use for
+display in the third argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.display_post_group">
+<code class="sig-name descname">display_post_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em>, <em class="sig-param"><span class="n">figure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.display_post_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the results of work done post-group</p>
+<p>This method is only called if self.show_window is True</p>
+<dl class="simple">
+<dt>workspace - the current workspace. workspace.display_data should have</dt><dd><p>whatever information is needed for the display. Numpy arrays
+lists, tuples, dictionaries and Python builtin objects are
+allowed.</p>
+</dd>
+</dl>
+<p>figure - the figure to use for the display.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.display_post_run">
+<code class="sig-name descname">display_post_run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em>, <em class="sig-param"><span class="n">figure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.display_post_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display results after post_run completes</p>
+<p>workspace - a workspace with pipeline, module and measurements valid</p>
+<p>figure - display results in this CPFigure</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.enabled">
+<em class="property">property </em><code class="sig-name descname">enabled</code><a class="headerlink" href="#cellprofiler_core.module.Module.enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the module should be executed, False if it should be ignored.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_categories">
+<code class="sig-name descname">get_categories</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_categories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the categories of measurements that this module produces</p>
+<p>object_name - return measurements made on this object (or ‘Image’ for image measurements)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_dictionary">
+<code class="sig-name descname">get_dictionary</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ignore</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_dictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the dictionary for this module</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_dictionary_for_worker">
+<code class="sig-name descname">get_dictionary_for_worker</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_dictionary_for_worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the dictionary that should be shared between analysis workers</p>
+<p>A module might use the dictionary for cacheing information stored on
+disk or that’s difficult to compute. It might also use it to store
+aggregate data, but this data may not be useful to other workers.</p>
+<p>Finally, a module might store Python objects that aren’t JSON serializable
+in its dictionary. In these cases, the module should create a dictionary
+that can be JSON serialized in get_dictionary_for_worker and then
+reconstruct the result of JSON deserialization in set_dictionary_in_worker.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_enabled">
+<code class="sig-name descname">get_enabled</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_enabled" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the module should be executed, False if it should be ignored.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_groupings">
+<code class="sig-name descname">get_groupings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_groupings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the image groupings of the image sets in an image set list</p>
+<p>get_groupings is called after prepare_run</p>
+<dl class="simple">
+<dt>workspace - a workspace with an image_set_list and measurements</dt><dd><p>as prepared by prepare_run.</p>
+</dd>
+</dl>
+<p>returns a tuple of key_names and group_list:
+key_names - the names of the keys that identify the groupings
+group_list - a sequence composed of two-tuples.</p>
+<blockquote>
+<div><p>the first element of the tuple is a dictionary giving
+the metadata values for the metadata keys
+the second element of the tuple is a sequence of
+image numbers comprising the image sets of the group</p>
+</div></blockquote>
+<p>For instance, an experiment might have key_names of ‘Metadata_Row’
+and ‘Metadata_Column’ and a group_list of:
+[ ({‘Metadata_Row’:’A’,’Metadata_Column’:’01’}, [1,97,193]),</p>
+<blockquote>
+<div><p>({‘Metadata_Row’:’A’,’Metadata_Column’:’02’), [2,98,194]),… ]</p>
+</div></blockquote>
+<p>Returns None to indicate that the module does not contribute any
+groupings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_help">
+<code class="sig-name descname">get_help</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_help" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return help text for the module</p>
+<p>The default help is taken from your modules docstring and from
+the settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_help_text">
+<code class="sig-name descname">get_help_text</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_help_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return help text for a module as unformatted strings</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_measurement_columns">
+<code class="sig-name descname">get_measurement_columns</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_measurement_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sequence describing the measurement columns needed by this module</p>
+<p>This call should return one element per image or object measurement
+made by the module during image set analysis. The element itself
+is a 3-tuple:
+first entry: either one of the predefined measurement categories,</p>
+<blockquote>
+<div><p>{“Image”, “Experiment” or “Neighbors” or the name of one
+of the objects.}</p>
+</div></blockquote>
+<dl class="simple">
+<dt>second entry: the measurement name (as would be used in a call</dt><dd><p>to add_measurement)</p>
+</dd>
+<dt>third entry: the column data type (for instance, “varchar(255)” or</dt><dd><p>“float”)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_measurement_images">
+<code class="sig-name descname">get_measurement_images</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">category</span></em>, <em class="sig-param"><span class="n">measurement</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_measurement_images" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of image names used as a basis for a particular measure</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_measurement_objects">
+<em class="property">static </em><code class="sig-name descname">get_measurement_objects</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">category</span></em>, <em class="sig-param"><span class="n">measurement</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_measurement_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of secondary object names used as a basis for a particular measure</p>
+<p>object_name - either “Image” or the name of the primary object
+category - the category being measured, for instance “Threshold”
+measurement - the name of the measurement being done</p>
+<p>Some modules output image-wide aggregate measurements in addition to
+object measurements. These must be stored using the “Image” object name
+in order to save a single value. A module can override
+get_measurement_objects to tell the user about the object name in
+those situations.</p>
+<p>In addition, some modules may make use of two segmentations, for instance
+when measuring the total value of secondary objects related to primary
+ones. This mechanism can be used to identify the secondary objects used.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_measurement_scales">
+<code class="sig-name descname">get_measurement_scales</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">category</span></em>, <em class="sig-param"><span class="n">measurement</span></em>, <em class="sig-param"><span class="n">image_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_measurement_scales" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of scales (eg for texture) at which a measurement was taken</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_measurements">
+<code class="sig-name descname">get_measurements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">category</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_measurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the measurements that this module produces</p>
+<p>object_name - return measurements made on this object (or ‘Image’ for image measurements)
+category - return measurements made in this category</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_module_num">
+<code class="sig-name descname">get_module_num</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_module_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the module’s index number</p>
+<p>The module’s index number or ModuleNum is a one-based index of its
+execution position in the pipeline. It can be used to predict what
+modules have been run (creating whatever images and measurements
+those modules create) previous to a given module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_notes">
+<code class="sig-name descname">get_notes</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_notes" title="Permalink to this definition">¶</a></dt>
+<dd><p>The user-entered notes for a module</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_object_relationships">
+<em class="property">static </em><code class="sig-name descname">get_object_relationships</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_object_relationships" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sequence describing the relationships recorded in measurements</p>
+<p>This method reports the relationships recorded in the measurements
+using add_relate_measurement. Modules that add relationships should
+return one 4-tuple of
+(&lt;relationship-name&gt;, &lt;object-name-1&gt;, &lt;object-name-2&gt;, &lt;when&gt;)
+for every combination of relationship and parent / child objects
+that will be produced during the course of a run.</p>
+<p>&lt;when&gt; is one of cpmeas.MCA_AVAILABILE_EACH_CYCLE or
+cpmeas.MCA_AVAILABLE_POST_GROUP. cpmeas.MCA_AVAILABLE_EACH_CYCLE
+promises that the relationships will be available after each cycle.
+Any relationship with that cycle’s image number (as either the
+parent or child) will be inserted if not already present in the database.</p>
+<p>MCA_AVAILABLE_POST_GROUP indicates that the relationship is not available
+until the group has completed - all relationships with a group’s
+image number will be written in that case.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_show_window">
+<code class="sig-name descname">get_show_window</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_show_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the user wants to see the figure for this module</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.get_wants_pause">
+<code class="sig-name descname">get_wants_pause</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.get_wants_pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the user wants to pause at this module while debugging</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.help_settings">
+<code class="sig-name descname">help_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.help_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Override this if you want the settings for help to be in a different order</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.in_batch_mode">
+<em class="property">static </em><code class="sig-name descname">in_batch_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.in_batch_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the module knows that the pipeline is in batch mode</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.is_aggregation_module">
+<em class="property">static </em><code class="sig-name descname">is_aggregation_module</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.is_aggregation_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>If true, the module uses data from other imagesets in a group</p>
+<p>Aggregation modules perform operations that require access to
+all image sets in a group, generally resulting in an aggregation
+operation during the last image set or in post_group. Examples are
+TrackObjects, MakeProjection and CorrectIllumination_Calculate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.is_create_batch_module">
+<em class="property">static </em><code class="sig-name descname">is_create_batch_module</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.is_create_batch_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>If true, the module will pickle the pipeline into a batch file and exit</p>
+<p>This is needed by modules which can’t properly operate in a batch
+mode (e.g., do all their work post_run or don’t work so well if
+run in parallel)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.is_image_from_file">
+<code class="sig-name descname">is_image_from_file</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.is_image_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if this module loads this image name from a file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.is_input_module">
+<em class="property">classmethod </em><code class="sig-name descname">is_input_module</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.is_input_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>If true, the module is one of the input modules</p>
+<p>The input modules are “Images”, “Metadata”, “NamesAndTypes” and “Groups”</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.is_load_module">
+<code class="sig-name descname">is_load_module</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.is_load_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>If true, the module will load files and make image sets</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.is_object_identification_module">
+<em class="property">static </em><code class="sig-name descname">is_object_identification_module</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.is_object_identification_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>If true, the module will identify primary, secondary or tertiary objects</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.module_class">
+<code class="sig-name descname">module_class</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.module_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>The class to instantiate, except for the special case of matlab modules.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.module_num">
+<em class="property">property </em><code class="sig-name descname">module_num</code><a class="headerlink" href="#cellprofiler_core.module.Module.module_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the module’s index number</p>
+<p>The module’s index number or ModuleNum is a one-based index of its
+execution position in the pipeline. It can be used to predict what
+modules have been run (creating whatever images and measurements
+those modules create) previous to a given module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.needs_default_image_folder">
+<code class="sig-name descname">needs_default_image_folder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.needs_default_image_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if the module needs the default image folder</p>
+<p>pipeline - pipeline being run</p>
+<p>Legacy modules might need the default image folder as does any module
+that uses the DirectoryPath setting.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.notes">
+<em class="property">property </em><code class="sig-name descname">notes</code><a class="headerlink" href="#cellprofiler_core.module.Module.notes" title="Permalink to this definition">¶</a></dt>
+<dd><p>The user-entered notes for a module</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.obfuscate">
+<code class="sig-name descname">obfuscate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.obfuscate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Erase any sensitive information in a module’s settings</p>
+<p>You should implement “obfuscate” to erase information like
+passwords or file names so that the pipeline can be uploaded
+for error reporting without revealing that information.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.on_activated">
+<code class="sig-name descname">on_activated</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.on_activated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the module is activated in the GUI</p>
+<p>workspace - the workspace that’s currently running</p>
+<p>on_activated is here to give modules the chance to modify other
+elements of the pipeline, such as the image plane details or image
+set list. You’re allowed to modify these parts of the pipeline
+in the UI thread until on_deactivated is called.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.on_deactivated">
+<code class="sig-name descname">on_deactivated</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.on_deactivated" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when the module is deactivated in the GUI</p>
+<p>This is the signal that the settings have been unhooked from the
+GUI and can’t be used to edit the pipeline</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.on_setting_changed">
+<code class="sig-name descname">on_setting_changed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">setting</span></em>, <em class="sig-param"><span class="n">pipeline</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.on_setting_changed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called when a setting has been changed in the GUI</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.other_providers">
+<code class="sig-name descname">other_providers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">group</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.other_providers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of hidden name/object/etc. providers supplied by the module for this group</p>
+<p>group - a group supported by a subclass of NameProvider</p>
+<p>This routine returns additional providers beyond those that
+are listed by the module’s visible_settings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.post_group">
+<code class="sig-name descname">post_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em>, <em class="sig-param"><span class="n">grouping</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.post_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do post-processing after a group completes</p>
+<p>workspace - the workspace at the end of the group
+grouping - the group that’s being run</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.post_pipeline_load">
+<code class="sig-name descname">post_pipeline_load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.post_pipeline_load" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a convenient place to do things to your module after the
+settings have been loaded or initialized</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.post_run">
+<code class="sig-name descname">post_run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.post_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do post-processing after the run completes</p>
+<p>workspace - the workspace at the end of the run</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.prepare_group">
+<code class="sig-name descname">prepare_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em>, <em class="sig-param"><span class="n">grouping</span></em>, <em class="sig-param"><span class="n">image_numbers</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.prepare_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare to start processing a new grouping</p>
+<dl class="simple">
+<dt>workspace - the workspace for the group. The pipeline, measurements</dt><dd><p>and image_set_list are valid at this point and you can
+fill in image_sets at this point.</p>
+</dd>
+<dt>grouping - a dictionary that describes the key for the grouping.</dt><dd><p>For instance, { ‘Metadata_Row’:’A’,’Metadata_Column’:’01’}</p>
+</dd>
+<dt>image_numbers - a sequence of the image numbers within the</dt><dd><p>group (image sets can be retreved as
+image_set_list.get_image_set(image_numbers[i]-1)</p>
+</dd>
+</dl>
+<p>prepare_group is called once after prepare_run if there are no
+groups.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.prepare_run">
+<code class="sig-name descname">prepare_run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.prepare_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare the image set list for a run (&amp; whatever else you want to do)</p>
+<p>workspace - holds the following crucial structures:</p>
+<blockquote>
+<div><p>pipeline - the pipeline being run</p>
+<p>module - this module</p>
+<dl class="simple">
+<dt>measurements - measurements structure that can be populated with</dt><dd><p>a image set file names and metadata.</p>
+</dd>
+</dl>
+<p>image_set_list - add any image sets to the image set list</p>
+<dl class="simple">
+<dt>frame - parent frame of application if GUI enabled, None if GUI</dt><dd><p>disabled</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>return True if operation completed, False if aborted</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.prepare_settings">
+<code class="sig-name descname">prepare_settings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">setting_values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.prepare_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do any sort of adjustment to the settings required for the given values</p>
+<dl class="simple">
+<dt>setting_values - the values for the settings just prior to mapping</dt><dd><p>as done by set_settings_from_values</p>
+</dd>
+</dl>
+<p>This method allows a module to specialize itself according to
+the number of settings and their value. For instance, a module that
+takes a variable number of images or objects can increase or decrease
+the number of relevant settings so they map correctly to the values.</p>
+<p>See cellprofiler_core.modules.measureobjectareashape for an example.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.prepare_to_create_batch">
+<code class="sig-name descname">prepare_to_create_batch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em>, <em class="sig-param"><span class="n">fn_alter_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.prepare_to_create_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare to create a batch file</p>
+<p>This function is called when CellProfiler is about to create a
+file for batch processing. It gives a module an opportunity to
+change its settings and measurements to adapt to file mount differences
+between the machine that created the pipeline and the machines that
+will run the pipeline. You should implement prepare_to_create_batch
+if your module stores paths in settings or measurements. You should
+call fn_alter_path(path) to update any paths to those of the target
+machine.</p>
+<dl class="simple">
+<dt>workspace - the workspace including the pipeline, the image_set_list</dt><dd><p>and the measurements that need to be modified.</p>
+</dd>
+<dt>fn_alter_path - this is a function that takes a pathname on the local</dt><dd><p>host and returns a pathname on the remote host. It
+handles issues such as replacing backslashes and
+mapping mountpoints. It should be called for every
+pathname stored in the settings or legacy fields.</p>
+</dd>
+</dl>
+<p>Returns True if it succeeds.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the module (abstract method)</p>
+<dl>
+<dt>workspace    - The workspace contains</dt><dd><p>pipeline     - instance of cpp for this run
+image_set    - the images in the image set being processed
+object_set   - the objects (labeled masks) in this image set
+measurements - the measurements for this run
+frame        - the parent frame to whatever frame is created.</p>
+<blockquote>
+<div><p>None means don’t draw.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>display_data - the run() module should store anything to be</dt><dd><p>displayed in this attribute, which will be used in
+display()</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>run() should not attempt to display any data, but should communicate it
+to display() via the workspace.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.set_dictionary_for_worker">
+<code class="sig-name descname">set_dictionary_for_worker</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.set_dictionary_for_worker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize this worker’s dictionary using results from first worker</p>
+<p>see get_dictionary_for_worker for details.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.set_module_num">
+<code class="sig-name descname">set_module_num</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module_num</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.set_module_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the module’s one-based index number in the pipeline</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.set_notes">
+<code class="sig-name descname">set_notes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">notes</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.set_notes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Give the module new user-entered notes</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.set_settings_from_values">
+<code class="sig-name descname">set_settings_from_values</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">setting_values</span></em>, <em class="sig-param"><span class="n">variable_revision_number</span></em>, <em class="sig-param"><span class="n">module_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.set_settings_from_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the settings in a module, given a list of values</p>
+<p>The default implementation gets all the settings and then
+sets their values using the string passed. A more modern
+module may want to tailor the particular settings set to
+whatever values are in the list or however many values
+are in the list.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.setting">
+<code class="sig-name descname">setting</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">setting_num</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.setting" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reference a setting by its one-based setting number</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.settings">
+<code class="sig-name descname">settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the settings to be loaded or saved to/from the pipeline</p>
+<p>These are the settings (from cellprofiler_core.settings) that are
+either read from the strings in the pipeline or written out
+to the pipeline. The settings should appear in a consistent
+order so they can be matched to the strings in the pipeline.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.should_stop_writing_measurements">
+<em class="property">static </em><code class="sig-name descname">should_stop_writing_measurements</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.should_stop_writing_measurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns True if measurements should not be taken after this module</p>
+<p>The ExportToDatabase and ExportToExcel modules expect that no
+measurements will be recorded in latter modules. This function
+returns False in the default, indicating that measurements should
+keep being made, but returns True for these modules, indicating
+that any subsequent modules will lose their measurements and should
+not write any.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.show_window">
+<em class="property">property </em><code class="sig-name descname">show_window</code><a class="headerlink" href="#cellprofiler_core.module.Module.show_window" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the user wants to see the figure for this module</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.test_module_warnings">
+<code class="sig-name descname">test_module_warnings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.test_module_warnings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test to see if there are any troublesome setting values in the module</p>
+<p>Throw a ValidationError exception with an explanation if a module
+is likely to be misconfigured. An example is if ExportToDatabase is
+not the last module.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.test_valid">
+<code class="sig-name descname">test_valid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.test_valid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test to see if the module is in a valid state to run</p>
+<p>Throw a ValidationError exception with an explanation if a module is not valid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.turn_off_batch_mode">
+<code class="sig-name descname">turn_off_batch_mode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.turn_off_batch_mode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset the module to an editable state if batch mode is on</p>
+<p>A module is allowed to create hidden information that it uses
+to turn batch mode on or to save state to be used in batch mode.
+This call signals that the pipeline has been opened for editing,
+even if it is a batch pipeline; all modules should be restored
+to a state that’s appropriate for creating a batch file, not
+for running a batch file</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.upgrade_settings">
+<code class="sig-name descname">upgrade_settings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">setting_values</span></em>, <em class="sig-param"><span class="n">variable_revision_number</span></em>, <em class="sig-param"><span class="n">module_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.upgrade_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adjust setting values if they came from a previous revision</p>
+<dl class="simple">
+<dt>setting_values - a sequence of strings representing the settings</dt><dd><p>for the module as stored in the pipeline</p>
+</dd>
+<dt>variable_revision_number - the variable revision number of the</dt><dd><p>module at the time the pipeline was saved. Use this
+to determine how the incoming setting values map
+to those of the current module version.</p>
+</dd>
+<dt>module_name - the name of the module that did the saving. This can be</dt><dd><p>used to import the settings from another module if
+that module was merged into the current module</p>
+</dd>
+</dl>
+<p>Overriding modules should return a tuple of setting_values,
+variable_revision_number and True if upgraded to CP 2.0, otherwise
+they should leave things as-is so that the caller can report
+an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.validate_module">
+<code class="sig-name descname">validate_module</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.validate_module" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implement this to validate module settings</p>
+<p>Module implementers should implement validate_module to
+further validate a module’s settings. For instance, load_data
+checks the .csv file that it uses in validate_module to ensure
+that the user has chosen a valid .csv file.</p>
+<p>Throw a cps.ValidationError, selecting the most egregiously offending
+setting to indicate failure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.validate_module_warnings">
+<code class="sig-name descname">validate_module_warnings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.validate_module_warnings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Implement this to flag potentially dangerous settings</p>
+<p>Module implementers should implement validate_module_warnings to
+find setting combinations that can cause unexpected results.
+Implementers should throw a cps.ValidationError, selecting the
+most egregiously offending setting to indicate failure.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.visible_settings">
+<code class="sig-name descname">visible_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.visible_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>The settings that are visible in the UI</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.wants_pause">
+<em class="property">property </em><code class="sig-name descname">wants_pause</code><a class="headerlink" href="#cellprofiler_core.module.Module.wants_pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the user wants to pause at this module while debugging</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.write_to_handles">
+<code class="sig-name descname">write_to_handles</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">handles</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.write_to_handles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write out the module’s state to the handles</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.Module.write_to_text">
+<code class="sig-name descname">write_to_text</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.Module.write_to_text" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the module’s state, informally, to a text file</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.module.PluginImporter">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.module.</code><code class="sig-name descname">PluginImporter</code><a class="headerlink" href="#cellprofiler_core.module.PluginImporter" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 
 

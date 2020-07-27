@@ -85,6 +85,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constants.html">Constants</a></li>
 <li class="toctree-l1"><a class="reference internal" href="image.html">Image</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Measurement</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module.html">Module</a></li>
@@ -163,6 +164,653 @@
             
   <div class="section" id="module-cellprofiler_core.measurement">
 <span id="measurement"></span><h1>Measurement<a class="headerlink" href="#module-cellprofiler_core.measurement" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="cellprofiler_core.measurement.Measurements">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.measurement.</code><code class="sig-name descname">Measurements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image_set_start</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">copy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'w'</span></em>, <em class="sig-param"><span class="n">image_numbers</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">multithread</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents measurements made on images and objects</p>
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.add_all_measurements">
+<code class="sig-name descname">add_all_measurements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">feature_name</span></em>, <em class="sig-param"><span class="n">values</span></em>, <em class="sig-param"><span class="n">data_type</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.add_all_measurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a list of measurements for all image sets</p>
+<p>object_name - name of object or Images
+feature_name - feature to add
+values - list of either values or arrays of values</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.add_experiment_measurement">
+<code class="sig-name descname">add_experiment_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feature_name</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.add_experiment_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add an experiment measurement to the measurement</p>
+<p>Experiment measurements have one value per experiment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.add_image_measurement">
+<code class="sig-name descname">add_image_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feature_name</span></em>, <em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.add_image_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a measurement to the “Image” category</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.add_measurement">
+<code class="sig-name descname">add_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">feature_name</span></em>, <em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">image_set_number</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data_type</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.add_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a measurement or, for objects, an array of measurements to the set</p>
+<p>This is the classic interface - like CPaddmeasurements:
+ObjectName - either the name of the labeled objects or “Image”
+FeatureName - the feature name, encoded with underbars for category/measurement/image/scale
+Data - the data item to be stored
+image_set_number - write the measurement to this image set or if</p>
+<blockquote>
+<div><p>a sequence of image sets, write the sequence of
+data values to the sequence of image sets</p>
+</div></blockquote>
+<p>data_type - an explicit data type to use when storing the measurements.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.add_relate_measurement">
+<code class="sig-name descname">add_relate_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module_number</span></em>, <em class="sig-param"><span class="n">relationship</span></em>, <em class="sig-param"><span class="n">object_name1</span></em>, <em class="sig-param"><span class="n">object_name2</span></em>, <em class="sig-param"><span class="n">image_numbers1</span></em>, <em class="sig-param"><span class="n">object_numbers1</span></em>, <em class="sig-param"><span class="n">image_numbers2</span></em>, <em class="sig-param"><span class="n">object_numbers2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.add_relate_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add object relationships to the measurements</p>
+<p>module_number - the module that generated the relationship</p>
+<dl class="simple">
+<dt>relationship - the relationship of the two objects, for instance,</dt><dd><p>“Parent” means object # 1 is the parent of object # 2</p>
+</dd>
+</dl>
+<p>object_name1, object_name2 - the name of the segmentation for the first and second objects</p>
+<p>image_numbers1, image_numbers2 - the image number of each object</p>
+<dl class="simple">
+<dt>object_numbers1, object_numbers2 - for each object, the object number</dt><dd><p>in the object’s object set</p>
+</dd>
+</dl>
+<p>This method lets the caller store any sort of arbitrary relationship
+between objects as long as they are in the same group. To record
+all neighbors within a particular segmentation, call with the same
+object name for object_name1 and object_name2 and the same group
+index - that of the current image. Relating would have different object
+names and TrackObjects would have different group indices.</p>
+<p>The structure in the HDF file:
+Measurements / &lt;date&gt; / Relationship / &lt;module #&gt; /</p>
+<blockquote>
+<div><p>&lt;relationship-name&gt; / &lt;object-name-1&gt; / &lt;object-name-2&gt; /
+[ImageNumber_First, ObjectNumber_First,</p>
+<blockquote>
+<div><p>ImageNumber_Second, ObjectNumber_Second]</p>
+</div></blockquote>
+</div></blockquote>
+<p>The leaves are vector datasets.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.agg_ignore_feature">
+<code class="sig-name descname">agg_ignore_feature</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">feature_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.agg_ignore_feature" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true if we should ignore a feature during aggregation</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.agg_ignore_object">
+<em class="property">static </em><code class="sig-name descname">agg_ignore_object</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.agg_ignore_object" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ignore objects (other than ‘Image’) if this returns true</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.alter_path_for_create_batch">
+<code class="sig-name descname">alter_path_for_create_batch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">is_image</span></em>, <em class="sig-param"><span class="n">fn_alter_path</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.alter_path_for_create_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alter the path of image location measurements for CreateBatchFiles</p>
+<p>name - name of the image or objects
+is_image - True to load as an image, False to load as objects
+fn_later_path - call this function to alter the path for batch processing</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.alter_url_post_create_batch">
+<code class="sig-name descname">alter_url_post_create_batch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">url</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.alter_url_post_create_batch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply CreateBatchFiles path mappings to an unmapped URL</p>
+<p>This method can be run on the measurements output by CreateBatchFiles
+to map the paths of any URL that wasn’t mapped by the alter-paths
+mechanism (e.g., URLs encoded in blobs)</p>
+<p>url - the url to map</p>
+<p>returns - a possibly mapped URL</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.apply_metadata">
+<code class="sig-name descname">apply_metadata</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pattern</span></em>, <em class="sig-param"><span class="n">image_set_number</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.apply_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply metadata from the current measurements to a pattern</p>
+<dl class="simple">
+<dt>pattern - a regexp-like pattern that specifies how to insert</dt><dd><p>metadata into a string. Each token has the form:
+“(?&lt;METADATA_TAG&gt;)” (matlab-style) or
+“g&lt;METADATA_TAG&gt;” (Python-style)</p>
+</dd>
+<dt>image_name - name of image associated with the metadata (or None</dt><dd><p>if metadata is not associated with an image)</p>
+</dd>
+<dt>image_set_number - # of image set to use to retrieve data.</dt><dd><p>None for current.</p>
+</dd>
+</dl>
+<p>C_SERIES and C_FRAME are special cases. We look at the series/frame
+values for all images in the image set and take the one that’s the
+highest - assuming that there may be a stack + a single image like
+one used for background subtraction. Admittedly a heuristic, but
+there it is.</p>
+<p>returns a string with the metadata tags replaced by the metadata</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.clear">
+<code class="sig-name descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all measurements</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.clear_cache">
+<code class="sig-name descname">clear_cache</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.clear_cache" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove all of the cached images</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.clear_image">
+<code class="sig-name descname">clear_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.clear_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the image memory associated with a provider</p>
+<p>name - the name of the provider</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.compute_aggregate_measurements">
+<code class="sig-name descname">compute_aggregate_measurements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image_set_number</span></em>, <em class="sig-param"><span class="n">aggs</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.compute_aggregate_measurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute aggregate measurements for a given image set</p>
+<p>returns a dictionary whose key is the aggregate measurement name and
+whose value is the aggregate measurement value</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.copy_relationships">
+<code class="sig-name descname">copy_relationships</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">src</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.copy_relationships" title="Permalink to this definition">¶</a></dt>
+<dd><p>Copy the relationships from another measurements file</p>
+<p>src - a Measurements possibly having relationships.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.create_from_handles">
+<code class="sig-name descname">create_from_handles</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">handles</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.create_from_handles" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load measurements from a handles structure</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_channel_descriptor">
+<code class="sig-name descname">get_channel_descriptor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_channel_descriptor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the channel descriptor with the given name</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_channel_descriptors">
+<code class="sig-name descname">get_channel_descriptors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_channel_descriptors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the channel descriptors</p>
+<p>Returns pipeline.ImageSetChannelDescriptor instances for each
+channel descriptor specified in the experiment measurements.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_current_image_measurement">
+<code class="sig-name descname">get_current_image_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feature_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_current_image_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value for the named image measurement</p>
+<p>feature_name - the name of the measurement feature to be returned</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_current_measurement">
+<code class="sig-name descname">get_current_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">feature_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_current_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value for the named measurement for the current image set
+object_name  - the name of the objects being measured or “Image”
+feature_name - the name of the measurement feature to be returned</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_experiment_measurement">
+<code class="sig-name descname">get_experiment_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">feature_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_experiment_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve an experiment-wide measurement</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_feature_names">
+<code class="sig-name descname">get_feature_names</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_feature_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of feature names (measurements) for an object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_group_index">
+<code class="sig-name descname">get_group_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_group_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>The within-group index of the current image set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_group_number">
+<code class="sig-name descname">get_group_number</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_group_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of the group currently being processed</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_grouping_keys">
+<code class="sig-name descname">get_grouping_keys</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_grouping_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a key, value dictionary that uniquely defines the group</p>
+<p>returns a dictionary for the current image set’s group where the
+key is the image feature name and the value is the value to match
+in the image measurements.</p>
+<dl class="simple">
+<dt>Note: this is somewhat legacy, from before GROUP_NUMBER was defined</dt><dd><p>and the only way to determine which images were in a group
+was to get the metadata colums used to define groups and scan
+them for matches. Now, we just return { GROUP_NUMBER: value }</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_grouping_tags">
+<code class="sig-name descname">get_grouping_tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_grouping_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the metadata tags that were used to group the image set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_groupings">
+<code class="sig-name descname">get_groupings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">features</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_groupings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return groupings of image sets based on feature values</p>
+<p>features - a sequence of feature names</p>
+<p>returns groupings suitable for return from CPModule.get_groupings.</p>
+<dl class="simple">
+<dt>group_list - a sequence composed of two-tuples.</dt><dd><p>the first element of the tuple is a dictionary giving
+the metadata values for the metadata keys
+the second element of the tuple is a sequence of
+image numbers comprising the image sets of the group</p>
+</dd>
+</dl>
+<p>For instance, an experiment might have key_names of ‘Metadata_Row’
+and ‘Metadata_Column’ and a group_list of:
+[ ({‘Metadata_Row’:’A’,’Metadata_Column’:’01’}, [1,97,193]),</p>
+<blockquote>
+<div><p>({‘Metadata_Row’:’A’,’Metadata_Column’:’02’), [2,98,194]),… ]</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_image">
+<code class="sig-name descname">get_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">must_be_binary</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">must_be_color</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">must_be_grayscale</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">must_be_rgb</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cache</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the image associated with the given name</p>
+<p>name - name of the image within the image_set
+must_be_color - raise an exception if not a color image
+must_be_grayscale - raise an exception if not a grayscale image
+must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,</p>
+<blockquote>
+<div><p>discard alpha channel.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_image_numbers">
+<code class="sig-name descname">get_image_numbers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_image_numbers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the image numbers from the Image table</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_image_provider">
+<code class="sig-name descname">get_image_provider</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_image_provider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a named image provider</p>
+<p>name - return the image provider with this name</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_is_first_image">
+<code class="sig-name descname">get_is_first_image</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_is_first_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if this is the first image in the set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_keys">
+<em class="property">property </em><code class="sig-name descname">get_keys</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_keys" title="Permalink to this definition">¶</a></dt>
+<dd><p>The keys that uniquely identify the image set</p>
+<p>Return key/value pairs for the metadata that specifies the site
+for the image set, for instance, plate / well / site. If image set
+was created by matching images by order, the image number will be
+returned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_measurement">
+<code class="sig-name descname">get_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">feature_name</span></em>, <em class="sig-param"><span class="n">image_set_number</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the value for the named measurement and indicated image set</p>
+<dl class="simple">
+<dt>object_name - the name of one of the objects or one of the generic</dt><dd><p>names such as Image or Experiment</p>
+</dd>
+</dl>
+<p>feature_name - the name of the feature to retrieve</p>
+<dl class="simple">
+<dt>image_set_number - the current image set by default, a single</dt><dd><p>image set number to get measurements for one
+image set or a sequence of image numbers to
+return measurements for each of the image sets
+listed.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_measurement_columns">
+<code class="sig-name descname">get_measurement_columns</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_measurement_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the measurement columns for the current measurements</p>
+<p>This returns the measurement columns in the style of
+pipeline.get_measurement_columns. It can be used for cases where
+the measurements are loaded from a file and do not reflect
+current module functionality.</p>
+<p>Note that this doesn’t correctly differentiate string data and blob
+data.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_metadata_tags">
+<code class="sig-name descname">get_metadata_tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_metadata_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read the metadata tags that are used to make an image set</p>
+<p>returns a list of metadata tags</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_names">
+<code class="sig-name descname">get_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the image provider names</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_object_names">
+<code class="sig-name descname">get_object_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_object_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of object names (including Image) that have measurements</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_providers">
+<code class="sig-name descname">get_providers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_providers" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of providers (populated during the image discovery phase)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_relationship_groups">
+<code class="sig-name descname">get_relationship_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_relationship_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the keys of each of the relationship groupings.</p>
+<p>The value returned is a list composed of objects with the following
+attributes:
+module_number - the module number of the module used to generate the relationship
+relationship - the relationship of the two objects
+object_name1 - the object name of the first object in the relationship
+object_name2 - the object name of the second object in the relationship</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_relationship_hdf5_group">
+<code class="sig-name descname">get_relationship_hdf5_group</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module_number</span></em>, <em class="sig-param"><span class="n">relationship</span></em>, <em class="sig-param"><span class="n">object_name1</span></em>, <em class="sig-param"><span class="n">object_name2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_relationship_hdf5_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the HDF5 group for a relationship</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.get_relationships">
+<code class="sig-name descname">get_relationships</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module_number</span></em>, <em class="sig-param"><span class="n">relationship</span></em>, <em class="sig-param"><span class="n">object_name1</span></em>, <em class="sig-param"><span class="n">object_name2</span></em>, <em class="sig-param"><span class="n">image_numbers</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.get_relationships" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the relationships recorded by a particular module</p>
+<p>module_number - # of module recording the relationship</p>
+<dl class="simple">
+<dt>relationship - the name of the relationship, e.g., “Parent” for</dt><dd><p>object # 1 is parent of object # 2</p>
+</dd>
+</dl>
+<p>object_name1, object_name2 - the names of the two objects</p>
+<dl class="simple">
+<dt>image_numbers - if defined, only return relationships with first or</dt><dd><p>second objects in these image numbers.</p>
+</dd>
+</dl>
+<p>returns a recarray with the following fields:
+R_FIRST_IMAGE_NUMBER, R_SECOND_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER,
+R_SECOND_OBJECT_NUMBER</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.group_by_metadata">
+<code class="sig-name descname">group_by_metadata</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tags</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.group_by_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return groupings of image sets with matching metadata tags</p>
+<p>tags - a sequence of tags to match.</p>
+<p>Returns a sequence of MetadataGroup objects. Each one represents
+a set of values for the metadata tags along with the image numbers of
+the image sets that match the values</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.group_index">
+<em class="property">property </em><code class="sig-name descname">group_index</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.group_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>The within-group index of the current image set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.group_number">
+<em class="property">property </em><code class="sig-name descname">group_number</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.group_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of the group currently being processed</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.has_groups">
+<code class="sig-name descname">has_groups</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.has_groups" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if there is more than one group in the image sets</p>
+<dl class="simple">
+<dt>Note - this works the dumb way now: it fetches all of the group numbers</dt><dd><p>and sees if there is a single unique group number. It involves
+fetching the whole column and it doesn’t cache, so it could
+be expensive. Alternatively, this could be an experiment
+measurement, populated after prepare_run.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.has_image_set_start">
+<em class="property">property </em><code class="sig-name descname">has_image_set_start</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.has_image_set_start" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the image set has an explicit start</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.image_number">
+<em class="property">property </em><code class="sig-name descname">image_number</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.image_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>The image number of the current image</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.image_set_count">
+<em class="property">property </em><code class="sig-name descname">image_set_count</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.image_set_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of complete image sets measured</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.image_set_start_number">
+<em class="property">property </em><code class="sig-name descname">image_set_start_number</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.image_set_start_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>The first image set (one-based) processed by the pipeline</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.init_image_number_relationships">
+<em class="property">static </em><code class="sig-name descname">init_image_number_relationships</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grp</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.init_image_number_relationships" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a dictionary of where to find image numbers in a relationship</p>
+<p>grp - the HDF5 group of the relationship</p>
+<p>returns a dictionary whose key is image number and whose value
+is a pair of the minimum and maximum position in the array of that
+image number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.initialize">
+<code class="sig-name descname">initialize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">measurement_columns</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the measurements with a list of objects and features</p>
+<p>This explicitly initializes the measurements with a list of
+object/feature pairs as would be returned by
+get_measurement_columns()</p>
+<p>measurement_columns - list of 3-tuples: object name, feature, type</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.is_first_image">
+<em class="property">property </em><code class="sig-name descname">is_first_image</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.is_first_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if this is the first image in the set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.load_image_sets">
+<code class="sig-name descname">load_image_sets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fd_or_file</span></em>, <em class="sig-param"><span class="n">start</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">stop</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.load_image_sets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load image sets from a .csv file into a measurements file</p>
+<p>fd_or_file - either the path name of the .csv file or a file-like object</p>
+<dl class="simple">
+<dt>start - the 1-based image set number to start the loading. For instance,</dt><dd><p>for start = 2, we skip the first line and write image
+measurements starting at line 2 into image set # 2</p>
+</dd>
+</dl>
+<p>stop - stop loading when this line is reached.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.match_metadata">
+<code class="sig-name descname">match_metadata</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">features</span></em>, <em class="sig-param"><span class="n">values</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.match_metadata" title="Permalink to this definition">¶</a></dt>
+<dd><p>Match vectors of metadata values to existing measurements</p>
+<p>This method finds the image sets that match each row in a vector
+of metadata values. Imagine being given an image set with metadata
+values of plate, well and site and annotations for each well
+with metadata values of plate and well and annotation. You’d like
+to match each annotation with all of the sites for it’s well. This
+method will return the image numbers that match.</p>
+<p>The method can also be used to match images, for instance when
+different illumination correction functions need to be matched
+against plates or sites.</p>
+<p>features - the measurement names for the incoming metadata</p>
+<dl class="simple">
+<dt>values - a sequence of vectors, one per feature, giving the</dt><dd><p>metadata values to be matched.</p>
+</dd>
+</dl>
+<p>returns a sequence of vectors of image numbers of equal length
+to the values. An exception is thrown if the metadata for more
+than one row in the values matches the same image set unless the number
+of values in each vector equals the number of image sets - in that case,
+the vectors are assumed to be arranged in the correct order already.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.names">
+<em class="property">property </em><code class="sig-name descname">names</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the image provider names</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.object_names">
+<em class="property">property </em><code class="sig-name descname">object_names</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.object_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of object names (including Image) that have measurements</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.providers">
+<em class="property">property </em><code class="sig-name descname">providers</code><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.providers" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of providers (populated during the image discovery phase)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.remove_image_provider">
+<code class="sig-name descname">remove_image_provider</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.remove_image_provider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a named image provider
+name - the name of the provider to remove</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.remove_measurement">
+<code class="sig-name descname">remove_measurement</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">feature_name</span></em>, <em class="sig-param"><span class="n">image_number</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.remove_measurement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the measurement for the given image number</p>
+<dl class="simple">
+<dt>object_name - the measurement’s object. If other than Image or Experiment,</dt><dd><p>will remove measurements for all objects</p>
+</dd>
+</dl>
+<p>feature_name - name of the measurement feature
+image_number - the image set’s image number</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.reorder_image_measurements">
+<code class="sig-name descname">reorder_image_measurements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">new_image_numbers</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.reorder_image_measurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Assign all image measurements to new image numbers</p>
+<dl class="simple">
+<dt>new_image_numbers - a zero-based array that maps old image number</dt><dd><p>to new image number, e.g., if
+new_image_numbers = [ 0, 3, 1, 2], then
+the measurements for old image number 1 will
+be the measurements for new image number 3, etc.</p>
+</dd>
+</dl>
+<p>Note that this does not handle any image numbers that might be stored
+in the measurements themselves. It is intended for use in
+prepare_run when it is necessary to reorder image numbers because
+of regrouping.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.set_channel_descriptors">
+<code class="sig-name descname">set_channel_descriptors</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">channel_descriptors</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.set_channel_descriptors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the names and data types of the channel descriptors</p>
+<dl class="simple">
+<dt>channel_descriptors - pipeline channel descriptors describing the</dt><dd><p>channels in the image set.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.set_grouping_tags">
+<code class="sig-name descname">set_grouping_tags</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">grouping_tags</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.set_grouping_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the metadata tags that are used to group an image set</p>
+<dl class="simple">
+<dt>grouping_tags - image feature names of the metadata tags that</dt><dd><p>uniquely define a group.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.set_metadata_tags">
+<code class="sig-name descname">set_metadata_tags</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">metadata_tags</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.set_metadata_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the metadata tags that are used to make an image set</p>
+<dl class="simple">
+<dt>metadata_tags - image feature names of the metadata tags that uniquely</dt><dd><p>define an image set. If metadata matching wasn’t used,
+write the image number feature name.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.update_image_number_relationships">
+<em class="property">static </em><code class="sig-name descname">update_image_number_relationships</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">imgnums</span></em>, <em class="sig-param"><span class="n">offset</span></em>, <em class="sig-param"><span class="n">d</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.update_image_number_relationships" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update an image number indexing dictionary with new image numbers</p>
+<p>imgnums - a vector of image numbers</p>
+<p>offset - the offset of this chunk within the relationships records</p>
+<p>d - the dictionary to update</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.measurement.Measurements.write_path_mappings">
+<code class="sig-name descname">write_path_mappings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mappings</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.Measurements.write_path_mappings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the mappings of local/remote dirs as an experiment measurement</p>
+<p>This records the mappings of local and remote directories entered
+by the CreateBatchFiles module.</p>
+<dl class="simple">
+<dt>mappings - a sequence of two-tuples. The first tuple is the local</dt><dd><p>path and the second is the remote path (on the target
+machine for the run)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.measurement.MetadataGroup">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.measurement.</code><code class="sig-name descname">MetadataGroup</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tag_dictionary</span></em>, <em class="sig-param"><span class="n">image_numbers</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.MetadataGroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of metadata tag values and the image set indexes that match</p>
+<p>The MetadataGroup object represents a group of image sets that
+have the same values for a given set of tags. For instance, if an
+experiment has metadata tags of “Plate”, “Well” and “Site” and
+we form a metadata group of “Plate” and “Well”, then each metadata
+group will have image set indexes of the images taken of a particular
+well</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.measurement.RelationshipKey">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.measurement.</code><code class="sig-name descname">RelationshipKey</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">module_number</span></em>, <em class="sig-param"><span class="n">relationship</span></em>, <em class="sig-param"><span class="n">object_name1</span></em>, <em class="sig-param"><span class="n">object_name2</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.measurement.RelationshipKey" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 
 

@@ -85,6 +85,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constants.html">Constants</a></li>
 <li class="toctree-l1"><a class="reference internal" href="image.html">Image</a></li>
 <li class="toctree-l1"><a class="reference internal" href="measurement.html">Measurement</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module.html">Module</a></li>
@@ -163,6 +164,333 @@
             
   <div class="section" id="module-cellprofiler_core.object">
 <span id="object"></span><h1>Object<a class="headerlink" href="#module-cellprofiler_core.object" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="cellprofiler_core.object.ObjectSet">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.object.</code><code class="sig-name descname">ObjectSet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">can_overwrite</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.ObjectSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>A set of objects.Objects instances.</p>
+<p>This class allows you to either refer to an object by name or
+iterate over all available objects.</p>
+<dl class="py method">
+<dt id="cellprofiler_core.object.ObjectSet.add_type_instance">
+<code class="sig-name descname">add_type_instance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type_name</span></em>, <em class="sig-param"><span class="n">instance_name</span></em>, <em class="sig-param"><span class="n">instance</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.ObjectSet.add_type_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a named instance of a type</p>
+<p>A thing of a given type can be stored in the object set so that
+it can be retrieved by name later in the pipeline. This function adds
+an instance of a type to the object set.</p>
+<p>type_name - the name of the instance’s type
+instance_name - the name of the instance
+instance - the instance itself</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.ObjectSet.all_objects">
+<em class="property">property </em><code class="sig-name descname">all_objects</code><a class="headerlink" href="#cellprofiler_core.object.ObjectSet.all_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of name / objects tuples</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.ObjectSet.get_object_names">
+<code class="sig-name descname">get_object_names</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.ObjectSet.get_object_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the names of all of the objects</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.ObjectSet.get_objects">
+<code class="sig-name descname">get_objects</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.ObjectSet.get_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the objects instance with the given name</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.ObjectSet.get_type_instance">
+<code class="sig-name descname">get_type_instance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">type_name</span></em>, <em class="sig-param"><span class="n">instance_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.ObjectSet.get_type_instance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an named instance of a type</p>
+<p>type_name - the name of the type of instance
+instance_name - the name of the instance to retrieve</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.ObjectSet.get_types">
+<code class="sig-name descname">get_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.ObjectSet.get_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get then names of types of per-image set “things”</p>
+<p>The object set can store arbitrary types of things other than objects,
+for instance ImageJ data tables. This function returns the thing types
+defined in the object set at this stage of the pipeline.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.ObjectSet.object_names">
+<em class="property">property </em><code class="sig-name descname">object_names</code><a class="headerlink" href="#cellprofiler_core.object.ObjectSet.object_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the names of all of the objects</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.object.Objects">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.object.</code><code class="sig-name descname">Objects</code><a class="headerlink" href="#cellprofiler_core.object.Objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents a segmentation of an image.</p>
+<p>IdentityPrimAutomatic produces three variants of its segmentation
+result. This object contains all three.</p>
+<p>There are three formats for segmentation, two of which support
+overlapping objects:</p>
+<dl class="simple">
+<dt>get/set_segmented - legacy, a single plane of labels that does not</dt><dd><p>support overlapping objects</p>
+</dd>
+<dt>get/set_labels - supports overlapping objects, returns one or more planes</dt><dd><p>along with indices. A typical usage is to perform an
+operation per-plane as if the objects did not overlap.</p>
+</dd>
+<dt>get/set_ijv    - supports overlapping objects, returns a sparse</dt><dd><p>representation in which the first two columns are the
+coordinates and the last is the object number. This
+is efficient for doing things like calculating intensity
+per-object.</p>
+</dd>
+</dl>
+<p>You can set one of the types and then get any of the types (except that
+get_segmented will raise an exception if objects overlap).</p>
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.areas">
+<em class="property">property </em><code class="sig-name descname">areas</code><a class="headerlink" href="#cellprofiler_core.object.Objects.areas" title="Permalink to this definition">¶</a></dt>
+<dd><p>The area of each object</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.crop_image_similarly">
+<code class="sig-name descname">crop_image_similarly</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.crop_image_similarly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crop an image in the same way as the parent image was cropped.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.fn_of_label_and_index">
+<code class="sig-name descname">fn_of_label_and_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.fn_of_label_and_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call a function taking a label matrix with the segmented labels</p>
+<dl>
+<dt>function - should have signature like</dt><dd><p>labels - label matrix
+index  - sequence of label indices documenting which</p>
+<blockquote>
+<div><p>label indices are of interest</p>
+</div></blockquote>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.fn_of_ones_label_and_index">
+<code class="sig-name descname">fn_of_ones_label_and_index</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.fn_of_ones_label_and_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call a function taking an image, a label matrix and an index with an image of all ones</p>
+<dl>
+<dt>function - should have signature like</dt><dd><p>image  - image with same dimensions as labels
+labels - label matrix
+index  - sequence of label indices documenting which</p>
+<blockquote>
+<div><p>label indices are of interest</p>
+</div></blockquote>
+</dd>
+</dl>
+<p>Pass this function an “image” of all ones, for instance to compute
+a center or an area</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.get_ijv">
+<code class="sig-name descname">get_ijv</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.get_ijv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the segmentation in IJV object format</p>
+<p>The ijv format is a list of i,j coordinates in slots 0 and 1
+and the label at the pixel in slot 2.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.get_labels">
+<code class="sig-name descname">get_labels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.get_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a set of labels matrices consisting of non-overlapping labels</p>
+<p>In IJV format, a single pixel might have multiple labels. If you
+want to use a labels matrix, you have an ambiguous situation and the
+resolution is to process separate labels matrices consisting of
+non-overlapping labels.</p>
+<p>returns a list of label matrixes and the indexes in each</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.has_parent_image">
+<em class="property">property </em><code class="sig-name descname">has_parent_image</code><a class="headerlink" href="#cellprofiler_core.object.Objects.has_parent_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the objects were derived from a parent image</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.has_small_removed_segmented">
+<code class="sig-name descname">has_small_removed_segmented</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.has_small_removed_segmented" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true if there is a junk object matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.has_unedited_segmented">
+<code class="sig-name descname">has_unedited_segmented</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.has_unedited_segmented" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true if there is an unedited segmented matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.histogram_from_ijv">
+<em class="property">static </em><code class="sig-name descname">histogram_from_ijv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent_ijv</span></em>, <em class="sig-param"><span class="n">child_ijv</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.histogram_from_ijv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find per pixel overlap of parent labels and child labels,
+stored in ijv format.</p>
+<p>parent_ijv - the parents which contain the children
+child_ijv - the children to be mapped to a parent</p>
+<p>Returns a 2d array of overlap between each parent and child.
+Note that the first row and column are empty, as these
+correspond to parent and child labels of 0.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.histogram_from_labels">
+<em class="property">static </em><code class="sig-name descname">histogram_from_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent_labels</span></em>, <em class="sig-param"><span class="n">child_labels</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.histogram_from_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find per pixel overlap of parent labels and child labels</p>
+<p>parent_labels - the parents which contain the children
+child_labels - the children to be mapped to a parent</p>
+<p>Returns a 2d array of overlap between each parent and child.
+Note that the first row and column are empty, as these
+correspond to parent and child labels of 0.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.ijv">
+<em class="property">property </em><code class="sig-name descname">ijv</code><a class="headerlink" href="#cellprofiler_core.object.Objects.ijv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the segmentation in IJV object format</p>
+<p>The ijv format is a list of i,j coordinates in slots 0 and 1
+and the label at the pixel in slot 2.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.indices">
+<em class="property">property </em><code class="sig-name descname">indices</code><a class="headerlink" href="#cellprofiler_core.object.Objects.indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the indices for a scipy.ndimage-style function from the segmented labels</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.make_ijv_outlines">
+<code class="sig-name descname">make_ijv_outlines</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">colors</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.make_ijv_outlines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make ijv-style color outlines</p>
+<p>Make outlines, coloring each object differently to distinguish between
+objects that might overlap.</p>
+<p>colors: a N x 3 color map to be used to color the outlines</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.parent_image">
+<em class="property">property </em><code class="sig-name descname">parent_image</code><a class="headerlink" href="#cellprofiler_core.object.Objects.parent_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>The image that was analyzed to yield the objects.</p>
+<p>The image is an instance of CPImage which means it has the mask
+and crop mask.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.relate_children">
+<code class="sig-name descname">relate_children</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">children</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.relate_children" title="Permalink to this definition">¶</a></dt>
+<dd><p>Relate the object numbers in one label to the object numbers in another</p>
+<dl class="simple">
+<dt>children - another “objects” instance: the labels of children within</dt><dd><p>the parent which is “self”</p>
+</dd>
+</dl>
+<p>Returns two 1-d arrays. The first gives the number of children within
+each parent. The second gives the mapping of each child to its parent’s
+object number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.relate_histogram">
+<em class="property">static </em><code class="sig-name descname">relate_histogram</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">histogram</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.relate_histogram" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return child counts and parents of children given a histogram</p>
+<p>histogram - histogram from histogram_from_ijv or histogram_from_labels</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.relate_labels">
+<code class="sig-name descname">relate_labels</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parent_labels</span></em>, <em class="sig-param"><span class="n">child_labels</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.relate_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>relate the object numbers in one label to those in another</p>
+<p>parent_labels - 2d label matrix of parent labels</p>
+<p>child_labels - 2d label matrix of child labels</p>
+<p>Returns two 1-d arrays. The first gives the number of children within
+each parent. The second gives the mapping of each child to its parent’s
+object number.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.segmented">
+<em class="property">property </em><code class="sig-name descname">segmented</code><a class="headerlink" href="#cellprofiler_core.object.Objects.segmented" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the de-facto segmentation of the image into objects: a matrix
+of object numbers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.set_ijv">
+<code class="sig-name descname">set_ijv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ijv</span></em>, <em class="sig-param"><span class="n">shape</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Objects.set_ijv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the segmentation to an IJV object format</p>
+<p>The ijv format is a list of i,j coordinates in slots 0 and 1
+and the label at the pixel in slot 2.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.small_removed_segmented">
+<em class="property">property </em><code class="sig-name descname">small_removed_segmented</code><a class="headerlink" href="#cellprofiler_core.object.Objects.small_removed_segmented" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the matrix of segmented objects with the small objects removed</p>
+<p>This should be the same as the unedited_segmented label matrix with
+the small objects removed, but objects touching the sides of the image
+or the image mask still present.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Objects.unedited_segmented">
+<em class="property">property </em><code class="sig-name descname">unedited_segmented</code><a class="headerlink" href="#cellprofiler_core.object.Objects.unedited_segmented" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the segmentation of the image into objects, including junk that
+should be ignored: a matrix of object numbers.</p>
+<p>The default, if no unedited matrix is available, is the
+segmented labeling.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.object.Segmentation">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.object.</code><code class="sig-name descname">Segmentation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dense</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sparse</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">shape</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Segmentation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A segmentation of a space into labeled objects</p>
+<p>Supports overlapping objects and cacheing. Retrieval can be as a
+single plane (legacy), as multiple planes and as sparse ijv.</p>
+<dl class="py method">
+<dt id="cellprofiler_core.object.Segmentation.get_dense">
+<code class="sig-name descname">get_dense</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.object.Segmentation.get_dense" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the dense representation of the segmentation</p>
+<p>return the segmentation as a 6-D array and a sequence of arrays of the
+object numbers in each 5-D hyperplane of the segmentation. The first
+axis of the segmentation allows us to assign multiple labels to
+individual pixels. Given a 5-D algorithm, the code typically iterates
+over the first axis:</p>
+<dl class="simple">
+<dt>for labels in self.get_dense():</dt><dd><p># do something</p>
+</dd>
+</dl>
+<p>The remaining axes are in the order, C, T, Z, Y and X</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Segmentation.shape">
+<em class="property">property </em><code class="sig-name descname">shape</code><a class="headerlink" href="#cellprofiler_core.object.Segmentation.shape" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or estimate the shape of the segmentation matrix</p>
+<p>Order of precedence:
+Shape supplied in the constructor
+Shape of the dense representation
+maximum extent of the sparse representation + 1</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.object.Segmentation.sparse">
+<em class="property">property </em><code class="sig-name descname">sparse</code><a class="headerlink" href="#cellprofiler_core.object.Segmentation.sparse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the sparse representation of the segmentation</p>
+<p>returns a Numpy record array where every row represents
+the labeling of a pixel. The dtype record names are taken from
+HDF5ObjectSet.AXIS_[X,Y,Z,C,T] and AXIS_LABELS for the object
+numbers.</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 

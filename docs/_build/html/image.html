@@ -37,7 +37,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Measurement" href="measurement.html" />
-    <link rel="prev" title="Commands" href="commands.html" /> 
+    <link rel="prev" title="Constants" href="constants.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -85,6 +85,7 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="analysis.html">Analysis</a></li>
 <li class="toctree-l1"><a class="reference internal" href="commands.html">Commands</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constants.html">Constants</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Image</a></li>
 <li class="toctree-l1"><a class="reference internal" href="measurement.html">Measurement</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module.html">Module</a></li>
@@ -163,6 +164,289 @@
             
   <div class="section" id="module-cellprofiler_core.image">
 <span id="image"></span><h1>Image<a class="headerlink" href="#module-cellprofiler_core.image" title="Permalink to this headline">¶</a></h1>
+<dl class="py class">
+<dt id="cellprofiler_core.image.Grayscale">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.image.</code><code class="sig-name descname">Grayscale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.Grayscale" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper around a non-grayscale image</p>
+<dl class="simple">
+<dt>This is meant to be used if the image is 3-d but all channels</dt><dd><p>are the same or if the image is binary.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="cellprofiler_core.image.Grayscale.pixel_data">
+<em class="property">property </em><code class="sig-name descname">pixel_data</code><a class="headerlink" href="#cellprofiler_core.image.Grayscale.pixel_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>One 2-d channel of the color image as a numpy array</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.image.Image">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.image.</code><code class="sig-name descname">Image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mask</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">crop_mask</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">parent_image</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">masking_objects</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">convert</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">path_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">file_name</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">scale</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dimensions</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">spacing</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.Image" title="Permalink to this definition">¶</a></dt>
+<dd><p>An image composed of a Numpy array plus secondary attributes such as mask and label matrices</p>
+<p>The secondary attributes:</p>
+<p>mask - a binary image indicating the points of interest in the image. The mask is the same size as the child image.</p>
+<p>crop_mask - the binary image used to crop the parent image to the dimensions of the child (this) image. The crop_mask is the same size as the parent image.</p>
+<p>parent_image - for derived images, the parent that was used to create this image. This image may inherit attributes from the parent image, such as the masks used to create the parent</p>
+<p>masking_objects - the labels matrix from these objects is used to mask and crop the parent image to make this image. The labels are available as mask_labels and crop_labels.</p>
+<p>convert - true to try to coerce whatever dtype passed (other than bool or float) to a scaled image.</p>
+<p>path_name - the path name to the file holding the image or None for a derived image</p>
+<p>file_name - the file name of the file holding the image or None for a derived image</p>
+<p>scale - the scaling suggested by the initial image format (e.g., 4095 for a 12-bit a/d converter).</p>
+<p>Resolution of mask and cropping_mask properties:</p>
+<p>The Image class looks for the mask and cropping_mask in the following places:</p>
+<ul class="simple">
+<li><p>self: if set using the properties or specified in the initializer</p></li>
+<li><p>masking_objects: if set using the masking_object property or specified in the initializer. The crop_mask and mask are composed of all of the labeled points.</p></li>
+<li><p>parent_image: if set using the initializer. The child image inherits the mask and cropping mask of the parent.</p></li>
+</ul>
+<p>Otherwise, the image has no mask or cropping mask and all pixels are significant.</p>
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.crop_image_similarly">
+<code class="sig-name descname">crop_image_similarly</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.Image.crop_image_similarly" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crop a 2-d or 3-d image using this image’s crop mask</p>
+<p>image - a np.ndarray to be cropped (of any type)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.crop_mask">
+<em class="property">property </em><code class="sig-name descname">crop_mask</code><a class="headerlink" href="#cellprofiler_core.image.Image.crop_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the mask used to crop this image</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.file_name">
+<em class="property">property </em><code class="sig-name descname">file_name</code><a class="headerlink" href="#cellprofiler_core.image.Image.file_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The name of the file holding this image</p>
+<p>If the image is derived, then return the file name of the first
+ancestor that has a file name. Return None if the image does not have
+an ancestor or if no ancestor has a file name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.get_image">
+<code class="sig-name descname">get_image</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.Image.get_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the primary image</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.has_channel_names">
+<em class="property">property </em><code class="sig-name descname">has_channel_names</code><a class="headerlink" href="#cellprofiler_core.image.Image.has_channel_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if there are channel names on this image</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.has_crop_mask">
+<em class="property">property </em><code class="sig-name descname">has_crop_mask</code><a class="headerlink" href="#cellprofiler_core.image.Image.has_crop_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the image or its ancestors has a crop mask</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.has_mask">
+<em class="property">property </em><code class="sig-name descname">has_mask</code><a class="headerlink" href="#cellprofiler_core.image.Image.has_mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the image has a mask</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.has_masking_objects">
+<em class="property">property </em><code class="sig-name descname">has_masking_objects</code><a class="headerlink" href="#cellprofiler_core.image.Image.has_masking_objects" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if the image was cropped with objects</p>
+<p>If this is true, there will also be a valid labels matrix
+available through the labels property</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.has_parent_image">
+<em class="property">property </em><code class="sig-name descname">has_parent_image</code><a class="headerlink" href="#cellprofiler_core.image.Image.has_parent_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if this image has a defined parent</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.image">
+<em class="property">property </em><code class="sig-name descname">image</code><a class="headerlink" href="#cellprofiler_core.image.Image.image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the primary image</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.labels">
+<em class="property">property </em><code class="sig-name descname">labels</code><a class="headerlink" href="#cellprofiler_core.image.Image.labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the segmentation labels from the masking objects</p>
+<p>returns the “segmented” labels: others are available through
+the masking_object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.mask">
+<em class="property">property </em><code class="sig-name descname">mask</code><a class="headerlink" href="#cellprofiler_core.image.Image.mask" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the mask (pixels to be considered) for the primary image</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.path_name">
+<em class="property">property </em><code class="sig-name descname">path_name</code><a class="headerlink" href="#cellprofiler_core.image.Image.path_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>The path to the file holding this image</p>
+<p>If the image is derived, then return the path name of the first
+ancestor that has a path name. Return None if the image does not have
+an ancestor or if no ancestor has a file name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.pixel_data">
+<em class="property">property </em><code class="sig-name descname">pixel_data</code><a class="headerlink" href="#cellprofiler_core.image.Image.pixel_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the primary image</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.scale">
+<em class="property">property </em><code class="sig-name descname">scale</code><a class="headerlink" href="#cellprofiler_core.image.Image.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>The scale at acquisition</p>
+<p>This is the intensity scale used by the acquisition device. For
+instance, a microscope might use a 12-bit a/d converter to acquire
+an image and store that information using the TIF MaxSampleValue
+tag = 4095.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.Image.set_image">
+<code class="sig-name descname">set_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em>, <em class="sig-param"><span class="n">convert</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.Image.set_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the primary image</p>
+<p>Convert the image to a numpy array of dtype = np.float64.
+Rescale according to Matlab’s rules for im2double:
+* single/double values: keep the same
+* uint8/16/32/64: scale 0 to max to 0 to 1
+* int8/16/32/64: scale min to max to 0 to 1
+* logical: save as is (and get if must_be_binary)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.image.ImageSet">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.image.</code><code class="sig-name descname">ImageSet</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">number</span></em>, <em class="sig-param"><span class="n">keys</span></em>, <em class="sig-param"><span class="n">legacy_fields</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the images for a particular iteration of a pipeline</p>
+<p>An image set is composed of one image provider per image in the set.
+The image provider loads or creates an image, given a dictionary of keys
+(which might represent things like the plate/well for the image set or the
+frame number in a movie, etc.)</p>
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSet.clear_image">
+<code class="sig-name descname">clear_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSet.clear_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the image memory associated with a provider</p>
+<p>name - the name of the provider</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSet.get_image">
+<code class="sig-name descname">get_image</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em>, <em class="sig-param"><span class="n">must_be_binary</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">must_be_color</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">must_be_grayscale</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">must_be_rgb</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSet.get_image" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the image associated with the given name</p>
+<p>name - name of the image within the image_set
+must_be_color - raise an exception if not a color image
+must_be_grayscale - raise an exception if not a grayscale image
+must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,</p>
+<blockquote>
+<div><p>discard alpha channel.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSet.get_image_provider">
+<code class="sig-name descname">get_image_provider</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSet.get_image_provider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a named image provider</p>
+<p>name - return the image provider with this name</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSet.names">
+<em class="property">property </em><code class="sig-name descname">names</code><a class="headerlink" href="#cellprofiler_core.image.ImageSet.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the image provider names</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSet.providers">
+<em class="property">property </em><code class="sig-name descname">providers</code><a class="headerlink" href="#cellprofiler_core.image.ImageSet.providers" title="Permalink to this definition">¶</a></dt>
+<dd><p>The list of providers (populated during the image discovery phase)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSet.remove_image_provider">
+<code class="sig-name descname">remove_image_provider</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSet.remove_image_provider" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove a named image provider</p>
+<p>name - the name of the provider to remove</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.image.ImageSetList">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.image.</code><code class="sig-name descname">ImageSetList</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">test_mode</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSetList" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represents the list of image sets in a pipeline run</p>
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSetList.add_provider_to_all_image_sets">
+<code class="sig-name descname">add_provider_to_all_image_sets</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">provider</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSetList.add_provider_to_all_image_sets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide an image to every image set</p>
+<p>provider - an instance of AbstractImageProvider</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSetList.get_groupings">
+<code class="sig-name descname">get_groupings</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">keys</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSetList.get_groupings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the groupings of an image set list over a set of keys</p>
+<p>keys - a sequence of keys that match some of the image set keys</p>
+<p>returns an object suitable for use by CPModule.get_groupings:
+tuple of keys, groupings
+keys - the keys as passed into the function
+groupings - a sequence of groupings of image sets where</p>
+<blockquote>
+<div><p>each element of the sequence is a two-tuple.
+The first element of the two-tuple is a dictionary
+that gives the group’s values for each key.
+The second element is a list of image numbers of
+the images in the group</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSetList.get_image_set">
+<code class="sig-name descname">get_image_set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">keys_or_number</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSetList.get_image_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return either the indexed image set (keys_or_number = index) or the image set with matching keys</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSetList.load_state">
+<code class="sig-name descname">load_state</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">state</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSetList.load_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load an image_set_list’s state from the string returned from save_state</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSetList.purge_image_set">
+<code class="sig-name descname">purge_image_set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">number</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSetList.purge_image_set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove the memory associated with an image set</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.image.ImageSetList.save_state">
+<code class="sig-name descname">save_state</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.ImageSetList.save_state" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string that can be used to load the image_set_list’s state</p>
+<p>load_state will restore the image set list’s state. No image_set can
+have image providers before this call.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="cellprofiler_core.image.RGB">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.image.</code><code class="sig-name descname">RGB</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">image</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.image.RGB" title="Permalink to this definition">¶</a></dt>
+<dd><p>A wrapper that discards the alpha channel</p>
+<p>This is meant to be used if the image is 3-d + alpha but the alpha
+channel is discarded</p>
+<dl class="py method">
+<dt id="cellprofiler_core.image.RGB.pixel_data">
+<em class="property">property </em><code class="sig-name descname">pixel_data</code><a class="headerlink" href="#cellprofiler_core.image.RGB.pixel_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the pixel data without the alpha channel</p>
+</dd></dl>
+
+</dd></dl>
+
 </div>
 
 
@@ -176,7 +460,7 @@
         <a href="measurement.html" class="btn btn-neutral float-right" title="Measurement" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="commands.html" class="btn btn-neutral float-left" title="Commands" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="constants.html" class="btn btn-neutral float-left" title="Constants" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

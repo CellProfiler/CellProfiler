@@ -61,9 +61,7 @@ def load_measurements(filename, dest_file=None, run_name=None, image_numbers=Non
         fd.close()
 
     if header.decode("unicode_escape") == HDF5_HEADER:
-        f, top_level = get_top_level_group(
-            filename
-        )
+        f, top_level = get_top_level_group(filename)
         try:
             if VERSION in list(f.keys()):
                 if run_name is not None:

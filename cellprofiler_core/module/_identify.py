@@ -122,10 +122,7 @@ class Identify(Module):
                             an object created by this module and each
                             value is a list of names of parents.
         """
-        if (
-            object_name == IMAGE
-            and category == C_COUNT
-        ):
+        if object_name == IMAGE and category == C_COUNT:
             return list(object_dictionary.keys())
 
         if object_name in object_dictionary:
@@ -178,19 +175,13 @@ def add_object_location_measurements(
         location_center_x = numpy.zeros((0,), dtype=float)
         number = numpy.zeros((0,), dtype=int)
     measurements.add_measurement(
-        object_name,
-        M_LOCATION_CENTER_X,
-        location_center_x,
+        object_name, M_LOCATION_CENTER_X, location_center_x,
     )
     measurements.add_measurement(
-        object_name,
-        M_LOCATION_CENTER_Y,
-        location_center_y,
+        object_name, M_LOCATION_CENTER_Y, location_center_y,
     )
     measurements.add_measurement(
-        object_name,
-        M_NUMBER_OBJECT_NUMBER,
-        number,
+        object_name, M_NUMBER_OBJECT_NUMBER, number,
     )
 
 
@@ -210,28 +201,20 @@ def add_object_location_measurements_ijv(
         center_x = numpy.bincount(ijv[:, 2], ijv[:, 1])[1:] / areas
         center_y = numpy.bincount(ijv[:, 2], ijv[:, 0])[1:] / areas
     measurements.add_measurement(
-        object_name,
-        M_LOCATION_CENTER_X,
-        center_x,
+        object_name, M_LOCATION_CENTER_X, center_x,
     )
     measurements.add_measurement(
-        object_name,
-        M_LOCATION_CENTER_Y,
-        center_y,
+        object_name, M_LOCATION_CENTER_Y, center_y,
     )
     measurements.add_measurement(
-        object_name,
-        M_NUMBER_OBJECT_NUMBER,
-        numpy.arange(1, object_count + 1),
+        object_name, M_NUMBER_OBJECT_NUMBER, numpy.arange(1, object_count + 1),
     )
 
 
 def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""
     measurements.add_measurement(
-        "Image",
-        FF_COUNT % object_name,
-        numpy.array([object_count], dtype=float),
+        "Image", FF_COUNT % object_name, numpy.array([object_count], dtype=float),
     )
 
 
@@ -244,24 +227,8 @@ def get_object_measurement_columns(object_name):
     add_object_count_measurements.
     """
     return [
-        (
-            object_name,
-            M_LOCATION_CENTER_X,
-            COLTYPE_FLOAT,
-        ),
-        (
-            object_name,
-            M_LOCATION_CENTER_Y,
-            COLTYPE_FLOAT,
-        ),
-        (
-            object_name,
-            M_NUMBER_OBJECT_NUMBER,
-            COLTYPE_INTEGER,
-        ),
-        (
-            IMAGE,
-            FF_COUNT % object_name,
-            COLTYPE_INTEGER,
-        ),
+        (object_name, M_LOCATION_CENTER_X, COLTYPE_FLOAT,),
+        (object_name, M_LOCATION_CENTER_Y, COLTYPE_FLOAT,),
+        (object_name, M_NUMBER_OBJECT_NUMBER, COLTYPE_INTEGER,),
+        (IMAGE, FF_COUNT % object_name, COLTYPE_INTEGER,),
     ]

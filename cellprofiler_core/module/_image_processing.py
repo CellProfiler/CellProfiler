@@ -59,7 +59,9 @@ class ImageProcessing(Module):
 
         y_data = self.function(x_data, *args)
 
-        y = image.Image(dimensions=dimensions, image=y_data, parent_image=x, convert=False)
+        y = image.Image(
+            dimensions=dimensions, image=y_data, parent_image=x, convert=False
+        )
 
         images.add(y_name, y)
 

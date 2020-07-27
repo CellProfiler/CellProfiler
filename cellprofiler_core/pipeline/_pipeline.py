@@ -647,7 +647,9 @@ class Pipeline:
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
-            image_set.add(image_name, cellprofiler_core.image.ImageSubscriber(input_pixels))
+            image_set.add(
+                image_name, cellprofiler_core.image.ImageSubscriber(input_pixels)
+            )
         object_set = cellprofiler_core.object.ObjectSet()
         measurements = cellprofiler_core.measurement.Measurements()
 

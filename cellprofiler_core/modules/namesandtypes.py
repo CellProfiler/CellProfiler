@@ -2411,12 +2411,12 @@ requests an object selection.
             elif category == cellprofiler_core.constants.measurement.C_COUNT:
                 return object_names
             elif category in (
-                    cellprofiler_core.constants.image.C_MD5_DIGEST,
-                    cellprofiler_core.constants.image.C_SCALING,
-                    cellprofiler_core.constants.image.C_HEIGHT,
-                    cellprofiler_core.constants.image.C_WIDTH,
-                    cellprofiler_core.constants.image.C_SERIES,
-                    cellprofiler_core.constants.image.C_FRAME,
+                cellprofiler_core.constants.image.C_MD5_DIGEST,
+                cellprofiler_core.constants.image.C_SCALING,
+                cellprofiler_core.constants.image.C_HEIGHT,
+                cellprofiler_core.constants.image.C_WIDTH,
+                cellprofiler_core.constants.image.C_SERIES,
+                cellprofiler_core.constants.image.C_FRAME,
             ):
                 return list(image_names) + list(object_names)
         elif object_name in self.get_object_names():

@@ -1510,20 +1510,20 @@ safe to press it.""",
                     cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME,
                 ),
                 (
-                        cellprofiler_core.constants.image.C_MD5_DIGEST,
+                    cellprofiler_core.constants.image.C_MD5_DIGEST,
                     cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FORMAT % 32,
                 ),
                 (
-                        cellprofiler_core.constants.image.C_SCALING,
-                        cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+                    cellprofiler_core.constants.image.C_SCALING,
+                    cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
                 ),
                 (
-                        cellprofiler_core.constants.image.C_HEIGHT,
-                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.constants.image.C_HEIGHT,
+                    cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                 ),
                 (
-                        cellprofiler_core.constants.image.C_WIDTH,
-                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
+                    cellprofiler_core.constants.image.C_WIDTH,
+                    cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
                 ),
             ):
                 for image_name in image_names:

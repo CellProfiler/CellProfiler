@@ -12,11 +12,7 @@ class PluginImporter(object):
         prefix, modname = fullname.rsplit(".", 1)
         if prefix != "cellprofiler.modules.plugins":
             return None
-        if os.path.exists(
-            os.path.join(
-                get_plugin_directory(), modname + ".py"
-            )
-        ):
+        if os.path.exists(os.path.join(get_plugin_directory(), modname + ".py")):
             return self
         return None
 

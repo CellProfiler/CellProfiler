@@ -15,7 +15,8 @@ from ....utilities.image import (
     is_numpy_file,
     is_matlab_file,
     loadmat,
-    load_data_file, generate_presigned_url,
+    load_data_file,
+    generate_presigned_url,
 )
 from ....constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES
 from ....utilities.pathname import pathname2url, url2pathname

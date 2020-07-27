@@ -2223,12 +2223,12 @@ def test_get_measurements():
         assert mnames[0] == OBJECTS_NAME
 
     for cname in (
-            cellprofiler_core.constants.image.C_MD5_DIGEST,
-            cellprofiler_core.constants.image.C_SCALING,
-            cellprofiler_core.constants.image.C_HEIGHT,
-            cellprofiler_core.constants.image.C_WIDTH,
-            cellprofiler_core.constants.measurement.C_SERIES,
-            cellprofiler_core.constants.measurement.C_FRAME,
+        cellprofiler_core.constants.image.C_MD5_DIGEST,
+        cellprofiler_core.constants.image.C_SCALING,
+        cellprofiler_core.constants.image.C_HEIGHT,
+        cellprofiler_core.constants.image.C_WIDTH,
+        cellprofiler_core.constants.measurement.C_SERIES,
+        cellprofiler_core.constants.measurement.C_FRAME,
     ):
         mnames = m.get_measurements(
             p, cellprofiler_core.constants.measurement.IMAGE, cname

@@ -426,12 +426,8 @@ created according to the pathname you have typed.
 .. |image1| image:: {CREATE_BUTTON}\
 """.format(
     **{
-        "CREATE_BUTTON": image_resource(
-            "folder_create.png"
-        ),
-        "BROWSE_BUTTON": image_resource(
-            "folder_browse.png"
-        ),
+        "CREATE_BUTTON": image_resource("folder_create.png"),
+        "BROWSE_BUTTON": image_resource("folder_browse.png"),
     }
 )
 

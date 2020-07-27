@@ -17,22 +17,51 @@ import six.moves
 
 
 import tests.modules
-from cellprofiler_core.constants.measurement import COLTYPE_INTEGER, EXPERIMENT, MCA_AVAILABLE_POST_RUN, GROUP_NUMBER, COLTYPE_FLOAT, GROUP_INDEX
+from cellprofiler_core.constants.measurement import (
+    COLTYPE_INTEGER,
+    EXPERIMENT,
+    MCA_AVAILABLE_POST_RUN,
+    GROUP_NUMBER,
+    COLTYPE_FLOAT,
+    GROUP_INDEX,
+)
 from cellprofiler_core.constants.modules import all_modules
-from cellprofiler_core.constants.pipeline import M_PIPELINE, M_VERSION, M_TIMESTAMP, M_MODIFICATION_TIMESTAMP
-from cellprofiler_core.image import Image
+from cellprofiler_core.constants.pipeline import (
+    M_PIPELINE,
+    M_VERSION,
+    M_TIMESTAMP,
+    M_MODIFICATION_TIMESTAMP,
+)
+from cellprofiler_core.image import Image, ImageSetList
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.modules.injectimage import InjectImage
 from cellprofiler_core.modules.measurementfixture import MeasurementFixture
-from cellprofiler_core.pipeline import Pipeline, RunException, ImageDependency, ObjectDependency, MeasurementDependency
-from cellprofiler_core.preferences import set_headless, set_default_output_directory, get_default_output_directory, set_default_image_directory, get_default_image_directory
+from cellprofiler_core.pipeline import (
+    Pipeline,
+    RunException,
+    ImageDependency,
+    ObjectDependency,
+    MeasurementDependency,
+)
+from cellprofiler_core.preferences import (
+    set_headless,
+    set_default_output_directory,
+    get_default_output_directory,
+    set_default_image_directory,
+    get_default_image_directory,
+)
 from cellprofiler_core.setting.text import ImageName, LabelName
 from cellprofiler_core.setting import Measurement
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.text import Text
 from cellprofiler_core.utilities.core.modules import fill_modules, instantiate_module
-from cellprofiler_core.utilities.core.pipeline import read_file_list, write_file_list, encapsulate_strings_in_arrays, encapsulate_string
+from cellprofiler_core.utilities.core.pipeline import (
+    read_file_list,
+    write_file_list,
+    encapsulate_strings_in_arrays,
+    encapsulate_string,
+)
 from cellprofiler_core.utilities.pathname import pathname2url
 from cellprofiler_core.workspace import Workspace
 
@@ -96,9 +125,7 @@ class TestPipeline(unittest.TestCase):
         # Change the default output directory to a temporary file
         set_headless()
         self.new_output_directory = os.path.normcase(tempfile.mkdtemp())
-        set_default_output_directory(
-            self.new_output_directory
-        )
+        set_default_output_directory(self.new_output_directory)
 
     def tearDown(self):
         subdir = self.new_output_directory
@@ -134,9 +161,7 @@ HasImagePlaneDetails:False"""
         not_txt = r"""not CellProfiler Pipeline: http://www.cellprofiler.org"""
         for text, expected in ((sensible, True), (proofpoint, True), (not_txt, False)):
             fd = six.moves.StringIO(text)
-            assert (
-                Pipeline.is_pipeline_txt_fd(fd) == expected
-            )
+            assert Pipeline.is_pipeline_txt_fd(fd) == expected
 
     def test_copy_nothing(self):
         # Regression test of issue #565
@@ -148,9 +173,7 @@ HasImagePlaneDetails:False"""
 
     def test_run_pipeline(self):
         x = exploding_pipeline(self)
-        module = InjectImage(
-            "OneCell", image_with_one_cell()
-        )
+        module = InjectImage("OneCell", image_with_one_cell())
         module.set_module_num(1)
         x.add_module(module)
         x.run()
@@ -194,35 +217,20 @@ HasImagePlaneDetails:False"""
             ]
         )
         assert any(
-            [
-                column[0] == EXPERIMENT
-                and column[1] == M_PIPELINE
-                for column in columns
-            ]
+            [column[0] == EXPERIMENT and column[1] == M_PIPELINE for column in columns]
         )
         assert any(
-            [
-                column[0] == EXPERIMENT
-                and column[1] == M_VERSION
-                for column in columns
-            ]
+            [column[0] == EXPERIMENT and column[1] == M_VERSION for column in columns]
         )
         assert any(
-            [
-                column[0] == EXPERIMENT
-                and column[1] == M_TIMESTAMP
-                for column in columns
-            ]
+            [column[0] == EXPERIMENT and column[1] == M_TIMESTAMP for column in columns]
         )
         assert any(
             [
                 len(columns) > 3
                 and column[0] == EXPERIMENT
-                and column[1]
-                == M_MODIFICATION_TIMESTAMP
-                and column[3][
-                    MCA_AVAILABLE_POST_RUN
-                ]
+                and column[1] == M_MODIFICATION_TIMESTAMP
+                and column[3][MCA_AVAILABLE_POST_RUN]
                 for column in columns
             ]
         )
@@ -259,16 +267,12 @@ HasImagePlaneDetails:False"""
             assert expects[0] == "PrepareRun"
             for group_number_idx, (grouping, image_numbers) in enumerate(groupings):
                 for group_idx, image_number in enumerate(image_numbers):
-                    workspace.measurements[
-                        "Image",
-                        GROUP_NUMBER,
-                        image_number,
-                    ] = (group_number_idx + 1)
-                    workspace.measurements[
-                        "Image",
-                        GROUP_INDEX,
-                        image_number,
-                    ] = (group_idx + 1)
+                    workspace.measurements["Image", GROUP_NUMBER, image_number,] = (
+                        group_number_idx + 1
+                    )
+                    workspace.measurements["Image", GROUP_INDEX, image_number,] = (
+                        group_idx + 1
+                    )
             expects[0], expects[1] = ("PrepareGroup", 0)
             return True
 
@@ -317,13 +321,7 @@ HasImagePlaneDetails:False"""
             expects[0], expects[1] = ("Done", 0)
 
         def get_measurement_columns(pipeline):
-            return [
-                (
-                    "Image",
-                    "mymeasurement",
-                    COLTYPE_INTEGER,
-                )
-            ]
+            return [("Image", "mymeasurement", COLTYPE_INTEGER,)]
 
         module = GroupModule()
         module.setup(
@@ -362,16 +360,12 @@ HasImagePlaneDetails:False"""
             assert expects[0] == "PrepareRun"
             for group_number_idx, (grouping, image_numbers) in enumerate(groupings):
                 for group_idx, image_number in enumerate(image_numbers):
-                    workspace.measurements[
-                        "Image",
-                        GROUP_NUMBER,
-                        image_number,
-                    ] = (group_number_idx + 1)
-                    workspace.measurements[
-                        "Image",
-                        GROUP_INDEX,
-                        image_number,
-                    ] = (group_idx + 1)
+                    workspace.measurements["Image", GROUP_NUMBER, image_number,] = (
+                        group_number_idx + 1
+                    )
+                    workspace.measurements["Image", GROUP_INDEX, image_number,] = (
+                        group_idx + 1
+                    )
             expects[0], expects[1] = ("PrepareGroup", 1)
             return True
 
@@ -412,13 +406,7 @@ HasImagePlaneDetails:False"""
             expects[0], expects[1] = ("Done", 0)
 
         def get_measurement_columns(pipeline):
-            return [
-                (
-                    "Image",
-                    "mymeasurement",
-                    COLTYPE_INTEGER,
-                )
-            ]
+            return [("Image", "mymeasurement", COLTYPE_INTEGER,)]
 
         module = GroupModule()
         module.setup(
@@ -444,27 +432,19 @@ HasImagePlaneDetails:False"""
         callbacks_called = set()
 
         def prepare_run(workspace):
-            workspace.measurements[
-                "Image",
-                GROUP_NUMBER,
-                1,
-            ] = 1
-            workspace.measurements[
-                "Image",
-                GROUP_INDEX,
-                1,
-            ] = 1
+            workspace.measurements["Image", GROUP_NUMBER, 1,] = 1
+            workspace.measurements["Image", GROUP_INDEX, 1,] = 1
             return True
 
         def prepare_group(workspace, grouping, *args):
             return True
 
         def run(workspace):
-            foo = "Bar"
+            self.foo = "Bar"
 
         def display_handler(module1, display_data, image_set_number):
             assert module1 is module
-            assert foo == "Bar"
+            assert self.foo == "Bar"
             assert image_set_number == 1
             callbacks_called.add("display_handler")
 
@@ -486,13 +466,7 @@ HasImagePlaneDetails:False"""
             callbacks_called.add("post_run_display_handler")
 
         def get_measurement_columns(pipeline):
-            return [
-                (
-                    "Image",
-                    "mymeasurement",
-                    COLTYPE_INTEGER,
-                )
-            ]
+            return [("Image", "mymeasurement", COLTYPE_INTEGER,)]
 
         module.setup(
             ((), ({}, (1,))),
@@ -505,9 +479,7 @@ HasImagePlaneDetails:False"""
         module.set_module_num(1)
         pipeline.add_module(module)
         m = Measurements()
-        workspace = Workspace(
-            pipeline, module, m, None, m, cellprofiler_core.image
-        )
+        workspace = Workspace(pipeline, module, m, None, m, ImageSetList())
         workspace.post_group_display_handler = post_group_display_handler
         workspace.post_run_display_handler = post_run_display_handler
         assert pipeline.prepare_run(workspace)
@@ -531,7 +503,7 @@ HasImagePlaneDetails:False"""
         should_be_true = [False]
 
         def callback(caller, event):
-            if isinstance(event, event.RunException):
+            if isinstance(event, RunException):
                 should_be_true[0] = True
 
         pipeline.add_listener(callback)
@@ -711,9 +683,7 @@ HasImagePlaneDetails:False"""
         # Put "ModuleWithMeasurement" into the module list
         #
         fill_modules()
-        all_modules[
-            MeasurementFixture.module_name
-        ] = MeasurementFixture
+        all_modules[MeasurementFixture.module_name] = MeasurementFixture
         #
         # Continue with test
         #
@@ -734,10 +704,7 @@ HasImagePlaneDetails:False"""
         pipeline.loadtxt(fd)
         assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
-        assert isinstance(
-            result_module,
-            MeasurementFixture,
-        )
+        assert isinstance(result_module, MeasurementFixture,)
         assert module.notes == eval(result_module.notes)
         assert module.my_variable.value == result_module.my_variable.value
 
@@ -753,10 +720,7 @@ HasImagePlaneDetails:False"""
         module.notes = "\\'αβ\\'"
         assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
-        assert isinstance(
-            result_module,
-            MeasurementFixture,
-        )
+        assert isinstance(result_module, MeasurementFixture,)
         assert module.notes == result_module.notes
         assert module.my_variable.value == result_module.my_variable.value
 
@@ -835,9 +799,7 @@ HasImagePlaneDetails:False"""
 
     def test_get_provider_dictionary_image(self):
         pipeline = get_empty_pipeline()
-        my_setting = ImageName(
-            "foo", IMAGE_NAME
-        )
+        my_setting = ImageName("foo", IMAGE_NAME)
         module = ATestModule([my_setting])
         module.set_module_num(1)
         pipeline.add_module(module)
@@ -854,9 +816,7 @@ HasImagePlaneDetails:False"""
 
     def test_get_provider_dictionary_object(self):
         pipeline = get_empty_pipeline()
-        my_setting = LabelName(
-            "foo", OBJECT_NAME
-        )
+        my_setting = LabelName("foo", OBJECT_NAME)
         module = ATestModule([my_setting])
         module.set_module_num(1)
         pipeline.add_module(module)
@@ -874,13 +834,7 @@ HasImagePlaneDetails:False"""
     def test_get_provider_dictionary_measurement(self):
         pipeline = get_empty_pipeline()
         module = ATestModule(
-            measurement_columns=[
-                (
-                    OBJECT_NAME,
-                    FEATURE_NAME,
-                    COLTYPE_FLOAT,
-                )
-            ]
+            measurement_columns=[(OBJECT_NAME, FEATURE_NAME, COLTYPE_FLOAT,)]
         )
         module.set_module_num(1)
         pipeline.add_module(module)
@@ -914,19 +868,9 @@ HasImagePlaneDetails:False"""
 
     def test_get_provider_dictionary_combo(self):
         pipeline = get_empty_pipeline()
-        image_setting = ImageName(
-            "foo", IMAGE_NAME
-        )
-        object_setting = LabelName(
-            "foo", OBJECT_NAME
-        )
-        measurement_columns = [
-            (
-                OBJECT_NAME,
-                FEATURE_NAME,
-                COLTYPE_FLOAT,
-            )
-        ]
+        image_setting = ImageName("foo", IMAGE_NAME)
+        object_setting = LabelName("foo", OBJECT_NAME)
+        measurement_columns = [(OBJECT_NAME, FEATURE_NAME, COLTYPE_FLOAT,)]
         other_providers = {"imagegroup": [ALT_IMAGE_NAME]}
         module = ATestModule(
             settings=[image_setting, object_setting],
@@ -980,15 +924,9 @@ HasImagePlaneDetails:False"""
         # Test disambiguation of the sources
         #
         pipeline = get_empty_pipeline()
-        my_image_setting_1 = ImageName(
-            "foo", IMAGE_NAME
-        )
-        my_image_setting_2 = ImageName(
-            "foo", IMAGE_NAME
-        )
-        my_object_setting = LabelName(
-            "foo", OBJECT_NAME
-        )
+        my_image_setting_1 = ImageName("foo", IMAGE_NAME)
+        my_image_setting_2 = ImageName("foo", IMAGE_NAME)
+        my_object_setting = LabelName("foo", OBJECT_NAME)
         module1 = ATestModule(settings=[my_image_setting_1])
         module2 = ATestModule(settings=[my_object_setting])
         module3 = ATestModule(settings=[my_image_setting_2])
@@ -1022,16 +960,8 @@ HasImagePlaneDetails:False"""
         for module in (
             ATestModule(),
             ATestModule([Choice("foo", ["Hello", "World"])]),
-            ATestModule(
-                [
-                    ImageName(
-                        "foo", IMAGE_NAME
-                    )
-                ]
-            ),
-            ATestModule(
-                [ImageName("foo", IMAGE_NAME)]
-            ),
+            ATestModule([ImageName("foo", IMAGE_NAME)]),
+            ATestModule([ImageName("foo", IMAGE_NAME)]),
         ):
             pipeline = Pipeline()
             module.set_module_num(1)
@@ -1043,23 +973,9 @@ HasImagePlaneDetails:False"""
         pipeline = Pipeline()
         for i, module in enumerate(
             (
-                ATestModule(
-                    [
-                        ImageName(
-                            "foo", IMAGE_NAME
-                        )
-                    ]
-                ),
-                ATestModule(
-                    [
-                        ImageName(
-                            "foo", ALT_IMAGE_NAME
-                        )
-                    ]
-                ),
-                ATestModule(
-                    [ImageName("foo", IMAGE_NAME)]
-                ),
+                ATestModule([ImageName("foo", IMAGE_NAME)]),
+                ATestModule([ImageName("foo", ALT_IMAGE_NAME)]),
+                ATestModule([ImageName("foo", IMAGE_NAME)]),
             )
         ):
             module.module_num = i + 1
@@ -1078,23 +994,9 @@ HasImagePlaneDetails:False"""
         pipeline = Pipeline()
         for i, module in enumerate(
             (
-                ATestModule(
-                    [
-                        LabelName(
-                            "foo", OBJECT_NAME
-                        )
-                    ]
-                ),
-                ATestModule(
-                    [
-                        ImageName(
-                            "foo", IMAGE_NAME
-                        )
-                    ]
-                ),
-                ATestModule(
-                    [LabelName("foo", OBJECT_NAME)]
-                ),
+                ATestModule([LabelName("foo", OBJECT_NAME)]),
+                ATestModule([ImageName("foo", IMAGE_NAME)]),
+                ATestModule([LabelName("foo", OBJECT_NAME)]),
             )
         ):
             module.module_num = i + 1
@@ -1111,26 +1013,12 @@ HasImagePlaneDetails:False"""
 
     def test_get_dependency_graph_measurement(self):
         pipeline = Pipeline()
-        measurement_columns = [
-            (
-                OBJECT_NAME,
-                FEATURE_NAME,
-                COLTYPE_FLOAT,
-            )
-        ]
-        measurement_setting = Measurement(
-            "text", lambda: OBJECT_NAME, FEATURE_NAME
-        )
+        measurement_columns = [(OBJECT_NAME, FEATURE_NAME, COLTYPE_FLOAT,)]
+        measurement_setting = Measurement("text", lambda: OBJECT_NAME, FEATURE_NAME)
         for i, module in enumerate(
             (
                 ATestModule(measurement_columns=measurement_columns),
-                ATestModule(
-                    [
-                        ImageName(
-                            "foo", ALT_IMAGE_NAME
-                        )
-                    ]
-                ),
+                ATestModule([ImageName("foo", ALT_IMAGE_NAME)]),
                 ATestModule([measurement_setting]),
             )
         ):
@@ -1139,9 +1027,7 @@ HasImagePlaneDetails:False"""
         g = pipeline.get_dependency_graph()
         assert len(g) == 1
         edge = g[0]
-        assert isinstance(
-            edge, MeasurementDependency
-        )
+        assert isinstance(edge, MeasurementDependency)
         assert edge.source == pipeline.modules()[0]
         assert edge.object_name == OBJECT_NAME
         assert edge.feature == FEATURE_NAME
@@ -1219,15 +1105,11 @@ HasImagePlaneDetails:False"""
         p.read_file_list(fd)
         assert len(p.file_list) == 2
         for path in paths:
-            assert (
-                pathname2url(path) in p.file_list
-            )
+            assert pathname2url(path) in p.file_list
 
     def test_read_file_list_urls(self):
         root = os.path.split(__file__)[0]
-        file_url = pathname2url(
-            os.path.join(root, "foo.tif")
-        )
+        file_url = pathname2url(os.path.join(root, "foo.tif"))
         urls = [
             "http://cellprofiler.org/foo.tif",
             file_url,
@@ -1319,8 +1201,7 @@ def profile_pipeline(pipeline_filename, output_filename=None, always_run=True):
     if not output_filename:
         pipeline_name = os.path.basename(pipeline_filename).split(".")[0]
         output_filename = os.path.join(
-            get_default_output_directory(),
-            pipeline_name + "_profile",
+            get_default_output_directory(), pipeline_name + "_profile",
         )
 
     if not os.path.exists(output_filename) or always_run:

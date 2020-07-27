@@ -34,13 +34,11 @@ from centrosome.otsu import otsu3
 
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import (
-    Float,
-    Choice,
-    ImageNameSubscriber,
-    Binary,
-    ImageNameProvider,
-)
+from cellprofiler_core.setting import Float
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import ImageNameProvider
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"

@@ -30,18 +30,16 @@ import numpy
 
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import (
-    Float,
-    DoSomething,
-    Choice,
-    RemoveSettingButton,
-    HiddenCount,
-    SettingsGroup,
-    Color,
-    ImageNameSubscriber,
-    ValidationError,
-    ImageNameProvider,
-)
+from cellprofiler_core.setting import Float
+from cellprofiler_core.setting import DoSomething
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import RemoveSettingButton
+from cellprofiler_core.setting import HiddenCount
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import Color
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting import ImageNameProvider
 
 OFF_RED_IMAGE_NAME = 0
 OFF_GREEN_IMAGE_NAME = 1

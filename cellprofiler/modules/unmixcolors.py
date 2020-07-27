@@ -62,17 +62,15 @@ import cellprofiler.gui.help.content
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import get_default_image_directory
-from cellprofiler_core.setting import (
-    DoSomething,
-    Float,
-    Choice,
-    RemoveSettingButton,
-    HiddenCount,
-    SettingsGroup,
-    ImageNameSubscriber,
-    Divider,
-    ImageNameProvider,
-)
+from cellprofiler_core.setting import DoSomething
+from cellprofiler_core.setting import Float
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import RemoveSettingButton
+from cellprofiler_core.setting import HiddenCount
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import ImageNameProvider
 
 CHOICE_HEMATOXYLIN = "Hematoxylin"
 ST_HEMATOXYLIN = (0.644, 0.717, 0.267)

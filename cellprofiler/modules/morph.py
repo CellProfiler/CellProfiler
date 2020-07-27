@@ -261,37 +261,17 @@ import scipy.ndimage
 
 
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import (
-    Integer,
-    DoSomething,
-    Choice,
-    RemoveSettingButton,
-    SettingsGroup,
-    ImageNameSubscriber,
-    Binary,
-    Divider,
-    ImageNameProvider,
-)
+from cellprofiler_core.setting import Integer
+from cellprofiler_core.setting import DoSomething
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import RemoveSettingButton
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import ImageNameProvider
 from cellprofiler_core.image import Image
-from centrosome.cpmorphology import (
-    endpoints,
-    skeletonize,
-    diag,
-    hbreak,
-    binary_shrink,
-    thicken,
-    openlines,
-    clean,
-    fill,
-    remove,
-    spur,
-    thin,
-    branchpoints,
-    convex_hull_image,
-    majority,
-    bridge,
-    vbreak,
-)
+import centrosome.cpmorphology
 import centrosome.filter
 
 F_BRANCHPOINTS = "branchpoints"
@@ -607,52 +587,54 @@ input for a measurement module."""
             # All of these have an iterations argument or it makes no
             # sense to iterate
             if function_name == F_BRANCHPOINTS:
-                return branchpoints(pixel_data, mask)
+                return centrosome.cpmorphology.branchpoints(pixel_data, mask)
             elif function_name == F_BRIDGE:
-                return bridge(pixel_data, mask, count)
+                return centrosome.cpmorphology.bridge(pixel_data, mask, count)
             elif function_name == F_CLEAN:
-                return clean(pixel_data, mask, count)
+                return centrosome.cpmorphology.clean(pixel_data, mask, count)
             elif function_name == F_CONVEX_HULL:
                 if mask is None:
-                    return convex_hull_image(pixel_data)
+                    return centrosome.cpmorphology.convex_hull_image(pixel_data)
                 else:
-                    return convex_hull_image(pixel_data & mask)
+                    return centrosome.cpmorphology.convex_hull_image(pixel_data & mask)
             elif function_name == F_DIAG:
-                return diag(pixel_data, mask, count)
+                return centrosome.cpmorphology.diag(pixel_data, mask, count)
             elif function_name == F_DISTANCE:
                 image = scipy.ndimage.distance_transform_edt(pixel_data)
                 if function.rescale_values.value:
                     image = image / numpy.max(image)
                 return image
             elif function_name == F_ENDPOINTS:
-                return endpoints(pixel_data, mask)
+                return centrosome.cpmorphology.endpoints(pixel_data, mask)
             elif function_name == F_FILL:
-                return fill(pixel_data, mask, count)
+                return centrosome.cpmorphology.fill(pixel_data, mask, count)
             elif function_name == F_HBREAK:
-                return hbreak(pixel_data, mask, count)
+                return centrosome.cpmorphology.hbreak(pixel_data, mask, count)
             elif function_name == F_MAJORITY:
-                return majority(pixel_data, mask, count)
+                return centrosome.cpmorphology.majority(pixel_data, mask, count)
             elif function_name == F_OPENLINES:
-                return openlines(pixel_data, linelength=custom_repeats, mask=mask)
+                return centrosome.cpmorphology.openlines(
+                    pixel_data, linelength=custom_repeats, mask=mask
+                )
             elif function_name == F_REMOVE:
-                return remove(pixel_data, mask, count)
+                return centrosome.cpmorphology.remove(pixel_data, mask, count)
             elif function_name == F_SHRINK:
-                return binary_shrink(pixel_data, count)
+                return centrosome.cpmorphology.binary_shrink(pixel_data, count)
             elif function_name == F_SKELPE:
-                return skeletonize(
+                return centrosome.cpmorphology.skeletonize(
                     pixel_data,
                     mask,
                     scipy.ndimage.distance_transform_edt(pixel_data)
                     * centrosome.filter.poisson_equation(pixel_data),
                 )
             elif function_name == F_SPUR:
-                return spur(pixel_data, mask, count)
+                return centrosome.cpmorphology.spur(pixel_data, mask, count)
             elif function_name == F_THICKEN:
-                return thicken(pixel_data, mask, count)
+                return centrosome.cpmorphology.thicken(pixel_data, mask, count)
             elif function_name == F_THIN:
-                return thin(pixel_data, mask, count)
+                return centrosome.cpmorphology.thin(pixel_data, mask, count)
             elif function_name == F_VBREAK:
-                return vbreak(pixel_data, mask)
+                return centrosome.cpmorphology.vbreak(pixel_data, mask)
             else:
                 raise NotImplementedError(
                     "Unimplemented morphological function: %s" % function_name

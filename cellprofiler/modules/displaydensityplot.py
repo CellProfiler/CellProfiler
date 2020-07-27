@@ -47,13 +47,11 @@ See also **DisplayScatterPlot**, **DisplayHistogram**.
 import matplotlib.cm
 
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import (
-    Measurement,
-    Integer,
-    ObjectNameSubscriber,
-    Choice,
-    Text,
-)
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import Integer
+from cellprofiler_core.setting import ObjectNameSubscriber
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import Text
 
 
 class DisplayDensityPlot(Module):

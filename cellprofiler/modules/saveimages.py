@@ -43,13 +43,11 @@ import skimage.util
 
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-from cellprofiler_core.preferences import (
-    DEFAULT_OUTPUT_FOLDER_NAME,
-    ABSOLUTE_FOLDER_NAME,
-    DEFAULT_INPUT_SUBFOLDER_NAME,
-    DEFAULT_INPUT_FOLDER_NAME,
-    DEFAULT_OUTPUT_SUBFOLDER_NAME,
-)
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
 import cellprofiler_core.setting
 import cellprofiler_core.utilities.pathname
 from cellprofiler.modules import _help

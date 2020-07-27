@@ -37,11 +37,14 @@ See also
 See also **DisplayDensityPlot**, **DisplayHistogram**.
 """
 
-import numpy as np
+import numpy
 
 from cellprofiler_core.measurement import IMAGE
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Measurement, ObjectNameSubscriber, Choice, Text
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import ObjectNameSubscriber
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import Text
 
 SOURCE_IM = IMAGE
 SOURCE_OBJ = "Object"
@@ -207,9 +210,12 @@ executed.
             if self.x_source.value == IMAGE:
                 xvals = m.get_all_measurements(IMAGE, self.x_axis.value)
                 yvals = m.get_all_measurements(IMAGE, self.y_axis.value)
-                xvals, yvals = np.array(
+                xvals, yvals = numpy.array(
                     [
-                        (x if np.isscalar(x) else x[0], y if np.isscalar(y) else y[0])
+                        (
+                            x if numpy.isscalar(x) else x[0],
+                            y if numpy.isscalar(y) else y[0],
+                        )
                         for x, y in zip(xvals, yvals)
                         if (x is not None) and (y is not None)
                     ]
@@ -232,16 +238,16 @@ executed.
                 yvals = m.get_current_measurement(
                     self.get_y_object(), self.y_axis.value
                 )
-                xvals = np.array([xvals[0]] * len(yvals))
+                xvals = numpy.array([xvals[0]] * len(yvals))
             else:
                 xvals = m.get_current_measurement(
                     self.get_x_object(), self.x_axis.value
                 )
                 yvals = m.get_all_measurements(IMAGE, self.y_axis.value)
-                yvals = np.array([yvals[0]] * len(xvals))
-            xvals, yvals = np.array(
+                yvals = numpy.array([yvals[0]] * len(xvals))
+            xvals, yvals = numpy.array(
                 [
-                    (x if np.isscalar(x) else x[0], y if np.isscalar(y) else y[0])
+                    (x if numpy.isscalar(x) else x[0], y if numpy.isscalar(y) else y[0])
                     for x, y in zip(xvals, yvals)
                     if (x is not None) and (y is not None)
                 ]

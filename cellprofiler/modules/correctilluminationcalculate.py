@@ -58,19 +58,18 @@ from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
-from cellprofiler_core.image import Image, AbstractImageProvider
+from cellprofiler_core.image import Image
+from cellprofiler_core.image import AbstractImageProvider
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.pipeline import Pipeline
-from cellprofiler_core.setting import (
-    Integer,
-    Float,
-    Choice,
-    ImageNameSubscriber,
-    Binary,
-    ValidationError,
-    ImageNameProvider,
-)
+from cellprofiler_core.setting import Integer
+from cellprofiler_core.setting import Float
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting import ImageNameProvider
 
 IC_REGULAR = "Regular"
 IC_BACKGROUND = "Background"

@@ -43,28 +43,29 @@ import os
 
 import numpy
 
-from cellprofiler_core.measurement import IMAGE, Measurements, COLTYPE_INTEGER
+from cellprofiler_core.measurement import IMAGE
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.measurement import COLTYPE_INTEGER
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
-from cellprofiler_core.setting import (
-    Measurement,
-    Choice,
-    FilenameText,
-    MultiChoice,
-    Text,
-    DoSomething,
-    Float,
-    ObjectNameSubscriber,
-    RemoveSettingButton,
-    HiddenCount,
-    DirectoryPath,
-    SettingsGroup,
-    Binary,
-    ValidationError,
-    Divider,
-)
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import FilenameText
+from cellprofiler_core.setting import MultiChoice
+from cellprofiler_core.setting import Text
+from cellprofiler_core.setting import DoSomething
+from cellprofiler_core.setting import Float
+from cellprofiler_core.setting import ObjectNameSubscriber
+from cellprofiler_core.setting import RemoveSettingButton
+from cellprofiler_core.setting import HiddenCount
+from cellprofiler_core.setting import DirectoryPath
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting import Divider
 from cellprofiler.utilities.rules import Rules
-from cellprofiler_core.workspace import DISPOSITION_SKIP, DISPOSITION_CONTINUE
+from cellprofiler_core.workspace import DISPOSITION_SKIP
+from cellprofiler_core.workspace import DISPOSITION_CONTINUE
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
 

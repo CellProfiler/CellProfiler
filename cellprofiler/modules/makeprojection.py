@@ -58,14 +58,13 @@ See also the help for the **Input** modules.
 
 import numpy
 
-from cellprofiler_core.image import Image, AbstractImageProvider
+from cellprofiler_core.image import Image
+from cellprofiler_core.image import AbstractImageProvider
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import (
-    Float,
-    Choice,
-    ImageNameSubscriber,
-    ImageNameProvider,
-)
+from cellprofiler_core.setting import Float
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import ImageNameProvider
 
 P_AVERAGE = "Average"
 P_MAXIMUM = "Maximum"

@@ -36,12 +36,15 @@ See also
 See also other **Display** modules and data tools.
 """
 
-import numpy as np
+import numpy
 import six
 
 from cellprofiler_core.measurement import IMAGE
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Measurement, ObjectNameSubscriber, Choice, Text
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import ObjectNameSubscriber
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import Text
 from cellprofiler.modules._help import USING_METADATA_HELP_REF
 
 AGG_AVG = "avg"
@@ -281,15 +284,15 @@ executed.
 
             for plate, sub_dict in list(pm_dict.items()):
                 for well, vals in list(sub_dict.items()):
-                    vals = np.hstack(vals)
+                    vals = numpy.hstack(vals)
                     if self.agg_method == AGG_AVG:
-                        pm_dict[plate][well] = np.mean(vals)
+                        pm_dict[plate][well] = numpy.mean(vals)
                     elif self.agg_method == AGG_STDEV:
-                        pm_dict[plate][well] = np.std(vals)
+                        pm_dict[plate][well] = numpy.std(vals)
                     elif self.agg_method == AGG_MEDIAN:
-                        pm_dict[plate][well] = np.median(vals)
+                        pm_dict[plate][well] = numpy.median(vals)
                     elif self.agg_method == AGG_CV:
-                        pm_dict[plate][well] = np.std(vals) / np.mean(vals)
+                        pm_dict[plate][well] = numpy.std(vals) / numpy.mean(vals)
                     else:
                         raise NotImplemented
             workspace.display_data.pm_dict = pm_dict

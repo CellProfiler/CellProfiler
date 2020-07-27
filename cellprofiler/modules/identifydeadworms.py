@@ -63,22 +63,18 @@ from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
 
 import cellprofiler_core.measurement
-from cellprofiler_core.measurement import (
-    IMAGE,
-    Measurements,
-    COLTYPE_FLOAT,
-    COLTYPE_INTEGER,
-)
+from cellprofiler_core.measurement import IMAGE
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.measurement import COLTYPE_FLOAT
+from cellprofiler_core.measurement import COLTYPE_INTEGER
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects, ObjectSet
 from cellprofiler_core.preferences import get_default_colormap
-from cellprofiler_core.setting import (
-    Integer,
-    Float,
-    ObjectNameProvider,
-    ImageNameSubscriber,
-    Binary,
-)
+from cellprofiler_core.setting import Integer
+from cellprofiler_core.setting import Float
+from cellprofiler_core.setting import ObjectNameProvider
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import Binary
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"

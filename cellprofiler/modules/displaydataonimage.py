@@ -33,7 +33,8 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-from cellprofiler_core.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler_core.measurement import M_LOCATION_CENTER_X
+from cellprofiler_core.measurement import M_LOCATION_CENTER_Y
 
 OI_OBJECTS = "Object"
 OI_IMAGE = "Image"

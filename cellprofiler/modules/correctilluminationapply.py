@@ -28,20 +28,18 @@ See also
 See also **CorrectIlluminationCalculate**.
 """
 
-import numpy as np
+import numpy
 
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import (
-    DoSomething,
-    Choice,
-    RemoveSettingButton,
-    SettingsGroup,
-    ImageNameSubscriber,
-    ValidationError,
-    Divider,
-    ImageNameProvider,
-)
+from cellprofiler_core.setting import DoSomething
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import RemoveSettingButton
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import ImageNameProvider
 
 ######################################
 #
@@ -241,7 +239,9 @@ somewhat empirical.
             )
         else:
             if illum_function_pixel_data.ndim == 2:
-                illum_function_pixel_data = illum_function_pixel_data[:, :, np.newaxis]
+                illum_function_pixel_data = illum_function_pixel_data[
+                    :, :, numpy.newaxis
+                ]
         # Throw an error if image and illum data are incompatible
         if orig_image.pixel_data.shape[:2] != illum_function_pixel_data.shape[:2]:
             raise ValueError(

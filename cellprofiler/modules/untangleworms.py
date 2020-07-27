@@ -100,25 +100,21 @@ import numpy
 import scipy.ndimage
 import six.moves.urllib.request
 import xml.dom.minidom as DOM
-from cellprofiler_core.constants.measurement import (
-    IMAGE,
-    C_LOCATION,
-    FTR_CENTER_X,
-    FTR_CENTER_Y,
-    C_NUMBER,
-    FTR_OBJECT_NUMBER,
-    M_NUMBER_OBJECT_NUMBER,
-    M_LOCATION_CENTER_Y,
-    M_LOCATION_CENTER_X,
-)
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.measurement import C_LOCATION
+from cellprofiler_core.constants.measurement import FTR_CENTER_X
+from cellprofiler_core.constants.measurement import FTR_CENTER_Y
+from cellprofiler_core.constants.measurement import C_NUMBER
+from cellprofiler_core.constants.measurement import FTR_OBJECT_NUMBER
+from cellprofiler_core.constants.measurement import M_NUMBER_OBJECT_NUMBER
+from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y
+from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X
 from cellprofiler_core.setting.choice import Choice, Colormap
-from cellprofiler_core.setting.text import (
-    ImageName,
-    LabelName,
-    Directory,
-    Float,
-    Integer,
-)
+from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.setting.text import Directory
+from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.text import Integer
 from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from scipy.sparse import coo

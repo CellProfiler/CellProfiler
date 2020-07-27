@@ -7,22 +7,42 @@ import urllib.request
 
 import javabridge
 
-import cellprofiler_core.constants.measurement
-import cellprofiler_core.constants.module
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.modules
-import cellprofiler_core.modules.images as cpmi
-import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
-import cellprofiler_core.setting.do_something._remove_setting_button
-import cellprofiler_core.setting.filter._directory_predicate
-import cellprofiler_core.setting.filter._extension_predicate
-import cellprofiler_core.setting.filter._file_predicate
-import cellprofiler_core.setting.text._directory
-import cellprofiler_core.setting.text._filename
-import cellprofiler_core.utilities
+from ..constants.measurement import COLTYPE_FLOAT
+from ..constants.measurement import COLTYPE_INTEGER
+from ..constants.measurement import COLTYPE_VARCHAR
+from ..constants.measurement import COLTYPE_VARCHAR_FILE_NAME
+from ..constants.measurement import C_FRAME
+from ..constants.measurement import C_METADATA
+from ..constants.measurement import C_SERIES
+from ..constants.measurement import RESERVED_METADATA_TAGS
+from ..constants.module import FILTER_RULES_BUTTONS_HELP
+from ..constants.module import PROTIP_RECOMMEND_ICON
+from ..module import Module
+from ..pipeline import ImagePlane
+from ..pipeline import Pipeline
+from ..preferences import ABSOLUTE_FOLDER_NAME
+from ..preferences import URL_FOLDER_NAME
+from ..preferences import report_progress
+from ..setting import Binary
+from ..setting import DataTypes
+from ..setting import Divider
+from ..setting import FileCollectionDisplay
+from ..setting import HiddenCount
+from ..setting import Joiner
+from ..setting import RegexpText
+from ..setting import SettingsGroup
+from ..setting import Table
+from ..setting import ValidationError
+from ..setting.choice import Choice
+from ..setting.do_something import DoSomething
+from ..setting.do_something import RemoveSettingButton
+from ..setting.filter import Filter
+from ..setting.text import Directory
+from ..setting.text import Filename
+from ..utilities.image import generate_presigned_url
+from ..utilities.image import url_to_modpath
+from ..utilities.image import image_resource
+from ..utilities.measurement import find_metadata_tokens
 
 __doc__ = """\
 Metadata
@@ -143,16 +163,10 @@ Measurements made by this module
 
 -  *Metadata:* The prefix of each metadata tag in the per-image table.
 """.format(
-    **{
-        "METADATA_DISPLAY_TABLE": cellprofiler_core.utilities.image.image_resource(
-            "Metadata_ExampleDisplayTable.png"
-        )
-    }
+    **{"METADATA_DISPLAY_TABLE": image_resource("Metadata_ExampleDisplayTable.png")}
 )
 
-import cellprofiler_core.utilities.image
-
-import cellprofiler_core.utilities.measurement
+from ..utilities.pathname import url2pathname
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
@@ -190,7 +204,7 @@ LEN_EXTRACTION_METHOD_V1 = 8
 LEN_EXTRACTION_METHOD = 9
 
 
-class Metadata(cellprofiler_core.module.Module):
+class Metadata(Module):
     variable_revision_number = 6
     module_name = "Metadata"
     category = "File Processing"
@@ -210,7 +224,7 @@ class Metadata(cellprofiler_core.module.Module):
         ]
         self.set_notes([" ".join(module_explanation)])
 
-        self.wants_metadata = cellprofiler_core.setting.Binary(
+        self.wants_metadata = Binary(
             "Extract metadata?",
             False,
             doc="""\
@@ -226,17 +240,17 @@ with your measurements. See the main module help for more details.
 
         self.add_extraction_method(False)
 
-        self.extraction_method_count = cellprofiler_core.setting.HiddenCount(
+        self.extraction_method_count = HiddenCount(
             self.extraction_methods, "Extraction method count"
         )
 
-        self.add_extraction_method_button = cellprofiler_core.setting.DoSomething(
+        self.add_extraction_method_button = DoSomething(
             "", "Add another extraction method", self.add_extraction_method
         )
 
-        self.dtc_divider = cellprofiler_core.setting.Divider()
+        self.dtc_divider = Divider()
 
-        self.data_type_choice = cellprofiler_core.setting.Choice(
+        self.data_type_choice = Choice(
             "Metadata data type",
             DTC_ALL,
             tooltips={
@@ -262,7 +276,7 @@ Metadata can be stored as either a text or numeric value:
             ),
         )
 
-        self.data_types = cellprofiler_core.setting.DataTypes(
+        self.data_types = DataTypes(
             "Metadata types",
             name_fn=self.get_metadata_keys,
             doc="""\
@@ -284,7 +298,7 @@ See **NamesAndTypes** for more details.
             ),
         )
 
-        self.table = cellprofiler_core.setting.Table(
+        self.table = Table(
             "",
             use_sash=True,
             corner_button=dict(
@@ -295,14 +309,14 @@ See **NamesAndTypes** for more details.
         )
 
     def add_extraction_method(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         if can_remove:
-            group.append("divider", cellprofiler_core.setting.Divider())
+            group.append("divider", Divider())
 
         group.append(
             "extraction_method",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Metadata extraction method",
                 X_ALL_EXTRACTION_METHODS,
                 X_MANUAL_EXTRACTION,
@@ -393,7 +407,7 @@ extraction method” button to add more.
                         "X_AUTOMATIC_EXTRACTION": X_AUTOMATIC_EXTRACTION,
                         "X_IMPORTED_EXTRACTION": X_IMPORTED_EXTRACTION,
                         "X_MANUAL_EXTRACTION": X_MANUAL_EXTRACTION,
-                        "PROTIP_RECOMMEND_ICON": cellprofiler_core.constants.module.PROTIP_RECOMMEND_ICON,
+                        "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON,
                     }
                 ),
             ),
@@ -401,7 +415,7 @@ extraction method” button to add more.
 
         group.append(
             "source",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Metadata source",
                 [XM_FILE_NAME, XM_FOLDER_NAME],
                 doc="You can extract the metadata from the image's file name or from its folder name.",
@@ -410,7 +424,7 @@ extraction method” button to add more.
 
         group.append(
             "file_regexp",
-            cellprofiler_core.setting.RegexpText(
+            RegexpText(
                 "Regular expression to extract from file name",
                 "^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])",
                 get_example_fn=self.example_file_fn,
@@ -476,11 +490,11 @@ the standard well nomenclature.
 
         group.append(
             "folder_regexp",
-            cellprofiler_core.setting.RegexpText(
+            RegexpText(
                 "Regular expression to extract from folder name",
                 "(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$",
                 get_example_fn=self.example_directory_fn,
-                guess=cellprofiler_core.setting.RegexpText.GUESS_FOLDER,
+                guess=RegexpText.GUESS_FOLDER,
                 doc="""\
 *(Used only if you want to extract metadata from the path)*
 
@@ -522,7 +536,7 @@ the plate, well, and site in the fields *Date* and *Run*:
 
         group.append(
             "filter_choice",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Extract metadata from",
                 [F_ALL_IMAGES, F_FILTERED_IMAGES],
                 doc="""\
@@ -553,12 +567,12 @@ There are two choices:
 
         group.append(
             "filter",
-            cellprofiler_core.setting.Filter(
+            Filter(
                 "Select the filtering criteria",
                 [
-                    cellprofiler_core.setting.filter._file_predicate.FilePredicate(),
-                    cellprofiler_core.setting.filter._directory_predicate.DirectoryPredicate(),
-                    cellprofiler_core.setting.filter._extension_predicate.ExtensionPredicate(),
+                    filter._file_predicate.FilePredicate(),
+                    filter._directory_predicate.DirectoryPredicate(),
+                    filter._extension_predicate.ExtensionPredicate(),
                 ],
                 'and (file does contain "")',
                 doc="""\
@@ -568,7 +582,7 @@ extraction.
 {FILTER_RULES_BUTTONS_HELP}
 """.format(
                     **{
-                        "FILTER_RULES_BUTTONS_HELP": cellprofiler_core.constants.module.FILTER_RULES_BUTTONS_HELP,
+                        "FILTER_RULES_BUTTONS_HELP": FILTER_RULES_BUTTONS_HELP,
                         "YES": "Yes",
                     }
                 ),
@@ -577,7 +591,7 @@ extraction.
 
         group.append(
             "csv_location",
-            cellprofiler_core.setting._text._directory.Directory(
+            Directory(
                 "Metadata file location",
                 support_urls=True,
                 doc="""\
@@ -607,7 +621,7 @@ the file as “Windows CSV” or “Windows Comma Separated”.
 
         group.append(
             "csv_filename",
-            cellprofiler_core.setting._text._filename.Filename(
+            Filename(
                 "Metadata file name",
                 "None",
                 browse_msg="Choose CSV file",
@@ -622,7 +636,7 @@ the file as “Windows CSV” or “Windows Comma Separated”.
 
         group.append(
             "csv_joiner",
-            cellprofiler_core.setting.Joiner(
+            Joiner(
                 "Match file and image metadata",
                 allow_none=False,
                 doc="""\
@@ -646,18 +660,14 @@ source; press |image0| to add more rows.
 
 .. |image0| image:: {MODULE_ADD_BUTTON}
 """.format(
-                    **{
-                        "MODULE_ADD_BUTTON": cellprofiler_core.utilities.image.image_resource(
-                            "module_add.png"
-                        )
-                    }
+                    **{"MODULE_ADD_BUTTON": image_resource("module_add.png")}
                 ),
             ),
         )
 
         group.append(
             "wants_case_insensitive",
-            cellprofiler_core.setting.Binary(
+            Binary(
                 "Use case insensitive matching?",
                 False,
                 doc="""\
@@ -678,7 +688,7 @@ not being applied, your choice on this setting may be the culprit.
                     **{
                         "NO": "No",
                         "YES": "Yes",
-                        "PROTIP_RECOMMEND_ICON": cellprofiler_core.constants.module.PROTIP_RECOMMEND_ICON,
+                        "PROTIP_RECOMMEND_ICON": PROTIP_RECOMMEND_ICON,
                     }
                 ),
             ),
@@ -686,7 +696,7 @@ not being applied, your choice on this setting may be the culprit.
 
         group.append(
             "metadata_autoextracted",
-            cellprofiler_core.setting.Binary(
+            Binary(
                 "Does cached metadata exist?",
                 False,
                 doc="""Used to keep track of whether a project has stored metadata.""",
@@ -695,7 +705,7 @@ not being applied, your choice on this setting may be the culprit.
 
         group.append(
             "update_metadata",
-            cellprofiler_core.setting.DoSomething(
+            DoSomething(
                 "",
                 "Extract metadata",
                 lambda: self.do_update_metadata(group),
@@ -710,7 +720,7 @@ not being applied, your choice on this setting may be the culprit.
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.do_something._remove_setting_button.RemoveSettingButton(
+                RemoveSettingButton(
                     "", "Remove this extraction method", self.extraction_methods, group
                 ),
             )
@@ -736,7 +746,7 @@ not being applied, your choice on this setting may be the culprit.
         group.imported_metadata_header_path = csv_path
         try:
             if group.csv_location.is_url():
-                url = cellprofiler_core.utilities.image.generate_presigned_url(csv_path)
+                url = generate_presigned_url(csv_path)
                 fd = urllib.request.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
@@ -761,8 +771,8 @@ not being applied, your choice on this setting may be the culprit.
         """
         key_pairs = []
         dt_numeric = (
-            cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
-            cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
+            COLTYPE_FLOAT,
+            COLTYPE_INTEGER,
         )
         kp_cls = "org/cellprofiler/imageset/MetadataKeyPair"
         kp_sig = "(Ljava/lang/String;Ljava/lang/String;)L%s;" % kp_cls
@@ -792,9 +802,7 @@ not being applied, your choice on this setting may be the culprit.
                 "java/io/StringReader", "(Ljava/lang/String;)V", header
             )
         elif group.csv_location.is_url():
-            url = cellprofiler_core.utilities.image.generate_presigned_url(
-                self.csv_path(group)
-            )
+            url = generate_presigned_url(self.csv_path(group))
             jurl = javabridge.make_instance(
                 "java/net/URL", "(Ljava/lang/String;)V", url
             )
@@ -833,7 +841,7 @@ not being applied, your choice on this setting may be the culprit.
             javabridge.to_string,
         )
         joiner = group.csv_joiner
-        assert isinstance(joiner, cellprofiler_core.setting.Joiner)
+        assert isinstance(joiner, Joiner)
         joiner.entities[self.IPD_JOIN_NAME] = list(possible_keys)
         header = self.get_group_header(group)
         if header is None:
@@ -928,7 +936,7 @@ not being applied, your choice on this setting may be the culprit.
             else:
                 urls = self.pipeline.file_list
             if len(urls) > 0:
-                return cellprofiler_core.modules.loadimages.urlfilename(urls[0])
+                return url2pathname(urls[0])
         return "PLATE_A01_s1_w11C78E18A-356E-48EC-B204-3F4379DC43AB.tif"
 
     def example_directory_fn(self):
@@ -941,7 +949,7 @@ not being applied, your choice on this setting may be the culprit.
             else:
                 urls = self.pipeline.file_list
             if len(urls) > 0:
-                return cellprofiler_core.modules.loadimages.urlpathname(urls[0])
+                return url2pathname(urls[0])
         return "/images/2012_01_12"
 
     def change_causes_prepare_run(self, setting):
@@ -961,7 +969,7 @@ not being applied, your choice on this setting may be the culprit.
             return True
 
         pipeline = workspace.pipeline
-        assert isinstance(pipeline, cellprofiler_core.pipeline.Pipeline)
+        assert isinstance(pipeline, Pipeline)
         filtered_file_list = pipeline.get_filtered_file_list(workspace)
         extractor = self.build_extractor()
         env = javabridge.get_env()
@@ -991,10 +999,7 @@ not being applied, your choice on this setting may be the culprit.
             metadata_array,
             key_set,
         )
-        ipds = [
-            cellprofiler_core.pipeline.ImagePlane(jipd)
-            for jipd in env.get_object_array_elements(jipds)
-        ]
+        ipds = [ImagePlane(jipd) for jipd in env.get_object_array_elements(jipds)]
         keys = sorted(javabridge.iterate_collection(key_set, javabridge.to_string))
         pipeline.set_image_plane_details(ipds, keys, self)
         return True
@@ -1145,10 +1150,8 @@ not being applied, your choice on this setting may be the culprit.
                     if group.filter_choice == F_FILTERED_IMAGES:
                         match = group.filter.evaluate(
                             (
-                                cellprofiler_core.setting.FileCollectionDisplay.NODE_IMAGE_PLANE,
-                                cellprofiler_core.modules.images.Images.url_to_modpath(
-                                    url
-                                ),
+                                FileCollectionDisplay.NODE_IMAGE_PLANE,
+                                url_to_modpath(url),
                                 self,
                             )
                         )
@@ -1277,9 +1280,7 @@ not being applied, your choice on this setting may be the culprit.
             self.table.insert_column(i, column)
 
         self.table.add_rows(columns, data)
-        cellprofiler_core.preferences.report_progress(
-            "MetadataCount", None, "Found %d rows" % len(data)
-        )
+        report_progress("MetadataCount", None, "Found %d rows" % len(data))
 
     def on_deactivated(self):
         self.pipeline = None
@@ -1318,16 +1319,11 @@ not being applied, your choice on this setting may be the culprit.
                     if group.source == XM_FILE_NAME
                     else group.folder_regexp
                 )
-                for (
-                    token
-                ) in cellprofiler_core.utilities.measurement.find_metadata_tokens(
-                    re_setting.value
-                ):
+                for token in find_metadata_tokens(re_setting.value):
                     if token.upper() in [
-                        reservedtag.upper()
-                        for reservedtag in cellprofiler_core.constants.measurement.RESERVED_METADATA_TAGS
+                        reservedtag.upper() for reservedtag in RESERVED_METADATA_TAGS
                     ]:
-                        raise cellprofiler_core.setting.ValidationError(
+                        raise ValidationError(
                             'The metadata tag, "%s", is reserved for use by CellProfiler.'
                             " Please use some other tag name." % token,
                             re_setting,
@@ -1355,41 +1351,37 @@ not being applied, your choice on this setting may be the culprit.
         )
 
     NUMERIC_DATA_TYPES = (
-        cellprofiler_core.pipeline.ImagePlane.MD_T,
-        cellprofiler_core.pipeline.ImagePlane.MD_Z,
-        cellprofiler_core.pipeline.ImagePlane.MD_SIZE_C,
-        cellprofiler_core.pipeline.ImagePlane.MD_SIZE_T,
-        cellprofiler_core.pipeline.ImagePlane.MD_SIZE_Z,
-        cellprofiler_core.pipeline.ImagePlane.MD_SIZE_X,
-        cellprofiler_core.pipeline.ImagePlane.MD_SIZE_Y,
-        cellprofiler_core.constants.measurement.C_SERIES,
-        cellprofiler_core.constants.measurement.C_FRAME,
+        ImagePlane.MD_T,
+        ImagePlane.MD_Z,
+        ImagePlane.MD_SIZE_C,
+        ImagePlane.MD_SIZE_T,
+        ImagePlane.MD_SIZE_Z,
+        ImagePlane.MD_SIZE_X,
+        ImagePlane.MD_SIZE_Y,
+        C_SERIES,
+        C_FRAME,
     )
 
     def get_data_type(self, key):
         """Get the data type for a particular metadata key"""
         if isinstance(key, str):
-            return self.get_data_type([key]).get(
-                key, cellprofiler_core.constants.measurement.COLTYPE_VARCHAR
-            )
+            return self.get_data_type([key]).get(key, COLTYPE_VARCHAR)
         result = {}
         if self.data_type_choice == DTC_CHOOSE:
-            data_types = cellprofiler_core.setting.DataTypes.decode_data_types(
-                self.data_types.value_text
-            )
+            data_types = DataTypes.decode_data_types(self.data_types.value_text)
         for k in key:
             if k in self.NUMERIC_DATA_TYPES:
-                result[k] = cellprofiler_core.constants.measurement.COLTYPE_INTEGER
+                result[k] = COLTYPE_INTEGER
             elif self.data_type_choice == DTC_CHOOSE:
-                dt = data_types.get(k, cellprofiler_core.setting.DataTypes.DT_TEXT)
-                if dt == cellprofiler_core.setting.DataTypes.DT_TEXT:
-                    result[k] = cellprofiler_core.constants.measurement.COLTYPE_VARCHAR
-                elif dt == cellprofiler_core.setting.DataTypes.DT_INTEGER:
-                    result[k] = cellprofiler_core.constants.measurement.COLTYPE_INTEGER
-                elif dt == cellprofiler_core.setting.DataTypes.DT_FLOAT:
-                    result[k] = cellprofiler_core.constants.measurement.COLTYPE_FLOAT
+                dt = data_types.get(k, DataTypes.DT_TEXT)
+                if dt == DataTypes.DT_TEXT:
+                    result[k] = COLTYPE_VARCHAR
+                elif dt == DataTypes.DT_INTEGER:
+                    result[k] = COLTYPE_INTEGER
+                elif dt == DataTypes.DT_FLOAT:
+                    result[k] = COLTYPE_FLOAT
             else:
-                result[k] = cellprofiler_core.constants.measurement.COLTYPE_VARCHAR
+                result[k] = COLTYPE_VARCHAR
 
         return result
 
@@ -1423,43 +1415,27 @@ not being applied, your choice on this setting may be the culprit.
         for key, coltype in list(key_types.items()):
             if self.data_type_choice == DTC_CHOOSE:
                 data_type = self.get_data_type(key)
-                if data_type == cellprofiler_core.setting.DataTypes.DT_NONE:
+                if data_type == DataTypes.DT_NONE:
                     continue
-                elif data_type == cellprofiler_core.setting.DataTypes.DT_INTEGER:
-                    data_type = cellprofiler_core.constants.measurement.COLTYPE_INTEGER
-                elif data_type == cellprofiler_core.setting.DataTypes.DT_FLOAT:
-                    data_type = cellprofiler_core.constants.measurement.COLTYPE_FLOAT
+                elif data_type == DataTypes.DT_INTEGER:
+                    data_type = COLTYPE_INTEGER
+                elif data_type == DataTypes.DT_FLOAT:
+                    data_type = COLTYPE_FLOAT
                 else:
-                    data_type = (
-                        cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME
-                    )
+                    data_type = COLTYPE_VARCHAR_FILE_NAME
             else:
-                data_type = (
-                    cellprofiler_core.constants.measurement.COLTYPE_VARCHAR_FILE_NAME
-                )
-            result.append(
-                (
-                    cellprofiler_core.constants.measurement.IMAGE,
-                    "_".join((cellprofiler_core.constants.measurement.C_METADATA, key)),
-                    data_type,
-                )
-            )
+                data_type = COLTYPE_VARCHAR_FILE_NAME
+            result.append(("Image", "_".join((C_METADATA, key)), data_type,))
         return result
 
     def get_categories(self, pipeline, object_name):
         """Return the measurement categories for a particular object"""
-        if (
-            object_name == cellprofiler_core.constants.measurement.IMAGE
-            and len(self.get_metadata_keys()) > 0
-        ):
-            return [cellprofiler_core.constants.measurement.C_METADATA]
+        if object_name == "Image" and len(self.get_metadata_keys()) > 0:
+            return [C_METADATA]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cellprofiler_core.constants.measurement.IMAGE
-            and category == cellprofiler_core.constants.measurement.C_METADATA
-        ):
+        if object_name == "Image" and category == C_METADATA:
             keys = self.get_metadata_keys()
             return keys
         return []
@@ -1535,11 +1511,9 @@ not being applied, your choice on this setting may be the culprit.
                         for scheme in ["http:", "https:", "ftp:"]
                     ]
                 ):
-                    directory_choice = cellprofiler_core.preferences.URL_FOLDER_NAME
+                    directory_choice = URL_FOLDER_NAME
                 else:
-                    directory_choice = (
-                        cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-                    )
+                    directory_choice = ABSOLUTE_FOLDER_NAME
 
                 group[6] = "{}|{}".format(directory_choice, directory)
                 group += [filename]

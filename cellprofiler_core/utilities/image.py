@@ -240,3 +240,23 @@ def generate_presigned_url(url):
         )
 
     return url
+
+
+def url_to_modpath(url):
+    import urllib.parse
+
+    from .hdf5_dict import HDF5FileList
+
+    if not url.lower().startswith("file:"):
+        schema, rest = HDF5FileList.split_url(url)
+        return [schema] + rest[0:1] + [urllib.parse.unquote(part) for part in rest[1:]]
+    path = urllib.request.url2pathname(url[5:])
+    parts = []
+    while True:
+        new_path, part = os.path.split(path)
+        if len(new_path) == 0 or len(part) == 0:
+            parts.insert(0, path)
+            break
+        parts.insert(0, part)
+        path = new_path
+    return parts

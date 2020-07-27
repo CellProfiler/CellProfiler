@@ -1,7 +1,7 @@
-from ._image import Image
+from ._image_name import ImageName
 
 
-class File(Image):
+class FileImageName(ImageName):
     """
     A setting that provides an image name where the image has an associated file
     """
@@ -14,4 +14,4 @@ class File(Image):
 
         kwargs["provided_attributes"]["file_image"] = True
 
-        super(File, self).__init__(text, value, *args, **kwargs)
+        super(FileImageName, self).__init__(text, value, *args, **kwargs)

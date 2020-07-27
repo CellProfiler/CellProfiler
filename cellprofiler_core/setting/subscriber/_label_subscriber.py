@@ -1,7 +1,7 @@
 from ._subscriber import Subscriber
 
 
-class Label(Subscriber):
+class LabelSubscriber(Subscriber):
     """
     A setting that subscribes to the list of available object names
     """
@@ -15,6 +15,6 @@ class Label(Subscriber):
         *args,
         **kwargs,
     ):
-        super(Label, self).__init__(
+        super(LabelSubscriber, self).__init__(
             text, "objectgroup", value, can_be_blank, blank_text, *args, **kwargs
         )

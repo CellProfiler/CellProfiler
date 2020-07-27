@@ -1,7 +1,7 @@
 from ._subscriber import Subscriber
 
 
-class Grid(Subscriber):
+class GridSubscriber(Subscriber):
     """
     A setting that subscribes to grid information providers
     """
@@ -15,6 +15,6 @@ class Grid(Subscriber):
         *args,
         **kwargs,
     ):
-        super(Grid, self).__init__(
+        super(GridSubscriber, self).__init__(
             text, "gridgroup", value, can_be_blank, blank_text, *args, **kwargs
         )

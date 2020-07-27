@@ -1,7 +1,7 @@
-from ._image_subscriber import Image
+from ._image_subscriber import ImageSubscriber
 
 
-class Outline(Image):
+class OutlineImageSubscriber(ImageSubscriber):
     """A setting that subscribes to the list of available object outline names
     """
 
@@ -14,10 +14,10 @@ class Outline(Image):
         *args,
         **kwargs,
     ):
-        super(Outline, self).__init__(
+        super(OutlineImageSubscriber, self).__init__(
             text, value, can_be_blank, blank_text, *args, **kwargs
         )
 
     def matches(self, setting):
         """Only match OutlineNameProvider variables"""
-        return isinstance(setting, Outline)
+        return isinstance(setting, OutlineImageSubscriber)

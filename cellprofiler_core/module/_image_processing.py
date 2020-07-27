@@ -2,7 +2,6 @@ from ._module import Module
 from .. import image
 
 
-
 class ImageProcessing(Module):
     category = "Image Processing"
 
@@ -11,7 +10,7 @@ class ImageProcessing(Module):
             "Select the input image", doc="Select the image you want to use."
         )
 
-        self.y_name = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+        self.y_name = cellprofiler_core.setting._text.alphanumeric.name.image._image.ImageSubscriber(
             "Name the output image",
             self.__class__.__name__,
             doc="Enter the name you want to call the image produced by this module.",

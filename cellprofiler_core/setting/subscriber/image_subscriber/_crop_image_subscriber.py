@@ -1,7 +1,7 @@
-from ._image_subscriber import Image
+from ._image_subscriber import ImageSubscriber
 
 
-class Crop(Image):
+class CropImageSubscriber(ImageSubscriber):
     """A setting that provides image names that have cropping masks"""
 
     def __init__(
@@ -17,6 +17,6 @@ class Crop(Image):
         if "required_attributes" not in kwargs:
             kwargs["required_attributes"] = {}
         kwargs["required_attributes"]["cropping_image"] = True
-        super(Crop, self).__init__(
+        super(CropImageSubscriber, self).__init__(
             text, value, can_be_blank, blank_text, *args, **kwargs
         )

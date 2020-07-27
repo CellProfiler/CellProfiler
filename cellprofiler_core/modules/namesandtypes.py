@@ -25,8 +25,8 @@ import cellprofiler_core.setting.filter._directory_predicate
 import cellprofiler_core.setting.filter._extension_predicate
 import cellprofiler_core.setting.filter._file_predicate
 import cellprofiler_core.setting.filter._image_predicate
-import cellprofiler_core.setting.text.alphanumeric.name._label
-import cellprofiler_core.setting.text.alphanumeric.name.image._file
+import cellprofiler_core.setting.text.alphanumeric.name._label_name
+import cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name
 import cellprofiler_core.setting.text.number._float
 import cellprofiler_core.utilities.image
 from ..image.abstract.file.url import Color
@@ -460,7 +460,7 @@ See help for *Relative pixel spacing in X* for details.
 """,
         )
 
-        self.single_image_provider = cellprofiler_core.setting._text.alphanumeric.name.image._file.File(
+        self.single_image_provider = cellprofiler_core.setting._text.alphanumeric.name.image_name._file_image_name.FileImageName(
             "Name to assign these images", IMAGE_NAMES[0]
         )
 
@@ -705,7 +705,7 @@ Specify a filter using rules to narrow down the files to be analyzed.
 
         group.append(
             "image_name",
-            cellprofiler_core.setting._text.alphanumeric.name.image._file.File(
+            cellprofiler_core.setting._text.alphanumeric.name.image_name._file_image_name.FileImageName(
                 "Name to assign these images",
                 unique_image_name,
                 doc="""\
@@ -722,7 +722,7 @@ by ASCII letters, underbars or digits.
 
         group.append(
             "object_name",
-            cellprofiler_core.setting.text.alphanumeric.name._label.Label(
+            cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName(
                 "Name to assign these objects",
                 unique_object_name,
                 doc="""\
@@ -875,7 +875,7 @@ select an existing image from the file list.
         )
         group.append(
             "image_name",
-            cellprofiler_core.setting._text.alphanumeric.name.image._file.File(
+            cellprofiler_core.setting._text.alphanumeric.name.image_name._file_image_name.FileImageName(
                 "Name to assign this image",
                 unique_image_name,
                 doc="""\
@@ -889,7 +889,7 @@ requests an image selection.
 
         group.append(
             "object_name",
-            cellprofiler_core.setting.text.alphanumeric.name._label.Label(
+            cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName(
                 "Name to assign these objects",
                 unique_object_name,
                 doc="""\

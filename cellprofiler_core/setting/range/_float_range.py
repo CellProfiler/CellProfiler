@@ -1,7 +1,7 @@
-from cellprofiler_core.setting.range._range import Range
+from ._range import Range
 
 
-class Float(Range):
+class FloatRange(Range):
     """A setting that allows only floating point input between two constrained values
     """
 
@@ -16,7 +16,7 @@ class Float(Range):
         """
         smin, smax = [("%f" % v).rstrip("0") for v in value]
         text_value = ",".join([x + "0" if x.endswith(".") else x for x in (smin, smax)])
-        super(Float, self).__init__(text, text_value, *args, **kwargs)
+        super(FloatRange, self).__init__(text, text_value, *args, **kwargs)
 
     def str_to_value(self, value_str):
         return float(value_str)

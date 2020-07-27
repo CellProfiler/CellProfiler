@@ -1,7 +1,7 @@
-from ._image_subscriber import Image
+from ._image_subscriber import ImageSubscriber
 
 
-class External(Image):
+class ExternalImageSubscriber(ImageSubscriber):
     """A setting that provides image names loaded externally (eg: from Java)"""
 
     def __init__(
@@ -13,6 +13,6 @@ class External(Image):
         *args,
         **kwargs,
     ):
-        super(External, self).__init__(
+        super(ExternalImageSubscriber, self).__init__(
             text, value, can_be_blank, blank_text, *args, **kwargs
         )

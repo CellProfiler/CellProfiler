@@ -1,7 +1,7 @@
 from .._subscriber import Subscriber
 
 
-class Image(Subscriber):
+class ImageSubscriber(Subscriber):
     """A setting that provides an image name
     """
 
@@ -14,6 +14,6 @@ class Image(Subscriber):
         *args,
         **kwargs,
     ):
-        super(Image, self).__init__(
+        super(ImageSubscriber, self).__init__(
             text, "imagegroup", value, can_be_blank, blank_text, *args, **kwargs
         )

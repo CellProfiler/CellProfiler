@@ -1,7 +1,7 @@
-from ._image import Image
+from ._image_name import ImageName
 
 
-class External(Image):
+class ExternalImageName(ImageName):
     """
     A setting that provides an image name where the image is loaded externally. (eg: from Java)
     """
@@ -14,4 +14,4 @@ class External(Image):
 
         kwargs["provided_attributes"]["external_image"] = True
 
-        super(External, self).__init__(text, value, *args, **kwargs)
+        super(ExternalImageName, self).__init__(text, value, *args, **kwargs)

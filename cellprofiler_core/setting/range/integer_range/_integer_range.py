@@ -1,7 +1,7 @@
-from cellprofiler_core.setting.range._range import Range
+from .._range import Range
 
 
-class Integer(Range):
+class IntegerRange(Range):
     """A setting that allows only integer input between two constrained values
     """
 
@@ -14,7 +14,7 @@ class Integer(Range):
         minval - the minimum acceptable value of either
         maxval - the maximum acceptable value of either
         """
-        super(Integer, self).__init__(
+        super(IntegerRange, self).__init__(
             text, "%d,%d" % value, minval, maxval, *args, **kwargs
         )
 

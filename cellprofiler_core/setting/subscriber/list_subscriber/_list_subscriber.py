@@ -2,7 +2,7 @@ from .._subscriber import Subscriber
 from ..._validation_error import ValidationError
 
 
-class List(Subscriber):
+class ListSubscriber(Subscriber):
     """
     Stores name provider names as a list
     """
@@ -19,7 +19,7 @@ class List(Subscriber):
     ):
         if value is None:
             value = ""
-        super(List, self).__init__(
+        super(ListSubscriber, self).__init__(
             text, group, value, can_be_blank, blank_text, *args, **kwargs
         )
         self.value = value

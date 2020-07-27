@@ -27,8 +27,8 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.pipeline.dependency
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-import cellprofiler_core.setting.text.alphanumeric.name._label
-import cellprofiler_core.setting.text.alphanumeric.name.image._image
+import cellprofiler_core.setting.text.alphanumeric.name._label_name
+import cellprofiler_core.setting.text.alphanumeric.name.image_name._image_name
 import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
@@ -833,7 +833,7 @@ HasImagePlaneDetails:False"""
 
     def test_get_provider_dictionary_image(self):
         pipeline = get_empty_pipeline()
-        my_setting = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+        my_setting = cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
             "foo", IMAGE_NAME
         )
         module = ATestModule([my_setting])
@@ -852,7 +852,7 @@ HasImagePlaneDetails:False"""
 
     def test_get_provider_dictionary_object(self):
         pipeline = get_empty_pipeline()
-        my_setting = cellprofiler_core.setting.text.alphanumeric.name._label.Label(
+        my_setting = cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName(
             "foo", OBJECT_NAME
         )
         module = ATestModule([my_setting])
@@ -912,10 +912,10 @@ HasImagePlaneDetails:False"""
 
     def test_get_provider_dictionary_combo(self):
         pipeline = get_empty_pipeline()
-        image_setting = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+        image_setting = cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
             "foo", IMAGE_NAME
         )
-        object_setting = cellprofiler_core.setting.text.alphanumeric.name._label.Label(
+        object_setting = cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName(
             "foo", OBJECT_NAME
         )
         measurement_columns = [
@@ -978,13 +978,13 @@ HasImagePlaneDetails:False"""
         # Test disambiguation of the sources
         #
         pipeline = get_empty_pipeline()
-        my_image_setting_1 = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+        my_image_setting_1 = cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
             "foo", IMAGE_NAME
         )
-        my_image_setting_2 = cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+        my_image_setting_2 = cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
             "foo", IMAGE_NAME
         )
-        my_object_setting = cellprofiler_core.setting.text.alphanumeric.name._label.Label(
+        my_object_setting = cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName(
             "foo", OBJECT_NAME
         )
         module1 = ATestModule(settings=[my_image_setting_1])
@@ -1022,7 +1022,7 @@ HasImagePlaneDetails:False"""
             ATestModule([cellprofiler_core.setting.Choice("foo", ["Hello", "World"])]),
             ATestModule(
                 [
-                    cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+                    cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
                         "foo", IMAGE_NAME
                     )
                 ]
@@ -1043,14 +1043,14 @@ HasImagePlaneDetails:False"""
             (
                 ATestModule(
                     [
-                        cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+                        cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
                             "foo", IMAGE_NAME
                         )
                     ]
                 ),
                 ATestModule(
                     [
-                        cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+                        cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
                             "foo", ALT_IMAGE_NAME
                         )
                     ]
@@ -1078,14 +1078,14 @@ HasImagePlaneDetails:False"""
             (
                 ATestModule(
                     [
-                        cellprofiler_core.setting.text.alphanumeric.name._label.Label(
+                        cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName(
                             "foo", OBJECT_NAME
                         )
                     ]
                 ),
                 ATestModule(
                     [
-                        cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+                        cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
                             "foo", IMAGE_NAME
                         )
                     ]
@@ -1124,7 +1124,7 @@ HasImagePlaneDetails:False"""
                 ATestModule(measurement_columns=measurement_columns),
                 ATestModule(
                     [
-                        cellprofiler_core.setting._text.alphanumeric.name.image._image.Image(
+                        cellprofiler_core.setting._text.alphanumeric.name.image_name._image_name.ImageName(
                             "foo", ALT_IMAGE_NAME
                         )
                     ]

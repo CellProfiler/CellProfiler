@@ -1,7 +1,7 @@
-from ._image_subscriber import Image
+from ._image_subscriber import ImageSubscriber
 
 
-class File(Image):
+class FileImageSubscriber(ImageSubscriber):
     """A setting that provides image names loaded from files"""
 
     def __init__(
@@ -17,6 +17,6 @@ class File(Image):
         if "required_attributes" not in kwargs:
             kwargs["required_attributes"] = {}
         kwargs["required_attributes"]["file_image"] = True
-        super(File, self).__init__(
+        super(FileImageSubscriber, self).__init__(
             text, value, can_be_blank, blank_text, *args, **kwargs
         )

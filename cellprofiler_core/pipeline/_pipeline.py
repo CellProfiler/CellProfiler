@@ -588,7 +588,7 @@ class Pipeline:
             for setting in module.settings():
                 if isinstance(
                     setting,
-                    cellprofiler_core.setting._text.alphanumeric.name.image._external.External,
+                    cellprofiler_core.setting._text.alphanumeric.name.image._external.ExternalImageSubscriber,
                 ):
                     result.append(setting.value)
         return result
@@ -647,7 +647,7 @@ class Pipeline:
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
-            image_set.add(image_name, cellprofiler_core.image.Image(input_pixels))
+            image_set.add(image_name, cellprofiler_core.image.ImageSubscriber(input_pixels))
         object_set = cellprofiler_core.object.ObjectSet()
         measurements = cellprofiler_core.measurement.Measurements()
 

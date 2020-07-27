@@ -1,6 +1,6 @@
 from ..module import Module
 from ..object import Objects
-from ..setting.text.alphanumeric.name._label import Label
+from ..setting.text.alphanumeric.name._label_name import LabelName
 
 
 class InjectObjects(Module):
@@ -26,7 +26,7 @@ class InjectObjects(Module):
                                   same as segmented
         """
         super(InjectObjects, self).__init__()
-        self.object_name = Label("text", object_name)
+        self.object_name = LabelName("text", object_name)
         self.__segmented = segmented
         self.__unedited_segmented = unedited_segmented
         self.__small_removed_segmented = small_removed_segmented

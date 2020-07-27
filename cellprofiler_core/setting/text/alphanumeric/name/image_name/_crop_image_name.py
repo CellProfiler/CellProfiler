@@ -1,7 +1,7 @@
-from ._image import Image
+from ._image_name import ImageName
 
 
-class Crop(Image):
+class CropImageName(ImageName):
     """
     A setting that provides an image name where the image has a cropping mask
     """
@@ -14,4 +14,4 @@ class Crop(Image):
 
         kwargs["provided_attributes"]["cropping_image"] = True
 
-        super(Crop, self).__init__(text, value, *args, **kwargs)
+        super(CropImageName, self).__init__(text, value, *args, **kwargs)

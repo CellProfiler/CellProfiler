@@ -1,9 +1,9 @@
-from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting.range._range import Range
-from cellprofiler_core.setting.range.integer._integer import Integer
+from ._integer_range import IntegerRange
+from .._range import Range
+from ..._validation_error import ValidationError
 
 
-class IntegerOrUnbounded(Integer):
+class IntegerOrUnboundedRange(IntegerRange):
     """A setting that specifies an integer range where the minimum and maximum
     can be set to unbounded by the user.
 
@@ -31,12 +31,12 @@ class IntegerOrUnbounded(Integer):
             len(str_value) > 0 and str_value[1:] == "end"
         ):
             return "end"
-        return super(IntegerOrUnbounded, self).str_to_value(str_value)
+        return super(IntegerOrUnboundedRange, self).str_to_value(str_value)
 
     def value_to_str(self, value):
         if value in ("begin", "end"):
             return value
-        return super(IntegerOrUnbounded, self).value_to_str(value)
+        return super(IntegerOrUnboundedRange, self).value_to_str(value)
 
     def get_unbounded_min(self):
         """True if there is no minimum"""

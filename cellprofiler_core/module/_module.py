@@ -863,7 +863,7 @@ class Module:
             if (
                 isinstance(
                     setting,
-                    cellprofiler_core.setting._text.alphanumeric.name.image._file.File,
+                    cellprofiler_core.setting._text.alphanumeric.name.image._file.FileImageSubscriber,
                 )
                 and setting.value == image_name
             ):

@@ -1,4 +1,5 @@
 import io
+import json
 import os
 import tempfile
 
@@ -421,7 +422,7 @@ C10,BRD041618,1.5,2
         module.data_type_choice.value = (
             cellprofiler_core.constants.modules.metadata.DTC_CHOOSE
         )
-        module.data_types.value = cellprofiler_core.setting.json.dumps(
+        module.data_types.value = json.dumps(
             dict(
                 Plate=cellprofiler_core.setting.DataTypes.DT_TEXT,
                 Well=cellprofiler_core.setting.DataTypes.DT_TEXT,
@@ -920,7 +921,7 @@ def test_well_row_column():
         pipeline.add_module(imgs)
         module.set_module_num(2)
         pipeline.add_module(module)
-        assert cellprofiler_core.measurement.M_WELL in [
+        assert cellprofiler_core.constants.measurement.M_WELL in [
             c[1] for c in module.get_measurement_columns(pipeline)
         ]
 

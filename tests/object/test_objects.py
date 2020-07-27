@@ -13,6 +13,7 @@ import cellprofiler_core.image
 import cellprofiler_core.image
 import cellprofiler_core.object
 import cellprofiler_core.object
+import cellprofiler_core.utilities.core.object
 import cellprofiler_core.utilities.hdf5_dict
 import cellprofiler_core.utilities.hdf5_dict
 
@@ -62,66 +63,66 @@ class TestDownsampleLabels:
     def test_01_01_downsample_127(self):
         i, j = numpy.mgrid[0:16, 0:8]
         labels = (i * 8 + j).astype(int)
-        result = cellprofiler_core.object.downsample_labels(labels)
+        result = cellprofiler_core.utilities.core.object.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int8)
         assert numpy.all(result == labels)
 
     def test_01_02_downsample_128(self):
         i, j = numpy.mgrid[0:16, 0:8]
         labels = (i * 8 + j).astype(int) + 1
-        result = cellprofiler_core.object.downsample_labels(labels)
+        result = cellprofiler_core.utilities.core.object.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int16)
         assert numpy.all(result == labels)
 
     def test_01_03_downsample_32767(self):
         i, j = numpy.mgrid[0:256, 0:128]
         labels = (i * 128 + j).astype(int)
-        result = cellprofiler_core.object.downsample_labels(labels)
+        result = cellprofiler_core.utilities.core.object.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int16)
         assert numpy.all(result == labels)
 
     def test_01_04_downsample_32768(self):
         i, j = numpy.mgrid[0:256, 0:128]
         labels = (i * 128 + j).astype(int) + 1
-        result = cellprofiler_core.object.downsample_labels(labels)
+        result = cellprofiler_core.utilities.core.object.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int32)
         assert numpy.all(result == labels)
 
 
 class TestCropLabelsAndImage:
     def test_01_01_crop_same(self):
-        labels, image = cellprofiler_core.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.utilities.core.object.crop_labels_and_image(
             numpy.zeros((10, 20)), numpy.zeros((10, 20))
         )
         assert tuple(labels.shape) == (10, 20)
         assert tuple(image.shape) == (10, 20)
 
     def test_01_02_crop_image(self):
-        labels, image = cellprofiler_core.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.utilities.core.object.crop_labels_and_image(
             numpy.zeros((10, 20)), numpy.zeros((10, 30))
         )
         assert tuple(labels.shape) == (10, 20)
         assert tuple(image.shape) == (10, 20)
-        labels, image = cellprofiler_core.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.utilities.core.object.crop_labels_and_image(
             numpy.zeros((10, 20)), numpy.zeros((20, 20))
         )
         assert tuple(labels.shape) == (10, 20)
         assert tuple(image.shape) == (10, 20)
 
     def test_01_03_crop_labels(self):
-        labels, image = cellprofiler_core.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.utilities.core.object.crop_labels_and_image(
             numpy.zeros((10, 30)), numpy.zeros((10, 20))
         )
         assert tuple(labels.shape) == (10, 20)
         assert tuple(image.shape) == (10, 20)
-        labels, image = cellprofiler_core.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.utilities.core.object.crop_labels_and_image(
             numpy.zeros((20, 20)), numpy.zeros((10, 20))
         )
         assert tuple(labels.shape) == (10, 20)
         assert tuple(image.shape) == (10, 20)
 
     def test_01_04_crop_both(self):
-        labels, image = cellprofiler_core.object.crop_labels_and_image(
+        labels, image = cellprofiler_core.utilities.core.object.crop_labels_and_image(
             numpy.zeros((10, 30)), numpy.zeros((20, 20))
         )
         assert tuple(labels.shape) == (10, 20)
@@ -172,7 +173,7 @@ class TestCropLabelsAndImage:
         labels[:, 3:-3, 3:-3] = 2
         labels[-3:, -3:, -3:] = 3
 
-        overlay_pixel_data = cellprofiler_core.object.overlay_labels(
+        overlay_pixel_data = cellprofiler_core.utilities.core.object.overlay_labels(
             pixel_data=data, labels=labels
         )
 
@@ -197,7 +198,7 @@ class TestCropLabelsAndImage:
         labels[:3, :3, :3] = 1
         labels[-3:, -3:, -3:] = 3
 
-        overlay_pixel_data = cellprofiler_core.object.overlay_labels(
+        overlay_pixel_data = cellprofiler_core.utilities.core.object.overlay_labels(
             pixel_data=data, labels=labels
         )
 
@@ -212,26 +213,26 @@ class TestCropLabelsAndImage:
 
 class TestSizeSimilarly:
     def test_01_01_size_same(self):
-        secondary, mask = cellprofiler_core.object.size_similarly(
+        secondary, mask = cellprofiler_core.utilities.core.object.size_similarly(
             numpy.zeros((10, 20)), numpy.zeros((10, 20))
         )
         assert tuple(secondary.shape) == (10, 20)
         assert numpy.all(mask)
 
     def test_01_02_larger_secondary(self):
-        secondary, mask = cellprofiler_core.object.size_similarly(
+        secondary, mask = cellprofiler_core.utilities.core.object.size_similarly(
             numpy.zeros((10, 20)), numpy.zeros((10, 30))
         )
         assert tuple(secondary.shape) == (10, 20)
         assert numpy.all(mask)
-        secondary, mask = cellprofiler_core.object.size_similarly(
+        secondary, mask = cellprofiler_core.utilities.core.object.size_similarly(
             numpy.zeros((10, 20)), numpy.zeros((20, 20))
         )
         assert tuple(secondary.shape) == (10, 20)
         assert numpy.all(mask)
 
     def test_01_03_smaller_secondary(self):
-        secondary, mask = cellprofiler_core.object.size_similarly(
+        secondary, mask = cellprofiler_core.utilities.core.object.size_similarly(
             numpy.zeros((10, 20), int), numpy.zeros((10, 15), numpy.float32)
         )
         assert tuple(secondary.shape) == (10, 20)
@@ -240,7 +241,7 @@ class TestSizeSimilarly:
         assert secondary.dtype == numpy.dtype(numpy.float32)
 
     def test_01_04_size_color(self):
-        secondary, mask = cellprofiler_core.object.size_similarly(
+        secondary, mask = cellprofiler_core.utilities.core.object.size_similarly(
             numpy.zeros((10, 20), int), numpy.zeros((10, 15, 3), numpy.float32)
         )
         assert tuple(secondary.shape) == (10, 20, 3)

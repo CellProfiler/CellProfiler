@@ -1,123 +1,22 @@
 import os
+import re
 import shutil
 import tempfile
 import urllib.request
 
+import boto3
 import javabridge
 import numpy
+import pkg_resources
 import scipy.io
 
-import cellprofiler_core.constants.measurement
-import cellprofiler_core.measurement
-import cellprofiler_core.utilities.measurement
-from cellprofiler_core.utilities import generate_presigned_url
-
-UIC1_TAG = 33628
-UIC2_TAG = 33629
-UIC3_TAG = 33630
-UIC4_TAG = 33631
-C_MD5_DIGEST = "MD5Digest"
-C_SCALING = "Scaling"
-C_HEIGHT = "Height"
-C_WIDTH = "Width"
-MS_EXACT_MATCH = "Text-Exact match"
-MS_REGEXP = "Text-Regular expressions"
-MS_ORDER = "Order"
-FF_INDIVIDUAL_IMAGES = "individual images"
-FF_STK_MOVIES = "stk movies"
-FF_AVI_MOVIES = "avi,mov movies"
-FF_AVI_MOVIES_OLD = ["avi movies"]
-FF_OTHER_MOVIES = "tif,tiff,flex,zvi movies"
-FF_OTHER_MOVIES_OLD = ["tif,tiff,flex movies", "tif,tiff,flex movies, zvi movies"]
-IO_IMAGES = "Images"
-IO_OBJECTS = "Objects"
-IO_ALL = (IO_IMAGES, IO_OBJECTS)
-IMAGE_FOR_OBJECTS_F = "IMAGE_FOR_%s"
-SUPPORTED_IMAGE_EXTENSIONS = {
-    ".ppm",
-    ".grib",
-    ".im",
-    ".rgba",
-    ".rgb",
-    ".pcd",
-    ".h5",
-    ".jpe",
-    ".jfif",
-    ".jpg",
-    ".fli",
-    ".sgi",
-    ".gbr",
-    ".pcx",
-    ".mpeg",
-    ".jpeg",
-    ".ps",
-    ".flc",
-    ".tif",
-    ".hdf",
-    ".icns",
-    ".gif",
-    ".palm",
-    ".mpg",
-    ".fits",
-    ".pgm",
-    ".mic",
-    ".fit",
-    ".xbm",
-    ".eps",
-    ".emf",
-    ".dcx",
-    ".bmp",
-    ".bw",
-    ".pbm",
-    ".dib",
-    ".ras",
-    ".cur",
-    ".fpx",
-    ".png",
-    ".msp",
-    ".iim",
-    ".wmf",
-    ".tga",
-    ".bufr",
-    ".ico",
-    ".psd",
-    ".xpm",
-    ".arg",
-    ".pdf",
-    ".tiff",
-}
-SUPPORTED_MOVIE_EXTENSIONS = {
-    ".avi",
-    ".mpeg",
-    ".stk",
-    ".flex",
-    ".mov",
-    ".tif",
-    ".tiff",
-    ".zvi",
-}
-FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
-M_NONE = "None"
-M_FILE_NAME = "File name"
-M_PATH = "Path"
-M_BOTH = "Both"
-M_Z = "Z"
-M_T = "T"
-C_SERIES = "Series"
-C_FRAME = "Frame"
-P_IMAGES = "LoadImagesImageProvider"
-V_IMAGES = 1
-P_MOVIES = "LoadImagesMovieProvider"
-V_MOVIES = 2
-P_FLEX = "LoadImagesFlexFrameProvider"
-V_FLEX = 1
-I_INTERLEAVED = "Interleaved"
-I_SEPARATED = "Separated"
-SUB_NONE = "None"
-SUB_ALL = "All"
-SUB_SOME = "Some"
-FILE_SCHEME = "file:"
-PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3")
+from .measurement import is_well_row_token
+from .measurement import is_well_column_token
+from ..constants.image import SUPPORTED_IMAGE_EXTENSIONS
+from ..constants.image import SUPPORTED_MOVIE_EXTENSIONS
+from ..constants.image import PASSTHROUGH_SCHEMES
+from ..constants.image import FILE_SCHEME
+from ..constants.measurement import FTR_WELL
 
 
 def convert_image_to_objects(image):
@@ -179,9 +78,9 @@ def well_metadata_tokens(tokens):
     well_row_token = None
     well_column_token = None
     for token in tokens:
-        if cellprofiler_core.utilities.measurement.is_well_row_token(token):
+        if is_well_row_token(token):
             well_row_token = token
-        if cellprofiler_core.utilities.measurement.is_well_column_token(token):
+        if is_well_column_token(token):
             well_column_token = token
     return well_row_token, well_column_token
 
@@ -191,7 +90,7 @@ def needs_well_metadata(tokens):
 
     Check for a row and column token and the absence of the well token.
     """
-    if cellprofiler_core.constants.measurement.FTR_WELL.lower() in [
+    if FTR_WELL.lower() in [
         x.lower() for x in tokens
     ]:
         return False
@@ -306,3 +205,40 @@ def crop_image(image, crop_mask, crop_internal=False):
 def make_dictionary_key(key):
     """Make a dictionary into a stable key for another dictionary"""
     return ", ".join([":".join([str(y) for y in x]) for x in sorted(key.items())])
+
+
+def image_resource(filename):
+    try:
+        abspath = os.path.abspath(
+            pkg_resources.resource_filename(
+                "cellprofiler", os.path.join("data", "images", filename)
+            )
+        )
+        return abspath.replace("\\", "/")
+    except ModuleNotFoundError:
+        # CellProfiler is not installed so the assets are missing.
+        # In theory an icon should never be called without the GUI anyway
+        print("CellProfiler image assets were not found")
+    return ""
+
+
+def generate_presigned_url(url):
+    """
+    Generate a presigned URL, if necessary (e.g., s3).
+
+    :param url: An unsigned URL.
+    :return: The presigned URL.
+    """
+    if url.startswith("s3"):
+        client = boto3.client("s3")
+
+        bucket_name, filename = (
+            re.compile("s3://([\w\d\-.]+)/(.*)").search(url).groups()
+        )
+
+        url = client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": filename.replace("+", " ")},
+        )
+
+    return url

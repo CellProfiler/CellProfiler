@@ -16,7 +16,7 @@ from ..setting import PathListRefreshButton
 from ..setting.filter import DirectoryPredicate
 from ..setting.filter import ExtensionPredicate
 from ..setting.filter import FilePredicate
-from ..utilities import image_resource
+from ..utilities.image import image_resource
 from ..utilities.hdf5_dict import HDF5FileList
 from ..utilities.pathname import pathname2url
 

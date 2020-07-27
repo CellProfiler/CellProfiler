@@ -1958,7 +1958,7 @@ class Pipeline:
         path - a path to a file or a URL
         """
         if isinstance(path_or_fd, str):
-            from cellprofiler_core.utilities.image import FILE_SCHEME
+            from ..constants.image import FILE_SCHEME
             from cellprofiler_core.utilities.pathname import url2pathname
 
             pathname = path_or_fd

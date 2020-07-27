@@ -5,7 +5,6 @@ import tempfile
 
 from .hdf5_dict import get_top_level_group
 from .hdf5_dict import VERSION
-from ..preferences import get_temporary_directory, get_default_output_directory
 
 
 def get_length_from_varchar(x):
@@ -22,6 +21,8 @@ def make_temporary_file():
     returns a file descriptor (that should be closed when done) and a
     file name.
     """
+    from ..preferences import get_temporary_directory
+
     temporary_directory = get_temporary_directory()
     if not (
         os.path.exists(temporary_directory) and os.access(temporary_directory, os.W_OK)
@@ -82,6 +83,8 @@ def load_measurements(filename, dest_file=None, run_name=None, image_numbers=Non
 
 
 def load_measurements_from_buffer(buf):
+    from ..preferences import get_default_output_directory
+
     dirtgt = get_default_output_directory()
     if not (os.path.exists(dirtgt) and os.access(dirtgt, os.W_OK)):
         dirtgt = None

@@ -1,7 +1,7 @@
 from ..preferences import ABSOLUTE_FOLDER_NAME
 from ..preferences import DEFAULT_INPUT_SUBFOLDER_NAME
 from ..preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
-from ..utilities import image_resource
+from ..utilities.image import image_resource
 
 DEFINITION_OBJECT = """\
 In CellProfiler, we use the term *object* as a generic term to refer to

@@ -144,11 +144,13 @@ Measurements made by this module
 -  *Metadata:* The prefix of each metadata tag in the per-image table.
 """.format(
     **{
-        "METADATA_DISPLAY_TABLE": cellprofiler_core.utilities.image_resource(
+        "METADATA_DISPLAY_TABLE": cellprofiler_core.utilities.image.image_resource(
             "Metadata_ExampleDisplayTable.png"
         )
     }
 )
+
+import cellprofiler_core.utilities.image
 
 import cellprofiler_core.utilities.measurement
 
@@ -645,7 +647,7 @@ source; press |image0| to add more rows.
 .. |image0| image:: {MODULE_ADD_BUTTON}
 """.format(
                     **{
-                        "MODULE_ADD_BUTTON": cellprofiler_core.utilities.image_resource(
+                        "MODULE_ADD_BUTTON": cellprofiler_core.utilities.image.image_resource(
                             "module_add.png"
                         )
                     }
@@ -734,7 +736,7 @@ not being applied, your choice on this setting may be the culprit.
         group.imported_metadata_header_path = csv_path
         try:
             if group.csv_location.is_url():
-                url = cellprofiler_core.utilities.generate_presigned_url(csv_path)
+                url = cellprofiler_core.utilities.image.generate_presigned_url(csv_path)
                 fd = urllib.request.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
@@ -790,7 +792,7 @@ not being applied, your choice on this setting may be the culprit.
                 "java/io/StringReader", "(Ljava/lang/String;)V", header
             )
         elif group.csv_location.is_url():
-            url = cellprofiler_core.utilities.generate_presigned_url(
+            url = cellprofiler_core.utilities.image.generate_presigned_url(
                 self.csv_path(group)
             )
             jurl = javabridge.make_instance(

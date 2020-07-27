@@ -10,6 +10,7 @@
 import logging
 import os
 import os.path
+import pathlib
 import sys
 import tempfile
 import threading
@@ -20,9 +21,8 @@ import weakref
 
 import psutil
 
-import cellprofiler_core.utilities
-import cellprofiler_core.utilities.utf16encode
-from cellprofiler_core.preferences._headless_configuration import HeadlessConfiguration
+from ._headless_configuration import HeadlessConfiguration
+from ..utilities.image import image_resource
 
 """get_absolute_path - mode = output. Assume "." is the default output dir"""
 ABSPATH_OUTPUT = "abspath_output"
@@ -30,7 +30,7 @@ ABSPATH_OUTPUT = "abspath_output"
 """get_absolute_path - mode = image. Assume "." is the default input dir"""
 ABSPATH_IMAGE = "abspath_image"
 
-__python_root = os.path.split(os.path.dirname(cellprofiler_core.__file__))[0]
+__python_root = os.path.split(os.path.dirname(pathlib.Path(__file__).parent))[0]
 __cp_root = os.path.split(__python_root)[0]
 
 __is_headless = False
@@ -426,10 +426,10 @@ created according to the pathname you have typed.
 .. |image1| image:: {CREATE_BUTTON}\
 """.format(
     **{
-        "CREATE_BUTTON": cellprofiler_core.utilities.image_resource(
+        "CREATE_BUTTON": image_resource(
             "folder_create.png"
         ),
-        "BROWSE_BUTTON": cellprofiler_core.utilities.image_resource(
+        "BROWSE_BUTTON": image_resource(
             "folder_browse.png"
         ),
     }

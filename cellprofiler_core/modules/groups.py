@@ -142,11 +142,13 @@ but only a subset of them may actually be active, depending on the
 number of groups you have.
 """.format(
     **{
-        "GROUPS_DISPLAY_TABLE": cellprofiler_core.utilities.image_resource(
+        "GROUPS_DISPLAY_TABLE": cellprofiler_core.utilities.image.image_resource(
             "Groups_ExampleDisplayTable.png"
         )
     }
 )
+
+import cellprofiler_core.utilities.image
 
 
 class Groups(cellprofiler_core.module.Module):

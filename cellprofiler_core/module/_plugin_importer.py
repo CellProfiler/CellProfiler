@@ -2,7 +2,7 @@ import os
 import sys
 import types
 
-import cellprofiler_core.preferences
+from ..preferences import get_plugin_directory
 
 
 class PluginImporter(object):
@@ -14,7 +14,7 @@ class PluginImporter(object):
             return None
         if os.path.exists(
             os.path.join(
-                cellprofiler_core.preferences.get_plugin_directory(), modname + ".py"
+                get_plugin_directory(), modname + ".py"
             )
         ):
             return self

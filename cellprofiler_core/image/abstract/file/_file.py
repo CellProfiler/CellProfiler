@@ -9,17 +9,15 @@ import numpy
 import skimage
 
 import cellprofiler_core.preferences
-from cellprofiler_core.utilities import generate_presigned_url
 from .._abstract import Abstract
 from ..._image import Image
 from ....utilities.image import (
     is_numpy_file,
     is_matlab_file,
     loadmat,
-    load_data_file,
-    FILE_SCHEME,
-    PASSTHROUGH_SCHEMES,
+    load_data_file, generate_presigned_url,
 )
+from ....constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES
 from ....utilities.pathname import pathname2url, url2pathname
 
 

@@ -1,10 +1,9 @@
 import urllib.request
 
 from cellprofiler_core.utilities.image import (
-    PASSTHROUGH_SCHEMES,
-    FILE_SCHEME,
     is_file_url,
 )
+from cellprofiler_core.constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES
 
 
 def pathname2url(path):

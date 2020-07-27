@@ -12,6 +12,7 @@ import pytest
 import six
 import zlib
 
+import cellprofiler_core.constants.image
 import cellprofiler_core.constants.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.namesandtypes
@@ -1767,21 +1768,21 @@ def test_load_color():
     assert (
         m[
             cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.utilities.image.C_MD5_DIGEST + "_" + IMAGE_NAME,
+            cellprofiler_core.constants.image.C_MD5_DIGEST + "_" + IMAGE_NAME,
         ]
         == md5
     )
     assert (
         m[
             cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.utilities.image.C_HEIGHT + "_" + IMAGE_NAME,
+            cellprofiler_core.constants.image.C_HEIGHT + "_" + IMAGE_NAME,
         ]
         == 21
     )
     assert (
         m[
             cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.utilities.image.C_WIDTH + "_" + IMAGE_NAME,
+            cellprofiler_core.constants.image.C_WIDTH + "_" + IMAGE_NAME,
         ]
         == 31
     )
@@ -1926,14 +1927,14 @@ def test_load_objects():
     assert (
         m[
             cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.utilities.image.C_MD5_DIGEST + "_" + OBJECTS_NAME,
+            cellprofiler_core.constants.image.C_MD5_DIGEST + "_" + OBJECTS_NAME,
         ]
         == md5
     )
     assert (
         m[
             cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.utilities.image.C_WIDTH + "_" + OBJECTS_NAME,
+            cellprofiler_core.constants.image.C_WIDTH + "_" + OBJECTS_NAME,
         ]
         == target.shape[1]
     )
@@ -2061,14 +2062,14 @@ def test_load_single_object():
     assert (
         m[
             cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.utilities.image.C_MD5_DIGEST + "_lsi",
+            cellprofiler_core.constants.image.C_MD5_DIGEST + "_lsi",
         ]
         == md5
     )
     assert (
         m[
             cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.utilities.image.C_WIDTH + "_lsi",
+            cellprofiler_core.constants.image.C_WIDTH + "_lsi",
         ]
         == target.shape[1]
     )
@@ -2098,10 +2099,10 @@ def test_get_measurement_columns():
         cellprofiler_core.constants.measurement.C_FILE_NAME,
         cellprofiler_core.constants.measurement.C_PATH_NAME,
         cellprofiler_core.constants.measurement.C_URL,
-        cellprofiler_core.utilities.image.C_MD5_DIGEST,
-        cellprofiler_core.utilities.image.C_SCALING,
-        cellprofiler_core.utilities.image.C_HEIGHT,
-        cellprofiler_core.utilities.image.C_WIDTH,
+        cellprofiler_core.constants.image.C_MD5_DIGEST,
+        cellprofiler_core.constants.image.C_SCALING,
+        cellprofiler_core.constants.image.C_HEIGHT,
+        cellprofiler_core.constants.image.C_WIDTH,
         cellprofiler_core.constants.measurement.C_SERIES,
         cellprofiler_core.constants.measurement.C_FRAME,
     ):
@@ -2116,10 +2117,10 @@ def test_get_measurement_columns():
     for ftr in (
         cellprofiler_core.constants.measurement.C_OBJECTS_FILE_NAME,
         cellprofiler_core.constants.measurement.C_OBJECTS_PATH_NAME,
-        cellprofiler_core.utilities.image.C_MD5_DIGEST,
+        cellprofiler_core.constants.image.C_MD5_DIGEST,
         cellprofiler_core.constants.measurement.C_OBJECTS_URL,
-        cellprofiler_core.utilities.image.C_HEIGHT,
-        cellprofiler_core.utilities.image.C_WIDTH,
+        cellprofiler_core.constants.image.C_HEIGHT,
+        cellprofiler_core.constants.image.C_WIDTH,
         cellprofiler_core.constants.measurement.C_OBJECTS_SERIES,
         cellprofiler_core.constants.measurement.C_OBJECTS_FRAME,
         cellprofiler_core.constants.measurement.C_COUNT,
@@ -2162,10 +2163,10 @@ def test_get_categories():
     assert cellprofiler_core.constants.measurement.C_FILE_NAME in categories
     assert cellprofiler_core.constants.measurement.C_PATH_NAME in categories
     assert cellprofiler_core.constants.measurement.C_URL in categories
-    assert cellprofiler_core.utilities.image.C_MD5_DIGEST in categories
-    assert cellprofiler_core.utilities.image.C_SCALING in categories
-    assert cellprofiler_core.utilities.image.C_WIDTH in categories
-    assert cellprofiler_core.utilities.image.C_HEIGHT in categories
+    assert cellprofiler_core.constants.image.C_MD5_DIGEST in categories
+    assert cellprofiler_core.constants.image.C_SCALING in categories
+    assert cellprofiler_core.constants.image.C_WIDTH in categories
+    assert cellprofiler_core.constants.image.C_HEIGHT in categories
     assert cellprofiler_core.constants.measurement.C_SERIES in categories
     assert cellprofiler_core.constants.measurement.C_FRAME in categories
     m.add_assignment()
@@ -2222,12 +2223,12 @@ def test_get_measurements():
         assert mnames[0] == OBJECTS_NAME
 
     for cname in (
-        cellprofiler_core.utilities.image.C_MD5_DIGEST,
-        cellprofiler_core.utilities.image.C_SCALING,
-        cellprofiler_core.utilities.image.C_HEIGHT,
-        cellprofiler_core.utilities.image.C_WIDTH,
-        cellprofiler_core.constants.measurement.C_SERIES,
-        cellprofiler_core.constants.measurement.C_FRAME,
+            cellprofiler_core.constants.image.C_MD5_DIGEST,
+            cellprofiler_core.constants.image.C_SCALING,
+            cellprofiler_core.constants.image.C_HEIGHT,
+            cellprofiler_core.constants.image.C_WIDTH,
+            cellprofiler_core.constants.measurement.C_SERIES,
+            cellprofiler_core.constants.measurement.C_FRAME,
     ):
         mnames = m.get_measurements(
             p, cellprofiler_core.constants.measurement.IMAGE, cname

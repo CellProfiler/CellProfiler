@@ -1,5 +1,5 @@
 import os
-import urllib.request
+from .....utilities.pathname import url2pathname
 
 from .._file_image import FileImage
 
@@ -19,7 +19,7 @@ class URLImage(FileImage):
         spacing=None,
     ):
         if url.lower().startswith("file:"):
-            path = urllib.request.url2pathname(url)
+            path = url2pathname(url)
             pathname, filename = os.path.split(path)
         else:
             pathname = ""

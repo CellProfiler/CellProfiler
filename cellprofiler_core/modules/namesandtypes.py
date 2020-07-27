@@ -46,6 +46,7 @@ from ..image.abstract_image.file.url import MonochromeImage
 from ..image.abstract_image.file.url import ObjectsImage
 from ..measurement import Measurements
 from ..module import Module
+from ..object import Objects
 from ..pipeline import ImagePlane
 from ..pipeline import ImageSetChannelDescriptor
 from ..preferences import get_headless
@@ -2112,7 +2113,7 @@ requests an object selection.
             provider, workspace.measurements, "Object",
         )
         image = provider.provide_image(workspace.image_set)
-        o = ObjectsImage()
+        o = Objects()
         if image.pixel_data.shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
             add_object_location_measurements(

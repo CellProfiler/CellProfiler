@@ -2,8 +2,17 @@ import functools
 
 import numpy
 
-from cellprofiler_core.constants.measurement import C_PATH_NAME, C_FILE_NAME, C_URL, C_OBJECTS_FILE_NAME, \
-    C_OBJECTS_PATH_NAME, C_OBJECTS_URL, COLTYPE_VARCHAR, COLTYPE_FLOAT, COLTYPE_INTEGER
+from cellprofiler_core.constants.measurement import (
+    C_PATH_NAME,
+    C_FILE_NAME,
+    C_URL,
+    C_OBJECTS_FILE_NAME,
+    C_OBJECTS_PATH_NAME,
+    C_OBJECTS_URL,
+    COLTYPE_VARCHAR,
+    COLTYPE_FLOAT,
+    COLTYPE_INTEGER,
+)
 
 
 def header_to_column(field):
@@ -133,7 +142,9 @@ def best_cast(sequence, coltype=None):
             return COLTYPE_FLOAT
         return COLTYPE_INTEGER
 
-    ldtype = functools.reduce(fn, [get_loaddata_type(x) for x in sequence], COLTYPE_INTEGER, )
+    ldtype = functools.reduce(
+        fn, [get_loaddata_type(x) for x in sequence], COLTYPE_INTEGER,
+    )
     if ldtype == COLTYPE_VARCHAR:
         return numpy.array(sequence)
     elif ldtype == COLTYPE_FLOAT:

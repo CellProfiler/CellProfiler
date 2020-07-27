@@ -17,7 +17,8 @@ from ...constants.measurement import M_LOCATION_CENTER_Y
 from ...constants.measurement import M_LOCATION_CENTER_Z
 from ...constants.measurement import M_NUMBER_OBJECT_NUMBER
 from ...image import Objects
-from ...setting import ImageSubscriber, LabelName
+from ...setting.subscriber import ImageSubscriber
+from ...setting.text import LabelName
 
 
 class ImageSegmentation(Module):

@@ -49,8 +49,8 @@ class TestImages:
         module = pipeline.modules()[0]
         assert isinstance(module, cellprofiler_core.modules.images.Images)
         assert (
-                module.filter_choice.value
-                == cellprofiler_core.constants.modules.images.FILTER_CHOICE_CUSTOM
+            module.filter_choice.value
+            == cellprofiler_core.constants.modules.images.FILTER_CHOICE_CUSTOM
         )
         assert (
             module.filter.value
@@ -64,8 +64,14 @@ class TestImages:
 
         for fc, fctext in (
             (cellprofiler_core.constants.modules.images.FILTER_CHOICE_CUSTOM, "Custom"),
-            (cellprofiler_core.constants.modules.images.FILTER_CHOICE_IMAGES, "Images only"),
-            (cellprofiler_core.constants.modules.images.FILTER_CHOICE_NONE, "No filtering"),
+            (
+                cellprofiler_core.constants.modules.images.FILTER_CHOICE_IMAGES,
+                "Images only",
+            ),
+            (
+                cellprofiler_core.constants.modules.images.FILTER_CHOICE_NONE,
+                "No filtering",
+            ),
         ):
             pipeline = cellprofiler_core.pipeline.Pipeline()
 

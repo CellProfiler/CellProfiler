@@ -4,10 +4,7 @@ copyright = "Copyright © 2003 - 2020 Broad Institute, Inc. All rights reserved.
 
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
-extensions = [
-    "sphinx.ext.autodoc",
-    "sphinx_rtd_theme"
-]
+extensions = ["sphinx.ext.autodoc", "sphinx_rtd_theme"]
 
 html_static_path = ["_static"]
 

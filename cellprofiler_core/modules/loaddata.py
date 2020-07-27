@@ -686,7 +686,7 @@ safe to press it.""",
                 get_objects_name(field)
                 for field in header
                 if is_objects_file_name_feature(field)
-                   or is_objects_url_name_feature(field)
+                or is_objects_url_name_feature(field)
             ]
         )
         return list(object_names)
@@ -1239,7 +1239,7 @@ safe to press it.""",
                 if key_is_path_or_url[index]:
                     # Account for possible rewrite of the pathname
                     # in batch data
-                    len_field = max(PATH_NAME_LENGTH, len_field + PATH_PADDING, )
+                    len_field = max(PATH_NAME_LENGTH, len_field + PATH_PADDING,)
                 if coltypes[index] != COLTYPE_VARCHAR:
                     ldtype = get_loaddata_type(field)
                     if coltypes[index] == COLTYPE_INTEGER:
@@ -1477,5 +1477,3 @@ LoadText = LoadData
 
 int32_max = numpy.iinfo(numpy.int32).max
 int32_min = numpy.iinfo(numpy.int32).min
-
-

@@ -8,7 +8,7 @@ from ...constants.measurement import FF_COUNT
 from ...constants.measurement import FF_PARENT
 from ...constants.measurement import FTR_OBJECT_NUMBER
 from ...image import Objects
-from ...setting import LabelName
+from ...setting.text import LabelName
 
 
 class ObjectProcessing(ImageSegmentation):

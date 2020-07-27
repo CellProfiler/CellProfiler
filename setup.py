@@ -10,12 +10,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.8",
     ],
     extras_require={
-        "dev": [
-            "black==19.10b0",
-            "pre-commit==2.2.0",
-            "sphinx==3.1.2",
-            "twine==3.1.1"
-        ],
+        "dev": ["black==19.10b0", "pre-commit==2.2.0", "sphinx==3.1.2", "twine==3.1.1"],
         "test": ["pytest==5.4.1"],
         "wx": ["wxPython==4.0.7.post2"],
     },

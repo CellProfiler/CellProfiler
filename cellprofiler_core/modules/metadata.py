@@ -1429,8 +1429,8 @@ not being applied, your choice on this setting may be the culprit.
             new_setting_values = setting_values[:IDX_EXTRACTION_METHOD_V1]
             for i in range(n_groups):
                 new_setting_values += setting_values[
-                                      (IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * i): (
-                                              IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * (i + 1)
+                    (IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * i) : (
+                        IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * (i + 1)
                     )
                 ]
                 new_setting_values.append("No")
@@ -1443,8 +1443,8 @@ not being applied, your choice on this setting may be the culprit.
             new_setting_values = setting_values[:IDX_EXTRACTION_METHOD_V2]
             for i in range(n_groups):
                 group = setting_values[
-                        (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * i): (
-                                IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * (i + 1)
+                    (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * i) : (
+                        IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * (i + 1)
                     )
                 ]
                 group[0] = (
@@ -1471,7 +1471,7 @@ not being applied, your choice on this setting may be the culprit.
         if variable_revision_number == 3:
             # Added data types
             setting_values = (
-                    setting_values[:IDX_EXTRACTION_METHOD_COUNT_V3]
+                setting_values[:IDX_EXTRACTION_METHOD_COUNT_V3]
                 + [DTC_TEXT, "{}"]
                 + setting_values[IDX_EXTRACTION_METHOD_COUNT_V3:]
             )

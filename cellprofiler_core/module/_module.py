@@ -862,10 +862,7 @@ class Module:
         """Return True if this module loads this image name from a file."""
         for setting in self.settings():
             if (
-                isinstance(
-                    setting,
-                    FileImageSubscriber,
-                )
+                isinstance(setting, FileImageSubscriber,)
                 and setting.value == image_name
             ):
                 return True

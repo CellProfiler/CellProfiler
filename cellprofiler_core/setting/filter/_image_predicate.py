@@ -14,8 +14,7 @@ class ImagePredicate(FilterPredicate):
         "Color",
         lambda x: (
             ImagePlane.MD_COLOR_FORMAT in x.metadata
-            and x.metadata[ImagePlane.MD_COLOR_FORMAT]
-            == ImagePlane.MD_RGB
+            and x.metadata[ImagePlane.MD_COLOR_FORMAT] == ImagePlane.MD_RGB
         ),
         [],
         doc="The image is an interleaved color image (for example, a PNG image)",
@@ -26,8 +25,7 @@ class ImagePredicate(FilterPredicate):
         "Monochrome",
         lambda x: (
             ImagePlane.MD_COLOR_FORMAT in x.metadata
-            and x.metadata[ImagePlane.MD_COLOR_FORMAT]
-            == ImagePlane.MD_MONOCHROME
+            and x.metadata[ImagePlane.MD_COLOR_FORMAT] == ImagePlane.MD_MONOCHROME
         ),
         [],
         doc="The image is monochrome",
@@ -35,15 +33,9 @@ class ImagePredicate(FilterPredicate):
 
     @staticmethod
     def is_stack(x):
-        if (
-            ImagePlane.MD_SIZE_T in x.metadata
-            and x.metadata[ImagePlane.MD_SIZE_T] > 1
-        ):
+        if ImagePlane.MD_SIZE_T in x.metadata and x.metadata[ImagePlane.MD_SIZE_T] > 1:
             return True
-        if (
-            ImagePlane.MD_SIZE_Z in x.metadata
-            and x.metadata[ImagePlane.MD_SIZE_Z] > 1
-        ):
+        if ImagePlane.MD_SIZE_Z in x.metadata and x.metadata[ImagePlane.MD_SIZE_Z] > 1:
             return True
         return False
 

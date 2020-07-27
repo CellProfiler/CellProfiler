@@ -42,33 +42,23 @@ class ImageSegmentation(Module):
                 center_y, center_x = centers.transpose()
 
         workspace.measurements.add_measurement(
-            object_name,
-            M_LOCATION_CENTER_X,
-            center_x,
+            object_name, M_LOCATION_CENTER_X, center_x,
         )
 
         workspace.measurements.add_measurement(
-            object_name,
-            M_LOCATION_CENTER_Y,
-            center_y,
+            object_name, M_LOCATION_CENTER_Y, center_y,
         )
 
         workspace.measurements.add_measurement(
-            object_name,
-            M_LOCATION_CENTER_Z,
-            center_z,
+            object_name, M_LOCATION_CENTER_Z, center_z,
         )
 
         workspace.measurements.add_measurement(
-            object_name,
-            M_NUMBER_OBJECT_NUMBER,
-            numpy.arange(1, objects.count + 1),
+            object_name, M_NUMBER_OBJECT_NUMBER, numpy.arange(1, objects.count + 1),
         )
 
         workspace.measurements.add_measurement(
-            IMAGE,
-            FF_COUNT % object_name,
-            numpy.array([objects.count], dtype=float),
+            IMAGE, FF_COUNT % object_name, numpy.array([objects.count], dtype=float),
         )
 
     def create_settings(self):
@@ -123,38 +113,15 @@ class ImageSegmentation(Module):
             object_name = self.y_name.value
 
         return [
-            (
-                object_name,
-                M_LOCATION_CENTER_X,
-                COLTYPE_FLOAT,
-            ),
-            (
-                object_name,
-                M_LOCATION_CENTER_Y,
-                COLTYPE_FLOAT,
-            ),
-            (
-                object_name,
-                M_LOCATION_CENTER_Z,
-                COLTYPE_FLOAT,
-            ),
-            (
-                object_name,
-                M_NUMBER_OBJECT_NUMBER,
-                COLTYPE_INTEGER,
-            ),
-            (
-                IMAGE,
-                FF_COUNT % object_name,
-                COLTYPE_INTEGER,
-            ),
+            (object_name, M_LOCATION_CENTER_X, COLTYPE_FLOAT,),
+            (object_name, M_LOCATION_CENTER_Y, COLTYPE_FLOAT,),
+            (object_name, M_LOCATION_CENTER_Z, COLTYPE_FLOAT,),
+            (object_name, M_NUMBER_OBJECT_NUMBER, COLTYPE_INTEGER,),
+            (IMAGE, FF_COUNT % object_name, COLTYPE_INTEGER,),
         ]
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == IMAGE
-            and category == C_COUNT
-        ):
+        if object_name == IMAGE and category == C_COUNT:
             return [self.y_name.value]
 
         if object_name == self.y_name.value:

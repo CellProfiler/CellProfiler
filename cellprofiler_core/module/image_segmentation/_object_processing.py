@@ -35,15 +35,12 @@ class ObjectProcessing(ImageSegmentation):
 
         workspace.measurements.add_measurement(
             input_object_name,
-            FF_CHILDREN_COUNT
-            % output_object_name,
+            FF_CHILDREN_COUNT % output_object_name,
             children_per_parent,
         )
 
         workspace.measurements.add_measurement(
-            output_object_name,
-            FF_PARENT % input_object_name,
-            parents_of_children,
+            output_object_name, FF_PARENT % input_object_name, parents_of_children,
         )
 
     def create_settings(self):
@@ -95,16 +92,10 @@ class ObjectProcessing(ImageSegmentation):
             + [
                 (
                     input_object_name,
-                    FF_CHILDREN_COUNT
-                    % output_object_name,
+                    FF_CHILDREN_COUNT % output_object_name,
                     COLTYPE_INTEGER,
                 ),
-                (
-                    output_object_name,
-                    FF_PARENT
-                    % input_object_name,
-                    COLTYPE_INTEGER,
-                ),
+                (output_object_name, FF_PARENT % input_object_name, COLTYPE_INTEGER,),
             ]
             for (input_object_name, output_object_name) in object_names
         ]
@@ -112,13 +103,8 @@ class ObjectProcessing(ImageSegmentation):
         return sum(columns, [])
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == self.x_name.value
-            and category == C_CHILDREN
-        ):
-            return [
-                FF_COUNT % self.y_name.value
-            ]
+        if object_name == self.x_name.value and category == C_CHILDREN:
+            return [FF_COUNT % self.y_name.value]
 
         if object_name == self.y_name.value:
             if category == C_NUMBER:

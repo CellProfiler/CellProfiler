@@ -133,9 +133,9 @@ class Filter(_setting.Setting):
             predicates = self.predicates
         while len(predicates) > 0:
             token = predicates[0]
-            if token is self.LITERAL_PREDICATE:
+            if token is LITERAL_PREDICATE:
                 tokens.append("")
-                predicates = self.LITERAL_PREDICATE.subpredicates
+                predicates = LITERAL_PREDICATE.subpredicates
             else:
                 tokens.append(token)
                 predicates = token.subpredicates
@@ -169,7 +169,7 @@ class Filter(_setting.Setting):
         elif needs_list:
             raise ValueError("List required in current context")
         if s[0] == '"':
-            if cls.LITERAL_PREDICATE not in predicates:
+            if LITERAL_PREDICATE not in predicates:
                 raise ValueError("Literal not allowed in current context")
             escape_next = False
             result = ""
@@ -196,10 +196,10 @@ class Filter(_setting.Setting):
         else:
             kwd, rest = match.groups()
         kwd = FilterPredicate.decode_symbol(kwd)
-        if kwd == cls.AND_PREDICATE.symbol:
-            match = cls.AND_PREDICATE
-        elif kwd == cls.OR_PREDICATE.symbol:
-            match = cls.OR_PREDICATE
+        if kwd == AND_PREDICATE.symbol:
+            match = AND_PREDICATE
+        elif kwd == OR_PREDICATE.symbol:
+            match = OR_PREDICATE
         else:
             matches = [x for x in predicates if x is not list and x.symbol == kwd]
             if len(matches) == 0:

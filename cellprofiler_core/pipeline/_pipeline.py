@@ -362,7 +362,7 @@ class Pipeline:
         has_image_plane_details = False
         git_hash = None
         pipeline_version = __version__
-        cellprofiler_core.pipeline.CURRENT_VERSION = None
+        current_version = int(re.sub(r"\.|rc\d", "", __version__))
         while True:
             line = readline(fd)
 
@@ -393,9 +393,6 @@ class Pipeline:
                     pass
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION,):
                 pipeline_version = int(value)
-                cellprofiler_core.pipeline.CURRENT_VERSION = int(
-                    re.sub(r"\.|rc\d", "", __version__)
-                )
             elif kwd == H_MODULE_COUNT:
                 module_count = int(value)
             elif kwd == H_HAS_IMAGE_PLANE_DETAILS:
@@ -409,12 +406,12 @@ class Pipeline:
                 print(line)
 
         pipeline_version = self.validate_pipeline_version(
-            CURRENT_VERSION, git_hash, pipeline_version
+            current_version, git_hash, pipeline_version
         )
 
         return git_hash, has_image_plane_details, module_count, pipeline_version
 
-    def validate_pipeline_version(self, CURRENT_VERSION, git_hash, pipeline_version):
+    def validate_pipeline_version(self, current_version, git_hash, pipeline_version):
         if 20080101000000 < pipeline_version < 30080101000000:
             # being optomistic... a millenium should be OK, no?
             second, minute, hour, day, month = [
@@ -426,18 +423,14 @@ class Pipeline:
             ).strftime(" @ %c")
         else:
             pipeline_date = ""
-        if CURRENT_VERSION is None:
-            pass
-        if pipeline_version > cellprofiler_core.pipeline.CURRENT_VERSION:
+        if pipeline_version > current_version:
             message = "Your pipeline version is {} but you are running CellProfiler version {}. Loading this pipeline may fail or have unpredictable results.".format(
-                pipeline_version, CURRENT_VERSION
+                pipeline_version, current_version
             )
 
             self.respond_to_version_mismatch_error(message)
         else:
-            if (
-                not get_headless()
-            ) and pipeline_version < cellprofiler_core.pipeline.CURRENT_VERSION:
+            if (not get_headless()) and pipeline_version < current_version:
                 if git_hash is not None:
                     message = (
                         "Your pipeline was saved using an old version\n"

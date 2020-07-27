@@ -1,7 +1,10 @@
 import centrosome.index
 import centrosome.outline
+import numpy
 import scipy.ndimage
 import scipy.sparse
+
+from . import downsample_labels, Segmentation
 
 
 class Objects:
@@ -75,7 +78,7 @@ class Objects:
 
     @staticmethod
     def __labels_to_segmentation(labels):
-        dense = cellprofiler_core.object.downsample_labels(labels)
+        dense = downsample_labels(labels)
 
         if dense.ndim == 3:
             z, x, y = dense.shape
@@ -85,12 +88,12 @@ class Objects:
 
         dense = dense.reshape((1, 1, 1, z, x, y))
 
-        return cellprofiler_core.object.Segmentation(dense=dense)
+        return Segmentation(dense=dense)
 
     @staticmethod
     def __segmentation_to_labels(segmentation):
         assert isinstance(
-            segmentation, cellprofiler_core.object.Segmentation
+            segmentation, Segmentation
         ), "Operation failed because objects were not initialized"
 
         dense, indices = segmentation.get_dense()
@@ -139,9 +142,7 @@ class Objects:
         )
         if shape is not None:
             shape = (1, 1, 1, shape[0], shape[1])
-        self.__segmented = cellprofiler_core.object.Segmentation(
-            sparse=sparse, shape=shape
-        )
+        self.__segmented = Segmentation(sparse=sparse, shape=shape)
 
     def get_ijv(self):
         """Get the segmentation in IJV object format
@@ -284,7 +285,7 @@ class Objects:
             # Have to color 2 planes using the same color!
             # There's some chance that overlapping objects will get
             # the same color. Give me more colors to work with please.
-            colors = numpy.vstack([colors] * (1 + len(all_labels) / len(colors)))
+            colors = numpy.vstack([colors] * (1 + len(all_labels) // len(colors)))
         r = numpy.random.mtrand.RandomState()
         alpha = numpy.zeros(all_labels[0][0].shape, numpy.float32)
         order = numpy.lexsort([counts])

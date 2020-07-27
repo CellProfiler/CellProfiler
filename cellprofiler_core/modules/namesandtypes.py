@@ -37,6 +37,8 @@ from ..constants.measurement import FTR_CENTER_X
 from ..constants.measurement import FTR_CENTER_Y
 from ..constants.measurement import FTR_OBJECT_NUMBER
 from ..constants.measurement import IMAGE_NUMBER
+from ..constants.module import FILTER_RULES_BUTTONS_HELP
+from ..constants.module import PROTIP_RECOMMEND_ICON
 from ..constants.module import USING_METADATA_HELP_REF
 from ..image.abstract_image.file.url import ColorImage
 from ..image.abstract_image.file.url import MaskImage
@@ -58,8 +60,26 @@ from ..setting.choice import Choice
 from ..setting.do_something import DoSomething
 from ..setting.do_something import ImageSetDisplay
 from ..setting.do_something import RemoveSettingButton
-from ..setting.filter import Filter
+from ..setting.filter import (
+    Filter,
+    FilePredicate,
+    DirectoryPredicate,
+    ExtensionPredicate,
+    ImagePredicate,
+    FilterPredicate,
+    DoesNotPredicate,
+    DoesPredicate,
+)
 from ..setting.filter import MetadataPredicate
+from ..setting.text import Float, FileImageName, LabelName
+from ..utilities.core.module.identify import (
+    add_object_location_measurements,
+    add_object_location_measurements_ijv,
+    add_object_count_measurements,
+    get_object_measurement_columns,
+)
+from ..utilities.core.pipeline import find_image_plane_details
+from ..utilities.image import image_resource
 
 __doc__ = """\
 NamesAndTypes
@@ -179,22 +199,12 @@ Measurements made by this module
                 :width: 100%
 """.format(
     **{
-        "DAPI": cellprofiler_core.utilities.image.image_resource("dapi.png"),
-        "GFP": cellprofiler_core.utilities.image.image_resource("gfp.png"),
-        "NAT_EXAMPLE_DISPLAY": cellprofiler_core.utilities.image.image_resource(
-            "NamesAndTypes_ExampleDisplayTable.png"
-        ),
+        "DAPI": image_resource("dapi.png"),
+        "GFP": image_resource("gfp.png"),
+        "NAT_EXAMPLE_DISPLAY": image_resource("NamesAndTypes_ExampleDisplayTable.png"),
     }
 )
 
-from ..setting.text import Float, FileImageName, LabelName
-from ..utilities.core.module.identify import (
-    add_object_location_measurements,
-    add_object_location_measurements_ijv,
-    add_object_count_measurements,
-    get_object_measurement_columns,
-)
-from ..utilities.core.pipeline import find_image_plane_details
 
 ASSIGN_ALL = "All images"
 ASSIGN_GUESS = "Try to guess image assignment"
@@ -714,10 +724,10 @@ You can match corresponding channels to each other in one of two ways:
             Filter(
                 "Select the rule criteria",
                 [
-                    filter._file_predicate.FilePredicate(),
-                    filter._directory_predicate.DirectoryPredicate(),
-                    filter._extension_predicate.ExtensionPredicate(),
-                    filter._image_predicate.ImagePredicate(),
+                    FilePredicate(),
+                    DirectoryPredicate(),
+                    ExtensionPredicate(),
+                    ImagePredicate(),
                     mp,
                 ],
                 'and (file does contain "")',
@@ -1125,15 +1135,15 @@ requests an object selection.
                 #
                 pattern = r"\(%s (?:%s|%s) ((?:\\.|[^ )])+)" % (
                     MetadataPredicate.SYMBOL,
-                    Filter.DoesNotPredicate.SYMBOL,
-                    Filter.DoesPredicate.SYMBOL,
+                    DoesNotPredicate.SYMBOL,
+                    DoesPredicate.SYMBOL,
                 )
                 text = rules_filter.value_text
                 while True:
                     match = re.search(pattern, text)
                     if match is None:
                         break
-                    key = Filter.FilterPredicate.decode_symbol(match.groups()[0])
+                    key = FilterPredicate.decode_symbol(match.groups()[0])
                     self.metadata_keys.append(key)
                     text = text[match.end() :]
             self.metadata_keys = list(set(self.metadata_keys))

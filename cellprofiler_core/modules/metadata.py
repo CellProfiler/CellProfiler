@@ -56,7 +56,12 @@ from ..setting import ValidationError
 from ..setting.choice import Choice
 from ..setting.do_something import DoSomething
 from ..setting.do_something import RemoveSettingButton
-from ..setting.filter import Filter
+from ..setting.filter import (
+    Filter,
+    FilePredicate,
+    DirectoryPredicate,
+    ExtensionPredicate,
+)
 from ..setting.text import Directory
 from ..setting.text import Filename
 from ..utilities.image import generate_presigned_url
@@ -552,11 +557,7 @@ There are two choices:
             "filter",
             Filter(
                 "Select the filtering criteria",
-                [
-                    filter._file_predicate.FilePredicate(),
-                    filter._directory_predicate.DirectoryPredicate(),
-                    filter._extension_predicate.ExtensionPredicate(),
-                ],
+                [FilePredicate(), DirectoryPredicate(), ExtensionPredicate(),],
                 'and (file does contain "")',
                 doc="""\
 Select "*{YES}*" to display and use rules to select files for metadata

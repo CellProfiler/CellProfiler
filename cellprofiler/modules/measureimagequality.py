@@ -151,7 +151,6 @@ References
    `(link) <https://doi.org/10.1002/jemt.20118>`__
 """
 
-logger = logging.getLogger(__name__)
 
 ##############################################
 #
@@ -744,7 +743,7 @@ to the foreground pixels or the background pixels.
 
     def prepare_run(self, workspace):
         if cellprofiler_core.preferences.get_headless():
-            logger.warning(
+            logging.warning(
                 "Experiment-wide values for mean threshold, etc calculated by MeasureImageQuality may be incorrect if the run is split into subsets of images."
             )
         return True

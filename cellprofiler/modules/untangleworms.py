@@ -100,28 +100,36 @@ import numpy
 import scipy.ndimage
 import six.moves.urllib.request
 import xml.dom.minidom as DOM
+from cellprofiler_core.constants.measurement import (
+    IMAGE,
+    C_LOCATION,
+    FTR_CENTER_X,
+    FTR_CENTER_Y,
+    C_NUMBER,
+    FTR_OBJECT_NUMBER,
+    M_NUMBER_OBJECT_NUMBER,
+    M_LOCATION_CENTER_Y,
+    M_LOCATION_CENTER_X,
+)
+from cellprofiler_core.setting.choice import Choice, Colormap
+from cellprofiler_core.setting.text import (
+    ImageName,
+    LabelName,
+    Directory,
+    Float,
+    Integer,
+)
 from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from scipy.sparse import coo
 
-logger = logging.getLogger(__name__)
+
 import cellprofiler
 from cellprofiler_core.module import Module
-from cellprofiler_core.measurement import IMAGE
 from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.measurement import COLTYPE_FLOAT
 from cellprofiler_core.image import Image
 from cellprofiler_core.object import Objects
 from cellprofiler_core.object import ObjectSet
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import OutlineNameProvider
-from cellprofiler_core.setting import DirectoryPath
-from cellprofiler_core.setting import FilenameText
-from cellprofiler_core.setting import Colormap
-from cellprofiler_core.setting import ObjectNameProvider
-from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
 import centrosome.cpmorphology
@@ -252,7 +260,7 @@ class UntangleWorms(Module):
             % globals(),
         )
 
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageName(
             "Select the input binary image",
             "None",
             doc="""\
@@ -277,7 +285,7 @@ worms or excluding the overlapping regions from both worms.
             % globals(),
         )
 
-        self.overlap_objects = ObjectNameProvider(
+        self.overlap_objects = LabelName(
             "Name the output overlapping worm objects",
             "OverlappingWorms",
             provided_attributes={ATTR_WORM_MEASUREMENTS: True},
@@ -332,7 +340,7 @@ This is the name of the outlines of the overlapped worms.
             % globals(),
         )
 
-        self.nonoverlapping_objects = ObjectNameProvider(
+        self.nonoverlapping_objects = LabelName(
             "Name the output non-overlapping worm objects",
             "NonOverlappingWorms",
             provided_attributes={ATTR_WORM_MEASUREMENTS: True},
@@ -374,7 +382,7 @@ overlapping sections removed.
             % globals(),
         )
 
-        self.training_set_directory = DirectoryPath(
+        self.training_set_directory = Directory(
             "Training set file location",
             support_urls=True,
             allow_metadata=False,
@@ -1113,7 +1121,7 @@ should be processed.
                         workspace, labels, i, skeleton, params
                     )
                     if len(graph.segments) > self.max_complexity:
-                        logger.warning(
+                        logging.warning(
                             "Warning: rejecting cluster of %d segments.\n"
                             % len(graph.segments)
                         )
@@ -1161,15 +1169,9 @@ should be processed.
             else:
                 center_x = numpy.bincount(ijv[:, 2], ijv[:, 1])[o.indices] / o.areas
                 center_y = numpy.bincount(ijv[:, 2], ijv[:, 0])[o.indices] / o.areas
-            measurements.add_measurement(
-                name, cellprofiler_core.measurement.M_LOCATION_CENTER_X, center_x
-            )
-            measurements.add_measurement(
-                name, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, center_y
-            )
-            measurements.add_measurement(
-                name, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER, o.indices
-            )
+            measurements.add_measurement(name, M_LOCATION_CENTER_X, center_x)
+            measurements.add_measurement(name, M_LOCATION_CENTER_Y, center_y)
+            measurements.add_measurement(name, M_NUMBER_OBJECT_NUMBER, o.indices)
             #
             # Save outlines
             #
@@ -2875,7 +2877,7 @@ should be processed.
                 for n in range(1, self.ncontrol_points() - 1)
             ]
         except:
-            logger.error(
+            logging.error(
                 "Failed to get # of control points from training file. Unknown number of angle measurements",
                 exc_info=True,
             )
@@ -2892,7 +2894,7 @@ should be processed.
                 for n in range(1, self.ncontrol_points() + 1)
             ]
         except:
-            logger.error(
+            logging.error(
                 "Failed to get # of control points from training file. Unknown number of control point features",
                 exc_info=True,
             )
@@ -2900,7 +2902,7 @@ should be processed.
 
     def get_categories(self, pipeline, object_name):
         if object_name == IMAGE:
-            return [cellprofiler_core.measurement.C_COUNT]
+            return [C_COUNT]
         if (
             object_name == self.overlap_objects.value
             and self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
@@ -2909,8 +2911,8 @@ should be processed.
             and self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         ):
             return [
-                cellprofiler_core.measurement.C_LOCATION,
-                cellprofiler_core.measurement.C_NUMBER,
+                C_LOCATION,
+                C_NUMBER,
                 C_WORM,
             ]
         return []
@@ -2919,7 +2921,7 @@ should be processed.
         wants_overlapping = self.overlap in (OO_BOTH, OO_WITH_OVERLAP)
         wants_nonoverlapping = self.overlap in (OO_BOTH, OO_WITHOUT_OVERLAP)
         result = []
-        if object_name == IMAGE and category == cellprofiler_core.measurement.C_COUNT:
+        if object_name == IMAGE and category == C_COUNT:
             if wants_overlapping:
                 result += [self.overlap_objects.value]
             if wants_nonoverlapping:
@@ -2927,13 +2929,13 @@ should be processed.
         if (wants_overlapping and object_name == self.overlap_objects) or (
             wants_nonoverlapping and object_name == self.nonoverlapping_objects
         ):
-            if category == cellprofiler_core.measurement.C_LOCATION:
+            if category == C_LOCATION:
                 result += [
-                    cellprofiler_core.measurement.FTR_CENTER_X,
-                    cellprofiler_core.measurement.FTR_CENTER_Y,
+                    FTR_CENTER_X,
+                    FTR_CENTER_Y,
                 ]
-            elif category == cellprofiler_core.measurement.C_NUMBER:
-                result += [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
+            elif category == C_NUMBER:
+                result += [FTR_OBJECT_NUMBER]
             elif category == C_WORM:
                 result += [F_LENGTH, F_ANGLE, F_CONTROL_POINT_X, F_CONTROL_POINT_Y]
         return result

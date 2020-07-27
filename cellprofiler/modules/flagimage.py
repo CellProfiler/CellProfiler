@@ -51,7 +51,7 @@ import cellprofiler.utilities.rules as cprules
 import cellprofiler_core.workspace as cpw
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
-logger = logging.getLogger(__name__)
+
 C_ANY = "Flag if any fail"
 C_ALL = "Flag if all fail"
 
@@ -504,7 +504,7 @@ image is not flagged.
                     try:
                         rules = self.get_rules(measurement_setting)
                     except Exception as instance:
-                        logger.warning(
+                        logging.warning(
                             "Failed to load rules: %s", str(instance), exc_info=True
                         )
                         raise cps.ValidationError(

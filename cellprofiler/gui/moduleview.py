@@ -37,7 +37,6 @@ from cellprofiler.gui import (
     treecheckboxdialog,
 )
 
-logger = logging.getLogger(__name__)
 
 WARNING_COLOR = wx.Colour(224, 224, 0, 255)
 RANGE_TEXT_WIDTH = 40  # number of pixels in a range text box TO_DO - calculate it
@@ -1207,7 +1206,7 @@ class ModuleView(object):
             image = (sm.to_rgba(j) * 255).astype(numpy.uint8)
             bitmap = wx.Bitmap.FromBufferRGBA(128, 12, image.tostring())
         except:
-            logger.warning("Failed to create the %s colorbar" % cmap_name)
+            logging.warning("Failed to create the %s colorbar" % cmap_name)
             bitmap = None
         if not control:
             control = wx.Panel(self.__module_panel, -1, name=control_name)
@@ -1260,7 +1259,7 @@ class ModuleView(object):
                 not hasattr(control, "bad_color_name")
                 or control.bad_color_name != v.value
             ):
-                logger.warn("Failed to set color to %s" % v.value)
+                logging.warn("Failed to set color to %s" % v.value)
                 control.bad_color_name = v.value
         if control is None:
             control = wx.lib.colourselect.ColourSelect(
@@ -2477,7 +2476,7 @@ class ModuleView(object):
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
         except Exception:
-            logger.debug(
+            logging.debug(
                 "Caught bare exception in ModuleView.on_validate()", exc_info=True
             )
             pass
@@ -2644,7 +2643,7 @@ class FilterPanelController(object):
         try:
             tokens = self.v.parse()
         except Exception as e:
-            logger.debug(
+            logging.debug(
                 "Failed to parse filter (value=%s): %s", self.v.value_text, str(e)
             )
             tokens = self.v.default()
@@ -2672,7 +2671,7 @@ class FilterPanelController(object):
                 self.panel.FindWindowByName(key).Show(value)
             self.panel.Layout()
         except:
-            logger.exception("Threw exception while updating filter")
+            logging.exception("Threw exception while updating filter")
         finally:
             self.inside_update = False
 
@@ -2734,7 +2733,7 @@ class FilterPanelController(object):
         return button
 
     def on_delete_rule(self, event, address):
-        logger.debug("Delete row at " + str(address))
+        logging.debug("Delete row at " + str(address))
         structure = self.v.parse()
         sequence = self.find_address(structure, address[:-1])
         del sequence[address[-1] + 1]
@@ -2752,7 +2751,7 @@ class FilterPanelController(object):
         return button
 
     def on_add_rule(self, event, address):
-        logger.debug("Add rule after " + str(address))
+        logging.debug("Add rule after " + str(address))
         structure = self.v.parse()
         sequence = self.find_address(structure, address[:-1])
         new_rule = self.v.default()
@@ -2770,7 +2769,7 @@ class FilterPanelController(object):
         return button
 
     def on_add_rules(self, event, address):
-        logger.debug("Add rules after " + str(address))
+        logging.debug("Add rules after " + str(address))
         structure = self.v.parse()
         sequence = self.find_address(structure, address[:-1])
         new_rule = [cellprofiler_core.setting.Filter.OR_PREDICATE, self.v.default()]
@@ -2799,7 +2798,7 @@ class FilterPanelController(object):
         return choice_ctrl
 
     def on_predicate_changed(self, event, index, address):
-        logger.debug(
+        logging.debug(
             "Predicate choice at %d / %s changed" % (index, self.saddress(address))
         )
         structure = self.v.parse()
@@ -2884,7 +2883,7 @@ class FilterPanelController(object):
         return literal_ctrl
 
     def on_literal_changed(self, event, index, address):
-        logger.debug("Literal at %d / %s changed" % (index, self.saddress(address)))
+        logging.debug("Literal at %d / %s changed" % (index, self.saddress(address)))
         try:
             structure = self.v.parse()
             sequence = self.find_address(structure, address)
@@ -2918,7 +2917,7 @@ class FilterPanelController(object):
         return anyall
 
     def on_anyall_changed(self, event, address):
-        logger.debug("Any / all choice at %s changed" % self.saddress(address))
+        logging.debug("Any / all choice at %s changed" % self.saddress(address))
         structure = self.v.parse()
         sequence = self.find_address(structure, address)
         predicate = self.ANY_ALL_PREDICATES[event.GetSelection()]
@@ -3198,7 +3197,7 @@ class FileCollectionDisplayController(object):
         self.user_collapsed_a_node = False
 
         def on_item_collapsed(event):
-            logger.debug("On item collapsed")
+            logging.debug("On item collapsed")
             self.user_collapsed_a_node = True
 
         self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_COLLAPSED, on_item_collapsed)
@@ -3264,7 +3263,7 @@ class FileCollectionDisplayController(object):
             dc.DrawText(text, (width - text_width) / 2, (height - text_height) / 2)
 
     def on_browse(self, event):
-        logger.debug("Browsing for file collection directory")
+        logging.debug("Browsing for file collection directory")
         dlg = wx.DirDialog(self.panel, "Select a directory to add")
         try:
             if dlg.ShowModal() == wx.ID_OK:
@@ -3404,10 +3403,10 @@ class FileCollectionDisplayController(object):
         return path
 
     def on_tree_item_menu(self, event):
-        logger.debug("On tree item menu")
+        logging.debug("On tree item menu")
         path = self.get_path_from_event(event)
         if len(path) == 0:
-            logger.warn("Could not find item associated with tree event")
+            logging.warn("Could not find item associated with tree event")
             return
         context_menu = self.v.get_context_menu(path)
         if len(context_menu) > 0:
@@ -3424,13 +3423,13 @@ class FileCollectionDisplayController(object):
                         menu.Append(-1, context_item)
 
                 def on_menu(event):
-                    logger.debug("On menu")
+                    logging.debug("On menu")
 
                     self.pipeline.start_undoable_action()
                     try:
                         for menu_item in menu.GetMenuItems():
                             if menu_item.Id == event.Id:
-                                logger.debug("    Command = %s" % menu_item.Text)
+                                logging.debug("    Command = %s" % menu_item.Text)
                                 if menu_item.Id in delete_menu_items:
                                     self.on_delete_selected(event)
                                 else:
@@ -3451,7 +3450,7 @@ class FileCollectionDisplayController(object):
             return True
 
     def on_tree_key_down(self, event):
-        logger.debug("On tree key down")
+        logging.debug("On tree key down")
         key = event.GetKeyCode()
         if key == wx.WXK_DELETE:
             self.on_delete_selected(event)
@@ -4706,7 +4705,7 @@ class ModuleSizer(wx.Sizer):
         except:
             # This happens, hopefully transiently, on the Mac
             if not self.__printed_exception:
-                logger.error("WX internal error detected", exc_info=True)
+                logging.error("WX internal error detected", exc_info=True)
                 self.__printed_exception = True
             return wx.Size(0, 0)
 
@@ -4844,7 +4843,7 @@ class ModuleSizer(wx.Sizer):
         except:
             # This happens, hopefully transiently, on the Mac
             if not self.__printed_exception:
-                logger.warning("Detected WX error", exc_info=True)
+                logging.warning("Detected WX error", exc_info=True)
                 self.__printed_exception = True
 
 
@@ -4943,7 +4942,7 @@ def validation_queue_handler():
             time.sleep(wait_for)
     finally:
         detach()
-    logger.info("Exiting the pipeline validation thread")
+    logging.info("Exiting the pipeline validation thread")
 
 
 def request_module_validation(validation_request):

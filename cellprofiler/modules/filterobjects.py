@@ -74,8 +74,6 @@ import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler.utilities.rules
 
-logger = logging.getLogger(__name__)
-
 
 """Minimal filter - pick a single object per image by minimum measured value"""
 FI_MINIMAL = "Minimal"
@@ -603,7 +601,9 @@ value will be retained.""".format(
             try:
                 rules = self.get_rules()
             except Exception as instance:
-                logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
+                logging.warning(
+                    "Failed to load rules: %s", str(instance), exc_info=True
+                )
                 raise cellprofiler_core.setting.ValidationError(
                     str(instance), self.rules_file_name
                 )

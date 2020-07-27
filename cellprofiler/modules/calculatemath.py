@@ -1,4 +1,24 @@
-# coding=utf-8
+import logging
+
+import numpy
+import six
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.measurement import R_FIRST_IMAGE_NUMBER
+from cellprofiler_core.constants.measurement import R_FIRST_OBJECT_NUMBER
+from cellprofiler_core.constants.measurement import R_PARENT
+from cellprofiler_core.constants.measurement import R_SECOND_IMAGE_NUMBER
+from cellprofiler_core.constants.measurement import R_SECOND_OBJECT_NUMBER
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.text import Alphanumeric
+from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.setting.text import LabelName
 
 """
 CalculateMath
@@ -53,31 +73,6 @@ The result of these calculations is a new measurement in the “Math”
 category.
 """
 
-import logging
-
-logger = logging.getLogger(__package__)
-
-import numpy
-import six
-
-from cellprofiler_core.module import Module
-from cellprofiler_core.measurement import R_SECOND_OBJECT_NUMBER
-from cellprofiler_core.measurement import IMAGE
-from cellprofiler_core.measurement import R_SECOND_IMAGE_NUMBER
-from cellprofiler_core.measurement import R_FIRST_OBJECT_NUMBER
-from cellprofiler_core.measurement import COLTYPE_FLOAT
-from cellprofiler_core.measurement import R_FIRST_IMAGE_NUMBER
-from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import AlphanumericText
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting import Divider
-from cellprofiler_core.measurement import R_PARENT
-
 O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"
 O_ADD = "Add"
@@ -119,7 +114,7 @@ class CalculateMath(Module):
                     doc="""Indicate whether the operand is an image or object measurement.""",
                 )
 
-                self.__operand_objects = ObjectNameSubscriber(
+                self.__operand_objects = LabelName(
                     self.operand_objects_text(),
                     "None",
                     doc="""Choose the objects you want to measure for this operation.""",
@@ -243,7 +238,7 @@ the type of measurement that is requested.""",
                 result += [self.operand_measurement, self.multiplicand, self.exponent]
                 return result
 
-        self.output_feature_name = AlphanumericText(
+        self.output_feature_name = Alphanumeric(
             "Name the output measurement",
             "Measurement",
             doc="""Enter a name for the measurement calculated by this module.""",
@@ -522,7 +517,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
                     v0 = bincount(i1, values[0][i0], minlength=len(values[1])) / c1
                     break
             else:
-                logger.warning(
+                logging.warning(
                     "Incompatible objects: %s has %d objects and %s has %d objects"
                     % (operand_object1, len(values[0]), operand_object2, len(values[1]))
                 )

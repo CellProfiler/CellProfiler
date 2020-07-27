@@ -259,7 +259,6 @@ import logging
 import numpy as np
 import scipy.ndimage as scind
 
-logger = logging.getLogger(__name__)
 
 import cellprofiler_core.module as cpm
 import cellprofiler_core.setting as cps
@@ -485,7 +484,7 @@ input for a measurement module."""
                     for plane in range(1, pixel_data.shape[2])
                 ]
             ):
-                logger.warn("Image is color, converting to grayscale")
+                logging.warn("Image is color, converting to grayscale")
             pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
         for function in self.functions:
             pixel_data = self.run_function(function, pixel_data, mask)
@@ -554,7 +553,7 @@ input for a measurement module."""
             and not is_binary
         ):
             # Apply a very crude threshold to the image for binary algorithms
-            logger.warning(
+            logging.warning(
                 "Warning: converting image to binary for %s\n" % function_name
             )
             pixel_data = pixel_data != 0
@@ -679,7 +678,7 @@ input for a measurement module."""
 
         if variable_revision_number == 5:
             # Removed "life" operation
-            logger.warn(
+            logging.warn(
                 "Morph's 'Life' option has been removed, this pipeline might "
                 "not be compatible with the current version of CellProfiler."
             )

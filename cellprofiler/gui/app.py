@@ -11,8 +11,6 @@ import cellprofiler.gui.dialog
 import cellprofiler_core.preferences
 import cellprofiler_core.utilities.java
 
-logger = logging.getLogger(__name__)
-
 
 dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
 

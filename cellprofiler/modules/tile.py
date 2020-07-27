@@ -65,7 +65,7 @@ import logging
 
 import numpy as np
 
-logger = logging.getLogger(__name__)
+
 import cellprofiler_core.image as cpi
 import cellprofiler_core.module as cpm
 import cellprofiler_core.setting as cps

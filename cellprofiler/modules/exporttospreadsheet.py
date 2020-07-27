@@ -87,7 +87,7 @@ See also **ExportToDatabase**.
 
 import logging
 
-logger = logging.getLogger(__name__)
+
 import base64
 import csv
 import numpy as np
@@ -1005,7 +1005,7 @@ desired.
         files_to_overwrite = list(filter(os.path.isfile, files_to_check))
         if len(files_to_overwrite) > 0:
             if get_headless():
-                logger.error(
+                logging.error(
                     "ExportToSpreadsheet is configured to refrain from overwriting files and the following file(s) already exist: %s"
                     % ", ".join(files_to_overwrite)
                 )

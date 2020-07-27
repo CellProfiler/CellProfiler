@@ -61,7 +61,7 @@ import cellprofiler_core.utilities.pathname
 import cellprofiler_core.utilities.zmq
 import cellprofiler_core.workspace
 
-logger = logging.getLogger(__name__)
+
 RECENT_PIPELINE_FILE_MENU_ID = [
     wx.NewId() for i in range(cellprofiler_core.preferences.RECENT_FILE_COUNT)
 ]
@@ -2334,7 +2334,7 @@ class PipelineController(object):
                         d[category] = []
                     d[category].append(module_name)
             except:
-                logger.error(
+                logging.error(
                     "Unable to instantiate module %s.\n\n" % module_name, exc_info=True
                 )
 
@@ -2394,7 +2394,7 @@ class PipelineController(object):
 
             self.on_add_to_pipeline(self, AddToPipelineEvent(module_name, loader))
         else:
-            logger.warning(
+            logging.warning(
                 "Could not find module associated with ID = %d, module = %s"
                 % (event.GetId(), event.GetString())
             )
@@ -2560,12 +2560,12 @@ class PipelineController(object):
             return
 
         if active_module is None:
-            logger.warning(
+            logging.warning(
                 "User managed to fire the enable/disable module event and no module was active"
             )
             return
         if active_module.is_input_module():
-            logger.warning(
+            logging.warning(
                 "User managed to fire the enable/disable module event when an input module was active"
             )
             return
@@ -2938,7 +2938,7 @@ class PipelineController(object):
             self.__pipeline.modules(exclude_disabled=False)
         ):
             # Defensive coding: module was deleted?
-            logger.warning(
+            logging.warning(
                 "Failed to display module # %d. The pipeline may have been edited during analysis"
                 % module_num
             )
@@ -3368,7 +3368,7 @@ class PipelineController(object):
             failure = 0
             cellprofiler.gui.viewworkspace.update_workspace_viewer(workspace)
         except Exception as instance:
-            logger.error("Failed to run module %s", module.module_name, exc_info=True)
+            logging.error("Failed to run module %s", module.module_name, exc_info=True)
             event = cellprofiler_core.pipeline.event.RunException(instance, module)
             self.__pipeline.notify_listeners(event)
             if event.cancel_run:

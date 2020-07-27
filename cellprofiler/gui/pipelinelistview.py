@@ -20,7 +20,6 @@ import cellprofiler.icons
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 
-logger = logging.getLogger(__name__)
 
 IMG_OK = cellprofiler.icons.get_builtin_image("check")
 IMG_ERROR = cellprofiler.icons.get_builtin_image("remove-sign")
@@ -500,7 +499,7 @@ class PipelineListView(object):
             if module.module_num == module_num:
                 break
         else:
-            logger.warn("Could not find module %d" % module_num)
+            logging.warn("Could not find module %d" % module_num)
             for ctrl, idx in self.iter_list_items():
                 ctrl.Select(idx, False)
             self.__on_item_selected(None)
@@ -516,7 +515,7 @@ class PipelineListView(object):
             if module.module_num == module_num:
                 break
         else:
-            logger.warn("Could not find module %d" % module_num)
+            logging.warn("Could not find module %d" % module_num)
             return
         ctrl, idx = self.get_ctrl_and_index(module)
         ctrl.Select(idx, selected)

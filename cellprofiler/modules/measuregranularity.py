@@ -74,8 +74,6 @@ IMAGE_SETTING_COUNT = IMAGE_SETTING_COUNT_V3
 OBJECTS_SETTING_COUNT_V3 = 1
 OBJECTS_SETTING_COUNT = OBJECTS_SETTING_COUNT_V3
 
-logger = logging.getLogger(__name__)
-
 
 class MeasureGranularity(cellprofiler_core.module.Module):
     module_name = "MeasureGranularity"
@@ -553,7 +551,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             if "None" in images_set:
                 images_set.remove("None")
             if len(settings_set) > 1:
-                logger.warning(
+                logging.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureGranularity module no longer supports different settings for each image.\n"
                     "Instead, all selected images and objects will be analysed together with the same settings.\n"
@@ -561,7 +559,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
                     "copy of the module."
                 )
             if len(objects_set) > len(objects_list):
-                logger.warning(
+                logging.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureGranularity module now analyses all images and object sets together.\n"
                     "Specific pairs of images and objects are no longer supported.\n"

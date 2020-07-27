@@ -14,7 +14,6 @@ import wx.lib.scrolledpanel
 import cellprofiler.gui
 import cellprofiler_core.preferences
 
-logger = logging.getLogger(__name__)
 
 OMERO_SCHEME = "omero:"
 
@@ -115,7 +114,7 @@ class PathListCtrl(wx.ScrolledWindow):
                 self.DROP_FILES_AND_FOLDERS_HERE
             )[:2]
         except:
-            logger.warn(
+            logging.warn(
                 'Failed to get text extend for "%s" message'
                 % self.DROP_FILES_AND_FOLDERS_HERE,
                 exc_info=True,

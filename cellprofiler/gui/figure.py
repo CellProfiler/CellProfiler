@@ -46,7 +46,6 @@ import cellprofiler_core.image
 import cellprofiler_core.object
 import cellprofiler_core.preferences
 
-logger = logging.getLogger(__name__)
 
 #
 # Monkey-patch the backend canvas to only report the truly supported filetypes
@@ -1758,7 +1757,7 @@ class Figure(wx.Frame):
 
         # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
         if image.shape[2] > 3:
-            logger.warn(
+            logging.warn(
                 "Multichannel display is only supported for RGB (3-channel) data."
                 " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
                     image.shape[2]

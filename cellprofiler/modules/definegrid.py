@@ -51,7 +51,7 @@ import logging
 
 import numpy as np
 
-logger = logging.getLogger(__name__)
+
 import cellprofiler.grid as cpg
 import cellprofiler_core.module as cpm
 import cellprofiler_core.image as cpi
@@ -865,7 +865,7 @@ first image.
                     image_shape,
                 )
             except Exception as e:
-                logger.error(e.message, exc_info=True)
+                logging.error(e.message, exc_info=True)
                 status_bar.SetStatusText(e.message)
                 return False
             return True

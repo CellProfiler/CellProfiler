@@ -1,4 +1,28 @@
-# coding=utf-8
+import functools
+import os
+
+import numpy
+import scipy.optimize
+import six
+from cellprofiler_core.constants.measurement import EXPERIMENT
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.measurement import NEIGHBORS
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import RemoveSettingButton
+from cellprofiler_core.setting.text import Directory
+from cellprofiler_core.setting.text import Text
 
 """
 CalculateStatistics
@@ -141,34 +165,6 @@ References
    dose-response-related code.
 """
 
-import os
-import functools
-
-import numpy
-import scipy.optimize
-import six
-
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
-from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
-from cellprofiler_core.measurement import IMAGE
-from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.measurement import EXPERIMENT
-from cellprofiler_core.measurement import NEIGHBORS
-from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import RemoveSettingButton
-from cellprofiler_core.setting import DirectoryPath
-from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import Text
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting import Divider
-
-
 """# of settings aside from the dose measurements"""
 FIXED_SETTING_COUNT = 1
 VARIABLE_SETTING_COUNT = 5
@@ -295,7 +291,7 @@ Leave this setting blank if you do not want a prefix.
         )
         group.append(
             "pathname",
-            DirectoryPath(
+            Directory(
                 "Output file location",
                 dir_choices=[
                     DEFAULT_OUTPUT_FOLDER_NAME,
@@ -589,8 +585,8 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                         dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
                         custom_path = "." + custom_path[1:]
                     else:
-                        dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-                directory = DirectoryPath.static_join_string(dir_choice, custom_path)
+                        dir_choice = ABSOLUTE_FOLDER_NAME
+                directory = Directory.static_join_string(dir_choice, custom_path)
                 new_setting_values += setting_values[offset : (offset + 4)]
                 new_setting_values += [directory]
             setting_values = new_setting_values
@@ -599,9 +595,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         # Standardize input/output directory name references
         setting_values = list(setting_values)
         for offset in range(5, len(setting_values), VARIABLE_SETTING_COUNT):
-            setting_values[offset] = DirectoryPath.upgrade_setting(
-                setting_values[offset]
-            )
+            setting_values[offset] = Directory.upgrade_setting(setting_values[offset])
 
         return setting_values, variable_revision_number
 

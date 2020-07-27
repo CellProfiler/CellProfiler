@@ -55,7 +55,6 @@ import cellprofiler_core.module
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 
-logger = logging.getLogger(__name__)
 
 SH_RECTANGLE = "Rectangle"
 SH_ELLIPSE = "Ellipse"
@@ -411,7 +410,7 @@ objects:
         if not recalculate_flag:
             if d[D_FIRST_CROPPING].shape != orig_image.pixel_data.shape[:2]:
                 recalculate_flag = True
-                logger.warning(
+                logging.warning(
                     """Image, "%s", size changed from %s to %s during cycle %d, recalculating""",
                     self.image_name.value,
                     str(d[D_FIRST_CROPPING].shape),

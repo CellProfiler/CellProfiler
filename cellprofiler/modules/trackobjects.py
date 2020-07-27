@@ -2,7 +2,7 @@
 
 import logging
 
-logger = logging.getLogger(__name__)
+
 import numpy.ma
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
@@ -206,7 +206,7 @@ M_BOTH = "Both"
 
 import logging
 
-logger = logging.getLogger(__name__)
+
 import numpy as np
 import numpy.ma
 from scipy.ndimage import distance_transform_edt
@@ -2506,7 +2506,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 # the image set after the parent)
                 #
                 lost_object_count[parent_image_index + 1] -= 1
-                logger.debug(
+                logging.debug(
                     "Gap closing: %d:%d to %d:%d, score=%f"
                     % (
                         parent_image_number,
@@ -2554,7 +2554,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 # one more split object
                 #
                 split_count[my_image_index] += 1
-                logger.debug(
+                logging.debug(
                     "split: %d:%d to %d:%d, score=%f"
                     % (
                         parent_image_number,
@@ -2603,7 +2603,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 )
                 lost_object_count[parent_image_index + 1] -= 1
                 merge_count[child_image_index] += 1
-                logger.debug(
+                logging.debug(
                     "Merge: %d:%d to %d:%d, score=%f"
                     % (
                         image_numbers[parent_image_index],
@@ -2652,7 +2652,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 add_fixup(F_LINK_TYPE, my_image_number, my_object_number, LT_MITOSIS)
                 add_fixup(F_MITOSIS_SCORE, my_image_number, my_object_number, score)
                 new_object_count[my_image_index] -= 1
-            logger.debug(
+            logging.debug(
                 "Mitosis: %d:%d to %d:%d and %d, score=%f"
                 % (
                     parent_image_number,

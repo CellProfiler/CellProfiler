@@ -56,7 +56,6 @@ import logging
 
 import cellprofiler_core.measurement
 
-logger = logging.getLogger(__name__)
 
 import os
 import numpy

@@ -109,7 +109,6 @@ ALL_MEASUREMENTS = [
     "LowerQuartileIntensity",
     "UpperQuartileIntensity",
 ]
-logger = logging.getLogger(__name__)
 
 
 class MeasureImageIntensity(cellprofiler_core.module.Module):
@@ -389,7 +388,7 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
             objects_string = ", ".join(map(str, objects_set))
             setting_values = [images_string, wants_objects, objects_string]
             if len(use_objects) > 1 or len(objects_set) > 1:
-                logger.warning(
+                logging.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureImageIntensity module no longer uses pairs of images and objects.\n"
                     "Instead, all selected images and objects will be analysed together.\n"

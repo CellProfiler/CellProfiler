@@ -41,7 +41,6 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 
-logger = logging.getLogger(__name__)
 
 HELP_ON_FILE_LIST = """\
 The *File List* panel displays the image files that are managed by the
@@ -519,7 +518,7 @@ class CPFrame(wx.Frame):
         try:
             self.__workspace.measurements.flush()
         except:
-            logger.warning(
+            logging.warning(
                 "Failed to flush temporary measurements file during close",
                 exc_info=True,
             )
@@ -528,21 +527,21 @@ class CPFrame(wx.Frame):
 
             clear_image_reader_cache()
         except:
-            logger.warning(
+            logging.warning(
                 "Failed to clear bioformats reader cache during close", exc_info=True,
             )
         try:
             self.__preferences_view.close()
         except:
-            logger.warning("Failed during close", exc_info=True)
+            logging.warning("Failed during close", exc_info=True)
         try:
             self.pipeline_controller.on_close()
         except:
-            logger.warning("Failed to close the pipeline controller", exc_info=True)
+            logging.warning("Failed to close the pipeline controller", exc_info=True)
         try:
             cellprofiler.gui.moduleview.stop_validation_queue_thread()
         except:
-            logger.warning("Failed to stop pipeline validation thread", exc_info=True)
+            logging.warning("Failed to stop pipeline validation thread", exc_info=True)
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):

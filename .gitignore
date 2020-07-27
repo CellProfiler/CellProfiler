@@ -3,8 +3,8 @@
 *.pyc
 *.swp
 *venv/
-.cache/
 .DS_Store
+.cache/
 .eggs/
 .idea/
 .mypy_cache/
@@ -13,6 +13,7 @@
 .vscode/
 build/
 dist/
+docs/_build
 docs/source/help
 docs/source/images
 frozen_version.py

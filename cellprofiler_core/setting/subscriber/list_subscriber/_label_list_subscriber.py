@@ -1,4 +1,4 @@
-from ._list import List
+from ._list_subscriber import List
 
 
 class Label(List):

@@ -1,8 +1,6 @@
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
-import cellprofiler_core.setting.text.alphanumeric.name.image._image
-from cellprofiler_core.module._module import Module
+from ._module import Module
+from .. import image
+
 
 
 class ImageProcessing(Module):
@@ -62,9 +60,7 @@ class ImageProcessing(Module):
 
         y_data = self.function(x_data, *args)
 
-        y = cellprofiler_core.image.Image(
-            dimensions=dimensions, image=y_data, parent_image=x, convert=False
-        )
+        y = image.Image(dimensions=dimensions, image=y_data, parent_image=x, convert=False)
 
         images.add(y_name, y)
 

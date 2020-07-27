@@ -5,7 +5,22 @@ import functools
 import numpy
 import scipy.ndimage
 
-import cellprofiler_core.constants.measurement
+from ._module import Module
+from ..constants.measurement import COLTYPE_FLOAT
+from ..constants.measurement import COLTYPE_INTEGER
+from ..constants.measurement import C_CHILDREN
+from ..constants.measurement import C_COUNT
+from ..constants.measurement import C_LOCATION
+from ..constants.measurement import C_NUMBER
+from ..constants.measurement import C_PARENT
+from ..constants.measurement import FF_COUNT
+from ..constants.measurement import FTR_CENTER_X
+from ..constants.measurement import FTR_CENTER_Y
+from ..constants.measurement import FTR_OBJECT_NUMBER
+from ..constants.measurement import IMAGE
+from ..constants.measurement import M_LOCATION_CENTER_X
+from ..constants.measurement import M_LOCATION_CENTER_Y
+from ..constants.measurement import M_NUMBER_OBJECT_NUMBER
 
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
@@ -81,20 +96,20 @@ class Identify(Module):
                             an object created by this module and each
                             value is a list of names of parents.
         """
-        if object_name == cellprofiler_core.constants.measurement.IMAGE:
-            return [cellprofiler_core.constants.measurement.C_COUNT]
+        if object_name == IMAGE:
+            return [C_COUNT]
         result = []
         if object_name in object_dictionary:
             result += [
-                cellprofiler_core.constants.measurement.C_LOCATION,
-                cellprofiler_core.constants.measurement.C_NUMBER,
+                C_LOCATION,
+                C_NUMBER,
             ]
             if len(object_dictionary[object_name]) > 0:
-                result += [cellprofiler_core.constants.measurement.C_PARENT]
+                result += [C_PARENT]
         if object_name in functools.reduce(
             lambda x, y: x + y, list(object_dictionary.values())
         ):
-            result += [cellprofiler_core.constants.measurement.C_CHILDREN]
+            result += [C_CHILDREN]
         return result
 
     @staticmethod
@@ -108,22 +123,22 @@ class Identify(Module):
                             value is a list of names of parents.
         """
         if (
-            object_name == cellprofiler_core.constants.measurement.IMAGE
-            and category == cellprofiler_core.constants.measurement.C_COUNT
+            object_name == IMAGE
+            and category == C_COUNT
         ):
             return list(object_dictionary.keys())
 
         if object_name in object_dictionary:
-            if category == cellprofiler_core.constants.measurement.C_LOCATION:
+            if category == C_LOCATION:
                 return [
-                    cellprofiler_core.constants.measurement.FTR_CENTER_X,
-                    cellprofiler_core.constants.measurement.FTR_CENTER_Y,
+                    FTR_CENTER_X,
+                    FTR_CENTER_Y,
                 ]
-            elif category == cellprofiler_core.constants.measurement.C_NUMBER:
-                return [cellprofiler_core.constants.measurement.FTR_OBJECT_NUMBER]
-            elif category == cellprofiler_core.constants.measurement.C_PARENT:
+            elif category == C_NUMBER:
+                return [FTR_OBJECT_NUMBER]
+            elif category == C_PARENT:
                 return list(object_dictionary[object_name])
-        if category == cellprofiler_core.constants.measurement.C_CHILDREN:
+        if category == C_CHILDREN:
             result = []
             for child_object_name in list(object_dictionary.keys()):
                 if object_name in object_dictionary[child_object_name]:
@@ -164,17 +179,17 @@ def add_object_location_measurements(
         number = numpy.zeros((0,), dtype=int)
     measurements.add_measurement(
         object_name,
-        cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+        M_LOCATION_CENTER_X,
         location_center_x,
     )
     measurements.add_measurement(
         object_name,
-        cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+        M_LOCATION_CENTER_Y,
         location_center_y,
     )
     measurements.add_measurement(
         object_name,
-        cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
+        M_NUMBER_OBJECT_NUMBER,
         number,
     )
 
@@ -196,17 +211,17 @@ def add_object_location_measurements_ijv(
         center_y = numpy.bincount(ijv[:, 2], ijv[:, 0])[1:] / areas
     measurements.add_measurement(
         object_name,
-        cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
+        M_LOCATION_CENTER_X,
         center_x,
     )
     measurements.add_measurement(
         object_name,
-        cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
+        M_LOCATION_CENTER_Y,
         center_y,
     )
     measurements.add_measurement(
         object_name,
-        cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
+        M_NUMBER_OBJECT_NUMBER,
         numpy.arange(1, object_count + 1),
     )
 
@@ -215,7 +230,7 @@ def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""
     measurements.add_measurement(
         "Image",
-        cellprofiler_core.constants.measurement.FF_COUNT % object_name,
+        FF_COUNT % object_name,
         numpy.array([object_count], dtype=float),
     )
 
@@ -231,22 +246,22 @@ def get_object_measurement_columns(object_name):
     return [
         (
             object_name,
-            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X,
-            cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+            M_LOCATION_CENTER_X,
+            COLTYPE_FLOAT,
         ),
         (
             object_name,
-            cellprofiler_core.constants.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler_core.constants.measurement.COLTYPE_FLOAT,
+            M_LOCATION_CENTER_Y,
+            COLTYPE_FLOAT,
         ),
         (
             object_name,
-            cellprofiler_core.constants.measurement.M_NUMBER_OBJECT_NUMBER,
-            cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
+            M_NUMBER_OBJECT_NUMBER,
+            COLTYPE_INTEGER,
         ),
         (
-            cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.measurement.FF_COUNT % object_name,
-            cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
+            IMAGE,
+            FF_COUNT % object_name,
+            COLTYPE_INTEGER,
         ),
     ]

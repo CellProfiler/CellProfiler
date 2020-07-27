@@ -3,9 +3,9 @@ import re
 import sys
 import tempfile
 
-import cellprofiler_core.preferences
-import cellprofiler_core.utilities
-from cellprofiler_core.measurement import Measurements
+from .hdf5_dict import get_top_level_group
+from .hdf5_dict import VERSION
+from ..preferences import get_temporary_directory, get_default_output_directory
 
 
 def get_length_from_varchar(x):
@@ -22,7 +22,7 @@ def make_temporary_file():
     returns a file descriptor (that should be closed when done) and a
     file name.
     """
-    temporary_directory = cellprofiler_core.preferences.get_temporary_directory()
+    temporary_directory = get_temporary_directory()
     if not (
         os.path.exists(temporary_directory) and os.access(temporary_directory, os.W_OK)
     ):
@@ -46,6 +46,8 @@ def load_measurements(filename, dest_file=None, run_name=None, image_numbers=Non
 
     returns a Measurements object
     """
+    from ..measurement import Measurements
+
     HDF5_HEADER = (
         chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) + chr(26) + chr(10)
     )
@@ -59,11 +61,11 @@ def load_measurements(filename, dest_file=None, run_name=None, image_numbers=Non
         fd.close()
 
     if header.decode("unicode_escape") == HDF5_HEADER:
-        f, top_level = cellprofiler_core.utilities.hdf5_dict.get_top_level_group(
+        f, top_level = get_top_level_group(
             filename
         )
         try:
-            if cellprofiler_core.utilities.hdf5_dict.VERSION in list(f.keys()):
+            if VERSION in list(f.keys()):
                 if run_name is not None:
                     top_level = top_level[run_name]
                 else:
@@ -82,7 +84,7 @@ def load_measurements(filename, dest_file=None, run_name=None, image_numbers=Non
 
 
 def load_measurements_from_buffer(buf):
-    dirtgt = cellprofiler_core.preferences.get_default_output_directory()
+    dirtgt = get_default_output_directory()
     if not (os.path.exists(dirtgt) and os.access(dirtgt, os.W_OK)):
         dirtgt = None
     fd, filename = tempfile.mkstemp(prefix="Cpmeasurements", suffix=".hdf5", dir=dirtgt)

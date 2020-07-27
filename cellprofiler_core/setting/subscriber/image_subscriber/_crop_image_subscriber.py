@@ -1,4 +1,4 @@
-from ._image import Image
+from ._image_subscriber import Image
 
 
 class Crop(Image):

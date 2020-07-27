@@ -993,10 +993,203 @@ most egregiously offending setting to indicate failure.</p>
 
 </dd></dl>
 
+<span class="target" id="module-cellprofiler_core.module.image_segmentation"></span><dl class="py class">
+<dt id="cellprofiler_core.module.image_segmentation.ImageSegmentation">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.module.image_segmentation.</code><code class="sig-name descname">ImageSegmentation</code><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ImageSegmentation" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ImageSegmentation.create_settings">
+<code class="sig-name descname">create_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ImageSegmentation.create_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create your settings by subclassing this function</p>
+<p>create_settings is called at the end of initialization.</p>
+<dl class="simple">
+<dt>You should create the setting variables for your module here:</dt><dd><p># Ask the user for the input image
+self.image_name = cellprofiler_core.settings.ImageNameSubscriber(…)
+# Ask the user for the name of the output image
+self.output_image = cellprofiler_core.settings.ImageNameProvider(…)
+# Ask the user for a parameter
+self.smoothing_size = cellprofiler_core.settings.Float(…)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ImageSegmentation.display">
+<code class="sig-name descname">display</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em>, <em class="sig-param"><span class="n">figure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ImageSegmentation.display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the results, and possibly intermediate results, as
+appropriate for this module.  This method will be called after
+run() is finished if self.show_window is True.</p>
+<p>The run() method should store whatever data display() needs in
+workspace.display_data.  The module is given a CPFigure to use for
+display in the third argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ImageSegmentation.get_categories">
+<code class="sig-name descname">get_categories</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ImageSegmentation.get_categories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the categories of measurements that this module produces</p>
+<p>object_name - return measurements made on this object (or ‘Image’ for image measurements)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ImageSegmentation.get_measurement_columns">
+<code class="sig-name descname">get_measurement_columns</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ImageSegmentation.get_measurement_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sequence describing the measurement columns needed by this module</p>
+<p>This call should return one element per image or object measurement
+made by the module during image set analysis. The element itself
+is a 3-tuple:
+first entry: either one of the predefined measurement categories,</p>
+<blockquote>
+<div><p>{“Image”, “Experiment” or “Neighbors” or the name of one
+of the objects.}</p>
+</div></blockquote>
+<dl class="simple">
+<dt>second entry: the measurement name (as would be used in a call</dt><dd><p>to add_measurement)</p>
+</dd>
+<dt>third entry: the column data type (for instance, “varchar(255)” or</dt><dd><p>“float”)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ImageSegmentation.get_measurements">
+<code class="sig-name descname">get_measurements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">category</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ImageSegmentation.get_measurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the measurements that this module produces</p>
+<p>object_name - return measurements made on this object (or ‘Image’ for image measurements)
+category - return measurements made in this category</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ImageSegmentation.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ImageSegmentation.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the module (abstract method)</p>
+<dl>
+<dt>workspace    - The workspace contains</dt><dd><p>pipeline     - instance of cpp for this run
+image_set    - the images in the image set being processed
+object_set   - the objects (labeled masks) in this image set
+measurements - the measurements for this run
+frame        - the parent frame to whatever frame is created.</p>
+<blockquote>
+<div><p>None means don’t draw.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>display_data - the run() module should store anything to be</dt><dd><p>displayed in this attribute, which will be used in
+display()</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>run() should not attempt to display any data, but should communicate it
+to display() via the workspace.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ImageSegmentation.settings">
+<code class="sig-name descname">settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ImageSegmentation.settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the settings to be loaded or saved to/from the pipeline</p>
+<p>These are the settings (from cellprofiler_core.settings) that are
+either read from the strings in the pipeline or written out
+to the pipeline. The settings should appear in a consistent
+order so they can be matched to the strings in the pipeline.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ImageSegmentation.visible_settings">
+<code class="sig-name descname">visible_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ImageSegmentation.visible_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>The settings that are visible in the UI</p>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="py class">
-<dt id="cellprofiler_core.module.PluginImporter">
-<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.module.</code><code class="sig-name descname">PluginImporter</code><a class="headerlink" href="#cellprofiler_core.module.PluginImporter" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dt id="cellprofiler_core.module.image_segmentation.ObjectProcessing">
+<em class="property">class </em><code class="sig-prename descclassname">cellprofiler_core.module.image_segmentation.</code><code class="sig-name descname">ObjectProcessing</code><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ObjectProcessing" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ObjectProcessing.create_settings">
+<code class="sig-name descname">create_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ObjectProcessing.create_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create your settings by subclassing this function</p>
+<p>create_settings is called at the end of initialization.</p>
+<dl class="simple">
+<dt>You should create the setting variables for your module here:</dt><dd><p># Ask the user for the input image
+self.image_name = cellprofiler_core.settings.ImageNameSubscriber(…)
+# Ask the user for the name of the output image
+self.output_image = cellprofiler_core.settings.ImageNameProvider(…)
+# Ask the user for a parameter
+self.smoothing_size = cellprofiler_core.settings.Float(…)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ObjectProcessing.display">
+<code class="sig-name descname">display</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em>, <em class="sig-param"><span class="n">figure</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ObjectProcessing.display" title="Permalink to this definition">¶</a></dt>
+<dd><p>Display the results, and possibly intermediate results, as
+appropriate for this module.  This method will be called after
+run() is finished if self.show_window is True.</p>
+<p>The run() method should store whatever data display() needs in
+workspace.display_data.  The module is given a CPFigure to use for
+display in the third argument.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ObjectProcessing.get_categories">
+<code class="sig-name descname">get_categories</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ObjectProcessing.get_categories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the categories of measurements that this module produces</p>
+<p>object_name - return measurements made on this object (or ‘Image’ for image measurements)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ObjectProcessing.get_measurement_columns">
+<code class="sig-name descname">get_measurement_columns</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">additional_objects</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ObjectProcessing.get_measurement_columns" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a sequence describing the measurement columns needed by this module</p>
+<p>This call should return one element per image or object measurement
+made by the module during image set analysis. The element itself
+is a 3-tuple:
+first entry: either one of the predefined measurement categories,</p>
+<blockquote>
+<div><p>{“Image”, “Experiment” or “Neighbors” or the name of one
+of the objects.}</p>
+</div></blockquote>
+<dl class="simple">
+<dt>second entry: the measurement name (as would be used in a call</dt><dd><p>to add_measurement)</p>
+</dd>
+<dt>third entry: the column data type (for instance, “varchar(255)” or</dt><dd><p>“float”)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ObjectProcessing.get_measurements">
+<code class="sig-name descname">get_measurements</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">pipeline</span></em>, <em class="sig-param"><span class="n">object_name</span></em>, <em class="sig-param"><span class="n">category</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ObjectProcessing.get_measurements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the measurements that this module produces</p>
+<p>object_name - return measurements made on this object (or ‘Image’ for image measurements)
+category - return measurements made in this category</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="cellprofiler_core.module.image_segmentation.ObjectProcessing.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">workspace</span></em><span class="sig-paren">)</span><a class="headerlink" href="#cellprofiler_core.module.image_segmentation.ObjectProcessing.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the module (abstract method)</p>
+<dl>
+<dt>workspace    - The workspace contains</dt><dd><p>pipeline     - instance of cpp for this run
+image_set    - the images in the image set being processed
+object_set   - the objects (labeled masks) in this image set
+measurements - the measurements for this run
+frame        - the parent frame to whatever frame is created.</p>
+<blockquote>
+<div><p>None means don’t draw.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>display_data - the run() module should store anything to be</dt><dd><p>displayed in this attribute, which will be used in
+display()</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p>run() should not attempt to display any data, but should communicate it
+to display() via the workspace.</p>
+</dd></dl>
+
+</dd></dl>
 
 </div>
 

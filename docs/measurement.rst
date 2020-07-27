@@ -6,9 +6,3 @@ Measurement
 
 .. autoclass:: Measurements
     :members:
-
-.. autoclass:: MetadataGroup
-    :members:
-
-.. autoclass:: RelationshipKey
-    :members:

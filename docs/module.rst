@@ -13,5 +13,10 @@ Module
 .. autoclass:: Module
     :members:
 
-.. autoclass:: PluginImporter
+.. module:: cellprofiler_core.module.image_segmentation
+
+.. autoclass:: ImageSegmentation
+    :members:
+
+.. autoclass:: ObjectProcessing
     :members:

@@ -256,15 +256,43 @@ tophat             EnhanceOrSuppressFeatures  *Operation*  Enhance -> Speckles
 
 import logging
 
-import numpy as np
-import scipy.ndimage as scind
+import numpy
+import scipy.ndimage
 
 
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
-import cellprofiler_core.image as cpi
-import centrosome.cpmorphology as morph
-from centrosome.filter import poisson_equation
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import (
+    Integer,
+    DoSomething,
+    Choice,
+    RemoveSettingButton,
+    SettingsGroup,
+    ImageNameSubscriber,
+    Binary,
+    Divider,
+    ImageNameProvider,
+)
+from cellprofiler_core.image import Image
+from centrosome.cpmorphology import (
+    endpoints,
+    skeletonize,
+    diag,
+    hbreak,
+    binary_shrink,
+    thicken,
+    openlines,
+    clean,
+    fill,
+    remove,
+    spur,
+    thin,
+    branchpoints,
+    convex_hull_image,
+    majority,
+    bridge,
+    vbreak,
+)
+import centrosome.filter
 
 F_BRANCHPOINTS = "branchpoints"
 F_BRIDGE = "bridge"
@@ -316,13 +344,13 @@ FUNCTION_SETTING_COUNT_V3 = 11
 FUNCTION_SETTING_COUNT = 4
 
 
-class Morph(cpm.Module):
+class Morph(Module):
     module_name = "Morph"
     category = "Image Processing"
     variable_revision_number = 5
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageNameSubscriber(
             "Select the input image",
             "None",
             doc="""\
@@ -332,13 +360,13 @@ module. Objects can be converted to binary using the **ConvertToImage**
 module.""",
         )
 
-        self.output_image_name = cps.ImageNameProvider(
+        self.output_image_name = ImageNameProvider(
             "Name the output image",
             "MorphBlue",
             doc="""Enter the name for the output image. It will be of the same type as the input image.""",
         )
 
-        self.add_button = cps.DoSomething(
+        self.add_button = DoSomething(
             "",
             "Add another operation",
             self.add_function,
@@ -362,10 +390,10 @@ Enter the number of times to repeat the operation."""
         group = MorphSettingsGroup()
         group.can_remove = can_remove
         if can_remove:
-            group.append("divider", cps.Divider(line=False))
+            group.append("divider", Divider(line=False))
         group.append(
             "function",
-            cps.Choice(
+            Choice(
                 "Select the operation to perform",
                 F_ALL,
                 doc="""Choose one of the operations described in this module's help.""",
@@ -374,7 +402,7 @@ Enter the number of times to repeat the operation."""
 
         group.append(
             "repeats_choice",
-            cps.Choice(
+            Choice(
                 "Number of times to repeat operation",
                 R_ALL,
                 doc="""\
@@ -391,12 +419,12 @@ applied successively to the image.
 
         group.append(
             "custom_repeats",
-            cps.Integer(self.CUSTOM_REPEATS_TEXT, 2, 1, doc=self.CUSTOM_REPEATS_DOC),
+            Integer(self.CUSTOM_REPEATS_TEXT, 2, 1, doc=self.CUSTOM_REPEATS_DOC),
         )
 
         group.append(
             "rescale_values",
-            cps.Binary(
+            Binary(
                 "Rescale values from 0 to 1?",
                 True,
                 doc="""\
@@ -417,9 +445,7 @@ input for a measurement module."""
         if can_remove:
             group.append(
                 "remove",
-                cps.RemoveSettingButton(
-                    "", "Remove this operation", self.functions, group
-                ),
+                RemoveSettingButton("", "Remove this operation", self.functions, group),
             )
         self.functions.append(group)
 
@@ -480,15 +506,15 @@ input for a measurement module."""
         if pixel_data.ndim == 3:
             if any(
                 [
-                    np.any(pixel_data[:, :, 0] != pixel_data[:, :, plane])
+                    numpy.any(pixel_data[:, :, 0] != pixel_data[:, :, plane])
                     for plane in range(1, pixel_data.shape[2])
                 ]
             ):
                 logging.warn("Image is color, converting to grayscale")
-            pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
+            pixel_data = numpy.sum(pixel_data, 2) / pixel_data.shape[2]
         for function in self.functions:
             pixel_data = self.run_function(function, pixel_data, mask)
-        new_image = cpi.Image(pixel_data, parent_image=image)
+        new_image = Image(pixel_data, parent_image=image)
         workspace.image_set.add(self.output_image_name.value, new_image)
         if self.show_window:
             workspace.display_data.image = image.pixel_data
@@ -581,52 +607,52 @@ input for a measurement module."""
             # All of these have an iterations argument or it makes no
             # sense to iterate
             if function_name == F_BRANCHPOINTS:
-                return morph.branchpoints(pixel_data, mask)
+                return branchpoints(pixel_data, mask)
             elif function_name == F_BRIDGE:
-                return morph.bridge(pixel_data, mask, count)
+                return bridge(pixel_data, mask, count)
             elif function_name == F_CLEAN:
-                return morph.clean(pixel_data, mask, count)
+                return clean(pixel_data, mask, count)
             elif function_name == F_CONVEX_HULL:
                 if mask is None:
-                    return morph.convex_hull_image(pixel_data)
+                    return convex_hull_image(pixel_data)
                 else:
-                    return morph.convex_hull_image(pixel_data & mask)
+                    return convex_hull_image(pixel_data & mask)
             elif function_name == F_DIAG:
-                return morph.diag(pixel_data, mask, count)
+                return diag(pixel_data, mask, count)
             elif function_name == F_DISTANCE:
-                image = scind.distance_transform_edt(pixel_data)
+                image = scipy.ndimage.distance_transform_edt(pixel_data)
                 if function.rescale_values.value:
-                    image = image / np.max(image)
+                    image = image / numpy.max(image)
                 return image
             elif function_name == F_ENDPOINTS:
-                return morph.endpoints(pixel_data, mask)
+                return endpoints(pixel_data, mask)
             elif function_name == F_FILL:
-                return morph.fill(pixel_data, mask, count)
+                return fill(pixel_data, mask, count)
             elif function_name == F_HBREAK:
-                return morph.hbreak(pixel_data, mask, count)
+                return hbreak(pixel_data, mask, count)
             elif function_name == F_MAJORITY:
-                return morph.majority(pixel_data, mask, count)
+                return majority(pixel_data, mask, count)
             elif function_name == F_OPENLINES:
-                return morph.openlines(pixel_data, linelength=custom_repeats, mask=mask)
+                return openlines(pixel_data, linelength=custom_repeats, mask=mask)
             elif function_name == F_REMOVE:
-                return morph.remove(pixel_data, mask, count)
+                return remove(pixel_data, mask, count)
             elif function_name == F_SHRINK:
-                return morph.binary_shrink(pixel_data, count)
+                return binary_shrink(pixel_data, count)
             elif function_name == F_SKELPE:
-                return morph.skeletonize(
+                return skeletonize(
                     pixel_data,
                     mask,
-                    scind.distance_transform_edt(pixel_data)
-                    * poisson_equation(pixel_data),
+                    scipy.ndimage.distance_transform_edt(pixel_data)
+                    * centrosome.filter.poisson_equation(pixel_data),
                 )
             elif function_name == F_SPUR:
-                return morph.spur(pixel_data, mask, count)
+                return spur(pixel_data, mask, count)
             elif function_name == F_THICKEN:
-                return morph.thicken(pixel_data, mask, count)
+                return thicken(pixel_data, mask, count)
             elif function_name == F_THIN:
-                return morph.thin(pixel_data, mask, count)
+                return thin(pixel_data, mask, count)
             elif function_name == F_VBREAK:
-                return morph.vbreak(pixel_data, mask)
+                return vbreak(pixel_data, mask)
             else:
                 raise NotImplementedError(
                     "Unimplemented morphological function: %s" % function_name
@@ -688,7 +714,7 @@ input for a measurement module."""
         return setting_values, variable_revision_number
 
 
-class MorphSettingsGroup(cps.SettingsGroup):
+class MorphSettingsGroup(SettingsGroup):
     @property
     def repeat_count(self):
         """"""  # of times to repeat'''

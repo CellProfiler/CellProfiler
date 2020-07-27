@@ -39,9 +39,9 @@ See also other **Display** modules and data tools.
 import numpy as np
 import six
 
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+from cellprofiler_core.measurement import IMAGE
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Measurement, ObjectNameSubscriber, Choice, Text
 from cellprofiler.modules._help import USING_METADATA_HELP_REF
 
 AGG_AVG = "avg"
@@ -55,7 +55,7 @@ WF_NAME = "Well name"
 WF_ROWCOL = "Row & Column"
 
 
-class DisplayPlatemap(cpm.Module):
+class DisplayPlatemap(Module):
     module_name = "DisplayPlatemap"
     category = "Data Tools"
     variable_revision_number = 2
@@ -64,10 +64,10 @@ class DisplayPlatemap(cpm.Module):
         if self.objects_or_image.value == OI_OBJECTS:
             return self.object.value
         else:
-            return cpmeas.IMAGE
+            return IMAGE
 
     def create_settings(self):
-        self.objects_or_image = cps.Choice(
+        self.objects_or_image = Choice(
             "Display object or image measurements?",
             [OI_OBJECTS, OI_IMAGE],
             doc="""\
@@ -79,7 +79,7 @@ class DisplayPlatemap(cpm.Module):
             % globals(),
         )
 
-        self.object = cps.ObjectNameSubscriber(
+        self.object = ObjectNameSubscriber(
             "Select the object whose measurements will be displayed",
             "None",
             doc="""\
@@ -89,16 +89,16 @@ whose measurements are to be displayed.
 """,
         )
 
-        self.plot_measurement = cps.Measurement(
+        self.plot_measurement = Measurement(
             "Select the measurement to plot",
             self.get_object,
             "None",
             doc="""Choose the image or object measurement made by a previous module to plot.""",
         )
 
-        self.plate_name = cps.Measurement(
+        self.plate_name = Measurement(
             "Select your plate metadata",
-            lambda: cpmeas.IMAGE,
+            lambda: IMAGE,
             "Metadata_Plate",
             doc="""\
 Choose the metadata tag that corresponds to the plate identifier. That
@@ -110,7 +110,7 @@ corresponding uniquely to that plate.
             % globals(),
         )
 
-        self.plate_type = cps.Choice(
+        self.plate_type = Choice(
             "Multiwell plate format",
             ["96", "384"],
             doc="""\
@@ -123,7 +123,7 @@ are:
 """,
         )
 
-        self.well_format = cps.Choice(
+        self.well_format = Choice(
             "Well metadata format",
             [WF_NAME, WF_ROWCOL],
             doc="""\
@@ -135,9 +135,9 @@ are:
             % globals(),
         )
 
-        self.well_name = cps.Measurement(
+        self.well_name = Measurement(
             "Select your well metadata",
-            lambda: cpmeas.IMAGE,
+            lambda: IMAGE,
             "Metadata_Well",
             doc="""\
 Choose the metadata tag that corresponds to the well identifier. The
@@ -152,9 +152,9 @@ and 24 columns) would span from well “A01” to well “P24”."
             % globals(),
         )
 
-        self.well_row = cps.Measurement(
+        self.well_row = Measurement(
             "Select your well row metadata",
-            lambda: cpmeas.IMAGE,
+            lambda: IMAGE,
             "Metadata_WellRow",
             doc="""\
 Choose the metadata tag that corresponds to the well row identifier,
@@ -167,9 +167,9 @@ standard format 96-well plate would span from row “A” to “H”, whereas a
             % globals(),
         )
 
-        self.well_col = cps.Measurement(
+        self.well_col = Measurement(
             "Select your well column metadata",
-            lambda: cpmeas.IMAGE,
+            lambda: IMAGE,
             "Metadata_WellCol",
             doc="""\
 Choose the metadata tag that corresponds to the well column identifier,
@@ -183,7 +183,7 @@ format 96-well plate would span from column “01” to “12”, whereas a
             % globals(),
         )
 
-        self.agg_method = cps.Choice(
+        self.agg_method = Choice(
             "How should the values be aggregated?",
             AGG_NAMES,
             AGG_NAMES[0],
@@ -201,7 +201,7 @@ they can be represented by a color. Options are:
             % globals(),
         )
 
-        self.title = cps.Text(
+        self.title = Text(
             "Enter a title for the plot, if desired",
             "",
             doc="""\
@@ -247,19 +247,18 @@ executed.
             # Get plates
             plates = list(
                 map(
-                    six.text_type,
-                    m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value),
+                    six.text_type, m.get_all_measurements(IMAGE, self.plate_name.value),
                 )
             )
             # Get wells
             if self.well_format == WF_NAME:
-                wells = m.get_all_measurements(cpmeas.IMAGE, self.well_name.value)
+                wells = m.get_all_measurements(IMAGE, self.well_name.value)
             elif self.well_format == WF_ROWCOL:
                 wells = [
                     "%s%s" % (x, y)
                     for x, y in zip(
-                        m.get_all_measurements(cpmeas.IMAGE, self.well_row.value),
-                        m.get_all_measurements(cpmeas.IMAGE, self.well_col.value),
+                        m.get_all_measurements(IMAGE, self.well_row.value),
+                        m.get_all_measurements(IMAGE, self.well_col.value),
                     )
                 ]
             # Get data to plot

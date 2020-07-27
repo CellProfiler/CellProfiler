@@ -58,11 +58,19 @@ from centrosome.smooth import circular_gaussian_kernel
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
 
-import cellprofiler_core.image as cpi
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.pipeline as cpp
-import cellprofiler_core.setting as cps
+from cellprofiler_core.image import Image, AbstractImageProvider
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
+from cellprofiler_core.pipeline import Pipeline
+from cellprofiler_core.setting import (
+    Integer,
+    Float,
+    Choice,
+    ImageNameSubscriber,
+    Binary,
+    ValidationError,
+    ImageNameProvider,
+)
 
 IC_REGULAR = "Regular"
 IC_BACKGROUND = "Background"
@@ -93,26 +101,26 @@ DOS_DIVIDE = "Divide"
 DOS_SUBTRACT = "Subtract"
 
 
-class CorrectIlluminationCalculate(cpm.Module):
+class CorrectIlluminationCalculate(Module):
     module_name = "CorrectIlluminationCalculate"
     variable_revision_number = 2
     category = "Image Processing"
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageNameSubscriber(
             "Select the input image",
             "None",
             doc="Choose the image to be used to calculate the illumination function.",
         )
 
-        self.illumination_image_name = cps.ImageNameProvider(
+        self.illumination_image_name = ImageNameProvider(
             "Name the output image",
             "IllumBlue",
             doc="""Enter a name for the resultant illumination function.""",
             provided_attributes={"aggregate_image": True, "available_on_last": False,},
         )
 
-        self.intensity_choice = cps.Choice(
+        self.intensity_choice = Choice(
             "Select how the illumination function is calculated",
             [IC_REGULAR, IC_BACKGROUND],
             IC_REGULAR,
@@ -162,7 +170,7 @@ the image beforehand solves this problem.
             ),
         )
 
-        self.dilate_objects = cps.Binary(
+        self.dilate_objects = Binary(
             "Dilate objects in the final averaged image?",
             False,
             doc="""\
@@ -177,7 +185,7 @@ objects for this approach.
             % globals(),
         )
 
-        self.object_dilation_radius = cps.Integer(
+        self.object_dilation_radius = Integer(
             "Dilation radius",
             1,
             0,
@@ -189,7 +197,7 @@ This value should be roughly equal to the original radius of the objects.
             % globals(),
         )
 
-        self.block_size = cps.Integer(
+        self.block_size = Integer(
             "Block size",
             60,
             1,
@@ -203,7 +211,7 @@ located.
             % globals(),
         )
 
-        self.rescale_option = cps.Choice(
+        self.rescale_option = Choice(
             "Rescale the illumination function?",
             ["Yes", "No", RE_MEDIAN],
             doc="""\
@@ -227,7 +235,7 @@ are all equal to or greater than 1. You have the following options:
             % globals(),
         )
 
-        self.each_or_all = cps.Choice(
+        self.each_or_all = Choice(
             "Calculate function for each image individually, or based on all images?",
             [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS],
             doc="""\
@@ -262,7 +270,7 @@ illumination function can be calculated in one of the three ways:
 """
             % globals(),
         )
-        self.smoothing_method = cps.Choice(
+        self.smoothing_method = Choice(
             "Smoothing method",
             [
                 SM_NONE,
@@ -349,7 +357,7 @@ stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Anal
             % globals(),
         )
 
-        self.automatic_object_width = cps.Choice(
+        self.automatic_object_width = Choice(
             "Method to calculate smoothing filter size",
             [FI_AUTOMATIC, FI_OBJECT_SIZE, FI_MANUALLY],
             doc="""\
@@ -366,7 +374,7 @@ Calculate the smoothing filter size. There are three options:
             % globals(),
         )
 
-        self.object_width = cps.Integer(
+        self.object_width = Integer(
             "Approximate object diameter",
             10,
             doc="""\
@@ -377,7 +385,7 @@ Enter the approximate diameter of typical objects, in pixels.
             % globals(),
         )
 
-        self.size_of_smoothing_filter = cps.Integer(
+        self.size_of_smoothing_filter = Integer(
             "Smoothing filter size",
             10,
             doc="""\
@@ -388,7 +396,7 @@ Enter the size of the desired smoothing filter, in pixels.
             % globals(),
         )
 
-        self.save_average_image = cps.Binary(
+        self.save_average_image = Binary(
             "Retain the averaged image?",
             False,
             doc="""\
@@ -404,7 +412,7 @@ module to save it to your hard drive.
             % globals(),
         )
 
-        self.average_image_name = cps.ImageNameProvider(
+        self.average_image_name = ImageNameProvider(
             "Name the averaged image",
             "IllumBlueAvg",
             doc="""\
@@ -413,7 +421,7 @@ module to save it to your hard drive.
 Enter a name that will allow the averaged image to be selected later in the pipeline.""",
         )
 
-        self.save_dilated_image = cps.Binary(
+        self.save_dilated_image = Binary(
             "Retain the dilated image?",
             False,
             doc="""\
@@ -427,7 +435,7 @@ module to save it to your hard drive.
             % globals(),
         )
 
-        self.dilated_image_name = cps.ImageNameProvider(
+        self.dilated_image_name = ImageNameProvider(
             "Name the dilated image",
             "IllumBlueDilated",
             doc="""\
@@ -437,7 +445,7 @@ Enter a name that will allow the dilated image to be selected later in
 the pipeline.""",
         )
 
-        self.automatic_splines = cps.Binary(
+        self.automatic_splines = Binary(
             "Automatically calculate spline parameters?",
             True,
             doc="""\
@@ -452,7 +460,7 @@ scale, maximum number of iterations and convergence.
             % globals(),
         )
 
-        self.spline_bg_mode = cps.Choice(
+        self.spline_bg_mode = Choice(
             "Background mode",
             [MODE_AUTO, MODE_DARK, MODE_BRIGHT, MODE_GRAY],
             doc="""\
@@ -480,7 +488,7 @@ foreground.
             % globals(),
         )
 
-        self.spline_threshold = cps.Float(
+        self.spline_threshold = Float(
             "Background threshold",
             2,
             minval=0.1,
@@ -504,7 +512,7 @@ deviations; this will provide a fairly stable, smooth background estimate.
             % globals(),
         )
 
-        self.spline_points = cps.Integer(
+        self.spline_points = Integer(
             "Number of spline points",
             5,
             4,
@@ -521,7 +529,7 @@ background more closely and take more time to compute.
             % globals(),
         )
 
-        self.spline_rescale = cps.Float(
+        self.spline_rescale = Float(
             "Image resampling factor",
             2,
             minval=1,
@@ -539,7 +547,7 @@ factor of 2 is entered.
             % globals(),
         )
 
-        self.spline_maximum_iterations = cps.Integer(
+        self.spline_maximum_iterations = Integer(
             "Maximum number of iterations",
             40,
             minval=1,
@@ -554,7 +562,7 @@ if it converges.
             % globals(),
         )
 
-        self.spline_convergence = cps.Float(
+        self.spline_convergence = Float(
             "Residual value for convergence",
             value=0.001,
             minval=0.00001,
@@ -674,9 +682,9 @@ fewer iterations, but less accuracy.
     def prepare_group(self, workspace, grouping, image_numbers):
         image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
-        assert isinstance(pipeline, cpp.Pipeline)
+        assert isinstance(pipeline, Pipeline)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, Measurements)
         if self.each_or_all != EA_EACH and len(image_numbers) > 0:
             title = "#%d: CorrectIlluminationCalculate for %s" % (
                 self.module_num,
@@ -874,7 +882,7 @@ fewer iterations, but less accuracy.
                         for x in image.pixel_data.transpose(2, 0, 1)
                     ]
                 )
-            return cpi.Image(dilated_pixels, parent_image=orig_image)
+            return Image(dilated_pixels, parent_image=orig_image)
         else:
             return image
 
@@ -902,7 +910,7 @@ fewer iterations, but less accuracy.
                     pixels[~orig_image.mask] = 0
                 else:
                     pixels[~orig_image.mask, :] = 0
-                avg_image = cpi.Image(pixels, parent_image=orig_image)
+                avg_image = Image(pixels, parent_image=orig_image)
             else:
                 avg_image = orig_image
         else:
@@ -922,7 +930,7 @@ fewer iterations, but less accuracy.
                 for i in range(pixels.shape[2]):
                     minima = fix(scind.minimum(pixels[:, :, i], labels, indexes))
                     min_block[labels != -1, i] = minima[labels[labels != -1]]
-            avg_image = cpi.Image(min_block, parent_image=orig_image)
+            avg_image = Image(min_block, parent_image=orig_image)
         return avg_image
 
     def apply_smoothing(self, image, orig_image=None):
@@ -944,7 +952,7 @@ fewer iterations, but less accuracy.
                 )
         else:
             output_pixels = self.smooth_plane(pixel_data, image.mask)
-        output_image = cpi.Image(output_pixels, parent_image=orig_image)
+        output_image = Image(output_pixels, parent_image=orig_image)
         return output_image
 
     def smooth_plane(self, pixel_data, mask):
@@ -1065,7 +1073,7 @@ fewer iterations, but less accuracy.
             output_pixels = np.dstack(
                 [scaling_fn_2d(x) for x in image.pixel_data.transpose(2, 0, 1)]
             )
-        output_image = cpi.Image(output_pixels, parent_image=orig_image)
+        output_image = Image(output_pixels, parent_image=orig_image)
         return output_image
 
     def validate_module(self, pipeline):
@@ -1074,7 +1082,7 @@ fewer iterations, but less accuracy.
             not pipeline.is_image_from_file(self.image_name.value)
             and self.each_or_all == EA_ALL_FIRST
         ):
-            raise cps.ValidationError(
+            raise ValidationError(
                 "All: First cycle requires that the input image be provided by the Input modules, or LoadImages/LoadData.",
                 self.each_or_all,
             )
@@ -1089,7 +1097,7 @@ fewer iterations, but less accuracy.
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
         if self.each_or_all == EA_ALL_FIRST:
-            raise cps.ValidationError(
+            raise ValidationError(
                 "Pre-calculation of the illumination function is time-intensive, especially for Test Mode. The analysis will proceed, but consider using '%s' instead."
                 % EA_ALL_ACROSS,
                 self.each_or_all,
@@ -1135,7 +1143,7 @@ fewer iterations, but less accuracy.
                 self.each_or_all.value = EA_ALL_ACROSS
 
 
-class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
+class CorrectIlluminationImageProvider(AbstractImageProvider):
     """CorrectIlluminationImageProvider provides the illumination correction image
 
     This class accumulates the image data from successive images and
@@ -1245,7 +1253,7 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
                 pixel_data[mask, i] = (
                     self.__image_sum[mask, i] / self.__mask_count[mask]
                 )
-        self.__cached_avg_image = cpi.Image(pixel_data, mask)
+        self.__cached_avg_image = Image(pixel_data, mask)
         self.__cached_dilated_image = self.__module.apply_dilation(
             self.__cached_avg_image
         )
@@ -1258,7 +1266,7 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         pass
 
 
-class CorrectIlluminationAvgImageProvider(cpi.AbstractImageProvider):
+class CorrectIlluminationAvgImageProvider(AbstractImageProvider):
     """Provide the image after averaging but before dilation and smoothing"""
 
     def __init__(self, name, ci_provider):
@@ -1279,7 +1287,7 @@ class CorrectIlluminationAvgImageProvider(cpi.AbstractImageProvider):
         return self.__name
 
 
-class CorrectIlluminationDilatedImageProvider(cpi.AbstractImageProvider):
+class CorrectIlluminationDilatedImageProvider(AbstractImageProvider):
     """Provide the image after averaging but before dilation and smoothing"""
 
     def __init__(self, name, ci_provider):

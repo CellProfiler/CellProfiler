@@ -32,9 +32,15 @@ from centrosome.filter import roberts, canny, sobel, hsobel, vsobel
 from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
 
-import cellprofiler_core.image as cpi
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import (
+    Float,
+    Choice,
+    ImageNameSubscriber,
+    Binary,
+    ImageNameProvider,
+)
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"
@@ -51,25 +57,25 @@ E_HORIZONTAL = "Horizontal"
 E_VERTICAL = "Vertical"
 
 
-class EnhanceEdges(cpm.Module):
+class EnhanceEdges(Module):
     module_name = "EnhanceEdges"
     category = "Image Processing"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageNameSubscriber(
             "Select the input image",
             "None",
             doc="""Select the image whose edges you want to enhance.""",
         )
 
-        self.output_image_name = cps.ImageNameProvider(
+        self.output_image_name = ImageNameProvider(
             "Name the output image",
             "EdgedImage",
             doc="""Enter a name for the resulting image with edges enhanced.""",
         )
 
-        self.method = cps.Choice(
+        self.method = Choice(
             "Select an edge-finding method",
             [M_SOBEL, M_PREWITT, M_ROBERTS, M_LOG, M_CANNY, M_KIRSCH],
             doc="""\
@@ -104,7 +110,7 @@ is best to test them against each other empirically:
             % globals(),
         )
 
-        self.wants_automatic_threshold = cps.Binary(
+        self.wants_automatic_threshold = Binary(
             "Automatically calculate the threshold?",
             True,
             doc="""\
@@ -119,7 +125,7 @@ Select *No* to manually enter the threshold value.
             % globals(),
         )
 
-        self.manual_threshold = cps.Float(
+        self.manual_threshold = Float(
             "Absolute threshold",
             0.2,
             0,
@@ -134,7 +140,7 @@ between 0 and 1.
             % globals(),
         )
 
-        self.threshold_adjustment_factor = cps.Float(
+        self.threshold_adjustment_factor = Float(
             "Threshold adjustment factor",
             1,
             doc="""\
@@ -148,7 +154,7 @@ adjustment factor has no effect on any threshold entered manually.
             % globals(),
         )
 
-        self.direction = cps.Choice(
+        self.direction = Choice(
             "Select edge direction to enhance",
             [E_ALL, E_HORIZONTAL, E_VERTICAL],
             doc="""\
@@ -160,7 +166,7 @@ Select the direction of the edges you aim to identify in the image
             % globals(),
         )
 
-        self.wants_automatic_sigma = cps.Binary(
+        self.wants_automatic_sigma = Binary(
             "Calculate Gaussian's sigma automatically?",
             True,
             doc="""\
@@ -171,11 +177,11 @@ Select *No* to manually enter the value.
             % globals(),
         )
 
-        self.sigma = cps.Float(
+        self.sigma = Float(
             "Gaussian's sigma value", 10, doc="""Set a value for Gaussian's sigma."""
         )
 
-        self.wants_automatic_low_threshold = cps.Binary(
+        self.wants_automatic_low_threshold = Binary(
             "Calculate value for low threshold automatically?",
             True,
             doc="""\
@@ -189,7 +195,7 @@ Select *No* to manually enter the low threshold value.
             % globals(),
         )
 
-        self.low_threshold = cps.Float(
+        self.low_threshold = Float(
             "Low threshold value",
             0.1,
             0,
@@ -314,7 +320,7 @@ values below this threshold as not being edges.
                 "Unimplemented edge detection method: %s" % self.method.value
             )
 
-        output_image = cpi.Image(output_pixels, parent_image=image)
+        output_image = Image(output_pixels, parent_image=image)
         workspace.image_set.add(self.output_image_name.value, output_image)
 
         if self.show_window:

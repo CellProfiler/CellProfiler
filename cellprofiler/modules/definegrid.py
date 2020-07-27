@@ -49,15 +49,24 @@ Measurements made by this module
 
 import logging
 
-import numpy as np
+import numpy
 
-
-import cellprofiler.grid as cpg
-import cellprofiler_core.module as cpm
-import cellprofiler_core.image as cpi
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.setting as cps
-from centrosome.cpmorphology import centers_of_labels
+from cellprofiler.grid import Grid
+from cellprofiler_core.module import Module
+from cellprofiler_core.image import Image
+from cellprofiler_core.measurement import IMAGE, COLTYPE_FLOAT, COLTYPE_INTEGER
+from cellprofiler_core.setting import (
+    Integer,
+    ObjectNameSubscriber,
+    Choice,
+    Coordinates,
+    GridNameProvider,
+    ImageNameSubscriber,
+    Binary,
+    ValidationError,
+    ImageNameProvider,
+)
+import centrosome.cpmorphology
 
 NUM_TOP_LEFT = "Top left"
 NUM_BOTTOM_LEFT = "Bottom left"
@@ -98,7 +107,7 @@ F_ROWS = "Rows"
 F_COLUMNS = "Columns"
 
 
-class DefineGrid(cpm.Module):
+class DefineGrid(Module):
     module_name = "DefineGrid"
     variable_revision_number = 1
     category = "Other"
@@ -108,28 +117,28 @@ class DefineGrid(cpm.Module):
 
         create_settings is called at the end of initialization.
         """
-        self.grid_image = cps.GridNameProvider(
+        self.grid_image = GridNameProvider(
             "Name the grid",
             doc="""\
 This is the name of the grid. You can use this name to
 retrieve the grid in subsequent modules.""",
         )
 
-        self.grid_rows = cps.Integer(
+        self.grid_rows = Integer(
             "Number of rows",
             8,
             1,
             doc="""Along the height of the grid, define the number of rows.""",
         )
 
-        self.grid_columns = cps.Integer(
+        self.grid_columns = Integer(
             "Number of columns",
             12,
             1,
             doc="""Along the width of the grid, define the number of columns.""",
         )
 
-        self.origin = cps.Choice(
+        self.origin = Choice(
             "Location of the first spot",
             [NUM_TOP_LEFT, NUM_BOTTOM_LEFT, NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT],
             doc="""\
@@ -141,7 +150,7 @@ larger numbers."""
             % globals(),
         )
 
-        self.ordering = cps.Choice(
+        self.ordering = Choice(
             "Order of the spots",
             [NUM_BY_ROWS, NUM_BY_COLUMNS],
             doc="""\
@@ -159,7 +168,7 @@ plate at the top left (by specifying the location of the first spot), then:
             % globals(),
         )
 
-        self.each_or_once = cps.Choice(
+        self.each_or_once = Choice(
             "Define a grid for which cycle?",
             [EO_EACH, EO_ONCE],
             doc="""\
@@ -177,7 +186,7 @@ The setting allows you choose when you want to define a new grid:
             % globals(),
         )
 
-        self.auto_or_manual = cps.Choice(
+        self.auto_or_manual = Choice(
             "Select the method to define the grid",
             [AM_AUTOMATIC, AM_MANUAL],
             doc="""\
@@ -208,7 +217,7 @@ setting controls how the grid is defined:
             % globals(),
         )
 
-        self.object_name = cps.ObjectNameSubscriber(
+        self.object_name = ObjectNameSubscriber(
             "Select the previously identified objects",
             "None",
             doc="""\
@@ -221,7 +230,7 @@ used to define the grid.
             % globals(),
         )
 
-        self.manual_choice = cps.Choice(
+        self.manual_choice = Choice(
             "Select the method to define the grid manually",
             [MAN_MOUSE, MAN_COORDINATES],
             doc="""\
@@ -242,7 +251,7 @@ entering the coordinates of the cells.
             % globals(),
         )
 
-        self.manual_image = cps.ImageNameSubscriber(
+        self.manual_image = ImageNameSubscriber(
             "Select the image to display when drawing",
             "None",
             doc="""\
@@ -256,7 +265,7 @@ interface.
             % globals(),
         )
 
-        self.first_spot_coordinates = cps.Coordinates(
+        self.first_spot_coordinates = Coordinates(
             "Coordinates of the first cell",
             (0, 0),
             doc="""\
@@ -272,7 +281,7 @@ coordinates of the center of your cell.
             % globals(),
         )
 
-        self.first_spot_row = cps.Integer(
+        self.first_spot_row = Integer(
             "Row number of the first cell",
             1,
             minval=1,
@@ -289,7 +298,7 @@ be row number 12.
             % globals(),
         )
 
-        self.first_spot_col = cps.Integer(
+        self.first_spot_col = Integer(
             "Column number of the first cell",
             1,
             minval=1,
@@ -306,7 +315,7 @@ be *12* and *1*, respectively.
             % globals(),
         )
 
-        self.second_spot_coordinates = cps.Coordinates(
+        self.second_spot_coordinates = Coordinates(
             "Coordinates of the second cell",
             (0, 0),
             doc="""\
@@ -321,7 +330,7 @@ display to determine the coordinates (X,Y) of the center of your cell.
             % globals(),
         )
 
-        self.second_spot_row = cps.Integer(
+        self.second_spot_row = Integer(
             "Row number of the second cell",
             1,
             minval=1,
@@ -338,7 +347,7 @@ be row number 12.
             % globals(),
         )
 
-        self.second_spot_col = cps.Integer(
+        self.second_spot_col = Integer(
             "Column number of the second cell",
             1,
             minval=1,
@@ -355,7 +364,7 @@ and 1, respectively.
             % globals(),
         )
 
-        self.wants_image = cps.Binary(
+        self.wants_image = Binary(
             "Retain an image of the grid?",
             False,
             doc="""\
@@ -366,7 +375,7 @@ be saved using the **SaveImages** module.
             % globals(),
         )
 
-        self.display_image_name = cps.ImageNameSubscriber(
+        self.display_image_name = ImageNameSubscriber(
             "Select the image on which to display the grid",
             "Leave blank",
             can_be_blank=True,
@@ -379,7 +388,7 @@ the figure and for the saved image.
 """,
         )
 
-        self.save_image_name = cps.ImageNameProvider(
+        self.save_image_name = ImageNameProvider(
             "Name the output image",
             "Grid",
             doc="""\
@@ -391,7 +400,7 @@ image using the **SaveImages** module.
 """,
         )
 
-        self.failed_grid_choice = cps.Choice(
+        self.failed_grid_choice = Choice(
             "Use a previous grid if gridding fails?",
             [FAIL_NO, FAIL_ANY_PREVIOUS, FAIL_FIRST],
             doc="""\
@@ -560,13 +569,15 @@ first image.
             height = float(shape[0]) / dpi
             figure.set_figheight(height)
             figure.set_figwidth(width)
-            bbox = matplotlib.transforms.Bbox(np.array([[0.0, 0.0], [width, height]]))
+            bbox = matplotlib.transforms.Bbox(
+                numpy.array([[0.0, 0.0], [width, height]])
+            )
             transform = matplotlib.transforms.Affine2D(
-                np.array([[dpi, 0, 0], [0, dpi, 0], [0, 0, 1]])
+                numpy.array([[dpi, 0, 0], [0, dpi, 0], [0, 0, 1]])
             )
             figure.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
             image_pixels = figure_to_image(figure, dpi=dpi)
-            image = cpi.Image(image_pixels)
+            image = Image(image_pixels)
 
             workspace.image_set.add(self.save_image_name.value, image)
 
@@ -580,7 +591,7 @@ first image.
         elif self.display_image_name.value == "Leave blank":
             if gridding is None:
                 return None
-            image = np.zeros(
+            image = numpy.zeros(
                 (
                     int(
                         gridding.total_height
@@ -608,7 +619,7 @@ first image.
                 self.display_image_name.value
             ).pixel_data
             if image.ndim == 2:
-                image = np.dstack((image, image, image))
+                image = numpy.dstack((image, image, image))
         return image
 
     def run_automatic(self, workspace):
@@ -617,7 +628,7 @@ first image.
         Returns a CPGridInfo object
         """
         objects = workspace.object_set.get_objects(self.object_name.value)
-        centroids = centers_of_labels(objects.segmented)
+        centroids = centrosome.cpmorphology.centers_of_labels(objects.segmented)
         try:
             if centroids.shape[1] < 2:
                 #
@@ -633,10 +644,10 @@ first image.
             first_column, second_column = (1, self.grid_columns.value)
             if self.origin in (NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT):
                 first_column, second_column = (second_column, first_column)
-            first_x = np.min(centroids[1, :])
-            first_y = np.min(centroids[0, :])
-            second_x = np.max(centroids[1, :])
-            second_y = np.max(centroids[0, :])
+            first_x = numpy.min(centroids[1, :])
+            first_y = numpy.min(centroids[0, :])
+            second_x = numpy.max(centroids[1, :])
+            second_y = numpy.max(centroids[0, :])
             result = self.build_grid_info(
                 first_x,
                 first_y,
@@ -935,7 +946,7 @@ first image.
         """Populate and return a CPGridInfo based on two cell locations"""
         first_row, first_col = self.canonical_row_and_column(first_row, first_col)
         second_row, second_col = self.canonical_row_and_column(second_row, second_col)
-        gridding = cpg.Grid()
+        gridding = Grid()
         gridding.x_spacing = float(first_x - second_x) / float(first_col - second_col)
         gridding.y_spacing = float(first_y - second_y) / float(first_row - second_row)
         gridding.x_location_of_lowest_x_spot = int(
@@ -956,48 +967,49 @@ first image.
         #
         # Make a 2 x columns array of x-coordinates of vertical lines (x0=x1)
         #
-        gridding.vert_lines_x = np.tile(
-            (np.arange(gridding.columns + 1) * gridding.x_spacing + line_left_x), (2, 1)
+        gridding.vert_lines_x = numpy.tile(
+            (numpy.arange(gridding.columns + 1) * gridding.x_spacing + line_left_x),
+            (2, 1),
         ).astype(int)
         #
         # Make a 2 x rows array of y-coordinates of horizontal lines (y0=y1)
         #
-        gridding.horiz_lines_y = np.tile(
-            (np.arange(gridding.rows + 1) * gridding.y_spacing + line_top_y), (2, 1)
+        gridding.horiz_lines_y = numpy.tile(
+            (numpy.arange(gridding.rows + 1) * gridding.y_spacing + line_top_y), (2, 1)
         ).astype(int)
         #
         # Make a 2x columns array of y-coordinates of vertical lines
         # all of which are from line_top_y to the bottom
         #
-        gridding.vert_lines_y = np.transpose(
-            np.tile(
+        gridding.vert_lines_y = numpy.transpose(
+            numpy.tile(
                 (line_top_y, line_top_y + gridding.total_height),
                 (gridding.columns + 1, 1),
             )
         ).astype(int)
-        gridding.horiz_lines_x = np.transpose(
-            np.tile(
+        gridding.horiz_lines_x = numpy.transpose(
+            numpy.tile(
                 (line_left_x, line_left_x + gridding.total_width),
                 (gridding.rows + 1, 1),
             )
         ).astype(int)
         gridding.x_locations = (
             gridding.x_location_of_lowest_x_spot
-            + np.arange(gridding.columns) * gridding.x_spacing
+            + numpy.arange(gridding.columns) * gridding.x_spacing
         ).astype(int)
         gridding.y_locations = (
             gridding.y_location_of_lowest_y_spot
-            + np.arange(gridding.rows) * gridding.y_spacing
+            + numpy.arange(gridding.rows) * gridding.y_spacing
         ).astype(int)
         #
         # The spot table has the numbering for each spot in the grid
         #
-        gridding.spot_table = np.arange(gridding.rows * gridding.columns) + 1
+        gridding.spot_table = numpy.arange(gridding.rows * gridding.columns) + 1
         if self.ordering == NUM_BY_COLUMNS:
             gridding.spot_table.shape = (gridding.rows, gridding.columns)
         else:
             gridding.spot_table.shape = (gridding.columns, gridding.rows)
-            gridding.spot_table = np.transpose(gridding.spot_table)
+            gridding.spot_table = numpy.transpose(gridding.spot_table)
         if self.origin in (NUM_BOTTOM_LEFT, NUM_BOTTOM_RIGHT):
             # Flip top and bottom
             gridding.spot_table = gridding.spot_table[::-1, :]
@@ -1044,7 +1056,7 @@ first image.
             figure.set_subplots((1, 1))
             figure.clf()
             ax = figure.subplot(0, 0)
-            gridding = cpg.Grid()
+            gridding = Grid()
             gridding.deserialize(workspace.display_data.gridding)
             self.display_grid(
                 workspace.display_data.background_image,
@@ -1059,7 +1071,7 @@ first image.
 
         axes.cla()
         assert isinstance(axes, matplotlib.axes.Axes)
-        assert isinstance(gridding, cpg.Grid)
+        assert isinstance(gridding, Grid)
         #
         # draw the image on the figure
         #
@@ -1114,13 +1126,13 @@ first image.
         """Make sure that the row and column are different"""
         if self.auto_or_manual == AM_MANUAL and self.manual_choice == MAN_COORDINATES:
             if self.first_spot_row.value == self.second_spot_row.value:
-                raise cps.ValidationError(
+                raise ValidationError(
                     "The first and second row numbers must be different in "
                     "order to calculate the distance between rows.",
                     self.second_spot_row,
                 )
             if self.first_spot_col.value == self.second_spot_col.value:
-                raise cps.ValidationError(
+                raise ValidationError(
                     "The first and second column numbers must be different "
                     "in order to calculate the distance between columns.",
                     self.second_spot_col,
@@ -1164,19 +1176,19 @@ first image.
                      "float")
         """
         return [
-            (cpmeas.IMAGE, self.get_feature_name(F_ROWS), cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, self.get_feature_name(F_COLUMNS), cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, self.get_feature_name(F_X_SPACING), cpmeas.COLTYPE_FLOAT),
-            (cpmeas.IMAGE, self.get_feature_name(F_Y_SPACING), cpmeas.COLTYPE_FLOAT),
+            (IMAGE, self.get_feature_name(F_ROWS), COLTYPE_INTEGER),
+            (IMAGE, self.get_feature_name(F_COLUMNS), COLTYPE_INTEGER),
+            (IMAGE, self.get_feature_name(F_X_SPACING), COLTYPE_FLOAT),
+            (IMAGE, self.get_feature_name(F_Y_SPACING), COLTYPE_FLOAT),
             (
-                cpmeas.IMAGE,
+                IMAGE,
                 self.get_feature_name(F_X_LOCATION_OF_LOWEST_X_SPOT),
-                cpmeas.COLTYPE_FLOAT,
+                COLTYPE_FLOAT,
             ),
             (
-                cpmeas.IMAGE,
+                IMAGE,
                 self.get_feature_name(F_Y_LOCATION_OF_LOWEST_Y_SPOT),
-                cpmeas.COLTYPE_FLOAT,
+                COLTYPE_FLOAT,
             ),
         ]
 
@@ -1185,12 +1197,12 @@ first image.
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        if object_name == cpmeas.IMAGE:
+        if object_name == IMAGE:
             return [M_CATEGORY]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == M_CATEGORY:
+        if object_name == IMAGE and category == M_CATEGORY:
             return [
                 "_".join((self.grid_image.value, feature))
                 for feature in (

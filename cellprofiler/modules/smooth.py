@@ -24,8 +24,8 @@ See also several related modules in the *Advanced* category (e.g.,
 **MedianFilter** and **GaussianFilter**).
 """
 
-import numpy as np
-import scipy.ndimage as scind
+import numpy
+import scipy.ndimage
 import skimage.restoration
 from centrosome.filter import median_filter, circular_average_filter
 from centrosome.smooth import fit_polynomial
@@ -222,23 +222,25 @@ the output image.
         )
         pixel_data = image.pixel_data
         if self.wants_automatic_object_size.value:
-            object_size = min(30, max(1, np.mean(pixel_data.shape) / 40))
+            object_size = min(30, max(1, numpy.mean(pixel_data.shape) / 40))
         else:
             object_size = float(self.object_size.value)
         sigma = object_size / 2.35
         if self.smoothing_method.value == GAUSSIAN_FILTER:
 
             def fn(image):
-                return scind.gaussian_filter(image, sigma, mode="constant", cval=0)
+                return scipy.ndimage.gaussian_filter(
+                    image, sigma, mode="constant", cval=0
+                )
 
             output_pixels = smooth_with_function_and_mask(pixel_data, fn, image.mask)
         elif self.smoothing_method.value == MEDIAN_FILTER:
             output_pixels = median_filter(pixel_data, image.mask, object_size / 2 + 1)
         elif self.smoothing_method.value == SMOOTH_KEEPING_EDGES:
-            sigma_range = np.float(self.sigma_range.value)
+            sigma_range = numpy.float(self.sigma_range.value)
 
             output_pixels = skimage.restoration.denoise_bilateral(
-                image=pixel_data.astype(np.float),
+                image=pixel_data.astype(numpy.float),
                 multichannel=image.multichannel,
                 sigma_color=sigma_range,
                 sigma_spatial=sigma,
@@ -251,10 +253,10 @@ the output image.
             )
         elif self.smoothing_method.value == SM_TO_AVERAGE:
             if image.has_mask:
-                mean = np.mean(pixel_data[image.mask])
+                mean = numpy.mean(pixel_data[image.mask])
             else:
-                mean = np.mean(pixel_data)
-            output_pixels = np.ones(pixel_data.shape, pixel_data.dtype) * mean
+                mean = numpy.mean(pixel_data)
+            output_pixels = numpy.ones(pixel_data.shape, pixel_data.dtype) * mean
         else:
             raise ValueError(
                 "Unsupported smoothing method: %s" % self.smoothing_method.value

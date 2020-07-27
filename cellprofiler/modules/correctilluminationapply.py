@@ -30,9 +30,18 @@ See also **CorrectIlluminationCalculate**.
 
 import numpy as np
 
-import cellprofiler_core.image as cpi
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import (
+    DoSomething,
+    Choice,
+    RemoveSettingButton,
+    SettingsGroup,
+    ImageNameSubscriber,
+    ValidationError,
+    Divider,
+    ImageNameProvider,
+)
 
 ######################################
 #
@@ -60,7 +69,7 @@ RE_MATCH = "Match maximums"
 SETTINGS_PER_IMAGE = 4
 
 
-class CorrectIlluminationApply(cpm.Module):
+class CorrectIlluminationApply(Module):
     category = "Image Processing"
     variable_revision_number = 3
     module_name = "CorrectIlluminationApply"
@@ -69,21 +78,21 @@ class CorrectIlluminationApply(cpm.Module):
         """Make settings here (and set the module name)"""
         self.images = []
         self.add_image(can_delete=False)
-        self.add_image_button = cps.DoSomething("", "Add another image", self.add_image)
+        self.add_image_button = DoSomething("", "Add another image", self.add_image)
 
     def add_image(self, can_delete=True):
         """Add an image and its settings to the list of images"""
-        image_name = cps.ImageNameSubscriber(
+        image_name = ImageNameSubscriber(
             "Select the input image", "None", doc="Select the image to be corrected."
         )
 
-        corrected_image_name = cps.ImageNameProvider(
+        corrected_image_name = ImageNameProvider(
             "Name the output image",
             "CorrBlue",
             doc="Enter a name for the corrected image.",
         )
 
-        illum_correct_function_image_name = cps.ImageNameSubscriber(
+        illum_correct_function_image_name = ImageNameSubscriber(
             "Select the illumination function",
             "None",
             doc="""\
@@ -98,7 +107,7 @@ a future version of CellProfiler. You can export .mat format images as
 """,
         )
 
-        divide_or_subtract = cps.Choice(
+        divide_or_subtract = Choice(
             "Select how the illumination function is applied",
             [DOS_DIVIDE, DOS_SUBTRACT],
             doc="""\
@@ -120,7 +129,7 @@ somewhat empirical.
             % globals(),
         )
 
-        image_settings = cps.SettingsGroup()
+        image_settings = SettingsGroup()
         image_settings.append("image_name", image_name)
         image_settings.append("corrected_image_name", corrected_image_name)
         image_settings.append(
@@ -132,11 +141,11 @@ somewhat empirical.
         if can_delete:
             image_settings.append(
                 "remover",
-                cps.RemoveSettingButton(
+                RemoveSettingButton(
                     "", "Remove this image", self.images, image_settings
                 ),
             )
-        image_settings.append("divider", cps.Divider())
+        image_settings.append("divider", Divider())
         self.images.append(image_settings)
 
     def settings(self):
@@ -263,7 +272,7 @@ somewhat empirical.
         # Save the output image in the image set and have it inherit
         # mask & cropping from the original image.
         #
-        output_image = cpi.Image(output_pixels, parent_image=orig_image)
+        output_image = Image(output_pixels, parent_image=orig_image)
         workspace.image_set.add(corrected_image_name, output_image)
         #
         # Save images for display
@@ -325,7 +334,7 @@ somewhat empirical.
         """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""
         for j, image in enumerate(self.images):
             if image.rescale_option != RE_NONE:
-                raise cps.ValidationError(
+                raise ValidationError(
                     (
                         "Your original pipeline used '%s' to rescale the final image, "
                         "but the rescaling option has been removed. Please use "

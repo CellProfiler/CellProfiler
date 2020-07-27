@@ -90,7 +90,7 @@ import logging
 
 import base64
 import csv
-import numpy as np
+import numpy
 import os
 
 import six
@@ -1048,7 +1048,7 @@ desired.
             writer.writerow((EH_KEY, EH_VALUE))
             for feature_name in feature_names:
                 v = m.get_all_measurements(EXPERIMENT, feature_name)
-                if isinstance(v, np.ndarray) and v.dtype == np.uint8:
+                if isinstance(v, numpy.ndarray) and v.dtype == numpy.uint8:
                     v = base64.b64encode(v.data)
                 else:
                     six.text_type(v)
@@ -1109,13 +1109,16 @@ desired.
                             row.append(value)
                         elif isinstance(value, six.string_types):
                             row.append(value)
-                        elif isinstance(value, np.ndarray) and value.dtype == np.uint8:
+                        elif (
+                            isinstance(value, numpy.ndarray)
+                            and value.dtype == numpy.uint8
+                        ):
                             row.append(base64.b64encode(value.data))
-                        elif np.isnan(value):
+                        elif numpy.isnan(value):
                             if self.nan_representation == NANS_AS_NULLS:
                                 row.append("")
                             else:
-                                row.append(str(np.NaN))
+                                row.append(str(numpy.NaN))
                         else:
                             row.append(str(value))
                 writer.writerow(row)
@@ -1248,7 +1251,9 @@ desired.
                     else m.get_measurement(IMAGE, feature_name, img_number)
                     for feature_name in image_features
                 ]
-                row = ["" if x is None else x if np.isscalar(x) else x[0] for x in row]
+                row = [
+                    "" if x is None else x if numpy.isscalar(x) else x[0] for x in row
+                ]
                 writer.writerow(row)
         finally:
             fd.close()
@@ -1347,7 +1352,7 @@ desired.
                 writer.writerow([x[i] for x in features])
 
             for img_number in image_set_numbers:
-                object_count = np.max(
+                object_count = numpy.max(
                     [
                         m.get_measurement(IMAGE, "Count_%s" % name, img_number)
                         for name in object_names
@@ -1355,13 +1360,13 @@ desired.
                 )
                 object_count = int(object_count) if object_count else 0
                 columns = [
-                    np.repeat(img_number, object_count)
+                    numpy.repeat(img_number, object_count)
                     if feature_name == IMAGE_NUMBER
-                    else np.arange(1, object_count + 1)
+                    else numpy.arange(1, object_count + 1)
                     if feature_name == OBJECT_NUMBER
-                    else np.repeat(np.NAN, object_count)
+                    else numpy.repeat(numpy.NAN, object_count)
                     if not m.has_feature(object_name, feature_name)
-                    else np.repeat(
+                    else numpy.repeat(
                         m.get_measurement(IMAGE, feature_name, img_number), object_count
                     )
                     if object_name == IMAGE
@@ -1372,14 +1377,14 @@ desired.
                     row = [
                         column[obj_index]
                         if (column is not None and obj_index < column.shape[0])
-                        else np.NAN
+                        else numpy.NAN
                         for column in columns
                     ]
                     if self.nan_representation == NANS_AS_NULLS:
                         row = [
                             ""
                             if (field is None)
-                            or (np.isreal(field) and not np.isfinite(field))
+                            or (numpy.isreal(field) and not numpy.isfinite(field))
                             else field
                             for field in row
                         ]

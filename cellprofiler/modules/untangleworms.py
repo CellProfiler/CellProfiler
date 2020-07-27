@@ -122,8 +122,6 @@ from cellprofiler_core.setting.text import (
 from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from scipy.sparse import coo
-
-
 import cellprofiler
 from cellprofiler_core.module import Module
 from cellprofiler_core.measurement import Measurements

@@ -66,21 +66,34 @@ will be positive, but there may not be a corresponding
 """
 
 import matplotlib.cm
-import numpy as np
-import scipy.ndimage as scind
+import numpy
+import scipy.ndimage
 import scipy.signal
 import skimage.morphology
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from centrosome.cpmorphology import strel_disk, centers_of_labels
 from centrosome.outline import outline
 
-import cellprofiler_core.image as cpi
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.object as cpo
-import cellprofiler_core.preferences as cpprefs
-import cellprofiler_core.setting as cps
-import cellprofiler_core.workspace as cpw
+from cellprofiler_core.image import Image
+from cellprofiler_core.measurement import (
+    MCA_AVAILABLE_EACH_CYCLE,
+    Measurements,
+    COLTYPE_FLOAT,
+    NEIGHBORS,
+    COLTYPE_INTEGER,
+)
+from cellprofiler_core.module import Module
+from cellprofiler_core.object import Objects
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.setting import (
+    Integer,
+    ObjectNameSubscriber,
+    Choice,
+    Colormap,
+    Binary,
+    ImageNameProvider,
+)
+from cellprofiler_core.workspace import Workspace
 
 D_ADJACENT = "Adjacent"
 D_EXPAND = "Expand until adjacent"
@@ -110,20 +123,20 @@ S_EXPANDED = "Expanded"
 S_ADJACENT = "Adjacent"
 
 
-class MeasureObjectNeighbors(cpm.Module):
+class MeasureObjectNeighbors(Module):
     module_name = "MeasureObjectNeighbors"
     category = "Measurement"
     variable_revision_number = 3
 
     def create_settings(self):
-        self.object_name = cps.ObjectNameSubscriber(
+        self.object_name = ObjectNameSubscriber(
             "Select objects to measure",
             "None",
             doc="""\
 Select the objects whose neighbors you want to measure.""",
         )
 
-        self.neighbors_name = cps.ObjectNameSubscriber(
+        self.neighbors_name = ObjectNameSubscriber(
             "Select neighboring objects to measure",
             "None",
             doc="""\
@@ -133,7 +146,7 @@ within the same set of objects by selecting the same objects
 as above.""",
         )
 
-        self.distance_method = cps.Choice(
+        self.distance_method = Choice(
             "Method to determine neighbors",
             D_ALL,
             D_EXPAND,
@@ -161,7 +174,7 @@ touch adjacent objects.
             % globals(),
         )
 
-        self.distance = cps.Integer(
+        self.distance = Integer(
             "Neighbor distance",
             5,
             1,
@@ -175,7 +188,7 @@ considered neighbors.
             % globals(),
         )
 
-        self.wants_count_image = cps.Binary(
+        self.wants_count_image = Binary(
             "Retain the image of objects colored by numbers of neighbors?",
             False,
             doc="""\
@@ -188,7 +201,7 @@ corresponding to 0. Use the **SaveImages** module to save this image to
 a file.""",
         )
 
-        self.count_image_name = cps.ImageNameProvider(
+        self.count_image_name = ImageNameProvider(
             "Name the output image",
             "ObjectNeighborCount",
             doc="""\
@@ -199,7 +212,7 @@ Specify a name that will allow the image of objects colored by numbers
 of neighbors to be selected later in the pipeline.""",
         )
 
-        self.count_colormap = cps.Colormap(
+        self.count_colormap = Colormap(
             "Select colormap",
             doc="""\
 *(Used only if the image of objects colored by numbers of neighbors is
@@ -211,7 +224,7 @@ available colormaps can be seen `here`_.
 .. _here: http://matplotlib.org/examples/color/colormaps_reference.html""",
         )
 
-        self.wants_percent_touching_image = cps.Binary(
+        self.wants_percent_touching_image = Binary(
             "Retain the image of objects colored by percent of touching pixels?",
             False,
             doc="""\
@@ -223,7 +236,7 @@ choice is used to show the touching percentage of each object. Use the
             % globals(),
         )
 
-        self.touching_image_name = cps.ImageNameProvider(
+        self.touching_image_name = ImageNameProvider(
             "Name the output image",
             "PercentTouching",
             doc="""\
@@ -234,7 +247,7 @@ Specify a name that will allow the image of objects colored by percent
 of touching pixels to be selected later in the pipeline.""",
         )
 
-        self.touching_colormap = cps.Colormap(
+        self.touching_colormap = Colormap(
             "Select colormap",
             doc="""\
 *(Used only if the image of objects colored by percent touching is to be
@@ -246,7 +259,7 @@ available colormaps can be seen `here`_.
 .. _here: http://matplotlib.org/examples/color/colormaps_reference.html""",
         )
 
-        self.wants_excluded_objects = cps.Binary(
+        self.wants_excluded_objects = Binary(
             "Consider objects discarded for touching image border?",
             True,
             doc="""\
@@ -294,21 +307,21 @@ previously discarded objects.""".format(
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
         dimensions = len(objects.shape)
-        assert isinstance(objects, cpo.Objects)
+        assert isinstance(objects, Objects)
         has_pixels = objects.areas > 0
         labels = objects.small_removed_segmented
         kept_labels = objects.segmented
         neighbor_objects = workspace.object_set.get_objects(self.neighbors_name.value)
         neighbor_labels = neighbor_objects.small_removed_segmented
         neighbor_kept_labels = neighbor_objects.segmented
-        assert isinstance(neighbor_objects, cpo.Objects)
+        assert isinstance(neighbor_objects, Objects)
         if not self.wants_excluded_objects.value:
             # Remove labels not present in kept segmentation while preserving object IDs.
             mask = neighbor_kept_labels > 0
             neighbor_labels[~mask] = 0
-        nobjects = np.max(labels)
+        nobjects = numpy.max(labels)
         nkept_objects = len(objects.indices)
-        nneighbors = np.max(neighbor_labels)
+        nneighbors = numpy.max(neighbor_labels)
 
         _, object_numbers = objects.relate_labels(labels, kept_labels)
         if self.neighbors_are_objects:
@@ -318,30 +331,30 @@ previously discarded objects.""".format(
             _, neighbor_numbers = neighbor_objects.relate_labels(
                 neighbor_labels, neighbor_objects.small_removed_segmented
             )
-            neighbor_has_pixels = np.bincount(neighbor_labels.ravel())[1:] > 0
-        neighbor_count = np.zeros((nobjects,))
-        pixel_count = np.zeros((nobjects,))
-        first_object_number = np.zeros((nobjects,), int)
-        second_object_number = np.zeros((nobjects,), int)
-        first_x_vector = np.zeros((nobjects,))
-        second_x_vector = np.zeros((nobjects,))
-        first_y_vector = np.zeros((nobjects,))
-        second_y_vector = np.zeros((nobjects,))
-        angle = np.zeros((nobjects,))
-        percent_touching = np.zeros((nobjects,))
+            neighbor_has_pixels = numpy.bincount(neighbor_labels.ravel())[1:] > 0
+        neighbor_count = numpy.zeros((nobjects,))
+        pixel_count = numpy.zeros((nobjects,))
+        first_object_number = numpy.zeros((nobjects,), int)
+        second_object_number = numpy.zeros((nobjects,), int)
+        first_x_vector = numpy.zeros((nobjects,))
+        second_x_vector = numpy.zeros((nobjects,))
+        first_y_vector = numpy.zeros((nobjects,))
+        second_y_vector = numpy.zeros((nobjects,))
+        angle = numpy.zeros((nobjects,))
+        percent_touching = numpy.zeros((nobjects,))
         expanded_labels = None
         if self.distance_method == D_EXPAND:
             # Find the i,j coordinates of the nearest foreground point
             # to every background point
             if dimensions == 2:
-                i, j = scind.distance_transform_edt(
+                i, j = scipy.ndimage.distance_transform_edt(
                     labels == 0, return_distances=False, return_indices=True
                 )
                 # Assign each background pixel to the label of its nearest
                 # foreground pixel. Assign label to label for foreground.
                 labels = labels[i, j]
             else:
-                k, i, j = scind.distance_transform_edt(
+                k, i, j = scipy.ndimage.distance_transform_edt(
                     labels == 0, return_distances=False, return_indices=True
                 )
                 labels = labels[k, i, j]
@@ -361,7 +374,7 @@ previously discarded objects.""".format(
         if nneighbors > (1 if self.neighbors_are_objects else 0):
             first_objects = []
             second_objects = []
-            object_indexes = np.arange(nobjects, dtype=np.int32) + 1
+            object_indexes = numpy.arange(nobjects, dtype=numpy.int32) + 1
             #
             # First, compute the first and second nearest neighbors,
             # and the angles between self and the first and second
@@ -371,14 +384,18 @@ previously discarded objects.""".format(
             ncenters = centers_of_labels(
                 neighbor_objects.small_removed_segmented
             ).transpose()
-            areas = fix(scind.sum(np.ones(labels.shape), labels, object_indexes))
+            areas = fix(
+                scipy.ndimage.sum(numpy.ones(labels.shape), labels, object_indexes)
+            )
             perimeter_outlines = outline(labels)
             perimeters = fix(
-                scind.sum(np.ones(labels.shape), perimeter_outlines, object_indexes)
+                scipy.ndimage.sum(
+                    numpy.ones(labels.shape), perimeter_outlines, object_indexes
+                )
             )
 
-            i, j = np.mgrid[0:nobjects, 0:nneighbors]
-            distance_matrix = np.sqrt(
+            i, j = numpy.mgrid[0:nobjects, 0:nneighbors]
+            distance_matrix = numpy.sqrt(
                 (ocenters[i, 0] - ncenters[j, 0]) ** 2
                 + (ocenters[i, 1] - ncenters[j, 1]) ** 2
             )
@@ -390,9 +407,9 @@ previously discarded objects.""".format(
             if distance_matrix.shape[1] == 1:
                 # a little buggy, lexsort assumes that a 2-d array of
                 # second dimension = 1 is a 1-d array
-                order = np.zeros(distance_matrix.shape, int)
+                order = numpy.zeros(distance_matrix.shape, int)
             else:
-                order = np.lexsort([distance_matrix])
+                order = numpy.lexsort([distance_matrix])
             first_neighbor = 1 if self.neighbors_are_objects else 0
             first_object_index = order[:, first_neighbor]
             first_x_vector = ncenters[first_object_index, 1] - ocenters[:, 1]
@@ -401,15 +418,15 @@ previously discarded objects.""".format(
                 second_object_index = order[:, first_neighbor + 1]
                 second_x_vector = ncenters[second_object_index, 1] - ocenters[:, 1]
                 second_y_vector = ncenters[second_object_index, 0] - ocenters[:, 0]
-                v1 = np.array((first_x_vector, first_y_vector))
-                v2 = np.array((second_x_vector, second_y_vector))
+                v1 = numpy.array((first_x_vector, first_y_vector))
+                v2 = numpy.array((second_x_vector, second_y_vector))
                 #
                 # Project the unit vector v1 against the unit vector v2
                 #
-                dot = np.sum(v1 * v2, 0) / np.sqrt(
-                    np.sum(v1 ** 2, 0) * np.sum(v2 ** 2, 0)
+                dot = numpy.sum(v1 * v2, 0) / numpy.sqrt(
+                    numpy.sum(v1 ** 2, 0) * numpy.sum(v2 ** 2, 0)
                 )
-                angle = np.arccos(dot) * 180.0 / np.pi
+                angle = numpy.arccos(dot) * 180.0 / numpy.pi
 
             # Make the structuring element for dilation
             if dimensions == 2:
@@ -429,38 +446,48 @@ previously discarded objects.""".format(
             # that excises the part of the image that is "distance"
             # away
             if dimensions == 2:
-                i, j = np.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
+                i, j = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
 
-                minimums_i, maximums_i, _, _ = scind.extrema(i, labels, object_indexes)
-                minimums_j, maximums_j, _, _ = scind.extrema(j, labels, object_indexes)
+                minimums_i, maximums_i, _, _ = scipy.ndimage.extrema(
+                    i, labels, object_indexes
+                )
+                minimums_j, maximums_j, _, _ = scipy.ndimage.extrema(
+                    j, labels, object_indexes
+                )
 
-                minimums_i = np.maximum(fix(minimums_i) - distance, 0).astype(int)
-                maximums_i = np.minimum(
+                minimums_i = numpy.maximum(fix(minimums_i) - distance, 0).astype(int)
+                maximums_i = numpy.minimum(
                     fix(maximums_i) + distance + 1, labels.shape[0]
                 ).astype(int)
-                minimums_j = np.maximum(fix(minimums_j) - distance, 0).astype(int)
-                maximums_j = np.minimum(
+                minimums_j = numpy.maximum(fix(minimums_j) - distance, 0).astype(int)
+                maximums_j = numpy.minimum(
                     fix(maximums_j) + distance + 1, labels.shape[1]
                 ).astype(int)
             else:
-                k, i, j = np.mgrid[
+                k, i, j = numpy.mgrid[
                     0 : labels.shape[0], 0 : labels.shape[1], 0 : labels.shape[2]
                 ]
 
-                minimums_k, maximums_k, _, _ = scind.extrema(k, labels, object_indexes)
-                minimums_i, maximums_i, _, _ = scind.extrema(i, labels, object_indexes)
-                minimums_j, maximums_j, _, _ = scind.extrema(j, labels, object_indexes)
+                minimums_k, maximums_k, _, _ = scipy.ndimage.extrema(
+                    k, labels, object_indexes
+                )
+                minimums_i, maximums_i, _, _ = scipy.ndimage.extrema(
+                    i, labels, object_indexes
+                )
+                minimums_j, maximums_j, _, _ = scipy.ndimage.extrema(
+                    j, labels, object_indexes
+                )
 
-                minimums_k = np.maximum(fix(minimums_k) - distance, 0).astype(int)
-                maximums_k = np.minimum(
+                minimums_k = numpy.maximum(fix(minimums_k) - distance, 0).astype(int)
+                maximums_k = numpy.minimum(
                     fix(maximums_k) + distance + 1, labels.shape[0]
                 ).astype(int)
-                minimums_i = np.maximum(fix(minimums_i) - distance, 0).astype(int)
-                maximums_i = np.minimum(
+                minimums_i = numpy.maximum(fix(minimums_i) - distance, 0).astype(int)
+                maximums_i = numpy.minimum(
                     fix(maximums_i) + distance + 1, labels.shape[1]
                 ).astype(int)
-                minimums_j = np.maximum(fix(minimums_j) - distance, 0).astype(int)
-                maximums_j = np.minimum(
+                minimums_j = numpy.maximum(fix(minimums_j) - distance, 0).astype(int)
+                maximums_j = numpy.minimum(
                     fix(maximums_j) + distance + 1, labels.shape[2]
                 ).astype(int)
             #
@@ -502,19 +529,19 @@ previously discarded objects.""".format(
                 #
                 patch_mask = patch == (index + 1)
                 if distance <= 5:
-                    extended = scind.binary_dilation(patch_mask, strel)
+                    extended = scipy.ndimage.binary_dilation(patch_mask, strel)
                 else:
                     extended = (
                         scipy.signal.fftconvolve(patch_mask, strel, mode="same") > 0.5
                     )
-                neighbors = np.unique(npatch[extended])
+                neighbors = numpy.unique(npatch[extended])
                 neighbors = neighbors[neighbors != 0]
                 if self.neighbors_are_objects:
                     neighbors = neighbors[neighbors != object_number]
                 nc = len(neighbors)
                 neighbor_count[index] = nc
                 if nc > 0:
-                    first_objects.append(np.ones(nc, int) * object_number)
+                    first_objects.append(numpy.ones(nc, int) * object_number)
                     second_objects.append(neighbors)
                 #
                 # Find the # of overlapping pixels. Dilate the neighbors
@@ -542,7 +569,9 @@ previously discarded objects.""".format(
                 if self.neighbors_are_objects:
                     extendme = (patch != 0) & (patch != object_number)
                     if distance <= 5:
-                        extended = scind.binary_dilation(extendme, strel_touching)
+                        extended = scipy.ndimage.binary_dilation(
+                            extendme, strel_touching
+                        )
                     else:
                         extended = (
                             scipy.signal.fftconvolve(
@@ -552,7 +581,9 @@ previously discarded objects.""".format(
                         )
                 else:
                     if distance <= 5:
-                        extended = scind.binary_dilation((npatch != 0), strel_touching)
+                        extended = scipy.ndimage.binary_dilation(
+                            (npatch != 0), strel_touching
+                        )
                     else:
                         extended = (
                             scipy.signal.fftconvolve(
@@ -560,58 +591,60 @@ previously discarded objects.""".format(
                             )
                             > 0.5
                         )
-                overlap = np.sum(outline_patch & extended)
+                overlap = numpy.sum(outline_patch & extended)
                 pixel_count[index] = overlap
             if sum([len(x) for x in first_objects]) > 0:
-                first_objects = np.hstack(first_objects)
-                reverse_object_numbers = np.zeros(
-                    max(np.max(object_numbers), np.max(first_objects)) + 1, int
+                first_objects = numpy.hstack(first_objects)
+                reverse_object_numbers = numpy.zeros(
+                    max(numpy.max(object_numbers), numpy.max(first_objects)) + 1, int
                 )
                 reverse_object_numbers[object_numbers] = (
-                    np.arange(len(object_numbers)) + 1
+                    numpy.arange(len(object_numbers)) + 1
                 )
                 first_objects = reverse_object_numbers[first_objects]
 
-                second_objects = np.hstack(second_objects)
-                reverse_neighbor_numbers = np.zeros(
-                    max(np.max(neighbor_numbers), np.max(second_objects)) + 1, int
+                second_objects = numpy.hstack(second_objects)
+                reverse_neighbor_numbers = numpy.zeros(
+                    max(numpy.max(neighbor_numbers), numpy.max(second_objects)) + 1, int
                 )
                 reverse_neighbor_numbers[neighbor_numbers] = (
-                    np.arange(len(neighbor_numbers)) + 1
+                    numpy.arange(len(neighbor_numbers)) + 1
                 )
                 second_objects = reverse_neighbor_numbers[second_objects]
                 to_keep = (first_objects > 0) & (second_objects > 0)
                 first_objects = first_objects[to_keep]
                 second_objects = second_objects[to_keep]
             else:
-                first_objects = np.zeros(0, int)
-                second_objects = np.zeros(0, int)
+                first_objects = numpy.zeros(0, int)
+                second_objects = numpy.zeros(0, int)
             percent_touching = pixel_count * 100 / perimeters
             object_indexes = object_numbers - 1
             neighbor_indexes = neighbor_numbers - 1
             #
             # Have to recompute nearest
             #
-            first_object_number = np.zeros(nkept_objects, int)
-            second_object_number = np.zeros(nkept_objects, int)
+            first_object_number = numpy.zeros(nkept_objects, int)
+            second_object_number = numpy.zeros(nkept_objects, int)
             if nkept_objects > (1 if self.neighbors_are_objects else 0):
                 di = (
-                    ocenters[object_indexes[:, np.newaxis], 0]
-                    - ncenters[neighbor_indexes[np.newaxis, :], 0]
+                    ocenters[object_indexes[:, numpy.newaxis], 0]
+                    - ncenters[neighbor_indexes[numpy.newaxis, :], 0]
                 )
                 dj = (
-                    ocenters[object_indexes[:, np.newaxis], 1]
-                    - ncenters[neighbor_indexes[np.newaxis, :], 1]
+                    ocenters[object_indexes[:, numpy.newaxis], 1]
+                    - ncenters[neighbor_indexes[numpy.newaxis, :], 1]
                 )
-                distance_matrix = np.sqrt(di * di + dj * dj)
-                distance_matrix[~has_pixels, :] = np.inf
-                distance_matrix[:, ~neighbor_has_pixels] = np.inf
+                distance_matrix = numpy.sqrt(di * di + dj * dj)
+                distance_matrix[~has_pixels, :] = numpy.inf
+                distance_matrix[:, ~neighbor_has_pixels] = numpy.inf
                 #
                 # order[:,0] should be arange(nobjects)
                 # order[:,1] should be the nearest neighbor
                 # order[:,2] should be the next nearest neighbor
                 #
-                order = np.lexsort([distance_matrix]).astype(first_object_number.dtype)
+                order = numpy.lexsort([distance_matrix]).astype(
+                    first_object_number.dtype
+                )
                 if self.neighbors_are_objects:
                     first_object_number[has_pixels] = order[has_pixels, 1] + 1
                     if nkept_objects > 2:
@@ -623,8 +656,8 @@ previously discarded objects.""".format(
         else:
             object_indexes = object_numbers - 1
             neighbor_indexes = neighbor_numbers - 1
-            first_objects = np.zeros(0, int)
-            second_objects = np.zeros(0, int)
+            first_objects = numpy.zeros(0, int)
+            second_objects = numpy.zeros(0, int)
         #
         # Now convert all measurements from the small-removed to
         # the final number set.
@@ -641,21 +674,21 @@ previously discarded objects.""".format(
         #
         # Record the measurements
         #
-        assert isinstance(workspace, cpw.Workspace)
+        assert isinstance(workspace, Workspace)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, Measurements)
         image_set = workspace.image_set
         features_and_data = [
             (M_NUMBER_OF_NEIGHBORS, neighbor_count),
             (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
             (
                 M_FIRST_CLOSEST_DISTANCE,
-                np.sqrt(first_x_vector ** 2 + first_y_vector ** 2),
+                numpy.sqrt(first_x_vector ** 2 + first_y_vector ** 2),
             ),
             (M_SECOND_CLOSEST_OBJECT_NUMBER, second_object_number),
             (
                 M_SECOND_CLOSEST_DISTANCE,
-                np.sqrt(second_x_vector ** 2 + second_y_vector ** 2),
+                numpy.sqrt(second_x_vector ** 2 + second_y_vector ** 2),
             ),
             (M_ANGLE_BETWEEN_NEIGHBORS, angle),
             (M_PERCENT_TOUCHING, percent_touching),
@@ -667,26 +700,26 @@ previously discarded objects.""".format(
         if len(first_objects) > 0:
             m.add_relate_measurement(
                 self.module_num,
-                cpmeas.NEIGHBORS,
+                NEIGHBORS,
                 self.object_name.value,
                 self.object_name.value
                 if self.neighbors_are_objects
                 else self.neighbors_name.value,
-                m.image_set_number * np.ones(first_objects.shape, int),
+                m.image_set_number * numpy.ones(first_objects.shape, int),
                 first_objects,
-                m.image_set_number * np.ones(second_objects.shape, int),
+                m.image_set_number * numpy.ones(second_objects.shape, int),
                 second_objects,
             )
 
         labels = kept_labels
 
-        neighbor_count_image = np.zeros(labels.shape, int)
+        neighbor_count_image = numpy.zeros(labels.shape, int)
         object_mask = objects.segmented != 0
         object_indexes = objects.segmented[object_mask] - 1
         neighbor_count_image[object_mask] = neighbor_count[object_indexes]
         workspace.display_data.neighbor_count_image = neighbor_count_image
 
-        percent_touching_image = np.zeros(labels.shape)
+        percent_touching_image = numpy.zeros(labels.shape)
         percent_touching_image[object_mask] = percent_touching[object_indexes]
         workspace.display_data.percent_touching_image = percent_touching_image
 
@@ -699,10 +732,10 @@ previously discarded objects.""".format(
             img[:, :, 0][~object_mask] = 0
             img[:, :, 1][~object_mask] = 0
             img[:, :, 2][~object_mask] = 0
-            count_image = cpi.Image(img, masking_objects=objects)
+            count_image = Image(img, masking_objects=objects)
             image_set.add(self.count_image_name.value, count_image)
         else:
-            neighbor_cm_name = cpprefs.get_default_colormap()
+            neighbor_cm_name = get_default_colormap()
             neighbor_cm = matplotlib.cm.get_cmap(neighbor_cm_name)
         if self.wants_percent_touching_image:
             percent_touching_cm_name = self.touching_colormap.value
@@ -712,10 +745,10 @@ previously discarded objects.""".format(
             img[:, :, 0][~object_mask] = 0
             img[:, :, 1][~object_mask] = 0
             img[:, :, 2][~object_mask] = 0
-            touching_image = cpi.Image(img, masking_objects=objects)
+            touching_image = Image(img, masking_objects=objects)
             image_set.add(self.touching_image_name.value, touching_image)
         else:
-            percent_touching_cm_name = cpprefs.get_default_colormap()
+            percent_touching_cm_name = get_default_colormap()
             percent_touching_cm = matplotlib.cm.get_cmap(percent_touching_cm_name)
 
         if self.show_window:
@@ -761,7 +794,7 @@ previously discarded objects.""".format(
                 workspace.display_data.neighbor_labels,
                 "Neighbors: %s" % self.neighbors_name.value,
             )
-        if np.any(object_mask):
+        if numpy.any(object_mask):
             figure.subplot_imshow(
                 0,
                 1,
@@ -842,14 +875,14 @@ previously discarded objects.""".format(
             [
                 (
                     feature,
-                    cpmeas.COLTYPE_INTEGER
+                    COLTYPE_INTEGER
                     if feature
                     in (
                         M_NUMBER_OF_NEIGHBORS,
                         M_FIRST_CLOSEST_OBJECT_NUMBER,
                         M_SECOND_CLOSEST_OBJECT_NUMBER,
                     )
-                    else cpmeas.COLTYPE_FLOAT,
+                    else COLTYPE_FLOAT,
                 )
                 for feature in self.all_features
             ]
@@ -870,14 +903,7 @@ previously discarded objects.""".format(
             neighbors_name = objects_name
         else:
             neighbors_name = self.neighbors_name.value
-        return [
-            (
-                cpmeas.NEIGHBORS,
-                objects_name,
-                neighbors_name,
-                cpmeas.MCA_AVAILABLE_EACH_CYCLE,
-            )
-        ]
+        return [(NEIGHBORS, objects_name, neighbors_name, MCA_AVAILABLE_EACH_CYCLE,)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name:
@@ -932,5 +958,5 @@ previously discarded objects.""".format(
 def get_colormap(name):
     """Get colormap, accounting for possible request for default"""
     if name == "Default":
-        name = cpprefs.get_default_colormap()
+        name = get_default_colormap()
     return matplotlib.cm.get_cmap(name)

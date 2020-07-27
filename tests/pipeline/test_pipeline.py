@@ -461,11 +461,11 @@ HasImagePlaneDetails:False"""
             return True
 
         def run(workspace):
-            workspace.display_data.foo = "Bar"
+            cellprofiler_core.constants.modules.foo = "Bar"
 
         def display_handler(module1, display_data, image_set_number):
             assert module1 is module
-            assert display_data.foo == "Bar"
+            assert cellprofiler_core.constants.modules.foo == "Bar"
             assert image_set_number == 1
             callbacks_called.add("display_handler")
 

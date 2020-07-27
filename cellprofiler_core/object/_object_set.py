@@ -1,4 +1,4 @@
-from cellprofiler_core.object import Objects
+from ._objects import Objects
 
 
 class ObjectSet:

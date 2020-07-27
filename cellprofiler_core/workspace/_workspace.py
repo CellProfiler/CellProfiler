@@ -7,6 +7,7 @@ import os
 
 import h5py
 
+import cellprofiler_core.utilities.measurement
 from ._disposition_changed_event import DispositionChangedEvent
 from ..constants.workspace import DISPOSITION_CONTINUE
 from ..utilities.hdf5_dict import HDF5FileList
@@ -353,7 +354,7 @@ class Workspace:
             #
             # Copy the file to a temporary location before opening
             #
-            fd, self.__filename = cellprofiler_core.measurement.make_temporary_file()
+            fd, self.__filename = cellprofiler_core.utilities.measurement.make_temporary_file()
             os.close(fd)
 
             shutil.copyfile(filename, self.__filename)
@@ -418,7 +419,7 @@ class Workspace:
 
         filename - name of the workspace file
         """
-        from cellprofiler_core.measurement import make_temporary_file
+        from ..utilities.measurement import make_temporary_file
         from cellprofiler_core.measurement import Measurements
 
         if isinstance(self.measurements, Measurements):

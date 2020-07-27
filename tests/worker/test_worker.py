@@ -18,6 +18,7 @@ import cellprofiler_core.modules.namesandtypes
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.utilities.image
+import cellprofiler_core.utilities.measurement
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.utilities.zmq
 import cellprofiler_core.worker
@@ -650,7 +651,7 @@ class TestAnalysisWorker(unittest.TestCase):
             req, cellprofiler_core.analysis.request.MeasurementsReport
         )
         self.assertSequenceEqual(req.image_set_numbers, [1])
-        m = cellprofiler_core.measurement.load_measurements_from_buffer(req.buf)
+        m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(req.buf)
         #
         # Spot check for some expected stuff
         #
@@ -751,7 +752,7 @@ class TestAnalysisWorker(unittest.TestCase):
             req, cellprofiler_core.analysis.request.MeasurementsReport
         )
         self.assertSequenceEqual(req.image_set_numbers, [2, 3])
-        m = cellprofiler_core.measurement.load_measurements_from_buffer(req.buf)
+        m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(req.buf)
         #
         # Spot check for some expected stuff
         #
@@ -866,7 +867,7 @@ class TestAnalysisWorker(unittest.TestCase):
             req, cellprofiler_core.analysis.request.MeasurementsReport
         )
         self.assertSequenceEqual(req.image_set_numbers, [2, 3])
-        m = cellprofiler_core.measurement.load_measurements_from_buffer(req.buf)
+        m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(req.buf)
         #
         # Spot check for some expected stuff
         #

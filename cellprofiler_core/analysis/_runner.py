@@ -38,7 +38,7 @@ from .request import MeasurementsReport
 from .request import PipelinePreferences
 from ..image import ImageSetList
 from ..measurement import Measurements
-from ..measurement import load_measurements_from_buffer
+from ..utilities.measurement import load_measurements_from_buffer
 from ..pipeline import dump
 from ..preferences import get_plugin_directory
 from ..preferences import get_temporary_directory

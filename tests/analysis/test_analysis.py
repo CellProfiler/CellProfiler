@@ -5,6 +5,7 @@ import logging
 import pytest
 
 import cellprofiler_core.constants.measurement
+import cellprofiler_core.utilities.measurement
 
 logger = logging.getLogger(__name__)
 # logger.addHandler(logging.StreamHandler())
@@ -466,7 +467,7 @@ class TestAnalysis(unittest.TestCase):
                     worker.analysis_id
                 )
             )()
-            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
             try:
@@ -748,7 +749,7 @@ class TestAnalysis(unittest.TestCase):
                     worker.analysis_id
                 )
             )()
-            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
             #####################################################
@@ -825,7 +826,7 @@ class TestAnalysis(unittest.TestCase):
                     worker.analysis_id
                 )
             )()
-            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
             #####################################################
@@ -933,7 +934,7 @@ class TestAnalysis(unittest.TestCase):
                     worker.analysis_id
                 )
             )()
-            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
             response = worker.send(
@@ -1033,7 +1034,7 @@ class TestAnalysis(unittest.TestCase):
                     worker.analysis_id
                 )
             )()
-            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
             #####################################################
@@ -1160,7 +1161,7 @@ class TestAnalysis(unittest.TestCase):
                     worker.analysis_id
                 )
             )()
-            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
             for image_number in (1, 2):
@@ -1232,7 +1233,7 @@ class TestAnalysis(unittest.TestCase):
                     worker.analysis_id
                 )
             )()
-            client_measurements = cellprofiler_core.measurement.load_measurements_from_buffer(
+            client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
             #####################################################

@@ -7,8 +7,6 @@ from ._object_set import ObjectSet
 from ._objects import Objects
 from ._segmentation import Segmentation
 
-OBJECT_TYPE_NAME = "objects"
-
 
 def downsample_labels(labels):
     """Convert a labels matrix to the smallest possible integer format"""

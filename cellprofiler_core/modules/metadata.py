@@ -150,6 +150,8 @@ Measurements made by this module
     }
 )
 
+import cellprofiler_core.utilities.measurement
+
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
 X_IMPORTED_EXTRACTION = "Import from file"
@@ -1314,7 +1316,7 @@ not being applied, your choice on this setting may be the culprit.
                     if group.source == XM_FILE_NAME
                     else group.folder_regexp
                 )
-                for token in cellprofiler_core.measurement.find_metadata_tokens(
+                for token in cellprofiler_core.utilities.measurement.find_metadata_tokens(
                     re_setting.value
                 ):
                     if token.upper() in [

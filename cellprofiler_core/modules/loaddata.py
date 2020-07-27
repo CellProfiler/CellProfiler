@@ -22,6 +22,7 @@ import cellprofiler_core.setting
 import cellprofiler_core.setting.text._directory
 import cellprofiler_core.setting.text._filename
 import cellprofiler_core.utilities.image
+import cellprofiler_core.utilities.measurement
 import cellprofiler_core.utilities.pathname
 from cellprofiler_core.module import _identify
 
@@ -895,9 +896,9 @@ safe to press it.""",
                         == cellprofiler_core.constants.measurement.FTR_WELL.lower()
                     ):
                         well_well_column = i
-                    elif cellprofiler_core.measurement.is_well_row_token(feature):
+                    elif cellprofiler_core.utilities.measurement.is_well_row_token(feature):
                         well_row_column = i
-                    elif cellprofiler_core.measurement.is_well_column_token(feature):
+                    elif cellprofiler_core.utilities.measurement.is_well_column_token(feature):
                         well_column_column = i
 
         if (
@@ -1341,7 +1342,7 @@ safe to press it.""",
         for i in range(len(header)):
             if header[i].startswith(
                     cellprofiler_core.constants.measurement.C_METADATA + "_"
-            ) and cellprofiler_core.measurement.is_well_column_token(
+            ) and cellprofiler_core.utilities.measurement.is_well_column_token(
                 header[i].split("_")[1]
             ):
                 coltypes[i] = cellprofiler_core.constants.measurement.COLTYPE_VARCHAR
@@ -1495,9 +1496,9 @@ safe to press it.""",
             if not column[1].startswith(cellprofiler_core.constants.measurement.C_METADATA + "_"):
                 continue
             category, feature = column[1].split("_", 1)
-            if cellprofiler_core.measurement.is_well_column_token(feature):
+            if cellprofiler_core.utilities.measurement.is_well_column_token(feature):
                 well_col_column = column
-            elif cellprofiler_core.measurement.is_well_row_token(feature):
+            elif cellprofiler_core.utilities.measurement.is_well_row_token(feature):
                 well_row_column = column
             elif feature.lower() == cellprofiler_core.constants.measurement.FTR_WELL.lower():
                 well_column = column
@@ -1506,10 +1507,10 @@ safe to press it.""",
             and well_row_column is not None
             and well_col_column is not None
         ):
-            length = cellprofiler_core.measurement.get_length_from_varchar(
+            length = cellprofiler_core.utilities.measurement.get_length_from_varchar(
                 well_row_column[2]
             )
-            length += cellprofiler_core.measurement.get_length_from_varchar(
+            length += cellprofiler_core.utilities.measurement.get_length_from_varchar(
                 well_col_column[2]
             )
             result += [
@@ -1538,9 +1539,9 @@ safe to press it.""",
             if not field.startswith(cellprofiler_core.constants.measurement.C_METADATA + "_"):
                 continue
             category, feature = field.split("_", 1)
-            if cellprofiler_core.measurement.is_well_column_token(feature):
+            if cellprofiler_core.utilities.measurement.is_well_column_token(feature):
                 has_well_col = True
-            elif cellprofiler_core.measurement.is_well_row_token(feature):
+            elif cellprofiler_core.utilities.measurement.is_well_row_token(feature):
                 has_well_row = True
             elif feature.lower() == cellprofiler_core.constants.measurement.FTR_WELL.lower():
                 return False

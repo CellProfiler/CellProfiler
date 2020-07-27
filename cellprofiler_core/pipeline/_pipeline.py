@@ -20,6 +20,7 @@ import numpy
 import cellprofiler_core.constants.measurement
 import cellprofiler_core.constants.pipeline
 import cellprofiler_core.constants.workspace
+import cellprofiler_core.utilities.measurement
 
 
 def _is_fp(x):
@@ -221,7 +222,7 @@ class Pipeline:
             os.unlink(filename)
             return
         else:
-            m = cellprofiler_core.measurement.load_measurements(filename)
+            m = cellprofiler_core.utilities.measurement.load_measurements(filename)
             pipeline_text = m.get_experiment_measurement(
                 cellprofiler_core.constants.pipeline.M_PIPELINE
             )

@@ -28,7 +28,7 @@ from ..constants.worker import NOTIFY_STOP
 from ..constants.worker import all_measurements
 from ..constants.worker import the_zmq_context
 from ..measurement import Measurements
-from ..measurement import load_measurements_from_buffer
+from ..utilities.measurement import load_measurements_from_buffer
 from ..pipeline import CancelledException
 from ..preferences import get_awt_headless
 from ..preferences import set_preferences_from_dict

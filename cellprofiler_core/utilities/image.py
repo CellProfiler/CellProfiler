@@ -9,6 +9,7 @@ import scipy.io
 
 import cellprofiler_core.constants.measurement
 import cellprofiler_core.measurement
+import cellprofiler_core.utilities.measurement
 from cellprofiler_core.utilities import generate_presigned_url
 
 UIC1_TAG = 33628
@@ -178,9 +179,9 @@ def well_metadata_tokens(tokens):
     well_row_token = None
     well_column_token = None
     for token in tokens:
-        if cellprofiler_core.measurement.is_well_row_token(token):
+        if cellprofiler_core.utilities.measurement.is_well_row_token(token):
             well_row_token = token
-        if cellprofiler_core.measurement.is_well_column_token(token):
+        if cellprofiler_core.utilities.measurement.is_well_column_token(token):
             well_column_token = token
     return well_row_token, well_column_token
 

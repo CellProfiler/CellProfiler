@@ -118,7 +118,6 @@ def fill_modules():
     try:
         import cellprofiler.modules
 
-        raise ImportError
         cpinstalled = True
     except ImportError:
         print("No CellProfiler installation detected, only base modules will be loaded")

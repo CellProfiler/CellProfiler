@@ -19,7 +19,7 @@ import numpy
 
 from .io import dump as dumpit
 from ..utilities.core.modules import instantiate_module, reload_modules
-from ..utilities.core.pipeline import read_file_list, add_all_measurements
+from ..utilities.core.pipeline import read_file_list
 from ._image_plane import ImagePlane
 from ._listener import Listener
 from .dependency import ImageDependency
@@ -1437,10 +1437,10 @@ class Pipeline:
                 iii = indexes[group_image_numbers]
                 group_numbers[iii] = i + 1
                 group_indexes[iii] = numpy.arange(len(iii)) + 1
-            add_all_measurements(
+            m.add_all_measurements(
                 "Image", GROUP_NUMBER, group_numbers,
             )
-            add_all_measurements(
+            m.add_all_measurements(
                 "Image", GROUP_INDEX, group_indexes,
             )
             #

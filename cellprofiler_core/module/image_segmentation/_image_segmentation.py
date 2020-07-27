@@ -1,4 +1,5 @@
 import numpy
+from cellprofiler_core.object import Objects
 
 from .._module import Module
 from ...constants.measurement import COLTYPE_FLOAT
@@ -16,7 +17,6 @@ from ...constants.measurement import M_LOCATION_CENTER_X
 from ...constants.measurement import M_LOCATION_CENTER_Y
 from ...constants.measurement import M_LOCATION_CENTER_Z
 from ...constants.measurement import M_NUMBER_OBJECT_NUMBER
-from ...image import ObjectsImage
 from ...setting.subscriber import ImageSubscriber
 from ...setting.text import LabelName
 
@@ -155,7 +155,7 @@ class ImageSegmentation(Module):
 
         y_data = self.function(x_data, *args)
 
-        y = ObjectsImage()
+        y = Objects()
 
         y.segmented = y_data
 

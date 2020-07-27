@@ -154,57 +154,6 @@ def map_feature_names(feature_names, max_size=63):
     return mapping
 
 
-def add_all_measurements(handles, measurements):
-    """Add all measurements from our measurements object into the numpy structure passed
-
-    """
-    object_names = [
-        name
-        for name in measurements.get_object_names()
-        if len(measurements.get_feature_names(name)) > 0
-    ]
-    measurements_dtype = make_cell_struct_dtype(object_names)
-    npy_measurements = numpy.ndarray((1, 1), dtype=measurements_dtype)
-    handles[MEASUREMENTS] = npy_measurements
-    image_numbers = measurements.get_image_numbers()
-    max_image_number = numpy.max(image_numbers)
-    has_image_number = numpy.zeros(max_image_number + 1, bool)
-    has_image_number[image_numbers] = True
-    for object_name in object_names:
-        if object_name == "Experiment":
-            continue
-        mapping = map_feature_names(measurements.get_feature_names(object_name))
-        object_dtype = make_cell_struct_dtype(list(mapping.keys()))
-        object_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
-        npy_measurements[object_name][0, 0] = object_measurements
-        for field, feature_name in list(mapping.items()):
-            feature_measurements = numpy.ndarray((1, max_image_number), dtype="object")
-            if type(field) == bytes:
-                field = field.decode("utf-8")
-            object_measurements[field][0, 0] = feature_measurements
-            for i in numpy.argwhere(~has_image_number[1:]).flatten():
-                feature_measurements[0, i] = numpy.zeros(0)
-            dddata = measurements[object_name, feature_name, image_numbers]
-            for i, ddata in zip(image_numbers, dddata):
-                if numpy.isscalar(ddata) and numpy.isreal(ddata):
-                    feature_measurements[0, i - 1] = numpy.array([ddata])
-                elif ddata is not None:
-                    feature_measurements[0, i - 1] = ddata
-                else:
-                    feature_measurements[0, i - 1] = numpy.zeros(0)
-    if "Experiment" in measurements.object_names:
-        mapping = map_feature_names(measurements.get_feature_names("Experiment"))
-        object_dtype = make_cell_struct_dtype(list(mapping.keys()))
-        experiment_measurements = numpy.ndarray((1, 1), dtype=object_dtype)
-        npy_measurements["Experiment"][0, 0] = experiment_measurements
-        for field, feature_name in list(mapping.items()):
-            feature_measurements = numpy.ndarray((1, 1), dtype="object")
-            feature_measurements[0, 0] = measurements.get_experiment_measurement(
-                feature_name
-            )
-            experiment_measurements[field][0, 0] = feature_measurements
-
-
 def read_file_list(file_or_fd):
     """Read a file list from a file or file object
 

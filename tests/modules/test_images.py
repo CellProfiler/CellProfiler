@@ -2,6 +2,7 @@ import io
 import os
 import tempfile
 
+import cellprofiler_core.constants.modules.images
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.images
 import cellprofiler_core.pipeline
@@ -48,8 +49,8 @@ class TestImages:
         module = pipeline.modules()[0]
         assert isinstance(module, cellprofiler_core.modules.images.Images)
         assert (
-            module.filter_choice.value
-            == cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
+                module.filter_choice.value
+                == cellprofiler_core.constants.modules.images.FILTER_CHOICE_CUSTOM
         )
         assert (
             module.filter.value
@@ -62,9 +63,9 @@ class TestImages:
             data = fd.read()
 
         for fc, fctext in (
-            (cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM, "Custom"),
-            (cellprofiler_core.modules.images.FILTER_CHOICE_IMAGES, "Images only"),
-            (cellprofiler_core.modules.images.FILTER_CHOICE_NONE, "No filtering"),
+            (cellprofiler_core.constants.modules.images.FILTER_CHOICE_CUSTOM, "Custom"),
+            (cellprofiler_core.constants.modules.images.FILTER_CHOICE_IMAGES, "Images only"),
+            (cellprofiler_core.constants.modules.images.FILTER_CHOICE_NONE, "No filtering"),
         ):
             pipeline = cellprofiler_core.pipeline.Pipeline()
 
@@ -88,7 +89,7 @@ class TestImages:
     def test_filter_url(self):
         module = cellprofiler_core.modules.images.Images()
         module.filter_choice.value = (
-            cellprofiler_core.modules.images.FILTER_CHOICE_CUSTOM
+            cellprofiler_core.constants.modules.images.FILTER_CHOICE_CUSTOM
         )
         for url, filter_value, expected in (
             (
@@ -135,7 +136,7 @@ class TestImages:
     def test_filter_standard(self):
         module = cellprofiler_core.modules.images.Images()
         module.filter_choice.value = (
-            cellprofiler_core.modules.images.FILTER_CHOICE_IMAGES
+            cellprofiler_core.constants.modules.images.FILTER_CHOICE_IMAGES
         )
         for url, expected in (
             ("file:/TestImages/NikonTIF.tif", True),

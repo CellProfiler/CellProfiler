@@ -1,61 +1,73 @@
-# coding=utf-8
-
-
 import csv
+import io
 import os
 import urllib.request
-from functools import reduce
-from io import StringIO
 
 import numpy
 
-from ..constants.image import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
-from ..constants.measurement import (
-    C_URL,
-    C_FILE_NAME,
-    C_PATH_NAME,
-    C_OBJECTS_URL,
-    C_OBJECTS_FILE_NAME,
-    C_OBJECTS_PATH_NAME,
-    C_METADATA,
-    FTR_WELL,
-    M_WELL,
-    COLTYPE_INTEGER,
-    COLTYPE_FLOAT,
-    C_SERIES,
-    C_FRAME,
-    C_OBJECTS_SERIES,
-    C_OBJECTS_FRAME,
-    COLTYPE_VARCHAR,
-    PATH_NAME_LENGTH,
-    COLTYPE_VARCHAR_FORMAT,
-    COLTYPE_VARCHAR_PATH_NAME,
-    COLTYPE_VARCHAR_FILE_NAME,
-)
+from ..constants.image import C_HEIGHT
+from ..constants.image import C_MD5_DIGEST
+from ..constants.image import C_SCALING
+from ..constants.image import C_WIDTH
+from ..constants.measurement import COLTYPE_FLOAT
+from ..constants.measurement import COLTYPE_INTEGER
+from ..constants.measurement import COLTYPE_VARCHAR
+from ..constants.measurement import COLTYPE_VARCHAR_FILE_NAME
+from ..constants.measurement import COLTYPE_VARCHAR_FORMAT
+from ..constants.measurement import COLTYPE_VARCHAR_PATH_NAME
+from ..constants.measurement import C_FILE_NAME
+from ..constants.measurement import C_FRAME
+from ..constants.measurement import C_METADATA
+from ..constants.measurement import C_OBJECTS_FILE_NAME
+from ..constants.measurement import C_OBJECTS_FRAME
+from ..constants.measurement import C_OBJECTS_PATH_NAME
+from ..constants.measurement import C_OBJECTS_SERIES
+from ..constants.measurement import C_OBJECTS_URL
+from ..constants.measurement import C_PATH_NAME
+from ..constants.measurement import C_SERIES
+from ..constants.measurement import C_URL
+from ..constants.measurement import FTR_WELL
+from ..constants.measurement import M_WELL
+from ..constants.measurement import PATH_NAME_LENGTH
 from ..constants.module import IO_FOLDER_CHOICE_HELP_TEXT
-from ..image import File, Objects
+from ..constants.modules.load_data import DIR_ALL
+from ..constants.modules.load_data import IMAGE_CATEGORIES
+from ..constants.modules.load_data import OBJECTS_CATEGORIES
+from ..constants.modules.load_data import PATH_PADDING
+from ..image import File
+from ..image import Objects
 from ..measurement import Measurements
 from ..module import Module
-from ..preferences import (
-    DEFAULT_INPUT_FOLDER_NAME,
-    DEFAULT_OUTPUT_FOLDER_NAME,
-    NO_FOLDER_NAME,
-    ABSOLUTE_FOLDER_NAME,
-    URL_FOLDER_NAME,
-    is_url_path,
-    get_data_file,
-)
-from ..setting import Binary, ValidationError
+from ..preferences import NO_FOLDER_NAME
+from ..preferences import URL_FOLDER_NAME
+from ..preferences import get_data_file
+from ..preferences import is_url_path
+from ..setting import Binary
+from ..setting import ValidationError
 from ..setting.do_something import DoSomething
 from ..setting.multichoice import MultiChoice
 from ..setting.range import IntegerRange
-from ..setting.text import Directory, Filename
-from ..utilities.core.module._identify import (
-    add_object_count_measurements,
-    add_object_location_measurements,
-    get_object_measurement_columns,
-)
-from ..utilities.image import generate_presigned_url, convert_image_to_objects
+from ..setting.text import Directory
+from ..setting.text import Filename
+from ..utilities.core.module.identify import add_object_count_measurements
+from ..utilities.core.module.identify import add_object_location_measurements
+from ..utilities.core.module.identify import get_object_measurement_columns
+from ..utilities.core.modules.load_data import bad_sizes_warning
+from ..utilities.core.modules.load_data import get_image_name
+from ..utilities.core.modules.load_data import get_loaddata_type
+from ..utilities.core.modules.load_data import get_objects_name
+from ..utilities.core.modules.load_data import header_to_column
+from ..utilities.core.modules.load_data import is_file_name_feature
+from ..utilities.core.modules.load_data import is_objects_file_name_feature
+from ..utilities.core.modules.load_data import is_objects_url_name_feature
+from ..utilities.core.modules.load_data import is_url_name_feature
+from ..utilities.image import convert_image_to_objects
+from ..utilities.image import generate_presigned_url
+from ..utilities.measurement import get_length_from_varchar
+from ..utilities.measurement import is_well_column_token
+from ..utilities.measurement import is_well_row_token
+from ..utilities.pathname import pathname2url
+from ..utilities.pathname import url2pathname
 
 __doc__ = """\
 LoadData
@@ -261,155 +273,10 @@ Measurements made by this module
 .. _wiki: http://github.com/CellProfiler/CellProfiler/wiki/Adapting-CellProfiler-to-a-LIMS-environment
 """
 
-from ..utilities.measurement import (
-    is_well_row_token,
-    is_well_column_token,
-    get_length_from_varchar,
-)
-from ..utilities.pathname import pathname2url, url2pathname
-
-IMAGE_CATEGORIES = (
-    C_URL,
-    C_FILE_NAME,
-    C_PATH_NAME,
-)
-OBJECTS_CATEGORIES = (
-    C_OBJECTS_URL,
-    C_OBJECTS_FILE_NAME,
-    C_OBJECTS_PATH_NAME,
-)
-DIR_NONE = "None"
-DIR_OTHER = "Elsewhere..."
-DIR_ALL = [
-    DEFAULT_INPUT_FOLDER_NAME,
-    DEFAULT_OUTPUT_FOLDER_NAME,
-    NO_FOLDER_NAME,
-    ABSOLUTE_FOLDER_NAME,
-]
-
 """Reserve extra space in pathnames for batch processing name rewrites"""
-PATH_PADDING = 20
 
 """Cache of header columns for files"""
 header_cache = {}
-
-
-###################################################################
-#
-# Helper functions for the header columns, Image_FileName_<image-name>
-# and Image_PathName_<image-name>
-#
-# These need to be converted to FileName_<image-name> and
-# PathName_<image-name> internally.
-###################################################################
-
-
-def header_to_column(field):
-    """Convert the field name in the header to a column name
-
-    This function converts Image_FileName to FileName and
-    Image_PathName to PathName so that the output column names
-    in the database will be Image_FileName and Image_PathName
-    """
-    for name in (
-        C_PATH_NAME,
-        C_FILE_NAME,
-        C_URL,
-        C_OBJECTS_FILE_NAME,
-        C_OBJECTS_PATH_NAME,
-        C_OBJECTS_URL,
-    ):
-        if field.startswith("Image" + "_" + name + "_"):
-            return field[6:]
-    return field
-
-
-def is_path_name_feature(feature):
-    """Return true if the feature name is a path name"""
-    return feature.startswith(C_PATH_NAME + "_")
-
-
-def is_file_name_feature(feature):
-    """Return true if the feature name is a file name"""
-    return feature.startswith(C_FILE_NAME + "_")
-
-
-def is_url_name_feature(feature):
-    return feature.startswith(C_URL + "_")
-
-
-def is_objects_path_name_feature(feature):
-    """Return true if the feature name is the path to a labels file"""
-    return feature.startswith(C_OBJECTS_PATH_NAME + "_")
-
-
-def is_objects_file_name_feature(feature):
-    """Return true if the feature name is a labels file name"""
-    return feature.startswith(C_OBJECTS_FILE_NAME + "_")
-
-
-def is_objects_url_name_feature(feature):
-    return feature.startswith(C_OBJECTS_URL + "_")
-
-
-def get_image_name(feature):
-    """Extract the image name from a feature name"""
-    if is_path_name_feature(feature):
-        return feature[len(C_PATH_NAME + "_") :]
-    if is_file_name_feature(feature):
-        return feature[len(C_FILE_NAME + "_") :]
-    if is_url_name_feature(feature):
-        return feature[len(C_URL + "_") :]
-    raise ValueError('"%s" is not a path feature or file name feature' % feature)
-
-
-def get_objects_name(feature):
-    """Extract the objects name from a feature name"""
-    if is_objects_path_name_feature(feature):
-        return feature[len(C_OBJECTS_PATH_NAME + "_") :]
-    if is_objects_file_name_feature(feature):
-        return feature[len(C_OBJECTS_FILE_NAME + "_") :]
-    if is_objects_url_name_feature(feature):
-        return feature[len(C_OBJECTS_URL + "_") :]
-    raise ValueError(
-        '"%s" is not a objects path feature or file name feature' % feature
-    )
-
-
-def make_path_name_feature(image):
-    """Return the path name feature, given an image name
-
-    The path name feature is the name of the measurement that stores
-    the image's path name.
-    """
-    return C_PATH_NAME + "_" + image
-
-
-def make_file_name_feature(image):
-    """Return the file name feature, given an image name
-
-    The file name feature is the name of the measurement that stores
-    the image's file name.
-    """
-    return C_FILE_NAME + "_" + image
-
-
-def make_objects_path_name_feature(objects_name):
-    """Return the path name feature, given an object name
-
-    The path name feature is the name of the measurement that stores
-    the objects file path name.
-    """
-    return C_OBJECTS_PATH_NAME + "_" + objects_name
-
-
-def make_objects_file_name_feature(objects_name):
-    """Return the file name feature, given an object name
-
-    The file name feature is the name of the measurement that stores
-    the objects file name.
-    """
-    return C_OBJECTS_FILE_NAME + "_" + objects_name
 
 
 class LoadData(Module):
@@ -735,7 +602,7 @@ safe to press it.""",
             if "URLEXCEPTION" in entry:
                 raise entry["URLEXCEPTION"]
             if "URLDATA" in entry:
-                fd = StringIO(entry["URLDATA"])
+                fd = io.StringIO(entry["URLDATA"])
             else:
                 if do_not_cache:
                     raise RuntimeError("Need to fetch URL manually.")
@@ -745,7 +612,7 @@ safe to press it.""",
                 except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e
-                fd = StringIO()
+                fd = io.StringIO()
                 while True:
                     text = url_fd.read()
                     if len(text) == 0:
@@ -819,7 +686,7 @@ safe to press it.""",
                 get_objects_name(field)
                 for field in header
                 if is_objects_file_name_feature(field)
-                or is_objects_url_name_feature(field)
+                   or is_objects_url_name_feature(field)
             ]
         )
         return list(object_names)
@@ -1372,7 +1239,7 @@ safe to press it.""",
                 if key_is_path_or_url[index]:
                     # Account for possible rewrite of the pathname
                     # in batch data
-                    len_field = max(PATH_NAME_LENGTH, len_field + PATH_PADDING,)
+                    len_field = max(PATH_NAME_LENGTH, len_field + PATH_PADDING, )
                 if coltypes[index] != COLTYPE_VARCHAR:
                     ldtype = get_loaddata_type(field)
                     if coltypes[index] == COLTYPE_INTEGER:
@@ -1608,82 +1475,7 @@ safe to press it.""",
 
 LoadText = LoadData
 
-
-def best_cast(sequence, coltype=None):
-    """Return the best cast (integer, float or string) of the sequence
-
-    sequence - a sequence of strings
-
-    Try casting all elements to integer and float, returning a numpy
-    array of values. If all fail, return a numpy array of strings.
-    """
-    if isinstance(coltype, str) and coltype.startswith(COLTYPE_VARCHAR):
-        # Cast columns already defined as strings as same
-        return numpy.array(sequence)
-
-    def fn(x, y):
-        if COLTYPE_VARCHAR in (x, y):
-            return COLTYPE_VARCHAR
-        if COLTYPE_FLOAT in (x, y):
-            return COLTYPE_FLOAT
-        return COLTYPE_INTEGER
-
-    ldtype = reduce(fn, [get_loaddata_type(x) for x in sequence], COLTYPE_INTEGER,)
-    if ldtype == COLTYPE_VARCHAR:
-        return numpy.array(sequence)
-    elif ldtype == COLTYPE_FLOAT:
-        return numpy.array(sequence, numpy.float64)
-    else:
-        return numpy.array(sequence, numpy.int32)
-
-
 int32_max = numpy.iinfo(numpy.int32).max
 int32_min = numpy.iinfo(numpy.int32).min
 
 
-def get_loaddata_type(x):
-    """Return the type to use to represent x
-
-    If x is a 32-bit integer, return cpmeas.COLTYPE_INTEGER.
-    If x cannot be represented in 32 bits but is an integer,
-    return cpmeas.COLTYPE_VARCHAR
-    If x can be represented as a float, return COLTYPE_FLOAT
-    """
-    global int32_max, int32_min
-
-    try:
-        iv = int(x)
-        if iv > int32_max:
-            return COLTYPE_VARCHAR
-        if iv < int32_min:
-            return COLTYPE_VARCHAR
-        return COLTYPE_INTEGER
-    except:
-        try:
-            fv = float(x)
-            return COLTYPE_FLOAT
-        except:
-            return COLTYPE_VARCHAR
-
-
-def bad_sizes_warning(first_size, first_filename, second_size, second_filename):
-    """Return a warning message about sizes being wrong
-
-    first_size: tuple of height / width of first image
-    first_filename: file name of first image
-    second_size: tuple of height / width of second image
-    second_filename: file name of second image
-    """
-    warning = (
-        "Warning: loading image files of different dimensions.\n\n"
-        "%s: width = %d, height = %d\n"
-        "%s: width = %d, height = %d"
-    ) % (
-        first_filename,
-        first_size[1],
-        first_size[0],
-        second_filename,
-        second_size[1],
-        second_size[0],
-    )
-    return warning

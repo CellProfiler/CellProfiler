@@ -3,6 +3,8 @@ import os
 import tempfile
 
 import cellprofiler_core.constants.measurement
+import cellprofiler_core.constants.modules.images
+import cellprofiler_core.constants.modules.metadata
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.images
 import cellprofiler_core.modules.metadata
@@ -40,24 +42,24 @@ def test_load_v1():
     assert len(module.extraction_methods) == 2
     em0, em1 = module.extraction_methods
     assert (
-        em0.extraction_method == cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
+            em0.extraction_method == cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
     )
-    assert em0.source == cellprofiler_core.modules.metadata.XM_FILE_NAME
+    assert em0.source == cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
     assert (
         em0.file_regexp.value
         == r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$"
     )
     assert em0.folder_regexp.value == r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
-    assert em0.filter_choice == cellprofiler_core.modules.metadata.F_ALL_IMAGES
+    assert em0.filter_choice == cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     assert em0.filter == 'or (file does contain "Channel2")'
     assert not em0.wants_case_insensitive
 
     assert (
-        em1.extraction_method.value
-        == cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            em1.extraction_method.value
+            == cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
     )
-    assert em1.source == cellprofiler_core.modules.metadata.XM_FOLDER_NAME
-    assert em1.filter_choice == cellprofiler_core.modules.metadata.F_FILTERED_IMAGES
+    assert em1.source == cellprofiler_core.constants.modules.metadata.XM_FOLDER_NAME
+    assert em1.filter_choice == cellprofiler_core.constants.modules.metadata.F_FILTERED_IMAGES
     assert (
         em1.csv_location.get_dir_choice()
         == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
@@ -90,24 +92,24 @@ def test_load_v2():
     assert len(module.extraction_methods) == 2
     em0, em1 = module.extraction_methods
     assert (
-        em0.extraction_method == cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
+            em0.extraction_method == cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
     )
-    assert em0.source == cellprofiler_core.modules.metadata.XM_FILE_NAME
+    assert em0.source == cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
     assert (
         em0.file_regexp.value
         == r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$"
     )
     assert em0.folder_regexp.value == r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
-    assert em0.filter_choice == cellprofiler_core.modules.metadata.F_ALL_IMAGES
+    assert em0.filter_choice == cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     assert em0.filter == 'or (file does contain "Channel2")'
     assert not em0.wants_case_insensitive
 
     assert (
-        em1.extraction_method.value
-        == cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            em1.extraction_method.value
+            == cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
     )
-    assert em1.source == cellprofiler_core.modules.metadata.XM_FOLDER_NAME
-    assert em1.filter_choice == cellprofiler_core.modules.metadata.F_FILTERED_IMAGES
+    assert em1.source == cellprofiler_core.constants.modules.metadata.XM_FOLDER_NAME
+    assert em1.filter_choice == cellprofiler_core.constants.modules.metadata.F_FILTERED_IMAGES
     assert (
         em1.csv_location.get_dir_choice()
         == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
@@ -137,28 +139,28 @@ def test_load_v3():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler_core.modules.metadata.Metadata)
     assert module.wants_metadata
-    assert module.data_type_choice == cellprofiler_core.modules.metadata.DTC_TEXT
+    assert module.data_type_choice == cellprofiler_core.constants.modules.metadata.DTC_TEXT
     assert len(module.extraction_methods) == 2
     em0, em1 = module.extraction_methods
     assert (
-        em0.extraction_method == cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
+            em0.extraction_method == cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
     )
-    assert em0.source == cellprofiler_core.modules.metadata.XM_FILE_NAME
+    assert em0.source == cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
     assert (
         em0.file_regexp.value
         == r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$"
     )
     assert em0.folder_regexp.value == r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
-    assert em0.filter_choice == cellprofiler_core.modules.metadata.F_ALL_IMAGES
+    assert em0.filter_choice == cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     assert em0.filter == 'or (file does contain "Channel2")'
     assert not em0.wants_case_insensitive
 
     assert (
-        em1.extraction_method
-        == cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            em1.extraction_method
+            == cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
     )
-    assert em1.source == cellprofiler_core.modules.metadata.XM_FOLDER_NAME
-    assert em1.filter_choice == cellprofiler_core.modules.metadata.F_FILTERED_IMAGES
+    assert em1.source == cellprofiler_core.constants.modules.metadata.XM_FOLDER_NAME
+    assert em1.filter_choice == cellprofiler_core.constants.modules.metadata.F_FILTERED_IMAGES
     assert (
         em1.csv_location.get_dir_choice()
         == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
@@ -188,7 +190,7 @@ def test_load_v4():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler_core.modules.metadata.Metadata)
     assert module.wants_metadata
-    assert module.data_type_choice == cellprofiler_core.modules.metadata.DTC_CHOOSE
+    assert module.data_type_choice == cellprofiler_core.constants.modules.metadata.DTC_CHOOSE
     d = cellprofiler_core.setting.DataTypes.decode_data_types(
         module.data_types.value_text
     )
@@ -203,24 +205,24 @@ def test_load_v4():
     assert len(module.extraction_methods) == 2
     em0, em1 = module.extraction_methods
     assert (
-        em0.extraction_method == cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
+            em0.extraction_method == cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
     )
-    assert em0.source == cellprofiler_core.modules.metadata.XM_FILE_NAME
+    assert em0.source == cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
     assert (
         em0.file_regexp.value
         == r"^Channel(?P<ChannelNumber>[12])-(?P<Index>[0-9]+)-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2}).tif$"
     )
     assert em0.folder_regexp.value == r"(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
-    assert em0.filter_choice == cellprofiler_core.modules.metadata.F_ALL_IMAGES
+    assert em0.filter_choice == cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     assert em0.filter == 'or (file does contain "Channel2")'
     assert not em0.wants_case_insensitive
 
     assert (
-        em1.extraction_method
-        == cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            em1.extraction_method
+            == cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
     )
-    assert em1.source == cellprofiler_core.modules.metadata.XM_FOLDER_NAME
-    assert em1.filter_choice == cellprofiler_core.modules.metadata.F_FILTERED_IMAGES
+    assert em1.source == cellprofiler_core.constants.modules.metadata.XM_FOLDER_NAME
+    assert em1.filter_choice == cellprofiler_core.constants.modules.metadata.F_FILTERED_IMAGES
     assert (
         em1.csv_location.get_dir_choice()
         == cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
@@ -270,7 +272,7 @@ def check(module, url, dd, keys=None, xml=None):
     """Check that running the metadata module on a url generates the expected dictionary"""
     pipeline = cellprofiler_core.pipeline.Pipeline()
     imgs = cellprofiler_core.modules.images.Images()
-    imgs.filter_choice.value = cellprofiler_core.modules.images.FILTER_CHOICE_NONE
+    imgs.filter_choice.value = cellprofiler_core.constants.modules.images.FILTER_CHOICE_NONE
     imgs.module_num = 1
     pipeline.add_module(imgs)
     module.set_module_num(2)
@@ -298,11 +300,11 @@ def test_get_metadata_from_filename():
     module = cellprofiler_core.modules.metadata.Metadata()
     module.wants_metadata.value = True
     em = module.extraction_methods[0]
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
-    em.extraction_method.value = cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
-    em.source.value = cellprofiler_core.modules.metadata.XM_FILE_NAME
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
+    em.extraction_method.value = cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
+    em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
     em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
     check(
         module,
@@ -316,11 +318,11 @@ def test_get_metadata_from_path():
     module = cellprofiler_core.modules.metadata.Metadata()
     module.wants_metadata.value = True
     em = module.extraction_methods[0]
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
-    em.extraction_method.value = cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
-    em.source.value = cellprofiler_core.modules.metadata.XM_FOLDER_NAME
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
+    em.extraction_method.value = cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
+    em.source.value = cellprofiler_core.constants.modules.metadata.XM_FOLDER_NAME
     em.folder_regexp.value = r".*[/\\](?P<Plate>.+)$"
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     url = "file:/imaging/analysis/P-12345/_B08_s5_w2.tif"
     check(module, url, [{"Plate": "P-12345"}], ("Plate",))
 
@@ -329,12 +331,12 @@ def test_filter_positive():
     module = cellprofiler_core.modules.metadata.Metadata()
     module.wants_metadata.value = True
     em = module.extraction_methods[0]
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_FILTERED_IMAGES
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_FILTERED_IMAGES
     em.filter.value = 'or (file does contain "B08")'
-    em.extraction_method.value = cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
-    em.source.value = cellprofiler_core.modules.metadata.XM_FILE_NAME
+    em.extraction_method.value = cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
+    em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
     em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
     check(
         module,
@@ -347,12 +349,12 @@ def test_filter_negative():
     module = cellprofiler_core.modules.metadata.Metadata()
     module.wants_metadata.value = True
     em = module.extraction_methods[0]
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_FILTERED_IMAGES
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_FILTERED_IMAGES
     em.filter.value = 'or (file doesnot contain "B08")'
-    em.extraction_method.value = cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
-    em.source.value = cellprofiler_core.modules.metadata.XM_FILE_NAME
+    em.extraction_method.value = cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
+    em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
     em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     url = "file:/imaging/analysis/P-12345_B08_s5_w2.tif"
     check(
         module,
@@ -373,7 +375,7 @@ C10,BRD041618,1.5,2
     try:
         module = cellprofiler_core.modules.metadata.Metadata()
         module.wants_metadata.value = True
-        module.data_type_choice.value = cellprofiler_core.modules.metadata.DTC_CHOOSE
+        module.data_type_choice.value = cellprofiler_core.constants.modules.metadata.DTC_CHOOSE
         module.data_types.value = cellprofiler_core.setting.json.dumps(
             dict(
                 Plate=cellprofiler_core.setting.DataTypes.DT_TEXT,
@@ -386,18 +388,18 @@ C10,BRD041618,1.5,2
         )
         module.add_extraction_method()
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
         )
-        em.source.value = cellprofiler_core.modules.metadata.XM_FILE_NAME
+        em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-Ha-h][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
 
         em = module.extraction_methods[1]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
         )
         directory, filename = os.path.split(path)
         em.csv_location.value = "{}|{}".format(
@@ -448,7 +450,7 @@ C10,BRD041618,1.5,2
         )
         pipeline = cellprofiler_core.pipeline.Pipeline()
         imgs = cellprofiler_core.modules.images.Images()
-        imgs.filter_choice.value = cellprofiler_core.modules.images.FILTER_CHOICE_NONE
+        imgs.filter_choice.value = cellprofiler_core.constants.modules.images.FILTER_CHOICE_NONE
         imgs.module_num = 1
         pipeline.add_module(imgs)
         module.set_module_num(2)
@@ -491,18 +493,18 @@ C10,BRD041618
         module.wants_metadata.value = True
         module.add_extraction_method()
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
         )
-        em.source.value = cellprofiler_core.modules.metadata.XM_FILE_NAME
+        em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-Ha-h][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
 
         em = module.extraction_methods[1]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
         )
         directory, filename = os.path.split(path)
         em.csv_location.value = "{}|{}".format(
@@ -569,18 +571,18 @@ C10,BRD041618
         module.wants_metadata.value = True
         module.add_extraction_method()
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
         )
-        em.source.value = cellprofiler_core.modules.metadata.XM_FILE_NAME
+        em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
 
         em = module.extraction_methods[1]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
         )
         directory, filename = os.path.split(path)
         em.csv_location.value = "{}|{}".format(
@@ -642,21 +644,21 @@ def test_numeric_joining():
         module.data_types.value = cellprofiler_core.setting.DataTypes.encode_data_types(
             {"Site": cellprofiler_core.setting.DataTypes.DT_INTEGER}
         )
-        module.data_type_choice.value = cellprofiler_core.modules.metadata.DTC_CHOOSE
+        module.data_type_choice.value = cellprofiler_core.constants.modules.metadata.DTC_CHOOSE
         module.add_extraction_method()
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
         )
-        em.source.value = cellprofiler_core.modules.metadata.XM_FILE_NAME
+        em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-H][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
 
         em = module.extraction_methods[1]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
         )
         directory, filename = os.path.split(path)
         em.csv_location.value = "{}|{}".format(
@@ -726,18 +728,18 @@ C10,BRD041618,bar
         module.wants_metadata.value = True
         module.add_extraction_method()
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
         )
-        em.source.value = cellprofiler_core.modules.metadata.XM_FILE_NAME
+        em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
         em.file_regexp.value = "^(?P<Plate>[^_]+)_(?P<Well>[A-Ha-h][0-9]{2})_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])"
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
 
         em = module.extraction_methods[1]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
         )
         directory, filename = os.path.split(path)
         em.csv_location.value = "{}|{}".format(
@@ -802,17 +804,17 @@ def test_well_row_column():
         module = cellprofiler_core.modules.metadata.Metadata()
         module.wants_metadata.value = True
         em = module.extraction_methods[0]
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
         )
-        em.source.value = cellprofiler_core.modules.metadata.XM_FILE_NAME
+        em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
         em.file_regexp.value = (
             "^Channel(?P<Wavelength>[1-2])-"
             "(?P<%(row_tag)s>[A-H])-"
             "(?P<%(column_tag)s>[0-9]{2}).tif$"
         ) % locals()
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         url = "file:/imaging/analysis/Channel1-C-05.tif"
         check(
             module,
@@ -828,7 +830,7 @@ def test_well_row_column():
         )
         pipeline = cellprofiler_core.pipeline.Pipeline()
         imgs = cellprofiler_core.modules.images.Images()
-        imgs.filter_choice.value = cellprofiler_core.modules.images.FILTER_CHOICE_NONE
+        imgs.filter_choice.value = cellprofiler_core.constants.modules.images.FILTER_CHOICE_NONE
         imgs.module_num = 1
         pipeline.add_module(imgs)
         module.set_module_num(2)
@@ -846,16 +848,16 @@ def test_well_row_column_before_import():
     module = cellprofiler_core.modules.metadata.Metadata()
     module.wants_metadata.value = True
     em = module.extraction_methods[0]
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
-    em.extraction_method.value = cellprofiler_core.modules.metadata.X_MANUAL_EXTRACTION
-    em.source.value = cellprofiler_core.modules.metadata.XM_FILE_NAME
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
+    em.extraction_method.value = cellprofiler_core.constants.modules.metadata.X_MANUAL_EXTRACTION
+    em.source.value = cellprofiler_core.constants.modules.metadata.XM_FILE_NAME
     em.file_regexp.value = (
         "^Channel(?P<Wavelength>[1-2])-" "(?P<%s>[A-H])-" "(?P<%s>[0-9]{2}).tif$"
     ) % (
         cellprofiler_core.constants.measurement.FTR_ROW,
         cellprofiler_core.constants.measurement.FTR_COLUMN,
     )
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     module.add_extraction_method()
     metadata_csv = """WellName,Treatment
 C05,DMSO
@@ -867,11 +869,11 @@ C05,DMSO
     try:
         em = module.extraction_methods[1]
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
         )
-        em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+        em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
         em.extraction_method.value = (
-            cellprofiler_core.modules.metadata.X_IMPORTED_EXTRACTION
+            cellprofiler_core.constants.modules.metadata.X_IMPORTED_EXTRACTION
         )
         directory, filename = os.path.split(path)
         em.csv_location.value = "{}|{}".format(
@@ -906,9 +908,9 @@ def test_ome_metadata():
     module = cellprofiler_core.modules.metadata.Metadata()
     module.wants_metadata.value = True
     em = module.extraction_methods[0]
-    em.filter_choice.value = cellprofiler_core.modules.metadata.F_ALL_IMAGES
+    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
     em.extraction_method.value = (
-        cellprofiler_core.modules.metadata.X_AUTOMATIC_EXTRACTION
+        cellprofiler_core.constants.modules.metadata.X_AUTOMATIC_EXTRACTION
     )
     url = "file:/imaging/analysis/Channel1-C-05.tif"
     metadata = []

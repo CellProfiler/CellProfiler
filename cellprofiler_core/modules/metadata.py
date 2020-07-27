@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import os
 import re
 import time
@@ -17,6 +15,28 @@ from ..constants.measurement import C_SERIES
 from ..constants.measurement import RESERVED_METADATA_TAGS
 from ..constants.module import FILTER_RULES_BUTTONS_HELP
 from ..constants.module import PROTIP_RECOMMEND_ICON
+from ..constants.modules.metadata import COL_INDEX
+from ..constants.modules.metadata import COL_PATH
+from ..constants.modules.metadata import COL_SERIES
+from ..constants.modules.metadata import DTC_ALL
+from ..constants.modules.metadata import DTC_CHOOSE
+from ..constants.modules.metadata import DTC_TEXT
+from ..constants.modules.metadata import F_ALL_IMAGES
+from ..constants.modules.metadata import F_FILTERED_IMAGES
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT_V1
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT_V2
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT_V3
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_V1
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_V2
+from ..constants.modules.metadata import LEN_EXTRACTION_METHOD
+from ..constants.modules.metadata import LEN_EXTRACTION_METHOD_V1
+from ..constants.modules.metadata import XM_FILE_NAME
+from ..constants.modules.metadata import XM_FOLDER_NAME
+from ..constants.modules.metadata import X_ALL_EXTRACTION_METHODS
+from ..constants.modules.metadata import X_AUTOMATIC_EXTRACTION
+from ..constants.modules.metadata import X_IMPORTED_EXTRACTION
+from ..constants.modules.metadata import X_MANUAL_EXTRACTION
 from ..module import Module
 from ..pipeline import ImagePlane
 from ..pipeline import Pipeline
@@ -40,8 +60,8 @@ from ..setting.filter import Filter
 from ..setting.text import Directory
 from ..setting.text import Filename
 from ..utilities.image import generate_presigned_url
-from ..utilities.image import url_to_modpath
 from ..utilities.image import image_resource
+from ..utilities.image import url_to_modpath
 from ..utilities.measurement import find_metadata_tokens
 
 __doc__ = """\
@@ -165,43 +185,6 @@ Measurements made by this module
 """.format(
     **{"METADATA_DISPLAY_TABLE": image_resource("Metadata_ExampleDisplayTable.png")}
 )
-
-from ..utilities.pathname import url2pathname
-
-X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
-X_MANUAL_EXTRACTION = "Extract from file/folder names"
-X_IMPORTED_EXTRACTION = "Import from file"
-X_ALL_EXTRACTION_METHODS = [
-    X_MANUAL_EXTRACTION,
-    X_IMPORTED_EXTRACTION,
-    X_AUTOMATIC_EXTRACTION,
-]
-XM_FILE_NAME = "File name"
-XM_FOLDER_NAME = "Folder name"
-
-DTC_TEXT = "Text"
-DTC_CHOOSE = "Choose for each"
-DTC_ALL = [DTC_TEXT, DTC_CHOOSE]
-
-F_ALL_IMAGES = "All images"
-F_FILTERED_IMAGES = "Images matching a rule"
-COL_PATH = "Path / URL"
-COL_SERIES = "Series"
-COL_INDEX = "Frame"
-
-"""Index of the extraction method count in the settings"""
-IDX_EXTRACTION_METHOD_COUNT = 3
-IDX_EXTRACTION_METHOD_COUNT_V1 = 1
-IDX_EXTRACTION_METHOD_COUNT_V2 = 1
-IDX_EXTRACTION_METHOD_COUNT_V3 = 1
-"""Index of the first extraction method block in the settings"""
-IDX_EXTRACTION_METHOD = 4
-IDX_EXTRACTION_METHOD_V1 = 2
-IDX_EXTRACTION_METHOD_V2 = 2
-IDX_EXTRACTION_METHOD_V3 = 2
-"""# of settings in an extraction method block"""
-LEN_EXTRACTION_METHOD_V1 = 8
-LEN_EXTRACTION_METHOD = 9
 
 
 class Metadata(Module):
@@ -936,7 +919,7 @@ not being applied, your choice on this setting may be the culprit.
             else:
                 urls = self.pipeline.file_list
             if len(urls) > 0:
-                return url2pathname(urls[0])
+                return urllib.request.url2pathname(urls[0])
         return "PLATE_A01_s1_w11C78E18A-356E-48EC-B204-3F4379DC43AB.tif"
 
     def example_directory_fn(self):
@@ -949,7 +932,7 @@ not being applied, your choice on this setting may be the culprit.
             else:
                 urls = self.pipeline.file_list
             if len(urls) > 0:
-                return url2pathname(urls[0])
+                return urllib.request.url2pathname(urls[0])
         return "/images/2012_01_12"
 
     def change_causes_prepare_run(self, setting):
@@ -1446,8 +1429,8 @@ not being applied, your choice on this setting may be the culprit.
             new_setting_values = setting_values[:IDX_EXTRACTION_METHOD_V1]
             for i in range(n_groups):
                 new_setting_values += setting_values[
-                    (IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * i) : (
-                        IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * (i + 1)
+                                      (IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * i): (
+                                              IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * (i + 1)
                     )
                 ]
                 new_setting_values.append("No")
@@ -1460,8 +1443,8 @@ not being applied, your choice on this setting may be the culprit.
             new_setting_values = setting_values[:IDX_EXTRACTION_METHOD_V2]
             for i in range(n_groups):
                 group = setting_values[
-                    (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * i) : (
-                        IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * (i + 1)
+                        (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * i): (
+                                IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * (i + 1)
                     )
                 ]
                 group[0] = (
@@ -1488,7 +1471,7 @@ not being applied, your choice on this setting may be the culprit.
         if variable_revision_number == 3:
             # Added data types
             setting_values = (
-                setting_values[:IDX_EXTRACTION_METHOD_COUNT_V3]
+                    setting_values[:IDX_EXTRACTION_METHOD_COUNT_V3]
                 + [DTC_TEXT, "{}"]
                 + setting_values[IDX_EXTRACTION_METHOD_COUNT_V3:]
             )

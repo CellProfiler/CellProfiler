@@ -7,17 +7,22 @@ import urllib.request
 import javabridge
 
 from ..constants.module import FILTER_RULES_BUTTONS_HELP
+from ..constants.modules.images import FILTER_CHOICE_ALL
+from ..constants.modules.images import FILTER_CHOICE_CUSTOM
+from ..constants.modules.images import FILTER_CHOICE_IMAGES
+from ..constants.modules.images import FILTER_CHOICE_NONE
+from ..constants.modules.images import FILTER_DEFAULT
 from ..module import Module
-from ..setting.choice import Choice
 from ..setting import FileCollectionDisplay
-from ..setting.filter import Filter
 from ..setting import PathListDisplay
+from ..setting.choice import Choice
 from ..setting.do_something import PathListRefreshButton
 from ..setting.filter import DirectoryPredicate
 from ..setting.filter import ExtensionPredicate
 from ..setting.filter import FilePredicate
-from ..utilities.image import image_resource
+from ..setting.filter import Filter
 from ..utilities.hdf5_dict import HDF5FileList
+from ..utilities.image import image_resource
 from ..utilities.pathname import pathname2url
 
 __doc__ = """\
@@ -150,16 +155,6 @@ particular wavelength.
         "IMG_PANEL_BLANK": image_resource("Images_FilelistPanel_Blank.png"),
         "IMG_PANEL_FILLED": image_resource("Images_FilelistPanel_Filled.png"),
     }
-)
-
-
-FILTER_CHOICE_NONE = "No filtering"
-FILTER_CHOICE_IMAGES = "Images only"
-FILTER_CHOICE_CUSTOM = "Custom"
-FILTER_CHOICE_ALL = [FILTER_CHOICE_NONE, FILTER_CHOICE_IMAGES, FILTER_CHOICE_CUSTOM]
-
-FILTER_DEFAULT = (
-    'and (extension does isimage) (directory doesnot containregexp "[\\\\\\\\/]\\\\.")'
 )
 
 

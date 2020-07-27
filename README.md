@@ -26,9 +26,15 @@
     cellprofiler.core.pipeline
     cellprofiler.core.pipeline.dependency
     cellprofiler.core.pipeline.event
+    cellprofiler.core.pipeline.event.run_exception
     cellprofiler.core.pipeline.io
     cellprofiler.core.preferences
     cellprofiler.core.setting
     cellprofiler.core.utilities
+    cellprofiler.core.utilities.core
+    cellprofiler.core.utilities.core.module
+    cellprofiler.core.utilities.core.modules
+    cellprofiler.core.utilities.core.pipeline
+    cellprofiler.core.utilities.core.workspace
     cellprofiler.core.worker
     cellprofiler.core.workspace

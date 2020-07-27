@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import numpy
 
 from ..constants.measurement import COLTYPE_VARCHAR

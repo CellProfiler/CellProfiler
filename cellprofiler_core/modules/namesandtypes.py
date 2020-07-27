@@ -188,7 +188,7 @@ Measurements made by this module
 )
 
 from ..setting.text import Float, FileImageName, LabelName
-from ..utilities.core.module._identify import (
+from ..utilities.core.module.identify import (
     add_object_location_measurements,
     add_object_location_measurements_ijv,
     add_object_count_measurements,

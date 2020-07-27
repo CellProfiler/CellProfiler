@@ -1,6 +1,7 @@
 from ._module import Module
 from ..image import Image
 from ..setting.subscriber import ImageSubscriber
+from ..setting.text import ImageName
 
 
 class ImageProcessing(Module):

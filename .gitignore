@@ -1,6 +1,7 @@
 *.egg-info/
 *.iml
 *.pyc
+*.sqlite3
 *.swp
 *venv/
 .DS_Store

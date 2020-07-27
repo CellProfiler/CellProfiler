@@ -2,8 +2,9 @@ import hashlib
 
 import numpy
 
+from ..image import Image
 from ..module import Module
-from ..setting.text.alphanumeric.name._name import Name
+from ..setting import Name
 
 
 class InjectImage(Module):

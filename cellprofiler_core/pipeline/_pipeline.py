@@ -17,14 +17,86 @@ import uuid
 import bioformats.formatreader
 import numpy
 
-import cellprofiler_core.constants.measurement
-import cellprofiler_core.constants.pipeline
-import cellprofiler_core.constants.workspace
-import cellprofiler_core.utilities.measurement
+from . import read_file_list
+from ._image_plane import ImagePlane
+from ._listener import Listener
+from .dependency import ImageDependency
+from .dependency import MeasurementDependency
+from .dependency import ObjectDependency
+from .event import CancelledException
+from .event import EndRun
+from .event import FileWalkEnded
+from .event import IPDLoadException
+from .event import LoadException
+from .event import ModuleAdded
+from .event import ModuleDisabled
+from .event import ModuleEdited
+from .event import ModuleEnabled
+from .event import ModuleMoved
+from .event import ModuleRemoved
+from .event import ModuleShowWindow
+from .event import PipelineLoaded
+from .event import PostRunException
+from .event import PrepareRunError
+from .event import PrepareRunException
+from .event import RunException
+from .event import URLsAdded
+from .event import URLsRemoved
+from ..constants.measurement import COLTYPE_INTEGER
+from ..constants.measurement import COLTYPE_LONGBLOB
+from ..constants.measurement import COLTYPE_VARCHAR
+from ..constants.measurement import C_CHANNEL
+from ..constants.measurement import C_FRAME
+from ..constants.measurement import C_METADATA
+from ..constants.measurement import C_OBJECTS_CHANNEL
+from ..constants.measurement import C_OBJECTS_FRAME
+from ..constants.measurement import C_OBJECTS_SERIES
+from ..constants.measurement import C_OBJECTS_URL
+from ..constants.measurement import C_SERIES
+from ..constants.measurement import C_URL
+from ..constants.measurement import EXPERIMENT
+from ..constants.measurement import IMAGE
+from ..constants.measurement import IMAGE_NUMBER
+from ..constants.measurement import MCA_AVAILABLE_POST_RUN
+from ..constants.pipeline import DIRECTION_DOWN
+from ..constants.pipeline import DIRECTION_UP
+from ..constants.pipeline import EXIT_STATUS
+from ..constants.pipeline import GROUP_INDEX
+from ..constants.pipeline import GROUP_NUMBER
+from ..constants.pipeline import H_DATE_REVISION
+from ..constants.pipeline import H_GIT_HASH
+from ..constants.pipeline import H_HAS_IMAGE_PLANE_DETAILS
+from ..constants.pipeline import H_MESSAGE_FOR_USER
+from ..constants.pipeline import H_MODULE_COUNT
+from ..constants.pipeline import H_SVN_REVISION
+from ..constants.pipeline import M_MODIFICATION_TIMESTAMP
+from ..constants.pipeline import M_PIPELINE
+from ..constants.pipeline import M_TIMESTAMP
+from ..constants.pipeline import M_USER_PIPELINE
+from ..constants.pipeline import M_VERSION
+from ..constants.pipeline import NATIVE_VERSION
+from ..constants.pipeline import SAD_PROOFPOINT_COOKIE
+from ..constants.workspace import DISPOSITION_CANCEL
+from ..constants.workspace import DISPOSITION_PAUSE
+from ..constants.workspace import DISPOSITION_SKIP
+from ..image import ImageSetList
+from ..measurement import Measurements
+from ..object import ObjectSet
+from ..preferences import get_headless
+from ..preferences import report_progress
+from ..setting import ExternalImageSubscriber
+from ..setting import ImageSubscriber
+from ..setting import Name
+from ..utilities.measurement import load_measurements
+from ..workspace import Workspace
 
 
 def _is_fp(x):
     return hasattr(x, "seek") and hasattr(x, "read")
+
+
+class ExternalImageNameSubscriber(object):
+    pass
 
 
 class Pipeline:
@@ -159,9 +231,7 @@ class Pipeline:
         fd.seek(0)
         if header.startswith("CellProfiler Pipeline: http://www.cellprofiler.org"):
             return True
-        if re.search(
-            cellprofiler_core.constants.pipeline.SAD_PROOFPOINT_COOKIE, header
-        ):
+        if re.search(SAD_PROOFPOINT_COOKIE, header):
             logging.info('print_emoji(":cat_crying_because_of_proofpoint:")')
             return True
         return False
@@ -222,10 +292,8 @@ class Pipeline:
             os.unlink(filename)
             return
         else:
-            m = cellprofiler_core.utilities.measurement.load_measurements(filename)
-            pipeline_text = m.get_experiment_measurement(
-                cellprofiler_core.constants.pipeline.M_PIPELINE
-            )
+            m = load_measurements(filename)
+            pipeline_text = m.get_experiment_measurement(M_PIPELINE)
             pipeline_text = pipeline_text
             self.load(io.StringIO(pipeline_text))
             return
@@ -268,7 +336,7 @@ class Pipeline:
         new_modules = self.setup_modules(fd, count, raise_on_error)
         if details:
             self.clear_urls(add_undo=False)
-            self.__file_list = cellprofiler_core.pipeline.read_file_list(fd)
+            self.__file_list = read_file_list(fd)
             self.__filtered_file_list_images_settings = None
         self.__modules = new_modules
         self.__settings = [
@@ -276,22 +344,20 @@ class Pipeline:
         ]
         for module in self.modules(False):
             module.post_pipeline_load(self)
-        self.notify_listeners(cellprofiler_core.pipeline.event.PipelineLoaded())
+        self.notify_listeners(PipelineLoaded())
         if details:
-            self.notify_listeners(
-                cellprofiler_core.pipeline.event.URLsAdded(self.__file_list)
-            )
+            self.notify_listeners(URLsAdded(self.__file_list))
         self.__undo_stack = []
         return checksum, version
 
     def validate_pipeline_file(self, fd, module_count):
-        version = cellprofiler_core.constants.pipeline.NATIVE_VERSION
+        version = NATIVE_VERSION
         do_deprecated_utf16_decode = False
         do_utf16_decode = False
         has_image_plane_details = False
         git_hash = None
         pipeline_version = cellprofiler_core.__version__
-        CURRENT_VERSION = None
+        cellprofiler_core.pipeline.CURRENT_VERSION = None
         while True:
             line = readline(fd)
 
@@ -308,10 +374,10 @@ class Pipeline:
 
             if kwd == "Version":
                 version = int(value)
-                if version > cellprofiler_core.constants.pipeline.NATIVE_VERSION:
+                if version > NATIVE_VERSION:
                     raise ValueError(
                         "Pipeline file version is {}.\nCellProfiler can only read version {} or less.\nPlease upgrade to the latest version of CellProfiler.".format(
-                            version, cellprofiler_core.constants.pipeline.NATIVE_VERSION
+                            version, NATIVE_VERSION
                         )
                     )
                 elif 1 < version < 4:
@@ -320,22 +386,19 @@ class Pipeline:
                     do_utf16_decode = True
                 elif version == 5:
                     pass
-            elif kwd in (
-                cellprofiler_core.constants.pipeline.H_SVN_REVISION,
-                cellprofiler_core.constants.pipeline.H_DATE_REVISION,
-            ):
+            elif kwd in (H_SVN_REVISION, H_DATE_REVISION,):
                 pipeline_version = int(value)
                 cellprofiler_core.pipeline.CURRENT_VERSION = int(
                     re.sub(r"\.|rc\d", "", cellprofiler_core.__version__)
                 )
-            elif kwd == cellprofiler_core.constants.pipeline.H_MODULE_COUNT:
+            elif kwd == H_MODULE_COUNT:
                 module_count = int(value)
-            elif kwd == cellprofiler_core.constants.pipeline.H_HAS_IMAGE_PLANE_DETAILS:
+            elif kwd == H_HAS_IMAGE_PLANE_DETAILS:
                 has_image_plane_details = value == "True"
-            elif kwd == cellprofiler_core.constants.pipeline.H_MESSAGE_FOR_USER:
+            elif kwd == H_MESSAGE_FOR_USER:
                 value = value
                 self.caption_for_user, self.message_for_user = value.split("|", 1)
-            elif kwd == cellprofiler_core.constants.pipeline.H_GIT_HASH:
+            elif kwd == H_GIT_HASH:
                 git_hash = value
             else:
                 print(line)
@@ -368,7 +431,7 @@ class Pipeline:
             self.respond_to_version_mismatch_error(message)
         else:
             if (
-                not cellprofiler_core.preferences.get_headless()
+                not get_headless()
             ) and pipeline_version < cellprofiler_core.pipeline.CURRENT_VERSION:
                 if git_hash is not None:
                     message = (
@@ -462,9 +525,7 @@ class Pipeline:
                 if raise_on_error:
                     raise
                 logging.error("Failed to load pipeline", exc_info=True)
-                event = cellprofiler_core.pipeline.event.LoadException(
-                    instance, module, module_name, settings
-                )
+                event = LoadException(instance, module, module_name, settings)
                 self.notify_listeners(event)
                 if event.cancel_run:
                     break
@@ -526,7 +587,7 @@ class Pipeline:
         return module
 
     def dump(self, fp, save_image_plane_details=True):
-        cellprofiler_core.pipeline.dump(self, fp, save_image_plane_details)
+        dump(self, fp, save_image_plane_details)
 
     def save_pipeline_notes(self, fd, indent=2):
         """Save pipeline notes to a text file
@@ -557,15 +618,11 @@ class Pipeline:
                         by the UI for the user for cases like a pipeline
                         created by CreateBatchFiles.
         """
-        assert isinstance(m, cellprofiler_core.measurement.Measurements)
+        assert isinstance(m, Measurements)
         fd = io.StringIO()
         self.dump(fd, save_image_plane_details=False)
         m.add_measurement(
-            cellprofiler_core.constants.measurement.EXPERIMENT,
-            cellprofiler_core.constants.pipeline.M_USER_PIPELINE
-            if user_pipeline
-            else cellprofiler_core.constants.pipeline.M_PIPELINE,
-            fd.getvalue(),
+            EXPERIMENT, M_USER_PIPELINE if user_pipeline else M_PIPELINE, fd.getvalue(),
         )
 
     def clear_measurements(self, m):
@@ -586,10 +643,7 @@ class Pipeline:
         result = []
         for module in self.modules():
             for setting in module.settings():
-                if isinstance(
-                    setting,
-                    cellprofiler_core.setting._text.alphanumeric.name.image._external.ExternalImageSubscriber,
-                ):
+                if isinstance(setting, ExternalImageSubscriber,):
                     result.append(setting.value)
         return result
 
@@ -597,9 +651,7 @@ class Pipeline:
         result = []
         for module in self.modules():
             for setting in module.settings():
-                if isinstance(
-                    setting, cellprofiler_core.setting.ExternalImageNameSubscriber
-                ):
+                if isinstance(setting, ExternalImageNameSubscriber):
                     result.append(setting.value)
         return result
 
@@ -643,19 +695,17 @@ class Pipeline:
             )
 
         # Create image set from provided dict
-        image_set_list = cellprofiler_core.image.ImageSetList()
+        image_set_list = ImageSetList()
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
-            image_set.add(
-                image_name, cellprofiler_core.image.ImageSubscriber(input_pixels)
-            )
-        object_set = cellprofiler_core.object.ObjectSet()
-        measurements = cellprofiler_core.measurement.Measurements()
+            image_set.add(image_name, ImageSubscriber(input_pixels))
+        object_set = ObjectSet()
+        measurements = Measurements()
 
         # Run the modules
         for module in self.modules():
-            workspace = cellprofiler_core.workspace.Workspace(
+            workspace = Workspace(
                 self, module, image_set, object_set, measurements, image_set_list
             )
             self.run_module(module, workspace)
@@ -687,7 +737,7 @@ class Pipeline:
                    grouping to run or None to run all groupings
         measurements_filename - name of file to use for measurements
         """
-        measurements = cellprofiler_core.measurement.Measurements(
+        measurements = Measurements(
             image_set_start=image_set_start,
             filename=measurements_filename,
             copy=initial_measurements,
@@ -744,25 +794,13 @@ class Pipeline:
 
                 if initial_measurements is not None and all(
                     [
-                        initial_measurements.has_feature(
-                            cellprofiler_core.constants.measurement.IMAGE, f
-                        )
-                        for f in (
-                            cellprofiler_core.constants.pipeline.GROUP_NUMBER,
-                            cellprofiler_core.constants.pipeline.GROUP_INDEX,
-                        )
+                        initial_measurements.has_feature(IMAGE, f)
+                        for f in (GROUP_NUMBER, GROUP_INDEX,)
                     ]
                 ):
                     group_number, group_index = [
-                        initial_measurements[
-                            cellprofiler_core.constants.measurement.IMAGE,
-                            f,
-                            image_number,
-                        ]
-                        for f in (
-                            cellprofiler_core.constants.pipeline.GROUP_NUMBER,
-                            cellprofiler_core.constants.pipeline.GROUP_INDEX,
-                        )
+                        initial_measurements[IMAGE, f, image_number,]
+                        for f in (GROUP_NUMBER, GROUP_INDEX,)
                     ]
                 else:
                     group_number = gn + 1
@@ -804,7 +842,7 @@ class Pipeline:
         Run the pipeline, returning the measurements made
         """
 
-        can_display = not cellprofiler_core.preferences.get_headless()
+        can_display = not get_headless()
 
         columns = self.get_measurement_columns()
 
@@ -817,13 +855,13 @@ class Pipeline:
             assert isinstance(image_set_end, int), "Image set end must be an integer"
 
         if initial_measurements is None:
-            measurements = cellprofiler_core.measurement.Measurements(image_set_start)
+            measurements = Measurements(image_set_start)
         else:
             measurements = initial_measurements
 
-        image_set_list = cellprofiler_core.image.ImageSetList()
+        image_set_list = ImageSetList()
 
-        workspace = cellprofiler_core.workspace.Workspace(
+        workspace = Workspace(
             self, None, None, None, measurements, image_set_list, frame
         )
 
@@ -855,15 +893,10 @@ class Pipeline:
                     if grouping_keys != grouping:
                         to_remove += list(grouping_image_numbers)
 
-            if len(to_remove) > 0 and measurements.has_feature(
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
-            ):
+            if len(to_remove) > 0 and measurements.has_feature("Image", IMAGE_NUMBER,):
                 for image_number in numpy.unique(to_remove):
                     measurements.remove_measurement(
-                        cellprofiler_core.constants.measurement.IMAGE,
-                        cellprofiler_core.constants.pipeline.IMAGE_NUMBER,
-                        image_number,
+                        "Image", IMAGE_NUMBER, image_number,
                     )
 
             # Keep track of progress for the benefit of the progress window.
@@ -888,9 +921,7 @@ class Pipeline:
             for group_number, group_index, image_number, closure in __group:
                 if image_number is None:
                     if not closure(workspace):
-                        measurements.add_experiment_measurement(
-                            cellprofiler_core.constants.pipeline.EXIT_STATUS, "Failure"
-                        )
+                        measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
 
                         return
 
@@ -925,7 +956,7 @@ class Pipeline:
 
                 slot_number = 0
 
-                object_set = cellprofiler_core.object.ObjectSet()
+                object_set = ObjectSet()
 
                 image_set = measurements
 
@@ -957,7 +988,7 @@ class Pipeline:
 
                     frame_if_shown = frame if module.show_window else None
 
-                    workspace = cellprofiler_core.workspace.Workspace(
+                    workspace = Workspace(
                         self,
                         module,
                         image_set,
@@ -1038,9 +1069,7 @@ class Pipeline:
                     failure = 0
 
                     if exception is not None:
-                        event = cellprofiler_core.pipeline.event.RunException(
-                            exception, module, tb
-                        )
+                        event = RunException(exception, module, tb)
 
                         self.notify_listeners(event)
 
@@ -1048,9 +1077,7 @@ class Pipeline:
                             return
                         elif event.skip_thisset:
                             # Skip this image, continue to others
-                            workspace.set_disposition(
-                                cellprofiler_core.constants.workspace.DISPOSITION_SKIP
-                            )
+                            workspace.set_disposition(DISPOSITION_SKIP)
 
                             should_write_measurements = False
 
@@ -1071,27 +1098,17 @@ class Pipeline:
                         )
 
                     while (
-                        workspace.disposition
-                        == cellprofiler_core.constants.workspace.DISPOSITION_PAUSE
-                        and frame is not None
+                        workspace.disposition == DISPOSITION_PAUSE and frame is not None
                     ):
                         # try to leave measurements temporary file in a readable state
                         measurements.flush()
 
                         yield measurements
 
-                    if (
-                        workspace.disposition
-                        == cellprofiler_core.constants.workspace.DISPOSITION_SKIP
-                    ):
+                    if workspace.disposition == DISPOSITION_SKIP:
                         break
-                    elif (
-                        workspace.disposition
-                        == cellprofiler_core.constants.workspace.DISPOSITION_CANCEL
-                    ):
-                        measurements.add_experiment_measurement(
-                            cellprofiler_core.constants.pipeline.EXIT_STATUS, "Failure"
-                        )
+                    elif workspace.disposition == DISPOSITION_CANCEL:
+                        measurements.add_experiment_measurement(EXIT_STATUS, "Failure")
 
                         return
 
@@ -1100,7 +1117,7 @@ class Pipeline:
             # by freeing up memory and resources.
             bioformats.formatreader.clear_image_reader_cache()
             if measurements is not None:
-                workspace = cellprofiler_core.workspace.Workspace(
+                workspace = Workspace(
                     self, None, None, None, measurements, image_set_list, frame
                 )
 
@@ -1109,9 +1126,7 @@ class Pipeline:
                 #
                 # Record the status after post_run
                 #
-                measurements.add_experiment_measurement(
-                    cellprofiler_core.constants.pipeline.EXIT_STATUS, exit_status
-                )
+                measurements.add_experiment_measurement(EXIT_STATUS, exit_status)
         finally:
             if measurements is not None:
                 # XXX - We want to force the measurements to update the
@@ -1146,14 +1161,12 @@ class Pipeline:
         """
         measurements.next_image_set(image_set_number)
         measurements.group_number = measurements[
-            cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.pipeline.GROUP_NUMBER,
+            "Image", GROUP_NUMBER,
         ]
         measurements.group_index = measurements[
-            cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.pipeline.GROUP_INDEX,
+            "Image", GROUP_INDEX,
         ]
-        object_set = cellprofiler_core.object.ObjectSet()
+        object_set = ObjectSet()
         image_set = measurements
         measurements.clear_cache()
         for provider in measurements.providers:
@@ -1165,7 +1178,7 @@ class Pipeline:
             print("Running module", module.module_name, module.module_num)
             if module.should_stop_writing_measurements():
                 should_write_measurements = False
-            workspace = cellprofiler_core.workspace.Workspace(
+            workspace = Workspace(
                 self,
                 module,
                 image_set,
@@ -1187,7 +1200,7 @@ class Pipeline:
                 self.run_module(module, workspace)
                 if module.show_window:
                     display_handler(module, workspace.display_data, image_set_number)
-            except cellprofiler_core.pipeline.CancelledException:
+            except CancelledException:
                 # Analysis worker interaction handler is telling us that
                 # the UI has cancelled the run. Forward exception upward.
                 raise
@@ -1200,12 +1213,10 @@ class Pipeline:
                 )
                 if should_write_measurements:
                     measurements[
-                        cellprofiler_core.constants.measurement.IMAGE,
+                        "Image",
                         "ModuleError_%02d%s" % (module.module_num, module.module_name),
                     ] = 1
-                evt = cellprofiler_core.pipeline.event.RunException(
-                    exception, module, sys.exc_info()[2]
-                )
+                evt = RunException(exception, module, sys.exc_info()[2])
                 self.notify_listeners(evt)
                 if evt.cancel_run or evt.skip_thisset:
                     # actual cancellation or skipping handled upstream.
@@ -1232,27 +1243,24 @@ class Pipeline:
             #  have already completed. So we don't report them for it.
             if should_write_measurements:
                 measurements[
-                    cellprofiler_core.constants.measurement.IMAGE,
+                    "Image",
                     "ModuleError_%02d%s" % (module.module_num, module.module_name),
                 ] = 0
                 measurements[
-                    cellprofiler_core.constants.measurement.IMAGE,
+                    "Image",
                     "ExecutionTime_%02d%s" % (module.module_num, module.module_name),
                 ] = cpu_delta_secs
 
             measurements.flush()
-            if (
-                workspace.disposition
-                == cellprofiler_core.constants.workspace.DISPOSITION_SKIP
-            ):
+            if workspace.disposition == DISPOSITION_SKIP:
                 break
-        return cellprofiler_core.workspace.Workspace(
+        return Workspace(
             self, None, measurements, object_set, measurements, None, outlines=outlines
         )
 
     def end_run(self):
         """Tell everyone that a run is ending"""
-        self.notify_listeners(cellprofiler_core.pipeline.event.EndRun())
+        self.notify_listeners(EndRun())
 
     def run_group_with_yield(
         self, workspace, grouping, image_numbers, stop_module, title, message
@@ -1287,10 +1295,10 @@ class Pipeline:
             for i, image_number in enumerate(image_numbers):
                 m.image_set_number = image_number
                 image_set = m
-                object_set = cellprofiler_core.object.ObjectSet()
+                object_set = ObjectSet()
                 old_providers = list(image_set.providers)
                 for module in pipeline.modules():
-                    w = cellprofiler_core.workspace.Workspace(
+                    w = Workspace(
                         self, module, image_set, object_set, m, image_set_list
                     )
                     if module == stop_module:
@@ -1329,15 +1337,13 @@ class Pipeline:
 
         Write the pipeline, version # and timestamp.
         """
-        assert isinstance(m, cellprofiler_core.measurement.Measurements)
+        assert isinstance(m, Measurements)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(
-            cellprofiler_core.constants.pipeline.M_VERSION,
-            cellprofiler_core.__version__,
+            M_VERSION, cellprofiler_core.__version__,
         )
         m.add_experiment_measurement(
-            cellprofiler_core.constants.pipeline.M_TIMESTAMP,
-            datetime.datetime.now().isoformat(),
+            M_TIMESTAMP, datetime.datetime.now().isoformat(),
         )
         m.flush()
 
@@ -1365,18 +1371,16 @@ class Pipeline:
 
         end_module - if present, terminate before executing this module
         """
-        assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
+        assert isinstance(workspace, Workspace)
         m = workspace.measurements
         if self.has_legacy_loaders():
             # Legacy - there may be cached group number/group index
             #          image measurements which may be incorrect.
             m.remove_measurement(
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.pipeline.GROUP_INDEX,
+                "Image", GROUP_INDEX,
             )
             m.remove_measurement(
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.pipeline.GROUP_NUMBER,
+                "Image", GROUP_NUMBER,
             )
         self.write_experiment_measurements(m)
 
@@ -1384,11 +1388,11 @@ class Pipeline:
 
         def on_pipeline_event(pipeline, event):
             nonlocal prepare_run_error_detected
-            if isinstance(event, cellprofiler_core.pipeline.event.PrepareRunError):
+            if isinstance(event, PrepareRunError):
                 prepare_run_error_detected = True
 
         had_image_sets = False
-        with cellprofiler_core.pipeline.Listener(self, on_pipeline_event):
+        with Listener(self, on_pipeline_event):
             for module in self.modules():
                 if module == end_module:
                     break
@@ -1408,9 +1412,7 @@ class Pipeline:
                         module.module_name,
                         exc_info=True,
                     )
-                    event = cellprofiler_core.pipeline.event.run_exception.PrepareRunException(
-                        instance, module, sys.exc_info()[2]
-                    )
+                    event = PrepareRunException(instance, module, sys.exc_info()[2])
                     self.notify_listeners(event)
                     if event.cancel_run:
                         self.clear_measurements(workspace.measurements)
@@ -1425,10 +1427,7 @@ class Pipeline:
                 )
             return False
 
-        if not m.has_feature(
-            cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.pipeline.GROUP_NUMBER,
-        ):
+        if not m.has_feature("Image", GROUP_NUMBER,):
             # Legacy pipelines don't populate group # or index
             key_names, groupings = self.get_groupings(workspace)
             image_numbers = m.get_image_numbers()
@@ -1441,14 +1440,10 @@ class Pipeline:
                 group_numbers[iii] = i + 1
                 group_indexes[iii] = numpy.arange(len(iii)) + 1
             m.add_all_measurements(
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.pipeline.GROUP_NUMBER,
-                group_numbers,
+                "Image", GROUP_NUMBER, group_numbers,
             )
             m.add_all_measurements(
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.pipeline.GROUP_INDEX,
-                group_indexes,
+                "Image", GROUP_INDEX, group_indexes,
             )
             #
             # The grouping for legacy pipelines may not be monotonically
@@ -1500,7 +1495,7 @@ class Pipeline:
 
         if len(args) == 3:
             measurements, image_set_list, frame = args
-            workspace = cellprofiler_core.workspace.Workspace(
+            workspace = Workspace(
                 self, None, None, None, measurements, image_set_list, frame
             )
         else:
@@ -1515,9 +1510,7 @@ class Pipeline:
                     % module.module_name,
                     exc_info=True,
                 )
-                event = cellprofiler_core.pipeline.event.PostRunException(
-                    instance, module, sys.exc_info()[2]
-                )
+                event = PostRunException(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return "Failure"
@@ -1535,8 +1528,7 @@ class Pipeline:
                         exc_info=True,
                     )
         workspace.measurements.add_experiment_measurement(
-            cellprofiler_core.constants.pipeline.M_MODIFICATION_TIMESTAMP,
-            datetime.datetime.now().isoformat(),
+            M_MODIFICATION_TIMESTAMP, datetime.datetime.now().isoformat(),
         )
 
         return "Complete"
@@ -1567,9 +1559,7 @@ class Pipeline:
                     module.module_name,
                     exc_info=True,
                 )
-                event = cellprofiler_core.pipeline.event.RunException(
-                    instance, module, sys.exc_info()[2]
-                )
+                event = RunException(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return
@@ -1626,17 +1616,8 @@ class Pipeline:
         current_metadata = []
         for column in columns:
             object_name, feature, coltype = column[:3]
-            if (
-                object_name == cellprofiler_core.constants.measurement.IMAGE
-                and feature.startswith(
-                    cellprofiler_core.constants.measurement.C_METADATA
-                )
-            ):
-                current_metadata.append(
-                    feature[
-                        (len(cellprofiler_core.constants.measurement.C_METADATA) + 1) :
-                    ]
-                )
+            if object_name == "Image" and feature.startswith(C_METADATA):
+                current_metadata.append(feature[(len(C_METADATA) + 1) :])
 
         m = re.findall("\\(\\?[<](.+?)[>]\\)", pattern)
         if not m:
@@ -1646,13 +1627,7 @@ class Pipeline:
                 filter(
                     (
                         lambda x: not any(
-                            [
-                                x.startswith(y)
-                                for y in (
-                                    cellprofiler_core.constants.measurement.C_SERIES,
-                                    cellprofiler_core.constants.measurement.C_FRAME,
-                                )
-                            ]
+                            [x.startswith(y) for y in (C_SERIES, C_FRAME,)]
                         )
                     ),
                     m,
@@ -1680,9 +1655,7 @@ class Pipeline:
                     module.module_name,
                     exc_info=True,
                 )
-                event = cellprofiler_core.pipeline.event.RunException(
-                    instance, module, sys.exc_info()[2]
-                )
+                event = RunException(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
@@ -1704,9 +1677,7 @@ class Pipeline:
                     % module.module_name,
                     exc_info=True,
                 )
-                event = cellprofiler_core.pipeline.event.RunException(
-                    instance, module, sys.exc_info()[2]
-                )
+                event = RunException(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
@@ -1755,7 +1726,7 @@ class Pipeline:
         try:
             while len(self.__modules) > 0:
                 self.remove_module(self.__modules[-1].module_num)
-            self.notify_listeners(cellprofiler_core.pipeline.event.PipelineCleared())
+            self.notify_listeners(PipelineCleared())
             self.init_modules()
         finally:
             self.stop_undoable_action()
@@ -1772,7 +1743,7 @@ class Pipeline:
 
         for i, module in enumerate((Images(), Metadata(), NamesAndTypes(), Groups())):
             module.set_module_num(i + 1)
-            module.show_window = cellprofiler_core.preferences.get_headless()
+            module.show_window = get_headless()
             self.add_module(module)
 
     def move_module(self, module_num, direction):
@@ -1782,7 +1753,7 @@ class Pipeline:
         the other modules in the list
         """
         idx = module_num - 1
-        if direction == cellprofiler_core.constants.pipeline.DIRECTION_DOWN:
+        if direction == DIRECTION_DOWN:
             if module_num >= len(self.__modules):
                 raise ValueError(
                     "%(module_num)d is at or after the last module in the pipeline and can"
@@ -1798,7 +1769,7 @@ class Pipeline:
             next_settings = self.__settings[idx + 1]
             self.__settings[idx + 1] = self.__settings[idx]
             self.__settings[idx] = next_settings
-        elif direction == cellprofiler_core.constants.pipeline.DIRECTION_UP:
+        elif direction == DIRECTION_UP:
             if module_num <= 1:
                 raise ValueError(
                     "The module is at the top of the pipeline and can" "t move up"
@@ -1815,18 +1786,12 @@ class Pipeline:
             self.__settings[idx] = prev_settings
         else:
             raise ValueError("Unknown direction: %s" % direction)
-        self.notify_listeners(
-            cellprofiler_core.pipeline.event.ModuleMoved(
-                new_module_num, direction, False
-            )
-        )
+        self.notify_listeners(ModuleMoved(new_module_num, direction, False))
 
         def undo():
             self.move_module(
                 module.module_num,
-                cellprofiler_core.constants.pipeline.DIRECTION_DOWN
-                if direction == cellprofiler_core.constants.pipeline.DIRECTION_UP
-                else cellprofiler_core.constants.pipeline.DIRECTION_UP,
+                DIRECTION_DOWN if direction == DIRECTION_UP else DIRECTION_UP,
             )
 
         message = "Move %s %s" % (module.module_name, direction)
@@ -1841,7 +1806,7 @@ class Pipeline:
             )
             return
         module.enabled = True
-        self.notify_listeners(cellprofiler_core.pipeline.event.ModuleEnabled(module))
+        self.notify_listeners(ModuleEnabled(module))
 
         def undo():
             self.disable_module(module)
@@ -1857,7 +1822,7 @@ class Pipeline:
                 % module.module_name
             )
         module.enabled = False
-        self.notify_listeners(cellprofiler_core.pipeline.event.ModuleDisabled(module))
+        self.notify_listeners(ModuleDisabled(module))
 
         def undo():
             self.enable_module(module)
@@ -1874,9 +1839,7 @@ class Pipeline:
         """
         if state != module.show_window:
             module.show_window = state
-            self.notify_listeners(
-                cellprofiler_core.pipeline.event.ModuleShowWindow(module)
-            )
+            self.notify_listeners(ModuleShowWindow(module))
 
             def undo():
                 self.show_module_window(module, not state)
@@ -1906,21 +1869,19 @@ class Pipeline:
                 else:
                     filename = path
                 filename = urllib.request.url2pathname(filename)
-                cellprofiler_core.preferences.report_progress(
-                    uid, float(i) / n, "Adding %s" % filename
-                )
+                report_progress(uid, float(i) / n, "Adding %s" % filename)
             pos = bisect.bisect_left(self.__file_list, url, start)
             if pos == len(self.file_list) or self.__file_list[pos] != url:
                 real_list.append(url)
                 self.__file_list.insert(pos, url)
             start = pos
         if n > 0:
-            cellprofiler_core.preferences.report_progress(uid, 1, "Done")
+            report_progress(uid, 1, "Done")
         # Invalidate caches
         self.__file_list_generation = uid
         self.__filtered_file_list_images_settings = None
         self.__image_plane_details_metadata_settings = None
-        self.notify_listeners(cellprofiler_core.pipeline.event.URLsAdded(real_list))
+        self.notify_listeners(URLsAdded(real_list))
         if add_undo:
 
             def undo():
@@ -1943,9 +1904,7 @@ class Pipeline:
             self.__image_plane_details_metadata_settings = None
             self.__image_plane_details = []
             self.__file_list_generation = uuid.uuid4()
-            self.notify_listeners(
-                cellprofiler_core.pipeline.event.URLsRemoved(real_list)
-            )
+            self.notify_listeners(URLsRemoved(real_list))
 
             def undo():
                 self.add_urls(real_list, False)
@@ -1960,9 +1919,7 @@ class Pipeline:
             self.__filtered_file_list_images_settings = None
             self.__image_plane_details_metadata_settings = None
             self.__image_plane_details = []
-            self.notify_listeners(
-                cellprofiler_core.pipeline.event.URLsRemoved(old_urls)
-            )
+            self.notify_listeners(URLsRemoved(old_urls))
             if add_undo:
 
                 def undo():
@@ -1981,9 +1938,7 @@ class Pipeline:
             urls = file_list.get_filelist()
         except Exception as instance:
             logging.error("Failed to get file list from workspace", exc_info=True)
-            x = cellprofiler_core.pipeline.event.IPDLoadException(
-                "Failed to get file list from workspace"
-            )
+            x = IPDLoadException("Failed to get file list from workspace")
             self.notify_listeners(x)
             if x.cancel_run:
                 raise instance
@@ -2192,16 +2147,11 @@ class Pipeline:
         if end_module is not None:
             end_module_idx = self.modules().index(end_module)
             end_module = pipeline.modules()[end_module_idx]
-        temp_measurements = cellprofiler_core.measurement.Measurements(mode="memory")
+        temp_measurements = Measurements(mode="memory")
         new_workspace = None
         try:
-            new_workspace = cellprofiler_core.workspace.Workspace(
-                pipeline,
-                None,
-                None,
-                None,
-                temp_measurements,
-                cellprofiler_core.image.ImageSetList(),
+            new_workspace = Workspace(
+                pipeline, None, None, None, temp_measurements, ImageSetList(),
             )
             new_workspace.set_file_list(workspace.file_list)
             pipeline.prepare_run(new_workspace, end_module)
@@ -2214,11 +2164,7 @@ class Pipeline:
             if len(all_image_numbers) == 0:
                 return iscds, metadata_key_names, {}
             metadata_columns = [
-                temp_measurements.get_measurement(
-                    cellprofiler_core.constants.measurement.IMAGE,
-                    feature,
-                    all_image_numbers,
-                )
+                temp_measurements.get_measurement("Image", feature, all_image_numbers,)
                 for feature in metadata_key_names
             ]
 
@@ -2228,57 +2174,29 @@ class Pipeline:
                 else:
                     category = image_category
                 feature_name = "_".join((category, iscd.name))
-                if feature_name in temp_measurements.get_feature_names(
-                    cellprofiler_core.constants.measurement.IMAGE
-                ):
+                if feature_name in temp_measurements.get_feature_names("Image"):
                     return temp_measurements.get_measurement(
-                        cellprofiler_core.constants.measurement.IMAGE,
-                        feature_name,
-                        all_image_numbers,
+                        "Image", feature_name, all_image_numbers,
                     )
                 else:
                     return [None] * len(all_image_numbers)
 
-            url_columns = [
-                get_column(
-                    cellprofiler_core.constants.measurement.C_URL,
-                    cellprofiler_core.constants.measurement.C_OBJECTS_URL,
-                    iscd,
-                )
-                for iscd in iscds
-            ]
+            url_columns = [get_column(C_URL, C_OBJECTS_URL, iscd,) for iscd in iscds]
             series_columns = [
-                get_column(
-                    cellprofiler_core.constants.measurement.C_SERIES,
-                    cellprofiler_core.constants.measurement.C_OBJECTS_SERIES,
-                    iscd,
-                )
-                for iscd in iscds
+                get_column(C_SERIES, C_OBJECTS_SERIES, iscd,) for iscd in iscds
             ]
             index_columns = [
-                get_column(
-                    cellprofiler_core.constants.measurement.C_FRAME,
-                    cellprofiler_core.constants.measurement.C_OBJECTS_FRAME,
-                    iscd,
-                )
-                for iscd in iscds
+                get_column(C_FRAME, C_OBJECTS_FRAME, iscd,) for iscd in iscds
             ]
             channel_columns = [
-                get_column(
-                    cellprofiler_core.constants.measurement.C_CHANNEL,
-                    cellprofiler_core.constants.measurement.C_OBJECTS_CHANNEL,
-                    iscd,
-                )
-                for iscd in iscds
+                get_column(C_CHANNEL, C_OBJECTS_CHANNEL, iscd,) for iscd in iscds
             ]
             d = {}
             for idx in range(len(all_image_numbers)):
                 key = tuple([mc[idx] for mc in metadata_columns])
                 value = [
                     pipeline.find_image_plane_details(
-                        cellprofiler_core.pipeline.ImagePlane(
-                            u[idx], s[idx], i[idx], c[idx]
-                        )
+                        ImagePlane(u[idx], s[idx], i[idx], c[idx])
                     )
                     for u, s, i, c in zip(
                         url_columns, series_columns, index_columns, channel_columns
@@ -2402,9 +2320,7 @@ class Pipeline:
         ):
             module.module_num = mn
         self.notify_listeners(
-            cellprofiler_core.pipeline.event.ModuleAdded(
-                module_num, is_image_set_modification=is_image_set_modification
-            )
+            ModuleAdded(module_num, is_image_set_modification=is_image_set_modification)
         )
         self.__settings.insert(idx, self.capture_module_settings(new_module))
 
@@ -2426,7 +2342,7 @@ class Pipeline:
         for module in self.__modules[idx:]:
             module.module_num = module.module_num - 1
         self.notify_listeners(
-            cellprofiler_core.pipeline.event.ModuleRemoved(
+            ModuleRemoved(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -2448,7 +2364,7 @@ class Pipeline:
         module = self.__modules[idx]
         new_settings = self.capture_module_settings(module)
         self.notify_listeners(
-            cellprofiler_core.pipeline.event.ModuleEdited(
+            ModuleEdited(
                 module_num, is_image_set_modification=is_image_set_modification
             )
         )
@@ -2461,9 +2377,7 @@ class Pipeline:
             module.set_settings_from_values(
                 old_settings, variable_revision_number, module_name
             )
-            self.notify_listeners(
-                cellprofiler_core.pipeline.event.ModuleEdited(module_num)
-            )
+            self.notify_listeners(ModuleEdited(module_num))
             self.__settings[idx] = old_settings
 
         self.__undo_stack.append((undo, "Edited %s" % module_name))
@@ -2477,14 +2391,14 @@ class Pipeline:
         return self.__image_plane_details
 
     def on_walk_completed(self):
-        self.notify_listeners(cellprofiler_core.pipeline.event.FileWalkEnded())
+        self.notify_listeners(FileWalkEnded())
 
     def wp_add_files(self, dirpath, directories, filenames):
         ipds = []
         for filename in filenames:
             path = os.path.join(dirpath, filename)
             url = "file:" + urllib.request.pathname2url(path)
-            ipd = cellprofiler_core.pipeline.ImagePlane(url, None, None, None)
+            ipd = ImagePlane(url, None, None, None)
             ipds.append(ipd)
         self.add_image_plane_details(ipds)
 
@@ -2495,37 +2409,27 @@ class Pipeline:
         if metadata.image_count == 1:
             m = {}
             pixels = metadata.image(0).Pixels
-            m[cellprofiler_core.pipeline.ImagePlane.MD_SIZE_C] = str(pixels.SizeC)
-            m[cellprofiler_core.pipeline.ImagePlane.MD_SIZE_Z] = str(pixels.SizeZ)
-            m[cellprofiler_core.pipeline.ImagePlane.MD_SIZE_T] = str(pixels.SizeT)
+            m[ImagePlane.MD_SIZE_C] = str(pixels.SizeC)
+            m[ImagePlane.MD_SIZE_Z] = str(pixels.SizeZ)
+            m[ImagePlane.MD_SIZE_T] = str(pixels.SizeT)
 
             if pixels.SizeC == 1:
                 #
                 # Monochrome image
                 #
-                m[
-                    cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT
-                ] = cellprofiler_core.pipeline.ImagePlane.MD_MONOCHROME
+                m[ImagePlane.MD_COLOR_FORMAT] = ImagePlane.MD_MONOCHROME
                 channel = pixels.Channel(0)
-                channel_name = (
-                    cellprofiler_core.setting._text.alphanumeric.name._name.Name
-                )
+                channel_name = Name
                 if channel_name is not None:
-                    m[
-                        cellprofiler_core.pipeline.ImagePlane.MD_CHANNEL_NAME
-                    ] = channel_name
+                    m[ImagePlane.MD_CHANNEL_NAME] = channel_name
             elif pixels.channel_count == 1:
                 #
                 # Oh contradictions! It's interleaved, really RGB or RGBA
                 #
-                m[
-                    cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT
-                ] = cellprofiler_core.pipeline.ImagePlane.MD_RGB
+                m[ImagePlane.MD_COLOR_FORMAT] = ImagePlane.MD_RGB
             else:
-                m[
-                    cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT
-                ] = cellprofiler_core.pipeline.ImagePlane.MD_PLANAR
-            exemplar = cellprofiler_core.pipeline.ImagePlane(url, None, None, None)
+                m[ImagePlane.MD_COLOR_FORMAT] = ImagePlane.MD_PLANAR
+            exemplar = ImagePlane(url, None, None, None)
             if ipd is None:
                 ipd = self.find_image_plane_details(exemplar)
             if ipd is not None:
@@ -2544,29 +2448,19 @@ class Pipeline:
                     m = {}
                     plane = pixels.Plane(index)
                     c = plane.TheC
-                    m[cellprofiler_core.pipeline.ImagePlane.MD_C] = plane.TheC
-                    m[cellprofiler_core.pipeline.ImagePlane.MD_T] = plane.TheT
-                    m[cellprofiler_core.pipeline.ImagePlane.MD_Z] = plane.TheZ
+                    m[ImagePlane.MD_C] = plane.TheC
+                    m[ImagePlane.MD_T] = plane.TheT
+                    m[ImagePlane.MD_Z] = plane.TheZ
                     if pixels.channel_count > c:
                         channel = pixels.Channel(c)
-                        channel_name = (
-                            cellprofiler_core.setting._text.alphanumeric.name._name.Name
-                        )
+                        channel_name = Name
                         if channel_name is not None:
-                            m[
-                                cellprofiler_core.pipeline.ImagePlane.MD_CHANNEL_NAME
-                            ] = channel_name
+                            m[ImagePlane.MD_CHANNEL_NAME] = channel_name
                         if channel.SamplesPerPixel == 1:
-                            m[
-                                cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT
-                            ] = cellprofiler_core.pipeline.ImagePlane.MD_MONOCHROME
+                            m[ImagePlane.MD_COLOR_FORMAT] = ImagePlane.MD_MONOCHROME
                         else:
-                            m[
-                                cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT
-                            ] = cellprofiler_core.pipeline.ImagePlane.MD_RGB
-                    exemplar = cellprofiler_core.pipeline.ImagePlane(
-                        url, series, index, None
-                    )
+                            m[ImagePlane.MD_COLOR_FORMAT] = ImagePlane.MD_RGB
+                    exemplar = ImagePlane(url, series, index, None)
                     ipd = self.find_image_plane_details(exemplar)
                     if ipd is None:
                         exemplar.metadata.update(m)
@@ -2579,13 +2473,13 @@ class Pipeline:
                 # Movie metadata might not have planes
                 #
                 if pixels.SizeC == 1:
-                    color_format = cellprofiler_core.pipeline.ImagePlane.MD_MONOCHROME
+                    color_format = ImagePlane.MD_MONOCHROME
                     n_channels = 1
                 elif pixels.channel_count == 1:
-                    color_format = cellprofiler_core.pipeline.ImagePlane.MD_RGB
+                    color_format = ImagePlane.MD_RGB
                     n_channels = 1
                 else:
-                    color_format = cellprofiler_core.pipeline.ImagePlane.MD_MONOCHROME
+                    color_format = ImagePlane.MD_MONOCHROME
                     n_channels = pixels.SizeC
                 n = 1
                 dims = []
@@ -2613,22 +2507,16 @@ class Pipeline:
                     zip(c_indexes, z_indexes, t_indexes)
                 ):
                     channel = pixels.Channel(c_idx)
-                    exemplar = cellprofiler_core.pipeline.ImagePlane(
-                        url, series, index, None
-                    )
+                    exemplar = ImagePlane(url, series, index, None)
                     metadata = {
-                        cellprofiler_core.pipeline.ImagePlane.MD_SIZE_C: channel.SamplesPerPixel,
-                        cellprofiler_core.pipeline.ImagePlane.MD_SIZE_Z: 1,
-                        cellprofiler_core.pipeline.ImagePlane.MD_SIZE_T: 1,
-                        cellprofiler_core.pipeline.ImagePlane.MD_COLOR_FORMAT: color_format,
+                        ImagePlane.MD_SIZE_C: channel.SamplesPerPixel,
+                        ImagePlane.MD_SIZE_Z: 1,
+                        ImagePlane.MD_SIZE_T: 1,
+                        ImagePlane.MD_COLOR_FORMAT: color_format,
                     }
-                    channel_name = (
-                        cellprofiler_core.setting._text.alphanumeric.name._name.Name
-                    )
+                    channel_name = Name
                     if channel_name is not None and len(channel_name) > 0:
-                        metadata[
-                            cellprofiler_core.pipeline.ImagePlane.MD_CHANNEL_NAME
-                        ] = channel_name
+                        metadata[ImagePlane.MD_CHANNEL_NAME] = channel_name
                     ipd = self.find_image_plane_details(exemplar)
                     if ipd is None:
                         exemplar.metadata.update(metadata)
@@ -2667,7 +2555,7 @@ class Pipeline:
 
         Report errors due to misconfiguration, such as no files found.
         """
-        event = cellprofiler_core.pipeline.event.PrepareRunError(module, message)
+        event = PrepareRunError(module, message)
         self.notify_listeners(event)
 
     def is_image_from_file(self, image_name):
@@ -2706,37 +2594,17 @@ class Pipeline:
         if terminating_module_num in self.__measurement_columns:
             return self.__measurement_columns[terminating_module_num]
         columns = [
+            (EXPERIMENT, M_PIPELINE, COLTYPE_LONGBLOB,),
+            (EXPERIMENT, M_VERSION, COLTYPE_VARCHAR,),
+            (EXPERIMENT, M_TIMESTAMP, COLTYPE_VARCHAR,),
             (
-                cellprofiler_core.constants.measurement.EXPERIMENT,
-                cellprofiler_core.constants.pipeline.M_PIPELINE,
-                cellprofiler_core.constants.measurement.COLTYPE_LONGBLOB,
+                EXPERIMENT,
+                M_MODIFICATION_TIMESTAMP,
+                COLTYPE_VARCHAR,
+                {MCA_AVAILABLE_POST_RUN: True},
             ),
-            (
-                cellprofiler_core.constants.measurement.EXPERIMENT,
-                cellprofiler_core.constants.pipeline.M_VERSION,
-                cellprofiler_core.constants.measurement.COLTYPE_VARCHAR,
-            ),
-            (
-                cellprofiler_core.constants.measurement.EXPERIMENT,
-                cellprofiler_core.constants.pipeline.M_TIMESTAMP,
-                cellprofiler_core.constants.measurement.COLTYPE_VARCHAR,
-            ),
-            (
-                cellprofiler_core.constants.measurement.EXPERIMENT,
-                cellprofiler_core.constants.pipeline.M_MODIFICATION_TIMESTAMP,
-                cellprofiler_core.constants.measurement.COLTYPE_VARCHAR,
-                {cellprofiler_core.constants.measurement.MCA_AVAILABLE_POST_RUN: True},
-            ),
-            (
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.pipeline.GROUP_NUMBER,
-                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
-            ),
-            (
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.pipeline.GROUP_INDEX,
-                cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
-            ),
+            ("Image", GROUP_NUMBER, COLTYPE_INTEGER,),
+            ("Image", GROUP_INDEX, COLTYPE_INTEGER,),
         ]
         should_write_columns = True
         for module in self.modules():
@@ -2758,16 +2626,8 @@ class Pipeline:
                     module.module_name,
                 )
                 columns += [
-                    (
-                        cellprofiler_core.constants.measurement.IMAGE,
-                        module_error_measurement,
-                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
-                    ),
-                    (
-                        cellprofiler_core.constants.measurement.IMAGE,
-                        execution_time_measurement,
-                        cellprofiler_core.constants.measurement.COLTYPE_INTEGER,
-                    ),
+                    ("Image", module_error_measurement, COLTYPE_INTEGER,),
+                    ("Image", execution_time_measurement, COLTYPE_INTEGER,),
                 ]
         self.__measurement_columns[terminating_module_num] = columns
         return columns
@@ -2882,24 +2742,24 @@ class Pipeline:
                         for pmodule, psetting in providers[group][name]:
                             if pmodule.module_num < module.module_num:
                                 if group == "objectgroup":
-                                    dependency = cellprofiler_core.pipeline.dependency.ObjectDependency(
+                                    dependency = ObjectDependency(
                                         pmodule, module, name, psetting, setting
                                     )
                                     result.append(dependency)
                                 elif group == "imagegroup":
-                                    dependency = cellprofiler_core.pipeline.dependency.ImageDependency(
+                                    dependency = ImageDependency(
                                         pmodule, module, name, psetting, setting
                                     )
                                     result.append(dependency)
                                 break
-                elif isinstance(setting, cellprofiler_core.setting.Measurement):
+                elif isinstance(setting, Measurement):
                     object_name = setting.get_measurement_object()
                     feature_name = setting.value
                     key = (object_name, feature_name)
                     if key in providers["measurementsgroup"]:
                         for pmodule, psetting in providers["measurementsgroup"][key]:
                             if pmodule.module_num < module.module_num:
-                                dependency = cellprofiler_core.pipeline.MeasurementDependency(
+                                dependency = MeasurementDependency(
                                     pmodule,
                                     module,
                                     object_name,

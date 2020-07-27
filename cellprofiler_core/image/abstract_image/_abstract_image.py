@@ -1,7 +1,7 @@
 import logging
 
 
-class Abstract:
+class AbstractImage:
     """Represents an image provider that returns images
     """
 

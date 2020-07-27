@@ -38,10 +38,10 @@ from ..constants.measurement import FTR_CENTER_Y
 from ..constants.measurement import FTR_OBJECT_NUMBER
 from ..constants.measurement import IMAGE_NUMBER
 from ..constants.module import USING_METADATA_HELP_REF
-from ..image.abstract.file.url import Color
-from ..image.abstract.file.url import Mask
-from ..image.abstract.file.url import Monochrome
-from ..image.abstract.file.url import Objects
+from ..image.abstract_image.file.url import ColorImage
+from ..image.abstract_image.file.url import MaskImage
+from ..image.abstract_image.file.url import MonochromeImage
+from ..image.abstract_image.file.url import Objects
 from ..measurement import Measurements
 from ..module import Module
 from ..pipeline import ImageSetChannelDescriptor
@@ -1990,11 +1990,11 @@ requests an object selection.
         spacing = (self.z.value, self.x.value, self.y.value) if volume else None
 
         if load_choice == LOAD_AS_COLOR_IMAGE:
-            provider = Color(
+            provider = ColorImage(
                 name, url, series, index, rescale, volume=volume, spacing=spacing
             )
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
-            provider = Monochrome(
+            provider = MonochromeImage(
                 name,
                 url,
                 series,
@@ -2005,11 +2005,11 @@ requests an object selection.
                 spacing=spacing,
             )
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
-            provider = Monochrome(
+            provider = MonochromeImage(
                 name, url, series, index, channel, False, volume=volume, spacing=spacing
             )
         elif load_choice == LOAD_AS_MASK:
-            provider = Mask(
+            provider = MaskImage(
                 name, url, series, index, channel, volume=volume, spacing=spacing
             )
 

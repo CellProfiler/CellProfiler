@@ -1,11 +1,11 @@
-from ._monochrome import Monochrome
+from ._monochrome_image import MonochromeImage
 
 
-class Mask(Monochrome):
+class MaskImage(MonochromeImage):
     """Provide a boolean image, converting nonzero to True, zero to False if needed"""
 
     def __init__(self, name, url, series, index, channel, volume=False, spacing=None):
-        Monochrome.__init__(
+        MonochromeImage.__init__(
             self,
             name,
             url,
@@ -18,7 +18,7 @@ class Mask(Monochrome):
         )
 
     def provide_image(self, image_set):
-        image = Monochrome.provide_image(self, image_set)
+        image = MonochromeImage.provide_image(self, image_set)
         if image.pixel_data.dtype.kind != "b":
             image.pixel_data = image.pixel_data != 0
         return image

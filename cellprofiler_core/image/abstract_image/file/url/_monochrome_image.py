@@ -1,9 +1,9 @@
 import skimage.color
 
-from ._url import URL
+from ._url_image import URLImage
 
 
-class Monochrome(URL):
+class MonochromeImage(URLImage):
     """Provide a monochrome image, combining RGB if needed"""
 
     def __init__(
@@ -17,7 +17,7 @@ class Monochrome(URL):
         volume=False,
         spacing=None,
     ):
-        URL.__init__(
+        URLImage.__init__(
             self,
             name,
             url,
@@ -30,7 +30,7 @@ class Monochrome(URL):
         )
 
     def provide_image(self, image_set):
-        image = URL.provide_image(self, image_set)
+        image = URLImage.provide_image(self, image_set)
 
         if image.pixel_data.ndim == image.dimensions + 1:
             image.pixel_data = skimage.color.rgb2gray(image.pixel_data)

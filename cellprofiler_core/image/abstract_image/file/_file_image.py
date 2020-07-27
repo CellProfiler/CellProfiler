@@ -9,20 +9,18 @@ import numpy
 import skimage
 
 import cellprofiler_core.preferences
-from .._abstract import Abstract
+from .._abstract_image import AbstractImage
 from ..._image import Image
-from ....utilities.image import (
-    is_numpy_file,
-    is_matlab_file,
-    loadmat,
-    load_data_file,
-    generate_presigned_url,
-)
+from ....utilities.image import is_numpy_file
+from ....utilities.image import is_matlab_file
+from ....utilities.image import loadmat
+from ....utilities.image import load_data_file
+from ....utilities.image import generate_presigned_url
 from ....constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES
 from ....utilities.pathname import pathname2url, url2pathname
 
 
-class File(Abstract):
+class FileImage(AbstractImage):
     """Base for image providers: handle pathname and filename & URLs"""
 
     def __init__(

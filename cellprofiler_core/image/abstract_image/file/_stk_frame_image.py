@@ -1,7 +1,7 @@
-from ._file import File
+from ._file_image import FileImage
 
 
-class STKFrame(File):
+class STKFrameImage(FileImage):
     """Provide an image by filename:frame from an STK file"""
 
     def __init__(self, name, pathname, filename, frame, rescale):
@@ -12,6 +12,6 @@ class STKFrame(File):
         filename - name of the file
         frame - # of the frame to provide
         """
-        super(STKFrame, self).__init__(
+        super(STKFrameImage, self).__init__(
             name, pathname, filename, rescale=rescale, index=frame
         )

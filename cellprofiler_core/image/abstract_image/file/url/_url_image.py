@@ -1,10 +1,9 @@
 import os
 
-from cellprofiler_core.utilities.pathname import url2pathname
-from .._file import File
+from .._file_image import FileImage
 
 
-class URL(File):
+class URLImage(FileImage):
     """Reference an image via a URL"""
 
     def __init__(
@@ -24,12 +23,12 @@ class URL(File):
         else:
             pathname = ""
             filename = url
-        super(URL, self).__init__(
+        super(URLImage, self).__init__(
             name, pathname, filename, rescale, series, index, channel, volume, spacing
         )
         self.url = url
 
     def get_url(self):
         if self.cache_file():
-            return super(URL, self).get_url()
+            return super(URLImage, self).get_url()
         return self.url

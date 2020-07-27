@@ -1,7 +1,7 @@
-from ._abstract import Abstract
+from ._abstract_image import AbstractImage
 
 
-class Vanilla(Abstract):
+class VanillaImage(AbstractImage):
     """This image provider returns the image given to it in the constructor
 
     """

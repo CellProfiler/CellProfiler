@@ -1,4 +1,4 @@
-class RGB:
+class RGBImage:
     """A wrapper that discards the alpha channel
 
     This is meant to be used if the image is 3-d + alpha but the alpha

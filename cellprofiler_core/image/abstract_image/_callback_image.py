@@ -1,7 +1,7 @@
-from ._abstract import Abstract
+from ._abstract_image import AbstractImage
 
 
-class Callback(Abstract):
+class CallbackImage(AbstractImage):
     """An image provider proxy that calls the indicated callback functions (presumably in your module) to implement the methods
     """
 

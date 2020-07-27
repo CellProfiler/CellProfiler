@@ -2,9 +2,9 @@ import logging
 
 import numpy
 
-from ._grayscale import Grayscale
-from ._rgb import RGB
-from .abstract import Vanilla
+from ._grayscale_image import GrayscaleImage
+from ._rgb_image import RGBImage
+from .abstract_image import VanillaImage
 
 
 class ImageSet:
@@ -65,7 +65,7 @@ class ImageSet:
                     and numpy.all(pd[0] == pd[1])
                     and numpy.all(pd[0] == pd[2])
                 ):
-                    return Grayscale(image)
+                    return GrayscaleImage(image)
 
                 raise ValueError("Image must be grayscale, but it was color")
 
@@ -79,7 +79,7 @@ class ImageSet:
                 if image.pixel_data.shape[-1] == 4:
                     logging.warning("Discarding alpha channel.")
 
-                    return RGB(image)
+                    return RGBImage(image)
 
             return image
 
@@ -87,7 +87,7 @@ class ImageSet:
             raise ValueError("Image was not binary")
 
         if must_be_grayscale and image.pixel_data.dtype.kind == "b":
-            return Grayscale(image)
+            return GrayscaleImage(image)
 
         if must_be_rgb:
             raise ValueError("Image must be RGB, but it was grayscale")
@@ -142,5 +142,5 @@ class ImageSet:
             self.clear_image(name)
         for provider in old_providers:
             self.providers.remove(provider)
-        provider = Vanilla(name, image)
+        provider = VanillaImage(name, image)
         self.providers.append(provider)

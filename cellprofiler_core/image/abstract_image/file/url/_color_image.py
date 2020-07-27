@@ -1,15 +1,15 @@
 import skimage.color
 
-from ._url import URL
+from ._url_image import URLImage
 
 
-class Color(URL):
+class ColorImage(URLImage):
     """Provide a color image, tripling a monochrome plane if needed"""
 
     def __init__(
         self, name, url, series, index, rescale=True, volume=False, spacing=None
     ):
-        URL.__init__(
+        URLImage.__init__(
             self,
             name,
             url,
@@ -21,7 +21,7 @@ class Color(URL):
         )
 
     def provide_image(self, image_set):
-        image = URL.provide_image(self, image_set)
+        image = URLImage.provide_image(self, image_set)
 
         if image.pixel_data.ndim == image.dimensions:
             image.pixel_data = skimage.color.gray2rgb(image.pixel_data, alpha=False)

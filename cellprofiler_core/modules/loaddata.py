@@ -34,7 +34,7 @@ from ..constants.modules.load_data import DIR_ALL
 from ..constants.modules.load_data import IMAGE_CATEGORIES
 from ..constants.modules.load_data import OBJECTS_CATEGORIES
 from ..constants.modules.load_data import PATH_PADDING
-from ..image import File
+from ..image import FileImage
 from ..image import Objects
 from ..measurement import Measurements
 from ..module import Module
@@ -1057,7 +1057,7 @@ safe to press it.""",
             frame = measurements["Image", frame_feature]
         else:
             frame = None
-        return File(
+        return FileImage(
             name,
             path,
             filename,

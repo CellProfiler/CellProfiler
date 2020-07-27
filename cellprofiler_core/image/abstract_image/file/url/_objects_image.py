@@ -1,17 +1,14 @@
 import bioformats
 import numpy
 
-import cellprofiler_core.image
-import cellprofiler_core.utilities
-import cellprofiler_core.utilities.image
-from ._url import URL
+from ._url_image import URLImage
 
 
-class Objects(URL):
+class Objects(URLImage):
     """Provide a multi-plane integer image, interpreting an image file as objects"""
 
     def __init__(self, name, url, series, index):
-        cellprofiler_core.image.abstract.file.url._url.URL.__init__(
+        cellprofiler_core.image.abstract_image.file.url._url_image.URLImage.__init__(
             self, name, url, rescale=False, series=series, index=index, volume=False
         )
 

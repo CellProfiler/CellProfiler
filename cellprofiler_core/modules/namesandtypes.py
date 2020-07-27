@@ -46,13 +46,14 @@ from ..image.abstract_image.file.url import MonochromeImage
 from ..image.abstract_image.file.url import ObjectsImage
 from ..measurement import Measurements
 from ..module import Module
+from ..pipeline import ImagePlane
 from ..pipeline import ImageSetChannelDescriptor
 from ..preferences import get_headless
 from ..setting import Binary
 from ..setting import Divider
 from ..setting import DoThings
 from ..setting import HiddenCount
-from ..setting import ImagePlane
+from ..setting import ImagePlane as ImagePlaneSetting
 from ..setting import Joiner
 from ..setting import SettingsGroup
 from ..setting import ValidationError
@@ -895,7 +896,7 @@ times.
 
         group.append(
             "image_plane",
-            ImagePlane(
+            ImagePlaneSetting(
                 "Single image location",
                 doc="""\
 Choose the single image to add to all image sets. You can
@@ -1842,7 +1843,7 @@ requests an object selection.
         if single_image.image_plane.url is None:
             raise ValueError("Single image is not yet specified")
         ipd = find_image_plane_details(
-            ImagePlane(
+            ImagePlaneSetting(
                 single_image.image_plane.url,
                 single_image.image_plane.series,
                 single_image.image_plane.index,

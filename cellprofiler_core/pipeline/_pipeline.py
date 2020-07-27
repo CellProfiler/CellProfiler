@@ -17,6 +17,7 @@ import uuid
 import bioformats.formatreader
 import numpy
 
+import cellprofiler_core.utilities.modules._modules
 from . import read_file_list
 from ._image_plane import ImagePlane
 from ._listener import Listener
@@ -187,7 +188,9 @@ class Pipeline:
     def instantiate_module(module_name):
         import cellprofiler_core.modules
 
-        return cellprofiler_core.modules.instantiate_module(module_name)
+        return cellprofiler_core.utilities.modules._modules.instantiate_module(
+            module_name
+        )
 
     def reload_modules(self):
         """Reload modules from source, and attempt to update pipeline to new versions.
@@ -198,7 +201,7 @@ class Pipeline:
         import cellprofiler_core.modules
 
         importlib.reload(cellprofiler_core.modules)
-        cellprofiler_core.modules.reload_modules()
+        cellprofiler_core.utilities.modules._modules.reload_modules()
         # attempt to reinstantiate pipeline with new modules
         try:
             self.copy()  # if this fails, we probably can't reload

@@ -1,3 +1,0 @@
-CellProfiler-core
-=================
-

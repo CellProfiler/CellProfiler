@@ -23,6 +23,7 @@ import cellprofiler_core.setting.text._directory
 import cellprofiler_core.setting.text._filename
 import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.measurement
+import cellprofiler_core.utilities.module._identify
 import cellprofiler_core.utilities.pathname
 from cellprofiler_core.module import _identify
 
@@ -1312,8 +1313,12 @@ safe to press it.""",
                 o = cellprofiler_core.object.Objects()
                 o.segmented = pixel_data
                 object_set.add_objects(o, objects_name)
-                _identify.add_object_count_measurements(m, objects_name, o.count)
-                _identify.add_object_location_measurements(m, objects_name, pixel_data)
+                cellprofiler_core.utilities.module._identify.add_object_count_measurements(
+                    m, objects_name, o.count
+                )
+                cellprofiler_core.utilities.module._identify.add_object_location_measurements(
+                    m, objects_name, pixel_data
+                )
 
         for feature_name in sorted(features):
             value = m.get_measurement(
@@ -1535,7 +1540,9 @@ safe to press it.""",
             # Add the object features
             #
             for object_name in self.get_object_names():
-                result += _identify.get_object_measurement_columns(object_name)
+                result += cellprofiler_core.utilities.module._identify.get_object_measurement_columns(
+                    object_name
+                )
                 for feature, coltype in (
                     (
                         cellprofiler_core.constants.measurement.C_OBJECTS_URL,

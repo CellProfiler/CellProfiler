@@ -29,6 +29,7 @@ import cellprofiler_core.setting.text.alphanumeric.name._label_name
 import cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name
 import cellprofiler_core.setting.text.number._float
 import cellprofiler_core.utilities.image
+import cellprofiler_core.utilities.module._identify
 from ..image.abstract.file.url import Color
 from ..image.abstract.file.url import Mask
 from ..image.abstract.file.url import Monochrome
@@ -2164,7 +2165,7 @@ requests an object selection.
         o = cellprofiler_core.object.Objects()
         if image.pixel_data.shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
-            _identify.add_object_location_measurements(
+            cellprofiler_core.utilities.module._identify.add_object_location_measurements(
                 workspace.measurements, name, o.segmented, o.count
             )
         else:
@@ -2177,10 +2178,12 @@ requests an object selection.
                     (ijv, numpy.column_stack([x[plane != 0] for x in (i, j, plane)]))
                 )
             o.set_ijv(ijv, shape)
-            _identify.add_object_location_measurements_ijv(
+            cellprofiler_core.utilities.module._identify.add_object_location_measurements_ijv(
                 workspace.measurements, name, o.ijv, o.count
             )
-        _identify.add_object_count_measurements(workspace.measurements, name, o.count)
+        cellprofiler_core.utilities.module._identify.add_object_count_measurements(
+            workspace.measurements, name, o.count
+        )
         workspace.object_set.add_objects(o, name)
 
     def on_activated(self, workspace):
@@ -2341,7 +2344,9 @@ requests an object selection.
                     ),
                 )
             ]
-            result += _identify.get_object_measurement_columns(object_name)
+            result += cellprofiler_core.utilities.module._identify.get_object_measurement_columns(
+                object_name
+            )
         result += [
             (
                 cellprofiler_core.constants.measurement.IMAGE,

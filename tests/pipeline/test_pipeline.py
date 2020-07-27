@@ -16,6 +16,7 @@ import six
 import six.moves
 
 import cellprofiler_core.constants.measurement
+import cellprofiler_core.constants.modules
 import cellprofiler_core.constants.pipeline
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -30,6 +31,7 @@ import cellprofiler_core.setting
 import cellprofiler_core.setting.text.alphanumeric.name._label_name
 import cellprofiler_core.setting.text.alphanumeric.name.image_name._image_name
 import cellprofiler_core.utilities.image
+import cellprofiler_core.utilities.modules._modules
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
 import tests.modules
@@ -567,12 +569,12 @@ HasImagePlaneDetails:False"""
 
     def test_img_286(self):
         """Regression test for img-286: module name in class"""
-        cellprofiler_core.modules.fill_modules()
+        cellprofiler_core.utilities.modules._modules.fill_modules()
         success = True
-        all_keys = list(cellprofiler_core.modules.all_modules.keys())
+        all_keys = list(cellprofiler_core.constants.modules.all_modules.keys())
         all_keys.sort()
         for k in all_keys:
-            v = cellprofiler_core.modules.all_modules[k]
+            v = cellprofiler_core.constants.modules.all_modules[k]
             try:
                 v.module_name
             except:
@@ -582,8 +584,10 @@ HasImagePlaneDetails:False"""
 
     def test_dump(self):
         pipeline = get_empty_pipeline()
-        cellprofiler_core.modules.fill_modules()
-        module = cellprofiler_core.modules.instantiate_module("Align")
+        cellprofiler_core.utilities.modules._modules.fill_modules()
+        module = cellprofiler_core.utilities.modules._modules.instantiate_module(
+            "Align"
+        )
         module.set_module_num(1)
         pipeline.add_module(module)
         fd = six.moves.StringIO()
@@ -708,8 +712,8 @@ HasImagePlaneDetails:False"""
         #
         # Put "ModuleWithMeasurement" into the module list
         #
-        cellprofiler_core.modules.fill_modules()
-        cellprofiler_core.modules.all_modules[
+        cellprofiler_core.utilities.modules._modules.fill_modules()
+        cellprofiler_core.constants.modules.all_modules[
             cellprofiler_core.modules.measurementfixture.MeasurementFixture.module_name
         ] = cellprofiler_core.modules.measurementfixture.MeasurementFixture
         #

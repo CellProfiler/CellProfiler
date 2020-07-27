@@ -56,11 +56,13 @@ def find_cpmodule(m):
     returns the CPModule class
     """
     from ....module import Module
+    from ....constants.modules import pymodule_to_cpmodule
 
-    for v, val in list(m.__dict__.items()):
-        if isinstance(val, type) and issubclass(val, Module):
-            # Figure this out
-            return val
+    modulename = os.path.splitext(os.path.basename(m.__file__))[0]
+    classname = pymodule_to_cpmodule[modulename]
+    module_class = m.__dict__[classname]
+    if issubclass(module_class, Module):
+        return module_class
     raise ValueError(
         "Could not find cellprofiler_core.module.Module class in %s" % m.__file__
     )

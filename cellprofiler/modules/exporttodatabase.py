@@ -96,12 +96,20 @@ import cellprofiler_core.utilities.legacy
 import numpy
 import six
 import six.moves
+from cellprofiler_core.constants.measurement import OBJECT, GROUP_INDEX
 from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import (
+    DEFAULT_OUTPUT_FOLDER_NAME,
+    DEFAULT_INPUT_FOLDER_NAME,
+    ABSOLUTE_FOLDER_NAME,
+    DEFAULT_OUTPUT_SUBFOLDER_NAME,
+    DEFAULT_INPUT_SUBFOLDER_NAME,
+)
 from cellprofiler_core.setting import SettingsGroup, Binary, HiddenCount
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.subscriber import LabelSubscriber
-from cellprofiler_core.setting.text import Text
+from cellprofiler_core.setting.text import Text, Directory
 
 import cellprofiler
 import cellprofiler.icons
@@ -191,10 +199,10 @@ W_DISPLAY_ALL = [W_SCATTERPLOT, W_HISTOGRAM, W_PLATEVIEWER, W_DENSITYPLOT, W_BOX
 W_INDEX = "Index"
 W_TYPE_ALL = [
     "Image",
-    cellprofiler_core.measurement.OBJECT,
+    OBJECT,
     W_INDEX,
 ]
-W_INDEX_ALL = [C_IMAGE_NUMBER, cellprofiler_core.pipeline.GROUP_INDEX]
+W_INDEX_ALL = [C_IMAGE_NUMBER, GROUP_INDEX]
 
 ################################################
 #
@@ -263,7 +271,6 @@ OT_DICTIONARY = {
     "Single object table": OT_COMBINE,
     "Single object view": OT_VIEW,
 }
-from cellprofiler_core.measurement import C_PARENT, M_NUMBER_OBJECT_NUMBER
 
 T_EXPERIMENT = "Experiment"
 T_EXPERIMENT_PROPERTIES = "Experiment_Properties"
@@ -486,14 +493,14 @@ combination of the table name and prefix exceeds this limit, you will
 receive an error associated with this setting.""",
         )
 
-        self.directory = DirectoryPath(
+        self.directory = Directory(
             "Output file location",
             dir_choices=[
-                cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
-                cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME,
-                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME,
-                cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
+                DEFAULT_OUTPUT_FOLDER_NAME,
+                DEFAULT_INPUT_FOLDER_NAME,
+                ABSOLUTE_FOLDER_NAME,
+                DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                DEFAULT_INPUT_SUBFOLDER_NAME,
             ],
             doc="""\
 *(Used only when using an SQLite database, and/or creating a
@@ -516,9 +523,7 @@ location.
             ),
         )
 
-        self.directory.dir_choice = (
-            cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
-        )
+        self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
         self.save_cpa_properties = Binary(
             "Create a CellProfiler Analyst properties file?",
@@ -1266,7 +1271,7 @@ You can choose from three options to control overwriting behavior:
 
         group.append(
             "image_cols",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Select an image to include",
                 ["None"],
                 choices_fn=self.get_property_file_image_choices,
@@ -1288,7 +1293,7 @@ modules.""",
 
         group.append(
             "wants_automatic_image_name",
-            cellprofiler_core.setting.Binary(
+            Binary(
                 "Use the image name for the display?",
                 True,
                 doc="""\
@@ -1306,7 +1311,7 @@ Select "*{NO}*" to name the image yourself.
 
         group.append(
             "image_name",
-            cellprofiler_core.setting.Text(
+            Text(
                 "Image name",
                 "Channel%d" % (len(self.image_groups) + 1),
                 doc="""\
@@ -1325,7 +1330,7 @@ Enter a name for the specified image.""",
 
         group.append(
             "image_channel_colors",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Channel color",
                 COLOR_ORDER,
                 default_color,
@@ -1338,12 +1343,10 @@ Enter a color to display this channel.""",
 
         group.append(
             "remover",
-            cellprofiler_core.setting.RemoveSettingButton(
-                "", "Remove this image", self.image_groups, group
-            ),
+            RemoveSettingButton("", "Remove this image", self.image_groups, group),
         )
 
-        group.append("divider", cellprofiler_core.setting.Divider(line=False))
+        group.append("divider", Divider(line=False))
 
         self.image_groups.append(group)
 
@@ -1352,7 +1355,7 @@ Enter a color to display this channel.""",
         group.can_remove = can_remove
         group.append(
             "group_name",
-            cellprofiler_core.setting.Text(
+            Text(
                 "Enter the name of the group",
                 "",
                 doc="""\
@@ -1364,7 +1367,7 @@ are permitted.""",
         )
         group.append(
             "group_statement",
-            cellprofiler_core.setting.Text(
+            Text(
                 "Enter the per-image columns which define the group, separated by commas",
                 GROUP_COL_DEFAULT,
                 doc="""\
@@ -1392,11 +1395,11 @@ automatically, so there is no need to enter them here.""",
         )
         group.append(
             "remover",
-            cellprofiler_core.setting.RemoveSettingButton(
+            RemoveSettingButton(
                 "", "Remove this group", self.group_field_groups, group
             ),
         )
-        group.append("divider", cellprofiler_core.setting.Divider(line=True))
+        group.append("divider", Divider(line=True))
 
         self.group_field_groups.append(group)
 
@@ -1407,7 +1410,7 @@ automatically, so there is no need to enter them here.""",
 
         group.append(
             "filter_name",
-            cellprofiler_core.setting.Text(
+            Text(
                 "Enter the name of the filter",
                 "",
                 doc="""\
@@ -1420,7 +1423,7 @@ underscores are permitted.""",
 
         group.append(
             "filter_statement",
-            cellprofiler_core.setting.Text(
+            Text(
                 "Enter the MySQL WHERE clause to define a filter",
                 "",
                 doc="""\
@@ -1441,11 +1444,11 @@ here.""",
         )
         group.append(
             "remover",
-            cellprofiler_core.setting.RemoveSettingButton(
+            RemoveSettingButton(
                 "", "Remove this filter", self.filter_field_groups, group
             ),
         )
-        group.append("divider", cellprofiler_core.setting.Divider(line=True))
+        group.append("divider", Divider(line=True))
 
         self.filter_field_groups.append(group)
 
@@ -1455,11 +1458,11 @@ here.""",
 
         group.can_remove = can_remove
 
-        group.append("divider", cellprofiler_core.setting.Divider(line=False))
+        group.append("divider", Divider(line=False))
 
         group.append(
             "measurement_display",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Select the measurement display tool",
                 W_DISPLAY_ALL,
                 doc="""\
@@ -1544,7 +1547,7 @@ available:
 
         group.append(
             "x_measurement_type",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Type of measurement to plot on the X-axis",
                 W_TYPE_ALL,
                 doc=measurement_type_help(),
@@ -1553,9 +1556,7 @@ available:
 
         group.append(
             "x_object_name",
-            cellprofiler_core.setting.LabelSubscriber(
-                "Enter the object name", "None", doc=object_name_help(),
-            ),
+            LabelSubscriber("Enter the object name", "None", doc=object_name_help(),),
         )
 
         def object_fn_x():
@@ -1574,7 +1575,7 @@ available:
 
         group.append(
             "x_measurement_name",
-            cellprofiler_core.setting.Measurement(
+            Measurement(
                 "Select the X-axis measurement",
                 object_fn_x,
                 doc=measurement_name_help(),
@@ -1583,14 +1584,12 @@ available:
 
         group.append(
             "x_index_name",
-            cellprofiler_core.setting.Choice(
-                "Select the X-axis index", W_INDEX_ALL, doc=index_name_help()
-            ),
+            Choice("Select the X-axis index", W_INDEX_ALL, doc=index_name_help()),
         )
 
         group.append(
             "y_measurement_type",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Type of measurement to plot on the Y-axis",
                 W_TYPE_ALL,
                 doc=measurement_type_help(),
@@ -1599,9 +1598,7 @@ available:
 
         group.append(
             "y_object_name",
-            cellprofiler_core.setting.LabelSubscriber(
-                "Enter the object name", "None", doc=object_name_help(),
-            ),
+            LabelSubscriber("Enter the object name", "None", doc=object_name_help(),),
         )
 
         def object_fn_y():
@@ -1617,7 +1614,7 @@ available:
 
         group.append(
             "y_measurement_name",
-            cellprofiler_core.setting.Measurement(
+            Measurement(
                 "Select the Y-axis measurement",
                 object_fn_y,
                 doc=measurement_name_help(),
@@ -1626,15 +1623,13 @@ available:
 
         group.append(
             "y_index_name",
-            cellprofiler_core.setting.Choice(
-                "Select the Y-axis index", W_INDEX_ALL, doc=index_name_help()
-            ),
+            Choice("Select the Y-axis index", W_INDEX_ALL, doc=index_name_help()),
         )
 
         if can_remove:
             group.append(
                 "remove_button",
-                cellprofiler_core.setting.RemoveSettingButton(
+                RemoveSettingButton(
                     "",
                     "Remove this measurement",
                     self.workspace_measurement_groups,
@@ -2012,35 +2007,33 @@ available:
     def validate_module(self, pipeline):
         if self.want_table_prefix.value:
             if not re.match("^[A-Za-z][A-Za-z0-9_]+$", self.table_prefix.value):
-                raise cellprofiler_core.setting.ValidationError(
-                    "Invalid table prefix", self.table_prefix
-                )
+                raise ValidationError("Invalid table prefix", self.table_prefix)
 
         if self.db_type == DB_MYSQL:
             if not re.match("^[A-Za-z0-9_]+$", self.db_name.value):
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "The database name has invalid characters", self.db_name
                 )
         elif self.db_type == DB_SQLITE:
             if not re.match("^[A-Za-z0-9_].*$", self.sqlite_file.value):
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "The sqlite file name has invalid characters", self.sqlite_file
                 )
 
         if self.db_type == DB_MYSQL:
             if not re.match("^[A-Za-z0-9_].*$", self.db_host.value):
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "The database host name has invalid characters", self.db_host
                 )
             if not re.match("^[A-Za-z0-9_]+$", self.db_user.value):
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "The database user name has invalid characters", self.db_user
                 )
 
         if self.objects_choice == O_SELECT:
             self.objects_list.load_choices(pipeline)
             if len(self.objects_list.choices) == 0:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "Please choose at least one object", self.objects_choice
                 )
 
@@ -2049,14 +2042,14 @@ available:
                 self.properties_wants_filters.value
                 and self.create_filters_for_plates.value
             ):
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "You must specify the plate metadata",
                     self.create_filters_for_plates,
                 )
 
         if self.want_image_thumbnails:
             if not self.thumbnail_image_names.get_selections():
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "Please choose at least one image", self.thumbnail_image_names
                 )
 
@@ -2085,18 +2078,18 @@ available:
                 )
                 msg += "Please shorten the prefix if using a single object table,\n"
                 msg += "and/or the object name if using separate tables."
-                raise cellprofiler_core.setting.ValidationError(msg, self.table_prefix)
+                raise ValidationError(msg, self.table_prefix)
 
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
         if pipeline.test_mode:
-            raise cellprofiler_core.setting.ValidationError(
+            raise ValidationError(
                 "ExportToDatabase does not produce output in Test Mode", self.db_type
             )
 
         # Warn user if using SQLLite and CreateBatchFiles
         if self.db_type == DB_SQLITE and pipeline.has_create_batch_module():
-            raise cellprofiler_core.setting.ValidationError(
+            raise ValidationError(
                 "Only one process can access a SQLite database at a time.\n"
                 "Database operations will fail if you run more than one copy\n"
                 "of CellProfiler simultaneously. You can run multiple copies\n"
@@ -2111,7 +2104,7 @@ available:
             self.objects_choice != O_NONE
             and self.separate_object_tables == OT_PER_OBJECT
         ):
-            raise cellprofiler_core.setting.ValidationError(
+            raise ValidationError(
                 (
                     "You will have to merge the separate object tables in order\n"
                     "to use CellProfiler Analyst fully, or you will be restricted\n"
@@ -2126,9 +2119,7 @@ available:
         if self.save_cpa_properties:
             warning_string = "CellProfiler Analyst will not recognize this %s because it contains invalid characters. Allowable characters are letters, numbers and underscores."
             if not re.match("^[\w]*$", self.location_object.value):
-                raise cellprofiler_core.setting.ValidationError(
-                    warning_string % "object", self.location_object
-                )
+                raise ValidationError(warning_string % "object", self.location_object)
 
             if self.properties_wants_groups:
                 for group in self.group_field_groups:
@@ -2136,7 +2127,7 @@ available:
                         not re.match("^[\w]*$", group.group_name.value)
                         or group.group_name.value == ""
                     ):
-                        raise cellprofiler_core.setting.ValidationError(
+                        raise ValidationError(
                             warning_string % "group name", group.group_name
                         )
 
@@ -2146,20 +2137,20 @@ available:
                         not re.match("^[\w]*$", group.filter_name.value)
                         or group.filter_name.value == ""
                     ):
-                        raise cellprofiler_core.setting.ValidationError(
+                        raise ValidationError(
                             warning_string % "filter name", group.filter_name
                         )
                     if (
                         not re.match("^[\w\s\"'=]*$", group.filter_statement.value)
                         or group.filter_statement.value == ""
                     ):
-                        raise cellprofiler_core.setting.ValidationError(
+                        raise ValidationError(
                             warning_string % "filter statement", group.filter_statement
                         )
 
             if self.properties_class_table_name:
                 if not re.match("^[\w]*$", self.properties_class_table_name.value):
-                    raise cellprofiler_core.setting.ValidationError(
+                    raise ValidationError(
                         warning_string % "class table name",
                         self.properties_class_table_name,
                     )
@@ -2225,9 +2216,7 @@ available:
                         if self.objects_choice == O_ALL
                         else " or de-select the object(s)."
                     )
-                    raise cellprofiler_core.setting.ValidationError(
-                        msg, self.separate_object_tables
-                    )
+                    raise ValidationError(msg, self.separate_object_tables)
 
     def test_connection(self):
         """Check to make sure the MySQL server is remotely accessible"""
@@ -2317,10 +2306,7 @@ available:
             #
             self.get_pipeline_measurement_columns(pipeline, image_set_list)
 
-            if (
-                pipeline.in_batch_mode()
-                or not cellprofiler_core.preferences.get_allow_schema_write()
-            ):
+            if pipeline.in_batch_mode() or not get_allow_schema_write():
                 return True
             if self.db_type == DB_ORACLE:
                 raise NotImplementedError(
@@ -2353,7 +2339,7 @@ available:
                             ", ".join(tables_that_exist[:-1]),
                             tables_that_exist[-1],
                         )
-                    if cellprofiler_core.preferences.get_headless():
+                    if get_headless():
                         if self.allow_overwrite == OVERWRITE_NEVER:
                             logging.error(
                                 "%s already in database and overwrite not allowed. Exiting"
@@ -3721,13 +3707,7 @@ CREATE TABLE %s (
 
             image_row = []
             if not post_group:
-                image_row += [
-                    (
-                        image_number,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
-                        C_IMAGE_NUMBER,
-                    )
-                ]
+                image_row += [(image_number, "integer", C_IMAGE_NUMBER,)]
             feature_names = set(measurements.get_feature_names("Image"))
             for m_col in measurement_cols:
                 if m_col[0] != "Image":
@@ -3938,7 +3918,7 @@ CREATE TABLE %s (
                 else float(field[0])
                 if (field[1] == cellprofiler_core.measurement.COLTYPE_FLOAT)
                 else int(field[0])
-                if (field[1] == cellprofiler_core.measurement.COLTYPE_INTEGER)
+                if (field[1] == "integer")
                 else buffer(field[0].encode())
                 if field[1]
                 in (
@@ -4993,13 +4973,9 @@ CP version : %d\n""" % int(
             dir_choice, custom_directory = setting_values[5:7]
             if dir_choice in (DIR_CUSTOM, DIR_CUSTOM_WITH_METADATA):
                 if custom_directory.startswith("."):
-                    dir_choice = (
-                        cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
-                    )
+                    dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
                 elif custom_directory.startswith("&"):
-                    dir_choice = (
-                        cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
-                    )
+                    dir_choice = DEFAULT_INPUT_SUBFOLDER_NAME
                     custom_directory = "." + custom_directory[1:]
                 else:
                     dir_choice = ABSOLUTE_FOLDER_NAME

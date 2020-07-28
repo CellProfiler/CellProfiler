@@ -1378,7 +1378,7 @@ Often a good choice is some multiple of the largest expected object size.
             and self.lower_outlier_fraction.value + self.upper_outlier_fraction.value
             >= 1
         ):
-            raise cellprofiler_core.setting.ValidationError(
+            raise ValidationError(
                 """
                 The sum of the lower robust background outlier fraction ({0:f}) and the upper fraction ({1:f}) must be
                 less than one.

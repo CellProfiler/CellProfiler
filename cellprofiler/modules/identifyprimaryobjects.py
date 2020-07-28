@@ -10,6 +10,10 @@ import numpy
 import scipy.ndimage
 import scipy.sparse
 import skimage.morphology
+from cellprofiler_core.setting import Binary, Color
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.range import IntegerRange
+from cellprofiler_core.setting.text import Integer, Float
 
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content

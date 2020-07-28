@@ -142,24 +142,20 @@ class MeasureImageIntensity(Module):
         """Make sure chosen objects and images are selected only once"""
         images = set()
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError(
-                "No images selected", self.images_list
-            )
+            raise ValidationError("No images selected", self.images_list)
         for image_name in self.images_list.value:
             if image_name in images:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "%s has already been selected" % image_name, image_name
                 )
             images.add(image_name)
         if self.wants_objects:
             objects = set()
             if len(self.objects_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError(
-                    "No objects selected", self.objects_list
-                )
+                raise ValidationError("No objects selected", self.objects_list)
             for object_name in self.objects_list.value:
                 if object_name in objects:
-                    raise cellprofiler_core.setting.ValidationError(
+                    raise ValidationError(
                         "%s has already been selected" % object_name, object_name
                     )
                 objects.add(object_name)
@@ -311,7 +307,7 @@ class MeasureImageIntensity(Module):
                 (F_MAD_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
                 (F_MIN_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
                 (F_MAX_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_TOTAL_AREA, cellprofiler_core.measurement.COLTYPE_INTEGER),
+                (F_TOTAL_AREA, "integer"),
                 (F_PERCENT_MAXIMAL, cellprofiler_core.measurement.COLTYPE_FLOAT),
                 (F_LOWER_QUARTILE, cellprofiler_core.measurement.COLTYPE_FLOAT),
                 (F_UPPER_QUARTILE, cellprofiler_core.measurement.COLTYPE_FLOAT),

@@ -1,5 +1,11 @@
+from cellprofiler_core.constants.measurement import (
+    COLTYPE_INTEGER,
+    FF_CHILDREN_COUNT,
+    FF_PARENT,
+)
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import LabelName
 
 from cellprofiler.modules import _help
 
@@ -266,14 +272,10 @@ supplied by a previous module.
         m = workspace.measurements
         child_count, parents = orig_objects.relate_children(filtered_objects)
         m.add_measurement(
-            filtered_objects_name,
-            cellprofiler_core.measurement.FF_PARENT % orig_objects_name,
-            parents,
+            filtered_objects_name, FF_PARENT % orig_objects_name, parents,
         )
         m.add_measurement(
-            orig_objects_name,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % filtered_objects_name,
-            child_count,
+            orig_objects_name, FF_CHILDREN_COUNT % filtered_objects_name, child_count,
         )
         #
         # The object count
@@ -310,7 +312,6 @@ supplied by a previous module.
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
-        from cellprofiler_core.modules.namesandtypes import ObjectsImageProvider
         from bioformats import load_image
 
         with wx.Dialog(None) as dlg:
@@ -500,14 +501,10 @@ supplied by a previous module.
         columns += [
             (
                 orig_image_name,
-                cellprofiler_core.measurement.FF_CHILDREN_COUNT % filtered_image_name,
+                FF_CHILDREN_COUNT % filtered_image_name,
                 COLTYPE_INTEGER,
             ),
-            (
-                filtered_image_name,
-                cellprofiler_core.measurement.FF_PARENT % orig_image_name,
-                COLTYPE_INTEGER,
-            ),
+            (filtered_image_name, FF_PARENT % orig_image_name, COLTYPE_INTEGER,),
         ]
         return columns
 

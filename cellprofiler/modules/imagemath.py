@@ -244,7 +244,7 @@ Enter a name for the resulting image.""",
         group.removable = removable
         group.append(
             "image_or_measurement",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Image or measurement?",
                 [IM_IMAGE, IM_MEASUREMENT],
                 doc="""\
@@ -262,7 +262,7 @@ use the median intensity measurement as the denominator.
 
         group.append(
             "image_name",
-            cellprofiler_core.setting.ImageSubscriber(
+            ImageSubscriber(
                 "Select the image",
                 "None",
                 doc="""\
@@ -272,7 +272,7 @@ Select the image that you want to use for this operation.""",
 
         group.append(
             "measurement",
-            cellprofiler_core.setting.Measurement(
+            Measurement(
                 "Measurement",
                 lambda: "Image",
                 "",
@@ -285,7 +285,7 @@ other operand's image.""",
 
         group.append(
             "factor",
-            cellprofiler_core.setting.Float(
+            Float(
                 "Multiply the image by",
                 1,
                 doc="""\
@@ -297,12 +297,10 @@ is applied before other operations.""",
         if removable:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
-                    "", "Remove this image", self.images, group
-                ),
+                RemoveSettingButton("", "Remove this image", self.images, group),
             )
 
-        group.append("divider", cellprofiler_core.setting.Divider())
+        group.append("divider", Divider())
         self.images.append(group)
 
     def renumber_settings(self):
@@ -652,7 +650,7 @@ is applied before other operations.""",
             op = self.images[i]
             if op.image_or_measurement == IM_IMAGE:
                 return
-        raise cellprofiler_core.setting.ValidationError(
+        raise ValidationError(
             "At least one of the operands must be an image", op.image_or_measurement
         )
 

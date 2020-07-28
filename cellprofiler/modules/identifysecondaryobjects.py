@@ -933,13 +933,13 @@ segmentation.""",
                 (
                     self.new_primary_objects_name.value,
                     cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
-                    cellprofiler_core.measurement.COLTYPE_INTEGER,
+                    "integer",
                 ),
                 (
                     self.y_name.value,
                     cellprofiler_core.measurement.FF_PARENT
                     % self.new_primary_objects_name.value,
-                    cellprofiler_core.measurement.COLTYPE_INTEGER,
+                    "integer",
                 ),
             ]
         else:

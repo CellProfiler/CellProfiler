@@ -194,7 +194,7 @@ Select the image to be used to calculate
 the total intensity along the edges between the vertices (trunks, branchpoints, and endpoints).""",
         )
 
-        self.directory = DirectoryPath(
+        self.directory = Directory(
             "File output directory",
             doc="Select the directory you want to save the graph relationships to.",
             dir_choices=[

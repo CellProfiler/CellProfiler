@@ -1,3 +1,12 @@
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber, GridSubscriber
+from cellprofiler_core.setting.text import LabelName, Integer
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_location_measurements,
+    add_object_count_measurements,
+    get_object_measurement_columns,
+)
+
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -60,14 +69,6 @@ from centrosome.cpmorphology import centers_of_labels
 from cellprofiler.grid import Grid
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import GridNameSubscriber
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import ObjectNameProvider
-from cellprofiler_core.modules.identify import add_object_count_measurements
-from cellprofiler_core.modules.identify import add_object_location_measurements
-from cellprofiler_core.modules.identify import get_object_measurement_columns
 
 SHAPE_RECTANGLE = "Rectangle Forced Location"
 SHAPE_CIRCLE_FORCED = "Circle Forced Location"
@@ -92,7 +93,7 @@ class IdentifyObjectsInGrid(Module):
 
         create_settings is called at the end of initialization.
         """
-        self.grid_name = GridNameSubscriber(
+        self.grid_name = GridSubscriber(
             "Select the defined grid",
             "None",
             doc="""Select the name of a grid created by a previous **DefineGrid** module.""",

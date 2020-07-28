@@ -155,11 +155,11 @@ The input image will be resized to the dimensions of the specified image.""",
         group = SettingsGroup()
 
         if can_remove:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
+            group.append("divider", Divider(line=False))
 
         group.append(
             "input_image_name",
-            cellprofiler_core.setting.ImageSubscriber(
+            ImageSubscriber(
                 "Select the additional image?",
                 "None",
                 doc="""\
@@ -170,7 +170,7 @@ resized with the same settings as the first image.""",
 
         group.append(
             "output_image_name",
-            cellprofiler_core.setting.ImageName(
+            ImageName(
                 "Name the output image",
                 "ResizedBlue",
                 doc="What is the name of the additional resized image?",
@@ -180,7 +180,7 @@ resized with the same settings as the first image.""",
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
+                RemoveSettingButton(
                     "", "Remove above image", self.additional_images, group
                 ),
             )

@@ -247,11 +247,11 @@ heatmap according to the measurement value for that band.
         group = SettingsGroup()
 
         if can_remove:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
+            group.append("divider", Divider(line=False))
 
         group.append(
             "object_name",
-            cellprofiler_core.setting.LabelSubscriber(
+            LabelSubscriber(
                 "Select objects to measure",
                 "None",
                 doc="Select the objects whose intensity distribution you want to measure.",
@@ -260,7 +260,7 @@ heatmap according to the measurement value for that band.
 
         group.append(
             "center_choice",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Object to use as center?",
                 C_ALL,
                 doc="""\
@@ -296,7 +296,7 @@ previously identified Nuclei objects as the centers
 
         group.append(
             "center_object_name",
-            cellprofiler_core.setting.LabelSubscriber(
+            LabelSubscriber(
                 "Select objects to use as centers",
                 "None",
                 doc="""\
@@ -314,9 +314,7 @@ object centers).
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
-                    "", "Remove this object", self.objects, group
-                ),
+                RemoveSettingButton("", "Remove this object", self.objects, group),
             )
 
         self.objects.append(group)
@@ -325,11 +323,11 @@ object centers).
         group = SettingsGroup()
 
         if can_remove:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
+            group.append("divider", Divider(line=False))
 
         group.append(
             "wants_scaled",
-            cellprofiler_core.setting.Binary(
+            Binary(
                 "Scale the bins?",
                 True,
                 doc="""\
@@ -349,7 +347,7 @@ taken without knowing the maximum object radius before the run starts.
 
         group.append(
             "bin_count",
-            cellprofiler_core.setting.Integer(
+            Integer(
                 "Number of bins",
                 4,
                 2,
@@ -366,7 +364,7 @@ another set of bins* button.""",
 
         group.append(
             "maximum_radius",
-            cellprofiler_core.setting.Integer(
+            Integer(
                 "Maximum radius",
                 100,
                 minval=1,
@@ -384,7 +382,7 @@ in pixels.
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
+                RemoveSettingButton(
                     "", "Remove this set of bins", self.bin_counts, group
                 ),
             )
@@ -403,7 +401,7 @@ in pixels.
         group = SettingsGroup()
 
         if len(self.heatmaps) > 0:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
+            group.append("divider", Divider(line=False))
 
         group.append(
             "image_name",
@@ -432,7 +430,7 @@ objects chosen in "Select objects to measure".""",
 
         group.append(
             "bin_count",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Number of bins",
                 self.get_bin_count_choices(),
                 choices_fn=self.get_bin_count_choices,
@@ -449,14 +447,14 @@ objects chosen in "Select objects to measure".""",
 
         group.append(
             "measurement",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Measurement", MEASUREMENT_CHOICES, doc="The measurement to display."
             ),
         )
 
         group.append(
             "colormap",
-            cellprofiler_core.setting.Colormap(
+            Colormap(
                 "Color map",
                 doc="""\
 The color map setting chooses the color palette that will be
@@ -468,7 +466,7 @@ actual image measurement.""",
 
         group.append(
             "wants_to_save_display",
-            cellprofiler_core.setting.Binary(
+            Binary(
                 "Save display as image?",
                 False,
                 doc="""\
@@ -483,7 +481,7 @@ display or *{NO}* if the display is not needed.
 
         group.append(
             "display_name",
-            cellprofiler_core.setting.ImageName(
+            ImageName(
                 "Output image name",
                 "Heatmap",
                 doc="""\
@@ -499,7 +497,7 @@ be selected in a later **SaveImages** or other module.
 
         group.append(
             "remover",
-            cellprofiler_core.setting.RemoveSettingButton(
+            RemoveSettingButton(
                 "", "Remove this heatmap display", self.heatmaps, group
             ),
         )
@@ -509,12 +507,10 @@ be selected in a later **SaveImages** or other module.
     def validate_module(self, pipeline):
         images = set()
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError(
-                "No images selected", self.images_list
-            )
+            raise ValidationError("No images selected", self.images_list)
         for image_name in self.images_list.value:
             if image_name in images:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "%s has already been selected" % image_name, image_name
                 )
             images.add(image_name)
@@ -522,7 +518,7 @@ be selected in a later **SaveImages** or other module.
         objects = set()
         for group in self.objects:
             if group.object_name.value in objects:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "{} has already been selected".format(group.object_name.value),
                     group.object_name,
                 )
@@ -531,7 +527,7 @@ be selected in a later **SaveImages** or other module.
         bins = set()
         for group in self.bin_counts:
             if group.bin_count.value in bins:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "{} has already been selected".format(group.bin_count.value),
                     group.bin_count,
                 )
@@ -686,9 +682,7 @@ be selected in a later **SaveImages** or other module.
                         output_pixels = heatmap_img
                     else:
                         if colormap == "Default":
-                            colormap = (
-                                cellprofiler_core.preferences.get_default_colormap()
-                            )
+                            colormap = get_default_colormap()
 
                         cm = matplotlib.cm.ScalarMappable(cmap=colormap)
 
@@ -1462,7 +1456,7 @@ be selected in a later **SaveImages** or other module.
         return setting_values, variable_revision_number
 
 
-class MORDObjectNameSubscriber(cellprofiler_core.setting.ObjectNameSubscriber):
+class MORDObjectNameSubscriber(ObjectNameSubscriber):
     """An object name subscriber limited by the objects in the objects' group"""
 
     def set_module(self, module):
@@ -1490,7 +1484,7 @@ class MORDObjectNameSubscriber(cellprofiler_core.setting.ObjectNameSubscriber):
         return self.value
 
 
-class MORDImageNameSubscriber(cellprofiler_core.setting.ImageNameSubscriber):
+class MORDImageNameSubscriber(ImageNameSubscriber):
     """An image name subscriber limited by the images in the image group"""
 
     def set_module(self, module):

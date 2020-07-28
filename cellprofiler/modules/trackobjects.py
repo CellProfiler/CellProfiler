@@ -209,30 +209,12 @@ import scipy.ndimage
 import scipy.sparse
 from cellprofiler_core.module import Module
 from cellprofiler_core.image import Image
-from cellprofiler_core.pipeline import IMAGE_NUMBER
 from cellprofiler_core.setting import (
     Measurement,
-    Integer,
-    Float,
-    ImageName,
-    Choice,
-    FloatRange,
-    LabelSubscriber,
     Binary,
     ValidationError,
 )
-from cellprofiler_core.measurement import (
-    MCA_AVAILABLE_EACH_CYCLE,
-    MCA_AVAILABLE_POST_GROUP,
-    IMAGE,
-    OBJECT_NUMBER,
-    Measurements,
-    COLTYPE_FLOAT,
-    GROUP_NUMBER,
-    GROUP_INDEX,
-    EXPERIMENT,
-    COLTYPE_INTEGER,
-)
+from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.preferences import get_default_colormap
 from centrosome.lapjv import lapjv
 import centrosome.filter

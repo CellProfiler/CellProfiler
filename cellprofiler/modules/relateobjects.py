@@ -209,7 +209,7 @@ Enter the name you want to call the object produced by this module. """,
 
         group.append(
             "step_parent_name",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Parent name",
                 ["None"],
                 choices_fn=self.get_step_parents,
@@ -226,7 +226,7 @@ parents or children of the parent object.""",
         if can_delete:
             group.append(
                 "remove",
-                cellprofiler_core.setting.RemoveSettingButton(
+                RemoveSettingButton(
                     "", "Remove this object", self.step_parent_names, group
                 ),
             )
@@ -772,7 +772,7 @@ parents or children of the parent object.""",
             )
 
             if self.x_name.value in parent_features:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "{} and {} were related by the {} module".format(
                         self.y_name.value, self.x_name.value, module.module_name
                     ),
@@ -783,7 +783,7 @@ parents or children of the parent object.""",
             step_parents = set()
             for group in self.step_parent_names:
                 if group.step_parent_name.value in step_parents:
-                    raise cellprofiler_core.setting.ValidationError(
+                    raise ValidationError(
                         "{} has already been chosen".format(
                             group.step_parent_name.value
                         ),
@@ -809,23 +809,11 @@ parents or children of the parent object.""",
         columns = []
         if self.find_parent_child_distances in (D_BOTH, D_CENTROID):
             for parent_name in self.get_parent_names():
-                columns += [
-                    (
-                        self.y_name.value,
-                        FF_CENTROID % parent_name,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
-                    )
-                ]
+                columns += [(self.y_name.value, FF_CENTROID % parent_name, "integer",)]
 
         if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
             for parent_name in self.get_parent_names():
-                columns += [
-                    (
-                        self.y_name.value,
-                        FF_MINIMUM % parent_name,
-                        cellprofiler_core.measurement.COLTYPE_INTEGER,
-                    )
-                ]
+                columns += [(self.y_name.value, FF_MINIMUM % parent_name, "integer",)]
 
         return columns
 
@@ -855,12 +843,12 @@ parents or children of the parent object.""",
             (
                 self.y_name.value,
                 cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                "integer",
             ),
             (
                 self.x_name.value,
                 cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
+                "integer",
             ),
         ]
 

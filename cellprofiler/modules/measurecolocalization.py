@@ -1429,15 +1429,11 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
     def validate_module(self, pipeline):
         """Make sure chosen objects are selected only once"""
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError(
-                "No images selected", self.images_list
-            )
+            raise ValidationError("No images selected", self.images_list)
 
         if self.wants_objects():
             if len(self.objects_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError(
-                    "No object sets selected", self.objects_list
-                )
+                raise ValidationError("No object sets selected", self.objects_list)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting values for pipelines saved under old revisions"""

@@ -63,10 +63,10 @@ The choices are:
 
         self.image_name = ImageSubscriber("Image", doc="Select the image to crop")
 
-        self.directory = DirectoryPath(
+        self.directory = Directory(
             "Directory",
             doc="Enter the directory where object crops are saved.",
-            value=cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
+            value=DEFAULT_OUTPUT_FOLDER_NAME,
         )
 
         self.file_format = Choice(

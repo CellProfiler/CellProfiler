@@ -207,7 +207,7 @@ You can create a morphological skeleton with the
             self.get_measurement_name("Endpoints"),
         ]
 
-        column_type = cellprofiler_core.measurement.COLTYPE_INTEGER
+        column_type = "integer"
 
         return [(image, feature, column_type) for feature in features]
 

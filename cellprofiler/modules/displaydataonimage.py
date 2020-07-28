@@ -25,6 +25,12 @@ import matplotlib.cm
 import matplotlib.figure
 import matplotlib.text
 import numpy
+from cellprofiler_core.constants.measurement import (
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+    C_PATH_NAME,
+    C_FILE_NAME,
+)
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import get_default_colormap
@@ -403,8 +409,6 @@ color map.
         # Note: workspace.measurements.image_set_number contains the image
         #    number that should be displayed.
         import wx
-        from cellprofiler_core.modules import C_PATH_NAME, C_FILE_NAME
-        from cellprofiler_core.image import LoadImagesImageProvider
         import os.path
 
         im_id = self.image_name.value
@@ -539,7 +543,7 @@ color map.
             # Added color map mode
             setting_values = setting_values + [
                 CT_TEXT,
-                cellprofiler_core.preferences.get_default_colormap(),
+                get_default_colormap(),
             ]
             variable_revision_number = 4
 

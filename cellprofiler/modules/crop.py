@@ -58,6 +58,7 @@ from cellprofiler_core.setting.subscriber import (
     LabelSubscriber,
 )
 from cellprofiler_core.setting.text import Integer, CropImageName
+from cellprofiler_core.utilities.image import crop_image
 
 SH_RECTANGLE = "Rectangle"
 SH_ELLIPSE = "Ellipse"
@@ -395,10 +396,7 @@ objects:
 
     def run(self, workspace):
         first_image_set = (
-            workspace.measurements.get_current_image_measurement(
-                cellprofiler_core.measurement.GROUP_INDEX
-            )
-            == 1
+            workspace.measurements.get_current_image_measurement("Group_Index") == 1
         )
         image_set_list = workspace.image_set_list
         d = self.get_dictionary(image_set_list)
@@ -460,19 +458,14 @@ objects:
                 image_mask = mask
         else:
             internal_cropping = self.remove_rows_and_columns == RM_ALL
-            cropped_pixel_data = cellprofiler_core.image.crop_image(
+            cropped_pixel_data = crop_image(
                 orig_image.pixel_data, cropping, internal_cropping
             )
             if mask is None:
-                mask = cellprofiler_core.image.crop_image(
-                    cropping, cropping, internal_cropping
-                )
+                mask = crop_image(cropping, cropping, internal_cropping)
             if orig_image.has_mask:
                 image_mask = (
-                    cellprofiler_core.image.crop_image(
-                        orig_image.mask, cropping, internal_cropping
-                    )
-                    & mask
+                    crop_image(orig_image.mask, cropping, internal_cropping) & mask
                 )
             else:
                 image_mask = mask
@@ -541,11 +534,7 @@ objects:
     def get_measurement_columns(self, pipeline):
         """Return information on the measurements made during cropping"""
         return [
-            (
-                "Image",
-                x % self.cropped_image_name.value,
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
-            )
+            ("Image", x % self.cropped_image_name.value, "integer",)
             for x in (FF_AREA_RETAINED, FF_ORIGINAL_AREA)
         ]
 

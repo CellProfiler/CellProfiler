@@ -410,7 +410,7 @@ Instances in which this information may be useful include:
             ),
         )
 
-        self.root_dir = DirectoryPath(
+        self.root_dir = Directory(
             "Base image folder",
             doc="""\
 *Used only if creating subfolders in the output folder*
@@ -548,12 +548,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         #
         if self.when_to_save == WS_FIRST_CYCLE:
             d = self.get_dictionary(workspace.image_set_list)
-            if (
-                workspace.measurements[
-                    "Image", cellprofiler_core.measurement.GROUP_INDEX,
-                ]
-                > 1
-            ):
+            if workspace.measurements["Image", "Group_Index",] > 1:
                 workspace.display_data.wrote_image = False
                 self.save_filename_measurements(workspace)
                 return
@@ -950,14 +945,12 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             #
             # Make sure that the image name is available on every cycle
             #
-            for setting in cellprofiler_core.setting.get_name_providers(
-                pipeline, self.image_name
-            ):
+            for setting in get_name_providers(pipeline, self.image_name):
                 if setting.provided_attributes.get("available_on_last"):
                     #
                     # If we fell through, then you can only save on the last cycle
                     #
-                    raise cellprofiler_core.setting.ValidationError(
+                    raise ValidationError(
                         "%s is only available after processing all images in an image group"
                         % self.image_name.value,
                         self.when_to_save,
@@ -978,7 +971,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             )
             undefined_tags = pipeline.get_undefined_metadata_tags(text_str)
             if len(undefined_tags) > 0:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "%s is not a defined metadata tag. Check the metadata specifications in your load modules"
                     % undefined_tags[0],
                     self.single_file_name
@@ -990,7 +983,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         return True
 
 
-class SaveImagesDirectoryPath(cellprofiler_core.setting.DirectoryPath):
+class SaveImagesDirectoryPath(DirectoryPath):
     """A specialized version of DirectoryPath to handle saving in the image dir"""
 
     def __init__(self, text, file_image_name, doc):
@@ -1023,7 +1016,7 @@ class SaveImagesDirectoryPath(cellprofiler_core.setting.DirectoryPath):
 
     def test_valid(self, pipeline):
         if self.dir_choice not in self.dir_choices:
-            raise cellprofiler_core.setting.ValidationError(
+            raise ValidationError(
                 "%s is not a valid directory option" % self.dir_choice, self
             )
 

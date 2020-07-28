@@ -1,3 +1,14 @@
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import LabelName, Integer
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_location_measurements,
+    add_object_count_measurements,
+    get_object_measurement_columns,
+)
+
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -218,13 +229,13 @@ order to keep from breaking up the object or breaking the hole.
 
         workspace.object_set.add_objects(output_objects, self.output_object_name.value)
 
-        cellprofiler_core.modules.identify.add_object_count_measurements(
+        add_object_count_measurements(
             workspace.measurements,
             self.output_object_name.value,
             numpy.max(output_objects.segmented),
         )
 
-        cellprofiler_core.modules.identify.add_object_location_measurements(
+        add_object_location_measurements(
             workspace.measurements,
             self.output_object_name.value,
             output_objects.segmented,
@@ -324,9 +335,7 @@ order to keep from breaking up the object or breaking the hole.
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
-        columns = cellprofiler_core.modules.identify.get_object_measurement_columns(
-            self.output_object_name.value
-        )
+        columns = get_object_measurement_columns(self.output_object_name.value)
         return columns
 
     def get_categories(self, pipeline, object_name):

@@ -1,3 +1,6 @@
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import LabelName
+
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -40,8 +43,6 @@ See also
 import numpy
 
 from cellprofiler_core.object import Objects
-from cellprofiler_core.setting import ObjectNameProvider
-from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.modules import identify as I
 
 TOOL_OUTLINE = "Outline"

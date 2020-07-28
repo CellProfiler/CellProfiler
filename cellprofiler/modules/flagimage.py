@@ -40,28 +40,21 @@ import logging
 import os
 
 import numpy
-from cellprofiler_core.measurement import COLTYPE_INTEGER
-from cellprofiler_core.measurement import IMAGE
+from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import DirectoryPath
 from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import FilenameText
-from cellprofiler_core.setting import Float
 from cellprofiler_core.setting import HiddenCount
 from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import MultiChoice
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import RemoveSettingButton
 from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import Text
 from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.workspace import DISPOSITION_CONTINUE
-from cellprofiler_core.workspace import DISPOSITION_SKIP
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.multichoice import MultiChoice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import Text, Filename, Directory, Float
 
 from cellprofiler.utilities.rules import Rules
 
@@ -260,7 +253,7 @@ Select the objects whose measurements you want to use for flagging.
 
         group.append(
             "rules_directory",
-            DirectoryPath(
+            Directory(
                 "Rules file location",
                 doc="""\
 *(Used only when flagging using "%(S_RULES)s")*

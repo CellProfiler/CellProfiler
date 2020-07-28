@@ -27,16 +27,14 @@ See also **ColorToGray** and **InvertForPrinting**.
 import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Choice
 from cellprofiler_core.setting import Color
-from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import Float
 from cellprofiler_core.setting import HiddenCount
-from cellprofiler_core.setting import ImageName
-from cellprofiler_core.setting import ImageNameSubscriber
-from cellprofiler_core.setting import RemoveSettingButton
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Float
 
 OFF_RED_IMAGE_NAME = 0
 OFF_GREEN_IMAGE_NAME = 1

@@ -17,6 +17,9 @@ YES          YES          NO
 
 import numpy
 import skimage.filters
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting.text import Integer
 
 
 class GaussianFilter(ImageProcessing):

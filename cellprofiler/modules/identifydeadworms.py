@@ -54,18 +54,14 @@ well as video tutorials.
 """
 
 import numpy
-from cellprofiler_core.measurement import COLTYPE_FLOAT
-from cellprofiler_core.measurement import COLTYPE_INTEGER
-from cellprofiler_core.measurement import IMAGE
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects, ObjectSet
 from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import ImageNameSubscriber
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import ObjectNameProvider
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import LabelName, Integer, Float
 from centrosome.cpmorphology import all_connected_components
 from centrosome.cpmorphology import fixup_scipy_ndimage_result
 from centrosome.cpmorphology import get_line_pts

@@ -157,11 +157,11 @@ maximal brightness already occurring in the image.
     def add_outline(self, can_remove=True):
         group = SettingsGroup()
         if can_remove:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
+            group.append("divider", Divider(line=False))
 
         group.append(
             "objects_name",
-            cellprofiler_core.setting.LabelSubscriber(
+            LabelSubscriber(
                 "Select objects to display",
                 "None",
                 doc="Choose the objects whose outlines you would like to display.",
@@ -176,7 +176,7 @@ maximal brightness already occurring in the image.
 
         group.append(
             "color",
-            cellprofiler_core.setting.Color(
+            Color(
                 "Select outline color",
                 default_color,
                 doc="Objects will be outlined in this color.",
@@ -186,9 +186,7 @@ maximal brightness already occurring in the image.
         if can_remove:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
-                    "", "Remove this outline", self.outlines, group
-                ),
+                RemoveSettingButton("", "Remove this outline", self.outlines, group),
             )
 
         self.outlines.append(group)

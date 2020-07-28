@@ -90,22 +90,8 @@ import os
 
 import numpy
 import six
-from cellprofiler_core.measurement import AGG_MEAN
-from cellprofiler_core.measurement import AGG_MEDIAN
-from cellprofiler_core.measurement import AGG_STD_DEV
-from cellprofiler_core.measurement import EXPERIMENT
-from cellprofiler_core.measurement import IMAGE
-from cellprofiler_core.measurement import IMAGE_NUMBER
 from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.measurement import NEIGHBORS
-from cellprofiler_core.measurement import R_FIRST_IMAGE_NUMBER
-from cellprofiler_core.measurement import R_FIRST_OBJECT_NUMBER
-from cellprofiler_core.measurement import R_SECOND_IMAGE_NUMBER
-from cellprofiler_core.measurement import R_SECOND_OBJECT_NUMBER
-from cellprofiler_core.measurement import find_metadata_tokens
-from cellprofiler_core.measurement import get_agg_measurement_name
 from cellprofiler_core.module import Module
-from cellprofiler_core.pipeline import EXIT_STATUS
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
@@ -113,19 +99,12 @@ from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
 from cellprofiler_core.preferences import get_headless
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import CustomChoice
-from cellprofiler_core.setting import DirectoryPath
 from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import MeasurementMultiChoice
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import RemoveSettingButton
 from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import Text
 from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Directory
 
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536
@@ -199,7 +178,7 @@ you prefer. Be sure that the delimiter you choose is not a character that is pre
 within your data (for example, in file names).""",
         )
 
-        self.directory = DirectoryPath(
+        self.directory = Directory(
             "Output file location",
             dir_choices=[
                 ABSOLUTE_FOLDER_NAME,
@@ -1117,17 +1096,6 @@ desired.
         image_set_numbers - the image sets whose data gets extracted
         workspace - workspace containing the measurements
         """
-        from cellprofiler_core.modules.loaddata import (
-            is_path_name_feature,
-            is_file_name_feature,
-        )
-        from cellprofiler_core.measurement import C_PATH_NAME, C_FILE_NAME, C_URL
-        from cellprofiler_core.utilities.image import (
-            C_MD5_DIGEST,
-            C_SCALING,
-            C_HEIGHT,
-            C_WIDTH,
-        )
 
         file_name = self.make_gct_file_name(
             workspace, image_set_numbers[0], settings_group

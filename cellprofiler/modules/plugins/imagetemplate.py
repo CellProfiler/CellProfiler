@@ -1,5 +1,3 @@
-# coding=utf-8
-
 #################################
 #
 # Imports from useful Python libraries

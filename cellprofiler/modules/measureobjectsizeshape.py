@@ -1,4 +1,3 @@
-# coding=utf-8
 import centrosome.cpmorphology
 import centrosome.zernike
 import numpy

@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 Create an RGB image with color-coded labels overlaid on a grayscale image.
 """

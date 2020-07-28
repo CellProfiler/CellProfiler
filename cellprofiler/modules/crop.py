@@ -45,7 +45,7 @@ import matplotlib.cm
 import matplotlib.figure
 import matplotlib.patches
 import numpy
-from centrosome.filter import stretch
+import centrosome.filter
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -561,7 +561,7 @@ objects:
         import wx
 
         """Show the cropping user interface"""
-        pixel_data = stretch(orig_image)
+        pixel_data = centrosome.filter.stretch(orig_image)
         #
         # Create the UI - a dialog with a figure inside
         #

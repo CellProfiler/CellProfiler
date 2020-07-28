@@ -1,5 +1,3 @@
-# coding=utf-8
-
 from cellprofiler.modules import _help
 
 __doc__ = """\

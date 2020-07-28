@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import numpy
 import scipy.ndimage
 from centrosome.cpmorphology import fixup_scipy_ndimage_result

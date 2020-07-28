@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import mahotas
 import numpy
 import scipy.ndimage

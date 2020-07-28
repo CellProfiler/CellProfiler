@@ -31,7 +31,7 @@ from cellprofiler_core.constants.measurement import (
     C_PATH_NAME,
     C_FILE_NAME,
 )
-from cellprofiler_core.image import Image
+from cellprofiler_core.image import Image, FileImage
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting import Binary, Measurement, Color
@@ -436,7 +436,7 @@ color map.
         # Add the image to the workspace ImageSetList
         image_set_list = workspace.image_set_list
         image_set = image_set_list.get_image_set(0)
-        ip = LoadImagesImageProvider(im_id, pathname, filename)
+        ip = FileImage(im_id, pathname, filename)
         image_set.providers.append(ip)
 
         self.run(workspace)

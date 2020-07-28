@@ -14,6 +14,11 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
 from cellprofiler_core.setting.text import Float, LabelName
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_count_measurements,
+    add_object_location_measurements,
+    get_object_measurement_columns,
+)
 from centrosome.cpmorphology import fixup_scipy_ndimage_result
 from centrosome.outline import outline
 
@@ -103,7 +108,7 @@ def s_lookup(x):
     return S_DICTIONARY.get(x, x)
 
 
-class MaskObjects(I.Identify):
+class MaskObjects(Identify):
     category = "Object Processing"
     module_name = "MaskObjects"
     variable_revision_number = 3
@@ -402,10 +407,8 @@ controls how remaining objects are associated with their predecessors:
             remaining_object_count = nobjects
         else:
             remaining_object_count = len(unique_labels)
-        I.add_object_count_measurements(
-            m, remaining_object_name, remaining_object_count
-        )
-        I.add_object_location_measurements(m, remaining_object_name, labels)
+        add_object_count_measurements(m, remaining_object_name, remaining_object_count)
+        add_object_location_measurements(m, remaining_object_name, labels)
         #
         # Save the input, mask and output images for display
         #
@@ -465,7 +468,7 @@ controls how remaining objects are associated with their predecessors:
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
-        columns = I.get_object_measurement_columns(self.remaining_objects.value)
+        columns = get_object_measurement_columns(self.remaining_objects.value)
         columns += [
             (object_name, FF_CHILDREN_COUNT % remaining_object_name, COLTYPE_INTEGER,),
             (remaining_object_name, FF_PARENT % object_name, COLTYPE_INTEGER,),

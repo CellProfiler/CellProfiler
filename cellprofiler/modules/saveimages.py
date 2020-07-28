@@ -39,8 +39,13 @@ import h5py
 import numpy
 import skimage.io
 import skimage.util
-from cellprofiler_core.constants.measurement import C_FILE_NAME, C_PATH_NAME, C_URL, COLTYPE_VARCHAR_FILE_NAME, \
-    COLTYPE_VARCHAR_PATH_NAME
+from cellprofiler_core.constants.measurement import (
+    C_FILE_NAME,
+    C_PATH_NAME,
+    C_URL,
+    COLTYPE_VARCHAR_FILE_NAME,
+    COLTYPE_VARCHAR_PATH_NAME,
+)
 from cellprofiler_core.constants.setting import get_name_providers
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME

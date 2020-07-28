@@ -8,6 +8,11 @@ import skimage.segmentation
 from cellprofiler_core.constants.measurement import C_LOCATION, COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider, ValidationError
+from cellprofiler_core.setting.subscriber import (
+    ImageListSubscriber,
+    LabelListSubscriber,
+)
+from cellprofiler_core.utilities.core.object import crop_labels_and_image
 
 from cellprofiler.modules import _help
 
@@ -326,20 +331,14 @@ class MeasureObjectIntensity(Module):
                     if image.dimensions == 2:
                         labels = labels.reshape(1, *labels.shape)
 
-                    labels, img = cellprofiler_core.object.crop_labels_and_image(
-                        labels, img
-                    )
-                    _, masked_image = cellprofiler_core.object.crop_labels_and_image(
-                        labels, masked_image
-                    )
+                    labels, img = crop_labels_and_image(labels, img)
+                    _, masked_image = crop_labels_and_image(labels, masked_image)
                     outlines = skimage.segmentation.find_boundaries(
                         labels, mode="inner"
                     )
 
                     if image.has_mask:
-                        _, mask = cellprofiler_core.object.crop_labels_and_image(
-                            labels, image_mask
-                        )
+                        _, mask = crop_labels_and_image(labels, image_mask)
                         masked_labels = labels.copy()
                         masked_labels[~mask] = 0
                         masked_outlines = outlines.copy()

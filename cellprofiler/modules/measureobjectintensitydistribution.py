@@ -21,7 +21,7 @@ from cellprofiler_core.setting import (
 )
 from cellprofiler_core.setting.choice import Choice, Colormap
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
-from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageListSubscriber
 from cellprofiler_core.setting.text import Integer, ImageName
 
 import cellprofiler.gui.help.content

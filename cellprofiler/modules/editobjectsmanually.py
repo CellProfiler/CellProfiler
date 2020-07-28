@@ -3,9 +3,15 @@ from cellprofiler_core.constants.measurement import (
     FF_CHILDREN_COUNT,
     FF_PARENT,
 )
+from cellprofiler_core.module import Identify
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
 from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.utilities.core.module.identify import (
+    get_object_measurement_columns,
+    add_object_location_measurements_ijv,
+    add_object_count_measurements,
+)
 
 from cellprofiler.modules import _help
 
@@ -66,7 +72,6 @@ from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import Binary
 
 from cellprofiler_core.utilities.pathname import pathname2url
-from cellprofiler_core.modules import identify as I
 
 ###########################################
 #
@@ -77,7 +82,7 @@ R_RENUMBER = "Renumber"
 R_RETAIN = "Retain"
 
 
-class EditObjectsManually(I.Identify):
+class EditObjectsManually(Identify):
     category = "Object Processing"
     variable_revision_number = 4
     module_name = "EditObjectsManually"
@@ -280,11 +285,11 @@ supplied by a previous module.
         #
         # The object count
         #
-        I.add_object_count_measurements(m, filtered_objects_name, object_count)
+        add_object_count_measurements(m, filtered_objects_name, object_count)
         #
         # The object locations
         #
-        I.add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
+        add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
 
         workspace.display_data.orig_ijv = orig_objects.ijv
         workspace.display_data.filtered_ijv = filtered_objects.ijv
@@ -368,9 +373,7 @@ supplied by a previous module.
             guidename = image_file_fbb.GetValue()
 
         if new_or_existing_rb.GetSelection() == 1:
-            provider = ObjectsImageProvider(
-                "InputObjects", pathname2url(fullname), None, None
-            )
+            provider = ObjectsImage("InputObjects", pathname2url(fullname), None, None)
             image = provider.provide_image(None)
             pixel_data = image.pixel_data
             shape = pixel_data.shape[:2]
@@ -497,7 +500,7 @@ supplied by a previous module.
         """Return information to use when creating database columns"""
         orig_image_name = self.object_name.value
         filtered_image_name = self.filtered_objects.value
-        columns = I.get_object_measurement_columns(filtered_image_name)
+        columns = get_object_measurement_columns(filtered_image_name)
         columns += [
             (
                 orig_image_name,

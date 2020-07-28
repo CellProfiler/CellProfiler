@@ -123,8 +123,11 @@ from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.setting.text import LabelName
-from cellprofiler_core.utilities.core.module.identify import add_object_count_measurements, \
-    add_object_location_measurements, get_object_measurement_columns
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_count_measurements,
+    add_object_location_measurements,
+    get_object_measurement_columns,
+)
 from centrosome.outline import outline
 from centrosome.propagate import propagate
 from scipy.interpolate import interp1d

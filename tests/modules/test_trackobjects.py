@@ -2,9 +2,18 @@ import centrosome.filter
 import numpy
 import six.moves
 
-from cellprofiler_core.constants.measurement import GROUP_NUMBER, GROUP_INDEX, R_FIRST_IMAGE_NUMBER, \
-    R_SECOND_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER, R_SECOND_OBJECT_NUMBER, C_COUNT, MCA_AVAILABLE_POST_GROUP, \
-    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler_core.constants.measurement import (
+    GROUP_NUMBER,
+    GROUP_INDEX,
+    R_FIRST_IMAGE_NUMBER,
+    R_SECOND_IMAGE_NUMBER,
+    R_FIRST_OBJECT_NUMBER,
+    R_SECOND_OBJECT_NUMBER,
+    C_COUNT,
+    MCA_AVAILABLE_POST_GROUP,
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+)
 from cellprofiler_core.image import ImageSetList
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.object import ObjectSet, Objects
@@ -193,14 +202,10 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
     module.measurement.value = "measurement"
     measurements = Measurements()
     measurements.add_all_measurements(
-        "Image",
-        GROUP_NUMBER,
-        [1] * len(labels_list),
+        "Image", GROUP_NUMBER, [1] * len(labels_list),
     )
     measurements.add_all_measurements(
-        "Image",
-        GROUP_INDEX,
-        list(range(1, len(labels_list) + 1)),
+        "Image", GROUP_INDEX, list(range(1, len(labels_list) + 1)),
     )
     pipeline = Pipeline()
     pipeline.add_module(module)
@@ -209,9 +214,7 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
     if fn:
         fn(module, None, 0)
     module.prepare_run(
-        Workspace(
-            pipeline, module, None, None, measurements, image_set_list
-        )
+        Workspace(pipeline, module, None, None, measurements, image_set_list)
     )
 
     first = True
@@ -267,18 +270,10 @@ def test_track_nothing():
 
     features = [
         feature
-        for feature in measurements.get_feature_names(
-            "Image"
-        )
+        for feature in measurements.get_feature_names("Image")
         if feature.startswith(cellprofiler.modules.trackobjects.F_PREFIX)
     ]
-    assert all(
-        [
-            column[1] in features
-            for column in columns
-            if column[0] == "Image"
-        ]
-    )
+    assert all([column[1] in features for column in columns if column[0] == "Image"])
     for feature in cellprofiler.modules.trackobjects.F_IMAGE_ALL:
         name = "_".join(
             (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "50")
@@ -448,9 +443,7 @@ def test_track_split():
         name = "_".join(
             (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "5")
         )
-        return measurements.get_all_measurements(
-            "Image", name
-        )[1]
+        return measurements.get_all_measurements("Image", name)[1]
 
     assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 0
     assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 0
@@ -719,10 +712,7 @@ def test_measurement_columns():
     )
     for object_name, features in (
         (OBJECT_NAME, cellprofiler.modules.trackobjects.F_ALL),
-        (
-            "Image",
-            cellprofiler.modules.trackobjects.F_IMAGE_ALL,
-        ),
+        ("Image", cellprofiler.modules.trackobjects.F_IMAGE_ALL,),
     ):
         for feature in features:
             if object_name == OBJECT_NAME:
@@ -975,10 +965,7 @@ def test_measurement_columns_lap():
                 + kalman_features
                 + other_features,
             ),
-            (
-                "Image",
-                cellprofiler.modules.trackobjects.F_IMAGE_ALL,
-            ),
+            ("Image", cellprofiler.modules.trackobjects.F_IMAGE_ALL,),
         ):
             for feature in features:
                 if object_name == OBJECT_NAME:
@@ -999,25 +986,13 @@ def test_measurement_columns_lap():
                 assert column[0] == object_name
                 if wants or feature in second_phase:
                     assert len(column) == 4
-                    assert (
-                        MCA_AVAILABLE_POST_GROUP
-                        in column[3]
-                    )
-                    assert column[3][
-                        MCA_AVAILABLE_POST_GROUP
-                    ]
+                    assert MCA_AVAILABLE_POST_GROUP in column[3]
+                    assert column[3][MCA_AVAILABLE_POST_GROUP]
                 else:
                     assert (
                         (len(column) == 3)
-                        or (
-                            MCA_AVAILABLE_POST_GROUP
-                            not in column[3]
-                        )
-                        or (
-                            not column[3][
-                                MCA_AVAILABLE_POST_GROUP
-                            ]
-                        )
+                        or (MCA_AVAILABLE_POST_GROUP not in column[3])
+                        or (not column[3][MCA_AVAILABLE_POST_GROUP])
                     )
 
 
@@ -1242,14 +1217,7 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
     image_set_list = ImageSetList()
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
-    workspace = Workspace(
-        pipeline,
-        module,
-        image_set,
-        ObjectSet(),
-        m,
-        image_set_list,
-    )
+    workspace = Workspace(pipeline, module, image_set, ObjectSet(), m, image_set_list,)
     return workspace, module
 
 
@@ -1306,13 +1274,9 @@ def check_relationships(
         1, cellprofiler.modules.trackobjects.R_PARENT, OBJECT_NAME, OBJECT_NAME
     )
     actual_parent_image_numbers = r[R_FIRST_IMAGE_NUMBER]
-    actual_parent_object_numbers = r[
-        R_FIRST_OBJECT_NUMBER
-    ]
+    actual_parent_object_numbers = r[R_FIRST_OBJECT_NUMBER]
     actual_child_image_numbers = r[R_SECOND_IMAGE_NUMBER]
-    actual_child_object_numbers = r[
-        R_SECOND_OBJECT_NUMBER
-    ]
+    actual_child_object_numbers = r[R_SECOND_OBJECT_NUMBER]
     assert len(actual_parent_image_numbers) == len(expected_parent_image_numbers)
     #
     # Sort similarly
@@ -2550,9 +2514,7 @@ def test_save_image():
     image_set_list = ImageSetList()
 
     module.prepare_run(
-        Workspace(
-            pipeline, module, None, None, measurements, image_set_list
-        )
+        Workspace(pipeline, module, None, None, measurements, image_set_list)
     )
 
     first = True
@@ -2647,18 +2609,10 @@ def test_neighbour_track_nothing():
 
     features = [
         feature
-        for feature in measurements.get_feature_names(
-            "Image"
-        )
+        for feature in measurements.get_feature_names("Image")
         if feature.startswith(cellprofiler.modules.trackobjects.F_PREFIX)
     ]
-    assert all(
-        [
-            column[1] in features
-            for column in columns
-            if column[0] == "Image"
-        ]
-    )
+    assert all([column[1] in features for column in columns if column[0] == "Image"])
     for feature in cellprofiler.modules.trackobjects.F_IMAGE_ALL:
         name = "_".join(
             (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "50")

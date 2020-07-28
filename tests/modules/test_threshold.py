@@ -304,8 +304,7 @@ def test_otsu3_low():
     module.run(workspace)
     m = workspace.measurements
     m_threshold = m[
-        "Image",
-        FF_ORIG_THRESHOLD % module.y_name.value,
+        "Image", FF_ORIG_THRESHOLD % module.y_name.value,
     ]
     assert round(abs(m_threshold - threshold), 7) == 0
 
@@ -333,8 +332,7 @@ def test_otsu3_high():
     module.run(workspace)
     m = workspace.measurements
     m_threshold = m[
-        "Image",
-        FF_ORIG_THRESHOLD % module.y_name.value,
+        "Image", FF_ORIG_THRESHOLD % module.y_name.value,
     ]
     assert round(abs(m_threshold - threshold), 7) == 0
 

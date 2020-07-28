@@ -168,6 +168,7 @@ from cellprofiler_core.setting import (
 )
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import ImageListSubscriber
 from cellprofiler_core.setting.text import ImageName, Integer, Float
 
 """Image selection"""
@@ -534,7 +535,7 @@ covered by objects.
             "two_class_otsu",
             Choice(
                 text="Two-class or three-class thresholding?",
-                choices=[identify.O_TWO_CLASS, identify.O_THREE_CLASS],
+                choices=[O_TWO_CLASS, O_THREE_CLASS],
                 doc="""\
 *(Used only if thresholds are calculated and the {TM_OTSU}
 thresholding method is used)*
@@ -555,8 +556,8 @@ thresholding may perform worse than two-class.
 """.format(
                     **{
                         "TM_OTSU": centrosome.threshold.TM_OTSU,
-                        "O_TWO_CLASS": identify.O_TWO_CLASS,
-                        "O_THREE_CLASS": identify.O_THREE_CLASS,
+                        "O_TWO_CLASS": O_TWO_CLASS,
+                        "O_THREE_CLASS": O_THREE_CLASS,
                     }
                 ),
             ),
@@ -566,7 +567,7 @@ thresholding may perform worse than two-class.
             "use_weighted_variance",
             Choice(
                 text="Minimize the weighted variance or the entropy?",
-                choices=[identify.O_WEIGHTED_VARIANCE, identify.O_ENTROPY],
+                choices=[O_WEIGHTED_VARIANCE, O_ENTROPY],
                 doc="""\
 Choose whether to minimize the weighted variance or the entropy when selecting
 the threshold.""",
@@ -577,7 +578,7 @@ the threshold.""",
             "assign_middle_to_foreground",
             Choice(
                 text="Assign pixels in the middle intensity class to the foreground or the background?",
-                choices=[identify.O_FOREGROUND, identify.O_BACKGROUND],
+                choices=[O_FOREGROUND, O_BACKGROUND],
                 doc="""\
 *(Used only if thresholds are calculated and the {TM_OTSU}
 thresholding method with {O_THREE_CLASS} is used)*
@@ -587,7 +588,7 @@ to the foreground pixels or the background pixels.
 """.format(
                     **{
                         "TM_OTSU": centrosome.threshold.TM_OTSU,
-                        "O_THREE_CLASS": identify.O_THREE_CLASS,
+                        "O_THREE_CLASS": O_THREE_CLASS,
                     }
                 ),
             ),
@@ -715,7 +716,7 @@ to the foreground pixels or the background pixels.
                     threshold_group.use_weighted_variance,
                     threshold_group.two_class_otsu,
                 ]
-                if threshold_group.two_class_otsu.value == identify.O_THREE_CLASS:
+                if threshold_group.two_class_otsu.value == O_THREE_CLASS:
                     result += [threshold_group.assign_middle_to_foreground]
             if threshold_group.can_remove:
                 result += [threshold_group.remove_button]
@@ -1438,16 +1439,12 @@ to the foreground pixels or the background pixels.
             for threshold_group in all_threshold_groups:
                 threshold_method = threshold_group.threshold_algorithm
                 object_fraction = threshold_group.object_fraction.value
-                two_class_otsu = (
-                    threshold_group.two_class_otsu.value == identify.O_TWO_CLASS
-                )
+                two_class_otsu = threshold_group.two_class_otsu.value == O_TWO_CLASS
                 use_weighted_variance = (
-                    threshold_group.use_weighted_variance.value
-                    == identify.O_WEIGHTED_VARIANCE
+                    threshold_group.use_weighted_variance.value == O_WEIGHTED_VARIANCE
                 )
                 assign_middle_to_foreground = (
-                    threshold_group.assign_middle_to_foreground.value
-                    == identify.O_FOREGROUND
+                    threshold_group.assign_middle_to_foreground.value == O_FOREGROUND
                 )
                 (local_threshold, global_threshold) = (
                     centrosome.threshold.get_threshold(
@@ -1541,25 +1538,25 @@ to the foreground pixels or the background pixels.
         z = itertools.product(
             [centrosome.threshold.TM_OTSU],
             [0],
-            [identify.O_WEIGHTED_VARIANCE, identify.O_ENTROPY],
-            [identify.O_THREE_CLASS],
-            [identify.O_FOREGROUND, identify.O_BACKGROUND],
+            [O_WEIGHTED_VARIANCE, O_ENTROPY],
+            [O_THREE_CLASS],
+            [O_FOREGROUND, O_BACKGROUND],
         )
         threshold_args += [i for i in z]
         z = itertools.product(
             [centrosome.threshold.TM_OTSU],
             [0],
-            [identify.O_WEIGHTED_VARIANCE, identify.O_ENTROPY],
-            [identify.O_TWO_CLASS],
-            [identify.O_FOREGROUND],
+            [O_WEIGHTED_VARIANCE, O_ENTROPY],
+            [O_TWO_CLASS],
+            [O_FOREGROUND],
         )
         threshold_args += [i for i in z]
         z = itertools.product(
             [centrosome.threshold.TM_MOG],
             object_fraction,
-            [identify.O_WEIGHTED_VARIANCE],
-            [identify.O_TWO_CLASS],
-            [identify.O_FOREGROUND],
+            [O_WEIGHTED_VARIANCE],
+            [O_TWO_CLASS],
+            [O_FOREGROUND],
         )
         threshold_args += [i for i in z]
         # Tack on the remaining simpler methods
@@ -1569,11 +1566,7 @@ to the foreground pixels or the background pixels.
             if i not in [centrosome.threshold.TM_OTSU, centrosome.threshold.TM_MOG]
         ]
         z = itertools.product(
-            leftover_methods,
-            [0],
-            [identify.O_WEIGHTED_VARIANCE],
-            [identify.O_TWO_CLASS],
-            [identify.O_FOREGROUND],
+            leftover_methods, [0], [O_WEIGHTED_VARIANCE], [O_TWO_CLASS], [O_FOREGROUND],
         )
         threshold_args += [i for i in z]
 
@@ -1641,9 +1634,9 @@ to the foreground pixels or the background pixels.
             for idx in range(num_images):
                 new_settings += setting_values[(idx * 8) : (idx * 8 + 8)]
                 new_settings += [
-                    identify.O_TWO_CLASS,
-                    identify.O_WEIGHTED_VARIANCE,
-                    identify.O_FOREGROUND,
+                    O_TWO_CLASS,
+                    O_WEIGHTED_VARIANCE,
+                    O_FOREGROUND,
                 ]
             setting_values = new_settings
             variable_revision_number = 3
@@ -1827,15 +1820,15 @@ class ImageQualitySettingsGroup(SettingsGroup):
         #
         threshold_algorithm = self.threshold_algorithm
         if threshold_algorithm == centrosome.threshold.TM_OTSU:
-            if self.two_class_otsu == identify.O_TWO_CLASS:
+            if self.two_class_otsu == O_TWO_CLASS:
                 scale = "2"
             else:
                 scale = "3"
-                if self.assign_middle_to_foreground == identify.O_FOREGROUND:
+                if self.assign_middle_to_foreground == O_FOREGROUND:
                     scale += "F"
                 else:
                     scale += "B"
-            if self.use_weighted_variance == identify.O_WEIGHTED_VARIANCE:
+            if self.use_weighted_variance == O_WEIGHTED_VARIANCE:
                 scale += "W"
             else:
                 scale += "S"
@@ -1851,15 +1844,15 @@ class ImageQualitySettingsGroup(SettingsGroup):
         agg - if present, the aggregating method, e.g., "Mean"
         """
         if self.threshold_algorithm == centrosome.threshold.TM_OTSU:
-            if self.use_weighted_variance == identify.O_WEIGHTED_VARIANCE:
+            if self.use_weighted_variance == O_WEIGHTED_VARIANCE:
                 wvorentropy = "WV"
             else:
                 wvorentropy = "S"
-            if self.two_class_otsu == identify.O_TWO_CLASS:
+            if self.two_class_otsu == O_TWO_CLASS:
                 result = "Otsu {} 2 cls".format(wvorentropy)
             else:
                 result = "Otsu {} 3 cls".format(wvorentropy)
-                if self.assign_middle_to_foreground == identify.O_FOREGROUND:
+                if self.assign_middle_to_foreground == O_FOREGROUND:
                     result += " Fg"
                 else:
                     result += " Bg"

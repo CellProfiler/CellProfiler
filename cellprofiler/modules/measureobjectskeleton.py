@@ -77,9 +77,11 @@ from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
 from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Directory
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.setting.text import Text
+from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.ndimage import grey_dilation, grey_erosion
 

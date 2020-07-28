@@ -496,15 +496,11 @@ measured and will result in a undefined value in the output file.
             )
             pixel_data = objects.crop_image_similarly(image.pixel_data)
         except ValueError:
-            pixel_data, m1 = size_similarly(
-                labels, image.pixel_data
-            )
+            pixel_data, m1 = size_similarly(labels, image.pixel_data)
 
             if numpy.any(~m1):
                 if image.has_mask:
-                    mask, m2 = size_similarly(
-                        labels, image.mask
-                    )
+                    mask, m2 = size_similarly(labels, image.mask)
                     mask[~m2] = False
                 else:
                     mask = m1

@@ -4,6 +4,10 @@ import numpy
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary, ValidationError, Divider
+from cellprofiler_core.setting.subscriber import (
+    LabelListSubscriber,
+    ImageListSubscriber,
+)
 
 from cellprofiler.modules import _help
 

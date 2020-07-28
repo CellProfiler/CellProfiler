@@ -1,9 +1,19 @@
 import numpy.ma
 import scipy.ndimage
 import scipy.sparse
-from cellprofiler_core.constants.measurement import COLTYPE_INTEGER, COLTYPE_FLOAT, GROUP_INDEX, GROUP_NUMBER, \
-    OBJECT_NUMBER, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, MCA_AVAILABLE_POST_GROUP, EXPERIMENT, \
-    MCA_AVAILABLE_EACH_CYCLE, IMAGE_NUMBER
+from cellprofiler_core.constants.measurement import (
+    COLTYPE_INTEGER,
+    COLTYPE_FLOAT,
+    GROUP_INDEX,
+    GROUP_NUMBER,
+    OBJECT_NUMBER,
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+    MCA_AVAILABLE_POST_GROUP,
+    EXPERIMENT,
+    MCA_AVAILABLE_EACH_CYCLE,
+    IMAGE_NUMBER,
+)
 from cellprofiler_core.constants.module import HELP_ON_MEASURING_DISTANCES
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import FloatRange
@@ -517,7 +527,9 @@ they are within this distance. To determine a suitable pixel distance,
 you can look at the axis increments on each image (shown in pixel units)
 or use the distance measurement tool.
 %(HELP_ON_MEASURING_DISTANCES)s
-""".format(HELP_ON_MEASURING_DISTANCES),
+""".format(
+                HELP_ON_MEASURING_DISTANCES
+            ),
         )
 
         self.model = Choice(
@@ -3607,7 +3619,11 @@ Enter a name to give the color-coded image of tracked labels.""",
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        if object_name == "Image" and category == F_PREFIX and measurement in F_IMAGE_ALL:
+        if (
+            object_name == "Image"
+            and category == F_PREFIX
+            and measurement in F_IMAGE_ALL
+        ):
             return [self.object_name.value]
         return []
 

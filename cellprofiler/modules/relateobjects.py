@@ -4,9 +4,24 @@ import cellprofiler_core.object
 import numpy
 import scipy.ndimage
 import skimage.segmentation
-from cellprofiler_core.constants.measurement import C_PARENT, C_CHILDREN, FF_PARENT, FF_CHILDREN_COUNT, R_PARENT, \
-    R_CHILD, MCA_AVAILABLE_EACH_CYCLE, C_COUNT, C_LOCATION, C_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, FTR_CENTER_Z, \
-    FTR_OBJECT_NUMBER, M_NUMBER_OBJECT_NUMBER, COLTYPE_FLOAT
+from cellprofiler_core.constants.measurement import (
+    C_PARENT,
+    C_CHILDREN,
+    FF_PARENT,
+    FF_CHILDREN_COUNT,
+    R_PARENT,
+    R_CHILD,
+    MCA_AVAILABLE_EACH_CYCLE,
+    C_COUNT,
+    C_LOCATION,
+    C_NUMBER,
+    FTR_CENTER_X,
+    FTR_CENTER_Y,
+    FTR_CENTER_Z,
+    FTR_OBJECT_NUMBER,
+    M_NUMBER_OBJECT_NUMBER,
+    COLTYPE_FLOAT,
+)
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.setting import Binary, SettingsGroup, ValidationError
 from cellprofiler_core.setting.choice import Choice

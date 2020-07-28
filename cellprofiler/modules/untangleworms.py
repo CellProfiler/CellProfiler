@@ -133,7 +133,6 @@ from centrosome.propagate import propagate
 from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from scipy.sparse import coo
-
 import cellprofiler
 
 RETAINING_OUTLINES_HELP = """\

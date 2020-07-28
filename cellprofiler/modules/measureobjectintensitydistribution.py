@@ -1,5 +1,3 @@
-import cellprofiler_core.object
-import cellprofiler_core.workspace
 import centrosome.cpmorphology
 import centrosome.propagate
 import centrosome.zernike
@@ -21,8 +19,16 @@ from cellprofiler_core.setting import (
 )
 from cellprofiler_core.setting.choice import Choice, Colormap
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
-from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageListSubscriber
+from cellprofiler_core.setting.subscriber import (
+    LabelSubscriber,
+    ImageListSubscriber,
+    ImageSubscriber,
+)
 from cellprofiler_core.setting.text import Integer, ImageName
+from cellprofiler_core.utilities.core.object import (
+    crop_labels_and_image,
+    size_similarly,
+)
 
 import cellprofiler.gui.help.content
 
@@ -824,9 +830,7 @@ be selected in a later **SaveImages** or other module.
 
         objects = workspace.object_set.get_objects(object_name)
 
-        labels, pixel_data = cellprofiler_core.object.crop_labels_and_image(
-            objects.segmented, image.pixel_data
-        )
+        labels, pixel_data = crop_labels_and_image(objects.segmented, image.pixel_data)
 
         nobjects = numpy.max(objects.segmented)
 
@@ -889,9 +893,7 @@ be selected in a later **SaveImages** or other module.
                 #
                 center_objects = workspace.object_set.get_objects(center_object_name)
 
-                center_labels, cmask = cellprofiler_core.object.size_similarly(
-                    labels, center_objects.segmented
-                )
+                center_labels, cmask = size_similarly(labels, center_objects.segmented)
 
                 pixel_counts = centrosome.cpmorphology.fixup_scipy_ndimage_result(
                     scipy.ndimage.sum(
@@ -1461,7 +1463,7 @@ be selected in a later **SaveImages** or other module.
         return setting_values, variable_revision_number
 
 
-class MORDObjectNameSubscriber(ObjectNameSubscriber):
+class MORDObjectNameSubscriber(LabelSubscriber):
     """An object name subscriber limited by the objects in the objects' group"""
 
     def set_module(self, module):
@@ -1489,7 +1491,7 @@ class MORDObjectNameSubscriber(ObjectNameSubscriber):
         return self.value
 
 
-class MORDImageNameSubscriber(ImageNameSubscriber):
+class MORDImageNameSubscriber(ImageSubscriber):
     """An image name subscriber limited by the images in the image group"""
 
     def set_module(self, module):

@@ -3,6 +3,7 @@ from cellprofiler_core.constants.measurement import (
     FF_CHILDREN_COUNT,
     FF_PARENT,
 )
+from cellprofiler_core.image import ObjectsImage
 from cellprofiler_core.module import Identify
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber

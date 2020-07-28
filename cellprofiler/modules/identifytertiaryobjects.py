@@ -6,11 +6,15 @@ from cellprofiler_core.constants.measurement import (
     COLTYPE_INTEGER,
 )
 from cellprofiler_core.module import Module
-import cellprofiler_core.modules
 from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_count_measurements,
+    add_object_location_measurements,
+    get_object_measurement_columns,
+)
 from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.outline import outline
 
@@ -378,13 +382,13 @@ but the results will be zero or not-a-number (NaN).
         #
         # The object count
         #
-        cpmi.add_object_count_measurements(
+        add_object_count_measurements(
             workspace.measurements, self.subregion_objects_name.value, object_count
         )
         #
         # The object locations
         #
-        cpmi.add_object_location_measurements(
+        add_object_location_measurements(
             workspace.measurements, self.subregion_objects_name.value, tertiary_labels
         )
 
@@ -437,7 +441,7 @@ but the results will be zero or not-a-number (NaN).
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
         subregion_name = self.subregion_objects_name.value
-        columns = cpmi.get_object_measurement_columns(subregion_name)
+        columns = get_object_measurement_columns(subregion_name)
         for parent in (
             self.primary_objects_name.value,
             self.secondary_objects_name.value,

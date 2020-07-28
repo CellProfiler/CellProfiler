@@ -5,9 +5,9 @@ from cellprofiler_core.constants.measurement import (
     FF_PARENT,
     FF_CHILDREN_COUNT,
 )
-from cellprofiler_core.modules import identify as I
+import matplotlib.cm
+from cellprofiler_core.module import Identify
 from cellprofiler_core.object import Objects
-from cellprofiler_core.object import size_similarly
 from cellprofiler_core.preferences import get_primary_outline_color
 from cellprofiler_core.preferences import get_secondary_outline_color
 from cellprofiler_core.setting import Binary
@@ -19,6 +19,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     get_object_measurement_columns,
 )
+from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result
 from centrosome.outline import outline
 

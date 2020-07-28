@@ -141,7 +141,7 @@ from cellprofiler_core.setting import (
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import LabelSubscriber
-from cellprofiler_core.setting.text import Text, Directory
+from cellprofiler_core.setting.text import Text, Directory, Integer
 from cellprofiler_core.utilities.measurement import agg_ignore_feature
 
 import cellprofiler

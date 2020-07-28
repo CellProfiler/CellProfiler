@@ -10,13 +10,19 @@ import centrosome.threshold
 import numpy
 import scipy.linalg.basic
 import scipy.ndimage
+from cellprofiler_core.constants.image import C_SCALING
 from cellprofiler_core.constants.measurement import (
     COLTYPE_FLOAT,
     EXPERIMENT,
     MCA_AVAILABLE_POST_RUN,
 )
+from cellprofiler_core.constants.module._identify import (
+    O_WEIGHTED_VARIANCE,
+    O_ENTROPY,
+    O_FOREGROUND,
+    O_BACKGROUND,
+)
 from cellprofiler_core.module import Module
-from cellprofiler_core.modules import identify
 
 __doc__ = """\
 MeasureImageQuality
@@ -170,6 +176,8 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageListSubscriber
 from cellprofiler_core.setting.text import ImageName, Integer, Float
+
+from cellprofiler.modules.threshold import O_THREE_CLASS, O_TWO_CLASS
 
 """Image selection"""
 O_ALL_LOADED = "All loaded images"  # Use all loaded images
@@ -795,11 +803,7 @@ to the foreground pixels or the background pixels.
                     columns.append(
                         (
                             "Image",
-                            "{}_{}_{}".format(
-                                C_IMAGE_QUALITY,
-                                cellprofiler_core.utilities.image.C_SCALING,
-                                image_name,
-                            ),
+                            "{}_{}_{}".format(C_IMAGE_QUALITY, C_SCALING, image_name,),
                             COLTYPE_FLOAT,
                         )
                     )

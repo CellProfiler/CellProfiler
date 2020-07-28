@@ -60,7 +60,6 @@ import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
 
-import cellprofiler_core.modules.identify
 import cellprofiler_core.object
 
 O_SHRINK_INF = "Shrink objects to a point"

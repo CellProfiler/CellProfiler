@@ -1,5 +1,11 @@
+from cellprofiler_core.module import Identify
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_location_measurements,
+    add_object_count_measurements,
+    get_object_measurement_columns,
+)
 
 from cellprofiler.modules import _help
 
@@ -43,14 +49,13 @@ See also
 import numpy
 
 from cellprofiler_core.object import Objects
-from cellprofiler_core.modules import identify as I
 
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"
 TOOL_ERASE = "Erase"
 
 
-class IdentifyObjectsManually(I.Identify):
+class IdentifyObjectsManually(Identify):
     category = "Object Processing"
     module_name = "IdentifyObjectsManually"
     variable_revision_number = 2
@@ -108,11 +113,11 @@ refer to your objects in subsequent modules.""",
         # The object count
         #
         object_count = numpy.max(labels)
-        I.add_object_count_measurements(m, objects_name, object_count)
+        add_object_count_measurements(m, objects_name, object_count)
         #
         # The object locations
         #
-        I.add_object_location_measurements(m, objects_name, labels)
+        add_object_location_measurements(m, objects_name, labels)
 
         workspace.display_data.labels = labels
         workspace.display_data.pixel_data = pixel_data
@@ -168,7 +173,7 @@ refer to your objects in subsequent modules.""",
 
         Return a list of tuples of object name, measurement name and data type
         """
-        result = I.get_object_measurement_columns(self.objects_name.value)
+        result = get_object_measurement_columns(self.objects_name.value)
         return result
 
     @property

@@ -18,6 +18,7 @@ from cellprofiler_core.constants.measurement import (
     FF_COUNT,
     C_COUNT,
 )
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
@@ -179,9 +180,7 @@ N_SETTING_VALUES = 10
 R_PARENT = "Parent"
 
 
-class IdentifySecondaryObjects(
-    cellprofiler_core.module.image_segmentation.ObjectProcessing
-):
+class IdentifySecondaryObjects(ObjectProcessing):
     module_name = "IdentifySecondaryObjects"
 
     variable_revision_number = 10

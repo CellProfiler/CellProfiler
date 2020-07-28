@@ -1,31 +1,3 @@
-# coding=utf-8
-
-from functools import reduce
-
-import numpy
-
-from cellprofiler_core.image import Image
-from cellprofiler_core.measurement import IMAGE
-from cellprofiler_core.measurement import COLTYPE_FLOAT
-from cellprofiler_core.measurement import COLTYPE_INTEGER
-from cellprofiler_core.module import Module
-from cellprofiler_core.preferences import get_default_colormap
-from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import Text
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import RemoveSettingButton
-from cellprofiler_core.setting import HiddenCount
-from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import AlphanumericText
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import ImageNameProvider
-
 __doc__ = """\
 ClassifyObjects
 ===============
@@ -90,6 +62,20 @@ Measurements made by this module
       measurement versus the 2\ :sup:`nd` measurement binned into bins
       above (“high”) and below (“low”) the cutoff.
 """
+
+import functools
+
+import numpy
+
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import HiddenCount
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting import Divider
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"
@@ -636,7 +622,7 @@ example, to be saved by a **SaveImages** module).
 
     def settings(self):
         result = [self.contrast_choice, self.single_measurement_count]
-        result += reduce(
+        result += functools.reduce(
             lambda x, y: x + y,
             [group.pipeline_settings() for group in self.single_measurements],
         )

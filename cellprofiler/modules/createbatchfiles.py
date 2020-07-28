@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 CreateBatchFiles
 ================
@@ -26,7 +24,6 @@ YES          YES          NO
 
 import logging
 
-
 import numpy
 import os
 import re
@@ -37,12 +34,8 @@ import cellprofiler
 from cellprofiler_core.module import Module
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.pipeline import Pipeline
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import RemoveSettingButton
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import Setting
-from cellprofiler_core.setting import Text
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting import Divider
@@ -53,8 +46,6 @@ from cellprofiler_core.preferences import get_headless
 from cellprofiler_core.preferences import get_absolute_path
 from cellprofiler_core.preferences import set_default_image_directory
 from cellprofiler_core.workspace import Workspace
-from cellprofiler_core.measurement import F_BATCH_DATA_H5
-from cellprofiler_core.measurement import F_BATCH_DATA
 
 """# of settings aside from the mappings"""
 S_FIXED_COUNT = 8

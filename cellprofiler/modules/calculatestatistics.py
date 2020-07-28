@@ -1,29 +1,3 @@
-import functools
-import os
-
-import numpy
-import scipy.optimize
-import six
-from cellprofiler_core.constants.measurement import EXPERIMENT
-from cellprofiler_core.constants.measurement import IMAGE
-from cellprofiler_core.constants.measurement import NEIGHBORS
-from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.module import Module
-from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting.do_something import DoSomething
-from cellprofiler_core.setting.do_something import RemoveSettingButton
-from cellprofiler_core.setting.text import Directory
-from cellprofiler_core.setting.text import Text
-
 """
 CalculateStatistics
 ===================
@@ -164,6 +138,32 @@ References
    `Ilya Ravkin`_. Carlos Evangelista donated his copyrighted
    dose-response-related code.
 """
+
+import functools
+import os
+
+import numpy
+import scipy.optimize
+import six
+from cellprofiler_core.constants.measurement import EXPERIMENT
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.measurement import NEIGHBORS
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import RemoveSettingButton
+from cellprofiler_core.setting.text import Directory
+from cellprofiler_core.setting.text import Text
 
 """# of settings aside from the dose measurements"""
 FIXED_SETTING_COUNT = 1

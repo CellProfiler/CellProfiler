@@ -1,25 +1,3 @@
-import logging
-
-import numpy
-import six
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
-from cellprofiler_core.constants.measurement import IMAGE
-from cellprofiler_core.constants.measurement import R_FIRST_IMAGE_NUMBER
-from cellprofiler_core.constants.measurement import R_FIRST_OBJECT_NUMBER
-from cellprofiler_core.constants.measurement import R_PARENT
-from cellprofiler_core.constants.measurement import R_SECOND_IMAGE_NUMBER
-from cellprofiler_core.constants.measurement import R_SECOND_OBJECT_NUMBER
-from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.text import Alphanumeric
-from cellprofiler_core.setting.text import Float
-from cellprofiler_core.setting.text import Integer
-from cellprofiler_core.setting.text import LabelName
-
 """
 CalculateMath
 =============
@@ -72,6 +50,28 @@ Measurements made by this module
 The result of these calculations is a new measurement in the “Math”
 category.
 """
+
+import logging
+
+import numpy
+import six
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.measurement import R_FIRST_IMAGE_NUMBER
+from cellprofiler_core.constants.measurement import R_FIRST_OBJECT_NUMBER
+from cellprofiler_core.constants.measurement import R_PARENT
+from cellprofiler_core.constants.measurement import R_SECOND_IMAGE_NUMBER
+from cellprofiler_core.constants.measurement import R_SECOND_OBJECT_NUMBER
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.text import Alphanumeric
+from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.setting.text import LabelName
 
 O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"

@@ -1,4 +1,10 @@
-# coding=utf-8
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
+import numpy
+import skimage.segmentation
+import skimage.morphology
+import scipy.ndimage
 
 """
 CombineObjects
@@ -32,14 +38,6 @@ YES          NO           NO
 ============ ============ ===============
 
 """
-
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
-import numpy
-import skimage.segmentation
-import skimage.morphology
-from scipy.ndimage import distance_transform_edt
 
 
 class CombineObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
@@ -200,12 +198,14 @@ subsequent modules.""",
             disputed = numpy.logical_and(labels_x > 0, labels_y > 0)
             seeds = numpy.add(labels_x, labels_y)
             seeds[disputed] = 0
-            distances, (i, j) = distance_transform_edt(seeds == 0, return_indices=True)
+            distances, (i, j) = scipy.ndimage.distance_transform_edt(
+                seeds == 0, return_indices=True
+            )
             output[to_segment] = seeds[i[to_segment], j[to_segment]]
 
         elif method == "Merge":
             to_segment = numpy.logical_or(labels_x > 0, labels_y > 0)
-            distances, (i, j) = distance_transform_edt(
+            distances, (i, j) = scipy.ndimage.distance_transform_edt(
                 labels_x == 0, return_indices=True
             )
             output[to_segment] = labels_x[i[to_segment], j[to_segment]]

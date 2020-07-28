@@ -1307,7 +1307,7 @@ class CPFrame(wx.Frame):
         self.SetIcon(cellprofiler.gui.get_cp_icon())
 
     def __on_data_tool_help(self, event, tool_name):
-        module = cellprofiler_core.modules.instantiate_module(tool_name)
+        module = instantiate_module(tool_name)
         self.do_help_module(tool_name, module.get_help())
 
     def add_error_listener(self, listener):

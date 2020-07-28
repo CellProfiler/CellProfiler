@@ -4,12 +4,13 @@
 import bisect
 import logging
 import uuid
-from functools import reduce
+import functools
 
 import numpy
 import six.moves.urllib.request
 import wx
 import wx.lib.scrolledpanel
+from cellprofiler_core.preferences import report_progress
 
 import cellprofiler.gui
 
@@ -359,10 +360,10 @@ class PathListCtrl(wx.ScrolledWindow):
                     [numpy.sum(x.enabled) if x.opened else 0 for x in self.folder_items]
                 )
             self.folder_idxs = numpy.hstack(([0], numpy.cumsum(self.folder_counts + 1)))
-            max_width = reduce(
+            max_width = functools.reduce(
                 max,
                 [
-                    max(reduce(max, x.widths), x.display_width)
+                    max(functools.reduce(max, x.widths), x.display_width)
                     for x in self.folder_items
                 ],
             )

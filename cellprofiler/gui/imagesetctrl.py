@@ -1562,8 +1562,6 @@ class FilterPanelDlg(wx.Dialog):
                         """
         super(self.__class__, self).__init__(parent, size=(640, 480))
         self.SetTitle("Select images using a filter")
-        from cellprofiler_core.modules.images import FilePredicate, DirectoryPredicate
-        from cellprofiler_core.modules.images import ExtensionPredicate
 
         self.filter_setting = cellprofiler_core.setting.Filter(
             "Filter",

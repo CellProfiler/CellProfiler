@@ -265,14 +265,14 @@ def search_module_help(text):
 
             count += len(matches)
 
-    for module_name in cellprofiler_core.modules.get_module_names():
-        module = cellprofiler_core.modules.instantiate_module(module_name)
+    for module_name in get_module_names():
+        module = instantiate_module(module_name)
 
         location = os.path.split(module.create_settings.__func__.__code__.co_filename)[
             0
         ]
 
-        if location == cellprofiler_core.preferences.get_plugin_directory():
+        if location == get_plugin_directory():
             continue
 
         prelim_matches = quick_search(module, text.lower())

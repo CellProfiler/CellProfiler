@@ -811,10 +811,7 @@ class PipelineListView(object):
     def on_filelist_data(self, x, y, action, filenames):
         for filename in filenames:
             _, ext = os.path.splitext(filename)
-            if (
-                len(ext) > 1
-                and ext[1:] in cellprofiler_core.preferences.EXT_PROJECT_CHOICES
-            ):
+            if len(ext) > 1 and ext[1:] in EXT_PROJECT_CHOICES:
                 self.__frame.Raise()
                 if (
                     wx.MessageBox(
@@ -827,10 +824,7 @@ class PipelineListView(object):
                 ):
                     self.__frame.pipeline_controller.do_open_workspace(filename)
                     break
-            elif (
-                len(ext) > 1
-                and ext[1:] in cellprofiler_core.preferences.EXT_PIPELINE_CHOICES
-            ):
+            elif len(ext) > 1 and ext[1:] in EXT_PIPELINE_CHOICES:
                 self.__frame.Raise()
                 if (
                     wx.MessageBox(

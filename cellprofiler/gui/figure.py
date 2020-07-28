@@ -1879,9 +1879,7 @@ class Figure(wx.Frame):
         image = numpy.zeros(list(shape) + [3], numpy.float)
 
         if len(ijv) > 0:
-            cm = matplotlib.cm.get_cmap(
-                cellprofiler_core.preferences.get_default_colormap()
-            )
+            cm = matplotlib.cm.get_cmap(get_default_colormap())
 
             max_label = numpy.max(ijv[:, 2])
 

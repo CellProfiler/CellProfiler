@@ -1,4 +1,9 @@
 import wx
+from cellprofiler_core.utilities.core.modules import (
+    get_module_names,
+    instantiate_module,
+    get_module_class,
+)
 
 import cellprofiler.gui
 import cellprofiler.gui.cpframe
@@ -148,15 +153,15 @@ class AddModuleFrame(wx.Frame):
         for key in self.__module_files:
             self.__module_dict[key] = {}
 
-        for mn in cellprofiler_core.modules.get_module_names():
+        for mn in get_module_names():
 
             def loader(module_num, mn=mn):
-                module = cellprofiler_core.modules.instantiate_module(mn)
+                module = instantiate_module(mn)
                 module.set_module_num(module_num)
                 return module
 
             try:
-                module = cellprofiler_core.modules.get_module_class(mn)
+                module = get_module_class(mn)
                 if module.is_input_module():
                     continue
                 categories = (

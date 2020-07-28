@@ -1,4 +1,5 @@
 import wx
+from cellprofiler_core.pipeline import PipelineLoadCancelledException
 
 
 class Pipeline(cellprofiler_core.pipeline.Pipeline):
@@ -19,9 +20,7 @@ class Pipeline(cellprofiler_core.pipeline.Pipeline):
             if dialog.ShowModal() != wx.ID_OK:
                 dialog.Destroy()
 
-                raise cellprofiler_core.pipeline.event.PipelineLoadCancelledException(
-                    message
-                )
+                raise PipelineLoadCancelledException(message)
 
             dialog.Destroy()
         else:

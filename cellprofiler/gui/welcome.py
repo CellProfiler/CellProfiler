@@ -192,7 +192,7 @@ class Welcome(wx.Frame):
             )
 
     def __set_startup_blurb(self):
-        cellprofiler_core.preferences.set_startup_blurb(False)
+        set_startup_blurb(False)
         wx.MessageBox(
             'This page can be accessed from "Help --> Show Welcome Screen" at any time.\n'
             "",

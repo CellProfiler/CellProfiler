@@ -5,6 +5,12 @@ import platform
 import sentry_sdk
 import wx
 import wx.lib.inspection
+from cellprofiler_core.preferences import (
+    get_telemetry_prompt,
+    set_telemetry,
+    set_telemetry_prompt,
+)
+from cellprofiler_core.utilities.java import stop_java, start_java
 
 import cellprofiler.gui.dialog
 
@@ -38,7 +44,7 @@ class App(wx.App):
 
         self.workspace_path = kwargs.pop("workspace_path", None)
 
-        cellprofiler_core.utilities.java.start_java()
+        start_java()
 
         super(App, self).__init__(*args, **kwargs)
 
@@ -76,7 +82,7 @@ class App(wx.App):
         return True
 
     def OnExit(self):
-        cellprofiler_core.utilities.java.stop_java()
+        stop_java()
 
         return 0
 

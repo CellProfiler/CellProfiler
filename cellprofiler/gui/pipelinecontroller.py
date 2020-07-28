@@ -2238,7 +2238,6 @@ class PipelineController(object):
 
     def populate_edit_menu(self, menu):
         """Display a menu of modules to add"""
-        from cellprofiler_core.modules import get_module_names
 
         #
         # Get a two-level dictionary of categories and names
@@ -2305,7 +2304,6 @@ class PipelineController(object):
         self.__module_view.set_selection(module_num)
 
     def on_menu_add_module(self, event):
-        from cellprofiler_core.modules import instantiate_module
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
 
         assert isinstance(event, wx.CommandEvent)
@@ -2681,7 +2679,7 @@ class PipelineController(object):
 
             num_workers = min(
                 len(self.__workspace.measurements.get_image_numbers()),
-                cellprofiler_core.preferences.get_max_workers(),
+                get_max_workers(),
             )
 
             self.__analysis = cellprofiler_core.analysis.Analysis(
@@ -2702,7 +2700,7 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", extended_message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
 
                 self.stop_running()
 
@@ -2886,7 +2884,7 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
         finally:
             # we need to ensure that the reply_cb gets a reply
             evt.reply(cellprofiler_core.analysis.reply.Ack())
@@ -2918,7 +2916,7 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
 
     def module_display_post_group_request(self, evt):
         assert (
@@ -2947,7 +2945,7 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
         finally:
             evt.reply(cellprofiler_core.analysis.reply.Ack())
 
@@ -2974,7 +2972,7 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
         finally:
             # we need to ensure that the reply_cb gets a reply (even if it
             # being empty causes futher exceptions).
@@ -3058,7 +3056,7 @@ class PipelineController(object):
         error = cellprofiler.gui.dialog.Error("Error", message)
 
         if error.status == wx.ID_CANCEL:
-            cellprofiler_core.preferences.cancel_progress()
+            cancel_progress()
 
             self.stop_running()
 
@@ -3123,9 +3121,9 @@ class PipelineController(object):
             [x == cellprofiler_core.analysis.Runner.STATUS_DONE for x in status]
         )
         self.stop_running()
-        if cellprofiler_core.preferences.get_wants_pony():
+        if get_wants_pony():
             Sound(os.path.join(cellprofiler.icons.resources, "wantpony.wav")).Play()
-        if cellprofiler_core.preferences.get_show_analysis_complete_dlg():
+        if get_show_analysis_complete_dlg():
             self.show_analysis_complete(n_image_sets)
         m.close()
         self.run_next_pipeline(None)
@@ -3603,9 +3601,7 @@ class PipelineController(object):
 
         class ChooseImageSetDialog(wx.Dialog, wx.lib.mixins.listctrl.ColumnSorterMixin):
             def __init__(self, parent):
-                dlg_size = (
-                    cellprofiler_core.preferences.get_choose_image_set_frame_size()
-                )
+                dlg_size = get_choose_image_set_frame_size()
                 if dlg_size is None:
                     dlg_size = wx.DefaultSize
                 wx.Dialog.__init__(
@@ -3699,9 +3695,7 @@ class PipelineController(object):
 
                 assert isinstance(event, wx.SizeEvent)
 
-                cellprofiler_core.preferences.set_choose_image_set_frame_size(
-                    size.width, size.height
-                )
+                set_choose_image_set_frame_size(size.width, size.height)
 
                 event.Skip(True)
 
@@ -3857,10 +3851,7 @@ class PipelineController(object):
 
                 if sys.platform == "darwin":
                     subprocess.call(
-                        [
-                            "open",
-                            cellprofiler_core.preferences.get_default_output_directory(),
-                        ]
+                        ["open", get_default_output_directory(),]
                     )
                 elif sys.platform == "win32":
                     subprocess.call(
@@ -3869,7 +3860,7 @@ class PipelineController(object):
                             "/C",
                             "start",
                             "explorer",
-                            cellprofiler_core.preferences.get_default_output_directory(),
+                            get_default_output_directory(),
                         ]
                     )
 
@@ -3883,8 +3874,7 @@ class PipelineController(object):
         def on_save_workspace(event):
             self.__on_save_workspace(event)
             wx.MessageBox(
-                "Saved project %s"
-                % cellprofiler_core.preferences.get_current_workspace_path(),
+                "Saved project %s" % get_current_workspace_path(),
                 caption="Saved project",
                 parent=self.__frame,
             )
@@ -3897,7 +3887,7 @@ class PipelineController(object):
         try:
             dlg.ShowModal()
             if dont_show_again.GetValue():
-                cellprofiler_core.preferences.set_show_analysis_complete_dlg(False)
+                set_show_analysis_complete_dlg(False)
         finally:
             dlg.Destroy()
 

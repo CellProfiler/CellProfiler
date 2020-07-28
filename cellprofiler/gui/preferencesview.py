@@ -34,14 +34,12 @@ class PreferencesView(object):
         self.__image_folder_panel.SetAutoLayout(True)
         self.__image_edit_box = self.__make_folder_panel(
             self.__image_folder_panel,
-            cellprofiler_core.preferences.get_default_image_directory(),
-            lambda: cellprofiler_core.preferences.get_recent_files(
-                cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY
-            ),
+            get_default_image_directory(),
+            lambda: get_recent_files(DEFAULT_IMAGE_DIRECTORY),
             "Default Input Folder",
-            cellprofiler_core.preferences.DEFAULT_IMAGE_FOLDER_HELP,
+            DEFAULT_IMAGE_FOLDER_HELP,
             [
-                cellprofiler_core.preferences.set_default_image_directory,
+                set_default_image_directory,
                 self.__notify_pipeline_list_view_directory_change,
             ],
             refresh_action=self.refresh_input_directory,
@@ -50,14 +48,12 @@ class PreferencesView(object):
         self.__output_folder_panel.SetAutoLayout(True)
         self.__output_edit_box = self.__make_folder_panel(
             self.__output_folder_panel,
-            cellprofiler_core.preferences.get_default_output_directory(),
-            lambda: cellprofiler_core.preferences.get_recent_files(
-                cellprofiler_core.preferences.DEFAULT_OUTPUT_DIRECTORY
-            ),
+            get_default_output_directory(),
+            lambda: get_recent_files(DEFAULT_OUTPUT_DIRECTORY),
             "Default Output Folder",
-            cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_HELP,
+            DEFAULT_OUTPUT_FOLDER_HELP,
             [
-                cellprofiler_core.preferences.set_default_output_directory,
+                set_default_output_directory,
                 self.__notify_pipeline_list_view_directory_change,
             ],
         )
@@ -111,12 +107,8 @@ class PreferencesView(object):
         self.__status_panel.Layout()
 
     def close(self):
-        cellprofiler_core.preferences.remove_image_directory_listener(
-            self.__on_preferences_image_directory_event
-        )
-        cellprofiler_core.preferences.remove_output_directory_listener(
-            self.__on_preferences_output_directory_event
-        )
+        remove_image_directory_listener(self.__on_preferences_image_directory_event)
+        remove_output_directory_listener(self.__on_preferences_output_directory_event)
 
     def __make_folder_panel(
         self, panel, value, list_fn, text, help_text, actions, refresh_action=None
@@ -200,16 +192,10 @@ class PreferencesView(object):
 
     def __make_odds_and_ends_panel(self):
         panel = self.__odds_and_ends_panel
-        cellprofiler_core.preferences.add_image_directory_listener(
-            self.__on_preferences_image_directory_event
-        )
-        cellprofiler_core.preferences.add_output_directory_listener(
-            self.__on_preferences_output_directory_event
-        )
+        add_image_directory_listener(self.__on_preferences_image_directory_event)
+        add_output_directory_listener(self.__on_preferences_output_directory_event)
         self.__hold_a_reference_to_progress_callback = self.progress_callback
-        cellprofiler_core.preferences.add_progress_callback(
-            self.__hold_a_reference_to_progress_callback
-        )
+        add_progress_callback(self.__hold_a_reference_to_progress_callback)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
 
     def update_worker_count_info(self, n_workers):
@@ -329,7 +315,7 @@ class PreferencesView(object):
             ):
                 return False, "Image directory does not exist"
             os.makedirs(path)
-            cellprofiler_core.preferences.set_default_image_directory(path)
+            set_default_image_directory(path)
         path = self.__output_edit_box.GetValue()
         if not os.path.isdir(path):
             if (
@@ -347,16 +333,12 @@ class PreferencesView(object):
             ):
                 return False, "Output directory does not exist"
             os.makedirs(path)
-            cellprofiler_core.preferences.set_default_output_directory(path)
+            set_default_output_directory(path)
         return True, "OK"
 
     def __on_destroy(self, event):
-        cellprofiler_core.preferences.remove_image_directory_listener(
-            self.__on_preferences_image_directory_event
-        )
-        cellprofiler_core.preferences.remove_output_directory_listener(
-            self.__on_preferences_output_directory_event
-        )
+        remove_image_directory_listener(self.__on_preferences_image_directory_event)
+        remove_output_directory_listener(self.__on_preferences_output_directory_event)
 
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         self.__pipeline_list_view = pipeline_list_view
@@ -487,29 +469,19 @@ class PreferencesView(object):
         error_text = "Pixel size must be a number"
         text = self.__pixel_size_edit_box.GetValue()
         if text.isdigit():
-            cellprofiler_core.preferences.set_pixel_size(int(text))
+            set_pixel_size(int(text))
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)
 
     def __on_preferences_output_directory_event(self, event):
         old_selection = self.__output_edit_box.GetSelection()
-        if (
-            self.__output_edit_box.GetValue()
-            != cellprofiler_core.preferences.get_default_output_directory()
-        ):
-            self.__output_edit_box.SetValue(
-                cellprofiler_core.preferences.get_default_output_directory()
-            )
+        if self.__output_edit_box.GetValue() != get_default_output_directory():
+            self.__output_edit_box.SetValue(get_default_output_directory())
 
     def __on_preferences_image_directory_event(self, event):
-        if (
-            self.__image_edit_box.GetValue()
-            != cellprofiler_core.preferences.get_default_image_directory()
-        ):
-            self.__image_edit_box.SetValue(
-                cellprofiler_core.preferences.get_default_image_directory()
-            )
+        if self.__image_edit_box.GetValue() != get_default_image_directory():
+            self.__image_edit_box.SetValue(get_default_image_directory())
 
     def __notify_pipeline_list_view_directory_change(self, path):
         # modules may need revalidation
@@ -518,7 +490,7 @@ class PreferencesView(object):
 
     @staticmethod
     def refresh_input_directory():
-        cellprofiler_core.preferences.fire_image_directory_changed_event()
+        fire_image_directory_changed_event()
 
 
 class ProgressWatcher(object):

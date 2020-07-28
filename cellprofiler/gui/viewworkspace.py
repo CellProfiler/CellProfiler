@@ -119,10 +119,10 @@ class VWImageRow(VWRow):
         image_set = vw.workspace.image_set
         name = self.chooser.GetStringSelection()
 
-        im = cellprofiler_core.preferences.get_intensity_mode()
-        if im == cellprofiler_core.preferences.INTENSITY_MODE_LOG:
+        im = get_intensity_mode()
+        if im == INTENSITY_MODE_LOG:
             normalization = cellprofiler.gui.artist.NORMALIZE_LOG
-        elif im == cellprofiler_core.preferences.INTENSITY_MODE_NORMAL:
+        elif im == INTENSITY_MODE_NORMAL:
             normalization = cellprofiler.gui.artist.NORMALIZE_LINEAR
         else:
             normalization = cellprofiler.gui.artist.NORMALIZE_RAW
@@ -134,7 +134,7 @@ class VWImageRow(VWRow):
             None,
             mode=cellprofiler.gui.artist.MODE_HIDE,
             color=self.color,
-            colormap=cellprofiler_core.preferences.get_default_colormap(),
+            colormap=get_default_colormap(),
             alpha=alpha,
             normalization=normalization,
         )
@@ -164,7 +164,7 @@ class VWObjectsRow(VWRow):
             name,
             None,
             outline_color=self.color,
-            colormap=cellprofiler_core.preferences.get_default_colormap(),
+            colormap=get_default_colormap(),
             alpha=0.5,
             mode=cellprofiler.gui.artist.MODE_HIDE,
         )
@@ -243,10 +243,10 @@ class ViewWorkspace(object):
         self.frame.set_subplots((1, 1))
         self.axes = self.frame.subplot(0, 0)
         self.axes.invert_yaxis()
-        interpolation = cellprofiler_core.preferences.get_interpolation_mode()
-        if interpolation == cellprofiler_core.preferences.IM_NEAREST:
+        interpolation = get_interpolation_mode()
+        if interpolation == IM_NEAREST:
             interpolation = cellprofiler.gui.artist.INTERPOLATION_NEAREST
-        elif interpolation == cellprofiler_core.preferences.IM_BILINEAR:
+        elif interpolation == IM_BILINEAR:
             interpolation = cellprofiler.gui.artist.INTERPOLATION_BILINEAR
         else:
             interpolation = cellprofiler.gui.artist.INTERPOLATION_BICUBIC

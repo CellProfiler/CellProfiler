@@ -24,12 +24,11 @@ YES          NO           NO
 .. _Pearson product-moment correlation coefficient: http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
 """
 
-import skimage.feature
-import skimage.io
-
 import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler_core.setting
+import skimage.feature
+import skimage.io
 
 
 class MatchTemplate(cellprofiler_core.module.Module):

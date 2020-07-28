@@ -16,15 +16,14 @@ YES          YES          NO
 ============ ============ ===============
 """
 
-import numpy
-import skimage.color
-import skimage.segmentation
-import skimage.util
-
 import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler_core.object
 import cellprofiler_core.setting
+import numpy
+import skimage.color
+import skimage.segmentation
+import skimage.util
 
 WANTS_COLOR = "Color"
 WANTS_GRAYSCALE = "Grayscale"

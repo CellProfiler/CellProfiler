@@ -18,12 +18,12 @@ YES          YES          NO
 
 """
 
-import numpy
-import skimage.morphology
-
 import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler_core.setting
+import numpy
+import skimage.morphology
+
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 

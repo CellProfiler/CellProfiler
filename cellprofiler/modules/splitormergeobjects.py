@@ -7,7 +7,6 @@ from cellprofiler_core.constants.measurement import (
     FF_PARENT,
     COLTYPE_INTEGER,
 )
-
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import Binary

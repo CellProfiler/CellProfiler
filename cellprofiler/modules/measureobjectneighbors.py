@@ -68,26 +68,25 @@ import numpy
 import scipy.ndimage
 import scipy.signal
 import skimage.morphology
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.cpmorphology import strel_disk, centers_of_labels
-from centrosome.outline import outline
-
 from cellprofiler_core.image import Image
+from cellprofiler_core.measurement import COLTYPE_FLOAT
+from cellprofiler_core.measurement import COLTYPE_INTEGER
 from cellprofiler_core.measurement import MCA_AVAILABLE_EACH_CYCLE
 from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.measurement import COLTYPE_FLOAT
 from cellprofiler_core.measurement import NEIGHBORS
-from cellprofiler_core.measurement import COLTYPE_INTEGER
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects
 from cellprofiler_core.preferences import get_default_colormap
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import ObjectNameSubscriber
+from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Choice
 from cellprofiler_core.setting import Colormap
-from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import Integer
+from cellprofiler_core.setting import ObjectNameSubscriber
 from cellprofiler_core.workspace import Workspace
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import strel_disk, centers_of_labels
+from centrosome.outline import outline
 
 D_ADJACENT = "Adjacent"
 D_EXPAND = "Expand until adjacent"

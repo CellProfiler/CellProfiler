@@ -1,13 +1,10 @@
-import logging
-
-
 import numpy.ma
-from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
+from scipy.ndimage import distance_transform_edt
+
 from cellprofiler.modules import _help
 from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
 
 __doc__ = """\
 TrackObjects

@@ -47,15 +47,15 @@ Measurements made by this module
 
 import logging
 
+import centrosome.cpmorphology
 import numpy
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Coordinates
+from cellprofiler_core.setting import ValidationError
 
 from cellprofiler.grid import Grid
-from cellprofiler_core.module import Module
-from cellprofiler_core.image import Image
-from cellprofiler_core.setting import Coordinates
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ValidationError
-import centrosome.cpmorphology
 
 NUM_TOP_LEFT = "Top left"
 NUM_BOTTOM_LEFT = "Bottom left"

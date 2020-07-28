@@ -23,13 +23,12 @@ YES          YES          YES
 
 import os.path
 
+import cellprofiler_core.module
+import cellprofiler_core.preferences
+import cellprofiler_core.setting
 import numpy
 import skimage.io
 import skimage.measure
-
-import cellprofiler_core.module
-import cellprofiler_core.setting
-import cellprofiler_core.preferences
 
 O_PNG = "png"
 O_TIFF_8 = "8-bit tiff"

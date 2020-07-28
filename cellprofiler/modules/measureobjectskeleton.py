@@ -65,28 +65,27 @@ import centrosome.cpmorphology
 import centrosome.propagate as propagate
 import numpy
 import scipy.ndimage
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from scipy.ndimage import grey_dilation, grey_erosion
-
 from cellprofiler_core.image import Image
-from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.measurement import COLTYPE_FLOAT
 from cellprofiler_core.measurement import COLTYPE_INTEGER
+from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import size_similarly
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
-from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import DirectoryPath
+from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import Integer
 from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import DirectoryPath
 from cellprofiler_core.setting import Text
-from cellprofiler_core.setting import ImageNameSubscriber
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ImageNameProvider
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from scipy.ndimage import grey_dilation, grey_erosion
 
 """The measurement category"""
 C_OBJSKELETON = "ObjectSkeleton"

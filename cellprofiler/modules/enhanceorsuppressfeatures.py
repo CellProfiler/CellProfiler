@@ -20,6 +20,9 @@ YES          YES          YES
 ============ ============ ===============
 """
 
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.setting
 import centrosome.filter
 import numpy
 import scipy.ndimage
@@ -28,9 +31,6 @@ import skimage.filters
 import skimage.morphology
 import skimage.transform
 
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 ENHANCE = "Enhance"

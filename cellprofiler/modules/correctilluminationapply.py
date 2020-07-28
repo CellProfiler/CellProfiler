@@ -27,12 +27,11 @@ See also **CorrectIlluminationCalculate**.
 """
 
 import numpy
-
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting import Divider
 
 ######################################
 #

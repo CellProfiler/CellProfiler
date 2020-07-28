@@ -1,17 +1,17 @@
-import numpy
-from centrosome.outline import outline
-
 import cellprofiler_core.measurement
-from cellprofiler_core.measurement import IMAGE
+import numpy
 from cellprofiler_core.measurement import COLTYPE_INTEGER
+from cellprofiler_core.measurement import IMAGE
 from cellprofiler_core.module import Module
+from cellprofiler_core.modules import identify as cpmi
 from cellprofiler_core.object import Objects
 from cellprofiler_core.object import size_similarly
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import ObjectNameProvider
 from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import ObjectNameProvider
+from cellprofiler_core.setting import ObjectNameSubscriber
+from centrosome.outline import outline
+
 from cellprofiler.modules import _help
-from cellprofiler_core.modules import identify as cpmi
 
 __doc__ = """\
 IdentifyTertiaryObjects

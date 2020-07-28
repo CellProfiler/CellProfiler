@@ -50,8 +50,6 @@ See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-import logging
-
 import cellprofiler_core.measurement
 
 

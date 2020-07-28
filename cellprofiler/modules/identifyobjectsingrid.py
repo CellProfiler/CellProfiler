@@ -68,7 +68,6 @@ from cellprofiler_core.setting import ObjectNameProvider
 from cellprofiler_core.modules.identify import add_object_count_measurements
 from cellprofiler_core.modules.identify import add_object_location_measurements
 from cellprofiler_core.modules.identify import get_object_measurement_columns
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
 
 SHAPE_RECTANGLE = "Rectangle Forced Location"
 SHAPE_CIRCLE_FORCED = "Circle Forced Location"

@@ -18,13 +18,12 @@ YES          YES          NO
 .. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/edges/plot_skeleton.html
 """
 
-import numpy
-import skimage.color
-import skimage.morphology
-
 import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler_core.setting
+import numpy
+import skimage.color
+import skimage.morphology
 
 
 class MedialAxis(cellprofiler_core.module.ImageProcessing):

@@ -82,29 +82,28 @@ See also
 See also **ExportToSpreadsheet**.
 """
 
+import base64
 import datetime
+import functools
 import hashlib
+import io
 import logging
 import os
 import re
-import functools
-import io
-import base64
 
-import numpy
-import six
-import six.moves
-
-import cellprofiler
-import cellprofiler.icons
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.utilities.legacy
-from cellprofiler.modules import _help
+import numpy
+import six
+import six.moves
 
+import cellprofiler
+import cellprofiler.icons
+from cellprofiler.modules import _help
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
 try:
@@ -2488,7 +2487,6 @@ available:
     def run(self, workspace):
         if self.want_image_thumbnails:
             import PIL.Image as Image
-            from io import StringIO
 
             measurements = workspace.measurements
             image_set = workspace.image_set

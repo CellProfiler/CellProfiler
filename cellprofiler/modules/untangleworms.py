@@ -92,45 +92,45 @@ import logging
 import os
 import re
 
-import cellprofiler_core.measurement
+import centrosome.cpmorphology
 import matplotlib.mlab as mlab
 import numpy
 import scipy.ndimage
 import six.moves.urllib.request
 import xml.dom.minidom as DOM
-from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_FLOAT, C_COUNT
 from cellprofiler_core.constants.measurement import C_LOCATION
+from cellprofiler_core.constants.measurement import C_NUMBER
 from cellprofiler_core.constants.measurement import FTR_CENTER_X
 from cellprofiler_core.constants.measurement import FTR_CENTER_Y
-from cellprofiler_core.constants.measurement import C_NUMBER
 from cellprofiler_core.constants.measurement import FTR_OBJECT_NUMBER
-from cellprofiler_core.constants.measurement import M_NUMBER_OBJECT_NUMBER
-from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y
+from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_FLOAT, C_COUNT
 from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X
+from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y
+from cellprofiler_core.constants.measurement import M_NUMBER_OBJECT_NUMBER
+from cellprofiler_core.image import Image
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
+from cellprofiler_core.modules import identify as I
+from cellprofiler_core.object import ObjectSet
+from cellprofiler_core.object import Objects
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import URL_FOLDER_NAME
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice, Colormap
-from cellprofiler_core.setting.text import ImageName
-from cellprofiler_core.setting.text import LabelName
 from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.setting.text import LabelName
+from centrosome.outline import outline
+from centrosome.propagate import propagate
 from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from scipy.sparse import coo
+
 import cellprofiler
-from cellprofiler_core.module import Module
-from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.image import Image
-from cellprofiler_core.object import Objects
-from cellprofiler_core.object import ObjectSet
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ValidationError
-import centrosome.cpmorphology
-from cellprofiler_core.preferences import get_default_colormap
-from cellprofiler_core.preferences import URL_FOLDER_NAME
-from cellprofiler_core.modules import identify as I
-from centrosome.propagate import propagate
-from centrosome.outline import outline
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 
 RETAINING_OUTLINES_HELP = """\
 Select *{YES}* to retain the outlines of the new objects for later use

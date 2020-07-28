@@ -254,23 +254,21 @@ tophat             EnhanceOrSuppressFeatures  *Operation*  Enhance -> Speckles
 
 import logging
 
-import numpy
-import scipy.ndimage
-
-
-from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import RemoveSettingButton
-from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import ImageNameSubscriber
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import ImageNameProvider
-from cellprofiler_core.image import Image
 import centrosome.cpmorphology
 import centrosome.filter
+import numpy
+import scipy.ndimage
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import DoSomething
+from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import Integer
+from cellprofiler_core.setting import RemoveSettingButton
+from cellprofiler_core.setting import SettingsGroup
 
 F_BRANCHPOINTS = "branchpoints"
 F_BRIDGE = "bridge"

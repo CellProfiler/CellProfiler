@@ -22,20 +22,15 @@ See also several related modules in the *Advanced* category (e.g.,
 **MedianFilter** and **GaussianFilter**).
 """
 
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.setting
 import numpy
 import scipy.ndimage
 import skimage.restoration
 from centrosome.filter import median_filter, circular_average_filter
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask
-
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
-from cellprofiler.modules._help import (
-    HELP_ON_MEASURING_DISTANCES,
-    HELP_ON_PIXEL_INTENSITIES,
-)
 
 FIT_POLYNOMIAL = "Fit Polynomial"
 MEDIAN_FILTER = "Median Filter"

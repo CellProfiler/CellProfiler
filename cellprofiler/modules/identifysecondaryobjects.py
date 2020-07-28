@@ -1,14 +1,14 @@
-﻿import centrosome.cpmorphology
+﻿import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
+import centrosome.cpmorphology
 import centrosome.propagate
 import numpy
 import scipy.ndimage
 import skimage.morphology
 
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
 from cellprofiler.modules import _help, threshold
 
 __doc__ = """\

@@ -52,15 +52,14 @@ References
 """
 import logging
 
-import numpy
-import scipy.ndimage
-import skimage.morphology
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
+import numpy
+import scipy.ndimage
+import skimage.morphology
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 "Granularity category"
 C_GRANULARITY = "Granularity_%s_%s"

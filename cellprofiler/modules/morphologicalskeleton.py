@@ -16,10 +16,9 @@ YES          YES          NO
 
 """
 
-import skimage.morphology
-
 import cellprofiler_core.image
 import cellprofiler_core.module
+import skimage.morphology
 
 
 class MorphologicalSkeleton(cellprofiler_core.module.ImageProcessing):

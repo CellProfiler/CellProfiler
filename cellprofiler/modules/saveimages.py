@@ -34,20 +34,20 @@ import os.path
 
 import bioformats.formatwriter
 import bioformats.omexml
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.setting
+import cellprofiler_core.utilities.pathname
 import h5py
 import numpy
 import skimage.io
 import skimage.util
-
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
-import cellprofiler_core.setting
-import cellprofiler_core.utilities.pathname
+
 from cellprofiler.modules import _help
 
 IF_IMAGE = "Image"

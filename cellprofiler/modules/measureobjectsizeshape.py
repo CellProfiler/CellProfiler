@@ -1,3 +1,7 @@
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 import centrosome.cpmorphology
 import centrosome.zernike
 import numpy
@@ -6,10 +10,6 @@ import skimage.measure
 
 import cellprofiler.gui.help.content
 import cellprofiler.icons
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
 
 __doc__ = """\
 MeasureObjectSizeShape

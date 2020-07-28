@@ -83,63 +83,49 @@ See also
 See also **ExportToDatabase**.
 """
 
-import logging
-
-
 import base64
 import csv
-import numpy
+import logging
 import os
 
+import numpy
 import six
-
-from cellprofiler_core.module import Module
-from cellprofiler_core.measurement import R_SECOND_OBJECT_NUMBER
-from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.measurement import R_FIRST_OBJECT_NUMBER
 from cellprofiler_core.measurement import AGG_MEAN
+from cellprofiler_core.measurement import AGG_MEDIAN
+from cellprofiler_core.measurement import AGG_STD_DEV
 from cellprofiler_core.measurement import EXPERIMENT
+from cellprofiler_core.measurement import IMAGE
+from cellprofiler_core.measurement import IMAGE_NUMBER
+from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.measurement import NEIGHBORS
 from cellprofiler_core.measurement import R_FIRST_IMAGE_NUMBER
-from cellprofiler_core.measurement import IMAGE_NUMBER
-from cellprofiler_core.measurement import IMAGE
+from cellprofiler_core.measurement import R_FIRST_OBJECT_NUMBER
 from cellprofiler_core.measurement import R_SECOND_IMAGE_NUMBER
+from cellprofiler_core.measurement import R_SECOND_OBJECT_NUMBER
 from cellprofiler_core.measurement import find_metadata_tokens
 from cellprofiler_core.measurement import get_agg_measurement_name
-from cellprofiler_core.measurement import AGG_STD_DEV
-from cellprofiler_core.measurement import AGG_MEDIAN
+from cellprofiler_core.module import Module
 from cellprofiler_core.pipeline import EXIT_STATUS
-from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import CustomChoice
+from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import get_headless
+from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import MeasurementMultiChoice
-from cellprofiler_core.setting import Text
-from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import CustomChoice
+from cellprofiler_core.setting import DirectoryPath
+from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import DoSomething
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import MeasurementMultiChoice
 from cellprofiler_core.setting import ObjectNameSubscriber
 from cellprofiler_core.setting import RemoveSettingButton
-from cellprofiler_core.setting import DirectoryPath
 from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Text
 from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting import Divider
-from cellprofiler_core.measurement import IMAGE
-from cellprofiler_core.measurement import EXPERIMENT
-from cellprofiler_core.preferences import get_headless
-from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
-from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
-
-from cellprofiler.modules._help import (
-    IO_FOLDER_CHOICE_HELP_TEXT,
-    IO_WITH_METADATA_HELP_TEXT,
-    USING_METADATA_HELP_REF,
-    USING_METADATA_TAGS_REF,
-)
-
-from cellprofiler.gui.help.content import MEASUREMENT_NAMING_HELP
 
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536

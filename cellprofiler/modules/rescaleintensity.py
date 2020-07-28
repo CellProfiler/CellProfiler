@@ -25,13 +25,12 @@ YES          YES          YES
 ============ ============ ===============
 """
 
-import numpy
-import skimage.exposure
-
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.setting
+import numpy
+import skimage.exposure
 
 M_STRETCH = "Stretch each image to use the full intensity range"
 M_MANUAL_INPUT_RANGE = "Choose specific values to be reset to the full intensity range"

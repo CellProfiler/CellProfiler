@@ -21,14 +21,13 @@ YES          YES          YES
 ============ ============ ===============
 """
 
-import centrosome.cpmorphology
-import matplotlib.cm
-import numpy
-
 import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
+import centrosome.cpmorphology
+import matplotlib.cm
+import numpy
 
 DEFAULT_COLORMAP = "Default"
 

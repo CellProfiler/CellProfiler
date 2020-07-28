@@ -2,9 +2,9 @@ import cellprofiler_core.module
 import cellprofiler_core.object
 import cellprofiler_core.setting
 import numpy
-import skimage.segmentation
-import skimage.morphology
 import scipy.ndimage
+import skimage.morphology
+import skimage.segmentation
 
 """
 CombineObjects

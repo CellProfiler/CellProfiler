@@ -1,3 +1,7 @@
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 import centrosome.cpmorphology
 import centrosome.filter
 import centrosome.outline
@@ -5,10 +9,6 @@ import numpy
 import scipy.ndimage
 import skimage.segmentation
 
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 __doc__ = """

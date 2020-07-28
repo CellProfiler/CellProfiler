@@ -1,3 +1,7 @@
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 import mahotas
 import numpy
 import scipy.ndimage
@@ -7,11 +11,6 @@ import skimage.filters
 import skimage.measure
 import skimage.morphology
 import skimage.transform
-
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
 
 O_DISTANCE = "Distance"
 O_MARKERS = "Markers"

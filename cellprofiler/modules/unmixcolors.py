@@ -56,18 +56,18 @@ import math
 
 import numpy
 import scipy.linalg
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import get_default_image_directory
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import HiddenCount
+from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
 
 import cellprofiler.gui.help.content
-from cellprofiler_core.image import Image
-from cellprofiler_core.module import Module
-from cellprofiler_core.preferences import get_default_image_directory
-from cellprofiler_core.setting import HiddenCount
-from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import Divider
 
 CHOICE_HEMATOXYLIN = "Hematoxylin"
 ST_HEMATOXYLIN = (0.644, 0.717, 0.267)

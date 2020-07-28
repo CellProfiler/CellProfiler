@@ -23,33 +23,32 @@ YES          YES          NO
 """
 
 import logging
-
-import numpy
 import os
 import re
 import sys
 import zlib
 
+import numpy
 from cellprofiler_core.constants.measurement import F_BATCH_DATA_H5
-from cellprofiler_core.setting.do_something import DoSomething
-from cellprofiler_core.setting.text import Text, Integer
-
-import cellprofiler
-from cellprofiler_core.module import Module
 from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
 from cellprofiler_core.pipeline import Pipeline
-from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import Setting
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting import Divider
-from cellprofiler_core.preferences import set_default_output_directory
+from cellprofiler_core.preferences import get_absolute_path
 from cellprofiler_core.preferences import get_default_image_directory
 from cellprofiler_core.preferences import get_default_output_directory
 from cellprofiler_core.preferences import get_headless
-from cellprofiler_core.preferences import get_absolute_path
 from cellprofiler_core.preferences import set_default_image_directory
+from cellprofiler_core.preferences import set_default_output_directory
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import Setting
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.text import Text, Integer
 from cellprofiler_core.workspace import Workspace
+
+import cellprofiler
 
 """# of settings aside from the mappings"""
 S_FIXED_COUNT = 8

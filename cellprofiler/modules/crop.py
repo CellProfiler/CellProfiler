@@ -40,19 +40,17 @@ help for more information on saving cropping shapes.
 import logging
 import math
 
-import matplotlib.axes
-import matplotlib.cm
-import matplotlib.figure
-import matplotlib.patches
-import numpy
-import centrosome.filter
-
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
-
+import centrosome.filter
+import matplotlib.axes
+import matplotlib.cm
+import matplotlib.figure
+import matplotlib.patches
+import numpy
 
 SH_RECTANGLE = "Rectangle"
 SH_ELLIPSE = "Ellipse"

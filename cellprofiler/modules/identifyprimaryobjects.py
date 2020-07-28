@@ -1,5 +1,8 @@
 import math
 
+import cellprofiler_core.module.image_segmentation
+import cellprofiler_core.object
+import cellprofiler_core.setting
 import centrosome.cpmorphology
 import centrosome.outline
 import centrosome.propagate
@@ -11,10 +14,7 @@ import skimage.morphology
 
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
-import cellprofiler_core.object
-import cellprofiler_core.setting
 from cellprofiler.modules import _help, threshold
-import cellprofiler_core.module.image_segmentation
 
 __doc__ = """\
 IdentifyPrimaryObjects

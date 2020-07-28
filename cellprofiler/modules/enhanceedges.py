@@ -24,15 +24,14 @@ YES          NO           YES
 """
 
 import numpy as np
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
 from centrosome.filter import laplacian_of_gaussian
 from centrosome.filter import prewitt, hprewitt, vprewitt, stretch
 from centrosome.filter import roberts, canny, sobel, hsobel, vsobel
 from centrosome.kirsch import kirsch
 from centrosome.otsu import otsu3
-
-from cellprofiler_core.image import Image
-from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Binary
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"

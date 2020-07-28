@@ -16,6 +16,10 @@ YES          YES          YES
 ============ ============ ===============
 """
 
+import cellprofiler_core.image
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.setting
 import centrosome.threshold
 import numpy
 import scipy.interpolate
@@ -24,10 +28,6 @@ import skimage.filters
 import skimage.filters.rank
 import skimage.morphology
 
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 O_TWO_CLASS = "Two classes"

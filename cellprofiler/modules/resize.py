@@ -28,13 +28,11 @@ See also **Crop**.
 
 import logging
 
-import numpy
-import skimage.transform
-
 import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler_core.setting
-
+import numpy
+import skimage.transform
 
 R_BY_FACTOR = "Resize by a fraction or multiple of the original size"
 R_TO_SIZE = "Resize by specifying desired final dimensions"

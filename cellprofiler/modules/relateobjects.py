@@ -1,13 +1,13 @@
 ﻿import re
 
-import numpy
-import scipy.ndimage
-import skimage.segmentation
-
 import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.object
 import cellprofiler_core.setting
+import numpy
+import scipy.ndimage
+import skimage.segmentation
+
 from cellprofiler.modules import _help
 
 __doc__ = """\

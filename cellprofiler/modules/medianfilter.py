@@ -14,10 +14,9 @@ YES          YES          NO
 ============ ============ ===============
 """
 
-import scipy.signal
-
 import cellprofiler_core.module
 import cellprofiler_core.setting
+import scipy.signal
 
 
 class MedianFilter(cellprofiler_core.module.ImageProcessing):

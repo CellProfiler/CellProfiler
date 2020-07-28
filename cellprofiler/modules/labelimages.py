@@ -45,24 +45,23 @@ Measurements made by this module
 from functools import reduce
 
 import numpy
-
-from cellprofiler_core.measurement import M_ROW
-from cellprofiler_core.measurement import M_PLATE
-from cellprofiler_core.measurement import FTR_ROW
-from cellprofiler_core.measurement import FTR_PLATE
-from cellprofiler_core.measurement import FTR_WELL
-from cellprofiler_core.measurement import M_WELL
-from cellprofiler_core.measurement import FTR_SITE
-from cellprofiler_core.measurement import IMAGE
-from cellprofiler_core.measurement import M_COLUMN
+from cellprofiler_core.measurement import COLTYPE_INTEGER
 from cellprofiler_core.measurement import COLTYPE_VARCHAR_FORMAT
 from cellprofiler_core.measurement import C_METADATA
 from cellprofiler_core.measurement import FTR_COLUMN
+from cellprofiler_core.measurement import FTR_PLATE
+from cellprofiler_core.measurement import FTR_ROW
+from cellprofiler_core.measurement import FTR_SITE
+from cellprofiler_core.measurement import FTR_WELL
+from cellprofiler_core.measurement import IMAGE
+from cellprofiler_core.measurement import M_COLUMN
+from cellprofiler_core.measurement import M_PLATE
+from cellprofiler_core.measurement import M_ROW
 from cellprofiler_core.measurement import M_SITE
-from cellprofiler_core.measurement import COLTYPE_INTEGER
+from cellprofiler_core.measurement import M_WELL
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Integer
 from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import Integer
 
 O_ROW = "Row"
 O_COLUMN = "Column"

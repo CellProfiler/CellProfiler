@@ -1,8 +1,7 @@
-import skimage
-import skimage.measure
-
 import cellprofiler_core.module
 import cellprofiler_core.setting
+import skimage
+import skimage.measure
 
 HELP_BINARY_IMAGE = """\
 This module can also convert a grayscale image to binary before converting it to an object.

@@ -19,6 +19,7 @@ YES          YES          NO
 import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler_core.setting
+
 import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 

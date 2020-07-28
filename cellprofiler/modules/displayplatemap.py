@@ -39,7 +39,6 @@ import six
 
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Measurement
-from cellprofiler.modules._help import USING_METADATA_HELP_REF
 
 AGG_AVG = "avg"
 AGG_MEDIAN = "median"

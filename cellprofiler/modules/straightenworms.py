@@ -87,6 +87,10 @@ import functools
 import itertools
 import os
 
+import cellprofiler_core.utilities.legacy
+import centrosome.index
+import numpy
+import scipy.ndimage
 from cellprofiler_core.constants.measurement import (
     COLTYPE_FLOAT,
     IMAGE,
@@ -100,18 +104,15 @@ from cellprofiler_core.constants.measurement import (
 from cellprofiler_core.image import Image
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
-from cellprofiler_core.object import Objects
 from cellprofiler_core.object import ObjectSet
-from cellprofiler_core.preferences import get_primary_outline_color
+from cellprofiler_core.object import Objects
 from cellprofiler_core.preferences import URL_FOLDER_NAME
+from cellprofiler_core.preferences import get_primary_outline_color
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import HiddenCount
 from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting import Divider
-import cellprofiler_core.utilities.legacy
-import centrosome.index
-import numpy
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Directory
@@ -121,14 +122,13 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_count_measurements,
 )
 from scipy.interpolate import interp1d
-import scipy.ndimage
+
 from cellprofiler.modules.untangleworms import C_WORM
 from cellprofiler.modules.untangleworms import F_CONTROL_POINT_X
 from cellprofiler.modules.untangleworms import F_CONTROL_POINT_Y
 from cellprofiler.modules.untangleworms import F_LENGTH
 from cellprofiler.modules.untangleworms import read_params
 from cellprofiler.modules.untangleworms import recalculate_single_worm_control_points
-from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
 FTR_MEAN_INTENSITY = "MeanIntensity"
 FTR_STD_INTENSITY = "StdIntensity"

@@ -22,12 +22,11 @@ YES          YES          NO
 ============ ============ ===============
 """
 
-import numpy
-import skimage.morphology
-
 import cellprofiler_core.image
 import cellprofiler_core.module
 import cellprofiler_core.setting
+import numpy
+import skimage.morphology
 
 
 class RemoveHoles(cellprofiler_core.module.ImageProcessing):

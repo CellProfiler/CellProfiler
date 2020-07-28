@@ -67,16 +67,15 @@ Measurements made by this module
 .. _SVI website: http://svi.nl/ColocalizationTheory   
 """
 
+import cellprofiler_core.measurement
+import cellprofiler_core.module
+import cellprofiler_core.object
+import cellprofiler_core.setting
 import numpy
 import scipy.ndimage
 import scipy.stats
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
-
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
 
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"

@@ -1,22 +1,22 @@
+import cellprofiler_core.measurement
 import numpy
 import scipy.ndimage
-from centrosome.cpmorphology import fixup_scipy_ndimage_result
-from centrosome.outline import outline
-
-import cellprofiler_core.measurement
 from cellprofiler_core.measurement import COLTYPE_INTEGER
+from cellprofiler_core.modules import identify as I
 from cellprofiler_core.object import Objects
 from cellprofiler_core.object import size_similarly
 from cellprofiler_core.preferences import get_primary_outline_color
 from cellprofiler_core.preferences import get_secondary_outline_color
-from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import ObjectNameProvider
-from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Choice
+from cellprofiler_core.setting import Float
+from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting import ObjectNameProvider
+from cellprofiler_core.setting import ObjectNameSubscriber
+from centrosome.cpmorphology import fixup_scipy_ndimage_result
+from centrosome.outline import outline
+
 from cellprofiler.modules import _help
-from cellprofiler_core.modules import identify as I
 
 __doc__ = """\
 MaskObjects

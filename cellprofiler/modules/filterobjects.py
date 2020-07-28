@@ -314,7 +314,7 @@ Please note the following:
 
             self.rules_directory.join_parts(dir_choice, custom_path)
 
-        self.rules_file_name = FilenameText(
+        self.rules_file_name = Filename(
             "Rules or classifier file name",
             "rules.txt",
             get_directory_fn=get_directory_fn,

@@ -69,7 +69,7 @@ OBJECTS_SETTING_COUNT_V3 = 1
 OBJECTS_SETTING_COUNT = OBJECTS_SETTING_COUNT_V3
 
 
-class MeasureGranularity(cellprofiler_core.module.Module):
+class MeasureGranularity(Module):
     module_name = "MeasureGranularity"
     category = "Measurement"
     variable_revision_number = 4
@@ -458,7 +458,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             for i in range(1, gslength + 1):
                 result += [
                     (
-                        cellprofiler_core.measurement.IMAGE,
+                        "Image",
                         self.granularity_feature(i, image_name),
                         cellprofiler_core.measurement.COLTYPE_FLOAT,
                     )
@@ -485,7 +485,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
 
         object_name - name of an object or IMAGE to match all
         """
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return self.images_list.value
         return [
             image_name

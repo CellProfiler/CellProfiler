@@ -274,7 +274,7 @@ Select the image that you want to use for this operation.""",
             "measurement",
             cellprofiler_core.setting.Measurement(
                 "Measurement",
-                lambda: cellprofiler_core.measurement.IMAGE,
+                lambda: "Image",
                 "",
                 doc="""\
 Select a measurement made on the image. The value of the

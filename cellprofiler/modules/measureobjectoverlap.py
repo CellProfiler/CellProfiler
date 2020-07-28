@@ -102,7 +102,7 @@ DM_KMEANS = "K Means"
 DM_SKEL = "Skeleton"
 
 
-class MeasureObjectOverlap(cellprofiler_core.module.Module):
+class MeasureObjectOverlap(Module):
     category = "Measurement"
     variable_revision_number = 2
     module_name = "MeasureObjectOverlap"
@@ -935,16 +935,13 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         )
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return [C_IMAGE_OVERLAP]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == C_IMAGE_OVERLAP
-        ):
+        if object_name == "Image" and category == C_IMAGE_OVERLAP:
             return self.all_features()
 
         return []
@@ -959,7 +956,7 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         self, pipeline, object_name, category, measurement, image_name
     ):
         if (
-            object_name == cellprofiler_core.measurement.IMAGE
+            object_name == "Image"
             and category == C_IMAGE_OVERLAP
             and measurement in FTR_ALL
         ):
@@ -978,7 +975,7 @@ the two objects. Set this setting to “No” to assess no penalty.""",
     def get_measurement_columns(self, pipeline):
         return [
             (
-                cellprofiler_core.measurement.IMAGE,
+                "Image",
                 self.measurement_name(feature),
                 cellprofiler_core.measurement.COLTYPE_FLOAT,
             )

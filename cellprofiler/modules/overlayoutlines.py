@@ -54,7 +54,7 @@ NUM_OUTLINE_SETTINGS_V4 = 2
 NUM_OUTLINE_SETTINGS = 2
 
 
-class OverlayOutlines(cellprofiler_core.module.Module):
+class OverlayOutlines(Module):
     module_name = "OverlayOutlines"
     variable_revision_number = 4
     category = "Image Processing"

@@ -1,3 +1,6 @@
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+
 from cellprofiler.modules import _help
 
 __doc__ = """\

@@ -25,6 +25,7 @@ import centrosome.cpmorphology
 import matplotlib.cm
 import numpy
 from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting.choice import Choice, Colormap
 from cellprofiler_core.setting.subscriber import LabelSubscriber
@@ -33,7 +34,7 @@ from cellprofiler_core.setting.text import ImageName
 DEFAULT_COLORMAP = "Default"
 
 
-class ConvertObjectsToImage(cellprofiler_core.module.Module):
+class ConvertObjectsToImage(Module):
     module_name = "ConvertObjectsToImage"
 
     category = "Object Processing"

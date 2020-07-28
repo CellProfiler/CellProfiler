@@ -98,6 +98,10 @@ import centrosome.propagate
 import numpy
 import scipy.ndimage
 import scipy.sparse
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Integer
 
 from cellprofiler.modules import _help
 
@@ -135,7 +139,7 @@ DM_KMEANS = "K Means"
 DM_SKEL = "Skeleton"
 
 
-class MeasureImageOverlap(cellprofiler_core.module.Module):
+class MeasureImageOverlap(Module):
     category = "Measurement"
     variable_revision_number = 5
     module_name = "MeasureImageOverlap"
@@ -759,16 +763,13 @@ the two images. Set this setting to “No” to assess no penalty.""",
         return "_".join((C_IMAGE_OVERLAP, feature, self.test_img.value))
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return [C_IMAGE_OVERLAP]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == C_IMAGE_OVERLAP
-        ):
+        if object_name == "Image" and category == C_IMAGE_OVERLAP:
             return self.all_features()
 
         return []
@@ -790,7 +791,7 @@ the two images. Set this setting to “No” to assess no penalty.""",
     def get_measurement_columns(self, pipeline):
         return [
             (
-                cellprofiler_core.measurement.IMAGE,
+                "Image",
                 self.measurement_name(feature),
                 cellprofiler_core.measurement.COLTYPE_FLOAT,
             )

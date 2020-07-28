@@ -1259,7 +1259,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
         pass
 
 
-class CorrectIlluminationAvgImageProvider(AbstractImageProvider):
+class CorrectIlluminationAvgImageProvider(AbstractImage):
     """Provide the image after averaging but before dilation and smoothing"""
 
     def __init__(self, name, ci_provider):
@@ -1280,7 +1280,7 @@ class CorrectIlluminationAvgImageProvider(AbstractImageProvider):
         return self.__name
 
 
-class CorrectIlluminationDilatedImageProvider(AbstractImageProvider):
+class CorrectIlluminationDilatedImageProvider(AbstractImage):
     """Provide the image after averaging but before dilation and smoothing"""
 
     def __init__(self, name, ci_provider):

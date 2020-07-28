@@ -15,6 +15,8 @@ YES          YES          NO
 .. _this tutorial: https://scikit-image.org/docs/dev/auto_examples/applications/plot_morphology.html#dilation
 
 """
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import StructuringElement
 
 import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL

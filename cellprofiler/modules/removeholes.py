@@ -24,6 +24,8 @@ YES          YES          NO
 
 import numpy
 import skimage.morphology
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting.text import Float
 
 
 class RemoveHoles(ImageProcessing):

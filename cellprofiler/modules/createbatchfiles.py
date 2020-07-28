@@ -44,7 +44,7 @@ from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import Setting
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.text import Text, Integer
 from cellprofiler_core.workspace import Workspace
 

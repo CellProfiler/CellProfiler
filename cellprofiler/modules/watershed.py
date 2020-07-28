@@ -8,6 +8,7 @@ import skimage.filters
 import skimage.measure
 import skimage.morphology
 import skimage.transform
+from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float

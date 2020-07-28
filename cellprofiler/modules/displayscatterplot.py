@@ -40,6 +40,7 @@ from cellprofiler_core.constants.measurement import IMAGE
 
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting.subscriber import LabelSubscriber
 
 SOURCE_IM = IMAGE
 SOURCE_OBJ = "Object"

@@ -13,7 +13,7 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
-from cellprofiler_core.setting.text import Integer, Float
+from cellprofiler_core.setting.text import Integer, Float, LabelName
 from cellprofiler_core.utilities.core.module.identify import (
     add_object_count_measurements,
     add_object_location_measurements,

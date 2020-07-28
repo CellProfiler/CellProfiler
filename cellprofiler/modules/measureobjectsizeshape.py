@@ -372,7 +372,7 @@ F_STANDARD = [
 ]
 
 
-class MeasureObjectSizeShape(cellprofiler_core.module.Module):
+class MeasureObjectSizeShape(Module):
     module_name = "MeasureObjectSizeShape"
     variable_revision_number = 3
     category = "Measurement"

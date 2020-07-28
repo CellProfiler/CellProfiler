@@ -28,7 +28,7 @@ import skimage.feature
 import skimage.io
 
 
-class MatchTemplate(cellprofiler_core.module.Module):
+class MatchTemplate(Module):
     module_name = "MatchTemplate"
     category = "Advanced"
     variable_revision_number = 1

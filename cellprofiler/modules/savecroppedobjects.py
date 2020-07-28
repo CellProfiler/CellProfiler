@@ -34,7 +34,7 @@ SAVE_PER_OBJECT = "Images"
 SAVE_MASK = "Masks"
 
 
-class SaveCroppedObjects(cellprofiler_core.module.Module):
+class SaveCroppedObjects(Module):
     category = "File Processing"
 
     module_name = "SaveCroppedObjects"

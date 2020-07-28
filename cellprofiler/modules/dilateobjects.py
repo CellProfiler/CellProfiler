@@ -23,6 +23,8 @@ YES          YES          NO
 """
 
 import cellprofiler_core.object
+from cellprofiler_core.setting import StructuringElement
+
 import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 

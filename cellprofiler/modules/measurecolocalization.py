@@ -103,7 +103,7 @@ F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 
-class MeasureColocalization(cellprofiler_core.module.Module):
+class MeasureColocalization(Module):
     module_name = "MeasureColocalization"
     category = "Measurement"
     variable_revision_number = 4
@@ -1244,12 +1244,12 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 if self.do_corr_and_slope:
                     columns += [
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_CORRELATION_FORMAT % (first_image, second_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_SLOPE_FORMAT % (first_image, second_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
@@ -1257,17 +1257,17 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 if self.do_overlap:
                     columns += [
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_OVERLAP_FORMAT % (first_image, second_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_K_FORMAT % (first_image, second_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_K_FORMAT % (second_image, first_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
@@ -1275,12 +1275,12 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 if self.do_manders:
                     columns += [
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_MANDERS_FORMAT % (first_image, second_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_MANDERS_FORMAT % (second_image, first_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
@@ -1289,12 +1289,12 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 if self.do_rwc:
                     columns += [
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_RWC_FORMAT % (first_image, second_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_RWC_FORMAT % (second_image, first_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
@@ -1302,12 +1302,12 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 if self.do_costes:
                     columns += [
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_COSTES_FORMAT % (first_image, second_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_COSTES_FORMAT % (second_image, first_image),
                             cellprofiler_core.measurement.COLTYPE_FLOAT,
                         ),
@@ -1388,10 +1388,8 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
 
         object_name - name of the measured object or cellprofiler_core.measurement.IMAGE
         """
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE and self.wants_images()
-        ) or (
-            (object_name != cellprofiler_core.measurement.IMAGE)
+        if (object_name == "Image" and self.wants_images()) or (
+            (object_name != "Image")
             and self.wants_objects()
             and (object_name in self.objects_list.value)
         ):
@@ -1402,7 +1400,7 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
         if self.get_categories(pipeline, object_name) == [category]:
             results = []
             if self.do_corr_and_slope:
-                if object_name == cellprofiler_core.measurement.IMAGE:
+                if object_name == "Image":
                     results += ["Correlation", "Slope"]
                 else:
                     results += ["Correlation"]

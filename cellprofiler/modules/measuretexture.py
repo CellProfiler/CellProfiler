@@ -118,7 +118,7 @@ IO_OBJECTS = "Objects"
 IO_BOTH = "Both"
 
 
-class MeasureTexture(cellprofiler_core.module.Module):
+class MeasureTexture(Module):
     module_name = "MeasureTexture"
 
     variable_revision_number = 6
@@ -315,10 +315,7 @@ measured and will result in a undefined value in the output file.
         if self.wants_object_measurements() and object_name_exists:
             return [TEXTURE]
 
-        if (
-            self.wants_image_measurements()
-            and object_name == cellprofiler_core.measurement.IMAGE
-        ):
+        if self.wants_image_measurements() and object_name == "Image":
             return [TEXTURE]
 
         return []
@@ -375,7 +372,7 @@ measured and will result in a undefined value in the output file.
                         for angle in range(13 if pipeline.volumetric() else 4):
                             columns += [
                                 (
-                                    cellprofiler_core.measurement.IMAGE,
+                                    "Image",
                                     "{}_{}_{}_{:d}_{:02d}".format(
                                         TEXTURE,
                                         feature,

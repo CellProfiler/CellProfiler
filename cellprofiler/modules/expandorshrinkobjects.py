@@ -70,7 +70,7 @@ O_ALL = [
 ]
 
 
-class ExpandOrShrinkObjects(cellprofiler_core.module.Module):
+class ExpandOrShrinkObjects(Module):
     module_name = "ExpandOrShrinkObjects"
     category = "Object Processing"
     variable_revision_number = 2
@@ -335,7 +335,7 @@ order to keep from breaking up the object or breaking the hole.
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         categories = []
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             categories += ["Count"]
         if object_name == self.output_object_name:
             categories += ("Location", "Number")
@@ -349,7 +349,7 @@ order to keep from breaking up the object or breaking the hole.
         """
         result = []
 
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             if category == "Count":
                 result += [self.output_object_name.value]
         if object_name == self.output_object_name:

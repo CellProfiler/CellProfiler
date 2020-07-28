@@ -23,6 +23,11 @@ import scipy.ndimage
 import skimage.filters
 import skimage.filters.rank
 import skimage.morphology
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.range import FloatRange
+from cellprofiler_core.setting.text import Float, Integer
 
 from cellprofiler.modules import _help
 
@@ -466,7 +471,7 @@ value from 0 to 1.
 
         self.thresholding_measurement = Measurement(
             "Select the measurement to threshold with",
-            lambda: cellprofiler_core.measurement.IMAGE,
+            lambda: "Image",
             doc="""\
 *(Used only if Measurement is selected for thresholding method)*
 
@@ -1126,20 +1131,20 @@ Often a good choice is some multiple of the largest expected object size.
         ave_final_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
         ave_orig_threshold = numpy.mean(numpy.atleast_1d(orig_threshold))
         measurements.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             cellprofiler_core.measurement.FF_FINAL_THRESHOLD % objname,
             ave_final_threshold,
         )
 
         measurements.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             cellprofiler_core.measurement.FF_ORIG_THRESHOLD % objname,
             ave_orig_threshold,
         )
 
         if self.threshold_scope == TS_ADAPTIVE:
             measurements.add_measurement(
-                cellprofiler_core.measurement.IMAGE,
+                "Image",
                 cellprofiler_core.measurement.FF_GUIDE_THRESHOLD % objname,
                 guide_threshold,
             )
@@ -1152,7 +1157,7 @@ Often a good choice is some multiple of the largest expected object size.
         wv = centrosome.threshold.weighted_variance(data, mask, binary_image)
 
         measurements.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             cellprofiler_core.measurement.FF_WEIGHTED_VARIANCE % objname,
             numpy.array([wv], dtype=float),
         )
@@ -1160,7 +1165,7 @@ Often a good choice is some multiple of the largest expected object size.
         entropies = centrosome.threshold.sum_of_entropies(data, mask, binary_image)
 
         measurements.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             cellprofiler_core.measurement.FF_SUM_OF_ENTROPIES % objname,
             numpy.array([entropies], dtype=float),
         )
@@ -1171,12 +1176,12 @@ Often a good choice is some multiple of the largest expected object size.
 
         measures = [
             (
-                cellprofiler_core.measurement.IMAGE,
+                "Image",
                 cellprofiler_core.measurement.FF_FINAL_THRESHOLD % object_name,
                 cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                cellprofiler_core.measurement.IMAGE,
+                "Image",
                 cellprofiler_core.measurement.FF_ORIG_THRESHOLD % object_name,
                 cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
@@ -1184,19 +1189,19 @@ Often a good choice is some multiple of the largest expected object size.
         if self.threshold_scope == TS_ADAPTIVE:
             measures += [
                 (
-                    cellprofiler_core.measurement.IMAGE,
+                    "Image",
                     cellprofiler_core.measurement.FF_GUIDE_THRESHOLD % object_name,
                     cellprofiler_core.measurement.COLTYPE_FLOAT,
                 )
             ]
         measures += [
             (
-                cellprofiler_core.measurement.IMAGE,
+                "Image",
                 cellprofiler_core.measurement.FF_WEIGHTED_VARIANCE % object_name,
                 cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
             (
-                cellprofiler_core.measurement.IMAGE,
+                "Image",
                 cellprofiler_core.measurement.FF_SUM_OF_ENTROPIES % object_name,
                 cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
@@ -1204,14 +1209,14 @@ Often a good choice is some multiple of the largest expected object size.
         return measures
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return [cellprofiler_core.measurement.C_THRESHOLD]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         if (
-            object_name == cellprofiler_core.measurement.IMAGE
+            object_name == "Image"
             and category == cellprofiler_core.measurement.C_THRESHOLD
         ):
             measures = [

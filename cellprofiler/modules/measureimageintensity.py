@@ -1,6 +1,7 @@
 import logging
 
 import numpy
+from cellprofiler_core.setting import Binary
 
 from cellprofiler.modules import _help
 
@@ -106,7 +107,7 @@ ALL_MEASUREMENTS = [
 ]
 
 
-class MeasureImageIntensity(cellprofiler_core.module.Module):
+class MeasureImageIntensity(Module):
     module_name = "MeasureImageIntensity"
     category = "Measurement"
     variable_revision_number = 3
@@ -318,41 +319,26 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
                 if self.wants_objects:
                     for object_set in self.objects_list.value:
                         measurement_name = im + "_" + object_set
-                        columns.append(
-                            (
-                                cellprofiler_core.measurement.IMAGE,
-                                feature % measurement_name,
-                                coltype,
-                            )
-                        )
+                        columns.append(("Image", feature % measurement_name, coltype,))
                 else:
                     measurement_name = im
-                    columns.append(
-                        (
-                            cellprofiler_core.measurement.IMAGE,
-                            feature % measurement_name,
-                            coltype,
-                        )
-                    )
+                    columns.append(("Image", feature % measurement_name, coltype,))
         return columns
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return ["Intensity"]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == "Intensity"
-        ):
+        if object_name == "Image" and category == "Intensity":
             return ALL_MEASUREMENTS
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         if (
-            object_name == cellprofiler_core.measurement.IMAGE
+            object_name == "Image"
             and category == "Intensity"
             and measurement in ALL_MEASUREMENTS
         ):

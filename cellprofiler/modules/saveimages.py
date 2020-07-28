@@ -44,6 +44,10 @@ from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber, FileImageSubscriber
+from cellprofiler_core.setting.text import Text, Integer
 
 from cellprofiler.modules import _help
 
@@ -90,7 +94,7 @@ WS_FIRST_CYCLE = "First cycle"
 WS_LAST_CYCLE = "Last cycle"
 
 
-class SaveImages(cellprofiler_core.module.Module):
+class SaveImages(Module):
     module_name = "SaveImages"
 
     variable_revision_number = 14
@@ -180,7 +184,7 @@ Several choices are available for constructing the image file name:
             ),
         )
 
-        self.file_image_name = FileImageNameSubscriber(
+        self.file_image_name = FileImageSubscriber(
             "Select image name for file prefix",
             "None",
             doc="""\
@@ -546,8 +550,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             d = self.get_dictionary(workspace.image_set_list)
             if (
                 workspace.measurements[
-                    cellprofiler_core.measurement.IMAGE,
-                    cellprofiler_core.measurement.GROUP_INDEX,
+                    "Image", cellprofiler_core.measurement.GROUP_INDEX,
                 ]
                 > 1
             ):
@@ -760,13 +763,13 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             pn, fn = os.path.split(filename)
             url = cellprofiler_core.utilities.pathname.pathname2url(filename)
             workspace.measurements.add_measurement(
-                cellprofiler_core.measurement.IMAGE, self.file_name_feature, fn,
+                "Image", self.file_name_feature, fn,
             )
             workspace.measurements.add_measurement(
-                cellprofiler_core.measurement.IMAGE, self.path_name_feature, pn,
+                "Image", self.path_name_feature, pn,
             )
             workspace.measurements.add_measurement(
-                cellprofiler_core.measurement.IMAGE, self.url_feature, url,
+                "Image", self.url_feature, url,
             )
 
     @property
@@ -799,9 +802,9 @@ store images in the subfolder, "*date*\/*plate-name*".""",
                 cellprofiler_core.measurement.C_PATH_NAME,
                 self.file_image_name.value,
             )
-            assert workspace.measurements.has_feature(
-                cellprofiler_core.measurement.IMAGE, path_feature
-            ), ("Image %s does not have a path!" % self.file_image_name.value)
+            assert workspace.measurements.has_feature("Image", path_feature), (
+                "Image %s does not have a path!" % self.file_image_name.value
+            )
             return workspace.measurements.get_current_image_measurement(path_feature)
 
         # ... otherwise, chase the cpimage hierarchy looking for an image with a path
@@ -817,12 +820,12 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         if self.update_file_names.value:
             return [
                 (
-                    cellprofiler_core.measurement.IMAGE,
+                    "Image",
                     self.file_name_feature,
                     cellprofiler_core.measurement.COLTYPE_VARCHAR_FILE_NAME,
                 ),
                 (
-                    cellprofiler_core.measurement.IMAGE,
+                    "Image",
                     self.path_name_feature,
                     cellprofiler_core.measurement.COLTYPE_VARCHAR_PATH_NAME,
                 ),

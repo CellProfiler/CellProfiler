@@ -144,7 +144,7 @@ C_MEASUREMENT_TEMPLATE = "MT"
 # you re-implement them. You can let Module do most of the work and
 # implement only what you need.
 #
-class MeasurementTemplate(cellprofiler_core.module.Module):
+class MeasurementTemplate(Module):
     #
     # The module starts by declaring the name that's used for display,
     # the category under which it is stored and the variable revision

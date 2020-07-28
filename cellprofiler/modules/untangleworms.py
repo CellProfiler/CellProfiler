@@ -405,7 +405,7 @@ An additional option is the following:
             )
             self.training_set_directory.join_parts(dir_choice, custom_path)
 
-        self.training_set_file_name = FilenameText(
+        self.training_set_file_name = Filename(
             "Training set file name",
             "TrainingSet.xml",
             doc="""This is the name of the training set file.""",

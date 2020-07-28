@@ -36,9 +36,12 @@ See also other **Display** modules and data tools.
 
 import numpy
 import six
+from cellprofiler_core.constants.measurement import IMAGE
 
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.text import Text
 
 AGG_AVG = "avg"
 AGG_MEDIAN = "median"

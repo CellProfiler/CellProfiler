@@ -25,8 +25,14 @@ import matplotlib.cm
 import matplotlib.figure
 import matplotlib.text
 import numpy
-from cellprofiler_core.measurement import M_LOCATION_CENTER_X
-from cellprofiler_core.measurement import M_LOCATION_CENTER_Y
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.setting import Binary, Measurement, Color
+from cellprofiler_core.setting.choice import Choice, Colormap
+from cellprofiler_core.setting.range import FloatRange
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Integer
 
 OI_OBJECTS = "Object"
 OI_IMAGE = "Image"
@@ -42,7 +48,7 @@ CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
 CMS_MANUAL = "Manual"
 
 
-class DisplayDataOnImage(cellprofiler_core.module.Module):
+class DisplayDataOnImage(Module):
     module_name = "DisplayDataOnImage"
     category = "Data Tools"
     variable_revision_number = 6
@@ -85,7 +91,7 @@ Choose the name of objects identified by some previous module (such as
             if self.objects_or_image == OI_OBJECTS:
                 return self.objects_name.value
             else:
-                return cellprofiler_core.measurement.IMAGE
+                return "Image"
 
         self.measurement = Measurement(
             "Measurement to display",
@@ -408,10 +414,7 @@ color map.
         pathname_feature = "_".join((C_PATH_NAME, image_name))
         filename_feature = "_".join((C_FILE_NAME, image_name))
         if not all(
-            [
-                m.has_feature(cellprofiler_core.measurement.IMAGE, f)
-                for f in (pathname_feature, filename_feature)
-            ]
+            [m.has_feature("Image", f) for f in (pathname_feature, filename_feature)]
         ):
             with wx.FileDialog(
                 None,
@@ -438,9 +441,7 @@ color map.
         figure.set_subplots((1, 1))
         ax = figure.subplot(0, 0)
         title = "%s_%s" % (
-            self.objects_name.value
-            if self.objects_or_image == OI_OBJECTS
-            else cellprofiler_core.measurement.IMAGE,
+            self.objects_name.value if self.objects_or_image == OI_OBJECTS else "Image",
             self.measurement.value,
         )
 

@@ -90,7 +90,7 @@ def endpoints(image):
     return _neighbors(image) == 1
 
 
-class MeasureImageSkeleton(cellprofiler_core.module.Module):
+class MeasureImageSkeleton(Module):
     category = "Measurement"
 
     module_name = "MeasureImageSkeleton"
@@ -178,7 +178,7 @@ You can create a morphological skeleton with the
         )
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return ["Skeleton"]
 
         return []
@@ -191,10 +191,7 @@ You can create a morphological skeleton with the
     def get_measurements(self, pipeline, object_name, category):
         name = self.skeleton_name.value
 
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == "Skeleton"
-        ):
+        if object_name == "Image" and category == "Skeleton":
             return [
                 "Skeleton_Branches_{}".format(name),
                 "Skeleton_Endpoints_{}".format(name),
@@ -203,7 +200,7 @@ You can create a morphological skeleton with the
         return []
 
     def get_measurement_columns(self, pipeline):
-        image = cellprofiler_core.measurement.IMAGE
+        image = "Image"
 
         features = [
             self.get_measurement_name("Branches"),

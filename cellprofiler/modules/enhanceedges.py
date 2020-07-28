@@ -27,6 +27,8 @@ import numpy as np
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName
 from centrosome.filter import laplacian_of_gaussian
 from centrosome.filter import prewitt, hprewitt, vprewitt, stretch
 from centrosome.filter import roberts, canny, sobel, hsobel, vsobel

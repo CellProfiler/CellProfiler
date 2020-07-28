@@ -37,7 +37,7 @@ CIRCULAR_AVERAGE_FILTER = "Circular Average Filter"
 SM_TO_AVERAGE = "Smooth to Average"
 
 
-class Smooth(cellprofiler_core.module.Module):
+class Smooth(Module):
     module_name = "Smooth"
     category = "Image Processing"
     variable_revision_number = 2

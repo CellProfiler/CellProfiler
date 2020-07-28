@@ -63,9 +63,9 @@ from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import HiddenCount
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.text import Float, ImageName
 
 import cellprofiler.gui.help.content
 

@@ -1,5 +1,8 @@
 import numpy
 import scipy.ndimage
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Integer, Float
 
 from cellprofiler.modules import _help
 

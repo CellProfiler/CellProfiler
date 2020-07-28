@@ -146,7 +146,7 @@ MEASUREMENT_ALIASES = {
 }
 
 
-class MeasureObjectIntensityDistribution(cellprofiler_core.module.Module):
+class MeasureObjectIntensityDistribution(Module):
     module_name = "MeasureObjectIntensityDistribution"
     category = "Measurement"
     variable_revision_number = 6

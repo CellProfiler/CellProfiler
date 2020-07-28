@@ -46,6 +46,8 @@ import matplotlib.cm
 import matplotlib.figure
 import matplotlib.patches
 import numpy
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import get_primary_outline_color
 from cellprofiler_core.setting import Coordinates
 from cellprofiler_core.setting.choice import Choice
@@ -55,6 +57,7 @@ from cellprofiler_core.setting.subscriber import (
     CropImageSubscriber,
     LabelSubscriber,
 )
+from cellprofiler_core.setting.text import Integer, CropImageName
 
 SH_RECTANGLE = "Rectangle"
 SH_ELLIPSE = "Ellipse"
@@ -105,7 +108,7 @@ D_FIRST_CROPPING = "FirstCropping"
 D_FIRST_CROPPING_MASK = "FirstCroppingMask"
 
 
-class Crop(cellprofiler_core.module.Module):
+class Crop(Module):
     module_name = "Crop"
     variable_revision_number = 3
     category = "Image Processing"
@@ -117,7 +120,7 @@ class Crop(cellprofiler_core.module.Module):
             doc="Choose the image to be cropped.",
         )
 
-        self.cropped_image_name = CroppingNameProvider(
+        self.cropped_image_name = CropImageName(
             text="Name the output image",
             value="CropBlue",
             doc="Enter the name to be given to cropped image.",
@@ -539,7 +542,7 @@ objects:
         """Return information on the measurements made during cropping"""
         return [
             (
-                cellprofiler_core.measurement.IMAGE,
+                "Image",
                 x % self.cropped_image_name.value,
                 cellprofiler_core.measurement.COLTYPE_INTEGER,
             )

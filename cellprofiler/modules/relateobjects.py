@@ -4,6 +4,10 @@ import cellprofiler_core.object
 import numpy
 import scipy.ndimage
 import skimage.segmentation
+from cellprofiler_core.setting import Binary, SettingsGroup
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.subscriber import LabelSubscriber
 
 from cellprofiler.modules import _help
 
@@ -912,7 +916,7 @@ parents or children of the parent object.""",
 
             if self.find_parent_child_distances != D_NONE:
                 result += [C_DISTANCE]
-        elif object_name == cellprofiler_core.measurement.IMAGE:
+        elif object_name == "Image":
             result += [cellprofiler_core.measurement.C_COUNT]
         elif object_name == self.output_child_objects_name.value:
             result += [
@@ -963,7 +967,7 @@ parents or children of the parent object.""",
                 return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
 
         elif (
-            object_name == cellprofiler_core.measurement.IMAGE
+            object_name == "Image"
             and self.wants_child_objects_saved.value
             and category == cellprofiler_core.measurement.C_COUNT
         ):

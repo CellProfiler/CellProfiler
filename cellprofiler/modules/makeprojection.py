@@ -55,7 +55,7 @@ See also the help for the **Input** modules.
 """
 
 import numpy
-from cellprofiler_core.image import AbstractImageProvider
+from cellprofiler_core.image import AbstractImage
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Choice
@@ -264,7 +264,7 @@ slices."""
         return setting_values, variable_revision_number
 
 
-class ImageProvider(AbstractImageProvider):
+class ImageProvider(AbstractImage):
     """Provide the image after averaging but before dilation and smoothing"""
 
     def __init__(self, name, how_to_accumulate, frequency=6):

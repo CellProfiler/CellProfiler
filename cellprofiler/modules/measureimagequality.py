@@ -197,7 +197,7 @@ SETTINGS_PER_GROUP_V3 = 11
 IMAGE_GROUP_SETTING_OFFSET = 2
 
 
-class MeasureImageQuality(cellprofiler_core.module.Module):
+class MeasureImageQuality(Module):
     module_name = "MeasureImageQuality"
     category = "Measurement"
     variable_revision_number = 6
@@ -777,7 +777,7 @@ to the foreground pixels or the background pixels.
                 for image_name in selected_images:
                     columns.append(
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             "{}_{}_{}".format(
                                 C_IMAGE_QUALITY,
                                 cellprofiler_core.utilities.image.C_SCALING,
@@ -793,7 +793,7 @@ to the foreground pixels or the background pixels.
                 for image_name in selected_images:
                     columns.append(
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             "{}_{}_{}".format(
                                 C_IMAGE_QUALITY, F_FOCUS_SCORE, image_name
                             ),
@@ -804,7 +804,7 @@ to the foreground pixels or the background pixels.
 
                     columns.append(
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             "{}_{}_{}".format(
                                 C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE, image_name
                             ),
@@ -816,7 +816,7 @@ to the foreground pixels or the background pixels.
                     for scale_group in image_group.scale_groups:
                         columns.append(
                             (
-                                cellprofiler_core.measurement.IMAGE,
+                                "Image",
                                 "{}_{}_{}_{:d}".format(
                                     C_IMAGE_QUALITY,
                                     F_LOCAL_FOCUS_SCORE,
@@ -830,7 +830,7 @@ to the foreground pixels or the background pixels.
 
                         columns.append(
                             (
-                                cellprofiler_core.measurement.IMAGE,
+                                "Image",
                                 "{}_{}_{}_{:d}".format(
                                     C_IMAGE_QUALITY,
                                     F_CORRELATION,
@@ -852,7 +852,7 @@ to the foreground pixels or the background pixels.
                         measurement_name = image_name
                         columns.append(
                             (
-                                cellprofiler_core.measurement.IMAGE,
+                                "Image",
                                 "{}_{}_{}".format(
                                     C_IMAGE_QUALITY, feature, measurement_name
                                 ),
@@ -867,7 +867,7 @@ to the foreground pixels or the background pixels.
                     for feature in SATURATION_FEATURES:
                         columns.append(
                             (
-                                cellprofiler_core.measurement.IMAGE,
+                                "Image",
                                 "{}_{}_{}".format(C_IMAGE_QUALITY, feature, image_name),
                                 cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
@@ -882,7 +882,7 @@ to the foreground pixels or the background pixels.
                         feature = threshold_group.threshold_feature_name(image_name)
                         columns.append(
                             (
-                                cellprofiler_core.measurement.IMAGE,
+                                "Image",
                                 feature,
                                 cellprofiler_core.measurement.COLTYPE_FLOAT,
                             )
@@ -917,7 +917,7 @@ to the foreground pixels or the background pixels.
             return columns
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return [C_IMAGE_QUALITY]
         elif (
             object_name == cellprofiler_core.measurement.EXPERIMENT
@@ -927,10 +927,7 @@ to the foreground pixels or the background pixels.
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == C_IMAGE_QUALITY
-        ):
+        if object_name == "Image" and category == C_IMAGE_QUALITY:
             result = []
             if self.any_scaling():
                 result += [cellprofiler_core.utilities.image.C_SCALING]
@@ -975,10 +972,7 @@ to the foreground pixels or the background pixels.
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
 
-        if (
-            object_name != cellprofiler_core.measurement.IMAGE
-            or category != C_IMAGE_QUALITY
-        ):
+        if object_name != "Image" or category != C_IMAGE_QUALITY:
             return []
         if measurement in (
             F_FOCUS_SCORE,
@@ -1027,10 +1021,7 @@ to the foreground pixels or the background pixels.
         self, pipeline, object_name, category, measurement, image_names
     ):
         """Get the scales (window_sizes) for the given measurement"""
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == C_IMAGE_QUALITY
-        ):
+        if object_name == "Image" and category == C_IMAGE_QUALITY:
             if measurement in (F_LOCAL_FOCUS_SCORE, F_CORRELATION):
                 result = []
                 for image_group in self.image_groups:
@@ -1110,9 +1101,7 @@ to the foreground pixels or the background pixels.
             value = workspace.image_set.get_image(image_name).scale
             if not value:  # Set to NaN if not defined, such as for derived images
                 value = numpy.NaN
-            workspace.add_measurement(
-                cellprofiler_core.measurement.IMAGE, feature, value
-            )
+            workspace.add_measurement("Image", feature, value)
             result += [["{} scaling".format(image_name), value]]
         return result
 
@@ -1207,9 +1196,7 @@ to the foreground pixels or the background pixels.
             focus_score_name = "{}_{}_{}".format(
                 C_IMAGE_QUALITY, F_FOCUS_SCORE, image_name
             )
-            workspace.add_measurement(
-                cellprofiler_core.measurement.IMAGE, focus_score_name, focus_score
-            )
+            workspace.add_measurement("Image", focus_score_name, focus_score)
             result += [["{} focus score @{:d}".format(image_name, scale), focus_score]]
 
             for idx, scale_group in enumerate(image_group.scale_groups):
@@ -1218,9 +1205,7 @@ to the foreground pixels or the background pixels.
                     C_IMAGE_QUALITY, F_LOCAL_FOCUS_SCORE, image_name, scale
                 )
                 workspace.add_measurement(
-                    cellprofiler_core.measurement.IMAGE,
-                    local_focus_score_name,
-                    local_focus_score[idx],
+                    "Image", local_focus_score_name, local_focus_score[idx],
                 )
                 result += [
                     [
@@ -1251,7 +1236,7 @@ to the foreground pixels or the background pixels.
                 if not numpy.isfinite(value):
                     value = 0.0
                 workspace.add_measurement(
-                    cellprofiler_core.measurement.IMAGE,
+                    "Image",
                     "{}_{}_{}_{:d}".format(
                         C_IMAGE_QUALITY, F_CORRELATION, image_name, scale
                     ),
@@ -1294,14 +1279,10 @@ to the foreground pixels or the background pixels.
                 C_IMAGE_QUALITY, F_PERCENT_MINIMAL, image_name
             )
             workspace.add_measurement(
-                cellprofiler_core.measurement.IMAGE,
-                percent_maximal_name,
-                percent_maximal,
+                "Image", percent_maximal_name, percent_maximal,
             )
             workspace.add_measurement(
-                cellprofiler_core.measurement.IMAGE,
-                percent_minimal_name,
-                percent_minimal,
+                "Image", percent_minimal_name, percent_minimal,
             )
             result += [
                 ["{} maximal".format(image_name), "{:.1f} %".format(percent_maximal)],
@@ -1429,7 +1410,7 @@ to the foreground pixels or the background pixels.
                 powerslope = 0
 
             workspace.add_measurement(
-                cellprofiler_core.measurement.IMAGE,
+                "Image",
                 "{}_{}_{}".format(C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE, image_name),
                 powerslope,
             )
@@ -1495,7 +1476,7 @@ to the foreground pixels or the background pixels.
                 else:
                     threshold_description = threshold_method + " " + scale
                 workspace.add_measurement(
-                    cellprofiler_core.measurement.IMAGE,
+                    "Image",
                     threshold_group.threshold_feature_name(image_name),
                     global_threshold,
                 )
@@ -1526,8 +1507,7 @@ to the foreground pixels or the background pixels.
             for image_name in self.images_to_process(image_group, workspace):
                 for threshold_group in all_threshold_groups:
                     values = m.get_all_measurements(
-                        cellprofiler_core.measurement.IMAGE,
-                        threshold_group.threshold_feature_name(image_name),
+                        "Image", threshold_group.threshold_feature_name(image_name),
                     )
 
                     values = values[numpy.isfinite(values)]

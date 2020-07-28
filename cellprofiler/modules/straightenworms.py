@@ -114,8 +114,15 @@ from cellprofiler_core.setting import HiddenCount
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
-from cellprofiler_core.setting.text import Integer, Directory
+from cellprofiler_core.setting.text import (
+    Integer,
+    Directory,
+    LabelName,
+    ImageName,
+    Filename,
+)
 from cellprofiler_core.utilities.core.module.identify import (
     get_object_measurement_columns,
     add_object_location_measurements,
@@ -233,7 +240,7 @@ An additional option is the following:
             )
             self.training_set_directory.join_parts(dir_choice, custom_path)
 
-        self.training_set_file_name = FilenameText(
+        self.training_set_file_name = Filename(
             "Training set file name",
             "TrainingSet.xml",
             doc="This is the name of the training set file.",

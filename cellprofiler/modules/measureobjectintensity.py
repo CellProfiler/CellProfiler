@@ -129,7 +129,7 @@ ALL_LOCATION_MEASUREMENTS = [
 ]
 
 
-class MeasureObjectIntensity(cellprofiler_core.module.Module):
+class MeasureObjectIntensity(Module):
     module_name = "MeasureObjectIntensity"
     variable_revision_number = 4
     category = "Measurement"

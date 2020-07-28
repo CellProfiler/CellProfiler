@@ -30,6 +30,12 @@ import logging
 
 import numpy
 import skimage.transform
+from cellprofiler_core.image import Image
+from cellprofiler_core.setting import Divider, HiddenCount, SettingsGroup
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Float, Integer
 
 R_BY_FACTOR = "Resize by a fraction or multiple of the original size"
 R_TO_SIZE = "Resize by specifying desired final dimensions"

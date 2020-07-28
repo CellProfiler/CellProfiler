@@ -61,7 +61,7 @@ from cellprofiler_core.setting import Coordinates
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
-from cellprofiler_core.setting.text import GridName, Integer
+from cellprofiler_core.setting.text import GridName, Integer, ImageName
 
 from cellprofiler.grid import Grid
 

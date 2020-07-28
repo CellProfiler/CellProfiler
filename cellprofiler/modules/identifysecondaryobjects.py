@@ -985,7 +985,7 @@ segmentation.""",
 
         if self.wants_discard_edge and self.wants_discard_primary:
             if (
-                object_name == cellprofiler_core.measurement.IMAGE
+                object_name == "Image"
                 and category == cellprofiler_core.measurement.C_COUNT
             ):
                 measurements += [self.new_primary_objects_name.value]

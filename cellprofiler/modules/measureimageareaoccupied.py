@@ -45,6 +45,8 @@ Measurements made by this module
 
 import numpy
 import skimage.measure
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting.choice import Choice
 
 C_AREA_OCCUPIED = "AreaOccupied"
 
@@ -70,7 +72,7 @@ IMAGE_SETTING_COUNT = 1
 OBJECT_SETTING_COUNT = 3
 
 
-class MeasureImageAreaOccupied(cellprofiler_core.module.Module):
+class MeasureImageAreaOccupied(Module):
     module_name = "MeasureImageAreaOccupied"
     category = "Measurement"
     variable_revision_number = 5
@@ -308,7 +310,7 @@ Select the previously identified objects you would like to measure.""".format(
                 for feature in self._get_feature_names(pipeline):
                     columns.append(
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             "{:s}_{:s}_{:s}".format(
                                 C_AREA_OCCUPIED, feature, object_set,
                             ),
@@ -320,7 +322,7 @@ Select the previously identified objects you would like to measure.""".format(
                 for feature in self._get_feature_names(pipeline):
                     columns.append(
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             "{:s}_{:s}_{:s}".format(
                                 C_AREA_OCCUPIED, feature, image_set,
                             ),
@@ -331,15 +333,12 @@ Select the previously identified objects you would like to measure.""".format(
         return columns
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return [C_AREA_OCCUPIED]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == C_AREA_OCCUPIED
-        ):
+        if object_name == "Image" and category == C_AREA_OCCUPIED:
             return self._get_feature_names(pipeline)
         return []
 

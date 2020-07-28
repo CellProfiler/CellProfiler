@@ -282,7 +282,7 @@ Select the location of the rules file that will be used for flagging images.
 
         group.append(
             "rules_file_name",
-            FilenameText(
+            Filename(
                 "Rules file name",
                 "rules.txt",
                 get_directory_fn=get_directory_fn,

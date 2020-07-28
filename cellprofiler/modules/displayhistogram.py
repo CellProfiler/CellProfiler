@@ -36,6 +36,11 @@ See also **DisplayDensityPlot**, **DisplayScatterPlot**.
 
 import textwrap
 
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.range import FloatRange
+from cellprofiler_core.setting.text import Text, Integer
+
 
 class DisplayHistogram(cellprofiler_core.module.Module):
     module_name = "DisplayHistogram"
@@ -50,7 +55,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
 
         create_settings is called at the end of initialization.
         """
-        self.object = cellprofiler_core.setting.LabelSubscriber(
+        self.object = LabelSubscriber(
             text="Select the object whose measurements will be displayed",
             value="None",
             doc=textwrap.dedent(
@@ -62,14 +67,14 @@ class DisplayHistogram(cellprofiler_core.module.Module):
             ),
         )
 
-        self.x_axis = cellprofiler_core.setting.Measurement(
+        self.x_axis = Measurement(
             text="Select the object measurement to plot",
             object_fn=self.get_object,
             value="None",
             doc="Choose the object measurement made by a previous module to plot.",
         )
 
-        self.bins = cellprofiler_core.setting.Integer(
+        self.bins = Integer(
             text="Number of bins",
             value=100,
             minval=1,
@@ -77,7 +82,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
             doc="Enter the number of equally-spaced bins that you want used on the X-axis.",
         )
 
-        self.xscale = cellprofiler_core.setting.Choice(
+        self.xscale = Choice(
             text="How should the X-axis be scaled?",
             choices=["linear", "log"],
             value=None,
@@ -96,7 +101,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
             ),
         )
 
-        self.yscale = cellprofiler_core.setting.Choice(
+        self.yscale = Choice(
             text="How should the Y-axis be scaled?",
             choices=["linear", "log"],
             value=None,
@@ -115,7 +120,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
             ),
         )
 
-        self.title = cellprofiler_core.setting.Text(
+        self.title = Text(
             text="Enter a title for the plot, if desired",
             value="",
             doc=textwrap.dedent(
@@ -127,7 +132,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
             ),
         )
 
-        self.wants_xbounds = cellprofiler_core.setting.Binary(
+        self.wants_xbounds = Binary(
             text="Specify min/max bounds for the X-axis?",
             value=False,
             doc=textwrap.dedent(
@@ -141,7 +146,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
             ),
         )
 
-        self.xbounds = cellprofiler_core.setting.FloatRange(
+        self.xbounds = FloatRange(
             text="Minimum/maximum values for the X-axis",
             doc="Set lower/upper limits for X-axis of the histogram.",
         )

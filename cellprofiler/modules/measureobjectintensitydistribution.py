@@ -152,7 +152,7 @@ class MeasureObjectIntensityDistribution(cellprofiler_core.module.Module):
     variable_revision_number = 6
 
     def create_settings(self):
-        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+        self.images_list = ListImageNameSubscriber(
             "Select images to measure",
             [],
             doc="""Select the images whose intensity distribution you want to measure.""",
@@ -164,13 +164,13 @@ class MeasureObjectIntensityDistribution(cellprofiler_core.module.Module):
 
         self.heatmaps = []
 
-        self.object_count = cellprofiler_core.setting.HiddenCount(self.objects)
+        self.object_count = HiddenCount(self.objects)
 
-        self.bin_counts_count = cellprofiler_core.setting.HiddenCount(self.bin_counts)
+        self.bin_counts_count = HiddenCount(self.bin_counts)
 
-        self.heatmap_count = cellprofiler_core.setting.HiddenCount(self.heatmaps)
+        self.heatmap_count = HiddenCount(self.heatmaps)
 
-        self.wants_zernikes = cellprofiler_core.setting.Choice(
+        self.wants_zernikes = Choice(
             "Calculate intensity Zernikes?",
             Z_ALL,
             doc="""\
@@ -196,7 +196,7 @@ useful information for classifying phenotypes.
             ),
         )
 
-        self.zernike_degree = cellprofiler_core.setting.Integer(
+        self.zernike_degree = Integer(
             "Maximum zernike moment",
             value=9,
             minval=1,
@@ -216,21 +216,19 @@ moment, so higher values are increasingly expensive to calculate.
             ),
         )
 
-        self.spacer_1 = cellprofiler_core.setting.Divider()
+        self.spacer_1 = Divider()
 
-        self.add_object_button = cellprofiler_core.setting.DoSomething(
-            "", "Add another object", self.add_object
-        )
+        self.add_object_button = DoSomething("", "Add another object", self.add_object)
 
-        self.spacer_2 = cellprofiler_core.setting.Divider()
+        self.spacer_2 = Divider()
 
-        self.add_bin_count_button = cellprofiler_core.setting.DoSomething(
+        self.add_bin_count_button = DoSomething(
             "", "Add another set of bins", self.add_bin_count
         )
 
-        self.spacer_3 = cellprofiler_core.setting.Divider()
+        self.spacer_3 = Divider()
 
-        self.add_heatmap_button = cellprofiler_core.setting.DoSomething(
+        self.add_heatmap_button = DoSomething(
             "",
             "Add another heatmap display",
             self.add_heatmap,
@@ -246,7 +244,7 @@ heatmap according to the measurement value for that band.
         self.add_bin_count(can_remove=False)
 
     def add_object(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         if can_remove:
             group.append("divider", cellprofiler_core.setting.Divider(line=False))
@@ -324,7 +322,7 @@ object centers).
         self.objects.append(group)
 
     def add_bin_count(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         if can_remove:
             group.append("divider", cellprofiler_core.setting.Divider(line=False))
@@ -402,7 +400,7 @@ in pixels.
         return choices
 
     def add_heatmap(self):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         if len(self.heatmaps) > 0:
             group.append("divider", cellprofiler_core.setting.Divider(line=False))
@@ -702,9 +700,7 @@ be selected in a later **SaveImages** or other module.
                         heatmap.image_name.get_image_name()
                     )
 
-                    output_img = cellprofiler_core.image.Image(
-                        output_pixels, parent_image=parent_image
-                    )
+                    output_img = Image(output_pixels, parent_image=parent_image)
 
                     img_name = heatmap.display_name.value
 
@@ -754,7 +750,7 @@ be selected in a later **SaveImages** or other module.
                 colormap = heatmap.colormap.value
 
                 if colormap == "Default":
-                    colormap = cellprofiler_core.preferences.get_default_colormap()
+                    colormap = get_default_colormap()
 
                 if sharexy is None:
                     sharexy = figure.subplot_imshow(

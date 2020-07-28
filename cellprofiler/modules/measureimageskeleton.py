@@ -98,7 +98,7 @@ class MeasureImageSkeleton(cellprofiler_core.module.Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.skeleton_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.skeleton_name = ImageSubscriber(
             "Select an image to measure",
             doc="""\
 Select the morphological skeleton image you wish to measure.

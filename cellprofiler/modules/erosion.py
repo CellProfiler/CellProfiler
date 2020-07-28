@@ -22,7 +22,7 @@ import skimage.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 
-class Erosion(cellprofiler_core.module.ImageProcessing):
+class Erosion(ImageProcessing):
     category = "Advanced"
 
     module_name = "Erosion"
@@ -32,7 +32,7 @@ class Erosion(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(Erosion, self).create_settings()
 
-        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+        self.structuring_element = StructuringElement(
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 

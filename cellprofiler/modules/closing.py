@@ -20,11 +20,13 @@ YES          YES           NO
 
 import numpy
 import skimage.morphology
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import StructuringElement
 
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 
-class Closing(cellprofiler_core.module.ImageProcessing):
+class Closing(ImageProcessing):
     category = "Advanced"
 
     module_name = "Closing"
@@ -34,7 +36,7 @@ class Closing(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(Closing, self).create_settings()
 
-        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+        self.structuring_element = StructuringElement(
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 
@@ -74,7 +76,6 @@ class Closing(cellprofiler_core.module.ImageProcessing):
 
 
 def planewise_morphology_closing(x_data, structuring_element):
-
     y_data = numpy.zeros_like(x_data)
 
     for index, plane in enumerate(x_data):

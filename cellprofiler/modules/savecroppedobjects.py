@@ -42,7 +42,7 @@ class SaveCroppedObjects(cellprofiler_core.module.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.export_option = cellprofiler_core.setting.Choice(
+        self.export_option = Choice(
             "Do you want to save cropped images or object masks?",
             [SAVE_PER_OBJECT, SAVE_MASK],
             doc="""\
@@ -57,21 +57,19 @@ The choices are:
             ),
         )
 
-        self.objects_name = cellprofiler_core.setting.LabelSubscriber(
+        self.objects_name = LabelSubscriber(
             "Objects", doc="Select the objects you want to export as per-object crops."
         )
 
-        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
-            "Image", doc="Select the image to crop"
-        )
+        self.image_name = ImageSubscriber("Image", doc="Select the image to crop")
 
-        self.directory = cellprofiler_core.setting.DirectoryPath(
+        self.directory = DirectoryPath(
             "Directory",
             doc="Enter the directory where object crops are saved.",
             value=cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
         )
 
-        self.file_format = cellprofiler_core.setting.Choice(
+        self.file_format = Choice(
             "Saved file format",
             [O_PNG, O_TIFF_8, O_TIFF_16],
             value=O_TIFF_8,

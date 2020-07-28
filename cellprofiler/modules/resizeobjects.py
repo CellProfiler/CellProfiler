@@ -43,7 +43,7 @@ class ResizeObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing
     def create_settings(self):
         super(ResizeObjects, self).create_settings()
 
-        self.method = cellprofiler_core.setting.Choice(
+        self.method = Choice(
             "Method",
             ["Dimensions", "Factor", "Match Image"],
             doc="""\
@@ -54,7 +54,7 @@ The following options are available:
             value="Factor",
         )
 
-        self.factor = cellprofiler_core.setting.Float(
+        self.factor = Float(
             "Factor",
             0.25,
             minval=0,
@@ -65,7 +65,7 @@ Numbers less than 1 will shrink the objects; numbers greater than 1 will
 enlarge the objects.""",
         )
 
-        self.width = cellprofiler_core.setting.Integer(
+        self.width = Integer(
             "Width",
             100,
             minval=1,
@@ -75,7 +75,7 @@ enlarge the objects.""",
 Enter the desired width of the final objects, in pixels.""",
         )
 
-        self.height = cellprofiler_core.setting.Integer(
+        self.height = Integer(
             "Height",
             100,
             minval=1,
@@ -85,7 +85,7 @@ Enter the desired width of the final objects, in pixels.""",
 Enter the desired height of the final objects, in pixels.""",
         )
 
-        self.specific_image = cellprofiler_core.setting.ImageNameSubscriber(
+        self.specific_image = ImageSubscriber(
             "Select the image with the desired dimensions",
             "None",
             doc="""\

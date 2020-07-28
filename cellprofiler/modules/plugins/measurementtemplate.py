@@ -169,7 +169,7 @@ class MeasurementTemplate(cellprofiler_core.module.Module):
         # The ImageSubscriber gives your user a list of these images
         # which can then be used as inputs in your module.
         #
-        self.input_image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.input_image_name = ImageSubscriber(
             # The text to the left of the edit box
             text="Input image name:",
             # reST help that gets displayed when the user presses the
@@ -187,7 +187,7 @@ that is made available by a prior module.
         # It will ask the user which object to pick from the list of
         # objects provided by upstream modules.
         #
-        self.input_object_name = cellprofiler_core.setting.LabelSubscriber(
+        self.input_object_name = LabelSubscriber(
             text="Input object name",
             doc="These are the objects that the module operates on.",
         )
@@ -200,7 +200,7 @@ that is made available by a prior module.
         # The setting is an integer setting, bounded between 1 and 50.
         # N = 50 generates 1200 features!
         #
-        self.radial_degree = cellprofiler_core.setting.Integer(
+        self.radial_degree = Integer(
             text="Radial degree",
             value=10,
             minval=1,

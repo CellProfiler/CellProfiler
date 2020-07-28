@@ -38,7 +38,8 @@ from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
-from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Float, ImageName, Integer
 
 COMBINE = "Combine"
 SPLIT = "Split"
@@ -60,7 +61,7 @@ class ColorToGray(Module):
     channel_names = ["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"]
 
     def create_settings(self):
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""Select the multichannel image you want to convert to grayscale.""",

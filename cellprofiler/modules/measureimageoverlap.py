@@ -141,7 +141,7 @@ class MeasureImageOverlap(cellprofiler_core.module.Module):
     module_name = "MeasureImageOverlap"
 
     def create_settings(self):
-        self.ground_truth = cellprofiler_core.setting.ImageNameSubscriber(
+        self.ground_truth = ImageSubscriber(
             "Select the image to be used as the ground truth basis for calculating the amount of overlap",
             "None",
             doc="""\
@@ -151,7 +151,7 @@ result of another segmentation algorithm whose results you would like to
 compare.""",
         )
 
-        self.test_img = cellprofiler_core.setting.ImageNameSubscriber(
+        self.test_img = ImageSubscriber(
             "Select the image to be used to test for overlap",
             "None",
             doc="""\
@@ -159,7 +159,7 @@ This binary (black and white) image is what you will compare with the
 ground truth image. It is known as the “test image”.""",
         )
 
-        self.wants_emd = cellprofiler_core.setting.Binary(
+        self.wants_emd = Binary(
             "Calculate earth mover's distance?",
             False,
             doc="""\
@@ -177,7 +177,7 @@ with each representative in the test image to those in the reference
 image.""",
         )
 
-        self.max_points = cellprofiler_core.setting.Integer(
+        self.max_points = Integer(
             "Maximum # of points",
             value=250,
             minval=100,
@@ -189,7 +189,7 @@ foreground of the test image and from the foreground of the reference
 image using the point selection method (see below).""",
         )
 
-        self.decimation_method = cellprofiler_core.setting.Choice(
+        self.decimation_method = Choice(
             "Point selection method",
             choices=[DM_KMEANS, DM_SKEL],
             doc="""\
@@ -220,7 +220,7 @@ worms or neurites.
             ),
         )
 
-        self.max_distance = cellprofiler_core.setting.Integer(
+        self.max_distance = Integer(
             "Maximum distance",
             value=250,
             minval=1,
@@ -237,7 +237,7 @@ The maximum distance should be set to the largest reasonable distance
 that pixels could be expected to move from one image to the next.""",
         )
 
-        self.penalize_missing = cellprofiler_core.setting.Binary(
+        self.penalize_missing = Binary(
             "Penalize missing pixels",
             value=False,
             doc="""\

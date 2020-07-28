@@ -63,7 +63,7 @@ Select "*Yes*" to specify an image to use for the red channel.
             ),
         )
 
-        self.red_input_image = ImageNameSubscriber(
+        self.red_input_image = ImageSubscriber(
             "Select the red image",
             "None",
             doc="""\
@@ -87,7 +87,7 @@ Select "*Yes*" to specify an image to use for the green channel.
             ),
         )
 
-        self.green_input_image = ImageNameSubscriber(
+        self.green_input_image = ImageSubscriber(
             "Select the green image",
             "None",
             doc="""\
@@ -111,7 +111,7 @@ Select "*Yes*" to specify an image to use for the blue channel.
             ),
         )
 
-        self.blue_input_image = ImageNameSubscriber(
+        self.blue_input_image = ImageSubscriber(
             "Select the blue image",
             "None",
             doc="""\
@@ -123,7 +123,7 @@ Provide an image for the blue channel.
             ),
         )
 
-        self.color_input_image = ImageNameSubscriber(
+        self.color_input_image = ImageSubscriber(
             "Select the color image",
             "None",
             doc="""

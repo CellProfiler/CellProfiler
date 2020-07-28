@@ -3,6 +3,9 @@ import numpy
 import scipy.ndimage
 import skimage.morphology
 import skimage.segmentation
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import LabelName
 
 """
 CombineObjects
@@ -46,19 +49,19 @@ class CombineObjects(cellprofiler_core.module.image_segmentation.ObjectProcessin
     variable_revision_number = 1
 
     def create_settings(self):
-        self.objects_x = cellprofiler_core.setting.LabelSubscriber(
+        self.objects_x = LabelSubscriber(
             "Select initial object set",
             "None",
             doc="""Select an object set which you want to add objects to.""",
         )
 
-        self.objects_y = cellprofiler_core.setting.LabelSubscriber(
+        self.objects_y = LabelSubscriber(
             "Select object set to combine",
             "None",
             doc="""Select an object set which you want to add to the initial set.""",
         )
 
-        self.merge_method = cellprofiler_core.setting.Choice(
+        self.merge_method = Choice(
             "Select how to handle overlapping objects",
             choices=["Merge", "Preserve", "Discard", "Segment"],
             doc="""\
@@ -85,7 +88,7 @@ eachother.
          """,
         )
 
-        self.output_object = cellprofiler_core.setting.LabelName(
+        self.output_object = LabelName(
             "Name the combined object set",
             "CombinedObjects",
             doc="""\

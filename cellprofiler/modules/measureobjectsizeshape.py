@@ -383,14 +383,14 @@ class MeasureObjectSizeShape(cellprofiler_core.module.Module):
         The module allows for an unlimited number of measured objects, each
         of which has an entry in self.object_groups.
         """
-        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+        self.objects_list = ListObjectNameSubscriber(
             "Select object sets to measure",
             [],
             doc="""Select the object sets whose size and shape you want to measure.""",
         )
-        self.spacer = cellprofiler_core.setting.Divider(line=True)
+        self.spacer = Divider(line=True)
 
-        self.calculate_advanced = cellprofiler_core.setting.Binary(
+        self.calculate_advanced = Binary(
             text="Calculate the advanced features?",
             value=False,
             doc="""\
@@ -405,7 +405,7 @@ to calculate.""".format(
             ),
         )
 
-        self.calculate_zernikes = cellprofiler_core.setting.Binary(
+        self.calculate_zernikes = Binary(
             text="Calculate the Zernike features?",
             value=True,
             doc="""\

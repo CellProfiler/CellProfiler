@@ -383,7 +383,7 @@ class ExportToDatabase(cellprofiler_core.module.Module):
 
     def create_settings(self):
         db_choices = [DB_SQLITE, DB_MYSQL] if HAS_MYSQL_DB else [DB_SQLITE]
-        self.db_type = cellprofiler_core.setting.Choice(
+        self.db_type = Choice(
             "Database type",
             db_choices,
             DB_SQLITE,
@@ -419,7 +419,7 @@ considerations to note:
             ),
         )
 
-        self.test_connection_button = cellprofiler_core.setting.DoSomething(
+        self.test_connection_button = DoSomething(
             "Test the database connection",
             "Test connection",
             self.test_connection,
@@ -428,13 +428,13 @@ This button test the connection to MySQL server specified using
 the settings entered by the user.""",
         )
 
-        self.db_name = cellprofiler_core.setting.Text(
+        self.db_name = Text(
             "Database name",
             "DefaultDB",
             doc="""Select a name for the database you want to use.""",
         )
 
-        self.experiment_name = cellprofiler_core.setting.Text(
+        self.experiment_name = Text(
             "Experiment name",
             "MyExpt",
             doc="""\
@@ -445,7 +445,7 @@ and will be able to find the experiment’s tables through database
 queries.""",
         )
 
-        self.want_table_prefix = cellprofiler_core.setting.Binary(
+        self.want_table_prefix = Binary(
             "Add a prefix to table names?",
             True,
             doc="""\
@@ -467,7 +467,7 @@ your choice entails overwriting an existing table.
             ),
         )
 
-        self.table_prefix = cellprofiler_core.setting.Text(
+        self.table_prefix = Text(
             "Table prefix",
             "MyExpt_",
             doc="""\
@@ -480,7 +480,7 @@ combination of the table name and prefix exceeds this limit, you will
 receive an error associated with this setting.""",
         )
 
-        self.directory = cellprofiler_core.setting.DirectoryPath(
+        self.directory = DirectoryPath(
             "Output file location",
             dir_choices=[
                 cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
@@ -514,7 +514,7 @@ location.
             cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
         )
 
-        self.save_cpa_properties = cellprofiler_core.setting.Binary(
+        self.save_cpa_properties = Binary(
             "Create a CellProfiler Analyst properties file?",
             False,
             doc="""\
@@ -530,7 +530,7 @@ should not share the resulting file because it contains your password.
             ),
         )
 
-        self.location_object = cellprofiler_core.setting.LabelSubscriber(
+        self.location_object = LabelSubscriber(
             "Which objects should be used for locations?",
             "None",
             doc="""\
@@ -555,7 +555,7 @@ setting: ‘Export measurements for all objects to the database?’.
             % globals(),
         )
 
-        self.wants_properties_image_url_prepend = cellprofiler_core.setting.Binary(
+        self.wants_properties_image_url_prepend = Binary(
             "Access CellProfiler Analyst images via URL?",
             False,
             doc="""\
@@ -582,7 +582,7 @@ file name. E.g., if an image is loaded from the path
         if "broadinstitute" in fqdn.lower():  # Broad
             default_prepend = "http://imageweb/images/CPALinks"
 
-        self.properties_image_url_prepend = cellprofiler_core.setting.Text(
+        self.properties_image_url_prepend = Text(
             "Enter an image url prepend if you plan to access your files via http",
             default_prepend,
             doc="""\
@@ -599,7 +599,7 @@ If you are not using the web to access your files (i.e., they are
 locally accessible by your computer), leave this setting blank.""",
         )
 
-        self.properties_plate_type = cellprofiler_core.setting.Choice(
+        self.properties_plate_type = Choice(
             "Select the plate type",
             PLATE_TYPES,
             doc="""\
@@ -611,7 +611,7 @@ plate type here. Supported types in CellProfiler Analyst are 96- and
 a plate or microarray, select *None*.""",
         )
 
-        self.properties_plate_metadata = cellprofiler_core.setting.Choice(
+        self.properties_plate_metadata = Choice(
             "Select the plate metadata",
             ["None"],
             choices_fn=self.get_metadata_choices,
@@ -628,7 +628,7 @@ metadata associated with the image set, select *None*.
             ),
         )
 
-        self.properties_well_metadata = cellprofiler_core.setting.Choice(
+        self.properties_well_metadata = Choice(
             "Select the well metadata",
             ["None"],
             choices_fn=self.get_metadata_choices,
@@ -645,7 +645,7 @@ associated with the image set, select *None*.
             ),
         )
 
-        self.properties_export_all_image_defaults = cellprofiler_core.setting.Binary(
+        self.properties_export_all_image_defaults = Binary(
             "Include information for all images, using default values?",
             True,
             doc="""\
@@ -667,15 +667,15 @@ override the automatic values.""".format(
         )
 
         self.image_groups = []
-        self.image_group_count = cellprofiler_core.setting.HiddenCount(
+        self.image_group_count = HiddenCount(
             self.image_groups, "Properties image group count"
         )
         self.add_image_group(False)
-        self.add_image_button = cellprofiler_core.setting.DoSomething(
+        self.add_image_button = DoSomething(
             "", "Add another image", self.add_image_group
         )
 
-        self.properties_wants_groups = cellprofiler_core.setting.Binary(
+        self.properties_wants_groups = Binary(
             "Do you want to add group fields?",
             False,
             doc="""\
@@ -711,15 +711,15 @@ fetch objects from images with specific values for the group columns.
         )
 
         self.group_field_groups = []
-        self.group_field_count = cellprofiler_core.setting.HiddenCount(
+        self.group_field_count = HiddenCount(
             self.group_field_groups, "Properties group field count"
         )
         self.add_group_field_group(False)
-        self.add_group_field_button = cellprofiler_core.setting.DoSomething(
+        self.add_group_field_button = DoSomething(
             "", "Add another group", self.add_group_field_group
         )
 
-        self.properties_wants_filters = cellprofiler_core.setting.Binary(
+        self.properties_wants_filters = Binary(
             "Do you want to add filter fields?",
             False,
             doc="""\
@@ -734,7 +734,7 @@ that satisfy a specific metadata constraint.
             ),
         )
 
-        self.create_filters_for_plates = cellprofiler_core.setting.Binary(
+        self.create_filters_for_plates = Binary(
             "Automatically create a filter for each plate?",
             False,
             doc="""\
@@ -748,14 +748,14 @@ create a set of filters in the properties file, one for each plate.
         )
 
         self.filter_field_groups = []
-        self.filter_field_count = cellprofiler_core.setting.HiddenCount(
+        self.filter_field_count = HiddenCount(
             self.filter_field_groups, "Properties filter field count"
         )
-        self.add_filter_field_button = cellprofiler_core.setting.DoSomething(
+        self.add_filter_field_button = DoSomething(
             "", "Add another filter", self.add_filter_field_group
         )
 
-        self.properties_class_table_name = cellprofiler_core.setting.Text(
+        self.properties_class_table_name = Text(
             "Enter a phenotype class table name if using the Classifier tool in CellProfiler Analyst",
             "",
             doc="""\
@@ -773,7 +773,7 @@ the *class\_table* field. Leave this field blank if you are not using
 Classifier or do not need the table written to the database.""",
         )
 
-        self.properties_classification_type = cellprofiler_core.setting.Choice(
+        self.properties_classification_type = Choice(
             "Select the classification type",
             CLASSIFIER_TYPE,
             doc="""\
@@ -796,7 +796,7 @@ the *classification\_type* field.
             ),
         )
 
-        self.create_workspace_file = cellprofiler_core.setting.Binary(
+        self.create_workspace_file = Binary(
             "Create a CellProfiler Analyst workspace file?",
             False,
             doc="""\
@@ -819,13 +819,13 @@ the *classification\_type* field.
             ),
         )
 
-        self.divider = cellprofiler_core.setting.Divider(line=True)
-        self.divider_props = cellprofiler_core.setting.Divider(line=True)
-        self.divider_props_wkspace = cellprofiler_core.setting.Divider(line=True)
-        self.divider_wkspace = cellprofiler_core.setting.Divider(line=True)
+        self.divider = Divider(line=True)
+        self.divider_props = Divider(line=True)
+        self.divider_props_wkspace = Divider(line=True)
+        self.divider_wkspace = Divider(line=True)
 
         self.workspace_measurement_groups = []
-        self.workspace_measurement_count = cellprofiler_core.setting.HiddenCount(
+        self.workspace_measurement_count = HiddenCount(
             self.workspace_measurement_groups, "Workspace measurement count"
         )
 
@@ -833,33 +833,33 @@ the *classification\_type* field.
             self.add_workspace_measurement_group(can_remove)
 
         add_workspace_measurement_group(False)
-        self.add_workspace_measurement_button = cellprofiler_core.setting.DoSomething(
+        self.add_workspace_measurement_button = DoSomething(
             "", "Add another measurement", self.add_workspace_measurement_group
         )
 
-        self.mysql_not_available = cellprofiler_core.setting.Divider(
+        self.mysql_not_available = Divider(
             "Cannot write to MySQL directly - CSV file output only",
             line=False,
             doc="""The MySQLdb python module could not be loaded.  MySQLdb is necessary for direct export.""",
         )
 
-        self.db_host = cellprofiler_core.setting.Text(
+        self.db_host = Text(
             text="Database host",
             value="",
             doc="""Enter the address CP must contact to write to the database.""",
         )
 
-        self.db_user = cellprofiler_core.setting.Text(
+        self.db_user = Text(
             text="Username", value="", doc="""Enter your database username."""
         )
 
-        self.db_passwd = cellprofiler_core.setting.Text(
+        self.db_passwd = Text(
             text="Password",
             value="",
             doc="""Enter your database password. Note that this will be saved in your pipeline file and thus you should never share the pipeline file with anyone else.""",
         )
 
-        self.sqlite_file = cellprofiler_core.setting.Text(
+        self.sqlite_file = Text(
             "Name the SQLite database file",
             "DefaultDB.db",
             doc="""\
@@ -868,7 +868,7 @@ the *classification\_type* field.
 Enter the name of the SQLite database filename to which you want to write.""",
         )
 
-        self.wants_agg_mean = cellprofiler_core.setting.Binary(
+        self.wants_agg_mean = Binary(
             "Calculate the per-image mean values of object measurements?",
             True,
             doc="""\
@@ -894,7 +894,7 @@ WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);``
             ),
         )
 
-        self.wants_agg_median = cellprofiler_core.setting.Binary(
+        self.wants_agg_median = Binary(
             "Calculate the per-image median values of object measurements?",
             False,
             doc="""\
@@ -915,7 +915,7 @@ built in median operation in MySQL to create these values manually.
             ),
         )
 
-        self.wants_agg_std_dev = cellprofiler_core.setting.Binary(
+        self.wants_agg_std_dev = Binary(
             "Calculate the per-image standard deviation values of object measurements?",
             False,
             doc="""\
@@ -941,7 +941,7 @@ WHERE Per_Image.ImageNumber = Per_Object.ImageNumber);``
             ),
         )
 
-        self.wants_agg_mean_well = cellprofiler_core.setting.Binary(
+        self.wants_agg_mean_well = Binary(
             "Calculate the per-well mean values of object measurements?",
             False,
             doc="""\
@@ -974,7 +974,7 @@ create the Per\_Well table, regardless of the option chosen above.
             ),
         )
 
-        self.wants_agg_median_well = cellprofiler_core.setting.Binary(
+        self.wants_agg_median_well = Binary(
             "Calculate the per-well median values of object measurements?",
             False,
             doc="""\
@@ -1008,7 +1008,7 @@ create the Per\_Well table, regardless of the option chosen above.
             ),
         )
 
-        self.wants_agg_std_dev_well = cellprofiler_core.setting.Binary(
+        self.wants_agg_std_dev_well = Binary(
             "Calculate the per-well standard deviation values of object measurements?",
             False,
             doc="""\
@@ -1042,7 +1042,7 @@ create the Per\_Well table, regardless of the option chosen above.
             ),
         )
 
-        self.objects_choice = cellprofiler_core.setting.Choice(
+        self.objects_choice = Choice(
             "Export measurements for all objects to the database?",
             [O_ALL, O_NONE, O_SELECT],
             doc="""\
@@ -1059,7 +1059,7 @@ in the Per\_Object and Per\_Well(s) database tables.
             ),
         )
 
-        self.objects_list = cellprofiler_core.setting.ObjectSubscriberMultiChoice(
+        self.objects_list = ObjectSubscriberMultiChoice(
             "Select the objects",
             doc="""\
 *(Used only if "Select" is chosen for adding objects)*
@@ -1071,7 +1071,7 @@ will be written out to the Per\_Object and/or Per\_Well(s) tables,
 otherwise, the object’s measurements will be skipped.""",
         )
 
-        self.wants_relationship_table_setting = cellprofiler_core.setting.Binary(
+        self.wants_relationship_table_setting = Binary(
             "Export object relationships?",
             True,
             doc="""\
@@ -1111,7 +1111,7 @@ This view has the following columns:
             ),
         )
 
-        self.max_column_size = cellprofiler_core.setting.Integer(
+        self.max_column_size = Integer(
             "Maximum # of characters in a column name",
             64,
             minval=10,
@@ -1125,7 +1125,7 @@ column names by removing characters, at the same time guaranteeing that
 no two columns have the same name.""",
         )
 
-        self.separate_object_tables = cellprofiler_core.setting.Choice(
+        self.separate_object_tables = Choice(
             "Create one table per object, a single object table or a single object view?",
             [OT_COMBINE, OT_PER_OBJECT, OT_VIEW],
             doc="""\
@@ -1171,7 +1171,7 @@ object exported or a single object table.
             ),
         )
 
-        self.want_image_thumbnails = cellprofiler_core.setting.Binary(
+        self.want_image_thumbnails = Binary(
             "Write image thumbnails directly to the database?",
             False,
             doc="""\
@@ -1186,7 +1186,7 @@ dropdown.""".format(
             ),
         )
 
-        self.thumbnail_image_names = cellprofiler_core.setting.ImageNameSubscriberMultiChoice(
+        self.thumbnail_image_names = ImageNameSubscriberMultiChoice(
             "Select the images for which you want to save thumbnails",
             doc="""\
 *(Used only if {DB_MYSQL} or {DB_SQLITE} are selected as database type)*
@@ -1200,7 +1200,7 @@ dropdown.""".format(
             ),
         )
 
-        self.auto_scale_thumbnail_intensities = cellprofiler_core.setting.Binary(
+        self.auto_scale_thumbnail_intensities = Binary(
             "Auto-scale thumbnail pixel intensities?",
             True,
             doc="""\
@@ -1214,7 +1214,7 @@ is white/saturated. """.format(
             ),
         )
 
-        self.allow_overwrite = cellprofiler_core.setting.Choice(
+        self.allow_overwrite = Choice(
             "Overwrite without warning?",
             [OVERWRITE_NEVER, OVERWRITE_DATA, OVERWRITE_ALL],
             doc="""\
@@ -1254,7 +1254,7 @@ You can choose from three options to control overwriting behavior:
         )
 
     def add_image_group(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         group.can_remove = can_remove
 
@@ -1342,7 +1342,7 @@ Enter a color to display this channel.""",
         self.image_groups.append(group)
 
     def add_group_field_group(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
         group.can_remove = can_remove
         group.append(
             "group_name",
@@ -1395,7 +1395,7 @@ automatically, so there is no need to enter them here.""",
         self.group_field_groups.append(group)
 
     def add_filter_field_group(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         group.can_remove = can_remove
 
@@ -1444,7 +1444,7 @@ here.""",
         self.filter_field_groups.append(group)
 
     def add_workspace_measurement_group(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
         self.workspace_measurement_groups.append(group)
 
         group.can_remove = can_remove
@@ -5057,10 +5057,8 @@ CP version : %d\n""" % int(
                     )
                     custom_directory = "." + custom_directory[1:]
                 else:
-                    dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-            directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
-                dir_choice, custom_directory
-            )
+                    dir_choice = ABSOLUTE_FOLDER_NAME
+            directory = DirectoryPath.static_join_string(dir_choice, custom_directory)
             setting_values = setting_values[:5] + [directory] + setting_values[7:]
             variable_revision_number = 15
 
@@ -5241,7 +5239,7 @@ CP version : %d\n""" % int(
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 4
         directory = setting_values[SLOT_DIRCHOICE]
-        directory = cellprofiler_core.setting.DirectoryPath.upgrade_setting(directory)
+        directory = DirectoryPath.upgrade_setting(directory)
         setting_values[SLOT_DIRCHOICE] = directory
 
         return setting_values, variable_revision_number

@@ -1,5 +1,7 @@
 import skimage
 import skimage.measure
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.text import Integer
 
 HELP_BINARY_IMAGE = """\
 This module can also convert a grayscale image to binary before converting it to an object.
@@ -49,11 +51,11 @@ class ConvertImageToObjects(
     def create_settings(self):
         super(ConvertImageToObjects, self).create_settings()
 
-        self.cast_to_bool = cellprofiler_core.setting.Binary(
+        self.cast_to_bool = Binary(
             text="Convert to boolean image", value=True, doc=HELP_BINARY_IMAGE
         )
 
-        self.preserve_labels = cellprofiler_core.setting.Binary(
+        self.preserve_labels = Binary(
             text="Preserve original labels",
             value=False,
             doc="""\
@@ -65,7 +67,7 @@ Setting this to *{YES}* will ensure that the original labels
             ),
         )
 
-        self.background_label = cellprofiler_core.setting.Integer(
+        self.background_label = Integer(
             text="Background label",
             value=0,
             doc="""\
@@ -74,7 +76,7 @@ By default, 0-valued pixels are considered as background pixels.
 """,
         )
 
-        self.connectivity = cellprofiler_core.setting.Integer(
+        self.connectivity = Integer(
             text="Connectivity",
             minval=0,
             value=0,

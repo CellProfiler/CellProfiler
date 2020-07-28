@@ -26,7 +26,7 @@ import numpy
 import skimage.morphology
 
 
-class RemoveHoles(cellprofiler_core.module.ImageProcessing):
+class RemoveHoles(ImageProcessing):
     category = "Advanced"
 
     module_name = "RemoveHoles"
@@ -36,7 +36,7 @@ class RemoveHoles(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(RemoveHoles, self).create_settings()
 
-        self.size = cellprofiler_core.setting.Float(
+        self.size = Float(
             text="Size of holes to fill",
             value=1.0,
             doc="Holes smaller than this diameter will be filled. Note that for 3D\

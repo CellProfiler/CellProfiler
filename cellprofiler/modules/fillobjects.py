@@ -35,13 +35,13 @@ class FillObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     def create_settings(self):
         super(FillObjects, self).create_settings()
 
-        self.size = cellprofiler_core.setting.Float(
+        self.size = Float(
             text="Minimum hole size",
             value=64.0,
             doc="Holes smaller than this diameter will be filled.",
         )
 
-        self.planewise = cellprofiler_core.setting.Binary(
+        self.planewise = Binary(
             text="Planewise fill",
             value=False,
             doc="""\

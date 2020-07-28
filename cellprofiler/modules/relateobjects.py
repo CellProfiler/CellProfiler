@@ -108,7 +108,7 @@ For example, when relating speckles to the nuclei that contain them,
 the nuclei are the parents.
         """
 
-        self.y_name = cellprofiler_core.setting.LabelSubscriber(
+        self.y_name = LabelSubscriber(
             "Child objects",
             doc="""\
 Child objects are defined as those objects contained within the parent object. For example, when relating
@@ -116,7 +116,7 @@ speckles to the nuclei that contains them, the speckles are the children.
             """,
         )
 
-        self.find_parent_child_distances = cellprofiler_core.setting.Choice(
+        self.find_parent_child_distances = Choice(
             "Calculate child-parent distances?",
             D_ALL,
             doc="""\
@@ -141,7 +141,7 @@ periphery.
             ),
         )
 
-        self.wants_step_parent_distances = cellprofiler_core.setting.Binary(
+        self.wants_step_parent_distances = Binary(
             "Calculate distances to other parents?",
             False,
             doc="""\
@@ -165,11 +165,11 @@ nor child of cytoplasm.""".format(
 
         self.add_step_parent(can_delete=False)
 
-        self.add_step_parent_button = cellprofiler_core.setting.DoSomething(
+        self.add_step_parent_button = DoSomething(
             "", "Add another parent", self.add_step_parent
         )
 
-        self.wants_per_parent_means = cellprofiler_core.setting.Binary(
+        self.wants_per_parent_means = Binary(
             "Calculate per-parent means for all child measurements?",
             False,
             doc="""\
@@ -183,7 +183,7 @@ of the children objects.""".format(
             ),
         )
 
-        self.wants_child_objects_saved = cellprofiler_core.setting.Binary(
+        self.wants_child_objects_saved = Binary(
             "Do you want to save the children with parents as a new object set?",
             False,
             doc="""\
@@ -193,7 +193,7 @@ object set. Objects with no parents will be discarded""".format(
             ),
         )
 
-        self.output_child_objects_name = cellprofiler_core.setting.LabelName(
+        self.output_child_objects_name = LabelName(
             "Name the output object",
             "RelateObjects",
             doc="""\
@@ -201,7 +201,7 @@ Enter the name you want to call the object produced by this module. """,
         )
 
     def add_step_parent(self, can_delete=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         group.append(
             "step_parent_name",

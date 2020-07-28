@@ -46,6 +46,15 @@ import matplotlib.cm
 import matplotlib.figure
 import matplotlib.patches
 import numpy
+from cellprofiler_core.preferences import get_primary_outline_color
+from cellprofiler_core.setting import Coordinates
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.range import IntegerOrUnboundedRange
+from cellprofiler_core.setting.subscriber import (
+    ImageSubscriber,
+    CropImageSubscriber,
+    LabelSubscriber,
+)
 
 SH_RECTANGLE = "Rectangle"
 SH_ELLIPSE = "Ellipse"
@@ -102,19 +111,19 @@ class Crop(cellprofiler_core.module.Module):
     category = "Image Processing"
 
     def create_settings(self):
-        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             text="Select the input image",
             value="None",
             doc="Choose the image to be cropped.",
         )
 
-        self.cropped_image_name = cellprofiler_core.setting.CroppingNameProvider(
+        self.cropped_image_name = CroppingNameProvider(
             text="Name the output image",
             value="CropBlue",
             doc="Enter the name to be given to cropped image.",
         )
 
-        self.shape = cellprofiler_core.setting.Choice(
+        self.shape = Choice(
             text="Select the cropping shape",
             choices=[SH_RECTANGLE, SH_ELLIPSE, SH_IMAGE, SH_OBJECTS, SH_CROPPING],
             value=SH_RECTANGLE,
@@ -156,7 +165,7 @@ Choose the shape into which you would like to crop:
             ),
         )
 
-        self.crop_method = cellprofiler_core.setting.Choice(
+        self.crop_method = Choice(
             text="Select the cropping method",
             choices=[CM_COORDINATES, CM_MOUSE],
             value=CM_COORDINATES,
@@ -184,7 +193,7 @@ clicking with the mouse.
             ),
         )
 
-        self.individual_or_once = cellprofiler_core.setting.Choice(
+        self.individual_or_once = Choice(
             text="Apply which cycle's cropping pattern?",
             choices=[IO_INDIVIDUALLY, IO_FIRST],
             value=IO_INDIVIDUALLY,
@@ -200,7 +209,7 @@ Specify how a given cropping pattern should be applied to other image cycles:
             ),
         )
 
-        self.horizontal_limits = cellprofiler_core.setting.IntegerOrUnboundedRange(
+        self.horizontal_limits = IntegerOrUnboundedRange(
             text="Left and right rectangle positions",
             minval=0,
             doc="""\
@@ -225,7 +234,7 @@ Specify the left and right positions for the bounding rectangle by selecting one
             ),
         )
 
-        self.vertical_limits = cellprofiler_core.setting.IntegerOrUnboundedRange(
+        self.vertical_limits = IntegerOrUnboundedRange(
             text="Top and bottom rectangle positions",
             minval=0,
             doc="""\
@@ -248,7 +257,7 @@ Specify the top and bottom positions for the bounding rectangle by selecting one
             ),
         )
 
-        self.ellipse_center = cellprofiler_core.setting.Coordinates(
+        self.ellipse_center = Coordinates(
             text="Coordinates of ellipse center",
             value=(500, 500),
             doc="""\
@@ -260,7 +269,7 @@ Specify the center pixel position of the ellipse.
             ),
         )
 
-        self.ellipse_x_radius = cellprofiler_core.setting.Integer(
+        self.ellipse_x_radius = Integer(
             text="Ellipse radius, X direction",
             value=400,
             doc="""\
@@ -272,7 +281,7 @@ Specify the radius of the ellipse in the X direction.
             ),
         )
 
-        self.ellipse_y_radius = cellprofiler_core.setting.Integer(
+        self.ellipse_y_radius = Integer(
             text="Ellipse radius, Y direction",
             value=200,
             doc="""\
@@ -284,7 +293,7 @@ Specify the radius of the ellipse in the Y direction.
             ),
         )
 
-        self.image_mask_source = cellprofiler_core.setting.ImageNameSubscriber(
+        self.image_mask_source = ImageSubscriber(
             text="Select the masking image",
             value="None",
             doc="""\
@@ -296,7 +305,7 @@ Select the image to be use as a cropping mask.
             ),
         )
 
-        self.cropping_mask_source = cellprofiler_core.setting.CroppingNameSubscriber(
+        self.cropping_mask_source = CropImageSubscriber(
             text="Select the image with a cropping mask",
             value="None",
             doc="""\
@@ -308,7 +317,7 @@ Select the image associated with the cropping mask that you want to use.
             ),
         )
 
-        self.objects_source = cellprofiler_core.setting.LabelSubscriber(
+        self.objects_source = LabelSubscriber(
             text="Select the objects",
             value="None",
             doc="""\
@@ -320,7 +329,7 @@ Select the objects that are to be used as a cropping mask.
             ),
         )
 
-        self.remove_rows_and_columns = cellprofiler_core.setting.Choice(
+        self.remove_rows_and_columns = Choice(
             text="Remove empty rows and columns?",
             choices=[RM_NO, RM_EDGES, RM_ALL],
             value=RM_ALL,
@@ -472,13 +481,13 @@ objects:
         if self.shape == SH_OBJECTS:
             # Special handling for objects - masked objects instead of
             # mask and crop mask
-            output_image = cellprofiler_core.image.Image(
+            output_image = Image(
                 image=cropped_pixel_data,
                 masking_objects=masking_objects,
                 parent_image=orig_image,
             )
         else:
-            output_image = cellprofiler_core.image.Image(
+            output_image = Image(
                 image=cropped_pixel_data,
                 mask=image_mask,
                 parent_image=orig_image,
@@ -602,7 +611,7 @@ objects:
                 x = max(0, min(x, pixel_data.shape[1]))
                 y = max(0, min(y, pixel_data.shape[0]))
                 self.__selected = False
-                self.__color = cellprofiler_core.preferences.get_primary_outline_color()
+                self.__color = get_primary_outline_color()
                 self.__color = numpy.hstack((self.__color, [255])).astype(float) / 255.0
                 self.__on_move = on_move
                 super(Handle, self).__init__(
@@ -675,7 +684,7 @@ objects:
             def __init__(self, top_left, bottom_right):
                 self.__left, self.__top = top_left
                 self.__right, self.__bottom = bottom_right
-                color = cellprofiler_core.preferences.get_primary_outline_color()
+                color = get_primary_outline_color()
                 color = numpy.hstack((color, [255])).astype(float) / 255.0
                 self.rectangle = matplotlib.patches.Rectangle(
                     (min(self.__left, self.__right), min(self.__bottom, self.__top)),
@@ -741,7 +750,7 @@ objects:
                 self.center_x, self.center_y = center
                 self.radius_x = self.center_x + radius[0] / 2
                 self.radius_y = self.center_y + radius[1] / 2
-                color = cellprofiler_core.preferences.get_primary_outline_color()
+                color = get_primary_outline_color()
                 color = numpy.hstack((color, [255])).astype(float) / 255.0
                 self.ellipse = matplotlib.patches.Ellipse(
                     center, self.width, self.height, edgecolor=color, facecolor="none"

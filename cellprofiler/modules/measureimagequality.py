@@ -203,7 +203,7 @@ class MeasureImageQuality(cellprofiler_core.module.Module):
     variable_revision_number = 6
 
     def create_settings(self):
-        self.images_choice = cellprofiler_core.setting.Choice(
+        self.images_choice = Choice(
             text="Calculate metrics for which images?",
             choices=[O_ALL_LOADED, O_SELECT],
             doc="""\
@@ -220,19 +220,17 @@ calculated.
             ),
         )
 
-        self.divider = cellprofiler_core.setting.Divider(line=True)
+        self.divider = Divider(line=True)
 
         self.image_groups = []
-        self.image_count = cellprofiler_core.setting.HiddenCount(
-            self.image_groups, "Image count"
-        )
+        self.image_count = HiddenCount(self.image_groups, "Image count")
         self.add_image_group(can_remove=False)
-        self.add_image_button = cellprofiler_core.setting.DoSomething(
+        self.add_image_button = DoSomething(
             "", "Add another image list", self.add_image_group
         )
 
     def add_image_group(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         group.can_remove = can_remove
         if can_remove:
@@ -294,9 +292,7 @@ the pipeline and press the "?" button).
 
         group.scale_groups = []
 
-        group.scale_count = cellprofiler_core.setting.HiddenCount(
-            group.scale_groups, "Scale count"
-        )
+        group.scale_count = HiddenCount(group.scale_groups, "Scale count")
 
         def add_scale_group(can_remove=True):
             self.add_scale_group(group, can_remove)
@@ -403,9 +399,7 @@ thresholding methods.
 
         group.threshold_groups = []
 
-        group.threshold_count = cellprofiler_core.setting.HiddenCount(
-            group.threshold_groups, "Threshold count"
-        )
+        group.threshold_count = HiddenCount(group.threshold_groups, "Threshold count")
 
         def add_threshold_group(can_remove=True):
             self.add_threshold_group(group, can_remove)
@@ -434,7 +428,7 @@ thresholding methods.
         return group
 
     def add_scale_group(self, image_group, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
         image_group.scale_groups.append(group)
 
         group.image_names = image_group.image_names

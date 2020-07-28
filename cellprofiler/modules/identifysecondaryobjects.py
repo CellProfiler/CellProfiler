@@ -192,7 +192,7 @@ secondary object and completely contained within it."""
 
         self.y_name.doc = "Enter the name that you want to call the objects identified by this module."
 
-        self.method = cellprofiler_core.setting.Choice(
+        self.method = Choice(
             "Select the method to identify the secondary objects",
             [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, M_DISTANCE_N, M_DISTANCE_B],
             M_PROPAGATION,
@@ -279,7 +279,7 @@ Analysis and Machine Intelligence*, Vol. 13, No. 6, 583-598 (`link2`_)
             ),
         )
 
-        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""\
@@ -291,7 +291,7 @@ identification, only the module's display.
             ),
         )
 
-        self.distance_to_dilate = cellprofiler_core.setting.Integer(
+        self.distance_to_dilate = Integer(
             "Number of pixels by which to expand the primary objects",
             10,
             minval=1,
@@ -307,7 +307,7 @@ measurements.
             ),
         )
 
-        self.regularization_factor = cellprofiler_core.setting.Float(
+        self.regularization_factor = Float(
             "Regularization factor",
             0.05,
             minval=0,
@@ -336,7 +336,7 @@ balance between these two considerations:
             ),
         )
 
-        self.wants_discard_edge = cellprofiler_core.setting.Binary(
+        self.wants_discard_edge = Binary(
             "Discard secondary objects touching the border of the image?",
             False,
             doc="""\
@@ -353,7 +353,7 @@ segmentation.
             ),
         )
 
-        self.fill_holes = cellprofiler_core.setting.Binary(
+        self.fill_holes = Binary(
             "Fill holes in identified objects?",
             True,
             doc="""\
@@ -366,7 +366,7 @@ enabled, the object will be lost when the hole is filled in.
             ),
         )
 
-        self.wants_discard_primary = cellprofiler_core.setting.Binary(
+        self.wants_discard_primary = Binary(
             "Discard the associated primary objects?",
             False,
             doc="""\
@@ -384,7 +384,7 @@ associated secondary object touches the image edge.
             ),
         )
 
-        self.new_primary_objects_name = cellprofiler_core.setting.LabelName(
+        self.new_primary_objects_name = LabelName(
             "Name the new primary objects",
             "FilteredNuclei",
             doc="""\
@@ -398,7 +398,7 @@ this allows them to be considered in downstream modules that modify the
 segmentation.""",
         )
 
-        self.threshold_setting_version = cellprofiler_core.setting.Integer(
+        self.threshold_setting_version = Integer(
             "Threshold setting version", value=self.threshold.variable_revision_number
         )
 

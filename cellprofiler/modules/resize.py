@@ -48,7 +48,7 @@ I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 S_ADDITIONAL_IMAGE_COUNT = 9
 
 
-class Resize(cellprofiler_core.module.ImageProcessing):
+class Resize(ImageProcessing):
     variable_revision_number = 4
 
     module_name = "Resize"
@@ -56,7 +56,7 @@ class Resize(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(Resize, self).create_settings()
 
-        self.size_method = cellprofiler_core.setting.Choice(
+        self.size_method = Choice(
             "Resizing method",
             R_ALL,
             doc="""\
@@ -66,7 +66,7 @@ The following options are available:
 -  *Resize by specifying desired final dimensions:* Enter the new height and width of the resized image, in units of pixels.""",
         )
 
-        self.resizing_factor = cellprofiler_core.setting.Float(
+        self.resizing_factor = Float(
             "Resizing factor",
             0.25,
             minval=0,
@@ -77,7 +77,7 @@ Numbers less than one (that is, fractions) will shrink the image;
 numbers greater than one (that is, multiples) will enlarge the image.""",
         )
 
-        self.use_manual_or_image = cellprofiler_core.setting.Choice(
+        self.use_manual_or_image = Choice(
             "Method to specify the dimensions",
             C_ALL,
             doc="""\
@@ -92,7 +92,7 @@ You have two options on how to resize your image:
             ),
         )
 
-        self.specific_width = cellprofiler_core.setting.Integer(
+        self.specific_width = Integer(
             "Width of the final image",
             100,
             minval=1,
@@ -102,7 +102,7 @@ You have two options on how to resize your image:
 Enter the desired width of the final image, in pixels.""",
         )
 
-        self.specific_height = cellprofiler_core.setting.Integer(
+        self.specific_height = Integer(
             "Height of the final image",
             100,
             minval=1,
@@ -112,7 +112,7 @@ Enter the desired width of the final image, in pixels.""",
 Enter the desired height of the final image, in pixels.""",
         )
 
-        self.specific_image = cellprofiler_core.setting.ImageNameSubscriber(
+        self.specific_image = ImageSubscriber(
             "Select the image with the desired dimensions",
             "None",
             doc="""\
@@ -121,7 +121,7 @@ Enter the desired height of the final image, in pixels.""",
 The input image will be resized to the dimensions of the specified image.""",
         )
 
-        self.interpolation = cellprofiler_core.setting.Choice(
+        self.interpolation = Choice(
             "Interpolation method",
             I_ALL,
             doc="""\
@@ -135,27 +135,25 @@ The input image will be resized to the dimensions of the specified image.""",
    input image.""",
         )
 
-        self.separator = cellprofiler_core.setting.Divider(line=False)
+        self.separator = Divider(line=False)
 
         self.additional_images = []
 
-        self.additional_image_count = cellprofiler_core.setting.HiddenCount(
+        self.additional_image_count = HiddenCount(
             self.additional_images, "Additional image count"
         )
 
-        self.add_button = cellprofiler_core.setting.DoSomething(
-            "", "Add another image", self.add_image
-        )
+        self.add_button = DoSomething("", "Add another image", self.add_image)
 
     def add_image(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         if can_remove:
             group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
         group.append(
             "input_image_name",
-            cellprofiler_core.setting.ImageNameSubscriber(
+            cellprofiler_core.setting.ImageSubscriber(
                 "Select the additional image?",
                 "None",
                 doc="""\
@@ -362,7 +360,7 @@ resized with the same settings as the first image.""",
         else:
             cropping = None
 
-        output_image = cellprofiler_core.image.Image(
+        output_image = Image(
             output_pixels,
             parent_image=image,
             mask=mask,

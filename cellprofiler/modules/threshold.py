@@ -55,7 +55,7 @@ PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 
 
-class Threshold(cellprofiler_core.module.ImageProcessing):
+class Threshold(ImageProcessing):
     module_name = "Threshold"
 
     variable_revision_number = 11
@@ -63,7 +63,7 @@ class Threshold(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(Threshold, self).create_settings()
 
-        self.threshold_scope = cellprofiler_core.setting.Choice(
+        self.threshold_scope = Choice(
             "Threshold strategy",
             TS_ALL,
             value=TS_GLOBAL,
@@ -102,7 +102,7 @@ The choices for the threshold strategy are:
             ),
         )
 
-        self.global_operation = cellprofiler_core.setting.Choice(
+        self.global_operation = Choice(
             "Thresholding method",
             [TM_LI, TM_OTSU, TM_ROBUST_BACKGROUND, TM_MEASUREMENT, TM_MANUAL,],
             value=TM_LI,
@@ -242,7 +242,7 @@ There are a number of methods for finding thresholds automatically:
             ),
         )
 
-        self.local_operation = cellprofiler_core.setting.Choice(
+        self.local_operation = Choice(
             "Thresholding method",
             [TM_LI, TM_OTSU, TM_ROBUST_BACKGROUND, TM_SAUVOLA,],
             value=TM_LI,
@@ -371,7 +371,7 @@ threshold value.
             ),
         )
 
-        self.threshold_smoothing_scale = cellprofiler_core.setting.Float(
+        self.threshold_smoothing_scale = Float(
             "Threshold smoothing scale",
             0,
             minval=0,
@@ -392,7 +392,7 @@ with a sigma of 1.
 """,
         )
 
-        self.threshold_correction_factor = cellprofiler_core.setting.Float(
+        self.threshold_correction_factor = Float(
             "Threshold correction factor",
             1,
             doc="""\
@@ -421,7 +421,7 @@ setting.
             ),
         )
 
-        self.threshold_range = cellprofiler_core.setting.FloatRange(
+        self.threshold_range = FloatRange(
             "Lower and upper bounds on threshold",
             (0, 1),
             minval=0,
@@ -451,7 +451,7 @@ empirically-determined value.
             ),
         )
 
-        self.manual_threshold = cellprofiler_core.setting.Float(
+        self.manual_threshold = Float(
             "Manual threshold",
             value=0.0,
             minval=0.0,
@@ -464,7 +464,7 @@ value from 0 to 1.
 """,
         )
 
-        self.thresholding_measurement = cellprofiler_core.setting.Measurement(
+        self.thresholding_measurement = Measurement(
             "Select the measurement to threshold with",
             lambda: cellprofiler_core.measurement.IMAGE,
             doc="""\
@@ -476,7 +476,7 @@ a prior module.
 """,
         )
 
-        self.two_class_otsu = cellprofiler_core.setting.Choice(
+        self.two_class_otsu = Choice(
             "Two-class or three-class thresholding?",
             [O_TWO_CLASS, O_THREE_CLASS],
             doc="""\
@@ -521,7 +521,7 @@ objects, three-class thresholding may perform worse than two-class.
             ),
         )
 
-        self.assign_middle_to_foreground = cellprofiler_core.setting.Choice(
+        self.assign_middle_to_foreground = Choice(
             "Assign pixels in the middle intensity class to the foreground or the background?",
             [O_FOREGROUND, O_BACKGROUND],
             doc="""\
@@ -532,7 +532,7 @@ be assigned to the foreground class or the background class.
 """,
         )
 
-        self.lower_outlier_fraction = cellprofiler_core.setting.Float(
+        self.lower_outlier_fraction = Float(
             "Lower outlier fraction",
             0.05,
             minval=0,
@@ -547,7 +547,7 @@ the lowest intensity.
             ),
         )
 
-        self.upper_outlier_fraction = cellprofiler_core.setting.Float(
+        self.upper_outlier_fraction = Float(
             "Upper outlier fraction",
             0.05,
             minval=0,
@@ -562,7 +562,7 @@ the highest intensity.
             ),
         )
 
-        self.averaging_method = cellprofiler_core.setting.Choice(
+        self.averaging_method = Choice(
             "Averaging method",
             [RB_MEAN, RB_MEDIAN, RB_MODE],
             doc="""\
@@ -591,7 +591,7 @@ This setting determines how the intensity midpoint is determined.
             ),
         )
 
-        self.variance_method = cellprofiler_core.setting.Choice(
+        self.variance_method = Choice(
             "Variance method",
             [RB_SD, RB_MAD],
             doc="""\
@@ -611,7 +611,7 @@ difference of the pixel intensities from their median).
             ),
         )
 
-        self.number_of_deviations = cellprofiler_core.setting.Float(
+        self.number_of_deviations = Float(
             "# of deviations",
             2,
             doc="""\
@@ -629,7 +629,7 @@ use a negative number if you want the threshold to be lower than the average
             ),
         )
 
-        self.adaptive_window_size = cellprofiler_core.setting.Integer(
+        self.adaptive_window_size = Integer(
             "Size of adaptive window",
             50,
             doc="""\
@@ -757,9 +757,7 @@ Often a good choice is some multiple of the largest expected object size.
             binary_image,
         )
 
-        output = cellprofiler_core.image.Image(
-            binary_image, parent_image=input_image, dimensions=dimensions
-        )
+        output = Image(binary_image, parent_image=input_image, dimensions=dimensions)
 
         workspace.image_set.add(self.y_name.value, output)
 

@@ -17,7 +17,7 @@ YES          YES          NO
 import scipy.signal
 
 
-class MedianFilter(cellprofiler_core.module.ImageProcessing):
+class MedianFilter(ImageProcessing):
     category = "Advanced"
 
     module_name = "MedianFilter"
@@ -27,7 +27,7 @@ class MedianFilter(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(MedianFilter, self).create_settings()
 
-        self.window = cellprofiler_core.setting.OddInteger(
+        self.window = OddInteger(
             text="Window",
             value=3,
             minval=0,

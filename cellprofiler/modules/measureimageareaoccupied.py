@@ -76,7 +76,7 @@ class MeasureImageAreaOccupied(cellprofiler_core.module.Module):
     variable_revision_number = 5
 
     def create_settings(self):
-        self.operand_choice = cellprofiler_core.setting.Choice(
+        self.operand_choice = Choice(
             "Measure the area occupied by",
             [O_BINARY_IMAGE, O_OBJECTS, O_BOTH],
             doc="""\
@@ -89,9 +89,9 @@ Area occupied can be measured in two ways:
             ),
         )
 
-        self.divider = cellprofiler_core.setting.Divider()
+        self.divider = Divider()
 
-        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+        self.images_list = ListImageNameSubscriber(
             "Select binary images to measure",
             [],
             doc="""*(Used only if ‘{O_BINARY_IMAGE}’ is to be measured)*
@@ -103,7 +103,7 @@ like to measure the area occupied by the foreground in the image.
             ),
         )
 
-        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+        self.objects_list = ListObjectNameSubscriber(
             "Select object sets to measure",
             [],
             doc="""*(Used only if ‘{O_OBJECTS}’ are to be measured)*

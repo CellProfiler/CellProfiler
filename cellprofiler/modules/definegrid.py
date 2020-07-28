@@ -49,11 +49,19 @@ import logging
 
 import centrosome.cpmorphology
 import numpy
+from cellprofiler_core.constants.measurement import (
+    IMAGE,
+    COLTYPE_INTEGER,
+    COLTYPE_FLOAT,
+)
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Coordinates
 from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import GridName, Integer
 
 from cellprofiler.grid import Grid
 
@@ -106,7 +114,7 @@ class DefineGrid(Module):
 
         create_settings is called at the end of initialization.
         """
-        self.grid_image = GridNameProvider(
+        self.grid_image = GridName(
             "Name the grid",
             doc="""\
 This is the name of the grid. You can use this name to
@@ -240,7 +248,7 @@ entering the coordinates of the cells.
             % globals(),
         )
 
-        self.manual_image = ImageNameSubscriber(
+        self.manual_image = ImageSubscriber(
             "Select the image to display when drawing",
             "None",
             doc="""\
@@ -364,7 +372,7 @@ be saved using the **SaveImages** module.
             % globals(),
         )
 
-        self.display_image_name = ImageNameSubscriber(
+        self.display_image_name = ImageSubscriber(
             "Select the image on which to display the grid",
             "Leave blank",
             can_be_blank=True,

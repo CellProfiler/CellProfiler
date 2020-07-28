@@ -60,7 +60,7 @@ class OverlayOutlines(cellprofiler_core.module.Module):
     category = "Image Processing"
 
     def create_settings(self):
-        self.blank_image = cellprofiler_core.setting.Binary(
+        self.blank_image = Binary(
             "Display outlines on a blank image?",
             False,
             doc="""\
@@ -72,7 +72,7 @@ Select "*{NO}*" to overlay the outlines on an image you choose.
             ),
         )
 
-        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select image on which to display outlines",
             "None",
             doc="""\
@@ -84,7 +84,7 @@ this one.
 """,
         )
 
-        self.line_mode = cellprofiler_core.setting.Choice(
+        self.line_mode = Choice(
             "How to outline",
             ["Inner", "Outer", "Thick"],
             value="Inner",
@@ -101,7 +101,7 @@ Specify how to mark the boundaries around an object:
 """,
         )
 
-        self.output_image_name = cellprofiler_core.setting.ImageName(
+        self.output_image_name = ImageName(
             "Name the output image",
             "OrigOverlay",
             doc="""\
@@ -110,7 +110,7 @@ image can be selected in later modules (for instance, **SaveImages**).
 """,
         )
 
-        self.wants_color = cellprofiler_core.setting.Choice(
+        self.wants_color = Choice(
             "Outline display mode",
             [WANTS_COLOR, WANTS_GRAYSCALE],
             doc="""\
@@ -122,9 +122,9 @@ same intensity as the brightest pixel in the image.
 """,
         )
 
-        self.spacer = cellprofiler_core.setting.Divider(line=False)
+        self.spacer = Divider(line=False)
 
-        self.max_type = cellprofiler_core.setting.Choice(
+        self.max_type = Choice(
             "Select method to determine brightness of outlines",
             [MAX_IMAGE, MAX_POSSIBLE],
             doc="""\
@@ -150,12 +150,12 @@ maximal brightness already occurring in the image.
 
         self.add_outline(can_remove=False)
 
-        self.add_outline_button = cellprofiler_core.setting.DoSomething(
+        self.add_outline_button = DoSomething(
             "", "Add another outline", self.add_outline
         )
 
     def add_outline(self, can_remove=True):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
         if can_remove:
             group.append("divider", cellprofiler_core.setting.Divider(line=False))
 
@@ -247,7 +247,7 @@ maximal brightness already occurring in the image.
         else:
             pixel_data = self.run_bw(workspace, base_image)
 
-        output_image = cellprofiler_core.image.Image(pixel_data, dimensions=dimensions)
+        output_image = Image(pixel_data, dimensions=dimensions)
 
         workspace.image_set.add(self.output_image_name.value, output_image)
 

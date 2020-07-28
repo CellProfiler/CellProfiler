@@ -54,13 +54,13 @@ class DisplayDataOnImage(cellprofiler_core.module.Module):
 
         You should create the setting variables for your module here:
             # Ask the user for the input image
-            self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
+            self.image_name = .ImageSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler_core.settings.ImageName(...)
+            self.output_image = .ImageName(...)
             # Ask the user for a parameter
-            self.smoothing_size = cellprofiler_core.settings.Float(...)
+            self.smoothing_size = .Float(...)
         """
-        self.objects_or_image = cellprofiler_core.setting.Choice(
+        self.objects_or_image = Choice(
             "Display object or image measurements?",
             [OI_OBJECTS, OI_IMAGE],
             doc="""\
@@ -70,7 +70,7 @@ class DisplayDataOnImage(cellprofiler_core.module.Module):
             % globals(),
         )
 
-        self.objects_name = cellprofiler_core.setting.LabelSubscriber(
+        self.objects_name = LabelSubscriber(
             "Select the input objects",
             "None",
             doc="""\
@@ -87,7 +87,7 @@ Choose the name of objects identified by some previous module (such as
             else:
                 return cellprofiler_core.measurement.IMAGE
 
-        self.measurement = cellprofiler_core.setting.Measurement(
+        self.measurement = Measurement(
             "Measurement to display",
             object_fn,
             doc="""\
@@ -97,7 +97,7 @@ image measurement) or on the objects you selected.
 """,
         )
 
-        self.wants_image = cellprofiler_core.setting.Binary(
+        self.wants_image = Binary(
             "Display background image?",
             True,
             doc="""\
@@ -110,7 +110,7 @@ display the measurements on top of a background image or "No"
 to display the measurements on a black background.""",
         )
 
-        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the image on which to display the measurements",
             "None",
             doc="""\
@@ -120,7 +120,7 @@ If you have chosen not to display the background image, the image
 will only be used to determine the dimensions of the displayed image.""",
         )
 
-        self.color_or_text = cellprofiler_core.setting.Choice(
+        self.color_or_text = Choice(
             "Display mode",
             [CT_TEXT, CT_COLOR],
             doc="""\
@@ -137,7 +137,7 @@ default color map.
             % globals(),
         )
 
-        self.colormap = cellprofiler_core.setting.Colormap(
+        self.colormap = Colormap(
             "Color map",
             doc="""\
 *(Used only when displaying object measurements)*
@@ -149,13 +149,13 @@ of the available colormaps.
 .. _this page: http://matplotlib.org/users/colormaps.html
             """,
         )
-        self.text_color = cellprofiler_core.setting.Color(
+        self.text_color = Color(
             "Text color",
             "red",
             doc="""This is the color that will be used when displaying the text.""",
         )
 
-        self.display_image = cellprofiler_core.setting.ImageName(
+        self.display_image = ImageName(
             "Name the output image that has the measurements displayed",
             "DisplayImage",
             doc="""\
@@ -165,21 +165,21 @@ modules (such as **SaveImages**).
 """,
         )
 
-        self.font_size = cellprofiler_core.setting.Integer(
+        self.font_size = Integer(
             "Font size (points)",
             10,
             minval=1,
             doc="""Set the font size of the letters to be displayed.""",
         )
 
-        self.decimals = cellprofiler_core.setting.Integer(
+        self.decimals = Integer(
             "Number of decimals",
             2,
             minval=0,
             doc="""Set how many decimals to be displayed, for example 2 decimals for 0.01; 3 decimals for 0.001.""",
         )
 
-        self.saved_image_contents = cellprofiler_core.setting.Choice(
+        self.saved_image_contents = Choice(
             "Image elements to save",
             [E_IMAGE, E_FIGURE, E_AXES],
             doc="""\
@@ -193,7 +193,7 @@ This setting controls the level of annotation on the image:
             % globals(),
         )
 
-        self.offset = cellprofiler_core.setting.Integer(
+        self.offset = Integer(
             "Annotation offset (in pixels)",
             0,
             doc="""\
@@ -203,7 +203,7 @@ the object. This setting adds a specified offset to the text, in a random
 direction.""",
         )
 
-        self.color_map_scale_choice = cellprofiler_core.setting.Choice(
+        self.color_map_scale_choice = Choice(
             "Color map scale",
             [CMS_USE_MEASUREMENT_RANGE, CMS_MANUAL],
             doc="""\
@@ -225,7 +225,7 @@ current image or manually-entered extremes.
 """
             % globals(),
         )
-        self.color_map_scale = cellprofiler_core.setting.FloatRange(
+        self.color_map_scale = FloatRange(
             "Color map range",
             value=(0.0, 1.0),
             doc="""\
@@ -390,7 +390,7 @@ color map.
                 fig.subplots_adjust(0.1, 0.1, 0.9, 0.9, 0, 0)
 
         pixel_data = figure_to_image(fig, dpi=fig.dpi)
-        image = cellprofiler_core.image.Image(pixel_data)
+        image = Image(pixel_data)
         workspace.image_set.add(self.display_image.value, image)
 
     def run_as_data_tool(self, workspace):
@@ -463,7 +463,7 @@ color map.
                 pixel_data = numpy.sum(pixel_data, 2) / pixel_data.shape[2]
             colormap_name = self.colormap.value
             if colormap_name == "Default":
-                colormap_name = cellprofiler_core.preferences.get_default_colormap()
+                colormap_name = get_default_colormap()
             colormap = matplotlib.cm.get_cmap(colormap_name)
             values = workspace.display_data.values
             vmask = workspace.display_data.mask

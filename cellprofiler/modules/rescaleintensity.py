@@ -65,7 +65,7 @@ HIGH_EACH_IMAGE = "Maximum for each image"
 HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
 
 
-class RescaleIntensity(cellprofiler_core.module.ImageProcessing):
+class RescaleIntensity(ImageProcessing):
     module_name = "RescaleIntensity"
 
     variable_revision_number = 3
@@ -73,7 +73,7 @@ class RescaleIntensity(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(RescaleIntensity, self).create_settings()
 
-        self.rescale_method = cellprofiler_core.setting.Choice(
+        self.rescale_method = Choice(
             "Rescaling method",
             choices=M_ALL,
             doc="""\
@@ -114,7 +114,7 @@ There are a number of options for rescaling the input image:
             % globals(),
         )
 
-        self.wants_automatic_low = cellprofiler_core.setting.Choice(
+        self.wants_automatic_low = Choice(
             "Method to calculate the minimum intensity",
             LOW_ALL,
             doc="""\
@@ -136,7 +136,7 @@ This setting controls how the minimum intensity is determined.
             % globals(),
         )
 
-        self.wants_automatic_high = cellprofiler_core.setting.Choice(
+        self.wants_automatic_high = Choice(
             "Method to calculate the maximum intensity",
             HIGH_ALL,
             doc="""\
@@ -158,7 +158,7 @@ This setting controls how the maximum intensity is determined.
             % globals(),
         )
 
-        self.source_low = cellprofiler_core.setting.Float(
+        self.source_low = Float(
             "Lower intensity limit for the input image",
             0,
             doc="""\
@@ -179,7 +179,7 @@ also rescaled to the minimum pixel value in the output image.
             ),
         )
 
-        self.source_high = cellprofiler_core.setting.Float(
+        self.source_high = Float(
             "Upper intensity limit for the input image",
             1,
             doc="""\
@@ -200,7 +200,7 @@ also rescaled to the maximum pixel value in the output image.
             ),
         )
 
-        self.source_scale = cellprofiler_core.setting.FloatRange(
+        self.source_scale = FloatRange(
             "Intensity range for the input image",
             (0, 1),
             doc="""\
@@ -222,7 +222,7 @@ or maximum, respectively.
             ),
         )
 
-        self.dest_scale = cellprofiler_core.setting.FloatRange(
+        self.dest_scale = FloatRange(
             "Intensity range for the output image",
             (0, 1),
             doc="""\
@@ -239,7 +239,7 @@ output image will be rescaled to the maximum output image intensity.
             ),
         )
 
-        self.matching_image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.matching_image_name = ImageSubscriber(
             "Select image to match in maximum intensity",
             "None",
             doc="""\
@@ -250,7 +250,7 @@ Select the image whose maximum you want the rescaled image to match.
             % globals(),
         )
 
-        self.divisor_value = cellprofiler_core.setting.Float(
+        self.divisor_value = Float(
             "Divisor value",
             1,
             minval=numpy.finfo(float).eps,
@@ -262,7 +262,7 @@ Enter the value to use as the divisor for the final image.
             % globals(),
         )
 
-        self.divisor_measurement = cellprofiler_core.setting.Measurement(
+        self.divisor_measurement = Measurement(
             "Divisor measurement",
             lambda: cellprofiler_core.measurement.IMAGE,
             doc="""\
@@ -411,7 +411,7 @@ Select the measurement value to use as the divisor for the final image.
         elif self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
             output_image = self.scale_by_image_maximum(workspace, input_image)
 
-        rescaled_image = cellprofiler_core.image.Image(
+        rescaled_image = Image(
             output_image,
             parent_image=input_image,
             convert=False,
@@ -474,7 +474,7 @@ Select the measurement value to use as the divisor for the final image.
                 channel = numpy.squeeze(channel, axis=splitaxis)
                 in_range = (min(channel[mask]), max(channel[mask]))
 
-                channelholder = cellprofiler_core.image.Image(channel, convert=False)
+                channelholder = Image(channel, convert=False)
 
                 rescaled = self.rescale(channelholder, in_range)
                 newchannels.append(rescaled)

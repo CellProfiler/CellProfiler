@@ -38,6 +38,11 @@ from cellprofiler_core.setting import ValidationError
 # Choices for "Divide or subtract"?
 #
 ######################################
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName
+
 DOS_DIVIDE = "Divide"
 DOS_SUBTRACT = "Subtract"
 
@@ -72,7 +77,7 @@ class CorrectIlluminationApply(Module):
 
     def add_image(self, can_delete=True):
         """Add an image and its settings to the list of images"""
-        image_name = ImageNameSubscriber(
+        image_name = ImageSubscriber(
             "Select the input image", "None", doc="Select the image to be corrected."
         )
 
@@ -82,7 +87,7 @@ class CorrectIlluminationApply(Module):
             doc="Enter a name for the corrected image.",
         )
 
-        illum_correct_function_image_name = ImageNameSubscriber(
+        illum_correct_function_image_name = ImageSubscriber(
             "Select the illumination function",
             "None",
             doc="""\

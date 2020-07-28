@@ -326,7 +326,7 @@ class Morph(Module):
     variable_revision_number = 5
 
     def create_settings(self):
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""\

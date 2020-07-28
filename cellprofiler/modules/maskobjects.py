@@ -155,7 +155,7 @@ module, such as **IdentifyPrimaryObjects**,
 """,
         )
 
-        self.masking_image = ImageNameSubscriber(
+        self.masking_image = ImageSubscriber(
             "Select the masking image",
             "None",
             doc="""\

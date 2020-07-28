@@ -94,7 +94,7 @@ class IdentifyDeadWorms(Module):
 
         Create the settings for the module during initialization.
         """
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""\

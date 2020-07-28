@@ -76,19 +76,19 @@ class ExpandOrShrinkObjects(cellprofiler_core.module.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.object_name = cellprofiler_core.setting.LabelSubscriber(
+        self.object_name = LabelSubscriber(
             "Select the input objects",
             "None",
             doc="Select the objects that you want to expand or shrink.",
         )
 
-        self.output_object_name = cellprofiler_core.setting.LabelName(
+        self.output_object_name = LabelName(
             "Name the output objects",
             "ShrunkenNuclei",
             doc="Enter a name for the resulting objects.",
         )
 
-        self.operation = cellprofiler_core.setting.Choice(
+        self.operation = Choice(
             "Select the operation",
             O_ALL,
             doc="""\
@@ -134,7 +134,7 @@ Choose the operation that you want to perform:
             ),
         )
 
-        self.iterations = cellprofiler_core.setting.Integer(
+        self.iterations = Integer(
             "Number of pixels by which to expand or shrink",
             1,
             minval=1,
@@ -147,7 +147,7 @@ Specify the number of pixels to add or remove from object borders.
             ),
         )
 
-        self.wants_fill_holes = cellprofiler_core.setting.Binary(
+        self.wants_fill_holes = Binary(
             "Fill holes in objects so that all objects shrink to a single point?",
             False,
             doc="""\

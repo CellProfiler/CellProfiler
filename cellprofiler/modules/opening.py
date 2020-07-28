@@ -24,7 +24,7 @@ import skimage.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 
-class Opening(cellprofiler_core.module.ImageProcessing):
+class Opening(ImageProcessing):
     category = "Advanced"
 
     module_name = "Opening"
@@ -34,7 +34,7 @@ class Opening(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(Opening, self).create_settings()
 
-        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+        self.structuring_element = StructuringElement(
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 

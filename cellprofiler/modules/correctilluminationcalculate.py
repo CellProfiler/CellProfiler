@@ -47,12 +47,15 @@ import centrosome.cpmorphology as cpmm
 import numpy as np
 import scipy.ndimage as scind
 import skimage.filters
-from cellprofiler_core.image import Image
+from cellprofiler_core.image import Image, AbstractImage
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.pipeline import Pipeline
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Integer, Float
 from centrosome.bg_compensate import MODE_DARK, MODE_GRAY
 from centrosome.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -97,7 +100,7 @@ class CorrectIlluminationCalculate(Module):
     category = "Image Processing"
 
     def create_settings(self):
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="Choose the image to be used to calculate the illumination function.",
@@ -1133,7 +1136,7 @@ fewer iterations, but less accuracy.
                 self.each_or_all.value = EA_ALL_ACROSS
 
 
-class CorrectIlluminationImageProvider(AbstractImageProvider):
+class CorrectIlluminationImageProvider(AbstractImage):
     """CorrectIlluminationImageProvider provides the illumination correction image
 
     This class accumulates the image data from successive images and

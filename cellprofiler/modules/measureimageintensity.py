@@ -113,14 +113,14 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
 
     def create_settings(self):
         """Create the settings & name the module"""
-        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+        self.images_list = ListImageNameSubscriber(
             "Select images to measure",
             [],
             doc="""Select the grayscale images whose intensity you want to measure.""",
         )
 
-        self.divider = cellprofiler_core.setting.Divider(line=False)
-        self.wants_objects = cellprofiler_core.setting.Binary(
+        self.divider = Divider(line=False)
+        self.wants_objects = Binary(
             "Measure the intensity only from areas enclosed by objects?",
             False,
             doc="""\
@@ -131,7 +131,7 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
         """,
         )
 
-        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+        self.objects_list = ListObjectNameSubscriber(
             "Select input object sets",
             [],
             doc="""Select the object sets whose intensity you want to measure.""",

@@ -137,9 +137,9 @@ object."""
 
         self.y_name.doc = "Enter a name for the collection of objects that are retained after applying the filter(s)."
 
-        self.spacer_1 = cellprofiler_core.setting.Divider(line=False)
+        self.spacer_1 = Divider(line=False)
 
-        self.mode = cellprofiler_core.setting.Choice(
+        self.mode = Choice(
             "Select the filtering mode",
             [MODE_MEASUREMENTS, MODE_RULES, MODE_BORDER, MODE_CLASSIFIERS],
             doc="""\
@@ -166,21 +166,19 @@ You can choose from the following options:
             ),
         )
 
-        self.spacer_2 = cellprofiler_core.setting.Divider(line=False)
+        self.spacer_2 = Divider(line=False)
 
         self.measurements = []
 
-        self.measurement_count = cellprofiler_core.setting.HiddenCount(
-            self.measurements, "Measurement count"
-        )
+        self.measurement_count = HiddenCount(self.measurements, "Measurement count")
 
         self.add_measurement(False)
 
-        self.add_measurement_button = cellprofiler_core.setting.DoSomething(
+        self.add_measurement_button = DoSomething(
             "", "Add another measurement", self.add_measurement
         )
 
-        self.filter_choice = cellprofiler_core.setting.Choice(
+        self.filter_choice = Choice(
             "Select the filtering method",
             FI_ALL,
             FI_LIMITS,
@@ -217,7 +215,7 @@ There are five different ways to filter objects:
             ),
         )
 
-        self.per_object_assignment = cellprofiler_core.setting.Choice(
+        self.per_object_assignment = Choice(
             "Assign overlapping child to",
             PO_ALL,
             doc="""\
@@ -251,7 +249,7 @@ maximal child is assigned. The choices are:
             ),
         )
 
-        self.enclosing_object_name = cellprofiler_core.setting.LabelSubscriber(
+        self.enclosing_object_name = LabelSubscriber(
             "Select the objects that contain the filtered objects",
             "None",
             doc="""\
@@ -267,7 +265,7 @@ choices.""".format(
             ),
         )
 
-        self.rules_directory = cellprofiler_core.setting.DirectoryPath(
+        self.rules_directory = DirectoryPath(
             "Select the location of the rules or classifier file",
             doc="""\
 *(Used only when filtering using {MODE_RULES} or {MODE_CLASSIFIERS})*
@@ -285,7 +283,7 @@ filtering.
             ),
         )
 
-        self.rules_class = cellprofiler_core.setting.Choice(
+        self.rules_class = Choice(
             "Class number",
             choices=["1", "2"],
             choices_fn=self.get_class_choices,
@@ -316,7 +314,7 @@ Please note the following:
 
             self.rules_directory.join_parts(dir_choice, custom_path)
 
-        self.rules_file_name = cellprofiler_core.setting.FilenameText(
+        self.rules_file_name = FilenameText(
             "Rules or classifier file name",
             "rules.txt",
             get_directory_fn=get_directory_fn,
@@ -350,13 +348,13 @@ with data processed as 3D.
 
         self.additional_objects = []
 
-        self.additional_object_count = cellprofiler_core.setting.HiddenCount(
+        self.additional_object_count = HiddenCount(
             self.additional_objects, "Additional object count"
         )
 
-        self.spacer_3 = cellprofiler_core.setting.Divider(line=False)
+        self.spacer_3 = Divider(line=False)
 
-        self.additional_object_button = cellprofiler_core.setting.DoSomething(
+        self.additional_object_button = DoSomething(
             "Relabel additional objects to match the filtered object?",
             "Add an additional object",
             self.add_additional_object,
@@ -384,7 +382,7 @@ between related objects (e.g., primary and secondary objects) after filtering.""
 
     def add_measurement(self, can_delete=True):
         """Add another measurement to the filter list"""
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         group.append(
             "measurement",
@@ -451,7 +449,7 @@ value will be retained.""".format(
             )
 
     def add_additional_object(self):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         group.append(
             "object_name",
@@ -1161,7 +1159,7 @@ value will be retained.""".format(
                     )
                     rules_path_name = "." + rules_path_name[1:]
 
-            rules_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
+            rules_directory = DirectoryPath.static_join_string(
                 rules_directory_choice, rules_path_name
             )
             setting_values = setting_values[:7] + [rules_directory] + setting_values[9:]
@@ -1224,9 +1222,7 @@ value will be retained.""".format(
 
         slot_directory = 5
 
-        setting_values[
-            slot_directory
-        ] = cellprofiler_core.setting.DirectoryPath.upgrade_setting(
+        setting_values[slot_directory] = DirectoryPath.upgrade_setting(
             setting_values[slot_directory]
         )
 

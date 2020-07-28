@@ -37,7 +37,7 @@ class DilateObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing
     def create_settings(self):
         super(DilateObjects, self).create_settings()
 
-        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+        self.structuring_element = StructuringElement(
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 

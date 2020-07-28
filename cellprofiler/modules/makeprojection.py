@@ -91,7 +91,7 @@ class MakeProjection(Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="Select the images to be made into a projection.",

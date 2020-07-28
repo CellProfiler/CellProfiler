@@ -65,7 +65,7 @@ class FlipAndRotate(Module):
     module_name = "FlipAndRotate"
 
     def create_settings(self):
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="Choose the image you want to flip or rotate.",

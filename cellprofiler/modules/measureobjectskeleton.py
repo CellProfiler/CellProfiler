@@ -127,7 +127,7 @@ per seed object. Seed objects are typically not single points/pixels but
 instead are usually objects of varying sizes.""",
         )
 
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the skeletonized image",
             "None",
             doc="""\
@@ -186,7 +186,7 @@ relationships between vertices (trunks, branchpoints and endpoints)."""
             % globals(),
         )
 
-        self.intensity_image_name = ImageNameSubscriber(
+        self.intensity_image_name = ImageSubscriber(
             "Intensity image",
             "None",
             doc="""\

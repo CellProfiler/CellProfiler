@@ -19,7 +19,7 @@ import numpy
 import skimage.filters
 
 
-class GaussianFilter(cellprofiler_core.module.ImageProcessing):
+class GaussianFilter(ImageProcessing):
     category = "Advanced"
 
     module_name = "GaussianFilter"
@@ -29,7 +29,7 @@ class GaussianFilter(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(GaussianFilter, self).create_settings()
 
-        self.sigma = cellprofiler_core.setting.Integer(
+        self.sigma = Integer(
             text="Sigma",
             value=1,
             doc="Standard deviation of the kernel to be used for blurring. Larger sigmas induce more blurring.",
@@ -52,9 +52,7 @@ class GaussianFilter(cellprofiler_core.module.ImageProcessing):
 
         y_data = skimage.filters.gaussian(x_data, sigma=sigma)
 
-        y = cellprofiler_core.image.Image(
-            dimensions=dimensions, image=y_data, parent_image=x
-        )
+        y = Image(dimensions=dimensions, image=y_data, parent_image=x)
 
         images.add(y_name, y)
 

@@ -55,7 +55,7 @@ class IdentifyObjectsManually(I.Identify):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""Choose the name of the image to display in the object selection user interface.""",

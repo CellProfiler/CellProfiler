@@ -75,15 +75,15 @@ class MeasureGranularity(cellprofiler_core.module.Module):
     variable_revision_number = 4
 
     def create_settings(self):
-        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+        self.images_list = ListImageNameSubscriber(
             "Select images to measure",
             [],
             doc="""Select images in which to measure the granularity.""",
         )
 
-        self.divider_top = cellprofiler_core.setting.Divider(line=True)
+        self.divider_top = Divider(line=True)
 
-        self.wants_objects = cellprofiler_core.setting.Binary(
+        self.wants_objects = Binary(
             "Measure within objects?",
             False,
             doc="""\
@@ -93,7 +93,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         object at the requested scales.""",
         )
 
-        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+        self.objects_list = ListObjectNameSubscriber(
             "Select objects to measure",
             [],
             doc="""\
@@ -102,8 +102,8 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         Select the objects within which granularity will be measured.""",
         )
 
-        self.divider_bottom = cellprofiler_core.setting.Divider(line=True)
-        self.subsample_size = cellprofiler_core.setting.Float(
+        self.divider_bottom = Divider(line=True)
+        self.subsample_size = Float(
             "Subsampling factor for granularity measurements",
             0.25,
             minval=numpy.finfo(float).eps,
@@ -131,7 +131,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         .. _pdf: http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf""",
         )
 
-        self.image_sample_size = cellprofiler_core.setting.Float(
+        self.image_sample_size = Float(
             "Subsampling factor for background reduction",
             0.25,
             minval=numpy.finfo(float).eps,
@@ -149,7 +149,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         depends on how the background was removed.""",
         )
 
-        self.element_size = cellprofiler_core.setting.Integer(
+        self.element_size = Integer(
             "Radius of structuring element",
             10,
             minval=1,
@@ -161,7 +161,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         of the spectrum defined below will cover more sizes.""",
         )
 
-        self.granular_spectrum_length = cellprofiler_core.setting.Integer(
+        self.granular_spectrum_length = Integer(
             "Range of the granular spectrum",
             16,
             minval=1,

@@ -110,7 +110,7 @@ This module can use one of two color schemes to combine images:
         # RGB settings
         #
         # # # # # # # # # # # # # # # #
-        self.red_image_name = ImageNameSubscriber(
+        self.red_image_name = ImageSubscriber(
             "Select the image to be colored red",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -122,7 +122,7 @@ Select the input image to be displayed in red.
             % globals(),
         )
 
-        self.green_image_name = ImageNameSubscriber(
+        self.green_image_name = ImageSubscriber(
             "Select the image to be colored green",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -134,7 +134,7 @@ Select the input image to be displayed in green.
             % globals(),
         )
 
-        self.blue_image_name = ImageNameSubscriber(
+        self.blue_image_name = ImageSubscriber(
             "Select the image to be colored blue",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -201,7 +201,7 @@ weights.
         # CYMK settings
         #
         # # # # # # # # # # # # # #
-        self.cyan_image_name = ImageNameSubscriber(
+        self.cyan_image_name = ImageSubscriber(
             "Select the image to be colored cyan",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -213,7 +213,7 @@ Select the input image to be displayed in cyan.
             % globals(),
         )
 
-        self.magenta_image_name = ImageNameSubscriber(
+        self.magenta_image_name = ImageSubscriber(
             "Select the image to be colored magenta",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -225,7 +225,7 @@ Select the input image to be displayed in magenta.
             % globals(),
         )
 
-        self.yellow_image_name = ImageNameSubscriber(
+        self.yellow_image_name = ImageSubscriber(
             "Select the image to be colored yellow",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -237,7 +237,7 @@ Select the input image to be displayed in yellow.
             % globals(),
         )
 
-        self.gray_image_name = ImageNameSubscriber(
+        self.gray_image_name = ImageSubscriber(
             "Select the image that determines brightness",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -332,7 +332,7 @@ weights.
         default_color = DEFAULT_COLORS[len(self.stack_channels) % len(DEFAULT_COLORS)]
         group.append(
             "image_name",
-            ImageNameSubscriber(
+            ImageSubscriber(
                 "Image name",
                 "None",
                 doc="""\

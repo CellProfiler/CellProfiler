@@ -426,7 +426,7 @@ metadata from the **Metadata** module. %(USING_METADATA_HELP_REF)s"""
             % globals(),
         )
 
-        self.use_which_image_for_gene_name = ImageNameSubscriber(
+        self.use_which_image_for_gene_name = ImageSubscriber(
             "Select the image to use as the identifier",
             "None",
             doc="""\

@@ -24,6 +24,11 @@ YES          YES          YES
 import centrosome.cpmorphology
 import matplotlib.cm
 import numpy
+from cellprofiler_core.image import Image
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.setting.choice import Choice, Colormap
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import ImageName
 
 DEFAULT_COLORMAP = "Default"
 
@@ -36,19 +41,19 @@ class ConvertObjectsToImage(cellprofiler_core.module.Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.object_name = cellprofiler_core.setting.LabelSubscriber(
+        self.object_name = LabelSubscriber(
             "Select the input objects",
             "None",
             doc="Choose the name of the objects you want to convert to an image.",
         )
 
-        self.image_name = cellprofiler_core.setting.ImageName(
+        self.image_name = ImageName(
             "Name the output image",
             "CellImage",
             doc="Enter the name of the resulting image.",
         )
 
-        self.image_mode = cellprofiler_core.setting.Choice(
+        self.image_mode = Choice(
             "Select the color format",
             ["Color", "Binary (black & white)", "Grayscale", "uint16"],
             doc="""\
@@ -80,7 +85,7 @@ objects.
             """,
         )
 
-        self.colormap = cellprofiler_core.setting.Colormap(
+        self.colormap = Colormap(
             "Select the colormap",
             doc="""\
 *(Used only if "Color" output image selected)*
@@ -135,7 +140,7 @@ Preferences*.
                 alpha[mask] = 1
             elif self.image_mode == "Color":
                 if self.colormap.value == DEFAULT_COLORMAP:
-                    cm_name = cellprofiler_core.preferences.get_default_colormap()
+                    cm_name = get_default_colormap()
                 elif self.colormap.value == "colorcube":
                     # Colorcube missing from matplotlib
                     cm_name = "gist_rainbow"
@@ -179,7 +184,7 @@ Preferences*.
         elif self.image_mode != "Binary (black & white)":
             pixel_data[mask] = pixel_data[mask] / alpha[mask]
 
-        image = cellprofiler_core.image.Image(
+        image = Image(
             pixel_data,
             parent_image=objects.parent_image,
             convert=convert,

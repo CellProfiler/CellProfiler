@@ -111,13 +111,13 @@ class MeasureColocalization(cellprofiler_core.module.Module):
     def create_settings(self):
         """Create the initial settings for the module"""
 
-        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+        self.images_list = ListImageNameSubscriber(
             "Select images to measure",
             [],
             doc="""Select images to measure the correlation/colocalization in.""",
         )
 
-        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+        self.objects_list = ListObjectNameSubscriber(
             "Select objects to measure",
             [],
             doc="""\
@@ -126,7 +126,7 @@ class MeasureColocalization(cellprofiler_core.module.Module):
 Select the objects to be measured.""",
         )
 
-        self.thr = cellprofiler_core.setting.Float(
+        self.thr = Float(
             "Set threshold as percentage of maximum intensity for the images",
             15,
             minval=0,
@@ -134,7 +134,7 @@ Select the objects to be measured.""",
             doc="You may choose to measure colocalization metrics only for those pixels above a certain threshold. Select the threshold as a percentage of the maximum intensity of the above image [0-99].",
         )
 
-        self.images_or_objects = cellprofiler_core.setting.Choice(
+        self.images_or_objects = Choice(
             "Select where to measure correlation",
             [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS],
             doc="""\
@@ -152,9 +152,9 @@ All methods measure correlation on a pixel by pixel basis.
             % globals(),
         )
 
-        self.spacer = cellprofiler_core.setting.Divider(line=True)
+        self.spacer = Divider(line=True)
 
-        self.do_all = cellprofiler_core.setting.Binary(
+        self.do_all = Binary(
             "Run all metrics?",
             True,
             doc="""\
@@ -167,7 +167,7 @@ colocalization algorithms to run.
             ),
         )
 
-        self.do_corr_and_slope = cellprofiler_core.setting.Binary(
+        self.do_corr_and_slope = Binary(
             "Calculate correlation and slope metrics?",
             True,
             doc="""\
@@ -177,7 +177,7 @@ Select *{YES}* to run the Pearson correlation and slope metrics.
             ),
         )
 
-        self.do_manders = cellprofiler_core.setting.Binary(
+        self.do_manders = Binary(
             "Calculate the Manders coefficients?",
             True,
             doc="""\
@@ -187,7 +187,7 @@ Select *{YES}* to run the Manders coefficients.
             ),
         )
 
-        self.do_rwc = cellprofiler_core.setting.Binary(
+        self.do_rwc = Binary(
             "Calculate the Rank Weighted Coloalization coefficients?",
             True,
             doc="""\
@@ -197,7 +197,7 @@ Select *{YES}* to run the Rank Weighted Coloalization coefficients.
             ),
         )
 
-        self.do_overlap = cellprofiler_core.setting.Binary(
+        self.do_overlap = Binary(
             "Calculate the Overlap coefficients?",
             True,
             doc="""\
@@ -207,7 +207,7 @@ Select *{YES}* to run the Overlap coefficients.
             ),
         )
 
-        self.do_costes = cellprofiler_core.setting.Binary(
+        self.do_costes = Binary(
             "Calculate the Manders coefficients using Costes auto threshold?",
             True,
             doc="""\

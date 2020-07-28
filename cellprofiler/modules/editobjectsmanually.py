@@ -80,11 +80,11 @@ class EditObjectsManually(I.Identify):
 
         You should create the setting variables for your module here:
             # Ask the user for the input image
-            self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
+            self.image_name = .ImageSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler_core.settings.ImageName(...)
+            self.output_image = .ImageName(...)
             # Ask the user for a parameter
-            self.smoothing_size = cellprofiler_core.settings.Float(...)
+            self.smoothing_size = .Float(...)
         """
         self.object_name = LabelSubscriber(
             "Select the objects to be edited",
@@ -152,7 +152,7 @@ Select "*No*" if you do not want a guide image while editing.
             % globals(),
         )
 
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the guiding image",
             "None",
             doc="""\

@@ -98,7 +98,7 @@ class SaveImages(cellprofiler_core.module.Module):
     category = "File Processing"
 
     def create_settings(self):
-        self.save_image_or_figure = cellprofiler_core.setting.Choice(
+        self.save_image_or_figure = Choice(
             "Select the type of image to save",
             IF_ALL,
             IF_IMAGE,
@@ -133,11 +133,11 @@ The following types of images can be saved as a file on the hard drive:
             ),
         )
 
-        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the image to save", doc="Select the image you want to save."
         )
 
-        self.file_name_method = cellprofiler_core.setting.Choice(
+        self.file_name_method = Choice(
             "Select method for constructing file names",
             [FN_FROM_IMAGE, FN_SEQUENTIAL, FN_SINGLE_NAME],
             FN_FROM_IMAGE,
@@ -180,7 +180,7 @@ Several choices are available for constructing the image file name:
             ),
         )
 
-        self.file_image_name = cellprofiler_core.setting.FileImageNameSubscriber(
+        self.file_image_name = FileImageNameSubscriber(
             "Select image name for file prefix",
             "None",
             doc="""\
@@ -192,7 +192,7 @@ will be used as the prefix for the output filename.""".format(
             ),
         )
 
-        self.single_file_name = cellprofiler_core.setting.Text(
+        self.single_file_name = Text(
             SINGLE_NAME_TEXT,
             "OrigBlue",
             metadata=True,
@@ -213,7 +213,7 @@ automatically.""".format(
             ),
         )
 
-        self.number_of_digits = cellprofiler_core.setting.Integer(
+        self.number_of_digits = Integer(
             "Number of digits",
             4,
             doc="""\
@@ -227,7 +227,7 @@ will override the value entered.""".format(
             ),
         )
 
-        self.wants_file_name_suffix = cellprofiler_core.setting.Binary(
+        self.wants_file_name_suffix = Binary(
             "Append a suffix to the image file name?",
             False,
             doc="""\
@@ -238,7 +238,7 @@ to use the image name as-is.
             ),
         )
 
-        self.file_name_suffix = cellprofiler_core.setting.Text(
+        self.file_name_suffix = Text(
             "Text to append to the image name",
             "",
             metadata=True,
@@ -257,7 +257,7 @@ automatically.
             ),
         )
 
-        self.file_format = cellprofiler_core.setting.Choice(
+        self.file_format = Choice(
             "Saved file format",
             [FF_JPEG, FF_NPY, FF_PNG, FF_TIFF, FF_H5],
             value=FF_TIFF,
@@ -321,7 +321,7 @@ between the various operating systems.
             ),
         )
 
-        self.bit_depth = cellprofiler_core.setting.Choice(
+        self.bit_depth = Choice(
             "Image bit depth",
             [BIT_DEPTH_8, BIT_DEPTH_16, BIT_DEPTH_FLOAT],
             doc="""\
@@ -338,7 +338,7 @@ TIFF formats.""".format(
             ),
         )
 
-        self.overwrite = cellprofiler_core.setting.Binary(
+        self.overwrite = Binary(
             "Overwrite existing files without warning?",
             False,
             doc="""\
@@ -352,7 +352,7 @@ prompt.""".format(
             ),
         )
 
-        self.when_to_save = cellprofiler_core.setting.Choice(
+        self.when_to_save = Choice(
             "When to save",
             [WS_EVERY_CYCLE, WS_FIRST_CYCLE, WS_LAST_CYCLE],
             WS_EVERY_CYCLE,
@@ -380,7 +380,7 @@ Specify at what point during pipeline execution to save file(s).
             ),
         )
 
-        self.update_file_names = cellprofiler_core.setting.Binary(
+        self.update_file_names = Binary(
             "Record the file and path information to the saved image?",
             False,
             doc="""\
@@ -398,7 +398,7 @@ Instances in which this information may be useful include:
             ),
         )
 
-        self.create_subdirectories = cellprofiler_core.setting.Binary(
+        self.create_subdirectories = Binary(
             "Create subfolders in the output folder?",
             False,
             doc="""Select "*{YES}*" to create subfolders to match the input image folder structure.""".format(
@@ -406,7 +406,7 @@ Instances in which this information may be useful include:
             ),
         )
 
-        self.root_dir = cellprofiler_core.setting.DirectoryPath(
+        self.root_dir = DirectoryPath(
             "Base image folder",
             doc="""\
 *Used only if creating subfolders in the output folder*

@@ -46,6 +46,9 @@ import matplotlib.cm
 
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import Integer, Text
 
 
 class DisplayDensityPlot(Module):

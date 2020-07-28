@@ -140,7 +140,7 @@ GRADIENT_DIRECTION_Y = "Gradient direction - Y"
 #    should inherit from this class. These are modules that take objects as
 #    input and output new objects.
 #
-class ImageTemplate(cellprofiler_core.module.ImageProcessing):
+class ImageTemplate(ImageProcessing):
     #
     # The module starts by declaring the name that's used for display,
     # the category under which it is stored and the variable revision
@@ -163,7 +163,7 @@ class ImageTemplate(cellprofiler_core.module.ImageProcessing):
     #
     def create_settings(self):
         #
-        # The superclass (cellprofiler_core.module.ImageProcessing) defines two
+        # The superclass (ImageProcessing) defines two
         # settings for image input and output:
         #
         # -  x_name: an ImageNameSubscriber which "subscribes" to all
@@ -194,7 +194,7 @@ that is made available by a prior module.
         # Here's a choice box - the user gets a drop-down list of what
         # can be done.
         #
-        self.gradient_choice = cellprofiler_core.setting.Choice(
+        self.gradient_choice = Choice(
             text="Gradient choice:",
             # The choice takes a list of possibilities. The first one
             # is the default - the one the user will typically choose.
@@ -234,7 +234,7 @@ Choose what to calculate:
         #
         # A binary setting displays a checkbox.
         #
-        self.automatic_smoothing = cellprofiler_core.setting.Binary(
+        self.automatic_smoothing = Binary(
             text="Automatically choose the smoothing scale?",
             value=True,  # The default value is to choose automatically
             doc="The module will automatically choose a smoothing scale for you if you leave this checked.",
@@ -247,7 +247,7 @@ Choose what to calculate:
         # for the scale. The control will turn red if the user types in
         # an invalid scale.
         #
-        self.scale = cellprofiler_core.setting.Float(
+        self.scale = Float(
             text="Scale",
             value=1,  # The default value is 1 - a short-range scale
             minval=0.1,  # We don't let the user type in really small values

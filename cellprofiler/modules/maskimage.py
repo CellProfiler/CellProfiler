@@ -82,7 +82,7 @@ Select the objects you would like to use to mask the input image.
 """,
         )
 
-        self.masking_image_name = ImageNameSubscriber(
+        self.masking_image_name = ImageSubscriber(
             "Select image for mask",
             "None",
             doc="""\
@@ -92,7 +92,7 @@ Select the image that you like to use to mask the input image.
 """,
         )
 
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="Select the image that you want to mask.",

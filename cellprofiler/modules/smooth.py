@@ -43,19 +43,19 @@ class Smooth(cellprofiler_core.module.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""Select the image to be smoothed.""",
         )
 
-        self.filtered_image_name = cellprofiler_core.setting.ImageName(
+        self.filtered_image_name = ImageName(
             "Name the output image",
             "FilteredImage",
             doc="""Enter a name for the resulting image.""",
         )
 
-        self.smoothing_method = cellprofiler_core.setting.Choice(
+        self.smoothing_method = Choice(
             "Select smoothing method",
             [
                 FIT_POLYNOMIAL,
@@ -116,7 +116,7 @@ anyway.*
             % globals(),
         )
 
-        self.wants_automatic_object_size = cellprofiler_core.setting.Binary(
+        self.wants_automatic_object_size = Binary(
             "Calculate artifact diameter automatically?",
             True,
             doc="""\
@@ -131,7 +131,7 @@ Select *No* to manually enter an artifact diameter.
             % globals(),
         )
 
-        self.object_size = cellprofiler_core.setting.Float(
+        self.object_size = Float(
             "Typical artifact diameter",
             16.0,
             doc="""\
@@ -147,7 +147,7 @@ amounts of time to process.
             % globals(),
         )
 
-        self.sigma_range = cellprofiler_core.setting.Float(
+        self.sigma_range = Float(
             "Edge intensity difference",
             0.1,
             doc="""\
@@ -163,7 +163,7 @@ and one. %(HELP_ON_PIXEL_INTENSITIES)s
             % globals(),
         )
 
-        self.clip = cellprofiler_core.setting.Binary(
+        self.clip = Binary(
             "Clip intensities to 0 and 1?",
             True,
             doc="""\
@@ -251,7 +251,7 @@ the output image.
             raise ValueError(
                 "Unsupported smoothing method: %s" % self.smoothing_method.value
             )
-        output_image = cellprofiler_core.image.Image(output_pixels, parent_image=image)
+        output_image = Image(output_pixels, parent_image=image)
         workspace.image_set.add(self.filtered_image_name.value, output_image)
         workspace.display_data.pixel_data = pixel_data
         workspace.display_data.output_pixels = output_pixels

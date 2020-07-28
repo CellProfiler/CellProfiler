@@ -20,7 +20,7 @@ import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 
-class DilateImage(cellprofiler_core.module.ImageProcessing):
+class DilateImage(ImageProcessing):
     category = "Advanced"
 
     module_name = "DilateImage"
@@ -30,7 +30,7 @@ class DilateImage(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(DilateImage, self).create_settings()
 
-        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+        self.structuring_element = StructuringElement(
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 

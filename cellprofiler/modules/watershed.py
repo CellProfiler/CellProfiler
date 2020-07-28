@@ -8,6 +8,9 @@ import skimage.filters
 import skimage.measure
 import skimage.morphology
 import skimage.transform
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Integer, Float
 
 O_DISTANCE = "Distance"
 O_MARKERS = "Markers"
@@ -93,7 +96,7 @@ class Watershed(cellprofiler_core.module.image_segmentation.ImageSegmentation):
     def create_settings(self):
         super(Watershed, self).create_settings()
 
-        self.operation = cellprofiler_core.setting.Choice(
+        self.operation = Choice(
             text="Generate from",
             choices=[O_DISTANCE, O_MARKERS],
             value=O_DISTANCE,
@@ -114,18 +117,18 @@ Select a method of inputs for the watershed algorithm:
             ),
         )
 
-        self.markers_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.markers_name = ImageSubscriber(
             "Markers",
             doc="An image marking the approximate centers of the objects for segmentation.",
         )
 
-        self.mask_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.mask_name = ImageSubscriber(
             "Mask",
             can_be_blank=True,
             doc="Optional. Only regions not blocked by the mask will be segmented.",
         )
 
-        self.connectivity = cellprofiler_core.setting.Integer(
+        self.connectivity = Integer(
             doc="""\
 Maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. 
 Accepted values are ranging from 1 to the number of dimensions.
@@ -143,7 +146,7 @@ See `skimage label`_ for more information.
             value=1,
         )
 
-        self.compactness = cellprofiler_core.setting.Float(
+        self.compactness = Float(
             text="Compactness",
             minval=0.0,
             value=0.0,
@@ -156,7 +159,7 @@ Higher values result in more regularly-shaped watershed basins.
 """,
         )
 
-        self.watershed_line = cellprofiler_core.setting.Binary(
+        self.watershed_line = Binary(
             text="Separate watershed labels",
             value=False,
             doc="""\
@@ -166,7 +169,7 @@ to touch. The line has the same label as the background.
 """,
         )
 
-        self.footprint = cellprofiler_core.setting.Integer(
+        self.footprint = Integer(
             doc="""\
 The **Footprint** defines the dimensions of the window used to scan
 the input image for local maxima. The footprint can be interpreted as a
@@ -187,7 +190,7 @@ See `mahotas regmax`_ for more information.
             value=8,
         )
 
-        self.downsample = cellprofiler_core.setting.Integer(
+        self.downsample = Integer(
             doc="""\
 Downsample an n-dimensional image by local averaging. If the downsampling factor is 1,
 the image is not downsampled.

@@ -16,10 +16,6 @@ import wx.lib.mixins.gridlabelrenderer
 
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
-import cellprofiler_core.modules.images
-import cellprofiler_core.pipeline
-import cellprofiler_core.pipeline
-import cellprofiler_core.utilities.legacy
 
 """Table column displays metadata"""
 COL_METADATA = "Metadata"
@@ -486,9 +482,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
                 parent=self,
             )
         else:
-            cellprofiler_core.preferences.report_progress(
-                "ImageSetCount", None, "Found %d image sets" % n_imagesets
-            )
+            report_progress("ImageSetCount", None, "Found %d image sets" % n_imagesets)
         self.recompute()
 
     def set_controller(self, controller):

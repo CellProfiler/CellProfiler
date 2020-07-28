@@ -9,7 +9,6 @@ import time
 import numpy
 import wx
 
-import cellprofiler_core.analysis
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils

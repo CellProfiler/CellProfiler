@@ -1,6 +1,5 @@
 # coding=utf-8
 
-import logging
 import platform
 
 import sentry_sdk
@@ -8,7 +7,6 @@ import wx
 import wx.lib.inspection
 
 import cellprofiler.gui.dialog
-import cellprofiler_core.utilities.java
 
 
 dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
@@ -62,15 +60,15 @@ class App(wx.App):
 
         self.frame.Show()
 
-        if cellprofiler_core.preferences.get_telemetry_prompt():
+        if get_telemetry_prompt():
             telemetry = cellprofiler.gui.dialog.Telemetry()
 
             if telemetry.status == wx.ID_YES:
-                cellprofiler_core.preferences.set_telemetry(True)
+                set_telemetry(True)
             else:
-                cellprofiler_core.preferences.set_telemetry(False)
+                set_telemetry(False)
 
-            cellprofiler_core.preferences.set_telemetry_prompt(False)
+            set_telemetry_prompt(False)
 
         if self.frame.startup_blurb_frame.IsShownOnScreen():
             self.frame.startup_blurb_frame.Raise()

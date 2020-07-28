@@ -36,9 +36,6 @@ import cellprofiler.gui.preferencesview
 import cellprofiler.gui.welcome
 import cellprofiler.gui.workspace
 import cellprofiler.icons
-import cellprofiler_core.modules
-import cellprofiler_core.pipeline
-import cellprofiler_core.workspace
 
 
 HELP_ON_FILE_LIST = """\
@@ -357,7 +354,7 @@ class CPFrame(wx.Frame):
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)
-        if cellprofiler_core.preferences.get_startup_blurb():
+        if get_startup_blurb():
             self.show_welcome_screen(True)
         self.show_module_ui(True)
 
@@ -582,9 +579,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
             wx.ID_OPEN,
             "Open Project...\tctrl+O",
-            helpString="Open a project from a .{} project file".format(
-                cellprofiler_core.preferences.EXT_PROJECT
-            ),
+            helpString="Open a project from a .{} project file".format(EXT_PROJECT),
         )
         self.recent_workspace_files = wx.Menu()
         self.__menu_file.AppendSubMenu(self.recent_workspace_files, "Open Recent")
@@ -607,8 +602,7 @@ class CPFrame(wx.Frame):
         submenu.Append(
             ID_FILE_LOAD_PIPELINE,
             "Pipeline from File...",
-            "Import a pipeline into the project from a .%s file"
-            % cellprofiler_core.preferences.EXT_PIPELINE,
+            "Import a pipeline into the project from a .%s file" % EXT_PIPELINE,
         )
         submenu.Append(
             ID_FILE_URL_LOAD_PIPELINE,
@@ -626,8 +620,7 @@ class CPFrame(wx.Frame):
         submenu.Append(
             ID_FILE_SAVE_PIPELINE,
             "Pipeline...\tctrl+P",
-            "Save the project's pipeline to a .%s file"
-            % cellprofiler_core.preferences.EXT_PIPELINE,
+            "Save the project's pipeline to a .%s file" % EXT_PIPELINE,
         )
         submenu.Append(
             ID_FILE_EXPORT_IMAGE_SETS,
@@ -835,7 +828,7 @@ class CPFrame(wx.Frame):
         self.__menu_bar.Append(self.__menu_file, "&File")
         self.__menu_bar.Append(self.menu_edit, "&Edit")
         self.__menu_bar.Append(self.__menu_debug, "&Test")
-        if cellprofiler_core.preferences.get_show_sampling():
+        if get_show_sampling():
             self.__menu_sample = wx.Menu()
             self.__menu_sample.Append(
                 ID_SAMPLE_INIT,

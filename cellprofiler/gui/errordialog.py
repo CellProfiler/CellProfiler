@@ -368,7 +368,6 @@ def show_warning(title, message, get_preference, set_preference):
 
     The message is printed to the console if headless.
     """
-    from cellprofiler_core.preferences import get_headless
 
     if get_headless():
         print(message)

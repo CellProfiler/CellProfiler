@@ -96,55 +96,55 @@ import cellprofiler_core.utilities.legacy
 import numpy
 import six
 import six.moves
-from cellprofiler_core.constants.measurement import OBJECT
-from cellprofiler_core.constants.measurement import GROUP_INDEX
-from cellprofiler_core.constants.measurement import EXPERIMENT
-from cellprofiler_core.constants.measurement import C_METADATA
-from cellprofiler_core.constants.measurement import C_FILE_NAME
-from cellprofiler_core.constants.measurement import COLTYPE_LONGBLOB
-from cellprofiler_core.constants.measurement import GROUP_NUMBER
-from cellprofiler_core.constants.measurement import NEIGHBORS
 from cellprofiler_core.constants.measurement import AGG_MEAN
 from cellprofiler_core.constants.measurement import AGG_MEDIAN
 from cellprofiler_core.constants.measurement import AGG_STD_DEV
+from cellprofiler_core.constants.measurement import COLTYPE_BLOB
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.constants.measurement import COLTYPE_LONGBLOB
+from cellprofiler_core.constants.measurement import COLTYPE_MEDIUMBLOB
 from cellprofiler_core.constants.measurement import COLTYPE_VARCHAR
+from cellprofiler_core.constants.measurement import C_FILE_NAME
+from cellprofiler_core.constants.measurement import C_METADATA
+from cellprofiler_core.constants.measurement import C_PARENT
+from cellprofiler_core.constants.measurement import C_PATH_NAME
+from cellprofiler_core.constants.measurement import EXPERIMENT
+from cellprofiler_core.constants.measurement import GROUP_INDEX
+from cellprofiler_core.constants.measurement import GROUP_NUMBER
+from cellprofiler_core.constants.measurement import MCA_AVAILABLE_POST_GROUP
 from cellprofiler_core.constants.measurement import MCA_AVAILABLE_POST_RUN
 from cellprofiler_core.constants.measurement import M_NUMBER_OBJECT_NUMBER
-from cellprofiler_core.constants.measurement import MCA_AVAILABLE_POST_GROUP
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
-from cellprofiler_core.constants.measurement import C_PATH_NAME
-from cellprofiler_core.constants.measurement import COLTYPE_MEDIUMBLOB
-from cellprofiler_core.constants.measurement import COLTYPE_BLOB
-from cellprofiler_core.constants.measurement import C_PARENT
+from cellprofiler_core.constants.measurement import NEIGHBORS
+from cellprofiler_core.constants.measurement import OBJECT
 from cellprofiler_core.constants.pipeline import M_MODIFICATION_TIMESTAMP
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
-from cellprofiler_core.preferences import get_headless
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
 from cellprofiler_core.preferences import get_allow_schema_write
-from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.preferences import get_headless
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import HiddenCount
 from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import HiddenCount
 from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.do_something import RemoveSettingButton
 from cellprofiler_core.setting.subscriber import LabelSubscriber
-from cellprofiler_core.setting.text import Text
 from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.setting.text import Text
 from cellprofiler_core.utilities.measurement import agg_ignore_feature
+
 import cellprofiler
 import cellprofiler.icons
 from cellprofiler.modules import _help
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
-
 
 buffer = memoryview
 

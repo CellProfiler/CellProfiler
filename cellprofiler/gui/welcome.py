@@ -8,7 +8,6 @@ import pkg_resources
 import wx
 import wx.html2
 
-import cellprofiler
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html
 import cellprofiler.gui.html.utils

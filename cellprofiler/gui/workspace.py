@@ -1,5 +1,4 @@
 import cellprofiler.gui.figure
-import cellprofiler_core.workspace
 
 
 class Workspace(cellprofiler_core.workspace.Workspace):

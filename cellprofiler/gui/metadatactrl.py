@@ -539,7 +539,7 @@ class MetadataControl(wx.Control):
         try:
             dc.SetBackgroundMode(wx.PENSTYLE_SOLID)
             background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
-            metadata_color = cellprofiler_core.preferences.get_primary_outline_color()
+            metadata_color = get_primary_outline_color()
             selected_background_color = wx.SystemSettings.GetColour(
                 wx.SYS_COLOUR_HIGHLIGHT
             )

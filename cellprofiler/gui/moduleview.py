@@ -278,7 +278,7 @@ class ModuleView(object):
         self.__frame = frame
         self.top_panel = top_panel
         self.showing_tables = False
-        background_color = cellprofiler_core.preferences.get_background_color()
+        background_color = get_background_color()
         #############################################
         #
         # Build the top-level GUI windows
@@ -1158,9 +1158,7 @@ class ModuleView(object):
                 index = choices.index(selection)
                 control.SetSelection(index)
                 if selection not in v.choices:
-                    control.SetItemForegroundColour(
-                        index, cellprofiler_core.preferences.get_error_color()
-                    )
+                    control.SetItemForegroundColour(index, get_error_color())
 
             def callback(event, setting=v, control=control):
                 self.__on_multichoice_change(event, setting, control)
@@ -1179,9 +1177,7 @@ class ModuleView(object):
                 elif choices[i] in selections:
                     control.Select(i)
                     if choices[i] not in v.choices:
-                        control.SetItemForegroundColour(
-                            i, cellprofiler_core.preferences.get_error_color()
-                        )
+                        control.SetItemForegroundColour(i, get_error_color())
         return control
 
     def make_colormap_control(self, v, control_name, control):
@@ -1193,7 +1189,7 @@ class ModuleView(object):
         """
         try:
             if v.value == "Default":
-                cmap_name = cellprofiler_core.preferences.get_default_colormap()
+                cmap_name = get_default_colormap()
             else:
                 cmap_name = v.value
             cm = matplotlib.cm.get_cmap(cmap_name)
@@ -1441,9 +1437,7 @@ class ModuleView(object):
                 filename = "plateA-2008-08-06_A12_s1_w1_[89A882DE-E675-4C12-9F8E-46C9976C4ABE].tif"
                 try:
                     if setting.get_example_fn is None:
-                        path = (
-                            cellprofiler_core.preferences.get_default_image_directory()
-                        )
+                        path = get_default_image_directory()
                         filenames = [
                             x
                             for x in os.listdir(path)
@@ -1657,11 +1651,11 @@ class ModuleView(object):
             if not browse_ctrl.IsShown():
                 browse_ctrl.Show()
             if v.dir_choice in (
-                cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
-                cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                DEFAULT_INPUT_SUBFOLDER_NAME,
+                DEFAULT_OUTPUT_SUBFOLDER_NAME,
             ):
                 custom_label.Label = "Sub-folder:"
-            elif v.dir_choice == cellprofiler_core.preferences.URL_FOLDER_NAME:
+            elif v.dir_choice == URL_FOLDER_NAME:
                 if v.support_urls:
                     custom_label.Label = "URL:"
                     custom_label.Show()
@@ -1676,20 +1670,13 @@ class ModuleView(object):
             custom_label.Hide()
             custom_ctrl.Hide()
             browse_ctrl.Hide()
-        if v.dir_choice in (
-            cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME,
-            cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME,
-        ):
-            folder_label.Label = (
-                "( %s )" % cellprofiler_core.preferences.get_default_image_directory()
-            )
+        if v.dir_choice in (DEFAULT_INPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,):
+            folder_label.Label = "( %s )" % get_default_image_directory()
         elif v.dir_choice in (
-            cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME,
-            cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME,
+            DEFAULT_OUTPUT_FOLDER_NAME,
+            DEFAULT_OUTPUT_SUBFOLDER_NAME,
         ):
-            folder_label.Label = (
-                "( %s )" % cellprofiler_core.preferences.get_default_output_directory()
-            )
+            folder_label.Label = "( %s )" % get_default_output_directory()
         else:
             folder_label.Label = wx.EmptyString
         dir_ctrl.SetToolTip(folder_label.Label)
@@ -2436,7 +2423,7 @@ class ModuleView(object):
 
     def on_validation(self, setting_idx, message, level):
         default_fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
-        default_bg_color = cellprofiler_core.preferences.get_background_color()
+        default_bg_color = get_background_color()
         if not self.__module:  # defensive coding, in case the module was deleted
             return
 
@@ -2470,7 +2457,7 @@ class ModuleView(object):
                     desired_fg, desired_bg = default_fg_color, default_bg_color
                     if setting is bad_setting:
                         if level == logging.ERROR:
-                            desired_fg = cellprofiler_core.preferences.get_error_color()
+                            desired_fg = get_error_color()
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
         except Exception:
@@ -3571,7 +3558,7 @@ class FileCollectionDisplayController(object):
             self.v.file_tree, self.root_item, False, [], operation_id, 0, total
         )
         self.manage_expansion()
-        cellprofiler_core.preferences.report_progress(operation_id, 1, None)
+        report_progress(operation_id, 1, None)
 
     def manage_expansion(self):
         """Handle UI expansion issues
@@ -3628,7 +3615,7 @@ class FileCollectionDisplayController(object):
             if x is None:
                 continue
             text, node_type, tooltip = self.v.get_node_info(sub_modpath)
-            cellprofiler_core.preferences.report_progress(
+            report_progress(
                 operation_id, float(count) / float(total), "Processing %s" % text
             )
             count += 1
@@ -4122,9 +4109,7 @@ class BinaryMatrixController(object):
                 wx.SYS_SMALLICON_Y,
             )
         ]
-        paint_dc.SetBackground(
-            wx.Brush(cellprofiler_core.preferences.get_background_color())
-        )
+        paint_dc.SetBackground(wx.Brush(get_background_color()))
         paint_dc.Clear()
         pShadow = wx.Pen(
             wx.SystemSettings.GetColour(wx.SYS_COLOUR_BTNSHADOW), 1, wx.PENSTYLE_SOLID
@@ -4440,7 +4425,7 @@ class DataTypeController(object):
 class TableController(wx.grid.GridTableBase):
     DEFAULT_ATTR = wx.grid.GridCellAttr()
     ERROR_ATTR = wx.grid.GridCellAttr()
-    ERROR_ATTR.SetTextColour(cellprofiler_core.preferences.get_error_color())
+    ERROR_ATTR.SetTextColour(get_error_color())
 
     def __init__(self, v):
         super(self.__class__, self).__init__()

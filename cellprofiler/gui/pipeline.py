@@ -1,7 +1,5 @@
 import wx
 
-import cellprofiler_core.pipeline
-
 
 class Pipeline(cellprofiler_core.pipeline.Pipeline):
     def create_progress_dialog(self, message, pipeline, title):

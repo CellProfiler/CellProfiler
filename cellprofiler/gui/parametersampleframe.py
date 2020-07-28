@@ -16,8 +16,6 @@ import wx
 import wx.lib.agw.floatspin
 
 import cellprofiler.gui.workspace
-import cellprofiler_core.object
-import cellprofiler_core.pipeline
 
 PARAM_CLASS_TEXT_LABEL = "Input text label"
 PARAM_CLASS_BOUNDED_DISCRETE = "Bounded, discrete"

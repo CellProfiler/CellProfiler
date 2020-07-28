@@ -24,7 +24,6 @@ import wx.html
 
 import cellprofiler.gui.figure
 import cellprofiler.gui.tools
-import cellprofiler_core.object
 
 
 class EditObjectsDialog(wx.Dialog):
@@ -129,7 +128,7 @@ class EditObjectsDialog(wx.Dialog):
         self.active_index = None
         self.mode = self.NORMAL_MODE
         self.scaling_mode = self.SM_NORMALIZED
-        self.interpolation_mode = cellprofiler_core.preferences.get_interpolation_mode()
+        self.interpolation_mode = get_interpolation_mode()
         self.label_display_mode = self.ID_LABELS_OUTLINES
         self.skip_right_button_up = False
         self.split_artist = None
@@ -301,9 +300,7 @@ class EditObjectsDialog(wx.Dialog):
         self.orig_axes.set_zorder(1)  # preferentially select on click.
         self.orig_axes._adjustable = "box"
         self.orig_axes.set_title(
-            self.title,
-            fontname=cellprofiler_core.preferences.get_title_font_name(),
-            fontsize=cellprofiler_core.preferences.get_title_font_size(),
+            self.title, fontname=get_title_font_name(), fontsize=get_title_font_size(),
         )
 
         ########################################
@@ -624,9 +621,7 @@ class EditObjectsDialog(wx.Dialog):
                 self.li = numpy.hstack((self.li, li))
                 self.lj = numpy.hstack((self.lj, lj))
                 self.ll = numpy.hstack((self.ll, ll))
-        cm = matplotlib.cm.get_cmap(
-            cellprofiler_core.preferences.get_default_colormap()
-        )
+        cm = matplotlib.cm.get_cmap(get_default_colormap())
         cm.set_bad((0, 0, 0))
 
         mappable = matplotlib.cm.ScalarMappable(cmap=cm)
@@ -1058,17 +1053,17 @@ class EditObjectsDialog(wx.Dialog):
         for mid, state, help_text in (
             (
                 self.ID_INTERPOLATION_NEAREST,
-                cellprofiler_core.preferences.IM_NEAREST,
+                IM_NEAREST,
                 "Display images using the intensity of the nearest pixel (blocky)",
             ),
             (
                 self.ID_INTERPOLATION_BILINEAR,
-                cellprofiler_core.preferences.IM_BILINEAR,
+                IM_BILINEAR,
                 "Display images by blending the intensities of the four nearest pixels (smoother)",
             ),
             (
                 self.ID_INTERPOLATION_BICUBIC,
-                cellprofiler_core.preferences.IM_BICUBIC,
+                IM_BICUBIC,
                 "Display images by blending intensities using cubic spline interpolation (smoothest)",
             ),
         ):
@@ -1150,15 +1145,15 @@ class EditObjectsDialog(wx.Dialog):
         self.display()
 
     def on_nearest_neighbor_interpolation(self, event):
-        self.interpolation_mode = cellprofiler_core.preferences.IM_NEAREST
+        self.interpolation_mode = IM_NEAREST
         self.display()
 
     def on_bilinear_interpolation(self, event):
-        self.interpolation_mode = cellprofiler_core.preferences.IM_BILINEAR
+        self.interpolation_mode = IM_BILINEAR
         self.display()
 
     def on_bicubic_interpolation(self, event):
-        self.interpolation_mode = cellprofiler_core.preferences.IM_BICUBIC
+        self.interpolation_mode = IM_BICUBIC
         self.display()
 
     def on_mouse_button_up(self, event):
@@ -1513,9 +1508,7 @@ class EditObjectsDialog(wx.Dialog):
             title = self.title
 
         self.orig_axes.set_title(
-            title,
-            fontname=cellprofiler_core.preferences.get_title_font_name(),
-            fontsize=cellprofiler_core.preferences.get_title_font_size(),
+            title, fontname=get_title_font_name(), fontsize=get_title_font_size(),
         )
 
     def enter_split_mode(self, event):

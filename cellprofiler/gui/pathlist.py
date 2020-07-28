@@ -251,9 +251,7 @@ class PathListCtrl(wx.ScrolledWindow):
         npaths = len(paths)
         for i, path in enumerate(paths):
             if i % 100 == 0:
-                cellprofiler_core.preferences.report_progress(
-                    uid, float(i) / npaths, "Loading %s into UI" % path
-                )
+                report_progress(uid, float(i) / npaths, "Loading %s into UI" % path)
             folder, filename = self.splitpath(path)
             display_name = six.moves.urllib.request.url2pathname(filename)
             width, _, _, _ = self.GetFullTextExtent(display_name)
@@ -272,7 +270,7 @@ class PathListCtrl(wx.ScrolledWindow):
                 folder_item.file_display_names.insert(pidx, display_name)
                 folder_item.enabled.insert(pidx, True)
         if len(paths) > 0:
-            cellprofiler_core.preferences.report_progress(uid, 1, "Done")
+            report_progress(uid, 1, "Done")
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
 

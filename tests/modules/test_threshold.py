@@ -12,7 +12,9 @@ import skimage.morphology
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-import cellprofiler_core.modules.identify
+from cellprofiler_core.constants.measurement import FF_ORIG_THRESHOLD
+from cellprofiler_core.constants.module._identify import TS_GLOBAL
+
 import cellprofiler.modules.threshold
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -302,8 +304,8 @@ def test_otsu3_low():
     module.run(workspace)
     m = workspace.measurements
     m_threshold = m[
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.measurement.FF_ORIG_THRESHOLD % module.y_name.value,
+        "Image",
+        FF_ORIG_THRESHOLD % module.y_name.value,
     ]
     assert round(abs(m_threshold - threshold), 7) == 0
 
@@ -331,8 +333,8 @@ def test_otsu3_high():
     module.run(workspace)
     m = workspace.measurements
     m_threshold = m[
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.measurement.FF_ORIG_THRESHOLD % module.y_name.value,
+        "Image",
+        FF_ORIG_THRESHOLD % module.y_name.value,
     ]
     assert round(abs(m_threshold - threshold), 7) == 0
 
@@ -417,7 +419,7 @@ def test_small_images():
                 mask[ii[p], jj[p]] = True
             workspace, x = make_workspace(image, mask)
             x.global_operation.value = threshold_method
-            x.threshold_scope.value = cellprofiler_core.modules.identify.TS_GLOBAL
+            x.threshold_scope.value = TS_GLOBAL
             l, g, _ = x.get_threshold(
                 cellprofiler_core.image.Image(image, mask=mask), workspace
             )

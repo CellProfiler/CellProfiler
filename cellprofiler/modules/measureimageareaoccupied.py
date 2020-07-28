@@ -107,7 +107,7 @@ like to measure the area occupied by the foreground in the image.
             ),
         )
 
-        self.objects_list = ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select object sets to measure",
             [],
             doc="""*(Used only if ‘{O_OBJECTS}’ are to be measured)*

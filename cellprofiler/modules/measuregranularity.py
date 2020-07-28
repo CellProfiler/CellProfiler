@@ -97,7 +97,7 @@ class MeasureGranularity(Module):
         object at the requested scales.""",
         )
 
-        self.objects_list = ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select objects to measure",
             [],
             doc="""\

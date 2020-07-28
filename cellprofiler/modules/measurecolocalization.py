@@ -122,7 +122,7 @@ class MeasureColocalization(Module):
             doc="""Select images to measure the correlation/colocalization in.""",
         )
 
-        self.objects_list = ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select objects to measure",
             [],
             doc="""\

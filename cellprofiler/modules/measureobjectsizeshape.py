@@ -386,7 +386,7 @@ class MeasureObjectSizeShape(Module):
         The module allows for an unlimited number of measured objects, each
         of which has an entry in self.object_groups.
         """
-        self.objects_list = ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select object sets to measure",
             [],
             doc="""Select the object sets whose size and shape you want to measure.""",

@@ -144,7 +144,7 @@ class MeasureObjectIntensity(Module):
             doc="""Select the grayscale images whose intensity you want to measure.""",
         )
         self.divider = Divider()
-        self.objects_list = ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select objects to measure",
             [],
             doc="""Select the object sets whose intensity you want to measure.""",

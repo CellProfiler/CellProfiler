@@ -134,7 +134,7 @@ class MeasureImageIntensity(Module):
         """,
         )
 
-        self.objects_list = ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select input object sets",
             [],
             doc="""Select the object sets whose intensity you want to measure.""",

@@ -1,20 +1,11 @@
-pymodule_to_cpmodule = {
+builtin_modules = {
     "align": "Align",
     "groups": "Groups",
     "images": "Images",
     "loaddata": "LoadData",
     "metadata": "Metadata",
     "namesandtypes": "NamesAndTypes",
-    "measurementfixture": "MeasurementFixture",
 }
-builtin_modules = [
-    "align",
-    "groups",
-    "images",
-    "loaddata",
-    "metadata",
-    "namesandtypes",
-]
 all_modules: dict = {}
 svn_revisions: dict = {}
 pymodules: list = []

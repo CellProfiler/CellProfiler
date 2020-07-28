@@ -4,6 +4,7 @@ import os
 import re
 import sys
 
+from ....module import Module
 from ....preferences import get_plugin_directory
 from ....constants.modules import (
     do_not_override,
@@ -31,8 +32,6 @@ def plugin_list(plugin_dir):
 
 
 def check_module(module, name):
-    from ....module import Module
-
     if hasattr(module, "do_not_check"):
         return
     assert (
@@ -55,14 +54,10 @@ def find_cpmodule(m):
 
     returns the CPModule class
     """
-    from ....module import Module
-    from ....constants.modules import pymodule_to_cpmodule
-
     modulename = os.path.splitext(os.path.basename(m.__file__))[0]
-    classname = pymodule_to_cpmodule[modulename]
-    module_class = m.__dict__[classname]
-    if issubclass(module_class, Module):
-        return module_class
+    for key, item in list(m.__dict__.items()):
+        if key.lower() == modulename and issubclass(item, Module):
+            return item
     raise ValueError(
         "Could not find cellprofiler_core.module.Module class in %s" % m.__file__
     )
@@ -74,10 +69,14 @@ def fill_modules():
     all_modules.clear()
     svn_revisions.clear()
 
-    def add_module(mod, check_svn):
+    def add_module(mod, check_svn, class_name=None):
         try:
             m = __import__(mod, globals(), locals(), ["__all__"], 0)
-            cp_module = find_cpmodule(m)
+            if class_name:
+                cp_module = m.__dict__[class_name]
+                assert issubclass(cp_module, Module)
+            else:
+                cp_module = find_cpmodule(m)
             name = cp_module.module_name
         except Exception as e:
             logging.warning("Could not load %s", mod, exc_info=True)
@@ -110,8 +109,8 @@ def fill_modules():
                 del pymodules[-1]
 
     # Import core modules
-    for mod in builtin_modules:
-        add_module("cellprofiler_core.modules." + mod, True)
+    for modname, classname in builtin_modules.items():
+        add_module("cellprofiler_core.modules." + modname, True, class_name=classname)
 
     # Import CellProfiler modules if CellProfiler is installed
     cpinstalled = False
@@ -122,8 +121,8 @@ def fill_modules():
     except ImportError:
         print("No CellProfiler installation detected, only base modules will be loaded")
     if cpinstalled:
-        for mod in cellprofiler.modules.builtin_modules:
-            add_module("cellprofiler.modules." + mod, True)
+        for modname, classname in cellprofiler.modules.builtin_modules.items():
+            add_module("cellprofiler.modules." + modname, True, class_name=classname)
 
     # Find and import plugins
     plugin_directory = get_plugin_directory()

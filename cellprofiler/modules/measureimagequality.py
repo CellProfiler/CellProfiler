@@ -10,6 +10,12 @@ import centrosome.threshold
 import numpy
 import scipy.linalg.basic
 import scipy.ndimage
+from cellprofiler_core.constants.measurement import (
+    COLTYPE_FLOAT,
+    EXPERIMENT,
+    MCA_AVAILABLE_POST_RUN,
+)
+from cellprofiler_core.module import Module
 from cellprofiler_core.modules import identify
 
 __doc__ = """\
@@ -152,6 +158,11 @@ References
 ##############################################
 
 # Setting variables
+from cellprofiler_core.setting import Divider, HiddenCount, SettingsGroup, Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.text import ImageName
+
 """Image selection"""
 O_ALL_LOADED = "All loaded images"  # Use all loaded images
 O_SELECT = "Select..."  # Select the images you want from a list, all treated the same

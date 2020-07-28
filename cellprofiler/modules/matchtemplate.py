@@ -26,6 +26,10 @@ YES          NO           NO
 
 import skimage.feature
 import skimage.io
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Pathname, ImageName
 
 
 class MatchTemplate(Module):

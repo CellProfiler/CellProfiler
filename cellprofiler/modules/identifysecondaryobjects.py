@@ -4,6 +4,24 @@ import centrosome.propagate
 import numpy
 import scipy.ndimage
 import skimage.morphology
+from cellprofiler_core.constants.measurement import (
+    FF_CHILDREN_COUNT,
+    FF_PARENT,
+    FTR_CENTER_Z,
+    FTR_CENTER_Y,
+    FTR_CENTER_X,
+    C_LOCATION,
+    C_NUMBER,
+    FTR_OBJECT_NUMBER,
+    C_PARENT,
+    C_CHILDREN,
+    FF_COUNT,
+    C_COUNT,
+)
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Integer, Float, LabelName
 
 from cellprofiler.modules import _help, threshold
 

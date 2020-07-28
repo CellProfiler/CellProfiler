@@ -58,10 +58,10 @@ import numpy
 from cellprofiler_core.image import AbstractImage
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import ImageName
-from cellprofiler_core.setting import ImageNameSubscriber
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text.number import Float
+from cellprofiler_core.setting.text import ImageName
 
 P_AVERAGE = "Average"
 P_MAXIMUM = "Maximum"

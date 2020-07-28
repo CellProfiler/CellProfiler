@@ -1,17 +1,19 @@
 import numpy
 import scipy.ndimage
-from cellprofiler_core.measurement import COLTYPE_INTEGER
+from cellprofiler_core.constants.measurement import (
+    COLTYPE_INTEGER,
+    FF_PARENT,
+    FF_CHILDREN_COUNT,
+)
 from cellprofiler_core.modules import identify as I
 from cellprofiler_core.object import Objects
 from cellprofiler_core.object import size_similarly
 from cellprofiler_core.preferences import get_primary_outline_color
 from cellprofiler_core.preferences import get_secondary_outline_color
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import ImageNameSubscriber
-from cellprofiler_core.setting import ObjectNameProvider
-from cellprofiler_core.setting import ObjectNameSubscriber
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import Float, LabelName
 from centrosome.cpmorphology import fixup_scipy_ndimage_result
 from centrosome.outline import outline
 

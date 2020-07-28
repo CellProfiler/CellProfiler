@@ -20,12 +20,14 @@ Measurements made by this module
 
 import numpy
 import scipy.ndimage
+from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_FLOAT
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Coordinates
+from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.setting.text import ImageName, Float
 
 FLIP_NONE = "Do not flip"
 FLIP_LEFT_TO_RIGHT = "Left to right"

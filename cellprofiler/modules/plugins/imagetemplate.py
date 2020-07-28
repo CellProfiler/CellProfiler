@@ -113,6 +113,11 @@ wherever possible, include a link to the original work. For example,
 # if someone wants to change the text, that text will change everywhere.
 # Also, you can't misspell it by accident.
 #
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.text import Float
+
 GRADIENT_MAGNITUDE = "Gradient magnitude"
 GRADIENT_DIRECTION_X = "Gradient direction - X"
 GRADIENT_DIRECTION_Y = "Gradient direction - Y"

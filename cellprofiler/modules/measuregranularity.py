@@ -56,6 +56,10 @@ import cellprofiler_core.workspace
 import numpy
 import scipy.ndimage
 import skimage.morphology
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Divider, Binary, ValidationError
+from cellprofiler_core.setting.text import Float, Integer
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 "Granularity category"

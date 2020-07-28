@@ -1,8 +1,17 @@
 import numpy
+from cellprofiler_core.constants.measurement import (
+    FF_PARENT,
+    FF_CHILDREN_COUNT,
+    IMAGE,
+    COLTYPE_INTEGER,
+)
 from cellprofiler_core.module import Module
 import cellprofiler_core.modules
 from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.outline import outline
 
 from cellprofiler.modules import _help

@@ -27,9 +27,12 @@ import skimage.exposure
 import skimage.filters
 import skimage.morphology
 import skimage.transform
+from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.setting.range import IntegerRange
+from cellprofiler_core.setting.text import Integer, Float
 
 from cellprofiler.modules import _help
 

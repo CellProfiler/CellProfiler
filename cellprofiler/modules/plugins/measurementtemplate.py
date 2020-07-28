@@ -132,6 +132,11 @@ wherever possible, include a link to the original work. For example,
 # if someone wants to change the text, that text will change everywhere.
 # Also, you can't misspell it by accident.
 #
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
+from cellprofiler_core.setting.text import Integer
+
 """This is the measurement template category"""
 C_MEASUREMENT_TEMPLATE = "MT"
 

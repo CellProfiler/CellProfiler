@@ -40,7 +40,8 @@ import logging
 import os
 
 import numpy
-from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_INTEGER
+from cellprofiler_core.constants.workspace import DISPOSITION_CONTINUE, DISPOSITION_SKIP
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME

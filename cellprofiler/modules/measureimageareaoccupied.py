@@ -45,7 +45,9 @@ Measurements made by this module
 
 import numpy
 import skimage.measure
-from cellprofiler_core.setting import Divider
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Divider, ValidationError
 from cellprofiler_core.setting.choice import Choice
 
 C_AREA_OCCUPIED = "AreaOccupied"

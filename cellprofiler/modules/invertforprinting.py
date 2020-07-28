@@ -28,10 +28,10 @@ import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import ImageName
-from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName
 
 CC_GRAYSCALE = "Grayscale"
 CC_COLOR = "Color"

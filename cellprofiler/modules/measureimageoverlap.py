@@ -98,6 +98,8 @@ import centrosome.propagate
 import numpy
 import scipy.ndimage
 import scipy.sparse
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber

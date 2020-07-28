@@ -54,7 +54,21 @@ well as video tutorials.
 """
 
 import numpy
-from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
+from cellprofiler_core.constants.measurement import (
+    COLTYPE_INTEGER,
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+    M_NUMBER_OBJECT_NUMBER,
+    FF_COUNT,
+    COLTYPE_FLOAT,
+    IMAGE,
+    C_COUNT,
+    C_LOCATION,
+    C_NUMBER,
+    FTR_CENTER_X,
+    FTR_CENTER_Y,
+    FTR_OBJECT_NUMBER,
+)
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects, ObjectSet

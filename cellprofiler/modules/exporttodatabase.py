@@ -96,7 +96,29 @@ import cellprofiler_core.utilities.legacy
 import numpy
 import six
 import six.moves
-from cellprofiler_core.constants.measurement import OBJECT, GROUP_INDEX
+from cellprofiler_core.constants.measurement import (
+    OBJECT,
+    GROUP_INDEX,
+    EXPERIMENT,
+    C_METADATA,
+    C_FILE_NAME,
+    COLTYPE_LONGBLOB,
+    GROUP_NUMBER,
+    NEIGHBORS,
+    AGG_MEAN,
+    AGG_MEDIAN,
+    AGG_STD_DEV,
+    COLTYPE_VARCHAR,
+    MCA_AVAILABLE_POST_RUN,
+    M_NUMBER_OBJECT_NUMBER,
+    MCA_AVAILABLE_POST_GROUP,
+    COLTYPE_FLOAT,
+    C_PATH_NAME,
+    COLTYPE_MEDIUMBLOB,
+    COLTYPE_BLOB,
+    C_PARENT,
+)
+from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import (
     DEFAULT_OUTPUT_FOLDER_NAME,
@@ -104,12 +126,22 @@ from cellprofiler_core.preferences import (
     ABSOLUTE_FOLDER_NAME,
     DEFAULT_OUTPUT_SUBFOLDER_NAME,
     DEFAULT_INPUT_SUBFOLDER_NAME,
+    get_headless,
+    get_allow_schema_write,
 )
-from cellprofiler_core.setting import SettingsGroup, Binary, HiddenCount
+from cellprofiler_core.setting import (
+    SettingsGroup,
+    Binary,
+    HiddenCount,
+    Divider,
+    Measurement,
+    ValidationError,
+)
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Text, Directory
+from cellprofiler_core.utilities.measurement import agg_ignore_feature
 
 import cellprofiler
 import cellprofiler.icons

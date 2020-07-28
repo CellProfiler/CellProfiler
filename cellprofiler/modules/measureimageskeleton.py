@@ -34,6 +34,8 @@ import numpy
 import scipy.ndimage
 import skimage.segmentation
 import skimage.util
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting.subscriber import ImageSubscriber
 
 
 def _neighbors(image):

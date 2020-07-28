@@ -34,6 +34,19 @@ See also **Threshold**, **RescaleIntensity**,
 import inflect
 import numpy
 import skimage.util
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import (
+    Divider,
+    Binary,
+    SettingsGroup,
+    Measurement,
+    ValidationError,
+)
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Float, ImageName
 
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"

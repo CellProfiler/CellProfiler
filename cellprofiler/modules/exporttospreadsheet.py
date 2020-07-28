@@ -106,6 +106,7 @@ from cellprofiler_core.constants.measurement import (
     R_FIRST_OBJECT_NUMBER,
     R_SECOND_OBJECT_NUMBER,
 )
+from cellprofiler_core.constants.pipeline import EXIT_STATUS
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
@@ -120,6 +121,7 @@ from cellprofiler_core.setting import Measurement
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import CustomChoice, Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.multichoice import MeasurementMultiChoice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Directory, Text

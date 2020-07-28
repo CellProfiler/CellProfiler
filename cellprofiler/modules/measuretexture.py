@@ -106,6 +106,10 @@ import cellprofiler_core.object
 import mahotas.features
 import numpy
 import skimage.util
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import HiddenCount, Divider
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
 
 TEXTURE = "Texture"
 

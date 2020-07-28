@@ -1,3 +1,7 @@
+from cellprofiler_core.constants.measurement import (
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+)
 from cellprofiler_core.preferences import (
     DEFAULT_INPUT_FOLDER_NAME,
     ABSOLUTE_FOLDER_NAME,

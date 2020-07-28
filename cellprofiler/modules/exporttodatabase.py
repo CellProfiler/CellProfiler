@@ -118,6 +118,7 @@ from cellprofiler_core.constants.measurement import (
     COLTYPE_BLOB,
     C_PARENT,
 )
+from cellprofiler_core.constants.pipeline import M_MODIFICATION_TIMESTAMP
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import (
@@ -1572,7 +1573,7 @@ available:
 """.format(
                 **{
                     "C_IMAGE_NUMBER": C_IMAGE_NUMBER,
-                    "GROUP_INDEX": cellprofiler_core.pipeline.GROUP_INDEX,
+                    "GROUP_INDEX": GROUP_INDEX,
                     "USING_METADATA_GROUPING_HELP_REF": _help.USING_METADATA_GROUPING_HELP_REF,
                 }
             )
@@ -4011,7 +4012,7 @@ CREATE TABLE %s (
             ###########################################
             stmt = "UPDATE %s SET %s='%s'" % (
                 self.get_table_name(EXPERIMENT),
-                cellprofiler_core.pipeline.M_MODIFICATION_TIMESTAMP,
+                M_MODIFICATION_TIMESTAMP,
                 datetime.datetime.now().isoformat(),
             )
             execute(self.cursor, stmt, return_result=False)

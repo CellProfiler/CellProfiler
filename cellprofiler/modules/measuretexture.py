@@ -115,12 +115,13 @@ from cellprofiler_core.setting import (
     ValidationError,
 )
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import (
     ImageListSubscriber,
     LabelListSubscriber,
 )
 from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.utilities.core.object import size_similarly
 
 TEXTURE = "Texture"
 
@@ -495,13 +496,13 @@ measured and will result in a undefined value in the output file.
             )
             pixel_data = objects.crop_image_similarly(image.pixel_data)
         except ValueError:
-            pixel_data, m1 = cellprofiler_core.object.size_similarly(
+            pixel_data, m1 = size_similarly(
                 labels, image.pixel_data
             )
 
             if numpy.any(~m1):
                 if image.has_mask:
-                    mask, m2 = cellprofiler_core.object.size_similarly(
+                    mask, m2 = size_similarly(
                         labels, image.mask
                     )
                     mask[~m2] = False

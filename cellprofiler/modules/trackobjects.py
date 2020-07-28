@@ -4,6 +4,7 @@ import scipy.sparse
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER, COLTYPE_FLOAT, GROUP_INDEX, GROUP_NUMBER, \
     OBJECT_NUMBER, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, MCA_AVAILABLE_POST_GROUP, EXPERIMENT, \
     MCA_AVAILABLE_EACH_CYCLE, IMAGE_NUMBER
+from cellprofiler_core.constants.module import HELP_ON_MEASURING_DISTANCES
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.subscriber import LabelSubscriber
@@ -516,8 +517,7 @@ they are within this distance. To determine a suitable pixel distance,
 you can look at the axis increments on each image (shown in pixel units)
 or use the distance measurement tool.
 %(HELP_ON_MEASURING_DISTANCES)s
-"""
-            % globals(),
+""".format(HELP_ON_MEASURING_DISTANCES),
         )
 
         self.model = Choice(

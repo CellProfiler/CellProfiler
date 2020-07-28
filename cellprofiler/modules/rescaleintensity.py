@@ -27,6 +27,13 @@ YES          YES          YES
 
 import numpy
 import skimage.exposure
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.range import FloatRange
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Float
 
 M_STRETCH = "Stretch each image to use the full intensity range"
 M_MANUAL_INPUT_RANGE = "Choose specific values to be reset to the full intensity range"

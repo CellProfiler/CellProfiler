@@ -22,6 +22,9 @@ YES          YES          NO
 
 import skimage.restoration
 import skimage.util
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting.text import Integer, Float
 
 
 class ReduceNoise(ImageProcessing):

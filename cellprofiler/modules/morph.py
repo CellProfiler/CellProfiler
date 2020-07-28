@@ -261,14 +261,13 @@ import scipy.ndimage
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import Choice
 from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import ImageName
-from cellprofiler_core.setting import ImageNameSubscriber
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import RemoveSettingButton
 from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import RemoveSettingButton
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Integer
 
 F_BRANCHPOINTS = "branchpoints"
 F_BRIDGE = "bridge"

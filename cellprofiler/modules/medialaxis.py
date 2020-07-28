@@ -21,6 +21,8 @@ YES          YES          NO
 import numpy
 import skimage.color
 import skimage.morphology
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import ImageProcessing
 
 
 class MedialAxis(ImageProcessing):

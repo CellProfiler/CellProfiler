@@ -16,11 +16,17 @@ YES          YES          NO
 ============ ============ ===============
 """
 
-import cellprofiler_core.object
 import numpy
 import skimage.color
 import skimage.segmentation
 import skimage.util
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary, Divider, SettingsGroup, Color
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
+from cellprofiler_core.setting.text import ImageName
 
 WANTS_COLOR = "Color"
 WANTS_GRAYSCALE = "Grayscale"

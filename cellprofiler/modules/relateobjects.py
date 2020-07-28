@@ -4,10 +4,15 @@ import cellprofiler_core.object
 import numpy
 import scipy.ndimage
 import skimage.segmentation
-from cellprofiler_core.setting import Binary, SettingsGroup
+from cellprofiler_core.constants.measurement import C_PARENT, C_CHILDREN, FF_PARENT, FF_CHILDREN_COUNT, R_PARENT, \
+    R_CHILD, MCA_AVAILABLE_EACH_CYCLE, C_COUNT, C_LOCATION, C_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, FTR_CENTER_Z, \
+    FTR_OBJECT_NUMBER
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
+from cellprofiler_core.setting import Binary, SettingsGroup, ValidationError
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import LabelName
 
 from cellprofiler.modules import _help
 
@@ -96,7 +101,7 @@ FIXED_SETTING_COUNT = 5
 VARIABLE_SETTING_COUNT = 1
 
 
-class RelateObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
+class RelateObjects(ObjectProcessing):
     module_name = "RelateObjects"
 
     variable_revision_number = 5

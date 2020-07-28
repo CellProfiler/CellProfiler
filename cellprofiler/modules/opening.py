@@ -20,6 +20,8 @@ YES          YES          NO
 
 import numpy
 import skimage.morphology
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import StructuringElement
 
 from cellprofiler.modules._help import HELP_FOR_STREL
 

@@ -15,6 +15,8 @@ YES          YES          NO
 """
 
 import scipy.signal
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting.text import OddInteger
 
 
 class MedianFilter(ImageProcessing):

@@ -1,5 +1,8 @@
 import numpy
 import scipy.ndimage
+from cellprofiler_core.constants.measurement import FF_CHILDREN_COUNT, FF_PARENT
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
+from cellprofiler_core.object import Objects
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float
@@ -38,7 +41,7 @@ See also
 )
 
 
-class ResizeObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
+class ResizeObjects(ObjectProcessing):
     module_name = "ResizeObjects"
 
     variable_revision_number = 2
@@ -144,7 +147,7 @@ Enter the desired height of the final objects, in pixels.""",
         else:
             y_data = rescale(x_data, self.factor.value)
 
-        y = cellprofiler_core.object.Objects()
+        y = Objects()
         y.segmented = y_data
         y.parent_image = x.parent_image
         objects.add_objects(y, y_name)
@@ -160,9 +163,7 @@ Enter the desired height of the final objects, in pixels.""",
     def add_measurements(
         self, workspace, input_object_name=None, output_object_name=None
     ):
-        super(
-            cellprofiler_core.module.image_segmentation.ObjectProcessing, self
-        ).add_measurements(workspace, self.y_name.value)
+        super(ObjectProcessing, self).add_measurements(workspace, self.y_name.value)
 
         labels = workspace.object_set.get_objects(self.y_name.value).segmented
 

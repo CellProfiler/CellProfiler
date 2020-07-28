@@ -25,6 +25,12 @@ See also several related modules in the *Advanced* category (e.g.,
 import numpy
 import scipy.ndimage
 import skimage.restoration
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Float
 from centrosome.filter import median_filter, circular_average_filter
 from centrosome.smooth import fit_polynomial
 from centrosome.smooth import smooth_with_function_and_mask

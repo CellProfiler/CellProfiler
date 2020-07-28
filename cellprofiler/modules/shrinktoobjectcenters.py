@@ -23,11 +23,10 @@ YES          YES          NO
 import cellprofiler_core.object
 import numpy
 import skimage.measure
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
 
 
-class ShrinkToObjectCenters(
-    cellprofiler_core.module.image_segmentation.ObjectProcessing
-):
+class ShrinkToObjectCenters(ObjectProcessing):
     module_name = "ShrinkToObjectCenters"
 
     category = "Advanced"

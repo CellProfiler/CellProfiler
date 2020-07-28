@@ -26,6 +26,11 @@ import os.path
 import numpy
 import skimage.io
 import skimage.measure
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import Directory
 
 O_PNG = "png"
 O_TIFF_8 = "8-bit tiff"

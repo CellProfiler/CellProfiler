@@ -1377,6 +1377,7 @@ of the straightened worms.""",
         """
         import wx
         import matplotlib.backends.backend_wxagg
+        import matplotlib.figure
 
         frame_size = wx.GetDisplaySize()
         frame_size = [max(frame_size[0], frame_size[1]) / 2] * 2

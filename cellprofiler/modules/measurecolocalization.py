@@ -116,7 +116,7 @@ class MeasureColocalization(Module):
     def create_settings(self):
         """Create the initial settings for the module"""
 
-        self.images_list = ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select images to measure",
             [],
             doc="""Select images to measure the correlation/colocalization in.""",

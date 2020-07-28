@@ -256,7 +256,7 @@ calculated.
 
         group.append(
             "image_names",
-            ListImageNameSubscriber(
+            ImageListSubscriber(
                 text="Select the images to measure",
                 doc="""\
 *(Used only if “{O_SELECT}” is chosen for selecting images)*

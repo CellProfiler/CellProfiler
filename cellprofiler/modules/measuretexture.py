@@ -116,6 +116,7 @@ from cellprofiler_core.setting import (
 )
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.subscriber import ImageListSubscriber
 from cellprofiler_core.setting.text import Integer
 
 TEXTURE = "Texture"
@@ -137,7 +138,7 @@ class MeasureTexture(Module):
     category = "Measurement"
 
     def create_settings(self):
-        self.images_list = ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select images to measure",
             [],
             doc="""Select the grayscale images whose intensity you want to measure.""",

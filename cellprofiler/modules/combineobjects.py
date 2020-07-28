@@ -1,12 +1,3 @@
-import cellprofiler_core.object
-import numpy
-import scipy.ndimage
-import skimage.morphology
-import skimage.segmentation
-from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.subscriber import LabelSubscriber
-from cellprofiler_core.setting.text import LabelName
-
 """
 CombineObjects
 ==============
@@ -39,6 +30,15 @@ YES          NO           NO
 ============ ============ ===============
 
 """
+
+import cellprofiler_core.object
+import numpy
+import scipy.ndimage
+import skimage.morphology
+import skimage.segmentation
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import LabelName
 
 
 class CombineObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):

@@ -79,7 +79,7 @@ class MeasureGranularity(Module):
     variable_revision_number = 4
 
     def create_settings(self):
-        self.images_list = ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select images to measure",
             [],
             doc="""Select images in which to measure the granularity.""",

@@ -167,7 +167,7 @@ class MeasureObjectIntensityDistribution(Module):
     variable_revision_number = 6
 
     def create_settings(self):
-        self.images_list = ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select images to measure",
             [],
             doc="""Select the images whose intensity distribution you want to measure.""",

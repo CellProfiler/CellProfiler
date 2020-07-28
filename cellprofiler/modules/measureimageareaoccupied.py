@@ -95,7 +95,7 @@ Area occupied can be measured in two ways:
 
         self.divider = Divider()
 
-        self.images_list = ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select binary images to measure",
             [],
             doc="""*(Used only if ‘{O_BINARY_IMAGE}’ is to be measured)*

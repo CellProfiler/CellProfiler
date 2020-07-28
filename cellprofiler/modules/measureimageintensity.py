@@ -116,7 +116,7 @@ class MeasureImageIntensity(Module):
 
     def create_settings(self):
         """Create the settings & name the module"""
-        self.images_list = ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select images to measure",
             [],
             doc="""Select the grayscale images whose intensity you want to measure.""",

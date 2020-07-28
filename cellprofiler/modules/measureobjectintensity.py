@@ -204,17 +204,14 @@ class MeasureObjectIntensity(Module):
             for object_name in self.objects_list.value:
                 for category, features in (
                     (INTENSITY, ALL_MEASUREMENTS),
-                    (
-                        cellprofiler_core.measurement.C_LOCATION,
-                        ALL_LOCATION_MEASUREMENTS,
-                    ),
+                    (C_LOCATION, ALL_LOCATION_MEASUREMENTS,),
                 ):
                     for feature in features:
                         columns.append(
                             (
                                 object_name,
                                 "%s_%s_%s" % (category, feature, image_name),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             )
                         )
 
@@ -229,12 +226,12 @@ class MeasureObjectIntensity(Module):
         """
         for object_set in self.objects_list.value:
             if object_set == object_name:
-                return [INTENSITY, cellprofiler_core.measurement.C_LOCATION]
+                return [INTENSITY, C_LOCATION]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         """Get the measurements made on the given object in the given category"""
-        if category == cellprofiler_core.measurement.C_LOCATION:
+        if category == C_LOCATION:
             all_measurements = ALL_LOCATION_MEASUREMENTS
         elif category == INTENSITY:
             all_measurements = ALL_MEASUREMENTS
@@ -250,7 +247,7 @@ class MeasureObjectIntensity(Module):
         if category == INTENSITY:
             if measurement not in ALL_MEASUREMENTS:
                 return []
-        elif category == cellprofiler_core.measurement.C_LOCATION:
+        elif category == C_LOCATION:
             if measurement not in ALL_LOCATION_MEASUREMENTS:
                 return []
         else:
@@ -562,12 +559,12 @@ class MeasureObjectIntensity(Module):
                     (INTENSITY, MEDIAN_INTENSITY, median_intensity),
                     (INTENSITY, MAD_INTENSITY, mad_intensity),
                     (INTENSITY, UPPER_QUARTILE_INTENSITY, upper_quartile_intensity),
-                    (cellprofiler_core.measurement.C_LOCATION, LOC_CMI_X, cmi_x),
-                    (cellprofiler_core.measurement.C_LOCATION, LOC_CMI_Y, cmi_y),
-                    (cellprofiler_core.measurement.C_LOCATION, LOC_CMI_Z, cmi_z),
-                    (cellprofiler_core.measurement.C_LOCATION, LOC_MAX_X, max_x),
-                    (cellprofiler_core.measurement.C_LOCATION, LOC_MAX_Y, max_y),
-                    (cellprofiler_core.measurement.C_LOCATION, LOC_MAX_Z, max_z),
+                    (C_LOCATION, LOC_CMI_X, cmi_x),
+                    (C_LOCATION, LOC_CMI_Y, cmi_y),
+                    (C_LOCATION, LOC_CMI_Z, cmi_z),
+                    (C_LOCATION, LOC_MAX_X, max_x),
+                    (C_LOCATION, LOC_MAX_Y, max_y),
+                    (C_LOCATION, LOC_MAX_Z, max_z),
                 ):
                     measurement_name = "{}_{}_{}".format(
                         category, feature_name, image_name

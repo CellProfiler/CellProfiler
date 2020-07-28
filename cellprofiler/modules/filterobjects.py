@@ -1038,9 +1038,9 @@ value will be retained.""".format(
         for feature_name in self.get_classifier_features():
             feature_name = feature_name.split("_", 1)[1]
             if feature_name == "x_loc":
-                feature_name = cellprofiler_core.measurement.M_LOCATION_CENTER_X
+                feature_name = M_LOCATION_CENTER_X
             elif feature_name == "y_loc":
-                feature_name = cellprofiler_core.measurement.M_LOCATION_CENTER_Y
+                feature_name = M_LOCATION_CENTER_Y
             features.append(feature_name)
 
         feature_vector = numpy.column_stack(

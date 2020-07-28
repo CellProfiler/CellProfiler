@@ -451,11 +451,7 @@ class MeasureGranularity(Module):
             gslength = self.granular_spectrum_length.value
             for i in range(1, gslength + 1):
                 result += [
-                    (
-                        "Image",
-                        self.granularity_feature(i, image_name),
-                        cellprofiler_core.measurement.COLTYPE_FLOAT,
-                    )
+                    ("Image", self.granularity_feature(i, image_name), COLTYPE_FLOAT,)
                 ]
                 sources += [(image_name, self.granularity_feature(i, image_name))]
             for object_name in self.objects_list.value:
@@ -464,7 +460,7 @@ class MeasureGranularity(Module):
                         (
                             object_name,
                             self.granularity_feature(i, image_name),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                     ]
                     sources += [(object_name, self.granularity_feature(i, image_name))]

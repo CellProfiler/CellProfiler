@@ -342,13 +342,12 @@ but the results will be zero or not-a-number (NaN).
         ):
             m.add_measurement(
                 self.subregion_objects_name.value,
-                cellprofiler_core.measurement.FF_PARENT % parent_objects_name.value,
+                FF_PARENT % parent_objects_name.value,
                 parents_of,
             )
             m.add_measurement(
                 parent_objects_name.value,
-                cellprofiler_core.measurement.FF_CHILDREN_COUNT
-                % self.subregion_objects_name.value,
+                FF_CHILDREN_COUNT % self.subregion_objects_name.value,
                 child_count,
             )
             mask = parents_of != 0
@@ -435,16 +434,8 @@ but the results will be zero or not-a-number (NaN).
             self.secondary_objects_name.value,
         ):
             columns += [
-                (
-                    parent,
-                    cellprofiler_core.measurement.FF_CHILDREN_COUNT % subregion_name,
-                    COLTYPE_INTEGER,
-                ),
-                (
-                    subregion_name,
-                    cellprofiler_core.measurement.FF_PARENT % parent,
-                    COLTYPE_INTEGER,
-                ),
+                (parent, FF_CHILDREN_COUNT % subregion_name, COLTYPE_INTEGER,),
+                (subregion_name, FF_PARENT % parent, COLTYPE_INTEGER,),
             ]
         return columns
 

@@ -556,11 +556,7 @@ radial degree you enter here.
         input_object_name = self.input_object_name.value
 
         return [
-            (
-                input_object_name,
-                self.get_measurement_name(n, m),
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
-            )
+            (input_object_name, self.get_measurement_name(n, m), COLTYPE_FLOAT,)
             for n, m in self.get_zernike_indexes(True)
         ]
 

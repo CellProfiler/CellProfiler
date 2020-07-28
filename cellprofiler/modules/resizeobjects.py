@@ -173,14 +173,12 @@ Enter the desired height of the final objects, in pixels.""",
 
         workspace.measurements.add_measurement(
             self.x_name.value,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+            FF_CHILDREN_COUNT % self.y_name.value,
             [1] * len(unique_labels),
         )
 
         workspace.measurements.add_measurement(
-            self.y_name.value,
-            cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
-            unique_labels,
+            self.y_name.value, FF_PARENT % self.x_name.value, unique_labels,
         )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):

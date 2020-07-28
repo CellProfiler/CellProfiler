@@ -974,10 +974,6 @@ the two objects. Set this setting to “No” to assess no penalty.""",
 
     def get_measurement_columns(self, pipeline):
         return [
-            (
-                "Image",
-                self.measurement_name(feature),
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
-            )
+            ("Image", self.measurement_name(feature), COLTYPE_FLOAT,)
             for feature in self.all_features()
         ]

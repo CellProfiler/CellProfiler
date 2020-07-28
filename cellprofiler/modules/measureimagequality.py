@@ -781,7 +781,7 @@ to the foreground pixels or the background pixels.
                                 cellprofiler_core.utilities.image.C_SCALING,
                                 image_name,
                             ),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                     )
                     sources.append([image_group.include_image_scalings, image_name])
@@ -795,7 +795,7 @@ to the foreground pixels or the background pixels.
                             "{}_{}_{}".format(
                                 C_IMAGE_QUALITY, F_FOCUS_SCORE, image_name
                             ),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                     )
                     sources.append([image_group.check_blur, image_name])
@@ -806,7 +806,7 @@ to the foreground pixels or the background pixels.
                             "{}_{}_{}".format(
                                 C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE, image_name
                             ),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                     )
                     sources.append([image_group.check_blur, image_name])
@@ -821,7 +821,7 @@ to the foreground pixels or the background pixels.
                                     image_name,
                                     scale_group.scale.value,
                                 ),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             )
                         )
                         sources.append([scale_group.scale, image_name])
@@ -835,7 +835,7 @@ to the foreground pixels or the background pixels.
                                     image_name,
                                     scale_group.scale.value,
                                 ),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             )
                         )
                         sources.append([scale_group.scale, image_name])
@@ -854,7 +854,7 @@ to the foreground pixels or the background pixels.
                                 "{}_{}_{}".format(
                                     C_IMAGE_QUALITY, feature, measurement_name
                                 ),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             )
                         )
                         sources.append([image_group.check_intensity, image_name])
@@ -867,7 +867,7 @@ to the foreground pixels or the background pixels.
                             (
                                 "Image",
                                 "{}_{}_{}".format(C_IMAGE_QUALITY, feature, image_name),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             )
                         )
                         sources.append([image_group.check_saturation, image_name])
@@ -878,25 +878,17 @@ to the foreground pixels or the background pixels.
                 for image_name in selected_images:
                     for threshold_group in all_threshold_groups:
                         feature = threshold_group.threshold_feature_name(image_name)
-                        columns.append(
-                            (
-                                "Image",
-                                feature,
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
-                            )
-                        )
+                        columns.append(("Image", feature, COLTYPE_FLOAT,))
                         for agg in ("Mean", "Median", "Std"):
                             feature = threshold_group.threshold_feature_name(
                                 image_name, agg
                             )
                             columns.append(
                                 (
-                                    cellprofiler_core.measurement.EXPERIMENT,
+                                    EXPERIMENT,
                                     feature,
-                                    cellprofiler_core.measurement.COLTYPE_FLOAT,
-                                    {
-                                        cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN: True
-                                    },
+                                    COLTYPE_FLOAT,
+                                    {MCA_AVAILABLE_POST_RUN: True},
                                 )
                             )
 
@@ -917,10 +909,7 @@ to the foreground pixels or the background pixels.
     def get_categories(self, pipeline, object_name):
         if object_name == "Image":
             return [C_IMAGE_QUALITY]
-        elif (
-            object_name == cellprofiler_core.measurement.EXPERIMENT
-            and self.any_threshold()
-        ):
+        elif object_name == EXPERIMENT and self.any_threshold():
             return [C_IMAGE_QUALITY]
         return []
 
@@ -957,10 +946,7 @@ to the foreground pixels or the background pixels.
                 result += sorted(list(set(thresholds)))
 
             return result
-        elif (
-            object_name == cellprofiler_core.measurement.EXPERIMENT
-            and category == C_IMAGE_QUALITY
-        ):
+        elif object_name == EXPERIMENT and category == C_IMAGE_QUALITY:
             return [
                 MEAN_THRESH_ALL_IMAGES,
                 MEDIAN_THRESH_ALL_IMAGES,

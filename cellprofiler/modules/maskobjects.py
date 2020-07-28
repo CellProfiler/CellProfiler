@@ -380,9 +380,7 @@ controls how remaining objects are associated with their predecessors:
         #
         m = workspace.measurements
         m.add_measurement(
-            remaining_object_name,
-            cellprofiler_core.measurement.FF_PARENT % object_name,
-            parent_objects,
+            remaining_object_name, FF_PARENT % object_name, parent_objects,
         )
         if numpy.max(original_objects.segmented) == 0:
             child_count = numpy.array([], int)
@@ -396,9 +394,7 @@ controls how remaining objects are associated with their predecessors:
             )
             child_count = (child_count > 0).astype(int)
         m.add_measurement(
-            object_name,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % remaining_object_name,
-            child_count,
+            object_name, FF_CHILDREN_COUNT % remaining_object_name, child_count,
         )
         if self.retain_or_renumber == R_RETAIN:
             remaining_object_count = nobjects
@@ -469,16 +465,8 @@ controls how remaining objects are associated with their predecessors:
         remaining_object_name = self.remaining_objects.value
         columns = I.get_object_measurement_columns(self.remaining_objects.value)
         columns += [
-            (
-                object_name,
-                cellprofiler_core.measurement.FF_CHILDREN_COUNT % remaining_object_name,
-                COLTYPE_INTEGER,
-            ),
-            (
-                remaining_object_name,
-                cellprofiler_core.measurement.FF_PARENT % object_name,
-                COLTYPE_INTEGER,
-            ),
+            (object_name, FF_CHILDREN_COUNT % remaining_object_name, COLTYPE_INTEGER,),
+            (remaining_object_name, FF_PARENT % object_name, COLTYPE_INTEGER,),
         ]
         return columns
 

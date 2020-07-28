@@ -300,17 +300,17 @@ class MeasureImageIntensity(Module):
         columns = []
         for im in self.images_list.value:
             for feature, coltype in (
-                (F_TOTAL_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_MEAN_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_MEDIAN_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_STD_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_MAD_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_MIN_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_MAX_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
+                (F_TOTAL_INTENSITY, COLTYPE_FLOAT),
+                (F_MEAN_INTENSITY, COLTYPE_FLOAT),
+                (F_MEDIAN_INTENSITY, COLTYPE_FLOAT),
+                (F_STD_INTENSITY, COLTYPE_FLOAT),
+                (F_MAD_INTENSITY, COLTYPE_FLOAT),
+                (F_MIN_INTENSITY, COLTYPE_FLOAT),
+                (F_MAX_INTENSITY, COLTYPE_FLOAT),
                 (F_TOTAL_AREA, "integer"),
-                (F_PERCENT_MAXIMAL, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_LOWER_QUARTILE, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_UPPER_QUARTILE, cellprofiler_core.measurement.COLTYPE_FLOAT),
+                (F_PERCENT_MAXIMAL, COLTYPE_FLOAT),
+                (F_LOWER_QUARTILE, COLTYPE_FLOAT),
+                (F_UPPER_QUARTILE, COLTYPE_FLOAT),
             ):
                 if self.wants_objects:
                     for object_set in self.objects_list.value:

@@ -712,14 +712,10 @@ segmentation.""",
         #
         children_per_parent, parents_of_children = objects.relate_children(objects_out)
         measurements.add_measurement(
-            self.x_name.value,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % objname,
-            children_per_parent,
+            self.x_name.value, FF_CHILDREN_COUNT % objname, children_per_parent,
         )
         measurements.add_measurement(
-            objname,
-            cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
-            parents_of_children,
+            objname, FF_PARENT % self.x_name.value, parents_of_children,
         )
         image_numbers = (
             numpy.ones(len(parents_of_children), int) * measurements.image_set_number
@@ -754,14 +750,13 @@ segmentation.""",
 
             measurements.add_measurement(
                 self.new_primary_objects_name.value,
-                cellprofiler_core.measurement.FF_CHILDREN_COUNT % objname,
+                FF_CHILDREN_COUNT % objname,
                 children_per_parent,
             )
 
             measurements.add_measurement(
                 objname,
-                cellprofiler_core.measurement.FF_PARENT
-                % self.new_primary_objects_name.value,
+                FF_PARENT % self.new_primary_objects_name.value,
                 parents_of_children,
             )
 
@@ -932,13 +927,12 @@ segmentation.""",
             columns += [
                 (
                     self.new_primary_objects_name.value,
-                    cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+                    FF_CHILDREN_COUNT % self.y_name.value,
                     "integer",
                 ),
                 (
                     self.y_name.value,
-                    cellprofiler_core.measurement.FF_PARENT
-                    % self.new_primary_objects_name.value,
+                    FF_PARENT % self.new_primary_objects_name.value,
                     "integer",
                 ),
             ]
@@ -969,7 +963,7 @@ segmentation.""",
                     pipeline, self.y_name.value
                 )
 
-                categories += [cellprofiler_core.measurement.C_CHILDREN]
+                categories += [C_CHILDREN]
 
         return categories
 
@@ -984,43 +978,32 @@ segmentation.""",
             )
 
         if self.wants_discard_edge and self.wants_discard_primary:
-            if (
-                object_name == "Image"
-                and category == cellprofiler_core.measurement.C_COUNT
-            ):
+            if object_name == "Image" and category == C_COUNT:
                 measurements += [self.new_primary_objects_name.value]
 
-            if (
-                object_name == self.y_name.value
-                and category == cellprofiler_core.measurement.C_PARENT
-            ):
+            if object_name == self.y_name.value and category == C_PARENT:
                 measurements += [self.new_primary_objects_name.value]
 
             if object_name == self.new_primary_objects_name.value:
-                if category == cellprofiler_core.measurement.C_LOCATION:
+                if category == C_LOCATION:
                     measurements += [
-                        cellprofiler_core.measurement.FTR_CENTER_X,
-                        cellprofiler_core.measurement.FTR_CENTER_Y,
-                        cellprofiler_core.measurement.FTR_CENTER_Z,
+                        FTR_CENTER_X,
+                        FTR_CENTER_Y,
+                        FTR_CENTER_Z,
                     ]
 
-                if category == cellprofiler_core.measurement.C_NUMBER:
-                    measurements += [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
+                if category == C_NUMBER:
+                    measurements += [FTR_OBJECT_NUMBER]
 
-                if category == cellprofiler_core.measurement.C_PARENT:
+                if category == C_PARENT:
                     measurements += [self.x_name.value]
 
-            if category == cellprofiler_core.measurement.C_CHILDREN:
+            if category == C_CHILDREN:
                 if object_name == self.x_name.value:
-                    measurements += [
-                        cellprofiler_core.measurement.FF_COUNT
-                        % self.new_primary_objects_name.value
-                    ]
+                    measurements += [FF_COUNT % self.new_primary_objects_name.value]
 
                 if object_name == self.new_primary_objects_name.value:
-                    measurements += [
-                        cellprofiler_core.measurement.FF_COUNT % self.y_name.value
-                    ]
+                    measurements += [FF_COUNT % self.y_name.value]
 
         return measurements
 

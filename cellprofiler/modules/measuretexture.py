@@ -376,7 +376,7 @@ measured and will result in a undefined value in the output file.
                                         scale_group.scale.value,
                                         angle,
                                     ),
-                                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                    COLTYPE_FLOAT,
                                 )
                             ]
 
@@ -396,7 +396,7 @@ measured and will result in a undefined value in the output file.
                                             scale_group.scale.value,
                                             angle,
                                         ),
-                                        cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                        COLTYPE_FLOAT,
                                     )
                                 ]
 

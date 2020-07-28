@@ -1131,22 +1131,16 @@ Often a good choice is some multiple of the largest expected object size.
         ave_final_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
         ave_orig_threshold = numpy.mean(numpy.atleast_1d(orig_threshold))
         measurements.add_measurement(
-            "Image",
-            cellprofiler_core.measurement.FF_FINAL_THRESHOLD % objname,
-            ave_final_threshold,
+            "Image", FF_FINAL_THRESHOLD % objname, ave_final_threshold,
         )
 
         measurements.add_measurement(
-            "Image",
-            cellprofiler_core.measurement.FF_ORIG_THRESHOLD % objname,
-            ave_orig_threshold,
+            "Image", FF_ORIG_THRESHOLD % objname, ave_orig_threshold,
         )
 
         if self.threshold_scope == TS_ADAPTIVE:
             measurements.add_measurement(
-                "Image",
-                cellprofiler_core.measurement.FF_GUIDE_THRESHOLD % objname,
-                guide_threshold,
+                "Image", FF_GUIDE_THRESHOLD % objname, guide_threshold,
             )
 
     def add_fg_bg_measurements(self, objname, measurements, image, binary_image):
@@ -1157,16 +1151,14 @@ Often a good choice is some multiple of the largest expected object size.
         wv = centrosome.threshold.weighted_variance(data, mask, binary_image)
 
         measurements.add_measurement(
-            "Image",
-            cellprofiler_core.measurement.FF_WEIGHTED_VARIANCE % objname,
-            numpy.array([wv], dtype=float),
+            "Image", FF_WEIGHTED_VARIANCE % objname, numpy.array([wv], dtype=float),
         )
 
         entropies = centrosome.threshold.sum_of_entropies(data, mask, binary_image)
 
         measurements.add_measurement(
             "Image",
-            cellprofiler_core.measurement.FF_SUM_OF_ENTROPIES % objname,
+            FF_SUM_OF_ENTROPIES % objname,
             numpy.array([entropies], dtype=float),
         )
 
@@ -1175,59 +1167,34 @@ Often a good choice is some multiple of the largest expected object size.
             object_name = self.y_name.value
 
         measures = [
-            (
-                "Image",
-                cellprofiler_core.measurement.FF_FINAL_THRESHOLD % object_name,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
-            ),
-            (
-                "Image",
-                cellprofiler_core.measurement.FF_ORIG_THRESHOLD % object_name,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
-            ),
+            ("Image", FF_FINAL_THRESHOLD % object_name, COLTYPE_FLOAT,),
+            ("Image", FF_ORIG_THRESHOLD % object_name, COLTYPE_FLOAT,),
         ]
         if self.threshold_scope == TS_ADAPTIVE:
-            measures += [
-                (
-                    "Image",
-                    cellprofiler_core.measurement.FF_GUIDE_THRESHOLD % object_name,
-                    cellprofiler_core.measurement.COLTYPE_FLOAT,
-                )
-            ]
+            measures += [("Image", FF_GUIDE_THRESHOLD % object_name, COLTYPE_FLOAT,)]
         measures += [
-            (
-                "Image",
-                cellprofiler_core.measurement.FF_WEIGHTED_VARIANCE % object_name,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
-            ),
-            (
-                "Image",
-                cellprofiler_core.measurement.FF_SUM_OF_ENTROPIES % object_name,
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
-            ),
+            ("Image", FF_WEIGHTED_VARIANCE % object_name, COLTYPE_FLOAT,),
+            ("Image", FF_SUM_OF_ENTROPIES % object_name, COLTYPE_FLOAT,),
         ]
         return measures
 
     def get_categories(self, pipeline, object_name):
         if object_name == "Image":
-            return [cellprofiler_core.measurement.C_THRESHOLD]
+            return [C_THRESHOLD]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == "Image"
-            and category == cellprofiler_core.measurement.C_THRESHOLD
-        ):
+        if object_name == "Image" and category == C_THRESHOLD:
             measures = [
-                cellprofiler_core.measurement.FTR_ORIG_THRESHOLD,
-                cellprofiler_core.measurement.FTR_FINAL_THRESHOLD,
+                FTR_ORIG_THRESHOLD,
+                FTR_FINAL_THRESHOLD,
             ]
             if self.threshold_scope == TS_ADAPTIVE:
-                measures += [cellprofiler_core.measurement.FTR_GUIDE_THRESHOLD]
+                measures += [FTR_GUIDE_THRESHOLD]
             measures += [
-                cellprofiler_core.measurement.FTR_SUM_OF_ENTROPIES,
-                cellprofiler_core.measurement.FTR_WEIGHTED_VARIANCE,
+                FTR_SUM_OF_ENTROPIES,
+                FTR_WEIGHTED_VARIANCE,
             ]
             return measures
         return []

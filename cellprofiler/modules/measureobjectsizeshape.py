@@ -877,13 +877,7 @@ module.""".format(
         cols = []
         for oname in self.objects_list.value:
             for mname in measurement_names:
-                cols += [
-                    (
-                        oname,
-                        AREA_SHAPE + "_" + mname,
-                        cellprofiler_core.measurement.COLTYPE_FLOAT,
-                    )
-                ]
+                cols += [(oname, AREA_SHAPE + "_" + mname, COLTYPE_FLOAT,)]
         return cols
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):

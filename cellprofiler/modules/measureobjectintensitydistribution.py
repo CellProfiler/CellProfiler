@@ -1294,17 +1294,13 @@ be selected in a later **SaveImages** or other module.
                                 (
                                     object_name,
                                     feature % (image_name, bin, bin_count),
-                                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                    COLTYPE_FLOAT,
                                 )
                             )
 
                         if not wants_scaling:
                             columns.append(
-                                (
-                                    object_name,
-                                    ofeature % image_name,
-                                    cellprofiler_core.measurement.COLTYPE_FLOAT,
-                                )
+                                (object_name, ofeature % image_name, COLTYPE_FLOAT,)
                             )
 
                     if self.wants_zernikes != Z_NONE:
@@ -1321,13 +1317,7 @@ be selected in a later **SaveImages** or other module.
                             ):
                                 ftr = name_fn(image_name, n, m)
 
-                                columns.append(
-                                    (
-                                        object_name,
-                                        ftr,
-                                        cellprofiler_core.measurement.COLTYPE_FLOAT,
-                                    )
-                                )
+                                columns.append((object_name, ftr, COLTYPE_FLOAT,))
 
         return columns
 

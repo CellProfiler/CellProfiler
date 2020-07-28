@@ -325,21 +325,13 @@ degrees.
         m = workspace.measurements
         assert isinstance(m, Measurements)
         object_name = self.object_name.value
-        m.add_measurement(
-            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_X, center_x
-        )
-        m.add_measurement(
-            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, center_y
-        )
+        m.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
+        m.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
         m.add_measurement(object_name, M_ANGLE, angles * 180 / numpy.pi)
         m.add_measurement(
-            object_name,
-            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-            label_indexes,
+            object_name, M_NUMBER_OBJECT_NUMBER, label_indexes,
         )
-        m.add_image_measurement(
-            cellprofiler_core.measurement.FF_COUNT % object_name, nlabels
-        )
+        m.add_image_measurement(FF_COUNT % object_name, nlabels)
         #
         # Make the objects
         #
@@ -628,52 +620,36 @@ degrees.
         """Return column definitions for measurements made by this module"""
         object_name = self.object_name.value
         return [
-            (
-                object_name,
-                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
-                COLTYPE_INTEGER,
-            ),
-            (
-                object_name,
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
-                COLTYPE_INTEGER,
-            ),
+            (object_name, M_LOCATION_CENTER_X, COLTYPE_INTEGER,),
+            (object_name, M_LOCATION_CENTER_Y, COLTYPE_INTEGER,),
             (object_name, M_ANGLE, COLTYPE_FLOAT),
-            (
-                object_name,
-                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                COLTYPE_INTEGER,
-            ),
-            (
-                IMAGE,
-                cellprofiler_core.measurement.FF_COUNT % object_name,
-                COLTYPE_INTEGER,
-            ),
+            (object_name, M_NUMBER_OBJECT_NUMBER, COLTYPE_INTEGER,),
+            (IMAGE, FF_COUNT % object_name, COLTYPE_INTEGER,),
         ]
 
     def get_categories(self, pipeline, object_name):
         if object_name == IMAGE:
-            return [cellprofiler_core.measurement.C_COUNT]
+            return [C_COUNT]
         elif object_name == self.object_name:
             return [
-                cellprofiler_core.measurement.C_LOCATION,
-                cellprofiler_core.measurement.C_NUMBER,
+                C_LOCATION,
+                C_NUMBER,
                 C_WORMS,
             ]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == IMAGE and category == cellprofiler_core.measurement.C_COUNT:
+        if object_name == IMAGE and category == C_COUNT:
             return [self.object_name.value]
         elif object_name == self.object_name:
-            if category == cellprofiler_core.measurement.C_LOCATION:
+            if category == C_LOCATION:
                 return [
-                    cellprofiler_core.measurement.FTR_CENTER_X,
-                    cellprofiler_core.measurement.FTR_CENTER_Y,
+                    FTR_CENTER_X,
+                    FTR_CENTER_Y,
                 ]
-            elif category == cellprofiler_core.measurement.C_NUMBER:
-                return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
+            elif category == C_NUMBER:
+                return [FTR_OBJECT_NUMBER]
             elif category == C_WORMS:
                 return [F_ANGLE]
         return []

@@ -310,7 +310,7 @@ Select the previously identified objects you would like to measure.""".format(
                             "{:s}_{:s}_{:s}".format(
                                 C_AREA_OCCUPIED, feature, object_set,
                             ),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                     )
         if self.operand_choice in (O_BOTH, O_BINARY_IMAGE):
@@ -322,7 +322,7 @@ Select the previously identified objects you would like to measure.""".format(
                             "{:s}_{:s}_{:s}".format(
                                 C_AREA_OCCUPIED, feature, image_set,
                             ),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                     )
 

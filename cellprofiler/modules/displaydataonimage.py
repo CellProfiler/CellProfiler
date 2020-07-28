@@ -25,20 +25,24 @@ import matplotlib.cm
 import matplotlib.figure
 import matplotlib.text
 import numpy
-from cellprofiler_core.constants.measurement import (
-    M_LOCATION_CENTER_X,
-    M_LOCATION_CENTER_Y,
-    C_PATH_NAME,
-    C_FILE_NAME,
-)
-from cellprofiler_core.image import Image, FileImage
+from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X
+from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y
+from cellprofiler_core.constants.measurement import C_PATH_NAME
+from cellprofiler_core.constants.measurement import C_FILE_NAME
+from cellprofiler_core.image import Image
+from cellprofiler_core.image import FileImage
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import get_default_colormap
-from cellprofiler_core.setting import Binary, Measurement, Color
-from cellprofiler_core.setting.choice import Choice, Colormap
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import Color
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.choice import Colormap
 from cellprofiler_core.setting.range import FloatRange
-from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
-from cellprofiler_core.setting.text import ImageName, Integer
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.setting.text import Integer
 
 OI_OBJECTS = "Object"
 OI_IMAGE = "Image"

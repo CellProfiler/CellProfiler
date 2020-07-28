@@ -23,18 +23,17 @@ YES          NO           YES
 
 """
 
-import numpy as np
+import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-from cellprofiler_core.setting.text import ImageName, Float
-from centrosome.filter import laplacian_of_gaussian
-from centrosome.filter import prewitt, hprewitt, vprewitt, stretch
-from centrosome.filter import roberts, canny, sobel, hsobel, vsobel
-from centrosome.kirsch import kirsch
-from centrosome.otsu import otsu3
+from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.setting.text import Float
+import centrosome.filter
+import centrosome.kirsch
+import centrosome.otsu
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"
@@ -262,14 +261,14 @@ values below this threshold as not being edges.
         if image.has_mask:
             mask = image.mask
         else:
-            mask = np.ones(orig_pixels.shape, bool)
+            mask = numpy.ones(orig_pixels.shape, bool)
         if self.method == M_SOBEL:
             if self.direction == E_ALL:
-                output_pixels = sobel(orig_pixels, mask)
+                output_pixels = centrosome.filter.sobel(orig_pixels, mask)
             elif self.direction == E_HORIZONTAL:
-                output_pixels = hsobel(orig_pixels, mask)
+                output_pixels = centrosome.filter.hsobel(orig_pixels, mask)
             elif self.direction == E_VERTICAL:
-                output_pixels = vsobel(orig_pixels, mask)
+                output_pixels = centrosome.filter.vsobel(orig_pixels, mask)
             else:
                 raise NotImplementedError(
                     "Unimplemented direction for Sobel: %s", self.direction.value
@@ -277,14 +276,16 @@ values below this threshold as not being edges.
         elif self.method == M_LOG:
             sigma = self.get_sigma()
             size = int(sigma * 4) + 1
-            output_pixels = laplacian_of_gaussian(orig_pixels, mask, size, sigma)
+            output_pixels = centrosome.filter.laplacian_of_gaussian(
+                orig_pixels, mask, size, sigma
+            )
         elif self.method == M_PREWITT:
             if self.direction == E_ALL:
-                output_pixels = prewitt(orig_pixels)
+                output_pixels = centrosome.filter.prewitt(orig_pixels)
             elif self.direction == E_HORIZONTAL:
-                output_pixels = hprewitt(orig_pixels, mask)
+                output_pixels = centrosome.filter.hprewitt(orig_pixels, mask)
             elif self.direction == E_VERTICAL:
-                output_pixels = vprewitt(orig_pixels, mask)
+                output_pixels = centrosome.filter.vprewitt(orig_pixels, mask)
             else:
                 raise NotImplementedError(
                     "Unimplemented direction for Prewitt: %s", self.direction.value
@@ -296,19 +297,19 @@ values below this threshold as not being edges.
                 self.wants_automatic_low_threshold.value
                 or self.wants_automatic_threshold.value
             ):
-                sobel_image = sobel(orig_pixels, mask)
-                low, high = otsu3(sobel_image[mask])
+                sobel_image = centrosome.filter.sobel(orig_pixels, mask)
+                low, high = centrosome.otsu.otsu3(sobel_image[mask])
                 if self.wants_automatic_low_threshold.value:
                     low_threshold = low * self.threshold_adjustment_factor.value
                 if self.wants_automatic_threshold.value:
                     high_threshold = high * self.threshold_adjustment_factor.value
-            output_pixels = canny(
+            output_pixels = centrosome.filter.canny(
                 orig_pixels, mask, self.get_sigma(), low_threshold, high_threshold
             )
         elif self.method == M_ROBERTS:
-            output_pixels = roberts(orig_pixels, mask)
+            output_pixels = centrosome.filter.roberts(orig_pixels, mask)
         elif self.method == M_KIRSCH:
-            output_pixels = kirsch(orig_pixels)
+            output_pixels = centrosome.kirsch.kirsch(orig_pixels)
         else:
             raise NotImplementedError(
                 "Unimplemented edge detection method: %s" % self.method.value
@@ -346,9 +347,9 @@ values below this threshold as not being edges.
                 self.output_image_name.value,
                 sharexy=figure.subplot(0, 0),
             )
-        color_image = np.zeros((output_pixels.shape[0], output_pixels.shape[1], 3))
-        color_image[:, :, 0] = stretch(orig_pixels)
-        color_image[:, :, 1] = stretch(output_pixels)
+        color_image = numpy.zeros((output_pixels.shape[0], output_pixels.shape[1], 3))
+        color_image[:, :, 0] = centrosome.filter.stretch(orig_pixels)
+        color_image[:, :, 1] = centrosome.filter.stretch(output_pixels)
         figure.subplot_imshow(
             1, 0, color_image, "Composite image", sharexy=figure.subplot(0, 0)
         )

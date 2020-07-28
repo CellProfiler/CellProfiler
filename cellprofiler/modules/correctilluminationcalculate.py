@@ -43,11 +43,11 @@ References
 .. _tutorials: http://cellprofiler.org/tutorials.html
 """
 
-import centrosome.cpmorphology as cpmm
-import numpy as np
-import scipy.ndimage as scind
+import numpy
+import scipy.ndimage
 import skimage.filters
-from cellprofiler_core.image import Image, AbstractImage
+from cellprofiler_core.image import AbstractImage
+from cellprofiler_core.image import Image
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.pipeline import Pipeline
@@ -55,15 +55,14 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-from cellprofiler_core.setting.text import ImageName, Integer, Float
-from centrosome.bg_compensate import MODE_DARK, MODE_GRAY
-from centrosome.bg_compensate import backgr, MODE_AUTO, MODE_BRIGHT
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.cpmorphology import grey_erosion, grey_dilation, strel_disk
-from centrosome.filter import convex_hull_transform
-from centrosome.smooth import circular_gaussian_kernel
-from centrosome.smooth import fit_polynomial
-from centrosome.smooth import smooth_with_function_and_mask
+from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.setting.text import Float
+import centrosome.bg_compensate
+import centrosome.cpmorphology
+import centrosome.filter
+import centrosome.smooth
+import centrosome.cpmorphology
 
 IC_REGULAR = "Regular"
 IC_BACKGROUND = "Background"
@@ -455,7 +454,12 @@ scale, maximum number of iterations and convergence.
 
         self.spline_bg_mode = Choice(
             "Background mode",
-            [MODE_AUTO, MODE_DARK, MODE_BRIGHT, MODE_GRAY],
+            [
+                centrosome.bg_compensate.MODE_AUTO,
+                centrosome.bg_compensate.MODE_DARK,
+                centrosome.bg_compensate.MODE_BRIGHT,
+                centrosome.bg_compensate.MODE_GRAY,
+            ],
             doc="""\
 *(Used only if %(SM_SPLINES)s are selected for the smoothing method
 and spline parameters are not calculated automatically)*
@@ -748,7 +752,7 @@ fewer iterations, but less accuracy.
             smoothed_image = self.apply_smoothing(dilated_image, orig_image)
             output_image = self.apply_scaling(smoothed_image, orig_image)
             # for illumination correction, we want the smoothed function to extend beyond the mask.
-            output_image.mask = np.ones(output_image.pixel_data.shape[:2], bool)
+            output_image.mask = numpy.ones(output_image.pixel_data.shape[:2], bool)
             workspace.image_set.add(self.illumination_image_name.value, output_image)
 
         if self.save_average_image.value:
@@ -824,8 +828,8 @@ fewer iterations, but less accuracy.
         )
         imshow(1, 0, dilated_image, "Dilated image", sharexy=figure.subplot(0, 0))
         statistics = [
-            ["Min value", round(np.min(output_image), 2)],
-            ["Max value", round(np.max(output_image), 2)],
+            ["Min value", round(numpy.min(output_image), 2)],
+            ["Max value", round(numpy.max(output_image), 2)],
             ["Calculation type", self.intensity_choice.value],
         ]
         if self.intensity_choice == IC_REGULAR:
@@ -857,21 +861,23 @@ fewer iterations, but less accuracy.
             # This filter is designed to spread the boundaries of cells
             # and this "dilates" the cells
             #
-            kernel = circular_gaussian_kernel(
+            kernel = centrosome.smooth.circular_gaussian_kernel(
                 self.object_dilation_radius.value, self.object_dilation_radius.value * 3
             )
 
             def fn(image):
-                return scind.convolve(image, kernel, mode="constant", cval=0)
+                return scipy.ndimage.convolve(image, kernel, mode="constant", cval=0)
 
             if image.pixel_data.ndim == 2:
-                dilated_pixels = smooth_with_function_and_mask(
+                dilated_pixels = centrosome.smooth.smooth_with_function_and_mask(
                     image.pixel_data, fn, image.mask
                 )
             else:
-                dilated_pixels = np.dstack(
+                dilated_pixels = numpy.dstack(
                     [
-                        smooth_with_function_and_mask(x, fn, image.mask)
+                        centrosome.smooth.smooth_with_function_and_mask(
+                            x, fn, image.mask
+                        )
                         for x in image.pixel_data.transpose(2, 0, 1)
                     ]
                 )
@@ -890,7 +896,7 @@ fewer iterations, but less accuracy.
         elif self.automatic_object_width == FI_OBJECT_SIZE:
             return self.object_width.value * 2.35 / 3.5
         elif self.automatic_object_width == FI_AUTOMATIC:
-            return min(30, float(np.max(image_shape)) / 40.0)
+            return min(30, float(numpy.max(image_shape)) / 40.0)
 
     def preprocess_image_for_averaging(self, orig_image):
         """Create a version of the image appropriate for averaging
@@ -909,19 +915,23 @@ fewer iterations, but less accuracy.
         else:
             # For background, we create a labels image using the block
             # size and find the minimum within each block.
-            labels, indexes = cpmm.block(
+            labels, indexes = centrosome.cpmorphology.block(
                 pixels.shape[:2], (self.block_size.value, self.block_size.value)
             )
             if orig_image.has_mask:
                 labels[~orig_image.mask] = -1
 
-            min_block = np.zeros(pixels.shape)
+            min_block = numpy.zeros(pixels.shape)
             if pixels.ndim == 2:
-                minima = fix(scind.minimum(pixels, labels, indexes))
+                minima = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                    scipy.ndimage.minimum(pixels, labels, indexes)
+                )
                 min_block[labels != -1] = minima[labels[labels != -1]]
             else:
                 for i in range(pixels.shape[2]):
-                    minima = fix(scind.minimum(pixels[:, :, i], labels, indexes))
+                    minima = centrosome.cpmorphology.fixup_scipy_ndimage_result(
+                        scipy.ndimage.minimum(pixels[:, :, i], labels, indexes)
+                    )
                     min_block[labels != -1, i] = minima[labels[labels != -1]]
             avg_image = Image(min_block, parent_image=orig_image)
         return avg_image
@@ -938,7 +948,7 @@ fewer iterations, but less accuracy.
 
         pixel_data = image.pixel_data
         if pixel_data.ndim == 3:
-            output_pixels = np.zeros(pixel_data.shape, pixel_data.dtype)
+            output_pixels = numpy.zeros(pixel_data.shape, pixel_data.dtype)
             for i in range(pixel_data.shape[2]):
                 output_pixels[:, :, i] = self.smooth_plane(
                     pixel_data[:, :, i], image.mask
@@ -953,7 +963,7 @@ fewer iterations, but less accuracy.
 
         sigma = self.smoothing_filter_size(pixel_data.shape) / 2.35
         if self.smoothing_method == SM_FIT_POLYNOMIAL:
-            output_pixels = fit_polynomial(pixel_data, mask)
+            output_pixels = centrosome.smooth.fit_polynomial(pixel_data, mask)
         elif self.smoothing_method == SM_GAUSSIAN_FILTER:
             #
             # Smoothing with the mask is good, even if there's no mask
@@ -961,20 +971,24 @@ fewer iterations, but less accuracy.
             # by any choice of how to deal with border effects.
             #
             def fn(image):
-                return scind.gaussian_filter(image, sigma, mode="constant", cval=0)
+                return scipy.ndimage.gaussian_filter(
+                    image, sigma, mode="constant", cval=0
+                )
 
-            output_pixels = smooth_with_function_and_mask(pixel_data, fn, mask)
+            output_pixels = centrosome.smooth.smooth_with_function_and_mask(
+                pixel_data, fn, mask
+            )
         elif self.smoothing_method == SM_MEDIAN_FILTER:
             filter_sigma = max(1, int(sigma + 0.5))
-            strel = strel_disk(filter_sigma)
+            strel = centrosome.cpmorphology.strel_disk(filter_sigma)
             rescaled_pixel_data = pixel_data * 65535
-            rescaled_pixel_data = rescaled_pixel_data.astype(np.uint16)
+            rescaled_pixel_data = rescaled_pixel_data.astype(numpy.uint16)
             output_pixels = skimage.filters.median(
                 rescaled_pixel_data, strel, mask=mask
             )
         elif self.smoothing_method == SM_TO_AVERAGE:
-            mean = np.mean(pixel_data[mask])
-            output_pixels = np.ones(pixel_data.shape, pixel_data.dtype) * mean
+            mean = numpy.mean(pixel_data[mask])
+            output_pixels = numpy.ones(pixel_data.shape, pixel_data.dtype) * mean
         elif self.smoothing_method == SM_SPLINES:
             output_pixels = self.smooth_with_splines(pixel_data, mask)
         elif self.smoothing_method == SM_CONVEX_HULL:
@@ -991,9 +1005,9 @@ fewer iterations, but less accuracy.
         # Apply an erosion, then the transform, then a dilation, heuristically
         # to ignore little spikey noisy things.
         #
-        image = grey_erosion(pixel_data, 2, mask)
-        image = convex_hull_transform(image, mask=mask)
-        image = grey_dilation(image, 2, mask)
+        image = centrosome.cpmorphology.grey_erosion(pixel_data, 2, mask)
+        image = centrosome.filter.convex_hull_transform(image, mask=mask)
+        image = centrosome.cpmorphology.grey_dilation(image, 2, mask)
         return image
 
     def smooth_with_splines(self, pixel_data, mask):
@@ -1004,7 +1018,7 @@ fewer iterations, but less accuracy.
                 scale = 1
             else:
                 scale = float(shortest_side) / 200
-            result = backgr(pixel_data, mask, scale=scale)
+            result = centrosome.bg_compensate.backgr(pixel_data, mask, scale=scale)
         else:
             mode = self.spline_bg_mode.value
             spline_points = self.spline_points.value
@@ -1012,7 +1026,7 @@ fewer iterations, but less accuracy.
             convergence = self.spline_convergence.value
             iterations = self.spline_maximum_iterations.value
             rescale = self.spline_rescale.value
-            result = backgr(
+            result = centrosome.bg_compensate.backgr(
                 pixel_data,
                 mask,
                 mode=mode,
@@ -1027,7 +1041,7 @@ fewer iterations, but less accuracy.
         # want to normalize the intensity by subtraction, leaving
         # the mean intensity alone.
         #
-        mean_intensity = np.mean(result[mask])
+        mean_intensity = numpy.mean(result[mask])
         result[mask] -= mean_intensity
         return result
 
@@ -1063,7 +1077,7 @@ fewer iterations, but less accuracy.
         if image.pixel_data.ndim == 2:
             output_pixels = scaling_fn_2d(image.pixel_data)
         else:
-            output_pixels = np.dstack(
+            output_pixels = numpy.dstack(
                 [scaling_fn_2d(x) for x in image.pixel_data.transpose(2, 0, 1)]
             )
         output_image = Image(output_pixels, parent_image=orig_image)
@@ -1111,7 +1125,7 @@ fewer iterations, but less accuracy.
             # Added spline parameters
             setting_values = setting_values + [
                 "Yes",  # automatic_splines
-                MODE_AUTO,  # spline_bg_mode
+                centrosome.bg_compensate.MODE_AUTO,  # spline_bg_mode
                 "5",  # spline points
                 "2",  # spline threshold
                 "2",  # spline rescale
@@ -1195,8 +1209,8 @@ class CorrectIlluminationImageProvider(AbstractImage):
         pimage = self.__module.preprocess_image_for_averaging(image)
         pixel_data = pimage.pixel_data
         if self.__image_sum is None:
-            self.__image_sum = np.zeros(pixel_data.shape, pixel_data.dtype)
-            self.__mask_count = np.zeros(pixel_data.shape[:2], np.int32)
+            self.__image_sum = numpy.zeros(pixel_data.shape, pixel_data.dtype)
+            self.__mask_count = numpy.zeros(pixel_data.shape[:2], numpy.int32)
         if image.has_mask:
             mask = image.mask
             if self.__image_sum.ndim == 2:
@@ -1237,7 +1251,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
         return self.__cached_dilated_image
 
     def calculate_image(self):
-        pixel_data = np.zeros(self.__image_sum.shape, self.__image_sum.dtype)
+        pixel_data = numpy.zeros(self.__image_sum.shape, self.__image_sum.dtype)
         mask = self.__mask_count > 0
         if pixel_data.ndim == 2:
             pixel_data[mask] = self.__image_sum[mask] / self.__mask_count[mask]

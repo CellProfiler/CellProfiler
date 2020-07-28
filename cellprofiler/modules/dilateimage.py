@@ -20,7 +20,7 @@ from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import StructuringElement
 
 import cellprofiler.utilities.morphology
-from cellprofiler.modules._help import HELP_FOR_STREL
+from ._help import HELP_FOR_STREL
 
 
 class DilateImage(ImageProcessing):

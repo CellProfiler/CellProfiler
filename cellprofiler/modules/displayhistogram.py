@@ -37,11 +37,13 @@ See also **DisplayDensityPlot**, **DisplayScatterPlot**.
 import textwrap
 
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Binary, Measurement
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Measurement
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.subscriber import LabelSubscriber
-from cellprofiler_core.setting.text import Text, Integer
+from cellprofiler_core.setting.text import Text
+from cellprofiler_core.setting.text import Integer
 
 
 class DisplayHistogram(Module):

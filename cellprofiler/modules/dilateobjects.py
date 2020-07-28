@@ -22,14 +22,14 @@ YES          YES          NO
 
 """
 
-import cellprofiler_core.object
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.setting import StructuringElement
 
 import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 
-class DilateObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
+class DilateObjects(ObjectProcessing):
     category = "Advanced"
 
     module_name = "DilateObjects"

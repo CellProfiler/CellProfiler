@@ -32,14 +32,9 @@ from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
-
-######################################
-#
-# Choices for "Divide or subtract"?
-#
-######################################
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName
 

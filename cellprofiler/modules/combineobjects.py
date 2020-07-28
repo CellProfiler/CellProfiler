@@ -31,17 +31,18 @@ YES          NO           NO
 
 """
 
-import cellprofiler_core.object
 import numpy
 import scipy.ndimage
 import skimage.morphology
 import skimage.segmentation
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
+from cellprofiler_core.object import Objects
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import LabelName
 
 
-class CombineObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
+class CombineObjects(ObjectProcessing):
     category = "Object Processing"
 
     module_name = "CombineObjects"
@@ -121,7 +122,7 @@ subsequent modules.""",
 
         output = self.combine_arrays(labels_x, labels_y)
         output_labels = skimage.morphology.label(output)
-        output_objects = cellprofiler_core.object.Objects()
+        output_objects = Objects()
         output_objects.segmented = output_labels
 
         workspace.object_set.add_objects(output_objects, self.output_object.value)

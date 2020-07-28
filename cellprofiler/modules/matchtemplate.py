@@ -46,7 +46,7 @@ class MatchTemplate(cellprofiler_core.module.Module):
             doc="Specify the location of the cropped image you want to use as a template.",
         )
 
-        self.output_image_name = cellprofiler_core.setting.ImageNameProvider(
+        self.output_image_name = cellprofiler_core.setting.ImageName(
             "Output",
             doc="Enter the name you want to call the image produced by this module.",
         )

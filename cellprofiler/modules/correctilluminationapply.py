@@ -76,7 +76,7 @@ class CorrectIlluminationApply(Module):
             "Select the input image", "None", doc="Select the image to be corrected."
         )
 
-        corrected_image_name = ImageNameProvider(
+        corrected_image_name = ImageName(
             "Name the output image",
             "CorrBlue",
             doc="Enter a name for the corrected image.",

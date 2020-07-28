@@ -103,7 +103,7 @@ class CorrectIlluminationCalculate(Module):
             doc="Choose the image to be used to calculate the illumination function.",
         )
 
-        self.illumination_image_name = ImageNameProvider(
+        self.illumination_image_name = ImageName(
             "Name the output image",
             "IllumBlue",
             doc="""Enter a name for the resultant illumination function.""",
@@ -402,7 +402,7 @@ module to save it to your hard drive.
             % globals(),
         )
 
-        self.average_image_name = ImageNameProvider(
+        self.average_image_name = ImageName(
             "Name the averaged image",
             "IllumBlueAvg",
             doc="""\
@@ -425,7 +425,7 @@ module to save it to your hard drive.
             % globals(),
         )
 
-        self.dilated_image_name = ImageNameProvider(
+        self.dilated_image_name = ImageName(
             "Name the dilated image",
             "IllumBlueDilated",
             doc="""\

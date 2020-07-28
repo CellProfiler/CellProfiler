@@ -28,7 +28,7 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Choice
 from cellprofiler_core.setting import Coordinates
 from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import ImageName
 from cellprofiler_core.setting import ImageNameSubscriber
 
 FLIP_NONE = "Do not flip"
@@ -71,7 +71,7 @@ class FlipAndRotate(Module):
             doc="Choose the image you want to flip or rotate.",
         )
 
-        self.output_name = ImageNameProvider(
+        self.output_name = ImageName(
             "Name the output image",
             "FlippedOrigBlue",
             doc="Provide a name for the transformed image.",

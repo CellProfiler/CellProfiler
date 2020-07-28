@@ -60,7 +60,7 @@ from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Choice
 from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import ImageName
 from cellprofiler_core.setting import ImageNameSubscriber
 
 P_AVERAGE = "Average"
@@ -156,7 +156,7 @@ References
             % globals(),
         )
 
-        self.projection_image_name = ImageNameProvider(
+        self.projection_image_name = ImageName(
             "Name the output image",
             "ProjectionBlue",
             doc="Enter the name for the projected image.",

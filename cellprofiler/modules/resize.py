@@ -169,7 +169,7 @@ resized with the same settings as the first image.""",
 
         group.append(
             "output_image_name",
-            cellprofiler_core.setting.ImageNameProvider(
+            cellprofiler_core.setting.ImageName(
                 "Name the output image",
                 "ResizedBlue",
                 doc="What is the name of the additional resized image?",

@@ -388,7 +388,7 @@ associated secondary object touches the image edge.
             ),
         )
 
-        self.new_primary_objects_name = cellprofiler_core.setting.ObjectNameProvider(
+        self.new_primary_objects_name = cellprofiler_core.setting.LabelName(
             "Name the new primary objects",
             "FilteredNuclei",
             doc="""\

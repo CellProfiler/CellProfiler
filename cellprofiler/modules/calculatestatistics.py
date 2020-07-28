@@ -186,7 +186,7 @@ class CalculateStatistics(Module):
             # Ask the user for the input image
             self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler_core.settings.ImageNameProvider(...)
+            self.output_image = cellprofiler_core.settings.ImageName(...)
             # Ask the user for a parameter
             self.smoothing_size = cellprofiler_core.settings.Float(...)"""
 

@@ -191,7 +191,7 @@ that is made available by a prior module.
         # It will ask the user which object to pick from the list of
         # objects provided by upstream modules.
         #
-        self.input_object_name = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.input_object_name = cellprofiler_core.setting.LabelSubscriber(
             text="Input object name",
             doc="These are the objects that the module operates on.",
         )

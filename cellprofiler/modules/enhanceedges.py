@@ -60,7 +60,7 @@ class EnhanceEdges(Module):
             doc="""Select the image whose edges you want to enhance.""",
         )
 
-        self.output_image_name = ImageNameProvider(
+        self.output_image_name = ImageName(
             "Name the output image",
             "EdgedImage",
             doc="""Enter a name for the resulting image with edges enhanced.""",

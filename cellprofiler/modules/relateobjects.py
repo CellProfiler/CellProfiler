@@ -111,7 +111,7 @@ For example, when relating speckles to the nuclei that contain them,
 the nuclei are the parents.
         """
 
-        self.y_name = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.y_name = cellprofiler_core.setting.LabelSubscriber(
             "Child objects",
             doc="""\
 Child objects are defined as those objects contained within the parent object. For example, when relating
@@ -196,7 +196,7 @@ object set. Objects with no parents will be discarded""".format(
             ),
         )
 
-        self.output_child_objects_name = cellprofiler_core.setting.ObjectNameProvider(
+        self.output_child_objects_name = cellprofiler_core.setting.LabelName(
             "Name the output object",
             "RelateObjects",
             doc="""\

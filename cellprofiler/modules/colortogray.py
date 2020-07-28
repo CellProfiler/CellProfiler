@@ -103,7 +103,7 @@ This setting provides three options to choose from:
         )
 
         # The following settings are used for the combine option
-        self.grayscale_name = ImageNameProvider(
+        self.grayscale_name = ImageName(
             "Name the output image",
             "OrigGray",
             doc="""\
@@ -161,7 +161,7 @@ red channel will be ignored.
             % globals(),
         )
 
-        self.red_name = ImageNameProvider(
+        self.red_name = ImageName(
             "Name the output image",
             "OrigRed",
             doc="""\
@@ -182,7 +182,7 @@ green channel will be ignored.
             % globals(),
         )
 
-        self.green_name = ImageNameProvider(
+        self.green_name = ImageName(
             "Name the output image",
             "OrigGreen",
             doc="""\
@@ -203,7 +203,7 @@ blue channel will be ignored.
             % globals(),
         )
 
-        self.blue_name = ImageNameProvider(
+        self.blue_name = ImageName(
             "Name the output image",
             "OrigBlue",
             doc="""\
@@ -225,7 +225,7 @@ will be ignored.
             % globals(),
         )
 
-        self.hue_name = ImageNameProvider(
+        self.hue_name = ImageName(
             "Name the output image",
             "OrigHue",
             doc="""\
@@ -246,7 +246,7 @@ saturation will be ignored.
             % globals(),
         )
 
-        self.saturation_name = ImageNameProvider(
+        self.saturation_name = ImageName(
             "Name the output image",
             "OrigSaturation",
             doc="""\
@@ -267,7 +267,7 @@ value will be ignored.
             % globals(),
         )
 
-        self.value_name = ImageNameProvider(
+        self.value_name = ImageName(
             "Name the output image",
             "OrigValue",
             doc="""\
@@ -325,7 +325,7 @@ other, increase or decrease the relative weights.""",
 
         group.append(
             "image_name",
-            ImageNameProvider(
+            ImageName(
                 "Image name",
                 value="Channel%d" % (len(self.channels) + 1),
                 doc="""\

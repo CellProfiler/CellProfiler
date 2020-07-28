@@ -61,7 +61,7 @@ class IdentifyObjectsManually(I.Identify):
             doc="""Choose the name of the image to display in the object selection user interface.""",
         )
 
-        self.objects_name = ObjectNameProvider(
+        self.objects_name = LabelName(
             "Name the objects to be identified",
             "Cells",
             doc="""\

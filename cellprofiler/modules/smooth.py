@@ -52,7 +52,7 @@ class Smooth(cellprofiler_core.module.Module):
             doc="""Select the image to be smoothed.""",
         )
 
-        self.filtered_image_name = cellprofiler_core.setting.ImageNameProvider(
+        self.filtered_image_name = cellprofiler_core.setting.ImageName(
             "Name the output image",
             "FilteredImage",
             doc="""Enter a name for the resulting image.""",

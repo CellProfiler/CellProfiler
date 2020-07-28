@@ -242,7 +242,7 @@ measures image quality and flags inappropriate images before it runs
 
         group.append(
             "object_name",
-            ObjectNameSubscriber(
+            LabelSubscriber(
                 "Select the object to be used for flagging",
                 "None",
                 doc="""\

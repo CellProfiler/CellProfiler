@@ -81,13 +81,13 @@ class ExpandOrShrinkObjects(cellprofiler_core.module.Module):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.object_name = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.object_name = cellprofiler_core.setting.LabelSubscriber(
             "Select the input objects",
             "None",
             doc="Select the objects that you want to expand or shrink.",
         )
 
-        self.output_object_name = cellprofiler_core.setting.ObjectNameProvider(
+        self.output_object_name = cellprofiler_core.setting.LabelName(
             "Name the output objects",
             "ShrunkenNuclei",
             doc="Enter a name for the resulting objects.",

@@ -79,7 +79,7 @@ from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
 from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import DirectoryPath
-from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import ImageName
 from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import Integer
 from cellprofiler_core.setting import ObjectNameSubscriber
@@ -117,7 +117,7 @@ class MeasureObjectSkeleton(Module):
 
     def create_settings(self):
         """Create the UI settings for the module"""
-        self.seed_objects_name = ObjectNameSubscriber(
+        self.seed_objects_name = LabelSubscriber(
             "Select the seed objects",
             "None",
             doc="""\
@@ -145,7 +145,7 @@ this module."""
             % globals(),
         )
 
-        self.branchpoint_image_name = ImageNameProvider(
+        self.branchpoint_image_name = ImageName(
             "Name the branchpoint image",
             "BranchpointImage",
             doc="""\

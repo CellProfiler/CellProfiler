@@ -264,7 +264,7 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Choice
 from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import ImageName
 from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import Integer
 from cellprofiler_core.setting import RemoveSettingButton
@@ -336,7 +336,7 @@ module. Objects can be converted to binary using the **ConvertToImage**
 module.""",
         )
 
-        self.output_image_name = ImageNameProvider(
+        self.output_image_name = ImageName(
             "Name the output image",
             "MorphBlue",
             doc="""Enter the name for the output image. It will be of the same type as the input image.""",

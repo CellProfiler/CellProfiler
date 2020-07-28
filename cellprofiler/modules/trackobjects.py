@@ -475,7 +475,7 @@ References
             ),
         )
 
-        self.object_name = cps.ObjectNameSubscriber(
+        self.object_name = cps.LabelSubscriber(
             "Select the objects to track",
             "None",
             doc="""Select the objects to be tracked by this module.""",
@@ -1047,7 +1047,7 @@ will only show the penultimate result and not the final product."""
             % globals(),
         )
 
-        self.image_name = cps.ImageNameProvider(
+        self.image_name = cps.ImageName(
             "Name the output image",
             "TrackedCells",
             doc="""\

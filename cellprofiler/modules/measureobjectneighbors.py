@@ -80,7 +80,7 @@ from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Choice
 from cellprofiler_core.setting import Colormap
-from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import ImageName
 from cellprofiler_core.setting import Integer
 from cellprofiler_core.setting import ObjectNameSubscriber
 from cellprofiler_core.workspace import Workspace
@@ -122,14 +122,14 @@ class MeasureObjectNeighbors(Module):
     variable_revision_number = 3
 
     def create_settings(self):
-        self.object_name = ObjectNameSubscriber(
+        self.object_name = LabelSubscriber(
             "Select objects to measure",
             "None",
             doc="""\
 Select the objects whose neighbors you want to measure.""",
         )
 
-        self.neighbors_name = ObjectNameSubscriber(
+        self.neighbors_name = LabelSubscriber(
             "Select neighboring objects to measure",
             "None",
             doc="""\
@@ -194,7 +194,7 @@ corresponding to 0. Use the **SaveImages** module to save this image to
 a file.""",
         )
 
-        self.count_image_name = ImageNameProvider(
+        self.count_image_name = ImageName(
             "Name the output image",
             "ObjectNeighborCount",
             doc="""\
@@ -229,7 +229,7 @@ choice is used to show the touching percentage of each object. Use the
             % globals(),
         )
 
-        self.touching_image_name = ImageNameProvider(
+        self.touching_image_name = ImageName(
             "Name the output image",
             "PercentTouching",
             doc="""\

@@ -737,7 +737,7 @@ class ParameterSampleFrame(wx.Frame):
             # Do not write settings without values, ie, buttons etc
             if setting.get_text() != "":
                 value_to_write = str(setting.get_value())
-                if isinstance(setting, cellprofiler_core.setting.ImageNameProvider):
+                if isinstance(setting, cellprofiler_core.setting.ImageName):
                     # Save image
                     image = self.__measurements.get_image(value_to_write)
                     path = os.path.join(

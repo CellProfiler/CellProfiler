@@ -183,7 +183,7 @@ recalculate the control points for these images.
 """,
         )
 
-        self.straightened_objects_name = ObjectNameProvider(
+        self.straightened_objects_name = LabelName(
             "Name the output straightened worm objects",
             "StraightenedWorms",
             doc="""\
@@ -356,7 +356,7 @@ then be used in subsequent modules such as
 
         group.append(
             "straightened_image_name",
-            ImageNameProvider(
+            ImageName(
                 "Name the output straightened image",
                 "StraightenedImage",
                 doc="""

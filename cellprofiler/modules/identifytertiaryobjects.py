@@ -1,14 +1,9 @@
 import cellprofiler_core.measurement
 import numpy
-from cellprofiler_core.measurement import COLTYPE_INTEGER
-from cellprofiler_core.measurement import IMAGE
 from cellprofiler_core.module import Module
-from cellprofiler_core.modules import identify as cpmi
+import cellprofiler_core.modules
 from cellprofiler_core.object import Objects
-from cellprofiler_core.object import size_similarly
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ObjectNameProvider
-from cellprofiler_core.setting import ObjectNameSubscriber
 from centrosome.outline import outline
 
 from cellprofiler.modules import _help
@@ -122,7 +117,7 @@ class IdentifyTertiaryObjects(Module):
 
         Create the settings for the module during initialization.
         """
-        self.secondary_objects_name = ObjectNameSubscriber(
+        self.secondary_objects_name = LabelSubscriber(
             "Select the larger identified objects",
             "None",
             doc="""\
@@ -130,7 +125,7 @@ Select the larger identified objects. This will usually be an object
 previously identified by an **IdentifySecondaryObjects** module.""",
         )
 
-        self.primary_objects_name = ObjectNameSubscriber(
+        self.primary_objects_name = LabelSubscriber(
             "Select the smaller identified objects",
             "None",
             doc="""\
@@ -138,7 +133,7 @@ Select the smaller identified objects. This will usually be an object
 previously identified by an **IdentifyPrimaryObjects** module.""",
         )
 
-        self.subregion_objects_name = ObjectNameProvider(
+        self.subregion_objects_name = LabelName(
             "Name the tertiary objects to be identified",
             "Cytoplasm",
             doc="""\

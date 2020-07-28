@@ -174,7 +174,7 @@ class ImageTemplate(cellprofiler_core.module.ImageProcessing):
         #    put images into CellProfiler. The ImageNameSubscriber gives
         #    your user a list of these images which can then be used as inputs
         #    in your module.
-        # -  y_name: an ImageNameProvider makes the image available to subsequent
+        # -  y_name: an ImageName makes the image available to subsequent
         #    modules.
         super(ImageTemplate, self).create_settings()
 

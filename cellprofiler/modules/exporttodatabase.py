@@ -534,7 +534,7 @@ should not share the resulting file because it contains your password.
             ),
         )
 
-        self.location_object = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.location_object = cellprofiler_core.setting.LabelSubscriber(
             "Which objects should be used for locations?",
             "None",
             doc="""\
@@ -1551,7 +1551,7 @@ available:
 
         group.append(
             "x_object_name",
-            cellprofiler_core.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.LabelSubscriber(
                 "Enter the object name", "None", doc=object_name_help(),
             ),
         )
@@ -1597,7 +1597,7 @@ available:
 
         group.append(
             "y_object_name",
-            cellprofiler_core.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.LabelSubscriber(
                 "Enter the object name", "None", doc=object_name_help(),
             ),
         )

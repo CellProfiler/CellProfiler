@@ -258,7 +258,7 @@ heatmap according to the measurement value for that band.
 
         group.append(
             "object_name",
-            cellprofiler_core.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.LabelSubscriber(
                 "Select objects to measure",
                 "None",
                 doc="Select the objects whose intensity distribution you want to measure.",
@@ -303,7 +303,7 @@ previously identified Nuclei objects as the centers
 
         group.append(
             "center_object_name",
-            cellprofiler_core.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.LabelSubscriber(
                 "Select objects to use as centers",
                 "None",
                 doc="""\
@@ -490,7 +490,7 @@ display or *{NO}* if the display is not needed.
 
         group.append(
             "display_name",
-            cellprofiler_core.setting.ImageNameProvider(
+            cellprofiler_core.setting.ImageName(
                 "Output image name",
                 "Heatmap",
                 doc="""\

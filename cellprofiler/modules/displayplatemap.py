@@ -75,7 +75,7 @@ class DisplayPlatemap(Module):
             % globals(),
         )
 
-        self.object = ObjectNameSubscriber(
+        self.object = LabelSubscriber(
             "Select the object whose measurements will be displayed",
             "None",
             doc="""\

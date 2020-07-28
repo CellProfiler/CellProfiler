@@ -48,13 +48,13 @@ class CombineObjects(cellprofiler_core.module.image_segmentation.ObjectProcessin
     variable_revision_number = 1
 
     def create_settings(self):
-        self.objects_x = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.objects_x = cellprofiler_core.setting.LabelSubscriber(
             "Select initial object set",
             "None",
             doc="""Select an object set which you want to add objects to.""",
         )
 
-        self.objects_y = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.objects_y = cellprofiler_core.setting.LabelSubscriber(
             "Select object set to combine",
             "None",
             doc="""Select an object set which you want to add to the initial set.""",
@@ -87,7 +87,7 @@ eachother.
          """,
         )
 
-        self.output_object = cellprofiler_core.setting.ObjectNameProvider(
+        self.output_object = cellprofiler_core.setting.LabelName(
             "Name the combined object set",
             "CombinedObjects",
             doc="""\

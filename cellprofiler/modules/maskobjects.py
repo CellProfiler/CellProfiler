@@ -109,7 +109,7 @@ class MaskObjects(I.Identify):
 
     def create_settings(self):
         """Create the settings that control this module"""
-        self.object_name = ObjectNameSubscriber(
+        self.object_name = LabelSubscriber(
             "Select objects to be masked",
             "None",
             doc="""\
@@ -121,7 +121,7 @@ objects created by a previous object processing module, such as
 """,
         )
 
-        self.remaining_objects = ObjectNameProvider(
+        self.remaining_objects = LabelName(
             "Name the masked objects",
             "MaskedNuclei",
             doc="""\
@@ -143,7 +143,7 @@ previously loaded or created in your pipeline (*%(MC_IMAGE)s*).
             % globals(),
         )
 
-        self.masking_objects = ObjectNameSubscriber(
+        self.masking_objects = LabelSubscriber(
             "Select the masking object",
             "None",
             doc="""\

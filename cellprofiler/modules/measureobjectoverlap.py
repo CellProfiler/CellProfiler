@@ -112,7 +112,7 @@ class MeasureObjectOverlap(cellprofiler_core.module.Module):
     module_name = "MeasureObjectOverlap"
 
     def create_settings(self):
-        self.object_name_GT = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.object_name_GT = cellprofiler_core.setting.LabelSubscriber(
             "Select the objects to be used as the ground truth basis for calculating the amount of overlap",
             "None",
             doc="""\
@@ -122,7 +122,7 @@ another segmentation algorithm whose results you would like to compare.
 See the **Load** modules for more details on loading objects.""",
         )
 
-        self.object_name_ID = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.object_name_ID = cellprofiler_core.setting.LabelSubscriber(
             "Select the objects to be tested for overlap against the ground truth",
             "None",
             doc="""\

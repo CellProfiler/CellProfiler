@@ -29,7 +29,7 @@ from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import ImageName
 from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import ValidationError
 
@@ -154,7 +154,7 @@ Select "*Yes*" to produce a grayscale image corresponding to the inverted red ch
             ),
         )
 
-        self.red_output_image = ImageNameProvider(
+        self.red_output_image = ImageName(
             "Name the red image",
             "InvertedRed",
             doc="""\
@@ -178,7 +178,7 @@ Select "*Yes*" to produce a grayscale image corresponding to the inverted green 
             ),
         )
 
-        self.green_output_image = ImageNameProvider(
+        self.green_output_image = ImageName(
             "Name the green image",
             "InvertedGreen",
             doc="""\
@@ -202,7 +202,7 @@ Select "*Yes*" to produce a grayscale image corresponding to the inverted blue c
             ),
         )
 
-        self.blue_output_image = ImageNameProvider(
+        self.blue_output_image = ImageName(
             "Name the blue image",
             "InvertedBlue",
             doc="""\
@@ -214,7 +214,7 @@ Provide a name for the inverted blue channel image.
             ),
         )
 
-        self.color_output_image = ImageNameProvider(
+        self.color_output_image = ImageName(
             "Name the inverted color image",
             "InvertedColor",
             doc="""\

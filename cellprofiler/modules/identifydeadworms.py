@@ -108,7 +108,7 @@ such as **IdentifyPrimaryObjects** to label each worm and then use
 """,
         )
 
-        self.object_name = ObjectNameProvider(
+        self.object_name = LabelName(
             "Name the dead worm objects to be identified",
             "DeadWorms",
             doc="""\

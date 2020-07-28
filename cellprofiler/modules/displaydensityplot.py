@@ -60,7 +60,7 @@ class DisplayDensityPlot(Module):
         return self.y_object.value
 
     def create_settings(self):
-        self.x_object = ObjectNameSubscriber(
+        self.x_object = LabelSubscriber(
             "Select the object to display on the X-axis",
             "None",
             doc="""\
@@ -77,7 +77,7 @@ measurements are to be displayed on the X-axis.
             doc="""Choose the object measurement made by a previous module to display on the X-axis.""",
         )
 
-        self.y_object = ObjectNameSubscriber(
+        self.y_object = LabelSubscriber(
             "Select the object to display on the Y-axis",
             "None",
             doc="""\

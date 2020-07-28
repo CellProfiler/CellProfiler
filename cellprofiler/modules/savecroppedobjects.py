@@ -60,7 +60,7 @@ The choices are:
             ),
         )
 
-        self.objects_name = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.objects_name = cellprofiler_core.setting.LabelSubscriber(
             "Objects", doc="Select the objects you want to export as per-object crops."
         )
 

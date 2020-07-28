@@ -210,7 +210,7 @@ custom values for the stain's red, green and blue absorbance.
 
         group.append(
             "image_name",
-            ImageNameProvider(
+            ImageName(
                 "Name the output image",
                 default_name,
                 doc="""\

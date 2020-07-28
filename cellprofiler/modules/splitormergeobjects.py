@@ -123,7 +123,7 @@ use any objects that were created in previous modules, such as
 **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**.""",
         )
 
-        self.output_objects_name = ObjectNameProvider(
+        self.output_objects_name = LabelName(
             "Name the new objects",
             "RelabeledNuclei",
             doc="""\

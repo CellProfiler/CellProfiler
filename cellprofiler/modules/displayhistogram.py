@@ -53,7 +53,7 @@ class DisplayHistogram(cellprofiler_core.module.Module):
 
         create_settings is called at the end of initialization.
         """
-        self.object = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.object = cellprofiler_core.setting.LabelSubscriber(
             text="Select the object whose measurements will be displayed",
             value="None",
             doc=textwrap.dedent(

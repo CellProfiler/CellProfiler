@@ -40,13 +40,13 @@ class ConvertObjectsToImage(cellprofiler_core.module.Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.object_name = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.object_name = cellprofiler_core.setting.LabelSubscriber(
             "Select the input objects",
             "None",
             doc="Choose the name of the objects you want to convert to an image.",
         )
 
-        self.image_name = cellprofiler_core.setting.ImageNameProvider(
+        self.image_name = cellprofiler_core.setting.ImageName(
             "Name the output image",
             "CellImage",
             doc="Enter the name of the resulting image.",

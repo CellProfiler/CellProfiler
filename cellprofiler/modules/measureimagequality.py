@@ -1641,11 +1641,7 @@ to the foreground pixels or the background pixels.
             for image_name in image_providers:
                 for module, setting in image_providers[image_name]:
                     if module.is_load_module() and (
-                        (
-                            not isinstance(
-                                setting, cellprofiler_core.setting.ImageNameProvider
-                            )
-                        )
+                        (not isinstance(setting, cellprofiler_core.setting.ImageName))
                         or "file_image" in setting.provided_attributes
                     ):
                         accepted_image_list.append(image_name)

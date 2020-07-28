@@ -104,7 +104,7 @@ Specify how to mark the boundaries around an object:
 """,
         )
 
-        self.output_image_name = cellprofiler_core.setting.ImageNameProvider(
+        self.output_image_name = cellprofiler_core.setting.ImageName(
             "Name the output image",
             "OrigOverlay",
             doc="""\
@@ -164,7 +164,7 @@ maximal brightness already occurring in the image.
 
         group.append(
             "objects_name",
-            cellprofiler_core.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.LabelSubscriber(
                 "Select objects to display",
                 "None",
                 doc="Choose the objects whose outlines you would like to display.",

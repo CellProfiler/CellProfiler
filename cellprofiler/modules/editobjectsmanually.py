@@ -85,11 +85,11 @@ class EditObjectsManually(I.Identify):
             # Ask the user for the input image
             self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler_core.settings.ImageNameProvider(...)
+            self.output_image = cellprofiler_core.settings.ImageName(...)
             # Ask the user for a parameter
             self.smoothing_size = cellprofiler_core.settings.Float(...)
         """
-        self.object_name = ObjectNameSubscriber(
+        self.object_name = LabelSubscriber(
             "Select the objects to be edited",
             "None",
             doc="""\
@@ -98,7 +98,7 @@ for editing, such as those produced by one of the
 **Identify** modules (e.g., "*IdentifyPrimaryObjects*", "*IdentifySecondaryObjects*" etc.).""",
         )
 
-        self.filtered_objects = ObjectNameProvider(
+        self.filtered_objects = LabelName(
             "Name the edited objects",
             "EditedObjects",
             doc="""\

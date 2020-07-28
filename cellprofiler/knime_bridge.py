@@ -617,7 +617,7 @@ class KnimeBridgeServer(threading.Thread):
         channels = []
         for module in input_modules:
             for setting in module.visible_settings():
-                if isinstance(setting, cellprofiler_core.setting.ImageNameProvider):
+                if isinstance(setting, cellprofiler_core.setting.ImageName):
                     channels.append(setting.value)
         return channels
 

@@ -32,7 +32,7 @@ from cellprofiler_core.setting import Color
 from cellprofiler_core.setting import DoSomething
 from cellprofiler_core.setting import Float
 from cellprofiler_core.setting import HiddenCount
-from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import ImageName
 from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import RemoveSettingButton
 from cellprofiler_core.setting import SettingsGroup
@@ -146,7 +146,7 @@ Select the input image to be displayed in blue.
             % globals(),
         )
 
-        self.rgb_image_name = ImageNameProvider(
+        self.rgb_image_name = ImageName(
             "Name the output image",
             "ColorImage",
             doc="""Enter a name for the resulting image.""",

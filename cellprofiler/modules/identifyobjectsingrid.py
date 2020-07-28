@@ -98,7 +98,7 @@ class IdentifyObjectsInGrid(Module):
             doc="""Select the name of a grid created by a previous **DefineGrid** module.""",
         )
 
-        self.output_objects_name = ObjectNameProvider(
+        self.output_objects_name = LabelName(
             "Name the objects to be identified",
             "Wells",
             doc="""\
@@ -180,7 +180,7 @@ Enter the diameter to be used for each grid circle, in pixels.
             % globals(),
         )
 
-        self.guiding_object_name = ObjectNameSubscriber(
+        self.guiding_object_name = LabelSubscriber(
             "Select the guiding objects",
             "None",
             doc="""\

@@ -61,7 +61,7 @@ class DisplayDataOnImage(cellprofiler_core.module.Module):
             # Ask the user for the input image
             self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler_core.settings.ImageNameProvider(...)
+            self.output_image = cellprofiler_core.settings.ImageName(...)
             # Ask the user for a parameter
             self.smoothing_size = cellprofiler_core.settings.Float(...)
         """
@@ -75,7 +75,7 @@ class DisplayDataOnImage(cellprofiler_core.module.Module):
             % globals(),
         )
 
-        self.objects_name = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.objects_name = cellprofiler_core.setting.LabelSubscriber(
             "Select the input objects",
             "None",
             doc="""\
@@ -160,7 +160,7 @@ of the available colormaps.
             doc="""This is the color that will be used when displaying the text.""",
         )
 
-        self.display_image = cellprofiler_core.setting.ImageNameProvider(
+        self.display_image = cellprofiler_core.setting.ImageName(
             "Name the output image that has the measurements displayed",
             "DisplayImage",
             doc="""\

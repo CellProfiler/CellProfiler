@@ -313,7 +313,7 @@ Select the image associated with the cropping mask that you want to use.
             ),
         )
 
-        self.objects_source = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.objects_source = cellprofiler_core.setting.LabelSubscriber(
             text="Select the objects",
             value="None",
             doc="""\

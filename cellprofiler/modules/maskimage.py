@@ -35,7 +35,7 @@ from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import ImageNameProvider
+from cellprofiler_core.setting import ImageName
 from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import ObjectNameSubscriber
 
@@ -72,7 +72,7 @@ You can mask an image in two ways:
             % globals(),
         )
 
-        self.object_name = ObjectNameSubscriber(
+        self.object_name = LabelSubscriber(
             "Select object for mask",
             "None",
             doc="""\
@@ -98,7 +98,7 @@ Select the image that you like to use to mask the input image.
             doc="Select the image that you want to mask.",
         )
 
-        self.masked_image_name = ImageNameProvider(
+        self.masked_image_name = ImageName(
             "Name the output image",
             "MaskBlue",
             doc="Enter the name for the output masked image.",

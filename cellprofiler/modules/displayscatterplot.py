@@ -72,7 +72,7 @@ You can plot two types of measurements:
             % globals(),
         )
 
-        self.x_object = ObjectNameSubscriber(
+        self.x_object = LabelSubscriber(
             "Select the object to plot on the X-axis",
             "None",
             doc="""\
@@ -110,7 +110,7 @@ You can plot two types of measurements:
             % globals(),
         )
 
-        self.y_object = ObjectNameSubscriber(
+        self.y_object = LabelSubscriber(
             "Select the object to plot on the Y-axis",
             "None",
             doc="""\

@@ -256,7 +256,7 @@ maximal child is assigned. The choices are:
             ),
         )
 
-        self.enclosing_object_name = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.enclosing_object_name = cellprofiler_core.setting.LabelSubscriber(
             "Select the objects that contain the filtered objects",
             "None",
             doc="""\
@@ -460,14 +460,14 @@ value will be retained.""".format(
 
         group.append(
             "object_name",
-            cellprofiler_core.setting.ObjectNameSubscriber(
+            cellprofiler_core.setting.LabelSubscriber(
                 "Select additional object to relabel", "None"
             ),
         )
 
         group.append(
             "target_name",
-            cellprofiler_core.setting.ObjectNameProvider(
+            cellprofiler_core.setting.LabelName(
                 "Name the relabeled objects", "FilteredGreen"
             ),
         )

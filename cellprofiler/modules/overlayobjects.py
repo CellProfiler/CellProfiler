@@ -24,7 +24,7 @@ class OverlayObjects(cellprofiler_core.module.ImageProcessing):
             "An RGB image with color-coded labels overlaid on a grayscale image."
         )
 
-        self.objects = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.objects = cellprofiler_core.setting.LabelSubscriber(
             text="Objects",
             doc="Color-coded labels of this object will be overlaid on the input image.",
         )

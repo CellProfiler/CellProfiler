@@ -231,7 +231,7 @@ the smallest image mask is applied after image math has been completed.
             % globals(),
         )
 
-        self.output_image_name = cellprofiler_core.setting.ImageNameProvider(
+        self.output_image_name = cellprofiler_core.setting.ImageName(
             "Name the output image",
             "ImageAfterMath",
             doc="""\

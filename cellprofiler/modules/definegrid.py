@@ -206,7 +206,7 @@ setting controls how the grid is defined:
             % globals(),
         )
 
-        self.object_name = ObjectNameSubscriber(
+        self.object_name = LabelSubscriber(
             "Select the previously identified objects",
             "None",
             doc="""\
@@ -377,7 +377,7 @@ the figure and for the saved image.
 """,
         )
 
-        self.save_image_name = ImageNameProvider(
+        self.save_image_name = ImageName(
             "Name the output image",
             "Grid",
             doc="""\

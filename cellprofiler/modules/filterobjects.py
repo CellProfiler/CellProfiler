@@ -1,8 +1,21 @@
-from cellprofiler_core.setting import Divider, HiddenCount, SettingsGroup
+from cellprofiler_core.preferences import (
+    DEFAULT_INPUT_FOLDER_NAME,
+    ABSOLUTE_FOLDER_NAME,
+    DEFAULT_INPUT_SUBFOLDER_NAME,
+    DEFAULT_OUTPUT_SUBFOLDER_NAME,
+)
+from cellprofiler_core.setting import (
+    Divider,
+    HiddenCount,
+    SettingsGroup,
+    Measurement,
+    Binary,
+    ValidationError,
+)
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import LabelSubscriber
-from cellprofiler_core.setting.text import Directory, Filename
+from cellprofiler_core.setting.text import Directory, Filename, Float, LabelName
 
 from cellprofiler.modules import _help
 

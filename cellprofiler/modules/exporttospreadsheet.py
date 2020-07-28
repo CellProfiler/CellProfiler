@@ -90,6 +90,22 @@ import os
 
 import numpy
 import six
+from cellprofiler_core.constants.image import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
+from cellprofiler_core.constants.measurement import (
+    EXPERIMENT,
+    IMAGE,
+    AGG_MEAN,
+    AGG_MEDIAN,
+    AGG_STD_DEV,
+    C_URL,
+    C_PATH_NAME,
+    C_FILE_NAME,
+    NEIGHBORS,
+    R_FIRST_IMAGE_NUMBER,
+    R_SECOND_IMAGE_NUMBER,
+    R_FIRST_OBJECT_NUMBER,
+    R_SECOND_OBJECT_NUMBER,
+)
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
@@ -103,8 +119,18 @@ from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import Measurement
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import CustomChoice, Choice
+from cellprofiler_core.setting.multichoice import MeasurementMultiChoice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-from cellprofiler_core.setting.text import Directory
+from cellprofiler_core.setting.text import Directory, Text
+from cellprofiler_core.utilities.core.modules.load_data import (
+    is_file_name_feature,
+    is_path_name_feature,
+)
+from cellprofiler_core.utilities.measurement import (
+    find_metadata_tokens,
+    get_agg_measurement_name,
+)
 
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536

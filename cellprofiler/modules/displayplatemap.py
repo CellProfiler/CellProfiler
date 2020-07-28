@@ -37,12 +37,8 @@ See also other **Display** modules and data tools.
 import numpy
 import six
 
-from cellprofiler_core.measurement import IMAGE
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import Text
 from cellprofiler.modules._help import USING_METADATA_HELP_REF
 
 AGG_AVG = "avg"

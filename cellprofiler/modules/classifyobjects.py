@@ -66,6 +66,11 @@ Measurements made by this module
 import functools
 
 import numpy
+from cellprofiler_core.constants.measurement import (
+    IMAGE,
+    COLTYPE_INTEGER,
+    COLTYPE_FLOAT,
+)
 
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
@@ -76,6 +81,16 @@ from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.text import (
+    LabelName,
+    Float,
+    Alphanumeric,
+    ImageName,
+    Integer,
+    Text,
+)
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"
@@ -142,7 +157,7 @@ classifications decision for each object:
         #
         # The object for the contrasting method
         #
-        self.object_name = ObjectNameSubscriber(
+        self.object_name = LabelName(
             "Select the object name",
             "None",
             doc="""\
@@ -254,7 +269,7 @@ such as
             % globals(),
         )
 
-        self.low_low_custom_name = AlphanumericText(
+        self.low_low_custom_name = Alphanumeric(
             "Enter the low-low bin name",
             "low_low",
             doc="""\
@@ -265,7 +280,7 @@ both measurements.
 """,
         )
 
-        self.low_high_custom_name = AlphanumericText(
+        self.low_high_custom_name = Alphanumeric(
             "Enter the low-high bin name",
             "low_high",
             doc="""\
@@ -277,7 +292,7 @@ is above threshold.
 """,
         )
 
-        self.high_low_custom_name = AlphanumericText(
+        self.high_low_custom_name = Alphanumeric(
             "Enter the high-low bin name",
             "high_low",
             doc="""\
@@ -288,7 +303,7 @@ first measurement is above threshold and whose second measurement
 is below threshold.""",
         )
 
-        self.high_high_custom_name = AlphanumericText(
+        self.high_high_custom_name = Alphanumeric(
             "Enter the high-high bin name",
             "high_high",
             doc="""\
@@ -309,7 +324,7 @@ example, to be saved by a **SaveImages** module).
             % globals(),
         )
 
-        self.image_name = ImageNameProvider(
+        self.image_name = ImageName(
             "Enter the image name",
             "None",
             doc="""\
@@ -330,7 +345,7 @@ Enter the name to be given to the classified object image.""",
 
         group.append(
             "object_name",
-            ObjectNameSubscriber(
+            LabelName(
                 "Select the object to be classified",
                 "None",
                 doc="""\
@@ -522,7 +537,7 @@ example, to be saved by a **SaveImages** module).
 
         group.append(
             "image_name",
-            ImageNameProvider(
+            ImageName(
                 "Name the output image",
                 "ClassifiedNuclei",
                 doc="""Enter the name to be given to the classified object image.""",

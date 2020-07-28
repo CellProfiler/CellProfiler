@@ -98,7 +98,7 @@ import numpy
 import scipy.ndimage
 import six.moves.urllib.request
 import xml.dom.minidom as DOM
-from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_FLOAT, C_COUNT
 from cellprofiler_core.constants.measurement import C_LOCATION
 from cellprofiler_core.constants.measurement import FTR_CENTER_X
 from cellprofiler_core.constants.measurement import FTR_CENTER_Y

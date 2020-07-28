@@ -1,11 +1,26 @@
 import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
+from cellprofiler_core.constants.measurement import (
+    C_PARENT,
+    FF_CHILDREN_COUNT,
+    FF_PARENT,
+    COLTYPE_INTEGER,
+)
 
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import Integer, Float
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_count_measurements,
+    add_object_location_measurements,
+    get_object_measurement_columns,
+)
+
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -99,7 +114,7 @@ class SplitOrMergeObjects(Module):
     variable_revision_number = 6
 
     def create_settings(self):
-        self.objects_name = ObjectNameSubscriber(
+        self.objects_name = LabelSubscriber(
             "Select the input objects",
             "None",
             doc="""\
@@ -216,7 +231,7 @@ objects within the grayscale image are met."""
             % globals(),
         )
 
-        self.image_name = ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the grayscale image to guide merging",
             "None",
             doc="""\

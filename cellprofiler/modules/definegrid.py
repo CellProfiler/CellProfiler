@@ -52,18 +52,9 @@ import numpy
 from cellprofiler.grid import Grid
 from cellprofiler_core.module import Module
 from cellprofiler_core.image import Image
-from cellprofiler_core.measurement import IMAGE
-from cellprofiler_core.measurement import COLTYPE_FLOAT
-from cellprofiler_core.measurement import COLTYPE_INTEGER
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import Choice
 from cellprofiler_core.setting import Coordinates
-from cellprofiler_core.setting import GridNameProvider
-from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting import ImageNameProvider
 import centrosome.cpmorphology
 
 NUM_TOP_LEFT = "Top left"

@@ -58,13 +58,8 @@ import cellprofiler_core.measurement
 import os
 import numpy
 
-from cellprofiler_core.measurement import COLTYPE_INTEGER
 from cellprofiler_core.object import Objects
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import ObjectNameProvider
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ImageNameSubscriber
 
 from cellprofiler_core.utilities.pathname import pathname2url
 from cellprofiler_core.modules import identify as I

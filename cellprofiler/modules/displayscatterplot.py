@@ -36,13 +36,10 @@ See also **DisplayDensityPlot**, **DisplayHistogram**.
 """
 
 import numpy
+from cellprofiler_core.constants.measurement import IMAGE
 
-from cellprofiler_core.measurement import IMAGE
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import Text
 
 SOURCE_IM = IMAGE
 SOURCE_OBJ = "Object"

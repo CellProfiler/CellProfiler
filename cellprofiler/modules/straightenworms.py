@@ -87,6 +87,16 @@ import functools
 import itertools
 import os
 
+from cellprofiler_core.constants.measurement import (
+    COLTYPE_FLOAT,
+    IMAGE,
+    C_COUNT,
+    C_LOCATION,
+    C_NUMBER,
+    FTR_CENTER_X,
+    FTR_CENTER_Y,
+    FTR_OBJECT_NUMBER,
+)
 from cellprofiler_core.image import Image
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
@@ -102,6 +112,14 @@ from cellprofiler_core.setting import Divider
 import cellprofiler_core.utilities.legacy
 import centrosome.index
 import numpy
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import Integer, Directory
+from cellprofiler_core.utilities.core.module.identify import (
+    get_object_measurement_columns,
+    add_object_location_measurements,
+    add_object_count_measurements,
+)
 from scipy.interpolate import interp1d
 import scipy.ndimage
 from cellprofiler.modules.untangleworms import C_WORM
@@ -150,7 +168,7 @@ class StraightenWorms(Module):
         """Create the settings for the module"""
         self.images = []
 
-        self.objects_name = ObjectNameSubscriber(
+        self.objects_name = LabelSubscriber(
             "Select the input untangled worm objects",
             "OverlappingWorms",
             doc="""\
@@ -185,7 +203,7 @@ any untangled worm, but can be set to be larger to include the
 worm's background in the straightened image.""",
         )
 
-        self.training_set_directory = DirectoryPath(
+        self.training_set_directory = Directory(
             "Training set file location",
             support_urls=True,
             allow_metadata=False,
@@ -325,7 +343,7 @@ You must use one of the straightened images below.""",
         group.append("divider", Divider())
         group.append(
             "image_name",
-            ImageNameSubscriber(
+            ImageSubscriber(
                 "Select an input image to straighten",
                 "None",
                 doc="""\

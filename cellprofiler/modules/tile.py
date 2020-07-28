@@ -70,6 +70,10 @@ from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Integer
 
 T_WITHIN_CYCLES = "Within cycles"
 T_ACROSS_CYCLES = "Across cycles"
@@ -103,7 +107,7 @@ class Tile(Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.input_image = ImageNameSubscriber(
+        self.input_image = ImageSubscriber(
             "Select an input image",
             "None",
             doc="""Select the image to be tiled. Additional images within the cycle can be
@@ -112,7 +116,7 @@ added later by choosing the "*%(T_ACROSS_CYCLES)s*" option below.
             % globals(),
         )
 
-        self.output_image = ImageNameProvider(
+        self.output_image = ImageName(
             "Name the output image",
             "TiledImage",
             doc="""Enter a name for the final tiled image.""",
@@ -256,7 +260,7 @@ create a grid that has roughly the same number of rows and columns.
 
         group.append(
             "input_image_name",
-            ImageNameSubscriber(
+            ImageSubscriber(
                 "Select an additional image to tile",
                 "None",
                 doc="""Select an additional image to tile?""",

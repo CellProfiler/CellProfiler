@@ -37,6 +37,9 @@ from cellprofiler_core.setting import HiddenCount
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.text import Float
 
 COMBINE = "Combine"
 SPLIT = "Split"

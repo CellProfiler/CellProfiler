@@ -30,6 +30,10 @@ import re
 import sys
 import zlib
 
+from cellprofiler_core.constants.measurement import F_BATCH_DATA_H5
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.text import Text, Integer
+
 import cellprofiler
 from cellprofiler_core.module import Module
 from cellprofiler_core.measurement import Measurements

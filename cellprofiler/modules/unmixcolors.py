@@ -56,6 +56,10 @@ import math
 
 import numpy
 import scipy.linalg
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Float
 
 import cellprofiler.gui.help.content
 from cellprofiler_core.image import Image
@@ -172,7 +176,7 @@ class UnmixColors(Module):
         self.outputs = []
         self.stain_count = HiddenCount(self.outputs, "Stain count")
 
-        self.input_image_name = ImageNameSubscriber(
+        self.input_image_name = ImageSubscriber(
             "Select the input color image",
             "None",
             doc="""\

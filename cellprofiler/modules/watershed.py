@@ -8,6 +8,7 @@ import skimage.filters
 import skimage.measure
 import skimage.morphology
 import skimage.transform
+from cellprofiler_core.module.image_segmentation import ImageSegmentation
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
@@ -87,7 +88,7 @@ This module has two operating modes:
 )
 
 
-class Watershed(cellprofiler_core.module.image_segmentation.ImageSegmentation):
+class Watershed(ImageSegmentation):
     category = "Advanced"
 
     module_name = "Watershed"

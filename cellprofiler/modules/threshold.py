@@ -17,14 +17,19 @@ YES          YES          YES
 """
 
 import centrosome.threshold
+import centrosome.smooth
 import numpy
 import scipy.interpolate
 import scipy.ndimage
 import skimage.filters
 import skimage.filters.rank
 import skimage.morphology
+from cellprofiler_core.constants.measurement import FF_WEIGHTED_VARIANCE, FF_FINAL_THRESHOLD, FF_ORIG_THRESHOLD, \
+    FF_GUIDE_THRESHOLD, FF_SUM_OF_ENTROPIES, COLTYPE_FLOAT, C_THRESHOLD, FTR_FINAL_THRESHOLD, FTR_ORIG_THRESHOLD, \
+    FTR_GUIDE_THRESHOLD, FTR_SUM_OF_ENTROPIES, FTR_WEIGHTED_VARIANCE
+from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
-from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import Measurement, ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.text import Float, Integer

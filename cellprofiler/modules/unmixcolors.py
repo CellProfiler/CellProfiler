@@ -476,8 +476,7 @@ blue absorbance values from the image.
 
         Returns a 3-tuple of the R/G/B absorbances
         """
-
-        from cellprofiler_core.image import LoadImagesImageProvider
+        from cellprofiler_core.image import FileImage
         import wx
 
         dlg = wx.FileDialog(
@@ -488,7 +487,7 @@ blue absorbance values from the image.
             "*.tif;*.tiff;*.bmp;*.png;*.gif;*.jpg"
         )
         if dlg.ShowModal() == wx.ID_OK:
-            lip = LoadImagesImageProvider("dummy", "", dlg.Path)
+            lip = FileImage("dummy", "", dlg.Path)
             image = lip.provide_image(None).pixel_data
             if image.ndim < 3:
                 wx.MessageBox(

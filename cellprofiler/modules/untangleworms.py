@@ -110,7 +110,6 @@ from cellprofiler_core.constants.measurement import M_NUMBER_OBJECT_NUMBER
 from cellprofiler_core.image import Image
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
-from cellprofiler_core.modules import identify as I
 from cellprofiler_core.object import ObjectSet
 from cellprofiler_core.object import Objects
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
@@ -119,11 +118,13 @@ from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice, Colormap
-from cellprofiler_core.setting.text import Directory
+from cellprofiler_core.setting.text import Directory, OutlineImageName, Filename
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.utilities.core.module.identify import add_object_count_measurements, \
+    add_object_location_measurements, get_object_measurement_columns
 from centrosome.outline import outline
 from centrosome.propagate import propagate
 from scipy.interpolate import interp1d
@@ -320,7 +321,7 @@ group of overlapping worms
             % globals(),
         )
 
-        self.overlapping_outlines_name = OutlineNameProvider(
+        self.overlapping_outlines_name = OutlineImageName(
             "Name the overlapped outline image",
             "OverlappedWormOutlines",
             doc="""\
@@ -361,7 +362,7 @@ be a part of the measurements of either worm.
             % globals(),
         )
 
-        self.nonoverlapping_outlines_name = OutlineNameProvider(
+        self.nonoverlapping_outlines_name = OutlineImageName(
             "Name the non-overlapped outlines image",
             "NonoverlappedWormOutlines",
             doc="""\
@@ -1149,7 +1150,7 @@ should be processed.
             name = self.overlap_objects.value
             object_names.append(name)
             object_set.add_objects(o, name)
-            I.add_object_count_measurements(measurements, name, o.count)
+            add_object_count_measurements(measurements, name, o.count)
             if self.show_window:
                 workspace.display_data.overlapping_labels = [
                     l for l, idx in o.get_labels()
@@ -1201,8 +1202,8 @@ should be processed.
             name = self.nonoverlapping_objects.value
             object_names.append(name)
             object_set.add_objects(o, name)
-            I.add_object_count_measurements(measurements, name, o.count)
-            I.add_object_location_measurements(measurements, name, labels, o.count)
+            add_object_count_measurements(measurements, name, o.count)
+            add_object_location_measurements(measurements, name, labels, o.count)
             if self.show_window:
                 workspace.display_data.nonoverlapping_labels = [
                     l for l, idx in o.get_labels()
@@ -2848,7 +2849,7 @@ should be processed.
             if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
                 object_names.append(self.nonoverlapping_objects.value)
             for object_name in object_names:
-                result += I.get_object_measurement_columns(object_name)
+                result += get_object_measurement_columns(object_name)
                 all_features = (
                     [F_LENGTH]
                     + self.angle_features()

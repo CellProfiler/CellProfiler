@@ -1,7 +1,13 @@
 import numpy.ma
 import scipy.ndimage
 import scipy.sparse
-from scipy.ndimage import distance_transform_edt
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER, COLTYPE_FLOAT, GROUP_INDEX, GROUP_NUMBER, \
+    OBJECT_NUMBER, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, MCA_AVAILABLE_POST_GROUP, EXPERIMENT, \
+    MCA_AVAILABLE_EACH_CYCLE, IMAGE_NUMBER
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.range import FloatRange
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import Integer, Float, ImageName
 
 from cellprofiler.modules import _help
 from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
@@ -1178,9 +1184,9 @@ Enter a name to give the color-coded image of tracked labels.""",
             d["group_number"] = group_number
             group_indexes = np.array(
                 [
-                    (m.get_measurement(IMAGE, GROUP_INDEX, i), i)
+                    (m.get_measurement("Image", GROUP_INDEX, i), i)
                     for i in m.get_image_numbers()
-                    if m.get_measurement(IMAGE, GROUP_NUMBER, i) == group_number
+                    if m.get_measurement("Image", GROUP_NUMBER, i) == group_number
                 ],
                 int,
             )
@@ -1336,7 +1342,8 @@ Enter a name to give the color-coded image of tracked labels.""",
             figure.figure.text(0.5, 0.5, "Analysis complete", ha="center", va="center")
 
     def draw(self, labels, ax, object_numbers):
-        import matplotlib
+        import matplotlib.cm
+        import matplotlib.colors
 
         indexer = np.zeros(len(object_numbers) + 1, int)
         indexer[1:] = object_numbers
@@ -1809,8 +1816,8 @@ Enter a name to give the color-coded image of tracked labels.""",
         assert isinstance(m, Measurements)
         group_numbers = {}
         for i in m.get_image_numbers():
-            group_number = m.get_measurement(IMAGE, GROUP_NUMBER, i)
-            group_index = m.get_measurement(IMAGE, GROUP_INDEX, i)
+            group_number = m.get_measurement("Image", GROUP_NUMBER, i)
+            group_index = m.get_measurement("Image", GROUP_INDEX, i)
             if (group_number not in group_numbers) or (
                 group_numbers[group_number][1] > group_index
             ):
@@ -1889,7 +1896,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         ]
         group_indices, new_object_count, lost_object_count, merge_count, split_count = [
             np.array(
-                [m.get_measurement(IMAGE, feature, i) for i in image_numbers], int,
+                [m.get_measurement("Image", feature, i) for i in image_numbers], int,
             )
             for feature in (
                 GROUP_INDEX,
@@ -2691,25 +2698,25 @@ Enter a name to give the color-coded image of tracked labels.""",
         for i, image_number in enumerate(image_numbers):
             n_objects = len(newlabel[i])
             m.add_measurement(
-                IMAGE,
+                "Image",
                 self.image_measurement_name(F_LOST_OBJECT_COUNT),
                 lost_object_count[i],
                 image_set_number=image_number,
             )
             m.add_measurement(
-                IMAGE,
+                "Image",
                 self.image_measurement_name(F_NEW_OBJECT_COUNT),
                 new_object_count[i],
                 image_set_number=image_number,
             )
             m.add_measurement(
-                IMAGE,
+                "Image",
                 self.image_measurement_name(F_MERGE_COUNT),
                 merge_count[i],
                 image_set_number=image_number,
             )
             m.add_measurement(
-                IMAGE,
+                "Image",
                 self.image_measurement_name(F_SPLIT_COUNT),
                 split_count[i],
                 image_set_number=image_number,
@@ -3510,7 +3517,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             for feature, coltype in F_ALL_COLTYPE_ALL
         ]
         result += [
-            (IMAGE, self.image_measurement_name(feature), coltype)
+            ("Image", self.image_measurement_name(feature), coltype)
             for feature, coltype in F_IMAGE_COLTYPE_ALL
         ]
         attributes = {MCA_AVAILABLE_POST_GROUP: True}
@@ -3564,7 +3571,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         return [(R_PARENT, object_name, object_name, when)]
 
     def get_categories(self, pipeline, object_name):
-        if object_name in (self.object_name.value, IMAGE):
+        if object_name in (self.object_name.value, "Image"):
             return [F_PREFIX]
         elif object_name == EXPERIMENT:
             return [F_PREFIX]
@@ -3592,7 +3599,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                     ]
                 result += self.get_kalman_feature_names()
             return result
-        if object_name == IMAGE:
+        if object_name == "Image":
             result = F_IMAGE_ALL
             return result
         if object_name == EXPERIMENT and category == F_PREFIX:
@@ -3600,7 +3607,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
-        if object_name == IMAGE and category == F_PREFIX and measurement in F_IMAGE_ALL:
+        if object_name == "Image" and category == F_PREFIX and measurement in F_IMAGE_ALL:
             return [self.object_name.value]
         return []
 

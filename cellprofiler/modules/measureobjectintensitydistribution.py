@@ -8,6 +8,21 @@ import numpy
 import numpy.ma
 import scipy.ndimage
 import scipy.sparse
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.setting import (
+    HiddenCount,
+    Divider,
+    SettingsGroup,
+    Binary,
+    ValidationError,
+)
+from cellprofiler_core.setting.choice import Choice, Colormap
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import Integer, ImageName
 
 import cellprofiler.gui.help.content
 

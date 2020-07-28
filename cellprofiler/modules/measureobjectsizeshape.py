@@ -4,6 +4,9 @@ import centrosome.zernike
 import numpy
 import scipy.ndimage
 import skimage.measure
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Divider, Binary, ValidationError
 
 import cellprofiler.gui.help.content
 import cellprofiler.icons

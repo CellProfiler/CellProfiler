@@ -158,10 +158,17 @@ References
 ##############################################
 
 # Setting variables
-from cellprofiler_core.setting import Divider, HiddenCount, SettingsGroup, Binary
+from cellprofiler_core.preferences import get_headless
+from cellprofiler_core.setting import (
+    Divider,
+    HiddenCount,
+    SettingsGroup,
+    Binary,
+    ValidationError,
+)
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import DoSomething
-from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.text import ImageName, Integer, Float
 
 """Image selection"""
 O_ALL_LOADED = "All loaded images"  # Use all loaded images

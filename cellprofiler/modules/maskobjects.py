@@ -12,7 +12,7 @@ from cellprofiler_core.preferences import get_primary_outline_color
 from cellprofiler_core.preferences import get_secondary_outline_color
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
 from cellprofiler_core.setting.text import Float, LabelName
 from centrosome.cpmorphology import fixup_scipy_ndimage_result
 from centrosome.outline import outline

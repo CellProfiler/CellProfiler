@@ -5,6 +5,9 @@ import centrosome.outline
 import numpy
 import scipy.ndimage
 import skimage.segmentation
+from cellprofiler_core.constants.measurement import C_LOCATION, COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Divider, ValidationError
 
 from cellprofiler.modules import _help
 

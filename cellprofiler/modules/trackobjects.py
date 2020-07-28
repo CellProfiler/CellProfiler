@@ -526,7 +526,7 @@ Objects in the subsequent frame will be considered potential matches if
 they are within this distance. To determine a suitable pixel distance,
 you can look at the axis increments on each image (shown in pixel units)
 or use the distance measurement tool.
-%(HELP_ON_MEASURING_DISTANCES)s
+{}
 """.format(
                 HELP_ON_MEASURING_DISTANCES
             ),

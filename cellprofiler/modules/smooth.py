@@ -25,6 +25,7 @@ See also several related modules in the *Advanced* category (e.g.,
 import numpy
 import scipy.ndimage
 import skimage.restoration
+from cellprofiler_core.constants.module import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
@@ -146,36 +147,34 @@ Select *No* to manually enter an artifact diameter.
 
 Enter the approximate diameter (in pixels) of the features to be blurred
 by the smoothing algorithm. This value is used to calculate the size of
-the spatial filter. %(HELP_ON_MEASURING_DISTANCES)s For most
+the spatial filter. {} For most
 smoothing methods, selecting a diameter over ~50 will take substantial
 amounts of time to process.
-"""
-            % globals(),
+""".format(HELP_ON_MEASURING_DISTANCES),
         )
 
         self.sigma_range = Float(
             "Edge intensity difference",
             0.1,
             doc="""\
-*(Used only if “%(SMOOTH_KEEPING_EDGES)s” is selected)*
+*(Used only if “{smooth_help}” is selected)*
 
 Enter the intensity step (which indicates an edge in an image) that you
 want to preserve. Edges are locations where the intensity changes
 precipitously, so this setting is used to adjust the rough magnitude of
 these changes. A lower number will preserve weaker edges. A higher
 number will preserve only stronger edges. Values should be between zero
-and one. %(HELP_ON_PIXEL_INTENSITIES)s
-"""
-            % globals(),
+and one. {pixel_help}
+""".format(smooth_help=SMOOTH_KEEPING_EDGES, pixel_help=HELP_ON_PIXEL_INTENSITIES),
         )
 
         self.clip = Binary(
             "Clip intensities to 0 and 1?",
             True,
             doc="""\
-*(Used only if "%(FIT_POLYNOMIAL)s" is selected)*
+*(Used only if "{fit}" is selected)*
 
-The *%(FIT_POLYNOMIAL)s* method is the only smoothing option that can
+The *{fit}* method is the only smoothing option that can
 yield an output image whose values are outside of the values of the
 input image. This setting controls whether to limit the image
 intensity to the 0 - 1 range used by CellProfiler.
@@ -185,8 +184,7 @@ and all pixels greater than one to one.
 
 Select *No* to allow values less than zero and greater than one in
 the output image.
-"""
-            % globals(),
+""".format(fit=FIT_POLYNOMIAL),
         )
 
     def settings(self):

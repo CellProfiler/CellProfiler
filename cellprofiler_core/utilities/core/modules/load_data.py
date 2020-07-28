@@ -161,13 +161,12 @@ def get_loaddata_type(x):
     return cpmeas.COLTYPE_VARCHAR
     If x can be represented as a float, return COLTYPE_FLOAT
     """
-    global int32_max, int32_min
 
     try:
         iv = int(x)
-        if iv > int32_max:
+        if iv > numpy.iinfo(numpy.int32).max:
             return COLTYPE_VARCHAR
-        if iv < int32_min:
+        if iv < numpy.iinfo(numpy.int32).min:
             return COLTYPE_VARCHAR
         return COLTYPE_INTEGER
     except:

@@ -1475,6 +1475,3 @@ safe to press it.""",
 
 
 LoadText = LoadData
-
-int32_max = numpy.iinfo(numpy.int32).max
-int32_min = numpy.iinfo(numpy.int32).min

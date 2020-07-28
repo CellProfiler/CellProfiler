@@ -4979,7 +4979,7 @@ CP version : %d\n""" % int(
                     custom_directory = "." + custom_directory[1:]
                 else:
                     dir_choice = ABSOLUTE_FOLDER_NAME
-            directory = DirectoryPath.static_join_string(dir_choice, custom_directory)
+            directory = Directory.static_join_string(dir_choice, custom_directory)
             setting_values = setting_values[:5] + [directory] + setting_values[7:]
             variable_revision_number = 15
 
@@ -5160,7 +5160,7 @@ CP version : %d\n""" % int(
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 4
         directory = setting_values[SLOT_DIRCHOICE]
-        directory = DirectoryPath.upgrade_setting(directory)
+        directory = Directory.upgrade_setting(directory)
         setting_values[SLOT_DIRCHOICE] = directory
 
         return setting_values, variable_revision_number

@@ -78,7 +78,7 @@ from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
 from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import DirectoryPath
+from cellprofiler_core.setting import Directory
 from cellprofiler_core.setting import ImageName
 from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import Integer
@@ -719,7 +719,7 @@ The file has the following columns:
             setting_values = setting_values + [
                 "No",
                 "None",
-                DirectoryPath.static_join_string(DEFAULT_OUTPUT_FOLDER_NAME, "None"),
+                Directory.static_join_string(DEFAULT_OUTPUT_FOLDER_NAME, "None"),
                 "None",
                 "None",
             ]

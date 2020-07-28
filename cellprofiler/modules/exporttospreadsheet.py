@@ -1505,9 +1505,7 @@ desired.
                     custom_directory = "." + custom_directory[1:]
                 else:
                     directory_choice = ABSOLUTE_FOLDER_NAME
-            directory = DirectoryPath.static_join_string(
-                directory_choice, custom_directory
-            )
+            directory = Directory.static_join_string(directory_choice, custom_directory)
             setting_values = (
                 setting_values[:3]
                 + setting_values[4:9]
@@ -1572,7 +1570,7 @@ desired.
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 7
         directory = setting_values[SLOT_DIRCHOICE]
-        directory = DirectoryPath.upgrade_setting(directory)
+        directory = Directory.upgrade_setting(directory)
         setting_values = (
             setting_values[:SLOT_DIRCHOICE]
             + [directory]

@@ -983,8 +983,8 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         return True
 
 
-class SaveImagesDirectoryPath(DirectoryPath):
-    """A specialized version of DirectoryPath to handle saving in the image dir"""
+class SaveImagesDirectoryPath(Directory):
+    """A specialized version of Directory to handle saving in the image dir"""
 
     def __init__(self, text, file_image_name, doc):
         """Constructor

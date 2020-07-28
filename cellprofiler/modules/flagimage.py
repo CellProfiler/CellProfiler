@@ -913,9 +913,7 @@ image is not flagged.
                     new_setting_values += setting_values[
                         (idx + 1) : (idx + N_SETTINGS_PER_MEASUREMENT_V2)
                     ] + [
-                        DirectoryPath.static_join_string(
-                            DEFAULT_INPUT_FOLDER_NAME, "None"
-                        ),
+                        Directory.static_join_string(DEFAULT_INPUT_FOLDER_NAME, "None"),
                         "rules.txt",
                     ]
                     idx += N_SETTINGS_PER_MEASUREMENT_V2

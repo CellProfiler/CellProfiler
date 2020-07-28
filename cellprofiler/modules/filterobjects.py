@@ -1146,7 +1146,7 @@ value will be retained.""".format(
             variable_revision_number = 4
         if variable_revision_number == 4:
             #
-            # Used DirectoryPath to combine directory choice & custom path
+            # Used Directory to combine directory choice & custom path
             #
             rules_directory_choice = setting_values[7]
             rules_path_name = setting_values[8]
@@ -1158,7 +1158,7 @@ value will be retained.""".format(
                     rules_directory_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
                     rules_path_name = "." + rules_path_name[1:]
 
-            rules_directory = DirectoryPath.static_join_string(
+            rules_directory = Directory.static_join_string(
                 rules_directory_choice, rules_path_name
             )
             setting_values = setting_values[:7] + [rules_directory] + setting_values[9:]
@@ -1221,7 +1221,7 @@ value will be retained.""".format(
 
         slot_directory = 5
 
-        setting_values[slot_directory] = DirectoryPath.upgrade_setting(
+        setting_values[slot_directory] = Directory.upgrade_setting(
             setting_values[slot_directory]
         )
 

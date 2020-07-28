@@ -88,41 +88,20 @@ import itertools
 import os
 
 from cellprofiler_core.image import Image
-from cellprofiler_core.measurement import IMAGE
 from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects
 from cellprofiler_core.object import ObjectSet
 from cellprofiler_core.preferences import get_primary_outline_color
 from cellprofiler_core.preferences import URL_FOLDER_NAME
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import FilenameText
-from cellprofiler_core.setting import ObjectNameProvider
-from cellprofiler_core.setting import ImageNameSubscriber
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import RemoveSettingButton
-from cellprofiler_core.setting import DirectoryPath
 from cellprofiler_core.setting import HiddenCount
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import ImageNameProvider
 import cellprofiler_core.utilities.legacy
 import centrosome.index
 import numpy
-from cellprofiler_core.measurement import C_LOCATION
-from cellprofiler_core.measurement import C_NUMBER
-from cellprofiler_core.measurement import C_COUNT
-from cellprofiler_core.measurement import FTR_CENTER_X
-from cellprofiler_core.measurement import FTR_CENTER_Y
-from cellprofiler_core.measurement import FTR_OBJECT_NUMBER
-from cellprofiler_core.modules.identify import add_object_count_measurements
-from cellprofiler_core.modules.identify import add_object_location_measurements
-from cellprofiler_core.modules.identify import get_object_measurement_columns
 from scipy.interpolate import interp1d
 import scipy.ndimage
 from cellprofiler.modules.untangleworms import C_WORM

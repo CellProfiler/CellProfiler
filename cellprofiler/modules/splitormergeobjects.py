@@ -2,24 +2,11 @@ import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
 
-from cellprofiler_core.measurement import COLTYPE_INTEGER
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects
-from cellprofiler_core.setting import Integer
-from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import ObjectNameSubscriber
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import ObjectNameProvider
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.measurement import C_PARENT
-from cellprofiler_core.measurement import FF_CHILDREN_COUNT
-from cellprofiler_core.measurement import FF_PARENT
 from cellprofiler.modules import _help
-from cellprofiler_core.modules.identify import add_object_count_measurements
-from cellprofiler_core.modules.identify import add_object_location_measurements
-from cellprofiler_core.modules.identify import get_object_measurement_columns
 
 __doc__ = """\
 SplitOrMergeObjects

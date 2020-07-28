@@ -51,24 +51,19 @@ See also **ColorToGray**.
 
 .. _Colour\_Deconvolution.java: http://imagej.net/Colour_Deconvolution
 """
+
 import math
 
 import numpy
-from scipy.linalg import lstsq
+import scipy.linalg
 
 import cellprofiler.gui.help.content
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import get_default_image_directory
-from cellprofiler_core.setting import DoSomething
-from cellprofiler_core.setting import Float
-from cellprofiler_core.setting import Choice
-from cellprofiler_core.setting import RemoveSettingButton
 from cellprofiler_core.setting import HiddenCount
 from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import ImageNameSubscriber
 from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import ImageNameProvider
 
 CHOICE_HEMATOXYLIN = "Hematoxylin"
 ST_HEMATOXYLIN = (0.644, 0.717, 0.267)
@@ -515,7 +510,7 @@ blue absorbance values from the image.
             # is each in turn.
             #
             strongest = data[order[-1]][:, numpy.newaxis]
-            absorbances = [lstsq(strongest, d)[0][0] for d in data]
+            absorbances = [scipy.linalg.lstsq(strongest, d)[0][0] for d in data]
             #
             # Normalize
             #

@@ -30,9 +30,6 @@ Measurements made by this module
 - *Endpoints*: Total number of pixels with only one neighbor.
 """
 
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
 import numpy
 import scipy.ndimage
 import skimage.segmentation

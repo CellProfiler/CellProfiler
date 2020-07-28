@@ -1,4 +1,3 @@
-import cellprofiler_core.measurement
 import numpy
 import scipy.ndimage
 from cellprofiler_core.measurement import COLTYPE_INTEGER

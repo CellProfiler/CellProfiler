@@ -49,13 +49,8 @@ import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
 
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
 import cellprofiler_core.modules.identify
 import cellprofiler_core.object
-import cellprofiler_core.setting
-
 
 O_SHRINK_INF = "Shrink objects to a point"
 O_EXPAND_INF = "Expand objects until touching"

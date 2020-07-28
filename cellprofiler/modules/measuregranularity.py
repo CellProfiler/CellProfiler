@@ -52,9 +52,6 @@ References
 """
 import logging
 
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
 import cellprofiler_core.workspace
 import numpy
 import scipy.ndimage

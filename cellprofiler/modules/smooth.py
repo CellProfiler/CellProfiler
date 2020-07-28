@@ -22,9 +22,6 @@ See also several related modules in the *Advanced* category (e.g.,
 **MedianFilter** and **GaussianFilter**).
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
 import numpy
 import scipy.ndimage
 import skimage.restoration

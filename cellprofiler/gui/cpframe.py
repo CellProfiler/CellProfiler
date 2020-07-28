@@ -38,7 +38,6 @@ import cellprofiler.gui.workspace
 import cellprofiler.icons
 import cellprofiler_core.modules
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 
 

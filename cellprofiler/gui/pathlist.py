@@ -12,8 +12,6 @@ import wx
 import wx.lib.scrolledpanel
 
 import cellprofiler.gui
-import cellprofiler_core.preferences
-
 
 OMERO_SCHEME = "omero:"
 

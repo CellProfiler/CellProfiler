@@ -42,10 +42,7 @@ import cellprofiler.gui.errordialog
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.tools
-import cellprofiler_core.image
 import cellprofiler_core.object
-import cellprofiler_core.preferences
-
 
 #
 # Monkey-patch the backend canvas to only report the truly supported filetypes

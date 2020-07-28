@@ -63,13 +63,8 @@ import scipy.ndimage
 import scipy.sparse
 
 import cellprofiler.gui.help
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
 import cellprofiler_core.modules.identify
 import cellprofiler_core.object
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
 import cellprofiler.utilities.rules
 
 

@@ -5,8 +5,6 @@
 import bioformats.formatreader
 import wx
 
-import cellprofiler_core.preferences
-
 
 class OmeroLoginDlg(wx.Dialog):
     SERVER_LABEL = "Server:"

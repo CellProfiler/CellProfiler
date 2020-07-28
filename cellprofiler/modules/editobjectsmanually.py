@@ -50,9 +50,6 @@ See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-import cellprofiler_core.measurement
-
-
 import os
 import numpy
 

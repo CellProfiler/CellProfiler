@@ -2,7 +2,6 @@ import math
 
 import cellprofiler_core.module.image_segmentation
 import cellprofiler_core.object
-import cellprofiler_core.setting
 import centrosome.cpmorphology
 import centrosome.outline
 import centrosome.propagate

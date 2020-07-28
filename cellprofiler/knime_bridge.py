@@ -24,12 +24,8 @@ if not hasattr(zmq, "Frame"):
 
     zmq.Frame = ZmqFrame
 
-import cellprofiler_core.module
-import cellprofiler_core.measurement
-import cellprofiler_core.image
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.setting
 import cellprofiler_core.workspace
 
 CONNECT_REQ_1 = "connect-request-1"

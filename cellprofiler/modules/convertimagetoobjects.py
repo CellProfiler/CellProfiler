@@ -1,5 +1,3 @@
-import cellprofiler_core.module
-import cellprofiler_core.setting
 import skimage
 import skimage.measure
 

@@ -36,9 +36,6 @@ See also **DisplayDensityPlot**, **DisplayScatterPlot**.
 
 import textwrap
 
-import cellprofiler_core.module
-import cellprofiler_core.setting
-
 
 class DisplayHistogram(cellprofiler_core.module.Module):
     module_name = "DisplayHistogram"

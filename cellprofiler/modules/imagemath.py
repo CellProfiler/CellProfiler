@@ -31,10 +31,6 @@ See also **Threshold**, **RescaleIntensity**,
 **CorrectIlluminationCalculate**.
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
 import inflect
 import numpy
 import skimage.util

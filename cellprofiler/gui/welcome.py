@@ -12,7 +12,6 @@ import cellprofiler
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html
 import cellprofiler.gui.html.utils
-import cellprofiler_core.preferences
 
 
 class Welcome(wx.Frame):

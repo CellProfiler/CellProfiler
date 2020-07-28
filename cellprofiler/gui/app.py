@@ -8,7 +8,6 @@ import wx
 import wx.lib.inspection
 
 import cellprofiler.gui.dialog
-import cellprofiler_core.preferences
 import cellprofiler_core.utilities.java
 
 

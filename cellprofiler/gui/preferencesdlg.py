@@ -13,7 +13,6 @@ import wx.lib.scrolledpanel
 import cellprofiler.gui.help
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.htmldialog
-import cellprofiler_core.preferences
 
 DIRBROWSE = "Browse"
 FILEBROWSE = "FileBrowse"

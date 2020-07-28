@@ -43,10 +43,6 @@ Measurements made by this module
    regions.
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
 import numpy
 import skimage.measure
 

@@ -16,10 +16,6 @@ YES          YES          YES
 ============ ============ ===============
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
 import centrosome.threshold
 import numpy
 import scipy.interpolate

@@ -1,10 +1,6 @@
 import itertools
 import logging
 
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
 import cellprofiler_core.utilities.image
 import centrosome.cpmorphology
 import centrosome.haralick

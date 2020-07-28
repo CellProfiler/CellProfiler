@@ -20,11 +20,6 @@ YES          NO           YES
 
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
 import matplotlib.axes
 import matplotlib.cm
 import matplotlib.figure

@@ -27,8 +27,6 @@ import cellprofiler.gui.htmldialog
 import cellprofiler.gui.pipeline
 import cellprofiler.icons
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
 from cellprofiler.gui import (
     cornerbuttonmixin,
     metadatactrl,

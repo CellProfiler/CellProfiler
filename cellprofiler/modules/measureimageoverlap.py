@@ -89,11 +89,7 @@ References
    *2009 IEEE 12th International Conference on Computer Vision*.
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
 import cellprofiler_core.object
-import cellprofiler_core.setting
 import centrosome.cpmorphology
 import centrosome.fastemd
 import centrosome.filter

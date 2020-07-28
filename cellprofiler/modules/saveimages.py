@@ -34,9 +34,6 @@ import os.path
 
 import bioformats.formatwriter
 import bioformats.omexml
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
 import cellprofiler_core.utilities.pathname
 import h5py
 import numpy

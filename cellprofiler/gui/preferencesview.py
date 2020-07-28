@@ -14,7 +14,6 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.htmldialog
-import cellprofiler_core.preferences
 
 WELCOME_MESSAGE = ""
 

@@ -16,8 +16,6 @@ YES          YES          NO
 
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.module
 import skimage.morphology
 
 

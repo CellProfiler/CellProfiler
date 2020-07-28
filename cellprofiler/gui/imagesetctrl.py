@@ -16,12 +16,9 @@ import wx.lib.mixins.gridlabelrenderer
 
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
-import cellprofiler_core.measurement
 import cellprofiler_core.modules.images
 import cellprofiler_core.pipeline
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
 import cellprofiler_core.utilities.legacy
 
 """Table column displays metadata"""

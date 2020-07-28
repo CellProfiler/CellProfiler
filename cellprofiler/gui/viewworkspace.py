@@ -9,9 +9,7 @@ import cellprofiler.gui.figure
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.htmldialog
-import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
-import cellprofiler_core.preferences
 
 __the_workspace_viewer = None
 

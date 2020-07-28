@@ -18,8 +18,6 @@ import cellprofiler.gui.moduleview
 import cellprofiler.gui.pipeline
 import cellprofiler.icons
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
-
 
 IMG_OK = cellprofiler.icons.get_builtin_image("check")
 IMG_ERROR = cellprofiler.icons.get_builtin_image("remove-sign")

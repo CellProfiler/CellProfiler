@@ -4,9 +4,6 @@
 #
 #################################
 
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
 import numpy
 import scipy.ndimage
 

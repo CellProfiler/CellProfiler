@@ -49,13 +49,8 @@ import cellprofiler_core.analysis
 import cellprofiler_core.analysis.event
 import cellprofiler_core.analysis.reply
 import cellprofiler_core.analysis.request
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
 import cellprofiler_core.utilities.legacy
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.utilities.zmq

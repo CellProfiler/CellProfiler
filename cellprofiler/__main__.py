@@ -17,10 +17,8 @@ import pkg_resources
 import six.moves
 
 import cellprofiler
-import cellprofiler_core.measurement
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.utilities.java
 import cellprofiler_core.utilities.hdf5_dict
 import cellprofiler_core.utilities.zmq
@@ -55,8 +53,6 @@ numpy.seterr(all="ignore")
 
 
 def main(args=None):
-    import cellprofiler_core.preferences
-
     """Run CellProfiler
 
     args - command-line arguments, e.g., sys.argv

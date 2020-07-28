@@ -20,10 +20,7 @@ YES          YES          NO
 
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.module
 import cellprofiler_core.object
-import cellprofiler_core.setting
 import numpy
 import skimage.measure
 

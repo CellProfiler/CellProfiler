@@ -67,10 +67,7 @@ Measurements made by this module
 .. _SVI website: http://svi.nl/ColocalizationTheory   
 """
 
-import cellprofiler_core.measurement
-import cellprofiler_core.module
 import cellprofiler_core.object
-import cellprofiler_core.setting
 import numpy
 import scipy.ndimage
 import scipy.stats

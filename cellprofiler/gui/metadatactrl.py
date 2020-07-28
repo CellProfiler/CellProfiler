@@ -6,9 +6,6 @@ import six
 import wx
 import wx.lib.masked
 
-import cellprofiler_core.measurement
-import cellprofiler_core.preferences
-
 __choice_ids = []
 
 

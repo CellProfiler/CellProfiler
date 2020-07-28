@@ -25,7 +25,6 @@ import wx.html
 import cellprofiler.gui.figure
 import cellprofiler.gui.tools
 import cellprofiler_core.object
-import cellprofiler_core.preferences
 
 
 class EditObjectsDialog(wx.Dialog):

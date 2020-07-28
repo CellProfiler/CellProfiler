@@ -53,7 +53,6 @@ well as video tutorials.
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
 
-import cellprofiler_core.measurement
 import numpy
 from cellprofiler_core.measurement import COLTYPE_FLOAT
 from cellprofiler_core.measurement import COLTYPE_INTEGER

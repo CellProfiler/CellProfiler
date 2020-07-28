@@ -8,7 +8,6 @@ import cellprofiler.gui
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
 import cellprofiler.modules
-import cellprofiler_core.preferences
 
 MENU_HELP = {
     "Accessing Images From OMERO": cellprofiler.gui.help.content.read_content(

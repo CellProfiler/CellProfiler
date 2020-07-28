@@ -1,4 +1,3 @@
-import cellprofiler_core.measurement
 import numpy
 from cellprofiler_core.module import Module
 import cellprofiler_core.modules

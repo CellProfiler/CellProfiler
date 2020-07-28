@@ -1,8 +1,5 @@
 import logging
 
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
 import numpy
 
 from cellprofiler.modules import _help

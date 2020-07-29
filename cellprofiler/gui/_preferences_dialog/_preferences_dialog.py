@@ -1,40 +1,105 @@
-# coding=utf-8
-"""preferencesdlg.py Edit global preferences
-"""
-
 import os
 import sys
 
 import matplotlib.cm
 import six
 import wx
-import wx.lib.scrolledpanel
+from cellprofiler_core.preferences import DEFAULT_COLORMAP_HELP
+from cellprofiler_core.preferences import DEFAULT_IMAGE_FOLDER_HELP
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_HELP
+from cellprofiler_core.preferences import ERROR_COLOR_HELP
+from cellprofiler_core.preferences import IM_BICUBIC
+from cellprofiler_core.preferences import IM_BILINEAR
+from cellprofiler_core.preferences import IM_NEAREST
+from cellprofiler_core.preferences import INTENSITY_MODE_GAMMA
+from cellprofiler_core.preferences import INTENSITY_MODE_HELP
+from cellprofiler_core.preferences import INTENSITY_MODE_LOG
+from cellprofiler_core.preferences import INTENSITY_MODE_NORMAL
+from cellprofiler_core.preferences import INTENSITY_MODE_RAW
+from cellprofiler_core.preferences import INTERPOLATION_MODE_HELP
+from cellprofiler_core.preferences import MAX_WORKERS_HELP
+from cellprofiler_core.preferences import NORMALIZATION_FACTOR_HELP
+from cellprofiler_core.preferences import PLUGINS_DIRECTORY_HELP
+from cellprofiler_core.preferences import PRIMARY_OUTLINE_COLOR_HELP
+from cellprofiler_core.preferences import REPORT_JVM_ERROR_HELP
+from cellprofiler_core.preferences import SAVE_PIPELINE_WITH_PROJECT_HELP
+from cellprofiler_core.preferences import SECONDARY_OUTLINE_COLOR_HELP
+from cellprofiler_core.preferences import SHOW_ANALYSIS_COMPLETE_HELP
+from cellprofiler_core.preferences import SHOW_EXITING_TEST_MODE_HELP
+from cellprofiler_core.preferences import SHOW_REPORT_BAD_SIZES_DLG_HELP
+from cellprofiler_core.preferences import SHOW_SAMPLING_MENU_HELP
+from cellprofiler_core.preferences import SHOW_STARTUP_BLURB_HELP
+from cellprofiler_core.preferences import SHOW_TELEMETRY_HELP
+from cellprofiler_core.preferences import SPP_ALL
+from cellprofiler_core.preferences import TABLE_FONT_HELP
+from cellprofiler_core.preferences import TEMP_DIR_HELP
+from cellprofiler_core.preferences import TERTIARY_OUTLINE_COLOR_HELP
+from cellprofiler_core.preferences import default_max_workers
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.preferences import get_default_image_directory
+from cellprofiler_core.preferences import get_default_output_directory
+from cellprofiler_core.preferences import get_error_color
+from cellprofiler_core.preferences import get_intensity_mode
+from cellprofiler_core.preferences import get_interpolation_mode
+from cellprofiler_core.preferences import get_max_workers
+from cellprofiler_core.preferences import get_normalization_factor
+from cellprofiler_core.preferences import get_plugin_directory
+from cellprofiler_core.preferences import get_primary_outline_color
+from cellprofiler_core.preferences import get_report_jvm_error
+from cellprofiler_core.preferences import get_save_pipeline_with_project
+from cellprofiler_core.preferences import get_secondary_outline_color
+from cellprofiler_core.preferences import get_show_analysis_complete_dlg
+from cellprofiler_core.preferences import get_show_exiting_test_mode_dlg
+from cellprofiler_core.preferences import get_show_report_bad_sizes_dlg
+from cellprofiler_core.preferences import get_show_sampling
+from cellprofiler_core.preferences import get_startup_blurb
+from cellprofiler_core.preferences import get_table_font_name
+from cellprofiler_core.preferences import get_table_font_size
+from cellprofiler_core.preferences import get_telemetry
+from cellprofiler_core.preferences import get_temporary_directory
+from cellprofiler_core.preferences import get_tertiary_outline_color
+from cellprofiler_core.preferences import get_title_font_name
+from cellprofiler_core.preferences import get_title_font_size
+from cellprofiler_core.preferences import get_wants_pony
+from cellprofiler_core.preferences import set_default_colormap
+from cellprofiler_core.preferences import set_default_image_directory
+from cellprofiler_core.preferences import set_default_output_directory
+from cellprofiler_core.preferences import set_error_color
+from cellprofiler_core.preferences import set_intensity_mode
+from cellprofiler_core.preferences import set_interpolation_mode
+from cellprofiler_core.preferences import set_max_workers
+from cellprofiler_core.preferences import set_normalization_factor
+from cellprofiler_core.preferences import set_plugin_directory
+from cellprofiler_core.preferences import set_primary_outline_color
+from cellprofiler_core.preferences import set_report_jvm_error
+from cellprofiler_core.preferences import set_save_pipeline_with_project
+from cellprofiler_core.preferences import set_secondary_outline_color
+from cellprofiler_core.preferences import set_show_analysis_complete_dlg
+from cellprofiler_core.preferences import set_show_exiting_test_mode_dlg
+from cellprofiler_core.preferences import set_show_report_bad_sizes_dlg
+from cellprofiler_core.preferences import set_show_sampling
+from cellprofiler_core.preferences import set_startup_blurb
+from cellprofiler_core.preferences import set_table_font_name
+from cellprofiler_core.preferences import set_table_font_size
+from cellprofiler_core.preferences import set_telemetry
+from cellprofiler_core.preferences import set_temporary_directory
+from cellprofiler_core.preferences import set_tertiary_outline_color
+from cellprofiler_core.preferences import set_title_font_name
+from cellprofiler_core.preferences import set_title_font_size
+from cellprofiler_core.preferences import set_wants_pony
 
-import cellprofiler.gui.help
-import cellprofiler.gui.html.utils
-import cellprofiler.gui.htmldialog
-
-DIRBROWSE = "Browse"
-FILEBROWSE = "FileBrowse"
-FONT = "Font"
-COLOR = "Color"
-CHOICE = "Choice"
-TEXT = "Text"
-
-
-class IntegerPreference(object):
-    """User interface info for an integer preference
-
-    This signals that a preference should be displayed and edited as
-    an integer, optionally limited by a range.
-    """
-
-    def __init__(self, minval=None, maxval=None):
-        self.minval = minval
-        self.maxval = maxval
+from ._integer_preference import IntegerPreference
+from ..constants.preferences_dialog import CHOICE
+from ..constants.preferences_dialog import COLOR
+from ..constants.preferences_dialog import DIRBROWSE
+from ..constants.preferences_dialog import FILEBROWSE
+from ..constants.preferences_dialog import FONT
+from ..constants.preferences_dialog import TEXT
+from ..html.utils import rst_to_html_fragment
+from ..htmldialog import HTMLDialog
 
 
-class PreferencesDlg(wx.Dialog):
+class PreferencesDialog(wx.Dialog):
     """Display a dialog for setting preferences
 
     The dialog handles fetching current defaults and setting the
@@ -171,10 +236,8 @@ class PreferencesDlg(wx.Dialog):
             button = wx.Button(scrollpanel, -1, "?", (0, 0), (30, -1))
 
             def on_help(event, help_text=help_text):
-                dlg = cellprofiler.gui.htmldialog.HTMLDialog(
-                    self,
-                    "Preferences help",
-                    cellprofiler.gui.html.utils.rst_to_html_fragment(help_text),
+                dlg = HTMLDialog(
+                    self, "Preferences help", rst_to_html_fragment(help_text),
                 )
                 dlg.Show()
 

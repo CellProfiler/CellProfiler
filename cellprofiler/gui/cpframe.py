@@ -39,8 +39,7 @@ import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
 import cellprofiler.gui.pipelinecontroller
 import cellprofiler.gui.pipelinelistview
-import cellprofiler.gui.preferencesdlg
-import cellprofiler.gui.preferencesview
+import cellprofiler.gui.preferencesdialog
 import cellprofiler.gui._welcome_frame
 import cellprofiler.gui._workspace_model
 import cellprofiler.icons
@@ -1023,7 +1022,7 @@ class CPFrame(wx.Frame):
 
     @staticmethod
     def __on_preferences(event):
-        dlg = cellprofiler.gui.preferencesdlg.PreferencesDlg()
+        dlg = cellprofiler.gui.preferencesdialog.PreferencesDialog()
         dlg.Show()
 
     def __on_close_all(self, event):

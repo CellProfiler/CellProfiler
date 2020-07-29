@@ -60,8 +60,6 @@ from cellprofiler_core.setting.text import Filename
 from cellprofiler_core.setting.text import Pathname
 
 from ._file_collection_display_controller import FileCollectionDisplayController
-from ._filter_panel_controller import FilterPanelController
-from ._joiner_controller import JoinerController
 from ._module_sizer import ModuleSizer
 from ._setting_edited_event import SettingEditedEvent
 from ._table_controller import TableController
@@ -422,6 +420,8 @@ class ModuleView:
                     control = self.make_tree_choice_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, Filter):
+                    from ._filter_panel_controller import FilterPanelController
+
                     if control is not None:
                         control.filter_panel_controller.update()
                     else:
@@ -456,6 +456,8 @@ class ModuleView:
                     control = self.make_html_control(v, control)
                     flag = wx.EXPAND | wx.ALL
                 elif isinstance(v, Joiner):
+                    from ._joiner_controller import JoinerController
+
                     control = JoinerController.update_control(self, v)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, BinaryMatrix):

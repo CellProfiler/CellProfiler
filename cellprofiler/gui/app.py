@@ -11,7 +11,6 @@ from cellprofiler_core.preferences import set_telemetry_prompt
 from cellprofiler_core.utilities.java import stop_java
 from cellprofiler_core.utilities.java import start_java
 
-from .cpframe import CPFrame
 from .dialog import Telemetry
 
 
@@ -49,9 +48,12 @@ class App(wx.App):
         super(App, self).__init__(*args, **kwargs)
 
     def OnInit(self):
+        from .cpframe import CPFrame
+        from cellprofiler import __version__
+
         # wx.lib.inspection.InspectionTool().Show()
 
-        self.SetAppName("CellProfiler{0:s}".format(cellprofiler.__version__))
+        self.SetAppName("CellProfiler{0:s}".format(__version__))
 
         self.frame = CPFrame(None, -1, "CellProfiler")
 

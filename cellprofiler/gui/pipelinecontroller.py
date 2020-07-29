@@ -153,7 +153,6 @@ import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
-import cellprofiler.gui.utilities.workspace_view
 import cellprofiler.icons
 from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
 
@@ -1673,7 +1672,7 @@ class PipelineController(object):
     def __on_pipeline_event(self, caller, event):
         if not wx.IsMainThread():
             wx.CallAfter(self.__on_pipeline_event, caller, event)
-        if isinstance(event, event.RunException):
+        if isinstance(event, RunException):
             error_msg = None
             self.__pipeline_list_view.select_one_module(event.module.module_num)
             try:
@@ -3334,7 +3333,9 @@ class PipelineController(object):
             ):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
-            cellprofiler.gui.utilities.workspace_view.update_workspace_viewer(workspace)
+
+            # TODO: wire up Workerspace View
+            # cellprofiler.gui.utilities.workspace_view.update_workspace_viewer(workspace)
         except Exception as instance:
             logging.error("Failed to run module %s", module.module_name, exc_info=True)
             event = RunException(instance, module)

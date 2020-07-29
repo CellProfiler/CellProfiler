@@ -8,8 +8,9 @@ import wx
 from cellprofiler_core.preferences import report_progress
 from cellprofiler_core.setting import FileCollectionDisplay
 
-import cellprofiler.gui
+from ..pipeline import Pipeline
 from ..utilities.module_view import edit_control_name
+from ...icons import get_builtin_image
 
 
 class FileCollectionDisplayController:
@@ -47,17 +48,15 @@ class FileCollectionDisplayController:
         wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, size=(16, 16))
     )
     IMAGE_PLANE_IMAGE_INDEX = IMAGE_LIST.Add(
-        cellprofiler.icons.get_builtin_image("microscope-icon_16").ConvertToBitmap()
+        get_builtin_image("microscope-icon_16").ConvertToBitmap()
     )
     IMAGE_PLANES_IMAGE_INDEX = IMAGE_LIST.Add(
-        cellprofiler.icons.get_builtin_image("microscopes_16").ConvertToBitmap()
+        get_builtin_image("microscopes_16").ConvertToBitmap()
     )
     COLOR_IMAGE_INDEX = IMAGE_LIST.Add(
-        cellprofiler.icons.get_builtin_image("microscope-color_16").ConvertToBitmap()
+        get_builtin_image("microscope-color_16").ConvertToBitmap()
     )
-    MOVIE_IMAGE_INDEX = IMAGE_LIST.Add(
-        cellprofiler.icons.get_builtin_image("movie_16").ConvertToBitmap()
-    )
+    MOVIE_IMAGE_INDEX = IMAGE_LIST.Add(get_builtin_image("movie_16").ConvertToBitmap())
 
     ACTIVE_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
     FILTERED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
@@ -105,7 +104,7 @@ class FileCollectionDisplayController:
         assert isinstance(v, FileCollectionDisplay)
         self.module_view = module_view
         self.v = v
-        assert isinstance(pipeline, cellprofiler.gui.pipeline.Pipeline)
+        assert isinstance(pipeline, Pipeline)
         self.pipeline = pipeline
         self.panel = wx.Panel(
             self.module_view.module_panel, -1, name=edit_control_name(v)

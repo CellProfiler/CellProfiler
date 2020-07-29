@@ -101,6 +101,7 @@ from cellprofiler_core.constants.measurement import (
     FTR_CENTER_Y,
     FTR_OBJECT_NUMBER,
 )
+from cellprofiler_core.constants.module import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler_core.image import Image
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
@@ -216,7 +217,7 @@ worm's background in the straightened image.""",
             allow_metadata=False,
             doc="""\
 Select the folder containing the training set to be loaded.
-%(IO_FOLDER_CHOICE_HELP_TEXT)s
+{folder_choice}
 
 An additional option is the following:
 
@@ -226,8 +227,7 @@ An additional option is the following:
    access this file, you would choose *URL* and enter
    *http://my_institution.edu/server/my_username/* as the path
    location.
-"""
-            % globals(),
+""".format(folder_choice=IO_FOLDER_CHOICE_HELP_TEXT),
         )
 
         def get_directory_fn():

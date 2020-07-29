@@ -1,3 +1,4 @@
+from cellprofiler_core.constants.module import HELP_ON_MEASURING_DISTANCES
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber, GridSubscriber
 from cellprofiler_core.setting.text import LabelName, Integer
@@ -176,9 +177,8 @@ There are two methods for selecting the circle diameter:
 specified manually)*
 
 Enter the diameter to be used for each grid circle, in pixels.
-%(HELP_ON_MEASURING_DISTANCES)s
-"""
-            % globals(),
+{dist}
+""".format(dist=HELP_ON_MEASURING_DISTANCES),
         )
 
         self.guiding_object_name = LabelSubscriber(

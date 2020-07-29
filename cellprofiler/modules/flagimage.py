@@ -41,6 +41,7 @@ import os
 
 import numpy
 from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_INTEGER
+from cellprofiler_core.constants.module import IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler_core.constants.workspace import DISPOSITION_CONTINUE, DISPOSITION_SKIP
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
@@ -252,20 +253,19 @@ Select the objects whose measurements you want to use for flagging.
                 return IMAGE
             return group.object_name.value
 
+
         group.append(
             "rules_directory",
             Directory(
                 "Rules file location",
                 doc="""\
-*(Used only when flagging using "%(S_RULES)s")*
+*(Used only when flagging using "{rules}")*
 
 Select the location of the rules file that will be used for flagging images.
-%(IO_FOLDER_CHOICE_HELP_TEXT)s
-"""
-                % globals(),
+{folder_choice}
+""".format(rules=S_RULES, folder_choice=IO_FOLDER_CHOICE_HELP_TEXT),
             ),
         )
-
         def get_directory_fn():
             """Get the directory for the rules file name"""
             return group.rules_directory.get_absolute_path()

@@ -107,6 +107,7 @@ from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_FLOAT, C_COUN
 from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X
 from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y
 from cellprofiler_core.constants.measurement import M_NUMBER_OBJECT_NUMBER
+from cellprofiler_core.constants.module import USING_METADATA_GROUPING_HELP_REF, IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler_core.image import Image
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
@@ -250,8 +251,8 @@ class UntangleWorms(Module):
 -  *%(MODE_UNTANGLE)s* uses the training file to untangle images of
    worms.
 
-%(USING_METADATA_GROUPING_HELP_REF)s
-"""
+{grouping}
+""".format(grouping=USING_METADATA_GROUPING_HELP_REF)
             % globals(),
         )
 
@@ -383,7 +384,7 @@ overlapping sections removed.
             allow_metadata=False,
             doc="""\
 Select the folder containing the training set to be loaded.
-%(IO_FOLDER_CHOICE_HELP_TEXT)s
+{folder_choice}
 
 An additional option is the following:
 
@@ -393,8 +394,7 @@ An additional option is the following:
    access this file, you would choose *URL* and enter
    ``http://my_institution.edu/server/my_username/`` as the path
    location.
-"""
-            % globals(),
+""".format(folder_choice=IO_FOLDER_CHOICE_HELP_TEXT),
         )
         self.training_set_directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 

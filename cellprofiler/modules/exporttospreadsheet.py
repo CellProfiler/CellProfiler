@@ -106,7 +106,8 @@ from cellprofiler_core.constants.measurement import (
     R_FIRST_OBJECT_NUMBER,
     R_SECOND_OBJECT_NUMBER,
 )
-from cellprofiler_core.constants.module import IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+from cellprofiler_core.constants.module import IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT, \
+    USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF
 from cellprofiler_core.constants.pipeline import EXIT_STATUS
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
@@ -122,7 +123,7 @@ from cellprofiler_core.setting import Measurement
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import CustomChoice, Choice
-from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.multichoice import MeasurementMultiChoice
 from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
 from cellprofiler_core.setting.text import Directory, Text
@@ -134,6 +135,8 @@ from cellprofiler_core.utilities.measurement import (
     find_metadata_tokens,
     get_agg_measurement_name,
 )
+
+from cellprofiler.gui.help.content import MEASUREMENT_NAMING_HELP
 
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536
@@ -418,9 +421,8 @@ specified in one of two ways:
 -  *Image filename:* If the gene name is not available, the image
    filename can be used as a surrogate identifier.
 
-%(USING_METADATA_HELP_REF)s
-"""
-            % globals(),
+{meta_help}
+""".format(meta_help=USING_METADATA_HELP_REF),
         )
 
         self.gene_name_column = Measurement(
@@ -431,8 +433,7 @@ specified in one of two ways:
 name each row)*
 
 Choose the measurement that corresponds to the identifier, such as
-metadata from the **Metadata** module. %(USING_METADATA_HELP_REF)s"""
-            % globals(),
+metadata from the **Metadata** module. {meta_help}""".format(meta_help=USING_METADATA_HELP_REF),
         )
 
         self.use_which_image_for_gene_name = ImageSubscriber(
@@ -452,7 +453,7 @@ Select which image whose filename will be used to identify each sample row.""",
 Select *"Yes"* to export every category of measurement.
 **ExportToSpreadsheet** will create one data file for each object
 produced in the pipeline, as well as per-image, per-experiment and
-object relationships, if relevant. See *%(MEASUREMENT_NAMING_HELP)s*
+object relationships, if relevant. See *{naming_help}*
 for more details on the various measurement types. The module will use
 the object name as the file name, optionally prepending the output file
 name if specified above.
@@ -460,8 +461,7 @@ name if specified above.
 Select *"No"* if you want to do either (or both) of two things:
 
 -  Specify which objects should be exported;
--  Override the automatic nomenclature of the exported files."""
-            % globals(),
+-  Override the automatic nomenclature of the exported files.""".format(naming_help=MEASUREMENT_NAMING_HELP),
         )
 
         self.object_groups = []
@@ -479,9 +479,8 @@ Select *"No"* if you want to do either (or both) of two things:
 
 Choose *Image*, *Experiment*, *Object relationships* or an object name
 from the list. **ExportToSpreadsheet** will write out a file of
-measurements for the given category. See *%(MEASUREMENT_NAMING_HELP)s*
-for more details on the various measurement types."""
-                % globals(),
+measurements for the given category. See *{naming_help}*
+for more details on the various measurement types.""".format(naming_help=MEASUREMENT_NAMING_HELP),
             ),
         )
 
@@ -499,8 +498,7 @@ example, if you measured Nuclei, Cells, and Cytoplasm objects, and you
 want to look at the measurements for all of them in a single spreadsheet.
 
 Select *"No"* to create separate files for this and the previous
-object."""
-                % globals(),
+object.""",
             ),
         )
 
@@ -516,8 +514,7 @@ Select *"Yes"* to use the object name as selected above to generate
 a file name for the spreadsheet. For example, if you selected *Image*
 above and have not checked the "*Prepend output file name*" option, your
 output file will be named “Image.csv”.
-Select *"No"* to name the file yourself."""
-                % globals(),
+Select *"No"* to name the file yourself.""",
             ),
         )
 
@@ -536,10 +533,12 @@ to this if you asked to do so above. If you have metadata associated
 with your images, this setting will also substitute metadata tags if
 desired.
 
-%(USING_METADATA_TAGS_REF)s
+{tags}
 
-%(USING_METADATA_HELP_REF)s
-"""
+{help}
+""".format(
+                    tags=USING_METADATA_TAGS_REF,
+                    help=USING_METADATA_HELP_REF)
                 % globals(),
             ),
         )

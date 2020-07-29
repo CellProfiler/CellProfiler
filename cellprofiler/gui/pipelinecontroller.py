@@ -104,6 +104,8 @@ from cellprofiler_core.preferences import (
     get_show_analysis_complete_dlg,
     get_wants_pony,
     set_show_analysis_complete_dlg,
+    add_recent_file,
+    set_default_output_directory,
 )
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.utilities.legacy import cmp

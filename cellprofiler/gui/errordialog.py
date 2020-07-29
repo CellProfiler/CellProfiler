@@ -14,6 +14,7 @@ from functools import reduce
 import six.moves.urllib.request
 import six.moves.urllib.error
 import six.moves.urllib.parse
+from cellprofiler_core.preferences import get_headless
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"

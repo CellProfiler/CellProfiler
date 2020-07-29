@@ -14,6 +14,13 @@ import wx.adv
 import wx.html
 import wx.lib.inspection
 import wx.lib.scrolledpanel
+from cellprofiler_core.preferences import (
+    get_startup_blurb,
+    EXT_PROJECT,
+    EXT_PIPELINE,
+    get_show_sampling,
+)
+from cellprofiler_core.utilities.core.modules import instantiate_module
 
 import cellprofiler
 import cellprofiler.gui

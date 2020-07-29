@@ -35,6 +35,17 @@ import six
 import skimage.exposure
 import wx
 import wx.grid
+from cellprofiler_core.preferences import (
+    reset_cpfigure_position,
+    get_interpolation_mode,
+    IM_NEAREST,
+    IM_BILINEAR,
+    IM_BICUBIC,
+    get_next_cpfigure_position,
+    get_title_font_name,
+    get_title_font_size,
+    get_normalization_factor,
+)
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
@@ -238,7 +249,7 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
     filename = url[(url.rfind("/") + 1) :]
 
     try:
-        provider = cellprofiler_core.image.LoadImagesImageProvider(
+        provider = LoadImagesImageProvider(
             filename=filename,
             name=os.path.splitext(filename)[0],
             pathname=os.path.dirname(url),

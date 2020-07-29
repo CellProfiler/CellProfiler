@@ -21,6 +21,17 @@ import scipy.sparse
 import wx
 import wx.adv
 import wx.html
+from cellprofiler_core.object import Objects
+from cellprofiler_core.preferences import (
+    get_interpolation_mode,
+    get_title_font_name,
+    get_default_colormap,
+    IM_NEAREST,
+    IM_BILINEAR,
+    IM_BICUBIC,
+    get_title_font_size,
+)
+from cellprofiler_core.utilities.core.object import size_similarly
 
 import cellprofiler.gui.figure
 import cellprofiler.gui.tools
@@ -219,7 +230,7 @@ class EditObjectsDialog(wx.Dialog):
         self.last_ijv = ijvx[:, :3]
         self.last_artist_save = artist_save
         self.last_to_keep = self.to_keep
-        temp = cellprofiler_core.object.Objects()
+        temp = Objects()
         temp.set_ijv(self.last_ijv, shape=self.shape)
         self.labels = [l for l, c in temp.get_labels()]
         self.init_labels()
@@ -699,7 +710,7 @@ class EditObjectsDialog(wx.Dialog):
             ii.append(i[mask])
             jj.append(j[mask])
             vv.append(l[mask])
-        temp = cellprofiler_core.object.Objects()
+        temp = Objects()
         temp.set_ijv(
             numpy.column_stack([numpy.hstack(x) for x in (ii, jj, vv)]),
             shape=self.shape,
@@ -749,9 +760,7 @@ class EditObjectsDialog(wx.Dialog):
                 orig_to_show[object_number] = False
         self.orig_axes.clear()
         if self.guide_image is not None and self.wants_image_display:
-            image, _ = cellprofiler_core.object.size_similarly(
-                self.orig_labels[0], self.guide_image
-            )
+            image, _ = size_similarly(self.orig_labels[0], self.guide_image)
             if image.ndim == 2:
                 image = numpy.dstack((image, image, image))
             if self.scaling_mode == self.SM_RAW:

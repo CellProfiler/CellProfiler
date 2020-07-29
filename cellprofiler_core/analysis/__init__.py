@@ -4,6 +4,8 @@ Run pipelines on imagesets to produce measurements.
 
 import sys
 
+from cellprofiler_core.analysis._runner import Runner
+
 use_analysis = True
 
 DEBUG = "DEBUG"

@@ -7,5 +7,6 @@ from ._image_set_success_with_dictionary import ImageSetSuccessWithDictionary
 from ._interaction import Interaction
 from ._no_work import NoWork
 from ._omero_login import OmeroLogin
+from ._server_exited import ServerExited
 from ._shared_dictionary import SharedDictionary
 from ._work import Work

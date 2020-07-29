@@ -43,14 +43,13 @@ from ..pipeline import dump
 from ..preferences import get_plugin_directory
 from ..preferences import get_temporary_directory
 from ..preferences import preferences_as_dict
-from ..utilities.analysis import close_all_on_exec
+from ..utilities.analysis import close_all_on_exec, start_daemon_thread
 from ..utilities.analysis import find_analysis_worker_source
 from ..utilities.analysis import find_python
 from ..utilities.analysis import find_worker_env
 from ..utilities.zmq import get_announcer_address
 from ..utilities.zmq import register_analysis
 from ..utilities.zmq.communicable.reply import Reply
-from ..worker import start_daemon_thread
 from ..workspace import Workspace
 
 

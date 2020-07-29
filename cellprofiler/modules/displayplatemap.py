@@ -37,6 +37,7 @@ See also other **Display** modules and data tools.
 import numpy
 import six
 from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.module import USING_METADATA_HELP_REF
 
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Measurement
@@ -105,9 +106,8 @@ Choose the metadata tag that corresponds to the plate identifier. That
 is, each plate should have a metadata tag containing a specifier
 corresponding uniquely to that plate.
 
-%(USING_METADATA_HELP_REF)s
-"""
-            % globals(),
+{meta_help}
+""".format(meta_help=USING_METADATA_HELP_REF),
         )
 
         self.plate_type = Choice(
@@ -178,9 +178,8 @@ format 96-well plate would span from column “01” to “12”, whereas a
 384-well plate (16 rows and 24 columns) would span from column “01” to
 “24”.
 
-%(USING_METADATA_HELP_REF)s
-"""
-            % globals(),
+{meta_help}
+""".format(meta_help=USING_METADATA_HELP_REF)
         )
 
         self.agg_method = Choice(

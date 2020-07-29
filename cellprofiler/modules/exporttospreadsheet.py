@@ -106,6 +106,7 @@ from cellprofiler_core.constants.measurement import (
     R_FIRST_OBJECT_NUMBER,
     R_SECOND_OBJECT_NUMBER,
 )
+from cellprofiler_core.constants.module import IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler_core.constants.pipeline import EXIT_STATUS
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
@@ -123,7 +124,7 @@ from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import CustomChoice, Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.multichoice import MeasurementMultiChoice
-from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
 from cellprofiler_core.setting.text import Directory, Text
 from cellprofiler_core.utilities.core.modules.load_data import (
     is_file_name_feature,
@@ -216,11 +217,12 @@ within your data (for example, in file names).""",
                 DEFAULT_INPUT_SUBFOLDER_NAME,
             ],
             doc="""\
-This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+This setting lets you choose the folder for the output files. {folder_choice}
 
-%(IO_WITH_METADATA_HELP_TEXT)s
-"""
-            % globals(),
+{metadata_help}
+""".format(
+                folder_choice=IO_FOLDER_CHOICE_HELP_TEXT,
+                metadata_help=IO_WITH_METADATA_HELP_TEXT),
         )
         self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
@@ -1590,14 +1592,14 @@ def is_object_group(group):
     return not group.name.value in (IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS)
 
 
-class EEObjectNameSubscriber(ObjectNameSubscriber):
+class EEObjectNameSubscriber(LabelSubscriber):
     """ExportToExcel needs to prepend "Image" and "Experiment" to the list of objects
 
     """
 
     def get_choices(self, pipeline):
         choices = [(s, "", 0, False) for s in [IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS]]
-        choices += ObjectNameSubscriber.get_choices(self, pipeline)
+        choices += LabelSubscriber.get_choices(self, pipeline)
         return choices
 
 

@@ -135,6 +135,7 @@ from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.do_something import RemoveSettingButton
+from cellprofiler_core.setting.multichoice import ObjectSubscriberMultiChoice, ImageNameSubscriberMultiChoice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.setting.text import Integer

@@ -28,8 +28,15 @@ import wx
 import wx.lib.buttons
 import wx.lib.mixins.listctrl
 from cellprofiler_core.analysis import DEBUG
+from cellprofiler_core.analysis._analysis import Analysis
 from cellprofiler_core.analysis._runner import Runner
-from cellprofiler_core.analysis.event import Finished
+from cellprofiler_core.analysis.event import (
+    Finished,
+    Resumed,
+    Paused,
+    Started,
+    Progress,
+)
 from cellprofiler_core.analysis.reply import (
     DebugCancel,
     ExceptionPleaseDebug,
@@ -37,7 +44,14 @@ from cellprofiler_core.analysis.reply import (
     Interaction,
     Ack,
 )
-from cellprofiler_core.analysis.request import Display, DisplayPostRun, DisplayPostGroup
+from cellprofiler_core.analysis.request import (
+    Display,
+    DisplayPostRun,
+    DisplayPostGroup,
+    DebugComplete,
+    DebugWaiting,
+    ExceptionReport,
+)
 from cellprofiler_core.constants.measurement import (
     EXPERIMENT,
     IMAGE,
@@ -53,7 +67,9 @@ from cellprofiler_core.constants.pipeline import (
     M_USER_PIPELINE,
     M_PIPELINE,
     DIRECTION_DOWN,
+    DIRECTION_UP,
 )
+from cellprofiler_core.constants.workspace import DISPOSITION_SKIP
 from cellprofiler_core.image import ImageSetList
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
@@ -72,6 +88,7 @@ from cellprofiler_core.pipeline import (
     PipelineLoaded,
     RunException,
     Listener,
+    PrepareRunError,
 )
 from cellprofiler_core.preferences import (
     RECENT_FILE_COUNT,
@@ -106,10 +123,18 @@ from cellprofiler_core.preferences import (
     set_show_analysis_complete_dlg,
     add_recent_file,
     set_default_output_directory,
+    get_max_workers,
+    set_default_image_directory,
 )
 from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.utilities.core.modules import (
+    instantiate_module,
+    get_module_class,
+    get_module_names,
+)
 from cellprofiler_core.utilities.legacy import cmp
 from cellprofiler_core.utilities.pathname import pathname2url
+from cellprofiler_core.utilities.zmq import Reply
 from wx.adv import Sound
 
 import cellprofiler

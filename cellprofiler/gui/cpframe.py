@@ -3,7 +3,6 @@
 """
 
 import codecs
-import inspect
 import logging
 import os
 import pdb

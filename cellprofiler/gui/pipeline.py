@@ -1,8 +1,9 @@
 import wx
 from cellprofiler_core.pipeline import PipelineLoadCancelledException
+from cellprofiler_core import pipeline
 
 
-class Pipeline(cellprofiler_core.pipeline.Pipeline):
+class Pipeline(pipeline.Pipeline):
     def create_progress_dialog(self, message, pipeline, title):
         return wx.ProgressDialog(
             title, message, style=wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT

@@ -35,6 +35,7 @@ import six
 import skimage.exposure
 import wx
 import wx.grid
+from cellprofiler_core.image import FileImage
 from cellprofiler_core.preferences import (
     reset_cpfigure_position,
     get_interpolation_mode,
@@ -45,7 +46,16 @@ from cellprofiler_core.preferences import (
     get_title_font_name,
     get_title_font_size,
     get_normalization_factor,
+    get_primary_outline_color,
+    get_secondary_outline_color,
+    get_tertiary_outline_color,
+    get_default_colormap,
+    INTENSITY_MODE_GAMMA,
+    INTENSITY_MODE_LOG,
+    INTENSITY_MODE_RAW,
+    get_intensity_mode,
 )
+from cellprofiler_core.utilities.core.object import overlay_labels
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
@@ -249,7 +259,7 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
     filename = url[(url.rfind("/") + 1) :]
 
     try:
-        provider = LoadImagesImageProvider(
+        provider = FileImage(
             filename=filename,
             name=os.path.splitext(filename)[0],
             pathname=os.path.dirname(url),
@@ -1801,7 +1811,7 @@ class Figure(wx.Frame):
         """
         if background_image is not None:
             opacity = 0.7
-            label_image = cellprofiler_core.object.overlay_labels(
+            label_image = overlay_labels(
                 labels=image,
                 opacity=opacity,
                 pixel_data=background_image,

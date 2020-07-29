@@ -1,6 +1,7 @@
 import threading
 
 import six.moves
+import wx
 
 WARNING_COLOR = wx.Colour(224, 224, 0, 255)
 RANGE_TEXT_WIDTH = 40  # number of pixels in a range text box TO_DO - calculate it

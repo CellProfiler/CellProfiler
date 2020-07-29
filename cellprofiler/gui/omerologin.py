@@ -4,6 +4,14 @@
 
 import bioformats.formatreader
 import wx
+from cellprofiler_core.preferences import (
+    get_omero_server,
+    get_omero_port,
+    get_omero_user,
+    set_omero_server,
+    set_omero_port,
+    set_omero_user,
+)
 
 
 class OmeroLoginDlg(wx.Dialog):

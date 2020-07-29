@@ -9,8 +9,11 @@ import six
 import wx
 import wx.grid
 from cellprofiler_core.pipeline import ImagePlane
+from cellprofiler_core.pipeline import PipelineCleared
+from cellprofiler_core.pipeline import PipelineLoaded
+from cellprofiler_core.pipeline import ModuleEdited
 from cellprofiler_core.pipeline import ModuleRemoved
-from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME, URL_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
@@ -19,7 +22,12 @@ from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.preferences import get_default_image_directory
 from cellprofiler_core.preferences import get_default_output_directory
 from cellprofiler_core.preferences import get_error_color
-from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Binary, PathListDisplay, Setting
+from cellprofiler_core.setting import Coordinates
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import Color
+from cellprofiler_core.setting import TreeChoice
 from cellprofiler_core.setting import BinaryMatrix
 from cellprofiler_core.setting import DataTypes
 from cellprofiler_core.setting import DoThings
@@ -34,14 +42,24 @@ from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.choice import Colormap
 from cellprofiler_core.setting.choice import CustomChoice
-from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import DoSomething, ImageSetDisplay
 from cellprofiler_core.setting.do_something import PathListRefreshButton
 from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.setting.multichoice import MeasurementMultiChoice
+from cellprofiler_core.setting.multichoice import SubscriberMultiChoice
 from cellprofiler_core.setting.multichoice import MultiChoice
 from cellprofiler_core.setting.multichoice import SubdirectoryFilter
 from cellprofiler_core.setting.range import IntegerOrUnboundedRange
+from cellprofiler_core.setting.range import IntegerRange
+from cellprofiler_core.setting.range import FloatRange
+from cellprofiler_core.setting.subscriber import (
+    ImageListSubscriber,
+    ImageSubscriber,
+    LabelListSubscriber,
+)
 from cellprofiler_core.setting.text import Directory
+from cellprofiler_core.setting.text import Filename
+from cellprofiler_core.setting.text import Pathname
 
 from ._binary_matrix_controller import BinaryMatrixController
 from ._data_type_controller import DataTypeController
@@ -62,6 +80,8 @@ from ..constants.module_view import CHECK_TIMEOUT_SEC
 from ..constants.module_view import EDIT_TIMEOUT_SEC
 from ..constants.module_view import FROM_EDGE
 from ..constants.module_view import WARNING_COLOR
+from ..html.utils import rst_to_html_fragment
+from ..htmldialog import HTMLDialog
 from ..utilities.module_view import absrel_control_name
 from ..utilities.module_view import button_control_name
 from ..utilities.module_view import category_control_name
@@ -345,15 +365,13 @@ class ModuleView:
                         v, v.get_choices(), control_name, wx.CB_READONLY, control
                     )
                     flag = wx.ALIGN_LEFT
-                elif isinstance(
-                    v, (ListImageNameSubscriber, ListObjectNameSubscriber,),
-                ):
+                elif isinstance(v, (ImageListSubscriber, LabelListSubscriber,),):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_list_name_subscriber_control(
                         v, choices, control_name, control
                     )
                     flag = wx.EXPAND
-                elif isinstance(v, NameSubscriber):
+                elif isinstance(v, ImageSubscriber):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_name_subscriber_control(
                         v, choices, control_name, control
@@ -394,9 +412,9 @@ class ModuleView:
                             )
                     flag = wx.EXPAND | wx.ALL
                     border = 2
-                elif isinstance(v, FilenameText):
+                elif isinstance(v, Filename):
                     control = self.make_filename_text_control(v, control)
-                elif isinstance(v, DirectoryPath):
+                elif isinstance(v, Directory):
                     control = self.make_directory_path_control(v, control_name, control)
                 elif isinstance(v, Pathname):
                     control = self.make_pathname_control(v, control)
@@ -673,7 +691,7 @@ class ModuleView:
         control_name - assign this name to the control
         """
         if not control:
-            namelabel = "Image" if isinstance(v, ListImageNameSubscriber) else "Object"
+            namelabel = "Image" if isinstance(v, ImageListSubscriber) else "Object"
             control = namesubscriber.NameSubscriberListBox(
                 self.__module_panel,
                 checked=v.value,
@@ -1329,9 +1347,9 @@ class ModuleView:
 
             def on_press(event):
                 """Open a file browser"""
-                if v.mode == FilenameText.MODE_OPEN:
+                if v.mode == Filename.MODE_OPEN:
                     mode = wx.FD_OPEN
-                elif v.mode == FilenameText.MODE_APPEND:
+                elif v.mode == Filename.MODE_APPEND:
                     mode = wx.FD_SAVE
                 else:
                     mode = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT
@@ -2002,10 +2020,8 @@ class ModuleView:
         control = wx.Button(self.__module_panel, -1, "?", (0, 0), (30, -1), name=name)
 
         def callback(event):
-            dialog = cellprofiler.gui.htmldialog.HTMLDialog(
-                self.__module_panel,
-                title,
-                cellprofiler.gui.html.utils.rst_to_html_fragment(content),
+            dialog = HTMLDialog(
+                self.__module_panel, title, rst_to_html_fragment(content),
             )
             dialog.CentreOnParent()
             dialog.Show()
@@ -2190,12 +2206,10 @@ class ModuleView:
         request_module_validation(self.__validation_request)
 
     def __on_pipeline_event(self, pipeline, event):
-        if isinstance(
-            event, cellprofiler_core.pipeline.event.PipelineCleared
-        ) or isinstance(event, cellprofiler_core.pipeline.event.PipelineLoaded):
+        if isinstance(event, PipelineCleared) or isinstance(event, PipelineLoaded):
             if self.__module not in self.__pipeline.modules(False):
                 self.clear_selection()
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleEdited):
+        elif isinstance(event, ModuleEdited):
             if (
                 not self.__inside_notify
                 and self.__module is not None

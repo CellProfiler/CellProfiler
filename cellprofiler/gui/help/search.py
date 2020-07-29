@@ -3,6 +3,11 @@ import re
 
 import wx
 import wx.html
+from cellprofiler_core.preferences import get_plugin_directory
+from cellprofiler_core.utilities.core.modules import (
+    instantiate_module,
+    get_module_names,
+)
 
 import cellprofiler.gui
 import cellprofiler.gui.help.content

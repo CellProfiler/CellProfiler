@@ -2236,8 +2236,8 @@ class ModuleView:
         if isinstance(
             event,
             (
-                cpw.WorkspaceModel.WorkspaceLoadedEvent,
-                cpw.WorkspaceModel.WorkspaceCreatedEvent,
+                cpw.Workspace.WorkspaceLoadedEvent,
+                cpw.Workspace.WorkspaceCreatedEvent,
             ),
         ):
             # Detach and reattach the current module to get it reacclimated

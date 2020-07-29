@@ -21,7 +21,7 @@ from cellprofiler_core.object import ObjectSet, Objects
 import cellprofiler.modules.trackobjects
 import tests.modules
 from cellprofiler_core.pipeline import Pipeline, LoadException, RunException
-from cellprofiler.gui._workspace_model import WorkspaceModel
+from cellprofiler.gui._workspace_model import Workspace
 
 OBJECT_NAME = "objects"
 
@@ -214,7 +214,7 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
     if fn:
         fn(module, None, 0)
     module.prepare_run(
-        WorkspaceModel(pipeline, module, None, None, measurements, image_set_list)
+        Workspace(pipeline, module, None, None, measurements, image_set_list)
     )
 
     first = True
@@ -232,7 +232,7 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
             measurements.add_measurement(
                 OBJECT_NAME, "measurement", numpy.array(measurement[index])
             )
-        workspace = WorkspaceModel(
+        workspace = Workspace(
             pipeline, module, image_set, object_set, measurements, image_set_list
         )
         if fn:
@@ -1217,7 +1217,7 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
     image_set_list = ImageSetList()
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
-    workspace = WorkspaceModel(
+    workspace = Workspace(
         pipeline, module, image_set, ObjectSet(), m, image_set_list,
     )
     return workspace, module
@@ -2516,7 +2516,7 @@ def test_save_image():
     image_set_list = ImageSetList()
 
     module.prepare_run(
-        WorkspaceModel(pipeline, module, None, None, measurements, image_set_list)
+        Workspace(pipeline, module, None, None, measurements, image_set_list)
     )
 
     first = True
@@ -2525,7 +2525,7 @@ def test_save_image():
     objects.segmented = numpy.zeros((640, 480), int)
     object_set.add_objects(objects, OBJECT_NAME)
     image_set = image_set_list.get_image_set(0)
-    workspace = WorkspaceModel(
+    workspace = Workspace(
         pipeline, module, image_set, object_set, measurements, image_set_list
     )
     module.run(workspace)

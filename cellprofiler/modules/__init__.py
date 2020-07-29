@@ -17,7 +17,7 @@ builtin_modules = {
     "displaydataonimage": "DisplayDataOnImage",
     "displaydensityplot": "DisplayDensityPlot",
     "displayhistogram": "DisplayHistogram",
-    "displayplatemap": "DisplayPlateMap",
+    "displayplatemap": "DisplayPlatemap",
     "displayscatterplot": "DisplayScatterPlot",
     "editobjectsmanually": "EditObjectsManually",
     "enhanceedges": "EnhanceEdges",

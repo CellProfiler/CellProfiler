@@ -148,6 +148,7 @@ import six
 from cellprofiler_core.constants.measurement import EXPERIMENT
 from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.constants.measurement import NEIGHBORS
+from cellprofiler_core.constants.module import IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
@@ -303,12 +304,11 @@ Leave this setting blank if you do not want a prefix.
                 doc="""\
 *(Used only when creating dose-response plots)*
 
-This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+This setting lets you choose the folder for the output files. {fcht}
 
-%(IO_WITH_METADATA_HELP_TEXT)s
-"""
-                % globals(),
-            ),
+{mht}
+""".format(fcht=IO_FOLDER_CHOICE_HELP_TEXT, mht=IO_WITH_METADATA_HELP_TEXT),
+        ),
         )
 
         group.append("divider", Divider())

@@ -1,3 +1,5 @@
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+
 from ._image_segmentation import ImageSegmentation
 from ...constants.measurement import COLTYPE_INTEGER
 from ...constants.measurement import C_CHILDREN
@@ -8,7 +10,6 @@ from ...constants.measurement import FF_COUNT
 from ...constants.measurement import FF_PARENT
 from ...constants.measurement import FTR_OBJECT_NUMBER
 from ...object import Objects
-from ...setting.text import LabelName
 
 
 class ObjectProcessing(ImageSegmentation):
@@ -46,7 +47,7 @@ class ObjectProcessing(ImageSegmentation):
     def create_settings(self):
         super(ObjectProcessing, self).create_settings()
 
-        self.x_name = LabelName(
+        self.x_name = LabelSubscriber(
             "Select the input object", doc="Select the object you want to use."
         )
 

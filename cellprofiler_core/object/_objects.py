@@ -481,7 +481,7 @@ class Objects:
         )
 
     def overlapping(self):
-        if not isinstance(self.__segmented, cellprofiler_core.object.Segmentation):
+        if not isinstance(self.__segmented, Segmentation):
             return False
         dense, indices = self.__segmented.get_dense()
         return len(dense) != 1

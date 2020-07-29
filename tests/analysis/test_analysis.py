@@ -8,6 +8,7 @@ import cellprofiler_core.constants.measurement
 import cellprofiler_core.utilities.measurement
 from cellprofiler_core.analysis._analysis import Analysis
 from cellprofiler_core.analysis._runner import Runner
+from cellprofiler_core.analysis.reply import ImageSetSuccess
 
 logger = logging.getLogger(__name__)
 # logger.addHandler(logging.StreamHandler())
@@ -677,9 +678,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertFalse(response.wants_dictionary)
             self.assertSequenceEqual(response.image_set_numbers, [1, 2])
             response = worker.send(
-                cellprofiler_core.analysis.ImageSetSuccess(
-                    worker.analysis_id, response.image_set_numbers[0]
-                )
+                ImageSetSuccess(worker.analysis_id, response.image_set_numbers[0])
             )()
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [3, 4])
@@ -827,7 +826,7 @@ class TestAnalysis(unittest.TestCase):
                 image_number = i + 1
                 if image_number > 0:
                     worker.send(
-                        cellprofiler_core.analysis.ImageSetSuccess(
+                        ImageSetSuccess(
                             worker.analysis_id, image_set_number=image_number
                         )
                     )
@@ -897,9 +896,7 @@ class TestAnalysis(unittest.TestCase):
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
             )
-            response = worker.send(
-                cellprofiler_core.analysis.ImageSetSuccess(worker.analysis_id, 1)
-            )()
+            response = worker.send(ImageSetSuccess(worker.analysis_id, 1))()
             #####################################################
             #
             # Get the second group.
@@ -916,9 +913,7 @@ class TestAnalysis(unittest.TestCase):
             objects_measurements = [r.uniform(size=10) for _ in range(4)]
             for image_number in range(2, 5):
                 worker.send(
-                    cellprofiler_core.analysis.ImageSetSuccess(
-                        worker.analysis_id, image_set_number=image_number
-                    )
+                    ImageSetSuccess(worker.analysis_id, image_set_number=image_number)
                 )
             for image_numbers in ((1, 2), (3, 4)):
                 m = cellprofiler_core.measurement.Measurements(copy=client_measurements)
@@ -1033,9 +1028,7 @@ class TestAnalysis(unittest.TestCase):
                 (3, objects_measurements[2]),
             ):
                 worker.send(
-                    cellprofiler_core.analysis.ImageSetSuccess(
-                        worker.analysis_id, image_set_number=image_number
-                    )
+                    ImageSetSuccess(worker.analysis_id, image_set_number=image_number)
                 )
                 m = cellprofiler_core.measurement.Measurements(copy=client_measurements)
                 m[
@@ -1128,9 +1121,7 @@ class TestAnalysis(unittest.TestCase):
             )
             for image_number in (1, 2):
                 response = worker.send(
-                    cellprofiler_core.analysis.ImageSetSuccess(
-                        worker.analysis_id, image_number
-                    )
+                    ImageSetSuccess(worker.analysis_id, image_number)
                 )()
             m = cellprofiler_core.measurement.Measurements(copy=client_measurements)
             objects_measurements = [r.uniform(size=10) for _ in range(2)]

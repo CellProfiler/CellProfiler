@@ -18,24 +18,8 @@ from .event import Paused
 from .event import Progress
 from .event import Resumed
 from .event import Started
-from .reply import Ack
-from .reply import ImageSetSuccess
-from .reply import ImageSetSuccessWithDictionary
-from .reply import Interaction
-from .reply import NoWork
-from .reply import OmeroLogin
-from .reply import SharedDictionary
-from .reply import Work
-from .request import AnalysisCancel
-from .request import DebugComplete
-from .request import DebugWaiting
-from .request import Display
-from .request import DisplayPostGroup
-from .request import DisplayPostRun
-from .request import ExceptionReport
-from .request import InitialMeasurements
-from .request import MeasurementsReport
-from .request import PipelinePreferences
+from . import reply as anareply
+from . import request as anarequest
 from ..image import ImageSetList
 from ..measurement import Measurements
 from ..utilities.measurement import load_measurements_from_buffer
@@ -208,7 +192,7 @@ class Runner:
         self.event_listener(evt)
 
     def post_run_display_handler(self, workspace, module):
-        event = DisplayPostRun(module.module_num, workspace.display_data)
+        event = anarequest.DisplayPostRun(module.module_num, workspace.display_data)
         self.event_listener(event)
 
     # XXX - catch and deal with exceptions in interface() and jobserver() threads
@@ -391,7 +375,9 @@ class Runner:
                         "Image", self.STATUS, int(finished_req.image_set_number),
                     ] = self.STATUS_FINISHED_WAITING
                     if waiting_for_first_imageset:
-                        assert isinstance(finished_req, ImageSetSuccessWithDictionary,)
+                        assert isinstance(
+                            finished_req, anareply.ImageSetSuccessWithDictionary,
+                        )
                         self.shared_dicts = finished_req.shared_dicts
                         waiting_for_first_imageset = False
                         assert len(self.shared_dicts) == len(self.pipeline.modules())
@@ -399,7 +385,7 @@ class Runner:
                         # queue them now that the shared state is available.
                         for job in job_groups:
                             self.work_queue.put((job, worker_runs_post_group, False))
-                    finished_req.reply(Ack())
+                    finished_req.reply(anareply.Ack())
 
                 # check progress and report
                 counts = collections.Counter(
@@ -534,7 +520,7 @@ class Runner:
             except queue.Empty:
                 continue
 
-            if isinstance(req, PipelinePreferences):
+            if isinstance(req, anarequest.PipelinePreferences):
                 logging.debug("Received pipeline preferences request")
                 req.reply(
                     Reply(
@@ -543,11 +529,11 @@ class Runner:
                     )
                 )
                 logging.debug("Replied to pipeline preferences request")
-            elif isinstance(req, InitialMeasurements):
+            elif isinstance(req, anarequest.InitialMeasurements):
                 logging.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
                 logging.debug("Replied to initial measurements request")
-            elif isinstance(req, Work):
+            elif isinstance(req, anarequest.Work):
                 if not self.work_queue.empty():
                     logging.debug("Received work request")
                     (
@@ -556,7 +542,7 @@ class Runner:
                         wants_dictionary,
                     ) = self.work_queue.get()
                     req.reply(
-                        Work(
+                        anareply.Work(
                             image_set_numbers=job,
                             worker_runs_post_group=worker_runs_post_group,
                             wants_dictionary=wants_dictionary,
@@ -570,39 +556,39 @@ class Runner:
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
-                    req.reply(NoWork())
-            elif isinstance(req, ImageSetSuccess):
+                    req.reply(anareply.NoWork())
+            elif isinstance(req, anareply.ImageSetSuccess):
                 # interface() is responsible for replying, to allow it to
                 # request the shared_state dictionary if needed.
                 logging.debug("Received ImageSetSuccess")
                 self.queue_imageset_finished(req)
                 logging.debug("Enqueued ImageSetSuccess")
-            elif isinstance(req, SharedDictionary):
+            elif isinstance(req, anarequest.SharedDictionary):
                 logging.debug("Received shared dictionary request")
-                req.reply(SharedDictionary(dictionaries=self.shared_dicts))
+                req.reply(anareply.SharedDictionary(dictionaries=self.shared_dicts))
                 logging.debug("Sent shared dictionary reply")
-            elif isinstance(req, MeasurementsReport):
+            elif isinstance(req, anarequest.MeasurementsReport):
                 logging.debug("Received measurements report")
                 self.queue_received_measurements(req.image_set_numbers, req.buf)
-                req.reply(Ack())
+                req.reply(anareply.Ack())
                 logging.debug("Acknowledged measurements report")
-            elif isinstance(req, AnalysisCancel):
+            elif isinstance(req, anarequest.AnalysisCancel):
                 # Signal the interface that we are cancelling
                 logging.debug("Received analysis worker cancel request")
                 with self.interface_work_cv:
                     self.cancelled = True
                     self.interface_work_cv.notify()
-                req.reply(Ack())
+                req.reply(anareply.Ack())
             elif isinstance(
                 req,
                 (
-                    Interaction,
-                    Display,
-                    DisplayPostGroup,
-                    ExceptionReport,
-                    DebugWaiting,
-                    DebugComplete,
-                    OmeroLogin,
+                    anarequest.Interaction,
+                    anarequest.Display,
+                    anarequest.DisplayPostGroup,
+                    anarequest.ExceptionReport,
+                    anarequest.DebugWaiting,
+                    anarequest.DebugComplete,
+                    anarequest.OmeroLogin,
                 ),
             ):
                 logging.debug("Enqueueing interactive request")

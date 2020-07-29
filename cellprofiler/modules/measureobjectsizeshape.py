@@ -1,4 +1,3 @@
-import cellprofiler_core.object
 import centrosome.cpmorphology
 import centrosome.zernike
 import numpy
@@ -6,6 +5,7 @@ import scipy.ndimage
 import skimage.measure
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
+from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import Divider, Binary, ValidationError
 from cellprofiler_core.setting.subscriber import LabelListSubscriber
 
@@ -592,7 +592,7 @@ module.""".format(
                 omap = numpy.zeros(objects.shape)
                 ocoords = coords_array[coords_array[:, 2] == label, 0:2]
                 numpy.put(omap, numpy.ravel_multi_index(ocoords.T, omap.shape), 1)
-                tempobject = cellprofiler_core.object.Objects()
+                tempobject = Objects()
                 tempobject.segmented = omap
                 buffer = self.analyze_objects(tempobject, desired_properties)
                 for f, m in buffer.items():

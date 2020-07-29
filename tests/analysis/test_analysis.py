@@ -972,9 +972,9 @@ class TestAnalysis(unittest.TestCase):
         pipeline, m = self.make_pipeline_and_measurements_and_start(
             nimage_sets=3,
             status=[
-                cellprofiler_core.analysis.Runner.STATUS_UNPROCESSED,
-                cellprofiler_core.analysis.Runner.STATUS_DONE,
-                cellprofiler_core.analysis.Runner.STATUS_IN_PROCESS,
+                Runner.STATUS_UNPROCESSED,
+                Runner.STATUS_DONE,
+                Runner.STATUS_IN_PROCESS,
             ],
         )
         r = numpy.random.RandomState()
@@ -1097,10 +1097,10 @@ class TestAnalysis(unittest.TestCase):
             group_numbers=[1, 1, 2, 2],
             group_indexes=[1, 2, 1, 2],
             status=[
-                cellprofiler_core.analysis.Runner.STATUS_DONE,
-                cellprofiler_core.analysis.Runner.STATUS_UNPROCESSED,
-                cellprofiler_core.analysis.Runner.STATUS_DONE,
-                cellprofiler_core.analysis.Runner.STATUS_DONE,
+                Runner.STATUS_DONE,
+                Runner.STATUS_UNPROCESSED,
+                Runner.STATUS_DONE,
+                Runner.STATUS_DONE,
             ],
         )
         r = numpy.random.RandomState()

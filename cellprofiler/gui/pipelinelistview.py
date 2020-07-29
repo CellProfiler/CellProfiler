@@ -28,7 +28,7 @@ from cellprofiler_core.pipeline import (
 from cellprofiler_core.preferences import EXT_PROJECT_CHOICES, EXT_PIPELINE_CHOICES
 
 import cellprofiler.gui
-import cellprofiler.gui._module_view._validation_request_controller
+import cellprofiler.gui.module_view._validation_request_controller
 import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pipeline
@@ -338,7 +338,7 @@ class PipelineListView(object):
                         setting_idx, message, level, module_num, settings_hash
                     )
 
-                validation_request = cellprofiler.gui._module_view._validation_request_controller.ValidationRequestController(
+                validation_request = cellprofiler.gui.module_view._validation_request_controller.ValidationRequestController(
                     self.__pipeline, module, on_validate_module
                 )
                 self.validation_requests.append(validation_request)

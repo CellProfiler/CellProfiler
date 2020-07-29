@@ -2,7 +2,7 @@ import wx
 import wx.lib
 import wx.lib.colourselect
 
-import cellprofiler.gui._workspace_view._workspace_view
+import cellprofiler.gui.workspace_view._workspace_view
 
 
 class WorkspaceViewMeasurementRow:
@@ -31,7 +31,7 @@ class WorkspaceViewMeasurementRow:
             self.choice_panel,
             (
                 row_idx,
-                cellprofiler.gui._workspace_view._workspace_view.WorkspaceView.C_CHOOSER,
+                cellprofiler.gui.workspace_view._workspace_view.WorkspaceView.C_CHOOSER,
             ),
             flag=wx.EXPAND,
         )
@@ -53,7 +53,7 @@ class WorkspaceViewMeasurementRow:
             self.font_button,
             (
                 row_idx,
-                cellprofiler.gui._workspace_view._workspace_view.WorkspaceView.C_COLOR,
+                cellprofiler.gui.workspace_view._workspace_view.WorkspaceView.C_COLOR,
             ),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP,
         )
@@ -63,7 +63,7 @@ class WorkspaceViewMeasurementRow:
             self.show_ctrl,
             (
                 row_idx,
-                cellprofiler.gui._workspace_view._workspace_view.WorkspaceView.C_SHOW,
+                cellprofiler.gui.workspace_view._workspace_view.WorkspaceView.C_SHOW,
             ),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP,
         )

@@ -138,9 +138,9 @@ from cellprofiler_core.utilities.zmq import Reply
 from wx.adv import Sound
 
 import cellprofiler
-import cellprofiler.gui._module_view._setting_edited_event
+import cellprofiler.gui.module_view._setting_edited_event
 import cellprofiler.gui._workspace_model
-import cellprofiler.gui._workspace_view
+import cellprofiler.gui.workspace_view
 import cellprofiler.gui.addmoduleframe
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.dialog
@@ -2662,7 +2662,7 @@ class PipelineController(object):
     def __on_module_view_event(self, caller, event):
         assert isinstance(
             event,
-            cellprofiler.gui._module_view._setting_edited_event.SettingEditedEvent,
+            cellprofiler.gui.module_view._setting_edited_event.SettingEditedEvent,
         ), (
             "%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent"
             % (str(event))

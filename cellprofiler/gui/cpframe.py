@@ -13,18 +13,16 @@ import wx.adv
 import wx.html
 import wx.lib.inspection
 import wx.lib.scrolledpanel
-from cellprofiler_core.preferences import (
-    get_startup_blurb,
-    EXT_PROJECT,
-    EXT_PIPELINE,
-    get_show_sampling,
-)
+from cellprofiler_core.preferences import get_startup_blurb
+from cellprofiler_core.preferences import EXT_PROJECT
+from cellprofiler_core.preferences import EXT_PIPELINE
+from cellprofiler_core.preferences import get_show_sampling
 from cellprofiler_core.utilities.core.modules import instantiate_module
 
 import cellprofiler
 import cellprofiler.gui
-import cellprofiler.gui._module_view._module_view
-import cellprofiler.gui._preferences_view._preferences_view
+import cellprofiler.gui.module_view
+import cellprofiler.gui.preferences_view._preferences_view
 import cellprofiler.gui.dialog
 import cellprofiler.gui.figure
 import cellprofiler.gui.help.content
@@ -328,7 +326,7 @@ class CPFrame(wx.Frame):
         )
 
         self.__imageset_panel.GetSizer().Add(self.__imageset_ctrl, 1, wx.EXPAND)
-        self.__grid_ctrl = cellprofiler.gui._module_view._module_view.ModuleView.CornerButtonGrid(
+        self.__grid_ctrl = cellprofiler.gui.module_view._module_view.ModuleView.CornerButtonGrid(
             self.__imageset_panel
         )
         self.__imageset_panel.GetSizer().Add(self.__grid_ctrl, 1, wx.EXPAND)
@@ -1268,7 +1266,7 @@ class CPFrame(wx.Frame):
         self.__pipeline_controller.attach_to_path_list_ctrl(
             self.__path_list_ctrl, self.__path_list_filter_checkbox
         )
-        self.__module_view = cellprofiler.gui._module_view._module_view.ModuleView(
+        self.__module_view = cellprofiler.gui.module_view._module_view.ModuleView(
             self.__module_panel,
             self.__workspace,
             frame=self,
@@ -1276,7 +1274,7 @@ class CPFrame(wx.Frame):
         )
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view(self.__module_view)
-        self.__preferences_view = cellprofiler.gui._preferences_view._preferences_view.PreferencesView(
+        self.__preferences_view = cellprofiler.gui.preferences_view._preferences_view.PreferencesView(
             self.__right_win.GetSizer(),
             self.__preferences_panel,
             self.__progress_panel,

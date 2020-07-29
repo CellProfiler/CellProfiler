@@ -9,7 +9,7 @@ from cellprofiler_core.preferences import report_progress
 from cellprofiler_core.setting import FileCollectionDisplay
 
 import cellprofiler.gui
-from cellprofiler.gui.utilities.module_view import edit_control_name
+from ..utilities.module_view import edit_control_name
 
 
 class FileCollectionDisplayController(object):

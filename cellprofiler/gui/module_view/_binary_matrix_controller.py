@@ -2,8 +2,8 @@ import wx
 from cellprofiler_core.preferences import get_background_color
 from cellprofiler_core.setting import BinaryMatrix
 
-from cellprofiler.gui._module_view._module_view import ModuleView
-from cellprofiler.gui.utilities.module_view import edit_control_name
+from ._module_view import ModuleView
+from ..utilities.module_view import edit_control_name
 
 
 class BinaryMatrixController(object):

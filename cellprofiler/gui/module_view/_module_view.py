@@ -52,11 +52,9 @@ from cellprofiler_core.setting.multichoice import SubdirectoryFilter
 from cellprofiler_core.setting.range import IntegerOrUnboundedRange
 from cellprofiler_core.setting.range import IntegerRange
 from cellprofiler_core.setting.range import FloatRange
-from cellprofiler_core.setting.subscriber import (
-    ImageListSubscriber,
-    ImageSubscriber,
-    LabelListSubscriber,
-)
+from cellprofiler_core.setting.subscriber import ImageListSubscriber
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.subscriber import LabelListSubscriber
 from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.setting.text import Filename
 from cellprofiler_core.setting.text import Pathname

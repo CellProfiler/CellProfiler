@@ -7,7 +7,7 @@ import os.path
 import re
 import sys
 import tempfile
-from urllib.parse import urlparse
+import urllib.parse
 
 import bioformats.formatreader
 import h5py
@@ -15,8 +15,26 @@ import matplotlib
 import numpy
 import pkg_resources
 import six.moves
+from cellprofiler_core.preferences import (
+    get_image_set_file,
+    set_headless,
+    set_temporary_directory,
+    set_awt_headless,
+    set_omero_port,
+    set_omero_server,
+    set_omero_user,
+    get_omero_server,
+    get_omero_port,
+    get_omero_user,
+    get_omero_session_id,
+    set_image_set_file,
+    set_data_file,
+    set_default_image_directory,
+    set_allow_schema_write,
+    set_default_output_directory,
+    set_plugin_directory,
+)
 
-import cellprofiler
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.utilities.java
@@ -60,14 +78,14 @@ def main(args=None):
     if args is None:
         args = sys.argv
 
-    cellprofiler_core.preferences.set_awt_headless(True)
+    set_awt_headless(True)
 
     exit_code = 0
 
     switches = ("--work-announce", "--knime-bridge-address")
 
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
-        cellprofiler_core.preferences.set_headless()
+        set_headless()
         cellprofiler_core.worker.aw_parse_args()
         cellprofiler_core.worker.main()
         return exit_code
@@ -77,14 +95,12 @@ def main(args=None):
     if options.temp_dir is not None:
         if not os.path.exists(options.temp_dir):
             os.makedirs(options.temp_dir)
-        cellprofiler_core.preferences.set_temporary_directory(
-            options.temp_dir, globally=False
-        )
+        set_temporary_directory(options.temp_dir, globally=False)
 
     to_clean = []
 
     if options.pipeline_filename:
-        o = urlparse(options.pipeline_filename)
+        o = urllib.parse.urlparse(options.pipeline_filename)
         if o[0] in ("ftp", "http", "https"):
             import urllib2
 
@@ -98,7 +114,7 @@ def main(args=None):
             to_clean.append(os.path.join(temp_dir, temp_pipe_file.name))
 
     if options.image_set_file:
-        o = urlparse(options.image_set_file)
+        o = urllib.parse.urlparse(options.image_set_file)
         if o[0] in ("ftp", "http", "https"):
             import urllib2
 
@@ -112,7 +128,7 @@ def main(args=None):
             to_clean.append(os.path.join(temp_dir, temp_set_file.name))
 
     if options.data_file:
-        o = urlparse(options.data_file)
+        o = urllib.parse.urlparse(options.data_file)
         if o[0] in ("ftp", "http", "https"):
             import urllib2
 
@@ -129,12 +145,12 @@ def main(args=None):
         __version__(exit_code)
 
     if (not options.show_gui) or options.write_schema_and_exit:
-        cellprofiler_core.preferences.set_headless()
+        set_headless()
 
         options.run_pipeline = True
 
     if options.batch_commands_file:
-        cellprofiler_core.preferences.set_headless()
+        set_headless()
         options.run_pipeline = False
         options.show_gui = False
 
@@ -157,38 +173,32 @@ def main(args=None):
         set_omero_credentials_from_string(options.omero_credentials)
 
     if options.plugins_directory is not None:
-        cellprofiler_core.preferences.set_plugin_directory(
-            options.plugins_directory, globally=False
-        )
+        set_plugin_directory(options.plugins_directory, globally=False)
 
     if not options.allow_schema_write:
-        cellprofiler_core.preferences.set_allow_schema_write(False)
+        set_allow_schema_write(False)
 
     if options.output_directory:
         if not os.path.exists(options.output_directory):
             os.makedirs(options.output_directory)
 
-        cellprofiler_core.preferences.set_default_output_directory(
-            options.output_directory
-        )
+        set_default_output_directory(options.output_directory)
 
     if options.image_directory:
-        cellprofiler_core.preferences.set_default_image_directory(
-            options.image_directory
-        )
+        set_default_image_directory(options.image_directory)
 
     if options.run_pipeline and not options.pipeline_filename:
         raise ValueError("You must specify a pipeline filename to run")
 
     if options.data_file is not None:
-        cellprofiler_core.preferences.set_data_file(os.path.abspath(options.data_file))
+        set_data_file(os.path.abspath(options.data_file))
 
     try:
         if not options.show_gui:
             cellprofiler_core.utilities.java.start_java()
 
         if options.image_set_file is not None:
-            cellprofiler_core.preferences.set_image_set_file(options.image_set_file)
+            set_image_set_file(options.image_set_file)
 
         #
         # Handle command-line tasks that that need to load the modules to run
@@ -540,24 +550,24 @@ def set_omero_credentials_from_string(credentials_string):
         k = k.lower()
 
         credentials = {
-            bioformats.formatreader.K_OMERO_SERVER: cellprofiler_core.preferences.get_omero_server(),
-            bioformats.formatreader.K_OMERO_PORT: cellprofiler_core.preferences.get_omero_port(),
-            bioformats.formatreader.K_OMERO_USER: cellprofiler_core.preferences.get_omero_user(),
-            bioformats.formatreader.K_OMERO_SESSION_ID: cellprofiler_core.preferences.get_omero_session_id(),
+            bioformats.formatreader.K_OMERO_SERVER: get_omero_server(),
+            bioformats.formatreader.K_OMERO_PORT: get_omero_port(),
+            bioformats.formatreader.K_OMERO_USER: get_omero_user(),
+            bioformats.formatreader.K_OMERO_SESSION_ID: get_omero_session_id(),
         }
 
         if k == OMERO_CK_HOST:
-            cellprofiler_core.preferences.set_omero_server(v, globally=False)
+            set_omero_server(v, globally=False)
 
             credentials[bioformats.formatreader.K_OMERO_SERVER] = v
         elif k == OMERO_CK_PORT:
-            cellprofiler_core.preferences.set_omero_port(v, globally=False)
+            set_omero_port(v, globally=False)
 
             credentials[bioformats.formatreader.K_OMERO_PORT] = v
         elif k == OMERO_CK_SESSION_ID:
             credentials[bioformats.formatreader.K_OMERO_SESSION_ID] = v
         elif k == OMERO_CK_USER:
-            cellprofiler_core.preferences.set_omero_user(v, globally=False)
+            set_omero_user(v, globally=False)
 
             credentials[bioformats.formatreader.K_OMERO_USER] = v
         elif k == OMERO_CK_PASSWORD:
@@ -827,7 +837,7 @@ def run_pipeline_headless(options, args):
     else:
         groups = None
 
-    file_list = cellprofiler_core.preferences.get_image_set_file()
+    file_list = get_image_set_file()
 
     if file_list is not None:
         pipeline.read_file_list(file_list)

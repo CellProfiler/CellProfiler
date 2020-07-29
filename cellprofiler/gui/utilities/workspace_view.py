@@ -1,7 +1,7 @@
 import wx
 
 import cellprofiler.gui
-from cellprofiler.gui._workspace_view._workspace_view import (
+from cellprofiler.gui.workspace_view._workspace_view import (
     WorkspaceView,
     __the_workspace_viewer,
 )

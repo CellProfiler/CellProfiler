@@ -1,8 +1,8 @@
 import wx
 from cellprofiler_core.setting import DataTypes
 
-from cellprofiler.gui._module_view._module_view import ModuleView
-from cellprofiler.gui.utilities.module_view import edit_control_name
+from ._module_view import ModuleView
+from ..utilities.module_view import edit_control_name
 
 
 class DataTypeController(object):

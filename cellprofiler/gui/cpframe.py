@@ -24,6 +24,7 @@ from cellprofiler_core.utilities.core.modules import instantiate_module
 
 import cellprofiler
 import cellprofiler.gui
+import cellprofiler.gui._preferences_view._preferences_view
 import cellprofiler.gui.dialog
 import cellprofiler.gui.figure
 import cellprofiler.gui.help.content
@@ -1276,7 +1277,7 @@ class CPFrame(wx.Frame):
         )
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view(self.__module_view)
-        self.__preferences_view = cellprofiler.gui.preferencesview.PreferencesView(
+        self.__preferences_view = cellprofiler.gui._preferences_view._preferences_view.PreferencesView(
             self.__right_win.GetSizer(),
             self.__preferences_panel,
             self.__progress_panel,

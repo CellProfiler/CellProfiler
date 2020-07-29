@@ -1,4 +1,3 @@
-# coding=utf-8
 """treecheckboxdialog.py - tree checkbox dialog for selection of tree branches
 """
 

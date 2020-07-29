@@ -66,7 +66,7 @@ from cellprofiler.gui import cornerbuttonmixin
 from cellprofiler.gui import metadatactrl
 from cellprofiler.gui import namesubscriber
 from cellprofiler.gui import regexp_editor
-from cellprofiler.gui import treecheckboxdialog
+from cellprofiler.gui import _tree_checkbox_dialog
 
 
 WARNING_COLOR = wx.Colour(224, 224, 0, 255)
@@ -1013,7 +1013,7 @@ class ModuleView(object):
                     return leaf_state
 
                 get_state(d)
-                dlg = treecheckboxdialog.TreeCheckboxDialog(
+                dlg = _tree_checkbox_dialog.TreeCheckboxDialog(
                     self.module_panel, d, size=(480, 480)
                 )
                 dlg.Title = "Select measurements"
@@ -1113,7 +1113,7 @@ class ModuleView(object):
                 finally:
                     self.module_panel.SetCursor(wx.NullCursor)
 
-                dlg = treecheckboxdialog.TreeCheckboxDialog(
+                dlg = _tree_checkbox_dialog.TreeCheckboxDialog(
                     self.module_panel, d, size=(320, 480)
                 )
                 dlg.set_parent_reflects_child(False)

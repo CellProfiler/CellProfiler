@@ -2002,7 +2002,7 @@ class ModuleView:
         return panel
 
     def make_html_control(self, v, control):
-        from cellprofiler.gui.html import HtmlClickableWindow
+        from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 
         if control is None:
             control = HtmlClickableWindow(

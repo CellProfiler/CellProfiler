@@ -3,6 +3,7 @@ import logging
 import six
 import wx
 from cellprofiler_core.setting.filter import Filter
+from cellprofiler_core.setting.filter._filter import AND_PREDICATE, OR_PREDICATE
 
 from ._module_view import ModuleView
 from ..utilities.module_view import edit_control_name
@@ -104,9 +105,9 @@ class FilterPanelController(object):
         # Always require an "and" or "or" clause
         #
         if len(tokens) == 0 or (
-            tokens[0] not in (Filter.AND_PREDICATE, Filter.OR_PREDICATE,)
+            tokens[0] not in (AND_PREDICATE, OR_PREDICATE,)
         ):
-            tokens = [Filter.AND_PREDICATE, tokens]
+            tokens = [AND_PREDICATE, tokens]
         return tokens
 
     def update(self):
@@ -125,8 +126,8 @@ class FilterPanelController(object):
             self.inside_update = False
 
     ANY_ALL_PREDICATES = [
-        Filter.AND_PREDICATE,
-        Filter.OR_PREDICATE,
+        AND_PREDICATE,
+        OR_PREDICATE,
     ]
 
     def any_all_choices(self):

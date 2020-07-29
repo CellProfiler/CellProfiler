@@ -11,6 +11,21 @@ import time
 
 import six.moves
 import wx
+from cellprofiler_core.constants.pipeline import DIRECTION_UP
+from cellprofiler_core.pipeline import (
+    ModuleShowWindow,
+    ModuleDisabled,
+    ModuleEnabled,
+    PipelineLoaded,
+    ModuleAdded,
+    ModuleMoved,
+    ModuleRemoved,
+    PipelineCleared,
+    ModuleEdited,
+    dump,
+    Pipeline,
+)
+from cellprofiler_core.preferences import EXT_PROJECT_CHOICES, EXT_PIPELINE_CHOICES
 
 import cellprofiler.gui
 import cellprofiler.gui._module_view._validation_request_controller
@@ -404,17 +419,17 @@ class PipelineListView(object):
         """Pipeline event notifications come through here
 
         """
-        if isinstance(event, cellprofiler_core.pipeline.event.PipelineLoaded):
+        if isinstance(event, PipelineLoaded):
             self.__on_pipeline_loaded(pipeline, event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleAdded):
+        elif isinstance(event, ModuleAdded):
             self.__on_module_added(pipeline, event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleMoved):
+        elif isinstance(event, ModuleMoved):
             self.__on_module_moved(pipeline, event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleRemoved):
+        elif isinstance(event, ModuleRemoved):
             self.__on_module_removed(pipeline, event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.PipelineCleared):
+        elif isinstance(event, PipelineCleared):
             self.__on_pipeline_cleared(pipeline, event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleEdited):
+        elif isinstance(event, ModuleEdited):
             for list_ctrl in self.list_ctrl, self.input_list_ctrl:
                 active_item = list_ctrl.get_active_item()
                 if (
@@ -439,11 +454,11 @@ class PipelineListView(object):
                             self.set_current_debug_module(module)
                         break
 
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleEnabled):
+        elif isinstance(event, ModuleEnabled):
             self.__on_module_enabled(event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleDisabled):
+        elif isinstance(event, ModuleDisabled):
             self.__on_module_disabled(event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleShowWindow):
+        elif isinstance(event, ModuleShowWindow):
             self.__on_show_window(event)
 
     def notify_directory_change(self):
@@ -698,12 +713,10 @@ class PipelineListView(object):
             event.Veto()
             return
         fd = six.moves.StringIO()
-        temp_pipeline = cellprofiler_core.pipeline.Pipeline()
+        temp_pipeline = Pipeline()
         for module in modules_to_save:
             temp_pipeline.add_module(module)
-        cellprofiler_core.pipeline.io.dump(
-            temp_pipeline, fd, save_image_plane_details=False, version=5
-        )
+        dump(temp_pipeline, fd, save_image_plane_details=False, version=5)
         pipeline_data_object = PipelineDataObject()
         pipeline_data_object.SetData(fd.getvalue().encode())
 
@@ -939,7 +952,7 @@ class PipelineListView(object):
     def __on_module_moved(self, pipeline, event):
         module = pipeline.modules(False)[event.module_num - 1]
         list_ctrl, index = self.get_ctrl_and_index(module)
-        if event.direction == cellprofiler_core.pipeline.DIRECTION_UP:
+        if event.direction == DIRECTION_UP:
             # if this module was moved up, the one before it was moved down
             # and is now after
             other_module = pipeline.modules(False)[event.module_num]

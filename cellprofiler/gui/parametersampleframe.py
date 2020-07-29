@@ -654,7 +654,7 @@ class ParameterSampleFrame(wx.Frame):
         self.__measurements = Measurements()
         self.__object_set = ObjectSet(can_overwrite=True)
         self.__image_set_list = ImageSetList()
-        workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
+        workspace = cellprofiler.gui._workspace_model.Workspace(
             self.__pipeline,
             None,
             None,
@@ -699,7 +699,7 @@ class ParameterSampleFrame(wx.Frame):
             #    #self.__frame if module.show_window else None,
             #    None,
             #    outlines = self.__outlines)
-            self.__workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
+            self.__workspace = cellprofiler.gui._workspace_model.Workspace(
                 self.__pipeline,
                 module,
                 self.__measurements,

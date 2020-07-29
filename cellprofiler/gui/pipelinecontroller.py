@@ -1759,7 +1759,7 @@ class PipelineController(object):
         """Workspace's file list changed. Invalidate the workspace cache."""
         if isinstance(
             event,
-            cellprofiler.gui._workspace_model.WorkspaceModel.WorkspaceFileListNotification,
+            cellprofiler.gui._workspace_model.Workspace.WorkspaceFileListNotification,
         ):
             self.on_image_set_modification()
             self.__dirty_workspace = True
@@ -3229,7 +3229,7 @@ class PipelineController(object):
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.gui.pipeline.Pipeline)
         self.__debug_image_set_list = ImageSetList(True)
-        workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
+        workspace = cellprofiler.gui._workspace_model.Workspace(
             self.__pipeline,
             None,
             None,
@@ -3296,7 +3296,7 @@ class PipelineController(object):
             self.__debug_measurements.add_image_measurement(
                 "Group_Length", len(self.__groupings[self.__grouping_index][1])
             )
-            workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
+            workspace = cellprofiler.gui._workspace_model.Workspace(
                 self.__pipeline,
                 module,
                 self.__debug_measurements,
@@ -3493,7 +3493,7 @@ class PipelineController(object):
     def debug_choose_group(self, index):
         self.__grouping_index = index
         self.__within_group_index = 0
-        workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
+        workspace = cellprofiler.gui._workspace_model.Workspace(
             self.__pipeline,
             None,
             None,

@@ -3,12 +3,12 @@ from cellprofiler_core.constants.measurement import GROUP_INDEX
 from cellprofiler_core.constants.measurement import M_GROUPING_TAGS
 from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.constants.measurement import GROUP_NUMBER
-from cellprofiler_core.workspace import Workspace
+from cellprofiler_core import workspace
 
 import cellprofiler.gui.figure
 
 
-class WorkspaceModel(Workspace):
+class Workspace(workspace.Workspace):
     def create_or_find_figure(self, title=None, subplots=None, window_name=None):
         assert not self.__in_background
 

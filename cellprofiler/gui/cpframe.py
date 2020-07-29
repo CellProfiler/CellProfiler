@@ -24,7 +24,7 @@ import cellprofiler.gui
 from .module_view import ModuleView
 from .preferences_view import PreferencesView
 from ._welcome_frame import WelcomeFrame
-from ._workspace_model import WorkspaceModel
+from ._workspace_model import Workspace
 from .dialog import AboutDialogInfo
 from .figure import close_all
 from .help.content import read_content
@@ -152,7 +152,7 @@ class CPFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
 
         self.__pipeline = Pipeline()
-        self.__workspace = WorkspaceModel(self.__pipeline, None, None, None, None, None)
+        self.__workspace = Workspace(self.__pipeline, None, None, None, None, None)
 
         super(CPFrame, self).__init__(*args, **kwds)
 

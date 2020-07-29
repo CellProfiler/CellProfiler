@@ -5,7 +5,7 @@ from ._module_view import ModuleView
 from ..utilities.module_view import edit_control_name
 
 
-class DataTypeController(object):
+class DataTypeController:
     """The DataTypeController manages a DataType setting"""
 
     DTC_NONE = "None"

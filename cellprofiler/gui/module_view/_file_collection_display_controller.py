@@ -12,7 +12,7 @@ import cellprofiler.gui
 from ..utilities.module_view import edit_control_name
 
 
-class FileCollectionDisplayController(object):
+class FileCollectionDisplayController:
     """This class provides the UI for the file collection display
 
     The UI has a browse button, a hide checkbox and a tree control.

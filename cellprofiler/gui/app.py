@@ -5,14 +5,14 @@ import platform
 import sentry_sdk
 import wx
 import wx.lib.inspection
-from cellprofiler_core.preferences import (
-    get_telemetry_prompt,
-    set_telemetry,
-    set_telemetry_prompt,
-)
-from cellprofiler_core.utilities.java import stop_java, start_java
+from cellprofiler_core.preferences import get_telemetry_prompt
+from cellprofiler_core.preferences import set_telemetry
+from cellprofiler_core.preferences import set_telemetry_prompt
+from cellprofiler_core.utilities.java import stop_java
+from cellprofiler_core.utilities.java import start_java
 
-import cellprofiler.gui.dialog
+from .cpframe import CPFrame
+from .dialog import Telemetry
 
 
 dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
@@ -49,13 +49,11 @@ class App(wx.App):
         super(App, self).__init__(*args, **kwargs)
 
     def OnInit(self):
-        import cellprofiler.gui.cpframe
-
         # wx.lib.inspection.InspectionTool().Show()
 
         self.SetAppName("CellProfiler{0:s}".format(cellprofiler.__version__))
 
-        self.frame = cellprofiler.gui.cpframe.CPFrame(None, -1, "CellProfiler")
+        self.frame = CPFrame(None, -1, "CellProfiler")
 
         self.frame.start(self.workspace_path, self.pipeline_path)
 
@@ -67,7 +65,7 @@ class App(wx.App):
         self.frame.Show()
 
         if get_telemetry_prompt():
-            telemetry = cellprofiler.gui.dialog.Telemetry()
+            telemetry = Telemetry()
 
             if telemetry.status == wx.ID_YES:
                 set_telemetry(True)

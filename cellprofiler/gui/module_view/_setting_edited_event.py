@@ -1,4 +1,4 @@
-class SettingEditedEvent(object):
+class SettingEditedEvent:
     """Represents an attempt by the user to edit a setting
 
     """

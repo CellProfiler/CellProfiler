@@ -59,8 +59,6 @@ from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.setting.text import Filename
 from cellprofiler_core.setting.text import Pathname
 
-from ._binary_matrix_controller import BinaryMatrixController
-from ._data_type_controller import DataTypeController
 from ._file_collection_display_controller import FileCollectionDisplayController
 from ._filter_panel_controller import FilterPanelController
 from ._joiner_controller import JoinerController
@@ -461,9 +459,13 @@ class ModuleView:
                     control = JoinerController.update_control(self, v)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, BinaryMatrix):
+                    from ._binary_matrix_controller import BinaryMatrixController
+
                     control = BinaryMatrixController.update_control(self, v)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, DataTypes):
+                    from ._data_type_controller import DataTypeController
+
                     control = DataTypeController.update_control(self, v)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, StructuringElement):

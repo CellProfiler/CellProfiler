@@ -1,4 +1,4 @@
-class ValidationRequestController(object):
+class ValidationRequestController:
     """A request for module validation"""
 
     def __init__(self, pipeline, module, callback):

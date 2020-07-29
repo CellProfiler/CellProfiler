@@ -4,7 +4,7 @@ from ._module_view import ModuleView
 from ..utilities.module_view import edit_control_name
 
 
-class JoinerController(object):
+class JoinerController:
     """The JoinerController managers a joiner setting"""
 
     #

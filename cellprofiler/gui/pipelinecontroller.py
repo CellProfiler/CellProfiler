@@ -29,6 +29,7 @@ import wx.lib.mixins.listctrl
 from wx.adv import Sound
 
 import cellprofiler
+import cellprofiler.gui._module_view._setting_edited_event
 import cellprofiler.gui.addmoduleframe
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.dialog
@@ -2586,7 +2587,10 @@ class PipelineController(object):
             #    self.stop_debugging()
 
     def __on_module_view_event(self, caller, event):
-        assert isinstance(event, cellprofiler.gui.moduleview.SettingEditedEvent), (
+        assert isinstance(
+            event,
+            cellprofiler.gui._module_view._setting_edited_event.SettingEditedEvent,
+        ), (
             "%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent"
             % (str(event))
         )

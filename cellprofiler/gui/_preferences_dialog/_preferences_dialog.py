@@ -4,6 +4,7 @@ import sys
 import matplotlib.cm
 import six
 import wx
+import wx.lib.scrolledpanel
 from cellprofiler_core.preferences import DEFAULT_COLORMAP_HELP
 from cellprofiler_core.preferences import DEFAULT_IMAGE_FOLDER_HELP
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_HELP

@@ -24,6 +24,7 @@ from cellprofiler_core.utilities.core.modules import instantiate_module
 
 import cellprofiler
 import cellprofiler.gui
+import cellprofiler.gui._module_view._module_view
 import cellprofiler.gui._preferences_view._preferences_view
 import cellprofiler.gui.dialog
 import cellprofiler.gui.figure
@@ -39,9 +40,9 @@ import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
 import cellprofiler.gui.pipelinecontroller
 import cellprofiler.gui.pipelinelistview
-import cellprofiler.gui.preferencesdialog
 import cellprofiler.gui._welcome_frame
 import cellprofiler.gui._workspace_model
+import cellprofiler.gui.utilities.module_view
 import cellprofiler.icons
 
 
@@ -328,7 +329,7 @@ class CPFrame(wx.Frame):
         )
 
         self.__imageset_panel.GetSizer().Add(self.__imageset_ctrl, 1, wx.EXPAND)
-        self.__grid_ctrl = cellprofiler.gui.moduleview.ModuleView.CornerButtonGrid(
+        self.__grid_ctrl = cellprofiler.gui._module_view._module_view.ModuleView.CornerButtonGrid(
             self.__imageset_panel
         )
         self.__imageset_panel.GetSizer().Add(self.__grid_ctrl, 1, wx.EXPAND)
@@ -542,7 +543,7 @@ class CPFrame(wx.Frame):
         except:
             logging.warning("Failed to close the pipeline controller", exc_info=True)
         try:
-            cellprofiler.gui.moduleview.stop_validation_queue_thread()
+            cellprofiler.gui.utilities.module_view.stop_validation_queue_thread()
         except:
             logging.warning("Failed to stop pipeline validation thread", exc_info=True)
         wx.GetApp().ExitMainLoop()
@@ -1268,7 +1269,7 @@ class CPFrame(wx.Frame):
         self.__pipeline_controller.attach_to_path_list_ctrl(
             self.__path_list_ctrl, self.__path_list_filter_checkbox
         )
-        self.__module_view = cellprofiler.gui.moduleview.ModuleView(
+        self.__module_view = cellprofiler.gui._module_view._module_view.ModuleView(
             self.__module_panel,
             self.__workspace,
             frame=self,

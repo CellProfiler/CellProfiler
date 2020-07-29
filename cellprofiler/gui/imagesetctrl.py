@@ -1605,7 +1605,9 @@ class FilterPanelDlg(wx.Dialog):
 
         function_dict - dictionary of button name to function to run.
         """
-        from cellprofiler.gui.moduleview import FilterPanelController
+        from cellprofiler.gui._module_view._filter_panel_controller import (
+            FilterPanelController,
+        )
 
         self.SetSizer(wx.BoxSizer(wx.VERTICAL))
         sizer = wx.BoxSizer(wx.VERTICAL)

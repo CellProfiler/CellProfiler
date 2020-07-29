@@ -13,9 +13,11 @@ import six.moves
 import wx
 
 import cellprofiler.gui
+import cellprofiler.gui._module_view._validation_request_controller
 import cellprofiler.gui.figure
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pipeline
+import cellprofiler.gui.utilities.module_view
 import cellprofiler.icons
 
 IMG_OK = cellprofiler.icons.get_builtin_image("check")
@@ -321,11 +323,11 @@ class PipelineListView(object):
                         setting_idx, message, level, module_num, settings_hash
                     )
 
-                validation_request = cellprofiler.gui.moduleview.ValidationRequest(
+                validation_request = cellprofiler.gui._module_view._validation_request_controller.ValidationRequestController(
                     self.__pipeline, module, on_validate_module
                 )
                 self.validation_requests.append(validation_request)
-                cellprofiler.gui.moduleview.request_module_validation(
+                cellprofiler.gui.utilities.module_view.request_module_validation(
                     validation_request
                 )
 

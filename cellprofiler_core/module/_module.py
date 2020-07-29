@@ -890,7 +890,7 @@ class Module:
         Legacy modules might need the default image folder as does any module
         that uses the DirectoryPath setting.
         """
-        from ..setting import Directory
+        from ..setting.text import Directory
 
         for setting in self.visible_settings():
             if isinstance(setting, Directory):

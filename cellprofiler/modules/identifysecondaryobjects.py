@@ -1,5 +1,4 @@
-﻿import cellprofiler_core.object
-import centrosome.cpmorphology
+﻿import centrosome.cpmorphology
 import centrosome.propagate
 import numpy
 import scipy.ndimage
@@ -19,10 +18,12 @@ from cellprofiler_core.constants.measurement import (
     C_COUNT,
 )
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
+from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float, LabelName
+from cellprofiler_core.utilities.core.object import size_similarly
 
 from cellprofiler.modules import _help, threshold
 
@@ -699,7 +700,7 @@ segmentation.""",
             lookup[lookup != 0] = numpy.arange(numpy.sum(lookup != 0)) + 1
             segmented_labels = lookup[objects.segmented]
             segmented_out = lookup[segmented_out]
-            new_objects = cellprofiler_core.object.Objects()
+            new_objects = Objects()
             new_objects.segmented = segmented_labels
             if objects.has_unedited_segmented:
                 new_objects.unedited_segmented = objects.unedited_segmented
@@ -710,7 +711,7 @@ segmentation.""",
         #
         # Add the objects to the object set
         #
-        objects_out = cellprofiler_core.object.Objects()
+        objects_out = Objects()
         objects_out.unedited_segmented = small_removed_segmented_out
         objects_out.small_removed_segmented = small_removed_segmented_out
         objects_out.segmented = segmented_out
@@ -889,9 +890,7 @@ segmentation.""",
         segmented_labels = objects.segmented
         max_out = numpy.max(labels_out)
         if max_out > 0:
-            segmented_labels, m1 = cellprofiler_core.object.size_similarly(
-                labels_out, segmented_labels
-            )
+            segmented_labels, m1 = size_similarly(labels_out, segmented_labels)
             segmented_labels[~m1] = 0
             lookup = scipy.ndimage.maximum(
                 segmented_labels, labels_out, list(range(max_out + 1))

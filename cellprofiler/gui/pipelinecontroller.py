@@ -41,9 +41,10 @@ import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
+import cellprofiler.gui.utilities.workspace_view
 from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
-import cellprofiler.gui.viewworkspace
-import cellprofiler.gui.workspace
+import cellprofiler.gui._workspace_view
+import cellprofiler.gui._workspace_model
 import cellprofiler.icons
 
 
@@ -1671,7 +1672,8 @@ class PipelineController(object):
     def on_workspace_event(self, event):
         """Workspace's file list changed. Invalidate the workspace cache."""
         if isinstance(
-            event, cellprofiler.gui.workspace.Workspace.WorkspaceFileListNotification
+            event,
+            cellprofiler.gui._workspace_model.WorkspaceModel.WorkspaceFileListNotification,
         ):
             self.on_image_set_modification()
             self.__dirty_workspace = True
@@ -3181,7 +3183,7 @@ class PipelineController(object):
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.gui.pipeline.Pipeline)
         self.__debug_image_set_list = cellprofiler_core.image.ImageSetList(True)
-        workspace = cellprofiler.gui.workspace.Workspace(
+        workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
             self.__pipeline,
             None,
             None,
@@ -3248,7 +3250,7 @@ class PipelineController(object):
             self.__debug_measurements.add_image_measurement(
                 "Group_Length", len(self.__groupings[self.__grouping_index][1])
             )
-            workspace = cellprofiler.gui.workspace.Workspace(
+            workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
                 self.__pipeline,
                 module,
                 self.__debug_measurements,
@@ -3285,7 +3287,7 @@ class PipelineController(object):
             ):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
-            cellprofiler.gui.viewworkspace.update_workspace_viewer(workspace)
+            cellprofiler.gui.utilities.workspace_view.update_workspace_viewer(workspace)
         except Exception as instance:
             logging.error("Failed to run module %s", module.module_name, exc_info=True)
             event = cellprofiler_core.pipeline.event.RunException(instance, module)
@@ -3443,7 +3445,7 @@ class PipelineController(object):
     def debug_choose_group(self, index):
         self.__grouping_index = index
         self.__within_group_index = 0
-        workspace = cellprofiler.gui.workspace.Workspace(
+        workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
             self.__pipeline,
             None,
             None,

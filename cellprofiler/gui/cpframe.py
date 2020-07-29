@@ -40,8 +40,8 @@ import cellprofiler.gui.pipelinecontroller
 import cellprofiler.gui.pipelinelistview
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.gui.preferencesview
-import cellprofiler.gui.welcome
-import cellprofiler.gui.workspace
+import cellprofiler.gui._welcome_frame
+import cellprofiler.gui._workspace_model
 import cellprofiler.icons
 
 
@@ -160,7 +160,7 @@ class CPFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
 
         self.__pipeline = cellprofiler.gui.pipeline.Pipeline()
-        self.__workspace = cellprofiler.gui.workspace.Workspace(
+        self.__workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
             self.__pipeline, None, None, None, None, None
         )
 
@@ -357,7 +357,7 @@ class CPFrame(wx.Frame):
         self.__set_properties()
         self.__set_icon()
         self.__do_layout()
-        self.startup_blurb_frame = cellprofiler.gui.welcome.Welcome(self)
+        self.startup_blurb_frame = cellprofiler.gui._welcome_frame.WelcomeFrame(self)
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)

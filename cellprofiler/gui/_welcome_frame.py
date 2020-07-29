@@ -1,5 +1,3 @@
-# coding:utf-8
-
 import glob
 import os.path
 
@@ -7,15 +5,16 @@ import jinja2
 import pkg_resources
 import wx
 import wx.html2
+from cellprofiler_core.preferences import set_startup_blurb
 
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html
 import cellprofiler.gui.html.utils
 
 
-class Welcome(wx.Frame):
+class WelcomeFrame(wx.Frame):
     def __init__(self, parent):
-        super(Welcome, self).__init__(
+        super(WelcomeFrame, self).__init__(
             parent,
             name="WelcomeScreenFrame",
             size=(640, 480),

@@ -15,7 +15,7 @@ import skimage.io
 import wx
 import wx.lib.agw.floatspin
 
-import cellprofiler.gui.workspace
+import cellprofiler.gui._workspace_model
 
 PARAM_CLASS_TEXT_LABEL = "Input text label"
 PARAM_CLASS_BOUNDED_DISCRETE = "Bounded, discrete"
@@ -634,7 +634,7 @@ class ParameterSampleFrame(wx.Frame):
         self.__measurements = cellprofiler_core.measurement.Measurements()
         self.__object_set = cellprofiler_core.object.ObjectSet(can_overwrite=True)
         self.__image_set_list = cellprofiler_core.image.ImageSetList()
-        workspace = cellprofiler.gui.workspace.Workspace(
+        workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
             self.__pipeline,
             None,
             None,
@@ -679,7 +679,7 @@ class ParameterSampleFrame(wx.Frame):
             #    #self.__frame if module.show_window else None,
             #    None,
             #    outlines = self.__outlines)
-            self.__workspace = cellprofiler.gui.workspace.Workspace(
+            self.__workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
                 self.__pipeline,
                 module,
                 self.__measurements,

@@ -1,4 +1,3 @@
-from ...modules.setting_validation import SettingValidation
 from ._filter_predicate import FilterPredicate
 from ._does_predicate import DoesPredicate
 from ._does_not_predicate import DoesNotPredicate
@@ -90,6 +89,8 @@ class ImagePredicate(FilterPredicate):
         return args[0](ipd, *args[1:])
 
     def test_valid(self, pipeline, *args):
+        from ...modules.setting_validation import SettingValidation
+
         self(
             (
                 FileCollectionDisplay.NODE_FILE,

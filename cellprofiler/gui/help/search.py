@@ -28,6 +28,9 @@ MENU_HELP = {
     "Configuring Logging": cellprofiler.gui.help.content.read_content(
         "other_logging.rst"
     ),
+    "Identifying Objects in 3D": cellprofiler.gui.help.content.read_content(
+        "other_3d_identify.rst"
+    ),
     "Introduction to Projects": cellprofiler.gui.help.content.read_content(
         "projects_introduction.rst"
     ),

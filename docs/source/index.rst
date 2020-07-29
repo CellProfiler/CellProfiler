@@ -177,6 +177,7 @@ Learn about the other features of CellProfiler.
    :caption: Other Features
    :titlesonly:
 
+   help/other_3d_identify
    help/other_troubleshooting
    help/other_batch
    help/other_logging

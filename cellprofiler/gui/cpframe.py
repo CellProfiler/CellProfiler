@@ -22,6 +22,7 @@ from cellprofiler_core.utilities.core.modules import instantiate_module
 import cellprofiler
 import cellprofiler.gui
 from .module_view import ModuleView
+from .preferences_dialog._preferences_dialog import PreferencesDialog
 from .preferences_view import PreferencesView
 from ._welcome_frame import WelcomeFrame
 from ._workspace_model import Workspace
@@ -1010,7 +1011,7 @@ class CPFrame(wx.Frame):
 
     @staticmethod
     def __on_preferences(event):
-        dlg = cellprofiler.gui.preferencesdialog.PreferencesDialog()
+        dlg = PreferencesDialog()
         dlg.Show()
 
     def __on_close_all(self, event):

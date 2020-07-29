@@ -3855,7 +3855,7 @@ class PipelineController(object):
         sub_sizer.Add(
             text_ctrl,
             1,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND | wx.ALL,
+            wx.EXPAND | wx.ALL,
             10,
         )
         bitmap = wx.ArtProvider.GetBitmap(
@@ -3865,7 +3865,7 @@ class PipelineController(object):
         dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
         dont_show_again.SetValue(False)
         sizer.Add(
-            dont_show_again, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 10
+            dont_show_again, 0, wx.ALIGN_LEFT | wx.LEFT, 10
         )
         button_sizer = wx.StdDialogButtonSizer()
         save_pipeline_button = wx.Button(dlg, -1, "Save project")
@@ -3900,7 +3900,7 @@ class PipelineController(object):
             )
         button_sizer.SetCancelButton(save_pipeline_button)
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
-        sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
+        sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
 
         def on_save_workspace(event):
             self.__on_save_workspace(event)
@@ -3938,7 +3938,7 @@ class PipelineController(object):
         sub_sizer.Add(
             text_ctrl,
             1,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND | wx.ALL,
+            wx.EXPAND | wx.ALL,
             10,
         )
         bitmap = wx.ArtProvider.GetBitmap(
@@ -3948,11 +3948,11 @@ class PipelineController(object):
         dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
         dont_show_again.SetValue(False)
         sizer.Add(
-            dont_show_again, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 10
+            dont_show_again, 0, wx.ALIGN_LEFT | wx.LEFT, 10
         )
         button_sizer = wx.StdDialogButtonSizer()
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
-        sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
+        sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
         button_sizer.Realize()
         dlg.Fit()
         dlg.CenterOnParent()

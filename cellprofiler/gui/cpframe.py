@@ -13,35 +13,29 @@ import wx.adv
 import wx.html
 import wx.lib.inspection
 import wx.lib.scrolledpanel
-from cellprofiler_core.preferences import get_startup_blurb
-from cellprofiler_core.preferences import EXT_PROJECT
 from cellprofiler_core.preferences import EXT_PIPELINE
+from cellprofiler_core.preferences import EXT_PROJECT
 from cellprofiler_core.preferences import get_show_sampling
+from cellprofiler_core.preferences import get_startup_blurb
 from cellprofiler_core.utilities.core.modules import instantiate_module
 
 import cellprofiler
 import cellprofiler.gui
-import cellprofiler.gui.module_view
-import cellprofiler.gui.preferences_view._preferences_view
-import cellprofiler.gui.dialog
-import cellprofiler.gui.figure
-import cellprofiler.gui.help.content
-import cellprofiler.gui.help.menu
-import cellprofiler.gui.html
-import cellprofiler.gui.html.htmlwindow
-import cellprofiler.gui.html.utils
-import cellprofiler.gui.imagesetctrl
-import cellprofiler.gui.menu
-import cellprofiler.gui.moduleview
-import cellprofiler.gui.pathlist
-import cellprofiler.gui.pipeline
-import cellprofiler.gui.pipelinecontroller
-import cellprofiler.gui.pipelinelistview
-import cellprofiler.gui._welcome_frame
-import cellprofiler.gui._workspace_model
-import cellprofiler.gui.utilities.module_view
-import cellprofiler.icons
-
+from .module_view import ModuleView
+from .preferences_view import PreferencesView
+from ._welcome_frame import WelcomeFrame
+from ._workspace_model import WorkspaceModel
+from .dialog import AboutDialogInfo
+from .figure import close_all
+from .help.content import read_content
+from .help.menu import Menu
+from .html.htmlwindow import HtmlClickableWindow
+from .html.utils import rst_to_html_fragment
+from .imagesetctrl import ImageSetCtrl
+from .pathlist import PathListCtrl
+from .pipeline import Pipeline
+from .pipelinecontroller import PipelineController
+from .pipelinelistview import PipelineListView
 
 HELP_ON_FILE_LIST = """\
 The *File List* panel displays the image files that are managed by the
@@ -157,10 +151,8 @@ class CPFrame(wx.Frame):
         """
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
 
-        self.__pipeline = cellprofiler.gui.pipeline.Pipeline()
-        self.__workspace = cellprofiler.gui._workspace_model.WorkspaceModel(
-            self.__pipeline, None, None, None, None, None
-        )
+        self.__pipeline = Pipeline()
+        self.__workspace = WorkspaceModel(self.__pipeline, None, None, None, None, None)
 
         super(CPFrame, self).__init__(*args, **kwds)
 
@@ -255,9 +247,7 @@ class CPFrame(wx.Frame):
         #
         # Path list control
         #
-        self.__path_list_ctrl = cellprofiler.gui.pathlist.PathListCtrl(
-            self.__path_list_sash
-        )
+        self.__path_list_ctrl = PathListCtrl(self.__path_list_sash)
         self.__path_list_ctrl.SetBackgroundColour(wx.WHITE)
         sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
         #
@@ -321,14 +311,12 @@ class CPFrame(wx.Frame):
         self.__imageset_panel.SetSizer(wx.BoxSizer())
         self.__imageset_panel.SetAutoLayout(True)
 
-        self.__imageset_ctrl = cellprofiler.gui.imagesetctrl.ImageSetCtrl(
+        self.__imageset_ctrl = ImageSetCtrl(
             self.__workspace, self.__imageset_panel, read_only=True
         )
 
         self.__imageset_panel.GetSizer().Add(self.__imageset_ctrl, 1, wx.EXPAND)
-        self.__grid_ctrl = cellprofiler.gui.module_view._module_view.ModuleView.CornerButtonGrid(
-            self.__imageset_panel
-        )
+        self.__grid_ctrl = ModuleView.CornerButtonGrid(self.__imageset_panel)
         self.__imageset_panel.GetSizer().Add(self.__grid_ctrl, 1, wx.EXPAND)
         self.__right_win.GetSizer().AddSpacer(4)
 
@@ -355,7 +343,7 @@ class CPFrame(wx.Frame):
         self.__set_properties()
         self.__set_icon()
         self.__do_layout()
-        self.startup_blurb_frame = cellprofiler.gui._welcome_frame.WelcomeFrame(self)
+        self.startup_blurb_frame = WelcomeFrame(self)
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)
@@ -535,10 +523,12 @@ class CPFrame(wx.Frame):
             self.__preferences_view.close()
         except:
             logging.warning("Failed during close", exc_info=True)
+
         try:
             self.pipeline_controller.on_close()
         except:
             logging.warning("Failed to close the pipeline controller", exc_info=True)
+
         try:
             cellprofiler.gui.utilities.module_view.stop_validation_queue_thread()
         except:
@@ -827,7 +817,7 @@ class CPFrame(wx.Frame):
 
         self.__menu_window.AppendSeparator()
 
-        self.__menu_help = cellprofiler.gui.help.menu.Menu(self)
+        self.__menu_help = Menu(self)
 
         self.__menu_bar = wx.MenuBar()
         self.__menu_bar.Append(self.__menu_file, "&File")
@@ -1024,7 +1014,7 @@ class CPFrame(wx.Frame):
         dlg.Show()
 
     def __on_close_all(self, event):
-        cellprofiler.gui.figure.close_all(self)
+        close_all(self)
 
     @staticmethod
     def __on_new_cp(event):
@@ -1041,28 +1031,22 @@ class CPFrame(wx.Frame):
         import cellprofiler.gui.htmldialog
 
         dlg = cellprofiler.gui.htmldialog.HTMLDialog(
-            self,
-            "Help on file list",
-            cellprofiler.gui.html.utils.rst_to_html_fragment(HELP_ON_FILE_LIST),
+            self, "Help on file list", rst_to_html_fragment(HELP_ON_FILE_LIST),
         )
         dlg.Show()
 
     def __on_debug_help(self, event):
         import cellprofiler.gui.htmldialog
 
-        contents = cellprofiler.gui.help.content.read_content(
-            "navigation_test_menu.rst"
-        )
+        contents = read_content("navigation_test_menu.rst")
         help_dialog = cellprofiler.gui.htmldialog.HTMLDialog(
-            self,
-            "Test Mode Help",
-            cellprofiler.gui.html.utils.rst_to_html_fragment(contents),
+            self, "Test Mode Help", rst_to_html_fragment(contents),
         )
         help_dialog.Show()
 
     @staticmethod
     def about(event):
-        info = cellprofiler.gui.dialog.AboutDialogInfo()
+        info = AboutDialogInfo()
 
         wx.adv.AboutBox(info)
 
@@ -1121,7 +1105,7 @@ class CPFrame(wx.Frame):
 
         sizer = wx.BoxSizer()
         helpframe.SetSizer(sizer)
-        window = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(helpframe)
+        window = HtmlClickableWindow(helpframe)
         sizer.Add(window, 1, wx.EXPAND)
         window.AppendToPage(help_text)
 
@@ -1236,7 +1220,7 @@ class CPFrame(wx.Frame):
         )
         if dlg.ShowModal() == wx.ID_OK:
             from cellprofiler_core.image import LoadImagesImageProvider
-            from cellprofiler.gui.figure import Figure
+            from .figure import Figure
 
             lip = LoadImagesImageProvider("dummy", "", dlg.GetPath())
             image = lip.provide_image(None).pixel_data
@@ -1248,12 +1232,8 @@ class CPFrame(wx.Frame):
             frame.panel.draw()
 
     def __attach_views(self):
-        self.__pipeline_list_view = cellprofiler.gui.pipelinelistview.PipelineListView(
-            self.__module_list_panel, self
-        )
-        self.__pipeline_controller = cellprofiler.gui.pipelinecontroller.PipelineController(
-            self.__workspace, self
-        )
+        self.__pipeline_list_view = PipelineListView(self.__module_list_panel, self)
+        self.__pipeline_controller = PipelineController(self.__workspace, self)
         self.__pipeline_list_view.attach_to_pipeline(
             self.__pipeline, self.__pipeline_controller
         )
@@ -1266,7 +1246,7 @@ class CPFrame(wx.Frame):
         self.__pipeline_controller.attach_to_path_list_ctrl(
             self.__path_list_ctrl, self.__path_list_filter_checkbox
         )
-        self.__module_view = cellprofiler.gui.module_view._module_view.ModuleView(
+        self.__module_view = ModuleView(
             self.__module_panel,
             self.__workspace,
             frame=self,
@@ -1274,7 +1254,7 @@ class CPFrame(wx.Frame):
         )
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view(self.__module_view)
-        self.__preferences_view = cellprofiler.gui.preferences_view._preferences_view.PreferencesView(
+        self.__preferences_view = PreferencesView(
             self.__right_win.GetSizer(),
             self.__preferences_panel,
             self.__progress_panel,

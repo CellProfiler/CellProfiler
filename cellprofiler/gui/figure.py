@@ -1519,6 +1519,8 @@ class Figure(wx.Frame):
                             d[CPLD_OUTLINE_COLOR] = get_secondary_outline_color()
                         elif i == 2:
                             d[CPLD_OUTLINE_COLOR] = get_tertiary_outline_color()
+                        else:
+                            d[CPLD_OUTLINE_COLOR] = wx.Colour(255, 255, 255)
 
                     if CPLD_MODE not in d:
                         d[CPLD_MODE] = CPLDM_OUTLINES

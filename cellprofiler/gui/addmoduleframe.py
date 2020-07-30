@@ -120,9 +120,8 @@ class AddModuleFrame(wx.Frame):
         self.Bind(
             wx.EVT_MENU, self.__on_close, id=cellprofiler.gui.cpframe.ID_FILE_EXIT
         )
+        self.Bind(wx.EVT_CHAR_HOOK, self.__on_special_key)
         self.search_text.Bind(wx.EVT_TEXT, self.__on_search_modules)
-        self.search_text.Bind(wx.EVT_TEXT_ENTER, self.__on_add_to_pipeline)
-        self.search_text.Bind(wx.EVT_CHAR_HOOK, self.__on_special_key)
         self.search_button.Bind(wx.EVT_BUTTON, self.__on_search_help)
         self.__get_module_files()
         self.__set_categories()
@@ -268,9 +267,12 @@ class AddModuleFrame(wx.Frame):
     def __on_special_key(self, event):
         # Capture keyboard shortcuts
         key = event.GetKeyCode()
-        numitems = len(self.__module_list_box.Items)
+        numitems = len(self.__module_list_box.GetItems())
         if key == wx.WXK_ESCAPE:
             self.Close()
+            return
+        elif key in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER):
+            self.__on_add_to_pipeline(event)
             return
         elif numitems <= 1:
             # No point moving selector

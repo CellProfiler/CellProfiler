@@ -506,7 +506,7 @@ negative as clockwise."""
             initial_angle[0] = get_angle(event) - angle[0]
             canvas.CaptureMouse()
 
-        wx.EVT_LEFT_DOWN(canvas, on_mouse_down)
+        canvas.Bind(wx.EVT_LEFT_DOWN, on_mouse_down)
 
         def on_mouse_up(event):
             if dragging[0]:
@@ -514,13 +514,13 @@ negative as clockwise."""
                 dragging[0] = False
                 canvas.Cursor = arrow_cursor
 
-        wx.EVT_LEFT_UP(canvas, on_mouse_up)
+        canvas.Bind(wx.EVT_LEFT_UP, on_mouse_up)
 
         def on_mouse_lost(event):
             dragging[0] = False
             canvas.Cursor = arrow_cursor
 
-        wx.EVT_MOUSE_CAPTURE_LOST(canvas, on_mouse_lost)
+        canvas.Bind(wx.EVT_MOUSE_CAPTURE_LOST, on_mouse_lost)
 
         def on_mouse_move(event):
             if dragging[0]:
@@ -528,7 +528,7 @@ negative as clockwise."""
                 imshow()
                 canvas.Refresh(eraseBackground=False)
 
-        wx.EVT_MOTION(canvas, on_mouse_move)
+        canvas.Bind(wx.EVT_MOTION, on_mouse_move)
         #
         # Put the OK and Cancel buttons on the bottom
         #

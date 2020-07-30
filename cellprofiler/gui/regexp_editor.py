@@ -84,7 +84,7 @@ class RegexpDialog(wx.Dialog):
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(hsizer, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        sizer.Add(hsizer, 0, wx.GROW | wx.ALL, 5)
         hsizer.Add(wx.StaticText(self, label="Regex:"), 0, wx.ALIGN_CENTER | wx.ALL, 5)
 
         self.regexp_display = wx.stc.StyledTextCtrl(self, -1, style=wx.BORDER_SIMPLE)
@@ -162,16 +162,16 @@ class RegexpDialog(wx.Dialog):
         sizer.Add(self.test_display, 0, wx.EXPAND | wx.ALL, 5)
 
         line = wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.LEFT, 5)
+        sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.LEFT, 5)
 
         hsizer = wx.StdDialogButtonSizer()
         guess_button = wx.Button(self, label="Guess")
-        hsizer.Add(guess_button, 0, wx.ALIGN_RIGHT)
+        hsizer.Add(guess_button, 0)
         ok_button = wx.Button(self, label="Submit")
         ok_button.SetDefault()
-        hsizer.Add(ok_button, 0, wx.ALIGN_RIGHT | wx.LEFT, 5)
+        hsizer.Add(ok_button, 0, wx.LEFT, 5)
         cancel_button = wx.Button(self, label="Cancel")
-        hsizer.Add(cancel_button, 0, wx.ALIGN_RIGHT | wx.LEFT, 5)
+        hsizer.Add(cancel_button, 0, wx.LEFT, 5)
         hsizer.Realize()
         sizer.Add(hsizer, 0, wx.ALIGN_RIGHT | wx.ALL, 5)
 

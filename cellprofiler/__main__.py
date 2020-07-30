@@ -15,33 +15,39 @@ import matplotlib
 import numpy
 import pkg_resources
 import six.moves
-from cellprofiler_core.preferences import (
-    get_image_set_file,
-    set_headless,
-    set_temporary_directory,
-    set_awt_headless,
-    set_omero_port,
-    set_omero_server,
-    set_omero_user,
-    get_omero_server,
-    get_omero_port,
-    get_omero_user,
-    get_omero_session_id,
-    set_image_set_file,
-    set_data_file,
-    set_default_image_directory,
-    set_allow_schema_write,
-    set_default_output_directory,
-    set_plugin_directory,
-)
-
-import cellprofiler_core.object
-import cellprofiler_core.pipeline
-import cellprofiler_core.utilities.java
-import cellprofiler_core.utilities.hdf5_dict
-import cellprofiler_core.utilities.zmq
-import cellprofiler_core.worker
-import cellprofiler_core.workspace
+from cellprofiler_core.constants.measurement import GROUP_NUMBER
+from cellprofiler_core.constants.measurement import GROUP_INDEX
+from cellprofiler_core.constants.measurement import EXPERIMENT
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.pipeline import M_PIPELINE, EXIT_STATUS
+from cellprofiler_core.preferences import get_image_set_file, get_temporary_directory
+from cellprofiler_core.preferences import set_headless
+from cellprofiler_core.preferences import set_temporary_directory
+from cellprofiler_core.preferences import set_awt_headless
+from cellprofiler_core.preferences import set_omero_port
+from cellprofiler_core.preferences import set_omero_server
+from cellprofiler_core.preferences import set_omero_user
+from cellprofiler_core.preferences import get_omero_server
+from cellprofiler_core.preferences import get_omero_port
+from cellprofiler_core.preferences import get_omero_user
+from cellprofiler_core.preferences import get_omero_session_id
+from cellprofiler_core.preferences import set_image_set_file
+from cellprofiler_core.preferences import set_data_file
+from cellprofiler_core.preferences import set_default_image_directory
+from cellprofiler_core.preferences import set_allow_schema_write
+from cellprofiler_core.preferences import set_default_output_directory
+from cellprofiler_core.preferences import set_plugin_directory
+from cellprofiler_core.object import ObjectSet
+from cellprofiler_core.pipeline import LoadException
+from cellprofiler_core.pipeline import Pipeline
+from cellprofiler_core.utilities.core.workspace import is_workspace_file
+from cellprofiler_core.utilities.java import start_java, stop_java
+from cellprofiler_core.utilities.hdf5_dict import HDF5FileList
+from cellprofiler_core.utilities.measurement import load_measurements
+from cellprofiler_core.utilities.zmq import join_to_the_boundary
+from cellprofiler_core.worker import aw_parse_args, main
+from cellprofiler_core.workspace import Workspace
+from cellprofiler_core.measurement import Measurements
 
 if sys.platform.startswith("win") and hasattr(sys, "frozen"):
     # For Windows builds, use built-in Java for CellProfiler, otherwise try to use Java from elsewhere on the system.
@@ -86,8 +92,8 @@ def main(args=None):
 
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         set_headless()
-        cellprofiler_core.worker.aw_parse_args()
-        cellprofiler_core.worker.main()
+        aw_parse_args()
+        main()
         return exit_code
 
     options, args = parse_args(args)
@@ -96,6 +102,8 @@ def main(args=None):
         if not os.path.exists(options.temp_dir):
             os.makedirs(options.temp_dir)
         set_temporary_directory(options.temp_dir, globally=False)
+
+    temp_dir = get_temporary_directory()
 
     to_clean = []
 
@@ -195,7 +203,7 @@ def main(args=None):
 
     try:
         if not options.show_gui:
-            cellprofiler_core.utilities.java.start_java()
+            start_java()
 
         if options.image_set_file is not None:
             set_image_set_file(options.image_set_file)
@@ -215,9 +223,7 @@ def main(args=None):
             import cellprofiler.gui.app
 
             if options.pipeline_filename:
-                if cellprofiler_core.workspace.is_workspace_file(
-                    options.pipeline_filename
-                ):
+                if is_workspace_file(options.pipeline_filename):
                     workspace_path = os.path.expanduser(options.pipeline_filename)
 
                     pipeline_path = None
@@ -263,7 +269,7 @@ def __version__(exit_code):
 
 
 def stop_cellprofiler():
-    cellprofiler_core.utilities.zmq.join_to_the_boundary()
+    join_to_the_boundary()
 
     # Bioformats readers have to be properly closed.
     # This is especially important when using OmeroReaders as leaving the
@@ -271,7 +277,7 @@ def stop_cellprofiler():
     # high memory consumption.
     bioformats.formatreader.clear_image_reader_cache()
 
-    cellprofiler_core.utilities.java.stop_java()
+    stop_java()
 
 
 def parse_args(args):
@@ -611,10 +617,10 @@ def print_measurements(options):
 
     import cellprofiler_core.pipeline
 
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
 
     def callback(pipeline, event):
-        if isinstance(event, cellprofiler_core.pipeline.event.LoadException):
+        if isinstance(event, LoadException):
             raise ValueError("Failed to load %s" % options.pipeline_filename)
 
     pipeline.add_listener(callback)
@@ -646,7 +652,7 @@ def print_groups(filename):
     """
     path = os.path.expanduser(filename)
 
-    m = cellprofiler_core.measurement.Measurements(filename=path, mode="r")
+    m = Measurements(filename=path, mode="r")
 
     metadata_tags = m.get_grouping_tags()
 
@@ -668,23 +674,17 @@ def get_batch_commands(filename, n_per_job=1):
     """
     path = os.path.expanduser(filename)
 
-    m = cellprofiler_core.measurement.Measurements(filename=path, mode="r")
+    m = Measurements(filename=path, mode="r")
 
     image_numbers = m.get_image_numbers()
 
-    if m.has_feature(
-        cellprofiler_core.measurement.IMAGE, cellprofiler_core.measurement.GROUP_NUMBER
-    ):
+    if m.has_feature(IMAGE, GROUP_NUMBER):
         group_numbers = m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_NUMBER,
-            image_numbers,
+            IMAGE, GROUP_NUMBER, image_numbers,
         ]
 
         group_indexes = m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_INDEX,
-            image_numbers,
+            IMAGE, GROUP_INDEX, image_numbers,
         ]
 
         if numpy.any(group_numbers != 1) and numpy.all(
@@ -738,7 +738,7 @@ def write_schema(pipeline_filename):
             "ExportToDatabase module."
         )
 
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
 
     pipeline.load(pipeline_filename)
 
@@ -753,11 +753,9 @@ def write_schema(pipeline_filename):
             % pipeline_filename
         )
 
-    m = cellprofiler_core.measurement.Measurements()
+    m = Measurements()
 
-    workspace = cellprofiler_core.workspace.Workspace(
-        pipeline, module, m, cellprofiler_core.object.ObjectSet, m, None
-    )
+    workspace = Workspace(pipeline, module, m, ObjectSet, m, None)
 
     module.prepare_run(workspace)
 
@@ -794,22 +792,20 @@ def run_pipeline_headless(options, args):
     ):
         options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
 
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
 
     initial_measurements = None
 
     try:
         if h5py.is_hdf5(options.pipeline_filename):
-            initial_measurements = cellprofiler_core.measurement.load_measurements(
+            initial_measurements = load_measurements(
                 options.pipeline_filename, image_numbers=image_set_numbers
             )
     except:
         logging.root.info("Failed to load measurements from pipeline")
 
     if initial_measurements is not None:
-        pipeline_text = initial_measurements.get_experiment_measurement(
-            cellprofiler_core.pipeline.M_PIPELINE
-        )
+        pipeline_text = initial_measurements.get_experiment_measurement(M_PIPELINE)
 
         pipeline_text = pipeline_text
 
@@ -821,12 +817,8 @@ def run_pipeline_headless(options, args):
             #
 
             with h5py.File(options.pipeline_filename, "r") as src:
-                if cellprofiler_core.utilities.hdf5_dict.HDF5FileList.has_file_list(
-                    src
-                ):
-                    cellprofiler_core.utilities.hdf5_dict.HDF5FileList.copy(
-                        src, initial_measurements.hdf5_dict.hdf5_file
-                    )
+                if HDF5FileList.has_file_list(src):
+                    HDF5FileList.copy(src, initial_measurements.hdf5_dict.hdf5_file)
     else:
         pipeline.load(options.pipeline_filename)
 
@@ -893,12 +885,9 @@ def run_pipeline_headless(options, args):
 
     if options.done_file is not None:
         if measurements is not None and measurements.has_feature(
-            cellprofiler_core.measurement.EXPERIMENT,
-            cellprofiler_core.pipeline.EXIT_STATUS,
+            EXPERIMENT, EXIT_STATUS,
         ):
-            done_text = measurements.get_experiment_measurement(
-                cellprofiler_core.pipeline.EXIT_STATUS
-            )
+            done_text = measurements.get_experiment_measurement(EXIT_STATUS)
 
             exit_code = 0 if done_text == "Complete" else -1
         else:
@@ -909,9 +898,7 @@ def run_pipeline_headless(options, args):
         fd = open(options.done_file, "wt")
         fd.write("%s\n" % done_text)
         fd.close()
-    elif not measurements.has_feature(
-        cellprofiler_core.measurement.EXPERIMENT, cellprofiler_core.pipeline.EXIT_STATUS
-    ):
+    elif not measurements.has_feature(EXPERIMENT, EXIT_STATUS):
         # The pipeline probably failed
         exit_code = 1
     else:

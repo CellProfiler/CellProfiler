@@ -43,26 +43,20 @@ class TestObjects:
         numpy.testing.assert_array_equal(objects.masked, mask)
 
     def test_shape(self):
-        x = numpy.zeros((224, 224, 3), numpy.float32)
-
-        mask = numpy.ones((224, 224), numpy.bool)
-
         objects = Objects()
 
-        objects.segmented = mask
+        objects.segmented = numpy.ones((224, 224), numpy.uint8)
 
         assert objects.shape == (224, 224)
 
     def test_segmented(self):
-        x = numpy.zeros((224, 224, 3), numpy.float32)
-
-        mask = numpy.ones((224, 224), numpy.bool)
+        segmented = numpy.ones((224, 224), numpy.bool)
 
         objects = Objects()
 
-        objects.segmented = mask
+        objects.segmented = segmented
 
-        numpy.testing.assert_array_equal(objects.segmented, mask)
+        numpy.testing.assert_array_equal(objects.segmented, segmented)
 
     def test_indices(self):
         pass

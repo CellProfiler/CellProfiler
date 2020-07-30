@@ -27,7 +27,7 @@ See also **ColorToGray** and **InvertForPrinting**.
 import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Color
+from cellprofiler_core.setting import Color, Binary
 from cellprofiler_core.setting import HiddenCount
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
@@ -46,7 +46,7 @@ OFF_BLUE_ADJUSTMENT_FACTOR = 6
 
 OFF_STACK_CHANNELS_V2 = 16
 OFF_STACK_CHANNEL_COUNT_V3 = 16
-OFF_STACK_CHANNEL_COUNT = 16
+OFF_STACK_CHANNEL_COUNT = 17
 
 SCHEME_RGB = "RGB"
 SCHEME_CMYK = "CMYK"
@@ -69,7 +69,7 @@ DEFAULT_COLORS = [
 
 class GrayToColor(Module):
     module_name = "GrayToColor"
-    variable_revision_number = 3
+    variable_revision_number = 4
     category = "Image Processing"
 
     def create_settings(self):
@@ -101,6 +101,20 @@ This module can use one of two color schemes to combine images:
    single color image.
 """
             % globals(),
+        )
+
+        self.wants_rescale = Binary(
+            "Rescale intensity",
+            True,
+            doc="""\
+Choose whether to rescale each channel individually to 
+the range of 0-1. This prevents clipping of channels with intensity 
+above 1 and can help to balance the brightness of the different channels. 
+This option also ensures that channels occupy the full intensity range 
+available, which is useful for displaying images in other software.
+
+This rescaling is applied before any multiplication factors set in this 
+module's options."""
         )
 
         # # # # # # # # # # # # # # # #
@@ -418,6 +432,7 @@ pixel values are multiplied by this weight before assigning the color.
     def settings(self):
         result = [
             self.scheme_choice,
+            self.wants_rescale,
             self.red_image_name,
             self.green_image_name,
             self.blue_image_name,
@@ -459,6 +474,8 @@ pixel values are multiplied by this weight before assigning the color.
             for color_scheme_setting in self.color_scheme_settings
         ]
         result += [self.rgb_image_name]
+        if self.scheme_choice != SCHEME_STACK:
+            result += [self.wants_rescale]
         for color_scheme_setting in self.color_scheme_settings:
             if not color_scheme_setting.image_name.is_blank:
                 result.append(color_scheme_setting.adjustment_factor)
@@ -511,6 +528,8 @@ pixel values are multiplied by this weight before assigning the color.
                     * color_scheme_setting.adjustment_factor.value
                 )
                 pixel_data = image.pixel_data
+                if self.wants_rescale.value:
+                    pixel_data = pixel_data / numpy.max(pixel_data)
                 if parent_image is not None:
                     if parent_image.pixel_data.shape != pixel_data.shape:
                         raise ValueError(
@@ -550,18 +569,23 @@ pixel values are multiplied by this weight before assigning the color.
                 rgb_pixel_data = numpy.dstack(source_channels)
             else:
                 colors = []
+                pixel_data = parent_image.pixel_data
+                if self.wants_rescale.value:
+                    pixel_data = pixel_data / numpy.max(pixel_data)
                 for sc in self.stack_channels:
                     color_tuple = sc.color.to_rgb()
                     color = (
                         sc.weight.value
-                        * numpy.array(color_tuple).astype(parent_image.pixel_data.dtype)
+                        * numpy.array(color_tuple).astype(pixel_data.dtype)
                         / 255
                     )
                     colors.append(color[numpy.newaxis, numpy.newaxis, :])
                 rgb_pixel_data = (
-                    parent_image.pixel_data[:, :, numpy.newaxis] * colors[0]
+                    pixel_data[:, :, numpy.newaxis] * colors[0]
                 )
                 for image, color in zip(source_channels[1:], colors[1:]):
+                    if self.wants_rescale.value:
+                        image = image / numpy.max(image)
                     rgb_pixel_data = rgb_pixel_data + image[:, :, numpy.newaxis] * color
 
         ##############
@@ -620,6 +644,7 @@ pixel values are multiplied by this weight before assigning the color.
             workspace.display_data.rgb_pixel_data[:, :, :3],
             title=self.rgb_image_name.value,
             sharexy=figure.subplot(0, 0),
+            normalize=False,
         )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
@@ -644,6 +669,9 @@ pixel values are multiplied by this weight before assigning the color.
                 ]
             setting_values = new_setting_values
             variable_revision_number = 3
+        if variable_revision_number == 3:
+            setting_values.insert(1, "No")
+            variable_revision_number = 4
         return setting_values, variable_revision_number
 
 

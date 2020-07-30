@@ -23,9 +23,10 @@ YES          YES          NO
 
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
+from cellprofiler_core.object import Objects
+from cellprofiler_core.setting import StructuringElement, Binary
+
 import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 
@@ -34,7 +35,8 @@ import scipy.ndimage
 import skimage.measure
 import skimage.morphology
 
-class ErodeObjects(cellprofiler_core.module.ObjectProcessing):
+
+class ErodeObjects(ObjectProcessing):
     category = "Advanced"
 
     module_name = "ErodeObjects"
@@ -44,11 +46,11 @@ class ErodeObjects(cellprofiler_core.module.ObjectProcessing):
     def create_settings(self):
         super(ErodeObjects, self).create_settings()
 
-        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+        self.structuring_element = StructuringElement(
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 
-        self.preserve_midpoints = cellprofiler_core.setting.Binary(
+        self.preserve_midpoints = Binary(
             "Prevent object removal",
             True,
             doc="""
@@ -58,7 +60,7 @@ in some objects this may be a cluster of pixels with equal distance to the edge.
 If set to "No", erosion can completely remove smaller objects."""
         )
 
-        self.relabel_objects = cellprofiler_core.setting.Binary(
+        self.relabel_objects = Binary(
             "Relabel resulting objects",
             False,
             doc="""
@@ -103,7 +105,7 @@ label numbers."""
         if self.relabel_objects.value:
             y_data = skimage.morphology.label(y_data)
 
-        y = cellprofiler_core.object.Objects()
+        y = Objects()
         y.segmented = y_data
         y.parent_image = x.parent_image
         objects.add_objects(y, y_name)

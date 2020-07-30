@@ -18,14 +18,14 @@ YES          YES          NO
 
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import StructuringElement
+
 import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
 
 
-class ErodeImage(cellprofiler_core.module.ImageProcessing):
+class ErodeImage(ImageProcessing):
     category = "Advanced"
 
     module_name = "ErodeImage"
@@ -35,7 +35,7 @@ class ErodeImage(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(ErodeImage, self).create_settings()
 
-        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+        self.structuring_element = StructuringElement(
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 

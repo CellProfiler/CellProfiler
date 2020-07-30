@@ -603,7 +603,7 @@ objects:
                 y = max(0, min(y, pixel_data.shape[0]))
                 self.__selected = False
                 self.__color = get_primary_outline_color()
-                self.__color = numpy.hstack((self.__color, [255])).astype(float) / 255.0
+                self.__color = numpy.hstack(self.__color).astype(float) / 255.0
                 self.__on_move = on_move
                 super(Handle, self).__init__(
                     (x - self.width / 2, y - self.height / 2),
@@ -676,7 +676,7 @@ objects:
                 self.__left, self.__top = top_left
                 self.__right, self.__bottom = bottom_right
                 color = get_primary_outline_color()
-                color = numpy.hstack((color, [255])).astype(float) / 255.0
+                color = numpy.hstack(color).astype(float) / 255.0
                 self.rectangle = matplotlib.patches.Rectangle(
                     (min(self.__left, self.__right), min(self.__bottom, self.__top)),
                     abs(self.__right - self.__left),
@@ -742,7 +742,7 @@ objects:
                 self.radius_x = self.center_x + radius[0] / 2
                 self.radius_y = self.center_y + radius[1] / 2
                 color = get_primary_outline_color()
-                color = numpy.hstack((color, [255])).astype(float) / 255.0
+                color = numpy.hstack(color).astype(float) / 255.0
                 self.ellipse = matplotlib.patches.Ellipse(
                     center, self.width, self.height, edgecolor=color, facecolor="none"
                 )

@@ -14,6 +14,7 @@ from ....constants.modules import (
     pymodules,
     badmodules,
     builtin_modules,
+    renamed_modules,
     unimplemented_modules,
     depricated_modules,
     replaced_modules,
@@ -148,6 +149,8 @@ def add_module_for_tst(module_class):
 def get_module_class(module_name):
     module_class = module_name.split(".")[-1]
     if module_class not in all_modules:
+        if module_class in renamed_modules:
+            return all_modules[renamed_modules[module_class]]
         if module_class in unimplemented_modules:
             raise ValueError(
                 (

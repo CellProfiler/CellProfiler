@@ -35,14 +35,14 @@ import numpy
 import scipy.ndimage
 import skimage.morphology
 import skimage.segmentation
-from cellprofiler_core.module.image_segmentation import ObjectProcessing
+from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import LabelName
 
 
-class CombineObjects(ObjectProcessing):
+class CombineObjects(Module):
     category = "Object Processing"
 
     module_name = "CombineObjects"

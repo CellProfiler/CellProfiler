@@ -9,6 +9,11 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
     ],
+    entry_points={
+        'console_scripts': [
+            'cellprofiler=cellprofiler_core.__main__:main'
+        ],
+    },
     extras_require={
         "dev": [
             "black==19.10b0",

@@ -71,6 +71,11 @@ class Menu(cellprofiler.gui.menu.Menu):
         )
 
         self.append(
+            "Identifying 3D objects",
+            contents=cellprofiler.gui.help.content.read_content("other_3d_identify.rst"),
+        )
+
+        self.append(
             "Batch Processing",
             contents=cellprofiler.gui.help.content.read_content("other_batch.rst"),
         )

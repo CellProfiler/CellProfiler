@@ -1,7 +1,7 @@
 import logging
 
-from cellprofiler_core.setting._setting import Setting
-from cellprofiler_core.setting._validation_error import ValidationError
+from .._setting import Setting
+from .._validation_error import ValidationError
 
 
 class Range(Setting):

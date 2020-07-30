@@ -114,7 +114,8 @@ This option also ensures that channels occupy the full intensity range
 available, which is useful for displaying images in other software.
 
 This rescaling is applied before any multiplication factors set in this 
-module's options."""
+module's options. Using a multiplication factor >1 would therefore result 
+in clipping."""
         )
 
         # # # # # # # # # # # # # # # #

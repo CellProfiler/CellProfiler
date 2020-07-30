@@ -2,9 +2,6 @@ class TestSegmentation:
     def test_shape(self):
         pass
 
-    def test_shape(self):
-        pass
-
     def test_has_dense(self):
         pass
 

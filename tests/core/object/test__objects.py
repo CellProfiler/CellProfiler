@@ -1,21 +1,68 @@
+import numpy
+
+from cellprofiler_core.image import Image
+from cellprofiler_core.object import Objects
+
+
 class TestObjects:
     def test_dimensions(self):
-        pass
+        x = numpy.zeros((100, 224, 224, 3), numpy.float32)
+
+        parent_image = Image(x, dimensions=3)
+
+        objects = Objects()
+
+        objects.parent_image = parent_image
+
+        assert objects.dimensions == 3
 
     def test_volumetric(self):
-        pass
+        x = numpy.zeros((100, 224, 224, 3), numpy.float32)
+
+        parent_image = Image(x, dimensions=3)
+
+        objects = Objects()
+
+        objects.parent_image = parent_image
+
+        assert objects.volumetric
 
     def test_masked(self):
-        pass
+        x = numpy.zeros((224, 224, 3), numpy.float32)
+
+        mask = numpy.ones((224, 224), numpy.bool)
+
+        parent_image = Image(x, mask=mask)
+
+        objects = Objects()
+
+        objects.segmented = mask
+
+        objects.parent_image = parent_image
+
+        numpy.testing.assert_array_equal(objects.masked, mask)
 
     def test_shape(self):
-        pass
+        x = numpy.zeros((224, 224, 3), numpy.float32)
+
+        mask = numpy.ones((224, 224), numpy.bool)
+
+        objects = Objects()
+
+        objects.segmented = mask
+
+        assert objects.shape == (224, 224)
 
     def test_segmented(self):
-        pass
+        x = numpy.zeros((224, 224, 3), numpy.float32)
 
-    def test_segmented(self):
-        pass
+        mask = numpy.ones((224, 224), numpy.bool)
+
+        objects = Objects()
+
+        objects.segmented = mask
+
+        numpy.testing.assert_array_equal(objects.segmented, mask)
 
     def test_indices(self):
         pass
@@ -41,19 +88,10 @@ class TestObjects:
     def test_unedited_segmented(self):
         pass
 
-    def test_unedited_segmented(self):
-        pass
-
     def test_has_small_removed_segmented(self):
         pass
 
     def test_small_removed_segmented(self):
-        pass
-
-    def test_small_removed_segmented(self):
-        pass
-
-    def test_parent_image(self):
         pass
 
     def test_parent_image(self):

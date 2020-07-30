@@ -1,4 +1,21 @@
-"""
+import logging
+
+import cellprofiler_core.workspace
+import numpy
+import scipy.ndimage
+import skimage.morphology
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Divider, Binary, ValidationError
+from cellprofiler_core.setting.subscriber import (
+    ImageListSubscriber,
+    LabelListSubscriber,
+)
+from cellprofiler_core.setting.text import Float, Integer
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from cellprofiler.gui.help.content import image_resource
+
+__doc__ = """\
 MeasureGranularity
 ==================
 **MeasureGranularity** outputs spectra of size measurements of the
@@ -65,27 +82,12 @@ References
 .. |MeasureGranularity_example| image:: {MEASUREGRANULARITY_EXAMPLE}
 """.format(
     **{
-        "MEASUREGRANULARITY_EXAMPLE": cellprofiler.gui.help.content.image_resource(
+        "MEASUREGRANULARITY_EXAMPLE": image_resource(
             "MeasureGranularity_example.png"
         )
     }
 )
 
-import logging
-
-import cellprofiler_core.workspace
-import numpy
-import scipy.ndimage
-import skimage.morphology
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
-from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Divider, Binary, ValidationError
-from cellprofiler_core.setting.subscriber import (
-    ImageListSubscriber,
-    LabelListSubscriber,
-)
-from cellprofiler_core.setting.text import Float, Integer
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 "Granularity category"
 C_GRANULARITY = "Granularity_%s_%s"

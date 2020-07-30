@@ -256,9 +256,7 @@ def test_long_int_image_measurement():
     pipeline, module, filename = make_pipeline(csv_text)
     m = pipeline.run()
     data = m.get_current_image_measurement("Test_Measurement")
-    assert isinstance(
-        data, str
-    ), "Expected <type 'six.text_type'> got %s" % type(data)
+    assert isinstance(data, str), "Expected <type 'six.text_type'> got %s" % type(data)
     assert data == "1234567890123"
     os.remove(filename)
 
@@ -282,39 +280,27 @@ def test_metadata_row_and_column():
     columns = module.get_measurement_columns(pipeline)
     assert any(
         [
-            c[0] == "Image"
-            and c[1] == "Metadata_Row"
-            and c[2] == "varchar(1)"
+            c[0] == "Image" and c[1] == "Metadata_Row" and c[2] == "varchar(1)"
             for c in columns
         ]
     )
     assert any(
         [
-            c[0] == "Image"
-            and c[1] == "Metadata_Column"
-            and c[2] == "varchar(2)"
+            c[0] == "Image" and c[1] == "Metadata_Column" and c[2] == "varchar(2)"
             for c in columns
         ]
     )
     assert any(
         [
-            c[0] == "Image"
-            and c[1] == "Metadata_Well"
-            and c[2] == "varchar(3)"
+            c[0] == "Image" and c[1] == "Metadata_Well" and c[2] == "varchar(3)"
             for c in columns
         ]
     )
     m = pipeline.run()
-    features = module.get_measurements(
-        pipeline,
-        "Image",
-        C_METADATA,
-    )
+    features = module.get_measurements(pipeline, "Image", C_METADATA,)
     for feature, expected in (("Row", "C"), ("Column", "03"), ("Well", "C03")):
         assert feature in features
-        value = m.get_current_image_measurement(
-            "_".join((C_METADATA, feature))
-        )
+        value = m.get_current_image_measurement("_".join((C_METADATA, feature)))
         assert value == expected
 
 
@@ -326,39 +312,27 @@ def test_metadata_row_and_column_and_well():
     columns = module.get_measurement_columns(pipeline)
     assert any(
         [
-            c[0] == "Image"
-            and c[1] == "Metadata_Row"
-            and c[2] == "varchar(1)"
+            c[0] == "Image" and c[1] == "Metadata_Row" and c[2] == "varchar(1)"
             for c in columns
         ]
     )
     assert any(
         [
-            c[0] == "Image"
-            and c[1] == "Metadata_Column"
-            and c[2] == "varchar(2)"
+            c[0] == "Image" and c[1] == "Metadata_Column" and c[2] == "varchar(2)"
             for c in columns
         ]
     )
     assert any(
         [
-            c[0] == "Image"
-            and c[1] == "Metadata_Well"
-            and c[2] == "varchar(3)"
+            c[0] == "Image" and c[1] == "Metadata_Well" and c[2] == "varchar(3)"
             for c in columns
         ]
     )
     m = pipeline.run()
-    features = module.get_measurements(
-        pipeline,
-        "Image",
-        C_METADATA,
-    )
+    features = module.get_measurements(pipeline, "Image", C_METADATA,)
     for feature, expected in (("Row", "C"), ("Column", "03"), ("Well", "B14")):
         assert feature in features
-        value = m.get_current_image_measurement(
-            "_".join((C_METADATA, feature))
-        )
+        value = m.get_current_image_measurement("_".join((C_METADATA, feature)))
         assert value == expected
 
 
@@ -390,13 +364,9 @@ def test_load_file():
         assert c0_ran[0]
         hexdigest = m.get_current_image_measurement("MD5Digest_DNA")
         assert hexdigest == test_md5
-        assert "PathName_DNA" in m.get_feature_names(
-            "Image"
-        )
+        assert "PathName_DNA" in m.get_feature_names("Image")
         assert m.get_current_image_measurement("PathName_DNA") == test_path
-        assert "FileName_DNA" in m.get_feature_names(
-            "Image"
-        )
+        assert "FileName_DNA" in m.get_feature_names("Image")
         assert m.get_current_image_measurement("FileName_DNA") == test_filename
     finally:
         os.remove(filename)
@@ -497,9 +467,7 @@ def test_some_rows():
     module.row_range.max = 6
     m = pipeline.run()
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
-    data = m.get_all_measurements(
-        "Image", "Test_Measurement"
-    )
+    data = m.get_all_measurements("Image", "Test_Measurement")
     assert numpy.all(data == numpy.arange(4, 7))
     os.remove(filename)
 
@@ -524,9 +492,7 @@ def test_img_717():
     module.row_range.max = 6
     m = pipeline.run()
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
-    data = m.get_all_measurements(
-        "Image", "Test_Measurement"
-    )
+    data = m.get_all_measurements("Image", "Test_Measurement")
     assert numpy.all(data == numpy.arange(4, 7))
     os.remove(filename)
 
@@ -546,9 +512,7 @@ def test_alternate_image_start():
 """
     pipeline, module, filename = make_pipeline(csv_text)
     m = pipeline.run(image_set_start=2)
-    data = m.get_all_measurements(
-        "Image", "Metadata_Measurement"
-    )
+    data = m.get_all_measurements("Image", "Metadata_Measurement")
     assert all([data[i - 2] == i for i in range(2, 11)])
     os.remove(filename)
 
@@ -579,11 +543,7 @@ def test_get_measurement_columns():
     for colname, coltype in zip(colnames, coltypes):
         assert any(
             [
-                (
-                    column[0] == "Image"
-                    and column[1] == colname
-                    and column[2] == coltype
-                )
+                (column[0] == "Image" and column[1] == colname and column[2] == coltype)
                 for column in columns
             ]
         ), ("Failed to find %s" % colname)
@@ -643,11 +603,7 @@ def test_long_integer_column():
     for colname, coltype in zip(colnames, coltypes):
         assert any(
             [
-                (
-                    column[0] == "Image"
-                    and column[1] == colname
-                    and column[2] == coltype
-                )
+                (column[0] == "Image" and column[1] == colname and column[2] == coltype)
                 for column in columns
             ]
         ), ("Failed to find %s" % colname)
@@ -666,26 +622,10 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
     pipeline, module, filename = make_pipeline(csv_text)
     columns = module.get_measurement_columns(pipeline)
     expected_columns = (
-        (
-            "Image",
-            C_OBJECTS_URL + "_" + OBJECTS_NAME,
-        ),
-        (
-            "Image",
-            C_OBJECTS_FILE_NAME
-            + "_"
-            + OBJECTS_NAME,
-        ),
-        (
-            "Image",
-            C_OBJECTS_PATH_NAME
-            + "_"
-            + OBJECTS_NAME,
-        ),
-        (
-            "Image",
-            C_COUNT + "_" + OBJECTS_NAME,
-        ),
+        ("Image", C_OBJECTS_URL + "_" + OBJECTS_NAME,),
+        ("Image", C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME,),
+        ("Image", C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME,),
+        ("Image", C_COUNT + "_" + OBJECTS_NAME,),
         (OBJECTS_NAME, M_LOCATION_CENTER_X),
         (OBJECTS_NAME, M_LOCATION_CENTER_Y),
         (OBJECTS_NAME, M_NUMBER_OBJECT_NUMBER),
@@ -842,12 +782,7 @@ def test_load_objects():
         module.run(workspace)
         objects = object_set.get_objects(OBJECTS_NAME)
         assert numpy.all(objects.segmented == labels)
-        assert (
-            measurements.get_current_image_measurement(
-                FF_COUNT % OBJECTS_NAME
-            )
-            == 9
-        )
+        assert measurements.get_current_image_measurement(FF_COUNT % OBJECTS_NAME) == 9
         for feature in (
             M_LOCATION_CENTER_X,
             M_LOCATION_CENTER_Y,
@@ -951,15 +886,8 @@ def test_load_filename():
         cellprofiler_core.image.ImageSetList(),
     )
     assert module.prepare_run(workspace)
-    assert (
-        m.get_measurement(
-            "Image", "FileName_DNA", 1
-        )
-        == test_filename
-    )
-    path = m.get_measurement(
-        "Image", "PathName_DNA", 1
-    )
+    assert m.get_measurement("Image", "FileName_DNA", 1) == test_filename
+    path = m.get_measurement("Image", "PathName_DNA", 1)
     assert path == test_path
     assert m.get_measurement(
         "Image", "URL_DNA", 1
@@ -999,30 +927,15 @@ def test_load_url():
     )
     assert module.prepare_run(workspace)
     assert (
-        m.get_measurement(
-            "Image", "FileName_DNA", 1
-        )
+        m.get_measurement("Image", "FileName_DNA", 1)
         == tests.modules.cp_logo_url_filename
     )
-    path = m.get_measurement(
-        "Image", "PathName_DNA", 1
-    )
+    path = m.get_measurement("Image", "PathName_DNA", 1)
     assert path == tests.modules.cp_logo_url_folder
-    assert (
-        m["Image", "URL_DNA", 1]
-        == tests.modules.cp_logo_url
-    )
-    assert (
-        m["Image", "FileName_DNA", 2]
-        == tests.modules.cp_logo_url_filename
-    )
-    assert (
-        m["Image", "PathName_DNA", 2] == "http:"
-    )
-    assert (
-        m["Image", "FileName_DNA", 3]
-        == "bogusurl.png"
-    )
+    assert m["Image", "URL_DNA", 1] == tests.modules.cp_logo_url
+    assert m["Image", "FileName_DNA", 2] == tests.modules.cp_logo_url_filename
+    assert m["Image", "PathName_DNA", 2] == "http:"
+    assert m["Image", "FileName_DNA", 3] == "bogusurl.png"
     assert m["Image", "PathName_DNA", 3] == ""
     module.prepare_group(workspace, {}, [1])
     module.run(workspace)
@@ -1057,30 +970,15 @@ def test_extra_fields():
     )
     assert module.prepare_run(workspace)
     assert (
-        m.get_measurement(
-            "Image", "FileName_DNA", 1
-        )
+        m.get_measurement("Image", "FileName_DNA", 1)
         == tests.modules.cp_logo_url_filename
     )
-    path = m.get_measurement(
-        "Image", "PathName_DNA", 1
-    )
+    path = m.get_measurement("Image", "PathName_DNA", 1)
     assert path == tests.modules.cp_logo_url_folder
-    assert (
-        m.get_measurement("Image", "URL_DNA", 1)
-        == tests.modules.cp_logo_url
-    )
-    assert (
-        m["Image", "FileName_DNA", 2]
-        == tests.modules.cp_logo_url_filename
-    )
-    assert (
-        m["Image", "PathName_DNA", 2] == "http:"
-    )
-    assert (
-        m["Image", "FileName_DNA", 3]
-        == "bogusurl.png"
-    )
+    assert m.get_measurement("Image", "URL_DNA", 1) == tests.modules.cp_logo_url
+    assert m["Image", "FileName_DNA", 2] == tests.modules.cp_logo_url_filename
+    assert m["Image", "PathName_DNA", 2] == "http:"
+    assert m["Image", "FileName_DNA", 3] == "bogusurl.png"
     assert m["Image", "PathName_DNA", 3] == ""
     module.prepare_group(workspace, {}, [1])
     module.run(workspace)
@@ -1117,13 +1015,8 @@ def test_extra_lines():
         assert module.prepare_run(workspace)
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
         assert m.image_set_count == 1
-        assert "FileName_DNA" in m.get_feature_names(
-            "Image"
-        )
-        assert (
-            m["Image", "FileName_DNA", 1]
-            == file_name
-        )
+        assert "FileName_DNA" in m.get_feature_names("Image")
+        assert m["Image", "FileName_DNA", 1] == file_name
     finally:
         os.remove(filename)
 
@@ -1166,13 +1059,8 @@ def test_extra_lines_skip_rows():
         assert module.prepare_run(workspace)
         assert isinstance(m, cellprofiler_core.measurement.Measurements)
         assert m.image_set_count == 1
-        assert "FileName_DNA" in m.get_feature_names(
-            "Image"
-        )
-        assert (
-            m["Image", "FileName_DNA", 1]
-            == file_names[0]
-        )
+        assert "FileName_DNA" in m.get_feature_names("Image")
+        assert m["Image", "FileName_DNA", 1] == file_names[0]
     finally:
         os.remove(filename)
 
@@ -1201,15 +1089,8 @@ def test_load_default_input_folder():
             cellprofiler_core.image.ImageSetList(),
         )
         assert module.prepare_run(workspace)
-        assert (
-            m.get_measurement(
-                "Image", "FileName_DNA", 1
-            )
-            == test_filename
-        )
-        path_out = m.get_measurement(
-            "Image", "PathName_DNA", 1
-        )
+        assert m.get_measurement("Image", "FileName_DNA", 1) == test_filename
+        path_out = m.get_measurement("Image", "PathName_DNA", 1)
         assert test_path == path_out
         assert m.get_measurement(
             "Image", "URL_DNA", 1

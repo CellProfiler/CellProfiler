@@ -2,7 +2,10 @@
 
 import unittest
 
-from cellprofiler_core.setting.subscriber import ImageListSubscriber, LabelListSubscriber
+from cellprofiler_core.setting.subscriber import (
+    ImageListSubscriber,
+    LabelListSubscriber,
+)
 
 
 class TestListNameSubscriber(unittest.TestCase):
@@ -17,9 +20,7 @@ class TestListNameSubscriber(unittest.TestCase):
         self.assertEqual(s.value, ["SampleName"])
 
     def test_load_image_list_multiple(self):
-        s = ImageListSubscriber(
-            "foo", value="SampleName1, SampleName2"
-        )
+        s = ImageListSubscriber("foo", value="SampleName1, SampleName2")
         self.assertEqual(s.value_text, "SampleName1, SampleName2")
         self.assertEqual(s.value, ["SampleName1", "SampleName2"])
 
@@ -35,16 +36,12 @@ class TestListNameSubscriber(unittest.TestCase):
         self.assertEqual(s.value, [])
 
     def test_load_object_list_single(self):
-        s = LabelListSubscriber(
-            "foo", value="SampleName"
-        )
+        s = LabelListSubscriber("foo", value="SampleName")
         self.assertEqual(s.value_text, "SampleName")
         self.assertEqual(s.value, ["SampleName"])
 
     def test_load_object_list_multiple(self):
-        s = LabelListSubscriber(
-            "foo", value="SampleName1, SampleName2"
-        )
+        s = LabelListSubscriber("foo", value="SampleName1, SampleName2")
         self.assertEqual(s.value_text, "SampleName1, SampleName2")
         self.assertEqual(s.value, ["SampleName1", "SampleName2"])
 

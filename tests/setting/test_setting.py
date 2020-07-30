@@ -5,23 +5,23 @@ import pytest
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.filter import Filter, FilterPredicate
 from cellprofiler_core.setting.filter._filter import LITERAL_PREDICATE, OR_PREDICATE
-from cellprofiler_core.setting.range import IntegerOrUnboundedRange, FloatRange, IntegerRange
+from cellprofiler_core.setting.range import (
+    IntegerOrUnboundedRange,
+    FloatRange,
+    IntegerRange,
+)
 from cellprofiler_core.setting.text import Float, Integer
 
 
 class TestIntegerSetting(unittest.TestCase):
     def test_01_01_default(self):
-        s = Integer(
-            "foo", value=5
-        )
+        s = Integer("foo", value=5)
         assert s == 5
         assert s.value_text == "5"
         s.test_valid(None)
 
     def test_01_02_set_value(self):
-        s = Integer(
-            "foo", value=5
-        )
+        s = Integer("foo", value=5)
         for test_case in ("06", "-1"):
             s.value_text = test_case
             assert s == int(test_case)
@@ -29,43 +29,33 @@ class TestIntegerSetting(unittest.TestCase):
             s.test_valid(None)
 
     def test_01_03_set_bad(self):
-        s = Integer(
-            "foo", value=5
-        )
+        s = Integer("foo", value=5)
         s.value_text = "bad"
         assert s == 5
         with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_01_good_min(self):
-        s = Integer(
-            "foo", value=5, minval=0
-        )
+        s = Integer("foo", value=5, minval=0)
         for test_case in ("0", "1"):
             s.value_text = test_case
             s.test_valid(None)
 
     def test_02_02_bad_min(self):
-        s = Integer(
-            "foo", value=5, minval=0
-        )
+        s = Integer("foo", value=5, minval=0)
         s.value_text = "-1"
         assert s == 5
         with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_03_good_max(self):
-        s = Integer(
-            "foo", value=5, maxval=10
-        )
+        s = Integer("foo", value=5, maxval=10)
         for test_case in ("9", "10"):
             s.value_text = test_case
             s.test_valid(None)
 
     def test_02_04_bad_max(self):
-        s = Integer(
-            "foo", value=5, maxval=10
-        )
+        s = Integer("foo", value=5, maxval=10)
         s.value_text = "11"
         assert s.value == 5
         with pytest.raises(ValidationError):
@@ -102,34 +92,26 @@ class TestFloatSetting(unittest.TestCase):
         assert s.value_text == "6.00"
 
     def test_02_01_good_min(self):
-        s = Float(
-            "foo", value=5, minval=0
-        )
+        s = Float("foo", value=5, minval=0)
         for test_case in ("0", "1"):
             s.value_text = test_case
             s.test_valid(None)
 
     def test_02_02_bad_min(self):
-        s = Float(
-            "foo", value=5, minval=0
-        )
+        s = Float("foo", value=5, minval=0)
         s.value_text = "-1"
         assert s == 5
         with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
     def test_02_03_good_max(self):
-        s = Float(
-            "foo", value=5, maxval=10
-        )
+        s = Float("foo", value=5, maxval=10)
         for test_case in ("9", "10"):
             s.value_text = test_case
             s.test_valid(None)
 
     def test_02_04_bad_max(self):
-        s = Float(
-            "foo", value=5, maxval=10
-        )
+        s = Float("foo", value=5, maxval=10)
         s.value_text = "11"
         assert s == 5
         with pytest.raises(ValidationError):
@@ -293,23 +275,21 @@ class TestFloatRange(unittest.TestCase):
 class TestIntegerOrUnboundedRange(unittest.TestCase):
     def test_01_01_default(self):
         for (
-                minval,
-                maxval,
-                expected_min,
-                expected_min_text,
-                expected_max,
-                expected_max_text,
-                expected_unbounded_max,
-                expected_abs,
+            minval,
+            maxval,
+            expected_min,
+            expected_min_text,
+            expected_max,
+            expected_max_text,
+            expected_unbounded_max,
+            expected_abs,
         ) in (
-                (0, "end", 0, "0", "end", "end", True, True),
-                ("begin", 15, 0, "begin", 15, "15", False, True),
-                (0, -15, 0, "0", -15, "15", False, False),
-                (0, "-" + "end", 0, "0", "end", "end", True, False),
+            (0, "end", 0, "0", "end", "end", True, True),
+            ("begin", 15, 0, "begin", 15, "15", False, True),
+            (0, -15, 0, "0", -15, "15", False, False),
+            (0, "-" + "end", 0, "0", "end", "end", True, False),
         ):
-            s = IntegerOrUnboundedRange(
-                "foo", (minval, maxval)
-            )
+            s = IntegerOrUnboundedRange("foo", (minval, maxval))
             assert s.min == expected_min
             assert s.max == expected_max
             assert s.display_min == expected_min_text
@@ -363,33 +343,20 @@ class TestIntegerOrUnboundedRange(unittest.TestCase):
 
 class TestFilterSetting(unittest.TestCase):
     def test_01_01_simple(self):
-        filters = [
-            FilterPredicate(
-                "foo", "Foo", lambda a: a == "x", []
-            )
-        ]
+        filters = [FilterPredicate("foo", "Foo", lambda a: a == "x", [])]
         f = Filter("", filters, "foo")
         assert f.evaluate("x")
         assert not f.evaluate("y")
 
     def test_01_02_compound(self):
-        f2 = FilterPredicate(
-            "bar", "Bar", lambda: "y", []
-        )
-        f1 = FilterPredicate(
-            "foo", "Foo", lambda a, b: a == b(), [f2]
-        )
+        f2 = FilterPredicate("bar", "Bar", lambda: "y", [])
+        f1 = FilterPredicate("foo", "Foo", lambda a, b: a == b(), [f2])
         f = Filter("", [f1], "foo bar")
         assert not f.evaluate("x")
         assert f.evaluate("y")
 
     def test_01_03_literal(self):
-        f1 = FilterPredicate(
-            "foo",
-            "Foo",
-            lambda a, b: a == b,
-            [LITERAL_PREDICATE],
-        )
+        f1 = FilterPredicate("foo", "Foo", lambda a, b: a == b, [LITERAL_PREDICATE],)
         f = Filter("", [f1], 'foo "x"')
         assert f.evaluate("x")
         assert not f.evaluate("y")
@@ -398,52 +365,27 @@ class TestFilterSetting(unittest.TestCase):
         assert not f.evaluate("x")
 
     def test_01_04_escaped_literal(self):
-        f1 = FilterPredicate(
-            "foo",
-            "Foo",
-            lambda a, b: a == b,
-            [LITERAL_PREDICATE],
-        )
+        f1 = FilterPredicate("foo", "Foo", lambda a, b: a == b, [LITERAL_PREDICATE],)
         f = Filter("", [f1], 'foo "\\\\"')
         assert f.evaluate("\\")
         assert not f.evaluate("/")
 
     def test_01_05_literal_with_quote(self):
-        f1 = FilterPredicate(
-            "foo",
-            "Foo",
-            lambda a, b: a == b,
-            [LITERAL_PREDICATE],
-        )
+        f1 = FilterPredicate("foo", "Foo", lambda a, b: a == b, [LITERAL_PREDICATE],)
         f = Filter("", [f1], 'foo "\\""')
         assert f.evaluate('"')
         assert not f.evaluate("/")
 
     def test_01_06_parentheses(self):
-        f1 = FilterPredicate(
-            "eq",
-            "Foo",
-            lambda a, b: a == b,
-            [LITERAL_PREDICATE],
-        )
-        f2 = FilterPredicate(
-            "ne",
-            "Bar",
-            lambda a, b: a != b,
-            [LITERAL_PREDICATE],
-        )
+        f1 = FilterPredicate("eq", "Foo", lambda a, b: a == b, [LITERAL_PREDICATE],)
+        f2 = FilterPredicate("ne", "Bar", lambda a, b: a != b, [LITERAL_PREDICATE],)
         f = Filter("", [f1, f2], 'and (eq "x") (ne "y")')
         assert f.evaluate("x")
         assert not f.evaluate("y")
         assert not f.evaluate("z")
 
     def test_01_07_or(self):
-        f1 = FilterPredicate(
-            "eq",
-            "Foo",
-            lambda a, b: a == b,
-            [LITERAL_PREDICATE],
-        )
+        f1 = FilterPredicate("eq", "Foo", lambda a, b: a == b, [LITERAL_PREDICATE],)
 
         f = Filter("", [f1], 'or (eq "x") (eq "y")')
         assert f.evaluate("x")
@@ -451,44 +393,25 @@ class TestFilterSetting(unittest.TestCase):
         assert not f.evaluate("z")
 
     def test_02_01_build_one(self):
-        f1 = FilterPredicate(
-            "foo", "Foo", lambda a: a == "foo", []
-        )
+        f1 = FilterPredicate("foo", "Foo", lambda a: a == "foo", [])
         f = Filter("", [f1])
         f.build([f1])
         assert f.value == "foo"
 
     def test_02_02_build_literal(self):
-        f1 = FilterPredicate(
-            "foo",
-            "Foo",
-            lambda a, b: a == b,
-            [LITERAL_PREDICATE],
-        )
+        f1 = FilterPredicate("foo", "Foo", lambda a, b: a == b, [LITERAL_PREDICATE],)
         f = Filter("", [f1])
         f.build([f1, "bar"])
         assert f.value == 'foo "bar"'
 
     def test_02_03_build_nested(self):
-        f1 = FilterPredicate(
-            "foo",
-            "Foo",
-            lambda a, b: a == b,
-            [LITERAL_PREDICATE],
-        )
+        f1 = FilterPredicate("foo", "Foo", lambda a, b: a == b, [LITERAL_PREDICATE],)
         f = Filter("", [f1])
-        f.build(
-            [OR_PREDICATE, [f1, "bar"], [f1, "baz"]]
-        )
+        f.build([OR_PREDICATE, [f1, "bar"], [f1, "baz"]])
         assert f.value == 'or (foo "bar") (foo "baz")'
 
     def test_02_04_build_escaped_literal(self):
-        f1 = FilterPredicate(
-            "foo",
-            "Foo",
-            lambda a, b: a == b,
-            [LITERAL_PREDICATE],
-        )
+        f1 = FilterPredicate("foo", "Foo", lambda a, b: a == b, [LITERAL_PREDICATE],)
         f = Filter("", [f1])
         f.build([f1, '"12\\'])
         assert f.value == 'foo "\\"12\\\\"'
@@ -498,9 +421,7 @@ class TestFilterSetting(unittest.TestCase):
     def test_02_05_build_escaped_symbol(self):
         ugly = '(\\")'
         expected = '\\(\\\\\\"\\)'
-        f1 = FilterPredicate(
-            ugly, "Foo", lambda a, b: a == b, []
-        )
+        f1 = FilterPredicate(ugly, "Foo", lambda a, b: a == b, [])
         f = Filter("", [f1])
         f.build([f1])
         assert f.value == '\\(\\\\"\\)'
@@ -508,9 +429,7 @@ class TestFilterSetting(unittest.TestCase):
     def test_02_06_parse_escaped_symbol(self):
         ugly = '(\\")'
         encoded_ugly = '\\(\\\\\\"\\)'
-        f1 = FilterPredicate(
-            ugly, "Foo", lambda a, b: a == b, []
-        )
+        f1 = FilterPredicate(ugly, "Foo", lambda a, b: a == b, [])
         f = Filter("", [f1], encoded_ugly)
         result = f.parse()
         assert len(result) == 1

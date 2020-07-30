@@ -15,7 +15,7 @@ setuptools.setup(
             "click>=7.1.2",
             "pre-commit==2.2.0",
             "sphinx==3.1.2",
-            "twine==3.1.1"
+            "twine==3.1.1",
         ],
         "test": ["pytest==5.4.1"],
         "wx": ["wxPython==4.0.7.post2"],

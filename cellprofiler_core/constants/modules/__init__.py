@@ -12,6 +12,9 @@ pymodules: list = []
 badmodules: list = []
 do_not_override = ["set_settings", "create_from_handles", "test_valid", "module_class"]
 should_override = ["create_settings", "settings", "run"]
+renamed_modules = {
+    "Erosion": "ErodeImage",
+}
 replaced_modules = {
     "LoadImageDirectory": ["LoadData"],
     "GroupMovieFrames": ["LoadData"],

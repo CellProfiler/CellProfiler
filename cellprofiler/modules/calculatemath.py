@@ -440,7 +440,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
                 except ValueError:
                     raise ValueError(
                         "Unable to use non-numeric value in measurement, %s"
-                        % operand.measurement.value
+                        % operand.operand_measurement.value
                     )
 
             input_values.append(value)

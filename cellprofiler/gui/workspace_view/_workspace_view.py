@@ -1,7 +1,6 @@
 import matplotlib
 import numpy
 import wx
-import wx.lib.colourselect
 import wx.lib.scrolledpanel
 from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X
 from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y

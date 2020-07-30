@@ -8,6 +8,9 @@ import numpy
 import six
 import wx
 import wx.grid
+import wx.lib.colourselect
+import wx.lib.scrolledpanel
+import wx.lib.resizewidget
 from cellprofiler_core.pipeline import ImagePlane
 from cellprofiler_core.pipeline import PipelineCleared
 from cellprofiler_core.pipeline import PipelineLoaded
@@ -1531,7 +1534,7 @@ class ModuleView:
                 control, bitmap=browse_bitmap, name=button_control_name(v)
             )
             control.GetSizer().Add(text_control, 1, wx.EXPAND)
-            control.GetSizer().AddSpacer((3, 0))
+            control.GetSizer().AddSpacer(3)
             control.GetSizer().Add(browse_ctrl, 0, wx.EXPAND)
 
             def on_browse(event):

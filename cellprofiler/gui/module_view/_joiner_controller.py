@@ -1,4 +1,5 @@
 import wx
+import wx.lib.rcsizer
 
 from ._module_view import ModuleView
 from ..utilities.module_view import edit_control_name

@@ -2,9 +2,9 @@ import numpy
 import numpy.testing
 import skimage.morphology
 
-import cellprofiler.modules.erosion
+import cellprofiler.modules.erodeimage
 
-instance = cellprofiler.modules.erosion.Erosion()
+instance = cellprofiler.modules.erodeimage.ErodeImage()
 
 
 def test_run(image, module, image_set, workspace):

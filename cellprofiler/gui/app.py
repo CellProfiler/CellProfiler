@@ -47,7 +47,7 @@ class App(wx.App):
         super(App, self).__init__(*args, **kwargs)
 
     def OnInit(self):
-        from .cpframe import CPFrame
+        from cellprofiler.gui.frame._frame import CPFrame
         from cellprofiler import __version__
 
         # wx.lib.inspection.InspectionTool().Show()

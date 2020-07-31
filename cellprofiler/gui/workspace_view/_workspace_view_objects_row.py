@@ -3,7 +3,7 @@ from cellprofiler_core.preferences import get_default_colormap
 from ._workspace_view_row import WorkspaceViewRow
 from ..artist import MODE_HIDE
 from ..artist import MODE_LINES
-from ..artist import ObjectsData
+from ..artist import _objects_data
 from ..utilities.workspace_view import bind_data_class
 
 
@@ -14,7 +14,7 @@ class WorkspaceViewObjectsRow(WorkspaceViewRow):
         super(WorkspaceViewObjectsRow, self).__init__(vw, color, can_delete)
         self.update_chooser(first=True)
         name = self.chooser.GetStringSelection()
-        self.data = bind_data_class(ObjectsData, self.color_ctrl, vw.redraw)(
+        self.data = bind_data_class(_objects_data, self.color_ctrl, vw.redraw)(
             name,
             None,
             outline_color=self.color,

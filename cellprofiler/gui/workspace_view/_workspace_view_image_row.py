@@ -4,7 +4,7 @@ from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.preferences import get_intensity_mode
 
 from ._workspace_view_row import WorkspaceViewRow
-from ..artist import ImageData
+from ..artist import _image_data
 from ..artist import MODE_COLORIZE
 from ..artist import MODE_HIDE
 from ..artist import NORMALIZE_LINEAR
@@ -27,7 +27,7 @@ class WorkspaceViewImageRow(WorkspaceViewRow):
         else:
             normalization = NORMALIZE_RAW
         alpha = 1.0 / (len(vw.image_rows) + 1.0)
-        self.data = bind_data_class(ImageData, self.color_ctrl, vw.redraw)(
+        self.data = bind_data_class(_image_data, self.color_ctrl, vw.redraw)(
             name,
             None,
             mode=MODE_HIDE,

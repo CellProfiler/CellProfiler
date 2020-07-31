@@ -6,9 +6,8 @@ from cellprofiler_core.utilities.core.modules import (
 )
 
 import cellprofiler.gui
-import cellprofiler.gui.cpframe
-import cellprofiler.gui.help.search
-import cellprofiler.modules
+import cellprofiler.gui.constants.frame
+from ._add_to_pipeline_event import AddToPipelineEvent
 
 
 class AddModuleFrame(wx.Frame):
@@ -100,7 +99,7 @@ class AddModuleFrame(wx.Frame):
 
         self.__set_icon()
         accelerators = wx.AcceleratorTable(
-            [(wx.ACCEL_CMD, ord("W"), cellprofiler.gui.cpframe.ID_FILE_EXIT)]
+            [(wx.ACCEL_CMD, ord("W"), cellprofiler.gui.constants.frame.ID_FILE_EXIT)]
         )
         self.SetAcceleratorTable(accelerators)
 
@@ -118,7 +117,9 @@ class AddModuleFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.__on_help, module_help_button)
         self.Bind(wx.EVT_BUTTON, self.__on_getting_started, getting_started_button)
         self.Bind(
-            wx.EVT_MENU, self.__on_close, id=cellprofiler.gui.cpframe.ID_FILE_EXIT
+            wx.EVT_MENU,
+            self.__on_close,
+            id=cellprofiler.gui.constants.frame.ID_FILE_EXIT,
         )
         self.Bind(wx.EVT_CHAR_HOOK, self.__on_special_key)
         self.search_text.Bind(wx.EVT_TEXT, self.__on_search_modules)
@@ -320,18 +321,3 @@ class AddModuleFrame(wx.Frame):
     def notify(self, event):
         for listener in self.__listeners:
             listener(self, event)
-
-
-class AddToPipelineEvent(object):
-    def __init__(self, module_name, module_loader):
-        self.module_name = module_name
-        self.__module_loader = module_loader
-
-    def get_module_loader(self):
-        """Return a function that, when called, will produce a module
-
-        The function takes one argument: the module number
-        """
-        return self.__module_loader
-
-    module_loader = property(get_module_loader)

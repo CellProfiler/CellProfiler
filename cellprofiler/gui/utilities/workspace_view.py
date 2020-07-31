@@ -1,6 +1,7 @@
 import wx
 
 import cellprofiler.gui
+import cellprofiler.gui.artist._color_mixin
 from cellprofiler.gui.workspace_view._workspace_view import WorkspaceView
 
 
@@ -26,7 +27,7 @@ def bind_data_class(data_class, color_select, fn_redraw):
                    to that of the data
     fn_redraw - function to be called
     """
-    assert issubclass(data_class, cellprofiler.gui.artist.ColorMixin)
+    assert issubclass(data_class, cellprofiler.gui.artist._color_mixin.ColorMixin)
     assert isinstance(color_select, wx.lib.colourselect.ColourSelect)
 
     class bdc(data_class):

@@ -12,6 +12,8 @@ from cellprofiler_core.preferences import IM_NEAREST
 from cellprofiler_core.preferences import get_interpolation_mode
 
 import cellprofiler.gui.artist
+import cellprofiler.gui.artist._image_artist
+import cellprofiler.gui.constants.artist
 import cellprofiler.gui.figure
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
@@ -49,12 +51,14 @@ class WorkspaceView(object):
         self.axes.invert_yaxis()
         interpolation = get_interpolation_mode()
         if interpolation == IM_NEAREST:
-            interpolation = cellprofiler.gui.artist.INTERPOLATION_NEAREST
+            interpolation = cellprofiler.gui.constants.artist.INTERPOLATION_NEAREST
         elif interpolation == IM_BILINEAR:
-            interpolation = cellprofiler.gui.artist.INTERPOLATION_BILINEAR
+            interpolation = cellprofiler.gui.constants.artist.INTERPOLATION_BILINEAR
         else:
-            interpolation = cellprofiler.gui.artist.INTERPOLATION_BICUBIC
-        self.image = cellprofiler.gui.artist.CPImageArtist(interpolation=interpolation)
+            interpolation = cellprofiler.gui.constants.artist.INTERPOLATION_BICUBIC
+        self.image = cellprofiler.gui.artist._image_artist.ImageArtist(
+            interpolation=interpolation
+        )
         assert isinstance(self.axes, matplotlib.axes.Axes)
         self.axes.add_artist(self.image)
         self.axes.set_aspect("equal")
@@ -224,7 +228,7 @@ class WorkspaceView(object):
         if self.frame.navtoolbar.is_home():
             max_x = max_y = 0
             for image_row in self.image_rows:
-                if image_row.data.mode != cellprofiler.gui.artist.MODE_HIDE:
+                if image_row.data.mode != cellprofiler.gui.constants.artist.MODE_HIDE:
                     shape = image_row.data.pixel_data.shape
                     max_x = max(shape[1], max_x)
                     max_y = max(shape[0], max_y)

@@ -58,6 +58,7 @@ from cellprofiler_core.utilities.core.object import overlay_labels
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
+import cellprofiler.gui.artist._image_artist
 import cellprofiler.gui.errordialog
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
@@ -808,7 +809,9 @@ class Figure(wx.Frame):
                 fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
             elif isinstance(event.inaxes, matplotlib.axes.Axes):
                 for artist in event.inaxes.artists:
-                    if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
+                    if isinstance(
+                        artist, cellprofiler.gui.artist._image_artist.ImageArtist
+                    ):
                         fields += [
                             "%s: %.4f" % (k, v)
                             for k, v in list(artist.get_channel_values(xi, yi).items())
@@ -1185,7 +1188,9 @@ class Figure(wx.Frame):
             elif evt.Id == MENU_CONTRAST_GAMMA:
                 params["normalize"] = "gamma"
             for artist in axes.artists:
-                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
+                if isinstance(
+                    artist, cellprofiler.gui.artist._image_artist.ImageArtist
+                ):
                     artist.kwargs["normalize"] = params["normalize"]
                     self.figure.canvas.draw()
                     return
@@ -1228,7 +1233,9 @@ class Figure(wx.Frame):
                 params["interpolation"] = "bilinear"
             axes = self.subplot(x, y)
             for artist in axes.artists:
-                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
+                if isinstance(
+                    artist, cellprofiler.gui.artist._image_artist.ImageArtist
+                ):
                     artist.interpolation = params["interpolation"]
                     artist.kwargs["interpolation"] = params["interpolation"]
                     self.figure.canvas.draw()

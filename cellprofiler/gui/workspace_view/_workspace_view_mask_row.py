@@ -1,7 +1,7 @@
 from ._workspace_view_row import WorkspaceViewRow
 from ..artist import MODE_HIDE
 from ..artist import MODE_LINES
-from ..artist import MaskData
+from ..artist import _mask_data
 from ..utilities.workspace_view import bind_data_class
 
 
@@ -13,7 +13,7 @@ class WorkspaceViewMaskRow(WorkspaceViewRow):
         self.__cached_names = None
         self.update_chooser(first=True)
         name = self.chooser.GetStringSelection()
-        self.data = bind_data_class(MaskData, self.color_ctrl, vw.redraw)(
+        self.data = bind_data_class(_mask_data, self.color_ctrl, vw.redraw)(
             name, None, color=self.color, alpha=0.5, mode=MODE_HIDE,
         )
         vw.image.add(self.data)

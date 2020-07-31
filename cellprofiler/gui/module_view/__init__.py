@@ -1,1 +1,3 @@
 from ._module_view import ModuleView
+from ._validation_request_controller import ValidationRequestController
+from ._setting_edited_event import SettingEditedEvent

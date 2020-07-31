@@ -1,7 +1,3 @@
-# -*- Encoding: utf-8 -*-
-""" CellProfiler.CellProfilerGUI.CPFrame - Cell Profiler's main window
-"""
-
 import codecs
 import logging
 import os
@@ -19,130 +15,77 @@ from cellprofiler_core.preferences import get_show_sampling
 from cellprofiler_core.preferences import get_startup_blurb
 from cellprofiler_core.utilities.core.modules import instantiate_module
 
-import cellprofiler
-import cellprofiler.gui
-from ._welcome_frame import WelcomeFrame
-from ._workspace_model import Workspace
-from .dialog import AboutDialogInfo
-from .figure import close_all
-from .help.content import read_content
-from .help.menu import Menu
-from .html.htmlwindow import HtmlClickableWindow
-from .html.utils import rst_to_html_fragment
-from .imagesetctrl import ImageSetCtrl
-from .module_view import ModuleView
-from .pathlist import PathListCtrl
-from .pipeline import Pipeline
-from .pipelinecontroller import PipelineController
-from .pipelinelistview import PipelineListView
-from .preferences_dialog._preferences_dialog import PreferencesDialog
-from .preferences_view import PreferencesView
-
-HELP_ON_FILE_LIST = """\
-The *File List* panel displays the image files that are managed by the
-**Images**, **Metadata**, **NamesAndTypes** and **Groups** modules.
-You can drop files and directories into this window or use the
-*Browse…* button to add files to the list. The context menu for the
-window lets you display or remove files and lets you remove folders.
-
-The buttons and checkbox along the bottom have the following
-functions:
-
--  *Browse…*: Browse for files and folders to add.
--  *Clear*: Clear all entries from the File list
--  *Show files excluded by filters*: *(Only shown if filtered based on
-   rules is selected)* Check this to see all files in the list. Uncheck
-   it to see only the files that pass the rules criteria in the
-   **Images** module.
--  *Expand tree*: Expand all of the folders in the tree
--  *Collapse tree*: Collapse the folders in the tree
-"""
-
-HELP_ON_MODULE_BUT_NONE_SELECTED = """\
-The help button can be used to obtain help for the currently selected
-module in the pipeline panel on the left side of the CellProfiler
-interface.
-
-You do not have any modules in the pipeline, yet. Add a
-module to the pipeline using the “+” button or by using File > Load
-Pipeline.\
-"""
-
-ID_FILE_NEW_WORKSPACE = wx.ID_NEW
-ID_FILE_LOAD = wx.ID_OPEN
-ID_FILE_LOAD_PIPELINE = wx.NewId()
-ID_FILE_URL_LOAD_PIPELINE = wx.NewId()
-ID_FILE_OPEN_IMAGE = wx.NewId()
-ID_FILE_EXIT = wx.NewId()
-ID_FILE_WIDGET_INSPECTOR = wx.NewId()
-ID_FILE_SAVE_PIPELINE = wx.NewId()
-ID_FILE_SAVE = wx.ID_SAVE
-ID_FILE_SAVE_AS = wx.ID_SAVEAS
-ID_FILE_REVERT_TO_SAVED = wx.NewId()
-ID_FILE_CLEAR_PIPELINE = wx.NewId()
-ID_FILE_EXPORT_IMAGE_SETS = wx.NewId()
-ID_FILE_EXPORT_PIPELINE_NOTES = wx.NewId()
-ID_FILE_IMPORT_FILE_LIST = wx.NewId()
-ID_FILE_ANALYZE_IMAGES = wx.NewId()
-ID_FILE_STOP_ANALYSIS = wx.NewId()
-ID_FILE_PRINT = wx.NewId()
-ID_FILE_PLATEVIEWER = wx.NewId()
-ID_FILE_NEW_CP = wx.NewId()
-
-ID_EDIT_SELECT_ALL = wx.NewId()
-ID_EDIT_COPY = wx.NewId()
-ID_EDIT_DUPLICATE = wx.NewId()
-ID_EDIT_UNDO = wx.ID_UNDO
-ID_EDIT_MOVE_UP = wx.NewId()
-ID_EDIT_MOVE_DOWN = wx.NewId()
-ID_EDIT_DELETE = wx.NewId()
-
-ID_EDIT_EXPAND_ALL = wx.NewId()
-ID_EDIT_COLLAPSE_ALL = wx.NewId()
-ID_EDIT_BROWSE_FOR_FILES = wx.NewId()
-ID_EDIT_BROWSE_FOR_FOLDER = wx.NewId()
-ID_EDIT_CLEAR_FILE_LIST = wx.NewId()
-ID_EDIT_REMOVE_FROM_FILE_LIST = wx.NewId()
-ID_EDIT_SHOW_FILE_LIST_IMAGE = wx.NewId()
-ID_EDIT_ENABLE_MODULE = wx.NewId()
-ID_EDIT_GO_TO_MODULE = wx.NewId()
-
-ID_OPTIONS_PREFERENCES = wx.ID_PREFERENCES
-ID_CHECK_NEW_VERSION = wx.NewId()
-
-ID_DEBUG_TOGGLE = wx.NewId()
-ID_DEBUG_STEP = wx.NewId()
-ID_DEBUG_NEXT_IMAGE_SET = wx.NewId()
-ID_DEBUG_NEXT_GROUP = wx.NewId()
-ID_DEBUG_CHOOSE_GROUP = wx.NewId()
-ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewId()
-ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET = wx.NewId()
-ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP = wx.NewId()
-ID_DEBUG_RELOAD = wx.NewId()
-ID_DEBUG_PDB = wx.NewId()
-ID_DEBUG_RUN_FROM_THIS_MODULE = wx.NewId()
-ID_DEBUG_STEP_FROM_THIS_MODULE = wx.NewId()
-ID_DEBUG_HELP = wx.NewId()
-
-# ~*~
-ID_SAMPLE_INIT = wx.NewId()
-# ~^~
-
-ID_WINDOW = wx.NewId()
-ID_WINDOW_CLOSE_ALL = wx.NewId()
-ID_WINDOW_SHOW_ALL_WINDOWS = wx.NewId()
-ID_WINDOW_HIDE_ALL_WINDOWS = wx.NewId()
-ID_WINDOW_ALL = (
-    ID_WINDOW_CLOSE_ALL,
-    ID_WINDOW_SHOW_ALL_WINDOWS,
-    ID_WINDOW_HIDE_ALL_WINDOWS,
-)
-
-window_ids = []
-
-ID_HELP_MODULE = wx.NewId()
-ID_HELP_SOURCE_CODE = wx.NewId()
-ID_HELP_ABOUT = wx.ID_ABOUT
+from cellprofiler import __version__
+from .. import get_cp_icon
+from .._welcome_frame import WelcomeFrame
+from .._workspace_model import Workspace
+from ..constants.frame import HELP_ON_FILE_LIST
+from ..constants.frame import HELP_ON_MODULE_BUT_NONE_SELECTED
+from ..constants.frame import ID_DEBUG_CHOOSE_GROUP
+from ..constants.frame import ID_DEBUG_CHOOSE_IMAGE_SET
+from ..constants.frame import ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP
+from ..constants.frame import ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET
+from ..constants.frame import ID_DEBUG_HELP
+from ..constants.frame import ID_DEBUG_NEXT_GROUP
+from ..constants.frame import ID_DEBUG_NEXT_IMAGE_SET
+from ..constants.frame import ID_DEBUG_PDB
+from ..constants.frame import ID_DEBUG_RELOAD
+from ..constants.frame import ID_DEBUG_STEP
+from ..constants.frame import ID_DEBUG_TOGGLE
+from ..constants.frame import ID_EDIT_BROWSE_FOR_FILES
+from ..constants.frame import ID_EDIT_BROWSE_FOR_FOLDER
+from ..constants.frame import ID_EDIT_CLEAR_FILE_LIST
+from ..constants.frame import ID_EDIT_COLLAPSE_ALL
+from ..constants.frame import ID_EDIT_COPY
+from ..constants.frame import ID_EDIT_DELETE
+from ..constants.frame import ID_EDIT_DUPLICATE
+from ..constants.frame import ID_EDIT_ENABLE_MODULE
+from ..constants.frame import ID_EDIT_EXPAND_ALL
+from ..constants.frame import ID_EDIT_MOVE_DOWN
+from ..constants.frame import ID_EDIT_MOVE_UP
+from ..constants.frame import ID_EDIT_REMOVE_FROM_FILE_LIST
+from ..constants.frame import ID_EDIT_SELECT_ALL
+from ..constants.frame import ID_EDIT_SHOW_FILE_LIST_IMAGE
+from ..constants.frame import ID_EDIT_UNDO
+from ..constants.frame import ID_FILE_ANALYZE_IMAGES
+from ..constants.frame import ID_FILE_CLEAR_PIPELINE
+from ..constants.frame import ID_FILE_EXPORT_IMAGE_SETS
+from ..constants.frame import ID_FILE_EXPORT_PIPELINE_NOTES
+from ..constants.frame import ID_FILE_IMPORT_FILE_LIST
+from ..constants.frame import ID_FILE_LOAD
+from ..constants.frame import ID_FILE_LOAD_PIPELINE
+from ..constants.frame import ID_FILE_NEW_CP
+from ..constants.frame import ID_FILE_OPEN_IMAGE, ID_FILE_EXIT
+from ..constants.frame import ID_FILE_PLATEVIEWER
+from ..constants.frame import ID_FILE_PRINT
+from ..constants.frame import ID_FILE_REVERT_TO_SAVED
+from ..constants.frame import ID_FILE_SAVE
+from ..constants.frame import ID_FILE_SAVE_PIPELINE
+from ..constants.frame import ID_FILE_STOP_ANALYSIS
+from ..constants.frame import ID_FILE_URL_LOAD_PIPELINE
+from ..constants.frame import ID_FILE_WIDGET_INSPECTOR
+from ..constants.frame import ID_HELP_ABOUT
+from ..constants.frame import ID_HELP_MODULE
+from ..constants.frame import ID_OPTIONS_PREFERENCES
+from ..constants.frame import ID_SAMPLE_INIT
+from ..constants.frame import ID_WINDOW_CLOSE_ALL
+from ..constants.frame import ID_WINDOW_HIDE_ALL_WINDOWS
+from ..constants.frame import ID_WINDOW_SHOW_ALL_WINDOWS
+from ..dialog import AboutDialogInfo
+from ..figure import close_all, Figure
+from ..help.content import read_content
+from ..help.menu import Menu
+from ..html.htmlwindow import HtmlClickableWindow
+from ..html.utils import rst_to_html_fragment
+from ..imagesetctrl import ImageSetCtrl
+from ..module_view import ModuleView
+from ..pathlist import PathListCtrl
+from ..pipeline import Pipeline
+from cellprofiler.gui.pipeline_controller._pipeline_controller import PipelineController
+from ..pipeline_list_view._pipeline_list_view import PipelineListView
+from ..preferences_dialog import PreferencesDialog
+from ..preferences_view import PreferencesView
+from ..utilities.module_view import stop_validation_queue_thread
 
 
 class CPFrame(wx.Frame):
@@ -531,13 +474,13 @@ class CPFrame(wx.Frame):
             logging.warning("Failed to close the pipeline controller", exc_info=True)
 
         try:
-            cellprofiler.gui.utilities.module_view.stop_validation_queue_thread()
+            stop_validation_queue_thread()
         except:
             logging.warning("Failed to stop pipeline validation thread", exc_info=True)
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler %s" % cellprofiler.__version__)
+        self.SetTitle("CellProfiler %s" % __version__)
         self.SetSize((1024, 600))
 
     def enable_edit_commands(self, ids):
@@ -1020,11 +963,7 @@ class CPFrame(wx.Frame):
     @staticmethod
     def __on_new_cp(event):
         if hasattr(sys, "frozen"):
-            os.system(
-                "open -na /Applications/CellProfiler-{}.app".format(
-                    cellprofiler.__version__
-                )
-            )
+            os.system("open -na /Applications/CellProfiler-{}.app".format(__version__))
         else:
             os.system("python3 -m cellprofiler")
 
@@ -1181,7 +1120,7 @@ class CPFrame(wx.Frame):
             ]
         )
         helpframe.SetAcceleratorTable(accelerator_table)
-        helpframe.SetIcon(cellprofiler.gui.get_cp_icon())
+        helpframe.SetIcon(get_cp_icon())
         helpframe.Layout()
         helpframe.Show()
 
@@ -1221,7 +1160,6 @@ class CPFrame(wx.Frame):
         )
         if dlg.ShowModal() == wx.ID_OK:
             from cellprofiler_core.image import LoadImagesImageProvider
-            from .figure import Figure
 
             lip = LoadImagesImageProvider("dummy", "", dlg.GetPath())
             image = lip.provide_image(None).pixel_data
@@ -1290,7 +1228,7 @@ class CPFrame(wx.Frame):
         top_left_win.Layout()
 
     def __set_icon(self):
-        self.SetIcon(cellprofiler.gui.get_cp_icon())
+        self.SetIcon(get_cp_icon())
 
     def __on_data_tool_help(self, event, tool_name):
         module = instantiate_module(tool_name)

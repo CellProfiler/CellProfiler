@@ -1,10 +1,8 @@
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import (
-    TOK_ORDINARY,
-    TOK_GROUP,
-    TOK_BRACKET_EXP,
-    TOK_REPEAT,
-    TOK_SPECIAL,
-)
+from ....constants.dialog.regular_expression_dialog import TOK_ORDINARY
+from ....constants.dialog.regular_expression_dialog import TOK_GROUP
+from ....constants.dialog.regular_expression_dialog import TOK_BRACKET_EXP
+from ....constants.dialog.regular_expression_dialog import TOK_REPEAT
+from ....constants.dialog.regular_expression_dialog import TOK_SPECIAL
 
 
 class RegularExpressionState(object):

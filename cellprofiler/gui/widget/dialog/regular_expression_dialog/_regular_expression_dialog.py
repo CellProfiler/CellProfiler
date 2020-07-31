@@ -4,22 +4,18 @@ import wx
 import wx.stc
 
 from ._regular_expression_state import RegularExpressionState
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import (
-    RE_FILENAME_GUESSES,
-)
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import STYLE_ERROR
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import (
-    STYLE_FIRST_LABEL,
-)
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import STYLE_NO_MATCH
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import TOK_BRACKET_EXP
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import TOK_DEFINITION
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import TOK_ESCAPE
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import TOK_GROUP
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import TOK_ORDINARY
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import TOK_REPEAT
-from cellprofiler.gui.constants.dialog.regular_expression_dialog import TOK_SPECIAL
-from cellprofiler.gui.utilities.dialog.regular_expression_dialog import parse
+from ....constants.dialog.regular_expression_dialog import RE_FILENAME_GUESSES
+from ....constants.dialog.regular_expression_dialog import STYLE_ERROR
+from ....constants.dialog.regular_expression_dialog import STYLE_FIRST_LABEL
+from ....constants.dialog.regular_expression_dialog import STYLE_NO_MATCH
+from ....constants.dialog.regular_expression_dialog import TOK_BRACKET_EXP
+from ....constants.dialog.regular_expression_dialog import TOK_DEFINITION
+from ....constants.dialog.regular_expression_dialog import TOK_ESCAPE
+from ....constants.dialog.regular_expression_dialog import TOK_GROUP
+from ....constants.dialog.regular_expression_dialog import TOK_ORDINARY
+from ....constants.dialog.regular_expression_dialog import TOK_REPEAT
+from ....constants.dialog.regular_expression_dialog import TOK_SPECIAL
+from ....utilities.dialog.regular_expression_dialog import parse
 
 
 class RegularExpressionDialog(wx.Dialog):

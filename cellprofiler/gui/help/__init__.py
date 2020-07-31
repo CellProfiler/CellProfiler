@@ -3,7 +3,7 @@
 
 def make_help_menu(h, window, menu=None):
     import wx
-    import cellprofiler.gui.components.dialog._html_dialog
+    import cellprofiler.gui.widget.dialog._html_dialog
     import cellprofiler.gui.html.utils
 
     if menu is None:
@@ -16,7 +16,7 @@ def make_help_menu(h, window, menu=None):
 
             def show_dialog(event, key=key, value=value):
                 value = cellprofiler.gui.html.utils.rst_to_html_fragment(value)
-                dlg = cellprofiler.gui.components.dialog._html_dialog.HTMLDialog(
+                dlg = cellprofiler.gui.widget.dialog._html_dialog.HTMLDialog(
                     window, key, value
                 )
                 dlg.Show()

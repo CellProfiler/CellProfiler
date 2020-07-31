@@ -2,7 +2,7 @@ import re
 
 import wx
 
-from cellprofiler.gui.components.dialog import RegularExpressionDialog
+from cellprofiler.gui.widget.dialog import RegularExpressionDialog
 from cellprofiler.gui.constants.dialog.regular_expression_dialog import (
     STYLE_ERROR,
     RE_FILENAME_GUESSES,

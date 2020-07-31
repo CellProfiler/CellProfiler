@@ -17,7 +17,7 @@ import cellprofiler.gui.constants.artist
 import cellprofiler.gui.widget.frame._figure_frame
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
-import cellprofiler.gui.components.dialog._html_dialog
+import cellprofiler.gui.widget.dialog._html_dialog
 from ._workspace_view_figure import WorkspaceViewFigure
 from ._workspace_view_image_row import WorkspaceViewImageRow
 from ._workspace_view_mask_row import WorkspaceViewMaskRow
@@ -206,7 +206,7 @@ class WorkspaceView(object):
         panel.Sizer.Add(help_button, 0, wx.ALIGN_RIGHT)
 
         def on_help(event):
-            cellprofiler.gui.components.dialog._html_dialog.HTMLDialog(
+            cellprofiler.gui.widget.dialog._html_dialog.HTMLDialog(
                 panel,
                 "Workspace viewer help",
                 cellprofiler.gui.help.WORKSPACE_VIEWER_HELP,

@@ -26,7 +26,7 @@ from cellprofiler_core.preferences import set_pixel_size
 from ._progress_watcher import ProgressWatcher
 from cellprofiler.gui.constants.preferences_view import WELCOME_MESSAGE
 from cellprofiler.gui.html.utils import rst_to_html_fragment
-from cellprofiler.gui.components.dialog._html_dialog import HTMLDialog
+from cellprofiler.gui.widget.dialog._html_dialog import HTMLDialog
 from cellprofiler.gui.utilities.preferences_view import secs_to_timestr
 
 

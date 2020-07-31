@@ -1,7 +1,7 @@
 import wx
 
 import cellprofiler.gui.html.utils
-import cellprofiler.gui.components.dialog._html_dialog
+import cellprofiler.gui.widget.dialog._html_dialog
 
 
 class Menu(wx.Menu):
@@ -21,7 +21,7 @@ class Menu(wx.Menu):
             self.Bind(wx.EVT_MENU, lambda _: self.__show_dialog(title, contents), id=id)
 
     def __show_dialog(self, title, contents):
-        help_dialog = cellprofiler.gui.components.dialog._html_dialog.HTMLDialog(
+        help_dialog = cellprofiler.gui.widget.dialog._html_dialog.HTMLDialog(
             self.frame,
             title,
             cellprofiler.gui.html.utils.rst_to_html_fragment(contents),

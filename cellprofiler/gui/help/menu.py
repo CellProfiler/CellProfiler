@@ -4,7 +4,7 @@ import webbrowser
 
 import cellprofiler.gui.help.content
 import cellprofiler.gui.help.search
-import cellprofiler.gui.components.dialog._html_dialog
+import cellprofiler.gui.widget.dialog._html_dialog
 import cellprofiler.gui.menu
 
 

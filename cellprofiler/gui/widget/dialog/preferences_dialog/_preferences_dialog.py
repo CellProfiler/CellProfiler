@@ -95,7 +95,7 @@ from cellprofiler.gui.constants.preferences_dialog import FILEBROWSE
 from cellprofiler.gui.constants.preferences_dialog import FONT
 from cellprofiler.gui.constants.preferences_dialog import TEXT
 from cellprofiler.gui.html.utils import rst_to_html_fragment
-from cellprofiler.gui.components.dialog._html_dialog import HTMLDialog
+from cellprofiler.gui.widget.dialog._html_dialog import HTMLDialog
 from ._integer_preference import IntegerPreference
 
 

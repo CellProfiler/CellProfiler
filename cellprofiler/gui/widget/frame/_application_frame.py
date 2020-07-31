@@ -17,7 +17,7 @@ from cellprofiler_core.utilities.core.modules import instantiate_module
 
 from cellprofiler import __version__
 from cellprofiler.gui import get_cp_icon
-from cellprofiler.gui.components.frame._welcome_frame import WelcomeFrame
+from cellprofiler.gui.widget.frame._welcome_frame import WelcomeFrame
 from cellprofiler.gui.model._workspace_model import Workspace
 from cellprofiler.gui.constants.frame import HELP_ON_FILE_LIST
 from cellprofiler.gui.constants.frame import HELP_ON_MODULE_BUT_NONE_SELECTED
@@ -71,19 +71,19 @@ from cellprofiler.gui.constants.frame import ID_SAMPLE_INIT
 from cellprofiler.gui.constants.frame import ID_WINDOW_CLOSE_ALL
 from cellprofiler.gui.constants.frame import ID_WINDOW_HIDE_ALL_WINDOWS
 from cellprofiler.gui.constants.frame import ID_WINDOW_SHOW_ALL_WINDOWS
-from cellprofiler.gui.components.dialog import AboutDialogInfo
+from cellprofiler.gui.widget.dialog import AboutDialogInfo
 from cellprofiler.gui.widget.frame._figure_frame import close_all, Figure
 from cellprofiler.gui.help.content import read_content
 from cellprofiler.gui.help.menu import Menu
 from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 from cellprofiler.gui.html.utils import rst_to_html_fragment
-from cellprofiler.gui.components.control._image_set_control import ImageSetCtrl
+from cellprofiler.gui.widget.control._image_set_control import ImageSetCtrl
 from cellprofiler.gui.view.module_view import ModuleView
 from cellprofiler.gui.widget.control._path_list_control import PathListCtrl
 from cellprofiler.gui.model._pipeline_model import Pipeline
 from cellprofiler.gui.controller.pipeline_controller import PipelineController
 from cellprofiler.gui.view.pipeline_list_view import PipelineListView
-from cellprofiler.gui.components.dialog import PreferencesDialog
+from cellprofiler.gui.widget.dialog import PreferencesDialog
 from cellprofiler.gui.view.preferences_view import PreferencesView
 from cellprofiler.gui.utilities.module_view import stop_validation_queue_thread
 
@@ -968,18 +968,18 @@ class AppliationFrame(wx.Frame):
             os.system("python3 -m cellprofiler")
 
     def __on_help_path_list(self, event):
-        import cellprofiler.gui.components.dialog._html_dialog
+        import cellprofiler.gui.widget.dialog._html_dialog
 
-        dlg = cellprofiler.gui.components.dialog._html_dialog.HTMLDialog(
+        dlg = cellprofiler.gui.widget.dialog._html_dialog.HTMLDialog(
             self, "Help on file list", rst_to_html_fragment(HELP_ON_FILE_LIST),
         )
         dlg.Show()
 
     def __on_debug_help(self, event):
-        import cellprofiler.gui.components.dialog._html_dialog
+        import cellprofiler.gui.widget.dialog._html_dialog
 
         contents = read_content("navigation_test_menu.rst")
-        help_dialog = cellprofiler.gui.components.dialog._html_dialog.HTMLDialog(
+        help_dialog = cellprofiler.gui.widget.dialog._html_dialog.HTMLDialog(
             self, "Test Mode Help", rst_to_html_fragment(contents),
         )
         help_dialog.Show()

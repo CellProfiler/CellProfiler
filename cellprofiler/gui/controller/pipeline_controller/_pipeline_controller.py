@@ -114,7 +114,7 @@ from cellprofiler_core.utilities.pathname import pathname2url
 from cellprofiler_core.utilities.zmq import Reply
 
 from ._fl_drop_target import FLDropTarget
-from cellprofiler.gui.components.frame import AddModuleFrame
+from cellprofiler.gui.widget.frame import AddModuleFrame
 from cellprofiler.gui.constants.frame import ID_DEBUG_CHOOSE_GROUP
 from cellprofiler.gui.constants.frame import ID_DEBUG_CHOOSE_IMAGE_SET
 from cellprofiler.gui.constants.frame import ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP
@@ -165,11 +165,11 @@ from cellprofiler.gui.constants.pipeline_controller import RECENT_WORKSPACE_FILE
 from cellprofiler.gui.constants.pipeline_list_view import (
     EVT_PLV_VALID_STEP_COLUMN_CLICKED,
 )
-from cellprofiler.gui.components.dialog import ErrorMessageDialog
+from cellprofiler.gui.widget.dialog import ErrorMessageDialog
 from cellprofiler.gui.help import content
 from cellprofiler.gui.html.utils import rst_to_html_fragment
 from cellprofiler.gui.view.module_view import SettingEditedEvent
-from cellprofiler.gui.components.frame.parametersampleframe import ParameterSampleFrame
+from cellprofiler.gui.widget.frame.parametersampleframe import ParameterSampleFrame
 from cellprofiler.gui.model._pipeline_model import Pipeline
 from cellprofiler.icons import get_builtin_image
 
@@ -2280,7 +2280,7 @@ class PipelineController:
         self.__module_view.set_selection(module_num)
 
     def on_menu_add_module(self, event):
-        from cellprofiler.gui.components.frame import AddToPipelineEvent
+        from cellprofiler.gui.widget.frame import AddToPipelineEvent
 
         assert isinstance(event, wx.CommandEvent)
         if event.GetId() in self.menu_id_to_module_name:

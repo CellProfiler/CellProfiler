@@ -14,6 +14,7 @@
     * control
         * ImageSetControl
         * MetadataControl
+        * PathListControl
     * dialog
         * AboutDialogInfo
         * EditObjectsDialog

@@ -78,7 +78,7 @@ from cellprofiler.gui.constants.module_view import EDIT_TIMEOUT_SEC
 from cellprofiler.gui.constants.module_view import FROM_EDGE
 from cellprofiler.gui.constants.module_view import WARNING_COLOR
 from cellprofiler.gui.html.utils import rst_to_html_fragment
-from cellprofiler.gui.components.dialog._html_dialog import HTMLDialog
+from cellprofiler.gui.widget.dialog._html_dialog import HTMLDialog
 from cellprofiler.gui.utilities.module_view import absrel_control_name
 from cellprofiler.gui.utilities.module_view import button_control_name
 from cellprofiler.gui.utilities.module_view import category_control_name

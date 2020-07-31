@@ -2146,7 +2146,7 @@ class PipelineController(object):
                     try:
                         while True:
                             urls += queue.get(block=False)
-                    except six.moves.queue.Empty:
+                    except Empty:
                         keep_going = update_pulse(
                             "Adding %d files to file list" % len(urls)
                         )

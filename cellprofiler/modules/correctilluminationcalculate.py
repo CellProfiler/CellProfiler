@@ -43,6 +43,11 @@ References
 .. _tutorials: http://cellprofiler.org/tutorials.html
 """
 
+import centrosome.bg_compensate
+import centrosome.cpmorphology
+import centrosome.cpmorphology
+import centrosome.filter
+import centrosome.smooth
 import numpy
 import scipy.ndimage
 import skimage.filters
@@ -55,14 +60,9 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
-from cellprofiler_core.setting.text import Float
-import centrosome.bg_compensate
-import centrosome.cpmorphology
-import centrosome.filter
-import centrosome.smooth
-import centrosome.cpmorphology
 
 IC_REGULAR = "Regular"
 IC_BACKGROUND = "Background"

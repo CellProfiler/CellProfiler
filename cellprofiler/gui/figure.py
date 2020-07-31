@@ -1058,6 +1058,8 @@ class Figure(wx.Frame):
         # If no popup has been built for this subplot yet, then create one
         popup = wx.Menu()
         self.popup_menus[(x, y)] = popup
+        contrast_item = wx.MenuItem(popup, -1, "Adjust Contrast")
+        popup.Append(contrast_item)
         open_in_new_figure_item = wx.MenuItem(popup, -1, "Open image in new window")
         popup.Append(open_in_new_figure_item)
         show_hist_item = wx.MenuItem(popup, -1, "Show image histogram")
@@ -1172,6 +1174,68 @@ class Figure(wx.Frame):
                 0, 0, self.images[(x, y)].flatten(), bins=200, xlabel="pixel intensity"
             )
             fig.figure.canvas.draw()
+
+        def open_contrast_dialog(evt):
+            imgmax = self.images[(x, y)].max()
+            with wx.Dialog(self, title="Adjust contrast") as dlg:
+                dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+                sizer = wx.BoxSizer(wx.VERTICAL)
+                dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 8)
+                sizer.Add(
+                    wx.StaticText(dlg, label="Adjust brightness"),
+                    0,
+                    wx.ALIGN_CENTER_HORIZONTAL,
+                )
+                sizer.AddSpacer(4)
+                slidermin = wx.Slider(
+                    dlg,
+                    value=0,
+                    minValue=0,
+                    maxValue=100,
+                    style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS,
+                    name="Minimum Intensity",
+                )
+                sizer.Add(slidermin, 1, wx.EXPAND)
+                slidermax = wx.Slider(
+                    dlg,
+                    value=imgmax*100,
+                    minValue=0,
+                    maxValue=100,
+                    style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS,
+                    name="Maximum Intensity"
+                )
+                sizer.Add(slidermax, 1, wx.EXPAND)
+
+                button_sizer = wx.StdDialogButtonSizer()
+                button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+                button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+                dlg.Sizer.Add(button_sizer)
+                button_sizer.Realize()
+
+                def apply_contrast(evt):
+                    params["vmin"] = slidermin.GetValue()/100
+                    params["vmax"] = slidermax.GetValue()/100
+                    params["normalize"] = False
+                    refresh_figure()
+
+                def update_contrast(evt):
+                    if slidermax.GetValue() <= slidermin.GetValue():
+                        slidermax.SetValue(slidermin.GetValue() + 1)
+                    elif slidermin.GetValue() >= slidermax.GetValue():
+                        slidermin.SetValue(slidermax.GetValue() - 1)
+
+                dlg.Bind(wx.EVT_SLIDER, update_contrast)
+                dlg.Bind(wx.EVT_SCROLL_THUMBRELEASE, apply_contrast)
+
+
+                dlg.Layout()
+                if dlg.ShowModal() != wx.ID_OK:
+                    pass
+                    #slider.SetValue(orig_alpha)
+                else:
+                    refresh_figure()
+
+
 
         def change_contrast(evt):
             """Callback for Image contrast menu items"""
@@ -1352,6 +1416,7 @@ class Figure(wx.Frame):
                 popup.Append(-1, name, submenu)
 
         self.Bind(wx.EVT_MENU, open_image_in_new_figure, open_in_new_figure_item)
+        self.Bind(wx.EVT_MENU, open_contrast_dialog, contrast_item)
         self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)

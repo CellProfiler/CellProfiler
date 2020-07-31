@@ -1936,7 +1936,7 @@ class PipelineController(object):
             else:
                 browse_function = self.on_pathlist_browse_files
             if path.startswith("file:"):
-                path = six.moves.urllib.request.url2pathname(path[5:])
+                path = url2pathname(path[5:])
                 browse_function(None, default_dir=path)
             else:
                 browse_function(None)
@@ -2834,7 +2834,7 @@ class PipelineController(object):
             while True:
                 try:
                     self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
-                except six.moves.queue.Empty:
+                except Empty:
                     break
             if evt.cancelled:
                 self.pipeline_list = []
@@ -3052,7 +3052,7 @@ class PipelineController(object):
             wx.IsMainThread()
         ), "PipelineController.analysis_exception() must be called from main thread!"
 
-        self.debug_request_queue = six.moves.queue.Queue()
+        self.debug_request_queue = Queue()
 
         evtlist = [evt]
 

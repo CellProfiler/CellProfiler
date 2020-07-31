@@ -35,6 +35,7 @@ from cellprofiler_core.utilities.legacy import cmp
 
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
+from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION
 
 """Table column displays metadata"""
 COL_METADATA = "Metadata"
@@ -478,8 +479,8 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             wx.MessageBox(
                 "Sorry, your pipeline doesn't produce any valid image sets "
                 "as currently configured. Check your Input module settings, "
-                "or see Help > %(CREATING_A_PROJECT_CAPTION)s for additional assistance "
-                "on using the Input modules." % locals(),
+                "or see Help > {caption} for additional assistance "
+                "on using the Input modules.".format(caption=CREATING_A_PROJECT_CAPTION),
                 caption="No Image Sets Available",
                 style=wx.OK | wx.ICON_INFORMATION,
                 parent=self,

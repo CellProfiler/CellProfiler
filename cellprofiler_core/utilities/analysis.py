@@ -1,4 +1,3 @@
-import fcntl
 import os
 import sys
 import threading
@@ -75,6 +74,8 @@ def close_all_on_exec():
     except for STDIN / STDOUT / STDERR. This should
     make it so in a horribly brute-force way.
     """
+    import fcntl
+
     try:
         maxfd = os.sysconf("SC_OPEN_MAX")
     except:

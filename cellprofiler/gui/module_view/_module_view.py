@@ -61,6 +61,8 @@ from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.setting.text import Filename
 from cellprofiler_core.setting.text import Pathname
 
+import cellprofiler.gui.constants.dialog.regular_expression_dialog
+import cellprofiler.gui.utilities.dialog.regular_expression_dialog
 from ._file_collection_display_controller import FileCollectionDisplayController
 from ._module_sizer import ModuleSizer
 from ._setting_edited_event import SettingEditedEvent
@@ -70,7 +72,7 @@ from .. import _tree_checkbox_dialog
 from .. import cornerbuttonmixin
 from .. import metadatactrl
 from .. import namesubscriber
-from .. import regexp_editor
+from ..dialog.regular_expression_dialog import _regular_expression_dialog
 from ..constants.module_view import ABSOLUTE
 from ..constants.module_view import CHECK_TIMEOUT_SEC
 from ..constants.module_view import EDIT_TIMEOUT_SEC
@@ -1289,11 +1291,15 @@ class ModuleView:
                     pass
 
                 if v.guess == RegexpText.GUESS_FOLDER:
-                    guesses = regexp_editor.RE_FOLDER_GUESSES
+                    guesses = (
+                        cellprofiler.gui.constants.dialog.regular_expression_dialog.RE_FOLDER_GUESSES
+                    )
                 else:
-                    guesses = regexp_editor.RE_FILENAME_GUESSES
+                    guesses = (
+                        cellprofiler.gui.constants.dialog.regular_expression_dialog.RE_FILENAME_GUESSES
+                    )
 
-                new_value = regexp_editor.edit_regexp(
+                new_value = cellprofiler.gui.utilities.dialog.regular_expression_dialog.edit_regexp(
                     panel, control.GetValue(), filename, guesses
                 )
                 if new_value:

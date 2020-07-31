@@ -1,6 +1,7 @@
 import wx
 import wx.lib.rcsizer
 
+import cellprofiler.gui.utilities.dialog.regular_expression_dialog
 from ._module_view import ModuleView
 from ..utilities.module_view import edit_control_name
 
@@ -70,7 +71,7 @@ class JoinerController:
         Each row is a dictionary of key / value where key is the entity name
         and value is the column or metadata value for the join row.
         """
-        return self.v.parse()
+        return cellprofiler.gui.utilities.dialog.regular_expression_dialog.parse()
 
     def update(self):
         """Update the control to match the setting"""

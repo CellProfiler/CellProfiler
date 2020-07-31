@@ -163,7 +163,7 @@ from ..constants.pipeline_controller import ED_STOP
 from ..constants.pipeline_controller import RECENT_PIPELINE_FILE_MENU_ID
 from ..constants.pipeline_controller import RECENT_WORKSPACE_FILE_MENU_ID
 from ..constants.pipeline_list_view import EVT_PLV_VALID_STEP_COLUMN_CLICKED
-from ..dialog import Error
+from cellprofiler.gui.dialog._error_message_dialog import ErrorMessageDialog
 from ..help import content
 from ..html.utils import rst_to_html_fragment
 from ..module_view import SettingEditedEvent
@@ -1107,7 +1107,7 @@ class PipelineController:
         except PipelineLoadCancelledException:
             self.__pipeline.clear()
         except Exception as instance:
-            error = Error("Error", str(instance))
+            error = ErrorMessageDialog("Error", str(instance))
 
             if error.status is wx.ID_CANCEL:
                 cancel_progress()
@@ -1300,7 +1300,7 @@ class PipelineController:
                 frame.Fit()
                 frame.Show()
             except Exception as e:
-                error = Error("Error", str(e))
+                error = ErrorMessageDialog("Error", str(e))
                 if error.status is wx.ID_CANCEL:
                     cancel_progress()
 
@@ -1335,7 +1335,7 @@ class PipelineController:
         except Exception as instance:
             extended_message = "Failed to make image sets"
 
-            error = Error("Error", extended_message)
+            error = ErrorMessageDialog("Error", extended_message)
 
             if error.status is wx.ID_CANCEL:
                 cancel_progress()
@@ -1619,7 +1619,7 @@ class PipelineController:
                 ) % (event.module.module_name, error_msg)
                 continue_only = False
 
-            error = Error("Error", message)
+            error = ErrorMessageDialog("Error", message)
 
             if error.status is wx.ID_CANCEL:
                 cancel_progress()
@@ -1690,7 +1690,7 @@ class PipelineController:
                 "Module settings:\n"
                 "\t%s"
             ) % (module_name, str(event.error), "\n\t".join(event.settings))
-        error = Error("Error", message)
+        error = ErrorMessageDialog("Error", message)
 
         if error.status is wx.ID_CANCEL:
             cancel_progress()
@@ -2667,7 +2667,7 @@ class PipelineController:
             print(error)
             extended_message = "Failure in analysis startup"
 
-            error = Error("Error", extended_message)
+            error = ErrorMessageDialog("Error", extended_message)
 
             if error.status is wx.ID_CANCEL:
                 cancel_progress()
@@ -2842,7 +2842,7 @@ class PipelineController:
 
             traceback.print_tb(tb, logger)
 
-            error = Error("Error", exc.message)
+            error = ErrorMessageDialog("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
                 cancel_progress()
@@ -2871,7 +2871,7 @@ class PipelineController:
 
             traceback.print_tb(tb, logger)
 
-            error = Error("Error", exc.message)
+            error = ErrorMessageDialog("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
                 cancel_progress()
@@ -2897,7 +2897,7 @@ class PipelineController:
 
             traceback.print_tb(tb, logger)
 
-            error = Error("Error", exc.message)
+            error = ErrorMessageDialog("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
                 cancel_progress()
@@ -2924,7 +2924,7 @@ class PipelineController:
 
             traceback.print_tb(tb, logger)
 
-            error = Error("Error", exc.message)
+            error = ErrorMessageDialog("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
                 cancel_progress()
@@ -3005,7 +3005,7 @@ class PipelineController:
                 "%s\n\nDo you want to stop processing?"
             ) % evt
 
-        error = Error("Error", message)
+        error = ErrorMessageDialog("Error", message)
 
         if error.status == wx.ID_CANCEL:
             cancel_progress()

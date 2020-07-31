@@ -71,7 +71,7 @@ from ..constants.frame import ID_SAMPLE_INIT
 from ..constants.frame import ID_WINDOW_CLOSE_ALL
 from ..constants.frame import ID_WINDOW_HIDE_ALL_WINDOWS
 from ..constants.frame import ID_WINDOW_SHOW_ALL_WINDOWS
-from ..dialog import AboutDialogInfo
+from cellprofiler.gui.dialog._about_dialog_info import AboutDialogInfo
 from ..figure import close_all, Figure
 from ..help.content import read_content
 from ..help.menu import Menu

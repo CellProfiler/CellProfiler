@@ -3,7 +3,6 @@ import os
 import sys
 import uuid
 
-import six
 import wx
 from cellprofiler_core.preferences import report_progress
 from cellprofiler_core.setting import FileCollectionDisplay
@@ -438,11 +437,7 @@ class FileCollectionDisplayController:
                 file_tree = self.v.file_tree
             is_filtered = False
             while True:
-                if (
-                    isinstance(mp, six.string_types)
-                    or isinstance(mp, tuple)
-                    and len(mp) == 3
-                ):
+                if isinstance(mp, str) or isinstance(mp, tuple) and len(mp) == 3:
                     path.append(mp)
                     if hint != FileCollectionDisplay.REMOVE:
                         is_filtered = not file_tree[mp]
@@ -458,9 +453,7 @@ class FileCollectionDisplayController:
                 mp = mp_list[0]
             if hint != FileCollectionDisplay.REMOVE:
                 self.status_text.Label = (
-                    "Processing " + path[-1]
-                    if isinstance(path[-1], six.string_types)
-                    else path[-2]
+                    "Processing " + path[-1] if isinstance(path[-1], str) else path[-2]
                 )
             self.status_text.Update()
             if not any_others:

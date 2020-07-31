@@ -23,17 +23,17 @@ YES          NO           YES
 
 """
 
+import centrosome.filter
+import centrosome.kirsch
+import centrosome.otsu
 import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Float
-import centrosome.filter
-import centrosome.kirsch
-import centrosome.otsu
+from cellprofiler_core.setting.text import ImageName
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"

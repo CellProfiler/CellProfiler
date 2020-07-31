@@ -1,6 +1,6 @@
 import wx
-from cellprofiler_core.pipeline import PipelineLoadCancelledException
 from cellprofiler_core import pipeline
+from cellprofiler_core.pipeline import PipelineLoadCancelledException
 
 
 class Pipeline(pipeline.Pipeline):

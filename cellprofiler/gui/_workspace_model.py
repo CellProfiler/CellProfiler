@@ -1,9 +1,9 @@
+from cellprofiler_core import workspace
 from cellprofiler_core.constants.measurement import EXPERIMENT
 from cellprofiler_core.constants.measurement import GROUP_INDEX
-from cellprofiler_core.constants.measurement import M_GROUPING_TAGS
-from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.constants.measurement import GROUP_NUMBER
-from cellprofiler_core import workspace
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.measurement import M_GROUPING_TAGS
 
 import cellprofiler.gui.figure
 

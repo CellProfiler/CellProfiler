@@ -54,7 +54,6 @@ category.
 import logging
 
 import numpy
-import six
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.constants.measurement import R_FIRST_IMAGE_NUMBER
@@ -434,7 +433,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
                 # ensure that the data can be changed in-place by floating point ops
                 value = value.astype(numpy.float)
 
-            if isinstance(value, six.string_types):
+            if isinstance(value, str):
                 try:
                     value = float(value)
                 except ValueError:

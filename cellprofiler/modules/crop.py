@@ -52,11 +52,11 @@ from cellprofiler_core.preferences import get_primary_outline_color
 from cellprofiler_core.setting import Coordinates
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import IntegerOrUnboundedRange
-from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.subscriber import CropImageSubscriber
+from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.subscriber import LabelSubscriber
-from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.setting.text import CropImageName
+from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.utilities.image import crop_image
 
 SH_RECTANGLE = "Rectangle"

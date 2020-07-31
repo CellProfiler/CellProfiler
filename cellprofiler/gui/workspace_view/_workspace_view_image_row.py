@@ -1,16 +1,16 @@
-from cellprofiler_core.preferences import get_intensity_mode
 from cellprofiler_core.preferences import INTENSITY_MODE_LOG
 from cellprofiler_core.preferences import INTENSITY_MODE_NORMAL
 from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.preferences import get_intensity_mode
 
-from ..artist import NORMALIZE_LOG
-from ..artist import NORMALIZE_LINEAR
-from ..artist import NORMALIZE_RAW
-from ..artist import ImageData
-from ..artist import MODE_HIDE
-from ..artist import MODE_COLORIZE
-from ..utilities.workspace_view import bind_data_class
 from ._workspace_view_row import WorkspaceViewRow
+from ..artist import ImageData
+from ..artist import MODE_COLORIZE
+from ..artist import MODE_HIDE
+from ..artist import NORMALIZE_LINEAR
+from ..artist import NORMALIZE_LOG
+from ..artist import NORMALIZE_RAW
+from ..utilities.workspace_view import bind_data_class
 
 
 class WorkspaceViewImageRow(WorkspaceViewRow):

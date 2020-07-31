@@ -4,7 +4,6 @@
 #
 #################################
 
-import cellprofiler_core.object
 import centrosome.cpmorphology
 import centrosome.zernike
 import numpy

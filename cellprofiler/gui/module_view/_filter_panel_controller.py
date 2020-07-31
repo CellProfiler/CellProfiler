@@ -1,6 +1,5 @@
 import logging
 
-import six
 import wx
 from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.setting.filter._filter import AND_PREDICATE, OR_PREDICATE
@@ -104,9 +103,7 @@ class FilterPanelController(object):
         #
         # Always require an "and" or "or" clause
         #
-        if len(tokens) == 0 or (
-            tokens[0] not in (AND_PREDICATE, OR_PREDICATE,)
-        ):
+        if len(tokens) == 0 or (tokens[0] not in (AND_PREDICATE, OR_PREDICATE,)):
             tokens = [AND_PREDICATE, tokens]
         return tokens
 
@@ -275,7 +272,7 @@ class FilterPanelController(object):
         # Make sure following predicates are legal
         #
         for index in range(index + 1, len(sequence)):
-            if isinstance(sequence[index], six.string_types):
+            if isinstance(sequence[index], str):
                 is_good = Filter.LITERAL_PREDICATE in predicates
             else:
                 matches = [p for p in predicates if sequence[index].symbol == p.symbol]
@@ -444,7 +441,7 @@ class FilterPanelController(object):
                 sizer = self.get_sizer(subaddress)
                 predicates = self.v.predicates
                 for i, token in enumerate(substructure):
-                    if isinstance(token, six.string_types):
+                    if isinstance(token, str):
                         literal_ctrl = self.make_literal(token, i, subaddress, sizer)
                         predicates = []
                     else:

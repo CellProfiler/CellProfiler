@@ -6,28 +6,28 @@ import os
 
 import wx
 from cellprofiler_core.analysis import use_analysis
-from cellprofiler_core.preferences import get_default_image_directory
-from cellprofiler_core.preferences import get_recent_files
 from cellprofiler_core.preferences import DEFAULT_IMAGE_DIRECTORY
 from cellprofiler_core.preferences import DEFAULT_IMAGE_FOLDER_HELP
-from cellprofiler_core.preferences import set_default_image_directory
-from cellprofiler_core.preferences import get_default_output_directory
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_DIRECTORY
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_HELP
-from cellprofiler_core.preferences import set_default_output_directory
-from cellprofiler_core.preferences import remove_image_directory_listener
-from cellprofiler_core.preferences import remove_output_directory_listener
 from cellprofiler_core.preferences import add_image_directory_listener
 from cellprofiler_core.preferences import add_output_directory_listener
 from cellprofiler_core.preferences import add_progress_callback
-from cellprofiler_core.preferences import set_pixel_size
 from cellprofiler_core.preferences import fire_image_directory_changed_event
+from cellprofiler_core.preferences import get_default_image_directory
+from cellprofiler_core.preferences import get_default_output_directory
+from cellprofiler_core.preferences import get_recent_files
+from cellprofiler_core.preferences import remove_image_directory_listener
+from cellprofiler_core.preferences import remove_output_directory_listener
+from cellprofiler_core.preferences import set_default_image_directory
+from cellprofiler_core.preferences import set_default_output_directory
+from cellprofiler_core.preferences import set_pixel_size
 
+from ._progress_watcher import ProgressWatcher
 from ..constants.preferences_view import WELCOME_MESSAGE
 from ..html.utils import rst_to_html_fragment
 from ..htmldialog import HTMLDialog
 from ..utilities.preferences_view import secs_to_timestr
-from ._progress_watcher import ProgressWatcher
 
 
 class PreferencesView:

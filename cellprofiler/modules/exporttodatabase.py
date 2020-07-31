@@ -94,8 +94,6 @@ import re
 import cellprofiler_core.pipeline
 import cellprofiler_core.utilities.legacy
 import numpy
-import six
-import six.moves
 from cellprofiler_core.constants.measurement import AGG_MEAN
 from cellprofiler_core.constants.measurement import AGG_MEDIAN
 from cellprofiler_core.constants.measurement import AGG_STD_DEV
@@ -135,7 +133,10 @@ from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.do_something import RemoveSettingButton
-from cellprofiler_core.setting.multichoice import ObjectSubscriberMultiChoice, ImageNameSubscriberMultiChoice
+from cellprofiler_core.setting.multichoice import (
+    ObjectSubscriberMultiChoice,
+    ImageNameSubscriberMultiChoice,
+)
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.setting.text import Integer
@@ -3099,7 +3100,7 @@ INSERT INTO %s (name) values ('%s')""" % (
         properties = self.get_property_file_text(workspace)
         for p in properties:
             for k, v in list(p.properties.items()):
-                if isinstance(v, six.text_type):
+                if isinstance(v, str):
                     v = v
                 statement = """
 INSERT INTO %s (experiment_id, object_name, field, value)
@@ -3143,7 +3144,7 @@ CREATE TABLE %s (
             value = workspace.measurements.get_experiment_measurement(ftr)
 
             if column[2].startswith(COLTYPE_VARCHAR):
-                if isinstance(value, six.text_type):
+                if isinstance(value, str):
                     value = value
                 if self.db_type != DB_SQLITE:
                     value = MySQLdb.escape_string(value).decode()

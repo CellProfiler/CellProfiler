@@ -178,7 +178,9 @@ specified manually)*
 
 Enter the diameter to be used for each grid circle, in pixels.
 {dist}
-""".format(dist=HELP_ON_MEASURING_DISTANCES),
+""".format(
+                dist=HELP_ON_MEASURING_DISTANCES
+            ),
         )
 
         self.guiding_object_name = LabelSubscriber(

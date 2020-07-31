@@ -57,7 +57,6 @@ References
 
 from functools import reduce
 
-import cellprofiler_core.object
 import centrosome.cpmorphology
 import centrosome.fastemd
 import centrosome.filter

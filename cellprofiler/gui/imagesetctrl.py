@@ -3,33 +3,32 @@
 """
 
 
-import re
 import functools
+import re
+import urllib
 
 import numpy
-import six
-import six.moves.urllib.parse
 import wx
 import wx.adv
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
 from cellprofiler_core.constants.image import C_FRAME
 from cellprofiler_core.constants.image import C_SERIES
-from cellprofiler_core.constants.measurement import C_OBJECTS_URL
-from cellprofiler_core.constants.measurement import C_URL
-from cellprofiler_core.constants.measurement import C_OBJECTS_PATH_NAME
-from cellprofiler_core.constants.measurement import C_PATH_NAME
-from cellprofiler_core.constants.measurement import C_OBJECTS_FILE_NAME
 from cellprofiler_core.constants.measurement import C_FILE_NAME
 from cellprofiler_core.constants.measurement import C_METADATA
+from cellprofiler_core.constants.measurement import C_OBJECTS_FILE_NAME
+from cellprofiler_core.constants.measurement import C_OBJECTS_PATH_NAME
+from cellprofiler_core.constants.measurement import C_OBJECTS_URL
+from cellprofiler_core.constants.measurement import C_PATH_NAME
+from cellprofiler_core.constants.measurement import C_URL
 from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.pipeline import ImageSetChannelDescriptor
 from cellprofiler_core.preferences import report_progress
 from cellprofiler_core.setting import FileCollectionDisplay
-from cellprofiler_core.setting.filter import FilePredicate
 from cellprofiler_core.setting.filter import DirectoryPredicate
 from cellprofiler_core.setting.filter import ExtensionPredicate
+from cellprofiler_core.setting.filter import FilePredicate
 from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.utilities.image import url_to_modpath
 from cellprofiler_core.utilities.legacy import cmp
@@ -249,7 +248,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
             and value is not None
         ):
             last_slash = value.rfind("/")
-            return six.moves.urllib.parse.unquote(value[(last_slash + 1) :])
+            return urllib.parse.unquote(value[(last_slash + 1) :])
         return value
 
     def get_url(self, row, col):
@@ -270,9 +269,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         image_number = self.image_numbers[row]
         metadata_tags = self.metadata_tags
         if len(metadata_tags) > 0:
-            key = [
-                six.text_type(self.cache[tag, image_number]) for tag in metadata_tags
-            ]
+            key = [str(self.cache[tag, image_number]) for tag in metadata_tags]
             return " : ".join(key)
 
         return str(image_number)
@@ -477,7 +474,6 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.table.workspace.refresh_image_set()
         n_imagesets = self.table.workspace.measurements.image_set_count
         if n_imagesets == 0:
-            from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION
 
             wx.MessageBox(
                 "Sorry, your pipeline doesn't produce any valid image sets "
@@ -1068,7 +1064,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             if need_column_layout:
                 if self.table.GetNumberRows() > 0:
                     first_width, _ = self.GetGridWindow().GetTextExtent(
-                        six.text_type(self.table.GetValue(0, i))
+                        str(self.table.GetValue(0, i))
                     )
                     first_width += self.cell_renderer.padding * 4
                     width = max(first_width, min_width)
@@ -1092,7 +1088,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
         assert isinstance(attr, wx.grid.GridCellAttr)
         assert isinstance(rect, wx.Rect)
         assert isinstance(grid, ImageSetCtrl)
-        s = six.text_type(grid.GetTable().GetValue(row, col))
+        s = str(grid.GetTable().GetValue(row, col))
         old_font = dc.GetFont()
         old_brush = dc.GetBrush()
         old_pen = dc.GetPen()
@@ -1192,7 +1188,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
     def GetBestSize(self, grid, attr, dc, row, col):
         assert isinstance(dc, wx.DC)
         assert isinstance(grid, wx.grid.Grid)
-        s = six.text_type(grid.GetTable().GetValue(row, col))
+        s = str(grid.GetTable().GetValue(row, col))
         width, height = grid.GetGridWindow().GetTextExtent(s)
         return wx.Size(width + 2 * self.padding, height)
 
@@ -1364,7 +1360,7 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
         self.renderer.DrawPushButton(window, dc, rect, flags)
         if isinstance(bitmap, wx.Bitmap):
             dc.DrawBitmap(bitmap, x, y, useMask=True)
-        elif isinstance(bitmap, six.string_types):
+        elif isinstance(bitmap, str):
             dc.SetFont(window.Font)
             dc.SetBackgroundMode(wx.PENSTYLE_TRANSPARENT)
             width, height = dc.GetTextExtent(bitmap)

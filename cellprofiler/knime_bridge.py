@@ -4,16 +4,14 @@ The knime bridge supports a ZMQ protocol that lets a single client
 run an analysis worker to get pipeline metadata and run a pipeline on
 an image set.
 """
-import logging
-
-
-from io import StringIO
 import json
-import javabridge
-import numpy
+import logging
 import threading
 import uuid
-import six
+from io import StringIO
+
+import javabridge
+import numpy
 import zmq
 
 if not hasattr(zmq, "Frame"):
@@ -295,7 +293,7 @@ class KnimeBridgeServer(threading.Thread):
                         sf.append((feature, 0))
                     else:
                         s = data[0]
-                        if isinstance(s, six.text_type):
+                        if isinstance(s, str):
                             s = s
                         else:
                             s = str(s)
@@ -565,7 +563,7 @@ class KnimeBridgeServer(threading.Thread):
         return pipeline, m, object_set
 
     def raise_pipeline_exception(self, session_id, message):
-        if isinstance(message, six.text_type):
+        if isinstance(message, str):
             message = message
         else:
             message = str(message)
@@ -579,7 +577,7 @@ class KnimeBridgeServer(threading.Thread):
         )
 
     def raise_cellprofiler_exception(self, session_id, message):
-        if isinstance(message, six.text_type):
+        if isinstance(message, str):
             message = message
         else:
             message = str(message)

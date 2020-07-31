@@ -2,7 +2,6 @@ import os
 import sys
 
 import matplotlib.cm
-import six
 import wx
 import wx.lib.scrolledpanel
 from cellprofiler_core.preferences import DEFAULT_COLORMAP_HELP
@@ -180,9 +179,7 @@ class PreferencesDialog(wx.Dialog):
 
                         dlg.Destroy()
 
-            elif isinstance(ui_info, six.string_types) and ui_info.startswith(
-                FILEBROWSE
-            ):
+            elif isinstance(ui_info, str) and ui_info.startswith(FILEBROWSE):
 
                 def on_press(event, ctl=ctl, parent=self, ui_info=ui_info):
                     dlg = wx.FileDialog(parent)

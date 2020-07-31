@@ -2,13 +2,12 @@
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
 
-import six
 import wx
 import wx.lib.masked
-from cellprofiler_core.constants.measurement import C_METADATA
-from cellprofiler_core.constants.measurement import IMAGE
-from cellprofiler_core.constants.measurement import C_SERIES
 from cellprofiler_core.constants.measurement import C_FRAME
+from cellprofiler_core.constants.measurement import C_METADATA
+from cellprofiler_core.constants.measurement import C_SERIES
+from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.preferences import get_primary_outline_color
 
 __choice_ids = []
@@ -133,7 +132,7 @@ class MetadataControl(wx.Control):
                 if value[index] in ("g", "?"):
                     state = STATE_PRE
                 else:
-                    self.__tokens.append(six.text_type(value[index]))
+                    self.__tokens.append(str(value[index]))
                     state = STATE_INITIAL
             elif state == STATE_PRE:
                 if value[index] != "<":

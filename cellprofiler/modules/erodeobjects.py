@@ -23,17 +23,16 @@ YES          YES          NO
 
 """
 
+import numpy
+import scipy.ndimage
+import skimage.measure
+import skimage.morphology
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.object import Objects
 from cellprofiler_core.setting import StructuringElement, Binary
 
 import cellprofiler.utilities.morphology
 from cellprofiler.modules._help import HELP_FOR_STREL
-
-import numpy
-import scipy.ndimage
-import skimage.measure
-import skimage.morphology
 
 
 class ErodeObjects(ObjectProcessing):
@@ -57,7 +56,7 @@ class ErodeObjects(ObjectProcessing):
 If set to "Yes", the central pixels for each object will not be eroded. This ensures that 
 objects are not lost. The preserved pixels are those furtherst from the object's edge, so 
 in some objects this may be a cluster of pixels with equal distance to the edge.
-If set to "No", erosion can completely remove smaller objects."""
+If set to "No", erosion can completely remove smaller objects.""",
         )
 
         self.relabel_objects = Binary(
@@ -69,18 +68,26 @@ to be split into two. This can cause problems in some other modules. Selecting "
 new label numbers to resulting objects. This will ensure that there are no 'missing' labels 
 (if object '3' is gone, object '4' will be reassigned to that number). However, this also means 
 that parts of objects which were split and are no longer touching will be given new, individual 
-label numbers."""
+label numbers.""",
         )
 
     def settings(self):
         __settings__ = super(ErodeObjects, self).settings()
 
-        return __settings__ + [self.structuring_element, self.preserve_midpoints, self.relabel_objects]
+        return __settings__ + [
+            self.structuring_element,
+            self.preserve_midpoints,
+            self.relabel_objects,
+        ]
 
     def visible_settings(self):
         __settings__ = super(ErodeObjects, self).settings()
 
-        return __settings__ + [self.structuring_element, self.preserve_midpoints, self.relabel_objects]
+        return __settings__ + [
+            self.structuring_element,
+            self.preserve_midpoints,
+            self.relabel_objects,
+        ]
 
     def run(self, workspace):
         x_name = self.x_name.value
@@ -90,12 +97,16 @@ label numbers."""
         dimensions = x.dimensions
         x_data = x.segmented
 
-        props = skimage.measure.regionprops(x_data)  # , properties=('label', 'centroid'))
+        props = skimage.measure.regionprops(
+            x_data
+        )  # , properties=('label', 'centroid'))
         y_data = numpy.zeros_like(x_data)
         for region in props:
             label = region.label
             binary = x_data == label
-            eroded = cellprofiler.utilities.morphology.binary_erosion(binary, self.structuring_element.value)
+            eroded = cellprofiler.utilities.morphology.binary_erosion(
+                binary, self.structuring_element.value
+            )
             y_data[eroded] = label
             if self.preserve_midpoints.value:
                 if label not in y_data:

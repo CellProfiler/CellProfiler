@@ -64,7 +64,9 @@ def binary_erosion(x_data, structuring_element):
 
         for index, plane in enumerate(x_data):
 
-            y_data[index] = skimage.morphology.binary_erosion(plane, structuring_element)
+            y_data[index] = skimage.morphology.binary_erosion(
+                plane, structuring_element
+            )
 
         return y_data
 

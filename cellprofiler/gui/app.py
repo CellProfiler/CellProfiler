@@ -8,11 +8,10 @@ import wx.lib.inspection
 from cellprofiler_core.preferences import get_telemetry_prompt
 from cellprofiler_core.preferences import set_telemetry
 from cellprofiler_core.preferences import set_telemetry_prompt
-from cellprofiler_core.utilities.java import stop_java
 from cellprofiler_core.utilities.java import start_java
+from cellprofiler_core.utilities.java import stop_java
 
 from .dialog import Telemetry
-
 
 dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
 

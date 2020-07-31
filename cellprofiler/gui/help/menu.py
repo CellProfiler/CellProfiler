@@ -6,7 +6,6 @@ import cellprofiler.gui.help.content
 import cellprofiler.gui.help.search
 import cellprofiler.gui.htmldialog
 import cellprofiler.gui.menu
-import cellprofiler_core.modules
 
 
 class Menu(cellprofiler.gui.menu.Menu):
@@ -72,7 +71,9 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append(
             "Identifying 3D objects",
-            contents=cellprofiler.gui.help.content.read_content("other_3d_identify.rst"),
+            contents=cellprofiler.gui.help.content.read_content(
+                "other_3d_identify.rst"
+            ),
         )
 
         self.append(

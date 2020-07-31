@@ -91,13 +91,13 @@ References
 import logging
 import os
 import re
+import xml.dom.minidom as DOM
+from urllib.request import urlopen
 
 import centrosome.cpmorphology
 import matplotlib.mlab as mlab
 import numpy
 import scipy.ndimage
-import six.moves.urllib.request
-import xml.dom.minidom as DOM
 from cellprofiler_core.constants.measurement import C_LOCATION
 from cellprofiler_core.constants.measurement import C_NUMBER
 from cellprofiler_core.constants.measurement import FTR_CENTER_X
@@ -107,7 +107,10 @@ from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_FLOAT, C_COUN
 from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X
 from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y
 from cellprofiler_core.constants.measurement import M_NUMBER_OBJECT_NUMBER
-from cellprofiler_core.constants.module import USING_METADATA_GROUPING_HELP_REF, IO_FOLDER_CHOICE_HELP_TEXT
+from cellprofiler_core.constants.module import (
+    USING_METADATA_GROUPING_HELP_REF,
+    IO_FOLDER_CHOICE_HELP_TEXT,
+)
 from cellprofiler_core.image import Image
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
@@ -134,6 +137,7 @@ from centrosome.propagate import propagate
 from scipy.interpolate import interp1d
 from scipy.io import loadmat
 from scipy.sparse import coo
+
 import cellprofiler
 
 RETAINING_OUTLINES_HELP = """\
@@ -252,7 +256,9 @@ class UntangleWorms(Module):
    worms.
 
 {grouping}
-""".format(grouping=USING_METADATA_GROUPING_HELP_REF)
+""".format(
+                grouping=USING_METADATA_GROUPING_HELP_REF
+            )
             % globals(),
         )
 
@@ -394,7 +400,9 @@ An additional option is the following:
    access this file, you would choose *URL* and enter
    ``http://my_institution.edu/server/my_username/`` as the path
    location.
-""".format(folder_choice=IO_FOLDER_CHOICE_HELP_TEXT),
+""".format(
+                folder_choice=IO_FOLDER_CHOICE_HELP_TEXT
+            ),
         )
         self.training_set_directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
@@ -3053,7 +3061,7 @@ def read_params(training_set_directory, training_set_file_name, d):
 
     if training_set_directory.dir_choice == URL_FOLDER_NAME:
         url = file_name
-        fd_or_file = six.moves.urllib.request.urlopen(url)
+        fd_or_file = urlopen(url)
         is_url = True
         timestamp = "URL"
     else:
@@ -3142,7 +3150,7 @@ def read_params(training_set_directory, training_set_file_name, d):
                 result.inv_angles_covariance_matrix[i, j] = float(text.strip())
     except:
         if is_url:
-            fd_or_file = six.moves.urllib.request.urlopen(url)
+            fd_or_file = urlopen(url)
 
         mat_params = loadmat(fd_or_file)["params"][0, 0]
         field_names = list(mat_params.dtype.fields.keys())

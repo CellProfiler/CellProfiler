@@ -3,6 +3,7 @@
 """
 
 import wx
+
 import cellprofiler.gui.html.htmlwindow
 
 long_text = """\

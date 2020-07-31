@@ -22,6 +22,7 @@ import numpy
 import skimage.morphology
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import StructuringElement
+
 from ._help import HELP_FOR_STREL
 
 

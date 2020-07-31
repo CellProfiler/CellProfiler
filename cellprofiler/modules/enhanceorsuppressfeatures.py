@@ -32,8 +32,8 @@ from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import IntegerRange
-from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.text import Integer
 
 from cellprofiler.modules import _help
 

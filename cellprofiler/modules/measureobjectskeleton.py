@@ -65,9 +65,9 @@ import centrosome.cpmorphology
 import centrosome.propagate as propagate
 import numpy
 import scipy.ndimage
-from cellprofiler_core.image import Image
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
+from cellprofiler_core.image import Image
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME

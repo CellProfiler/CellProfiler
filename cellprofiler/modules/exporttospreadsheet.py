@@ -89,7 +89,6 @@ import logging
 import os
 
 import numpy
-import six
 from cellprofiler_core.constants.image import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 from cellprofiler_core.constants.measurement import (
     EXPERIMENT,
@@ -106,8 +105,12 @@ from cellprofiler_core.constants.measurement import (
     R_FIRST_OBJECT_NUMBER,
     R_SECOND_OBJECT_NUMBER,
 )
-from cellprofiler_core.constants.module import IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT, \
-    USING_METADATA_HELP_REF, USING_METADATA_TAGS_REF
+from cellprofiler_core.constants.module import (
+    IO_FOLDER_CHOICE_HELP_TEXT,
+    IO_WITH_METADATA_HELP_TEXT,
+    USING_METADATA_HELP_REF,
+    USING_METADATA_TAGS_REF,
+)
 from cellprofiler_core.constants.pipeline import EXIT_STATUS
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
@@ -225,7 +228,8 @@ This setting lets you choose the folder for the output files. {folder_choice}
 {metadata_help}
 """.format(
                 folder_choice=IO_FOLDER_CHOICE_HELP_TEXT,
-                metadata_help=IO_WITH_METADATA_HELP_TEXT),
+                metadata_help=IO_WITH_METADATA_HELP_TEXT,
+            ),
         )
         self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
@@ -422,7 +426,9 @@ specified in one of two ways:
    filename can be used as a surrogate identifier.
 
 {meta_help}
-""".format(meta_help=USING_METADATA_HELP_REF),
+""".format(
+                meta_help=USING_METADATA_HELP_REF
+            ),
         )
 
         self.gene_name_column = Measurement(
@@ -433,7 +439,9 @@ specified in one of two ways:
 name each row)*
 
 Choose the measurement that corresponds to the identifier, such as
-metadata from the **Metadata** module. {meta_help}""".format(meta_help=USING_METADATA_HELP_REF),
+metadata from the **Metadata** module. {meta_help}""".format(
+                meta_help=USING_METADATA_HELP_REF
+            ),
         )
 
         self.use_which_image_for_gene_name = ImageSubscriber(
@@ -461,7 +469,9 @@ name if specified above.
 Select *"No"* if you want to do either (or both) of two things:
 
 -  Specify which objects should be exported;
--  Override the automatic nomenclature of the exported files.""".format(naming_help=MEASUREMENT_NAMING_HELP),
+-  Override the automatic nomenclature of the exported files.""".format(
+                naming_help=MEASUREMENT_NAMING_HELP
+            ),
         )
 
         self.object_groups = []
@@ -480,7 +490,9 @@ Select *"No"* if you want to do either (or both) of two things:
 Choose *Image*, *Experiment*, *Object relationships* or an object name
 from the list. **ExportToSpreadsheet** will write out a file of
 measurements for the given category. See *{naming_help}*
-for more details on the various measurement types.""".format(naming_help=MEASUREMENT_NAMING_HELP),
+for more details on the various measurement types.""".format(
+                    naming_help=MEASUREMENT_NAMING_HELP
+                ),
             ),
         )
 
@@ -537,8 +549,8 @@ desired.
 
 {help}
 """.format(
-                    tags=USING_METADATA_TAGS_REF,
-                    help=USING_METADATA_HELP_REF)
+                    tags=USING_METADATA_TAGS_REF, help=USING_METADATA_HELP_REF
+                )
                 % globals(),
             ),
         )
@@ -1043,7 +1055,7 @@ desired.
                 if isinstance(v, numpy.ndarray) and v.dtype == numpy.uint8:
                     v = base64.b64encode(v.data)
                 else:
-                    six.text_type(v)
+                    str(v)
                 writer.writerow((feature_name, v))
         finally:
             fd.close()
@@ -1097,9 +1109,9 @@ desired.
                             value = m[IMAGE, feature_name, img_number]
                         if value is None:
                             row.append("")
-                        elif isinstance(value, six.text_type):
+                        elif isinstance(value, str):
                             row.append(value)
-                        elif isinstance(value, six.string_types):
+                        elif isinstance(value, str):
                             row.append(value)
                         elif (
                             isinstance(value, numpy.ndarray)

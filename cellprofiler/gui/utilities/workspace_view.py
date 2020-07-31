@@ -1,10 +1,7 @@
 import wx
 
 import cellprofiler.gui
-from cellprofiler.gui.workspace_view._workspace_view import (
-    WorkspaceView,
-    __the_workspace_viewer,
-)
+from cellprofiler.gui.workspace_view._workspace_view import WorkspaceView
 
 
 def show_workspace_viewer(parent, workspace):

@@ -53,6 +53,7 @@ well as video tutorials.
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
 
+import matplotlib.cm
 import numpy
 from cellprofiler_core.constants.measurement import (
     COLTYPE_INTEGER,
@@ -81,7 +82,6 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result
 from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
-import matplotlib.cm
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"

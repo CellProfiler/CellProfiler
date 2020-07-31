@@ -8,11 +8,6 @@ from cellprofiler_core.setting import ValidationError
 from cellprofiler.gui.module_view._validation_request_controller import (
     ValidationRequestController,
 )
-from cellprofiler.gui.constants.module_view import (
-    validation_queue,
-    pipeline_queue_thread,
-    validation_queue_keep_running,
-)
 
 
 def text_control_name(v):

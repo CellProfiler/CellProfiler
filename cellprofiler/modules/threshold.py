@@ -16,8 +16,8 @@ YES          YES          YES
 ============ ============ ===============
 """
 
-import centrosome.threshold
 import centrosome.smooth
+import centrosome.threshold
 import numpy
 import scipy.interpolate
 import scipy.ndimage

@@ -35,7 +35,6 @@ See also other **Display** modules and data tools.
 """
 
 import numpy
-import six
 from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.constants.module import USING_METADATA_HELP_REF
 
@@ -107,7 +106,9 @@ is, each plate should have a metadata tag containing a specifier
 corresponding uniquely to that plate.
 
 {meta_help}
-""".format(meta_help=USING_METADATA_HELP_REF),
+""".format(
+                meta_help=USING_METADATA_HELP_REF
+            ),
         )
 
         self.plate_type = Choice(
@@ -179,7 +180,9 @@ format 96-well plate would span from column “01” to “12”, whereas a
 “24”.
 
 {meta_help}
-""".format(meta_help=USING_METADATA_HELP_REF)
+""".format(
+                meta_help=USING_METADATA_HELP_REF
+            ),
         )
 
         self.agg_method = Choice(
@@ -245,9 +248,7 @@ executed.
             m = workspace.get_measurements()
             # Get plates
             plates = list(
-                map(
-                    six.text_type, m.get_all_measurements(IMAGE, self.plate_name.value),
-                )
+                map(str, m.get_all_measurements(IMAGE, self.plate_name.value),)
             )
             # Get wells
             if self.well_format == WF_NAME:

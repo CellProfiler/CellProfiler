@@ -21,9 +21,6 @@ from cellprofiler_core.utilities.core.modules import instantiate_module
 
 import cellprofiler
 import cellprofiler.gui
-from .module_view import ModuleView
-from .preferences_dialog._preferences_dialog import PreferencesDialog
-from .preferences_view import PreferencesView
 from ._welcome_frame import WelcomeFrame
 from ._workspace_model import Workspace
 from .dialog import AboutDialogInfo
@@ -33,10 +30,13 @@ from .help.menu import Menu
 from .html.htmlwindow import HtmlClickableWindow
 from .html.utils import rst_to_html_fragment
 from .imagesetctrl import ImageSetCtrl
+from .module_view import ModuleView
 from .pathlist import PathListCtrl
 from .pipeline import Pipeline
 from .pipelinecontroller import PipelineController
 from .pipelinelistview import PipelineListView
+from .preferences_dialog._preferences_dialog import PreferencesDialog
+from .preferences_view import PreferencesView
 
 HELP_ON_FILE_LIST = """\
 The *File List* panel displays the image files that are managed by the

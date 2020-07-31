@@ -1217,9 +1217,7 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
     image_set_list = ImageSetList()
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
-    workspace = Workspace(
-        pipeline, module, image_set, ObjectSet(), m, image_set_list,
-    )
+    workspace = Workspace(pipeline, module, image_set, ObjectSet(), m, image_set_list,)
     return workspace, module
 
 

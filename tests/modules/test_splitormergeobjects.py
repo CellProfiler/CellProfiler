@@ -4,8 +4,16 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
-from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, FF_COUNT, FF_PARENT, \
-    COLTYPE_FLOAT, M_NUMBER_OBJECT_NUMBER, COLTYPE_INTEGER, FF_CHILDREN_COUNT
+from cellprofiler_core.constants.measurement import (
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+    FF_COUNT,
+    FF_PARENT,
+    COLTYPE_FLOAT,
+    M_NUMBER_OBJECT_NUMBER,
+    COLTYPE_INTEGER,
+    FF_CHILDREN_COUNT,
+)
 
 import cellprofiler.modules.splitormergeobjects
 import cellprofiler_core.object
@@ -177,9 +185,7 @@ def test_split_zero():
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
-    count = m.get_current_image_measurement(
-        FF_COUNT % OUTPUT_OBJECTS_NAME
-    )
+    count = m.get_current_image_measurement(FF_COUNT % OUTPUT_OBJECTS_NAME)
     assert count == 0
     for feature_name in (
         M_LOCATION_CENTER_X,
@@ -195,36 +201,12 @@ def test_split_zero():
     columns = module.get_measurement_columns(workspace.pipeline)
     assert len(columns) == 6
     for object_name, feature_name, coltype in (
-        (
-            OUTPUT_OBJECTS_NAME,
-            M_LOCATION_CENTER_X,
-            COLTYPE_FLOAT,
-        ),
-        (
-            OUTPUT_OBJECTS_NAME,
-            M_LOCATION_CENTER_Y,
-            COLTYPE_FLOAT,
-        ),
-        (
-            OUTPUT_OBJECTS_NAME,
-            M_NUMBER_OBJECT_NUMBER,
-            COLTYPE_INTEGER,
-        ),
-        (
-            INPUT_OBJECTS_NAME,
-            FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
-            COLTYPE_INTEGER,
-        ),
-        (
-            OUTPUT_OBJECTS_NAME,
-            FF_PARENT % INPUT_OBJECTS_NAME,
-            COLTYPE_INTEGER,
-        ),
-        (
-            "Image",
-            FF_COUNT % OUTPUT_OBJECTS_NAME,
-            COLTYPE_INTEGER,
-        ),
+        (OUTPUT_OBJECTS_NAME, M_LOCATION_CENTER_X, COLTYPE_FLOAT,),
+        (OUTPUT_OBJECTS_NAME, M_LOCATION_CENTER_Y, COLTYPE_FLOAT,),
+        (OUTPUT_OBJECTS_NAME, M_NUMBER_OBJECT_NUMBER, COLTYPE_INTEGER,),
+        (INPUT_OBJECTS_NAME, FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME, COLTYPE_INTEGER,),
+        (OUTPUT_OBJECTS_NAME, FF_PARENT % INPUT_OBJECTS_NAME, COLTYPE_INTEGER,),
+        ("Image", FF_COUNT % OUTPUT_OBJECTS_NAME, COLTYPE_INTEGER,),
     ):
         assert any(
             [
@@ -232,9 +214,7 @@ def test_split_zero():
                 for c in columns
             ]
         )
-    categories = module.get_categories(
-        workspace.pipeline, "Image"
-    )
+    categories = module.get_categories(workspace.pipeline, "Image")
     assert len(categories) == 1
     assert categories[0] == "Count"
     categories = module.get_categories(workspace.pipeline, OUTPUT_OBJECTS_NAME)
@@ -245,9 +225,7 @@ def test_split_zero():
     categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS_NAME)
     assert len(categories) == 1
     assert categories[0] == "Children"
-    f = module.get_measurements(
-        workspace.pipeline, "Image", "Count"
-    )
+    f = module.get_measurements(workspace.pipeline, "Image", "Count")
     assert len(f) == 1
     assert f[0] == OUTPUT_OBJECTS_NAME
     f = module.get_measurements(workspace.pipeline, OUTPUT_OBJECTS_NAME, "Location")
@@ -277,9 +255,7 @@ def test_split_one():
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     m = workspace.measurements
     assert isinstance(m, cellprofiler_core.measurement.Measurements)
-    count = m.get_current_image_measurement(
-        FF_COUNT % OUTPUT_OBJECTS_NAME
-    )
+    count = m.get_current_image_measurement(FF_COUNT % OUTPUT_OBJECTS_NAME)
     assert count == 1
     for feature_name, value in (
         (M_LOCATION_CENTER_X, 5),
@@ -291,8 +267,7 @@ def test_split_one():
         assert round(abs(values[0] - value), 7) == 0
 
     values = m.get_current_measurement(
-        INPUT_OBJECTS_NAME,
-        FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+        INPUT_OBJECTS_NAME, FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
     )
     assert len(values) == 1
     assert values[0] == 1
@@ -314,14 +289,12 @@ def test_split_one_into_two():
     assert numpy.all(labels_out == expected)
     m = workspace.measurements
     values = m.get_current_measurement(
-        OUTPUT_OBJECTS_NAME,
-        FF_PARENT % INPUT_OBJECTS_NAME,
+        OUTPUT_OBJECTS_NAME, FF_PARENT % INPUT_OBJECTS_NAME,
     )
     assert len(values) == 2
     assert numpy.all(values == 1)
     values = m.get_current_measurement(
-        INPUT_OBJECTS_NAME,
-        FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
+        INPUT_OBJECTS_NAME, FF_CHILDREN_COUNT % OUTPUT_OBJECTS_NAME,
     )
     assert len(values) == 1
     assert values[0] == 2

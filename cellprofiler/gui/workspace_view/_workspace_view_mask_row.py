@@ -1,8 +1,8 @@
-from ..artist import MODE_LINES
+from ._workspace_view_row import WorkspaceViewRow
 from ..artist import MODE_HIDE
+from ..artist import MODE_LINES
 from ..artist import MaskData
 from ..utilities.workspace_view import bind_data_class
-from ._workspace_view_row import WorkspaceViewRow
 
 
 class WorkspaceViewMaskRow(WorkspaceViewRow):

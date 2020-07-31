@@ -2,14 +2,14 @@ import matplotlib
 import numpy
 import wx
 import wx.lib.scrolledpanel
+from cellprofiler_core.constants.measurement import EXPERIMENT
+from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X
 from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y
-from cellprofiler_core.constants.measurement import IMAGE
-from cellprofiler_core.constants.measurement import EXPERIMENT
 from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.preferences import get_interpolation_mode
-from cellprofiler_core.preferences import IM_NEAREST
 from cellprofiler_core.preferences import IM_BILINEAR
+from cellprofiler_core.preferences import IM_NEAREST
+from cellprofiler_core.preferences import get_interpolation_mode
 
 import cellprofiler.gui.artist
 import cellprofiler.gui.figure

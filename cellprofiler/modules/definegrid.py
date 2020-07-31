@@ -49,20 +49,21 @@ import logging
 
 import centrosome.cpmorphology
 import numpy
-from cellprofiler_core.constants.measurement import IMAGE
-from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
+from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Coordinates
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import GridName
-from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.setting.text import Integer
+
 from cellprofiler.grid import Grid
 
 NUM_TOP_LEFT = "Top left"

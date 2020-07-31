@@ -16,14 +16,12 @@ import sys
 import threading
 import traceback
 from functools import reduce, cmp_to_key
+from queue import PriorityQueue, Queue, Empty
+from urllib.request import urlretrieve, url2pathname
 
 import cellprofiler_core
 import h5py
 import numpy
-import six
-import six.moves.queue
-import six.moves.urllib
-import six.moves.urllib.request
 import wx
 import wx.lib.buttons
 import wx.lib.mixins.listctrl
@@ -138,9 +136,7 @@ from cellprofiler_core.utilities.zmq import Reply
 from wx.adv import Sound
 
 import cellprofiler
-import cellprofiler.gui.module_view._setting_edited_event
 import cellprofiler.gui._workspace_model
-import cellprofiler.gui.workspace_view
 import cellprofiler.gui.addmoduleframe
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.dialog
@@ -148,11 +144,13 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.htmldialog
+import cellprofiler.gui.module_view._setting_edited_event
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
+import cellprofiler.gui.workspace_view
 import cellprofiler.icons
 from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
 
@@ -197,7 +195,7 @@ class PipelineController(object):
         add_output_directory_listener(self.__on_output_directory_change)
 
         # interaction/display requests and exceptions from an Analysis
-        self.interaction_request_queue = six.moves.queue.PriorityQueue()
+        self.interaction_request_queue = PriorityQueue()
         self.interaction_pending = False
         self.debug_request_queue = None
 
@@ -1094,7 +1092,7 @@ class PipelineController(object):
             import cellprofiler.misc
 
             url = cellprofiler.misc.generate_presigned_url(dlg.GetValue())
-            filename, headers = six.moves.urllib.request.urlretrieve(url)
+            filename, headers = urlretrieve(url)
             try:
                 self.do_load_pipeline(filename)
             finally:
@@ -1156,7 +1154,7 @@ class PipelineController(object):
         """
         with open(path, mode="w") as fd:
             for url in self.__workspace.file_list.get_filelist():
-                if isinstance(url, six.text_type):
+                if isinstance(url, str):
                     url = url.encode()
                 fd.write(url + "\n")
 
@@ -1896,7 +1894,7 @@ class PipelineController(object):
             if len(paths) == 0 or not paths[0].startswith("file:"):
                 browse_function(None)
             else:
-                path = six.moves.urllib.request.url2pathname(paths[0][5:])
+                path = url2pathname(paths[0][5:])
                 path = os.path.split(path)[0]
                 browse_function(None, default_dir=path)
         else:
@@ -2035,7 +2033,7 @@ class PipelineController(object):
             assert isinstance(dlg, wx.ProgressDialog)
             to_remove = []
             for idx, url in enumerate(urls):
-                path = six.moves.urllib.request.url2pathname(url[5:])
+                path = url2pathname(url[5:])
                 if not os.path.isfile(path):
                     to_remove.append(url)
                 if idx % 100 == 0:
@@ -2082,7 +2080,7 @@ class PipelineController(object):
                 dlg.SetSize(min_width, h)
 
             # Content needs to be in containers to be shared between threads
-            queue = six.moves.queue.Queue()
+            queue = Queue()
             interrupt = [False]
             message = ["Initializing"]
 
@@ -2153,7 +2151,7 @@ class PipelineController(object):
                             "Adding %d files to file list" % len(urls)
                         )
                         self.add_urls(urls)
-                except six.moves.queue.Empty as err:
+                except Empty as err:
                     if not thread.is_alive():
                         try:
                             self.add_urls(queue.get(block=False))
@@ -2328,7 +2326,7 @@ class PipelineController(object):
                 if module.is_input_module():
                     continue
                 category = module.category
-                if isinstance(category, six.string_types):
+                if isinstance(category, str):
                     categories = [category, "All"]
                 else:
                     categories = list(category) + ["All"]
@@ -2901,7 +2899,7 @@ class PipelineController(object):
             pri_func_args = (
                 self.interaction_request_queue.get_nowait()
             )  # in case the queue's been emptied
-        except six.moves.queue.Empty:
+        except Empty:
             return
 
         self.interaction_pending = True
@@ -3093,7 +3091,7 @@ class PipelineController(object):
                     try:
                         evtlist[0] = self.debug_request_queue.get(timeout=0.25)
                         return True
-                    except six.moves.queue.Empty:
+                    except Empty:
                         keep_going, skip = dlg.UpdatePulse(
                             "Debugging remotely, Cancel to abandon"
                         )
@@ -3671,9 +3669,7 @@ class PipelineController(object):
                     self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
                     for row in list(choices.values()):
-                        w, h, _, _ = self.list_ctrl.GetFullTextExtent(
-                            six.text_type(row[i])
-                        )
+                        w, h, _, _ = self.list_ctrl.GetFullTextExtent(str(row[i]))
                         if w > width:
                             width = w
                     self.list_ctrl.SetColumnWidth(i + 1, width + 15)
@@ -3691,7 +3687,7 @@ class PipelineController(object):
                                 if isinstance(v, int)
                                 else "%020.10f" % v
                                 if isinstance(v, float)
-                                else six.text_type(v)
+                                else str(v)
                                 for v in [k] + choices[k]
                             ],
                         )
@@ -3700,9 +3696,7 @@ class PipelineController(object):
                 )
 
                 for image_number in sorted(choices.keys()):
-                    row = [six.text_type(image_number)] + [
-                        six.text_type(x) for x in choices[image_number]
-                    ]
+                    row = [str(image_number)] + [str(x) for x in choices[image_number]]
                     pos = self.list_ctrl.Append(row)
                     self.list_ctrl.SetItemData(pos, image_number)
                 wx.lib.mixins.listctrl.ColumnSorterMixin.__init__(
@@ -3853,10 +3847,7 @@ class PipelineController(object):
             "processing cores." % n_image_sets,
         )
         sub_sizer.Add(
-            text_ctrl,
-            1,
-            wx.EXPAND | wx.ALL,
-            10,
+            text_ctrl, 1, wx.EXPAND | wx.ALL, 10,
         )
         bitmap = wx.ArtProvider.GetBitmap(
             wx.ART_INFORMATION, wx.ART_CMN_DIALOG, size=(32, 32)
@@ -3864,9 +3855,7 @@ class PipelineController(object):
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0, wx.EXPAND | wx.ALL, 10)
         dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
         dont_show_again.SetValue(False)
-        sizer.Add(
-            dont_show_again, 0, wx.ALIGN_LEFT | wx.LEFT, 10
-        )
+        sizer.Add(dont_show_again, 0, wx.ALIGN_LEFT | wx.LEFT, 10)
         button_sizer = wx.StdDialogButtonSizer()
         save_pipeline_button = wx.Button(dlg, -1, "Save project")
         button_sizer.AddButton(save_pipeline_button)
@@ -3936,10 +3925,7 @@ class PipelineController(object):
             ),
         )
         sub_sizer.Add(
-            text_ctrl,
-            1,
-            wx.EXPAND | wx.ALL,
-            10,
+            text_ctrl, 1, wx.EXPAND | wx.ALL, 10,
         )
         bitmap = wx.ArtProvider.GetBitmap(
             wx.ART_INFORMATION, wx.ART_CMN_DIALOG, size=(32, 32)
@@ -3947,9 +3933,7 @@ class PipelineController(object):
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0, wx.EXPAND | wx.ALL, 10)
         dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
         dont_show_again.SetValue(False)
-        sizer.Add(
-            dont_show_again, 0, wx.ALIGN_LEFT | wx.LEFT, 10
-        )
+        sizer.Add(dont_show_again, 0, wx.ALIGN_LEFT | wx.LEFT, 10)
         button_sizer = wx.StdDialogButtonSizer()
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
         sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)

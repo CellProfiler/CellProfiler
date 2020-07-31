@@ -102,7 +102,6 @@ References
 .. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 """
 
-import cellprofiler_core.object
 import mahotas.features
 import numpy
 import skimage.util

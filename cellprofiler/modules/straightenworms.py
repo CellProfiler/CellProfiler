@@ -227,7 +227,9 @@ An additional option is the following:
    access this file, you would choose *URL* and enter
    *http://my_institution.edu/server/my_username/* as the path
    location.
-""".format(folder_choice=IO_FOLDER_CHOICE_HELP_TEXT),
+""".format(
+                folder_choice=IO_FOLDER_CHOICE_HELP_TEXT
+            ),
         )
 
         def get_directory_fn():

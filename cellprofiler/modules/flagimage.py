@@ -253,7 +253,6 @@ Select the objects whose measurements you want to use for flagging.
                 return IMAGE
             return group.object_name.value
 
-
         group.append(
             "rules_directory",
             Directory(
@@ -263,9 +262,12 @@ Select the objects whose measurements you want to use for flagging.
 
 Select the location of the rules file that will be used for flagging images.
 {folder_choice}
-""".format(rules=S_RULES, folder_choice=IO_FOLDER_CHOICE_HELP_TEXT),
+""".format(
+                    rules=S_RULES, folder_choice=IO_FOLDER_CHOICE_HELP_TEXT
+                ),
             ),
         )
+
         def get_directory_fn():
             """Get the directory for the rules file name"""
             return group.rules_directory.get_absolute_path()

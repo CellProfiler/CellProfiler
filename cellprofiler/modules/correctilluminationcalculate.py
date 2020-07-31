@@ -109,7 +109,7 @@ class CorrectIlluminationCalculate(Module):
             "Name the output image",
             "IllumBlue",
             doc="""Enter a name for the resultant illumination function.""",
-            provided_attributes={"aggregate_image": True, "available_on_last": False, },
+            provided_attributes={"aggregate_image": True, "available_on_last": False,},
         )
 
         self.intensity_choice = Choice(
@@ -174,7 +174,7 @@ should be dilated with a Gaussian filter in the final averaged
 correction where model objects are produced. Select *Yes* to dilate
 objects for this approach.
 """
-                % globals(),
+            % globals(),
         )
 
         self.object_dilation_radius = Integer(
@@ -186,7 +186,7 @@ objects for this approach.
 
 This value should be roughly equal to the original radius of the objects.
 """
-                % globals(),
+            % globals(),
         )
 
         self.block_size = Integer(
@@ -200,7 +200,7 @@ The block size should be large enough that every square block of pixels
 is likely to contain some background pixels, where no objects are
 located.
 """
-                % globals(),
+            % globals(),
         )
 
         self.rescale_option = Choice(
@@ -224,7 +224,7 @@ are all equal to or greater than 1. You have the following options:
 -  %(RE_MEDIAN)s\ *:* This option chooses the median value in the image
    to rescale so that division increases some values and decreases others.
 """
-                % globals(),
+            % globals(),
         )
 
         self.each_or_all = Choice(
@@ -260,7 +260,7 @@ illumination function can be calculated in one of the three ways:
    want to exclude images that are filtered by a prior **FlagImage**
    module.
 """
-                % globals(),
+            % globals(),
         )
         self.smoothing_method = Choice(
             "Smoothing method",
@@ -346,7 +346,7 @@ of intensity nonuniformities in 2D and 3D microscope images of fluorescence
 stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
 (SCIA), pp. 264-271
 """
-                % globals(),
+            % globals(),
         )
 
         self.automatic_object_width = Choice(
@@ -363,7 +363,7 @@ Calculate the smoothing filter size. There are three options:
    based on the width of typical objects in your images.
 -  *%(FI_MANUALLY)s:* You can enter a value yourself.
 """
-                % globals(),
+            % globals(),
         )
 
         self.object_width = Integer(
@@ -374,7 +374,7 @@ Calculate the smoothing filter size. There are three options:
 
 Enter the approximate diameter of typical objects, in pixels.
 """
-                % globals(),
+            % globals(),
         )
 
         self.size_of_smoothing_filter = Integer(
@@ -385,7 +385,7 @@ Enter the approximate diameter of typical objects, in pixels.
 
 Enter the size of the desired smoothing filter, in pixels.
 """
-                % globals(),
+            % globals(),
         )
 
         self.save_average_image = Binary(
@@ -401,7 +401,7 @@ taking the time to recalculate the averaged image each time.
 Select *Yes* to retain this averaged image. Use the **SaveImages**
 module to save it to your hard drive.
 """
-                % globals(),
+            % globals(),
         )
 
         self.average_image_name = ImageName(
@@ -424,7 +424,7 @@ not typically needed for downstream modules.
 Select *Yes* to retain this dilated image. Use the **SaveImages**
 module to save it to your hard drive.
 """
-                % globals(),
+            % globals(),
         )
 
         self.dilated_image_name = ImageName(
@@ -449,7 +449,7 @@ fitting.
 Select *No* to specify the background mode, background threshold,
 scale, maximum number of iterations and convergence.
 """
-                % globals(),
+            % globals(),
         )
 
         self.spline_bg_mode = Choice(
@@ -510,7 +510,7 @@ final background and a lower number to converge more rapidly, but with
 lower stability. The default for this parameter is two standard
 deviations; this will provide a fairly stable, smooth background estimate.
 """
-                % globals(),
+            % globals(),
         )
 
         self.spline_points = Integer(
@@ -527,7 +527,7 @@ suggested by the method’s authors. A lower value will give you a more
 stable background while a higher one will fit variations in the
 background more closely and take more time to compute.
 """
-                % globals(),
+            % globals(),
         )
 
         self.spline_rescale = Float(
@@ -545,7 +545,7 @@ objects. The image will be downsampled by the factor you enter. For
 instance, a 500x600 image will be downsampled into a 250x300 image if a
 factor of 2 is entered.
 """
-                % globals(),
+            % globals(),
         )
 
         self.spline_maximum_iterations = Integer(
@@ -560,7 +560,7 @@ This setting determines the maximum number of iterations of the
 algorithm to be performed. The algorithm will perform fewer iterations
 if it converges.
 """
-                % globals(),
+            % globals(),
         )
 
         self.spline_convergence = Float(
@@ -585,7 +585,7 @@ Enter a smaller number for the convergence to calculate a more accurate
 background. Enter a larger number to calculate the background using
 fewer iterations, but less accuracy.
 """
-                % globals(),
+            % globals(),
         )
 
     def settings(self):
@@ -692,8 +692,8 @@ fewer iterations, but less accuracy.
                 self.image_name,
             )
             message = (
-                    "CorrectIlluminationCalculate is averaging %d images while "
-                    "preparing for run" % (len(image_numbers))
+                "CorrectIlluminationCalculate is averaging %d images while "
+                "preparing for run" % (len(image_numbers))
             )
             output_image_provider = CorrectIlluminationImageProvider(
                 self.illumination_image_name.value, self
@@ -711,7 +711,7 @@ fewer iterations, but less accuracy.
                 idx = modules.index(src_module)
                 last_module = modules[idx + 1]
                 for w in pipeline.run_group_with_yield(
-                        workspace, grouping, image_numbers, last_module, title, message
+                    workspace, grouping, image_numbers, last_module, title, message
                 ):
                     image = w.image_set.get_image(self.image_name.value, cache=False)
                     output_image_provider.add_image(image)
@@ -737,10 +737,10 @@ fewer iterations, but less accuracy.
 
             # fetch images for display
             if (
-                    self.show_window
-                    or self.save_average_image
-                    or self.save_dilated_image
-                    or self.each_or_all == EA_ALL_FIRST
+                self.show_window
+                or self.save_average_image
+                or self.save_dilated_image
+                or self.each_or_all == EA_ALL_FIRST
             ):
                 avg_image = output_image_provider.provide_avg_image()
                 dilated_image = output_image_provider.provide_dilated_image()
@@ -790,16 +790,16 @@ fewer iterations, but less accuracy.
             if not self.illumination_image_name.value in image_set.names:
                 workspace.image_set.providers.append(output_image_provider)
             if (
-                    self.save_average_image
-                    and self.average_image_name.value not in image_set.names
+                self.save_average_image
+                and self.average_image_name.value not in image_set.names
             ):
                 workspace.image_set.add(
                     self.average_image_name.value,
                     output_image_provider.provide_avg_image(),
                 )
             if (
-                    self.save_dilated_image
-                    and self.dilated_image_name.value not in image_set.names
+                self.save_dilated_image
+                and self.dilated_image_name.value not in image_set.names
             ):
                 workspace.image_set.add(
                     self.dilated_image_name.value,
@@ -1090,8 +1090,8 @@ fewer iterations, but less accuracy.
     def validate_module(self, pipeline):
         """Produce error if 'All:First' is selected and input image is not provided by the file image provider."""
         if (
-                not pipeline.is_image_from_file(self.image_name.value)
-                and self.each_or_all == EA_ALL_FIRST
+            not pipeline.is_image_from_file(self.image_name.value)
+            and self.each_or_all == EA_ALL_FIRST
         ):
             raise ValidationError(
                 "All: First cycle requires that the input image be provided by the Input modules, or LoadImages/LoadData.",
@@ -1221,7 +1221,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
                 self.__image_sum[mask] = self.__image_sum[mask] + pixel_data[mask]
             else:
                 self.__image_sum[mask, :] = (
-                        self.__image_sum[mask, :] + pixel_data[mask, :]
+                    self.__image_sum[mask, :] + pixel_data[mask, :]
                 )
             self.__mask_count[mask] = self.__mask_count[mask] + 1
         else:
@@ -1262,7 +1262,7 @@ class CorrectIlluminationImageProvider(AbstractImage):
         else:
             for i in range(pixel_data.shape[2]):
                 pixel_data[mask, i] = (
-                        self.__image_sum[mask, i] / self.__mask_count[mask]
+                    self.__image_sum[mask, i] / self.__mask_count[mask]
                 )
         self.__cached_avg_image = Image(pixel_data, mask)
         self.__cached_dilated_image = self.__module.apply_dilation(

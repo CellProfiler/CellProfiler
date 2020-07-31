@@ -1,3 +1,4 @@
+import io
 import json
 import logging
 import logging.config
@@ -14,40 +15,39 @@ import h5py
 import matplotlib
 import numpy
 import pkg_resources
-import six.moves
-from cellprofiler_core.constants.measurement import GROUP_NUMBER
-from cellprofiler_core.constants.measurement import GROUP_INDEX
 from cellprofiler_core.constants.measurement import EXPERIMENT
+from cellprofiler_core.constants.measurement import GROUP_INDEX
+from cellprofiler_core.constants.measurement import GROUP_NUMBER
 from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.constants.pipeline import M_PIPELINE, EXIT_STATUS
-from cellprofiler_core.preferences import get_image_set_file, get_temporary_directory
-from cellprofiler_core.preferences import set_headless
-from cellprofiler_core.preferences import set_temporary_directory
-from cellprofiler_core.preferences import set_awt_headless
-from cellprofiler_core.preferences import set_omero_port
-from cellprofiler_core.preferences import set_omero_server
-from cellprofiler_core.preferences import set_omero_user
-from cellprofiler_core.preferences import get_omero_server
-from cellprofiler_core.preferences import get_omero_port
-from cellprofiler_core.preferences import get_omero_user
-from cellprofiler_core.preferences import get_omero_session_id
-from cellprofiler_core.preferences import set_image_set_file
-from cellprofiler_core.preferences import set_data_file
-from cellprofiler_core.preferences import set_default_image_directory
-from cellprofiler_core.preferences import set_allow_schema_write
-from cellprofiler_core.preferences import set_default_output_directory
-from cellprofiler_core.preferences import set_plugin_directory
+from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.object import ObjectSet
 from cellprofiler_core.pipeline import LoadException
 from cellprofiler_core.pipeline import Pipeline
+from cellprofiler_core.preferences import get_image_set_file, get_temporary_directory
+from cellprofiler_core.preferences import get_omero_port
+from cellprofiler_core.preferences import get_omero_server
+from cellprofiler_core.preferences import get_omero_session_id
+from cellprofiler_core.preferences import get_omero_user
+from cellprofiler_core.preferences import set_allow_schema_write
+from cellprofiler_core.preferences import set_awt_headless
+from cellprofiler_core.preferences import set_data_file
+from cellprofiler_core.preferences import set_default_image_directory
+from cellprofiler_core.preferences import set_default_output_directory
+from cellprofiler_core.preferences import set_headless
+from cellprofiler_core.preferences import set_image_set_file
+from cellprofiler_core.preferences import set_omero_port
+from cellprofiler_core.preferences import set_omero_server
+from cellprofiler_core.preferences import set_omero_user
+from cellprofiler_core.preferences import set_plugin_directory
+from cellprofiler_core.preferences import set_temporary_directory
 from cellprofiler_core.utilities.core.workspace import is_workspace_file
-from cellprofiler_core.utilities.java import start_java, stop_java
 from cellprofiler_core.utilities.hdf5_dict import HDF5FileList
+from cellprofiler_core.utilities.java import start_java, stop_java
 from cellprofiler_core.utilities.measurement import load_measurements
 from cellprofiler_core.utilities.zmq import join_to_the_boundary
 from cellprofiler_core.worker import aw_parse_args, main
 from cellprofiler_core.workspace import Workspace
-from cellprofiler_core.measurement import Measurements
 
 if sys.platform.startswith("win") and hasattr(sys, "frozen"):
     # For Windows builds, use built-in Java for CellProfiler, otherwise try to use Java from elsewhere on the system.
@@ -615,8 +615,6 @@ def print_measurements(options):
     if options.pipeline_filename is None:
         raise ValueError("Can't print measurements, no pipeline file")
 
-    import cellprofiler_core.pipeline
-
     pipeline = Pipeline()
 
     def callback(pipeline, event):
@@ -809,7 +807,7 @@ def run_pipeline_headless(options, args):
 
         pipeline_text = pipeline_text
 
-        pipeline.load(six.moves.StringIO(pipeline_text))
+        pipeline.load(io.StringIO(pipeline_text))
 
         if not pipeline.in_batch_mode():
             #

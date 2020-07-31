@@ -25,7 +25,10 @@ See also several related modules in the *Advanced* category (e.g.,
 import numpy
 import scipy.ndimage
 import skimage.restoration
-from cellprofiler_core.constants.module import HELP_ON_MEASURING_DISTANCES, HELP_ON_PIXEL_INTENSITIES
+from cellprofiler_core.constants.module import (
+    HELP_ON_MEASURING_DISTANCES,
+    HELP_ON_PIXEL_INTENSITIES,
+)
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
@@ -150,7 +153,9 @@ by the smoothing algorithm. This value is used to calculate the size of
 the spatial filter. {} For most
 smoothing methods, selecting a diameter over ~50 will take substantial
 amounts of time to process.
-""".format(HELP_ON_MEASURING_DISTANCES),
+""".format(
+                HELP_ON_MEASURING_DISTANCES
+            ),
         )
 
         self.sigma_range = Float(
@@ -165,7 +170,9 @@ precipitously, so this setting is used to adjust the rough magnitude of
 these changes. A lower number will preserve weaker edges. A higher
 number will preserve only stronger edges. Values should be between zero
 and one. {pixel_help}
-""".format(smooth_help=SMOOTH_KEEPING_EDGES, pixel_help=HELP_ON_PIXEL_INTENSITIES),
+""".format(
+                smooth_help=SMOOTH_KEEPING_EDGES, pixel_help=HELP_ON_PIXEL_INTENSITIES
+            ),
         )
 
         self.clip = Binary(
@@ -184,7 +191,9 @@ and all pixels greater than one to one.
 
 Select *No* to allow values less than zero and greater than one in
 the output image.
-""".format(fit=FIT_POLYNOMIAL),
+""".format(
+                fit=FIT_POLYNOMIAL
+            ),
         )
 
     def settings(self):

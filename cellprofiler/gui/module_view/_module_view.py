@@ -5,17 +5,16 @@ import sys
 
 import matplotlib.cm
 import numpy
-import six
 import wx
 import wx.grid
 import wx.lib.colourselect
-import wx.lib.scrolledpanel
 import wx.lib.resizewidget
+import wx.lib.scrolledpanel
 from cellprofiler_core.pipeline import ImagePlane
-from cellprofiler_core.pipeline import PipelineCleared
-from cellprofiler_core.pipeline import PipelineLoaded
 from cellprofiler_core.pipeline import ModuleEdited
 from cellprofiler_core.pipeline import ModuleRemoved
+from cellprofiler_core.pipeline import PipelineCleared
+from cellprofiler_core.pipeline import PipelineLoaded
 from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME, URL_FOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
@@ -26,21 +25,21 @@ from cellprofiler_core.preferences import get_default_image_directory
 from cellprofiler_core.preferences import get_default_output_directory
 from cellprofiler_core.preferences import get_error_color
 from cellprofiler_core.setting import Binary, PathListDisplay, Setting
-from cellprofiler_core.setting import Coordinates
-from cellprofiler_core.setting import Measurement
-from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import Color
-from cellprofiler_core.setting import TreeChoice
 from cellprofiler_core.setting import BinaryMatrix
+from cellprofiler_core.setting import Color
+from cellprofiler_core.setting import Coordinates
 from cellprofiler_core.setting import DataTypes
+from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import DoThings
 from cellprofiler_core.setting import FigureSubscriber
 from cellprofiler_core.setting import FileCollectionDisplay
 from cellprofiler_core.setting import HTMLText
 from cellprofiler_core.setting import Joiner
+from cellprofiler_core.setting import Measurement
 from cellprofiler_core.setting import RegexpText
 from cellprofiler_core.setting import StructuringElement
 from cellprofiler_core.setting import Table
+from cellprofiler_core.setting import TreeChoice
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.choice import Colormap
@@ -49,12 +48,12 @@ from cellprofiler_core.setting.do_something import DoSomething, ImageSetDisplay
 from cellprofiler_core.setting.do_something import PathListRefreshButton
 from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.setting.multichoice import MeasurementMultiChoice
-from cellprofiler_core.setting.multichoice import SubscriberMultiChoice
 from cellprofiler_core.setting.multichoice import MultiChoice
 from cellprofiler_core.setting.multichoice import SubdirectoryFilter
+from cellprofiler_core.setting.multichoice import SubscriberMultiChoice
+from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.range import IntegerOrUnboundedRange
 from cellprofiler_core.setting.range import IntegerRange
-from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.subscriber import ImageListSubscriber, LabelSubscriber
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.subscriber import LabelListSubscriber
@@ -290,7 +289,7 @@ class ModuleView:
             #################################
             if self.notes_panel is not None:
                 self.module_notes_control.SetValue(
-                    "\n".join([six.text_type(note) for note in self.__module.notes])
+                    "\n".join([str(note) for note in self.__module.notes])
                 )
 
             #################################
@@ -1604,7 +1603,7 @@ class ModuleView:
             else:
                 style = 0
                 text = v.get_value_text()
-                if not isinstance(text, six.string_types):
+                if not isinstance(text, str):
                     text = str(text)
                 if getattr(v, "multiline_display", False):
                     style = wx.TE_MULTILINE | wx.TE_PROCESS_ENTER
@@ -1622,7 +1621,7 @@ class ModuleView:
             self.__module_panel.Bind(wx.EVT_TEXT, on_cell_change, control)
         elif not (v.get_value_text() == control.Value):
             text = v.get_value_text()
-            if not isinstance(text, six.string_types):
+            if not isinstance(text, str):
                 text = str(text)
             control.Value = text
         if text is not None:
@@ -2146,7 +2145,7 @@ class ModuleView:
     def __on_cell_change(self, event, setting, control, timeout=True):
         if not self.__handle_change:
             return
-        proposed_value = six.text_type(control.GetValue())
+        proposed_value = str(control.GetValue())
         timeout_sec = EDIT_TIMEOUT_SEC * 1000 if timeout else False
         self.on_value_change(setting, control, proposed_value, event, timeout_sec)
 
@@ -2238,10 +2237,7 @@ class ModuleView:
 
         if isinstance(
             event,
-            (
-                cpw.Workspace.WorkspaceLoadedEvent,
-                cpw.Workspace.WorkspaceCreatedEvent,
-            ),
+            (cpw.Workspace.WorkspaceLoadedEvent, cpw.Workspace.WorkspaceCreatedEvent,),
         ):
             # Detach and reattach the current module to get it reacclimated
             # to the current workspace and reselect

@@ -1,4 +1,3 @@
-import six
 import wx
 import wx.grid
 from cellprofiler_core.preferences import get_error_color
@@ -106,7 +105,7 @@ class TableController(wx.grid.GridTableBase):
             s = self.v.data[row][col]
             if s is None:
                 s = ""
-            elif not isinstance(s, six.string_types):
+            elif not isinstance(s, str):
                 s = str(s)
             self.grid.GetGridWindow().SetToolTip(s)
         event.Skip()
@@ -148,7 +147,7 @@ class TableController(wx.grid.GridTableBase):
     def GetValue(self, row, col):
         if self.IsEmptyCell(row, col):
             return None
-        s = six.text_type(self.v.data[row][col])
+        s = str(self.v.data[row][col])
         if len(self.column_size) <= col:
             self.column_size += [self.v.max_field_size] * (
                 col - len(self.column_size) + 1

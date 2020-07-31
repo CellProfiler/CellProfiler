@@ -66,9 +66,9 @@ Measurements made by this module
 import functools
 
 import numpy
-from cellprofiler_core.constants.measurement import IMAGE
-from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
+from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import get_default_colormap
@@ -81,11 +81,11 @@ from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.do_something import RemoveSettingButton
-from cellprofiler_core.setting.text import LabelName
-from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import Alphanumeric
+from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.setting.text import LabelName
 from cellprofiler_core.setting.text import Text
 
 BY_SINGLE_MEASUREMENT = "Single measurement"

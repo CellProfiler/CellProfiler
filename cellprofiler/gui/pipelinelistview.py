@@ -9,7 +9,6 @@ import os
 import sys
 import time
 
-import six.moves
 import wx
 from cellprofiler_core.constants.pipeline import DIRECTION_UP
 from cellprofiler_core.pipeline import (
@@ -28,8 +27,8 @@ from cellprofiler_core.pipeline import (
 from cellprofiler_core.preferences import EXT_PROJECT_CHOICES, EXT_PIPELINE_CHOICES
 
 import cellprofiler.gui
-import cellprofiler.gui.module_view._validation_request_controller
 import cellprofiler.gui.figure
+import cellprofiler.gui.module_view._validation_request_controller
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pipeline
 import cellprofiler.gui.utilities.module_view
@@ -712,7 +711,7 @@ class PipelineListView(object):
         if len(modules_to_save) == 0:
             event.Veto()
             return
-        fd = six.moves.StringIO()
+        fd = io.StringIO()
         temp_pipeline = Pipeline()
         for module in modules_to_save:
             temp_pipeline.add_module(module)
@@ -860,7 +859,7 @@ class PipelineListView(object):
         wx.BeginBusyCursor()
         try:
             pipeline = cellprofiler.gui.pipeline.Pipeline()
-            pipeline.load(six.moves.StringIO(data))
+            pipeline.load(io.StringIO(data))
             n_input_modules = self.get_input_item_count()
             for i, module in enumerate(pipeline.modules(False)):
                 module.module_num = i + index + n_input_modules + 1

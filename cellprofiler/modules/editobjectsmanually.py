@@ -4,17 +4,17 @@ from cellprofiler_core.constants.measurement import FF_PARENT
 from cellprofiler_core.image import ObjectsImage
 from cellprofiler_core.module import Identify
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import LabelName
 from cellprofiler_core.utilities.core.module.identify import (
-    get_object_measurement_columns,
+    add_object_count_measurements,
 )
 from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements_ijv,
 )
 from cellprofiler_core.utilities.core.module.identify import (
-    add_object_count_measurements,
+    get_object_measurement_columns,
 )
 
 from cellprofiler.modules import _help

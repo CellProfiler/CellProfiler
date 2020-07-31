@@ -2,12 +2,12 @@
 """
 
 import bisect
+import functools
 import logging
 import uuid
-import functools
+from urllib.request import url2pathname
 
 import numpy
-import six.moves.urllib.request
 import wx
 import wx.lib.scrolledpanel
 from cellprofiler_core.preferences import report_progress
@@ -254,7 +254,7 @@ class PathListCtrl(wx.ScrolledWindow):
             if i % 100 == 0:
                 report_progress(uid, float(i) / npaths, "Loading %s into UI" % path)
             folder, filename = self.splitpath(path)
-            display_name = six.moves.urllib.request.url2pathname(filename)
+            display_name = url2pathname(filename)
             width, _, _, _ = self.GetFullTextExtent(display_name)
             idx = bisect.bisect_left(self.folder_names, folder)
             if idx >= len(self.folder_names) or self.folder_names[idx] != folder:
@@ -332,7 +332,7 @@ class PathListCtrl(wx.ScrolledWindow):
         For files, the user expects to see a path, not a URL
         """
         if folder.startswith("file:"):
-            return six.moves.urllib.request.url2pathname(folder[5:])
+            return url2pathname(folder[5:])
         return folder
 
     def recalc(self):

@@ -1,3 +1,4 @@
+import matplotlib.cm
 import numpy
 import scipy.ndimage
 from cellprofiler_core.constants.measurement import (
@@ -5,7 +6,6 @@ from cellprofiler_core.constants.measurement import (
     FF_PARENT,
     FF_CHILDREN_COUNT,
 )
-import matplotlib.cm
 from cellprofiler_core.module import Identify
 from cellprofiler_core.object import Objects
 from cellprofiler_core.preferences import get_primary_outline_color

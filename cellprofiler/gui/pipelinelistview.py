@@ -733,9 +733,9 @@ class PipelineListView(object):
         selected_module_ids = [m.id for m in self.get_selected_modules()]
         self.__pipeline.start_undoable_action()
         try:
-            result = drop_source.DoDragDrop(wx.Drag_AllowMove)
+            result = drop_source.DoDragDrop(wx.Drag_DefaultMove)
             self.drag_underway = False
-            if result in (wx.DragMove, wx.DragCopy):
+            if result == wx.DragMove:
                 for identifier in selected_module_ids:
                     for module in self.__pipeline.modules(False):
                         if module.id == identifier:
@@ -1117,6 +1117,9 @@ class PipelineDropTarget(wx.DropTarget):
                 self.window.on_filelist_data(
                     x, y, action, self.file_data_object.GetFilenames()
                 )
+        if action == 1:
+            # Bug in wx 4.1 returns the wrong action ID on Windows. Get the right one.
+            action = self.OnDragOver(x, y, None)
         return action
 
 

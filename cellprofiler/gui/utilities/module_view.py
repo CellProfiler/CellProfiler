@@ -4,11 +4,10 @@ import time
 
 import wx
 from cellprofiler_core.setting import ValidationError
-
+import cellprofiler.gui.constants.module_view as mv_constants
 from cellprofiler.gui.module_view._validation_request_controller import (
     ValidationRequestController,
 )
-
 
 def text_control_name(v):
     """Return the name of a setting's text control
@@ -210,8 +209,8 @@ def validation_queue_handler():
 
     attach()
     try:
-        while validation_queue_keep_running:
-            request = validation_queue.get()
+        while mv_constants.validation_queue_keep_running:
+            request = mv_constants.validation_queue.get()
             if (
                 not isinstance(request, ValidationRequestController)
                 or request.cancelled
@@ -236,20 +235,18 @@ def request_module_validation(validation_request):
     """Request that a module be validated
 
     """
-    global pipeline_queue_thread, validation_queue
-
-    if pipeline_queue_thread is None:
-        pipeline_queue_thread = threading.Thread(target=validation_queue_handler)
-        pipeline_queue_thread.setName("Pipeline vaidation thread")
-        pipeline_queue_thread.setDaemon(True)
-        pipeline_queue_thread.start()
-    validation_queue.put(validation_request)
+    if mv_constants.pipeline_queue_thread is None:
+        mv_constants.pipeline_queue_thread = threading.Thread(target=validation_queue_handler)
+        mv_constants.pipeline_queue_thread.setName("Pipeline vaidation thread")
+        mv_constants.pipeline_queue_thread.setDaemon(True)
+        mv_constants.pipeline_queue_thread.start()
+    mv_constants.validation_queue.put(validation_request)
 
 
 def stop_validation_queue_thread():
     """Stop the thread that handles module validation"""
-    global validation_queue_keep_running
-    if pipeline_queue_thread is not None:
-        validation_queue_keep_running = False
-        validation_queue.put(None)
-        pipeline_queue_thread.join()
+
+    if mv_constants.pipeline_queue_thread is not None:
+        mv_constants.validation_queue_keep_running = False
+        mv_constants.validation_queue.put(None)
+        mv_constants.pipeline_queue_thread.join()

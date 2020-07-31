@@ -564,7 +564,8 @@ class PipelineListView(object):
     def __on_list_dclick(self, event):
         list_ctrl = event.GetEventObject()
         item, hit_code, subitem = list_ctrl.HitTestSubItem(event.Position)
-
+        if list_ctrl.ItemCount == 0:
+            return
         if (
             0 <= item < list_ctrl.ItemCount
             and (hit_code & wx.LIST_HITTEST_ONITEM)
@@ -1603,10 +1604,21 @@ class PipelineListCtrl(wx.ScrolledWindow):
             wx.SYS_COLOUR_LISTBOXHIGHLIGHTTEXT
         )
 
+        if len(self.items) == 0:
+            text = "Drop a pipeline file here (.cppipe or .cpproj)\n or add modules using the buttons below"
+            dc.SetTextForeground(
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+            )
+            text_width, text_height = dc.GetTextExtent(text)/2
+            width, height = self.GetSize()
+            dc.DrawText(
+                text, (width - text_width) / 2, (height - text_height) / 2
+            )
+
         for index, item in enumerate(self.items):
             item_text_color = text_color
 
-            dc.SetFont(self.Font)
+            dc.SetFont(self.GetFont())
 
             if self.show_step and self.test_mode:
                 rectangle = self.get_step_rect(index)

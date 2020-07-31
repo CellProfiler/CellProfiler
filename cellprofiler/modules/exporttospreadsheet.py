@@ -1309,7 +1309,7 @@ desired.
             filefeatures = [
                 (IMAGE, name)
                 for object_name, name in columns
-                if name.startswith("PathName_", "FileName_") and object_name == IMAGE
+                if name.startswith(("PathName_", "FileName_")) and object_name == IMAGE
             ]
             filefeatures.sort()
             features += filefeatures

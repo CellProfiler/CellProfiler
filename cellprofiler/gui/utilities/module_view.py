@@ -5,9 +5,7 @@ import time
 import wx
 from cellprofiler_core.setting import ValidationError
 
-from cellprofiler.gui.module_view._validation_request_controller import (
-    ValidationRequestController,
-)
+from cellprofiler.gui.view.module_view import ValidationRequestController
 
 
 def text_control_name(v):

@@ -318,7 +318,7 @@ supplied by a previous module.
         )
 
     def run_as_data_tool(self):
-        from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
+        from cellprofiler.gui.components.dialog import EditObjectsDialog
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
         from bioformats import load_image
@@ -480,7 +480,7 @@ supplied by a previous module.
             project_labels[0, 0, :, :, 0] = mask
 
     def handle_interaction(self, orig_labels, guide_image, image_set_number):
-        from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
+        from cellprofiler.gui.components.dialog import EditObjectsDialog
         from wx import OK
 
         title = "%s #%d, image cycle #%d: " % (

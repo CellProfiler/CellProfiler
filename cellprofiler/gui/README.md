@@ -1,0 +1,31 @@
+# cellprofiler.gui
+
+* controller
+    * PipelineController
+* model
+    * PipelineModel
+    * WorkspaceModel
+* view
+    * ModuleView
+    * PipelineListView
+    * PreferencesView
+    * WorkspaceView
+* widget
+    * control
+        * ImageSetControl
+        * MetadataControl
+    * dialog
+        * AboutDialogInfo
+        * EditObjectsDialog
+        * ErrorMessageDialog
+        * HTMLDialog
+        * PreferencesDialog
+        * RegularExpressionDialog
+        * TelemetryMessageDialog
+        * TreeCheckboxDialog
+    * frame
+        * ApplicationFrame
+        * AddModuleFrame
+        * FigureFrame
+        * WelcomeFrame
+        * ParameterSampleFrame

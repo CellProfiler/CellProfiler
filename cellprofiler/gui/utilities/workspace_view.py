@@ -2,7 +2,7 @@ import wx
 
 import cellprofiler.gui
 import cellprofiler.gui.artist._color_mixin
-from cellprofiler.gui.workspace_view._workspace_view import WorkspaceView
+from cellprofiler.gui.view.workspace_view._workspace_view import WorkspaceView
 
 
 def show_workspace_viewer(parent, workspace):

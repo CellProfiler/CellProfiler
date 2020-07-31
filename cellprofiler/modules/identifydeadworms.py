@@ -367,10 +367,10 @@ degrees.
     def display(self, workspace, figure):
         """Show an informative display"""
         import matplotlib
-        import cellprofiler.gui.figure
+        import cellprofiler.gui.widget.frame._figure_frame
 
         figure.set_subplots((2, 1))
-        assert isinstance(figure, cellprofiler.gui.figure.Figure)
+        assert isinstance(figure, cellprofiler.gui.widget.frame._figure_frame.Figure)
 
         i = workspace.display_data.i
         j = workspace.display_data.j

@@ -139,7 +139,7 @@ refer to your objects in subsequent modules.""",
 
     def handle_interaction(self, pixel_data, image_set_number):
         """Display a UI for editing"""
-        from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
+        from cellprofiler.gui.components.dialog import EditObjectsDialog
         from wx import OK
 
         title = "%s #%d, image cycle #%d: " % (

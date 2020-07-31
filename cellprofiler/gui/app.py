@@ -11,7 +11,7 @@ from cellprofiler_core.preferences import set_telemetry_prompt
 from cellprofiler_core.utilities.java import start_java
 from cellprofiler_core.utilities.java import stop_java
 
-from .dialog import TelemetryMessageDialog
+from cellprofiler.gui.components.dialog import TelemetryMessageDialog
 
 dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
 
@@ -47,14 +47,14 @@ class App(wx.App):
         super(App, self).__init__(*args, **kwargs)
 
     def OnInit(self):
-        from cellprofiler.gui.frame._frame import CPFrame
+        from cellprofiler.gui.components.frame import AppliationFrame
         from cellprofiler import __version__
 
         # wx.lib.inspection.InspectionTool().Show()
 
         self.SetAppName("CellProfiler{0:s}".format(__version__))
 
-        self.frame = CPFrame(None, -1, "CellProfiler")
+        self.frame = AppliationFrame(None, -1, "CellProfiler")
 
         self.frame.start(self.workspace_path, self.pipeline_path)
 

@@ -50,6 +50,9 @@ class App(wx.App):
         from .cpframe import CPFrame
         from cellprofiler import __version__
 
+        # This import is needed to populate the modules list
+        import cellprofiler_core.modules
+
         # wx.lib.inspection.InspectionTool().Show()
 
         self.SetAppName("CellProfiler{0:s}".format(__version__))

@@ -1176,7 +1176,17 @@ class Figure(wx.Frame):
             fig.figure.canvas.draw()
 
         def open_contrast_dialog(evt):
-            imgmax = self.images[(x, y)].max()
+            nonlocal params
+            orig_params = params.copy()
+            if params["normalize"]:
+                imgmax = self.images[(x, y)].max()
+            else:
+                imgmax = params["vmax"]
+            axes = self.subplot(x,y)
+            background = self.figure.canvas.copy_from_bbox(axes.bbox)
+            axesdata = axes.plot([0, 0], list(self.images[(x, y)].shape[:2]), "k")[0]
+            imgdata = self.subplot(x, y).imshow(self.normalize_image(self.images[(x, y)], **params))
+
             with wx.Dialog(self, title="Adjust contrast") as dlg:
                 dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
                 sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1189,6 +1199,7 @@ class Figure(wx.Frame):
                 sizer.AddSpacer(4)
                 slidermin = wx.Slider(
                     dlg,
+                    id=0,
                     value=0,
                     minValue=0,
                     maxValue=100,
@@ -1198,6 +1209,7 @@ class Figure(wx.Frame):
                 sizer.Add(slidermin, 1, wx.EXPAND)
                 slidermax = wx.Slider(
                     dlg,
+                    id=1,
                     value=imgmax*100,
                     minValue=0,
                     maxValue=100,
@@ -1212,27 +1224,27 @@ class Figure(wx.Frame):
                 dlg.Sizer.Add(button_sizer)
                 button_sizer.Realize()
 
-                def apply_contrast(evt):
+                def apply_contrast(event):
+                    maxval = slidermax.GetValue()
+                    minval = slidermin.GetValue()
+                    if event.Id == 0:
+                        if maxval <= minval:
+                            slidermax.SetValue(minval)
+                    else:
+                        if minval >= maxval:
+                            slidermin.SetValue(maxval)
                     params["vmin"] = slidermin.GetValue()/100
                     params["vmax"] = slidermax.GetValue()/100
                     params["normalize"] = False
-                    refresh_figure()
+                    refresh_figure(axes, background, axesdata, imgdata)
 
-                def update_contrast(evt):
-                    if slidermax.GetValue() <= slidermin.GetValue():
-                        slidermax.SetValue(slidermin.GetValue() + 1)
-                    elif slidermin.GetValue() >= slidermax.GetValue():
-                        slidermin.SetValue(slidermax.GetValue() - 1)
-
-                dlg.Bind(wx.EVT_SLIDER, update_contrast)
-                dlg.Bind(wx.EVT_SCROLL_THUMBRELEASE, apply_contrast)
-
+                dlg.Bind(wx.EVT_SLIDER, apply_contrast)
 
                 dlg.Layout()
-                if dlg.ShowModal() != wx.ID_OK:
-                    pass
-                    #slider.SetValue(orig_alpha)
+                if dlg.ShowModal() == wx.ID_OK:
+                    return
                 else:
+                    params = orig_params
                     refresh_figure()
 
 
@@ -1274,14 +1286,23 @@ class Figure(wx.Frame):
 
             change_contrast(evt)
 
-        def refresh_figure():
-            xlims = self.subplot(x, y).get_xlim()
-            ylims = self.subplot(x, y).get_ylim()
-            self.subplot_imshow(x, y, self.images[(x, y)], **params)
-            # Restore plot zoom
-            self.subplot(x, y).set_xlim(xlims[0], xlims[1])
-            self.subplot(x, y).set_ylim(ylims[0], ylims[1])
-            self.figure.canvas.draw()
+        def refresh_figure(axes=None, background=None, axesdata=None, imgdata=None):
+            if axes is not None:
+                imgdata.set_data(self.normalize_image(self.images[(x, y)], **params))
+            else:
+                xlims = self.subplot(x, y).get_xlim()
+                ylims = self.subplot(x, y).get_ylim()
+                self.subplot_imshow(x, y, self.images[(x, y)], **params)
+                # Restore plot zoom
+                self.subplot(x, y).set_xlim(xlims[0], xlims[1])
+                self.subplot(x, y).set_ylim(ylims[0], ylims[1])
+            if axes is not None:
+                self.figure.canvas.restore_region(background)
+                axes.draw_artist(axesdata)
+                axes.draw_artist(imgdata)
+                self.figure.canvas.blit(axes.bbox)
+            else:
+                self.figure.canvas.draw()
 
         def change_interpolation(evt):
             if evt.Id == MENU_INTERPOLATION_NEAREST:

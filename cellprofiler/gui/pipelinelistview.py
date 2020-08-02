@@ -564,7 +564,10 @@ class PipelineListView(object):
     def __on_list_dclick(self, event):
         list_ctrl = event.GetEventObject()
         item, hit_code, subitem = list_ctrl.HitTestSubItem(event.Position)
-
+        if item is None:
+            # Open the add modules window
+            self.__frame.pipeline_controller.open_add_modules()
+            return
         if (
             0 <= item < list_ctrl.ItemCount
             and (hit_code & wx.LIST_HITTEST_ONITEM)
@@ -583,6 +586,8 @@ class PipelineListView(object):
 
     def __on_step_column_clicked(self, event):
         module = self.get_event_module(event)
+        if not self.list_ctrl.test_mode:
+            return
         if (
             self.get_current_debug_module().module_num >= module.module_num
             and module.enabled
@@ -1606,10 +1611,19 @@ class PipelineListCtrl(wx.ScrolledWindow):
             wx.SYS_COLOUR_LISTBOXHIGHLIGHTTEXT
         )
 
+        if len(self.items) == 0:
+            text = "Drop a pipeline file here (.cppipe or .cpproj)\n or double-click to add modules"
+            dc.SetTextForeground(
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+            )
+            dc.DrawLabel(
+                text, wx.Bitmap(), wx.Rect(self.GetSize()), alignment=wx.ALIGN_CENTER,
+            )
+
         for index, item in enumerate(self.items):
             item_text_color = text_color
 
-            dc.SetFont(self.Font)
+            dc.SetFont(self.GetFont())
 
             if self.show_step and self.test_mode:
                 rectangle = self.get_step_rect(index)

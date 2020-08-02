@@ -2313,6 +2313,9 @@ class PipelineController(object):
         self.__add_module_frame.Show()
         self.__add_module_frame.Raise()
 
+    def open_add_modules(self):
+        self.__on_add_module(None)
+
     def populate_edit_menu(self, menu):
         """Display a menu of modules to add"""
 

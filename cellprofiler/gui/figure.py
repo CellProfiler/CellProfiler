@@ -1182,10 +1182,10 @@ class Figure(wx.Frame):
                 imgmax = self.images[(x, y)].max()
             else:
                 imgmax = params["vmax"]
-            axes = self.subplot(x,y)
+            axes = self.subplot(x, y)
             background = self.figure.canvas.copy_from_bbox(axes.bbox)
-            axesdata = axes.plot([0, 0], list(self.images[(x, y)].shape[:2]), "k")[0]
-            imgdata = self.subplot(x, y).imshow(self.normalize_image(self.images[(x, y)], **params))
+            size = self.images[(x, y)].shape[:2]
+            axesdata = axes.plot([0, 0], list(size), "k")[0]
 
             with wx.Dialog(self, title="Adjust contrast") as dlg:
                 dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1236,9 +1236,15 @@ class Figure(wx.Frame):
                     params["vmin"] = slidermin.GetValue()/100
                     params["vmax"] = slidermax.GetValue()/100
                     params["normalize"] = False
-                    refresh_figure(axes, background, axesdata, imgdata)
+                    refresh_figure(axes, background, axesdata)
 
-                dlg.Bind(wx.EVT_SLIDER, apply_contrast)
+                # For small images we can draw fast enough for a live preview.
+                # For large images, we draw when the slider is released.
+                if size[0] * size[1] > 1000000:
+                    dlg.Bind(wx.EVT_SCROLL_THUMBRELEASE, apply_contrast)
+                    dlg.Bind(wx.EVT_SCROLL_CHANGED, apply_contrast)
+                else:
+                    dlg.Bind(wx.EVT_SLIDER, apply_contrast)
 
                 dlg.Layout()
                 if dlg.ShowModal() == wx.ID_OK:
@@ -1256,6 +1262,8 @@ class Figure(wx.Frame):
                 params["normalize"] = False
             elif evt.Id == MENU_CONTRAST_NORMALIZED:
                 params["normalize"] = True
+                params["vmin"] = 0
+                params["vmax"] = 1
             elif evt.Id == MENU_CONTRAST_LOG:
                 params["normalize"] = "log"
             elif evt.Id == MENU_CONTRAST_GAMMA:
@@ -1286,20 +1294,14 @@ class Figure(wx.Frame):
 
             change_contrast(evt)
 
-        def refresh_figure(axes=None, background=None, axesdata=None, imgdata=None):
-            if axes is not None:
-                imgdata.set_data(self.normalize_image(self.images[(x, y)], **params))
-            else:
-                xlims = self.subplot(x, y).get_xlim()
-                ylims = self.subplot(x, y).get_ylim()
-                self.subplot_imshow(x, y, self.images[(x, y)], **params)
-                # Restore plot zoom
-                self.subplot(x, y).set_xlim(xlims[0], xlims[1])
-                self.subplot(x, y).set_ylim(ylims[0], ylims[1])
+        def refresh_figure(axes=None, background=None, axesdata=None):
+            image = self.images[(x, y)]
+            subplot = self.subplot(x, y)
+            subplot.displayed.set_data(self.normalize_image(image, **params))
             if axes is not None:
                 self.figure.canvas.restore_region(background)
                 axes.draw_artist(axesdata)
-                axes.draw_artist(imgdata)
+                axes.draw_artist(subplot.displayed)
                 self.figure.canvas.blit(axes.bbox)
             else:
                 self.figure.canvas.draw()
@@ -1740,7 +1742,7 @@ class Figure(wx.Frame):
 
             image = self.images[(x, y)]
 
-            subplot.imshow(self.normalize_image(image, **kwargs))
+            self.subplot(x, y).displayed = subplot.imshow(self.normalize_image(image, **kwargs))
 
             self.update_line_labels(subplot, kwargs)
 

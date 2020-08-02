@@ -306,7 +306,7 @@ def get_matplotlib_interpolation_preference():
     elif interpolation == IM_BILINEAR:
         return "bilinear"
     elif interpolation == IM_BICUBIC:
-        return "bilinear"
+        return "bicubic"
     return "nearest"
 
 
@@ -1143,7 +1143,7 @@ class Figure(wx.Frame):
 
         if params["interpolation"] == "bilinear":
             item_bilinear.Check()
-        elif params["interpolation"] == "bilinear":
+        elif params["interpolation"] == "bicubic":
             item_bicubic.Check()
         else:
             item_nearest.Check()
@@ -1315,7 +1315,7 @@ class Figure(wx.Frame):
             elif evt.Id == MENU_INTERPOLATION_BILINEAR:
                 params["interpolation"] = "bilinear"
             elif evt.Id == MENU_INTERPOLATION_BICUBIC:
-                params["interpolation"] = "bilinear"
+                params["interpolation"] = "bicubic"
             axes = self.subplot(x, y)
             for artist in axes.artists:
                 if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):

@@ -1058,50 +1058,53 @@ class Figure(wx.Frame):
         # If no popup has been built for this subplot yet, then create one
         popup = wx.Menu()
         self.popup_menus[(x, y)] = popup
-        contrast_item = wx.MenuItem(popup, -1, "Adjust Contrast")
-        popup.Append(contrast_item)
+        has_image = params["vmax"] is not None
+        if has_image:
+            contrast_item = wx.MenuItem(popup, -1, "Adjust Contrast")
+            popup.Append(contrast_item)
         open_in_new_figure_item = wx.MenuItem(popup, -1, "Open image in new window")
         popup.Append(open_in_new_figure_item)
-        show_hist_item = wx.MenuItem(popup, -1, "Show image histogram")
-        popup.Append(show_hist_item)
+        if has_image:
+            show_hist_item = wx.MenuItem(popup, -1, "Show image histogram")
+            popup.Append(show_hist_item)
 
-        submenu = wx.Menu()
-        item_raw = submenu.Append(
-            MENU_CONTRAST_RAW,
-            "Raw",
-            "Do not transform pixel intensities",
-            wx.ITEM_RADIO,
-        )
-        item_normalized = submenu.Append(
-            MENU_CONTRAST_NORMALIZED,
-            "Normalized",
-            "Stretch pixel intensities to fit " "the interval [0,1]",
-            wx.ITEM_RADIO,
-        )
-        item_log = submenu.Append(
-            MENU_CONTRAST_LOG,
-            "Log normalized",
-            "Log transform pixel intensities, after stretching them to fit the interval [0,1]",
-            wx.ITEM_RADIO,
-        )
+            submenu = wx.Menu()
+            item_raw = submenu.Append(
+                MENU_CONTRAST_RAW,
+                "Raw",
+                "Do not transform pixel intensities",
+                wx.ITEM_RADIO,
+            )
+            item_normalized = submenu.Append(
+                MENU_CONTRAST_NORMALIZED,
+                "Normalized",
+                "Stretch pixel intensities to fit " "the interval [0,1]",
+                wx.ITEM_RADIO,
+            )
+            item_log = submenu.Append(
+                MENU_CONTRAST_LOG,
+                "Log normalized",
+                "Log transform pixel intensities, after stretching them to fit the interval [0,1]",
+                wx.ITEM_RADIO,
+            )
 
-        item_gamma = submenu.Append(
-            MENU_CONTRAST_GAMMA,
-            "Adjust gamma",
-            "Apply gamma correction (a.k.a., power law transform) pixel intensities, after stretching them"
-            " to fit the interval [0,1].",
-            wx.ITEM_RADIO,
-        )
+            item_gamma = submenu.Append(
+                MENU_CONTRAST_GAMMA,
+                "Adjust gamma",
+                "Apply gamma correction (a.k.a., power law transform) pixel intensities, after stretching them"
+                " to fit the interval [0,1].",
+                wx.ITEM_RADIO,
+            )
 
-        if params["normalize"] == "log":
-            item_log.Check()
-        elif params["normalize"] == "gamma":
-            item_gamma.Check()
-        elif params["normalize"]:
-            item_normalized.Check()
-        else:
-            item_raw.Check()
-        popup.Append(-1, "Image contrast", submenu)
+            if params["normalize"] == "log":
+                item_log.Check()
+            elif params["normalize"] == "gamma":
+                item_gamma.Check()
+            elif params["normalize"]:
+                item_normalized.Check()
+            else:
+                item_raw.Check()
+            popup.Append(-1, "Image contrast", submenu)
 
         submenu = wx.Menu()
         item_nearest = submenu.Append(
@@ -1439,8 +1442,9 @@ class Figure(wx.Frame):
                 popup.Append(-1, name, submenu)
 
         self.Bind(wx.EVT_MENU, open_image_in_new_figure, open_in_new_figure_item)
-        self.Bind(wx.EVT_MENU, open_contrast_dialog, contrast_item)
-        self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
+        if has_image:
+            self.Bind(wx.EVT_MENU, open_contrast_dialog, contrast_item)
+            self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
         self.Bind(wx.EVT_MENU, adjust_log, id=MENU_CONTRAST_LOG)

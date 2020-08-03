@@ -13,6 +13,11 @@ jobs:
           prerelease: true
           release_name: ${{ github.ref }}
           tag_name: ${{ github.ref }}
+  build_release:
+    name: build_release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
 name: create-release
 on:
   push:

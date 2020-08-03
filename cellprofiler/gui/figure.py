@@ -2244,14 +2244,12 @@ class Figure(wx.Frame):
 
     @staticmethod
     def normalize_image(image, **kwargs):
-        import time
         """Produce a color image normalized according to user spec"""
         if 0 in image.shape:
             # No normalization to perform for images with an empty dimension.
             # Return the image.
             # https://github.com/CellProfiler/CellProfiler/issues/3330
             return image
-        start = time.perf_counter()
         colormap = kwargs["colormap"]
         normalize = kwargs["normalize"]
         vmin = kwargs["vmin"]
@@ -2362,7 +2360,6 @@ class Figure(wx.Frame):
                     image[labels != 0, :] *= 1 - alpha
                     image[labels != 0, :] += limage * alpha
                 loffset += numpy.max(labels)
-        #print(f"Norm'd image in {time.perf_counter() - start}s")
         return image
 
     def subplot_table(

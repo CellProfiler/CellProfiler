@@ -1064,52 +1064,13 @@ class Figure(wx.Frame):
         popup = wx.Menu()
         self.popup_menus[(x, y)] = popup
         has_image = params["vmax"] is not None
-        if has_image:
-            contrast_item = wx.MenuItem(popup, -1, "Adjust Contrast")
-            popup.Append(contrast_item)
         open_in_new_figure_item = wx.MenuItem(popup, -1, "Open image in new window")
         popup.Append(open_in_new_figure_item)
         if has_image:
+            contrast_item = wx.MenuItem(popup, -1, "Adjust Contrast")
+            popup.Append(contrast_item)
             show_hist_item = wx.MenuItem(popup, -1, "Show image histogram")
             popup.Append(show_hist_item)
-
-            submenu = wx.Menu()
-            item_raw = submenu.Append(
-                MENU_CONTRAST_RAW,
-                "Raw",
-                "Do not transform pixel intensities",
-                wx.ITEM_RADIO,
-            )
-            item_normalized = submenu.Append(
-                MENU_CONTRAST_NORMALIZED,
-                "Normalized",
-                "Stretch pixel intensities to fit " "the interval [0,1]",
-                wx.ITEM_RADIO,
-            )
-            item_log = submenu.Append(
-                MENU_CONTRAST_LOG,
-                "Log normalized",
-                "Log transform pixel intensities, after stretching them to fit the interval [0,1]",
-                wx.ITEM_RADIO,
-            )
-
-            item_gamma = submenu.Append(
-                MENU_CONTRAST_GAMMA,
-                "Adjust gamma",
-                "Apply gamma correction (a.k.a., power law transform) pixel intensities, after stretching them"
-                " to fit the interval [0,1].",
-                wx.ITEM_RADIO,
-            )
-
-            if params["normalize"] == "log":
-                item_log.Check()
-            elif params["normalize"] == "gamma":
-                item_gamma.Check()
-            elif params["normalize"]:
-                item_normalized.Check()
-            else:
-                item_raw.Check()
-            popup.Append(-1, "Image contrast", submenu)
 
         submenu = wx.Menu()
         item_nearest = submenu.Append(
@@ -1423,51 +1384,6 @@ class Figure(wx.Frame):
                     params = orig_params
                     refresh_figure()
 
-        def change_contrast(evt):
-            """Callback for Image contrast menu items"""
-            axes = self.subplot(x, y)
-            if evt.Id == MENU_CONTRAST_RAW:
-                params["normalize"] = False
-                params["vmin"] = 0
-                params["vmax"] = max(1, self.images[(x, y)].max())
-            elif evt.Id == MENU_CONTRAST_NORMALIZED:
-                params["normalize"] = True
-                params["vmin"] = 0
-                params["vmax"] = 1
-            elif evt.Id == MENU_CONTRAST_LOG:
-                params["normalize"] = "log"
-                params["vmin"] = 0
-                params["vmax"] = 1
-            elif evt.Id == MENU_CONTRAST_GAMMA:
-                params["normalize"] = "gamma"
-                params["vmin"] = 0
-                params["vmax"] = 1
-            for artist in axes.artists:
-                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
-                    artist.kwargs["normalize"] = params["normalize"]
-                    self.figure.canvas.draw()
-                    return
-            else:
-                refresh_figure()
-
-        def adjust_gamma(evt):
-            dlg = wx.TextEntryDialog(self, "Normalization factor", "Adjust gamma")
-            dlg.SetValue(get_normalization_factor())
-            if dlg.ShowModal() == wx.ID_OK:
-                params["normalize_args"] = {"gamma": float(dlg.GetValue())}
-            dlg.Destroy()
-
-            change_contrast(evt)
-
-        def adjust_log(evt):
-            dlg = wx.TextEntryDialog(self, "Normalization factor", "Log normalization")
-            dlg.SetValue(get_normalization_factor())
-            if dlg.ShowModal() == wx.ID_OK:
-                params["normalize_args"] = {"gain": float(dlg.GetValue())}
-            dlg.Destroy()
-
-            change_contrast(evt)
-
         def refresh_figure(axes=None, background=None, axesdata=None):
             image = self.images[(x, y)]
             subplot = self.subplot(x, y)
@@ -1616,10 +1532,6 @@ class Figure(wx.Frame):
         if has_image:
             self.Bind(wx.EVT_MENU, open_contrast_dialog, contrast_item)
             self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
-        self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
-        self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
-        self.Bind(wx.EVT_MENU, adjust_log, id=MENU_CONTRAST_LOG)
-        self.Bind(wx.EVT_MENU, adjust_gamma, id=MENU_CONTRAST_GAMMA)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_NEAREST)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BICUBIC)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BILINEAR)

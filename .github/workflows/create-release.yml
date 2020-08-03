@@ -83,6 +83,7 @@ jobs:
         python-version: [ "3.8" ]
   upload:
     name: upload
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v1

@@ -84,7 +84,7 @@ jobs:
           tag_name: ${{ github.ref }}
       - uses: actions/download-artifact@v1
         with:
-          name: CellProfiler.app
+          name: CellProfiler-macOS.zip
       - uses: actions/download-artifact@v1
         with:
           name: CellProfiler.exe

@@ -39,7 +39,7 @@ builtin_modules = {
     "identifyprimaryobjects": "IdentifyPrimaryObjects",
     "identifysecondaryobjects": "IdentifySecondaryObjects",
     "identifytertiaryobjects": "IdentifyTertiaryObjects",
-    "image_registration": "ImageRegistration",
+    "register": "Register",
     "imagemath": "ImageMath",
     "invertforprinting": "InvertForPrinting",
     "keypoint_detection": "KeypointDetection",

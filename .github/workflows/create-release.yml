@@ -52,7 +52,6 @@ jobs:
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
         if: ${{ matrix.os == 'macos-10.15' }}
-        name: Package for Mac
         run: |
           brew install mysql
           make
@@ -68,27 +67,16 @@ jobs:
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
           iscc /dMyAppVersion="4.0.0rc5" "distribution/windows/cellprofiler.iss"
-      - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        id: upload_macos_asset
-        if: ${{ matrix.os == 'macos-10.15' }}
-        uses: actions/upload-release-asset@v1
+      - if: ${{ matrix.os == 'macos-10.15' }}
+        uses: actions/upload-artifact@v1
         with:
-          asset_content_type: application/app
-          asset_name: CellProfiler.app
-          asset_path: CellProfiler.app
-          upload_url: ${{ jobs.create_release.steps.create_release.outputs.upload_url }}
-        working-directory: ./distribution/macos/dist
-      - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        id: upload_windows_asset
-        if: ${{ matrix.os == 'windows-2019' }}
-        uses: actions/upload-release-asset@v1
+          name: macos_artifact
+          path: ./distribution/macos/dist/CellProfiler.app
+      - if: ${{ matrix.os == 'windows-2019' }}
+        uses: actions/upload-artifact@v1
         with:
-          asset_content_type: application/exe
-          asset_name: CellProfiler.exe
-          asset_path: ./distribution/windows/Output/CellProfiler.exe
-          upload_url: ${{ jobs.create_release.steps.create_release.outputs.upload_url }}
+          name: windows_artifact
+          path: ./distribution/windows/Output/CellProfiler.exe
     strategy:
       matrix:
         os: [macos-10.15, windows-2019]

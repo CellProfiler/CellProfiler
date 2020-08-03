@@ -90,13 +90,14 @@ jobs:
         with:
           name: CellProfiler.exe
           path: ./
+      - run: ls -R
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/zip
           asset_name: CellProfiler-macOS.zip
-          asset_path: ./CellProfiler-macOS.zip
+          asset_path: CellProfiler-macOS.zip
           upload_url: ${{ steps.create_release.outputs.upload_url }}
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -104,7 +105,7 @@ jobs:
         with:
           asset_content_type: application/exe
           asset_name: CellProfiler.exe
-          asset_path: ./CellProfiler.exe
+          asset_path: CellProfiler.exe
           upload_url: ${{ steps.create_release.outputs.upload_url }}
 name: create-release
 on:

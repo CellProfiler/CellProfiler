@@ -1,21 +1,6 @@
 jobs:
-  create_release:
-    name: create_release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          draft: true
-          prerelease: true
-          release_name: ${{ github.ref }}
-          tag_name: ${{ github.ref }}
   build:
     name: build
-    needs: create_release
     runs-on: ${{ matrix.os }}
     steps:
       - if: ${{ matrix.os == 'windows-2019' }}
@@ -86,12 +71,38 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+        - env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          id: create_release
+          uses: actions/create-release@v1
+          with:
+            draft: true
+            prerelease: true
+            release_name: ${{ github.ref }}
+            tag_name: ${{ github.ref }}
       - uses: actions/download-artifact@v1
         with:
           name: CellProfiler.app
       - uses: actions/download-artifact@v1
         with:
           name: CellProfiler.exe
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-release-asset@v1
+        with:
+          asset_content_type: application/app
+          asset_name: CellProfiler.app
+          asset_path: ./CellProfiler.app
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-release-asset@v1
+        with:
+          asset_content_type: application/exe
+          asset_name: CellProfiler.exe
+          asset_path: ./CellProfiler.exe
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
 name: create-release
 on:
   push:

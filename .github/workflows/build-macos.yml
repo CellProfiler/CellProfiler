@@ -1,4 +1,4 @@
-name: release
+name: build-macos
 on:
   push:
     branches: [ features/release-actions ]
@@ -30,8 +30,8 @@ jobs:
           git clone https://github.com/CellProfiler/distribution.git
           git clone https://github.com/CellProfiler/pyinstaller.git
       - run: |
-          git clone https://github.com/CellProfiler/pyinstaller.git
-          cd pyinstaller && pip install --editable .
+          pip install --editable .
+        working-directory: ./pyinstaller
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
         run: |

@@ -1048,10 +1048,6 @@ class Figure(wx.Frame):
         Note: Each item is bound to a handler.
         """
         (x, y) = coordinates
-        MENU_CONTRAST_RAW = wx.NewId()
-        MENU_CONTRAST_NORMALIZED = wx.NewId()
-        MENU_CONTRAST_LOG = wx.NewId()
-        MENU_CONTRAST_GAMMA = wx.NewId()
         MENU_INTERPOLATION_NEAREST = wx.NewId()
         MENU_INTERPOLATION_BILINEAR = wx.NewId()
         MENU_INTERPOLATION_BICUBIC = wx.NewId()
@@ -1166,7 +1162,7 @@ class Figure(wx.Frame):
             size = self.images[(x, y)].shape[:2]
             axesdata = axes.plot([0, 0], list(size), "k")[0]
 
-            with wx.Dialog(self, title="Adjust contrast", size=wx.Size(250, 300)) as dlg:
+            with wx.Dialog(self, title="Adjust contrast", size=wx.Size(250, 350)) as dlg:
                 dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
 
                 sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1365,7 +1361,7 @@ class Figure(wx.Frame):
 
                 # For small images we can draw fast enough for a live preview.
                 # For large images, we draw when the slider is released.
-                if size[0] * size[1] > 1166400:  # 1080x1080
+                if size[0] * size[1] > 262144:  # 512x512
                     dlg.Bind(wx.EVT_SCROLL_THUMBRELEASE, apply_contrast)
                     dlg.Bind(wx.EVT_SCROLL_CHANGED, apply_contrast)
                 else:

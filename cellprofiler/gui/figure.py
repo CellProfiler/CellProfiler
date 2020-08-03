@@ -55,6 +55,9 @@ from cellprofiler_core.preferences import (
     get_intensity_mode,
 )
 from cellprofiler_core.utilities.core.object import overlay_labels
+from numpy.ma import MaskedArray
+from wx.lib.intctrl import IntCtrl
+from wx.lib.masked import NumCtrl, EVT_NUM
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
@@ -306,7 +309,7 @@ def get_matplotlib_interpolation_preference():
     elif interpolation == IM_BILINEAR:
         return "bilinear"
     elif interpolation == IM_BICUBIC:
-        return "bilinear"
+        return "bicubic"
     return "nearest"
 
 
@@ -1045,10 +1048,6 @@ class Figure(wx.Frame):
         Note: Each item is bound to a handler.
         """
         (x, y) = coordinates
-        MENU_CONTRAST_RAW = wx.NewId()
-        MENU_CONTRAST_NORMALIZED = wx.NewId()
-        MENU_CONTRAST_LOG = wx.NewId()
-        MENU_CONTRAST_GAMMA = wx.NewId()
         MENU_INTERPOLATION_NEAREST = wx.NewId()
         MENU_INTERPOLATION_BILINEAR = wx.NewId()
         MENU_INTERPOLATION_BICUBIC = wx.NewId()
@@ -1058,48 +1057,14 @@ class Figure(wx.Frame):
         # If no popup has been built for this subplot yet, then create one
         popup = wx.Menu()
         self.popup_menus[(x, y)] = popup
+        has_image = params["vmax"] is not None
         open_in_new_figure_item = wx.MenuItem(popup, -1, "Open image in new window")
         popup.Append(open_in_new_figure_item)
-        show_hist_item = wx.MenuItem(popup, -1, "Show image histogram")
-        popup.Append(show_hist_item)
-
-        submenu = wx.Menu()
-        item_raw = submenu.Append(
-            MENU_CONTRAST_RAW,
-            "Raw",
-            "Do not transform pixel intensities",
-            wx.ITEM_RADIO,
-        )
-        item_normalized = submenu.Append(
-            MENU_CONTRAST_NORMALIZED,
-            "Normalized",
-            "Stretch pixel intensities to fit " "the interval [0,1]",
-            wx.ITEM_RADIO,
-        )
-        item_log = submenu.Append(
-            MENU_CONTRAST_LOG,
-            "Log normalized",
-            "Log transform pixel intensities, after stretching them to fit the interval [0,1]",
-            wx.ITEM_RADIO,
-        )
-
-        item_gamma = submenu.Append(
-            MENU_CONTRAST_GAMMA,
-            "Adjust gamma",
-            "Apply gamma correction (a.k.a., power law transform) pixel intensities, after stretching them"
-            " to fit the interval [0,1].",
-            wx.ITEM_RADIO,
-        )
-
-        if params["normalize"] == "log":
-            item_log.Check()
-        elif params["normalize"] == "gamma":
-            item_gamma.Check()
-        elif params["normalize"]:
-            item_normalized.Check()
-        else:
-            item_raw.Check()
-        popup.Append(-1, "Image contrast", submenu)
+        if has_image:
+            contrast_item = wx.MenuItem(popup, -1, "Adjust Contrast")
+            popup.Append(contrast_item)
+            show_hist_item = wx.MenuItem(popup, -1, "Show image histogram")
+            popup.Append(show_hist_item)
 
         submenu = wx.Menu()
         item_nearest = submenu.Append(
@@ -1138,7 +1103,7 @@ class Figure(wx.Frame):
 
         if params["interpolation"] == "bilinear":
             item_bilinear.Check()
-        elif params["interpolation"] == "bilinear":
+        elif params["interpolation"] == "bicubic":
             item_bicubic.Check()
         else:
             item_nearest.Check()
@@ -1173,51 +1138,264 @@ class Figure(wx.Frame):
             )
             fig.figure.canvas.draw()
 
-        def change_contrast(evt):
-            """Callback for Image contrast menu items"""
-            axes = self.subplot(x, y)
-            if evt.Id == MENU_CONTRAST_RAW:
-                params["normalize"] = False
-            elif evt.Id == MENU_CONTRAST_NORMALIZED:
-                params["normalize"] = True
-            elif evt.Id == MENU_CONTRAST_LOG:
-                params["normalize"] = "log"
-            elif evt.Id == MENU_CONTRAST_GAMMA:
-                params["normalize"] = "gamma"
-            for artist in axes.artists:
-                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
-                    artist.kwargs["normalize"] = params["normalize"]
-                    self.figure.canvas.draw()
-                    return
+        def open_contrast_dialog(evt):
+            nonlocal params
+            orig_params = params.copy()
+            id_dict = {
+                False: "Raw",
+                True: "Normalised",
+                "log": "Log Normalised",
+                "gamma": "Gamma Normalised"
+            }
+            if params["normalize"]:
+                maxval = 1
+                minval = 0
             else:
-                refresh_figure()
+                imgmax = orig_params["vmax"]
+                imgmin = orig_params["vmin"]
+                maxval = max(1, imgmax)
+                minval = min(0, imgmin)
+            start_min = int((params["vmin"]/minval)*255 if minval != 0 else 0)
+            start_max = int((params["vmax"]/maxval)*255)
+            axes = self.subplot(x, y)
+            background = self.figure.canvas.copy_from_bbox(axes.bbox)
+            size = self.images[(x, y)].shape[:2]
+            axesdata = axes.plot([0, 0], list(size), "k")[0]
+            if sys.platform == "win32":
+                slider_flags = wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS
+            else:
+                slider_flags = wx.SL_HORIZONTAL
 
-        def adjust_gamma(evt):
-            dlg = wx.TextEntryDialog(self, "Normalization factor", "Adjust gamma")
-            dlg.SetValue(get_normalization_factor())
-            if dlg.ShowModal() == wx.ID_OK:
-                params["normalize_args"] = {"gamma": float(dlg.GetValue())}
-            dlg.Destroy()
+            with wx.Dialog(self, title="Adjust contrast", size=wx.Size(250, 350)) as dlg:
+                dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
 
-            change_contrast(evt)
+                sizer = wx.BoxSizer(wx.VERTICAL)
+                dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, border=5)
+                sizer.Add(
+                    wx.StaticText(dlg, label="Normalisation Mode"),
+                    0,
+                    wx.ALIGN_LEFT,
+                )
 
-        def adjust_log(evt):
-            dlg = wx.TextEntryDialog(self, "Normalization factor", "Log normalization")
-            dlg.SetValue(get_normalization_factor())
-            if dlg.ShowModal() == wx.ID_OK:
-                params["normalize_args"] = {"gain": float(dlg.GetValue())}
-            dlg.Destroy()
+                method_select = wx.ComboBox(dlg,
+                                            id=2,
+                                            choices=list(id_dict.values()),
+                                            value=id_dict[params["normalize"]],
+                                            style=wx.CB_READONLY,
+                                            )
+                sizer.Add(method_select, flag=wx.ALL | wx.EXPAND, border=3)
 
-            change_contrast(evt)
+                sizer.Add(
+                    wx.StaticText(dlg, label="Minimum brightness"),
+                    0,
+                    wx.ALIGN_LEFT,
+                )
+                slidermin = wx.Slider(
+                    dlg,
+                    id=0,
+                    value=start_min,
+                    minValue=0,
+                    maxValue=255,
+                    style=slider_flags,
+                    name="Minimum Intensity",
+                )
+                sliderminbox = IntCtrl(dlg, id=0, value=start_min, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
+                                       style=wx.TE_CENTRE)
+                minbright_sizer = wx.BoxSizer()
+                minbright_sizer.Add(slidermin, 1, wx.EXPAND)
+                minbright_sizer.AddSpacer(4)
+                minbright_sizer.Add(sliderminbox)
+                sizer.Add(minbright_sizer, 1, wx.EXPAND)
 
-        def refresh_figure():
-            xlims = self.subplot(x, y).get_xlim()
-            ylims = self.subplot(x, y).get_ylim()
-            self.subplot_imshow(x, y, self.images[(x, y)], **params)
-            # Restore plot zoom
-            self.subplot(x, y).set_xlim(xlims[0], xlims[1])
-            self.subplot(x, y).set_ylim(ylims[0], ylims[1])
-            self.figure.canvas.draw()
+                sizer.Add(
+                    wx.StaticText(dlg, label="Maximum brightness"),
+                    0,
+                    wx.ALIGN_LEFT,
+                )
+                slidermax = wx.Slider(
+                    dlg,
+                    id=1,
+                    value=start_max,
+                    minValue=0,
+                    maxValue=255,
+                    style=slider_flags,
+                    name="Maximum Intensity"
+                )
+                slidermaxbox = IntCtrl(dlg, id=1, value=start_max, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
+                                       style=wx.TE_CENTRE)
+                maxbright_sizer = wx.BoxSizer()
+                maxbright_sizer.Add(slidermax, 1, wx.EXPAND)
+                maxbright_sizer.AddSpacer(4)
+                maxbright_sizer.Add(slidermaxbox)
+                sizer.Add(maxbright_sizer, 1, wx.EXPAND)
+                normtext = wx.StaticText(dlg, label="Normalisation Factor")
+                sizer.Add(
+                    normtext,
+                    0,
+                    wx.ALIGN_LEFT,
+                )
+                slidernorm = wx.Slider(
+                    dlg,
+                    id=2,
+                    value=4.5,
+                    minValue=0,
+                    maxValue=20,
+                    style=slider_flags,
+                    name="Normalisation Factor"
+                )
+                slidernormbox = NumCtrl(
+                    dlg,
+                    id=2,
+                    value=float(get_normalization_factor()),
+                    min=0,
+                    max=1000,
+                    limited=True,
+                    size=wx.Size(35, 22),
+                    fractionWidth=1,
+                    autoSize=False,
+                    style=wx.TE_CENTRE,
+                )
+                norm_sizer = wx.BoxSizer()
+                norm_sizer.Add(slidernorm, 1, wx.EXPAND)
+                norm_sizer.AddSpacer(4)
+                norm_sizer.Add(slidernormbox)
+                sizer.Add(norm_sizer, 1, wx.EXPAND)
+
+                if params["normalize"] not in ("log", "gamma"):
+                    normtext.Enable(False)
+                    slidernorm.Enable(False)
+                    slidernormbox.Enable(False)
+                if self.subplots.shape != (1, 1):
+                    sizer.Add(wx.Button(dlg, wx.ID_APPLY, label="Apply to all"), 0, wx.ALIGN_CENTER_HORIZONTAL)
+                button_sizer = wx.StdDialogButtonSizer()
+                button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+                button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+                dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
+                button_sizer.Realize()
+
+                def on_slider(event):
+                    if event.Id == 0:
+                        sliderminbox.SetValue(slidermin.GetValue())
+                        sliderminbox.Update()
+                    elif event.Id == 1:
+                        slidermaxbox.SetValue(slidermax.GetValue())
+                        slidermaxbox.Update()
+                    elif event.Id == 2:
+                        slidernormbox.SetValue(slidernorm.GetValue())
+                        slidernormbox.Update()
+                    event.Skip()
+
+                def on_int_entry(event):
+                    if event.Id == 0:
+                        slidermin.SetValue(sliderminbox.GetValue())
+                    elif event.Id == 1:
+                        slidermax.SetValue(slidermaxbox.GetValue())
+                    elif event.Id == 2:
+                        slidernorm.SetValue(slidernormbox.GetValue())
+                    apply_contrast(event)
+
+                def apply_contrast(event):
+                    current_max = slidermaxbox.GetValue()
+                    current_min = sliderminbox.GetValue()
+                    if event.Id == 0:
+                        if current_max <= current_min:
+                            slidermax.SetValue(current_min)
+                            slidermaxbox.SetValue(current_min)
+                    elif event.Id == 1:
+                        if current_min >= current_max:
+                            slidermin.SetValue(current_max)
+                            sliderminbox.SetValue(current_max)
+                    elif event.Id == 2:
+                        if params["normalize"] == "log":
+                            params["normalize_args"] = {"gain": float(slidernormbox.GetValue())}
+                        elif params["normalize"] == "gamma":
+                            params["normalize_args"] = {"gamma": float(slidernormbox.GetValue())}
+                    params["vmin"] = (sliderminbox.GetValue() / 255) * maxval
+                    params["vmax"] = (slidermaxbox.GetValue() / 255) * maxval
+                    refresh_figure(axes, background, axesdata)
+
+                def change_contrast_mode(event):
+                    newvalue = next(paramvalue for paramvalue, listvalue
+                                    in id_dict.items() if listvalue == method_select.GetValue())
+                    if newvalue == params["normalize"]:
+                        return
+                    params["normalize"] = newvalue
+                    params["vmin"] = 0
+                    if not newvalue:
+                        nonlocal imgmax, maxval, orig_params
+                        imgmax = orig_params["vmax"]
+                        maxval = max(1, imgmax)
+                        params["vmax"] = max(1, self.images[(x, y)].max())
+                    else:
+                        params["vmax"] = 1
+                        if newvalue == "log":
+                            params["normalize_args"] = {"gain": 1.0}
+                        elif newvalue == "gamma":
+                            params["normalize_args"] = {"gamma": 1.0}
+                    slidermin.SetValue(0)
+                    sliderminbox.SetValue(0)
+                    slidermax.SetValue(255)
+                    slidermaxbox.SetValue(255)
+                    slidernorm.SetValue(float(get_normalization_factor()))
+                    slidernormbox.SetValue(float(get_normalization_factor()))
+                    want_norm = params["normalize"] in ("log", "gamma")
+                    normtext.Enable(want_norm)
+                    slidernorm.Enable(want_norm)
+                    slidernormbox.Enable(want_norm)
+                    refresh_figure(axes, background, axesdata)
+
+                def apply_to_all(event):
+                    if event.Id == wx.ID_APPLY:
+                        numx, numy = self.subplots.shape
+                        for xcoord in range(numx):
+                            for ycoord in range(numy):
+                                subplot_item = self.subplot(xcoord, ycoord)
+                                if hasattr(subplot_item, "displayed"):
+                                    plot_params = self.subplot_params[(xcoord, ycoord)]
+                                    plot_params["vmin"] = params["vmin"]
+                                    plot_params["vmax"] = params["vmax"]
+                                    plot_params["normalize"] = params["normalize"]
+                                    plot_params["normalize_args"] = params["normalize_args"]
+                                    image = self.images[(xcoord, ycoord)]
+                                    if not isinstance(image, MaskedArray):
+                                        subplot_item.displayed.set_data(self.normalize_image(image, **plot_params))
+                                else:
+                                    # Should be a table, make sure the invisible subplot stays hidden.
+                                    subplot_item.axis("off")
+                        self.figure.canvas.draw()
+                    else:
+                        event.Skip()
+
+                # For small images we can draw fast enough for a live preview.
+                # For large images, we draw when the slider is released.
+                if size[0] * size[1] > 262144:  # 512x512
+                    dlg.Bind(wx.EVT_SCROLL_THUMBRELEASE, apply_contrast)
+                    dlg.Bind(wx.EVT_SCROLL_CHANGED, apply_contrast)
+                else:
+                    dlg.Bind(wx.EVT_SLIDER, apply_contrast)
+                dlg.Bind(wx.EVT_COMBOBOX, change_contrast_mode)
+                dlg.Bind(wx.EVT_SLIDER, on_slider)
+                dlg.Bind(wx.EVT_TEXT, on_int_entry)
+                dlg.Bind(EVT_NUM, on_int_entry)
+                dlg.Bind(wx.EVT_BUTTON, apply_to_all)
+                dlg.Layout()
+                if dlg.ShowModal() == wx.ID_OK:
+                    return
+                else:
+                    params = orig_params
+                    refresh_figure()
+
+        def refresh_figure(axes=None, background=None, axesdata=None):
+            image = self.images[(x, y)]
+            subplot = self.subplot(x, y)
+            subplot.displayed.set_data(self.normalize_image(image, **params))
+            if axes is not None:
+                self.figure.canvas.restore_region(background)
+                axes.draw_artist(axesdata)
+                axes.draw_artist(subplot.displayed)
+                self.figure.canvas.blit(axes.bbox)
+            else:
+                self.figure.canvas.draw()
 
         def change_interpolation(evt):
             if evt.Id == MENU_INTERPOLATION_NEAREST:
@@ -1225,7 +1403,7 @@ class Figure(wx.Frame):
             elif evt.Id == MENU_INTERPOLATION_BILINEAR:
                 params["interpolation"] = "bilinear"
             elif evt.Id == MENU_INTERPOLATION_BICUBIC:
-                params["interpolation"] = "bilinear"
+                params["interpolation"] = "bicubic"
             axes = self.subplot(x, y)
             for artist in axes.artists:
                 if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
@@ -1352,11 +1530,9 @@ class Figure(wx.Frame):
                 popup.Append(-1, name, submenu)
 
         self.Bind(wx.EVT_MENU, open_image_in_new_figure, open_in_new_figure_item)
-        self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
-        self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
-        self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
-        self.Bind(wx.EVT_MENU, adjust_log, id=MENU_CONTRAST_LOG)
-        self.Bind(wx.EVT_MENU, adjust_gamma, id=MENU_CONTRAST_GAMMA)
+        if has_image:
+            self.Bind(wx.EVT_MENU, open_contrast_dialog, contrast_item)
+            self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_NEAREST)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BICUBIC)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BILINEAR)
@@ -1654,7 +1830,7 @@ class Figure(wx.Frame):
 
             image = self.images[(x, y)]
 
-            subplot.imshow(self.normalize_image(image, **kwargs))
+            self.subplot(x, y).displayed = subplot.imshow(self.normalize_image(image, **kwargs))
 
             self.update_line_labels(subplot, kwargs)
 
@@ -1987,7 +2163,6 @@ class Figure(wx.Frame):
             # Return the image.
             # https://github.com/CellProfiler/CellProfiler/issues/3330
             return image
-
         colormap = kwargs["colormap"]
         normalize = kwargs["normalize"]
         vmin = kwargs["vmin"]
@@ -2098,7 +2273,6 @@ class Figure(wx.Frame):
                     image[labels != 0, :] *= 1 - alpha
                     image[labels != 0, :] += limage * alpha
                 loffset += numpy.max(labels)
-
         return image
 
     def subplot_table(

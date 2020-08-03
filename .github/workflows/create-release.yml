@@ -85,9 +85,11 @@ jobs:
       - uses: actions/download-artifact@v1
         with:
           name: CellProfiler-macOS.zip
+          path: ./
       - uses: actions/download-artifact@v1
         with:
           name: CellProfiler.exe
+          path: ./
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/upload-release-asset@v1
@@ -109,3 +111,4 @@ on:
   push:
     tags:
       - "v*"
+ss

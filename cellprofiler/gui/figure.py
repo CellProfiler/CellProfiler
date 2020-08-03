@@ -51,10 +51,13 @@ from cellprofiler_core.preferences import (
     get_default_colormap,
     INTENSITY_MODE_GAMMA,
     INTENSITY_MODE_LOG,
+    INTENSITY_MODE_NORMAL,
     INTENSITY_MODE_RAW,
     get_intensity_mode,
 )
 from cellprofiler_core.utilities.core.object import overlay_labels
+from wx.lib.intctrl import IntCtrl
+from wx.lib.plot import PolyHistogram, PlotGraphics, PlotCanvas
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
@@ -1181,74 +1184,150 @@ class Figure(wx.Frame):
         def open_contrast_dialog(evt):
             nonlocal params
             orig_params = params.copy()
+            id_dict = {
+                False: "Raw",
+                True: "Normalised",
+                "log": "Log Normalised",
+                "gamma": "Gamma Normalised"
+            }
             if params["normalize"]:
-                imgmax = self.images[(x, y)].max()
+                maxval = 1
             else:
-                imgmax = params["vmax"]
+                imgmax = orig_params["vmax"]
+                maxval = max(1, imgmax)
             axes = self.subplot(x, y)
             background = self.figure.canvas.copy_from_bbox(axes.bbox)
             size = self.images[(x, y)].shape[:2]
             axesdata = axes.plot([0, 0], list(size), "k")[0]
 
-            with wx.Dialog(self, title="Adjust contrast") as dlg:
+            with wx.Dialog(self, title="Adjust contrast", size=wx.Size(250, 300)) as dlg:
                 dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+
                 sizer = wx.BoxSizer(wx.VERTICAL)
-                dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 8)
+                dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, border=5)
                 sizer.Add(
-                    wx.StaticText(dlg, label="Adjust brightness"),
+                    wx.StaticText(dlg, label="Normalisation Mode"),
                     0,
-                    wx.ALIGN_CENTER_HORIZONTAL,
+                    wx.ALIGN_LEFT,
                 )
-                sizer.AddSpacer(4)
+
+                method_select = wx.ComboBox(dlg,
+                                            id=2,
+                                            choices=list(id_dict.values()),
+                                            value=id_dict[params["normalize"]],
+                                            style=wx.CB_READONLY,
+                                            )
+                sizer.Add(method_select, flag=wx.ALL | wx.EXPAND, border=3)
+
+                sizer.Add(
+                    wx.StaticText(dlg, label="Minimum brightness"),
+                    0,
+                    wx.ALIGN_LEFT,
+                )
+                minbright_sizer = wx.BoxSizer()
+                maxbright_sizer = wx.BoxSizer()
+
                 slidermin = wx.Slider(
                     dlg,
                     id=0,
                     value=0,
                     minValue=0,
-                    maxValue=100,
-                    style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS,
+                    maxValue=255,
+                    style=wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS,
                     name="Minimum Intensity",
                 )
-                sizer.Add(slidermin, 1, wx.EXPAND)
+                sliderminbox = IntCtrl(dlg, id=0, value=0, min=0, max=9999, limited=True, size=wx.Size(35, 22), style=wx.TE_CENTRE)
+                slidermaxbox = IntCtrl(dlg, id=1, value=255, min=0, max=9999, limited=True, size=wx.Size(35, 22), style=wx.TE_CENTRE)
+                minbright_sizer.Add(slidermin, 1, wx.EXPAND)
+                minbright_sizer.AddSpacer(4)
+                minbright_sizer.Add(sliderminbox)
+                sizer.Add(minbright_sizer, 1, wx.EXPAND)
+                sizer.Add(
+                    wx.StaticText(dlg, label="Maximum brightness"),
+                    0,
+                    wx.ALIGN_LEFT,
+                )
                 slidermax = wx.Slider(
                     dlg,
                     id=1,
-                    value=imgmax*100,
+                    value=(params["vmax"]/maxval)*255,
                     minValue=0,
-                    maxValue=100,
-                    style=wx.SL_HORIZONTAL | wx.SL_AUTOTICKS | wx.SL_LABELS,
+                    maxValue=255,
+                    style=wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS,
                     name="Maximum Intensity"
                 )
-                sizer.Add(slidermax, 1, wx.EXPAND)
+                maxbright_sizer.Add(slidermax, 1, wx.EXPAND)
+                maxbright_sizer.AddSpacer(4)
+                maxbright_sizer.Add(slidermaxbox)
+                sizer.Add(maxbright_sizer, 1, wx.EXPAND)
 
                 button_sizer = wx.StdDialogButtonSizer()
                 button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
                 button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
-                dlg.Sizer.Add(button_sizer)
+                sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
                 button_sizer.Realize()
 
-                def apply_contrast(event):
-                    maxval = slidermax.GetValue()
-                    minval = slidermin.GetValue()
+                def on_slider(event):
                     if event.Id == 0:
-                        if maxval <= minval:
-                            slidermax.SetValue(minval)
+                        sliderminbox.SetValue(slidermin.GetValue())
+                        sliderminbox.Update()
+                    elif event.Id == 1:
+                        slidermaxbox.SetValue(slidermax.GetValue())
+                        slidermaxbox.Update()
+                    event.Skip()
+
+                def on_int_entry(event):
+                    if event.Id == 0:
+                        slidermin.SetValue(sliderminbox.GetValue())
+                    elif event.Id == 1:
+                        slidermax.SetValue(slidermaxbox.GetValue())
+                    apply_contrast(event)
+
+                def apply_contrast(event):
+                    current_max = slidermaxbox.GetValue()
+                    current_min = sliderminbox.GetValue()
+                    if event.Id == 0:
+                        if current_max <= current_min:
+                            slidermax.SetValue(current_min)
+                            slidermaxbox.SetValue(current_min)
                     else:
-                        if minval >= maxval:
-                            slidermin.SetValue(maxval)
-                    params["vmin"] = slidermin.GetValue()/100
-                    params["vmax"] = slidermax.GetValue()/100
-                    params["normalize"] = False
+                        if current_min >= current_max:
+                            slidermin.SetValue(current_max)
+                            sliderminbox.SetValue(current_max)
+                    params["vmin"] = (sliderminbox.GetValue() / 255) * maxval
+                    params["vmax"] = (slidermaxbox.GetValue() / 255) * maxval
+                    refresh_figure(axes, background, axesdata)
+
+                def change_contrast_mode(event):
+                    newvalue = next(paramvalue for paramvalue, listvalue
+                                    in id_dict.items() if listvalue == method_select.GetValue())
+                    if newvalue == params["normalize"]:
+                        return
+                    params["normalize"] = newvalue
+                    params["vmin"] = 0
+                    if not newvalue:
+                        nonlocal imgmax, maxval, orig_params
+                        imgmax = orig_params["vmax"]
+                        maxval = max(1, imgmax)
+                        params["vmax"] = max(1, self.images[(x, y)].max())
+                    else:
+                        params["vmax"] = 1
+                    slidermin.SetValue(0)
+                    sliderminbox.SetValue(0)
+                    slidermax.SetValue(255)
+                    slidermaxbox.SetValue(255)
                     refresh_figure(axes, background, axesdata)
 
                 # For small images we can draw fast enough for a live preview.
                 # For large images, we draw when the slider is released.
-                if size[0] * size[1] > 1000000:
+                if size[0] * size[1] > 1166400:  # 1080x1080
                     dlg.Bind(wx.EVT_SCROLL_THUMBRELEASE, apply_contrast)
                     dlg.Bind(wx.EVT_SCROLL_CHANGED, apply_contrast)
                 else:
                     dlg.Bind(wx.EVT_SLIDER, apply_contrast)
-
+                dlg.Bind(wx.EVT_COMBOBOX, change_contrast_mode)
+                dlg.Bind(wx.EVT_SLIDER, on_slider)
+                dlg.Bind(wx.EVT_TEXT, on_int_entry)
                 dlg.Layout()
                 if dlg.ShowModal() == wx.ID_OK:
                     return
@@ -1256,21 +1335,25 @@ class Figure(wx.Frame):
                     params = orig_params
                     refresh_figure()
 
-
-
         def change_contrast(evt):
             """Callback for Image contrast menu items"""
             axes = self.subplot(x, y)
             if evt.Id == MENU_CONTRAST_RAW:
                 params["normalize"] = False
+                params["vmin"] = 0
+                params["vmax"] = max(1, self.images[(x, y)].max())
             elif evt.Id == MENU_CONTRAST_NORMALIZED:
                 params["normalize"] = True
                 params["vmin"] = 0
                 params["vmax"] = 1
             elif evt.Id == MENU_CONTRAST_LOG:
                 params["normalize"] = "log"
+                params["vmin"] = 0
+                params["vmax"] = 1
             elif evt.Id == MENU_CONTRAST_GAMMA:
                 params["normalize"] = "gamma"
+                params["vmin"] = 0
+                params["vmax"] = 1
             for artist in axes.artists:
                 if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
                     artist.kwargs["normalize"] = params["normalize"]

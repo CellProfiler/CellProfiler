@@ -1161,6 +1161,10 @@ class Figure(wx.Frame):
             background = self.figure.canvas.copy_from_bbox(axes.bbox)
             size = self.images[(x, y)].shape[:2]
             axesdata = axes.plot([0, 0], list(size), "k")[0]
+            if sys.platform == "win32":
+                slider_flags = wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS
+            else:
+                slider_flags = wx.SL_HORIZONTAL
 
             with wx.Dialog(self, title="Adjust contrast", size=wx.Size(250, 350)) as dlg:
                 dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1192,7 +1196,7 @@ class Figure(wx.Frame):
                     value=start_min,
                     minValue=0,
                     maxValue=255,
-                    style=wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS,
+                    style=slider_flags,
                     name="Minimum Intensity",
                 )
                 sliderminbox = IntCtrl(dlg, id=0, value=start_min, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
@@ -1214,7 +1218,7 @@ class Figure(wx.Frame):
                     value=start_max,
                     minValue=0,
                     maxValue=255,
-                    style=wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS,
+                    style=slider_flags,
                     name="Maximum Intensity"
                 )
                 slidermaxbox = IntCtrl(dlg, id=1, value=start_max, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
@@ -1236,7 +1240,7 @@ class Figure(wx.Frame):
                     value=4.5,
                     minValue=0,
                     maxValue=20,
-                    style=wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS,
+                    style=slider_flags,
                     name="Normalisation Factor"
                 )
                 slidernormbox = NumCtrl(
@@ -1355,6 +1359,9 @@ class Figure(wx.Frame):
                                     image = self.images[(xcoord, ycoord)]
                                     if not isinstance(image, MaskedArray):
                                         subplot_item.displayed.set_data(self.normalize_image(image, **plot_params))
+                                else:
+                                    # Should be a table, make sure the invisible subplot stays hidden.
+                                    subplot_item.axis("off")
                         self.figure.canvas.draw()
                     else:
                         event.Skip()

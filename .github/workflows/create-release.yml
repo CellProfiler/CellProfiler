@@ -13,11 +13,86 @@ jobs:
           prerelease: true
           release_name: ${{ github.ref }}
           tag_name: ${{ github.ref }}
-  build_release:
-    name: build_release
-    runs-on: ubuntu-latest
+  build:
+    name: build
+    needs: create_release
+    runs-on: ${{ matrix.os }}
     steps:
+      - if: ${{ matrix.os == 'windows-2019' }}
+        uses: actions/cache@v2
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - if: ${{ matrix.os == 'macos-10.15' }}
+        uses: actions/cache@v2
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          architecture: x64
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14.0.1' # The JDK version to make available on the path.
+          java-package: jdk
+          architecture: x64
+      - run: |
+          pip install --upgrade pip setuptools wheel
+          pip install numpy
+          git clone https://github.com/CellProfiler/distribution.git
+          git clone https://github.com/CellProfiler/pyinstaller.git
+      - run: pip install --editable .
+        working-directory: pyinstaller
+      - env:
+          LDFLAGS: -L/usr/local/opt/openssl/lib
+        if: ${{ matrix.os == 'macos-10.15' }}
+        name: Package for Mac
+        run: |
+          brew install mysql
+          make
+        working-directory: ./distribution/macos
+      - env:
+          JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
+        if: ${{ matrix.os == 'windows-2019' }}
+        run: |
+          pip install cython
+          pip install mysqlclient==1.4.6
+          pip install --editable .
+      - if: ${{ matrix.os == 'windows-2019' }}
+        run: |
+          pyinstaller distribution/windows/cellprofiler.spec
+          iscc /dMyAppVersion="4.0.0rc5" "distribution/windows/cellprofiler.iss"
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: upload_macos_asset
+        if: ${{ matrix.os == 'macos-10.15' }}
+        uses: actions/upload-release-asset@v1
+        with:
+          asset_content_type: application/app
+          asset_name: CellProfiler.app
+          asset_path: CellProfiler.app
+          upload_url: ${{ jobs.create_release.steps.create_release.outputs.upload_url }}
+        working-directory: ./distribution/macos/dist
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: upload_windows_asset
+        if: ${{ matrix.os == 'windows-2019' }}
+        uses: actions/upload-release-asset@v1
+        with:
+          asset_content_type: application/exe
+          asset_name: CellProfiler.exe
+          asset_path: ./distribution/windows/Output/CellProfiler.exe
+          upload_url: ${{ jobs.create_release.steps.create_release.outputs.upload_url }}
+    strategy:
+      matrix:
+        os: [macos-10.15, windows-2019]
+        python-version: [ "3.8" ]
 name: create-release
 on:
   push:

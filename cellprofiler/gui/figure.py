@@ -51,7 +51,6 @@ from cellprofiler_core.preferences import (
     get_default_colormap,
     INTENSITY_MODE_GAMMA,
     INTENSITY_MODE_LOG,
-    INTENSITY_MODE_NORMAL,
     INTENSITY_MODE_RAW,
     get_intensity_mode,
 )
@@ -59,7 +58,6 @@ from cellprofiler_core.utilities.core.object import overlay_labels
 from numpy.ma import MaskedArray
 from wx.lib.intctrl import IntCtrl
 from wx.lib.masked import NumCtrl, EVT_NUM
-from wx.lib.plot import PolyHistogram, PlotGraphics, PlotCanvas
 
 import cellprofiler.gui
 import cellprofiler.gui.artist

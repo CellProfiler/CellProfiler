@@ -57,6 +57,7 @@ from cellprofiler_core.preferences import (
 )
 from cellprofiler_core.utilities.core.object import overlay_labels
 from wx.lib.intctrl import IntCtrl
+from wx.lib.masked import NumCtrl, EVT_NUM
 from wx.lib.plot import PolyHistogram, PlotGraphics, PlotCanvas
 
 import cellprofiler.gui
@@ -1224,9 +1225,6 @@ class Figure(wx.Frame):
                     0,
                     wx.ALIGN_LEFT,
                 )
-                minbright_sizer = wx.BoxSizer()
-                maxbright_sizer = wx.BoxSizer()
-
                 slidermin = wx.Slider(
                     dlg,
                     id=0,
@@ -1236,12 +1234,14 @@ class Figure(wx.Frame):
                     style=wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS,
                     name="Minimum Intensity",
                 )
-                sliderminbox = IntCtrl(dlg, id=0, value=0, min=0, max=9999, limited=True, size=wx.Size(35, 22), style=wx.TE_CENTRE)
-                slidermaxbox = IntCtrl(dlg, id=1, value=255, min=0, max=9999, limited=True, size=wx.Size(35, 22), style=wx.TE_CENTRE)
+                sliderminbox = IntCtrl(dlg, id=0, value=0, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
+                                       style=wx.TE_CENTRE)
+                minbright_sizer = wx.BoxSizer()
                 minbright_sizer.Add(slidermin, 1, wx.EXPAND)
                 minbright_sizer.AddSpacer(4)
                 minbright_sizer.Add(sliderminbox)
                 sizer.Add(minbright_sizer, 1, wx.EXPAND)
+
                 sizer.Add(
                     wx.StaticText(dlg, label="Maximum brightness"),
                     0,
@@ -1256,15 +1256,55 @@ class Figure(wx.Frame):
                     style=wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS,
                     name="Maximum Intensity"
                 )
+                slidermaxbox = IntCtrl(dlg, id=1, value=255, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
+                                       style=wx.TE_CENTRE)
+                maxbright_sizer = wx.BoxSizer()
                 maxbright_sizer.Add(slidermax, 1, wx.EXPAND)
                 maxbright_sizer.AddSpacer(4)
                 maxbright_sizer.Add(slidermaxbox)
                 sizer.Add(maxbright_sizer, 1, wx.EXPAND)
+                normtext = wx.StaticText(dlg, label="Normalisation Factor")
+                sizer.Add(
+                    normtext,
+                    0,
+                    wx.ALIGN_LEFT,
+                )
+                slidernorm = wx.Slider(
+                    dlg,
+                    id=2,
+                    value=4.5,
+                    minValue=0,
+                    maxValue=20,
+                    style=wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS,
+                    name="Normalisation Factor"
+                )
+                slidernormbox = NumCtrl(
+                    dlg,
+                    id=2,
+                    value=float(get_normalization_factor()),
+                    min=0,
+                    max=1000,
+                    limited=True,
+                    size=wx.Size(35, 22),
+                    fractionWidth=1,
+                    autoSize=False,
+                    style=wx.TE_CENTRE,
+                )
+                norm_sizer = wx.BoxSizer()
+                norm_sizer.Add(slidernorm, 1, wx.EXPAND)
+                norm_sizer.AddSpacer(4)
+                norm_sizer.Add(slidernormbox)
+                sizer.Add(norm_sizer, 1, wx.EXPAND)
 
+                if params["normalize"] not in ("log", "gamma"):
+                    normtext.Enable(False)
+                    slidernorm.Enable(False)
+                    slidernormbox.Enable(False)
                 button_sizer = wx.StdDialogButtonSizer()
                 button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
                 button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
-                sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
+                button_sizer.AddButton(wx.Button(dlg, wx.ID_APPLY, label="Apply to all"))
+                dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
                 button_sizer.Realize()
 
                 def on_slider(event):
@@ -1274,6 +1314,9 @@ class Figure(wx.Frame):
                     elif event.Id == 1:
                         slidermaxbox.SetValue(slidermax.GetValue())
                         slidermaxbox.Update()
+                    elif event.Id == 2:
+                        slidernormbox.SetValue(slidernorm.GetValue())
+                        slidernormbox.Update()
                     event.Skip()
 
                 def on_int_entry(event):
@@ -1281,6 +1324,8 @@ class Figure(wx.Frame):
                         slidermin.SetValue(sliderminbox.GetValue())
                     elif event.Id == 1:
                         slidermax.SetValue(slidermaxbox.GetValue())
+                    elif event.Id == 2:
+                        slidernorm.SetValue(slidernormbox.GetValue())
                     apply_contrast(event)
 
                 def apply_contrast(event):
@@ -1290,10 +1335,15 @@ class Figure(wx.Frame):
                         if current_max <= current_min:
                             slidermax.SetValue(current_min)
                             slidermaxbox.SetValue(current_min)
-                    else:
+                    elif event.Id == 1:
                         if current_min >= current_max:
                             slidermin.SetValue(current_max)
                             sliderminbox.SetValue(current_max)
+                    elif event.Id == 2:
+                        if params["normalize"] == "log":
+                            params["normalize_args"] = {"gain": float(slidernormbox.GetValue())}
+                        elif params["normalize"] == "gamma":
+                            params["normalize_args"] = {"gamma": float(slidernormbox.GetValue())}
                     params["vmin"] = (sliderminbox.GetValue() / 255) * maxval
                     params["vmax"] = (slidermaxbox.GetValue() / 255) * maxval
                     refresh_figure(axes, background, axesdata)
@@ -1312,10 +1362,21 @@ class Figure(wx.Frame):
                         params["vmax"] = max(1, self.images[(x, y)].max())
                     else:
                         params["vmax"] = 1
+                        if newvalue == "log":
+                            params["normalize_args"] = {"gain": 1.0}
+                        elif newvalue == "gamma":
+                            params["normalize_args"] = {"gamma": 1.0}
                     slidermin.SetValue(0)
                     sliderminbox.SetValue(0)
                     slidermax.SetValue(255)
                     slidermaxbox.SetValue(255)
+                    slidernorm.SetValue(float(get_normalization_factor()))
+                    slidernormbox.SetValue(float(get_normalization_factor()))
+                    want_norm = params["normalize"] in ("log", "gamma")
+                    normtext.Enable(want_norm)
+                    slidernorm.Enable(want_norm)
+                    slidernormbox.Enable(want_norm)
+
                     refresh_figure(axes, background, axesdata)
 
                 # For small images we can draw fast enough for a live preview.
@@ -1328,6 +1389,7 @@ class Figure(wx.Frame):
                 dlg.Bind(wx.EVT_COMBOBOX, change_contrast_mode)
                 dlg.Bind(wx.EVT_SLIDER, on_slider)
                 dlg.Bind(wx.EVT_TEXT, on_int_entry)
+                dlg.Bind(EVT_NUM, on_int_entry)
                 dlg.Layout()
                 if dlg.ShowModal() == wx.ID_OK:
                     return
@@ -2156,13 +2218,14 @@ class Figure(wx.Frame):
 
     @staticmethod
     def normalize_image(image, **kwargs):
+        import time
         """Produce a color image normalized according to user spec"""
         if 0 in image.shape:
             # No normalization to perform for images with an empty dimension.
             # Return the image.
             # https://github.com/CellProfiler/CellProfiler/issues/3330
             return image
-
+        start = time.perf_counter()
         colormap = kwargs["colormap"]
         normalize = kwargs["normalize"]
         vmin = kwargs["vmin"]
@@ -2273,7 +2336,7 @@ class Figure(wx.Frame):
                     image[labels != 0, :] *= 1 - alpha
                     image[labels != 0, :] += limage * alpha
                 loffset += numpy.max(labels)
-
+        #print(f"Norm'd image in {time.perf_counter() - start}s")
         return image
 
     def subplot_table(

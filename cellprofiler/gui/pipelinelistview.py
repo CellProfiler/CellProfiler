@@ -9,18 +9,30 @@ import os
 import sys
 import time
 
-import six.moves
 import wx
+from cellprofiler_core.constants.pipeline import DIRECTION_UP
+from cellprofiler_core.pipeline import (
+    ModuleShowWindow,
+    ModuleDisabled,
+    ModuleEnabled,
+    PipelineLoaded,
+    ModuleAdded,
+    ModuleMoved,
+    ModuleRemoved,
+    PipelineCleared,
+    ModuleEdited,
+    dump,
+    Pipeline,
+)
+from cellprofiler_core.preferences import EXT_PROJECT_CHOICES, EXT_PIPELINE_CHOICES
 
 import cellprofiler.gui
 import cellprofiler.gui.figure
+import cellprofiler.gui.module_view._validation_request_controller
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.pipeline
+import cellprofiler.gui.utilities.module_view
 import cellprofiler.icons
-import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
-
-logger = logging.getLogger(__name__)
 
 IMG_OK = cellprofiler.icons.get_builtin_image("check")
 IMG_ERROR = cellprofiler.icons.get_builtin_image("remove-sign")
@@ -194,9 +206,7 @@ class PipelineListView(object):
             EVT_PLV_ERROR_COLUMN_CLICKED, self.__on_error_column_clicked
         )
         self.list_ctrl.Bind(EVT_PLV_EYE_COLUMN_CLICKED, self.__on_eye_column_clicked)
-        self.list_ctrl.Bind(
-            EVT_PLV_STEP_COLUMN_CLICKED, self.__on_step_column_clicked
-        )
+        self.list_ctrl.Bind(EVT_PLV_STEP_COLUMN_CLICKED, self.__on_step_column_clicked)
         self.list_ctrl.Bind(
             EVT_PLV_PAUSE_COLUMN_CLICKED, self.__on_pause_column_clicked
         )
@@ -327,11 +337,11 @@ class PipelineListView(object):
                         setting_idx, message, level, module_num, settings_hash
                     )
 
-                validation_request = cellprofiler.gui.moduleview.ValidationRequest(
+                validation_request = cellprofiler.gui.module_view._validation_request_controller.ValidationRequestController(
                     self.__pipeline, module, on_validate_module
                 )
                 self.validation_requests.append(validation_request)
-                cellprofiler.gui.moduleview.request_module_validation(
+                cellprofiler.gui.utilities.module_view.request_module_validation(
                     validation_request
                 )
 
@@ -408,17 +418,17 @@ class PipelineListView(object):
         """Pipeline event notifications come through here
 
         """
-        if isinstance(event, cellprofiler_core.pipeline.event.PipelineLoaded):
+        if isinstance(event, PipelineLoaded):
             self.__on_pipeline_loaded(pipeline, event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleAdded):
+        elif isinstance(event, ModuleAdded):
             self.__on_module_added(pipeline, event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleMoved):
+        elif isinstance(event, ModuleMoved):
             self.__on_module_moved(pipeline, event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleRemoved):
+        elif isinstance(event, ModuleRemoved):
             self.__on_module_removed(pipeline, event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.PipelineCleared):
+        elif isinstance(event, PipelineCleared):
             self.__on_pipeline_cleared(pipeline, event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleEdited):
+        elif isinstance(event, ModuleEdited):
             for list_ctrl in self.list_ctrl, self.input_list_ctrl:
                 active_item = list_ctrl.get_active_item()
                 if (
@@ -443,11 +453,11 @@ class PipelineListView(object):
                             self.set_current_debug_module(module)
                         break
 
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleEnabled):
+        elif isinstance(event, ModuleEnabled):
             self.__on_module_enabled(event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleDisabled):
+        elif isinstance(event, ModuleDisabled):
             self.__on_module_disabled(event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.ModuleShowWindow):
+        elif isinstance(event, ModuleShowWindow):
             self.__on_show_window(event)
 
     def notify_directory_change(self):
@@ -502,7 +512,7 @@ class PipelineListView(object):
             if module.module_num == module_num:
                 break
         else:
-            logger.warn("Could not find module %d" % module_num)
+            logging.warn("Could not find module %d" % module_num)
             for ctrl, idx in self.iter_list_items():
                 ctrl.Select(idx, False)
             self.__on_item_selected(None)
@@ -518,7 +528,7 @@ class PipelineListView(object):
             if module.module_num == module_num:
                 break
         else:
-            logger.warn("Could not find module %d" % module_num)
+            logging.warn("Could not find module %d" % module_num)
             return
         ctrl, idx = self.get_ctrl_and_index(module)
         ctrl.Select(idx, selected)
@@ -554,7 +564,10 @@ class PipelineListView(object):
     def __on_list_dclick(self, event):
         list_ctrl = event.GetEventObject()
         item, hit_code, subitem = list_ctrl.HitTestSubItem(event.Position)
-
+        if item is None:
+            # Open the add modules window
+            self.__frame.pipeline_controller.open_add_modules()
+            return
         if (
             0 <= item < list_ctrl.ItemCount
             and (hit_code & wx.LIST_HITTEST_ONITEM)
@@ -573,8 +586,15 @@ class PipelineListView(object):
 
     def __on_step_column_clicked(self, event):
         module = self.get_event_module(event)
-        if self.get_current_debug_module().module_num >= module.module_num and module.enabled:
-            mod_evt = self.list_ctrl.make_event(EVT_PLV_VALID_STEP_COLUMN_CLICKED, index=None, module=module)
+        if not self.list_ctrl.test_mode:
+            return
+        if (
+            self.get_current_debug_module().module_num >= module.module_num
+            and module.enabled
+        ):
+            mod_evt = self.list_ctrl.make_event(
+                EVT_PLV_VALID_STEP_COLUMN_CLICKED, index=None, module=module
+            )
             self.list_ctrl.GetEventHandler().ProcessEvent(mod_evt)
         self.list_ctrl.Refresh(eraseBackground=False)
 
@@ -696,13 +716,11 @@ class PipelineListView(object):
         if len(modules_to_save) == 0:
             event.Veto()
             return
-        fd = six.moves.StringIO()
-        temp_pipeline = cellprofiler_core.pipeline.Pipeline()
+        fd = io.StringIO()
+        temp_pipeline = Pipeline()
         for module in modules_to_save:
             temp_pipeline.add_module(module)
-        cellprofiler_core.pipeline.io.dump(
-            temp_pipeline, fd, save_image_plane_details=False, version=5
-        )
+        dump(temp_pipeline, fd, save_image_plane_details=False, version=5)
         pipeline_data_object = PipelineDataObject()
         pipeline_data_object.SetData(fd.getvalue().encode())
 
@@ -715,14 +733,14 @@ class PipelineListView(object):
         drop_source = wx.DropSource(self.list_ctrl)
         drop_source.SetData(data_object)
         self.drag_underway = False
-        self.drag_start = self.list_ctrl.ScreenToClient(wx.GetMousePosition())
+        self.drag_start = None
         self.drag_time = time.time()
         selected_module_ids = [m.id for m in self.get_selected_modules()]
         self.__pipeline.start_undoable_action()
         try:
-            result = drop_source.DoDragDrop(wx.Drag_AllowMove)
+            result = drop_source.DoDragDrop(wx.Drag_DefaultMove)
             self.drag_underway = False
-            if result in (wx.DragMove, wx.DragCopy):
+            if result == wx.DragMove:
                 for identifier in selected_module_ids:
                     for module in self.__pipeline.modules(False):
                         if module.id == identifier:
@@ -754,6 +772,9 @@ class PipelineListView(object):
         the cursor 10 pixels. Drop at drag site is not
         allowed.
         """
+        if self.drag_start is None:
+            self.drag_start = (x, y)
+            return False
         if not self.__allow_editing:
             return False
         index = self.where_to_drop(x, y)
@@ -775,7 +796,7 @@ class PipelineListView(object):
             self.drag_underway = True
         if self.drag_start is not None:
             start_index = self.list_ctrl.HitTest(self.drag_start)
-            if start_index == index:
+            if start_index[0] == index:
                 return False
         return True
 
@@ -809,10 +830,7 @@ class PipelineListView(object):
     def on_filelist_data(self, x, y, action, filenames):
         for filename in filenames:
             _, ext = os.path.splitext(filename)
-            if (
-                len(ext) > 1
-                and ext[1:] in cellprofiler_core.preferences.EXT_PROJECT_CHOICES
-            ):
+            if len(ext) > 1 and ext[1:] in EXT_PROJECT_CHOICES:
                 self.__frame.Raise()
                 if (
                     wx.MessageBox(
@@ -825,10 +843,7 @@ class PipelineListView(object):
                 ):
                     self.__frame.pipeline_controller.do_open_workspace(filename)
                     break
-            elif (
-                len(ext) > 1
-                and ext[1:] in cellprofiler_core.preferences.EXT_PIPELINE_CHOICES
-            ):
+            elif len(ext) > 1 and ext[1:] in EXT_PIPELINE_CHOICES:
                 self.__frame.Raise()
                 if (
                     wx.MessageBox(
@@ -849,7 +864,7 @@ class PipelineListView(object):
         wx.BeginBusyCursor()
         try:
             pipeline = cellprofiler.gui.pipeline.Pipeline()
-            pipeline.load(six.moves.StringIO(data))
+            pipeline.load(io.StringIO(data))
             n_input_modules = self.get_input_item_count()
             for i, module in enumerate(pipeline.modules(False)):
                 module.module_num = i + index + n_input_modules + 1
@@ -920,7 +935,8 @@ class PipelineListView(object):
         module = pipeline.modules(False)[event.module_num - 1]
         self.__populate_row(module)
         self.__adjust_rows()
-        self.select_one_module(event.module_num)
+        if len(self.get_selected_modules()) <= 1:
+            self.select_one_module(event.module_num)
         self.request_validation(module)
         self.notify_has_file_list(self.__has_file_list)
 
@@ -940,7 +956,7 @@ class PipelineListView(object):
     def __on_module_moved(self, pipeline, event):
         module = pipeline.modules(False)[event.module_num - 1]
         list_ctrl, index = self.get_ctrl_and_index(module)
-        if event.direction == cellprofiler_core.pipeline.DIRECTION_UP:
+        if event.direction == DIRECTION_UP:
             # if this module was moved up, the one before it was moved down
             # and is now after
             other_module = pipeline.modules(False)[event.module_num]
@@ -1106,6 +1122,9 @@ class PipelineDropTarget(wx.DropTarget):
                 self.window.on_filelist_data(
                     x, y, action, self.file_data_object.GetFilenames()
                 )
+        if action == 1:
+            # Bug in wx 4.1 returns the wrong action ID on Windows. Get the right one.
+            action = self.OnDragOver(x, y, None)
         return action
 
 
@@ -1592,14 +1611,25 @@ class PipelineListCtrl(wx.ScrolledWindow):
             wx.SYS_COLOUR_LISTBOXHIGHLIGHTTEXT
         )
 
+        if len(self.items) == 0:
+            text = "Drop a pipeline file here (.cppipe or .cpproj)\n or double-click to add modules"
+            dc.SetTextForeground(
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+            )
+            dc.DrawLabel(
+                text, wx.Bitmap(), wx.Rect(self.GetSize()), alignment=wx.ALIGN_CENTER,
+            )
+
         for index, item in enumerate(self.items):
             item_text_color = text_color
 
-            dc.SetFont(self.Font)
+            dc.SetFont(self.GetFont())
 
             if self.show_step and self.test_mode:
                 rectangle = self.get_step_rect(index)
-                bitmap = self.bmp_step if self.running_item == index else self.bmp_stepped
+                bitmap = (
+                    self.bmp_step if self.running_item == index else self.bmp_stepped
+                )
                 if self.running_item >= index and item.enabled:
                     dc.DrawBitmap(bitmap, rectangle.GetLeft(), rectangle.GetTop(), True)
 

@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 MeasureObjectOverlap
 ====================
@@ -67,13 +65,13 @@ import centrosome.propagate
 import numpy
 import scipy.ndimage
 import scipy.sparse
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import Integer
 
-import cellprofiler.icons
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 C_IMAGE_OVERLAP = "Overlap"
@@ -109,13 +107,13 @@ DM_KMEANS = "K Means"
 DM_SKEL = "Skeleton"
 
 
-class MeasureObjectOverlap(cellprofiler_core.module.Module):
+class MeasureObjectOverlap(Module):
     category = "Measurement"
     variable_revision_number = 2
     module_name = "MeasureObjectOverlap"
 
     def create_settings(self):
-        self.object_name_GT = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.object_name_GT = LabelSubscriber(
             "Select the objects to be used as the ground truth basis for calculating the amount of overlap",
             "None",
             doc="""\
@@ -125,7 +123,7 @@ another segmentation algorithm whose results you would like to compare.
 See the **Load** modules for more details on loading objects.""",
         )
 
-        self.object_name_ID = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.object_name_ID = LabelSubscriber(
             "Select the objects to be tested for overlap against the ground truth",
             "None",
             doc="""\
@@ -133,7 +131,7 @@ This set of objects is what you will compare with the ground truth
 objects. It is known as the “test object.”""",
         )
 
-        self.wants_emd = cellprofiler_core.setting.Binary(
+        self.wants_emd = Binary(
             "Calculate earth mover's distance?",
             False,
             doc="""\
@@ -151,7 +149,7 @@ with each representative in the test object to those in the reference
 object.""",
         )
 
-        self.max_points = cellprofiler_core.setting.Integer(
+        self.max_points = Integer(
             "Maximum # of points",
             value=250,
             minval=100,
@@ -163,7 +161,7 @@ foreground of the test objects and from the foreground of the reference
 objects using the point selection method (see below).""",
         )
 
-        self.decimation_method = cellprofiler_core.setting.Choice(
+        self.decimation_method = Choice(
             "Point selection method",
             choices=[DM_KMEANS, DM_SKEL],
             doc="""\
@@ -194,7 +192,7 @@ worms or neurites.
             ),
         )
 
-        self.max_distance = cellprofiler_core.setting.Integer(
+        self.max_distance = Integer(
             "Maximum distance",
             value=250,
             minval=1,
@@ -211,7 +209,7 @@ The maximum distance should be set to the largest reasonable distance
 that pixels could be expected to move from one object to the next.""",
         )
 
-        self.penalize_missing = cellprofiler_core.setting.Binary(
+        self.penalize_missing = Binary(
             "Penalize missing pixels",
             value=False,
             doc="""\
@@ -942,16 +940,13 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         )
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return [C_IMAGE_OVERLAP]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == C_IMAGE_OVERLAP
-        ):
+        if object_name == "Image" and category == C_IMAGE_OVERLAP:
             return self.all_features()
 
         return []
@@ -966,7 +961,7 @@ the two objects. Set this setting to “No” to assess no penalty.""",
         self, pipeline, object_name, category, measurement, image_name
     ):
         if (
-            object_name == cellprofiler_core.measurement.IMAGE
+            object_name == "Image"
             and category == C_IMAGE_OVERLAP
             and measurement in FTR_ALL
         ):
@@ -984,10 +979,6 @@ the two objects. Set this setting to “No” to assess no penalty.""",
 
     def get_measurement_columns(self, pipeline):
         return [
-            (
-                cellprofiler_core.measurement.IMAGE,
-                self.measurement_name(feature),
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
-            )
+            ("Image", self.measurement_name(feature), COLTYPE_FLOAT,)
             for feature in self.all_features()
         ]

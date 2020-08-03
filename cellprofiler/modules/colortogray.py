@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 ColorToGray
 ===========
@@ -31,11 +29,20 @@ See also **GrayToColor**.
 import re
 
 import matplotlib.colors
-import numpy as np
-
-import cellprofiler_core.image as cpi
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+import numpy
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import HiddenCount
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import RemoveSettingButton
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.setting.text import Integer
 
 COMBINE = "Combine"
 SPLIT = "Split"
@@ -50,20 +57,20 @@ SLOTS_PER_CHANNEL = 3
 SLOT_CHANNEL_CHOICE = 0
 
 
-class ColorToGray(cpm.Module):
+class ColorToGray(Module):
     module_name = "ColorToGray"
     variable_revision_number = 4
     category = "Image Processing"
     channel_names = ["Red: 1", "Green: 2", "Blue: 3", "Alpha: 4"]
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""Select the multichannel image you want to convert to grayscale.""",
         )
 
-        self.combine_or_split = cps.Choice(
+        self.combine_or_split = Choice(
             "Conversion method",
             [COMBINE, SPLIT],
             doc="""\
@@ -76,7 +83,7 @@ How do you want to convert the color image?
             % globals(),
         )
 
-        self.rgb_or_channels = cps.Choice(
+        self.rgb_or_channels = Choice(
             "Image type",
             [CH_RGB, CH_HSV, CH_CHANNELS],
             doc="""\
@@ -100,7 +107,7 @@ This setting provides three options to choose from:
         )
 
         # The following settings are used for the combine option
-        self.grayscale_name = cps.ImageNameProvider(
+        self.grayscale_name = ImageName(
             "Name the output image",
             "OrigGray",
             doc="""\
@@ -109,7 +116,7 @@ This setting provides three options to choose from:
 Enter a name for the resulting grayscale image.""",
         )
 
-        self.red_contribution = cps.Float(
+        self.red_contribution = Float(
             "Relative weight of the red channel",
             1,
             0,
@@ -121,7 +128,7 @@ contribute equally in the final image. To weight colors relative to each
 other, increase or decrease the relative weights.""",
         )
 
-        self.green_contribution = cps.Float(
+        self.green_contribution = Float(
             "Relative weight of the green channel",
             1,
             0,
@@ -133,7 +140,7 @@ contribute equally in the final image. To weight colors relative to each
 other, increase or decrease the relative weights.""",
         )
 
-        self.blue_contribution = cps.Float(
+        self.blue_contribution = Float(
             "Relative weight of the blue channel",
             1,
             0,
@@ -146,7 +153,7 @@ other, increase or decrease the relative weights.""",
         )
 
         # The following settings are used for the split RGB option
-        self.use_red = cps.Binary(
+        self.use_red = Binary(
             "Convert red to gray?",
             True,
             doc="""\
@@ -158,7 +165,7 @@ red channel will be ignored.
             % globals(),
         )
 
-        self.red_name = cps.ImageNameProvider(
+        self.red_name = ImageName(
             "Name the output image",
             "OrigRed",
             doc="""\
@@ -167,7 +174,7 @@ red channel will be ignored.
 Enter a name for the resulting grayscale image coming from the red channel.""",
         )
 
-        self.use_green = cps.Binary(
+        self.use_green = Binary(
             "Convert green to gray?",
             True,
             doc="""\
@@ -179,7 +186,7 @@ green channel will be ignored.
             % globals(),
         )
 
-        self.green_name = cps.ImageNameProvider(
+        self.green_name = ImageName(
             "Name the output image",
             "OrigGreen",
             doc="""\
@@ -188,7 +195,7 @@ green channel will be ignored.
 Enter a name for the resulting grayscale image coming from the green channel.""",
         )
 
-        self.use_blue = cps.Binary(
+        self.use_blue = Binary(
             "Convert blue to gray?",
             True,
             doc="""\
@@ -200,7 +207,7 @@ blue channel will be ignored.
             % globals(),
         )
 
-        self.blue_name = cps.ImageNameProvider(
+        self.blue_name = ImageName(
             "Name the output image",
             "OrigBlue",
             doc="""\
@@ -210,7 +217,7 @@ Enter a name for the resulting grayscale image coming from the blue channel.""",
         )
 
         # The following settings are used for the split HSV option
-        self.use_hue = cps.Binary(
+        self.use_hue = Binary(
             "Convert hue to gray?",
             True,
             doc="""\
@@ -222,7 +229,7 @@ will be ignored.
             % globals(),
         )
 
-        self.hue_name = cps.ImageNameProvider(
+        self.hue_name = ImageName(
             "Name the output image",
             "OrigHue",
             doc="""\
@@ -231,7 +238,7 @@ will be ignored.
 Enter a name for the resulting grayscale image coming from the hue.""",
         )
 
-        self.use_saturation = cps.Binary(
+        self.use_saturation = Binary(
             "Convert saturation to gray?",
             True,
             doc="""\
@@ -243,7 +250,7 @@ saturation will be ignored.
             % globals(),
         )
 
-        self.saturation_name = cps.ImageNameProvider(
+        self.saturation_name = ImageName(
             "Name the output image",
             "OrigSaturation",
             doc="""\
@@ -252,7 +259,7 @@ saturation will be ignored.
 Enter a name for the resulting grayscale image coming from the saturation.""",
         )
 
-        self.use_value = cps.Binary(
+        self.use_value = Binary(
             "Convert value to gray?",
             True,
             doc="""\
@@ -264,7 +271,7 @@ value will be ignored.
             % globals(),
         )
 
-        self.value_name = cps.ImageNameProvider(
+        self.value_name = ImageName(
             "Name the output image",
             "OrigValue",
             doc="""\
@@ -276,19 +283,17 @@ Enter a name for the resulting grayscale image coming from the value.""",
         # The alternative model:
         self.channels = []
         self.add_channel(False)
-        self.channel_button = cps.DoSomething(
-            "", "Add another channel", self.add_channel
-        )
+        self.channel_button = DoSomething("", "Add another channel", self.add_channel)
 
-        self.channel_count = cps.HiddenCount(self.channels, "Channel count")
+        self.channel_count = HiddenCount(self.channels, "Channel count")
 
     def add_channel(self, can_remove=True):
         """Add another channel to the channels list"""
-        group = cps.SettingsGroup()
+        group = SettingsGroup()
         group.can_remove = can_remove
         group.append(
             "channel_choice",
-            cps.Integer(
+            Integer(
                 text="Channel number",
                 value=len(self.channels) + 1,
                 minval=1,
@@ -309,7 +314,7 @@ example, “5” for a three-channel .PNG file.""",
 
         group.append(
             "contribution",
-            cps.Float(
+            Float(
                 "Relative weight of the channel",
                 1,
                 0,
@@ -324,7 +329,7 @@ other, increase or decrease the relative weights.""",
 
         group.append(
             "image_name",
-            cps.ImageNameProvider(
+            ImageName(
                 "Image name",
                 value="Channel%d" % (len(self.channels) + 1),
                 doc="""\
@@ -337,9 +342,7 @@ Select the name of the output grayscale image.""",
         if group.can_remove:
             group.append(
                 "remover",
-                cps.RemoveSettingButton(
-                    "", "Remove this channel", self.channels, group
-                ),
+                RemoveSettingButton("", "Remove this channel", self.channels, group),
             )
         self.channels.append(group)
 
@@ -439,14 +442,14 @@ Select the name of the output grayscale image.""",
             if (self.rgb_or_channels == CH_RGB) and not any(
                 [self.use_red.value, self.use_blue.value, self.use_green.value]
             ):
-                raise cps.ValidationError(
+                raise ValidationError(
                     "You must output at least one of the color images when in split mode",
                     self.use_red,
                 )
             if (self.rgb_or_channels == CH_HSV) and not any(
                 [self.use_hue.value, self.use_saturation.value, self.use_value.value]
             ):
-                raise cps.ValidationError(
+                raise ValidationError(
                     "You must output at least one of the color images when in split mode",
                     self.use_hue,
                 )
@@ -554,13 +557,15 @@ Select the name of the output grayscale image.""",
         input_image = image.pixel_data
         channels, contributions = list(zip(*self.channels_and_contributions()))
         denominator = sum(contributions)
-        channels = np.array(channels, int)
-        contributions = np.array(contributions) / denominator
+        channels = numpy.array(channels, int)
+        contributions = numpy.array(contributions) / denominator
 
-        output_image = np.sum(
-            input_image[:, :, channels] * contributions[np.newaxis, np.newaxis, :], 2
+        output_image = numpy.sum(
+            input_image[:, :, channels]
+            * contributions[numpy.newaxis, numpy.newaxis, :],
+            2,
         )
-        image = cpi.Image(output_image, parent_image=image)
+        image = Image(output_image, parent_image=image)
         workspace.image_set.add(self.grayscale_name.value, image)
 
         workspace.display_data.input_image = input_image
@@ -592,15 +597,13 @@ Select the name of the output grayscale image.""",
         if self.rgb_or_channels in (CH_RGB, CH_CHANNELS):
             for index, name, title in self.channels_and_image_names():
                 output_image = input_image[:, :, index]
-                workspace.image_set.add(
-                    name, cpi.Image(output_image, parent_image=image)
-                )
+                workspace.image_set.add(name, Image(output_image, parent_image=image))
                 disp_collection.append([output_image, name])
         elif self.rgb_or_channels == CH_HSV:
             output_image = matplotlib.colors.rgb_to_hsv(input_image)
             for index, name, title in self.channels_and_image_names():
                 workspace.image_set.add(
-                    name, cpi.Image(output_image[:, :, index], parent_image=image)
+                    name, Image(output_image[:, :, index], parent_image=image)
                 )
                 disp_collection.append([output_image[:, :, index], name])
 
@@ -613,7 +616,7 @@ Select the name of the output grayscale image.""",
         input_image = workspace.display_data.input_image
         disp_collection = workspace.display_data.disp_collection
         ndisp = len(disp_collection)
-        ncols = int(np.ceil((ndisp + 1) ** 0.5))
+        ncols = int(numpy.ceil((ndisp + 1) ** 0.5))
         subplots = (ncols, (ndisp // ncols) + 1)
         figure.set_subplots(subplots)
         figure.subplot_imshow_color(0, 0, input_image, title="Original image")

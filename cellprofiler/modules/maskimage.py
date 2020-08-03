@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 MaskImage
 =========
@@ -32,17 +30,19 @@ See also **Threshold**, **IdentifyPrimaryObjects**, and
 **IdentifyObjectsManually**.
 """
 
-import numpy as np
-
-import cellprofiler_core.image as cpi
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+import numpy
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import ImageName
 
 IO_IMAGE = "Image"
 IO_OBJECTS = "Objects"
 
 
-class MaskImage(cpm.Module):
+class MaskImage(Module):
     module_name = "MaskImage"
     category = "Image Processing"
     variable_revision_number = 3
@@ -51,7 +51,7 @@ class MaskImage(cpm.Module):
         """Create the settings here and set the module name (initialization)
 
         """
-        self.source_choice = cps.Choice(
+        self.source_choice = Choice(
             "Use objects or an image as a mask?",
             [IO_OBJECTS, IO_IMAGE],
             doc="""\
@@ -71,7 +71,7 @@ You can mask an image in two ways:
             % globals(),
         )
 
-        self.object_name = cps.ObjectNameSubscriber(
+        self.object_name = LabelSubscriber(
             "Select object for mask",
             "None",
             doc="""\
@@ -81,7 +81,7 @@ Select the objects you would like to use to mask the input image.
 """,
         )
 
-        self.masking_image_name = cps.ImageNameSubscriber(
+        self.masking_image_name = ImageSubscriber(
             "Select image for mask",
             "None",
             doc="""\
@@ -91,19 +91,19 @@ Select the image that you like to use to mask the input image.
 """,
         )
 
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="Select the image that you want to mask.",
         )
 
-        self.masked_image_name = cps.ImageNameProvider(
+        self.masked_image_name = ImageName(
             "Name the output image",
             "MaskBlue",
             doc="Enter the name for the output masked image.",
         )
 
-        self.invert_mask = cps.Binary(
+        self.invert_mask = Binary(
             "Invert the mask?",
             False,
             doc="""\
@@ -172,14 +172,14 @@ This option reverses the foreground/background relationship of the mask.
         if (
             orig_image.multichannel and mask.shape != orig_image.pixel_data.shape[:-1]
         ) or mask.shape != orig_image.pixel_data.shape:
-            tmp = np.zeros(orig_image.pixel_data.shape[:2], mask.dtype)
+            tmp = numpy.zeros(orig_image.pixel_data.shape[:2], mask.dtype)
             tmp[mask] = True
             mask = tmp
         if orig_image.has_mask:
-            mask = np.logical_and(mask, orig_image.mask)
+            mask = numpy.logical_and(mask, orig_image.mask)
         masked_pixels = orig_image.pixel_data.copy()
-        masked_pixels[np.logical_not(mask)] = 0
-        masked_image = cpi.Image(
+        masked_pixels[numpy.logical_not(mask)] = 0
+        masked_image = Image(
             masked_pixels,
             mask=mask,
             parent_image=orig_image,

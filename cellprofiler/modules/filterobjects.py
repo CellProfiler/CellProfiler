@@ -1,4 +1,25 @@
-# coding=utf-8
+from cellprofiler_core.constants.measurement import (
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+)
+from cellprofiler_core.preferences import (
+    DEFAULT_INPUT_FOLDER_NAME,
+    ABSOLUTE_FOLDER_NAME,
+    DEFAULT_INPUT_SUBFOLDER_NAME,
+    DEFAULT_OUTPUT_SUBFOLDER_NAME,
+)
+from cellprofiler_core.setting import (
+    Divider,
+    HiddenCount,
+    SettingsGroup,
+    Measurement,
+    Binary,
+    ValidationError,
+)
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import Directory, Filename, Float, LabelName
 
 from cellprofiler.modules import _help
 
@@ -65,16 +86,8 @@ import scipy.ndimage
 import scipy.sparse
 
 import cellprofiler.gui.help
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.modules.identify
 import cellprofiler_core.object
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
 import cellprofiler.utilities.rules
-
-logger = logging.getLogger(__name__)
 
 
 """Minimal filter - pick a single object per image by minimum measured value"""
@@ -146,9 +159,9 @@ object."""
 
         self.y_name.doc = "Enter a name for the collection of objects that are retained after applying the filter(s)."
 
-        self.spacer_1 = cellprofiler_core.setting.Divider(line=False)
+        self.spacer_1 = Divider(line=False)
 
-        self.mode = cellprofiler_core.setting.Choice(
+        self.mode = Choice(
             "Select the filtering mode",
             [MODE_MEASUREMENTS, MODE_RULES, MODE_BORDER, MODE_CLASSIFIERS],
             doc="""\
@@ -175,21 +188,19 @@ You can choose from the following options:
             ),
         )
 
-        self.spacer_2 = cellprofiler_core.setting.Divider(line=False)
+        self.spacer_2 = Divider(line=False)
 
         self.measurements = []
 
-        self.measurement_count = cellprofiler_core.setting.HiddenCount(
-            self.measurements, "Measurement count"
-        )
+        self.measurement_count = HiddenCount(self.measurements, "Measurement count")
 
         self.add_measurement(False)
 
-        self.add_measurement_button = cellprofiler_core.setting.DoSomething(
+        self.add_measurement_button = DoSomething(
             "", "Add another measurement", self.add_measurement
         )
 
-        self.filter_choice = cellprofiler_core.setting.Choice(
+        self.filter_choice = Choice(
             "Select the filtering method",
             FI_ALL,
             FI_LIMITS,
@@ -226,7 +237,7 @@ There are five different ways to filter objects:
             ),
         )
 
-        self.per_object_assignment = cellprofiler_core.setting.Choice(
+        self.per_object_assignment = Choice(
             "Assign overlapping child to",
             PO_ALL,
             doc="""\
@@ -260,7 +271,7 @@ maximal child is assigned. The choices are:
             ),
         )
 
-        self.enclosing_object_name = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.enclosing_object_name = LabelSubscriber(
             "Select the objects that contain the filtered objects",
             "None",
             doc="""\
@@ -276,7 +287,7 @@ choices.""".format(
             ),
         )
 
-        self.rules_directory = cellprofiler_core.setting.DirectoryPath(
+        self.rules_directory = Directory(
             "Select the location of the rules or classifier file",
             doc="""\
 *(Used only when filtering using {MODE_RULES} or {MODE_CLASSIFIERS})*
@@ -294,7 +305,7 @@ filtering.
             ),
         )
 
-        self.rules_class = cellprofiler_core.setting.Choice(
+        self.rules_class = Choice(
             "Class number",
             choices=["1", "2"],
             choices_fn=self.get_class_choices,
@@ -325,7 +336,7 @@ Please note the following:
 
             self.rules_directory.join_parts(dir_choice, custom_path)
 
-        self.rules_file_name = cellprofiler_core.setting.FilenameText(
+        self.rules_file_name = Filename(
             "Rules or classifier file name",
             "rules.txt",
             get_directory_fn=get_directory_fn,
@@ -359,13 +370,13 @@ with data processed as 3D.
 
         self.additional_objects = []
 
-        self.additional_object_count = cellprofiler_core.setting.HiddenCount(
+        self.additional_object_count = HiddenCount(
             self.additional_objects, "Additional object count"
         )
 
-        self.spacer_3 = cellprofiler_core.setting.Divider(line=False)
+        self.spacer_3 = Divider(line=False)
 
-        self.additional_object_button = cellprofiler_core.setting.DoSomething(
+        self.additional_object_button = DoSomething(
             "Relabel additional objects to match the filtered object?",
             "Add an additional object",
             self.add_additional_object,
@@ -393,11 +404,11 @@ between related objects (e.g., primary and secondary objects) after filtering.""
 
     def add_measurement(self, can_delete=True):
         """Add another measurement to the filter list"""
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         group.append(
             "measurement",
-            cellprofiler_core.setting.Measurement(
+            Measurement(
                 "Select the measurement to filter by",
                 self.x_name.get_value,
                 "AreaShape_Area",
@@ -413,7 +424,7 @@ features measured.""".format(
 
         group.append(
             "wants_minimum",
-            cellprofiler_core.setting.Binary(
+            Binary(
                 "Filter using a minimum measurement value?",
                 True,
                 doc="""\
@@ -427,11 +438,11 @@ this value will be retained.""".format(
             ),
         )
 
-        group.append("min_limit", cellprofiler_core.setting.Float("Minimum value", 0))
+        group.append("min_limit", Float("Minimum value", 0))
 
         group.append(
             "wants_maximum",
-            cellprofiler_core.setting.Binary(
+            Binary(
                 "Filter using a maximum measurement value?",
                 True,
                 doc="""\
@@ -445,45 +456,40 @@ value will be retained.""".format(
             ),
         )
 
-        group.append("max_limit", cellprofiler_core.setting.Float("Maximum value", 1))
+        group.append("max_limit", Float("Maximum value", 1))
 
-        group.append("divider", cellprofiler_core.setting.Divider())
+        group.append("divider", Divider())
 
         self.measurements.append(group)
 
         if can_delete:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
+                RemoveSettingButton(
                     "", "Remove this measurement", self.measurements, group
                 ),
             )
 
     def add_additional_object(self):
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         group.append(
             "object_name",
-            cellprofiler_core.setting.ObjectNameSubscriber(
-                "Select additional object to relabel", "None"
-            ),
+            LabelSubscriber("Select additional object to relabel", "None"),
         )
 
         group.append(
-            "target_name",
-            cellprofiler_core.setting.ObjectNameProvider(
-                "Name the relabeled objects", "FilteredGreen"
-            ),
+            "target_name", LabelName("Name the relabeled objects", "FilteredGreen"),
         )
 
         group.append(
             "remover",
-            cellprofiler_core.setting.RemoveSettingButton(
+            RemoveSettingButton(
                 "", "Remove this additional object", self.additional_objects, group
             ),
         )
 
-        group.append("divider", cellprofiler_core.setting.Divider(line=False))
+        group.append("divider", Divider(line=False))
 
         self.additional_objects.append(group)
 
@@ -595,7 +601,7 @@ value will be retained.""".format(
         if self.mode == MODE_MEASUREMENTS and self.filter_choice == FI_LIMITS:
             for group in self.measurements:
                 if not (group.wants_minimum.value or group.wants_maximum.value):
-                    raise cellprofiler_core.setting.ValidationError(
+                    raise ValidationError(
                         "Please enter a minimum and/or maximum limit for your measurement",
                         group.wants_minimum,
                     )
@@ -603,10 +609,10 @@ value will be retained.""".format(
             try:
                 rules = self.get_rules()
             except Exception as instance:
-                logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
-                raise cellprofiler_core.setting.ValidationError(
-                    str(instance), self.rules_file_name
+                logging.warning(
+                    "Failed to load rules: %s", str(instance), exc_info=True
                 )
+                raise ValidationError(str(instance), self.rules_file_name)
             measurement_columns = pipeline.get_measurement_columns(self)
             for r in rules.rules:
                 if not any(
@@ -615,7 +621,7 @@ value will be retained.""".format(
                         for mc in measurement_columns
                     ]
                 ):
-                    raise cellprofiler_core.setting.ValidationError(
+                    raise ValidationError(
                         (
                             "The rules file, %s, uses the measurement, %s "
                             "for object %s, but that measurement is not available "
@@ -632,12 +638,12 @@ value will be retained.""".format(
                 self.get_bin_labels()
                 self.get_classifier_features()
             except IOError:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "Failed to load classifier file %s" % self.rules_file_name.value,
                     self.rules_file_name,
                 )
             except:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "Unable to load %s as a classifier file"
                     % self.rules_file_name.value,
                     self.rules_file_name,
@@ -966,9 +972,7 @@ value will be retained.""".format(
         rules_directory = self.rules_directory.get_absolute_path()
         path = os.path.join(rules_directory, rules_file)
         if not os.path.isfile(path):
-            raise cellprofiler_core.setting.ValidationError(
-                "No such rules file: %s" % path, self.rules_file_name
-            )
+            raise ValidationError("No such rules file: %s" % path, self.rules_file_name)
         else:
             rules = cellprofiler.utilities.rules.Rules()
             rules.parse(path)
@@ -985,7 +989,7 @@ value will be retained.""".format(
         path_ = os.path.join(directory_, file_)
         if path_ not in d:
             if not os.path.isfile(path_):
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "No such classifier file: %s" % path_, self.rules_file_name
                 )
             else:
@@ -1038,9 +1042,9 @@ value will be retained.""".format(
         for feature_name in self.get_classifier_features():
             feature_name = feature_name.split("_", 1)[1]
             if feature_name == "x_loc":
-                feature_name = cellprofiler_core.measurement.M_LOCATION_CENTER_X
+                feature_name = M_LOCATION_CENTER_X
             elif feature_name == "y_loc":
-                feature_name = cellprofiler_core.measurement.M_LOCATION_CENTER_Y
+                feature_name = M_LOCATION_CENTER_Y
             features.append(feature_name)
 
         feature_vector = numpy.column_stack(
@@ -1089,11 +1093,7 @@ value will be retained.""".format(
             #
             setting_values = (
                 setting_values[:11]
-                + [
-                    MODE_MEASUREMENTS,
-                    cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME,
-                    ".",
-                ]
+                + [MODE_MEASUREMENTS, DEFAULT_INPUT_FOLDER_NAME, ".",]
                 + setting_values[11:]
             )
             variable_revision_number = 2
@@ -1126,7 +1126,7 @@ value will be retained.""".format(
                 rules_file_name,
             ) = setting_values[:15]
             additional_object_settings = setting_values[15:]
-            additional_object_count = len(additional_object_settings) / 4
+            additional_object_count = len(additional_object_settings) // 4
 
             setting_values = [
                 target_name,
@@ -1150,25 +1150,19 @@ value will be retained.""".format(
             variable_revision_number = 4
         if variable_revision_number == 4:
             #
-            # Used DirectoryPath to combine directory choice & custom path
+            # Used Directory to combine directory choice & custom path
             #
             rules_directory_choice = setting_values[7]
             rules_path_name = setting_values[8]
             if rules_directory_choice == DIR_CUSTOM:
-                rules_directory_choice = (
-                    cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-                )
+                rules_directory_choice = ABSOLUTE_FOLDER_NAME
                 if rules_path_name.startswith("."):
-                    rules_directory_choice = (
-                        cellprofiler_core.preferences.DEFAULT_INPUT_SUBFOLDER_NAME
-                    )
+                    rules_directory_choice = DEFAULT_INPUT_SUBFOLDER_NAME
                 elif rules_path_name.startswith("&"):
-                    rules_directory_choice = (
-                        cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
-                    )
+                    rules_directory_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
                     rules_path_name = "." + rules_path_name[1:]
 
-            rules_directory = cellprofiler_core.setting.DirectoryPath.static_join_string(
+            rules_directory = Directory.static_join_string(
                 rules_directory_choice, rules_path_name
             )
             setting_values = setting_values[:7] + [rules_directory] + setting_values[9:]
@@ -1231,9 +1225,7 @@ value will be retained.""".format(
 
         slot_directory = 5
 
-        setting_values[
-            slot_directory
-        ] = cellprofiler_core.setting.DirectoryPath.upgrade_setting(
+        setting_values[slot_directory] = Directory.upgrade_setting(
             setting_values[slot_directory]
         )
 

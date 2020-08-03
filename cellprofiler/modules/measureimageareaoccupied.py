@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 MeasureImageAreaOccupied
 ========================
@@ -47,11 +45,14 @@ Measurements made by this module
 
 import numpy
 import skimage.measure
-
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Divider, ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import (
+    ImageListSubscriber,
+    LabelListSubscriber,
+)
 
 C_AREA_OCCUPIED = "AreaOccupied"
 
@@ -77,13 +78,13 @@ IMAGE_SETTING_COUNT = 1
 OBJECT_SETTING_COUNT = 3
 
 
-class MeasureImageAreaOccupied(cellprofiler_core.module.Module):
+class MeasureImageAreaOccupied(Module):
     module_name = "MeasureImageAreaOccupied"
     category = "Measurement"
     variable_revision_number = 5
 
     def create_settings(self):
-        self.operand_choice = cellprofiler_core.setting.Choice(
+        self.operand_choice = Choice(
             "Measure the area occupied by",
             [O_BINARY_IMAGE, O_OBJECTS, O_BOTH],
             doc="""\
@@ -96,9 +97,9 @@ Area occupied can be measured in two ways:
             ),
         )
 
-        self.divider = cellprofiler_core.setting.Divider()
+        self.divider = Divider()
 
-        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select binary images to measure",
             [],
             doc="""*(Used only if ‘{O_BINARY_IMAGE}’ is to be measured)*
@@ -110,7 +111,7 @@ like to measure the area occupied by the foreground in the image.
             ),
         )
 
-        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select object sets to measure",
             [],
             doc="""*(Used only if ‘{O_OBJECTS}’ are to be measured)*
@@ -125,24 +126,20 @@ Select the previously identified objects you would like to measure.""".format(
         if self.operand_choice in (O_BINARY_IMAGE, O_BOTH):
             images = set()
             if len(self.images_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError(
-                    "No images selected", self.images_list
-                )
+                raise ValidationError("No images selected", self.images_list)
             for image_name in self.images_list.value:
                 if image_name in images:
-                    raise cellprofiler_core.setting.ValidationError(
+                    raise ValidationError(
                         "%s has already been selected" % image_name, image_name
                     )
                 images.add(image_name)
         if self.operand_choice in (O_OBJECTS, O_BOTH):
             objects = set()
             if len(self.objects_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError(
-                    "No objects selected", self.objects_list
-                )
+                raise ValidationError("No objects selected", self.objects_list)
             for object_name in self.objects_list.value:
                 if object_name in objects:
-                    raise cellprofiler_core.setting.ValidationError(
+                    raise ValidationError(
                         "%s has already been selected" % object_name, object_name
                     )
                 objects.add(object_name)
@@ -315,11 +312,11 @@ Select the previously identified objects you would like to measure.""".format(
                 for feature in self._get_feature_names(pipeline):
                     columns.append(
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             "{:s}_{:s}_{:s}".format(
                                 C_AREA_OCCUPIED, feature, object_set,
                             ),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                     )
         if self.operand_choice in (O_BOTH, O_BINARY_IMAGE):
@@ -327,26 +324,23 @@ Select the previously identified objects you would like to measure.""".format(
                 for feature in self._get_feature_names(pipeline):
                     columns.append(
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             "{:s}_{:s}_{:s}".format(
                                 C_AREA_OCCUPIED, feature, image_set,
                             ),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                     )
 
         return columns
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return [C_AREA_OCCUPIED]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == C_AREA_OCCUPIED
-        ):
+        if object_name == "Image" and category == C_AREA_OCCUPIED:
             return self._get_feature_names(pipeline)
         return []
 

@@ -31,10 +31,30 @@ import numpy
 import numpy.ma
 import scipy.ndimage
 import scipy.sparse
-import six
 import skimage.exposure
 import wx
 import wx.grid
+from cellprofiler_core.image import FileImage
+from cellprofiler_core.preferences import (
+    reset_cpfigure_position,
+    get_interpolation_mode,
+    IM_NEAREST,
+    IM_BILINEAR,
+    IM_BICUBIC,
+    get_next_cpfigure_position,
+    get_title_font_name,
+    get_title_font_size,
+    get_normalization_factor,
+    get_primary_outline_color,
+    get_secondary_outline_color,
+    get_tertiary_outline_color,
+    get_default_colormap,
+    INTENSITY_MODE_GAMMA,
+    INTENSITY_MODE_LOG,
+    INTENSITY_MODE_RAW,
+    get_intensity_mode,
+)
+from cellprofiler_core.utilities.core.object import overlay_labels
 
 import cellprofiler.gui
 import cellprofiler.gui.artist
@@ -42,11 +62,6 @@ import cellprofiler.gui.errordialog
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.tools
-import cellprofiler_core.modules.loadimages
-import cellprofiler_core.object
-import cellprofiler_core.preferences
-
-logger = logging.getLogger(__name__)
 
 #
 # Monkey-patch the backend canvas to only report the truly supported filetypes
@@ -184,7 +199,7 @@ def close_all(parent):
         else:
             window.Close()
 
-    cellprofiler_core.preferences.reset_cpfigure_position()
+    reset_cpfigure_position()
 
 
 def allow_sharexy(fn):
@@ -243,7 +258,7 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
     filename = url[(url.rfind("/") + 1) :]
 
     try:
-        provider = cellprofiler_core.modules.loadimages.LoadImagesImageProvider(
+        provider = FileImage(
             filename=filename,
             name=os.path.splitext(filename)[0],
             pathname=os.path.dirname(url),
@@ -285,12 +300,12 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
 
 
 def get_matplotlib_interpolation_preference():
-    interpolation = cellprofiler_core.preferences.get_interpolation_mode()
-    if interpolation == cellprofiler_core.preferences.IM_NEAREST:
+    interpolation = get_interpolation_mode()
+    if interpolation == IM_NEAREST:
         return "nearest"
-    elif interpolation == cellprofiler_core.preferences.IM_BILINEAR:
+    elif interpolation == IM_BILINEAR:
         return "bilinear"
-    elif interpolation == cellprofiler_core.preferences.IM_BICUBIC:
+    elif interpolation == IM_BICUBIC:
         return "bilinear"
     return "nearest"
 
@@ -348,7 +363,7 @@ class Figure(wx.Frame):
         """
         global window_ids
         if pos == wx.DefaultPosition:
-            pos = cellprofiler_core.preferences.get_next_cpfigure_position()
+            pos = get_next_cpfigure_position()
         super(Figure, self).__init__(parent, identifier, title, pos, size, style, name)
         self.close_fn = on_close
         self.mouse_mode = MODE_NONE
@@ -637,10 +652,11 @@ class Figure(wx.Frame):
     def on_button_press(self, event):
         if not hasattr(self, "subplots"):
             return
-
-        if event.inaxes in self.subplots.flatten():
-            self.mouse_down = (event.xdata, event.ydata)
-
+        if event.inaxes in self.subplots.flatten() or self.dimensions == 3:
+            if event.xdata is not None:
+                self.mouse_down = (event.xdata, event.ydata)
+            else:
+                self.mouse_down = None
             if self.mouse_mode == MODE_MEASURE_LENGTH:
                 self.on_measure_length_mouse_down(event)
 
@@ -991,11 +1007,9 @@ class Figure(wx.Frame):
         x - subplot's column
         y - subplot's row
         """
-        fontname = cellprofiler_core.preferences.get_title_font_name()
+        fontname = get_title_font_name()
         self.subplot(x, y).set_title(
-            fill(title, 30),
-            fontname=fontname,
-            fontsize=cellprofiler_core.preferences.get_title_font_size(),
+            fill(title, 30), fontname=fontname, fontsize=get_title_font_size(),
         )
 
     def clear_subplot(self, x, y):
@@ -1180,7 +1194,7 @@ class Figure(wx.Frame):
 
         def adjust_gamma(evt):
             dlg = wx.TextEntryDialog(self, "Normalization factor", "Adjust gamma")
-            dlg.SetValue(cellprofiler_core.preferences.get_normalization_factor())
+            dlg.SetValue(get_normalization_factor())
             if dlg.ShowModal() == wx.ID_OK:
                 params["normalize_args"] = {"gamma": float(dlg.GetValue())}
             dlg.Destroy()
@@ -1189,7 +1203,7 @@ class Figure(wx.Frame):
 
         def adjust_log(evt):
             dlg = wx.TextEntryDialog(self, "Normalization factor", "Log normalization")
-            dlg.SetValue(cellprofiler_core.preferences.get_normalization_factor())
+            dlg.SetValue(get_normalization_factor())
             if dlg.ShowModal() == wx.ID_OK:
                 params["normalize_args"] = {"gain": float(dlg.GetValue())}
             dlg.Destroy()
@@ -1281,6 +1295,7 @@ class Figure(wx.Frame):
                     if identifier == evt.Id:
                         params["rgb_mask"][idx] = not params["rgb_mask"][idx]
                 refresh_figure()
+
             for identifier in ids:
                 self.Bind(wx.EVT_MENU, toggle_channels, id=identifier)
 
@@ -1471,22 +1486,18 @@ class Figure(wx.Frame):
                 interpolation = get_matplotlib_interpolation_preference()
 
             if normalize is None:
-                normalize = cellprofiler_core.preferences.get_intensity_mode()
+                normalize = get_intensity_mode()
 
-                if normalize == cellprofiler_core.preferences.INTENSITY_MODE_RAW:
+                if normalize == INTENSITY_MODE_RAW:
                     normalize = False
                 elif normalize == False:
                     normalize = False
-                elif normalize == cellprofiler_core.preferences.INTENSITY_MODE_LOG:
+                elif normalize == INTENSITY_MODE_LOG:
                     normalize = "log"
-                    normalize_args["gain"] = float(
-                        cellprofiler_core.preferences.get_normalization_factor()
-                    )
-                elif normalize == cellprofiler_core.preferences.INTENSITY_MODE_GAMMA:
+                    normalize_args["gain"] = float(get_normalization_factor())
+                elif normalize == INTENSITY_MODE_GAMMA:
                     normalize = "gamma"
-                    normalize_args["gamma"] = float(
-                        cellprofiler_core.preferences.get_normalization_factor()
-                    )
+                    normalize_args["gamma"] = float(get_normalization_factor())
                 else:
                     normalize = True
 
@@ -1502,23 +1513,13 @@ class Figure(wx.Frame):
 
                     if CPLD_OUTLINE_COLOR not in d:
                         if i == 0:
-                            d[
-                                CPLD_OUTLINE_COLOR
-                            ] = (
-                                cellprofiler_core.preferences.get_primary_outline_color()
-                            )
+                            d[CPLD_OUTLINE_COLOR] = get_primary_outline_color()
                         elif i == 1:
-                            d[
-                                CPLD_OUTLINE_COLOR
-                            ] = (
-                                cellprofiler_core.preferences.get_secondary_outline_color()
-                            )
+                            d[CPLD_OUTLINE_COLOR] = get_secondary_outline_color()
                         elif i == 2:
-                            d[
-                                CPLD_OUTLINE_COLOR
-                            ] = (
-                                cellprofiler_core.preferences.get_tertiary_outline_color()
-                            )
+                            d[CPLD_OUTLINE_COLOR] = get_tertiary_outline_color()
+                        else:
+                            d[CPLD_OUTLINE_COLOR] = wx.Colour(255, 255, 255)
 
                     if CPLD_MODE not in d:
                         d[CPLD_MODE] = CPLDM_OUTLINES
@@ -1527,9 +1528,7 @@ class Figure(wx.Frame):
                         d[CPLD_LINE_WIDTH] = 1
 
                     if CPLD_ALPHA_COLORMAP not in d:
-                        d[
-                            CPLD_ALPHA_COLORMAP
-                        ] = cellprofiler_core.preferences.get_default_colormap()
+                        d[CPLD_ALPHA_COLORMAP] = get_default_colormap()
 
                     if CPLD_ALPHA_VALUE not in d:
                         d[CPLD_ALPHA_VALUE] = 0.25
@@ -1570,9 +1569,7 @@ class Figure(wx.Frame):
             self.subplot_params[(x, y)].update(kwargs)
 
             if kwargs["colormap"] is None:
-                kwargs[
-                    "colormap"
-                ] = cellprofiler_core.preferences.get_default_colormap()
+                kwargs["colormap"] = get_default_colormap()
 
             # and fetch back out
             title = kwargs["title"]
@@ -1623,7 +1620,7 @@ class Figure(wx.Frame):
             else:
                 tick_vmax = image.max()
 
-            if isinstance(colormap, six.string_types):
+            if isinstance(colormap, str):
                 colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
 
             # NOTE: We bind this event each time imshow is called to a new closure
@@ -1756,7 +1753,7 @@ class Figure(wx.Frame):
 
         # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
         if image.shape[2] > 3:
-            logger.warn(
+            logging.warn(
                 "Multichannel display is only supported for RGB (3-channel) data."
                 " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
                     image.shape[2]
@@ -1815,7 +1812,7 @@ class Figure(wx.Frame):
         """
         if background_image is not None:
             opacity = 0.7
-            label_image = cellprofiler_core.object.overlay_labels(
+            label_image = overlay_labels(
                 labels=image,
                 opacity=opacity,
                 pixel_data=background_image,
@@ -1826,8 +1823,10 @@ class Figure(wx.Frame):
         else:
             # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
-            if colormap == None:
-                colormap = self.return_cmap()
+            if not colormap:
+                colormap = self.return_cmap(
+                    numpy.max(image) if numpy.max(image) > 255 else None
+                )
             else:
                 colormap = colormap
 
@@ -1846,11 +1845,9 @@ class Figure(wx.Frame):
             colormap=colormap,
         )
 
-    def return_cmap(self):
+    def return_cmap(self, nindexes=None):
         # Get the colormap from the user preferences
-        colormap = matplotlib.cm.get_cmap(
-            cellprofiler_core.preferences.get_default_colormap()
-        )
+        colormap = matplotlib.cm.get_cmap(get_default_colormap(), lut=nindexes,)
         # Initialize the colormap so we have access to the LUT
         colormap._init()
         # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,
@@ -1904,9 +1901,7 @@ class Figure(wx.Frame):
         image = numpy.zeros(list(shape) + [3], numpy.float)
 
         if len(ijv) > 0:
-            cm = matplotlib.cm.get_cmap(
-                cellprofiler_core.preferences.get_default_colormap()
-            )
+            cm = matplotlib.cm.get_cmap(get_default_colormap())
 
             max_label = numpy.max(ijv[:, 2])
 
@@ -2150,6 +2145,7 @@ class Figure(wx.Frame):
             elif title == "short":
                 title = "Per-image means"
             ystart += 0.1
+            height -= 0.1
             axes = self.subplot(x, y)
             if not self.figure.get_constrained_layout():
                 self.figure.tight_layout()
@@ -2164,7 +2160,7 @@ class Figure(wx.Frame):
         ctrl.CreateGrid(nrows, ncols)
         if col_labels is not None:
             for i, value in enumerate(col_labels):
-                ctrl.SetColLabelValue(i, six.text_type(value))
+                ctrl.SetColLabelValue(i, str(value))
         else:
             ctrl.SetColLabelSize(0)
         if row_labels is not None:
@@ -2172,7 +2168,7 @@ class Figure(wx.Frame):
             ctrl.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
             max_width = 0
             for i, value in enumerate(row_labels):
-                value = six.text_type(value)
+                value = str(value)
                 ctrl.SetRowLabelValue(i, value)
                 max_width = max(
                     max_width,
@@ -2184,7 +2180,7 @@ class Figure(wx.Frame):
 
         for i, row in enumerate(statistics):
             for j, value in enumerate(row):
-                ctrl.SetCellValue(i, j, six.text_type(value))
+                ctrl.SetCellValue(i, j, str(value))
                 ctrl.SetReadOnly(i, j, True)
         ctrl.AutoSize()
         ctrl.Show()

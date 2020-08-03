@@ -4,10 +4,12 @@ import six.moves
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
+import cellprofiler_core.modules
 import cellprofiler.modules.identifytertiaryobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+import tests.modules
 
 PRIMARY = "primary"
 SECONDARY = "secondary"
@@ -465,9 +467,8 @@ def test_relationships():
 
 
 def test_load_v3():
-    with open(
-        "./tests/resources/modules/identifytertiaryobjects/v3.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory("identifytertiaryobjects/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

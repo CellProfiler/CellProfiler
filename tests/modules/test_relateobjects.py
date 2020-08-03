@@ -4,6 +4,17 @@ import unittest
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
+from cellprofiler_core.constants.measurement import (
+    C_PARENT,
+    GROUP_NUMBER,
+    GROUP_INDEX,
+    COLTYPE_FLOAT,
+    COLTYPE_INTEGER,
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+    FF_PARENT,
+)
+
 import cellprofiler.modules.relateobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -15,7 +26,7 @@ cellprofiler_core.preferences.set_headless()
 PARENT_OBJECTS = "parentobjects"
 CHILD_OBJECTS = "childobjects"
 MEASUREMENT = "Measurement"
-IGNORED_MEASUREMENT = "%s_Foo" % cellprofiler_core.measurement.C_PARENT
+IGNORED_MEASUREMENT = "%s_Foo" % C_PARENT
 
 
 class TestRelateObjects(unittest.TestCase):
@@ -27,16 +38,8 @@ class TestRelateObjects(unittest.TestCase):
             class FakeModule(cellprofiler_core.module.Module):
                 def get_measurement_columns(self, pipeline):
                     return [
-                        (
-                            CHILD_OBJECTS,
-                            MEASUREMENT,
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
-                        ),
-                        (
-                            CHILD_OBJECTS,
-                            IGNORED_MEASUREMENT,
-                            cellprofiler_core.measurement.COLTYPE_INTEGER,
-                        ),
+                        (CHILD_OBJECTS, MEASUREMENT, COLTYPE_FLOAT,),
+                        (CHILD_OBJECTS, IGNORED_MEASUREMENT, COLTYPE_INTEGER,),
                     ]
 
             module = FakeModule()
@@ -56,8 +59,8 @@ class TestRelateObjects(unittest.TestCase):
         image_set_list = cellprofiler_core.image.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         m = cellprofiler_core.measurement.Measurements()
-        m.add_image_measurement(cellprofiler_core.measurement.GROUP_NUMBER, 1)
-        m.add_image_measurement(cellprofiler_core.measurement.GROUP_INDEX, 1)
+        m.add_image_measurement(GROUP_NUMBER, 1)
+        m.add_image_measurement(GROUP_INDEX, 1)
         workspace = cellprofiler_core.workspace.Workspace(
             pipeline, module, image_set, object_set, m, image_set_list
         )
@@ -80,11 +83,7 @@ class TestRelateObjects(unittest.TestCase):
         module = workspace.module
         pipeline = workspace.pipeline
         measurements = workspace.measurements
-        object_names = [
-            x
-            for x in measurements.get_object_names()
-            if x != cellprofiler_core.measurement.IMAGE
-        ]
+        object_names = [x for x in measurements.get_object_names() if x != "Image"]
         features = [
             [
                 feature
@@ -94,9 +93,7 @@ class TestRelateObjects(unittest.TestCase):
             for object_name in object_names
         ]
         columns = [
-            x
-            for x in module.get_measurement_columns(pipeline)
-            if x[0] != cellprofiler_core.measurement.IMAGE
+            x for x in module.get_measurement_columns(pipeline) if x[0] != "Image"
         ]
         self.assertEqual(sum([len(f) for f in features]), len(columns))
         for column in columns:
@@ -378,20 +375,14 @@ class TestRelateObjects(unittest.TestCase):
         mcolumns = module.get_measurement_columns(workspace.pipeline)
         assert any([c[0] == PARENT_OBJECTS and c[1] == feat_mean for c in mcolumns])
         m = workspace.measurements
-        m[
-            CHILD_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_X, 1
-        ] = child_centers[1]
-        m[
-            CHILD_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, 1
-        ] = child_centers[0]
+        m[CHILD_OBJECTS, M_LOCATION_CENTER_X, 1] = child_centers[1]
+        m[CHILD_OBJECTS, M_LOCATION_CENTER_Y, 1] = child_centers[0]
         module.run(workspace)
 
         v = m[PARENT_OBJECTS, feat_mean, 1]
 
         plabel = m[
-            CHILD_OBJECTS,
-            "_".join((cellprofiler_core.measurement.C_PARENT, PARENT_OBJECTS)),
-            1,
+            CHILD_OBJECTS, "_".join((C_PARENT, PARENT_OBJECTS)), 1,
         ]
 
         assert len(v) == 4
@@ -473,9 +464,7 @@ class TestRelateObjects(unittest.TestCase):
 
         workspace, module = self.make_workspace(parents, children)
 
-        workspace.measurements.add_measurement(
-            "Step", cellprofiler_core.measurement.FF_PARENT % PARENT_OBJECTS, []
-        )
+        workspace.measurements.add_measurement("Step", FF_PARENT % PARENT_OBJECTS, [])
 
         module.step_parent_names[0].step_parent_name.value = "Step"
 

@@ -13,10 +13,12 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
+import tests.modules
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/morph/v2.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("morph/v2.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -55,9 +57,8 @@ def test_load_v2():
 
 # https://github.com/CellProfiler/CellProfiler/issues/3349
 def test_load_with_extracted_operations():
-    with open(
-        "./tests/resources/modules/morph/extracted_operations.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory("morph/extracted_operations.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     def callback(caller, event):

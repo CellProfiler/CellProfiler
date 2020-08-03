@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<body style = "font-family: sans-serif; font-size: small;">
+<h2 class="title">Making measurements</h2>
+
+    <p>In most cases, the reason for identifying image features is to make
+    measurements on them. CellProfiler has a number of modules dedicated to
+    calculating measurements of various types, on both images and objects;
+    these are accessible by clicking the <img src=
+    "{{MODULE_ADD_BUTTON}}">&nbsp;button (located underneath the pipeline
+    panel)</p>
+    <p>Below is a list of measurement categories; these is not meant to be
+    comprehensive, but are sufficient for most assays:</p>
+    <table border="1" cellpadding="10">
+        <tr align="center" bgcolor="#555555">
+            <th><span style="color: #FFFFFF; "><b>Measurement</b></span></th>
+            <th><span style="color: #FFFFFF; "><b>Description</b></span></th>
+            <th><span style="color: #FFFFFF; "><b>Relevant modules</b></span></th>
+        </tr>
+        <tr align="center">
+            <td><i>Count</i></td>
+            <td>The number of objects in an image.</td>
+            <td>All modules which produce a new set of objects, such as
+            <b>IdentifyPrimaryObjects</b></td>
+        </tr>
+        <tr align="center">
+            <td><i>Location</i></td>
+            <td>The (x,y) coordinates of each object, which can be of interest
+            in time-lapse imaging.</td>
+            <td>All modules which produce a new set of objects</td>
+        </tr>
+        <tr align="center">
+            <td><i>Morphology</i></td>
+            <td>Quantities defining the geometry of the object, as defined by
+            its external boundary. This includes quantities like area,
+            perimeter, etc.</td>
+            <td>
+            <b>MeasureImageAreaOccupied</b>,<b>MeasureObjectSizeShape</b></td>
+        </tr>
+        <tr align="center">
+            <td><i>Intensity</i></td>
+            <td>In fluorescence assays, the intensity of a pixel is related to
+            the substance labeled with a fluorescence marker at that location.
+            The maximal, minimal, mean, and integrated (total) intensity of
+            each marker can be measured as well as correlations in intensity
+            between channels.</td>
+            <td><b>MeasureObjectIntensity</b>, <b>MeasureImageIntensity</b>,
+            <b>MeasureObjectRadialDistribution</b>,
+            <b>MeasureColocalization</b></td>
+        </tr>
+        <tr align="center">
+            <td><i>Texture</i></td>
+            <td>These quantities characterize spatial smoothness and regularity
+            across an object, and are often useful for characterizing the fine
+            patterns of localization.</td>
+            <td><b>MeasureTexture</b></td>
+        </tr>
+        <tr align="center">
+            <td><i>Clustering</i></td>
+            <td>Spatial relationships can be characterized by adjacency
+            descriptors, such as the number of neighboring objects, the percent
+            of the perimeter touching neighbor objects, etc.</td>
+            <td><b>MeasureObjectNeighbors</b></td>
+        </tr>
+    </table>
+    <p>For more information on these modules and how to configure them for best
+    performance, please see the detailed help by selecting the module and
+    clicking the <img src="{{MODULE_HELP_BUTTON}}">&nbsp; button at the bottom of
+    the pipeline panel. You can also find details on measurement nomenclature
+    when exporting under <i>Help > Using Your Output > How Measurements are Named</i></p>
+    {{GO_BACK}}
+</body>
+</html>

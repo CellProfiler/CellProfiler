@@ -1,4 +1,12 @@
-# coding=utf-8
+from cellprofiler_core.constants.module import HELP_ON_MEASURING_DISTANCES
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber, GridSubscriber
+from cellprofiler_core.setting.text import LabelName, Integer
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_location_measurements,
+    add_object_count_measurements,
+    get_object_measurement_columns,
+)
 
 from cellprofiler.modules import _help
 
@@ -56,17 +64,12 @@ See also **DefineGrid**.
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-import numpy as np
+import numpy
 from centrosome.cpmorphology import centers_of_labels
 
-import cellprofiler.grid as cpg
-import cellprofiler_core.module as cpm
-import cellprofiler_core.object as cpo
-import cellprofiler_core.setting as cps
-from cellprofiler_core.modules.identify import add_object_count_measurements
-from cellprofiler_core.modules.identify import add_object_location_measurements
-from cellprofiler_core.modules.identify import get_object_measurement_columns
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
+from cellprofiler.grid import Grid
+from cellprofiler_core.module import Module
+from cellprofiler_core.object import Objects
 
 SHAPE_RECTANGLE = "Rectangle Forced Location"
 SHAPE_CIRCLE_FORCED = "Circle Forced Location"
@@ -81,7 +84,7 @@ FAIL_ANY_PREVIOUS = "Any Previous"
 FAIL_FIRST = "The First"
 
 
-class IdentifyObjectsInGrid(cpm.Module):
+class IdentifyObjectsInGrid(Module):
     module_name = "IdentifyObjectsInGrid"
     variable_revision_number = 3
     category = "Object Processing"
@@ -91,13 +94,13 @@ class IdentifyObjectsInGrid(cpm.Module):
 
         create_settings is called at the end of initialization.
         """
-        self.grid_name = cps.GridNameSubscriber(
+        self.grid_name = GridSubscriber(
             "Select the defined grid",
             "None",
             doc="""Select the name of a grid created by a previous **DefineGrid** module.""",
         )
 
-        self.output_objects_name = cps.ObjectNameProvider(
+        self.output_objects_name = LabelName(
             "Name the objects to be identified",
             "Wells",
             doc="""\
@@ -105,7 +108,7 @@ Enter the name of the grid objects identified by this module. These objects
 will be available for further measurement and processing in subsequent modules.""",
         )
 
-        self.shape_choice = cps.Choice(
+        self.shape_choice = Choice(
             "Select object shapes and locations",
             [SHAPE_RECTANGLE, SHAPE_CIRCLE_FORCED, SHAPE_CIRCLE_NATURAL, SHAPE_NATURAL],
             doc="""\
@@ -149,7 +152,7 @@ objects’ shapes and locations:
             % globals(),
         )
 
-        self.diameter_choice = cps.Choice(
+        self.diameter_choice = Choice(
             "Specify the circle diameter automatically?",
             [AM_AUTOMATIC, AM_MANUAL],
             doc="""\
@@ -165,7 +168,7 @@ There are two methods for selecting the circle diameter:
             % globals(),
         )
 
-        self.diameter = cps.Integer(
+        self.diameter = Integer(
             "Circle diameter",
             20,
             minval=2,
@@ -174,12 +177,13 @@ There are two methods for selecting the circle diameter:
 specified manually)*
 
 Enter the diameter to be used for each grid circle, in pixels.
-%(HELP_ON_MEASURING_DISTANCES)s
-"""
-            % globals(),
+{dist}
+""".format(
+                dist=HELP_ON_MEASURING_DISTANCES
+            ),
         )
 
-        self.guiding_object_name = cps.ObjectNameSubscriber(
+        self.guiding_object_name = LabelSubscriber(
             "Select the guiding objects",
             "None",
             doc="""\
@@ -247,7 +251,7 @@ depending on the method chosen.
             labels = self.run_natural_circle(workspace, gridding)
         elif self.shape_choice == SHAPE_NATURAL:
             labels = self.run_natural(workspace, gridding)
-        objects = cpo.Objects()
+        objects = Objects()
         objects.segmented = labels
         object_count = gridding.rows * gridding.columns
         workspace.object_set.add_objects(objects, self.output_objects_name.value)
@@ -267,25 +271,27 @@ depending on the method chosen.
 
     def fill_grid(self, workspace, gridding):
         """Fill a labels matrix by labeling each rectangle in the grid"""
-        assert isinstance(gridding, cpg.Grid)
-        i, j = np.mgrid[0 : gridding.image_height, 0 : gridding.image_width]
+        assert isinstance(gridding, Grid)
+        i, j = numpy.mgrid[0 : gridding.image_height, 0 : gridding.image_width]
         i_min = int(gridding.y_location_of_lowest_y_spot - gridding.y_spacing / 2)
         j_min = int(gridding.x_location_of_lowest_x_spot - gridding.x_spacing / 2)
-        i = np.floor((i - i_min) / gridding.y_spacing).astype(int)
-        j = np.floor((j - j_min) / gridding.x_spacing).astype(int)
+        i = numpy.floor((i - i_min) / gridding.y_spacing).astype(int)
+        j = numpy.floor((j - j_min) / gridding.x_spacing).astype(int)
         mask = (
             (i >= 0)
             & (j >= 0)
             & (i < gridding.spot_table.shape[0])
             & (j < gridding.spot_table.shape[1])
         )
-        labels = np.zeros((int(gridding.image_height), int(gridding.image_width)), int)
+        labels = numpy.zeros(
+            (int(gridding.image_height), int(gridding.image_width)), int
+        )
         labels[mask] = gridding.spot_table[i[mask], j[mask]]
         return labels
 
     def run_forced_circle(self, workspace, gridding):
         """Return a labels matrix composed of circles centered in the grids"""
-        i, j = np.mgrid[0 : gridding.rows, 0 : gridding.columns]
+        i, j = numpy.mgrid[0 : gridding.rows, 0 : gridding.columns]
 
         return self.run_circle(
             workspace, gridding, gridding.y_locations[i], gridding.x_locations[j]
@@ -300,18 +306,18 @@ depending on the method chosen.
                    This should have one coordinate per grid cell.
         """
 
-        assert isinstance(gridding, cpg.Grid)
+        assert isinstance(gridding, Grid)
         radius = self.get_radius(workspace, gridding)
         labels = self.fill_grid(workspace, gridding)
         labels = self.fit_labels_to_guiding_objects(workspace, labels)
-        spot_center_i_flat = np.zeros(gridding.spot_table.max() + 1)
-        spot_center_j_flat = np.zeros(gridding.spot_table.max() + 1)
+        spot_center_i_flat = numpy.zeros(gridding.spot_table.max() + 1)
+        spot_center_j_flat = numpy.zeros(gridding.spot_table.max() + 1)
         spot_center_i_flat[gridding.spot_table.flatten()] = spot_center_i.flatten()
         spot_center_j_flat[gridding.spot_table.flatten()] = spot_center_j.flatten()
 
         centers_i = spot_center_i_flat[labels]
         centers_j = spot_center_j_flat[labels]
-        i, j = np.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
+        i, j = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
         #
         # Add .5 to measure from the center of the pixel
         #
@@ -320,7 +326,7 @@ depending on the method chosen.
         #
         # Remove any label with a bogus center (no guiding object)
         #
-        labels[np.isnan(centers_i) | np.isnan(centers_j)] = 0
+        labels[numpy.isnan(centers_i) | numpy.isnan(centers_j)] = 0
         # labels, count = relabel(labels)
         return labels
 
@@ -333,10 +339,10 @@ depending on the method chosen.
         labels = self.fill_grid(workspace, gridding)
         labels[guide_label[0 : labels.shape[0], 0 : labels.shape[1]] == 0] = 0
         centers_i, centers_j = centers_of_labels(labels)
-        nmissing = np.max(gridding.spot_table) - len(centers_i)
+        nmissing = numpy.max(gridding.spot_table) - len(centers_i)
         if nmissing > 0:
-            centers_i = np.hstack((centers_i, [np.NaN] * nmissing))
-            centers_j = np.hstack((centers_j, [np.NaN] * nmissing))
+            centers_i = numpy.hstack((centers_i, [numpy.NaN] * nmissing))
+            centers_j = numpy.hstack((centers_j, [numpy.NaN] * nmissing))
         #
         # Broadcast these using the spot table
         #
@@ -367,7 +373,7 @@ depending on the method chosen.
 
         guide_label = self.get_guide_labels(workspace)
         if any(guide_label.shape[i] > labels.shape[i] for i in range(2)):
-            result = np.zeros(
+            result = numpy.zeros(
                 [max(guide_label.shape[i], labels.shape[i]) for i in range(2)], int
             )
             result[0 : labels.shape[0], 0 : labels.shape[1]] = labels
@@ -379,14 +385,14 @@ depending on the method chosen.
         if self.diameter_choice == AM_MANUAL:
             return self.diameter.value / 2
         labels = self.filtered_labels(workspace, gridding)
-        areas = np.bincount(labels[labels != 0])
+        areas = numpy.bincount(labels[labels != 0])
         if len(areas) == 0:
             raise RuntimeError(
                 "Failed to calculate average radius: no grid objects found in %s"
                 % self.guiding_object_name.value
             )
-        median_area = np.median(areas[areas != 0])
-        return max(1, np.sqrt(median_area / np.pi))
+        median_area = numpy.median(areas[areas != 0])
+        return max(1, numpy.sqrt(median_area / numpy.pi))
 
     def filtered_labels(self, workspace, gridding):
         """Filter labels by proximity to edges of grid"""
@@ -395,22 +401,22 @@ depending on the method chosen.
         # a label might be something small in a corner of the grid.
         # This function filters out those parts of the guide labels matrix
         #
-        assert isinstance(gridding, cpg.Grid)
+        assert isinstance(gridding, Grid)
         guide_labels = self.get_guide_labels(workspace)
         labels = self.fill_grid(workspace, gridding)
 
-        centers = np.zeros((2, np.max(guide_labels) + 1))
+        centers = numpy.zeros((2, numpy.max(guide_labels) + 1))
         centers[:, 1:] = centers_of_labels(guide_labels)
         bad_centers = (
-            (~np.isfinite(centers[0, :]))
-            | (~np.isfinite(centers[1, :]))
+            (~numpy.isfinite(centers[0, :]))
+            | (~numpy.isfinite(centers[1, :]))
             | (centers[0, :] >= labels.shape[0])
             | (centers[1, :] >= labels.shape[1])
         )
-        centers = np.round(centers).astype(int)
+        centers = numpy.round(centers).astype(int)
         masked_labels = labels.copy()
-        x_border = int(np.ceil(gridding.x_spacing / 10))
-        y_border = int(np.ceil(gridding.y_spacing / 10))
+        x_border = int(numpy.ceil(gridding.x_spacing / 10))
+        y_border = int(numpy.ceil(gridding.y_spacing / 10))
         #
         # erase anything that's not like what's next to it
         #
@@ -435,8 +441,8 @@ depending on the method chosen.
         # each guide object pixel. Mask out guide labels that don't match
         # centers.
         #
-        mask = np.zeros(guide_labels.shape, bool)
-        ii_labels = np.index_exp[0 : labels.shape[0], 0 : labels.shape[1]]
+        mask = numpy.zeros(guide_labels.shape, bool)
+        ii_labels = numpy.index_exp[0 : labels.shape[0], 0 : labels.shape[1]]
         mask[ii_labels] = lcenters[guide_labels[ii_labels]] != labels
         mask[guide_labels == 0] = True
         mask[lcenters[guide_labels] == 0] = True

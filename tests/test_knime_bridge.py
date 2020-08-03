@@ -22,7 +22,10 @@ class TestKnimeBridge(unittest.TestCase):
         self.kill_pub = context.socket(zmq.PUB)
         self.kill_pub.bind(self.notify_addr)
         self.server = cellprofiler.knime_bridge.KnimeBridgeServer(
-            context, self.socket_addr, self.notify_addr, cellprofiler.worker.NOTIFY_STOP
+            context,
+            self.socket_addr,
+            self.notify_addr,
+            cellprofiler_core.worker.NOTIFY_STOP,
         )
         self.server.start()
         self.session_id = uuid.uuid4().hex
@@ -30,7 +33,7 @@ class TestKnimeBridge(unittest.TestCase):
         self.socket.connect(self.socket_addr)
 
     def tearDown(self):
-        self.kill_pub.send(cellprofiler.worker.NOTIFY_STOP)
+        self.kill_pub.send(cellprofiler_core.worker.NOTIFY_STOP)
         self.server.join()
         self.kill_pub.close()
         self.socket.close()

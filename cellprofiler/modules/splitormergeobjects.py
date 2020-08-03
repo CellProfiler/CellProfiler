@@ -1,18 +1,26 @@
-# coding=utf-8
+import centrosome.cpmorphology
+import numpy
+import scipy.ndimage
+from cellprofiler_core.constants.measurement import (
+    C_PARENT,
+    FF_CHILDREN_COUNT,
+    FF_PARENT,
+    COLTYPE_INTEGER,
+)
+from cellprofiler_core.module import Module
+from cellprofiler_core.object import Objects
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import Integer, Float, LabelName
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_count_measurements,
+    add_object_location_measurements,
+    get_object_measurement_columns,
+)
 
-import centrosome.cpmorphology as morph
-import numpy as np
-import scipy.ndimage as scind
-
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.object as cpo
-import cellprofiler_core.setting as cps
-from cellprofiler_core.measurement import C_PARENT, FF_CHILDREN_COUNT, FF_PARENT
 from cellprofiler.modules import _help
-from cellprofiler_core.modules.identify import add_object_count_measurements
-from cellprofiler_core.modules.identify import add_object_location_measurements
-from cellprofiler_core.modules.identify import get_object_measurement_columns
 
 __doc__ = """\
 SplitOrMergeObjects
@@ -99,13 +107,13 @@ UM_DISCONNECTED = "Disconnected"
 UM_CONVEX_HULL = "Convex hull"
 
 
-class SplitOrMergeObjects(cpm.Module):
+class SplitOrMergeObjects(Module):
     module_name = "SplitOrMergeObjects"
     category = "Object Processing"
     variable_revision_number = 6
 
     def create_settings(self):
-        self.objects_name = cps.ObjectNameSubscriber(
+        self.objects_name = LabelSubscriber(
             "Select the input objects",
             "None",
             doc="""\
@@ -115,7 +123,7 @@ use any objects that were created in previous modules, such as
 **IdentifyPrimaryObjects** or **IdentifySecondaryObjects**.""",
         )
 
-        self.output_objects_name = cps.ObjectNameProvider(
+        self.output_objects_name = LabelName(
             "Name the new objects",
             "RelabeledNuclei",
             doc="""\
@@ -124,7 +132,7 @@ whose numbers have been reassigned).
 You can use this name in subsequent modules that take objects as inputs.""",
         )
 
-        self.relabel_option = cps.Choice(
+        self.relabel_option = Choice(
             "Operation",
             [OPTION_MERGE, OPTION_SPLIT],
             doc="""\
@@ -140,7 +148,7 @@ You can choose one of the following options:
             % globals(),
         )
 
-        self.merge_option = cps.Choice(
+        self.merge_option = Choice(
             "Merging method",
             [UNIFY_DISTANCE, UNIFY_PARENT],
             doc="""\
@@ -158,7 +166,7 @@ You can merge objects in one of two ways:
             % globals(),
         )
 
-        self.merging_method = cps.Choice(
+        self.merging_method = Choice(
             "Output object type",
             [UM_DISCONNECTED, UM_CONVEX_HULL],
             doc="""\
@@ -174,7 +182,7 @@ create an output object that is the convex hull around them all."""
             % globals(),
         )
 
-        self.parent_object = cps.Choice(
+        self.parent_object = Choice(
             "Select the parent object",
             ["None"],
             choices_fn=self.get_parent_choices,
@@ -189,7 +197,7 @@ Please note the following:
    them here.""",
         )
 
-        self.distance_threshold = cps.Integer(
+        self.distance_threshold = Integer(
             "Maximum distance within which to merge objects",
             0,
             minval=0,
@@ -208,7 +216,7 @@ components. If you want to add pixels around objects, see
             % globals(),
         )
 
-        self.wants_image = cps.Binary(
+        self.wants_image = Binary(
             "Merge using a grayscale image?",
             False,
             doc="""\
@@ -222,7 +230,7 @@ objects within the grayscale image are met."""
             % globals(),
         )
 
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the grayscale image to guide merging",
             "None",
             doc="""\
@@ -232,7 +240,7 @@ merging)*
 Select the name of an image loaded or created by a previous module.""",
         )
 
-        self.minimum_intensity_fraction = cps.Float(
+        self.minimum_intensity_fraction = Float(
             "Minimum intensity fraction",
             0.9,
             minval=0,
@@ -245,7 +253,7 @@ Select the minimum acceptable intensity fraction. This will be used as
 described for the method you choose in the next setting.""",
         )
 
-        self.where_algorithm = cps.Choice(
+        self.where_algorithm = Choice(
             "Method to find object intensity",
             [CA_CLOSEST_POINT, CA_CENTROIDS],
             doc="""\
@@ -302,7 +310,7 @@ above):
             and self.merge_option == UNIFY_PARENT
             and self.parent_object.value == "None"
         ):
-            raise cps.ValidationError(
+            raise ValidationError(
                 "%s is not a valid object name" % "None", self.parent_object
             )
 
@@ -340,10 +348,12 @@ above):
     def run(self, workspace):
         objects_name = self.objects_name.value
         objects = workspace.object_set.get_objects(objects_name)
-        assert isinstance(objects, cpo.Objects)
+        assert isinstance(objects, Objects)
         labels = objects.segmented
         if self.relabel_option == OPTION_SPLIT:
-            output_labels, count = scind.label(labels > 0, np.ones((3, 3), bool))
+            output_labels, count = scipy.ndimage.label(
+                labels > 0, numpy.ones((3, 3), bool)
+            )
         else:
             if self.merge_option == UNIFY_DISTANCE:
                 mask = labels > 0
@@ -353,9 +363,11 @@ above):
                     # and figure out what points are less than 1/2 of the
                     # distance from an object.
                     #
-                    d = scind.distance_transform_edt(~mask)
+                    d = scipy.ndimage.distance_transform_edt(~mask)
                     mask = d < self.distance_threshold.value / 2 + 1
-                output_labels, count = scind.label(mask, np.ones((3, 3), bool))
+                output_labels, count = scipy.ndimage.label(
+                    mask, numpy.ones((3, 3), bool)
+                )
                 output_labels[labels == 0] = 0
                 if self.wants_image:
                     output_labels = self.filter_using_image(workspace, mask)
@@ -364,14 +376,14 @@ above):
                 parents_of = workspace.measurements[
                     objects_name, "_".join((C_PARENT, parents_name))
                 ]
-                output_labels = labels.copy().astype(np.uint32)
+                output_labels = labels.copy().astype(numpy.uint32)
                 output_labels[labels > 0] = parents_of[labels[labels > 0] - 1]
                 if self.merging_method == UM_CONVEX_HULL:
-                    ch_pts, n_pts = morph.convex_hull(output_labels)
-                    ijv = morph.fill_convex_hulls(ch_pts, n_pts)
+                    ch_pts, n_pts = centrosome.cpmorphology.convex_hull(output_labels)
+                    ijv = centrosome.cpmorphology.fill_convex_hulls(ch_pts, n_pts)
                     output_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
 
-        output_objects = cpo.Objects()
+        output_objects = Objects()
         output_objects.segmented = output_labels
         if objects.has_small_removed_segmented:
             output_objects.small_removed_segmented = copy_labels(
@@ -388,7 +400,7 @@ above):
         add_object_count_measurements(
             measurements,
             self.output_objects_name.value,
-            np.max(output_objects.segmented),
+            numpy.max(output_objects.segmented),
         )
         add_object_location_measurements(
             measurements, self.output_objects_name.value, output_objects.segmented
@@ -449,7 +461,7 @@ above):
                 ]
 
             elif self.merge_option == UNIFY_PARENT:
-                image = np.zeros(workspace.display_data.output_labels.shape)
+                image = numpy.zeros(workspace.display_data.output_labels.shape)
                 cplabels = [
                     dict(
                         name=self.output_objects_name.value,
@@ -527,7 +539,7 @@ above):
         # Do a distance transform into the background to label points
         # in the background with their closest foreground object
         #
-        i, j = scind.distance_transform_edt(
+        i, j = scipy.ndimage.distance_transform_edt(
             labels == 0, return_indices=True, return_distances=False
         )
         confluent_labels = labels[i, j]
@@ -540,18 +552,18 @@ above):
             #
             object_intensity = image[i, j] * self.minimum_intensity_fraction.value
             confluent_labels[object_intensity > image] = 0
-        count, index, c_j = morph.find_neighbors(confluent_labels)
+        count, index, c_j = centrosome.cpmorphology.find_neighbors(confluent_labels)
         if len(c_j) == 0:
             # Nobody touches - return the labels matrix
             return labels
         #
         # Make a row of i matching the touching j
         #
-        c_i = np.zeros(len(c_j))
+        c_i = numpy.zeros(len(c_j))
         #
         # Eliminate labels without matches
         #
-        label_numbers = np.arange(1, len(count) + 1)[count > 0]
+        label_numbers = numpy.arange(1, len(count) + 1)[count > 0]
         index = index[count > 0]
         count = count[count > 0]
         #
@@ -560,13 +572,13 @@ above):
         #
         label_numbers[1:] = label_numbers[1:] - label_numbers[:-1]
         c_i[index] = label_numbers
-        c_i = np.cumsum(c_i).astype(int)
+        c_i = numpy.cumsum(c_i).astype(int)
         if self.where_algorithm == CA_CENTROIDS:
             #
             # Only connect points > minimum intensity fraction
             #
-            center_i, center_j = morph.centers_of_labels(labels)
-            indexes, counts, i, j = morph.get_line_pts(
+            center_i, center_j = centrosome.cpmorphology.centers_of_labels(labels)
+            indexes, counts, i, j = centrosome.cpmorphology.get_line_pts(
                 center_i[c_i - 1],
                 center_j[c_i - 1],
                 center_i[c_j - 1],
@@ -579,7 +591,7 @@ above):
             #
             # The minimum of the intensities at pt0 and pt1
             #
-            centroid_intensities = np.minimum(
+            centroid_intensities = numpy.minimum(
                 image[i[indexes], j[indexes]], image[i[last_indexes], j[last_indexes]]
             )
             #
@@ -587,11 +599,13 @@ above):
             # scipy.ndimage.minimum. The label numbers are indexes into
             # "connections" above.
             #
-            pt_labels = np.zeros(len(i), int)
+            pt_labels = numpy.zeros(len(i), int)
             pt_labels[indexes[1:]] = 1
-            pt_labels = np.cumsum(pt_labels)
-            minima = scind.minimum(image[i, j], pt_labels, np.arange(len(indexes)))
-            minima = morph.fixup_scipy_ndimage_result(minima)
+            pt_labels = numpy.cumsum(pt_labels)
+            minima = scipy.ndimage.minimum(
+                image[i, j], pt_labels, numpy.arange(len(indexes))
+            )
+            minima = centrosome.cpmorphology.fixup_scipy_ndimage_result(minima)
             #
             # Filter the connections using the image
             #
@@ -604,15 +618,15 @@ above):
         #
         # Add in connections from self to self
         #
-        unique_labels = np.unique(labels)
-        i = np.hstack((i, unique_labels))
-        j = np.hstack((j, unique_labels))
+        unique_labels = numpy.unique(labels)
+        i = numpy.hstack((i, unique_labels))
+        j = numpy.hstack((j, unique_labels))
         #
         # Run "all_connected_components" to get a component # for
         # objects identified as same.
         #
-        new_indexes = morph.all_connected_components(i, j)
-        new_labels = np.zeros(labels.shape, int)
+        new_indexes = centrosome.cpmorphology.all_connected_components(i, j)
+        new_labels = numpy.zeros(labels.shape, int)
         new_labels[labels != 0] = new_indexes[labels[labels != 0]]
         return new_labels
 
@@ -659,12 +673,12 @@ above):
             (
                 self.output_objects_name.value,
                 FF_PARENT % self.objects_name.value,
-                cpmeas.COLTYPE_INTEGER,
+                COLTYPE_INTEGER,
             ),
             (
                 self.objects_name.value,
                 FF_CHILDREN_COUNT % self.output_objects_name.value,
-                cpmeas.COLTYPE_INTEGER,
+                COLTYPE_INTEGER,
             ),
         ]
         return columns
@@ -707,8 +721,8 @@ def copy_labels(labels, segmented):
     labels - labels matrix similarly segmented to "segmented"
     segmented - the newly numbered labels matrix (a subset of pixels are labeled)
     """
-    max_labels = np.max(segmented)
-    seglabel = scind.minimum(labels, segmented, np.arange(1, max_labels + 1))
+    max_labels = numpy.max(segmented)
+    seglabel = scipy.ndimage.minimum(labels, segmented, numpy.arange(1, max_labels + 1))
     labels_new = labels.copy()
     labels_new[segmented != 0] = seglabel[segmented[segmented != 0] - 1]
     return labels_new

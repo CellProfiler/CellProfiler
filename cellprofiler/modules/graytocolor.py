@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 GrayToColor
 ===========
@@ -26,11 +24,17 @@ See also
 See also **ColorToGray** and **InvertForPrinting**.
 """
 
-import numpy as np
-
-import cellprofiler_core.image as cpi
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+import numpy
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Color, Binary
+from cellprofiler_core.setting import HiddenCount
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Float
 
 OFF_RED_IMAGE_NAME = 0
 OFF_GREEN_IMAGE_NAME = 1
@@ -42,7 +46,7 @@ OFF_BLUE_ADJUSTMENT_FACTOR = 6
 
 OFF_STACK_CHANNELS_V2 = 16
 OFF_STACK_CHANNEL_COUNT_V3 = 16
-OFF_STACK_CHANNEL_COUNT = 16
+OFF_STACK_CHANNEL_COUNT = 17
 
 SCHEME_RGB = "RGB"
 SCHEME_CMYK = "CMYK"
@@ -63,13 +67,13 @@ DEFAULT_COLORS = [
 ]
 
 
-class GrayToColor(cpm.Module):
+class GrayToColor(Module):
     module_name = "GrayToColor"
-    variable_revision_number = 3
+    variable_revision_number = 4
     category = "Image Processing"
 
     def create_settings(self):
-        self.scheme_choice = cps.Choice(
+        self.scheme_choice = Choice(
             "Select a color scheme",
             [SCHEME_RGB, SCHEME_CMYK, SCHEME_STACK, SCHEME_COMPOSITE],
             doc="""\
@@ -99,12 +103,27 @@ This module can use one of two color schemes to combine images:
             % globals(),
         )
 
+        self.wants_rescale = Binary(
+            "Rescale intensity",
+            True,
+            doc="""\
+Choose whether to rescale each channel individually to 
+the range of 0-1. This prevents clipping of channels with intensity 
+above 1 and can help to balance the brightness of the different channels. 
+This option also ensures that channels occupy the full intensity range 
+available, which is useful for displaying images in other software.
+
+This rescaling is applied before any multiplication factors set in this 
+module's options. Using a multiplication factor >1 would therefore result 
+in clipping."""
+        )
+
         # # # # # # # # # # # # # # # #
         #
         # RGB settings
         #
         # # # # # # # # # # # # # # # #
-        self.red_image_name = cps.ImageNameSubscriber(
+        self.red_image_name = ImageSubscriber(
             "Select the image to be colored red",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -116,7 +135,7 @@ Select the input image to be displayed in red.
             % globals(),
         )
 
-        self.green_image_name = cps.ImageNameSubscriber(
+        self.green_image_name = ImageSubscriber(
             "Select the image to be colored green",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -128,7 +147,7 @@ Select the input image to be displayed in green.
             % globals(),
         )
 
-        self.blue_image_name = cps.ImageNameSubscriber(
+        self.blue_image_name = ImageSubscriber(
             "Select the image to be colored blue",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -140,13 +159,13 @@ Select the input image to be displayed in blue.
             % globals(),
         )
 
-        self.rgb_image_name = cps.ImageNameProvider(
+        self.rgb_image_name = ImageName(
             "Name the output image",
             "ColorImage",
             doc="""Enter a name for the resulting image.""",
         )
 
-        self.red_adjustment_factor = cps.Float(
+        self.red_adjustment_factor = Float(
             "Relative weight for the red image",
             value=1,
             minval=0,
@@ -161,7 +180,7 @@ weights.
             % globals(),
         )
 
-        self.green_adjustment_factor = cps.Float(
+        self.green_adjustment_factor = Float(
             "Relative weight for the green image",
             value=1,
             minval=0,
@@ -176,7 +195,7 @@ weights.
             % globals(),
         )
 
-        self.blue_adjustment_factor = cps.Float(
+        self.blue_adjustment_factor = Float(
             "Relative weight for the blue image",
             value=1,
             minval=0,
@@ -195,7 +214,7 @@ weights.
         # CYMK settings
         #
         # # # # # # # # # # # # # #
-        self.cyan_image_name = cps.ImageNameSubscriber(
+        self.cyan_image_name = ImageSubscriber(
             "Select the image to be colored cyan",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -207,7 +226,7 @@ Select the input image to be displayed in cyan.
             % globals(),
         )
 
-        self.magenta_image_name = cps.ImageNameSubscriber(
+        self.magenta_image_name = ImageSubscriber(
             "Select the image to be colored magenta",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -219,7 +238,7 @@ Select the input image to be displayed in magenta.
             % globals(),
         )
 
-        self.yellow_image_name = cps.ImageNameSubscriber(
+        self.yellow_image_name = ImageSubscriber(
             "Select the image to be colored yellow",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -231,7 +250,7 @@ Select the input image to be displayed in yellow.
             % globals(),
         )
 
-        self.gray_image_name = cps.ImageNameSubscriber(
+        self.gray_image_name = ImageSubscriber(
             "Select the image that determines brightness",
             can_be_blank=True,
             blank_text=LEAVE_THIS_BLACK,
@@ -243,7 +262,7 @@ Select the input image that will determine each pixel's brightness.
             % globals(),
         )
 
-        self.cyan_adjustment_factor = cps.Float(
+        self.cyan_adjustment_factor = Float(
             "Relative weight for the cyan image",
             value=1,
             minval=0,
@@ -258,7 +277,7 @@ weights.
             % globals(),
         )
 
-        self.magenta_adjustment_factor = cps.Float(
+        self.magenta_adjustment_factor = Float(
             "Relative weight for the magenta image",
             value=1,
             minval=0,
@@ -273,7 +292,7 @@ weights.
             % globals(),
         )
 
-        self.yellow_adjustment_factor = cps.Float(
+        self.yellow_adjustment_factor = Float(
             "Relative weight for the yellow image",
             value=1,
             minval=0,
@@ -288,7 +307,7 @@ weights.
             % globals(),
         )
 
-        self.gray_adjustment_factor = cps.Float(
+        self.gray_adjustment_factor = Float(
             "Relative weight for the brightness image",
             value=1,
             minval=0,
@@ -310,9 +329,9 @@ weights.
         # # # # # # # # # # # # # #
 
         self.stack_channels = []
-        self.stack_channel_count = cps.HiddenCount(self.stack_channels)
+        self.stack_channel_count = HiddenCount(self.stack_channels)
         self.add_stack_channel_cb(can_remove=False)
-        self.add_stack_channel = cps.DoSomething(
+        self.add_stack_channel = DoSomething(
             "Add another channel",
             "Add another channel",
             self.add_stack_channel_cb,
@@ -322,11 +341,11 @@ weights.
         )
 
     def add_stack_channel_cb(self, can_remove=True):
-        group = cps.SettingsGroup()
+        group = SettingsGroup()
         default_color = DEFAULT_COLORS[len(self.stack_channels) % len(DEFAULT_COLORS)]
         group.append(
             "image_name",
-            cps.ImageNameSubscriber(
+            ImageSubscriber(
                 "Image name",
                 "None",
                 doc="""\
@@ -339,7 +358,7 @@ Select the input image to add to the stacked image.
         )
         group.append(
             "color",
-            cps.Color(
+            Color(
                 "Color",
                 default_color,
                 doc="""\
@@ -352,7 +371,7 @@ The color to be assigned to the above image.
         )
         group.append(
             "weight",
-            cps.Float(
+            Float(
                 "Weight",
                 1.0,
                 minval=0.5 / 255,
@@ -369,7 +388,7 @@ pixel values are multiplied by this weight before assigning the color.
         if can_remove:
             group.append(
                 "remover",
-                cps.RemoveSettingButton(
+                RemoveSettingButton(
                     "", "Remove this image", self.stack_channels, group
                 ),
             )
@@ -414,6 +433,7 @@ pixel values are multiplied by this weight before assigning the color.
     def settings(self):
         result = [
             self.scheme_choice,
+            self.wants_rescale,
             self.red_image_name,
             self.green_image_name,
             self.blue_image_name,
@@ -455,6 +475,8 @@ pixel values are multiplied by this weight before assigning the color.
             for color_scheme_setting in self.color_scheme_settings
         ]
         result += [self.rgb_image_name]
+        if self.scheme_choice != SCHEME_STACK:
+            result += [self.wants_rescale]
         for color_scheme_setting in self.color_scheme_settings:
             if not color_scheme_setting.image_name.is_blank:
                 result.append(color_scheme_setting.adjustment_factor)
@@ -481,7 +503,7 @@ pixel values are multiplied by this weight before assigning the color.
                     for color_scheme_setting in self.color_scheme_settings
                 ]
             ):
-                raise cps.ValidationError(
+                raise ValidationError(
                     "At least one of the images must not be blank",
                     self.color_scheme_settings[0].image_name,
                 )
@@ -507,6 +529,8 @@ pixel values are multiplied by this weight before assigning the color.
                     * color_scheme_setting.adjustment_factor.value
                 )
                 pixel_data = image.pixel_data
+                if self.wants_rescale.value:
+                    pixel_data = pixel_data / numpy.max(pixel_data)
                 if parent_image is not None:
                     if parent_image.pixel_data.shape != pixel_data.shape:
                         raise ValueError(
@@ -518,11 +542,11 @@ pixel values are multiplied by this weight before assigning the color.
                                 image.pixel_data.shape,
                             )
                         )
-                    rgb_pixel_data += np.dstack([pixel_data] * 3) * multiplier
+                    rgb_pixel_data += numpy.dstack([pixel_data] * 3) * multiplier
                 else:
                     parent_image = image
                     parent_image_name = color_scheme_setting.image_name.value
-                    rgb_pixel_data = np.dstack([pixel_data] * 3) * multiplier
+                    rgb_pixel_data = numpy.dstack([pixel_data] * 3) * multiplier
         else:
             input_image_names = [sc.image_name.value for sc in self.stack_channels]
             channel_names = input_image_names
@@ -543,25 +567,32 @@ pixel values are multiplied by this weight before assigning the color.
                         )
                     )
             if self.scheme_choice == SCHEME_STACK:
-                rgb_pixel_data = np.dstack(source_channels)
+                rgb_pixel_data = numpy.dstack(source_channels)
             else:
                 colors = []
+                pixel_data = parent_image.pixel_data
+                if self.wants_rescale.value:
+                    pixel_data = pixel_data / numpy.max(pixel_data)
                 for sc in self.stack_channels:
                     color_tuple = sc.color.to_rgb()
                     color = (
                         sc.weight.value
-                        * np.array(color_tuple).astype(parent_image.pixel_data.dtype)
+                        * numpy.array(color_tuple).astype(pixel_data.dtype)
                         / 255
                     )
-                    colors.append(color[np.newaxis, np.newaxis, :])
-                rgb_pixel_data = parent_image.pixel_data[:, :, np.newaxis] * colors[0]
+                    colors.append(color[numpy.newaxis, numpy.newaxis, :])
+                rgb_pixel_data = (
+                    pixel_data[:, :, numpy.newaxis] * colors[0]
+                )
                 for image, color in zip(source_channels[1:], colors[1:]):
-                    rgb_pixel_data = rgb_pixel_data + image[:, :, np.newaxis] * color
+                    if self.wants_rescale.value:
+                        image = image / numpy.max(image)
+                    rgb_pixel_data = rgb_pixel_data + image[:, :, numpy.newaxis] * color
 
         ##############
         # Save image #
         ##############
-        rgb_image = cpi.Image(rgb_pixel_data, parent_image=parent_image)
+        rgb_image = Image(rgb_pixel_data, parent_image=parent_image)
         rgb_image.channel_names = channel_names
         imgset.add(self.rgb_image_name.value, rgb_image)
 
@@ -614,6 +645,7 @@ pixel values are multiplied by this weight before assigning the color.
             workspace.display_data.rgb_pixel_data[:, :, :3],
             title=self.rgb_image_name.value,
             sharexy=figure.subplot(0, 0),
+            normalize=False,
         )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
@@ -638,6 +670,9 @@ pixel values are multiplied by this weight before assigning the color.
                 ]
             setting_values = new_setting_values
             variable_revision_number = 3
+        if variable_revision_number == 3:
+            setting_values.insert(1, "No")
+            variable_revision_number = 4
         return setting_values, variable_revision_number
 
 
@@ -669,4 +704,6 @@ class ColorSchemeSettings(object):
     @property
     def intensities(self):
         """The intensities in RGB order as a numpy array"""
-        return np.array((self.red_intensity, self.green_intensity, self.blue_intensity))
+        return numpy.array(
+            (self.red_intensity, self.green_intensity, self.blue_intensity)
+        )

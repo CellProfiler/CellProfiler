@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 ShrinkToObjectCenters
 ======================
@@ -22,18 +20,13 @@ YES          YES          NO
 
 """
 
+import cellprofiler_core.object
 import numpy
 import skimage.measure
-
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
 
 
-class ShrinkToObjectCenters(
-    cellprofiler_core.module.image_segmentation.ObjectProcessing
-):
+class ShrinkToObjectCenters(ObjectProcessing):
     module_name = "ShrinkToObjectCenters"
 
     category = "Advanced"

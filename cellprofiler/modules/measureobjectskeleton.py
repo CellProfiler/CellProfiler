@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 MeasureObjectSkeleton
 =====================
@@ -63,19 +61,29 @@ Measurements made by this module
 
 import os
 
-import centrosome.cpmorphology as morph
+import centrosome.cpmorphology
 import centrosome.propagate as propagate
-import numpy as np
-import scipy.ndimage as scind
+import numpy
+import scipy.ndimage
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
+from cellprofiler_core.image import Image
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Directory
+from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.setting.text import Text
+from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.ndimage import grey_dilation, grey_erosion
-
-import cellprofiler_core.image as cpi
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.object as cpo
-import cellprofiler_core.preferences as cpprefs
-import cellprofiler_core.setting as cps
 
 """The measurement category"""
 C_OBJSKELETON = "ObjectSkeleton"
@@ -100,14 +108,14 @@ F_ALL = [
 ]
 
 
-class MeasureObjectSkeleton(cpm.Module):
+class MeasureObjectSkeleton(Module):
     module_name = "MeasureObjectSkeleton"
     category = "Measurement"
     variable_revision_number = 3
 
     def create_settings(self):
         """Create the UI settings for the module"""
-        self.seed_objects_name = cps.ObjectNameSubscriber(
+        self.seed_objects_name = LabelSubscriber(
             "Select the seed objects",
             "None",
             doc="""\
@@ -117,7 +125,7 @@ per seed object. Seed objects are typically not single points/pixels but
 instead are usually objects of varying sizes.""",
         )
 
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the skeletonized image",
             "None",
             doc="""\
@@ -125,7 +133,7 @@ Select the skeletonized image of the dendrites and/or axons as produced
 by the **Morph** module’s *Skel* operation.""",
         )
 
-        self.wants_branchpoint_image = cps.Binary(
+        self.wants_branchpoint_image = Binary(
             "Retain the branchpoint image?",
             False,
             doc="""\
@@ -135,7 +143,7 @@ this module."""
             % globals(),
         )
 
-        self.branchpoint_image_name = cps.ImageNameProvider(
+        self.branchpoint_image_name = ImageName(
             "Name the branchpoint image",
             "BranchpointImage",
             doc="""\
@@ -145,7 +153,7 @@ Enter a name for the branchpoint image here. You can then use this image
 in a later module, such as **SaveImages**.""",
         )
 
-        self.wants_to_fill_holes = cps.Binary(
+        self.wants_to_fill_holes = Binary(
             "Fill small holes?",
             True,
             doc="""\
@@ -156,7 +164,7 @@ these small holes prior to skeletonizing."""
             % globals(),
         )
 
-        self.maximum_hole_size = cps.Integer(
+        self.maximum_hole_size = Integer(
             "Maximum hole size",
             10,
             minval=1,
@@ -167,7 +175,7 @@ This is the area of the largest hole to fill, measured in pixels. The
 algorithm will fill in any hole whose area is this size or smaller.""",
         )
 
-        self.wants_objskeleton_graph = cps.Binary(
+        self.wants_objskeleton_graph = Binary(
             "Export the skeleton graph relationships?",
             False,
             doc="""\
@@ -176,7 +184,7 @@ relationships between vertices (trunks, branchpoints and endpoints)."""
             % globals(),
         )
 
-        self.intensity_image_name = cps.ImageNameSubscriber(
+        self.intensity_image_name = ImageSubscriber(
             "Intensity image",
             "None",
             doc="""\
@@ -184,20 +192,20 @@ Select the image to be used to calculate
 the total intensity along the edges between the vertices (trunks, branchpoints, and endpoints).""",
         )
 
-        self.directory = cps.DirectoryPath(
+        self.directory = Directory(
             "File output directory",
             doc="Select the directory you want to save the graph relationships to.",
             dir_choices=[
-                cpprefs.DEFAULT_OUTPUT_FOLDER_NAME,
-                cpprefs.DEFAULT_INPUT_FOLDER_NAME,
-                cpprefs.ABSOLUTE_FOLDER_NAME,
-                cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME,
+                DEFAULT_OUTPUT_FOLDER_NAME,
+                DEFAULT_INPUT_FOLDER_NAME,
+                ABSOLUTE_FOLDER_NAME,
+                DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                DEFAULT_INPUT_SUBFOLDER_NAME,
             ],
         )
-        self.directory.dir_choice = cpprefs.DEFAULT_OUTPUT_FOLDER_NAME
+        self.directory.dir_choice = DEFAULT_OUTPUT_FOLDER_NAME
 
-        self.vertex_file_name = cps.Text(
+        self.vertex_file_name = Text(
             "Vertex file name",
             "vertices.csv",
             doc="""\
@@ -224,7 +232,7 @@ branchpoint or an endpoint. The file has the following columns:
 """,
         )
 
-        self.edge_file_name = cps.Text(
+        self.edge_file_name = Text(
             "Edge file name",
             "edges.csv",
             doc="""\
@@ -332,7 +340,7 @@ The file has the following columns:
         edge_files = set()
         vertex_files = set()
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, Measurements)
         for image_number in m.get_image_numbers():
             edge_path, vertex_path = self.get_graph_file_paths(m, image_number)
             edge_files.add(edge_path)
@@ -368,8 +376,8 @@ The file has the following columns:
         skeleton_name = self.image_name.value
         seed_objects = workspace.object_set.get_objects(seed_objects_name)
         labels = seed_objects.segmented
-        labels_count = np.max(labels)
-        label_range = np.arange(labels_count, dtype=np.int32) + 1
+        labels_count = numpy.max(labels)
+        label_range = numpy.arange(labels_count, dtype=numpy.int32) + 1
 
         skeleton_image = workspace.image_set.get_image(
             skeleton_name, must_be_binary=True
@@ -380,7 +388,7 @@ The file has the following columns:
         try:
             labels = skeleton_image.crop_image_similarly(labels)
         except:
-            labels, m1 = cpo.size_similarly(skeleton, labels)
+            labels, m1 = size_similarly(skeleton, labels)
             labels[~m1] = 0
         #
         # The following code makes a ring around the seed objects with
@@ -396,7 +404,7 @@ The file has the following columns:
         #
         # Dilate the objects, then subtract them to make a ring
         #
-        my_disk = morph.strel_disk(1.5).astype(int)
+        my_disk = centrosome.cpmorphology.strel_disk(1.5).astype(int)
         dilated_labels = grey_dilation(labels, footprint=my_disk)
         seed_mask = dilated_labels > 0
         combined_skel = skeleton | seed_mask
@@ -413,13 +421,13 @@ The file has the following columns:
             def size_fn(area, is_object):
                 return (~is_object) and (area <= self.maximum_hole_size.value)
 
-            combined_skel = morph.fill_labeled_holes(
+            combined_skel = centrosome.cpmorphology.fill_labeled_holes(
                 combined_skel, ~seed_center, size_fn
             )
         #
         # Reskeletonize to make true branchpoints at the ring boundaries
         #
-        combined_skel = morph.skeletonize(combined_skel)
+        combined_skel = centrosome.cpmorphology.skeletonize(combined_skel)
         #
         # The skeleton outside of the labels
         #
@@ -428,7 +436,7 @@ The file has the following columns:
         # Associate all skeleton points with seed objects
         #
         dlabels, distance_map = propagate.propagate(
-            np.zeros(labels.shape), dilated_labels, combined_skel, 1
+            numpy.zeros(labels.shape), dilated_labels, combined_skel, 1
         )
         #
         # Get rid of any branchpoints not connected to seeds
@@ -437,7 +445,7 @@ The file has the following columns:
         #
         # Find the branchpoints
         #
-        branch_points = morph.branchpoints(combined_skel)
+        branch_points = centrosome.cpmorphology.branchpoints(combined_skel)
         #
         # Odd case: when four branches meet like this, branchpoints are not
         # assigned because they are arbitrary. So assign them.
@@ -459,17 +467,19 @@ The file has the following columns:
         # Find the branching counts for the trunks (# of extra branches
         # emanating from a point other than the line it might be on).
         #
-        branching_counts = morph.branchings(combined_skel)
-        branching_counts = np.array([0, 0, 0, 1, 2])[branching_counts]
+        branching_counts = centrosome.cpmorphology.branchings(combined_skel)
+        branching_counts = numpy.array([0, 0, 0, 1, 2])[branching_counts]
         #
         # Only take branches within 1 of the outside skeleton
         #
-        dilated_skel = scind.binary_dilation(outside_skel, morph.eight_connect)
+        dilated_skel = scipy.ndimage.binary_dilation(
+            outside_skel, centrosome.cpmorphology.eight_connect
+        )
         branching_counts[~dilated_skel] = 0
         #
         # Find the endpoints
         #
-        end_points = morph.endpoints(combined_skel)
+        end_points = centrosome.cpmorphology.endpoints(combined_skel)
         #
         # We use two ranges for classification here:
         # * anything within one pixel of the dilated image is a trunk
@@ -486,33 +496,37 @@ The file has the following columns:
         #
         if labels_count > 0:
             trunk_counts = fix(
-                scind.sum(branching_counts, nearby_labels, label_range)
+                scipy.ndimage.sum(branching_counts, nearby_labels, label_range)
             ).astype(int)
         else:
-            trunk_counts = np.zeros((0,), int)
+            trunk_counts = numpy.zeros((0,), int)
         #
         # The branches are the branchpoints that lie outside the seed objects
         #
         if labels_count > 0:
-            branch_counts = fix(scind.sum(branch_points, outside_labels, label_range))
+            branch_counts = fix(
+                scipy.ndimage.sum(branch_points, outside_labels, label_range)
+            )
         else:
-            branch_counts = np.zeros((0,), int)
+            branch_counts = numpy.zeros((0,), int)
         #
         # Save the endpoints
         #
         if labels_count > 0:
-            end_counts = fix(scind.sum(end_points, outside_labels, label_range))
+            end_counts = fix(scipy.ndimage.sum(end_points, outside_labels, label_range))
         else:
-            end_counts = np.zeros((0,), int)
+            end_counts = numpy.zeros((0,), int)
         #
         # Calculate the distances
         #
-        total_distance = morph.skeleton_length(dlabels * outside_skel, label_range)
+        total_distance = centrosome.cpmorphology.skeleton_length(
+            dlabels * outside_skel, label_range
+        )
         #
         # Save measurements
         #
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, Measurements)
         feature = "_".join((C_OBJSKELETON, F_NUMBER_TRUNKS, skeleton_name))
         m.add_measurement(seed_objects_name, feature, trunk_counts)
         feature = "_".join((C_OBJSKELETON, F_NUMBER_NON_TRUNK_BRANCHES, skeleton_name))
@@ -559,7 +573,7 @@ The file has the following columns:
         # Make the display image
         #
         if self.show_window or self.wants_branchpoint_image:
-            branchpoint_image = np.zeros((skeleton.shape[0], skeleton.shape[1], 3))
+            branchpoint_image = numpy.zeros((skeleton.shape[0], skeleton.shape[1], 3))
             trunk_mask = (branching_counts > 0) & (nearby_labels != 0)
             branch_mask = branch_points & (outside_labels != 0)
             end_mask = end_points & (outside_labels != 0)
@@ -573,7 +587,7 @@ The file has the following columns:
             if self.show_window:
                 workspace.display_data.branchpoint_image = branchpoint_image
             if self.wants_branchpoint_image:
-                bi = cpi.Image(branchpoint_image, parent_image=skeleton_image)
+                bi = Image(branchpoint_image, parent_image=skeleton_image)
                 workspace.image_set.add(self.branchpoint_image_name.value, bi)
 
     def handle_interaction(
@@ -623,14 +637,14 @@ The file has the following columns:
             j = vertex_graph["j"]
             kind = vertex_graph["kind"]
             brightness = edge_graph["total_intensity"] / edge_graph["length"]
-            brightness = (brightness - np.min(brightness)) / (
-                np.max(brightness) - np.min(brightness) + 0.000001
+            brightness = (brightness - numpy.min(brightness)) / (
+                numpy.max(brightness) - numpy.min(brightness) + 0.000001
             )
-            cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+            cm = matplotlib.cm.get_cmap(get_default_colormap())
             cmap = matplotlib.cm.ScalarMappable(cmap=cm)
             edge_color = cmap.to_rgba(brightness)
             for idx in range(len(edge_graph["v1"])):
-                v = np.array([edge_graph["v1"][idx] - 1, edge_graph["v2"][idx] - 1])
+                v = numpy.array([edge_graph["v1"][idx] - 1, edge_graph["v2"][idx] - 1])
                 line = Line2D(j[v], i[v], color=edge_color[idx])
                 axes.add_line(line)
 
@@ -640,9 +654,9 @@ The file has the following columns:
             (
                 self.seed_objects_name.value,
                 "_".join((C_OBJSKELETON, feature, self.image_name.value)),
-                cpmeas.COLTYPE_FLOAT
+                COLTYPE_FLOAT
                 if feature == F_TOTAL_OBJSKELETON_LENGTH
-                else cpmeas.COLTYPE_INTEGER,
+                else COLTYPE_INTEGER,
             )
             for feature in F_ALL
         ]
@@ -703,9 +717,7 @@ The file has the following columns:
             setting_values = setting_values + [
                 "No",
                 "None",
-                cps.DirectoryPath.static_join_string(
-                    cpprefs.DEFAULT_OUTPUT_FOLDER_NAME, "None"
-                ),
+                Directory.static_join_string(DEFAULT_OUTPUT_FOLDER_NAME, "None"),
                 "None",
                 "None",
             ]
@@ -740,16 +752,16 @@ The file has the following columns:
         label: the vertex's label
         kind: kind of vertex = "T" for trunk, "B" for branchpoint or "E" for endpoint.
         """
-        i, j = np.mgrid[0 : skeleton.shape[0], 0 : skeleton.shape[1]]
+        i, j = numpy.mgrid[0 : skeleton.shape[0], 0 : skeleton.shape[1]]
         #
         # Give each point of interest a unique number
         #
         points_of_interest = trunks | branchpoints | endpoints
-        number_of_points = np.sum(points_of_interest)
+        number_of_points = numpy.sum(points_of_interest)
         #
         # Make up the vertex table
         #
-        tbe = np.zeros(points_of_interest.shape, "|S1")
+        tbe = numpy.zeros(points_of_interest.shape, "|S1")
         tbe[trunks] = "T"
         tbe[branchpoints] = "B"
         tbe[endpoints] = "E"
@@ -771,45 +783,47 @@ The file has the following columns:
         #
         # Label the broken skeleton: this labels each edge differently
         #
-        edge_labels, nlabels = morph.label_skeleton(skeleton)
+        edge_labels, nlabels = centrosome.cpmorphology.label_skeleton(skeleton)
         #
         # Reindex after removing the points of interest
         #
         edge_labels[points_of_interest] = 0
         if nlabels > 0:
-            indexer = np.arange(nlabels + 1)
-            unique_labels = np.sort(np.unique(edge_labels))
+            indexer = numpy.arange(nlabels + 1)
+            unique_labels = numpy.sort(numpy.unique(edge_labels))
             nlabels = len(unique_labels) - 1
-            indexer[unique_labels] = np.arange(len(unique_labels))
+            indexer[unique_labels] = numpy.arange(len(unique_labels))
             edge_labels = indexer[edge_labels]
             #
             # find magnitudes and lengths for all edges
             #
             magnitudes = fix(
-                scind.sum(image, edge_labels, np.arange(1, nlabels + 1, dtype=np.int32))
+                scipy.ndimage.sum(
+                    image, edge_labels, numpy.arange(1, nlabels + 1, dtype=numpy.int32)
+                )
             )
             lengths = fix(
-                scind.sum(
-                    np.ones(edge_labels.shape),
+                scipy.ndimage.sum(
+                    numpy.ones(edge_labels.shape),
                     edge_labels,
-                    np.arange(1, nlabels + 1, dtype=np.int32),
+                    numpy.arange(1, nlabels + 1, dtype=numpy.int32),
                 )
             ).astype(int)
         else:
-            magnitudes = np.zeros(0)
-            lengths = np.zeros(0, int)
+            magnitudes = numpy.zeros(0)
+            lengths = numpy.zeros(0, int)
         #
         # combine the edge labels and indexes of points of interest with padding
         #
         edge_mask = edge_labels != 0
-        all_labels = np.zeros(np.array(edge_labels.shape) + 2, int)
+        all_labels = numpy.zeros(numpy.array(edge_labels.shape) + 2, int)
         all_labels[1:-1, 1:-1][edge_mask] = edge_labels[edge_mask] + number_of_points
-        all_labels[i_idx + 1, j_idx + 1] = np.arange(1, number_of_points + 1)
+        all_labels[i_idx + 1, j_idx + 1] = numpy.arange(1, number_of_points + 1)
         #
         # Collect all 8 neighbors for each point of interest
         #
-        p1 = np.zeros(0, int)
-        p2 = np.zeros(0, int)
+        p1 = numpy.zeros(0, int)
+        p2 = numpy.zeros(0, int)
         for i_off, j_off in (
             (0, 0),
             (0, 1),
@@ -820,8 +834,8 @@ The file has the following columns:
             (2, 1),
             (2, 2),
         ):
-            p1 = np.hstack((p1, np.arange(1, number_of_points + 1)))
-            p2 = np.hstack((p2, all_labels[i_idx + i_off, j_idx + j_off]))
+            p1 = numpy.hstack((p1, numpy.arange(1, number_of_points + 1)))
+            p2 = numpy.hstack((p2, all_labels[i_idx + i_off, j_idx + j_off]))
         #
         # Get rid of zeros which are background
         #
@@ -853,7 +867,9 @@ The file has the following columns:
         # take the minimum distance connecting each pair to throw out
         # the edge.
         #
-        edge, p1_edge, p2_edge = morph.pairwise_permutations(edge, p1_edge)
+        edge, p1_edge, p2_edge = centrosome.cpmorphology.pairwise_permutations(
+            edge, p1_edge
+        )
         indexer = edge - number_of_points - 1
         lengths = lengths[indexer]
         magnitudes = magnitudes[indexer]
@@ -861,7 +877,7 @@ The file has the following columns:
         # OK, now we make the edge table. First poi<->poi. Length = 2,
         # magnitude = magnitude at each point
         #
-        poi_length = np.ones(len(p1_poi)) * 2
+        poi_length = numpy.ones(len(p1_poi)) * 2
         poi_magnitude = (
             image[i_idx[p1_poi - 1], j_idx[p1_poi - 1]]
             + image[i_idx[p2_poi - 1], j_idx[p2_poi - 1]]
@@ -878,20 +894,20 @@ The file has the following columns:
         #
         # Put together the columns
         #
-        v1 = np.hstack((p1_poi, p1_edge))
-        v2 = np.hstack((p2_poi, p2_edge))
-        lengths = np.hstack((poi_length, poi_edge_length))
-        magnitudes = np.hstack((poi_magnitude, poi_edge_magnitude))
+        v1 = numpy.hstack((p1_poi, p1_edge))
+        v2 = numpy.hstack((p2_poi, p2_edge))
+        lengths = numpy.hstack((poi_length, poi_edge_length))
+        magnitudes = numpy.hstack((poi_magnitude, poi_edge_magnitude))
         #
         # Sort by p1, p2 and length in order to pick the shortest length
         #
-        indexer = np.lexsort((lengths, v1, v2))
+        indexer = numpy.lexsort((lengths, v1, v2))
         v1 = v1[indexer]
         v2 = v2[indexer]
         lengths = lengths[indexer]
         magnitudes = magnitudes[indexer]
         if len(v1) > 0:
-            to_keep = np.hstack(([True], (v1[1:] != v1[:-1]) | (v2[1:] != v2[:-1])))
+            to_keep = numpy.hstack(([True], (v1[1:] != v1[:-1]) | (v2[1:] != v2[:-1])))
             v1 = v1[to_keep]
             v2 = v2[to_keep]
             lengths = lengths[to_keep]

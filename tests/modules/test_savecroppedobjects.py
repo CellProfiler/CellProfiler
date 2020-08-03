@@ -10,6 +10,7 @@ import skimage.morphology
 import cellprofiler_core.image
 import cellprofiler.modules.savecroppedobjects
 import cellprofiler_core.object
+import cellprofiler_core.preferences
 import cellprofiler_core.setting
 
 instance = cellprofiler.modules.savecroppedobjects.SaveCroppedObjects()
@@ -33,7 +34,7 @@ def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
     module.objects_name.value = "example"
 
     module.directory.value = "{}|{}".format(
-        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.run(workspace)
@@ -97,7 +98,7 @@ def test_run_masks(image, module, image_set, workspace, object_set, tmpdir):
     module.objects_name.value = "example"
 
     module.directory.value = "{}|{}".format(
-        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME, directory
+        cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME, directory
     )
 
     module.run(workspace)
@@ -146,7 +147,7 @@ def test_create_subfolders(image, module, image_set, workspace, object_set, tmpd
     module.objects_name.value = "example"
 
     module.directory.value = "{}|{}".format(
-        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME,
+        cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME,
         os.path.join(directory, "subdirectory"),
     )
 
@@ -202,8 +203,8 @@ def test_create_subfolders_from_metadata(
     module.export_option.value = "Masks"
 
     module.directory.value = "{}|{}".format(
-        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME,
-        os.path.join(directory, "\\g<Plate>", "\\g<Well>"),
+        cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME,
+        directory + r"\\\g<Plate>\\\g<Well>",
     )
 
     module.run(workspace)

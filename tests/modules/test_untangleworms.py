@@ -11,11 +11,14 @@ import scipy.ndimage
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+import cellprofiler_core.modules
 import cellprofiler.modules.untangleworms
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
+import tests.modules
 
 cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
 
@@ -267,7 +270,8 @@ A02_image = bioformats.load_image(path, rescale=False)[:, :, 0] > 0
 
 
 def test_load_v1():
-    with open("./tests/resources/modules/untangleworms/v1.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("untangleworms/v1.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -302,7 +306,8 @@ def test_load_v1():
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/untangleworms/v2.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("untangleworms/v2.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -344,7 +349,7 @@ def make_workspace(image, data=None, write_mode="wb"):
     data - the binary of the params file to run
     """
     if data is not None:
-        with open(filename, "wb") as fd:
+        with open(path, "wb") as fd:
             fd.write(data)
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -370,12 +375,12 @@ def make_workspace(image, data=None, write_mode="wb"):
     image_set = image_set_list.get_image_set(0)
     image_set.add(IMAGE_NAME, img)
     module.training_set_directory.dir_choice = (
-        cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+        cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
     )
     (
         module.training_set_directory.custom_path,
         module.training_set_file_name.value,
-    ) = os.path.split(filename)
+    ) = os.path.split(path)
 
     workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
@@ -395,12 +400,12 @@ def make_params(d):
     """
 
     class X(object):
-        def __init__(d):
+        def __init__(self, d):
             for key in list(d.keys()):
                 value = d[key]
                 if isinstance(value, dict):
                     value = X(value)
-                setattr(key, value)
+                setattr(self, key, value)
 
     return X(d)
 
@@ -928,9 +933,10 @@ def test_load_params():
 
 
 def test_load_xml_params():
-    with open("test/resources/modules/untangleworms/parameters.xml", "r") as fd:
+    file = tests.modules.test_resources_directory("untangleworms/parameters.xml")
+    with open(file, "r") as fd:
         data = fd.read()
-
+    data = data.encode()
     workspace, module = make_workspace(
         numpy.zeros((10, 10), bool), data, write_mode="w"
     )
@@ -1606,10 +1612,10 @@ def test_get_all_paths_recur_none():
 
     class Result(object):
         def __init__(self):
-            branch_areas = []
-            segments = []
-            incidence_matrix = numpy.zeros((0, 0), bool)
-            segment_lengths = []
+            self.branch_areas = []
+            self.segments = []
+            self.incidence_matrix = numpy.zeros((0, 0), bool)
+            self.segment_lengths = []
 
     paths_list = list(module.get_all_paths_recur(Result(), [], [], 0, 0, 1000))
     assert len(paths_list) == 0
@@ -1623,11 +1629,11 @@ def test_get_all_paths_recur_one():
     #
     class Result(object):
         def __init__(self):
-            incident_branch_areas = [[0], [0]]
-            incident_segments = [[0, 1]]
-            segments = [numpy.zeros((2, 1)), numpy.zeros((2, 1))]
-            segment_lengths = [1, 1]
-            incidence_directions = numpy.array([[False, True]])
+            self.incident_branch_areas = [[0], [0]]
+            self.incident_segments = [[0, 1]]
+            self.segments = [numpy.zeros((2, 1)), numpy.zeros((2, 1))]
+            self.segment_lengths = [1, 1]
+            self.incidence_directions = numpy.array([[False, True]])
 
     paths_list = list(module.get_all_paths_recur(Result(), [0], [[0]], 1, 0, 1000))
     assert len(paths_list) == 1
@@ -1646,11 +1652,11 @@ def test_get_all_paths_recur_depth_two():
     #
     class Result(object):
         def __init__(self):
-            incident_branch_areas = [[0], [0, 1], [1]]
-            incident_segments = [[0, 1], [1, 2]]
-            segments = [numpy.zeros((2, 1)), numpy.zeros((2, 1))] * 3
-            segment_lengths = [1, 1, 1]
-            incidence_directions = numpy.array(
+            self.incident_branch_areas = [[0], [0, 1], [1]]
+            self.incident_segments = [[0, 1], [1, 2]]
+            self.segments = [numpy.zeros((2, 1)), numpy.zeros((2, 1))] * 3
+            self.segment_lengths = [1, 1, 1]
+            self.incidence_directions = numpy.array(
                 [[False, True, False], [False, True, False]]
             )
 
@@ -1673,11 +1679,11 @@ def test_get_all_paths_recur_many():
     #
     class Result(object):
         def __init__(self):
-            incident_branch_areas = [list(range(3))] * 4
-            incident_segments = [list(range(4))] * 3
-            segments = [(numpy.zeros((2, 1)), numpy.zeros((2, 1)))] * 4
-            segment_lengths = [1] * 4
-            incidence_directions = numpy.ones((3, 4), bool)
+            self.incident_branch_areas = [list(range(3))] * 4
+            self.incident_segments = [list(range(4))] * 3
+            self.segments = [(numpy.zeros((2, 1)), numpy.zeros((2, 1)))] * 4
+            self.segment_lengths = [1] * 4
+            self.incidence_directions = numpy.ones((3, 4), bool)
 
     paths_list = module.get_all_paths_recur(
         Result(), [0], [[i] for i in range(3)], 1, 0, 1000
@@ -1758,9 +1764,9 @@ def test_get_all_paths_none():
 
     class Result(object):
         def __init__(self):
-            branch_areas = []
-            segments = []
-            incidence_matrix = numpy.zeros((0, 0), bool)
+            self.branch_areas = []
+            self.segments = []
+            self.incidence_matrix = numpy.zeros((0, 0), bool)
 
     path_list = list(module.get_all_paths(Result(), 0, 1000))
     assert len(path_list) == 0
@@ -1771,10 +1777,10 @@ def test_get_all_paths_one():
 
     class Result(object):
         def __init__(self):
-            branch_areas = []
-            segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]]
-            incidence_matrix = numpy.zeros((0, 1), bool)
-            incidence_directions = [[True, False]]
+            self.branch_areas = []
+            self.segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]]
+            self.incidence_matrix = numpy.zeros((0, 1), bool)
+            self.incidence_directions = [[True, False]]
 
     path_list = list(module.get_all_paths(Result(), 0, 1000))
     assert len(path_list) == 1
@@ -1789,10 +1795,10 @@ def test_get_all_paths_two_segments():
 
     class Result(object):
         def __init__(self):
-            branch_areas = [1]
-            segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]] * 2
-            incidence_matrix = numpy.ones((1, 2), bool)
-            incidence_directions = numpy.array([[True, False]])
+            self.branch_areas = [1]
+            self.segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]] * 2
+            self.incidence_matrix = numpy.ones((1, 2), bool)
+            self.incidence_directions = numpy.array([[True, False]])
 
     path_list = list(module.get_all_paths(Result(), 0, 1000))
     assert len(path_list) == 3
@@ -1809,10 +1815,10 @@ def test_get_all_paths_many():
 
     class Result(object):
         def __init__(self):
-            branch_areas = [0, 1, 2]
-            segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]] * 4
-            incidence_directions = numpy.random.uniform(size=(3, 4)) > 0.25
-            incidence_matrix = incidence_directions | (
+            self.branch_areas = [0, 1, 2]
+            self.segments = [[numpy.zeros((1, 2)), numpy.zeros((1, 2))]] * 4
+            self.incidence_directions = numpy.random.uniform(size=(3, 4)) > 0.25
+            self.incidence_matrix = self.incidence_directions | (
                 numpy.random.uniform(size=(3, 4)) > 0.25
             )
 

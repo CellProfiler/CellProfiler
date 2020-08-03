@@ -1,11 +1,14 @@
 import wx
+from cellprofiler_core.utilities.core.modules import (
+    get_module_names,
+    instantiate_module,
+    get_module_class,
+)
 
 import cellprofiler.gui
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.help.search
-import cellprofiler_core.module
 import cellprofiler.modules
-import cellprofiler_core.preferences
 
 
 class AddModuleFrame(wx.Frame):
@@ -117,8 +120,8 @@ class AddModuleFrame(wx.Frame):
         self.Bind(
             wx.EVT_MENU, self.__on_close, id=cellprofiler.gui.cpframe.ID_FILE_EXIT
         )
+        self.Bind(wx.EVT_CHAR_HOOK, self.__on_special_key)
         self.search_text.Bind(wx.EVT_TEXT, self.__on_search_modules)
-        self.search_text.Bind(wx.EVT_TEXT_ENTER, self.__on_add_to_pipeline)
         self.search_button.Bind(wx.EVT_BUTTON, self.__on_search_help)
         self.__get_module_files()
         self.__set_categories()
@@ -126,6 +129,7 @@ class AddModuleFrame(wx.Frame):
         self.__module_categories_list_box.Select(0)
         self.__on_category_selected(None)
         self.Fit()
+        self.search_text.SetFocus()
 
     def __on_close(self, event):
         self.Hide()
@@ -148,15 +152,15 @@ class AddModuleFrame(wx.Frame):
         for key in self.__module_files:
             self.__module_dict[key] = {}
 
-        for mn in cellprofiler_core.modules.get_module_names():
+        for mn in get_module_names():
 
             def loader(module_num, mn=mn):
-                module = cellprofiler_core.modules.instantiate_module(mn)
+                module = instantiate_module(mn)
                 module.set_module_num(module_num)
                 return module
 
             try:
-                module = cellprofiler_core.modules.get_module_class(mn)
+                module = get_module_class(mn)
                 if module.is_input_module():
                     continue
                 categories = (
@@ -259,6 +263,29 @@ class AddModuleFrame(wx.Frame):
         else:
             self.__module_list_box.AppendItems("No matching modules")
             self.__module_list_box.Enable(False)
+
+    def __on_special_key(self, event):
+        # Capture keyboard shortcuts
+        key = event.GetKeyCode()
+        numitems = len(self.__module_list_box.GetItems())
+        if key == wx.WXK_ESCAPE:
+            self.Close()
+            return
+        elif key in (wx.WXK_RETURN, wx.WXK_NUMPAD_ENTER):
+            self.__on_add_to_pipeline(event)
+            return
+        elif numitems <= 1:
+            # No point moving selector
+            pass
+        elif key == wx.WXK_DOWN:
+            i = self.__module_list_box.GetSelection()
+            self.__module_list_box.Select(min(i + 1, numitems - 1))
+            return
+        elif key == wx.WXK_UP:
+            i = self.__module_list_box.GetSelection()
+            self.__module_list_box.Select(max(0, i - 1))
+            return
+        event.Skip()
 
     def __on_getting_started(self, event):
         import cellprofiler.gui.help.content

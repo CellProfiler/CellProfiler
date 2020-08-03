@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome Screen</title>
+</head>
+<body style = "font-family: sans-serif;">
+<p style="text-align: center;"><strong><span style="font-size: larger;">Welcome to CellProfiler!</span></strong></p>
+<table style="margin: auto; width: 100%; height: 290px;" border="3" cellspacing="5" cellpadding="3">
+<tbody>
+<tr style="height: 50%; vertical-align: middle;">
+    <td style="width: 25%; border-width: 3; border-color: blue;" align="center"><strong><span style="font-size: small;">Try Example</span></strong><br /> <a href="loadexample:ExampleFly"><img src="{{WELCOME_PIPELINE}}" border="" /></a></td>
+    <td style="width: 25%;" align="center"><strong><span style="font-size: small;">Getting Started<br /> <a href="help:gettingstarted"><img src="{{WELCOME_START}}" border=""/></a></span></strong></td>
+    <td style="width: 25%;" align="center"><strong><span style="font-size: small;">More Examples</span></strong><br /> <a href="http://cellprofiler.org/examples.html"><img src="{{WELCOME_EXAMPLES}}" border="" /></a></td>
+
+    <td style="width: 25%;" align="center"><strong><span style="font-size: small;">Tutorials</span></strong><br /> <a href="http://cellprofiler.org/tutorials.html"><img src="{{WELCOME_TUTORIALS}}" border="" /></a></td>
+</tr>
+<tr style="height: 50%; vertical-align: middle;">
+    <td style="width: 25%;" align="center"><strong><span style="font-size: small;">Q&amp;A Forum</span></strong><br /> <a href="https://forum.image.sc/tag/cellprofiler"><img src="{{WELCOME_FORUM}}" border="" /></a></td>
+    <td style="width: 25%;" align="center"><strong><span style="font-size: small;">Built-In Help<br /> <a href="help:inapphelp"><img src="{{WELCOME_HELP}}" border="" /></a></span></strong></td>
+    <td style="width: 25%;" align="center"><strong><span style="font-size: small;">Manual<br /> <a href="{{MANUAL_URL}}"> <img src="{{WELCOME_MANUAL}}" border="" /></a></span></strong></td>
+    <td style="width: 25%;" align="center"><strong><span style="font-size: small;">What's New<br /> <a href="https://carpenterlab.broadinstitute.org/blog/categories/releases"> <img src="{{WELCOME_NEW}}" border="" /></a></span></td>
+</tr>
+</tbody>
+</table>
+<p style="text-align: center;"><button onclick="location.href='pref:no_display'" type="button"> Don't show this again</button></p>
+<p style="text-align: center;"><span style="font-size: small;"></span></p>
+</body>
+</html>

@@ -1,12 +1,14 @@
-# coding=utf-8
-
 import logging
 
-import numpy as np
+import numpy
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary, ValidationError, Divider
+from cellprofiler_core.setting.subscriber import (
+    LabelListSubscriber,
+    ImageListSubscriber,
+)
 
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 __doc__ = """
@@ -109,24 +111,23 @@ ALL_MEASUREMENTS = [
     "LowerQuartileIntensity",
     "UpperQuartileIntensity",
 ]
-logger = logging.getLogger(__name__)
 
 
-class MeasureImageIntensity(cellprofiler_core.module.Module):
+class MeasureImageIntensity(Module):
     module_name = "MeasureImageIntensity"
     category = "Measurement"
     variable_revision_number = 3
 
     def create_settings(self):
         """Create the settings & name the module"""
-        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select images to measure",
             [],
             doc="""Select the grayscale images whose intensity you want to measure.""",
         )
 
-        self.divider = cellprofiler_core.setting.Divider(line=False)
-        self.wants_objects = cellprofiler_core.setting.Binary(
+        self.divider = Divider(line=False)
+        self.wants_objects = Binary(
             "Measure the intensity only from areas enclosed by objects?",
             False,
             doc="""\
@@ -137,7 +138,7 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
         """,
         )
 
-        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select input object sets",
             [],
             doc="""Select the object sets whose intensity you want to measure.""",
@@ -147,24 +148,20 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
         """Make sure chosen objects and images are selected only once"""
         images = set()
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError(
-                "No images selected", self.images_list
-            )
+            raise ValidationError("No images selected", self.images_list)
         for image_name in self.images_list.value:
             if image_name in images:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "%s has already been selected" % image_name, image_name
                 )
             images.add(image_name)
         if self.wants_objects:
             objects = set()
             if len(self.objects_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError(
-                    "No objects selected", self.objects_list
-                )
+                raise ValidationError("No objects selected", self.objects_list)
             for object_name in self.objects_list.value:
                 if object_name in objects:
-                    raise cellprofiler_core.setting.ValidationError(
+                    raise ValidationError(
                         "%s has already been selected" % object_name, object_name
                     )
                 objects.add(object_name)
@@ -202,7 +199,7 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
                         )
                     if image.has_mask:
                         pixels = input_pixels[
-                            np.logical_and(objects.segmented != 0, image.mask)
+                            numpy.logical_and(objects.segmented != 0, image.mask)
                         ]
                     else:
                         pixels = input_pixels[objects.segmented != 0]
@@ -237,7 +234,7 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
         measurement_name - group title to be used in data tables
         workspace - has all the details for current image set
         """
-        pixel_count = np.product(pixels.shape)
+        pixel_count = numpy.product(pixels.shape)
         if pixel_count == 0:
             pixel_sum = 0
             pixel_mean = 0
@@ -251,18 +248,20 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
             pixel_upper_qrt = 0
         else:
             pixels = pixels.flatten()
-            pixels = pixels[np.nonzero(np.isfinite(pixels))[0]]  # Ignore NaNs, Infs
-            pixel_count = np.product(pixels.shape)
+            pixels = pixels[
+                numpy.nonzero(numpy.isfinite(pixels))[0]
+            ]  # Ignore NaNs, Infs
+            pixel_count = numpy.product(pixels.shape)
 
-            pixel_sum = np.sum(pixels)
+            pixel_sum = numpy.sum(pixels)
             pixel_mean = pixel_sum / float(pixel_count)
-            pixel_std = np.std(pixels)
-            pixel_median = np.median(pixels)
-            pixel_mad = np.median(np.abs(pixels - pixel_median))
-            pixel_min = np.min(pixels)
-            pixel_max = np.max(pixels)
+            pixel_std = numpy.std(pixels)
+            pixel_median = numpy.median(pixels)
+            pixel_mad = numpy.median(numpy.abs(pixels - pixel_median))
+            pixel_min = numpy.min(pixels)
+            pixel_max = numpy.max(pixels)
             pixel_pct_max = (
-                100.0 * float(np.sum(pixels == pixel_max)) / float(pixel_count)
+                100.0 * float(numpy.sum(pixels == pixel_max)) / float(pixel_count)
             )
             sorted_pixel_data = sorted(pixels)
             pixel_lower_qrt = sorted_pixel_data[int(len(sorted_pixel_data) * 0.25)]
@@ -307,56 +306,41 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
         columns = []
         for im in self.images_list.value:
             for feature, coltype in (
-                (F_TOTAL_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_MEAN_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_MEDIAN_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_STD_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_MAD_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_MIN_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_MAX_INTENSITY, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_TOTAL_AREA, cellprofiler_core.measurement.COLTYPE_INTEGER),
-                (F_PERCENT_MAXIMAL, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_LOWER_QUARTILE, cellprofiler_core.measurement.COLTYPE_FLOAT),
-                (F_UPPER_QUARTILE, cellprofiler_core.measurement.COLTYPE_FLOAT),
+                (F_TOTAL_INTENSITY, COLTYPE_FLOAT),
+                (F_MEAN_INTENSITY, COLTYPE_FLOAT),
+                (F_MEDIAN_INTENSITY, COLTYPE_FLOAT),
+                (F_STD_INTENSITY, COLTYPE_FLOAT),
+                (F_MAD_INTENSITY, COLTYPE_FLOAT),
+                (F_MIN_INTENSITY, COLTYPE_FLOAT),
+                (F_MAX_INTENSITY, COLTYPE_FLOAT),
+                (F_TOTAL_AREA, "integer"),
+                (F_PERCENT_MAXIMAL, COLTYPE_FLOAT),
+                (F_LOWER_QUARTILE, COLTYPE_FLOAT),
+                (F_UPPER_QUARTILE, COLTYPE_FLOAT),
             ):
                 if self.wants_objects:
                     for object_set in self.objects_list.value:
                         measurement_name = im + "_" + object_set
-                        columns.append(
-                            (
-                                cellprofiler_core.measurement.IMAGE,
-                                feature % measurement_name,
-                                coltype,
-                            )
-                        )
+                        columns.append(("Image", feature % measurement_name, coltype,))
                 else:
                     measurement_name = im
-                    columns.append(
-                        (
-                            cellprofiler_core.measurement.IMAGE,
-                            feature % measurement_name,
-                            coltype,
-                        )
-                    )
+                    columns.append(("Image", feature % measurement_name, coltype,))
         return columns
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return ["Intensity"]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == "Intensity"
-        ):
+        if object_name == "Image" and category == "Intensity":
             return ALL_MEASUREMENTS
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, measurement):
         if (
-            object_name == cellprofiler_core.measurement.IMAGE
+            object_name == "Image"
             and category == "Intensity"
             and measurement in ALL_MEASUREMENTS
         ):
@@ -389,7 +373,7 @@ class MeasureImageIntensity(cellprofiler_core.module.Module):
             objects_string = ", ".join(map(str, objects_set))
             setting_values = [images_string, wants_objects, objects_string]
             if len(use_objects) > 1 or len(objects_set) > 1:
-                logger.warning(
+                logging.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureImageIntensity module no longer uses pairs of images and objects.\n"
                     "Instead, all selected images and objects will be analysed together.\n"

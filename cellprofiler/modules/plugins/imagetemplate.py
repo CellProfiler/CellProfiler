@@ -1,5 +1,3 @@
-# coding=utf-8
-
 #################################
 #
 # Imports from useful Python libraries
@@ -8,10 +6,6 @@
 
 import numpy
 import scipy.ndimage
-
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
 
 #################################
 #
@@ -119,6 +113,11 @@ wherever possible, include a link to the original work. For example,
 # if someone wants to change the text, that text will change everywhere.
 # Also, you can't misspell it by accident.
 #
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.text import Float
+
 GRADIENT_MAGNITUDE = "Gradient magnitude"
 GRADIENT_DIRECTION_X = "Gradient direction - X"
 GRADIENT_DIRECTION_Y = "Gradient direction - Y"
@@ -146,7 +145,7 @@ GRADIENT_DIRECTION_Y = "Gradient direction - Y"
 #    should inherit from this class. These are modules that take objects as
 #    input and output new objects.
 #
-class ImageTemplate(cellprofiler_core.module.ImageProcessing):
+class ImageTemplate(ImageProcessing):
     #
     # The module starts by declaring the name that's used for display,
     # the category under which it is stored and the variable revision
@@ -169,7 +168,7 @@ class ImageTemplate(cellprofiler_core.module.ImageProcessing):
     #
     def create_settings(self):
         #
-        # The superclass (cellprofiler_core.module.ImageProcessing) defines two
+        # The superclass (ImageProcessing) defines two
         # settings for image input and output:
         #
         # -  x_name: an ImageNameSubscriber which "subscribes" to all
@@ -177,7 +176,7 @@ class ImageTemplate(cellprofiler_core.module.ImageProcessing):
         #    put images into CellProfiler. The ImageNameSubscriber gives
         #    your user a list of these images which can then be used as inputs
         #    in your module.
-        # -  y_name: an ImageNameProvider makes the image available to subsequent
+        # -  y_name: an ImageName makes the image available to subsequent
         #    modules.
         super(ImageTemplate, self).create_settings()
 
@@ -200,7 +199,7 @@ that is made available by a prior module.
         # Here's a choice box - the user gets a drop-down list of what
         # can be done.
         #
-        self.gradient_choice = cellprofiler_core.setting.Choice(
+        self.gradient_choice = Choice(
             text="Gradient choice:",
             # The choice takes a list of possibilities. The first one
             # is the default - the one the user will typically choose.
@@ -240,7 +239,7 @@ Choose what to calculate:
         #
         # A binary setting displays a checkbox.
         #
-        self.automatic_smoothing = cellprofiler_core.setting.Binary(
+        self.automatic_smoothing = Binary(
             text="Automatically choose the smoothing scale?",
             value=True,  # The default value is to choose automatically
             doc="The module will automatically choose a smoothing scale for you if you leave this checked.",
@@ -253,7 +252,7 @@ Choose what to calculate:
         # for the scale. The control will turn red if the user types in
         # an invalid scale.
         #
-        self.scale = cellprofiler_core.setting.Float(
+        self.scale = Float(
             text="Scale",
             value=1,  # The default value is 1 - a short-range scale
             minval=0.1,  # We don't let the user type in really small values

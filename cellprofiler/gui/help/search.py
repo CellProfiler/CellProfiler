@@ -3,12 +3,16 @@ import re
 
 import wx
 import wx.html
+from cellprofiler_core.preferences import get_plugin_directory
+from cellprofiler_core.utilities.core.modules import (
+    instantiate_module,
+    get_module_names,
+)
 
 import cellprofiler.gui
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
 import cellprofiler.modules
-import cellprofiler_core.preferences
 
 MENU_HELP = {
     "Accessing Images From OMERO": cellprofiler.gui.help.content.read_content(
@@ -24,11 +28,11 @@ MENU_HELP = {
     "Configuring Logging": cellprofiler.gui.help.content.read_content(
         "other_logging.rst"
     ),
+    "Identifying Objects in 3D": cellprofiler.gui.help.content.read_content(
+        "other_3d_identify.rst"
+    ),
     "Introduction to Projects": cellprofiler.gui.help.content.read_content(
         "projects_introduction.rst"
-    ),
-    "Load Modules": cellprofiler.gui.help.content.read_content(
-        "legacy_load_modules.rst"
     ),
     "Loading Image Stacks and Movies": cellprofiler.gui.help.content.read_content(
         "projects_image_sequences.rst"
@@ -60,9 +64,6 @@ MENU_HELP = {
     "Using The Display Window Menu Bar": cellprofiler.gui.help.content.read_content(
         "display_menu_bar.rst"
     ),
-    "Using the Parameter Sampling Menu": cellprofiler.gui.help.content.read_content(
-        "navigation_parameter_sampling_menu.rst"
-    ),
     "Plate Viewer": cellprofiler.gui.help.content.read_content(
         "output_plateviewer.rst"
     ),
@@ -79,9 +80,6 @@ MENU_HELP = {
         "navigation_test_menu.rst"
     ),
     "Using Plugins": cellprofiler.gui.help.content.read_content("other_plugins.rst"),
-    "Setting the Output Filename": cellprofiler.gui.help.content.read_content(
-        "legacy_output_file.rst"
-    ),
     "Why Use CellProfiler?": cellprofiler.gui.help.content.read_content(
         "why_use_cellprofiler.rst"
     ),
@@ -275,14 +273,14 @@ def search_module_help(text):
 
             count += len(matches)
 
-    for module_name in cellprofiler_core.modules.get_module_names():
-        module = cellprofiler_core.modules.instantiate_module(module_name)
+    for module_name in get_module_names():
+        module = instantiate_module(module_name)
 
         location = os.path.split(module.create_settings.__func__.__code__.co_filename)[
             0
         ]
 
-        if location == cellprofiler_core.preferences.get_plugin_directory():
+        if location == get_plugin_directory():
             continue
 
         prelim_matches = quick_search(module, text.lower())

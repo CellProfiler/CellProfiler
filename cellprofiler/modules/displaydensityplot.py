@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 DisplayDensityPlot
 ==================
@@ -46,11 +44,15 @@ See also **DisplayScatterPlot**, **DisplayHistogram**.
 
 import matplotlib.cm
 
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.setting.text import Text
 
 
-class DisplayDensityPlot(cpm.Module):
+class DisplayDensityPlot(Module):
     module_name = "DisplayDensityPlot"
     category = "Data Tools"
     variable_revision_number = 1
@@ -62,7 +64,7 @@ class DisplayDensityPlot(cpm.Module):
         return self.y_object.value
 
     def create_settings(self):
-        self.x_object = cps.ObjectNameSubscriber(
+        self.x_object = LabelSubscriber(
             "Select the object to display on the X-axis",
             "None",
             doc="""\
@@ -72,14 +74,14 @@ measurements are to be displayed on the X-axis.
 """,
         )
 
-        self.x_axis = cps.Measurement(
+        self.x_axis = Measurement(
             "Select the object measurement to plot on the X-axis",
             self.get_x_object,
             "None",
             doc="""Choose the object measurement made by a previous module to display on the X-axis.""",
         )
 
-        self.y_object = cps.ObjectNameSubscriber(
+        self.y_object = LabelSubscriber(
             "Select the object to display on the Y-axis",
             "None",
             doc="""\
@@ -89,14 +91,14 @@ measurements are to be displayed on the Y-axis.
 """,
         )
 
-        self.y_axis = cps.Measurement(
+        self.y_axis = Measurement(
             "Select the object measurement to plot on the Y-axis",
             self.get_y_object,
             "None",
             doc="""Choose the object measurement made by a previous module to display on the Y-axis.""",
         )
 
-        self.gridsize = cps.Integer(
+        self.gridsize = Integer(
             "Select the grid size",
             100,
             1,
@@ -107,7 +109,7 @@ axis. Increasing the number of grid regions increases the
 resolution of the plot.""",
         )
 
-        self.xscale = cps.Choice(
+        self.xscale = Choice(
             "How should the X-axis be scaled?",
             ["linear", "log"],
             None,
@@ -122,7 +124,7 @@ plotted linearly.
 """,
         )
 
-        self.yscale = cps.Choice(
+        self.yscale = Choice(
             "How should the Y-axis be scaled?",
             ["linear", "log"],
             None,
@@ -137,7 +139,7 @@ plotted linearly.
 """,
         )
 
-        self.bins = cps.Choice(
+        self.bins = Choice(
             "How should the colorbar be scaled?",
             ["linear", "log"],
             None,
@@ -155,7 +157,7 @@ plotted linearly.
         maps = [m for m in list(matplotlib.cm.datad.keys()) if not m.endswith("_r")]
         maps.sort()
 
-        self.colormap = cps.Choice(
+        self.colormap = Choice(
             "Select the color map",
             maps,
             "jet",
@@ -167,7 +169,7 @@ of the available colormaps.
 """,
         )
 
-        self.title = cps.Text(
+        self.title = Text(
             "Enter a title for the plot, if desired",
             "",
             doc="""\

@@ -1,0 +1,6 @@
+DIRBROWSE = "Browse"
+FILEBROWSE = "FileBrowse"
+FONT = "Font"
+COLOR = "Color"
+CHOICE = "Choice"
+TEXT = "Text"

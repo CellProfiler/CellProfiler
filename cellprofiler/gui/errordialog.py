@@ -3,17 +3,20 @@
 """
 
 
+import functools
 import io
 import logging
 import os
 import platform
 import sys
 import traceback
-from functools import reduce
+import urllib
+import urllib.parse
+import urllib.request
+from urllib.error import HTTPError, URLError
+from urllib.request import urlopen
 
-import six.moves.urllib.request
-import six.moves.urllib.error
-import six.moves.urllib.parse
+from cellprofiler_core.preferences import get_headless
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
@@ -337,19 +340,19 @@ def on_report(event, dialog, traceback_text, pipeline):
     except:
         pass
     headers = {"Accept": "text/plain"}
-    data = six.moves.urllib.parse.urlencode(params)
-    req = six.moves.urllib.request.Request(ERROR_URL, data, headers)
+    data = urllib.parse.urlencode(params)
+    req = urllib.request.Request(ERROR_URL, data, headers)
     import wx
 
     try:
-        conn = six.moves.urllib.request.urlopen(req)
+        conn = urlopen(req)
         response = conn.read()
         wx.MessageBox(
             "Report successfully sent to CellProfiler.org. Thank you.", parent=dialog
         )
-    except six.moves.urllib.error.HTTPError as e:
+    except HTTPError as e:
         wx.MessageBox("Failed to upload, server reported code %d" % e.code)
-    except six.moves.urllib.error.URLError as e:
+    except URLError as e:
         wx.MessageBox("Failed to upload: %s" % e.reason)
 
 
@@ -368,7 +371,6 @@ def show_warning(title, message, get_preference, set_preference):
 
     The message is printed to the console if headless.
     """
-    from cellprofiler_core.preferences import get_headless
 
     if get_headless():
         print(message)
@@ -454,7 +456,7 @@ def display_error_message(parent, message, title, buttons=None, size=(300, 200))
         line_sizes = [
             message_ctrl.GetFullTextExtent(line) for line in message.split("\n")
         ]
-        width = reduce(max, [x[0] for x in line_sizes])
+        width = functools.reduce(max, [x[0] for x in line_sizes])
         width += wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
         width += wx.SystemSettings.GetMetric(wx.SYS_BORDER_X) * 2
         height = sum([x[1] for x in line_sizes])

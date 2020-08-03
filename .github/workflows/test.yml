@@ -12,15 +12,13 @@ jobs:
         python-version: [3.8]
     steps:
     - uses: actions/checkout@v2
-    - name: Setup Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v1
+    - uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Installation
-      run: |
+    - run: |
         python -m pip install --upgrade pip
+        pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk2/ubuntu-18.04 wxPython==4.1.0
         pip install numpy
-        pip install -U https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
         pip install --editable .[build,test]
     - name: Test
       run: |

@@ -1,7 +1,7 @@
-# coding=utf-8
-
 import math
 
+import cellprofiler_core.module.image_segmentation
+import cellprofiler_core.object
 import centrosome.cpmorphology
 import centrosome.outline
 import centrosome.propagate
@@ -10,13 +10,14 @@ import numpy
 import scipy.ndimage
 import scipy.sparse
 import skimage.morphology
+from cellprofiler_core.setting import Binary, Color
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.range import IntegerRange
+from cellprofiler_core.setting.text import Integer, Float
 
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
-import cellprofiler_core.object
-import cellprofiler_core.setting
 from cellprofiler.modules import _help, threshold
-import cellprofiler_core.module.image_segmentation
 
 __doc__ = """\
 IdentifyPrimaryObjects
@@ -115,7 +116,7 @@ What do I get as output?
 
 A set of primary objects are produced by this module, which can be used
 in downstream modules for measurement purposes or other operations. See
-the section `"Measurements made by this module" <#Measurements_made_by_thismodule>`__ below
+the section "Measurements made by this module" below
 for the measurements that are produced directly by this module. Once the module
 has finished processing, the module display window will show the
 following panels:
@@ -347,7 +348,7 @@ class IdentifyPrimaryObjects(
         self.y_name.text = "Name the primary objects to be identified"
         self.y_name.doc = "Enter the name that you want to call the objects identified by this module."
 
-        self.size_range = cellprofiler_core.setting.IntegerRange(
+        self.size_range = IntegerRange(
             SIZE_RANGE_SETTING_TEXT,
             (10, 40),
             minval=1,
@@ -386,7 +387,7 @@ A few important notes:
             ),
         )
 
-        self.exclude_size = cellprofiler_core.setting.Binary(
+        self.exclude_size = Binary(
             EXCLUDE_SIZE_SETTING_TEXT,
             True,
             doc="""\
@@ -413,7 +414,7 @@ desired.
             ),
         )
 
-        self.exclude_border_objects = cellprofiler_core.setting.Binary(
+        self.exclude_border_objects = Binary(
             "Discard objects touching the border of the image?",
             True,
             doc="""\
@@ -440,7 +441,7 @@ partial object would not be accurate.
             ),
         )
 
-        self.unclump_method = cellprofiler_core.setting.Choice(
+        self.unclump_method = Choice(
             "Method to distinguish clumped objects",
             [UN_INTENSITY, UN_SHAPE, UN_NONE],
             doc="""\
@@ -532,7 +533,7 @@ see the results of each.
             ),
         )
 
-        self.watershed_method = cellprofiler_core.setting.Choice(
+        self.watershed_method = Choice(
             "Method to draw dividing lines between clumped objects",
             [WA_INTENSITY, WA_SHAPE, WA_PROPAGATE, WA_NONE],
             doc="""\
@@ -579,7 +580,7 @@ see the results of each.
             ),
         )
 
-        self.automatic_smoothing = cellprofiler_core.setting.Binary(
+        self.automatic_smoothing = Binary(
             AUTOMATIC_SMOOTHING_SETTING_TEXT,
             True,
             doc="""\
@@ -611,7 +612,7 @@ calculated value.""".format(
             ),
         )
 
-        self.smoothing_filter_size = cellprofiler_core.setting.Integer(
+        self.smoothing_filter_size = Integer(
             SMOOTHING_FILTER_SIZE_SETTING_TEXT,
             10,
             doc="""\
@@ -643,7 +644,7 @@ diameter).
             ),
         )
 
-        self.automatic_suppression = cellprofiler_core.setting.Binary(
+        self.automatic_suppression = Binary(
             AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT,
             True,
             doc="""\
@@ -675,7 +676,7 @@ the automatically calculated value.""".format(
             ),
         )
 
-        self.maxima_suppression_size = cellprofiler_core.setting.Float(
+        self.maxima_suppression_size = Float(
             "Suppress local maxima that are closer than this minimum allowed distance",
             7,
             minval=0,
@@ -705,7 +706,7 @@ these two settings; read the help carefully for both.
             ),
         )
 
-        self.low_res_maxima = cellprofiler_core.setting.Binary(
+        self.low_res_maxima = Binary(
             "Speed up by using lower-resolution image to find local maxima?",
             True,
             doc="""\
@@ -720,7 +721,7 @@ checking this box will have no effect.""".format(
             ),
         )
 
-        self.fill_holes = cellprofiler_core.setting.Choice(
+        self.fill_holes = Choice(
             "Fill holes in identified objects?",
             FH_ALL,
             value=FH_THRESHOLDING,
@@ -745,7 +746,7 @@ or more objects) are filled in:
             ),
         )
 
-        self.limit_choice = cellprofiler_core.setting.Choice(
+        self.limit_choice = Choice(
             "Handling of objects if excessive number of objects identified",
             [LIMIT_NONE, LIMIT_ERASE],
             doc="""\
@@ -766,7 +767,7 @@ ways:
             ),
         )
 
-        self.maximum_object_count = cellprofiler_core.setting.Integer(
+        self.maximum_object_count = Integer(
             "Maximum number of objects",
             value=500,
             minval=2,
@@ -778,7 +779,7 @@ This setting limits the number of objects in the image. See the
 documentation for the previous setting for details.""",
         )
 
-        self.want_plot_maxima = cellprofiler_core.setting.Binary(
+        self.want_plot_maxima = Binary(
             "Display accepted local maxima?",
             False,
             doc="""\
@@ -789,20 +790,20 @@ documentation for the previous setting for details.""",
 
             Local maxima are small cluster of pixels from which objects are 'grown' during segmentation.
             Each object in a declumped segmentation will have a single maxima.
-            
+
             For example, for intensity-based declumping, maxima should appear at the brightest points in an object.
             If obvious intensity peaks are missing they were probably removed by the filters set above.""".format(
                 **{"YES": "Yes"}
             ),
         )
 
-        self.maxima_color = cellprofiler_core.setting.Color(
+        self.maxima_color = Color(
             "Select maxima color",
             DEFAULT_MAXIMA_COLOR,
             doc="Maxima will be displayed in this color.",
         )
 
-        self.use_advanced = cellprofiler_core.setting.Binary(
+        self.use_advanced = Binary(
             "Use advanced settings?",
             value=False,
             doc="""\
@@ -853,7 +854,7 @@ If "*{NO}*" is selected, the following settings are used:
             ),
         )
 
-        self.threshold_setting_version = cellprofiler_core.setting.Integer(
+        self.threshold_setting_version = Integer(
             "Threshold setting version", value=self.threshold.variable_revision_number
         )
 
@@ -1194,7 +1195,11 @@ If "*{NO}*" is selected, the following settings are used:
         )
 
         self.threshold.add_threshold_measurements(
-            self.y_name.value, workspace.measurements, final_threshold, orig_threshold, guide_threshold
+            self.y_name.value,
+            workspace.measurements,
+            final_threshold,
+            orig_threshold,
+            guide_threshold,
         )
 
         binary_image, sigma = self.threshold.apply_threshold(

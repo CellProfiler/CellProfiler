@@ -1,15 +1,27 @@
-# coding=utf-8
-
-import logging
-
-logger = logging.getLogger(__name__)
 import numpy.ma
-from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
+from cellprofiler_core.constants.measurement import (
+    COLTYPE_INTEGER,
+    COLTYPE_FLOAT,
+    GROUP_INDEX,
+    GROUP_NUMBER,
+    OBJECT_NUMBER,
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+    MCA_AVAILABLE_POST_GROUP,
+    EXPERIMENT,
+    MCA_AVAILABLE_EACH_CYCLE,
+    IMAGE_NUMBER,
+)
+from cellprofiler_core.constants.module import HELP_ON_MEASURING_DISTANCES
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.range import FloatRange
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import Integer, Float, ImageName
+
 from cellprofiler.modules import _help
 from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
-from cellprofiler.modules._help import HELP_ON_MEASURING_DISTANCES
 
 __doc__ = """\
 TrackObjects
@@ -206,26 +218,30 @@ M_BOTH = "Both"
 
 import logging
 
-logger = logging.getLogger(__name__)
+
 import numpy as np
 import numpy.ma
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
-import cellprofiler_core.module as cpm
-import cellprofiler_core.image as cpi
-import cellprofiler_core.pipeline as cpp
-import cellprofiler_core.setting as cps
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.preferences as cpprefs
+from cellprofiler_core.module import Module
+from cellprofiler_core.image import Image
+from cellprofiler_core.setting import (
+    Measurement,
+    Binary,
+    ValidationError,
+)
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.preferences import get_default_colormap
 from centrosome.lapjv import lapjv
-import centrosome.filter as cpfilter
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
-from centrosome.cpmorphology import centers_of_labels
-from centrosome.cpmorphology import associate_by_distance
-from centrosome.cpmorphology import all_connected_components
+import centrosome.filter
+from centrosome.cpmorphology import (
+    fixup_scipy_ndimage_result,
+    centers_of_labels,
+    associate_by_distance,
+    all_connected_components,
+)
 from centrosome.index import Indexes
-from cellprofiler_core.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
 
 # if neighmovetrack is not available remove it from options
@@ -309,24 +325,24 @@ which is stored using this name."""
 F_AREA = "Area"
 
 F_ALL_COLTYPE_ALL = [
-    (F_LABEL, cpmeas.COLTYPE_INTEGER),
-    (F_PARENT_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
-    (F_PARENT_IMAGE_NUMBER, cpmeas.COLTYPE_INTEGER),
-    (F_TRAJECTORY_X, cpmeas.COLTYPE_INTEGER),
-    (F_TRAJECTORY_Y, cpmeas.COLTYPE_INTEGER),
-    (F_DISTANCE_TRAVELED, cpmeas.COLTYPE_FLOAT),
-    (F_DISPLACEMENT, cpmeas.COLTYPE_FLOAT),
-    (F_INTEGRATED_DISTANCE, cpmeas.COLTYPE_FLOAT),
-    (F_LINEARITY, cpmeas.COLTYPE_FLOAT),
-    (F_LIFETIME, cpmeas.COLTYPE_INTEGER),
-    (F_FINAL_AGE, cpmeas.COLTYPE_INTEGER),
+    (F_LABEL, COLTYPE_INTEGER),
+    (F_PARENT_OBJECT_NUMBER, COLTYPE_INTEGER),
+    (F_PARENT_IMAGE_NUMBER, COLTYPE_INTEGER),
+    (F_TRAJECTORY_X, COLTYPE_INTEGER),
+    (F_TRAJECTORY_Y, COLTYPE_INTEGER),
+    (F_DISTANCE_TRAVELED, COLTYPE_FLOAT),
+    (F_DISPLACEMENT, COLTYPE_FLOAT),
+    (F_INTEGRATED_DISTANCE, COLTYPE_FLOAT),
+    (F_LINEARITY, COLTYPE_FLOAT),
+    (F_LIFETIME, COLTYPE_INTEGER),
+    (F_FINAL_AGE, COLTYPE_INTEGER),
 ]
 
 F_IMAGE_COLTYPE_ALL = [
-    (F_NEW_OBJECT_COUNT, cpmeas.COLTYPE_INTEGER),
-    (F_LOST_OBJECT_COUNT, cpmeas.COLTYPE_INTEGER),
-    (F_SPLIT_COUNT, cpmeas.COLTYPE_INTEGER),
-    (F_MERGE_COUNT, cpmeas.COLTYPE_INTEGER),
+    (F_NEW_OBJECT_COUNT, COLTYPE_INTEGER),
+    (F_LOST_OBJECT_COUNT, COLTYPE_INTEGER),
+    (F_SPLIT_COUNT, COLTYPE_INTEGER),
+    (F_MERGE_COUNT, COLTYPE_INTEGER),
 ]
 
 F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
@@ -334,13 +350,13 @@ F_ALL = [feature for feature, coltype in F_ALL_COLTYPE_ALL]
 F_IMAGE_ALL = [feature for feature, coltype in F_IMAGE_COLTYPE_ALL]
 
 
-class TrackObjects(cpm.Module):
+class TrackObjects(Module):
     module_name = "TrackObjects"
     category = "Object Processing"
     variable_revision_number = 7
 
     def create_settings(self):
-        self.tracking_method = cps.Choice(
+        self.tracking_method = Choice(
             "Choose a tracking method",
             TM_ALL,
             doc="""\
@@ -481,13 +497,13 @@ References
             ),
         )
 
-        self.object_name = cps.ObjectNameSubscriber(
+        self.object_name = LabelSubscriber(
             "Select the objects to track",
             "None",
             doc="""Select the objects to be tracked by this module.""",
         )
 
-        self.measurement = cps.Measurement(
+        self.measurement = Measurement(
             "Select object measurement to use for tracking",
             lambda: self.object_name.value,
             doc="""\
@@ -501,7 +517,7 @@ will also be asked to specify additional details such as the image from
 which the measurements originated or the measurement scale.""",
         )
 
-        self.pixel_radius = cps.Integer(
+        self.pixel_radius = Integer(
             "Maximum pixel distance to consider matches",
             50,
             minval=1,
@@ -510,12 +526,13 @@ Objects in the subsequent frame will be considered potential matches if
 they are within this distance. To determine a suitable pixel distance,
 you can look at the axis increments on each image (shown in pixel units)
 or use the distance measurement tool.
-%(HELP_ON_MEASURING_DISTANCES)s
-"""
-            % globals(),
+{}
+""".format(
+                HELP_ON_MEASURING_DISTANCES
+            ),
         )
 
-        self.model = cps.Choice(
+        self.model = Choice(
             "Select the movement model",
             [M_RANDOM, M_VELOCITY, M_BOTH],
             value=M_BOTH,
@@ -555,7 +572,7 @@ variance in position that follows a Gaussian distribution.
             ),
         )
 
-        self.radius_std = cps.Float(
+        self.radius_std = Float(
             "Number of standard deviations for search radius",
             3,
             minval=1,
@@ -582,7 +599,7 @@ error times the number of standard deviations that you enter here.
             ),
         )
 
-        self.radius_limit = cps.FloatRange(
+        self.radius_limit = FloatRange(
             "Search radius limit, in pixel units (Min,Max)",
             (2, 10),
             minval=0,
@@ -625,7 +642,7 @@ constrains the search radius to reasonable values.
             ),
         )
 
-        self.wants_second_phase = cps.Binary(
+        self.wants_second_phase = Binary(
             "Run the second phase of the LAP algorithm?",
             True,
             doc="""\
@@ -646,7 +663,7 @@ each the settings."""
             % globals(),
         )
 
-        self.gap_cost = cps.Integer(
+        self.gap_cost = Integer(
             "Gap closing cost",
             40,
             minval=1,
@@ -673,7 +690,7 @@ pixels, of the displacement of the object between frames.
             ),
         )
 
-        self.split_cost = cps.Integer(
+        self.split_cost = Integer(
             "Split alternative cost",
             40,
             minval=1,
@@ -709,7 +726,7 @@ is (conceptually) subtracted from the cost of making the split.
             ),
         )
 
-        self.merge_cost = cps.Integer(
+        self.merge_cost = Integer(
             "Merge alternative cost",
             40,
             minval=1,
@@ -744,7 +761,7 @@ The merge cost is measured in pixels. The merge alternative cost is
             ),
         )
 
-        self.mitosis_cost = cps.Integer(
+        self.mitosis_cost = Integer(
             "Mitosis alternative cost",
             80,
             minval=1,
@@ -775,7 +792,7 @@ Area(daughters) / Area(parent) and Area(parent) / Area(daughters)).
             ),
         )
 
-        self.mitosis_max_distance = cps.Integer(
+        self.mitosis_max_distance = Integer(
             "Maximum mitosis distance, in pixel units",
             40,
             minval=1,
@@ -787,7 +804,7 @@ daughter candidate centroids after mitosis from the parent candidate."""
             % globals(),
         )
 
-        self.max_gap_score = cps.Integer(
+        self.max_gap_score = Integer(
             "Maximum gap displacement, in pixel units",
             5,
             minval=1,
@@ -818,7 +835,7 @@ during the second phase.
             ),
         )
 
-        self.max_merge_score = cps.Integer(
+        self.max_merge_score = Integer(
             "Maximum merge score",
             50,
             minval=1,
@@ -846,7 +863,7 @@ merge score has two components:
             ),
         )
 
-        self.max_split_score = cps.Integer(
+        self.max_split_score = Integer(
             "Maximum split score",
             50,
             minval=1,
@@ -873,7 +890,7 @@ split score has two components:
             ),
         )
 
-        self.max_frame_distance = cps.Integer(
+        self.max_frame_distance = Integer(
             "Maximum temporal gap, in frames",
             5,
             minval=1,
@@ -902,7 +919,7 @@ find an object in one or more frames.
             ),
         )
 
-        self.average_cell_diameter = cps.Float(
+        self.average_cell_diameter = Float(
             "Average cell diameter in pixels",
             35.0,
             minval=5,
@@ -914,7 +931,7 @@ algorithm parameters. %(HELP_ON_MEASURING_DISTANCES)s"""
             % globals(),
         )
 
-        self.advanced_parameters = cps.Binary(
+        self.advanced_parameters = Binary(
             "Use advanced configuration parameters",
             False,
             doc="""\
@@ -926,7 +943,7 @@ parameters when cells are incorrectly marked missing between frames or
 cells of different sizes are falsely matched.""",
         )
 
-        self.drop_cost = cps.Float(
+        self.drop_cost = Float(
             "Cost of cell to empty matching",
             15,
             minval=1,
@@ -951,7 +968,7 @@ cells (from t+1) rather then classified as missing.
             ),
         )
 
-        self.area_weight = cps.Float(
+        self.area_weight = Float(
             "Weight of area difference in function matching cost",
             25,
             minval=1,
@@ -961,7 +978,7 @@ Increasing this value will make differences in position favored over
 differences in area when identifying objects between frames.""",
         )
 
-        self.wants_lifetime_filtering = cps.Binary(
+        self.wants_lifetime_filtering = Binary(
             "Filter objects by lifetime?",
             False,
             doc="""\
@@ -985,7 +1002,7 @@ mis-segmentation.
             ),
         )
 
-        self.wants_minimum_lifetime = cps.Binary(
+        self.wants_minimum_lifetime = Binary(
             "Filter using a minimum lifetime?",
             True,
             doc="""\
@@ -997,7 +1014,7 @@ of frames.""".format(
             ),
         )
 
-        self.min_lifetime = cps.Integer(
+        self.min_lifetime = Integer(
             "Minimum lifetime",
             1,
             minval=1,
@@ -1006,7 +1023,7 @@ Enter the minimum number of frames an object is permitted to persist. Objects
 which last this number of frames or lower are filtered out.""",
         )
 
-        self.wants_maximum_lifetime = cps.Binary(
+        self.wants_maximum_lifetime = Binary(
             "Filter using a maximum lifetime?",
             False,
             doc="""\
@@ -1017,7 +1034,7 @@ of frames."""
             % globals(),
         )
 
-        self.max_lifetime = cps.Integer(
+        self.max_lifetime = Integer(
             "Maximum lifetime",
             100,
             doc="""\
@@ -1025,7 +1042,7 @@ Enter the maximum number of frames an object is permitted to persist. Objects
 which last this number of frames or more are filtered out.""",
         )
 
-        self.display_type = cps.Choice(
+        self.display_type = Choice(
             "Select display option",
             DT_ALL,
             doc="""\
@@ -1038,7 +1055,7 @@ The output image can be saved as:
             % globals(),
         )
 
-        self.wants_image = cps.Binary(
+        self.wants_image = Binary(
             "Save color-coded image?",
             False,
             doc="""\
@@ -1053,7 +1070,7 @@ will only show the penultimate result and not the final product."""
             % globals(),
         )
 
-        self.image_name = cps.ImageNameProvider(
+        self.image_name = ImageName(
             "Name the output image",
             "TrackedCells",
             doc="""\
@@ -1105,7 +1122,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 and self.wants_minimum_lifetime.value == False
             )
         ):
-            raise cps.ValidationError(
+            raise ValidationError(
                 "Please enter a minimum and/or maximum lifetime limit",
                 self.wants_lifetime_filtering,
             )
@@ -1172,17 +1189,16 @@ Enter a name to give the color-coded image of tracked labels.""",
 
     def get_group_image_numbers(self, workspace):
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, Measurements)
         d = self.get_ws_dictionary(workspace)
         group_number = m.get_group_number()
         if "group_number" not in d or d["group_number"] != group_number:
             d["group_number"] = group_number
             group_indexes = np.array(
                 [
-                    (m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i), i)
+                    (m.get_measurement("Image", GROUP_INDEX, i), i)
                     for i in m.get_image_numbers()
-                    if m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i)
-                    == group_number
+                    if m.get_measurement("Image", GROUP_NUMBER, i) == group_number
                 ],
                 int,
             )
@@ -1316,7 +1332,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             #
             only_display_image(figure, objects.segmented.shape)
             image_pixels = figure_to_image(figure, dpi=figure.dpi)
-            image = cpi.Image(image_pixels)
+            image = Image(image_pixels)
             workspace.image_set.add(self.image_name.value, image)
         if self.show_window:
             workspace.display_data.labels = objects.segmented
@@ -1338,7 +1354,8 @@ Enter a name to give the color-coded image of tracked labels.""",
             figure.figure.text(0.5, 0.5, "Analysis complete", ha="center", va="center")
 
     def draw(self, labels, ax, object_numbers):
-        import matplotlib
+        import matplotlib.cm
+        import matplotlib.colors
 
         indexer = np.zeros(len(object_numbers) + 1, int)
         indexer[1:] = object_numbers
@@ -1352,7 +1369,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         bits = (indexer & pow_of_2).astype(bool)
         indexer = np.sum(bits.transpose() * (2 ** np.arange(7, -1, -1)), 1)
         recolored_labels = indexer[labels]
-        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+        cm = matplotlib.cm.get_cmap(get_default_colormap())
         cm.set_bad((0, 0, 0))
         norm = matplotlib.colors.BoundaryNorm(list(range(256)), 256)
         img = ax.imshow(
@@ -1469,12 +1486,12 @@ Enter a name to give the color-coded image of tracked labels.""",
         kalman_states = self.get_kalman_states(workspace)
         if kalman_states is None:
             if self.static_model:
-                kalman_states = [cpfilter.static_kalman_model()]
+                kalman_states = [centrosome.filter.static_kalman_model()]
             else:
                 kalman_states = []
             if self.velocity_model:
-                kalman_states.append(cpfilter.velocity_kalman_model())
-        areas = fix(
+                kalman_states.append(centrosome.filter.velocity_kalman_model())
+        areas = fixup_scipy_ndimage_result(
             scipy.ndimage.sum(
                 np.ones(objects.segmented.shape),
                 objects.segmented,
@@ -1511,7 +1528,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             # The index of the Kalman filter used: -1 means not used
             kalman_used = -np.ones((n_old, n_new), int)
             for nkalman, kalman_state in enumerate(kalman_states):
-                assert isinstance(kalman_state, cpfilter.KalmanState)
+                assert isinstance(kalman_state, centrosome.filter.KalmanState)
                 obs = kalman_state.predicted_obs_vec
                 dk = np.sqrt((obs[i, 0] - new_i[j]) ** 2 + (obs[i, 1] - new_j[j]) ** 2)
                 noise_sd = np.sqrt(np.sum(kalman_state.noise_var[:, 0:2], 1))
@@ -1544,7 +1561,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             t = t + 1
             t = np.column_stack((t, x))
             a = np.arange(len(old_i)) + 2
-            x = np.searchsorted(t[0 : (t.size / 2), 0], a)
+            x = np.searchsorted(t[0 : (t.size // 2), 0], a)
             a = np.arange(len(old_i)) + 1
             b = np.arange(len(old_i)) + len(new_i) + 1
             c = np.zeros(len(old_i)) + costDie
@@ -1625,7 +1642,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                     matching_idx = old_idx[new_idx]
                     i, j = np.mgrid[0 : len(matching_idx), 0:state_len]
                     q[new_idx[i], j, j] = kalman_state.noise_var[matching_idx[i], j]
-                new_kalman_state = cpfilter.kalman_filter(
+                new_kalman_state = centrosome.filter.kalman_filter(
                     kalman_state, old_idx, np.column_stack((new_i, new_j)), q, r
                 )
                 new_kalman_states.append(new_kalman_state)
@@ -1647,7 +1664,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             r = np.zeros((count, 2, 2))
             for kalman_state in kalman_states:
                 q = np.zeros((count, kalman_state.state_len, kalman_state.state_len))
-                new_kalman_state = cpfilter.kalman_filter(
+                new_kalman_state = centrosome.filter.kalman_filter(
                     kalman_state, -np.ones(count), np.column_stack((i, j)), q, r
                 )
                 new_kalman_states.append(new_kalman_state)
@@ -1657,7 +1674,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             j = (j + 0.5).astype(int)
             self.map_objects(workspace, np.zeros((0,), int), np.zeros(count, int), i, j)
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, Measurements)
         m.add_measurement(self.object_name.value, self.measurement_name(F_AREA), areas)
         m[
             self.object_name.value, self.measurement_name(F_LINKING_DISTANCE)
@@ -1688,7 +1705,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         for (model, elements), kalman_state in zip(
             self.get_kalman_models(), self.get_kalman_states(workspace)
         ):
-            assert isinstance(kalman_state, cpfilter.KalmanState)
+            assert isinstance(kalman_state, centrosome.filter.KalmanState)
             nobjs = len(kalman_state.state_vec)
             if nobjs > 0:
                 #
@@ -1808,11 +1825,11 @@ Enter a name to give the color-coded image of tracked labels.""",
 
     def run_as_data_tool(self, workspace):
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, Measurements)
         group_numbers = {}
         for i in m.get_image_numbers():
-            group_number = m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, i)
-            group_index = m.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, i)
+            group_number = m.get_measurement("Image", GROUP_NUMBER, i)
+            group_index = m.get_measurement("Image", GROUP_INDEX, i)
             if (group_number not in group_numbers) or (
                 group_numbers[group_number][1] > group_index
             ):
@@ -1844,7 +1861,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         image_numbers = self.get_group_image_numbers(workspace)
         if self.tracking_method != "LAP":
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(m, Measurements)
             self.recalculate_group(workspace, image_numbers)
             return
 
@@ -1863,7 +1880,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         max_frame_difference = self.max_frame_distance.value
 
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, Measurements)
         image_numbers = self.get_group_image_numbers(workspace)
         object_name = self.object_name.value
         (
@@ -1881,7 +1898,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             ]
             for feature, mtype in (
                 (self.measurement_name(F_LABEL), int),
-                (cpmeas.OBJECT_NUMBER, int),
+                (OBJECT_NUMBER, int),
                 (M_LOCATION_CENTER_X, float),
                 (M_LOCATION_CENTER_Y, float),
                 (self.measurement_name(F_AREA), float),
@@ -1891,11 +1908,10 @@ Enter a name to give the color-coded image of tracked labels.""",
         ]
         group_indices, new_object_count, lost_object_count, merge_count, split_count = [
             np.array(
-                [m.get_measurement(cpmeas.IMAGE, feature, i) for i in image_numbers],
-                int,
+                [m.get_measurement("Image", feature, i) for i in image_numbers], int,
             )
             for feature in (
-                cpmeas.GROUP_INDEX,
+                GROUP_INDEX,
                 self.image_measurement_name(F_NEW_OBJECT_COUNT),
                 self.image_measurement_name(F_LOST_OBJECT_COUNT),
                 self.image_measurement_name(F_MERGE_COUNT),
@@ -2093,7 +2109,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         merge_off = gap_end
         if len(P1) > 0:
             # Do the initial winnowing in chunks of 10m pairs
-            lchunk_size = 10000000 / len(P1)
+            lchunk_size = 10000000 // len(P1)
             chunks = []
             for lstart in range(0, len(L), lchunk_size):
                 lend = min(len(L), lstart + lchunk_size)
@@ -2161,7 +2177,7 @@ Enter a name to give the color-coded image of tracked labels.""",
 
         split_off = merge_end
         if len(P2) > 0:
-            lchunk_size = 10000000 / len(P2)
+            lchunk_size = 10000000 // len(P2)
             chunks = []
             for fstart in range(0, len(L), lchunk_size):
                 fend = min(len(L), fstart + lchunk_size)
@@ -2506,7 +2522,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 # the image set after the parent)
                 #
                 lost_object_count[parent_image_index + 1] -= 1
-                logger.debug(
+                logging.debug(
                     "Gap closing: %d:%d to %d:%d, score=%f"
                     % (
                         parent_image_number,
@@ -2554,7 +2570,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 # one more split object
                 #
                 split_count[my_image_index] += 1
-                logger.debug(
+                logging.debug(
                     "split: %d:%d to %d:%d, score=%f"
                     % (
                         parent_image_number,
@@ -2603,7 +2619,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 )
                 lost_object_count[parent_image_index + 1] -= 1
                 merge_count[child_image_index] += 1
-                logger.debug(
+                logging.debug(
                     "Merge: %d:%d to %d:%d, score=%f"
                     % (
                         image_numbers[parent_image_index],
@@ -2652,7 +2668,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 add_fixup(F_LINK_TYPE, my_image_number, my_object_number, LT_MITOSIS)
                 add_fixup(F_MITOSIS_SCORE, my_image_number, my_object_number, score)
                 new_object_count[my_image_index] -= 1
-            logger.debug(
+            logging.debug(
                 "Mitosis: %d:%d to %d:%d and %d, score=%f"
                 % (
                     parent_image_number,
@@ -2694,32 +2710,28 @@ Enter a name to give the color-coded image of tracked labels.""",
         for i, image_number in enumerate(image_numbers):
             n_objects = len(newlabel[i])
             m.add_measurement(
-                cpmeas.IMAGE,
+                "Image",
                 self.image_measurement_name(F_LOST_OBJECT_COUNT),
                 lost_object_count[i],
-                True,
-                image_number,
+                image_set_number=image_number,
             )
             m.add_measurement(
-                cpmeas.IMAGE,
+                "Image",
                 self.image_measurement_name(F_NEW_OBJECT_COUNT),
                 new_object_count[i],
-                True,
-                image_number,
+                image_set_number=image_number,
             )
             m.add_measurement(
-                cpmeas.IMAGE,
+                "Image",
                 self.image_measurement_name(F_MERGE_COUNT),
                 merge_count[i],
-                True,
-                image_number,
+                image_set_number=image_number,
             )
             m.add_measurement(
-                cpmeas.IMAGE,
+                "Image",
                 self.image_measurement_name(F_SPLIT_COUNT),
                 split_count[i],
-                True,
-                image_number,
+                image_set_number=image_number,
             )
             if n_objects == 0:
                 continue
@@ -2955,7 +2967,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         m = workspace.measurements
         object_name = self.object_name.value
 
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, Measurements)
 
         image_index = np.zeros(np.max(image_numbers) + 1, int)
         image_index[image_numbers] = np.arange(len(image_numbers))
@@ -3176,8 +3188,8 @@ Enter a name to give the color-coded image of tracked labels.""",
         i, j - the coordinates for each new object.
         """
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
-        image_number = m.get_current_image_measurement(cpp.IMAGE_NUMBER)
+        assert isinstance(m, Measurements)
+        image_number = m.get_current_image_measurement(IMAGE_NUMBER)
         new_of_old = new_of_old.astype(int)
         old_of_new = old_of_new.astype(int)
         old_object_numbers = self.get_saved_object_numbers(workspace).astype(int)
@@ -3340,7 +3352,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         """Rerun the kalman filters to improve the motion models"""
         m = workspace.measurements
         object_name = self.object_name.value
-        object_number = m[object_name, cpmeas.OBJECT_NUMBER, image_numbers]
+        object_number = m[object_name, OBJECT_NUMBER, image_numbers]
 
         # ########################
         #
@@ -3377,13 +3389,13 @@ Enter a name to give the color-coded image of tracked labels.""",
 
         models = self.get_kalman_models()
         kalman_models = [
-            cpfilter.static_kalman_model()
+            centrosome.filter.static_kalman_model()
             if model == F_STATIC_MODEL
-            else cpfilter.velocity_kalman_model()
+            else centrosome.filter.velocity_kalman_model()
             for model, elements in models
         ]
         kalman_states = [
-            cpfilter.KalmanState(
+            centrosome.filter.KalmanState(
                 kalman_model.observation_matrix, kalman_model.translation_matrix
             )
             for kalman_model in kalman_models
@@ -3411,7 +3423,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             ).reshape(n_objects, 2, 2)
             for kalman_state in kalman_states:
                 new_kalman_states.append(
-                    cpfilter.kalman_filter(
+                    centrosome.filter.kalman_filter(
                         kalman_state,
                         -np.ones(n_objects, int),
                         np.column_stack((ii, jj)),
@@ -3457,7 +3469,7 @@ Enter a name to give the color-coded image of tracked labels.""",
             errors = link_distance[next_slice]
             model_used = movement_model[next_slice]
             for (model, elements), kalman_state in zip(models, kalman_states):
-                assert isinstance(kalman_state, cpfilter.KalmanState)
+                assert isinstance(kalman_state, centrosome.filter.KalmanState)
                 n_elements = len(elements)
                 q = np.zeros((n_objects, n_elements, n_elements))
                 if np.any(has_child):
@@ -3474,7 +3486,7 @@ Enter a name to give the color-coded image of tracked labels.""",
 
                     for j in range(n_elements):
                         q[has_child, j, j] = kalman_state.noise_var[kid_idx, j]
-                updated_state = cpfilter.kalman_filter(
+                updated_state = centrosome.filter.kalman_filter(
                     kalman_state,
                     child_object_number - 1,
                     np.column_stack((ii, jj)),
@@ -3517,38 +3529,34 @@ Enter a name to give the color-coded image of tracked labels.""",
             for feature, coltype in F_ALL_COLTYPE_ALL
         ]
         result += [
-            (cpmeas.IMAGE, self.image_measurement_name(feature), coltype)
+            ("Image", self.image_measurement_name(feature), coltype)
             for feature, coltype in F_IMAGE_COLTYPE_ALL
         ]
-        attributes = {cpmeas.MCA_AVAILABLE_POST_GROUP: True}
+        attributes = {MCA_AVAILABLE_POST_GROUP: True}
         if self.tracking_method == "LAP":
             result += [
                 (self.object_name.value, self.measurement_name(name), coltype)
                 for name, coltype in (
-                    (F_AREA, cpmeas.COLTYPE_INTEGER),
-                    (F_LINK_TYPE, cpmeas.COLTYPE_INTEGER),
-                    (F_LINKING_DISTANCE, cpmeas.COLTYPE_FLOAT),
-                    (F_STANDARD_DEVIATION, cpmeas.COLTYPE_FLOAT),
-                    (F_MOVEMENT_MODEL, cpmeas.COLTYPE_INTEGER),
+                    (F_AREA, COLTYPE_INTEGER),
+                    (F_LINK_TYPE, COLTYPE_INTEGER),
+                    (F_LINKING_DISTANCE, COLTYPE_FLOAT),
+                    (F_STANDARD_DEVIATION, COLTYPE_FLOAT),
+                    (F_MOVEMENT_MODEL, COLTYPE_INTEGER),
                 )
             ]
             result += [
-                (
-                    self.object_name.value,
-                    self.measurement_name(name),
-                    cpmeas.COLTYPE_FLOAT,
-                )
+                (self.object_name.value, self.measurement_name(name), COLTYPE_FLOAT,)
                 for name in list(self.get_kalman_feature_names())
             ]
             if self.wants_second_phase:
                 result += [
                     (self.object_name.value, self.measurement_name(name), coltype)
                     for name, coltype in (
-                        (F_GAP_LENGTH, cpmeas.COLTYPE_INTEGER),
-                        (F_GAP_SCORE, cpmeas.COLTYPE_FLOAT),
-                        (F_MERGE_SCORE, cpmeas.COLTYPE_FLOAT),
-                        (F_SPLIT_SCORE, cpmeas.COLTYPE_FLOAT),
-                        (F_MITOSIS_SCORE, cpmeas.COLTYPE_FLOAT),
+                        (F_GAP_LENGTH, COLTYPE_INTEGER),
+                        (F_GAP_SCORE, COLTYPE_FLOAT),
+                        (F_MERGE_SCORE, COLTYPE_FLOAT),
+                        (F_SPLIT_SCORE, COLTYPE_FLOAT),
+                        (F_MITOSIS_SCORE, COLTYPE_FLOAT),
                     )
                 ]
                 # Add the post-group attribute to all measurements
@@ -3569,15 +3577,15 @@ Enter a name to give the color-coded image of tracked labels.""",
         """Return the object relationships produced by this module"""
         object_name = self.object_name.value
         if self.wants_second_phase and self.tracking_method == "LAP":
-            when = cpmeas.MCA_AVAILABLE_POST_GROUP
+            when = MCA_AVAILABLE_POST_GROUP
         else:
-            when = cpmeas.MCA_AVAILABLE_EACH_CYCLE
+            when = MCA_AVAILABLE_EACH_CYCLE
         return [(R_PARENT, object_name, object_name, when)]
 
     def get_categories(self, pipeline, object_name):
-        if object_name in (self.object_name.value, cpmeas.IMAGE):
+        if object_name in (self.object_name.value, "Image"):
             return [F_PREFIX]
-        elif object_name == cpmeas.EXPERIMENT:
+        elif object_name == EXPERIMENT:
             return [F_PREFIX]
         else:
             return []
@@ -3603,16 +3611,16 @@ Enter a name to give the color-coded image of tracked labels.""",
                     ]
                 result += self.get_kalman_feature_names()
             return result
-        if object_name == cpmeas.IMAGE:
+        if object_name == "Image":
             result = F_IMAGE_ALL
             return result
-        if object_name == cpmeas.EXPERIMENT and category == F_PREFIX:
+        if object_name == EXPERIMENT and category == F_PREFIX:
             return [F_EXPT_ORIG_NUMTRACKS, F_EXPT_FILT_NUMTRACKS]
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
         if (
-            object_name == cpmeas.IMAGE
+            object_name == "Image"
             and category == F_PREFIX
             and measurement in F_IMAGE_ALL
         ):

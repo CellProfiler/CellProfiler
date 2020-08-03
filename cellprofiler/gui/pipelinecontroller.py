@@ -16,19 +16,127 @@ import sys
 import threading
 import traceback
 from functools import reduce, cmp_to_key
+from queue import PriorityQueue, Queue, Empty
+from urllib.request import urlretrieve, url2pathname
 
+import cellprofiler_core
 import h5py
 import numpy
-import six
-import six.moves.queue
-import six.moves.urllib
-import six.moves.urllib.request
 import wx
 import wx.lib.buttons
 import wx.lib.mixins.listctrl
+from cellprofiler_core.analysis import DEBUG
+from cellprofiler_core.analysis._analysis import Analysis
+from cellprofiler_core.analysis._runner import Runner
+from cellprofiler_core.analysis.event import (
+    Finished,
+    Resumed,
+    Paused,
+    Started,
+    Progress,
+)
+from cellprofiler_core.analysis.reply import (
+    DebugCancel,
+    ExceptionPleaseDebug,
+    OmeroLogin,
+    Interaction,
+    Ack,
+)
+from cellprofiler_core.analysis.request import (
+    Display,
+    DisplayPostRun,
+    DisplayPostGroup,
+    DebugComplete,
+    DebugWaiting,
+    ExceptionReport,
+)
+from cellprofiler_core.constants.measurement import (
+    EXPERIMENT,
+    IMAGE,
+    C_URL,
+    C_METADATA,
+    C_PATH_NAME,
+    C_FRAME,
+    C_FILE_NAME,
+    GROUP_INDEX,
+    GROUP_NUMBER,
+)
+from cellprofiler_core.constants.pipeline import (
+    M_USER_PIPELINE,
+    M_PIPELINE,
+    DIRECTION_DOWN,
+    DIRECTION_UP,
+)
+from cellprofiler_core.constants.workspace import DISPOSITION_SKIP
+from cellprofiler_core.image import ImageSetList
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
+from cellprofiler_core.object import ObjectSet
+from cellprofiler_core.pipeline import (
+    PipelineLoadCancelledException,
+    PostRunException,
+    PrepareRunException,
+    URLsAdded,
+    URLsRemoved,
+    LoadException,
+    ModuleAdded,
+    ModuleMoved,
+    ModuleRemoved,
+    PipelineCleared,
+    PipelineLoaded,
+    RunException,
+    Listener,
+    PrepareRunError,
+)
+from cellprofiler_core.preferences import (
+    RECENT_FILE_COUNT,
+    add_image_directory_listener,
+    get_image_set_file,
+    clear_image_set_file,
+    get_background_color,
+    get_current_workspace_path,
+    EXT_PROJECT_CHOICES,
+    set_workspace_file,
+    set_current_workspace_path,
+    add_progress_callback,
+    remove_progress_callback,
+    EXT_PROJECT,
+    get_save_pipeline_with_project,
+    SPP_PIPELINE_ONLY,
+    SPP_PIPELINE_AND_FILE_LIST,
+    EXT_PIPELINE,
+    EXT_PIPELINE_CHOICES,
+    cancel_progress,
+    add_output_directory_listener,
+    get_show_exiting_test_mode_dlg,
+    SPP_FILE_LIST_ONLY,
+    get_recent_files,
+    WORKSPACE_FILE,
+    set_show_exiting_test_mode_dlg,
+    get_default_output_directory,
+    set_choose_image_set_frame_size,
+    get_choose_image_set_frame_size,
+    get_show_analysis_complete_dlg,
+    get_wants_pony,
+    set_show_analysis_complete_dlg,
+    add_recent_file,
+    set_default_output_directory,
+    get_max_workers,
+    set_default_image_directory,
+)
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.utilities.core.modules import (
+    instantiate_module,
+    get_module_class,
+    get_module_names,
+)
+from cellprofiler_core.utilities.legacy import cmp
+from cellprofiler_core.utilities.pathname import pathname2url
+from cellprofiler_core.utilities.zmq import Reply
 from wx.adv import Sound
 
 import cellprofiler
+import cellprofiler.gui._workspace_model
 import cellprofiler.gui.addmoduleframe
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.dialog
@@ -36,41 +144,18 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.htmldialog
+import cellprofiler.gui.module_view._setting_edited_event
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.omerologin
 import cellprofiler.gui.parametersampleframe
 import cellprofiler.gui.pathlist
 import cellprofiler.gui.pipeline
-from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
-import cellprofiler.gui.viewworkspace
-import cellprofiler.gui.workspace
+import cellprofiler.gui.workspace_view
 import cellprofiler.icons
-import cellprofiler_core.analysis
-import cellprofiler_core.analysis.event
-import cellprofiler_core.analysis.reply
-import cellprofiler_core.analysis.request
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.modules.loadimages
-import cellprofiler_core.modules.loadimages
-import cellprofiler_core.object
-import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
-import cellprofiler_core.utilities.legacy
-import cellprofiler_core.utilities.zmq
-import cellprofiler_core.workspace
+from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
 
-logger = logging.getLogger(__name__)
-RECENT_PIPELINE_FILE_MENU_ID = [
-    wx.NewId() for i in range(cellprofiler_core.preferences.RECENT_FILE_COUNT)
-]
-RECENT_WORKSPACE_FILE_MENU_ID = [
-    wx.NewId() for i in range(cellprofiler_core.preferences.RECENT_FILE_COUNT)
-]
-WRITING_MAT_FILE = "Writing .MAT measurements file..."
-WROTE_MAT_FILE = ".MAT measurements file has been saved"
+RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
+RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
 ED_SKIP = "Skip"
@@ -106,15 +191,11 @@ class PipelineController(object):
         self.__plate_viewer = None
         self.__locked_workspace_filename = None
         self.pipeline_list = []
-        cellprofiler_core.preferences.add_image_directory_listener(
-            self.__on_image_directory_change
-        )
-        cellprofiler_core.preferences.add_output_directory_listener(
-            self.__on_output_directory_change
-        )
+        add_image_directory_listener(self.__on_image_directory_change)
+        add_output_directory_listener(self.__on_output_directory_change)
 
         # interaction/display requests and exceptions from an Analysis
-        self.interaction_request_queue = six.moves.queue.PriorityQueue()
+        self.interaction_request_queue = PriorityQueue()
         self.interaction_pending = False
         self.debug_request_queue = None
 
@@ -200,9 +281,6 @@ class PipelineController(object):
             wx.EVT_MENU,
             self.on_stop_running,
             id=cellprofiler.gui.cpframe.ID_FILE_STOP_ANALYSIS,
-        )
-        frame.Bind(
-            wx.EVT_MENU, self.on_restart, id=cellprofiler.gui.cpframe.ID_FILE_RESTART
         )
 
         frame.Bind(wx.EVT_MENU, self.on_undo, id=cellprofiler.gui.cpframe.ID_EDIT_UNDO)
@@ -362,8 +440,7 @@ class PipelineController(object):
         )
 
         frame.Bind(
-            EVT_PLV_VALID_STEP_COLUMN_CLICKED,
-            self.on_step_from_specific_module,
+            EVT_PLV_VALID_STEP_COLUMN_CLICKED, self.on_step_from_specific_module,
         )
 
         from bioformats.formatreader import set_omero_login_hook
@@ -384,8 +461,8 @@ class PipelineController(object):
             self.do_create_workspace()
         if pipeline_path is not None:
             self.do_load_pipeline(pipeline_path)
-        file_list = cellprofiler_core.preferences.get_image_set_file()
-        cellprofiler_core.preferences.clear_image_set_file()
+        file_list = get_image_set_file()
+        clear_image_set_file()
         if file_list is not None:
             self.__pipeline.read_file_list(file_list)
 
@@ -545,7 +622,7 @@ class PipelineController(object):
         In addition, the PipelineController gets to add whatever buttons it wants to the
         panel.
         """
-        bkgnd_color = cellprofiler_core.preferences.get_background_color()
+        bkgnd_color = get_background_color()
         assert isinstance(panel, wx.Window)
         self.__test_controls_panel = panel
         #
@@ -705,7 +782,7 @@ class PipelineController(object):
             self.do_open_workspace(path)
 
     def __on_revert_workspace(self, event):
-        path = cellprofiler_core.preferences.get_current_workspace_path()
+        path = get_current_workspace_path()
         if path is not None:
             if (
                 wx.MessageBox(
@@ -725,12 +802,8 @@ class PipelineController(object):
         the workspace file is locked.
         """
         wildcard = "CellProfiler project (%s)|%s|All files (*.*)|*.*" % (
-            ",".join(
-                ["*.%s" % x for x in cellprofiler_core.preferences.EXT_PROJECT_CHOICES]
-            ),
-            ";".join(
-                ["*.%s" % x for x in cellprofiler_core.preferences.EXT_PROJECT_CHOICES]
-            ),
+            ",".join(["*.%s" % x for x in EXT_PROJECT_CHOICES]),
+            ";".join(["*.%s" % x for x in EXT_PROJECT_CHOICES]),
         )
         with wx.FileDialog(
             self.__frame, "Choose a project file to open", wildcard=wildcard
@@ -819,12 +892,12 @@ class PipelineController(object):
                             dlg.longest_msg_len = msg_len
                             dlg.Fit()
 
-                cellprofiler_core.preferences.add_progress_callback(progress_callback)
+                add_progress_callback(progress_callback)
                 progress_callback_fn = progress_callback
 
                 self.__workspace.load(filename, load_pipeline)
-                cellprofiler_core.preferences.set_workspace_file(filename)
-                cellprofiler_core.preferences.set_current_workspace_path(filename)
+                set_workspace_file(filename)
+                set_current_workspace_path(filename)
                 self.__pipeline.load_file_list(self.__workspace)
                 self.__pipeline.turn_off_batch_mode()
                 if not load_pipeline:
@@ -834,13 +907,11 @@ class PipelineController(object):
                 self.__dirty_workspace = False
                 self.set_title()
                 self.display_pipeline_message_for_user()
-            except cellprofiler_core.pipeline.event.PipelineLoadCancelledException:
+            except PipelineLoadCancelledException:
                 # In response to user interaction, so pass
                 self.__pipeline.clear()
             finally:
-                cellprofiler_core.preferences.remove_progress_callback(
-                    progress_callback_fn
-                )
+                remove_progress_callback(progress_callback_fn)
         # issue #1855 - apparently there is a WX bug in 3.0 that
         # disables buttons during the progress bar display (good),
         # re-enables the buttons after the progress bar is down (good)
@@ -910,7 +981,7 @@ class PipelineController(object):
             if result == wx.CANCEL:
                 return
             elif result == wx.YES:
-                path = cellprofiler_core.preferences.get_current_workspace_path()
+                path = get_current_workspace_path()
                 if path is None:
                     if not self.do_save_as_workspace():
                         return
@@ -930,7 +1001,7 @@ class PipelineController(object):
         self.__workspace.measurements.clear()
         self.__workspace.save_pipeline_to_measurements()
         self.__dirty_workspace = False
-        cellprofiler_core.preferences.set_current_workspace_path(None)
+        set_current_workspace_path(None)
         self.__pipeline_list_view.select_one_module(1)
         self.enable_module_controls_panel_buttons()
         self.set_title()
@@ -941,22 +1012,15 @@ class PipelineController(object):
         self.do_save_as_workspace()
 
     def do_save_as_workspace(self):
-        default_filename = cellprofiler_core.preferences.get_current_workspace_path()
+        default_filename = get_current_workspace_path()
         if default_filename is None:
-            default_filename = "project.%s" % cellprofiler_core.preferences.EXT_PROJECT
+            default_filename = "project.%s" % EXT_PROJECT
             default_path = None
         else:
             default_path, default_filename = os.path.split(default_filename)
-            default_filename = (
-                os.path.splitext(default_filename)[0]
-                + "."
-                + cellprofiler_core.preferences.EXT_PROJECT
-            )
+            default_filename = os.path.splitext(default_filename)[0] + "." + EXT_PROJECT
 
-        wildcard = "CellProfiler project (*.%s)|*.%s" % (
-            cellprofiler_core.preferences.EXT_PROJECT,
-            cellprofiler_core.preferences.EXT_PROJECT,
-        )
+        wildcard = "CellProfiler project (*.%s)|*.%s" % (EXT_PROJECT, EXT_PROJECT,)
         with wx.FileDialog(
             self.__frame,
             "Save project file as",
@@ -968,19 +1032,19 @@ class PipelineController(object):
             if dlg.ShowModal() == wx.ID_OK:
                 pathname, filename = os.path.split(dlg.Path)
                 fullname = dlg.Path
-                dot_cpproj_ext = "." + cellprofiler_core.preferences.EXT_PROJECT
+                dot_cpproj_ext = "." + EXT_PROJECT
                 if sys.platform == "darwin" and not filename.endswith(dot_cpproj_ext):
                     fullname += dot_cpproj_ext
                 self.do_save_workspace(fullname)
-                cellprofiler_core.preferences.set_current_workspace_path(fullname)
-                cellprofiler_core.preferences.set_workspace_file(fullname)
+                set_current_workspace_path(fullname)
+                set_workspace_file(fullname)
                 self.set_title()
                 return True
             return False
 
     def __on_save_workspace(self, event):
         """Handle the Save Project menu command"""
-        path = cellprofiler_core.preferences.get_current_workspace_path()
+        path = get_current_workspace_path()
         if path is None:
             self.do_save_as_workspace()
         else:
@@ -989,24 +1053,14 @@ class PipelineController(object):
     def do_save_workspace(self, filename):
         """Create a copy of the current workspace file"""
         self.__workspace.save(filename)
-        cellprofiler_core.preferences.set_workspace_file(filename)
+        set_workspace_file(filename)
         self.__dirty_workspace = False
         self.set_title()
-        others = cellprofiler_core.preferences.get_save_pipeline_with_project()
-        if others in (
-            cellprofiler_core.preferences.SPP_PIPELINE_ONLY,
-            cellprofiler_core.preferences.SPP_PIPELINE_AND_FILE_LIST,
-        ):
-            pipeline_path = (
-                os.path.splitext(filename)[0]
-                + "."
-                + cellprofiler_core.preferences.EXT_PIPELINE
-            )
+        others = get_save_pipeline_with_project()
+        if others in (SPP_PIPELINE_ONLY, SPP_PIPELINE_AND_FILE_LIST,):
+            pipeline_path = os.path.splitext(filename)[0] + "." + EXT_PIPELINE
             self.__pipeline.save(pipeline_path, save_image_plane_details=False)
-        if others in (
-            cellprofiler_core.preferences.SPP_FILE_LIST_ONLY,
-            cellprofiler_core.preferences.SPP_PIPELINE_AND_FILE_LIST,
-        ):
+        if others in (SPP_FILE_LIST_ONLY, SPP_PIPELINE_AND_FILE_LIST,):
             filelist_path = os.path.splitext(filename)[0] + ".txt"
             self.do_export_text_file_list(filelist_path)
 
@@ -1014,12 +1068,8 @@ class PipelineController(object):
 
     def __on_load_pipeline(self, event):
         wildcard = "CellProfiler pipeline (%s)|%s" % (
-            ",".join(
-                [".%s" % x for x in cellprofiler_core.preferences.EXT_PIPELINE_CHOICES]
-            ),
-            ";".join(
-                ["*.%s" % x for x in cellprofiler_core.preferences.EXT_PIPELINE_CHOICES]
-            ),
+            ",".join([".%s" % x for x in EXT_PIPELINE_CHOICES]),
+            ";".join(["*.%s" % x for x in EXT_PIPELINE_CHOICES]),
         )
         dlg = wx.FileDialog(
             self.__frame, "Choose a pipeline file to open", wildcard=wildcard
@@ -1042,7 +1092,7 @@ class PipelineController(object):
             import cellprofiler.misc
 
             url = cellprofiler.misc.generate_presigned_url(dlg.GetValue())
-            filename, headers = six.moves.urllib.request.urlretrieve(url)
+            filename, headers = urlretrieve(url)
             try:
                 self.do_load_pipeline(filename)
             finally:
@@ -1104,7 +1154,7 @@ class PipelineController(object):
         """
         with open(path, mode="w") as fd:
             for url in self.__workspace.file_list.get_filelist():
-                if isinstance(url, six.text_type):
+                if isinstance(url, str):
                     url = url.encode()
                 fd.write(url + "\n")
 
@@ -1133,123 +1183,23 @@ class PipelineController(object):
                 self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()
-            self.__pipeline.fix_legacy_pipeline()
-            if self.__pipeline.can_convert_legacy_input_modules():
-                # Note: the length of the longest line of text also
-                #       controls the size of the directory entry text box
-                text = (
-                    "Your pipeline contains the legacy module LoadImages, and legacy references\n"
-                    "to the Default Input Folder. CellProfiler can convert this pipeline by:\n\n"
-                    "\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
-                    "\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
-                    "If you choose to convert the pipeline, you should then make sure of the \n"
-                    "following:\n"
-                    "\u2022 Images module: Provide your original images and/or folders as input.\n"
-                    "\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
-                    "\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
-                    "   color images under the 'Select the image type' setting.\n"
-                    "\u2022 Groups: Confirm that that the expected number of images per group are present."
-                )
-                CONVERT = 1
-                DONT_CONVERT = 2
-
-                with wx.Dialog(self.__frame, title="Convert legacy pipeline?") as dlg:
-                    import wx.lib.filebrowsebutton as filebrowse
-
-                    #
-                    # Structure:
-                    #
-                    # dialog sizer (vertical)
-                    #    sizer (horizontal)
-                    #        static bitmap
-                    #        vsizer (vertical)
-                    #            static text
-                    #            default input folder dirbrowser
-                    # stddlgbuttonsizer
-                    #     Convert button
-                    #     Don't convert button
-                    #
-                    dlg.SetSizer(wx.BoxSizer(wx.VERTICAL))
-                    sizer = wx.BoxSizer(wx.HORIZONTAL)
-                    dlg.GetSizer().Add(sizer, 0, wx.EXPAND | wx.ALL, 10)
-                    bmp = wx.ArtProvider.GetBitmap(wx.ART_QUESTION, wx.ART_CMN_DIALOG)
-                    sizer.Add(
-                        wx.StaticBitmap(dlg, bitmap=bmp),
-                        0,
-                        wx.ALIGN_LEFT | wx.ALIGN_TOP,
-                    )
-                    sizer.AddSpacer(8)
-                    vsizer = wx.BoxSizer(wx.VERTICAL)
-                    sizer.Add(vsizer, 1, wx.EXPAND | wx.ALL)
-                    vsizer.Add(
-                        wx.StaticText(dlg, label=text), 0, wx.ALIGN_LEFT | wx.ALIGN_TOP
-                    )
-                    vsizer.AddSpacer(8)
-                    dir_ctrl = filebrowse.DirBrowseButton(
-                        dlg,
-                        labelText="Folder",
-                        dialogTitle="Browse for default input folder",
-                        startDirectory=cellprofiler_core.preferences.get_default_image_directory(),
-                    )
-                    dir_ctrl.SetValue(
-                        cellprofiler_core.preferences.get_default_image_directory()
-                    )
-                    vsizer.Add(dir_ctrl, 1, wx.EXPAND)
-                    dlg.Sizer.AddSpacer(8)
-                    btn_sizer = wx.StdDialogButtonSizer()
-                    dlg.Sizer.Add(btn_sizer, 0, wx.ALIGN_RIGHT | wx.ALL, 6)
-                    convert_button = wx.Button(dlg, label="Convert")
-                    btn_sizer.AddButton(convert_button)
-                    btn_sizer.SetAffirmativeButton(convert_button)
-                    dont_convert_button = wx.Button(dlg, label="Don't Convert")
-                    btn_sizer.AddButton(dont_convert_button)
-                    btn_sizer.SetNegativeButton(dont_convert_button)
-                    btn_sizer.Realize()
-                    #
-                    dlg.action = DONT_CONVERT
-
-                    def on_convert_pressed(event):
-                        dlg.action = CONVERT
-                        dlg.EndModal(CONVERT)
-
-                    def on_dont_convert_pressed(event):
-                        dlg.action = DONT_CONVERT
-                        dlg.EndModal(DONT_CONVERT)
-
-                    convert_button.Bind(wx.EVT_BUTTON, on_convert_pressed)
-                    dont_convert_button.Bind(wx.EVT_BUTTON, on_dont_convert_pressed)
-                    dlg.Fit()
-                    convert_button.SetFocus()
-                    dlg.ShowModal()
-                    if dlg.action == CONVERT:
-                        self.__pipeline.convert_legacy_input_modules()
-                        self.__pipeline.convert_default_input_folder(
-                            dir_ctrl.GetValue()
-                        )
-
             self.__workspace.save_pipeline_to_measurements()
             self.display_pipeline_message_for_user()
-            target_project_path = (
-                os.path.splitext(pathname)[0]
-                + "."
-                + cellprofiler_core.preferences.EXT_PROJECT
-            )
+            target_project_path = os.path.splitext(pathname)[0] + "." + EXT_PROJECT
             if (
                 not os.path.exists(target_project_path)
-                and cellprofiler_core.preferences.get_current_workspace_path() is None
+                and get_current_workspace_path() is None
             ):
-                cellprofiler_core.preferences.set_current_workspace_path(
-                    target_project_path
-                )
+                set_current_workspace_path(target_project_path)
                 self.set_title()
 
-        except cellprofiler_core.pipeline.event.PipelineLoadCancelledException:
+        except PipelineLoadCancelledException:
             self.__pipeline.clear()
         except Exception as instance:
             error = cellprofiler.gui.dialog.Error("Error", str(instance))
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
 
     def load_hdf5_pipeline(self, pathname):
         """Load a pipeline from an HDF5 measurements file or similar
@@ -1257,15 +1207,9 @@ class PipelineController(object):
         pathname - pathname to the file
         """
         assert h5py.is_hdf5(pathname)
-        m = cellprofiler_core.measurement.Measurements(filename=pathname, mode="r")
-        has_user_pipeline = m.has_feature(
-            cellprofiler_core.measurement.EXPERIMENT,
-            cellprofiler_core.pipeline.M_USER_PIPELINE,
-        )
-        has_pipeline = m.has_feature(
-            cellprofiler_core.measurement.EXPERIMENT,
-            cellprofiler_core.pipeline.M_PIPELINE,
-        )
+        m = Measurements(filename=pathname, mode="r")
+        has_user_pipeline = m.has_feature(EXPERIMENT, M_USER_PIPELINE,)
+        has_pipeline = m.has_feature(EXPERIMENT, M_PIPELINE,)
         if has_user_pipeline:
             if has_pipeline:
                 with wx.Dialog(self.__frame, title="Choose pipeline to open") as dlg:
@@ -1300,17 +1244,13 @@ class PipelineController(object):
                     btn_sizer.Realize()
                     dlg.Fit()
                     if dlg.ShowModal() == wx.ID_OK:
-                        ftr = (
-                            cellprofiler_core.pipeline.M_USER_PIPELINE
-                            if rb_user.GetValue()
-                            else cellprofiler_core.pipeline.M_PIPELINE
-                        )
+                        ftr = M_USER_PIPELINE if rb_user.GetValue() else M_PIPELINE
                     else:
                         return False
             else:
-                ftr = cellprofiler_core.pipeline.M_USER_PIPELINE
+                ftr = M_USER_PIPELINE
         else:
-            ftr = cellprofiler_core.pipeline.M_PIPELINE
+            ftr = M_PIPELINE
         pipeline_text = m.get_experiment_measurement(ftr)
         pipeline_text = pipeline_text
         self.__pipeline.load(io.StringIO(pipeline_text))
@@ -1337,28 +1277,19 @@ class PipelineController(object):
 
         return True if the user saved the pipeline
         """
-        default_filename = cellprofiler_core.preferences.get_current_workspace_path()
+        default_filename = get_current_workspace_path()
         if default_filename is None:
-            default_filename = (
-                "pipeline.%s" % cellprofiler_core.preferences.EXT_PIPELINE
-            )
+            default_filename = "pipeline.%s" % EXT_PIPELINE
             default_path = None
         else:
             default_path, default_filename = os.path.split(default_filename)
             default_filename = (
-                os.path.splitext(default_filename)[0]
-                + "."
-                + cellprofiler_core.preferences.EXT_PIPELINE
+                os.path.splitext(default_filename)[0] + "." + EXT_PIPELINE
             )
         wildcard = (
             "CellProfiler pipeline (*.%s)|*.%s|"
             "CellProfiler pipeline and file list (*.%s)|*.%s"
-        ) % (
-            cellprofiler_core.preferences.EXT_PIPELINE,
-            cellprofiler_core.preferences.EXT_PIPELINE,
-            cellprofiler_core.preferences.EXT_PIPELINE,
-            cellprofiler_core.preferences.EXT_PIPELINE,
-        )
+        ) % (EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE,)
         with wx.FileDialog(
             self.__frame,
             "Save pipeline",
@@ -1374,7 +1305,7 @@ class PipelineController(object):
                 file_name = dlg.GetFilename()
                 pathname = dlg.GetPath()
                 if not sys.platform.startswith("win"):
-                    dot_ext_pipeline = "." + cellprofiler_core.preferences.EXT_PIPELINE
+                    dot_ext_pipeline = "." + EXT_PIPELINE
                     if not file_name.endswith(dot_ext_pipeline):
                         # on platforms other than Windows, add the default suffix
                         pathname += dot_ext_pipeline
@@ -1460,10 +1391,10 @@ class PipelineController(object):
             except Exception as e:
                 error = cellprofiler.gui.dialog.Error("Error", str(e))
                 if error.status is wx.ID_CANCEL:
-                    cellprofiler_core.preferences.cancel_progress()
+                    cancel_progress()
 
     def __on_export_pipeline_notes(self, event):
-        default_filename = cellprofiler_core.preferences.get_current_workspace_path()
+        default_filename = get_current_workspace_path()
         if default_filename is None:
             default_filename = "pipeline.txt"
             default_path = None
@@ -1496,11 +1427,11 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", extended_message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
 
             return
         m = self.__workspace.measurements
-        assert isinstance(m, cellprofiler_core.measurement.Measurements)
+        assert isinstance(m, Measurements)
 
         image_numbers = m.get_image_numbers()
         if len(image_numbers) == 0:
@@ -1510,20 +1441,12 @@ class PipelineController(object):
                 "Plate viewer: No image sets",
             )
             return
-        url_features = [
-            f
-            for f in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
-            if f.startswith(cellprofiler_core.measurement.C_URL)
-        ]
+        url_features = [f for f in m.get_feature_names(IMAGE) if f.startswith(C_URL)]
         pws = []
         for feature in ("Plate", "Well", "Site"):
-            measurement = cellprofiler_core.measurement.C_METADATA + "_" + feature
-            if m.has_feature(cellprofiler_core.measurement.IMAGE, measurement):
-                pws.append(
-                    m.get_measurement(
-                        cellprofiler_core.measurement.IMAGE, measurement, image_numbers
-                    )
-                )
+            measurement = C_METADATA + "_" + feature
+            if m.has_feature(IMAGE, measurement):
+                pws.append(m.get_measurement(IMAGE, measurement, image_numbers))
             else:
                 pws.append([None] * len(image_numbers))
         plate, well, site = pws
@@ -1539,12 +1462,8 @@ class PipelineController(object):
             return
 
         for url_feature in url_features:
-            channel = [
-                url_feature[(len(cellprofiler_core.measurement.C_URL) + 1) :]
-            ] * len(image_numbers)
-            urls = m.get_measurement(
-                cellprofiler_core.measurement.IMAGE, url_feature, image_numbers
-            )
+            channel = [url_feature[(len(C_URL) + 1) :]] * len(image_numbers)
+            urls = m.get_measurement(IMAGE, url_feature, image_numbers)
             data.add_files(
                 [url for url in urls], plate, well, site, channel_names=channel
             )
@@ -1589,13 +1508,13 @@ class PipelineController(object):
                 dlg.EndModal(0)
 
             def do_help(event):
-                cellprofiler.gui.htmldialog.HTMLDialog(
+                HTMLDialog(
                     self.__frame,
                     "Help for plate viewer",
                     cellprofiler.gui.html.utils.rst_to_html_fragment(
-                    cellprofiler.gui.help.content.read_content(
-                        "output_plateviewer.rst"
-                    )
+                        cellprofiler.gui.help.content.read_content(
+                            "output_plateviewer.rst"
+                        )
                     ),
                 ).Show()
 
@@ -1605,8 +1524,8 @@ class PipelineController(object):
             dlg.ShowModal()
 
     def set_current_pipeline_path(self, pathname):
-        cellprofiler_core.preferences.set_current_pipeline_path(pathname)
-        cellprofiler_core.preferences.add_recent_file(pathname)
+        set_current_pipeline_path(pathname)
+        add_recent_file(pathname)
         self.populate_recent_files()
 
     def populate_recent_files(self):
@@ -1615,15 +1534,13 @@ class PipelineController(object):
             (
                 self.__frame.recent_pipeline_files,
                 RECENT_PIPELINE_FILE_MENU_ID,
-                cellprofiler_core.preferences.get_recent_files(),
+                get_recent_files(),
                 self.do_load_pipeline,
             ),
             (
                 self.__frame.recent_workspace_files,
                 RECENT_WORKSPACE_FILE_MENU_ID,
-                cellprofiler_core.preferences.get_recent_files(
-                    cellprofiler_core.preferences.WORKSPACE_FILE
-                ),
+                get_recent_files(WORKSPACE_FILE),
                 self.do_open_workspace,
             ),
         ):
@@ -1641,7 +1558,7 @@ class PipelineController(object):
 
     def set_title(self):
         """Set the title of the parent frame"""
-        pathname = cellprofiler_core.preferences.get_current_workspace_path()
+        pathname = get_current_workspace_path()
         if pathname is None:
             self.__frame.Title = "CellProfiler %s" % cellprofiler.__version__
             return
@@ -1732,9 +1649,7 @@ class PipelineController(object):
             try:
                 dialog.ShowModal()
                 if answer[0] == SAVE_ID:
-                    workspace_path = (
-                        cellprofiler_core.preferences.get_current_workspace_path()
-                    )
+                    workspace_path = get_current_workspace_path()
                     if workspace_path is None:
                         return self.do_save_as_workspace()
                     if not self.do_save_workspace(workspace_path):
@@ -1755,7 +1670,7 @@ class PipelineController(object):
     def __on_pipeline_event(self, caller, event):
         if not wx.IsMainThread():
             wx.CallAfter(self.__on_pipeline_event, caller, event)
-        if isinstance(event, cellprofiler_core.pipeline.event.RunException):
+        if isinstance(event, RunException):
             error_msg = None
             self.__pipeline_list_view.select_one_module(event.module.module_num)
             try:
@@ -1776,13 +1691,13 @@ class PipelineController(object):
                     error_msg = event.error.strerror
                 else:
                     error_msg = str(event.error)
-            if isinstance(event, cellprofiler_core.pipeline.event.PrepareRunException):
+            if isinstance(event, PrepareRunException):
                 message = (
                     "Encountered unrecoverable error in %s during startup:\n%s"
                     % (event.module.module_name, error_msg)
                 )
                 continue_only = True
-            elif isinstance(event, cellprofiler_core.pipeline.event.PostRunException):
+            elif isinstance(event, PostRunException):
                 message = (
                     "Encountered uncrecoverable error in %s during post-processing:\n%s"
                     % (event.module.module_name, error_msg)
@@ -1798,13 +1713,13 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
 
-        elif isinstance(event, cellprofiler_core.pipeline.event.LoadException):
+        elif isinstance(event, LoadException):
             self.on_load_exception_event(event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.URLsAdded):
+        elif isinstance(event, URLsAdded):
             self.on_urls_added(event)
-        elif isinstance(event, cellprofiler_core.pipeline.event.URLsRemoved):
+        elif isinstance(event, URLsRemoved):
             self.on_urls_removed(event)
         elif event.is_pipeline_modification:
             self.__dirty_workspace = True
@@ -1819,11 +1734,11 @@ class PipelineController(object):
             if isinstance(
                 event,
                 (
-                    cellprofiler_core.pipeline.event.ModuleAdded,
-                    cellprofiler_core.pipeline.event.ModuleMoved,
-                    cellprofiler_core.pipeline.event.ModuleRemoved,
-                    cellprofiler_core.pipeline.event.PipelineCleared,
-                    cellprofiler_core.pipeline.event.PipelineLoaded,
+                    ModuleAdded,
+                    ModuleMoved,
+                    ModuleRemoved,
+                    PipelineCleared,
+                    PipelineLoaded,
                 ),
             ):
                 self.populate_goto_menu()
@@ -1841,7 +1756,8 @@ class PipelineController(object):
     def on_workspace_event(self, event):
         """Workspace's file list changed. Invalidate the workspace cache."""
         if isinstance(
-            event, cellprofiler.gui.workspace.Workspace.WorkspaceFileListNotification
+            event,
+            cellprofiler.gui._workspace_model.Workspace.WorkspaceFileListNotification,
         ):
             self.on_image_set_modification()
             self.__dirty_workspace = True
@@ -1868,7 +1784,7 @@ class PipelineController(object):
         error = cellprofiler.gui.dialog.Error("Error", message)
 
         if error.status is wx.ID_CANCEL:
-            cellprofiler_core.preferences.cancel_progress()
+            cancel_progress()
 
             event.cancel_run = False
 
@@ -1978,7 +1894,7 @@ class PipelineController(object):
             if len(paths) == 0 or not paths[0].startswith("file:"):
                 browse_function(None)
             else:
-                path = six.moves.urllib.request.url2pathname(paths[0][5:])
+                path = url2pathname(paths[0][5:])
                 path = os.path.split(path)[0]
                 browse_function(None, default_dir=path)
         else:
@@ -2020,7 +1936,7 @@ class PipelineController(object):
             else:
                 browse_function = self.on_pathlist_browse_files
             if path.startswith("file:"):
-                path = six.moves.urllib.request.url2pathname(path[5:])
+                path = url2pathname(path[5:])
                 browse_function(None, default_dir=path)
             else:
                 browse_function(None)
@@ -2055,7 +1971,7 @@ class PipelineController(object):
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
         from cellprofiler.gui.figure import show_image
-        from cellprofiler_core.modules.loadimages import url2pathname
+        from cellprofiler_core.utilities.pathname import url2pathname
 
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY
@@ -2067,10 +1983,7 @@ class PipelineController(object):
             return
         path = url2pathname(paths[0])
         ext = os.path.splitext(path)[1]
-        if (
-            len(ext) > 1
-            and ext[1:] in cellprofiler_core.preferences.EXT_PROJECT_CHOICES
-        ):
+        if len(ext) > 1 and ext[1:] in EXT_PROJECT_CHOICES:
             result = wx.MessageBox(
                 "Do you want to load the project, \n"
                 '"%s", into your project?' % os.path.split(path)[1],
@@ -2082,10 +1995,7 @@ class PipelineController(object):
                 self.do_open_workspace(path)
             return
 
-        if (
-            len(ext) > 1
-            and ext[1:] in cellprofiler_core.preferences.EXT_PIPELINE_CHOICES
-        ):
+        if len(ext) > 1 and ext[1:] in EXT_PIPELINE_CHOICES:
             result = wx.MessageBox(
                 "Do you want to import the pipeline, \n"
                 '"%s", into your project?' % os.path.split(path)[1],
@@ -2123,7 +2033,7 @@ class PipelineController(object):
             assert isinstance(dlg, wx.ProgressDialog)
             to_remove = []
             for idx, url in enumerate(urls):
-                path = six.moves.urllib.request.url2pathname(url[5:])
+                path = url2pathname(url[5:])
                 if not os.path.isfile(path):
                     to_remove.append(url)
                 if idx % 100 == 0:
@@ -2170,7 +2080,7 @@ class PipelineController(object):
                 dlg.SetSize(min_width, h)
 
             # Content needs to be in containers to be shared between threads
-            queue = six.moves.queue.Queue()
+            queue = Queue()
             interrupt = [False]
             message = ["Initializing"]
 
@@ -2194,9 +2104,7 @@ class PipelineController(object):
 
                     message[0] = "Processing " + pathname
                     if os.path.isfile(pathname):
-                        urls.append(
-                            cellprofiler_core.modules.loadimages.pathname2url(pathname)
-                        )
+                        urls.append(pathname2url(pathname))
                         if len(urls) > 100:
                             queue.put(urls)
                             urls = []
@@ -2206,11 +2114,7 @@ class PipelineController(object):
                                 if not interrupt or interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)
-                                urls.append(
-                                    cellprofiler_core.modules.loadimages.pathname2url(
-                                        path
-                                    )
-                                )
+                                urls.append(pathname2url(path))
                                 message[0] = "Processing " + path
                                 if len(urls) > 100:
                                     queue.put(urls)
@@ -2242,12 +2146,12 @@ class PipelineController(object):
                     try:
                         while True:
                             urls += queue.get(block=False)
-                    except six.moves.queue.Empty:
+                    except Empty:
                         keep_going = update_pulse(
                             "Adding %d files to file list" % len(urls)
                         )
                         self.add_urls(urls)
-                except six.moves.queue.Empty as err:
+                except Empty as err:
                     if not thread.is_alive():
                         try:
                             self.add_urls(queue.get(block=False))
@@ -2335,10 +2239,7 @@ class PipelineController(object):
 
         hdf_file_list = self.__workspace.get_file_list()
         file_list = [
-            cellprofiler_core.modules.loadimages.pathname2url(
-                os.path.join(dirpath, filename)
-            )
-            for filename in filenames
+            pathname2url(os.path.join(dirpath, filename)) for filename in filenames
         ]
         hdf_file_list.add_files_to_filelist(file_list)
         self.__pipeline.add_urls(file_list)
@@ -2412,9 +2313,11 @@ class PipelineController(object):
         self.__add_module_frame.Show()
         self.__add_module_frame.Raise()
 
+    def open_add_modules(self):
+        self.__on_add_module(None)
+
     def populate_edit_menu(self, menu):
         """Display a menu of modules to add"""
-        from cellprofiler_core.modules import get_module_names
 
         #
         # Get a two-level dictionary of categories and names
@@ -2422,11 +2325,11 @@ class PipelineController(object):
         d = {"All": []}
         for module_name in get_module_names():
             try:
-                module = cellprofiler_core.modules.get_module_class(module_name)
+                module = get_module_class(module_name)
                 if module.is_input_module():
                     continue
                 category = module.category
-                if isinstance(category, six.string_types):
+                if isinstance(category, str):
                     categories = [category, "All"]
                 else:
                     categories = list(category) + ["All"]
@@ -2435,7 +2338,7 @@ class PipelineController(object):
                         d[category] = []
                     d[category].append(module_name)
             except:
-                logger.error(
+                logging.error(
                     "Unable to instantiate module %s.\n\n" % module_name, exc_info=True
                 )
 
@@ -2481,7 +2384,6 @@ class PipelineController(object):
         self.__module_view.set_selection(module_num)
 
     def on_menu_add_module(self, event):
-        from cellprofiler_core.modules import instantiate_module
         from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
 
         assert isinstance(event, wx.CommandEvent)
@@ -2495,7 +2397,7 @@ class PipelineController(object):
 
             self.on_add_to_pipeline(self, AddToPipelineEvent(module_name, loader))
         else:
-            logger.warning(
+            logging.warning(
                 "Could not find module associated with ID = %d, module = %s"
                 % (event.GetId(), event.GetString())
             )
@@ -2560,7 +2462,7 @@ class PipelineController(object):
         """
         if self.is_in_debug_mode():
             self.stop_debugging()
-            if cellprofiler_core.preferences.get_show_exiting_test_mode_dlg():
+            if get_show_exiting_test_mode_dlg():
                 self.show_exiting_test_mode()
 
     def on_duplicate_module(self, event):
@@ -2599,9 +2501,7 @@ class PipelineController(object):
                 return
             selected_modules = [active_module]
         for module in selected_modules:
-            self.__pipeline.move_module(
-                module.module_num, cellprofiler_core.pipeline.DIRECTION_UP
-            )
+            self.__pipeline.move_module(module.module_num, DIRECTION_UP)
 
     def on_module_down(self, event):
         """Move the currently selected modules down"""
@@ -2615,9 +2515,7 @@ class PipelineController(object):
                 return
             selected_modules = [active_module]
         for module in selected_modules:
-            self.__pipeline.move_module(
-                module.module_num, cellprofiler_core.pipeline.DIRECTION_DOWN
-            )
+            self.__pipeline.move_module(module.module_num, DIRECTION_DOWN)
 
     def on_update_module_enable(self, event):
         """Update the UI for the ENABLE_MODULE menu item / button
@@ -2661,12 +2559,12 @@ class PipelineController(object):
             return
 
         if active_module is None:
-            logger.warning(
+            logging.warning(
                 "User managed to fire the enable/disable module event and no module was active"
             )
             return
         if active_module.is_input_module():
-            logger.warning(
+            logging.warning(
                 "User managed to fire the enable/disable module event when an input module was active"
             )
             return
@@ -2718,7 +2616,7 @@ class PipelineController(object):
             # legacy pipeline
             #
             message = (
-                "%s is a legacy input module that is incompatible\n"
+                "%s is an alternative input module that is incompatible\n"
                 "with the Images, Metadata, NamesAndTypes, and Groups\n"
                 "input modules. Do you want to remove these input\n"
                 "modules and use %s instead?"
@@ -2726,7 +2624,7 @@ class PipelineController(object):
             if (
                 wx.MessageBox(
                     message,
-                    caption="Use legacy input module, %s" % module.module_name,
+                    caption="Use alternative input module, %s" % module.module_name,
                     style=wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION,
                     parent=self.__frame,
                 )
@@ -2762,7 +2660,10 @@ class PipelineController(object):
             #    self.stop_debugging()
 
     def __on_module_view_event(self, caller, event):
-        assert isinstance(event, cellprofiler.gui.moduleview.SettingEditedEvent), (
+        assert isinstance(
+            event,
+            cellprofiler.gui.module_view._setting_edited_event.SettingEditedEvent,
+        ), (
             "%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent"
             % (str(event))
         )
@@ -2787,7 +2688,7 @@ class PipelineController(object):
             # list.
             #
             self.stop_debugging()
-            if cellprofiler_core.preferences.get_show_exiting_test_mode_dlg():
+            if get_show_exiting_test_mode_dlg():
                 self.show_exiting_test_mode()
 
     def status_callback(self, *args):
@@ -2798,15 +2699,8 @@ class PipelineController(object):
             return
         pipeline_details = self.pipeline_list.pop(0)
         self.do_load_pipeline(pipeline_details.path)
-        cellprofiler_core.preferences.set_default_image_directory(
-            pipeline_details.default_input_folder
-        )
-        cellprofiler_core.preferences.set_default_output_directory(
-            pipeline_details.default_output_folder
-        )
-        cellprofiler_core.preferences.set_output_file_name(
-            pipeline_details.measurements_file
-        )
+        set_default_image_directory(pipeline_details.default_input_folder)
+        set_default_output_directory(pipeline_details.default_output_folder)
         self.on_analyze_images(event)
 
     def on_analyze_images(self, event):
@@ -2828,7 +2722,7 @@ class PipelineController(object):
         if ok:
             try:
                 self.__pipeline.test_valid()
-            except cellprofiler_core.setting.ValidationError as v:
+            except ValidationError as v:
                 ok = False
                 reason = v
         if not ok:
@@ -2855,30 +2749,18 @@ class PipelineController(object):
 
             self.__frame.preferences_view.on_analyze_images()
 
-            with cellprofiler_core.pipeline.Listener(
-                self.__pipeline, self.on_prepare_run_error_event
-            ):
+            with Listener(self.__pipeline, self.on_prepare_run_error_event):
                 if not self.__pipeline.prepare_run(self.__workspace):
                     self.stop_running()
                     return
 
-            measurements_file_path = None
-
-            if (
-                cellprofiler_core.preferences.get_write_MAT_files()
-                == cellprofiler_core.preferences.WRITE_HDF5
-            ):
-                measurements_file_path = self.get_output_file_path()
-
             num_workers = min(
                 len(self.__workspace.measurements.get_image_numbers()),
-                cellprofiler_core.preferences.get_max_workers(),
+                get_max_workers(),
             )
 
-            self.__analysis = cellprofiler_core.analysis.Analysis(
-                self.__pipeline,
-                measurements_file_path,
-                initial_measurements=self.__workspace.measurements,
+            self.__analysis = Analysis(
+                self.__pipeline, initial_measurements=self.__workspace.measurements,
             )
 
             self.__analysis.start(self.analysis_event_handler, num_workers)
@@ -2895,7 +2777,7 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", extended_message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
 
                 self.stop_running()
 
@@ -2907,7 +2789,7 @@ class PipelineController(object):
         This is called if the pipeline is misconfigured - an unrecoverable
         error that's the user's fault.
         """
-        if isinstance(event, cellprofiler_core.pipeline.event.PrepareRunError):
+        if isinstance(event, PrepareRunError):
             if event.module is None:
                 caption = "Cannot run pipeline"
                 message = (
@@ -2933,18 +2815,15 @@ class PipelineController(object):
     def analysis_event_handler(self, evt):
         PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = list(range(3))
 
-        if isinstance(evt, cellprofiler_core.analysis.event.Started):
+        if isinstance(evt, Started):
             wx.CallAfter(self.show_analysis_controls)
-        elif isinstance(evt, cellprofiler_core.analysis.event.Progress):
+        elif isinstance(evt, Progress):
             print("Progress", evt.counts)
             total_jobs = sum(evt.counts.values())
             completed = sum(
                 map(
                     (lambda status: evt.counts.get(status, 0)),
-                    (
-                        cellprofiler_core.analysis.Runner.STATUS_DONE,
-                        cellprofiler_core.analysis.Runner.STATUS_FINISHED_WAITING,
-                    ),
+                    (Runner.STATUS_DONE, Runner.STATUS_FINISHED_WAITING,),
                 )
             )
             wx.CallAfter(
@@ -2952,46 +2831,40 @@ class PipelineController(object):
                 total_jobs,
                 completed,
             )
-        elif isinstance(evt, cellprofiler_core.analysis.event.Finished):
+        elif isinstance(evt, Finished):
             print(("Cancelled!" if evt.cancelled else "Finished!"))
             # drop any interaction/display requests or exceptions
             while True:
                 try:
                     self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
-                except six.moves.queue.Empty:
+                except Empty:
                     break
             if evt.cancelled:
                 self.pipeline_list = []
 
             wx.CallAfter(self.on_stop_analysis, evt)
-        elif isinstance(evt, cellprofiler_core.analysis.request.Display):
+        elif isinstance(evt, Display):
             wx.CallAfter(self.module_display_request, evt)
-        elif isinstance(evt, cellprofiler_core.analysis.request.DisplayPostRun):
+        elif isinstance(evt, DisplayPostRun):
             wx.CallAfter(self.module_display_post_run_request, evt)
-        elif isinstance(evt, cellprofiler_core.analysis.request.DisplayPostGroup):
+        elif isinstance(evt, DisplayPostGroup):
             wx.CallAfter(self.module_display_post_group_request, evt)
-        elif isinstance(evt, cellprofiler_core.analysis.request.Interaction):
+        elif isinstance(evt, Interaction):
             self.interaction_request_queue.put(
                 (PRI_INTERACTION, self.module_interaction_request, evt)
             )
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cellprofiler_core.analysis.request.OmeroLogin):
+        elif isinstance(evt, OmeroLogin):
             self.interaction_request_queue.put(
                 (PRI_INTERACTION, self.omero_login_request, evt)
             )
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cellprofiler_core.analysis.request.ExceptionReport):
+        elif isinstance(evt, ExceptionReport):
             self.interaction_request_queue.put(
                 (PRI_EXCEPTION, self.analysis_exception, evt)
             )
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(
-            evt,
-            (
-                cellprofiler_core.analysis.request.DebugWaiting,
-                cellprofiler_core.analysis.request.DebugComplete,
-            ),
-        ):
+        elif isinstance(evt, (DebugWaiting, DebugComplete,),):
             # These are handled by the dialog reading the debug
             # request queue
             if self.debug_request_queue is None:
@@ -3001,11 +2874,11 @@ class PipelineController(object):
                 evt.reply(cellprofiler_core.analysis.ServerExited())
             else:
                 self.debug_request_queue.put(evt)
-        elif isinstance(evt, cellprofiler_core.analysis.event.Paused):
+        elif isinstance(evt, Paused):
             wx.CallAfter(self.show_resume_button)
-        elif isinstance(evt, cellprofiler_core.analysis.event.Resumed):
+        elif isinstance(evt, Resumed):
             wx.CallAfter(self.show_pause_button)
-        elif isinstance(evt, cellprofiler_core.pipeline.event.RunException):
+        elif isinstance(evt, RunException):
             # exception in (prepare/post)_(run/group)
             wx.CallAfter(self.__on_pipeline_event, self.__pipeline, evt)
         else:
@@ -3029,7 +2902,7 @@ class PipelineController(object):
             pri_func_args = (
                 self.interaction_request_queue.get_nowait()
             )  # in case the queue's been emptied
-        except six.moves.queue.Empty:
+        except Empty:
             return
 
         self.interaction_pending = True
@@ -3052,18 +2925,18 @@ class PipelineController(object):
             self.__pipeline.modules(exclude_disabled=False)
         ):
             # Defensive coding: module was deleted?
-            logger.warning(
+            logging.warning(
                 "Failed to display module # %d. The pipeline may have been edited during analysis"
                 % module_num
             )
-            evt.reply(cellprofiler_core.analysis.reply.Ack())
+            evt.reply(Ack())
             return
 
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if module.display != cellprofiler_core.module.Module.display:
+            if module.display != Module.display:
                 fig = self.__workspace.get_module_figure(
                     module, evt.image_set_number, self.__frame
                 )
@@ -3079,10 +2952,10 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
         finally:
             # we need to ensure that the reply_cb gets a reply
-            evt.reply(cellprofiler_core.analysis.reply.Ack())
+            evt.reply(Ack())
 
     def module_display_post_run_request(self, evt):
         assert (
@@ -3093,10 +2966,7 @@ class PipelineController(object):
         self.__workspace.display_data.__dict__.update(evt.display_data.__dict__)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if (
-                module.display_post_run
-                != cellprofiler_core.module.Module.display_post_run
-            ):
+            if module.display_post_run != Module.display_post_run:
                 image_number = self.__workspace.measurements.image_set_count
                 fig = self.__workspace.get_module_figure(
                     module, image_number, self.__frame
@@ -3111,7 +2981,7 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
 
     def module_display_post_group_request(self, evt):
         assert (
@@ -3122,10 +2992,7 @@ class PipelineController(object):
         self.__workspace.display_data.__dict__.update(evt.display_data)
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
-            if (
-                module.display_post_group
-                != cellprofiler_core.module.Module.display_post_group
-            ):
+            if module.display_post_group != Module.display_post_group:
                 image_number = evt.image_set_number
                 fig = self.__workspace.get_module_figure(
                     module, image_number, self.__frame
@@ -3140,9 +3007,9 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
         finally:
-            evt.reply(cellprofiler_core.analysis.reply.Ack())
+            evt.reply(Ack())
 
     def module_interaction_request(self, evt):
         """forward a module interaction request from the running pipeline to
@@ -3167,18 +3034,18 @@ class PipelineController(object):
             error = cellprofiler.gui.dialog.Error("Error", exc.message)
 
             if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
+                cancel_progress()
         finally:
             # we need to ensure that the reply_cb gets a reply (even if it
             # being empty causes futher exceptions).
-            evt.reply(cellprofiler_core.analysis.reply.Interaction(result=result))
+            evt.reply(Interaction(result=result))
 
     @staticmethod
     def omero_login_request(evt):
         """Handle retrieval of the Omero credentials"""
         from bioformats.formatreader import get_omero_credentials
 
-        evt.reply(cellprofiler_core.analysis.reply.OmeroLogin(get_omero_credentials()))
+        evt.reply(OmeroLogin(get_omero_credentials()))
 
     def analysis_exception(self, evt):
         """Report an error in analysis to the user, giving options for
@@ -3188,7 +3055,7 @@ class PipelineController(object):
             wx.IsMainThread()
         ), "PipelineController.analysis_exception() must be called from main thread!"
 
-        self.debug_request_queue = six.moves.queue.Queue()
+        self.debug_request_queue = Queue()
 
         evtlist = [evt]
 
@@ -3202,10 +3069,7 @@ class PipelineController(object):
             evt = evtlist[0]
             # Request debugging.  We get back a port.
             evt.reply(
-                cellprofiler_core.analysis.reply.ExceptionPleaseDebug(
-                    cellprofiler_core.analysis.DEBUG,
-                    hashlib.sha1(verification).hexdigest(),
-                )
+                ExceptionPleaseDebug(DEBUG, hashlib.sha1(verification).hexdigest(),)
             )
             evt = self.debug_request_queue.get()
             port = evt.port
@@ -3216,7 +3080,7 @@ class PipelineController(object):
                 wx.OK | wx.CANCEL | wx.ICON_INFORMATION,
             )
             if result == wx.ID_CANCEL:
-                evt.reply(cellprofiler_core.analysis.reply.DebugCancel())
+                evt.reply(DebugCancel())
                 return False
             # Acknowledge the port request, and we'll get back a
             # DebugComplete(), which we use as a new evt to reply with the
@@ -3230,7 +3094,7 @@ class PipelineController(object):
                     try:
                         evtlist[0] = self.debug_request_queue.get(timeout=0.25)
                         return True
-                    except six.moves.queue.Empty:
+                    except Empty:
                         keep_going, skip = dlg.UpdatePulse(
                             "Debugging remotely, Cancel to abandon"
                         )
@@ -3251,7 +3115,7 @@ class PipelineController(object):
         error = cellprofiler.gui.dialog.Error("Error", message)
 
         if error.status == wx.ID_CANCEL:
-            cellprofiler_core.preferences.cancel_progress()
+            cancel_progress()
 
             self.stop_running()
 
@@ -3259,67 +3123,9 @@ class PipelineController(object):
         else:
             disposition = ED_CONTINUE
 
-        evtlist[0].reply(
-            cellprofiler_core.utilities.zmq.communicable.reply.Reply(
-                disposition=disposition
-            )
-        )
+        evtlist[0].reply(Reply(disposition=disposition))
 
         wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
-
-    def on_restart(self, event):
-        """Restart a pipeline from a measurements file"""
-        dlg = wx.FileDialog(
-            self.__frame,
-            "Select measurements file",
-            wildcard="Measurements file (*.mat, *.h5)|*.mat;*.h5",
-            style=wx.FD_OPEN,
-        )
-        try:
-            if dlg.ShowModal() != wx.ID_OK:
-                return
-            path = dlg.GetPath()
-        finally:
-            dlg.Destroy()
-
-        ##################################
-        #
-        # Start the pipeline
-        #
-        ##################################
-
-        try:
-            measurements = cellprofiler_core.measurement.load_measurements(path)
-            pipeline_txt = measurements.get_experiment_measurement(
-                cellprofiler_core.pipeline.M_PIPELINE
-            )
-            self.__pipeline.loadtxt(io.StringIO(pipeline_txt))
-            self.__module_view.disable()
-            self.__pipeline_list_view.allow_editing(False)
-            self.__frame.preferences_view.on_analyze_images()
-            measurements_file_path = None
-            if (
-                cellprofiler_core.preferences.get_write_MAT_files()
-                == cellprofiler_core.preferences.WRITE_HDF5
-            ):
-                measurements_file_path = self.get_output_file_path()
-
-            self.__analysis = cellprofiler_core.analysis.Analysis(
-                self.__pipeline,
-                measurements_file_path,
-                initial_measurements=measurements,
-            )
-            self.__analysis.start(self.analysis_event_handler, overwrite=False)
-
-        except Exception as instance:
-            extended_message = "Failure in analysis startup"
-
-            error = cellprofiler.gui.dialog.Error("Error", extended_message)
-
-            if error.status is wx.ID_CANCEL:
-                cellprofiler_core.preferences.cancel_progress()
-
-            self.stop_running()
 
     def on_pause(self, event):
         self.__frame.preferences_view.pause(True)
@@ -3360,44 +3166,18 @@ class PipelineController(object):
 
         event - a cpanalysis.AnalysisFinished event
         """
-        try:
-            if cellprofiler_core.preferences.get_write_MAT_files() is True:
-                # The user wants to write a .mat file.
-                if event.cancelled:
-                    if event.measurements is None:
-                        return
-                    with wx.FileDialog(
-                        self.__frame,
-                        "Save measurements to a file",
-                        wildcard="CellProfiler measurements (*.mat)|*.mat",
-                        style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
-                    ) as dlg:
-                        if dlg.ShowModal() == wx.ID_OK:
-                            path = dlg.Path
-                        else:
-                            return
-                else:
-                    path = self.get_output_file_path()
-                    if path is None:
-                        return
-                self.__pipeline.save_measurements(path, event.measurements)
-        finally:
-            m = event.measurements
-            status = m[
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.analysis.Runner.STATUS,
-                m.get_image_numbers(),
-            ]
-            n_image_sets = sum(
-                [x == cellprofiler_core.analysis.Runner.STATUS_DONE for x in status]
-            )
-            self.stop_running()
-            if cellprofiler_core.preferences.get_wants_pony():
-                Sound(os.path.join(cellprofiler.icons.resources, "wantpony.wav")).Play()
-            if cellprofiler_core.preferences.get_show_analysis_complete_dlg():
-                self.show_analysis_complete(n_image_sets)
-            m.close()
-            self.run_next_pipeline(None)
+        m = event.measurements
+        status = m[
+            IMAGE, Runner.STATUS, m.get_image_numbers(),
+        ]
+        n_image_sets = sum([x == Runner.STATUS_DONE for x in status])
+        self.stop_running()
+        if get_wants_pony():
+            Sound(os.path.join(cellprofiler.icons.resources, "wantpony.wav")).Play()
+        if get_show_analysis_complete_dlg():
+            self.show_analysis_complete(n_image_sets)
+        m.close()
+        self.run_next_pipeline(None)
 
     def stop_running(self):
         if self.is_running():
@@ -3437,22 +3217,20 @@ class PipelineController(object):
         self.__pipeline_list_view.set_debug_mode(True)
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.show_test_controls()
-        with cellprofiler_core.pipeline.Listener(
-            self.__pipeline, self.on_prepare_run_error_event
-        ):
+        with Listener(self.__pipeline, self.on_prepare_run_error_event):
             if not self.__workspace.refresh_image_set():
                 self.stop_debugging()
                 return False
 
         self.close_debug_measurements()
-        self.__debug_measurements = cellprofiler_core.measurement.Measurements(
+        self.__debug_measurements = Measurements(
             copy=self.__workspace.measurements, mode="memory"
         )
-        self.__debug_object_set = cellprofiler_core.object.ObjectSet(can_overwrite=True)
+        self.__debug_object_set = ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.gui.pipeline.Pipeline)
-        self.__debug_image_set_list = cellprofiler_core.image.ImageSetList(True)
-        workspace = cellprofiler.gui.workspace.Workspace(
+        self.__debug_image_set_list = ImageSetList(True)
+        workspace = cellprofiler.gui._workspace_model.Workspace(
             self.__pipeline,
             None,
             None,
@@ -3511,15 +3289,15 @@ class PipelineController(object):
         try:
             image_set_number = self.__debug_measurements.image_set_number
             self.__debug_measurements.add_image_measurement(
-                cellprofiler_core.pipeline.GROUP_NUMBER, self.__grouping_index + 1
+                GROUP_NUMBER, self.__grouping_index + 1
             )  # in the analysis mode version, it starts at 1
             self.__debug_measurements.add_image_measurement(
-                cellprofiler_core.pipeline.GROUP_INDEX, self.__within_group_index + 1
+                GROUP_INDEX, self.__within_group_index + 1
             )  # in the analysis mode version, it starts at 1
             self.__debug_measurements.add_image_measurement(
                 "Group_Length", len(self.__groupings[self.__grouping_index][1])
             )
-            workspace = cellprofiler.gui.workspace.Workspace(
+            workspace = cellprofiler.gui._workspace_model.Workspace(
                 self.__pipeline,
                 module,
                 self.__debug_measurements,
@@ -3548,7 +3326,7 @@ class PipelineController(object):
                 module.display(workspace, fig)
                 fig.Refresh()
             workspace.refresh()
-            if workspace.disposition == cellprofiler_core.workspace.DISPOSITION_SKIP:
+            if workspace.disposition == DISPOSITION_SKIP:
                 self.last_debug_module()
             elif (
                 module.module_num < len(self.__pipeline.modules())
@@ -3556,10 +3334,12 @@ class PipelineController(object):
             ):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
-            cellprofiler.gui.viewworkspace.update_workspace_viewer(workspace)
+
+            # TODO: wire up Workerspace View
+            # cellprofiler.gui.utilities.workspace_view.update_workspace_viewer(workspace)
         except Exception as instance:
-            logger.error("Failed to run module %s", module.module_name, exc_info=True)
-            event = cellprofiler_core.pipeline.event.RunException(instance, module)
+            logging.error("Failed to run module %s", module.module_name, exc_info=True)
+            event = RunException(instance, module)
             self.__pipeline.notify_listeners(event)
             if event.cancel_run:
                 self.on_debug_stop(event)
@@ -3714,7 +3494,7 @@ class PipelineController(object):
     def debug_choose_group(self, index):
         self.__grouping_index = index
         self.__within_group_index = 0
-        workspace = cellprofiler.gui.workspace.Workspace(
+        workspace = cellprofiler.gui._workspace_model.Workspace(
             self.__pipeline,
             None,
             None,
@@ -3791,7 +3571,7 @@ class PipelineController(object):
 
         def feature_cmp(x, y):
             if "_" not in x or "_" not in y:
-                return cellprofiler_core.utilities.legacy.cmp(x, y)
+                return cmp(x, y)
             (cx, fx), (cy, fy) = [z.split("_", 1) for z in (x, y)]
             #
             # For image names, group image file, path and frame consecutively
@@ -3799,50 +3579,37 @@ class PipelineController(object):
             # Put metadata first.
             #
             file_md_order = (
-                cellprofiler_core.measurement.C_FILE_NAME,
-                cellprofiler_core.measurement.C_PATH_NAME,
-                cellprofiler_core.measurement.C_FRAME,
+                C_FILE_NAME,
+                C_PATH_NAME,
+                C_FRAME,
             )
             cx_is_file_md, cy_is_file_md = [cz in file_md_order for cz in (cx, cy)]
             if cx_is_file_md:
                 if not cy_is_file_md:
                     return 1
                 elif fx != fy:
-                    return cellprofiler_core.utilities.legacy.cmp(fx, fy)
+                    return cmp(fx, fy)
                 else:
                     cx_priority, cy_priority = [
                         file_md_order.index(cz) for cz in (cx, cy)
                     ]
-                    return cellprofiler_core.utilities.legacy.cmp(
-                        cx_priority, cy_priority
-                    )
+                    return cmp(cx_priority, cy_priority)
             elif cy_is_file_md:
                 return -1
             else:
-                return cellprofiler_core.utilities.legacy.cmp(x, y)
+                return cmp(x, y)
 
         m = self.__debug_measurements
         features = sorted(
             [
                 f
-                for f in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
-                if f.split("_")[0]
-                in (
-                    cellprofiler_core.measurement.C_METADATA,
-                    cellprofiler_core.measurement.C_FILE_NAME,
-                    cellprofiler_core.measurement.C_PATH_NAME,
-                    cellprofiler_core.measurement.C_FRAME,
-                )
+                for f in m.get_feature_names(IMAGE)
+                if f.split("_")[0] in (C_METADATA, C_FILE_NAME, C_PATH_NAME, C_FRAME,)
             ],
             key=cmp_to_key(feature_cmp),
         )
         image_numbers = numpy.array(self.__groupings[self.__grouping_index][1], int)
-        columns = dict(
-            [
-                (f, m[cellprofiler_core.measurement.IMAGE, f, image_numbers])
-                for f in features
-            ]
-        )
+        columns = dict([(f, m[IMAGE, f, image_numbers]) for f in features])
         choices = {}
         for i, image_number in enumerate(image_numbers):
             choices[image_number] = [columns[f][i] for f in features]
@@ -3872,9 +3639,7 @@ class PipelineController(object):
 
         class ChooseImageSetDialog(wx.Dialog, wx.lib.mixins.listctrl.ColumnSorterMixin):
             def __init__(self, parent):
-                dlg_size = (
-                    cellprofiler_core.preferences.get_choose_image_set_frame_size()
-                )
+                dlg_size = get_choose_image_set_frame_size()
                 if dlg_size is None:
                     dlg_size = wx.DefaultSize
                 wx.Dialog.__init__(
@@ -3896,26 +3661,18 @@ class PipelineController(object):
                 self.list_ctrl.InsertColumn(0, "Image #")
                 total_width = self.list_ctrl.GetFullTextExtent("Image #")[0]
                 for i, f in enumerate(features):
-                    if f.startswith(cellprofiler_core.measurement.C_METADATA):
-                        name = f[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
-                    elif f.startswith(cellprofiler_core.measurement.C_FILE_NAME):
-                        name = f[(len(cellprofiler_core.measurement.C_FILE_NAME) + 1) :]
-                    elif f.startswith(cellprofiler_core.measurement.C_FRAME):
-                        name = (
-                            f[(len(cellprofiler_core.measurement.C_FRAME) + 1) :]
-                            + " frame"
-                        )
+                    if f.startswith(C_METADATA):
+                        name = f[(len(C_METADATA) + 1) :]
+                    elif f.startswith(C_FILE_NAME):
+                        name = f[(len(C_FILE_NAME) + 1) :]
+                    elif f.startswith(C_FRAME):
+                        name = f[(len(C_FRAME) + 1) :] + " frame"
                     else:
-                        name = (
-                            f[(len(cellprofiler_core.measurement.C_PATH_NAME) + 1) :]
-                            + " folder"
-                        )
+                        name = f[(len(C_PATH_NAME) + 1) :] + " folder"
                     self.list_ctrl.InsertColumn(i + 1, name)
                     width = 0
                     for row in list(choices.values()):
-                        w, h, _, _ = self.list_ctrl.GetFullTextExtent(
-                            six.text_type(row[i])
-                        )
+                        w, h, _, _ = self.list_ctrl.GetFullTextExtent(str(row[i]))
                         if w > width:
                             width = w
                     self.list_ctrl.SetColumnWidth(i + 1, width + 15)
@@ -3933,7 +3690,7 @@ class PipelineController(object):
                                 if isinstance(v, int)
                                 else "%020.10f" % v
                                 if isinstance(v, float)
-                                else six.text_type(v)
+                                else str(v)
                                 for v in [k] + choices[k]
                             ],
                         )
@@ -3942,9 +3699,7 @@ class PipelineController(object):
                 )
 
                 for image_number in sorted(choices.keys()):
-                    row = [six.text_type(image_number)] + [
-                        six.text_type(x) for x in choices[image_number]
-                    ]
+                    row = [str(image_number)] + [str(x) for x in choices[image_number]]
                     pos = self.list_ctrl.Append(row)
                     self.list_ctrl.SetItemData(pos, image_number)
                 wx.lib.mixins.listctrl.ColumnSorterMixin.__init__(
@@ -3968,9 +3723,7 @@ class PipelineController(object):
 
                 assert isinstance(event, wx.SizeEvent)
 
-                cellprofiler_core.preferences.set_choose_image_set_frame_size(
-                    size.width, size.height
-                )
+                set_choose_image_set_frame_size(size.width, size.height)
 
                 event.Skip(True)
 
@@ -4097,10 +3850,7 @@ class PipelineController(object):
             "processing cores." % n_image_sets,
         )
         sub_sizer.Add(
-            text_ctrl,
-            1,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND | wx.ALL,
-            10,
+            text_ctrl, 1, wx.EXPAND | wx.ALL, 10,
         )
         bitmap = wx.ArtProvider.GetBitmap(
             wx.ART_INFORMATION, wx.ART_CMN_DIALOG, size=(32, 32)
@@ -4108,9 +3858,7 @@ class PipelineController(object):
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0, wx.EXPAND | wx.ALL, 10)
         dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
         dont_show_again.SetValue(False)
-        sizer.Add(
-            dont_show_again, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 10
-        )
+        sizer.Add(dont_show_again, 0, wx.ALIGN_LEFT | wx.LEFT, 10)
         button_sizer = wx.StdDialogButtonSizer()
         save_pipeline_button = wx.Button(dlg, -1, "Save project")
         button_sizer.AddButton(save_pipeline_button)
@@ -4126,10 +3874,7 @@ class PipelineController(object):
 
                 if sys.platform == "darwin":
                     subprocess.call(
-                        [
-                            "open",
-                            cellprofiler_core.preferences.get_default_output_directory(),
-                        ]
+                        ["open", get_default_output_directory(),]
                     )
                 elif sys.platform == "win32":
                     subprocess.call(
@@ -4138,7 +3883,7 @@ class PipelineController(object):
                             "/C",
                             "start",
                             "explorer",
-                            cellprofiler_core.preferences.get_default_output_directory(),
+                            get_default_output_directory(),
                         ]
                     )
 
@@ -4147,13 +3892,12 @@ class PipelineController(object):
             )
         button_sizer.SetCancelButton(save_pipeline_button)
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
-        sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
+        sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
 
         def on_save_workspace(event):
             self.__on_save_workspace(event)
             wx.MessageBox(
-                "Saved project %s"
-                % cellprofiler_core.preferences.get_current_workspace_path(),
+                "Saved project %s" % get_current_workspace_path(),
                 caption="Saved project",
                 parent=self.__frame,
             )
@@ -4166,7 +3910,7 @@ class PipelineController(object):
         try:
             dlg.ShowModal()
             if dont_show_again.GetValue():
-                cellprofiler_core.preferences.set_show_analysis_complete_dlg(False)
+                set_show_analysis_complete_dlg(False)
         finally:
             dlg.Destroy()
 
@@ -4184,10 +3928,7 @@ class PipelineController(object):
             ),
         )
         sub_sizer.Add(
-            text_ctrl,
-            1,
-            wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.EXPAND | wx.ALL,
-            10,
+            text_ctrl, 1, wx.EXPAND | wx.ALL, 10,
         )
         bitmap = wx.ArtProvider.GetBitmap(
             wx.ART_INFORMATION, wx.ART_CMN_DIALOG, size=(32, 32)
@@ -4195,58 +3936,19 @@ class PipelineController(object):
         sub_sizer.Add(wx.StaticBitmap(dlg, -1, bitmap), 0, wx.EXPAND | wx.ALL, 10)
         dont_show_again = wx.CheckBox(dlg, -1, "Don't show this again")
         dont_show_again.SetValue(False)
-        sizer.Add(
-            dont_show_again, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 10
-        )
+        sizer.Add(dont_show_again, 0, wx.ALIGN_LEFT | wx.LEFT, 10)
         button_sizer = wx.StdDialogButtonSizer()
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
-        sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
+        sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
         button_sizer.Realize()
         dlg.Fit()
         dlg.CenterOnParent()
         try:
             dlg.ShowModal()
             if dont_show_again.GetValue():
-                cellprofiler_core.preferences.set_show_exiting_test_mode_dlg(False)
+                set_show_exiting_test_mode_dlg(False)
         finally:
             dlg.Destroy()
-
-    def get_output_file_path(self):
-        path = os.path.join(
-            cellprofiler_core.preferences.get_default_output_directory(),
-            cellprofiler_core.preferences.get_output_file_name(),
-        )
-        if (
-            os.path.exists(path)
-            and not cellprofiler_core.preferences.get_allow_output_file_overwrite()
-        ):
-            (first_part, ext) = os.path.splitext(path)
-            start = 1
-            match = re.match("^(.+)__([0-9]+)$", first_part)
-            if match:
-                first_part = match.groups()[0]
-                start = int(match.groups()[1])
-            for i in range(start, 1000):
-                alternate_name = "%(first_part)s__%(i)d%(ext)s" % (locals())
-                if not os.path.exists(alternate_name):
-                    break
-            result = wx.MessageDialog(
-                parent=self.__frame,
-                message="%s already exists. Would you like to create %s instead?"
-                % (path, alternate_name),
-                caption="Output file exists",
-                style=wx.YES_NO + wx.ICON_QUESTION,
-            )
-            user_choice = result.ShowModal()
-            result.Destroy()
-            if user_choice & wx.YES:
-                path = alternate_name
-                cellprofiler_core.preferences.set_output_file_name(
-                    os.path.split(alternate_name)[1]
-                )
-            else:
-                return None
-        return path
 
     def on_show_all_windows(self, event):
         """Turn "show_window" on for every module in the pipeline"""

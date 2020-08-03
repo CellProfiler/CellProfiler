@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 FlipAndRotate
 =============
@@ -20,13 +18,16 @@ Measurements made by this module
 -  *Rotation:* Angle of rotation for the input image.
 """
 
-import numpy as np
-import scipy.ndimage as scind
-
-import cellprofiler_core.image as cpi
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+import numpy
+import scipy.ndimage
+from cellprofiler_core.constants.measurement import IMAGE, COLTYPE_FLOAT
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Coordinates
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Float
 
 FLIP_NONE = "Do not flip"
 FLIP_LEFT_TO_RIGHT = "Left to right"
@@ -56,32 +57,32 @@ M_ROTATION_CATEGORY = "Rotation"
 M_ROTATION_F = "%s_%%s" % M_ROTATION_CATEGORY
 
 
-class FlipAndRotate(cpm.Module):
+class FlipAndRotate(Module):
     category = "Image Processing"
     variable_revision_number = 2
     module_name = "FlipAndRotate"
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="Choose the image you want to flip or rotate.",
         )
 
-        self.output_name = cps.ImageNameProvider(
+        self.output_name = ImageName(
             "Name the output image",
             "FlippedOrigBlue",
             doc="Provide a name for the transformed image.",
         )
 
-        self.flip_choice = cps.Choice(
+        self.flip_choice = Choice(
             "Select method to flip image",
             FLIP_ALL,
             doc="""\
 Select how the image is to be flipped.""",
         )
 
-        self.rotate_choice = cps.Choice(
+        self.rotate_choice = Choice(
             "Select method to rotate image",
             ROTATE_ALL,
             doc="""\
@@ -101,7 +102,7 @@ Select how the image is to be flipped.""",
             % globals(),
         )
 
-        self.wants_crop = cps.Binary(
+        self.wants_crop = Binary(
             "Crop away the rotated edges?",
             True,
             doc="""\
@@ -117,7 +118,7 @@ the original, which may affect downstream modules.
             % globals(),
         )
 
-        self.how_often = cps.Choice(
+        self.how_often = Choice(
             "Calculate rotation",
             IO_ALL,
             doc="""\
@@ -131,7 +132,7 @@ calculated.
             % globals(),
         )
 
-        self.first_pixel = cps.Coordinates(
+        self.first_pixel = Coordinates(
             "Enter coordinates of the top or left pixel",
             (0, 0),
             doc="""\
@@ -145,7 +146,7 @@ above the other point.
             ),
         )
 
-        self.second_pixel = cps.Coordinates(
+        self.second_pixel = Coordinates(
             "Enter the coordinates of the bottom or right pixel",
             (0, 100),
             doc="""\
@@ -159,7 +160,7 @@ below the other point.
             ),
         )
 
-        self.horiz_or_vert = cps.Choice(
+        self.horiz_or_vert = Choice(
             "Select how the specified points should be aligned",
             C_ALL,
             doc="""\
@@ -170,7 +171,7 @@ be horizontally or vertically aligned after the rotation is complete."""
             % globals(),
         )
 
-        self.angle = cps.Float(
+        self.angle = Float(
             "Enter angle of rotation",
             0,
             doc="""\
@@ -235,15 +236,15 @@ negative as clockwise."""
 
         if self.flip_choice != FLIP_NONE:
             if self.flip_choice == FLIP_LEFT_TO_RIGHT:
-                i, j = np.mgrid[
+                i, j = numpy.mgrid[
                     0 : pixel_data.shape[0], pixel_data.shape[1] - 1 : -1 : -1
                 ]
             elif self.flip_choice == FLIP_TOP_TO_BOTTOM:
-                i, j = np.mgrid[
+                i, j = numpy.mgrid[
                     pixel_data.shape[0] - 1 : -1 : -1, 0 : pixel_data.shape[1]
                 ]
             elif self.flip_choice == FLIP_BOTH:
-                i, j = np.mgrid[
+                i, j = numpy.mgrid[
                     pixel_data.shape[0] - 1 : -1 : -1, pixel_data.shape[1] - 1 : -1 : -1
                 ]
             else:
@@ -263,9 +264,9 @@ negative as clockwise."""
                 xdiff = self.second_pixel.x - self.first_pixel.x
                 ydiff = self.second_pixel.y - self.first_pixel.y
                 if self.horiz_or_vert == C_VERTICALLY:
-                    angle = -np.arctan2(ydiff, xdiff) * 180.0 / np.pi
+                    angle = -numpy.arctan2(ydiff, xdiff) * 180.0 / numpy.pi
                 elif self.horiz_or_vert == C_HORIZONTALLY:
-                    angle = np.arctan2(xdiff, ydiff) * 180.0 / np.pi
+                    angle = numpy.arctan2(xdiff, ydiff) * 180.0 / numpy.pi
                 else:
                     raise NotImplementedError(
                         "Unknown axis: %s" % self.horiz_or_vert.value
@@ -288,13 +289,16 @@ negative as clockwise."""
                 raise NotImplementedError(
                     "Unknown rotation method: %s" % self.rotate_choice.value
                 )
-            rangle = angle * np.pi / 180.0
-            mask = scind.rotate(mask.astype(float), angle, reshape=True) > 0.50
+            rangle = angle * numpy.pi / 180.0
+            mask = scipy.ndimage.rotate(mask.astype(float), angle, reshape=True) > 0.50
             crop = (
-                scind.rotate(np.ones(pixel_data.shape[:2]), angle, reshape=True) > 0.50
+                scipy.ndimage.rotate(
+                    numpy.ones(pixel_data.shape[:2]), angle, reshape=True
+                )
+                > 0.50
             )
             mask = mask & crop
-            pixel_data = scind.rotate(pixel_data, angle, reshape=True)
+            pixel_data = scipy.ndimage.rotate(pixel_data, angle, reshape=True)
             if self.wants_crop.value:
                 #
                 # We want to find the largest rectangle that fits inside
@@ -305,32 +309,32 @@ negative as clockwise."""
                 # The left and right halves are symmetric, so we compute
                 # on just two of the quadrants.
                 #
-                half = (np.array(crop.shape) / 2).astype(int)
+                half = (numpy.array(crop.shape) / 2).astype(int)
                 #
                 # Operate on the lower right
                 #
                 quartercrop = crop[half[0] :, half[1] :]
-                ci = np.cumsum(quartercrop, 0)
-                cj = np.cumsum(quartercrop, 1)
+                ci = numpy.cumsum(quartercrop, 0)
+                cj = numpy.cumsum(quartercrop, 1)
                 carea_d = ci * cj
                 carea_d[quartercrop == 0] = 0
                 #
                 # Operate on the upper right by flipping I
                 #
                 quartercrop = crop[crop.shape[0] - half[0] - 1 :: -1, half[1] :]
-                ci = np.cumsum(quartercrop, 0)
-                cj = np.cumsum(quartercrop, 1)
+                ci = numpy.cumsum(quartercrop, 0)
+                cj = numpy.cumsum(quartercrop, 1)
                 carea_u = ci * cj
                 carea_u[quartercrop == 0] = 0
                 carea = carea_d + carea_u
-                max_carea = np.max(carea)
-                max_area = np.argwhere(carea == max_carea)[0] + half
+                max_carea = numpy.max(carea)
+                max_area = numpy.argwhere(carea == max_carea)[0] + half
                 min_i = max(crop.shape[0] - max_area[0] - 1, 0)
                 max_i = max_area[0] + 1
                 min_j = max(crop.shape[1] - max_area[1] - 1, 0)
                 max_j = max_area[1] + 1
-                ii = np.index_exp[min_i:max_i, min_j:max_j]
-                crop = np.zeros(pixel_data.shape, bool)
+                ii = numpy.index_exp[min_i:max_i, min_j:max_j]
+                crop = numpy.zeros(pixel_data.shape, bool)
                 crop[ii] = True
                 mask = mask[ii]
                 pixel_data = pixel_data[ii]
@@ -339,17 +343,19 @@ negative as clockwise."""
         else:
             crop = None
             angle = 0
-        output_image = cpi.Image(pixel_data, mask, crop, image)
+        output_image = Image(pixel_data, mask, crop, image)
         image_set.add(self.output_name.value, output_image)
         workspace.measurements.add_image_measurement(
             M_ROTATION_F % self.output_name.value, angle
         )
 
         vmin = min(
-            np.min(image.pixel_data), np.min(output_image.pixel_data[output_image.mask])
+            numpy.min(image.pixel_data),
+            numpy.min(output_image.pixel_data[output_image.mask]),
         )
         vmax = max(
-            np.max(image.pixel_data), np.max(output_image.pixel_data[output_image.mask])
+            numpy.max(image.pixel_data),
+            numpy.max(output_image.pixel_data[output_image.mask]),
         )
         workspace.display_data.image_pixel_data = image.pixel_data
         workspace.display_data.output_image_pixel_data = output_image.pixel_data
@@ -412,9 +418,9 @@ negative as clockwise."""
 
         if pixel_data.ndim == 2:
             # make a color matrix for consistency
-            pixel_data = np.dstack((pixel_data, pixel_data, pixel_data))
-        pd_min = np.min(pixel_data)
-        pd_max = np.max(pixel_data)
+            pixel_data = numpy.dstack((pixel_data, pixel_data, pixel_data))
+        pd_min = numpy.min(pixel_data)
+        pd_max = numpy.max(pixel_data)
         if pd_min == pd_max:
             pixel_data[:, :, :] = 0
         else:
@@ -423,12 +429,12 @@ negative as clockwise."""
         # Make a 100 x 100 image so it's manageable
         #
         isize = 200
-        i, j, k = np.mgrid[
+        i, j, k = numpy.mgrid[
             0:isize, 0 : int(isize * pixel_data.shape[1] / pixel_data.shape[0]), 0:3
         ].astype(float)
         i *= float(pixel_data.shape[0]) / float(isize)
         j *= float(pixel_data.shape[0]) / float(isize)
-        pixel_data = scind.map_coordinates(pixel_data, (i, j, k))
+        pixel_data = scipy.ndimage.map_coordinates(pixel_data, (i, j, k))
         #
         # Make a dialog box that contains the image
         #
@@ -453,29 +459,29 @@ negative as clockwise."""
         def imshow():
             angle_text.Label = "Angle: %d" % int(angle[0])
             angle_text.Refresh()
-            my_angle = -angle[0] * np.pi / 180.0
-            transform = np.array(
+            my_angle = -angle[0] * numpy.pi / 180.0
+            transform = numpy.array(
                 [
-                    [np.cos(my_angle), -np.sin(my_angle)],
-                    [np.sin(my_angle), np.cos(my_angle)],
+                    [numpy.cos(my_angle), -numpy.sin(my_angle)],
+                    [numpy.sin(my_angle), numpy.cos(my_angle)],
                 ]
             )
             # Make it rotate about the center
             offset = affine_offset(pixel_data.shape, transform)
-            x = np.dstack(
+            x = numpy.dstack(
                 (
-                    scind.affine_transform(
+                    scipy.ndimage.affine_transform(
                         pixel_data[:, :, 0], transform, offset, order=0
                     ),
-                    scind.affine_transform(
+                    scipy.ndimage.affine_transform(
                         pixel_data[:, :, 1], transform, offset, order=0
                     ),
-                    scind.affine_transform(
+                    scipy.ndimage.affine_transform(
                         pixel_data[:, :, 2], transform, offset, order=0
                     ),
                 )
             )
-            buff = x.astype(np.uint8).tostring()
+            buff = x.astype(numpy.uint8).tostring()
             bitmap = wx.Bitmap.FromBuffer(x.shape[1], x.shape[0], buff)
             canvas.SetBitmap(bitmap)
 
@@ -489,10 +495,10 @@ negative as clockwise."""
         arrow_cursor = wx.Cursor(wx.CURSOR_ARROW)
 
         def get_angle(event):
-            center = np.array(canvas.Size) / 2
-            point = np.array(event.GetPosition())
+            center = numpy.array(canvas.Size) / 2
+            point = numpy.array(event.GetPosition())
             offset = point - center
-            return -np.arctan2(offset[1], offset[0]) * 180.0 / np.pi
+            return -numpy.arctan2(offset[1], offset[0]) * 180.0 / numpy.pi
 
         def on_mouse_down(event):
             canvas.Cursor = hand_cursor
@@ -500,7 +506,7 @@ negative as clockwise."""
             initial_angle[0] = get_angle(event) - angle[0]
             canvas.CaptureMouse()
 
-        wx.EVT_LEFT_DOWN(canvas, on_mouse_down)
+        canvas.Bind(wx.EVT_LEFT_DOWN, on_mouse_down)
 
         def on_mouse_up(event):
             if dragging[0]:
@@ -508,13 +514,13 @@ negative as clockwise."""
                 dragging[0] = False
                 canvas.Cursor = arrow_cursor
 
-        wx.EVT_LEFT_UP(canvas, on_mouse_up)
+        canvas.Bind(wx.EVT_LEFT_UP, on_mouse_up)
 
         def on_mouse_lost(event):
             dragging[0] = False
             canvas.Cursor = arrow_cursor
 
-        wx.EVT_MOUSE_CAPTURE_LOST(canvas, on_mouse_lost)
+        canvas.Bind(wx.EVT_MOUSE_CAPTURE_LOST, on_mouse_lost)
 
         def on_mouse_move(event):
             if dragging[0]:
@@ -522,7 +528,7 @@ negative as clockwise."""
                 imshow()
                 canvas.Refresh(eraseBackground=False)
 
-        wx.EVT_MOTION(canvas, on_mouse_move)
+        canvas.Bind(wx.EVT_MOTION, on_mouse_move)
         #
         # Put the OK and Cancel buttons on the bottom
         #
@@ -545,17 +551,15 @@ negative as clockwise."""
         raise ValueError("Canceled by user in FlipAndRotate")
 
     def get_measurement_columns(self, pipeline):
-        return [
-            (cpmeas.IMAGE, M_ROTATION_F % self.output_name.value, cpmeas.COLTYPE_FLOAT)
-        ]
+        return [(IMAGE, M_ROTATION_F % self.output_name.value, COLTYPE_FLOAT)]
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cpmeas.IMAGE:
+        if object_name == IMAGE:
             return [M_ROTATION_CATEGORY]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name != cpmeas.IMAGE or category != M_ROTATION_CATEGORY:
+        if object_name != IMAGE or category != M_ROTATION_CATEGORY:
             return []
         return [self.output_name.value]
 
@@ -584,5 +588,5 @@ def affine_offset(shape, transform):
     transform the location of the center of the image (the image rotates
     or is flipped about the center).
     """
-    c = (np.array(shape[:2]) - 1).astype(float) / 2.0
-    return -np.dot(transform - np.identity(2), c)
+    c = (numpy.array(shape[:2]) - 1).astype(float) / 2.0
+    return -numpy.dot(transform - numpy.identity(2), c)

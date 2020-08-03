@@ -1,4 +1,21 @@
-# coding=utf-8
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
+from cellprofiler_core.constants.measurement import FF_CHILDREN_COUNT
+from cellprofiler_core.constants.measurement import FF_PARENT
+from cellprofiler_core.image import ObjectsImage
+from cellprofiler_core.module import Identify
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_count_measurements,
+)
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_location_measurements_ijv,
+)
+from cellprofiler_core.utilities.core.module.identify import (
+    get_object_measurement_columns,
+)
 
 from cellprofiler.modules import _help
 
@@ -52,21 +69,13 @@ See also **FilterObjects**, **MaskObject**, **OverlayOutlines**,
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-import logging
-
-import cellprofiler_core.measurement
-
-logger = logging.getLogger(__name__)
-
 import os
-import numpy as np
+import numpy
 
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.object as cpo
-import cellprofiler_core.setting as cps
+from cellprofiler_core.object import Objects
+from cellprofiler_core.setting import Binary
 
-from cellprofiler_core.modules.loadimages import pathname2url
-from cellprofiler_core.modules import identify as I
+from cellprofiler_core.utilities.pathname import pathname2url
 
 ###########################################
 #
@@ -77,7 +86,7 @@ R_RENUMBER = "Renumber"
 R_RETAIN = "Retain"
 
 
-class EditObjectsManually(I.Identify):
+class EditObjectsManually(Identify):
     category = "Object Processing"
     variable_revision_number = 4
     module_name = "EditObjectsManually"
@@ -89,13 +98,13 @@ class EditObjectsManually(I.Identify):
 
         You should create the setting variables for your module here:
             # Ask the user for the input image
-            self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
+            self.image_name = .ImageSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler_core.settings.ImageNameProvider(...)
+            self.output_image = .ImageName(...)
             # Ask the user for a parameter
-            self.smoothing_size = cellprofiler_core.settings.Float(...)
+            self.smoothing_size = .Float(...)
         """
-        self.object_name = cps.ObjectNameSubscriber(
+        self.object_name = LabelSubscriber(
             "Select the objects to be edited",
             "None",
             doc="""\
@@ -104,7 +113,7 @@ for editing, such as those produced by one of the
 **Identify** modules (e.g., "*IdentifyPrimaryObjects*", "*IdentifySecondaryObjects*" etc.).""",
         )
 
-        self.filtered_objects = cps.ObjectNameProvider(
+        self.filtered_objects = LabelName(
             "Name the edited objects",
             "EditedObjects",
             doc="""\
@@ -113,7 +122,7 @@ after editing. These objects will be available for use by
 subsequent modules.""",
         )
 
-        self.allow_overlap = cps.Binary(
+        self.allow_overlap = Binary(
             "Allow overlapping objects?",
             False,
             doc="""\
@@ -127,7 +136,7 @@ Select "*Yes*" to allow overlaps or select "*No*" to prevent them.
             % globals(),
         )
 
-        self.renumber_choice = cps.Choice(
+        self.renumber_choice = Choice(
             "Numbering of the edited objects",
             [R_RENUMBER, R_RETAIN],
             doc="""\
@@ -150,7 +159,7 @@ controls how edited objects are associated with their predecessors:
             % globals(),
         )
 
-        self.wants_image_display = cps.Binary(
+        self.wants_image_display = Binary(
             "Display a guiding image?",
             True,
             doc="""\
@@ -161,7 +170,7 @@ Select "*No*" if you do not want a guide image while editing.
             % globals(),
         )
 
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the guiding image",
             "None",
             doc="""\
@@ -216,15 +225,15 @@ supplied by a previous module.
         filtered_objects_name = self.filtered_objects.value
 
         orig_objects = workspace.object_set.get_objects(orig_objects_name)
-        assert isinstance(orig_objects, cpo.Objects)
+        assert isinstance(orig_objects, Objects)
         orig_labels = [l for l, c in orig_objects.get_labels()]
 
         if self.wants_image_display:
             guide_image = workspace.image_set.get_image(self.image_name.value)
             guide_image = guide_image.pixel_data
-            if np.any(guide_image != np.min(guide_image)):
-                guide_image = (guide_image - np.min(guide_image)) / (
-                    np.max(guide_image) - np.min(guide_image)
+            if numpy.any(guide_image != numpy.min(guide_image)):
+                guide_image = (guide_image - numpy.min(guide_image)) / (
+                    numpy.max(guide_image) - numpy.min(guide_image)
                 )
         else:
             guide_image = None
@@ -239,25 +248,27 @@ supplied by a previous module.
         #
         # Renumber objects consecutively if asked to do so
         #
-        unique_labels = np.unique(np.array(filtered_labels))
+        unique_labels = numpy.unique(numpy.array(filtered_labels))
         unique_labels = unique_labels[unique_labels != 0]
         object_count = len(unique_labels)
         if self.renumber_choice == R_RENUMBER:
-            mapping = np.zeros(
-                1 if len(unique_labels) == 0 else np.max(unique_labels) + 1, int
+            mapping = numpy.zeros(
+                1 if len(unique_labels) == 0 else numpy.max(unique_labels) + 1, int
             )
-            mapping[unique_labels] = np.arange(1, object_count + 1)
+            mapping[unique_labels] = numpy.arange(1, object_count + 1)
             filtered_labels = [mapping[l] for l in filtered_labels]
         #
         # Make the objects out of the labels
         #
-        filtered_objects = cpo.Objects()
-        i, j = np.mgrid[
+        filtered_objects = Objects()
+        i, j = numpy.mgrid[
             0 : filtered_labels[0].shape[0], 0 : filtered_labels[0].shape[1]
         ]
-        ijv = np.zeros((0, 3), filtered_labels[0].dtype)
+        ijv = numpy.zeros((0, 3), filtered_labels[0].dtype)
         for l in filtered_labels:
-            ijv = np.vstack((ijv, np.column_stack((i[l != 0], j[l != 0], l[l != 0]))))
+            ijv = numpy.vstack(
+                (ijv, numpy.column_stack((i[l != 0], j[l != 0], l[l != 0])))
+            )
         filtered_objects.set_ijv(ijv, orig_labels[0].shape)
         if orig_objects.has_unedited_segmented():
             filtered_objects.unedited_segmented = orig_objects.unedited_segmented
@@ -270,23 +281,19 @@ supplied by a previous module.
         m = workspace.measurements
         child_count, parents = orig_objects.relate_children(filtered_objects)
         m.add_measurement(
-            filtered_objects_name,
-            cellprofiler_core.measurement.FF_PARENT % orig_objects_name,
-            parents,
+            filtered_objects_name, FF_PARENT % orig_objects_name, parents,
         )
         m.add_measurement(
-            orig_objects_name,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % filtered_objects_name,
-            child_count,
+            orig_objects_name, FF_CHILDREN_COUNT % filtered_objects_name, child_count,
         )
         #
         # The object count
         #
-        I.add_object_count_measurements(m, filtered_objects_name, object_count)
+        add_object_count_measurements(m, filtered_objects_name, object_count)
         #
         # The object locations
         #
-        I.add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
+        add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
 
         workspace.display_data.orig_ijv = orig_objects.ijv
         workspace.display_data.filtered_ijv = filtered_objects.ijv
@@ -314,7 +321,6 @@ supplied by a previous module.
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
-        from cellprofiler_core.modules.namesandtypes import ObjectsImageProvider
         from bioformats import load_image
 
         with wx.Dialog(None) as dlg:
@@ -371,9 +377,7 @@ supplied by a previous module.
             guidename = image_file_fbb.GetValue()
 
         if new_or_existing_rb.GetSelection() == 1:
-            provider = ObjectsImageProvider(
-                "InputObjects", pathname2url(fullname), None, None
-            )
+            provider = ObjectsImage("InputObjects", pathname2url(fullname), None, None)
             image = provider.provide_image(None)
             pixel_data = image.pixel_data
             shape = pixel_data.shape[:2]
@@ -384,13 +388,13 @@ supplied by a previous module.
         # Load the guide image
         #
         guide_image = load_image(guidename)
-        if np.min(guide_image) != np.max(guide_image):
-            guide_image = (guide_image - np.min(guide_image)) / (
-                np.max(guide_image) - np.min(guide_image)
+        if numpy.min(guide_image) != numpy.max(guide_image):
+            guide_image = (guide_image - numpy.min(guide_image)) / (
+                numpy.max(guide_image) - numpy.min(guide_image)
             )
         if labels is None:
             shape = guide_image.shape[:2]
-            labels = [np.zeros(shape, int)]
+            labels = [numpy.zeros(shape, int)]
         with EditObjectsDialog(
             guide_image, labels, self.allow_overlap, self.object_name.value
         ) as dialog_box:
@@ -436,37 +440,37 @@ supplied by a previous module.
                     % (guidename, project_name)
                 )
             project_labels = data_item["labels"]["data"]
-            mask = np.ones(project_labels.shape[2:4], project_labels.dtype)
+            mask = numpy.ones(project_labels.shape[2:4], project_labels.dtype)
             for label in labels:
                 mask[label != 0] = 2
             #
             # "only" use the first 100,000 points in the image
             #
             subsample = 100000
-            npts = np.prod(mask.shape)
+            npts = numpy.prod(mask.shape)
             if npts > subsample:
-                r = np.random.RandomState()
-                r.seed(np.sum(mask) % (2 ** 16))
-                i, j = np.mgrid[0 : mask.shape[0], 0 : mask.shape[1]]
+                r = numpy.random.RandomState()
+                r.seed(numpy.sum(mask) % (2 ** 16))
+                i, j = numpy.mgrid[0 : mask.shape[0], 0 : mask.shape[1]]
                 i0 = i[mask == 1]
                 j0 = j[mask == 1]
                 i1 = i[mask == 2]
                 j1 = j[mask == 2]
                 if len(i1) < subsample / 2:
                     p0 = r.permutation(len(i0))[: (subsample - len(i1))]
-                    p1 = np.arange(len(i1))
+                    p1 = numpy.arange(len(i1))
                 elif len(i0) < subsample / 2:
-                    p0 = np.arange(len(i0))
+                    p0 = numpy.arange(len(i0))
                     p1 = r.permutation(len(i1))[: (subsample - len(i0))]
                 else:
                     p0 = r.permutation(len(i0))[: (subsample / 2)]
                     p1 = r.permutation(len(i1))[: (subsample / 2)]
-                mask_copy = np.zeros(mask.shape, mask.dtype)
+                mask_copy = numpy.zeros(mask.shape, mask.dtype)
                 mask_copy[i0[p0], j0[p0]] = 1
                 mask_copy[i1[p1], j1[p1]] = 2
                 if "prediction" in data_item:
                     prediction = data_item["prediction"]
-                    if np.max(prediction[0, 0, :, :, 0]) > 0.5:
+                    if numpy.max(prediction[0, 0, :, :, 0]) > 0.5:
                         # Only do if prediction was done (otherwise all == 0)
                         for n in range(2):
                             p = prediction[0, 0, :, :, n]
@@ -500,18 +504,14 @@ supplied by a previous module.
         """Return information to use when creating database columns"""
         orig_image_name = self.object_name.value
         filtered_image_name = self.filtered_objects.value
-        columns = I.get_object_measurement_columns(filtered_image_name)
+        columns = get_object_measurement_columns(filtered_image_name)
         columns += [
             (
                 orig_image_name,
-                cellprofiler_core.measurement.FF_CHILDREN_COUNT % filtered_image_name,
-                cpmeas.COLTYPE_INTEGER,
+                FF_CHILDREN_COUNT % filtered_image_name,
+                COLTYPE_INTEGER,
             ),
-            (
-                filtered_image_name,
-                cellprofiler_core.measurement.FF_PARENT % orig_image_name,
-                cpmeas.COLTYPE_INTEGER,
-            ),
+            (filtered_image_name, FF_PARENT % orig_image_name, COLTYPE_INTEGER,),
         ]
         return columns
 

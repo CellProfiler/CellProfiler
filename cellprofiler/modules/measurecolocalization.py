@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 MeasureColocalization
 =====================
@@ -69,16 +67,21 @@ Measurements made by this module
 .. _SVI website: http://svi.nl/ColocalizationTheory   
 """
 
+import cellprofiler_core.object
 import numpy
 import scipy.ndimage
 import scipy.stats
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Divider, Binary, ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import (
+    LabelListSubscriber,
+    ImageListSubscriber,
+)
+from cellprofiler_core.setting.text import Float
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
-
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
 
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
@@ -109,7 +112,7 @@ F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 
 
-class MeasureColocalization(cellprofiler_core.module.Module):
+class MeasureColocalization(Module):
     module_name = "MeasureColocalization"
     category = "Measurement"
     variable_revision_number = 4
@@ -117,13 +120,13 @@ class MeasureColocalization(cellprofiler_core.module.Module):
     def create_settings(self):
         """Create the initial settings for the module"""
 
-        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select images to measure",
             [],
             doc="""Select images to measure the correlation/colocalization in.""",
         )
 
-        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select objects to measure",
             [],
             doc="""\
@@ -132,7 +135,7 @@ class MeasureColocalization(cellprofiler_core.module.Module):
 Select the objects to be measured.""",
         )
 
-        self.thr = cellprofiler_core.setting.Float(
+        self.thr = Float(
             "Set threshold as percentage of maximum intensity for the images",
             15,
             minval=0,
@@ -140,7 +143,7 @@ Select the objects to be measured.""",
             doc="You may choose to measure colocalization metrics only for those pixels above a certain threshold. Select the threshold as a percentage of the maximum intensity of the above image [0-99].",
         )
 
-        self.images_or_objects = cellprofiler_core.setting.Choice(
+        self.images_or_objects = Choice(
             "Select where to measure correlation",
             [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS],
             doc="""\
@@ -158,9 +161,9 @@ All methods measure correlation on a pixel by pixel basis.
             % globals(),
         )
 
-        self.spacer = cellprofiler_core.setting.Divider(line=True)
+        self.spacer = Divider(line=True)
 
-        self.do_all = cellprofiler_core.setting.Binary(
+        self.do_all = Binary(
             "Run all metrics?",
             True,
             doc="""\
@@ -173,7 +176,7 @@ colocalization algorithms to run.
             ),
         )
 
-        self.do_corr_and_slope = cellprofiler_core.setting.Binary(
+        self.do_corr_and_slope = Binary(
             "Calculate correlation and slope metrics?",
             True,
             doc="""\
@@ -183,7 +186,7 @@ Select *{YES}* to run the Pearson correlation and slope metrics.
             ),
         )
 
-        self.do_manders = cellprofiler_core.setting.Binary(
+        self.do_manders = Binary(
             "Calculate the Manders coefficients?",
             True,
             doc="""\
@@ -193,7 +196,7 @@ Select *{YES}* to run the Manders coefficients.
             ),
         )
 
-        self.do_rwc = cellprofiler_core.setting.Binary(
+        self.do_rwc = Binary(
             "Calculate the Rank Weighted Coloalization coefficients?",
             True,
             doc="""\
@@ -203,7 +206,7 @@ Select *{YES}* to run the Rank Weighted Coloalization coefficients.
             ),
         )
 
-        self.do_overlap = cellprofiler_core.setting.Binary(
+        self.do_overlap = Binary(
             "Calculate the Overlap coefficients?",
             True,
             doc="""\
@@ -213,7 +216,7 @@ Select *{YES}* to run the Overlap coefficients.
             ),
         )
 
-        self.do_costes = cellprofiler_core.setting.Binary(
+        self.do_costes = Binary(
             "Calculate the Manders coefficients using Costes auto threshold?",
             True,
             doc="""\
@@ -1250,72 +1253,72 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 if self.do_corr_and_slope:
                     columns += [
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_CORRELATION_FORMAT % (first_image, second_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_SLOPE_FORMAT % (first_image, second_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                     ]
                 if self.do_overlap:
                     columns += [
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_OVERLAP_FORMAT % (first_image, second_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_K_FORMAT % (first_image, second_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_K_FORMAT % (second_image, first_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                     ]
                 if self.do_manders:
                     columns += [
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_MANDERS_FORMAT % (first_image, second_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_MANDERS_FORMAT % (second_image, first_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                     ]
 
                 if self.do_rwc:
                     columns += [
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_RWC_FORMAT % (first_image, second_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_RWC_FORMAT % (second_image, first_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                     ]
                 if self.do_costes:
                     columns += [
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_COSTES_FORMAT % (first_image, second_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                         (
-                            cellprofiler_core.measurement.IMAGE,
+                            "Image",
                             F_COSTES_FORMAT % (second_image, first_image),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         ),
                     ]
 
@@ -1327,7 +1330,7 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                             (
                                 object_name,
                                 F_CORRELATION_FORMAT % (first_image, second_image),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             )
                         ]
                     if self.do_overlap:
@@ -1335,17 +1338,17 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                             (
                                 object_name,
                                 F_OVERLAP_FORMAT % (first_image, second_image),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_K_FORMAT % (first_image, second_image),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_K_FORMAT % (second_image, first_image),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             ),
                         ]
                     if self.do_manders:
@@ -1353,12 +1356,12 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                             (
                                 object_name,
                                 F_MANDERS_FORMAT % (first_image, second_image),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_MANDERS_FORMAT % (second_image, first_image),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             ),
                         ]
                     if self.do_rwc:
@@ -1366,12 +1369,12 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                             (
                                 object_name,
                                 F_RWC_FORMAT % (first_image, second_image),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_RWC_FORMAT % (second_image, first_image),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             ),
                         ]
                     if self.do_costes:
@@ -1379,12 +1382,12 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                             (
                                 object_name,
                                 F_COSTES_FORMAT % (first_image, second_image),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             ),
                             (
                                 object_name,
                                 F_COSTES_FORMAT % (second_image, first_image),
-                                cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                COLTYPE_FLOAT,
                             ),
                         ]
         return columns
@@ -1394,10 +1397,8 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
 
         object_name - name of the measured object or cellprofiler_core.measurement.IMAGE
         """
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE and self.wants_images()
-        ) or (
-            (object_name != cellprofiler_core.measurement.IMAGE)
+        if (object_name == "Image" and self.wants_images()) or (
+            (object_name != "Image")
             and self.wants_objects()
             and (object_name in self.objects_list.value)
         ):
@@ -1408,7 +1409,7 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
         if self.get_categories(pipeline, object_name) == [category]:
             results = []
             if self.do_corr_and_slope:
-                if object_name == cellprofiler_core.measurement.IMAGE:
+                if object_name == "Image":
                     results += ["Correlation", "Slope"]
                 else:
                     results += ["Correlation"]
@@ -1437,15 +1438,11 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
     def validate_module(self, pipeline):
         """Make sure chosen objects are selected only once"""
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError(
-                "No images selected", self.images_list
-            )
+            raise ValidationError("No images selected", self.images_list)
 
         if self.wants_objects():
             if len(self.objects_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError(
-                    "No object sets selected", self.objects_list
-                )
+                raise ValidationError("No object sets selected", self.objects_list)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting values for pipelines saved under old revisions"""

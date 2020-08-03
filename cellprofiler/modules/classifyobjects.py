@@ -1,15 +1,3 @@
-# coding=utf-8
-
-from functools import reduce
-
-import numpy as np
-
-import cellprofiler_core.image as cpi
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.preferences as cpprefs
-import cellprofiler_core.setting as cps
-
 __doc__ = """\
 ClassifyObjects
 ===============
@@ -75,6 +63,31 @@ Measurements made by this module
       above (“high”) and below (“low”) the cutoff.
 """
 
+import functools
+
+import numpy
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import HiddenCount
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import RemoveSettingButton
+from cellprofiler_core.setting.text import Alphanumeric
+from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.setting.text import Text
+
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"
 TM_MEAN = "Mean"
@@ -89,7 +102,7 @@ F_PCT_PER_BIN = "PctObjectsPerBin"
 F_NUM_PER_BIN = "NumObjectsPerBin"
 
 
-class ClassifyObjects(cpm.Module):
+class ClassifyObjects(Module):
     category = "Object Processing"
     module_name = "ClassifyObjects"
     variable_revision_number = 2
@@ -99,7 +112,7 @@ class ClassifyObjects(cpm.Module):
 
         Create the settings for the module during initialization.
         """
-        self.contrast_choice = cps.Choice(
+        self.contrast_choice = Choice(
             "Make each classification decision on how many measurements?",
             [BY_SINGLE_MEASUREMENT, BY_TWO_MEASUREMENTS],
             doc="""\
@@ -124,7 +137,7 @@ classifications decision for each object:
         #
         # A count of # of measurements
         #
-        self.single_measurement_count = cps.HiddenCount(self.single_measurements)
+        self.single_measurement_count = HiddenCount(self.single_measurements)
         #
         # Add one single measurement to start off
         #
@@ -132,7 +145,7 @@ classifications decision for each object:
         #
         # A button to press to get another measurement
         #
-        self.add_measurement_button = cps.DoSomething(
+        self.add_measurement_button = DoSomething(
             "", "Add another classification", self.add_single_measurement
         )
         #
@@ -140,7 +153,7 @@ classifications decision for each object:
         #
         # The object for the contrasting method
         #
-        self.object_name = cps.ObjectNameSubscriber(
+        self.object_name = LabelName(
             "Select the object name",
             "None",
             doc="""\
@@ -156,7 +169,7 @@ an object created by a previous module such as
         def object_fn():
             return self.object_name.value
 
-        self.first_measurement = cps.Measurement(
+        self.first_measurement = Measurement(
             "Select the first measurement",
             object_fn,
             doc="""\
@@ -168,7 +181,7 @@ one made on the object in a prior module.
 """,
         )
 
-        self.first_threshold_method = cps.Choice(
+        self.first_threshold_method = Choice(
             "Method to select the cutoff",
             [TM_MEAN, TM_MEDIAN, TM_CUSTOM],
             doc="""\
@@ -186,7 +199,7 @@ measurement. You can set this cutoff threshold in one of three ways:
             % globals(),
         )
 
-        self.first_threshold = cps.Float(
+        self.first_threshold = Float(
             "Enter the cutoff value",
             0.5,
             doc="""\
@@ -195,7 +208,7 @@ measurement. You can set this cutoff threshold in one of three ways:
 This is the cutoff value separating objects in the two classes.""",
         )
 
-        self.second_measurement = cps.Measurement(
+        self.second_measurement = Measurement(
             "Select the second measurement",
             object_fn,
             doc="""\
@@ -207,7 +220,7 @@ The measurement should be one made on the object in a prior
 module.""",
         )
 
-        self.second_threshold_method = cps.Choice(
+        self.second_threshold_method = Choice(
             "Method to select the cutoff",
             [TM_MEAN, TM_MEDIAN, TM_CUSTOM],
             doc="""\
@@ -225,7 +238,7 @@ measurement. You can set this cutoff threshold in one of three ways:
             % globals(),
         )
 
-        self.second_threshold = cps.Float(
+        self.second_threshold = Float(
             "Enter the cutoff value",
             0.5,
             doc="""\
@@ -234,7 +247,7 @@ measurement. You can set this cutoff threshold in one of three ways:
 This is the cutoff value separating objects in the two classes.""",
         )
 
-        self.wants_custom_names = cps.Binary(
+        self.wants_custom_names = Binary(
             "Use custom names for the bins?",
             False,
             doc="""\
@@ -252,7 +265,7 @@ such as
             % globals(),
         )
 
-        self.low_low_custom_name = cps.AlphanumericText(
+        self.low_low_custom_name = Alphanumeric(
             "Enter the low-low bin name",
             "low_low",
             doc="""\
@@ -263,7 +276,7 @@ both measurements.
 """,
         )
 
-        self.low_high_custom_name = cps.AlphanumericText(
+        self.low_high_custom_name = Alphanumeric(
             "Enter the low-high bin name",
             "low_high",
             doc="""\
@@ -275,7 +288,7 @@ is above threshold.
 """,
         )
 
-        self.high_low_custom_name = cps.AlphanumericText(
+        self.high_low_custom_name = Alphanumeric(
             "Enter the high-low bin name",
             "high_low",
             doc="""\
@@ -286,7 +299,7 @@ first measurement is above threshold and whose second measurement
 is below threshold.""",
         )
 
-        self.high_high_custom_name = cps.AlphanumericText(
+        self.high_high_custom_name = Alphanumeric(
             "Enter the high-high bin name",
             "high_high",
             doc="""\
@@ -296,7 +309,7 @@ Name of the measurement for objects that
 are above the threshold for both measurements.""",
         )
 
-        self.wants_image = cps.Binary(
+        self.wants_image = Binary(
             "Retain an image of the classified objects?",
             False,
             doc="""\
@@ -307,7 +320,7 @@ example, to be saved by a **SaveImages** module).
             % globals(),
         )
 
-        self.image_name = cps.ImageNameProvider(
+        self.image_name = ImageName(
             "Enter the image name",
             "None",
             doc="""\
@@ -322,13 +335,13 @@ Enter the name to be given to the classified object image.""",
         can_delete - True to include a "remove" button, False if you're not
                      allowed to remove it.
         """
-        group = cps.SettingsGroup()
+        group = SettingsGroup()
         if can_delete:
-            group.append("divider", cps.Divider(line=True))
+            group.append("divider", Divider(line=True))
 
         group.append(
             "object_name",
-            cps.ObjectNameSubscriber(
+            LabelName(
                 "Select the object to be classified",
                 "None",
                 doc="""\
@@ -344,7 +357,7 @@ created by any previous module. See **IdentifyPrimaryObjects**,
 
         group.append(
             "measurement",
-            cps.Measurement(
+            Measurement(
                 "Select the measurement to classify by",
                 object_fn,
                 doc="""\
@@ -358,7 +371,7 @@ classified according to their values for this measurement.
 
         group.append(
             "bin_choice",
-            cps.Choice(
+            Choice(
                 "Select bin spacing",
                 [BC_EVEN, BC_CUSTOM],
                 doc="""\
@@ -381,7 +394,7 @@ following options:
 
         group.append(
             "bin_count",
-            cps.Integer(
+            Integer(
                 "Number of bins",
                 3,
                 minval=1,
@@ -395,7 +408,7 @@ the low and high threshold""",
 
         group.append(
             "low_threshold",
-            cps.Float(
+            Float(
                 "Lower threshold",
                 0,
                 doc="""\
@@ -411,7 +424,7 @@ thresholds of bins between the lowest and highest.
 
         group.append(
             "wants_low_bin",
-            cps.Binary(
+            Binary(
                 "Use a bin for objects below the threshold?",
                 False,
                 doc="""\
@@ -427,7 +440,7 @@ for these objects.
 
         group.append(
             "high_threshold",
-            cps.Float(
+            Float(
                 "Upper threshold",
                 1,
                 doc="""\
@@ -442,7 +455,7 @@ that if you would like two bins, you should select "*%(BC_CUSTOM)s*".
 
         group.append(
             "wants_high_bin",
-            cps.Binary(
+            Binary(
                 "Use a bin for objects above the threshold?",
                 False,
                 doc="""\
@@ -459,7 +472,7 @@ Select "*No*" if you do not want a bin for these objects.
 
         group.append(
             "custom_thresholds",
-            cps.Text(
+            Text(
                 "Enter the custom thresholds separating the values between bins",
                 "0,1",
                 doc="""\
@@ -476,7 +489,7 @@ more bin than there are thresholds.
 
         group.append(
             "wants_custom_names",
-            cps.Binary(
+            Binary(
                 "Give each bin a name?",
                 False,
                 doc="""\
@@ -493,7 +506,7 @@ the measurements and the bin number.
 
         group.append(
             "bin_names",
-            cps.Text(
+            Text(
                 "Enter the bin names separated by commas",
                 "None",
                 doc="""\
@@ -506,7 +519,7 @@ An example including three bins might be *First,Second,Third*.""",
 
         group.append(
             "wants_images",
-            cps.Binary(
+            Binary(
                 "Retain an image of the classified objects?",
                 False,
                 doc="""\
@@ -520,7 +533,7 @@ example, to be saved by a **SaveImages** module).
 
         group.append(
             "image_name",
-            cps.ImageNameProvider(
+            ImageName(
                 "Name the output image",
                 "ClassifiedNuclei",
                 doc="""Enter the name to be given to the classified object image.""",
@@ -579,33 +592,33 @@ example, to be saved by a **SaveImages** module).
                     if group.bin_choice == BC_EVEN
                     else group.custom_thresholds
                 )
-                raise cps.ValidationError(
+                raise ValidationError(
                     "You must have at least one bin in order to take measurements. "
                     "Either add more bins or ask for bins for objects above or below threshold",
                     bad_setting,
                 )
             if bin_name_count != number_of_bins():
-                raise cps.ValidationError(
+                raise ValidationError(
                     "The number of bin names (%d) does not match the number of bins (%d)."
                     % (bin_name_count, bin_count),
                     group.bin_names,
                 )
             for bin_feature_name in bin_feature_names():
-                cps.AlphanumericText.validate_alphanumeric_text(
+                Alphanumeric.validate_alphanumeric_text(
                     bin_feature_name, group.bin_names, True
                 )
             if group.bin_choice == BC_CUSTOM:
                 try:
                     [float(x.strip()) for x in group.custom_thresholds.value.split(",")]
                 except ValueError:
-                    raise cps.ValidationError(
+                    raise ValidationError(
                         "Custom thresholds must be a comma-separated list "
                         'of numbers (example: "1.0, 2.3, 4.5")',
                         group.custom_thresholds,
                     )
             elif group.bin_choice == BC_EVEN:
                 if group.low_threshold.value >= group.high_threshold.value:
-                    raise cps.ValidationError(
+                    raise ValidationError(
                         "Lower Threshold must be less than Upper Threshold",
                         group.low_threshold,
                     )
@@ -613,14 +626,14 @@ example, to be saved by a **SaveImages** module).
         group.validate_group = validate_group
 
         if can_delete:
-            group.remove_settings_button = cps.RemoveSettingButton(
+            group.remove_settings_button = RemoveSettingButton(
                 "", "Remove this classification", self.single_measurements, group
             )
         self.single_measurements.append(group)
 
     def settings(self):
         result = [self.contrast_choice, self.single_measurement_count]
-        result += reduce(
+        result += functools.reduce(
             lambda x, y: x + y,
             [group.pipeline_settings() for group in self.single_measurements],
         )
@@ -733,7 +746,7 @@ example, to be saved by a **SaveImages** module).
     def get_feature_name_matrix(self):
         """Get a 2x2 matrix of feature names for two measurements"""
         if self.wants_custom_names:
-            return np.array(
+            return numpy.array(
                 [
                     [self.low_low_custom_name.value, self.low_high_custom_name.value],
                     [self.high_low_custom_name.value, self.high_high_custom_name.value],
@@ -742,7 +755,7 @@ example, to be saved by a **SaveImages** module).
         else:
             m1 = self.first_measurement.value
             m2 = self.second_measurement.value
-            return np.array(
+            return numpy.array(
                 [
                     ["_".join((m1, a1, m2, a2)) for a2 in ("low", "high")]
                     for a1 in ("low", "high")
@@ -754,7 +767,7 @@ example, to be saved by a **SaveImages** module).
         in_high_class = []
         saved_values = []
         objects = workspace.object_set.get_objects(self.object_name.value)
-        has_nan_measurement = np.zeros(objects.count, bool)
+        has_nan_measurement = numpy.zeros(objects.count, bool)
         for feature, threshold_method, threshold in (
             (self.first_measurement, self.first_threshold_method, self.first_threshold),
             (
@@ -767,17 +780,19 @@ example, to be saved by a **SaveImages** module).
                 self.object_name.value, feature.value
             )
             if len(values) < objects.count:
-                values = np.hstack((values, [np.NaN] * (objects.count - len(values))))
+                values = numpy.hstack(
+                    (values, [numpy.NaN] * (objects.count - len(values)))
+                )
             saved_values.append(values)
-            has_nan_measurement = has_nan_measurement | np.isnan(values)
+            has_nan_measurement = has_nan_measurement | numpy.isnan(values)
             if threshold_method == TM_CUSTOM:
                 t = threshold.value
             elif len(values) == 0:
                 t = 0
             elif threshold_method == TM_MEAN:
-                t = np.mean(values[~np.isnan(values)])
+                t = numpy.mean(values[~numpy.isnan(values)])
             elif threshold_method == TM_MEDIAN:
-                t = np.median(values[~np.isnan(values)])
+                t = numpy.median(values[~numpy.isnan(values)])
             else:
                 raise ValueError(
                     "Unknown threshold method: %s" % threshold_method.value
@@ -801,12 +816,12 @@ example, to be saved by a **SaveImages** module).
                 measurement_name = "_".join(
                     (M_CATEGORY, feature_names[i, j], F_NUM_PER_BIN)
                 )
-                measurements.add_measurement(cpmeas.IMAGE, measurement_name, num_hits)
+                measurements.add_measurement(IMAGE, measurement_name, num_hits)
                 measurement_name = "_".join(
                     (M_CATEGORY, feature_names[i, j], F_PCT_PER_BIN)
                 )
                 measurements.add_measurement(
-                    cpmeas.IMAGE,
+                    IMAGE,
                     measurement_name,
                     100.0 * float(num_hits) / num_values if num_values > 0 else 0,
                 )
@@ -814,15 +829,15 @@ example, to be saved by a **SaveImages** module).
         if self.wants_image:
             class_1, class_2 = in_high_class
             object_codes = class_1.astype(int) + class_2.astype(int) * 2 + 1
-            object_codes = np.hstack(([0], object_codes))
-            object_codes[np.hstack((False, np.isnan(values)))] = 0
+            object_codes = numpy.hstack(([0], object_codes))
+            object_codes[numpy.hstack((False, numpy.isnan(values)))] = 0
             nobjects = len(class_1)
-            mapping = np.zeros(nobjects + 1, int)
-            mapping[1:] = np.arange(1, nobjects + 1)
+            mapping = numpy.zeros(nobjects + 1, int)
+            mapping[1:] = numpy.arange(1, nobjects + 1)
             labels = object_codes[mapping[objects.segmented]]
             colors = self.get_colors(4)
             image = colors[labels, :3]
-            image = cpi.Image(image, parent_image=objects.parent_image)
+            image = Image(image, parent_image=objects.parent_image)
             workspace.image_set.add(self.image_name.value, image)
 
         if self.show_window:
@@ -838,7 +853,7 @@ example, to be saved by a **SaveImages** module).
             (1, self.second_measurement.value),
         ):
             saved_values = workspace.display_data.saved_values[i]
-            good_saved_values = saved_values[~np.isnan(saved_values)]
+            good_saved_values = saved_values[~numpy.isnan(saved_values)]
             if len(good_saved_values) == 0:
                 figure.subplot_table(i, 0, [["No %s objects found" % object_name]])
             else:
@@ -848,13 +863,13 @@ example, to be saved by a **SaveImages** module).
                 axes.set_ylabel("# of %s" % object_name)
         class_1, class_2 = workspace.display_data.in_high_class
         object_codes = class_1.astype(int) + class_2.astype(int) * 2 + 1
-        object_codes = np.hstack(([0], object_codes))
+        object_codes = numpy.hstack(([0], object_codes))
         nobjects = len(class_1)
-        mapping = np.zeros(nobjects + 1, int)
-        mapping[1:] = np.arange(1, nobjects + 1)
+        mapping = numpy.zeros(nobjects + 1, int)
+        mapping[1:] = numpy.arange(1, nobjects + 1)
         for i in range(2):
             saved_values = workspace.display_data.saved_values[i]
-            mapping[1:][np.isnan(saved_values)] = 0
+            mapping[1:][numpy.isnan(saved_values)] = 0
         labels = object_codes[mapping[workspace.display_data.labels]]
         figure.subplot_imshow_labels(0, 1, labels, title=object_name)
         #
@@ -862,7 +877,7 @@ example, to be saved by a **SaveImages** module).
         #
         axes = figure.subplot(1, 1)
         values = object_codes[1:]
-        axes.hist(values[~np.isnan(values)], bins=4, range=(0.5, 4.5))
+        axes.hist(values[~numpy.isnan(values)], bins=4, range=(0.5, 4.5))
         axes.set_xticks((1, 2, 3, 4))
         if self.wants_custom_names:
             axes.set_xticklabels(
@@ -894,17 +909,15 @@ example, to be saved by a **SaveImages** module).
         # Pad values if too few (defensive programming).
         #
         if len(values) < objects.count:
-            values = np.hstack((values, [np.NaN] * (objects.count - len(values))))
+            values = numpy.hstack((values, [numpy.NaN] * (objects.count - len(values))))
         if group.bin_choice == BC_EVEN:
             low_threshold = group.low_threshold.value
             high_threshold = group.high_threshold.value
             if low_threshold >= high_threshold:
-                raise ValueError(
-                    "Lower Threshold must be less than Upper Threshold"
-                )
+                raise ValueError("Lower Threshold must be less than Upper Threshold")
             bin_count = group.bin_count.value
             thresholds = (
-                np.arange(bin_count + 1)
+                numpy.arange(bin_count + 1)
                 * (high_threshold - low_threshold)
                 / float(bin_count)
                 + low_threshold
@@ -917,17 +930,17 @@ example, to be saved by a **SaveImages** module).
         # Put infinities at either end of the thresholds so we can bin the
         # low and high bins
         #
-        thresholds = np.hstack(
+        thresholds = numpy.hstack(
             (
-                [-np.inf] if group.wants_low_bin else [],
+                [-numpy.inf] if group.wants_low_bin else [],
                 thresholds,
-                [np.inf] if group.wants_high_bin else [],
+                [numpy.inf] if group.wants_high_bin else [],
             )
         )
         #
         # Do a cross-product of objects and threshold comparisons
         #
-        ob_idx, th_idx = np.mgrid[0 : len(values), 0 : len(thresholds) - 1]
+        ob_idx, th_idx = numpy.mgrid[0 : len(values), 0 : len(thresholds) - 1]
         bin_hits = (values[ob_idx] > thresholds[th_idx]) & (
             values[ob_idx] <= thresholds[th_idx + 1]
         )
@@ -939,30 +952,30 @@ example, to be saved by a **SaveImages** module).
             )
             measurement_name = "_".join((M_CATEGORY, feature_name, F_NUM_PER_BIN))
             num_hits = bin_hits[:, bin_idx].sum()
-            measurements.add_measurement(cpmeas.IMAGE, measurement_name, num_hits)
+            measurements.add_measurement(IMAGE, measurement_name, num_hits)
             measurement_name = "_".join((M_CATEGORY, feature_name, F_PCT_PER_BIN))
             measurements.add_measurement(
-                cpmeas.IMAGE,
+                IMAGE,
                 measurement_name,
                 100.0 * float(num_hits) / num_values if num_values > 0 else 0,
             )
         if group.wants_images or self.show_window:
             colors = self.get_colors(bin_hits.shape[1])
-            object_bins = np.sum(bin_hits * th_idx, 1) + 1
-            object_color = np.hstack(([0], object_bins))
-            object_color[np.hstack((False, np.isnan(values)))] = 0
+            object_bins = numpy.sum(bin_hits * th_idx, 1) + 1
+            object_color = numpy.hstack(([0], object_bins))
+            object_color[numpy.hstack((False, numpy.isnan(values)))] = 0
             labels = object_color[objects.segmented]
             if group.wants_images:
                 image = colors[labels, :3]
                 workspace.image_set.add(
                     group.image_name.value,
-                    cpi.Image(image, parent_image=objects.parent_image),
+                    Image(image, parent_image=objects.parent_image),
                 )
 
             if self.show_window:
-                workspace.display_data.bins.append(object_bins[~np.isnan(values)])
+                workspace.display_data.bins.append(object_bins[~numpy.isnan(values)])
                 workspace.display_data.labels.append(labels)
-                workspace.display_data.values.append(values[~np.isnan(values)])
+                workspace.display_data.values.append(values[~numpy.isnan(values)])
 
     def display_single_measurement(self, workspace, figure):
         """Display an array of single measurements"""
@@ -977,7 +990,7 @@ example, to be saved by a **SaveImages** module).
             # A histogram of the values
             #
             axes = figure.subplot(0, i)
-            axes.hist(values[~np.isnan(values)])
+            axes.hist(values[~numpy.isnan(values)])
             axes.set_xlabel(group.measurement.value)
             axes.set_ylabel("# of %s" % group.object_name.value)
             #
@@ -989,7 +1002,7 @@ example, to be saved by a **SaveImages** module).
                 bins=group.number_of_bins(),
                 range=(0.5, group.number_of_bins() + 0.5),
             )
-            axes.set_xticks(np.arange(1, group.number_of_bins() + 1))
+            axes.set_xticks(numpy.arange(1, group.number_of_bins() + 1))
             if group.wants_custom_names:
                 axes.set_xticklabels(group.bin_names.value.split(","))
             axes.set_xlabel(group.measurement.value)
@@ -1012,13 +1025,13 @@ example, to be saved by a **SaveImages** module).
         """Get colors used for two-measurement labels image"""
         import matplotlib.cm as cm
 
-        cmap = cm.get_cmap(cpprefs.get_default_colormap())
+        cmap = cm.get_cmap(get_default_colormap())
         #
         # Trick the colormap into divulging the values used.
         #
         sm = cm.ScalarMappable(cmap=cmap)
-        colors = sm.to_rgba(np.arange(count) + 1)
-        return np.vstack((np.zeros(colors.shape[1]), colors))
+        colors = sm.to_rgba(numpy.arange(count) + 1)
+        return numpy.vstack((numpy.zeros(colors.shape[1]), colors))
 
     def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
@@ -1087,17 +1100,17 @@ example, to be saved by a **SaveImages** module).
             for group in self.single_measurements:
                 columns += [
                     (
-                        cpmeas.IMAGE,
+                        IMAGE,
                         "_".join((M_CATEGORY, feature_name, F_NUM_PER_BIN)),
-                        cpmeas.COLTYPE_INTEGER,
+                        COLTYPE_INTEGER,
                     )
                     for feature_name in group.bin_feature_names()
                 ]
                 columns += [
                     (
-                        cpmeas.IMAGE,
+                        IMAGE,
                         "_".join((M_CATEGORY, feature_name, F_PCT_PER_BIN)),
-                        cpmeas.COLTYPE_FLOAT,
+                        COLTYPE_FLOAT,
                     )
                     for feature_name in group.bin_feature_names()
                 ]
@@ -1105,34 +1118,22 @@ example, to be saved by a **SaveImages** module).
                     (
                         group.object_name.value,
                         "_".join((M_CATEGORY, feature_name)),
-                        cpmeas.COLTYPE_INTEGER,
+                        COLTYPE_INTEGER,
                     )
                     for feature_name in group.bin_feature_names()
                 ]
         else:
             names = self.get_feature_name_matrix()
             columns += [
-                (
-                    cpmeas.IMAGE,
-                    "_".join((M_CATEGORY, name, F_NUM_PER_BIN)),
-                    cpmeas.COLTYPE_INTEGER,
-                )
+                (IMAGE, "_".join((M_CATEGORY, name, F_NUM_PER_BIN)), COLTYPE_INTEGER,)
                 for name in names.flatten()
             ]
             columns += [
-                (
-                    cpmeas.IMAGE,
-                    "_".join((M_CATEGORY, name, F_PCT_PER_BIN)),
-                    cpmeas.COLTYPE_FLOAT,
-                )
+                (IMAGE, "_".join((M_CATEGORY, name, F_PCT_PER_BIN)), COLTYPE_FLOAT,)
                 for name in names.flatten()
             ]
             columns += [
-                (
-                    self.object_name.value,
-                    "_".join((M_CATEGORY, name)),
-                    cpmeas.COLTYPE_INTEGER,
-                )
+                (self.object_name.value, "_".join((M_CATEGORY, name)), COLTYPE_INTEGER,)
                 for name in names.flatten()
             ]
         return columns
@@ -1143,7 +1144,7 @@ example, to be saved by a **SaveImages** module).
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         if (
-            (object_name == cpmeas.IMAGE)
+            (object_name == IMAGE)
             or (
                 self.contrast_choice == BY_SINGLE_MEASUREMENT
                 and object_name
@@ -1171,7 +1172,7 @@ example, to be saved by a **SaveImages** module).
             for group in self.single_measurements:
                 if group.object_name == object_name:
                     return group.bin_feature_names()
-                elif object_name == cpmeas.IMAGE:
+                elif object_name == IMAGE:
                     for image_features in (F_NUM_PER_BIN, F_PCT_PER_BIN):
                         for bin_feature_names in group.bin_feature_names():
                             result += ["_".join((bin_feature_names, image_features))]
@@ -1179,7 +1180,7 @@ example, to be saved by a **SaveImages** module).
         elif self.contrast_choice == BY_TWO_MEASUREMENTS:
             if self.object_name == object_name:
                 return self.get_feature_name_matrix().flatten().tolist()
-            elif object_name == cpmeas.IMAGE:
+            elif object_name == IMAGE:
                 result = []
                 for image_features in (F_NUM_PER_BIN, F_PCT_PER_BIN):
                     for bin_feature_names in (

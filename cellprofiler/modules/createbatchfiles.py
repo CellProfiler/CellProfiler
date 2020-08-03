@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 CreateBatchFiles
 ================
@@ -25,23 +23,33 @@ YES          YES          NO
 """
 
 import logging
-
-logger = logging.getLogger(__name__)
-import numpy as np
 import os
 import re
 import sys
 import zlib
 
-import cellprofiler
-import cellprofiler_core.module as cpm
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.pipeline as cpp
-import cellprofiler_core.setting as cps
-import cellprofiler_core.preferences as cpprefs
-import cellprofiler_core.workspace as cpw
+import numpy
+from cellprofiler_core.constants.measurement import F_BATCH_DATA_H5
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
+from cellprofiler_core.pipeline import Pipeline
+from cellprofiler_core.preferences import get_absolute_path
+from cellprofiler_core.preferences import get_default_image_directory
+from cellprofiler_core.preferences import get_default_output_directory
+from cellprofiler_core.preferences import get_headless
+from cellprofiler_core.preferences import set_default_image_directory
+from cellprofiler_core.preferences import set_default_output_directory
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import Setting
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import RemoveSettingButton
+from cellprofiler_core.setting.text import Text, Integer
+from cellprofiler_core.workspace import Workspace
 
-from cellprofiler_core.measurement import F_BATCH_DATA_H5, F_BATCH_DATA
+import cellprofiler
 
 """# of settings aside from the mappings"""
 S_FIXED_COUNT = 8
@@ -49,7 +57,7 @@ S_FIXED_COUNT = 8
 S_PER_MAPPING = 2
 
 
-class CreateBatchFiles(cpm.Module):
+class CreateBatchFiles(Module):
     #
     # How it works:
     #
@@ -75,7 +83,7 @@ class CreateBatchFiles(cpm.Module):
     #
     def create_settings(self):
         """Create the module settings and name the module"""
-        self.wants_default_output_directory = cps.Binary(
+        self.wants_default_output_directory = Binary(
             "Store batch files in default output folder?",
             True,
             doc="""\
@@ -85,15 +93,15 @@ store these files. The Default Output folder can be set by clicking the "View ou
             % globals(),
         )
 
-        self.custom_output_directory = cps.Text(
+        self.custom_output_directory = Text(
             "Output folder path",
-            cpprefs.get_default_output_directory(),
+            get_default_output_directory(),
             doc="Enter the path to the output folder. (Used only if not using the default output folder)",
         )
 
         # Worded this way not because I am windows-centric but because it's
         # easier than listing every other OS in the universe except for VMS
-        self.remote_host_is_windows = cps.Binary(
+        self.remote_host_is_windows = Binary(
             "Are the cluster computers running Windows?",
             False,
             doc="""\
@@ -105,22 +113,22 @@ Unix or Macintosh file separator (slash / )."""
             % globals(),
         )
 
-        self.batch_mode = cps.Binary("Hidden: in batch mode", False)
-        self.distributed_mode = cps.Binary("Hidden: in distributed mode", False)
-        self.default_image_directory = cps.Setting(
+        self.batch_mode = Binary("Hidden: in batch mode", False)
+        self.distributed_mode = Binary("Hidden: in distributed mode", False)
+        self.default_image_directory = Setting(
             "Hidden: default input folder at time of save",
-            cpprefs.get_default_image_directory(),
+            get_default_image_directory(),
         )
-        self.revision = cps.Integer("Hidden: revision number", 0)
-        self.from_old_matlab = cps.Binary("Hidden: from old matlab", False)
-        self.acknowledge_old_matlab = cps.DoSomething(
+        self.revision = Integer("Hidden: revision number", 0)
+        self.from_old_matlab = Binary("Hidden: from old matlab", False)
+        self.acknowledge_old_matlab = DoSomething(
             "Could not update CP1.0 pipeline to be compatible with CP2.0.  See module notes.",
             "OK",
             self.clear_old_matlab,
         )
         self.mappings = []
         self.add_mapping()
-        self.add_mapping_button = cps.DoSomething(
+        self.add_mapping_button = DoSomething(
             "",
             "Add another path mapping",
             self.add_mapping,
@@ -131,12 +139,12 @@ computer sees the folder location.""",
         )
 
     def add_mapping(self):
-        group = cps.SettingsGroup()
+        group = SettingsGroup()
         group.append(
             "local_directory",
-            cps.Text(
+            Text(
                 "Local root path",
-                cpprefs.get_default_image_directory(),
+                get_default_image_directory(),
                 doc="""\
 Enter the path to files on this computer. This is the root path on the
 local machine (i.e., the computer setting up the batch files).
@@ -173,9 +181,9 @@ cluster root path in the next setting.""",
 
         group.append(
             "remote_directory",
-            cps.Text(
+            Text(
                 "Cluster root path",
-                cpprefs.get_default_image_directory(),
+                get_default_image_directory(),
                 doc="""\
 Enter the path to files on the cluster. This is the cluster root path,
 i.e., how the cluster machine sees the top-most folder where your
@@ -212,11 +220,9 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
         )
         group.append(
             "remover",
-            cps.RemoveSettingButton(
-                "", "Remove this path mapping", self.mappings, group
-            ),
+            RemoveSettingButton("", "Remove this path mapping", self.mappings, group),
         )
-        group.append("divider", cps.Divider(line=False))
+        group.append("divider", Divider(line=False))
         self.mappings.append(group)
 
     def settings(self):
@@ -284,7 +290,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
             return True
         else:
             path = self.save_pipeline(workspace)
-            if not cpprefs.get_headless():
+            if not get_headless():
                 import wx
 
                 wx.MessageBox(
@@ -305,14 +311,14 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
         """Make sure the module settings are valid"""
         # Ensure we're not an un-updatable version of the module from way back.
         if self.from_old_matlab.value:
-            raise cps.ValidationError(
+            raise ValidationError(
                 "The pipeline you loaded was from an old version of CellProfiler 1.0, "
                 "which could not be made compatible with this version of CellProfiler.",
                 self.acknowledge_old_matlab,
             )
         # This must be the last module in the pipeline
         if id(self) != id(pipeline.modules()[-1]):
-            raise cps.ValidationError(
+            raise ValidationError(
                 "The CreateBatchFiles module must be " "the last in the pipeline.",
                 self.wants_default_output_directory,
             )
@@ -320,7 +326,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
         if pipeline.test_mode:
-            raise cps.ValidationError(
+            raise ValidationError(
                 "CreateBatchFiles will not produce output in Test Mode",
                 self.wants_default_output_directory,
             )
@@ -335,25 +341,25 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
         """
         if outf is None:
             if self.wants_default_output_directory.value:
-                path = cpprefs.get_default_output_directory()
+                path = get_default_output_directory()
             else:
-                path = cpprefs.get_absolute_path(self.custom_output_directory.value)
+                path = get_absolute_path(self.custom_output_directory.value)
             h5_path = os.path.join(path, F_BATCH_DATA_H5)
         else:
             h5_path = outf
 
         image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
-        m = cpmeas.Measurements(copy=workspace.measurements, filename=h5_path)
+        m = Measurements(copy=workspace.measurements, filename=h5_path)
         try:
-            assert isinstance(pipeline, cpp.Pipeline)
-            assert isinstance(m, cpmeas.Measurements)
+            assert isinstance(pipeline, Pipeline)
+            assert isinstance(m, Measurements)
 
             orig_pipeline = pipeline
             pipeline = pipeline.copy()
             # this use of workspace.frame is okay, since we're called from
             # prepare_run which happens in the main wx thread.
-            target_workspace = cpw.Workspace(
+            target_workspace = Workspace(
                 pipeline, None, None, None, m, image_set_list, workspace.frame
             )
             pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
@@ -363,10 +369,10 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
             )
             if self.wants_default_output_directory:
                 bizarro_self.custom_output_directory.value = self.alter_path(
-                    cpprefs.get_default_output_directory()
+                    get_default_output_directory()
                 )
             bizarro_self.default_image_directory.value = self.alter_path(
-                cpprefs.get_default_image_directory()
+                get_default_image_directory()
             )
             bizarro_self.batch_mode.value = True
             pipeline.write_pipeline_measurement(m)
@@ -394,21 +400,21 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
     def enter_batch_mode(self, workspace):
         """Restore the image set list from its setting as we go into batch mode"""
         pipeline = workspace.pipeline
-        assert isinstance(pipeline, cpp.Pipeline)
+        assert isinstance(pipeline, Pipeline)
         assert not self.distributed_mode, "Distributed mode no longer supported"
         default_output_directory = self.custom_output_directory.value
         default_image_directory = self.default_image_directory.value
         if os.path.isdir(default_output_directory):
-            cpprefs.set_default_output_directory(default_output_directory)
+            set_default_output_directory(default_output_directory)
         else:
-            logger.info(
+            logging.info(
                 'Batch file default output directory, "%s", does not exist'
                 % default_output_directory
             )
         if os.path.isdir(default_image_directory):
-            cpprefs.set_default_image_directory(default_image_directory)
+            set_default_image_directory(default_image_directory)
         else:
-            logger.info(
+            logging.info(
                 'Batch file default input directory "%s", does not exist'
                 % default_image_directory
             )
@@ -419,7 +425,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
         This call restores the module to an editable state.
         """
         self.batch_mode.value = False
-        self.batch_state = np.zeros((0,), np.uint8)
+        self.batch_state = numpy.zeros((0,), numpy.uint8)
 
     def alter_path(self, path, **varargs):
         """Modify the path passed so that it can be executed on the remote host
@@ -455,7 +461,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
         if variable_revision_number == 1:
             setting_values = (
                 setting_values[:5]
-                + [cpprefs.get_default_image_directory()]
+                + [get_default_image_directory()]
                 + setting_values[5:]
             )
             variable_revision_number = 2
@@ -468,7 +474,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
             variable_revision_number = 3
         if variable_revision_number == 3:
             # Pickled image list is now the batch state
-            self.batch_state = np.array(zlib.compress(setting_values[4]))
+            self.batch_state = numpy.array(zlib.compress(setting_values[4]))
             setting_values = setting_values[:4] + setting_values[5:]
             variable_revision_number = 4
         if variable_revision_number == 4:

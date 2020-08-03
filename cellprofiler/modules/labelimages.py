@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 LabelImages
 ===========
@@ -46,23 +44,36 @@ Measurements made by this module
 
 from functools import reduce
 
-import numpy as np
-
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+import numpy
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
+from cellprofiler_core.constants.measurement import COLTYPE_VARCHAR_FORMAT
+from cellprofiler_core.constants.measurement import C_METADATA
+from cellprofiler_core.constants.measurement import FTR_COLUMN
+from cellprofiler_core.constants.measurement import FTR_PLATE
+from cellprofiler_core.constants.measurement import FTR_ROW
+from cellprofiler_core.constants.measurement import FTR_SITE
+from cellprofiler_core.constants.measurement import FTR_WELL
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.measurement import M_COLUMN
+from cellprofiler_core.constants.measurement import M_PLATE
+from cellprofiler_core.constants.measurement import M_ROW
+from cellprofiler_core.constants.measurement import M_SITE
+from cellprofiler_core.constants.measurement import M_WELL
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.text.number import Integer
 
 O_ROW = "Row"
 O_COLUMN = "Column"
 
 
-class LabelImages(cpm.Module):
+class LabelImages(Module):
     module_name = "LabelImages"
     category = "File Processing"
     variable_revision_number = 1
 
     def create_settings(self):
-        self.site_count = cps.Integer(
+        self.site_count = Integer(
             "Number of image sites per well",
             1,
             minval=1,
@@ -70,7 +81,7 @@ class LabelImages(cpm.Module):
 Enter the number of image sets (fields of view) corresponding to each well.""",
         )
 
-        self.column_count = cps.Integer(
+        self.column_count = Integer(
             "Number of columns per plate",
             12,
             minval=1,
@@ -78,7 +89,7 @@ Enter the number of image sets (fields of view) corresponding to each well.""",
 Enter the number of columns per plate.""",
         )
 
-        self.row_count = cps.Integer(
+        self.row_count = Integer(
             "Number of rows per plate",
             8,
             minval=1,
@@ -86,7 +97,7 @@ Enter the number of columns per plate.""",
 Enter the number of rows per plate.""",
         )
 
-        self.order = cps.Choice(
+        self.order = Choice(
             "Order of image data",
             [O_ROW, O_COLUMN],
             doc="""\
@@ -137,11 +148,11 @@ You would use “%(O_ROW)s” to label these because the ordering is by row and 
         well = well_template % (row_text, column_index + 1)
 
         statistics = [
-            (cpmeas.M_SITE, site_index + 1),
-            (cpmeas.M_ROW, row_text),
-            (cpmeas.M_COLUMN, column_index + 1),
-            (cpmeas.M_WELL, well),
-            (cpmeas.M_PLATE, plate_index + 1),
+            (M_SITE, site_index + 1),
+            (M_ROW, row_text),
+            (M_COLUMN, column_index + 1),
+            (M_WELL, well),
+            (M_PLATE, plate_index + 1),
         ]
         for feature, value in statistics:
             m.add_image_measurement(feature, value)
@@ -157,40 +168,38 @@ You would use “%(O_ROW)s” to label these because the ordering is by row and 
         If a plate has more than 26 rows, you need two digits. The following
         is sufficiently general.
         """
-        return int(1 + np.log(self.row_count.value) / np.log(26))
+        return int(1 + numpy.log(self.row_count.value) / numpy.log(26))
 
     @property
     def column_digits(self):
         """The number of digits it takes to represent a column."""
 
-        return int(1 + np.log10(self.column_count.value))
+        return int(1 + numpy.log10(self.column_count.value))
 
     def get_measurement_columns(self, pipeline):
-        row_coltype = cpmeas.COLTYPE_VARCHAR_FORMAT % self.row_digits
-        well_coltype = cpmeas.COLTYPE_VARCHAR_FORMAT % (
-            self.row_digits + self.column_digits
-        )
+        row_coltype = COLTYPE_VARCHAR_FORMAT % self.row_digits
+        well_coltype = COLTYPE_VARCHAR_FORMAT % (self.row_digits + self.column_digits)
         return [
-            (cpmeas.IMAGE, cpmeas.M_SITE, cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, cpmeas.M_ROW, row_coltype),
-            (cpmeas.IMAGE, cpmeas.M_COLUMN, cpmeas.COLTYPE_INTEGER),
-            (cpmeas.IMAGE, cpmeas.M_WELL, well_coltype),
-            (cpmeas.IMAGE, cpmeas.M_PLATE, cpmeas.COLTYPE_INTEGER),
+            (IMAGE, M_SITE, COLTYPE_INTEGER),
+            (IMAGE, M_ROW, row_coltype),
+            (IMAGE, M_COLUMN, COLTYPE_INTEGER),
+            (IMAGE, M_WELL, well_coltype),
+            (IMAGE, M_PLATE, COLTYPE_INTEGER),
         ]
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cpmeas.IMAGE:
-            return [cpmeas.C_METADATA]
+        if object_name == IMAGE:
+            return [C_METADATA]
         return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == cpmeas.C_METADATA:
+        if object_name == IMAGE and category == C_METADATA:
             return [
-                cpmeas.FTR_SITE,
-                cpmeas.FTR_ROW,
-                cpmeas.FTR_COLUMN,
-                cpmeas.FTR_WELL,
-                cpmeas.FTR_PLATE,
+                FTR_SITE,
+                FTR_ROW,
+                FTR_COLUMN,
+                FTR_WELL,
+                FTR_PLATE,
             ]
         return []
 

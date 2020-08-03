@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 CalculateStatistics
 ===================
@@ -141,22 +139,34 @@ References
    dose-response-related code.
 """
 
+import functools
 import os
-from functools import reduce
 
-import numpy as np
+import numpy
 import scipy.optimize
-import six
-
-import cellprofiler_core.preferences as cpprefs
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
-
-from cellprofiler.modules._help import (
+from cellprofiler_core.constants.measurement import EXPERIMENT
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.constants.measurement import NEIGHBORS
+from cellprofiler_core.constants.module import (
     IO_FOLDER_CHOICE_HELP_TEXT,
     IO_WITH_METADATA_HELP_TEXT,
 )
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_INPUT_SUBFOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_SUBFOLDER_NAME
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.do_something import DoSomething
+from cellprofiler_core.setting.do_something import RemoveSettingButton
+from cellprofiler_core.setting.text import Directory
+from cellprofiler_core.setting.text import Text
 
 """# of settings aside from the dose measurements"""
 FIXED_SETTING_COUNT = 1
@@ -165,7 +175,7 @@ VARIABLE_SETTING_COUNT = 5
 PC_CUSTOM = "Custom"
 
 
-class CalculateStatistics(cpm.Module):
+class CalculateStatistics(Module):
     module_name = "CalculateStatistics"
     category = "Data Tools"
     variable_revision_number = 2
@@ -177,15 +187,15 @@ class CalculateStatistics(cpm.Module):
 
         You should create the setting variables for your module here:
             # Ask the user for the input image
-            self.image_name = cellprofiler_core.settings.ImageNameSubscriber(...)
+            self.image_name = .ImageSubscriber(...)
             # Ask the user for the name of the output image
-            self.output_image = cellprofiler_core.settings.ImageNameProvider(...)
+            self.output_image = .ImageName(...)
             # Ask the user for a parameter
-            self.smoothing_size = cellprofiler_core.settings.Float(...)"""
+            self.smoothing_size = .Float(...)"""
 
-        self.grouping_values = cps.Measurement(
+        self.grouping_values = Measurement(
             "Select the image measurement describing the positive and negative control status",
-            lambda: cpmeas.IMAGE,
+            lambda: IMAGE,
             doc="""\
 The Z’ factor, a measure of assay quality, is calculated by this module
 based on measurements from images that are specified as positive
@@ -214,7 +224,7 @@ example text file.
         )
         self.dose_values = []
         self.add_dose_value(can_remove=False)
-        self.add_dose_button = cps.DoSomething(
+        self.add_dose_button = DoSomething(
             "", "Add another dose specification", self.add_dose_value
         )
 
@@ -223,12 +233,12 @@ example text file.
 
         can_delete - set this to False to keep from showing the "remove"
                      button for images that must be present."""
-        group = cps.SettingsGroup()
+        group = SettingsGroup()
         group.append(
             "measurement",
-            cps.Measurement(
+            Measurement(
                 "Select the image measurement describing the treatment dose",
-                lambda: cpmeas.IMAGE,
+                lambda: IMAGE,
                 doc="""\
 The V and Z’ factors, metrics of assay quality, and the EC50,
 indicating dose-response, are calculated by this module based on each
@@ -240,7 +250,7 @@ images. See the help for the previous setting for details.""",
 
         group.append(
             "log_transform",
-            cps.Binary(
+            Binary(
                 "Log-transform the dose values?",
                 False,
                 doc="""\
@@ -256,7 +266,7 @@ controls.
 
         group.append(
             "wants_save_figure",
-            cps.Binary(
+            Binary(
                 """Create dose-response plots?""",
                 False,
                 doc="""Select *Yes* if you want to create and save dose-response plots.
@@ -267,7 +277,7 @@ You will be asked for information on how to save the plots."""
 
         group.append(
             "figure_name",
-            cps.Text(
+            Text(
                 "Figure prefix",
                 "",
                 doc="""\
@@ -284,31 +294,32 @@ Leave this setting blank if you do not want a prefix.
         )
         group.append(
             "pathname",
-            cps.DirectoryPath(
+            Directory(
                 "Output file location",
                 dir_choices=[
-                    cpprefs.DEFAULT_OUTPUT_FOLDER_NAME,
-                    cpprefs.DEFAULT_INPUT_FOLDER_NAME,
-                    cpprefs.ABSOLUTE_FOLDER_NAME,
-                    cpprefs.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                    cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME,
+                    DEFAULT_OUTPUT_FOLDER_NAME,
+                    DEFAULT_INPUT_FOLDER_NAME,
+                    ABSOLUTE_FOLDER_NAME,
+                    DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                    DEFAULT_INPUT_SUBFOLDER_NAME,
                 ],
                 doc="""\
 *(Used only when creating dose-response plots)*
 
-This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+This setting lets you choose the folder for the output files. {fcht}
 
-%(IO_WITH_METADATA_HELP_TEXT)s
-"""
-                % globals(),
+{mht}
+""".format(
+                    fcht=IO_FOLDER_CHOICE_HELP_TEXT, mht=IO_WITH_METADATA_HELP_TEXT
+                ),
             ),
         )
 
-        group.append("divider", cps.Divider())
+        group.append("divider", Divider())
 
         group.append(
             "remover",
-            cps.RemoveSettingButton(
+            RemoveSettingButton(
                 "", "Remove this dose measurement", self.dose_values, group
             ),
         )
@@ -322,7 +333,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         to the pipeline. The settings should appear in a consistent
         order so they can be matched to the strings in the pipeline.
         """
-        return [self.grouping_values] + reduce(
+        return [self.grouping_values] + functools.reduce(
             lambda x, y: x + y,
             [
                 [
@@ -397,35 +408,33 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         workspace.post_run_display(self)
 
     def get_image_measurements(self, measurements, feature_name):
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, Measurements)
         image_numbers = measurements.get_image_numbers()
-        result = np.zeros(len(image_numbers))
+        result = numpy.zeros(len(image_numbers))
         for i, image_number in enumerate(image_numbers):
-            value = measurements.get_measurement(
-                cpmeas.IMAGE, feature_name, image_number
-            )
+            value = measurements.get_measurement(IMAGE, feature_name, image_number)
             result[i] = (
-                None if value is None else value if np.isscalar(value) else value[0]
+                None if value is None else value if numpy.isscalar(value) else value[0]
             )
         return result
 
     def aggregate_measurement(self, measurements, object_name, feature_name):
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, Measurements)
         image_numbers = measurements.get_image_numbers()
-        result = np.zeros(len(image_numbers))
+        result = numpy.zeros(len(image_numbers))
         for i, image_number in enumerate(image_numbers):
             values = measurements.get_measurement(
                 object_name, feature_name, image_number
             )
             if values is None:
-                result[i] = np.nan
-            elif np.isscalar(values):
+                result[i] = numpy.nan
+            elif numpy.isscalar(values):
                 result[i] = values
-            elif np.any(np.isfinite(values)):
-                values = np.array(values)
-                result[i] = np.mean(values[np.isfinite(values)])
+            elif numpy.any(numpy.isfinite(values)):
+                values = numpy.array(values)
+                result[i] = numpy.mean(values[numpy.isfinite(values)])
             else:
-                result[i] = np.nan
+                result[i] = numpy.nan
         return result
 
     def post_run(self, workspace):
@@ -434,11 +443,11 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         workspace - the workspace at the end of the run
         """
         measurements = workspace.measurements
-        assert isinstance(measurements, cpmeas.Measurements)
+        assert isinstance(measurements, Measurements)
         all_objects = [
             x
             for x in measurements.get_object_names()
-            if x not in [cpmeas.EXPERIMENT, cpmeas.NEIGHBORS]
+            if x not in [EXPERIMENT, NEIGHBORS]
         ]
         feature_set = []
         image_numbers = measurements.get_image_numbers()
@@ -455,7 +464,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
             measurements, self.grouping_values.value
         )
         grouping_data = grouping_data.flatten()
-        data = np.zeros((len(grouping_data), len(feature_set)))
+        data = numpy.zeros((len(grouping_data), len(feature_set)))
         for i, (object_name, feature_name) in enumerate(feature_set):
             data[:, i] = self.aggregate_measurement(
                 measurements, object_name, feature_name
@@ -470,7 +479,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         dose_data = self.get_image_measurements(
             measurements, self.dose_values[0].measurement.value
         )
-        dose_data = np.array(dose_data).flatten()
+        dose_data = numpy.array(dose_data).flatten()
         v = v_factors(dose_data, data)
         expt_measurements = {
             "Zfactor": z,
@@ -517,7 +526,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         figure.set_subplots((2, 1))
         for ii, key in enumerate(("Zfactor", "Vfactor")):
             a = expt_measurements[key]
-            indexes = np.lexsort((-a,))
+            indexes = numpy.lexsort((-a,))
             col_labels = ["Object", "Feature", key]
             stats = [[feature_set[i][0], feature_set[i][1], a[i]] for i in indexes[:10]]
             figure.subplot_table(ii, 0, stats, col_labels=col_labels)
@@ -530,10 +539,10 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
             return False
         if feature_name.find("ExecutionTime") != -1:
             return False
-        if object_name == cpmeas.IMAGE and feature_name == self.grouping_values:
+        if object_name == IMAGE and feature_name == self.grouping_values:
             # Don't measure the pos/neg controls
             return False
-        if object_name == cpmeas.IMAGE and feature_name in [
+        if object_name == IMAGE and feature_name in [
             g.measurement.value for g in self.dose_values
         ]:
             return False
@@ -545,17 +554,17 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                 break
         else:
             return False
-        if np.isscalar(v):
-            return not (isinstance(v, six.string_types))
+        if numpy.isscalar(v):
+            return not (isinstance(v, str))
         #
         # Make sure the measurement isn't a string or other oddity
         #
-        return np.asanyarray(v).dtype.kind not in "OSU"
+        return numpy.asanyarray(v).dtype.kind not in "OSU"
 
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
         if pipeline.test_mode:
-            raise cps.ValidationError(
+            raise ValidationError(
                 "CalculateStatistics will not produce any output in test mode",
                 self.grouping_values,
             )
@@ -580,10 +589,8 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
                         dir_choice = DEFAULT_OUTPUT_SUBFOLDER_NAME
                         custom_path = "." + custom_path[1:]
                     else:
-                        dir_choice = cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
-                directory = cps.DirectoryPath.static_join_string(
-                    dir_choice, custom_path
-                )
+                        dir_choice = ABSOLUTE_FOLDER_NAME
+                directory = Directory.static_join_string(dir_choice, custom_path)
                 new_setting_values += setting_values[offset : (offset + 4)]
                 new_setting_values += [directory]
             setting_values = new_setting_values
@@ -592,9 +599,7 @@ This setting lets you choose the folder for the output files. %(IO_FOLDER_CHOICE
         # Standardize input/output directory name references
         setting_values = list(setting_values)
         for offset in range(5, len(setting_values), VARIABLE_SETTING_COUNT):
-            setting_values[offset] = cps.DirectoryPath.upgrade_setting(
-                setting_values[offset]
-            )
+            setting_values[offset] = Directory.upgrade_setting(setting_values[offset])
 
         return setting_values, variable_revision_number
 
@@ -621,7 +626,7 @@ def z_factors(xcol, ymatr):
     xs, avers, stds = loc_shrink_mean_std(xcol, ymatr)
     # Z' factor is defined by the positive and negative controls, so we take the
     # extremes BY DOSE of the averages and stdevs.
-    zrange = np.abs(avers[0, :] - avers[-1, :])
+    zrange = numpy.abs(avers[0, :] - avers[-1, :])
     zstd = stds[0, :] + stds[-1, :]
     zstd[zrange == 0] = 1
     zrange[zrange == 0] = 0.000001
@@ -629,7 +634,7 @@ def z_factors(xcol, ymatr):
 
     # The one-tailed Z' factor is defined by using only the samples between the
     # means, again defined by DOSE extremes
-    zrange = np.abs(avers[0, :] - avers[-1, :])
+    zrange = numpy.abs(avers[0, :] - avers[-1, :])
     exp1_vals = ymatr[xcol == xs[0], :]
     exp2_vals = ymatr[xcol == xs[-1], :]
     #
@@ -637,7 +642,7 @@ def z_factors(xcol, ymatr):
     # so that the lowest is in index 0 and the highest is in index 1 independent
     # of whether the control is negative or positive
     #
-    sort_avers = np.sort(np.array((avers[0, :], avers[-1, :])), 0)
+    sort_avers = numpy.sort(numpy.array((avers[0, :], avers[-1, :])), 0)
 
     for i in range(sort_avers.shape[1]):
         # Here the std must be calculated using the full formula
@@ -649,15 +654,15 @@ def z_factors(xcol, ymatr):
         vals2 = exp2_cvals[
             (exp2_cvals >= sort_avers[0, i]) & (exp2_cvals <= sort_avers[1, i])
         ]
-        stds[0, i] = np.sqrt(np.sum((vals1 - sort_avers[0, i]) ** 2) / len(vals1))
-        stds[1, i] = np.sqrt(np.sum((vals2 - sort_avers[1, i]) ** 2) / len(vals2))
+        stds[0, i] = numpy.sqrt(numpy.sum((vals1 - sort_avers[0, i]) ** 2) / len(vals1))
+        stds[1, i] = numpy.sqrt(numpy.sum((vals2 - sort_avers[1, i]) ** 2) / len(vals2))
 
     zstd = stds[0, :] + stds[1, :]
 
     # If means aren't the same and stdev aren't NaN, calculate the value
     z_one_tailed = 1 - 3 * (zstd / zrange)
     # Otherwise, set it to a really negative value
-    z_one_tailed[(~np.isfinite(zstd)) | (zrange == 0)] = -1e5
+    z_one_tailed[(~numpy.isfinite(zstd)) | (zrange == 0)] = -1e5
     return z, z_one_tailed, xs, avers
 
 
@@ -673,13 +678,13 @@ def v_factors(xcol, ymatr):
     #
     # Range of averages per label
     #
-    vrange = np.max(avers, 0) - np.min(avers, 0)
+    vrange = numpy.max(avers, 0) - numpy.min(avers, 0)
     #
     # Special handling for labels that have no ranges
     #
-    vstd = np.zeros(len(vrange))
+    vstd = numpy.zeros(len(vrange))
     vstd[vrange == 0] = 1
-    vstd[vrange != 0] = np.mean(stds[:, vrange != 0], 0)
+    vstd[vrange != 0] = numpy.mean(stds[:, vrange != 0], 0)
     vrange[vrange == 0] = 0.000001
     v = 1 - 6 * (vstd / vrange)
     return v
@@ -698,7 +703,7 @@ def loc_shrink_mean_std(xcol, ymatr):
     """
     ncols = ymatr.shape[1]
     labels, labnum, xs = loc_vector_labels(xcol)
-    avers = np.zeros((labnum, ncols))
+    avers = numpy.zeros((labnum, ncols))
     stds = avers.copy()
     for ilab in range(labnum):
         labinds = labels == ilab
@@ -706,8 +711,8 @@ def loc_shrink_mean_std(xcol, ymatr):
         if labmatr.shape[0] == 1:
             avers[ilab, :] = labmatr[0, :]
         else:
-            avers[ilab, :] = np.mean(labmatr, 0)
-            stds[ilab, :] = np.std(labmatr, 0)
+            avers[ilab, :] = numpy.mean(labmatr, 0)
+            stds[ilab, :] = numpy.std(labmatr, 0)
     return xs, avers, stds
 
 
@@ -725,8 +730,8 @@ def loc_vector_labels(x):
     #
     # Get the index of each image's label in the sorted array
     #
-    order = np.lexsort((x,))
-    reverse_order = np.lexsort((order,))
+    order = numpy.lexsort((x,))
+    reverse_order = numpy.lexsort((order,))
     #
     # Get a sorted view of the labels
     #
@@ -740,9 +745,9 @@ def loc_vector_labels(x):
     #     0,0,0,1,1,1,2,2,2
     #
     # and sorted_x[first_occurrence] gives the unique labels in order
-    first_occurrence = np.ones(len(x), bool)
+    first_occurrence = numpy.ones(len(x), bool)
     first_occurrence[1:] = sorted_x[:-1] != sorted_x[1:]
-    sorted_labels = np.cumsum(first_occurrence) - 1
+    sorted_labels = numpy.cumsum(first_occurrence) - 1
     labels = sorted_labels[reverse_order]
     uniqsortvals = sorted_x[first_occurrence]
     return labels, len(uniqsortvals), uniqsortvals
@@ -776,10 +781,10 @@ def calculate_ec50(conc, responses, Logarithmic):
     # fitting a sigmoid to the curve if the concentrations are
     # log-transformed.
     if Logarithmic:
-        conc = np.log(conc)
+        conc = numpy.log(conc)
 
     n = responses.shape[1]
-    results = np.zeros((n, 4))
+    results = numpy.zeros((n, 4))
 
     def error_fn(v, x, y):
         """Least-squares error function
@@ -787,7 +792,7 @@ def calculate_ec50(conc, responses, Logarithmic):
         This measures the least-squares error of fitting the sigmoid
         with parameters in v to the x and y data.
         """
-        return np.sum((sigmoid(v, x) - y) ** 2)
+        return numpy.sum((sigmoid(v, x) - y) ** 2)
 
     for i in range(n):
         response = responses[:, i]
@@ -836,8 +841,8 @@ def calc_init_params(x, y):
     # unless the parameter will equal either the max(x) or min(x).  In this case, we will use the
     # former approach, namely (mean([max(x); min(x)]).  DL 2007.09.24
     YvalueAt50thPercentile = (min(y) + max(y)) / 2
-    DistanceToCentralYValue = np.abs(y - YvalueAt50thPercentile)
-    LocationOfNearest = np.argmin(DistanceToCentralYValue)
+    DistanceToCentralYValue = numpy.abs(y - YvalueAt50thPercentile)
+    LocationOfNearest = numpy.argmin(DistanceToCentralYValue)
     XvalueAt50thPercentile = x[LocationOfNearest]
     if XvalueAt50thPercentile == min(x) or XvalueAt50thPercentile == max(x):
         ec50 = (min(x) + max(x)) / 2
@@ -865,8 +870,8 @@ def calc_init_params(x, y):
     # I've made this look at the Y response at the minimum and maximum dosage
     # whereas before, it was looking at the Y response at the first and last
     # point which could just happen to be the same.
-    min_idx = np.argmin(x)
-    max_idx = np.argmax(x)
+    min_idx = numpy.argmin(x)
+    max_idx = numpy.argmax(x)
     x0 = x[min_idx]
     x1 = x[max_idx]
     y0 = y[min_idx]
@@ -911,7 +916,7 @@ def write_figures(
     from matplotlib.backends.backend_pdf import FigureCanvasPdf
 
     if log_transform:
-        dose_data = np.log(dose_data)
+        dose_data = numpy.log(dose_data)
     for i, (object_name, feature_name) in enumerate(feature_set):
         fdata = data[:, i]
         fcoeffs = ec50_coeffs[i, :]
@@ -920,7 +925,7 @@ def write_figures(
         f = Figure()
         canvas = FigureCanvasPdf(f)
         ax = f.add_subplot(1, 1, 1)
-        x = np.linspace(0, np.max(dose_data), num=100)
+        x = numpy.linspace(0, numpy.max(dose_data), num=100)
         y = sigmoid(fcoeffs, x)
         ax.plot(x, y)
         dose_y = sigmoid(fcoeffs, dose_data)

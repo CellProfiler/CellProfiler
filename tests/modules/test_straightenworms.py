@@ -4,12 +4,14 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler_core.measurement
+import cellprofiler_core.modules
 import cellprofiler.modules.straightenworms
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
+import cellprofiler_core.preferences
+import tests.modules
 
 OBJECTS_NAME = "worms"
 STRAIGHTENED_OBJECTS_NAME = "straightenedworms"
@@ -20,7 +22,8 @@ AUX_STRAIGHTENED_IMAGE_NAME = "auxstraightenedimage"
 
 
 def test_load_v1():
-    with open("./tests/resources/modules/straightenworms/v1.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("straightenworms/v1.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -36,7 +39,10 @@ def test_load_v1():
     assert module.objects_name == "OverlappingWorms"
     assert module.straightened_objects_name == "StraightenedWorms"
     assert module.width == 20
-    assert module.training_set_directory.dir_choice == DEFAULT_OUTPUT_FOLDER_NAME
+    assert (
+        module.training_set_directory.dir_choice
+        == cellprofiler_core.preferences.DEFAULT_OUTPUT_FOLDER_NAME
+    )
     assert module.training_set_file_name == "TrainingSet.xml"
     assert module.image_count.value == 2
     for group, input_name, output_name in (
@@ -48,7 +54,8 @@ def test_load_v1():
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/straightenworms/v2.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("straightenworms/v2.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -71,7 +78,10 @@ def test_load_v2():
         assert module.objects_name == "OverlappingWorms"
         assert module.straightened_objects_name == "StraightenedWorms"
         assert module.width == 20
-        assert module.training_set_directory.dir_choice == DEFAULT_INPUT_FOLDER_NAME
+        assert (
+            module.training_set_directory.dir_choice
+            == cellprofiler_core.preferences.DEFAULT_INPUT_FOLDER_NAME
+        )
         assert module.training_set_file_name == "TrainingSet.mat"
         assert len(module.images) == 1
         assert module.wants_measurements

@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 FillObjects
 ===========
@@ -25,13 +23,12 @@ YES          YES          NO
 
 import numpy
 import skimage.morphology
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.text import Float
 
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
 
-
-class FillObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
+class FillObjects(ObjectProcessing):
     category = "Advanced"
 
     module_name = "FillObjects"
@@ -41,13 +38,13 @@ class FillObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
     def create_settings(self):
         super(FillObjects, self).create_settings()
 
-        self.size = cellprofiler_core.setting.Float(
+        self.size = Float(
             text="Minimum hole size",
             value=64.0,
             doc="Holes smaller than this diameter will be filled.",
         )
 
-        self.planewise = cellprofiler_core.setting.Binary(
+        self.planewise = Binary(
             text="Planewise fill",
             value=False,
             doc="""\

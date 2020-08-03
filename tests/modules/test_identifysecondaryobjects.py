@@ -3,6 +3,7 @@ import io
 import centrosome.threshold
 import numpy
 
+import tests.modules
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.identify
@@ -23,9 +24,10 @@ THRESHOLD_IMAGE_NAME = "threshold"
 
 
 def test_load_v9():
-    with open(
-        "./tests/resources/modules/identifysecondaryobjects/v9.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory(
+        "identifysecondaryobjects/v9.pipeline"
+    )
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -73,9 +75,10 @@ def test_load_v9():
 
 
 def test_load_v10():
-    with open(
-        "./tests/resources/modules/identifysecondaryobjects/v10.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory(
+        "identifysecondaryobjects/v10.pipeline"
+    )
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -268,42 +271,6 @@ def test_two_objects_propagation_distance():
     assert numpy.all(objects_out.segmented[mask] == expected[mask])
 
 
-def test_propagation_wrong_size():
-    """Regression test of img-961: different image / object sizes"""
-    img = numpy.zeros((10, 20))
-    img[2:7, 2:7] = 0.5
-    labels = numpy.zeros((20, 10), int)
-    labels[3:6, 3:6] = 1
-    workspace, module = make_workspace(img, labels)
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_PROPAGATION
-    module.threshold.threshold_scope.value = (
-        cellprofiler_core.modules.identify.TS_GLOBAL
-    )
-    module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
-    module.run(workspace)
-    m = workspace.measurements
-    assert OUTPUT_OBJECTS_NAME in m.get_object_names()
-    assert "Image" in m.get_object_names()
-    assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
-    objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
-    counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
-    assert counts == 1
-    expected = numpy.zeros((10, 20), int)
-    expected[2:7, 2:7] = 1
-    assert numpy.all(objects_out.segmented == expected)
-    child_counts = m.get_current_measurement(
-        INPUT_OBJECTS_NAME, "Children_%s_Count" % OUTPUT_OBJECTS_NAME
-    )
-    assert len(child_counts) == 1
-    assert child_counts[0] == 1
-    parents = m.get_current_measurement(
-        OUTPUT_OBJECTS_NAME, "Parent_%s" % INPUT_OBJECTS_NAME
-    )
-    assert len(parents) == 1
-    assert parents[0] == 1
-
-
 def test_zeros_watershed_gradient():
     p = cellprofiler_core.pipeline.Pipeline()
     o_s = cellprofiler_core.object.ObjectSet()
@@ -432,39 +399,6 @@ def test_two_objects_watershed_gradient():
     assert numpy.all(objects_out.segmented[mask] == expected[mask])
 
 
-def test_watershed_gradient_wrong_size():
-    img = numpy.zeros((20, 10))
-    img[2:7, 2:7] = 0.5
-    labels = numpy.zeros((10, 20), int)
-    labels[3:6, 3:6] = 1
-    workspace, module = make_workspace(img, labels)
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_G
-    module.threshold.threshold_scope.value = (
-        cellprofiler_core.modules.identify.TS_GLOBAL
-    )
-    module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
-    module.run(workspace)
-    m = workspace.measurements
-    assert OUTPUT_OBJECTS_NAME in m.get_object_names()
-    assert "Image" in m.get_object_names()
-    assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
-    counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
-    assert counts == 1
-    objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
-    expected = numpy.zeros((20, 10), int)
-    expected[2:7, 2:7] = 1
-    assert numpy.all(objects_out.segmented == expected)
-    assert "Location_Center_X" in m.get_feature_names(OUTPUT_OBJECTS_NAME)
-    values = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_X")
-    assert numpy.product(values.shape) == 1
-    assert values[0] == 4
-    assert "Location_Center_Y" in m.get_feature_names(OUTPUT_OBJECTS_NAME)
-    values = m.get_current_measurement(OUTPUT_OBJECTS_NAME, "Location_Center_Y")
-    assert numpy.product(values.shape) == 1
-    assert values[0] == 4
-
-
 def test_zeros_watershed_image():
     p = cellprofiler_core.pipeline.Pipeline()
     o_s = cellprofiler_core.object.ObjectSet()
@@ -586,31 +520,6 @@ def test_two_objects_watershed_image():
     assert numpy.all(objects_out.segmented[mask] == expected[mask])
 
 
-def test_watershed_image_wrong_size():
-    img = numpy.zeros((20, 10))
-    img[2:7, 2:7] = 0.5
-    labels = numpy.zeros((10, 20), int)
-    labels[3:6, 3:6] = 1
-    workspace, module = make_workspace(img, labels)
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_WATERSHED_I
-    module.threshold.threshold_scope.value = (
-        cellprofiler_core.modules.identify.TS_GLOBAL
-    )
-    module.threshold.global_operation.value = centrosome.threshold.TM_OTSU
-    module.run(workspace)
-    m = workspace.measurements
-    assert OUTPUT_OBJECTS_NAME in m.get_object_names()
-    assert "Image" in m.get_object_names()
-    assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
-    counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
-    assert counts == 1
-    objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
-    expected = numpy.zeros((20, 10), int)
-    expected[2:7, 2:7] = 1
-    assert numpy.all(objects_out.segmented == expected)
-
-
 def test_zeros_distance_n():
     p = cellprofiler_core.pipeline.Pipeline()
     o_s = cellprofiler_core.object.ObjectSet()
@@ -719,30 +628,6 @@ def test_two_objects_distance_n():
     expected = numpy.zeros((10, 20), int)
     expected[:, :10] = 1
     expected[:, 10:] = 2
-    assert numpy.all(objects_out.segmented == expected)
-
-
-def test_distance_n_wrong_size():
-    img = numpy.zeros((20, 10))
-    labels = numpy.zeros((10, 20), int)
-    labels[3:6, 3:6] = 1
-    workspace, module = make_workspace(img, labels)
-    module.method.value = cellprofiler.modules.identifysecondaryobjects.M_DISTANCE_N
-    module.distance_to_dilate.value = 1
-    module.run(workspace)
-    m = workspace.measurements
-    assert OUTPUT_OBJECTS_NAME in m.get_object_names()
-    assert "Image" in m.get_object_names()
-    assert "Count_%s" % OUTPUT_OBJECTS_NAME in m.get_feature_names("Image")
-    counts = m.get_current_measurement("Image", "Count_%s" % OUTPUT_OBJECTS_NAME)
-    assert numpy.product(counts.shape) == 1
-    assert counts == 1
-    objects_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
-    expected = numpy.zeros((20, 10), int)
-    expected[2:7, 2:7] = 1
-    for x in (2, 6):
-        for y in (2, 6):
-            expected[x, y] = 0
     assert numpy.all(objects_out.segmented == expected)
 
 

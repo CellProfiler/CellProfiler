@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 DisplayScatterPlot
 ==================
@@ -37,25 +35,28 @@ See also
 See also **DisplayDensityPlot**, **DisplayHistogram**.
 """
 
-import numpy as np
+import numpy
+from cellprofiler_core.constants.measurement import IMAGE
 
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Measurement
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import Text
 
-SOURCE_IM = cpmeas.IMAGE
+SOURCE_IM = IMAGE
 SOURCE_OBJ = "Object"
 SOURCE_CHOICE = [SOURCE_IM, SOURCE_OBJ]
 SCALE_CHOICE = ["linear", "log"]
 
 
-class DisplayScatterPlot(cpm.Module):
+class DisplayScatterPlot(Module):
     module_name = "DisplayScatterPlot"
     category = "Data Tools"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.x_source = cps.Choice(
+        self.x_source = Choice(
             "Type of measurement to plot on X-axis",
             SOURCE_CHOICE,
             doc="""\
@@ -74,7 +75,7 @@ You can plot two types of measurements:
             % globals(),
         )
 
-        self.x_object = cps.ObjectNameSubscriber(
+        self.x_object = LabelSubscriber(
             "Select the object to plot on the X-axis",
             "None",
             doc="""\
@@ -86,14 +87,14 @@ measurements are to be displayed on the X-axis.
 """,
         )
 
-        self.x_axis = cps.Measurement(
+        self.x_axis = Measurement(
             "Select the measurement to plot on the X-axis",
             self.get_x_object,
             "None",
             doc="""Choose the measurement (made by a previous module) to plot on the X-axis.""",
         )
 
-        self.y_source = cps.Choice(
+        self.y_source = Choice(
             "Type of measurement to plot on Y-axis",
             SOURCE_CHOICE,
             doc="""\
@@ -112,7 +113,7 @@ You can plot two types of measurements:
             % globals(),
         )
 
-        self.y_object = cps.ObjectNameSubscriber(
+        self.y_object = LabelSubscriber(
             "Select the object to plot on the Y-axis",
             "None",
             doc="""\
@@ -124,14 +125,14 @@ measurements are to be displayed on the Y-axis.
 """,
         )
 
-        self.y_axis = cps.Measurement(
+        self.y_axis = Measurement(
             "Select the measurement to plot on the Y-axis",
             self.get_y_object,
             "None",
             doc="""Choose the measurement (made by a previous module) to plot on the Y-axis.""",
         )
 
-        self.xscale = cps.Choice(
+        self.xscale = Choice(
             "How should the X-axis be scaled?",
             SCALE_CHOICE,
             None,
@@ -146,7 +147,7 @@ linearly.
 """,
         )
 
-        self.yscale = cps.Choice(
+        self.yscale = Choice(
             "How should the Y-axis be scaled?",
             SCALE_CHOICE,
             None,
@@ -161,7 +162,7 @@ linearly.
 """,
         )
 
-        self.title = cps.Text(
+        self.title = Text(
             "Enter a title for the plot, if desired",
             "",
             doc="""\
@@ -172,13 +173,13 @@ executed.
         )
 
     def get_x_object(self):
-        if self.x_source.value == cpmeas.IMAGE:
-            return cpmeas.IMAGE
+        if self.x_source.value == IMAGE:
+            return IMAGE
         return self.x_object.value
 
     def get_y_object(self):
-        if self.y_source.value == cpmeas.IMAGE:
-            return cpmeas.IMAGE
+        if self.y_source.value == IMAGE:
+            return IMAGE
         return self.x_object.value
 
     def settings(self):
@@ -189,12 +190,12 @@ executed.
 
     def visible_settings(self):
         result = [self.x_source]
-        if self.x_source.value != cpmeas.IMAGE:
+        if self.x_source.value != IMAGE:
             result += [self.x_object, self.x_axis]
         else:
             result += [self.x_axis]
         result += [self.y_source]
-        if self.y_source.value != cpmeas.IMAGE:
+        if self.y_source.value != IMAGE:
             result += [self.y_object, self.y_axis]
         else:
             result += [self.y_axis]
@@ -204,12 +205,15 @@ executed.
     def run(self, workspace):
         m = workspace.get_measurements()
         if self.x_source.value == self.y_source.value:
-            if self.x_source.value == cpmeas.IMAGE:
-                xvals = m.get_all_measurements(cpmeas.IMAGE, self.x_axis.value)
-                yvals = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
-                xvals, yvals = np.array(
+            if self.x_source.value == IMAGE:
+                xvals = m.get_all_measurements(IMAGE, self.x_axis.value)
+                yvals = m.get_all_measurements(IMAGE, self.y_axis.value)
+                xvals, yvals = numpy.array(
                     [
-                        (x if np.isscalar(x) else x[0], y if np.isscalar(y) else y[0])
+                        (
+                            x if numpy.isscalar(x) else x[0],
+                            y if numpy.isscalar(y) else y[0],
+                        )
                         for x, y in zip(xvals, yvals)
                         if (x is not None) and (y is not None)
                     ]
@@ -227,21 +231,21 @@ executed.
                     workspace.measurements.image_set_number,
                 )
         else:
-            if self.x_source.value == cpmeas.IMAGE:
-                xvals = m.get_all_measurements(cpmeas.IMAGE, self.x_axis.value)
+            if self.x_source.value == IMAGE:
+                xvals = m.get_all_measurements(IMAGE, self.x_axis.value)
                 yvals = m.get_current_measurement(
                     self.get_y_object(), self.y_axis.value
                 )
-                xvals = np.array([xvals[0]] * len(yvals))
+                xvals = numpy.array([xvals[0]] * len(yvals))
             else:
                 xvals = m.get_current_measurement(
                     self.get_x_object(), self.x_axis.value
                 )
-                yvals = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
-                yvals = np.array([yvals[0]] * len(xvals))
-            xvals, yvals = np.array(
+                yvals = m.get_all_measurements(IMAGE, self.y_axis.value)
+                yvals = numpy.array([yvals[0]] * len(xvals))
+            xvals, yvals = numpy.array(
                 [
-                    (x if np.isscalar(x) else x[0], y if np.isscalar(y) else y[0])
+                    (x if numpy.isscalar(x) else x[0], y if numpy.isscalar(y) else y[0])
                     for x, y in zip(xvals, yvals)
                     if (x is not None) and (y is not None)
                 ]
@@ -274,13 +278,13 @@ executed.
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting_values to upgrade from a previous version"""
         if variable_revision_number == 1:
-            if setting_values[0] == cpmeas.IMAGE:
+            if setting_values[0] == IMAGE:
                 # self.source, self.x_axis, "Image", self.y_axis, self.xscale, self.yscale, self.title
                 new_setting_values = [
                     setting_values[0],
                     "None",
                     setting_values[1],
-                    cpmeas.IMAGE,
+                    IMAGE,
                     "None",
                 ] + setting_values[2:]
             else:

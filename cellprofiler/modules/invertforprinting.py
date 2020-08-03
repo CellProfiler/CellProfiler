@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 InvertForPrinting
 =================
@@ -26,31 +24,34 @@ YES          NO           NO
 
 """
 
-import numpy as np
-
-import cellprofiler_core.image as cpi
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+import numpy
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName
 
 CC_GRAYSCALE = "Grayscale"
 CC_COLOR = "Color"
 CC_ALL = [CC_COLOR, CC_GRAYSCALE]
 
 
-class InvertForPrinting(cpm.Module):
+class InvertForPrinting(Module):
     module_name = "InvertForPrinting"
     category = "Image Processing"
     variable_revision_number = 1
 
     def create_settings(self):
         # Input settings
-        self.input_color_choice = cps.Choice(
+        self.input_color_choice = Choice(
             "Input image type",
             CC_ALL,
             doc="Specify whether you are combining several grayscale images or loading a single color image.",
         )
 
-        self.wants_red_input = cps.Binary(
+        self.wants_red_input = Binary(
             "Use a red image?",
             True,
             doc="""\
@@ -62,7 +63,7 @@ Select "*Yes*" to specify an image to use for the red channel.
             ),
         )
 
-        self.red_input_image = cps.ImageNameSubscriber(
+        self.red_input_image = ImageSubscriber(
             "Select the red image",
             "None",
             doc="""\
@@ -74,7 +75,7 @@ Provide an image for the red channel.
             ),
         )
 
-        self.wants_green_input = cps.Binary(
+        self.wants_green_input = Binary(
             "Use a green image?",
             True,
             doc="""\
@@ -86,7 +87,7 @@ Select "*Yes*" to specify an image to use for the green channel.
             ),
         )
 
-        self.green_input_image = cps.ImageNameSubscriber(
+        self.green_input_image = ImageSubscriber(
             "Select the green image",
             "None",
             doc="""\
@@ -98,7 +99,7 @@ Provide an image for the green channel.
             ),
         )
 
-        self.wants_blue_input = cps.Binary(
+        self.wants_blue_input = Binary(
             "Use a blue image?",
             True,
             doc="""\
@@ -110,7 +111,7 @@ Select "*Yes*" to specify an image to use for the blue channel.
             ),
         )
 
-        self.blue_input_image = cps.ImageNameSubscriber(
+        self.blue_input_image = ImageSubscriber(
             "Select the blue image",
             "None",
             doc="""\
@@ -122,7 +123,7 @@ Provide an image for the blue channel.
             ),
         )
 
-        self.color_input_image = cps.ImageNameSubscriber(
+        self.color_input_image = ImageSubscriber(
             "Select the color image",
             "None",
             doc="""
@@ -135,13 +136,13 @@ Select the color image to use.
         )
 
         # Output settings
-        self.output_color_choice = cps.Choice(
+        self.output_color_choice = Choice(
             "Output image type",
             CC_ALL,
             doc="Specify whether you want to produce several grayscale images or one color image.",
         )
 
-        self.wants_red_output = cps.Binary(
+        self.wants_red_output = Binary(
             'Select "*Yes*" to produce a red image.',
             True,
             doc="""\
@@ -153,7 +154,7 @@ Select "*Yes*" to produce a grayscale image corresponding to the inverted red ch
             ),
         )
 
-        self.red_output_image = cps.ImageNameProvider(
+        self.red_output_image = ImageName(
             "Name the red image",
             "InvertedRed",
             doc="""\
@@ -165,7 +166,7 @@ Provide a name for the inverted red channel image.
             ),
         )
 
-        self.wants_green_output = cps.Binary(
+        self.wants_green_output = Binary(
             'Select "*Yes*" to produce a green image.',
             True,
             doc="""\
@@ -177,7 +178,7 @@ Select "*Yes*" to produce a grayscale image corresponding to the inverted green 
             ),
         )
 
-        self.green_output_image = cps.ImageNameProvider(
+        self.green_output_image = ImageName(
             "Name the green image",
             "InvertedGreen",
             doc="""\
@@ -189,7 +190,7 @@ Provide a name for the inverted green channel image.
             ),
         )
 
-        self.wants_blue_output = cps.Binary(
+        self.wants_blue_output = Binary(
             'Select "*Yes*" to produce a blue image.',
             True,
             doc="""\
@@ -201,7 +202,7 @@ Select "*Yes*" to produce a grayscale image corresponding to the inverted blue c
             ),
         )
 
-        self.blue_output_image = cps.ImageNameProvider(
+        self.blue_output_image = ImageName(
             "Name the blue image",
             "InvertedBlue",
             doc="""\
@@ -213,7 +214,7 @@ Provide a name for the inverted blue channel image.
             ),
         )
 
-        self.color_output_image = cps.ImageNameProvider(
+        self.color_output_image = ImageName(
             "Name the inverted color image",
             "InvertedColor",
             doc="""\
@@ -300,7 +301,7 @@ Enter a name for the inverted color image.
             and (not self.wants_green_input.value)
             and (not self.wants_blue_input.value)
         ):
-            raise cps.ValidationError(
+            raise ValidationError(
                 "You must supply at least one grayscale input", self.wants_red_input
             )
 
@@ -329,7 +330,7 @@ Enter a name for the inverted color image.
                 shape = blue_image.shape
             else:
                 blue_image = 0
-            color_image = np.zeros((shape[0], shape[1], 3))
+            color_image = numpy.zeros((shape[0], shape[1], 3))
             color_image[:, :, 0] = red_image
             color_image[:, :, 1] = green_image
             color_image[:, :, 2] = blue_image
@@ -350,7 +351,7 @@ Enter a name for the inverted color image.
         inverted_red = (1 - green_image) * (1 - blue_image)
         inverted_green = (1 - red_image) * (1 - blue_image)
         inverted_blue = (1 - red_image) * (1 - green_image)
-        inverted_color = np.dstack((inverted_red, inverted_green, inverted_blue))
+        inverted_color = numpy.dstack((inverted_red, inverted_green, inverted_blue))
         if self.output_color_choice == CC_GRAYSCALE:
             for wants_output, output_image_name, output_image in (
                 (self.wants_red_output, self.red_output_image, inverted_red),
@@ -358,10 +359,10 @@ Enter a name for the inverted color image.
                 (self.wants_blue_output, self.blue_output_image, inverted_blue),
             ):
                 if wants_output.value:
-                    image = cpi.Image(output_image)
+                    image = Image(output_image)
                     image_set.add(output_image_name.value, image)
         elif self.output_color_choice == CC_COLOR:
-            image = cpi.Image(inverted_color)
+            image = Image(inverted_color)
             image_set.add(self.color_output_image.value, image)
         else:
             raise ValueError(

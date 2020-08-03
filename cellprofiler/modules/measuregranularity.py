@@ -1,6 +1,22 @@
-# coding=utf-8
+import logging
 
-"""
+import cellprofiler_core.workspace
+import numpy
+import scipy.ndimage
+import skimage.morphology
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Divider, Binary, ValidationError
+from cellprofiler_core.setting.subscriber import (
+    ImageListSubscriber,
+    LabelListSubscriber,
+)
+from cellprofiler_core.setting.text import Float, Integer
+from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+
+from cellprofiler.gui.help.content import image_resource
+
+__doc__ = """\
 MeasureGranularity
 ==================
 **MeasureGranularity** outputs spectra of size measurements of the
@@ -10,8 +26,20 @@ Image granularity is a texture measurement that tries to fit a series of
 structure elements of increasing size into the texture of the image and outputs a spectrum of measures
 based on how well they fit.
 Granularity is measured as described by Ilya Ravkin (references below).
-The size of the starting structure element as well as the range of the
-spectrum is given as input.
+
+Basically, MeasureGranularity:
+1 - Downsamples the image (if you tell it to). This is set in
+**Subsampling factor for granularity measurements** or **Subsampling factor for background reduction**.
+2 - Background subtracts anything larger than the radius in pixels set in
+**Radius of structuring element.**
+3 - For as many times as you set in **Range of the granular spectrum**, it gets rid of bright areas
+that are only 1 pixel across, reports how much signal was lost by doing that, then repeats.
+i.e. The first time it removes one pixel from all bright areas in the image,
+(effectively deleting those that are only 1 pixel in size) and then reports what % of the signal was lost.
+It then takes the first-iteration image and repeats the removal and reporting (effectively reporting
+the amount of signal that is two pixels in size). etc.
+
+|MeasureGranularity_example|
 
 As of **CellProfiler 4.0** the settings for this module have been changed to simplify
 configuration. A single set of parameters is now applied to all images and objects within the module,
@@ -33,7 +61,7 @@ Measurements made by this module
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 -  *Granularity:* The module returns one measurement for each instance
-   of the granularity spectrum.
+   of the granularity spectrum set in **Range of the granular spectrum**.
 
 References
 ^^^^^^^^^^
@@ -51,18 +79,12 @@ References
 -  Ravkin I, Temov V. (1988) “Bit representation techniques and image
    processing”, *Applied Informatics*, v.14, pp. 41-90, Finances and
    Statistics, Moskow, (in Russian)
-"""
-import logging
 
-import numpy as np
-import scipy.ndimage as scind
-import skimage.morphology
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+.. |MeasureGranularity_example| image:: {MEASUREGRANULARITY_EXAMPLE}
+""".format(
+    **{"MEASUREGRANULARITY_EXAMPLE": image_resource("MeasureGranularity_example.png")}
+)
 
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
-import cellprofiler_core.workspace
 
 "Granularity category"
 C_GRANULARITY = "Granularity_%s_%s"
@@ -74,24 +96,22 @@ IMAGE_SETTING_COUNT = IMAGE_SETTING_COUNT_V3
 OBJECTS_SETTING_COUNT_V3 = 1
 OBJECTS_SETTING_COUNT = OBJECTS_SETTING_COUNT_V3
 
-logger = logging.getLogger(__name__)
 
-
-class MeasureGranularity(cellprofiler_core.module.Module):
+class MeasureGranularity(Module):
     module_name = "MeasureGranularity"
     category = "Measurement"
     variable_revision_number = 4
 
     def create_settings(self):
-        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select images to measure",
             [],
             doc="""Select images in which to measure the granularity.""",
         )
 
-        self.divider_top = cellprofiler_core.setting.Divider(line=True)
+        self.divider_top = Divider(line=True)
 
-        self.wants_objects = cellprofiler_core.setting.Binary(
+        self.wants_objects = Binary(
             "Measure within objects?",
             False,
             doc="""\
@@ -101,7 +121,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         object at the requested scales.""",
         )
 
-        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select objects to measure",
             [],
             doc="""\
@@ -110,16 +130,16 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         Select the objects within which granularity will be measured.""",
         )
 
-        self.divider_bottom = cellprofiler_core.setting.Divider(line=True)
-        self.subsample_size = cellprofiler_core.setting.Float(
+        self.divider_bottom = Divider(line=True)
+        self.subsample_size = Float(
             "Subsampling factor for granularity measurements",
             0.25,
-            minval=np.finfo(float).eps,
+            minval=numpy.finfo(float).eps,
             maxval=1,
             doc="""\
         If the textures of interest are larger than a few pixels, we recommend
         you subsample the image with a factor <1 to speed up the processing.
-        Down sampling the image will let you detect larger structures with a
+        Downsampling the image will let you detect larger structures with a
         smaller sized structure element. A factor >1 might increase the accuracy
         but also require more processing time. Images are typically of higher
         resolution than is required for granularity measurements, so the default
@@ -139,10 +159,10 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         .. _pdf: http://www.ravkin.net/presentations/Statistical%20properties%20of%20algorithms%20for%20analysis%20of%20cell%20images.pdf""",
         )
 
-        self.image_sample_size = cellprofiler_core.setting.Float(
+        self.image_sample_size = Float(
             "Subsampling factor for background reduction",
             0.25,
-            minval=np.finfo(float).eps,
+            minval=numpy.finfo(float).eps,
             maxval=1,
             doc="""\
         It is important to remove low frequency image background variations as
@@ -157,7 +177,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         depends on how the background was removed.""",
         )
 
-        self.element_size = cellprofiler_core.setting.Integer(
+        self.element_size = Integer(
             "Radius of structuring element",
             10,
             minval=1,
@@ -169,7 +189,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         of the spectrum defined below will cover more sizes.""",
         )
 
-        self.granular_spectrum_length = cellprofiler_core.setting.Integer(
+        self.granular_spectrum_length = Integer(
             "Range of the granular spectrum",
             16,
             minval=1,
@@ -182,15 +202,11 @@ class MeasureGranularity(cellprofiler_core.module.Module):
     def validate_module(self, pipeline):
         """Make sure settings are compatible. In particular, we make sure that no measurements are duplicated"""
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError(
-                "No images selected", self.images_list
-            )
+            raise ValidationError("No images selected", self.images_list)
 
         if self.wants_objects.value:
             if len(self.objects_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError(
-                    "No object sets selected", self.objects_list
-                )
+                raise ValidationError("No object sets selected", self.objects_list)
 
         measurements, sources = self.get_measurement_columns(
             pipeline, return_sources=True
@@ -198,9 +214,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         d = {}
         for m, s in zip(measurements, sources):
             if m in d:
-                raise cellprofiler_core.setting.ValidationError(
-                    "Measurement %s made twice." % (m[1]), s[0]
-                )
+                raise ValidationError("Measurement %s made twice." % (m[1]), s[0])
             d[m] = True
 
     def settings(self):
@@ -260,25 +274,32 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         #
         # Downsample the image and mask
         #
-        new_shape = np.array(im.pixel_data.shape)
+        new_shape = numpy.array(im.pixel_data.shape)
         if self.subsample_size.value < 1:
             new_shape = new_shape * self.subsample_size.value
             if im.dimensions == 2:
                 i, j = (
-                    np.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
+                    numpy.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
                     / self.subsample_size.value
                 )
-                pixels = scind.map_coordinates(im.pixel_data, (i, j), order=1)
-                mask = scind.map_coordinates(im.mask.astype(float), (i, j)) > 0.9
+                pixels = scipy.ndimage.map_coordinates(im.pixel_data, (i, j), order=1)
+                mask = (
+                    scipy.ndimage.map_coordinates(im.mask.astype(float), (i, j)) > 0.9
+                )
             else:
                 k, i, j = (
-                    np.mgrid[
+                    numpy.mgrid[
                         0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
                     ].astype(float)
                     / self.subsample_size.value
                 )
-                pixels = scind.map_coordinates(im.pixel_data, (k, i, j), order=1)
-                mask = scind.map_coordinates(im.mask.astype(float), (k, i, j)) > 0.9
+                pixels = scipy.ndimage.map_coordinates(
+                    im.pixel_data, (k, i, j), order=1
+                )
+                mask = (
+                    scipy.ndimage.map_coordinates(im.mask.astype(float), (k, i, j))
+                    > 0.9
+                )
         else:
             pixels = im.pixel_data
             mask = im.mask
@@ -289,20 +310,24 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             back_shape = new_shape * self.image_sample_size.value
             if im.dimensions == 2:
                 i, j = (
-                    np.mgrid[0 : back_shape[0], 0 : back_shape[1]].astype(float)
+                    numpy.mgrid[0 : back_shape[0], 0 : back_shape[1]].astype(float)
                     / self.image_sample_size.value
                 )
-                back_pixels = scind.map_coordinates(pixels, (i, j), order=1)
-                back_mask = scind.map_coordinates(mask.astype(float), (i, j)) > 0.9
+                back_pixels = scipy.ndimage.map_coordinates(pixels, (i, j), order=1)
+                back_mask = (
+                    scipy.ndimage.map_coordinates(mask.astype(float), (i, j)) > 0.9
+                )
             else:
                 k, i, j = (
-                    np.mgrid[
+                    numpy.mgrid[
                         0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
                     ].astype(float)
                     / self.subsample_size.value
                 )
-                back_pixels = scind.map_coordinates(pixels, (k, i, j), order=1)
-                back_mask = scind.map_coordinates(mask.astype(float), (k, i, j)) > 0.9
+                back_pixels = scipy.ndimage.map_coordinates(pixels, (k, i, j), order=1)
+                back_mask = (
+                    scipy.ndimage.map_coordinates(mask.astype(float), (k, i, j)) > 0.9
+                )
         else:
             back_pixels = pixels
             back_mask = mask
@@ -312,30 +337,34 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             selem = skimage.morphology.disk(radius, dtype=bool)
         else:
             selem = skimage.morphology.ball(radius, dtype=bool)
-        back_pixels_mask = np.zeros_like(back_pixels)
+        back_pixels_mask = numpy.zeros_like(back_pixels)
         back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
         back_pixels = skimage.morphology.erosion(back_pixels_mask, selem=selem)
-        back_pixels_mask = np.zeros_like(back_pixels)
+        back_pixels_mask = numpy.zeros_like(back_pixels)
         back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
         back_pixels = skimage.morphology.dilation(back_pixels_mask, selem=selem)
         if self.image_sample_size.value < 1:
             if im.dimensions == 2:
-                i, j = np.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
+                i, j = numpy.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
                 #
                 # Make sure the mapping only references the index range of
                 # back_pixels.
                 #
                 i *= float(back_shape[0] - 1) / float(new_shape[0] - 1)
                 j *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
-                back_pixels = scind.map_coordinates(back_pixels, (i, j), order=1)
+                back_pixels = scipy.ndimage.map_coordinates(
+                    back_pixels, (i, j), order=1
+                )
             else:
-                k, i, j = np.mgrid[
+                k, i, j = numpy.mgrid[
                     0 : new_shape[0], 0 : new_shape[1], 0 : new_shape[2]
                 ].astype(float)
                 k *= float(back_shape[0] - 1) / float(new_shape[0] - 1)
                 i *= float(back_shape[1] - 1) / float(new_shape[1] - 1)
                 j *= float(back_shape[2] - 1) / float(new_shape[2] - 1)
-                back_pixels = scind.map_coordinates(back_pixels, (k, i, j), order=1)
+                back_pixels = scipy.ndimage.map_coordinates(
+                    back_pixels, (k, i, j), order=1
+                )
         pixels -= back_pixels
         pixels[pixels < 0] = 0
 
@@ -346,15 +375,17 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             def __init__(self, name):
                 self.name = name
                 self.labels = workspace.object_set.get_objects(name).segmented
-                self.nobjects = np.max(self.labels)
+                self.nobjects = numpy.max(self.labels)
                 if self.nobjects != 0:
-                    self.range = np.arange(1, np.max(self.labels) + 1)
+                    self.range = numpy.arange(1, numpy.max(self.labels) + 1)
                     self.labels = self.labels.copy()
                     self.labels[~im.mask] = 0
                     self.current_mean = fix(
-                        scind.mean(im.pixel_data, self.labels, self.range)
+                        scipy.ndimage.mean(im.pixel_data, self.labels, self.range)
                     )
-                    self.start_mean = np.maximum(self.current_mean, np.finfo(float).eps)
+                    self.start_mean = numpy.maximum(
+                        self.current_mean, numpy.finfo(float).eps
+                    )
 
         object_records = [
             ObjectRecord(objects_name) for objects_name in self.objects_list.value
@@ -372,14 +403,14 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         # THIS IMPLEMENTATION INSTEAD OF OPENING USES EROSION FOLLOWED BY RECONSTRUCTION
         #
         ng = self.granular_spectrum_length.value
-        startmean = np.mean(pixels[mask])
+        startmean = numpy.mean(pixels[mask])
         ero = pixels.copy()
         # Mask the test image so that masked pixels will have no effect
         # during reconstruction
         #
         ero[~mask] = 0
         currentmean = startmean
-        startmean = max(startmean, np.finfo(float).eps)
+        startmean = max(startmean, numpy.finfo(float).eps)
 
         if im.dimensions == 2:
             footprint = skimage.morphology.disk(1, dtype=bool)
@@ -388,11 +419,11 @@ class MeasureGranularity(cellprofiler_core.module.Module):
         statistics = [image_name]
         for i in range(1, ng + 1):
             prevmean = currentmean
-            ero_mask = np.zeros_like(ero)
+            ero_mask = numpy.zeros_like(ero)
             ero_mask[mask == True] = ero[mask == True]
             ero = skimage.morphology.erosion(ero_mask, selem=footprint)
             rec = skimage.morphology.reconstruction(ero, pixels, selem=footprint)
-            currentmean = np.mean(rec[mask])
+            currentmean = numpy.mean(rec[mask])
             gs = (prevmean - currentmean) * 100 / startmean
             statistics += ["%.2f" % gs]
             feature = self.granularity_feature(i, image_name)
@@ -403,22 +434,22 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             #
             orig_shape = im.pixel_data.shape
             if im.dimensions == 2:
-                i, j = np.mgrid[0 : orig_shape[0], 0 : orig_shape[1]].astype(float)
+                i, j = numpy.mgrid[0 : orig_shape[0], 0 : orig_shape[1]].astype(float)
                 #
                 # Make sure the mapping only references the index range of
                 # back_pixels.
                 #
                 i *= float(new_shape[0] - 1) / float(orig_shape[0] - 1)
                 j *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
-                rec = scind.map_coordinates(rec, (i, j), order=1)
+                rec = scipy.ndimage.map_coordinates(rec, (i, j), order=1)
             else:
-                k, i, j = np.mgrid[
+                k, i, j = numpy.mgrid[
                     0 : orig_shape[0], 0 : orig_shape[1], 0 : orig_shape[2]
                 ].astype(float)
                 k *= float(new_shape[0] - 1) / float(orig_shape[0] - 1)
                 i *= float(new_shape[1] - 1) / float(orig_shape[1] - 1)
                 j *= float(new_shape[2] - 1) / float(orig_shape[2] - 1)
-                rec = scind.map_coordinates(rec, (k, i, j), order=1)
+                rec = scipy.ndimage.map_coordinates(rec, (k, i, j), order=1)
             #
             # Calculate the means for the objects
             #
@@ -426,7 +457,9 @@ class MeasureGranularity(cellprofiler_core.module.Module):
                 assert isinstance(object_record, ObjectRecord)
                 if object_record.nobjects > 0:
                     new_mean = fix(
-                        scind.mean(rec, object_record.labels, object_record.range)
+                        scipy.ndimage.mean(
+                            rec, object_record.labels, object_record.range
+                        )
                     )
                     gss = (
                         (object_record.current_mean - new_mean)
@@ -435,7 +468,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
                     )
                     object_record.current_mean = new_mean
                 else:
-                    gss = np.zeros((0,))
+                    gss = numpy.zeros((0,))
                 measurements.add_measurement(object_record.name, feature, gss)
         return statistics
 
@@ -446,11 +479,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             gslength = self.granular_spectrum_length.value
             for i in range(1, gslength + 1):
                 result += [
-                    (
-                        cellprofiler_core.measurement.IMAGE,
-                        self.granularity_feature(i, image_name),
-                        cellprofiler_core.measurement.COLTYPE_FLOAT,
-                    )
+                    ("Image", self.granularity_feature(i, image_name), COLTYPE_FLOAT,)
                 ]
                 sources += [(image_name, self.granularity_feature(i, image_name))]
             for object_name in self.objects_list.value:
@@ -459,7 +488,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
                         (
                             object_name,
                             self.granularity_feature(i, image_name),
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                     ]
                     sources += [(object_name, self.granularity_feature(i, image_name))]
@@ -474,7 +503,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
 
         object_name - name of an object or IMAGE to match all
         """
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return self.images_list.value
         return [
             image_name
@@ -553,7 +582,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
             if "None" in images_set:
                 images_set.remove("None")
             if len(settings_set) > 1:
-                logger.warning(
+                logging.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureGranularity module no longer supports different settings for each image.\n"
                     "Instead, all selected images and objects will be analysed together with the same settings.\n"
@@ -561,7 +590,7 @@ class MeasureGranularity(cellprofiler_core.module.Module):
                     "copy of the module."
                 )
             if len(objects_set) > len(objects_list):
-                logger.warning(
+                logging.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureGranularity module now analyses all images and object sets together.\n"
                     "Specific pairs of images and objects are no longer supported.\n"

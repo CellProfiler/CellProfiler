@@ -1,4 +1,11 @@
-# coding=utf-8
+from cellprofiler_core.module import Identify
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_location_measurements,
+    add_object_count_measurements,
+    get_object_measurement_columns,
+)
 
 from cellprofiler.modules import _help
 
@@ -39,30 +46,28 @@ See also
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-import numpy as np
+import numpy
 
-import cellprofiler_core.object as cpo
-import cellprofiler_core.setting as cps
-from cellprofiler_core.modules import identify as I
+from cellprofiler_core.object import Objects
 
 TOOL_OUTLINE = "Outline"
 TOOL_ZOOM_IN = "Zoom in"
 TOOL_ERASE = "Erase"
 
 
-class IdentifyObjectsManually(I.Identify):
+class IdentifyObjectsManually(Identify):
     category = "Object Processing"
     module_name = "IdentifyObjectsManually"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""Choose the name of the image to display in the object selection user interface.""",
         )
 
-        self.objects_name = cps.ObjectNameProvider(
+        self.objects_name = LabelName(
             "Name the objects to be identified",
             "Cells",
             doc="""\
@@ -94,8 +99,8 @@ refer to your objects in subsequent modules.""",
         if labels is None:
             # User cancelled. Soldier on as best we can.
             workspace.cancel_request()
-            labels = np.zeros(pixel_data.shape[:2], int)
-        objects = cpo.Objects()
+            labels = numpy.zeros(pixel_data.shape[:2], int)
+        objects = Objects()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, objects_name)
 
@@ -107,12 +112,12 @@ refer to your objects in subsequent modules.""",
         #
         # The object count
         #
-        object_count = np.max(labels)
-        I.add_object_count_measurements(m, objects_name, object_count)
+        object_count = numpy.max(labels)
+        add_object_count_measurements(m, objects_name, object_count)
         #
         # The object locations
         #
-        I.add_object_location_measurements(m, objects_name, labels)
+        add_object_location_measurements(m, objects_name, labels)
 
         workspace.display_data.labels = labels
         workspace.display_data.pixel_data = pixel_data
@@ -146,7 +151,7 @@ refer to your objects in subsequent modules.""",
         title += 'Press "F" to being freehand drawing.\n'
         title += "Click Help for full instructions."
         with EditObjectsDialog(
-            pixel_data, [np.zeros(pixel_data.shape[:2], np.uint32)], False, title
+            pixel_data, [numpy.zeros(pixel_data.shape[:2], numpy.uint32)], False, title
         ) as dialog_box:
             result = dialog_box.ShowModal()
             if result != OK:
@@ -168,7 +173,7 @@ refer to your objects in subsequent modules.""",
 
         Return a list of tuples of object name, measurement name and data type
         """
-        result = I.get_object_measurement_columns(self.objects_name.value)
+        result = get_object_measurement_columns(self.objects_name.value)
         return result
 
     @property

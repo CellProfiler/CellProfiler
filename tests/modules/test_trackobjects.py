@@ -2,26 +2,39 @@ import centrosome.filter
 import numpy
 import six.moves
 
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.measurement
-import cellprofiler_core.measurement
+from cellprofiler_core.constants.measurement import (
+    GROUP_NUMBER,
+    GROUP_INDEX,
+    R_FIRST_IMAGE_NUMBER,
+    R_SECOND_IMAGE_NUMBER,
+    R_FIRST_OBJECT_NUMBER,
+    R_SECOND_OBJECT_NUMBER,
+    C_COUNT,
+    MCA_AVAILABLE_POST_GROUP,
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+)
+from cellprofiler_core.image import ImageSetList
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.object import ObjectSet, Objects
+
 import cellprofiler.modules.trackobjects
-import cellprofiler_core.object
-import cellprofiler_core.pipeline
-import cellprofiler_core.workspace
+import tests.modules
+from cellprofiler_core.pipeline import Pipeline, LoadException, RunException
+from cellprofiler.gui._workspace_model import Workspace
 
 OBJECT_NAME = "objects"
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/trackobjects/v3.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("trackobjects/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
+        assert not isinstance(event, LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -44,13 +57,14 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/trackobjects/v4.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("trackobjects/v4.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
+        assert not isinstance(event, LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -94,13 +108,14 @@ def test_load_v4():
 
 
 def test_load_v5():
-    with open("./tests/resources/modules/trackobjects/v5.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("trackobjects/v5.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
+        assert not isinstance(event, LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -130,13 +145,14 @@ def test_load_v5():
 
 
 def test_load_v6():
-    with open("./tests/resources/modules/trackobjects/v6s.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("trackobjects/v6.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
+        assert not isinstance(event, LoadException)
 
     pipeline.add_listener(callback)
     pipeline.load(six.moves.StringIO(data))
@@ -184,33 +200,27 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
     module.object_name.value = OBJECT_NAME
     module.pixel_radius.value = 50
     module.measurement.value = "measurement"
-    measurements = cellprofiler_core.measurement.Measurements()
+    measurements = Measurements()
     measurements.add_all_measurements(
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.pipeline.GROUP_NUMBER,
-        [1] * len(labels_list),
+        "Image", GROUP_NUMBER, [1] * len(labels_list),
     )
     measurements.add_all_measurements(
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.pipeline.GROUP_INDEX,
-        list(range(1, len(labels_list) + 1)),
+        "Image", GROUP_INDEX, list(range(1, len(labels_list) + 1)),
     )
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
     pipeline.add_module(module)
-    image_set_list = cellprofiler_core.image.ImageSetList()
+    image_set_list = ImageSetList()
 
     if fn:
         fn(module, None, 0)
     module.prepare_run(
-        cellprofiler_core.workspace.Workspace(
-            pipeline, module, None, None, measurements, image_set_list
-        )
+        Workspace(pipeline, module, None, None, measurements, image_set_list)
     )
 
     first = True
     for labels, index in zip(labels_list, list(range(len(labels_list)))):
-        object_set = cellprofiler_core.object.ObjectSet()
-        objects = cellprofiler_core.object.Objects()
+        object_set = ObjectSet()
+        objects = Objects()
         objects.segmented = labels
         object_set.add_objects(objects, OBJECT_NAME)
         image_set = image_set_list.get_image_set(index)
@@ -222,7 +232,7 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
             measurements.add_measurement(
                 OBJECT_NAME, "measurement", numpy.array(measurement[index])
             )
-        workspace = cellprofiler_core.workspace.Workspace(
+        workspace = Workspace(
             pipeline, module, image_set, object_set, measurements, image_set_list
         )
         if fn:
@@ -260,18 +270,10 @@ def test_track_nothing():
 
     features = [
         feature
-        for feature in measurements.get_feature_names(
-            cellprofiler_core.measurement.IMAGE
-        )
+        for feature in measurements.get_feature_names("Image")
         if feature.startswith(cellprofiler.modules.trackobjects.F_PREFIX)
     ]
-    assert all(
-        [
-            column[1] in features
-            for column in columns
-            if column[0] == cellprofiler_core.measurement.IMAGE
-        ]
-    )
+    assert all([column[1] in features for column in columns if column[0] == "Image"])
     for feature in cellprofiler.modules.trackobjects.F_IMAGE_ALL:
         name = "_".join(
             (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "50")
@@ -441,9 +443,7 @@ def test_track_split():
         name = "_".join(
             (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "5")
         )
-        return measurements.get_all_measurements(
-            cellprofiler_core.measurement.IMAGE, name
-        )[1]
+        return measurements.get_all_measurements("Image", name)[1]
 
     assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 0
     assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 0
@@ -712,10 +712,7 @@ def test_measurement_columns():
     )
     for object_name, features in (
         (OBJECT_NAME, cellprofiler.modules.trackobjects.F_ALL),
-        (
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler.modules.trackobjects.F_IMAGE_ALL,
-        ),
+        ("Image", cellprofiler.modules.trackobjects.F_IMAGE_ALL,),
     ):
         for feature in features:
             if object_name == OBJECT_NAME:
@@ -968,10 +965,7 @@ def test_measurement_columns_lap():
                 + kalman_features
                 + other_features,
             ),
-            (
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler.modules.trackobjects.F_IMAGE_ALL,
-            ),
+            ("Image", cellprofiler.modules.trackobjects.F_IMAGE_ALL,),
         ):
             for feature in features:
                 if object_name == OBJECT_NAME:
@@ -992,25 +986,13 @@ def test_measurement_columns_lap():
                 assert column[0] == object_name
                 if wants or feature in second_phase:
                     assert len(column) == 4
-                    assert (
-                        cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP
-                        in column[3]
-                    )
-                    assert column[3][
-                        cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP
-                    ]
+                    assert MCA_AVAILABLE_POST_GROUP in column[3]
+                    assert column[3][MCA_AVAILABLE_POST_GROUP]
                 else:
                     assert (
                         (len(column) == 3)
-                        or (
-                            cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP
-                            not in column[3]
-                        )
-                        or (
-                            not column[3][
-                                cellprofiler_core.measurement.MCA_AVAILABLE_POST_GROUP
-                            ]
-                        )
+                        or (MCA_AVAILABLE_POST_GROUP not in column[3])
+                        or (not column[3][MCA_AVAILABLE_POST_GROUP])
                     )
 
 
@@ -1079,15 +1061,15 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
 
     module.pixel_radius.value = 50
 
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline = Pipeline()
 
     def callback(caller, event):
-        assert not isinstance(event, cellprofiler_core.pipeline.event.RunException)
+        assert not isinstance(event, RunException)
 
     pipeline.add_listener(callback)
     pipeline.add_module(module)
 
-    m = cellprofiler_core.measurement.Measurements()
+    m = Measurements()
     if objs.shape[0] > 0:
         nobjects = numpy.bincount(objs[:, 0].astype(int))
     else:
@@ -1114,8 +1096,8 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
                 ),
                 int,
             ),
-            (4, cellprofiler_core.measurement.M_LOCATION_CENTER_X, float),
-            (5, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, float),
+            (4, M_LOCATION_CENTER_X, float),
+            (5, M_LOCATION_CENTER_Y, float),
             (
                 6,
                 module.measurement_name(cellprofiler.modules.trackobjects.F_AREA),
@@ -1124,27 +1106,27 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
         ):
             values = objs[objs[:, 0] == i, index].astype(dtype)
             m.add_measurement(OBJECT_NAME, feature, values, i + 1)
-        m.add_measurement(cellprofiler_core.measurement.IMAGE, "ImageNumber", i + 1)
+        m.add_measurement("Image", "ImageNumber", i + 1)
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.pipeline.GROUP_NUMBER,
+            "Image",
+            GROUP_NUMBER,
             1 if group_numbers is None else group_numbers[i],
-            i + 1,
+            image_set_number=i + 1,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.pipeline.GROUP_INDEX,
+            "Image",
+            GROUP_INDEX,
             i if group_indexes is None else group_indexes[i],
-            i + 1,
+            image_set_number=i + 1,
         )
         #
         # Add blanks of the right sizes for measurements that are recalculated
         #
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
-            "_".join((cellprofiler_core.measurement.C_COUNT, OBJECT_NAME)),
+            "Image",
+            "_".join((C_COUNT, OBJECT_NAME)),
             nobjects[i],
-            i + 1,
+            image_set_number=i + 1,
         )
         for feature in (
             cellprofiler.modules.trackobjects.F_DISTANCE_TRAVELED,
@@ -1178,17 +1160,17 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
                 numpy.NaN * numpy.ones(nobjects[i], dtype)
                 if feature == cellprofiler.modules.trackobjects.F_FINAL_AGE
                 else numpy.zeros(nobjects[i], dtype),
-                i + 1,
+                image_set_number=i + 1,
             )
         for feature in (
             cellprofiler.modules.trackobjects.F_SPLIT_COUNT,
             cellprofiler.modules.trackobjects.F_MERGE_COUNT,
         ):
             m.add_measurement(
-                cellprofiler_core.measurement.IMAGE,
+                "Image",
                 module.image_measurement_name(feature),
                 0,
-                i + 1,
+                image_set_number=i + 1,
             )
     #
     # Figure out how many new and lost objects per image set
@@ -1215,36 +1197,27 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
                 [1 for label in label_sets[i - 1] if label not in label_sets[i]]
             )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             module.image_measurement_name(
                 cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT
             ),
             new_objects,
-            True,
-            i + 1,
+            image_set_number=i + 1,
         )
         m.add_measurement(
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             module.image_measurement_name(
                 cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT
             ),
             lost_objects,
-            True,
-            i + 1,
+            image_set_number=i + 1,
         )
     m.image_set_number = nimages
 
-    image_set_list = cellprofiler_core.image.ImageSetList()
+    image_set_list = ImageSetList()
     for i in range(nimages):
         image_set = image_set_list.get_image_set(i)
-    workspace = cellprofiler_core.workspace.Workspace(
-        pipeline,
-        module,
-        image_set,
-        cellprofiler_core.object.ObjectSet(),
-        m,
-        image_set_list,
-    )
+    workspace = Workspace(pipeline, module, image_set, ObjectSet(), m, image_set_list,)
     return workspace, module
 
 
@@ -1255,13 +1228,13 @@ def check_measurements(workspace, d):
     d - dictionary of feature name and list of expected measurement values
     """
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m, Measurements)
     module = workspace.module
     assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
     for feature, expected in list(d.items()):
         if numpy.isscalar(expected[0]):
             mname = module.image_measurement_name(feature)
-            values = m.get_all_measurements(cellprofiler_core.measurement.IMAGE, mname)
+            values = m.get_all_measurements("Image", mname)
             assert len(expected) == len(values), (
                 "Expected # image sets (%d) != actual (%d) for %s"
                 % (len(expected), len(values), feature)
@@ -1296,18 +1269,14 @@ def check_relationships(
     expected_child_image_numbers = numpy.atleast_1d(expected_child_image_numbers)
     expected_parent_object_numbers = numpy.atleast_1d(expected_parent_object_numbers)
     expected_child_object_numbers = numpy.atleast_1d(expected_child_object_numbers)
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m, Measurements)
     r = m.get_relationships(
         1, cellprofiler.modules.trackobjects.R_PARENT, OBJECT_NAME, OBJECT_NAME
     )
-    actual_parent_image_numbers = r[cellprofiler_core.measurement.R_FIRST_IMAGE_NUMBER]
-    actual_parent_object_numbers = r[
-        cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER
-    ]
-    actual_child_image_numbers = r[cellprofiler_core.measurement.R_SECOND_IMAGE_NUMBER]
-    actual_child_object_numbers = r[
-        cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER
-    ]
+    actual_parent_image_numbers = r[R_FIRST_IMAGE_NUMBER]
+    actual_parent_object_numbers = r[R_FIRST_OBJECT_NUMBER]
+    actual_child_image_numbers = r[R_SECOND_IMAGE_NUMBER]
+    actual_child_object_numbers = r[R_SECOND_OBJECT_NUMBER]
     assert len(actual_parent_image_numbers) == len(expected_parent_image_numbers)
     #
     # Sort similarly
@@ -2515,19 +2484,19 @@ class MonkeyPatchedDelete(object):
             ... do test ...
     """
 
-    def __init__(self, test):
+    def __init__(self, test=None):
         __test = test
 
     def __enter__(self):
-        old_delete = numpy.delete
-        numpy.delete = monkey_patched_delete
+        self.old_delete = numpy.delete
+        numpy.delete = self.monkey_patched_delete
 
     def __exit__(self, type, value, traceback):
-        numpy.delete = old_delete
+        numpy.delete = self.old_delete
 
     def monkey_patched_delete(self, array, indices, axis):
-        __test.assertTrue(numpy.all(indices >= 0))
-        return old_delete(array, indices, axis)
+        # __test.assertTrue(numpy.all(indices >= 0))
+        return self.old_delete(array, indices, axis)
 
 
 def test_save_image():
@@ -2537,26 +2506,24 @@ def test_save_image():
     module.pixel_radius.value = 50
     module.wants_image.value = True
     module.image_name.value = "outimage"
-    measurements = cellprofiler_core.measurement.Measurements()
-    measurements.add_image_measurement(cellprofiler_core.pipeline.GROUP_NUMBER, 1)
-    measurements.add_image_measurement(cellprofiler_core.pipeline.GROUP_INDEX, 1)
-    pipeline = cellprofiler_core.pipeline.Pipeline()
+    measurements = Measurements()
+    measurements.add_image_measurement(GROUP_NUMBER, 1)
+    measurements.add_image_measurement(GROUP_INDEX, 1)
+    pipeline = Pipeline()
     pipeline.add_module(module)
-    image_set_list = cellprofiler_core.image.ImageSetList()
+    image_set_list = ImageSetList()
 
     module.prepare_run(
-        cellprofiler_core.workspace.Workspace(
-            pipeline, module, None, None, measurements, image_set_list
-        )
+        Workspace(pipeline, module, None, None, measurements, image_set_list)
     )
 
     first = True
-    object_set = cellprofiler_core.object.ObjectSet()
-    objects = cellprofiler_core.object.Objects()
+    object_set = ObjectSet()
+    objects = Objects()
     objects.segmented = numpy.zeros((640, 480), int)
     object_set.add_objects(objects, OBJECT_NAME)
     image_set = image_set_list.get_image_set(0)
-    workspace = cellprofiler_core.workspace.Workspace(
+    workspace = Workspace(
         pipeline, module, image_set, object_set, measurements, image_set_list
     )
     module.run(workspace)
@@ -2642,18 +2609,10 @@ def test_neighbour_track_nothing():
 
     features = [
         feature
-        for feature in measurements.get_feature_names(
-            cellprofiler_core.measurement.IMAGE
-        )
+        for feature in measurements.get_feature_names("Image")
         if feature.startswith(cellprofiler.modules.trackobjects.F_PREFIX)
     ]
-    assert all(
-        [
-            column[1] in features
-            for column in columns
-            if column[0] == cellprofiler_core.measurement.IMAGE
-        ]
-    )
+    assert all([column[1] in features for column in columns if column[0] == "Image"])
     for feature in cellprofiler.modules.trackobjects.F_IMAGE_ALL:
         name = "_".join(
             (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "50")

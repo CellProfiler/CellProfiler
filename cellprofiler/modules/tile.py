@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 Tile
 ====
@@ -61,14 +59,17 @@ YES          NO
 
 """
 
-import logging
-
-import numpy as np
-
-logger = logging.getLogger(__name__)
-import cellprofiler_core.image as cpi
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+import numpy
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import ValidationError
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Integer
 
 T_WITHIN_CYCLES = "Within cycles"
 T_ACROSS_CYCLES = "Across cycles"
@@ -96,13 +97,13 @@ TILE_HEIGHT = "TileHeight"
 FIXED_SETTING_COUNT = 10
 
 
-class Tile(cpm.Module):
+class Tile(Module):
     module_name = "Tile"
     category = "Image Processing"
     variable_revision_number = 1
 
     def create_settings(self):
-        self.input_image = cps.ImageNameSubscriber(
+        self.input_image = ImageSubscriber(
             "Select an input image",
             "None",
             doc="""Select the image to be tiled. Additional images within the cycle can be
@@ -111,7 +112,7 @@ added later by choosing the "*%(T_ACROSS_CYCLES)s*" option below.
             % globals(),
         )
 
-        self.output_image = cps.ImageNameProvider(
+        self.output_image = ImageName(
             "Name the output image",
             "TiledImage",
             doc="""Enter a name for the final tiled image.""",
@@ -119,14 +120,14 @@ added later by choosing the "*%(T_ACROSS_CYCLES)s*" option below.
 
         self.additional_images = []
 
-        self.add_button = cps.DoSomething(
+        self.add_button = DoSomething(
             "",
             "Add another image",
             self.add_image,
             doc="""Add images from other channels to perform similar tiling""",
         )
 
-        self.tile_method = cps.Choice(
+        self.tile_method = Choice(
             "Tile assembly method",
             T_ALL,
             doc="""\
@@ -147,7 +148,7 @@ assembled:
             % globals(),
         )
 
-        self.rows = cps.Integer(
+        self.rows = Integer(
             "Final number of rows",
             8,
             doc="""\
@@ -166,7 +167,7 @@ images.
 """,
         )
 
-        self.columns = cps.Integer(
+        self.columns = Integer(
             "Final number of columns",
             12,
             doc="""\
@@ -184,7 +185,7 @@ images.
 """,
         )
 
-        self.place_first = cps.Choice(
+        self.place_first = Choice(
             "Image corner to begin tiling",
             P_ALL,
             doc="""Where do you want the first image to be placed? Begin in the upper
@@ -192,7 +193,7 @@ left-hand corner for a typical multi-well plate format where the first image is 
 """,
         )
 
-        self.tile_style = cps.Choice(
+        self.tile_style = Choice(
             "Direction to begin tiling",
             S_ALL,
             doc="""This setting specifies the order that the images are to be arranged. For example, if
@@ -201,7 +202,7 @@ your images are named A01, A02, etc, enter "*%(S_ROW)s*".
             % globals(),
         )
 
-        self.meander = cps.Binary(
+        self.meander = Binary(
             "Use meander mode?",
             False,
             doc="""\
@@ -215,7 +216,7 @@ the same direction.
             % globals(),
         )
 
-        self.wants_automatic_rows = cps.Binary(
+        self.wants_automatic_rows = Binary(
             "Automatically calculate number of rows?",
             False,
             doc="""\
@@ -231,7 +232,7 @@ create a grid that has roughly the same number of rows and columns.
             % globals(),
         )
 
-        self.wants_automatic_columns = cps.Binary(
+        self.wants_automatic_columns = Binary(
             "Automatically calculate number of columns?",
             False,
             doc="""\
@@ -249,13 +250,13 @@ create a grid that has roughly the same number of rows and columns.
 
     def add_image(self, can_remove=True):
         """Add an image + associated questions and buttons"""
-        group = cps.SettingsGroup()
+        group = SettingsGroup()
         if can_remove:
-            group.append("divider", cps.Divider(line=True))
+            group.append("divider", Divider(line=True))
 
         group.append(
             "input_image_name",
-            cps.ImageNameSubscriber(
+            ImageSubscriber(
                 "Select an additional image to tile",
                 "None",
                 doc="""Select an additional image to tile?""",
@@ -264,7 +265,7 @@ create a grid that has roughly the same number of rows and columns.
         if can_remove:
             group.append(
                 "remover",
-                cps.RemoveSettingButton(
+                RemoveSettingButton(
                     "", "Remove above image", self.additional_images, group
                 ),
             )
@@ -348,7 +349,7 @@ create a grid that has roughly the same number of rows and columns.
             output_pixels = self.place_adjacent(workspace)
         else:
             output_pixels = self.tile(workspace)
-        output_image = cpi.Image(output_pixels)
+        output_image = Image(output_pixels)
         workspace.image_set.add(self.output_image.value, output_image)
         if self.show_window:
             workspace.display_data.image = output_pixels
@@ -358,7 +359,7 @@ create a grid that has roughly the same number of rows and columns.
             image_set = workspace.image_set
             if self.output_image.value not in image_set.names:
                 d = self.get_dictionary(workspace.image_set_list)
-                image_set.add(self.output_image.value, cpi.Image(d[TILED_IMAGE]))
+                image_set.add(self.output_image.value, Image(d[TILED_IMAGE]))
 
     def is_aggregation_module(self):
         """Need to run all cycles in same worker if across cycles"""
@@ -392,7 +393,7 @@ create a grid that has roughly the same number of rows and columns.
                 shape = (height, width, pixels.shape[2])
             else:
                 shape = (height, width)
-            output_pixels = np.zeros(shape)
+            output_pixels = numpy.zeros(shape)
             d[TILED_IMAGE] = output_pixels
             d[TILE_WIDTH] = tile_width
             d[TILE_HEIGHT] = tile_height
@@ -449,9 +450,9 @@ create a grid that has roughly the same number of rows and columns.
         height = tile_height * rows
         width = tile_width * columns
         if colors > 0:
-            output_pixels = np.zeros((height, width, colors))
+            output_pixels = numpy.zeros((height, width, colors))
         else:
-            output_pixels = np.zeros((height, width))
+            output_pixels = numpy.zeros((height, width))
         for i, p in enumerate(pixel_data):
             self.put_tile(p, output_pixels, i, rows, columns)
         return output_pixels
@@ -504,7 +505,7 @@ create a grid that has roughly the same number of rows and columns.
                 # Take the square root of the # of images & assign as rows.
                 # Maybe add 1 to get # of columns.
                 #
-                i = int(np.sqrt(image_count))
+                i = int(numpy.sqrt(image_count))
                 j = int((image_count + i - 1) / i)
                 return i, j
             else:
@@ -535,7 +536,7 @@ create a grid that has roughly the same number of rows and columns.
             and (not self.wants_automatic_columns)
             and self.rows.value * self.columns.value < len(self.additional_images) + 1
         ):
-            raise cps.ValidationError(
+            raise ValidationError(
                 "There are too many images (%d) for a %d by %d grid"
                 % (
                     len(self.additional_images) + 1,

@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 EnhanceOrSuppressFeatures
 =========================
@@ -29,10 +27,14 @@ import skimage.exposure
 import skimage.filters
 import skimage.morphology
 import skimage.transform
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.range import IntegerRange
+from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.text import Integer
 
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 ENHANCE = "Enhance"
@@ -52,15 +54,15 @@ N_GRADIENT = "Line structures"
 N_TUBENESS = "Tubeness"
 
 
-class EnhanceOrSuppressFeatures(cellprofiler_core.module.ImageProcessing):
+class EnhanceOrSuppressFeatures(ImageProcessing):
     module_name = "EnhanceOrSuppressFeatures"
 
-    variable_revision_number = 6
+    variable_revision_number = 7
 
     def create_settings(self):
         super(EnhanceOrSuppressFeatures, self).create_settings()
 
-        self.method = cellprofiler_core.setting.Choice(
+        self.method = Choice(
             "Select the operation",
             [ENHANCE, SUPPRESS],
             doc="""\
@@ -75,7 +77,7 @@ designate.
             ),
         )
 
-        self.enhance_method = cellprofiler_core.setting.Choice(
+        self.enhance_method = Choice(
             "Feature type",
             [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],
             doc="""\
@@ -140,7 +142,7 @@ This module can enhance several kinds of image features:
             ),
         )
 
-        self.object_size = cellprofiler_core.setting.Integer(
+        self.object_size = Integer(
             "Feature size",
             10,
             2,
@@ -163,7 +165,7 @@ used to calculate an appropriate filter size.
             ),
         )
 
-        self.hole_size = cellprofiler_core.setting.IntegerRange(
+        self.hole_size = IntegerRange(
             "Range of hole sizes",
             value=(1, 10),
             minval=1,
@@ -177,7 +179,7 @@ holes whose diameters fall between these two values.
             ),
         )
 
-        self.smoothing = cellprofiler_core.setting.Float(
+        self.smoothing = Float(
             "Smoothing scale",
             value=2.0,
             minval=0.0,
@@ -214,7 +216,7 @@ this is not recommended.
             ),
         )
 
-        self.angle = cellprofiler_core.setting.Float(
+        self.angle = Float(
             "Shear angle",
             value=0,
             doc="""\
@@ -231,7 +233,7 @@ the shear angle is 180° + 45° = 225°.
             ),
         )
 
-        self.decay = cellprofiler_core.setting.Float(
+        self.decay = Float(
             "Decay",
             value=0.95,
             minval=0.1,
@@ -252,7 +254,7 @@ appears to be a bias in the integration direction.
             ),
         )
 
-        self.neurite_choice = cellprofiler_core.setting.Choice(
+        self.neurite_choice = Choice(
             "Enhancement method",
             [N_TUBENESS, N_GRADIENT],
             doc="""\
@@ -287,7 +289,7 @@ Two methods can be used to enhance neurites:
             ),
         )
 
-        self.speckle_accuracy = cellprofiler_core.setting.Choice(
+        self.speckle_accuracy = Choice(
             "Speed and accuracy",
             choices=[S_FAST, S_SLOW],
             doc="""\
@@ -303,6 +305,20 @@ Two methods can be used to enhance neurites:
             ),
         )
 
+        self.wants_rescale = Binary(
+            "Rescale result image",
+            False,
+            doc="""\
+*(Used only for the "{E_NEURITES}" method)*
+
+*{E_NEURITES}* can rescale the resulting values to use the 
+whole intensity range of the image (0-1). This can make 
+the output easier to display.
+""".format(
+                **{"E_NEURITES": E_NEURITES}
+            ),
+        )
+
     def settings(self):
         __settings__ = super(EnhanceOrSuppressFeatures, self).settings()
         return __settings__ + [
@@ -315,6 +331,7 @@ Two methods can be used to enhance neurites:
             self.decay,
             self.neurite_choice,
             self.speckle_accuracy,
+            self.wants_rescale,
         ]
 
     def visible_settings(self):
@@ -335,6 +352,7 @@ Two methods can be used to enhance neurites:
                     __settings__ += [self.object_size]
                 else:
                     __settings__ += [self.smoothing]
+                __settings__ += [self.wants_rescale]
             elif self.enhance_method == E_SPECKLES:
                 __settings__ += [self.object_size, self.speckle_accuracy]
                 self.object_size.min_value = 3
@@ -355,9 +373,9 @@ Two methods can be used to enhance neurites:
                     image, radius, self.speckle_accuracy.value
                 )
             elif self.enhance_method == E_NEURITES:
-                result = skimage.exposure.rescale_intensity(
-                    self.enhance_neurites(image, radius, self.neurite_choice.value)
-                )
+                result = self.enhance_neurites(image, radius, self.neurite_choice.value)
+                if self.wants_rescale.value:
+                    result = skimage.exposure.rescale_intensity(result)
             elif self.enhance_method == E_DARK_HOLES:
                 min_radius = max(1, int(self.hole_size.min / 2))
 
@@ -381,9 +399,7 @@ Two methods can be used to enhance neurites:
         else:
             raise ValueError("Unknown filtering method: %s" % self.method)
 
-        result_image = cellprofiler_core.image.Image(
-            result, parent_image=image, dimensions=image.dimensions
-        )
+        result_image = Image(result, parent_image=image, dimensions=image.dimensions)
 
         workspace.image_set.add(self.y_name.value, result_image)
 
@@ -620,6 +636,11 @@ Two methods can be used to enhance neurites:
                 setting_values[-1] = "Fast"
 
             variable_revision_number = 6
+
+        if variable_revision_number == 6:
+            # Add neurite rescaling option
+            setting_values.append("Yes")
+            variable_revision_number = 7
 
         return setting_values, variable_revision_number
 

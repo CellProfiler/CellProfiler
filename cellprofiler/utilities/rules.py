@@ -4,7 +4,6 @@
 import re
 
 import numpy
-import six
 
 
 class Rules(object):
@@ -91,7 +90,7 @@ class Rules(object):
             ",\\s*\\[\\s*(?P<true>[^\\]]+)\\s*\\]"
             ",\\s*\\[\\s*(?P<false>[^\\]]+)\\s*\\]\\s*\\)$"
         )
-        if isinstance(fd_or_file, six.string_types):
+        if isinstance(fd_or_file, str):
             fd = open(fd_or_file, "r")
             needs_close = True
         else:

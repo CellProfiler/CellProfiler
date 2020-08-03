@@ -1,14 +1,14 @@
-# coding=utf-8
 """ tools.py - cpfigure tools that do not depend on WX
 """
 
+import io
+
 import centrosome.cpmorphology
+import imageio
 import matplotlib
 import matplotlib.figure
 import matplotlib.transforms
 import numpy
-import imageio
-import io
 
 
 def figure_to_image(figure, *args, **kwargs):

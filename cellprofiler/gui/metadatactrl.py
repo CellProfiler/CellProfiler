@@ -2,12 +2,13 @@
 """metadatadlg.py - dialog for editing an expression that might contain metadata
 """
 
-import six
 import wx
 import wx.lib.masked
-
-import cellprofiler_core.measurement
-import cellprofiler_core.preferences
+from cellprofiler_core.constants.measurement import C_FRAME
+from cellprofiler_core.constants.measurement import C_METADATA
+from cellprofiler_core.constants.measurement import C_SERIES
+from cellprofiler_core.constants.measurement import IMAGE
+from cellprofiler_core.preferences import get_primary_outline_color
 
 __choice_ids = []
 
@@ -48,16 +49,13 @@ class MetadataControl(wx.Control):
         super(MetadataControl, self).__init__(*args, **kwargs)
         columns = pipeline.get_measurement_columns(module)
         choices = [
-            cellprofiler_core.measurement.C_SERIES,
-            cellprofiler_core.measurement.C_FRAME,
+            C_SERIES,
+            C_FRAME,
         ]
         for column in columns:
             object_name, feature, coltype = column[:3]
-            choice = feature[(len(cellprofiler_core.measurement.C_METADATA) + 1) :]
-            if (
-                object_name == cellprofiler_core.measurement.IMAGE
-                and feature.startswith(cellprofiler_core.measurement.C_METADATA)
-            ):
+            choice = feature[(len(C_METADATA) + 1) :]
+            if object_name == IMAGE and feature.startswith(C_METADATA):
                 choices.append(choice)
         self.__metadata_choices = choices
         self.SetValue(value)
@@ -86,7 +84,8 @@ class MetadataControl(wx.Control):
 
         def on_show(event):
             if event:
-                self.make_caret()
+                if isinstance(event.EventObject, MetadataControl):
+                    self.make_caret()
             else:
                 del self.__caret
                 self.__caret = None
@@ -133,7 +132,7 @@ class MetadataControl(wx.Control):
                 if value[index] in ("g", "?"):
                     state = STATE_PRE
                 else:
-                    self.__tokens.append(six.text_type(value[index]))
+                    self.__tokens.append(str(value[index]))
                     state = STATE_INITIAL
             elif state == STATE_PRE:
                 if value[index] != "<":
@@ -541,7 +540,7 @@ class MetadataControl(wx.Control):
         try:
             dc.SetBackgroundMode(wx.PENSTYLE_SOLID)
             background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
-            metadata_color = cellprofiler_core.preferences.get_primary_outline_color()
+            metadata_color = get_primary_outline_color()
             selected_background_color = wx.SystemSettings.GetColour(
                 wx.SYS_COLOUR_HIGHLIGHT
             )

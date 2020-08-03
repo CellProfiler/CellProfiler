@@ -3,6 +3,7 @@
 """
 
 import platform
+
 import wx
 
 
@@ -117,9 +118,16 @@ class NameSubscriberComboBox(wx.Panel):
         def fn_key(x):
             return x[2], x
 
+        def on_selection(event):
+            self.Value = index[event.Id]
+            self.choice_made(event)
+
         choices_sorted_by_num = sorted(self.orig_choices, key=fn_key)
-        for name, annotation, num, is_input_module, choiceid in choices_sorted_by_num:
-            all_menu.Append(choiceid, "filler")
+        index = {}
+        for idx, choice in enumerate(choices_sorted_by_num):
+            choices_sorted_by_num[idx] = choice + (idx,)
+            all_menu.Append(idx, "filler")
+            index[idx] = choice[0]
 
         align_twosided_items(
             self.combo_dlg,
@@ -152,6 +160,7 @@ class NameSubscriberComboBox(wx.Panel):
                 for (num, annotation, is_input_module), v in sorted_submenus
             ],
         )
+        menu.Bind(wx.EVT_MENU, on_selection)
         self.PopupMenu(menu)
         menu.Destroy()
 

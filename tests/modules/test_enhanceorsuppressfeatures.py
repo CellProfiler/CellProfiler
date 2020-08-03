@@ -9,6 +9,7 @@ import skimage.exposure
 import skimage.filters
 import skimage.transform
 
+import tests.modules
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -453,6 +454,8 @@ def test_enhance_neurites_tubeness_positive(image, module, workspace):
 
     module.smoothing.value = 1.0
 
+    module.wants_rescale.value = True
+
     module.run(workspace)
 
     output = workspace.image_set.get_image("output")
@@ -486,6 +489,8 @@ def test_enhance_neurites_tubeness_negative(image, module, workspace):
     module.neurite_choice.value = "Tubeness"
 
     module.smoothing.value = 1.0
+
+    module.wants_rescale.value = True
 
     module.run(workspace)
 
@@ -522,6 +527,8 @@ def test_enhance_neurites_tubeness_positive_volume(image, module, workspace):
     module.neurite_choice.value = "Tubeness"
 
     module.smoothing.value = 1.0
+
+    module.wants_rescale.value = True
 
     module.run(workspace)
 
@@ -561,6 +568,8 @@ def test_enhance_neurites_tubeness_negative_volume(image, module, workspace):
     module.neurite_choice.value = "Tubeness"
 
     module.smoothing.value = 1.0
+
+    module.wants_rescale.value = True
 
     module.run(workspace)
 
@@ -939,9 +948,10 @@ def test_enhance_dic(image, module, workspace):
 
 
 def test_load_v2():
-    with open(
-        "./tests/resources/modules/enhanceorsuppressfeatures/v2.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory(
+        "enhanceorsuppressfeatures/v2.pipeline"
+    )
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1027,10 +1037,11 @@ def test_load_v2():
         assert module.hole_size.max == max_range
 
 
-def test_test_load_v3():
-    with open(
-        "./tests/resources/modules/enhanceorsuppressfeatures/v3.pipeline", "r"
-    ) as fd:
+def test_load_v3():
+    file = tests.modules.test_resources_directory(
+        "enhanceorsuppressfeatures/v3.pipeline"
+    )
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1070,9 +1081,10 @@ def test_test_load_v3():
 
 
 def test_load_v4():
-    with open(
-        "./tests/resources/modules/enhanceorsuppressfeatures/v4.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory(
+        "enhanceorsuppressfeatures/v4.pipeline"
+    )
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1116,9 +1128,10 @@ def test_load_v4():
 
 
 def test_load_v5():
-    with open(
-        "./tests/resources/modules/enhanceorsuppressfeatures/v5.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory(
+        "enhanceorsuppressfeatures/v5.pipeline"
+    )
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1151,7 +1164,8 @@ def test_load_v5():
         == cellprofiler.modules.enhanceorsuppressfeatures.N_TUBENESS
     )
     assert (
-        module.speckle_accuracy == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
+        module.speckle_accuracy.value
+        == cellprofiler.modules.enhanceorsuppressfeatures.S_SLOW
     )
 
     module = pipeline.modules()[1]

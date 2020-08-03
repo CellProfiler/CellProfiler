@@ -9,8 +9,11 @@ import cellprofiler_core.measurement
 import cellprofiler.modules.calculatestatistics
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
+import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
+
+import tests.modules
 
 INPUT_OBJECTS = "my_object"
 TEST_FTR = "my_measurement"
@@ -18,7 +21,8 @@ FIGURE_NAME = "figname"
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/calculatestatistics/v2.pipeline", "r") as fd:
+    path = tests.modules.test_resources_directory("calculatestatistics/v2.pipeline")
+    with open(path, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -485,7 +489,9 @@ def test_make_path():
     try:
         dose_group = module.dose_values[0]
         dose_group.wants_save_figure.value = True
-        dose_group.pathname.dir_choice = cellprofiler_core.setting.ABSOLUTE_FOLDER_NAME
+        dose_group.pathname.dir_choice = (
+            cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+        )
         dose_group.pathname.custom_path = my_subdir
         dose_group.figure_name.value = FIGURE_NAME
         module.post_run(workspace)

@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 EnhanceEdges
 ============
@@ -25,16 +23,17 @@ YES          NO           YES
 
 """
 
-import numpy as np
-from centrosome.filter import laplacian_of_gaussian
-from centrosome.filter import prewitt, hprewitt, vprewitt, stretch
-from centrosome.filter import roberts, canny, sobel, hsobel, vsobel
-from centrosome.kirsch import kirsch
-from centrosome.otsu import otsu3
-
-import cellprofiler_core.image as cpi
-import cellprofiler_core.module as cpm
-import cellprofiler_core.setting as cps
+import centrosome.filter
+import centrosome.kirsch
+import centrosome.otsu
+import numpy
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.text import ImageName
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"
@@ -51,25 +50,25 @@ E_HORIZONTAL = "Horizontal"
 E_VERTICAL = "Vertical"
 
 
-class EnhanceEdges(cpm.Module):
+class EnhanceEdges(Module):
     module_name = "EnhanceEdges"
     category = "Image Processing"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""Select the image whose edges you want to enhance.""",
         )
 
-        self.output_image_name = cps.ImageNameProvider(
+        self.output_image_name = ImageName(
             "Name the output image",
             "EdgedImage",
             doc="""Enter a name for the resulting image with edges enhanced.""",
         )
 
-        self.method = cps.Choice(
+        self.method = Choice(
             "Select an edge-finding method",
             [M_SOBEL, M_PREWITT, M_ROBERTS, M_LOG, M_CANNY, M_KIRSCH],
             doc="""\
@@ -104,7 +103,7 @@ is best to test them against each other empirically:
             % globals(),
         )
 
-        self.wants_automatic_threshold = cps.Binary(
+        self.wants_automatic_threshold = Binary(
             "Automatically calculate the threshold?",
             True,
             doc="""\
@@ -119,7 +118,7 @@ Select *No* to manually enter the threshold value.
             % globals(),
         )
 
-        self.manual_threshold = cps.Float(
+        self.manual_threshold = Float(
             "Absolute threshold",
             0.2,
             0,
@@ -134,7 +133,7 @@ between 0 and 1.
             % globals(),
         )
 
-        self.threshold_adjustment_factor = cps.Float(
+        self.threshold_adjustment_factor = Float(
             "Threshold adjustment factor",
             1,
             doc="""\
@@ -148,7 +147,7 @@ adjustment factor has no effect on any threshold entered manually.
             % globals(),
         )
 
-        self.direction = cps.Choice(
+        self.direction = Choice(
             "Select edge direction to enhance",
             [E_ALL, E_HORIZONTAL, E_VERTICAL],
             doc="""\
@@ -160,7 +159,7 @@ Select the direction of the edges you aim to identify in the image
             % globals(),
         )
 
-        self.wants_automatic_sigma = cps.Binary(
+        self.wants_automatic_sigma = Binary(
             "Calculate Gaussian's sigma automatically?",
             True,
             doc="""\
@@ -171,11 +170,11 @@ Select *No* to manually enter the value.
             % globals(),
         )
 
-        self.sigma = cps.Float(
+        self.sigma = Float(
             "Gaussian's sigma value", 10, doc="""Set a value for Gaussian's sigma."""
         )
 
-        self.wants_automatic_low_threshold = cps.Binary(
+        self.wants_automatic_low_threshold = Binary(
             "Calculate value for low threshold automatically?",
             True,
             doc="""\
@@ -189,7 +188,7 @@ Select *No* to manually enter the low threshold value.
             % globals(),
         )
 
-        self.low_threshold = cps.Float(
+        self.low_threshold = Float(
             "Low threshold value",
             0.1,
             0,
@@ -262,14 +261,14 @@ values below this threshold as not being edges.
         if image.has_mask:
             mask = image.mask
         else:
-            mask = np.ones(orig_pixels.shape, bool)
+            mask = numpy.ones(orig_pixels.shape, bool)
         if self.method == M_SOBEL:
             if self.direction == E_ALL:
-                output_pixels = sobel(orig_pixels, mask)
+                output_pixels = centrosome.filter.sobel(orig_pixels, mask)
             elif self.direction == E_HORIZONTAL:
-                output_pixels = hsobel(orig_pixels, mask)
+                output_pixels = centrosome.filter.hsobel(orig_pixels, mask)
             elif self.direction == E_VERTICAL:
-                output_pixels = vsobel(orig_pixels, mask)
+                output_pixels = centrosome.filter.vsobel(orig_pixels, mask)
             else:
                 raise NotImplementedError(
                     "Unimplemented direction for Sobel: %s", self.direction.value
@@ -277,14 +276,16 @@ values below this threshold as not being edges.
         elif self.method == M_LOG:
             sigma = self.get_sigma()
             size = int(sigma * 4) + 1
-            output_pixels = laplacian_of_gaussian(orig_pixels, mask, size, sigma)
+            output_pixels = centrosome.filter.laplacian_of_gaussian(
+                orig_pixels, mask, size, sigma
+            )
         elif self.method == M_PREWITT:
             if self.direction == E_ALL:
-                output_pixels = prewitt(orig_pixels)
+                output_pixels = centrosome.filter.prewitt(orig_pixels)
             elif self.direction == E_HORIZONTAL:
-                output_pixels = hprewitt(orig_pixels, mask)
+                output_pixels = centrosome.filter.hprewitt(orig_pixels, mask)
             elif self.direction == E_VERTICAL:
-                output_pixels = vprewitt(orig_pixels, mask)
+                output_pixels = centrosome.filter.vprewitt(orig_pixels, mask)
             else:
                 raise NotImplementedError(
                     "Unimplemented direction for Prewitt: %s", self.direction.value
@@ -296,25 +297,25 @@ values below this threshold as not being edges.
                 self.wants_automatic_low_threshold.value
                 or self.wants_automatic_threshold.value
             ):
-                sobel_image = sobel(orig_pixels, mask)
-                low, high = otsu3(sobel_image[mask])
+                sobel_image = centrosome.filter.sobel(orig_pixels, mask)
+                low, high = centrosome.otsu.otsu3(sobel_image[mask])
                 if self.wants_automatic_low_threshold.value:
                     low_threshold = low * self.threshold_adjustment_factor.value
                 if self.wants_automatic_threshold.value:
                     high_threshold = high * self.threshold_adjustment_factor.value
-            output_pixels = canny(
+            output_pixels = centrosome.filter.canny(
                 orig_pixels, mask, self.get_sigma(), low_threshold, high_threshold
             )
         elif self.method == M_ROBERTS:
-            output_pixels = roberts(orig_pixels, mask)
+            output_pixels = centrosome.filter.roberts(orig_pixels, mask)
         elif self.method == M_KIRSCH:
-            output_pixels = kirsch(orig_pixels)
+            output_pixels = centrosome.kirsch.kirsch(orig_pixels)
         else:
             raise NotImplementedError(
                 "Unimplemented edge detection method: %s" % self.method.value
             )
 
-        output_image = cpi.Image(output_pixels, parent_image=image)
+        output_image = Image(output_pixels, parent_image=image)
         workspace.image_set.add(self.output_image_name.value, output_image)
 
         if self.show_window:
@@ -346,9 +347,9 @@ values below this threshold as not being edges.
                 self.output_image_name.value,
                 sharexy=figure.subplot(0, 0),
             )
-        color_image = np.zeros((output_pixels.shape[0], output_pixels.shape[1], 3))
-        color_image[:, :, 0] = stretch(orig_pixels)
-        color_image[:, :, 1] = stretch(output_pixels)
+        color_image = numpy.zeros((output_pixels.shape[0], output_pixels.shape[1], 3))
+        color_image[:, :, 0] = centrosome.filter.stretch(orig_pixels)
+        color_image[:, :, 1] = centrosome.filter.stretch(output_pixels)
         figure.subplot_imshow(
             1, 0, color_image, "Composite image", sharexy=figure.subplot(0, 0)
         )

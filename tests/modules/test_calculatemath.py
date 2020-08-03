@@ -45,8 +45,8 @@ def run_workspace(
             measurements.add_measurement(OBJECT[i], measurement, data)
         operand.operand_measurement.value = measurement
     module.output_feature_name.value = OUTPUT_MEASUREMENTS
-    module.rounding = "Not rounded"
-    module.rounding_digit = 0
+    module.rounding.value = "Not rounded"
+    module.rounding_digit.value = 0
     pipeline = cellprofiler_core.pipeline.Pipeline()
     image_set_list = cellprofiler_core.image.ImageSetList()
     workspace = cellprofiler_core.workspace.Workspace(

@@ -1,5 +1,10 @@
 import six.moves
+import os
 
+import tests.modules
+
+# Need to import modules before a manual identify module
+import cellprofiler_core.modules
 import cellprofiler_core.measurement
 import cellprofiler.modules.editobjectsmanually
 import cellprofiler_core.pipeline
@@ -9,7 +14,8 @@ OUTPUT_OBJECTS_NAME = "outputobjects"
 
 
 def test_load_v1():
-    with open("./tests/resources/modules/editobjectsmanually/v1.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("editobjectsmanually/v1.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -31,7 +37,8 @@ def test_load_v1():
 
 
 def test_load_v2():
-    with open("./tests/resources/modules/editobjectsmanually/v2.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("editobjectsmanually/v2.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -55,7 +62,8 @@ def test_load_v2():
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/editobjectsmanually/v3.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("editobjectsmanually/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -79,7 +87,8 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/editobjectsmanually/v4.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("editobjectsmanually/v4.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 MeasureImageSkeleton
 ====================
@@ -36,10 +34,8 @@ import numpy
 import scipy.ndimage
 import skimage.segmentation
 import skimage.util
-
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting.subscriber import ImageSubscriber
 
 
 def _neighbors(image):
@@ -96,7 +92,7 @@ def endpoints(image):
     return _neighbors(image) == 1
 
 
-class MeasureImageSkeleton(cellprofiler_core.module.Module):
+class MeasureImageSkeleton(Module):
     category = "Measurement"
 
     module_name = "MeasureImageSkeleton"
@@ -104,7 +100,7 @@ class MeasureImageSkeleton(cellprofiler_core.module.Module):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.skeleton_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.skeleton_name = ImageSubscriber(
             "Select an image to measure",
             doc="""\
 Select the morphological skeleton image you wish to measure.
@@ -184,7 +180,7 @@ You can create a morphological skeleton with the
         )
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cellprofiler_core.measurement.IMAGE:
+        if object_name == "Image":
             return ["Skeleton"]
 
         return []
@@ -197,10 +193,7 @@ You can create a morphological skeleton with the
     def get_measurements(self, pipeline, object_name, category):
         name = self.skeleton_name.value
 
-        if (
-            object_name == cellprofiler_core.measurement.IMAGE
-            and category == "Skeleton"
-        ):
+        if object_name == "Image" and category == "Skeleton":
             return [
                 "Skeleton_Branches_{}".format(name),
                 "Skeleton_Endpoints_{}".format(name),
@@ -209,14 +202,14 @@ You can create a morphological skeleton with the
         return []
 
     def get_measurement_columns(self, pipeline):
-        image = cellprofiler_core.measurement.IMAGE
+        image = "Image"
 
         features = [
             self.get_measurement_name("Branches"),
             self.get_measurement_name("Endpoints"),
         ]
 
-        column_type = cellprofiler_core.measurement.COLTYPE_INTEGER
+        column_type = "integer"
 
         return [(image, feature, column_type) for feature in features]
 

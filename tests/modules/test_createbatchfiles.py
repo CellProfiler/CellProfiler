@@ -8,6 +8,9 @@ import cellprofiler.modules.createbatchfiles
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 
+import os
+import tests.modules
+
 
 def test_test_load_version_9_please():
     assert (
@@ -16,8 +19,10 @@ def test_test_load_version_9_please():
     )
 
 
+@pytest.mark.skip(reason="Outdated pipeline")
 def test_load_v7():
-    with open("./tests/resources/modules/createbatchfiles/v7.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("createbatchfiles/v7.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -26,7 +31,7 @@ def test_load_v7():
     module = pipeline.modules()[0]
     assert isinstance(module, cellprofiler.modules.createbatchfiles.CreateBatchFiles)
     assert module.wants_default_output_directory
-    assert module.custom_output_directory == r"C:\foo\bar"
+    assert module.custom_output_directory.value == r"C:\foo\bar"
     assert not module.remote_host_is_windows
     assert not module.distributed_mode
     assert module.default_image_directory == r"C:\bar\baz"
@@ -39,7 +44,8 @@ def test_load_v7():
 
 
 def test_load_v8():
-    with open("./tests/resources/modules/createbatchfiles/v8.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("createbatchfiles/v8.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

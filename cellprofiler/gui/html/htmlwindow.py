@@ -3,8 +3,8 @@
 import os
 import sys
 import webbrowser
+from urllib.request import pathname2url
 
-import six.moves.urllib.request
 import wx.html
 
 import cellprofiler.icons
@@ -40,7 +40,7 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                 if sys.platform.startswith("win"):
                     my_url = full_path
                 else:
-                    my_url = "file:" + six.moves.urllib.request.pathname2url(full_path)
+                    my_url = "file:" + pathname2url(full_path)
 
                 return wx.html.HTML_REDIRECT, my_url
 

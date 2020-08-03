@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 DilateImage
 ===========
@@ -14,18 +12,18 @@ Supports 2D? Supports 3D? Respects masks?
 YES          YES          NO
 ============ ============ ===============
 
-.. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/xx_applications/plot_morphology.html#dilation
+.. _this tutorial: https://scikit-image.org/docs/dev/auto_examples/applications/plot_morphology.html#dilation
 
 """
 
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import StructuringElement
+
 import cellprofiler.utilities.morphology
-from cellprofiler.modules._help import HELP_FOR_STREL
+from ._help import HELP_FOR_STREL
 
 
-class DilateImage(cellprofiler_core.module.ImageProcessing):
+class DilateImage(ImageProcessing):
     category = "Advanced"
 
     module_name = "DilateImage"
@@ -35,7 +33,7 @@ class DilateImage(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(DilateImage, self).create_settings()
 
-        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+        self.structuring_element = StructuringElement(
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 

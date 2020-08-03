@@ -4,17 +4,14 @@ The knime bridge supports a ZMQ protocol that lets a single client
 run an analysis worker to get pipeline metadata and run a pipeline on
 an image set.
 """
-import logging
-
-logger = logging.getLogger(__name__)
-
-from io import StringIO
 import json
-import javabridge
-import numpy
+import logging
 import threading
 import uuid
-import six
+from io import StringIO
+
+import javabridge
+import numpy
 import zmq
 
 if not hasattr(zmq, "Frame"):
@@ -25,12 +22,8 @@ if not hasattr(zmq, "Frame"):
 
     zmq.Frame = ZmqFrame
 
-import cellprofiler_core.module
-import cellprofiler_core.measurement
-import cellprofiler_core.image
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.setting
 import cellprofiler_core.workspace
 
 CONNECT_REQ_1 = "connect-request-1"
@@ -100,7 +93,7 @@ class KnimeBridgeServer(threading.Thread):
         try:
             self.socket = self.context.socket(zmq.REP)
             self.socket.bind(self.address)
-            logger.info("Binding Knime bridge server to %s" % self.address)
+            logging.info("Binding Knime bridge server to %s" % self.address)
             poller = zmq.Poller()
             poller.register(self.socket, flags=zmq.POLLIN)
             if self.notify_addr is not None:
@@ -139,7 +132,7 @@ class KnimeBridgeServer(threading.Thread):
                                         session_id, message_type, msg
                                     )
                                 except Exception as e:
-                                    logger.warn(e.message, exc_info=1)
+                                    logging.warn(e.message, exc_info=1)
                                     self.raise_cellprofiler_exception(
                                         session_id, e.message
                                     )
@@ -161,13 +154,13 @@ class KnimeBridgeServer(threading.Thread):
 
     def pipeline_info(self, session_id, message_type, message):
         """Handle the pipeline info message"""
-        logger.info("Handling pipeline info request")
+        logging.info("Handling pipeline info request")
         pipeline_txt = message.pop(0).bytes
         pipeline = cellprofiler_core.pipeline.Pipeline()
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
-            logger.warning(
+            logging.warning(
                 "Failed to load pipeline: sending pipeline exception", exc_info=1
             )
             self.raise_pipeline_exception(session_id, str(e))
@@ -186,14 +179,14 @@ class KnimeBridgeServer(threading.Thread):
 
     def clean_pipeline(self, session_id, message_type, message):
         """Handle the clean pipeline request message"""
-        logger.info("Handling clean pipeline request")
+        logging.info("Handling clean pipeline request")
         pipeline_txt = message.pop(0).bytes
         module_names = json.loads(message.pop(0).bytes)
         pipeline = cellprofiler_core.pipeline.Pipeline()
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
-            logger.warning(
+            logging.warning(
                 "Failed to load pipeline: sending pipeline exception", exc_info=1
             )
             self.raise_pipeline_exception(session_id, str(e))
@@ -238,7 +231,7 @@ class KnimeBridgeServer(threading.Thread):
                 pipeline, module, m, object_set, m, None
             )
             try:
-                logger.info(
+                logging.info(
                     "Running module # %d: %s" % (module.module_num, module.module_name)
                 )
                 pipeline.run_module(module, workspace)
@@ -252,7 +245,7 @@ class KnimeBridgeServer(threading.Thread):
                     module.module_name,
                     e.message,
                 )
-                logger.warning(msg, exc_info=1)
+                logging.warning(msg, exc_info=1)
                 self.raise_cellprofiler_exception(session_id, msg)
                 return
         type_names, feature_dict = self.find_measurements(other_modules, pipeline)
@@ -300,7 +293,7 @@ class KnimeBridgeServer(threading.Thread):
                         sf.append((feature, 0))
                     else:
                         s = data[0]
-                        if isinstance(s, six.text_type):
+                        if isinstance(s, str):
                             s = s
                         else:
                             s = str(s)
@@ -369,7 +362,7 @@ class KnimeBridgeServer(threading.Thread):
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
-            logger.warning(
+            logging.warning(
                 "Failed to load pipeline: sending pipeline exception", exc_info=1
             )
             self.raise_pipeline_exception(session_id, str(e))
@@ -391,7 +384,7 @@ class KnimeBridgeServer(threading.Thread):
         workspace = cellprofiler_core.workspace.Workspace(
             pipeline, None, m, None, m, None
         )
-        logger.info("Preparing group")
+        logging.info("Preparing group")
         for module in other_modules:
             module.prepare_group(
                 workspace,
@@ -412,7 +405,7 @@ class KnimeBridgeServer(threading.Thread):
                     pipeline, module, m, object_set, m, None
                 )
                 try:
-                    logger.info(
+                    logging.info(
                         "Running module # %d: %s"
                         % (module.module_num, module.module_name)
                     )
@@ -427,7 +420,7 @@ class KnimeBridgeServer(threading.Thread):
                         module.module_name,
                         e.message,
                     )
-                    logger.warning(msg, exc_info=1)
+                    logging.warning(msg, exc_info=1)
                     self.raise_cellprofiler_exception(session_id, msg)
                     return
             else:
@@ -438,7 +431,7 @@ class KnimeBridgeServer(threading.Thread):
             module.post_group(
                 workspace, dict([("image_number", i) for i in image_numbers])
             )
-        logger.info("Finished group")
+        logging.info("Finished group")
 
         type_names, feature_dict = self.find_measurements(other_modules, pipeline)
 
@@ -555,13 +548,13 @@ class KnimeBridgeServer(threading.Thread):
                 )
                 m.add(channel_name, cellprofiler_core.image.Image(pixel_data))
         except Exception as e:
-            logger.warn("Failed to decode message", exc_info=1)
+            logging.warn("Failed to decode message", exc_info=1)
             self.raise_cellprofiler_exception(session_id, e.message)
             return None, None, None
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
-            logger.warning(
+            logging.warning(
                 "Failed to load pipeline: sending pipeline exception", exc_info=1
             )
             self.raise_pipeline_exception(session_id, str(e))
@@ -570,7 +563,7 @@ class KnimeBridgeServer(threading.Thread):
         return pipeline, m, object_set
 
     def raise_pipeline_exception(self, session_id, message):
-        if isinstance(message, six.text_type):
+        if isinstance(message, str):
             message = message
         else:
             message = str(message)
@@ -584,7 +577,7 @@ class KnimeBridgeServer(threading.Thread):
         )
 
     def raise_cellprofiler_exception(self, session_id, message):
-        if isinstance(message, six.text_type):
+        if isinstance(message, str):
             message = message
         else:
             message = str(message)
@@ -618,7 +611,7 @@ class KnimeBridgeServer(threading.Thread):
         channels = []
         for module in input_modules:
             for setting in module.visible_settings():
-                if isinstance(setting, cellprofiler_core.setting.ImageNameProvider):
+                if isinstance(setting, cellprofiler_core.setting.ImageName):
                     channels.append(setting.value)
         return channels
 

@@ -39,7 +39,10 @@ RE_FILENAME_GUESSES = [
     # GE InCell Analyzer
     r"^(?P<Row>[A-H]*) - (?P<Column>[0-9]*)\(fld (?P<Site>[0-9]*) wv (?P<Wavelength>.*) - (?P<Filter>.*)\)",
     # Phenix
-    r"^r(?P<WellRow>\d{2})c(?P<WellColumn>\d{2})f(?P<Site>\d{2})p\d{2}-ch(?P<ChannelNumber>\d)"
+    r"^r(?P<WellRow>\d{2})c(?P<WellColumn>\d{2})f(?P<Site>\d{2})p\d{2}-ch(?P<ChannelNumber>\d)",
+    # GE InCell Analyzer 7.2
+    r"^(?P<Row>[A-P])_(?P<Column>[0-9]*)_f(?P<Site>[0-9]*)_c(?P<Channel>[0-9]*)_x(?P<Wavelength>.*)_m("
+    r"?P<Filter>.*)_z(?P<Slice>[0-9]*)_t(?P<Timepoint>[0-9]*)\.tif",
     # Please add more guesses below
 ]
 
@@ -55,9 +58,7 @@ RE_FOLDER_GUESSES = [
 def edit_regexp(parent, regexp, test_text, guesses=None):
     if guesses is None:
         guesses = RE_FILENAME_GUESSES
-    frame = RegexpDialog(
-        parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-    )
+    frame = RegexpDialog(parent, style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
     frame.SetMinSize((300, 200))
     frame.SetSize((600, 200))
     frame.value = regexp
@@ -75,13 +76,15 @@ class RegexpDialog(wx.Dialog):
         self.__value = "Not initialized"
         self.__test_text = "Not initialized"
         self.__guesses = RE_FILENAME_GUESSES
-        font = wx.Font(10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        font = wx.Font(
+            10, wx.FONTFAMILY_MODERN, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL
+        )
         self.font = font
         self.error_font = font
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(hsizer, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        sizer.Add(hsizer, 0, wx.GROW | wx.ALL, 5)
         hsizer.Add(wx.StaticText(self, label="Regex:"), 0, wx.ALIGN_CENTER | wx.ALL, 5)
 
         self.regexp_display = wx.stc.StyledTextCtrl(self, -1, style=wx.BORDER_SIMPLE)
@@ -154,21 +157,21 @@ class RegexpDialog(wx.Dialog):
         self.test_display.SetMarginWidth(wx.stc.STC_MARGIN_NUMBER, 0)
         self.test_display.SetMarginWidth(wx.stc.STC_MARGIN_SYMBOL, 0)
         text_extent = self.test_display.GetFullTextExtent(self.__test_text)
-        self.test_display.SetSizeHints(100, text_extent[1]+3, maxH=text_extent[1]+3)
+        self.test_display.SetSizeHints(100, text_extent[1] + 3, maxH=text_extent[1] + 3)
         self.test_display.Enable(False)
         sizer.Add(self.test_display, 0, wx.EXPAND | wx.ALL, 5)
 
         line = wx.StaticLine(self, -1, size=(20, -1), style=wx.LI_HORIZONTAL)
-        sizer.Add(line, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.LEFT, 5)
+        sizer.Add(line, 0, wx.GROW | wx.RIGHT | wx.LEFT, 5)
 
         hsizer = wx.StdDialogButtonSizer()
         guess_button = wx.Button(self, label="Guess")
-        hsizer.Add(guess_button, 0, wx.ALIGN_RIGHT)
+        hsizer.Add(guess_button, 0)
         ok_button = wx.Button(self, label="Submit")
         ok_button.SetDefault()
-        hsizer.Add(ok_button, 0, wx.ALIGN_RIGHT | wx.LEFT, 5)
+        hsizer.Add(ok_button, 0, wx.LEFT, 5)
         cancel_button = wx.Button(self, label="Cancel")
-        hsizer.Add(cancel_button, 0, wx.ALIGN_RIGHT | wx.LEFT, 5)
+        hsizer.Add(cancel_button, 0, wx.LEFT, 5)
         hsizer.Realize()
         sizer.Add(hsizer, 0, wx.ALIGN_RIGHT | wx.ALL, 5)
 

@@ -197,7 +197,9 @@ class PlateViewer(object):
         self.site_grid.CreateGrid(1, 2)
         self.site_grid.SetColLabelValue(0, "X")
         self.site_grid.SetColLabelValue(1, "Y")
-        control_sizer.Add(self.site_grid, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL | wx.EXPAND, 5)
+        control_sizer.Add(
+            self.site_grid, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL | wx.EXPAND, 5
+        )
 
         self.channel_grid = wx.grid.Grid(self.canvas_panel)
         self.channel_grid.CreateGrid(1, 4)
@@ -331,7 +333,8 @@ class PlateViewer(object):
             if self.plate_name in self.data.get_plate_names():
                 self.plate_data = self.data.get_plate(self.plate_name)
             elif (
-                len(self.data.get_plate_names()) == 0 and None in self.data.plate_well_site
+                len(self.data.get_plate_names()) == 0
+                and None in self.data.plate_well_site
             ):
                 self.plate_data = self.data.get_plate(None)
             else:
@@ -344,7 +347,7 @@ class PlateViewer(object):
                 "'Well' metadata must be in the format [Column][Row], e.g. 'A01'\n"
                 "Please see 'Help-->Using Your Output-->Plate Viewer' for guidance.",
                 caption="Plate Metadata Error",
-                )
+            )
             self.plate_data = None
             self.error = True
             return
@@ -477,7 +480,7 @@ class PlateViewer(object):
         dc.SetBackground(wx.Brush(self.plate_panel.GetBackgroundColour()))
         dc.Clear()
         gc = wx.GraphicsContext.Create(dc)
-        gc.SetFont(self.plate_panel.GetFont(), wx.Colour('black'))
+        gc.SetFont(self.plate_panel.GetFont(), wx.Colour("black"))
         if self.plate_data is None:
             return
         side = self.get_well_side()
@@ -517,7 +520,7 @@ class PlateViewer(object):
             from bioformats import load_image_url
             import javabridge
             from scipy.io.matlab.mio import loadmat
-            from cellprofiler_core.modules.loadimages import url2pathname
+            from cellprofiler_core.utilities.pathname import url2pathname
 
             javabridge.attach()
             with self.image_dict_lock:

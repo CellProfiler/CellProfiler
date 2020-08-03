@@ -1,15 +1,24 @@
-# coding=utf-8
-
-import numpy as np
+import numpy
+from cellprofiler_core.constants.measurement import (
+    FF_PARENT,
+    FF_CHILDREN_COUNT,
+    IMAGE,
+    COLTYPE_INTEGER,
+)
+from cellprofiler_core.module import Module
+from cellprofiler_core.object import Objects
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_count_measurements,
+    add_object_location_measurements,
+    get_object_measurement_columns,
+)
+from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.outline import outline
 
-import cellprofiler_core.measurement
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.object as cpo
-import cellprofiler_core.setting as cps
 from cellprofiler.modules import _help
-from cellprofiler_core.modules import identify as cpmi
 
 __doc__ = """\
 IdentifyTertiaryObjects
@@ -110,7 +119,7 @@ R_PARENT = "Parent"
 R_REMOVED = "Removed"
 
 
-class IdentifyTertiaryObjects(cpm.Module):
+class IdentifyTertiaryObjects(Module):
     module_name = "IdentifyTertiaryObjects"
     variable_revision_number = 3
     category = "Object Processing"
@@ -120,7 +129,7 @@ class IdentifyTertiaryObjects(cpm.Module):
 
         Create the settings for the module during initialization.
         """
-        self.secondary_objects_name = cps.ObjectNameSubscriber(
+        self.secondary_objects_name = LabelSubscriber(
             "Select the larger identified objects",
             "None",
             doc="""\
@@ -128,7 +137,7 @@ Select the larger identified objects. This will usually be an object
 previously identified by an **IdentifySecondaryObjects** module.""",
         )
 
-        self.primary_objects_name = cps.ObjectNameSubscriber(
+        self.primary_objects_name = LabelSubscriber(
             "Select the smaller identified objects",
             "None",
             doc="""\
@@ -136,7 +145,7 @@ Select the smaller identified objects. This will usually be an object
 previously identified by an **IdentifyPrimaryObjects** module.""",
         )
 
-        self.subregion_objects_name = cps.ObjectNameProvider(
+        self.subregion_objects_name = LabelName(
             "Name the tertiary objects to be identified",
             "Cytoplasm",
             doc="""\
@@ -144,7 +153,7 @@ Enter a name for the new tertiary objects. The tertiary objects
 will consist of the smaller object subtracted from the larger object.""",
         )
 
-        self.shrink_primary = cps.Binary(
+        self.shrink_primary = Binary(
             "Shrink smaller object prior to subtraction?",
             True,
             doc="""\
@@ -245,15 +254,13 @@ but the results will be zero or not-a-number (NaN).
             # No suitable cropping - resize all to fit the secondary
             # labels which are the most critical.
             #
-            primary_labels, _ = cpo.size_similarly(secondary_labels, primary_labels)
+            primary_labels, _ = size_similarly(secondary_labels, primary_labels)
             if secondary_objects.parent_image is not None:
                 tertiary_image = secondary_objects.parent_image
             else:
                 tertiary_image = primary_objects.parent_image
                 if tertiary_image is not None:
-                    tertiary_image, _ = cpo.size_similarly(
-                        secondary_labels, tertiary_image
-                    )
+                    tertiary_image, _ = size_similarly(secondary_labels, tertiary_image)
         # If size/shape differences were too extreme, raise an error.
         if primary_labels.shape != secondary_labels.shape:
             raise ValueError(
@@ -277,7 +284,7 @@ but the results will be zero or not-a-number (NaN).
         primary_outline = outline(primary_labels)
         tertiary_labels = secondary_labels.copy()
         if self.shrink_primary:
-            primary_mask = np.logical_or(primary_labels == 0, primary_outline)
+            primary_mask = numpy.logical_or(primary_labels == 0, primary_outline)
         else:
             primary_mask = primary_labels == 0
         tertiary_labels[primary_mask == False] = 0
@@ -288,7 +295,7 @@ but the results will be zero or not-a-number (NaN).
         #
         # Make the tertiary objects container
         #
-        tertiary_objects = cpo.Objects()
+        tertiary_objects = Objects()
         tertiary_objects.segmented = tertiary_labels
         tertiary_objects.parent_image = tertiary_image
         #
@@ -306,13 +313,15 @@ but the results will be zero or not-a-number (NaN).
             # Establish overlap between primary and secondary and commute
             _, secondary_of_primary = secondary_objects.relate_children(primary_objects)
             mask = secondary_of_primary != 0
-            child_count_of_primary = np.zeros(mask.shape, int)
+            child_count_of_primary = numpy.zeros(mask.shape, int)
             child_count_of_primary[mask] = child_count_of_secondary[
                 secondary_of_primary[mask] - 1
             ]
-            primary_parents = np.zeros(secondary_parents.shape, secondary_parents.dtype)
-            primary_of_secondary = np.zeros(secondary_objects.count + 1, int)
-            primary_of_secondary[secondary_of_primary] = np.arange(
+            primary_parents = numpy.zeros(
+                secondary_parents.shape, secondary_parents.dtype
+            )
+            primary_of_secondary = numpy.zeros(secondary_objects.count + 1, int)
+            primary_of_secondary[secondary_of_primary] = numpy.arange(
                 1, len(secondary_of_primary) + 1
             )
             primary_of_secondary[0] = 0
@@ -346,18 +355,17 @@ but the results will be zero or not-a-number (NaN).
         ):
             m.add_measurement(
                 self.subregion_objects_name.value,
-                cellprofiler_core.measurement.FF_PARENT % parent_objects_name.value,
+                FF_PARENT % parent_objects_name.value,
                 parents_of,
             )
             m.add_measurement(
                 parent_objects_name.value,
-                cellprofiler_core.measurement.FF_CHILDREN_COUNT
-                % self.subregion_objects_name.value,
+                FF_CHILDREN_COUNT % self.subregion_objects_name.value,
                 child_count,
             )
             mask = parents_of != 0
-            image_number = np.ones(np.sum(mask), int) * m.image_set_number
-            child_object_number = np.argwhere(mask).flatten() + 1
+            image_number = numpy.ones(numpy.sum(mask), int) * m.image_set_number
+            child_object_number = numpy.argwhere(mask).flatten() + 1
             parent_object_number = parents_of[mask]
             m.add_relate_measurement(
                 self.module_num,
@@ -374,13 +382,13 @@ but the results will be zero or not-a-number (NaN).
         #
         # The object count
         #
-        cpmi.add_object_count_measurements(
+        add_object_count_measurements(
             workspace.measurements, self.subregion_objects_name.value, object_count
         )
         #
         # The object locations
         #
-        cpmi.add_object_location_measurements(
+        add_object_location_measurements(
             workspace.measurements, self.subregion_objects_name.value, tertiary_labels
         )
 
@@ -401,7 +409,7 @@ but the results will be zero or not-a-number (NaN).
         #
         figure.set_subplots((2, 2))
 
-        cmap = figure.return_cmap()
+        cmap = figure.return_cmap(numpy.max(primary_labels))
 
         figure.subplot_imshow_labels(
             0, 0, primary_labels, self.primary_objects_name.value, colormap=cmap,
@@ -433,22 +441,14 @@ but the results will be zero or not-a-number (NaN).
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
         subregion_name = self.subregion_objects_name.value
-        columns = cpmi.get_object_measurement_columns(subregion_name)
+        columns = get_object_measurement_columns(subregion_name)
         for parent in (
             self.primary_objects_name.value,
             self.secondary_objects_name.value,
         ):
             columns += [
-                (
-                    parent,
-                    cellprofiler_core.measurement.FF_CHILDREN_COUNT % subregion_name,
-                    cpmeas.COLTYPE_INTEGER,
-                ),
-                (
-                    subregion_name,
-                    cellprofiler_core.measurement.FF_PARENT % parent,
-                    cpmeas.COLTYPE_INTEGER,
-                ),
+                (parent, FF_CHILDREN_COUNT % subregion_name, COLTYPE_INTEGER,),
+                (subregion_name, FF_PARENT % parent, COLTYPE_INTEGER,),
             ]
         return columns
 
@@ -470,7 +470,7 @@ but the results will be zero or not-a-number (NaN).
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
         categories = []
-        if object_name == cpmeas.IMAGE:
+        if object_name == IMAGE:
             categories += ["Count"]
         elif (
             object_name == self.primary_objects_name
@@ -489,7 +489,7 @@ but the results will be zero or not-a-number (NaN).
         """
         result = []
 
-        if object_name == cpmeas.IMAGE:
+        if object_name == IMAGE:
             if category == "Count":
                 result += [self.subregion_objects_name.value]
         if (

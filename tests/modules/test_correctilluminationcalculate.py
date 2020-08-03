@@ -11,6 +11,9 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 
+import os
+import tests.modules
+
 INPUT_IMAGE_NAME = "MyImage"
 OUTPUT_IMAGE_NAME = "MyResult"
 AVERAGE_IMAGE_NAME = "Ave"
@@ -1278,161 +1281,11 @@ def test_rescale_outlier():
     assert numpy.all(image.pixel_data == expected_image)
 
 
-def test_load_v1():
-    with open(
-        "./tests/resources/modules/correctilluminationcalculate/v1.pipeline", "r"
-    ) as fd:
-        data = fd.read()
-
-    pipeline = cellprofiler_core.pipeline.Pipeline()
-
-    def callback(caller, event):
-        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
-
-    pipeline.add_listener(callback)
-    pipeline.load(StringIO(data))
-    assert len(pipeline.modules()) == 6
-    for (
-        i,
-        (
-            image_name,
-            illumination_image_name,
-            intensity_choice,
-            dilate_objects,
-            object_dilation_radius,
-            block_size,
-            rescale_option,
-            each_or_all,
-            smoothing_method,
-            automatic_object_width,
-            object_width,
-            size_of_smoothing_filter,
-            save_average_image,
-            average_image_name,
-            save_dilated_image,
-            dilated_image_name,
-        ),
-    ) in enumerate(
-        (
-            (
-                "Image1",
-                "Illum1",
-                cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
-                False,
-                1,
-                60,
-                "Yes",
-                cellprofiler.modules.correctilluminationcalculate.EA_ALL_FIRST,
-                cellprofiler.modules.correctilluminationcalculate.SM_NONE,
-                cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC,
-                10,
-                10,
-                True,
-                "Illum1Average",
-                True,
-                "Illum1Dilated",
-            ),
-            (
-                "Image2",
-                "Illum2",
-                cellprofiler.modules.correctilluminationcalculate.IC_BACKGROUND,
-                True,
-                2,
-                65,
-                "No",
-                cellprofiler.modules.correctilluminationcalculate.EA_ALL_FIRST,
-                cellprofiler.modules.correctilluminationcalculate.SM_MEDIAN_FILTER,
-                cellprofiler.modules.correctilluminationcalculate.FI_MANUALLY,
-                15,
-                20,
-                True,
-                "Illum2Avg",
-                True,
-                "Illum2Dilated",
-            ),
-            (
-                "Image3",
-                "Illum3",
-                cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
-                False,
-                1,
-                60,
-                cellprofiler.modules.correctilluminationcalculate.RE_MEDIAN,
-                cellprofiler.modules.correctilluminationcalculate.EA_ALL_ACROSS,
-                cellprofiler.modules.correctilluminationcalculate.SM_MEDIAN_FILTER,
-                cellprofiler.modules.correctilluminationcalculate.FI_AUTOMATIC,
-                10,
-                10,
-                False,
-                "Illum3Avg",
-                True,
-                "Illum3Dilated",
-            ),
-            (
-                "Image4",
-                "Illum4",
-                cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
-                "No",
-                1,
-                60,
-                cellprofiler.modules.correctilluminationcalculate.RE_MEDIAN,
-                cellprofiler.modules.correctilluminationcalculate.EA_EACH,
-                cellprofiler.modules.correctilluminationcalculate.SM_GAUSSIAN_FILTER,
-                cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
-                15,
-                10,
-                False,
-                "Illum4Avg",
-                True,
-                "Illum4Dilated",
-            ),
-            (
-                "Image5",
-                "Illum5",
-                cellprofiler.modules.correctilluminationcalculate.IC_REGULAR,
-                "No",
-                1,
-                60,
-                cellprofiler.modules.correctilluminationcalculate.RE_MEDIAN,
-                cellprofiler.modules.correctilluminationcalculate.EA_ALL_ACROSS,
-                cellprofiler.modules.correctilluminationcalculate.SM_TO_AVERAGE,
-                cellprofiler.modules.correctilluminationcalculate.FI_OBJECT_SIZE,
-                15,
-                10,
-                False,
-                "Illum5Avg",
-                False,
-                "Illum5Dilated",
-            ),
-        )
-    ):
-        module = pipeline.modules()[i + 1]
-        assert isinstance(
-            module,
-            cellprofiler.modules.correctilluminationcalculate.CorrectIlluminationCalculate,
-        )
-        assert module.image_name == image_name
-        assert module.illumination_image_name == illumination_image_name
-        assert module.intensity_choice == intensity_choice
-        assert module.dilate_objects == dilate_objects
-        assert module.object_dilation_radius == object_dilation_radius
-        assert module.block_size == block_size
-        assert module.rescale_option == rescale_option
-        assert module.each_or_all == each_or_all
-        assert module.smoothing_method == smoothing_method
-        assert module.automatic_object_width == automatic_object_width
-        assert module.object_width == object_width
-        assert module.size_of_smoothing_filter == size_of_smoothing_filter
-        assert module.save_average_image == save_average_image
-        assert module.average_image_name == average_image_name
-        assert module.save_dilated_image == save_dilated_image
-        assert module.dilated_image_name == dilated_image_name
-
-
 def test_load_v2():
-    with open(
-        "./tests/resources/modules/correctilluminationcalculate/v2.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory(
+        "correctilluminationcalculate/v2.pipeline"
+    )
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

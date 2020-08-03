@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 IdentifyDeadWorms
 =================
@@ -55,19 +53,35 @@ well as video tutorials.
 .. _Worm Toolbox: http://www.cellprofiler.org/wormtoolbox/
 """
 
-import numpy as np
+import matplotlib.cm
+import numpy
+from cellprofiler_core.constants.measurement import (
+    COLTYPE_INTEGER,
+    M_LOCATION_CENTER_X,
+    M_LOCATION_CENTER_Y,
+    M_NUMBER_OBJECT_NUMBER,
+    FF_COUNT,
+    COLTYPE_FLOAT,
+    IMAGE,
+    C_COUNT,
+    C_LOCATION,
+    C_NUMBER,
+    FTR_CENTER_X,
+    FTR_CENTER_Y,
+    FTR_OBJECT_NUMBER,
+)
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
+from cellprofiler_core.object import Objects, ObjectSet
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import LabelName, Integer, Float
 from centrosome.cpmorphology import all_connected_components
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+from centrosome.cpmorphology import fixup_scipy_ndimage_result
 from centrosome.cpmorphology import get_line_pts
 from scipy.ndimage import binary_erosion, binary_fill_holes
 from scipy.ndimage import mean as mean_of_labels
-
-import cellprofiler_core.measurement
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.module as cpm
-import cellprofiler_core.object as cpo
-import cellprofiler_core.preferences as cpprefs
-import cellprofiler_core.setting as cps
 
 C_WORMS = "Worm"
 F_ANGLE = "Angle"
@@ -81,7 +95,7 @@ LABEL_ALPHA = 1.0
 WORM_ALPHA = 0.25
 
 
-class IdentifyDeadWorms(cpm.Module):
+class IdentifyDeadWorms(Module):
     module_name = "IdentifyDeadWorms"
     variable_revision_number = 2
     category = ["Worm Toolbox"]
@@ -91,7 +105,7 @@ class IdentifyDeadWorms(cpm.Module):
 
         Create the settings for the module during initialization.
         """
-        self.image_name = cps.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""\
@@ -104,7 +118,7 @@ such as **IdentifyPrimaryObjects** to label each worm and then use
 """,
         )
 
-        self.object_name = cps.ObjectNameProvider(
+        self.object_name = LabelName(
             "Name the dead worm objects to be identified",
             "DeadWorms",
             doc="""\
@@ -113,7 +127,7 @@ to this name in subsequent modules such as
 **IdentifySecondaryObjects**""",
         )
 
-        self.worm_width = cps.Integer(
+        self.worm_width = Integer(
             "Worm width",
             10,
             minval=1,
@@ -124,7 +138,7 @@ matching against the worm. It should be less than the width
 of a worm.""",
         )
 
-        self.worm_length = cps.Integer(
+        self.worm_length = Integer(
             "Worm length",
             100,
             minval=1,
@@ -134,7 +148,7 @@ of the diamond used as a template when matching against the
 worm. It should be less than the length of a worm""",
         )
 
-        self.angle_count = cps.Integer(
+        self.angle_count = Integer(
             "Number of angles",
             32,
             minval=1,
@@ -146,7 +160,7 @@ that is, you will get the same shape after rotating it by 180°.
 """,
         )
 
-        self.wants_automatic_distance = cps.Binary(
+        self.wants_automatic_distance = Binary(
             "Automatically calculate distance parameters?",
             True,
             doc="""\
@@ -161,7 +175,7 @@ distances manually.
             % globals(),
         )
 
-        self.space_distance = cps.Float(
+        self.space_distance = Float(
             "Spatial distance",
             5,
             minval=1,
@@ -174,7 +188,7 @@ be considered two separate worms.
 """,
         )
 
-        self.angular_distance = cps.Float(
+        self.angular_distance = Float(
             "Angular distance",
             30,
             minval=1,
@@ -234,24 +248,24 @@ degrees.
         # j - the j coordinate of each point found after erosion
         # a - the angle of the structuring element for each point found
         #
-        i = np.zeros(0, int)
-        j = np.zeros(0, int)
-        a = np.zeros(0, int)
+        i = numpy.zeros(0, int)
+        j = numpy.zeros(0, int)
+        a = numpy.zeros(0, int)
 
-        ig, jg = np.mgrid[0 : mask.shape[0], 0 : mask.shape[1]]
+        ig, jg = numpy.mgrid[0 : mask.shape[0], 0 : mask.shape[1]]
         this_idx = 0
         for angle_number in range(angle_count):
-            angle = float(angle_number) * np.pi / float(angle_count)
+            angle = float(angle_number) * numpy.pi / float(angle_count)
             strel = self.get_diamond(angle)
             erosion = binary_erosion(mask, strel)
             #
             # Accumulate the count, i, j and angle for all foreground points
             # in the erosion
             #
-            this_count = np.sum(erosion)
-            i = np.hstack((i, ig[erosion]))
-            j = np.hstack((j, jg[erosion]))
-            a = np.hstack((a, np.ones(this_count, float) * angle))
+            this_count = numpy.sum(erosion)
+            i = numpy.hstack((i, ig[erosion]))
+            j = numpy.hstack((j, jg[erosion]))
+            a = numpy.hstack((a, numpy.ones(this_count, float) * angle))
         #
         # Find connections based on distances, not adjacency
         #
@@ -261,13 +275,17 @@ degrees.
         #
         if len(first) > 0:
             ij_labels = all_connected_components(first, second) + 1
-            nlabels = np.max(ij_labels)
-            label_indexes = np.arange(1, nlabels + 1)
+            nlabels = numpy.max(ij_labels)
+            label_indexes = numpy.arange(1, nlabels + 1)
             #
             # Compute the measurements
             #
-            center_x = fix(mean_of_labels(j, ij_labels, label_indexes))
-            center_y = fix(mean_of_labels(i, ij_labels, label_indexes))
+            center_x = fixup_scipy_ndimage_result(
+                mean_of_labels(j, ij_labels, label_indexes)
+            )
+            center_y = fixup_scipy_ndimage_result(
+                mean_of_labels(i, ij_labels, label_indexes)
+            )
             #
             # The angles are wierdly complicated because of the wrap-around.
             # You can imagine some horrible cases, like a circular patch of
@@ -286,59 +304,55 @@ degrees.
             # the connected components - both overkill for such an inconsequential
             # measurement I hope.
             #
-            angles = fix(mean_of_labels(a, ij_labels, label_indexes))
-            vangles = fix(
+            angles = fixup_scipy_ndimage_result(
+                mean_of_labels(a, ij_labels, label_indexes)
+            )
+            vangles = fixup_scipy_ndimage_result(
                 mean_of_labels(
                     (a - angles[ij_labels - 1]) ** 2, ij_labels, label_indexes
                 )
             )
             aa = a.copy()
-            aa[a > np.pi / 2] -= np.pi
-            aangles = fix(mean_of_labels(aa, ij_labels, label_indexes))
-            vaangles = fix(
+            aa[a > numpy.pi / 2] -= numpy.pi
+            aangles = fixup_scipy_ndimage_result(
+                mean_of_labels(aa, ij_labels, label_indexes)
+            )
+            vaangles = fixup_scipy_ndimage_result(
                 mean_of_labels(
                     (aa - aangles[ij_labels - 1]) ** 2, ij_labels, label_indexes
                 )
             )
-            aangles[aangles < 0] += np.pi
+            aangles[aangles < 0] += numpy.pi
             angles[vaangles < vangles] = aangles[vaangles < vangles]
             #
             # Squish the labels to 2-d. The labels for overlaps are arbitrary.
             #
-            labels = np.zeros(mask.shape, int)
+            labels = numpy.zeros(mask.shape, int)
             labels[i, j] = ij_labels
         else:
-            center_x = np.zeros(0, int)
-            center_y = np.zeros(0, int)
-            angles = np.zeros(0)
+            center_x = numpy.zeros(0, int)
+            center_y = numpy.zeros(0, int)
+            angles = numpy.zeros(0)
             nlabels = 0
-            label_indexes = np.zeros(0, int)
-            labels = np.zeros(mask.shape, int)
+            label_indexes = numpy.zeros(0, int)
+            labels = numpy.zeros(mask.shape, int)
 
         m = workspace.measurements
-        assert isinstance(m, cpmeas.Measurements)
+        assert isinstance(m, Measurements)
         object_name = self.object_name.value
+        m.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
+        m.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
+        m.add_measurement(object_name, M_ANGLE, angles * 180 / numpy.pi)
         m.add_measurement(
-            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_X, center_x
+            object_name, M_NUMBER_OBJECT_NUMBER, label_indexes,
         )
-        m.add_measurement(
-            object_name, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, center_y
-        )
-        m.add_measurement(object_name, M_ANGLE, angles * 180 / np.pi)
-        m.add_measurement(
-            object_name,
-            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-            label_indexes,
-        )
-        m.add_image_measurement(
-            cellprofiler_core.measurement.FF_COUNT % object_name, nlabels
-        )
+        m.add_image_measurement(FF_COUNT % object_name, nlabels)
         #
         # Make the objects
         #
         object_set = workspace.object_set
-        assert isinstance(object_set, cpo.ObjectSet)
-        objects = cpo.Objects()
+        assert isinstance(object_set, ObjectSet)
+        objects = Objects()
         objects.segmented = labels
         objects.parent_image = image
         object_set.add_objects(objects, object_name)
@@ -365,7 +379,7 @@ degrees.
         labels = workspace.display_data.labels
         count = workspace.display_data.count
 
-        color_image = np.zeros((mask.shape[0], mask.shape[1], 4))
+        color_image = numpy.zeros((mask.shape[0], mask.shape[1], 4))
         #
         # We do the coloring using alpha values to let the different
         # things we draw meld together.
@@ -375,10 +389,10 @@ degrees.
         color_image[mask, :] = MASK_ALPHA
         if count > 0:
             mappable = matplotlib.cm.ScalarMappable(
-                cmap=matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+                cmap=matplotlib.cm.get_cmap(get_default_colormap())
             )
-            np.random.seed(0)
-            colors = mappable.to_rgba(np.random.permutation(np.arange(count)))
+            numpy.random.seed(0)
+            colors = mappable.to_rgba(numpy.random.permutation(numpy.arange(count)))
 
             #
             # The labels
@@ -393,7 +407,7 @@ degrees.
             lcolors = colors * 0.5 + 0.5  # Wash the colors out a little
             for ii in range(count):
                 diamond = self.get_diamond(angles[ii])
-                hshape = ((np.array(diamond.shape) - 1) / 2).astype(int)
+                hshape = ((numpy.array(diamond.shape) - 1) / 2).astype(int)
                 iii = i[ii]
                 jjj = j[ii]
                 color_image[
@@ -406,7 +420,7 @@ degrees.
         #
         color_image[:, :, -1][color_image[:, :, -1] == 0] = 1
         color_image[:, :, :-1] = (
-            color_image[:, :, :-1] / color_image[:, :, -1][:, :, np.newaxis]
+            color_image[:, :, :-1] / color_image[:, :, -1][:, :, numpy.newaxis]
         )
         plot00 = figure.subplot_imshow_bw(0, 0, mask, self.image_name.value)
         figure.subplot_imshow_color(
@@ -437,22 +451,22 @@ degrees.
         #
         #                   + x3,y3
         #
-        x0 = int(np.sin(angle) * worm_length / 2)
-        x1 = int(np.cos(angle) * worm_width / 2)
+        x0 = int(numpy.sin(angle) * worm_length / 2)
+        x1 = int(numpy.cos(angle) * worm_width / 2)
         x2 = -x0
         x3 = -x1
-        y2 = int(np.cos(angle) * worm_length / 2)
-        y1 = int(np.sin(angle) * worm_width / 2)
+        y2 = int(numpy.cos(angle) * worm_length / 2)
+        y1 = int(numpy.sin(angle) * worm_width / 2)
         y0 = -y2
         y3 = -y1
-        xmax = np.max(np.abs([x0, x1, x2, x3]))
-        ymax = np.max(np.abs([y0, y1, y2, y3]))
-        strel = np.zeros((ymax * 2 + 1, xmax * 2 + 1), bool)
+        xmax = numpy.max(numpy.abs([x0, x1, x2, x3]))
+        ymax = numpy.max(numpy.abs([y0, y1, y2, y3]))
+        strel = numpy.zeros((ymax * 2 + 1, xmax * 2 + 1), bool)
         index, count, i, j = get_line_pts(
-            np.array([y0, y1, y2, y3]) + ymax,
-            np.array([x0, x1, x2, x3]) + xmax,
-            np.array([y1, y2, y3, y0]) + ymax,
-            np.array([x1, x2, x3, x0]) + xmax,
+            numpy.array([y0, y1, y2, y3]) + ymax,
+            numpy.array([x0, x1, x2, x3]) + xmax,
+            numpy.array([y1, y2, y3, y0]) + ymax,
+            numpy.array([x1, x2, x3, x0]) + xmax,
         )
         strel[i, j] = True
         strel = binary_fill_holes(strel)
@@ -471,13 +485,13 @@ degrees.
 
         returns augmented collection of points
         """
-        numbering1 = np.zeros(img1.shape, int)
-        numbering1[img1] = np.arange(count1) + offset1
-        numbering2 = np.zeros(img1.shape, int)
-        numbering2[img2] = np.arange(count2) + offset2
+        numbering1 = numpy.zeros(img1.shape, int)
+        numbering1[img1] = numpy.arange(count1) + offset1
+        numbering2 = numpy.zeros(img1.shape, int)
+        numbering2[img2] = numpy.arange(count2) + offset2
 
-        f = np.zeros(0, int)
-        s = np.zeros(0, int)
+        f = numpy.zeros(0, int)
+        s = numpy.zeros(0, int)
         #
         # Do all 9
         #
@@ -486,9 +500,9 @@ degrees.
                 f1, s1 = IdentifyDeadWorms.find_adjacent_one(
                     img1, numbering1, img2, numbering2, oi, oj
                 )
-                f = np.hstack((f, f1))
-                s = np.hstack((s, s1))
-        return np.hstack((first, f)), np.hstack((second, s))
+                f = numpy.hstack((f, f1))
+                s = numpy.hstack((s, s1))
+        return numpy.hstack((first, f)), numpy.hstack((second, s))
 
     @staticmethod
     def find_adjacent_same(img, offset, count, first, second):
@@ -500,18 +514,18 @@ degrees.
 
         returns augmented collection of points
         """
-        numbering = np.zeros(img.shape, int)
-        numbering[img] = np.arange(count) + offset
-        f = np.zeros(0, int)
-        s = np.zeros(0, int)
+        numbering = numpy.zeros(img.shape, int)
+        numbering[img] = numpy.arange(count) + offset
+        f = numpy.zeros(0, int)
+        s = numpy.zeros(0, int)
         for oi in (0, 1):
             for oj in (0, 1):
                 f1, s1 = IdentifyDeadWorms.find_adjacent_one(
                     img, numbering, img, numbering, oi, oj
                 )
-                f = np.hstack((f, f1))
-                s = np.hstack((s, s1))
-        return np.hstack((first, f)), np.hstack((second, s))
+                f = numpy.hstack((f, f1))
+                s = numpy.hstack((s, s1))
+        return numpy.hstack((first, f)), numpy.hstack((second, s))
 
     @staticmethod
     def find_adjacent_one(img1, numbering1, img2, numbering2, oi, oj):
@@ -539,33 +553,35 @@ degrees.
         centers that are connected.
         """
         if len(i) < 2:
-            return np.zeros(len(i), int), np.zeros(len(i), int)
+            return numpy.zeros(len(i), int), numpy.zeros(len(i), int)
         if self.wants_automatic_distance:
             space_distance = self.worm_width.value
-            angle_distance = np.arctan2(self.worm_width.value, self.worm_length.value)
-            angle_distance += np.pi / self.angle_count.value
+            angle_distance = numpy.arctan2(
+                self.worm_width.value, self.worm_length.value
+            )
+            angle_distance += numpy.pi / self.angle_count.value
         else:
             space_distance = self.space_distance.value
-            angle_distance = self.angular_distance.value * np.pi / 180
+            angle_distance = self.angular_distance.value * numpy.pi / 180
         #
         # Sort by i and break the sorted vector into chunks where
         # consecutive locations are separated by more than space_distance
         #
-        order = np.lexsort((a, j, i))
+        order = numpy.lexsort((a, j, i))
         i = i[order]
         j = j[order]
         a = a[order]
-        breakpoint = np.hstack(([False], i[1:] - i[:-1] > space_distance))
-        if np.all(~breakpoint):
+        breakpoint = numpy.hstack(([False], i[1:] - i[:-1] > space_distance))
+        if numpy.all(~breakpoint):
             # No easy win - cross all with all
-            first, second = np.mgrid[0 : len(i), 0 : len(i)]
+            first, second = numpy.mgrid[0 : len(i), 0 : len(i)]
         else:
             # The segment that each belongs to
-            segment_number = np.cumsum(breakpoint)
+            segment_number = numpy.cumsum(breakpoint)
             # The number of elements in each segment
-            member_count = np.bincount(segment_number)
+            member_count = numpy.bincount(segment_number)
             # The index of the first element in the segment
-            member_idx = np.hstack(([0], np.cumsum(member_count[:-1])))
+            member_idx = numpy.hstack(([0], numpy.cumsum(member_count[:-1])))
             # The index of the first element, for every element in the segment
             segment_start = member_idx[segment_number]
             #
@@ -575,24 +591,24 @@ degrees.
             # # of (first,second) pairs in each segment
             cross_size = member_count ** 2
             # Index in final array of first element of each segment
-            segment_idx = np.cumsum(cross_size)
+            segment_idx = numpy.cumsum(cross_size)
             # relative location of first "first"
-            first_start_idx = np.cumsum(member_count[segment_number[:-1]])
-            first = np.zeros(segment_idx[-1], int)
+            first_start_idx = numpy.cumsum(member_count[segment_number[:-1]])
+            first = numpy.zeros(segment_idx[-1], int)
             first[first_start_idx] = 1
             # The "firsts" array
-            first = np.cumsum(first)
-            first_start_idx = np.hstack(([0], first_start_idx))
+            first = numpy.cumsum(first)
+            first_start_idx = numpy.hstack(([0], first_start_idx))
             second = (
-                np.arange(len(first)) - first_start_idx[first] + segment_start[first]
+                numpy.arange(len(first)) - first_start_idx[first] + segment_start[first]
             )
         mask = (
-            np.abs((i[first] - i[second]) ** 2 + (j[first] - j[second]) ** 2)
+            numpy.abs((i[first] - i[second]) ** 2 + (j[first] - j[second]) ** 2)
             <= space_distance ** 2
         ) & (
-            (np.abs(a[first] - a[second]) <= angle_distance)
-            | (a[first] + np.pi - a[second] <= angle_distance)
-            | (a[second] + np.pi - a[first] <= angle_distance)
+            (numpy.abs(a[first] - a[second]) <= angle_distance)
+            | (a[first] + numpy.pi - a[second] <= angle_distance)
+            | (a[second] + numpy.pi - a[first] <= angle_distance)
         )
         return order[first[mask]], order[second[mask]]
 
@@ -608,66 +624,47 @@ degrees.
         for the first and second arrays.
         """
         if offset > 0:
-            s0, s1 = slice(0, -offset), slice(offset, np.iinfo(int).max)
+            s0, s1 = slice(0, -offset), slice(offset, numpy.iinfo(int).max)
         elif offset < 0:
             s1, s0 = IdentifyDeadWorms.get_slices(-offset)
         else:
-            s0 = s1 = slice(0, np.iinfo(int).max)
+            s0 = s1 = slice(0, numpy.iinfo(int).max)
         return s0, s1
 
     def get_measurement_columns(self, pipeline):
         """Return column definitions for measurements made by this module"""
         object_name = self.object_name.value
         return [
-            (
-                object_name,
-                cellprofiler_core.measurement.M_LOCATION_CENTER_X,
-                cpmeas.COLTYPE_INTEGER,
-            ),
-            (
-                object_name,
-                cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
-                cpmeas.COLTYPE_INTEGER,
-            ),
-            (object_name, M_ANGLE, cpmeas.COLTYPE_FLOAT),
-            (
-                object_name,
-                cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-                cpmeas.COLTYPE_INTEGER,
-            ),
-            (
-                cpmeas.IMAGE,
-                cellprofiler_core.measurement.FF_COUNT % object_name,
-                cpmeas.COLTYPE_INTEGER,
-            ),
+            (object_name, M_LOCATION_CENTER_X, COLTYPE_INTEGER,),
+            (object_name, M_LOCATION_CENTER_Y, COLTYPE_INTEGER,),
+            (object_name, M_ANGLE, COLTYPE_FLOAT),
+            (object_name, M_NUMBER_OBJECT_NUMBER, COLTYPE_INTEGER,),
+            (IMAGE, FF_COUNT % object_name, COLTYPE_INTEGER,),
         ]
 
     def get_categories(self, pipeline, object_name):
-        if object_name == cpmeas.IMAGE:
-            return [cellprofiler_core.measurement.C_COUNT]
+        if object_name == IMAGE:
+            return [C_COUNT]
         elif object_name == self.object_name:
             return [
-                cellprofiler_core.measurement.C_LOCATION,
-                cellprofiler_core.measurement.C_NUMBER,
+                C_LOCATION,
+                C_NUMBER,
                 C_WORMS,
             ]
         else:
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        if (
-            object_name == cpmeas.IMAGE
-            and category == cellprofiler_core.measurement.C_COUNT
-        ):
+        if object_name == IMAGE and category == C_COUNT:
             return [self.object_name.value]
         elif object_name == self.object_name:
-            if category == cellprofiler_core.measurement.C_LOCATION:
+            if category == C_LOCATION:
                 return [
-                    cellprofiler_core.measurement.FTR_CENTER_X,
-                    cellprofiler_core.measurement.FTR_CENTER_Y,
+                    FTR_CENTER_X,
+                    FTR_CENTER_Y,
                 ]
-            elif category == cellprofiler_core.measurement.C_NUMBER:
-                return [cellprofiler_core.measurement.FTR_OBJECT_NUMBER]
+            elif category == C_NUMBER:
+                return [FTR_OBJECT_NUMBER]
             elif category == C_WORMS:
                 return [F_ANGLE]
         return []

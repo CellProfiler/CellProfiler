@@ -12,6 +12,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
+import tests.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -43,9 +44,8 @@ def make_workspace(labels):
 
 
 def test_01_load_v1():
-    with open(
-        "./tests/resources/modules/measureobjectsizeshape/v1.pipeline", "r"
-    ) as fd:
+    file = tests.modules.test_resources_directory("measureobjectsizeshape/v1.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -61,8 +61,8 @@ def test_01_load_v1():
         module, cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape
     )
     assert len(module.objects_list.value) == 2
-    for og, expected in zip(module.objects_list.value, ("Nuclei", "Cells")):
-        assert og.name == expected
+    for object_name in module.objects_list.value:
+        assert object_name in ("Nuclei", "Cells")
     assert module.calculate_zernikes
 
 
@@ -256,7 +256,7 @@ def test_non_contiguous():
     module.run(workspace)
     values = measurements.get_current_measurement("SomeObjects", "AreaShape_Perimeter")
     assert len(values) == 1
-    assert values[0] == 54
+    assert values[0] == 46
 
 
 def test_zernikes_are_different():
@@ -416,7 +416,10 @@ def test_overlapping():
         v2 = v2[0]
         expected = (v1, v2)
         v = mlist[2].get_current_measurement(oname, feature)
-        assert tuple(v) == expected
+        if numpy.all(numpy.isnan(v)):
+            assert numpy.all(numpy.isnan(v))
+        else:
+            assert tuple(v) == expected
 
 
 def test_max_radius():
@@ -496,7 +499,7 @@ def test_run_volume():
         ),
     )[0]
 
-    assert center_x == 29.5
+    assert center_x == 29
 
     center_y = workspace.measurements.get_current_measurement(
         OBJECTS_NAME,
@@ -508,7 +511,7 @@ def test_run_volume():
         ),
     )[0]
 
-    assert center_y == 9.5
+    assert center_y == 9
 
 
 # https://github.com/CellProfiler/CellProfiler/issues/2813
@@ -549,3 +552,58 @@ def test_run_with_zernikes():
     ]
 
     assert len(zernikes) > 0
+
+
+def test_run_without_advanced():
+    cells_resource = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), "..", "resources", "cells.tiff")
+    )
+
+    workspace, module = make_workspace(skimage.io.imread(cells_resource))
+
+    module.calculate_advanced.value = False
+    module.calculate_zernikes.value = False
+
+    module.run(workspace)
+
+    measurements = workspace.measurements
+
+    standard = [
+        f"AreaShape_{name}"
+        for name in cellprofiler.modules.measureobjectsizeshape.F_STANDARD
+        + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+    ]
+    advanced = [
+        f"AreaShape_{name}"
+        for name in cellprofiler.modules.measureobjectsizeshape.F_ADV_2D
+    ]
+    measures = measurements.get_feature_names(OBJECTS_NAME)
+    for feature in standard:
+        assert feature in measures
+    for feature in advanced:
+        assert feature not in measures
+
+
+def test_run_with_advanced():
+    cells_resource = os.path.realpath(
+        os.path.join(os.path.dirname(__file__), "..", "resources", "cells.tiff")
+    )
+
+    workspace, module = make_workspace(skimage.io.imread(cells_resource))
+
+    module.calculate_advanced.value = True
+    module.calculate_zernikes.value = False
+
+    module.run(workspace)
+
+    measurements = workspace.measurements
+
+    allfeatures = [
+        f"AreaShape_{name}"
+        for name in cellprofiler.modules.measureobjectsizeshape.F_STANDARD
+        + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+        + cellprofiler.modules.measureobjectsizeshape.F_ADV_2D
+    ]
+    measures = measurements.get_feature_names(OBJECTS_NAME)
+    for feature in allfeatures:
+        assert feature in measures

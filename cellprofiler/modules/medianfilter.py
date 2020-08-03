@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 MedianFilter
 ============
@@ -17,12 +15,11 @@ YES          YES          NO
 """
 
 import scipy.signal
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting.text import OddInteger
 
-import cellprofiler_core.module
-import cellprofiler_core.setting
 
-
-class MedianFilter(cellprofiler_core.module.ImageProcessing):
+class MedianFilter(ImageProcessing):
     category = "Advanced"
 
     module_name = "MedianFilter"
@@ -32,7 +29,7 @@ class MedianFilter(cellprofiler_core.module.ImageProcessing):
     def create_settings(self):
         super(MedianFilter, self).create_settings()
 
-        self.window = cellprofiler_core.setting.OddInteger(
+        self.window = OddInteger(
             text="Window",
             value=3,
             minval=0,

@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 ImageMath
 =========
@@ -36,11 +34,19 @@ See also **Threshold**, **RescaleIntensity**,
 import inflect
 import numpy
 import skimage.util
-
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import (
+    Divider,
+    Binary,
+    SettingsGroup,
+    Measurement,
+    ValidationError,
+)
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Float, ImageName
 
 O_ADD = "Add"
 O_SUBTRACT = "Subtract"
@@ -76,7 +82,7 @@ FIXED_SETTING_COUNT_1 = 8
 FIXED_SETTING_COUNT = 9
 
 
-class ImageMath(cellprofiler_core.module.ImageProcessing):
+class ImageMath(ImageProcessing):
     variable_revision_number = 5
 
     module_name = "ImageMath"
@@ -89,7 +95,7 @@ class ImageMath(cellprofiler_core.module.ImageProcessing):
         self.add_image(False)
 
         # other settings
-        self.operation = cellprofiler_core.setting.Choice(
+        self.operation = Choice(
             "Operation",
             [
                 O_ADD,
@@ -165,30 +171,30 @@ single image.
 """
             % globals(),
         )
-        self.divider_top = cellprofiler_core.setting.Divider(line=False)
+        self.divider_top = Divider(line=False)
 
-        self.exponent = cellprofiler_core.setting.Float(
+        self.exponent = Float(
             "Raise the power of the result by",
             1,
             doc="""\
 Enter an exponent to raise the result to *after* the chosen operation.""",
         )
 
-        self.after_factor = cellprofiler_core.setting.Float(
+        self.after_factor = Float(
             "Multiply the result by",
             1,
             doc="""\
 Enter a factor to multiply the result by *after* the chosen operation.""",
         )
 
-        self.addend = cellprofiler_core.setting.Float(
+        self.addend = Float(
             "Add to result",
             0,
             doc="""\
 Enter a number to add to the result *after* the chosen operation.""",
         )
 
-        self.truncate_low = cellprofiler_core.setting.Binary(
+        self.truncate_low = Binary(
             "Set values less than 0 equal to 0?",
             True,
             doc="""\
@@ -198,7 +204,7 @@ modules. Select *Yes* to set negative values to 0.
             % globals(),
         )
 
-        self.truncate_high = cellprofiler_core.setting.Binary(
+        self.truncate_high = Binary(
             "Set values greater than 1 equal to 1?",
             True,
             doc="""\
@@ -209,7 +215,7 @@ value of 1.
             % globals(),
         )
 
-        self.replace_nan = cellprofiler_core.setting.Binary(
+        self.replace_nan = Binary(
             "Replace invalid values with 0?",
             True,
             doc="""\
@@ -223,7 +229,7 @@ value of 1.
             % globals(),
         )
 
-        self.ignore_mask = cellprofiler_core.setting.Binary(
+        self.ignore_mask = Binary(
             "Ignore the image masks?",
             False,
             doc="""\
@@ -234,26 +240,24 @@ the smallest image mask is applied after image math has been completed.
             % globals(),
         )
 
-        self.output_image_name = cellprofiler_core.setting.ImageNameProvider(
+        self.output_image_name = ImageName(
             "Name the output image",
             "ImageAfterMath",
             doc="""\
 Enter a name for the resulting image.""",
         )
 
-        self.add_button = cellprofiler_core.setting.DoSomething(
-            "", "Add another image", self.add_image
-        )
+        self.add_button = DoSomething("", "Add another image", self.add_image)
 
-        self.divider_bottom = cellprofiler_core.setting.Divider(line=False)
+        self.divider_bottom = Divider(line=False)
 
     def add_image(self, removable=True):
         # The text for these settings will be replaced in renumber_settings()
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
         group.removable = removable
         group.append(
             "image_or_measurement",
-            cellprofiler_core.setting.Choice(
+            Choice(
                 "Image or measurement?",
                 [IM_IMAGE, IM_MEASUREMENT],
                 doc="""\
@@ -271,7 +275,7 @@ use the median intensity measurement as the denominator.
 
         group.append(
             "image_name",
-            cellprofiler_core.setting.ImageNameSubscriber(
+            ImageSubscriber(
                 "Select the image",
                 "None",
                 doc="""\
@@ -281,9 +285,9 @@ Select the image that you want to use for this operation.""",
 
         group.append(
             "measurement",
-            cellprofiler_core.setting.Measurement(
+            Measurement(
                 "Measurement",
-                lambda: cellprofiler_core.measurement.IMAGE,
+                lambda: "Image",
                 "",
                 doc="""\
 Select a measurement made on the image. The value of the
@@ -294,7 +298,7 @@ other operand's image.""",
 
         group.append(
             "factor",
-            cellprofiler_core.setting.Float(
+            Float(
                 "Multiply the image by",
                 1,
                 doc="""\
@@ -306,12 +310,10 @@ is applied before other operations.""",
         if removable:
             group.append(
                 "remover",
-                cellprofiler_core.setting.RemoveSettingButton(
-                    "", "Remove this image", self.images, group
-                ),
+                RemoveSettingButton("", "Remove this image", self.images, group),
             )
 
-        group.append("divider", cellprofiler_core.setting.Divider())
+        group.append("divider", Divider())
         self.images.append(group)
 
     def renumber_settings(self):
@@ -500,7 +502,7 @@ is applied before other operations.""",
                 op = numpy.add
             elif opval == O_SUBTRACT:
                 if self.use_logical_operation(pixel_data):
-                    op = numpy.logical_xor
+                    output_pixel_data = pixel_data[0].copy()
                 else:
                     op = numpy.subtract
             elif opval == O_DIFFERENCE:
@@ -539,6 +541,8 @@ is applied before other operations.""",
                         pd = pd[:, :, numpy.newaxis]
                 if opval == O_EQUALS:
                     output_pixel_data = output_pixel_data & (comparitor == pd)
+                elif opval == O_SUBTRACT and self.use_logical_operation(pixel_data):
+                    output_pixel_data[pd] = False
                 else:
                     output_pixel_data = op(output_pixel_data, pd)
                 if self.ignore_mask:
@@ -600,7 +604,7 @@ is applied before other operations.""",
             if smallest_image.has_masking_objects
             else None
         )
-        output_image = cellprofiler_core.image.Image(
+        output_image = Image(
             output_pixel_data,
             mask=output_mask,
             crop_mask=crop_mask,
@@ -659,7 +663,7 @@ is applied before other operations.""",
             op = self.images[i]
             if op.image_or_measurement == IM_IMAGE:
                 return
-        raise cellprofiler_core.setting.ValidationError(
+        raise ValidationError(
             "At least one of the operands must be an image", op.image_or_measurement
         )
 

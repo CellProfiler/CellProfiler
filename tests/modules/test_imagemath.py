@@ -5,6 +5,7 @@ import numpy.testing
 import pytest
 import six.moves
 import skimage.util
+import tests.modules
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -57,6 +58,7 @@ def workspace(image_a, image_b, module):
 
 def run_operation(operation, expected, module, workspace):
     module.operation.value = operation
+    module.replace_nan.value = False
     module.run(workspace)
     output = workspace.image_set.get_image("output")
     actual = output.pixel_data
@@ -207,7 +209,8 @@ class TestBinaryImages(object):
     @staticmethod
     def test_subtract(image_a, image_b, module, workspace):
         operation = "Subtract"
-        expected = numpy.logical_xor(image_a.pixel_data, image_b.pixel_data)
+        expected = image_a.pixel_data.copy()
+        expected[image_b.pixel_data] = False
         run_operation(operation, expected, module, workspace)
 
     @staticmethod
@@ -284,7 +287,8 @@ class TestBinaryImages(object):
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/imagemath/v3.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("imagemath/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -318,7 +322,8 @@ def test_load_v3():
 
 
 def test_load_v4():
-    with open("./tests/resources/modules/imagemath/v4.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("imagemath/v4.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()

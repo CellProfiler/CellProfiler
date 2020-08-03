@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 MeasureTexture
 ==============
@@ -107,11 +105,22 @@ References
 import mahotas.features
 import numpy
 import skimage.util
-
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import (
+    HiddenCount,
+    Divider,
+    SettingsGroup,
+    ValidationError,
+)
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
+from cellprofiler_core.setting.subscriber import (
+    ImageListSubscriber,
+    LabelListSubscriber,
+)
+from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.utilities.core.object import size_similarly
 
 TEXTURE = "Texture"
 
@@ -124,7 +133,7 @@ IO_OBJECTS = "Objects"
 IO_BOTH = "Both"
 
 
-class MeasureTexture(cellprofiler_core.module.Module):
+class MeasureTexture(Module):
     module_name = "MeasureTexture"
 
     variable_revision_number = 6
@@ -132,13 +141,13 @@ class MeasureTexture(cellprofiler_core.module.Module):
     category = "Measurement"
 
     def create_settings(self):
-        self.images_list = cellprofiler_core.setting.ListImageNameSubscriber(
+        self.images_list = ImageListSubscriber(
             "Select images to measure",
             [],
             doc="""Select the grayscale images whose intensity you want to measure.""",
         )
 
-        self.objects_list = cellprofiler_core.setting.ListObjectNameSubscriber(
+        self.objects_list = LabelListSubscriber(
             "Select objects to measure",
             [],
             doc="""\
@@ -156,15 +165,15 @@ class MeasureTexture(cellprofiler_core.module.Module):
 
         self.scale_groups = []
 
-        self.scale_count = cellprofiler_core.setting.HiddenCount(self.scale_groups)
+        self.scale_count = HiddenCount(self.scale_groups)
 
-        self.image_divider = cellprofiler_core.setting.Divider()
+        self.image_divider = Divider()
 
-        self.object_divider = cellprofiler_core.setting.Divider()
+        self.object_divider = Divider()
 
         self.add_scale(removable=False)
 
-        self.add_scales = cellprofiler_core.setting.DoSomething(
+        self.add_scales = DoSomething(
             callback=self.add_scale,
             label="Add another scale",
             text="",
@@ -174,7 +183,7 @@ class MeasureTexture(cellprofiler_core.module.Module):
             """,
         )
 
-        self.images_or_objects = cellprofiler_core.setting.Choice(
+        self.images_or_objects = Choice(
             "Measure whole images or objects?",
             [IO_IMAGES, IO_OBJECTS, IO_BOTH],
             value=IO_BOTH,
@@ -247,12 +256,12 @@ measurements, per-object measurements or both.
         :param removable: set this to False to keep from showing the "remove" button for scales that must be present.
 
         """
-        group = cellprofiler_core.setting.SettingsGroup()
+        group = SettingsGroup()
 
         if removable:
-            group.append("divider", cellprofiler_core.setting.Divider(line=False))
+            group.append("divider", Divider(line=False))
 
-        scale = cellprofiler_core.setting.Integer(
+        scale = Integer(
             doc="""\
 You can specify the scale of texture to be measured, in pixel units; the
 texture scale is the distance between correlated intensities in the
@@ -271,7 +280,7 @@ measured and will result in a undefined value in the output file.
         group.append("scale", scale)
 
         if removable:
-            remove_setting = cellprofiler_core.setting.RemoveSettingButton(
+            remove_setting = RemoveSettingButton(
                 entry=group, label="Remove this scale", list=self.scale_groups, text=""
             )
 
@@ -282,12 +291,10 @@ measured and will result in a undefined value in the output file.
     def validate_module(self, pipeline):
         images = set()
         if len(self.images_list.value) == 0:
-            raise cellprofiler_core.setting.ValidationError(
-                "No images selected", self.images_list
-            )
+            raise ValidationError("No images selected", self.images_list)
         for image_name in self.images_list.value:
             if image_name in images:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "%s has already been selected" % image_name, image_name
                 )
             images.add(image_name)
@@ -295,12 +302,10 @@ measured and will result in a undefined value in the output file.
         if self.wants_object_measurements():
             objects = set()
             if len(self.objects_list.value) == 0:
-                raise cellprofiler_core.setting.ValidationError(
-                    "No objects selected", self.objects_list
-                )
+                raise ValidationError("No objects selected", self.objects_list)
             for object_name in self.objects_list.value:
                 if object_name in objects:
-                    raise cellprofiler_core.setting.ValidationError(
+                    raise ValidationError(
                         "%s has already been selected" % object_name, object_name
                     )
                 objects.add(object_name)
@@ -308,7 +313,7 @@ measured and will result in a undefined value in the output file.
         scales = set()
         for group in self.scale_groups:
             if group.scale.value in scales:
-                raise cellprofiler_core.setting.ValidationError(
+                raise ValidationError(
                     "{} has already been selected".format(group.scale.value),
                     group.scale,
                 )
@@ -321,10 +326,7 @@ measured and will result in a undefined value in the output file.
         if self.wants_object_measurements() and object_name_exists:
             return [TEXTURE]
 
-        if (
-            self.wants_image_measurements()
-            and object_name == cellprofiler_core.measurement.IMAGE
-        ):
+        if self.wants_image_measurements() and object_name == "Image":
             return [TEXTURE]
 
         return []
@@ -381,7 +383,7 @@ measured and will result in a undefined value in the output file.
                         for angle in range(13 if pipeline.volumetric() else 4):
                             columns += [
                                 (
-                                    cellprofiler_core.measurement.IMAGE,
+                                    "Image",
                                     "{}_{}_{}_{:d}_{:02d}".format(
                                         TEXTURE,
                                         feature,
@@ -389,7 +391,7 @@ measured and will result in a undefined value in the output file.
                                         scale_group.scale.value,
                                         angle,
                                     ),
-                                    cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                    COLTYPE_FLOAT,
                                 )
                             ]
 
@@ -409,7 +411,7 @@ measured and will result in a undefined value in the output file.
                                             scale_group.scale.value,
                                             angle,
                                         ),
-                                        cellprofiler_core.measurement.COLTYPE_FLOAT,
+                                        COLTYPE_FLOAT,
                                     )
                                 ]
 
@@ -493,15 +495,11 @@ measured and will result in a undefined value in the output file.
             )
             pixel_data = objects.crop_image_similarly(image.pixel_data)
         except ValueError:
-            pixel_data, m1 = cellprofiler_core.object.size_similarly(
-                labels, image.pixel_data
-            )
+            pixel_data, m1 = size_similarly(labels, image.pixel_data)
 
             if numpy.any(~m1):
                 if image.has_mask:
-                    mask, m2 = cellprofiler_core.object.size_similarly(
-                        labels, image.mask
-                    )
+                    mask, m2 = size_similarly(labels, image.mask)
                     mask[~m2] = False
                 else:
                     mask = m1

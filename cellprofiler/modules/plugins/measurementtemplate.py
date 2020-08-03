@@ -1,5 +1,3 @@
-# coding=utf-8
-
 #################################
 #
 # Imports from useful Python libraries
@@ -10,12 +8,6 @@ import centrosome.cpmorphology
 import centrosome.zernike
 import numpy
 import scipy.ndimage
-
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.object
-import cellprofiler_core.setting
 
 #################################
 #
@@ -139,6 +131,11 @@ wherever possible, include a link to the original work. For example,
 # if someone wants to change the text, that text will change everywhere.
 # Also, you can't misspell it by accident.
 #
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
+from cellprofiler_core.setting.text import Integer
+
 """This is the measurement template category"""
 C_MEASUREMENT_TEMPLATE = "MT"
 
@@ -151,7 +148,7 @@ C_MEASUREMENT_TEMPLATE = "MT"
 # you re-implement them. You can let Module do most of the work and
 # implement only what you need.
 #
-class MeasurementTemplate(cellprofiler_core.module.Module):
+class MeasurementTemplate(Module):
     #
     # The module starts by declaring the name that's used for display,
     # the category under which it is stored and the variable revision
@@ -176,7 +173,7 @@ class MeasurementTemplate(cellprofiler_core.module.Module):
         # The ImageSubscriber gives your user a list of these images
         # which can then be used as inputs in your module.
         #
-        self.input_image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.input_image_name = ImageSubscriber(
             # The text to the left of the edit box
             text="Input image name:",
             # reST help that gets displayed when the user presses the
@@ -194,7 +191,7 @@ that is made available by a prior module.
         # It will ask the user which object to pick from the list of
         # objects provided by upstream modules.
         #
-        self.input_object_name = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.input_object_name = LabelSubscriber(
             text="Input object name",
             doc="These are the objects that the module operates on.",
         )
@@ -207,7 +204,7 @@ that is made available by a prior module.
         # The setting is an integer setting, bounded between 1 and 50.
         # N = 50 generates 1200 features!
         #
-        self.radial_degree = cellprofiler_core.setting.Integer(
+        self.radial_degree = Integer(
             text="Radial degree",
             value=10,
             minval=1,
@@ -563,11 +560,7 @@ radial degree you enter here.
         input_object_name = self.input_object_name.value
 
         return [
-            (
-                input_object_name,
-                self.get_measurement_name(n, m),
-                cellprofiler_core.measurement.COLTYPE_FLOAT,
-            )
+            (input_object_name, self.get_measurement_name(n, m), COLTYPE_FLOAT,)
             for n, m in self.get_zernike_indexes(True)
         ]
 

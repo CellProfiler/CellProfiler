@@ -1,17 +1,29 @@
-# coding=utf-8
-
-import numpy as np
-import scipy.ndimage as scind
-from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
+import matplotlib.cm
+import numpy
+import scipy.ndimage
+from cellprofiler_core.constants.measurement import (
+    COLTYPE_INTEGER,
+    FF_PARENT,
+    FF_CHILDREN_COUNT,
+)
+from cellprofiler_core.module import Identify
+from cellprofiler_core.object import Objects
+from cellprofiler_core.preferences import get_primary_outline_color
+from cellprofiler_core.preferences import get_secondary_outline_color
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.text import Float, LabelName
+from cellprofiler_core.utilities.core.module.identify import (
+    add_object_count_measurements,
+    add_object_location_measurements,
+    get_object_measurement_columns,
+)
+from cellprofiler_core.utilities.core.object import size_similarly
+from centrosome.cpmorphology import fixup_scipy_ndimage_result
 from centrosome.outline import outline
 
-import cellprofiler_core.measurement
-import cellprofiler_core.measurement as cpmeas
-import cellprofiler_core.object as cpo
-import cellprofiler_core.preferences as cpprefs
-import cellprofiler_core.setting as cps
 from cellprofiler.modules import _help
-from cellprofiler_core.modules import identify as I
 
 __doc__ = """\
 MaskObjects
@@ -97,14 +109,14 @@ def s_lookup(x):
     return S_DICTIONARY.get(x, x)
 
 
-class MaskObjects(I.Identify):
+class MaskObjects(Identify):
     category = "Object Processing"
     module_name = "MaskObjects"
     variable_revision_number = 3
 
     def create_settings(self):
         """Create the settings that control this module"""
-        self.object_name = cps.ObjectNameSubscriber(
+        self.object_name = LabelSubscriber(
             "Select objects to be masked",
             "None",
             doc="""\
@@ -116,7 +128,7 @@ objects created by a previous object processing module, such as
 """,
         )
 
-        self.remaining_objects = cps.ObjectNameProvider(
+        self.remaining_objects = LabelName(
             "Name the masked objects",
             "MaskedNuclei",
             doc="""\
@@ -126,7 +138,7 @@ subsequent modules by this name.
 """,
         )
 
-        self.mask_choice = cps.Choice(
+        self.mask_choice = Choice(
             "Mask using a region defined by other objects or by binary image?",
             [MC_OBJECTS, MC_IMAGE],
             doc="""\
@@ -138,7 +150,7 @@ previously loaded or created in your pipeline (*%(MC_IMAGE)s*).
             % globals(),
         )
 
-        self.masking_objects = cps.ObjectNameSubscriber(
+        self.masking_objects = LabelSubscriber(
             "Select the masking object",
             "None",
             doc="""\
@@ -151,7 +163,7 @@ module, such as **IdentifyPrimaryObjects**,
 """,
         )
 
-        self.masking_image = cps.ImageNameSubscriber(
+        self.masking_image = ImageSubscriber(
             "Select the masking image",
             "None",
             doc="""\
@@ -166,7 +178,7 @@ image using **ApplyThreshold**.
 """,
         )
 
-        self.wants_inverted_mask = cps.Binary(
+        self.wants_inverted_mask = Binary(
             "Invert the mask?",
             False,
             doc="""\
@@ -181,7 +193,7 @@ This option reverses the foreground/background relationship of the mask.
             % globals(),
         )
 
-        self.overlap_choice = cps.Choice(
+        self.overlap_choice = Choice(
             "Handling of objects that are partially masked",
             [P_MASK, P_KEEP, P_REMOVE, P_REMOVE_PERCENTAGE],
             doc="""\
@@ -206,7 +218,7 @@ of three ways:
             % globals(),
         )
 
-        self.overlap_fraction = cps.Float(
+        self.overlap_fraction = Float(
             "Fraction of object that must overlap",
             0.5,
             minval=0,
@@ -221,7 +233,7 @@ object to be retained.
 """,
         )
 
-        self.retain_or_renumber = cps.Choice(
+        self.retain_or_renumber = Choice(
             "Numbering of resulting objects",
             [R_RENUMBER, R_RETAIN],
             doc="""\
@@ -313,11 +325,11 @@ controls how remaining objects are associated with their predecessors:
         # Load the labels
         #
         labels = original_objects.segmented.copy()
-        nobjects = np.max(labels)
+        nobjects = numpy.max(labels)
         #
         # Resize the mask to cover the objects
         #
-        mask, m1 = cpo.size_similarly(labels, mask)
+        mask, m1 = size_similarly(labels, mask)
         mask[~m1] = False
         #
         # Apply the mask according to the overlap choice.
@@ -327,17 +339,19 @@ controls how remaining objects are associated with their predecessors:
         elif self.overlap_choice == P_MASK:
             labels = labels * mask
         else:
-            pixel_counts = fix(
-                scind.sum(mask, labels, np.arange(1, nobjects + 1, dtype=np.int32))
+            pixel_counts = fixup_scipy_ndimage_result(
+                scipy.ndimage.sum(
+                    mask, labels, numpy.arange(1, nobjects + 1, dtype=numpy.int32)
+                )
             )
             if self.overlap_choice == P_KEEP:
                 keep = pixel_counts > 0
             else:
-                total_pixels = fix(
-                    scind.sum(
-                        np.ones(labels.shape),
+                total_pixels = fixup_scipy_ndimage_result(
+                    scipy.ndimage.sum(
+                        numpy.ones(labels.shape),
                         labels,
-                        np.arange(1, nobjects + 1, dtype=np.int32),
+                        numpy.arange(1, nobjects + 1, dtype=numpy.int32),
                     )
                 )
                 if self.overlap_choice == P_REMOVE:
@@ -349,23 +363,23 @@ controls how remaining objects are associated with their predecessors:
                     raise NotImplementedError(
                         "Unknown overlap-handling choice: %s", self.overlap_choice.value
                     )
-            keep = np.hstack(([False], keep))
+            keep = numpy.hstack(([False], keep))
             labels[~keep[labels]] = 0
         #
         # Renumber the labels matrix if requested
         #
         if self.retain_or_renumber == R_RENUMBER:
-            unique_labels = np.unique(labels[labels != 0])
-            indexer = np.zeros(nobjects + 1, int)
-            indexer[unique_labels] = np.arange(1, len(unique_labels) + 1)
+            unique_labels = numpy.unique(labels[labels != 0])
+            indexer = numpy.zeros(nobjects + 1, int)
+            indexer[unique_labels] = numpy.arange(1, len(unique_labels) + 1)
             labels = indexer[labels]
             parent_objects = unique_labels
         else:
-            parent_objects = np.arange(1, nobjects + 1)
+            parent_objects = numpy.arange(1, nobjects + 1)
         #
         # Add the objects
         #
-        remaining_objects = cpo.Objects()
+        remaining_objects = Objects()
         remaining_objects.segmented = labels
         remaining_objects.unedited_segmented = original_objects.unedited_segmented
         workspace.object_set.add_objects(remaining_objects, remaining_object_name)
@@ -374,34 +388,28 @@ controls how remaining objects are associated with their predecessors:
         #
         m = workspace.measurements
         m.add_measurement(
-            remaining_object_name,
-            cellprofiler_core.measurement.FF_PARENT % object_name,
-            parent_objects,
+            remaining_object_name, FF_PARENT % object_name, parent_objects,
         )
-        if np.max(original_objects.segmented) == 0:
-            child_count = np.array([], int)
+        if numpy.max(original_objects.segmented) == 0:
+            child_count = numpy.array([], int)
         else:
-            child_count = fix(
-                scind.sum(
+            child_count = fixup_scipy_ndimage_result(
+                scipy.ndimage.sum(
                     labels,
                     original_objects.segmented,
-                    np.arange(1, nobjects + 1, dtype=np.int32),
+                    numpy.arange(1, nobjects + 1, dtype=numpy.int32),
                 )
             )
             child_count = (child_count > 0).astype(int)
         m.add_measurement(
-            object_name,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % remaining_object_name,
-            child_count,
+            object_name, FF_CHILDREN_COUNT % remaining_object_name, child_count,
         )
         if self.retain_or_renumber == R_RETAIN:
             remaining_object_count = nobjects
         else:
             remaining_object_count = len(unique_labels)
-        I.add_object_count_measurements(
-            m, remaining_object_name, remaining_object_count
-        )
-        I.add_object_location_measurements(m, remaining_object_name, labels)
+        add_object_count_measurements(m, remaining_object_name, remaining_object_count)
+        add_object_location_measurements(m, remaining_object_name, labels)
         #
         # Save the input, mask and output images for display
         #
@@ -422,7 +430,7 @@ controls how remaining objects are associated with their predecessors:
         #
         outlines = outline(original_labels) > 0
 
-        cm = figure.return_cmap()
+        cm = figure.return_cmap(numpy.max(original_labels))
         sm = matplotlib.cm.ScalarMappable(cmap=cm)
         #
         # Paint the labels in color
@@ -438,12 +446,10 @@ controls how remaining objects are associated with their predecessors:
         # and the outlines of removed objects red.
         #
         final_outlines = outline(final_labels) > 0
-        original_color = (
-            np.array(cpprefs.get_secondary_outline_color()[0:3], float) / 255
-        )
-        final_color = np.array(cpprefs.get_primary_outline_color()[0:3], float) / 255
-        image[outlines, :] = original_color[np.newaxis, :]
-        image[final_outlines, :] = final_color[np.newaxis, :]
+        original_color = numpy.array(get_secondary_outline_color()[0:3], float) / 255
+        final_color = numpy.array(get_primary_outline_color()[0:3], float) / 255
+        image[outlines, :] = original_color[numpy.newaxis, :]
+        image[final_outlines, :] = final_color[numpy.newaxis, :]
 
         figure.set_subplots((2, 1))
         figure.subplot_imshow_labels(
@@ -463,18 +469,10 @@ controls how remaining objects are associated with their predecessors:
 
         object_name = self.object_name.value
         remaining_object_name = self.remaining_objects.value
-        columns = I.get_object_measurement_columns(self.remaining_objects.value)
+        columns = get_object_measurement_columns(self.remaining_objects.value)
         columns += [
-            (
-                object_name,
-                cellprofiler_core.measurement.FF_CHILDREN_COUNT % remaining_object_name,
-                cpmeas.COLTYPE_INTEGER,
-            ),
-            (
-                remaining_object_name,
-                cellprofiler_core.measurement.FF_PARENT % object_name,
-                cpmeas.COLTYPE_INTEGER,
-            ),
+            (object_name, FF_CHILDREN_COUNT % remaining_object_name, COLTYPE_INTEGER,),
+            (remaining_object_name, FF_PARENT % object_name, COLTYPE_INTEGER,),
         ]
         return columns
 

@@ -1,5 +1,6 @@
 import numpy
 import six.moves
+import os
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -7,6 +8,7 @@ import cellprofiler.modules.graytocolor
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+import tests.modules
 
 OUTPUT_IMAGE_NAME = "outputimage"
 
@@ -14,6 +16,7 @@ OUTPUT_IMAGE_NAME = "outputimage"
 def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
     module = cellprofiler.modules.graytocolor.GrayToColor()
     module.scheme_choice.value = scheme
+    module.wants_rescale.value = False
     if scheme not in (
         cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
         cellprofiler.modules.graytocolor.SCHEME_STACK,
@@ -94,7 +97,8 @@ def make_workspace(scheme, images, adjustments=None, colors=None, weights=None):
 
 
 def test_load_v3():
-    with open("./tests/resources/modules/graytocolor/v3.pipeline", "r") as fd:
+    file = tests.modules.test_resources_directory("graytocolor/v3.pipeline")
+    with open(file, "r") as fd:
         data = fd.read()
 
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -237,6 +241,128 @@ def test_composite():
         channel = sum(
             [
                 image * weight * float(color[i]) / 255
+                for image, color, weight in zip(images, colors, weights)
+            ]
+        )
+        numpy.testing.assert_array_almost_equal(output[:, :, i], channel)
+
+
+def test_rgb_rescale():
+    numpy.random.seed(0)
+    for combination in (
+        (True, True, True),
+        (True, True, False),
+        (True, False, True),
+        (True, False, False),
+        (False, True, True),
+        (False, True, False),
+        (False, False, True),
+    ):
+        adjustments = numpy.random.uniform(size=7)
+        images = [
+            numpy.random.uniform(size=(10, 15)) if combination[i] else None
+            for i in range(3)
+        ]
+        images += [None] * 4
+        workspace, module = make_workspace(
+            cellprofiler.modules.graytocolor.SCHEME_RGB, images, adjustments
+        )
+        module.wants_rescale.value = True
+        module.run(workspace)
+        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = image.pixel_data
+
+        expected = numpy.dstack(
+            [
+                image if image is not None else numpy.zeros((10, 15))
+                for image in images[:3]
+            ]
+        )
+        for i in range(3):
+            plane = expected[:, :, i]
+            if plane.max() > 0:
+                plane = plane / numpy.max(plane)
+            plane *= adjustments[i]
+            expected[:, :, i] = plane
+        assert numpy.all(numpy.abs(expected - pixel_data) <= 0.00001)
+
+
+def test_cmyk_rescale():
+    numpy.random.seed(0)
+    for combination in [[(i & 2 ^ j) != 0 for j in range(4)] for i in range(1, 16)]:
+        adjustments = numpy.random.uniform(size=7)
+        images = [
+            numpy.random.uniform(size=(10, 15)) if combination[i] else None
+            for i in range(4)
+        ]
+        images = [None] * 3 + images
+        workspace, module = make_workspace(
+            cellprofiler.modules.graytocolor.SCHEME_CMYK, images, adjustments
+        )
+        module.wants_rescale.value = True
+        module.run(workspace)
+        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = image.pixel_data
+
+        expected = numpy.array(
+            [
+                numpy.dstack(
+                    [(image/numpy.max(image)) * adjustment if image is not None else numpy.zeros((10, 15))]
+                    * 3
+                )
+                * numpy.array(multiplier)
+                / numpy.sum(multiplier)
+                for image, multiplier, adjustment in (
+                    (images[3], (0, 1, 1), adjustments[3]),
+                    (images[4], (1, 1, 0), adjustments[4]),
+                    (images[5], (1, 0, 1), adjustments[5]),
+                    (images[6], (1, 1, 1), adjustments[6]),
+                )
+            ]
+        )
+        expected = numpy.sum(expected, 0)
+        assert numpy.all(numpy.abs(expected - pixel_data) <= 0.00001)
+
+
+def test_stack_rescale():
+    # Shouldn't do anything to the result, setting not supported.
+    r = numpy.random.RandomState()
+    r.seed(41)
+    images = [r.uniform(size=(11, 13)) for _ in range(5)]
+    workspace, module = make_workspace(
+        cellprofiler.modules.graytocolor.SCHEME_STACK, images
+    )
+    module.wants_rescale.value = True
+    module.run(workspace)
+    output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+    assert output.shape[:2] == images[0].shape
+    assert output.shape[2] == len(images)
+    for i, image in enumerate(images):
+        numpy.testing.assert_array_almost_equal(output[:, :, i], image)
+
+
+def test_composite_rescale():
+    r = numpy.random.RandomState()
+    r.seed(41)
+    images = [r.uniform(size=(11, 13)) for _ in range(5)]
+    colors = [r.randint(0, 255, size=3) for _ in range(5)]
+    weights = r.uniform(low=1.0 / 255, high=1.5, size=5).tolist()
+    color_names = ["#%02x%02x%02x" % tuple(color.tolist()) for color in colors]
+    workspace, module = make_workspace(
+        cellprofiler.modules.graytocolor.SCHEME_COMPOSITE,
+        images,
+        colors=color_names,
+        weights=weights,
+    )
+    module.wants_rescale.value = True
+    module.run(workspace)
+    output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+    assert output.shape[:2] == images[0].shape
+    assert output.shape[2] == 3
+    for i in range(3):
+        channel = sum(
+            [
+                (image / image.max()) * weight * float(color[i]) / 255
                 for image, color, weight in zip(images, colors, weights)
             ]
         )

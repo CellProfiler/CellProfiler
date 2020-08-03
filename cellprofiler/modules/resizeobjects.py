@@ -1,11 +1,12 @@
-# coding=utf-8
-
 import numpy
 import scipy.ndimage
+from cellprofiler_core.constants.measurement import FF_CHILDREN_COUNT, FF_PARENT
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
+from cellprofiler_core.object import Objects
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import Integer, Float
 
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.setting
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -40,7 +41,7 @@ See also
 )
 
 
-class ResizeObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
+class ResizeObjects(ObjectProcessing):
     module_name = "ResizeObjects"
 
     variable_revision_number = 2
@@ -48,7 +49,7 @@ class ResizeObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing
     def create_settings(self):
         super(ResizeObjects, self).create_settings()
 
-        self.method = cellprofiler_core.setting.Choice(
+        self.method = Choice(
             "Method",
             ["Dimensions", "Factor", "Match Image"],
             doc="""\
@@ -59,7 +60,7 @@ The following options are available:
             value="Factor",
         )
 
-        self.factor = cellprofiler_core.setting.Float(
+        self.factor = Float(
             "Factor",
             0.25,
             minval=0,
@@ -70,7 +71,7 @@ Numbers less than 1 will shrink the objects; numbers greater than 1 will
 enlarge the objects.""",
         )
 
-        self.width = cellprofiler_core.setting.Integer(
+        self.width = Integer(
             "Width",
             100,
             minval=1,
@@ -80,7 +81,7 @@ enlarge the objects.""",
 Enter the desired width of the final objects, in pixels.""",
         )
 
-        self.height = cellprofiler_core.setting.Integer(
+        self.height = Integer(
             "Height",
             100,
             minval=1,
@@ -90,7 +91,7 @@ Enter the desired width of the final objects, in pixels.""",
 Enter the desired height of the final objects, in pixels.""",
         )
 
-        self.specific_image = cellprofiler_core.setting.ImageNameSubscriber(
+        self.specific_image = ImageSubscriber(
             "Select the image with the desired dimensions",
             "None",
             doc="""\
@@ -146,7 +147,7 @@ Enter the desired height of the final objects, in pixels.""",
         else:
             y_data = rescale(x_data, self.factor.value)
 
-        y = cellprofiler_core.object.Objects()
+        y = Objects()
         y.segmented = y_data
         y.parent_image = x.parent_image
         objects.add_objects(y, y_name)
@@ -162,9 +163,7 @@ Enter the desired height of the final objects, in pixels.""",
     def add_measurements(
         self, workspace, input_object_name=None, output_object_name=None
     ):
-        super(
-            cellprofiler_core.module.image_segmentation.ObjectProcessing, self
-        ).add_measurements(workspace, self.y_name.value)
+        super(ObjectProcessing, self).add_measurements(workspace, self.y_name.value)
 
         labels = workspace.object_set.get_objects(self.y_name.value).segmented
 
@@ -175,14 +174,12 @@ Enter the desired height of the final objects, in pixels.""",
 
         workspace.measurements.add_measurement(
             self.x_name.value,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % self.y_name.value,
+            FF_CHILDREN_COUNT % self.y_name.value,
             [1] * len(unique_labels),
         )
 
         workspace.measurements.add_measurement(
-            self.y_name.value,
-            cellprofiler_core.measurement.FF_PARENT % self.x_name.value,
-            unique_labels,
+            self.y_name.value, FF_PARENT % self.x_name.value, unique_labels,
         )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):

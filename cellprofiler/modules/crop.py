@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 Crop
 ====
@@ -42,20 +40,24 @@ help for more information on saving cropping shapes.
 import logging
 import math
 
+import centrosome.filter
 import matplotlib.axes
 import matplotlib.cm
 import matplotlib.figure
 import matplotlib.patches
 import numpy
-from centrosome.filter import stretch
-
-import cellprofiler_core.image
-import cellprofiler_core.measurement
-import cellprofiler_core.module
-import cellprofiler_core.preferences
-import cellprofiler_core.setting
-
-logger = logging.getLogger(__name__)
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.preferences import get_primary_outline_color
+from cellprofiler_core.setting import Coordinates
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.range import IntegerOrUnboundedRange
+from cellprofiler_core.setting.subscriber import CropImageSubscriber
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.subscriber import LabelSubscriber
+from cellprofiler_core.setting.text import CropImageName
+from cellprofiler_core.setting.text import Integer
+from cellprofiler_core.utilities.image import crop_image
 
 SH_RECTANGLE = "Rectangle"
 SH_ELLIPSE = "Ellipse"
@@ -106,25 +108,25 @@ D_FIRST_CROPPING = "FirstCropping"
 D_FIRST_CROPPING_MASK = "FirstCroppingMask"
 
 
-class Crop(cellprofiler_core.module.Module):
+class Crop(Module):
     module_name = "Crop"
     variable_revision_number = 3
     category = "Image Processing"
 
     def create_settings(self):
-        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             text="Select the input image",
             value="None",
             doc="Choose the image to be cropped.",
         )
 
-        self.cropped_image_name = cellprofiler_core.setting.CroppingNameProvider(
+        self.cropped_image_name = CropImageName(
             text="Name the output image",
             value="CropBlue",
             doc="Enter the name to be given to cropped image.",
         )
 
-        self.shape = cellprofiler_core.setting.Choice(
+        self.shape = Choice(
             text="Select the cropping shape",
             choices=[SH_RECTANGLE, SH_ELLIPSE, SH_IMAGE, SH_OBJECTS, SH_CROPPING],
             value=SH_RECTANGLE,
@@ -136,9 +138,9 @@ Choose the shape into which you would like to crop:
 -  *{SH_IMAGE}:* Cropping will occur based on a binary image you
    specify. A choice box with available images will appear from which
    you can select an image. To crop into an arbitrary shape that you
-   define, choose *{SH_IMAGE}* and use the **LoadSingleImage** module
-   to load a black and white image that you have already prepared from a
-   file. If you have created this image in a program such as Photoshop,
+   define, choose *{SH_IMAGE}* and use a black and white image that you
+   have already prepared from a file.
+   If you have created this image in a program such as Photoshop,
    this binary image should contain only the values 0 and 255, with
    zeros (black) for the parts you want to remove and 255 (white) for
    the parts you want to retain. Alternately, you may have previously
@@ -166,7 +168,7 @@ Choose the shape into which you would like to crop:
             ),
         )
 
-        self.crop_method = cellprofiler_core.setting.Choice(
+        self.crop_method = Choice(
             text="Select the cropping method",
             choices=[CM_COORDINATES, CM_MOUSE],
             value=CM_COORDINATES,
@@ -194,7 +196,7 @@ clicking with the mouse.
             ),
         )
 
-        self.individual_or_once = cellprofiler_core.setting.Choice(
+        self.individual_or_once = Choice(
             text="Apply which cycle's cropping pattern?",
             choices=[IO_INDIVIDUALLY, IO_FIRST],
             value=IO_INDIVIDUALLY,
@@ -210,7 +212,7 @@ Specify how a given cropping pattern should be applied to other image cycles:
             ),
         )
 
-        self.horizontal_limits = cellprofiler_core.setting.IntegerOrUnboundedRange(
+        self.horizontal_limits = IntegerOrUnboundedRange(
             text="Left and right rectangle positions",
             minval=0,
             doc="""\
@@ -235,7 +237,7 @@ Specify the left and right positions for the bounding rectangle by selecting one
             ),
         )
 
-        self.vertical_limits = cellprofiler_core.setting.IntegerOrUnboundedRange(
+        self.vertical_limits = IntegerOrUnboundedRange(
             text="Top and bottom rectangle positions",
             minval=0,
             doc="""\
@@ -258,7 +260,7 @@ Specify the top and bottom positions for the bounding rectangle by selecting one
             ),
         )
 
-        self.ellipse_center = cellprofiler_core.setting.Coordinates(
+        self.ellipse_center = Coordinates(
             text="Coordinates of ellipse center",
             value=(500, 500),
             doc="""\
@@ -270,7 +272,7 @@ Specify the center pixel position of the ellipse.
             ),
         )
 
-        self.ellipse_x_radius = cellprofiler_core.setting.Integer(
+        self.ellipse_x_radius = Integer(
             text="Ellipse radius, X direction",
             value=400,
             doc="""\
@@ -282,7 +284,7 @@ Specify the radius of the ellipse in the X direction.
             ),
         )
 
-        self.ellipse_y_radius = cellprofiler_core.setting.Integer(
+        self.ellipse_y_radius = Integer(
             text="Ellipse radius, Y direction",
             value=200,
             doc="""\
@@ -294,7 +296,7 @@ Specify the radius of the ellipse in the Y direction.
             ),
         )
 
-        self.image_mask_source = cellprofiler_core.setting.ImageNameSubscriber(
+        self.image_mask_source = ImageSubscriber(
             text="Select the masking image",
             value="None",
             doc="""\
@@ -306,7 +308,7 @@ Select the image to be use as a cropping mask.
             ),
         )
 
-        self.cropping_mask_source = cellprofiler_core.setting.CroppingNameSubscriber(
+        self.cropping_mask_source = CropImageSubscriber(
             text="Select the image with a cropping mask",
             value="None",
             doc="""\
@@ -318,7 +320,7 @@ Select the image associated with the cropping mask that you want to use.
             ),
         )
 
-        self.objects_source = cellprofiler_core.setting.ObjectNameSubscriber(
+        self.objects_source = LabelSubscriber(
             text="Select the objects",
             value="None",
             doc="""\
@@ -330,7 +332,7 @@ Select the objects that are to be used as a cropping mask.
             ),
         )
 
-        self.remove_rows_and_columns = cellprofiler_core.setting.Choice(
+        self.remove_rows_and_columns = Choice(
             text="Remove empty rows and columns?",
             choices=[RM_NO, RM_EDGES, RM_ALL],
             value=RM_ALL,
@@ -393,10 +395,7 @@ objects:
 
     def run(self, workspace):
         first_image_set = (
-            workspace.measurements.get_current_image_measurement(
-                cellprofiler_core.measurement.GROUP_INDEX
-            )
-            == 1
+            workspace.measurements.get_current_image_measurement("Group_Index") == 1
         )
         image_set_list = workspace.image_set_list
         d = self.get_dictionary(image_set_list)
@@ -411,7 +410,7 @@ objects:
         if not recalculate_flag:
             if d[D_FIRST_CROPPING].shape != orig_image.pixel_data.shape[:2]:
                 recalculate_flag = True
-                logger.warning(
+                logging.warning(
                     """Image, "%s", size changed from %s to %s during cycle %d, recalculating""",
                     self.image_name.value,
                     str(d[D_FIRST_CROPPING].shape),
@@ -458,19 +457,14 @@ objects:
                 image_mask = mask
         else:
             internal_cropping = self.remove_rows_and_columns == RM_ALL
-            cropped_pixel_data = cellprofiler_core.image.crop_image(
+            cropped_pixel_data = crop_image(
                 orig_image.pixel_data, cropping, internal_cropping
             )
             if mask is None:
-                mask = cellprofiler_core.image.crop_image(
-                    cropping, cropping, internal_cropping
-                )
+                mask = crop_image(cropping, cropping, internal_cropping)
             if orig_image.has_mask:
                 image_mask = (
-                    cellprofiler_core.image.crop_image(
-                        orig_image.mask, cropping, internal_cropping
-                    )
-                    & mask
+                    crop_image(orig_image.mask, cropping, internal_cropping) & mask
                 )
             else:
                 image_mask = mask
@@ -482,13 +476,13 @@ objects:
         if self.shape == SH_OBJECTS:
             # Special handling for objects - masked objects instead of
             # mask and crop mask
-            output_image = cellprofiler_core.image.Image(
+            output_image = Image(
                 image=cropped_pixel_data,
                 masking_objects=masking_objects,
                 parent_image=orig_image,
             )
         else:
-            output_image = cellprofiler_core.image.Image(
+            output_image = Image(
                 image=cropped_pixel_data,
                 mask=image_mask,
                 parent_image=orig_image,
@@ -539,11 +533,7 @@ objects:
     def get_measurement_columns(self, pipeline):
         """Return information on the measurements made during cropping"""
         return [
-            (
-                cellprofiler_core.measurement.IMAGE,
-                x % self.cropped_image_name.value,
-                cellprofiler_core.measurement.COLTYPE_INTEGER,
-            )
+            ("Image", x % self.cropped_image_name.value, "integer",)
             for x in (FF_AREA_RETAINED, FF_ORIGINAL_AREA)
         ]
 
@@ -564,7 +554,7 @@ objects:
         import wx
 
         """Show the cropping user interface"""
-        pixel_data = stretch(orig_image)
+        pixel_data = centrosome.filter.stretch(orig_image)
         #
         # Create the UI - a dialog with a figure inside
         #
@@ -612,8 +602,8 @@ objects:
                 x = max(0, min(x, pixel_data.shape[1]))
                 y = max(0, min(y, pixel_data.shape[0]))
                 self.__selected = False
-                self.__color = cellprofiler_core.preferences.get_primary_outline_color()
-                self.__color = numpy.hstack((self.__color, [255])).astype(float) / 255.0
+                self.__color = get_primary_outline_color()
+                self.__color = numpy.hstack(self.__color).astype(float) / 255.0
                 self.__on_move = on_move
                 super(Handle, self).__init__(
                     (x - self.width / 2, y - self.height / 2),
@@ -685,8 +675,8 @@ objects:
             def __init__(self, top_left, bottom_right):
                 self.__left, self.__top = top_left
                 self.__right, self.__bottom = bottom_right
-                color = cellprofiler_core.preferences.get_primary_outline_color()
-                color = numpy.hstack((color, [255])).astype(float) / 255.0
+                color = get_primary_outline_color()
+                color = numpy.hstack(color).astype(float) / 255.0
                 self.rectangle = matplotlib.patches.Rectangle(
                     (min(self.__left, self.__right), min(self.__bottom, self.__top)),
                     abs(self.__right - self.__left),
@@ -751,8 +741,8 @@ objects:
                 self.center_x, self.center_y = center
                 self.radius_x = self.center_x + radius[0] / 2
                 self.radius_y = self.center_y + radius[1] / 2
-                color = cellprofiler_core.preferences.get_primary_outline_color()
-                color = numpy.hstack((color, [255])).astype(float) / 255.0
+                color = get_primary_outline_color()
+                color = numpy.hstack(color).astype(float) / 255.0
                 self.ellipse = matplotlib.patches.Ellipse(
                     center, self.width, self.height, edgecolor=color, facecolor="none"
                 )

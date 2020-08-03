@@ -1,5 +1,3 @@
-# coding=utf-8
-
 """
 Smooth
 ======
@@ -24,20 +22,22 @@ See also several related modules in the *Advanced* category (e.g.,
 **MedianFilter** and **GaussianFilter**).
 """
 
-import numpy as np
-import scipy.ndimage as scind
+import numpy
+import scipy.ndimage
 import skimage.restoration
-from centrosome.filter import median_filter, circular_average_filter
-from centrosome.smooth import fit_polynomial
-from centrosome.smooth import smooth_with_function_and_mask
-
-import cellprofiler_core.image
-import cellprofiler_core.module
-import cellprofiler_core.setting
-from cellprofiler.modules._help import (
+from cellprofiler_core.constants.module import (
     HELP_ON_MEASURING_DISTANCES,
     HELP_ON_PIXEL_INTENSITIES,
 )
+from cellprofiler_core.image import Image
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.text import ImageName, Float
+from centrosome.filter import median_filter, circular_average_filter
+from centrosome.smooth import fit_polynomial
+from centrosome.smooth import smooth_with_function_and_mask
 
 FIT_POLYNOMIAL = "Fit Polynomial"
 MEDIAN_FILTER = "Median Filter"
@@ -47,25 +47,25 @@ CIRCULAR_AVERAGE_FILTER = "Circular Average Filter"
 SM_TO_AVERAGE = "Smooth to Average"
 
 
-class Smooth(cellprofiler_core.module.Module):
+class Smooth(Module):
     module_name = "Smooth"
     category = "Image Processing"
     variable_revision_number = 2
 
     def create_settings(self):
-        self.image_name = cellprofiler_core.setting.ImageNameSubscriber(
+        self.image_name = ImageSubscriber(
             "Select the input image",
             "None",
             doc="""Select the image to be smoothed.""",
         )
 
-        self.filtered_image_name = cellprofiler_core.setting.ImageNameProvider(
+        self.filtered_image_name = ImageName(
             "Name the output image",
             "FilteredImage",
             doc="""Enter a name for the resulting image.""",
         )
 
-        self.smoothing_method = cellprofiler_core.setting.Choice(
+        self.smoothing_method = Choice(
             "Select smoothing method",
             [
                 FIT_POLYNOMIAL,
@@ -126,7 +126,7 @@ anyway.*
             % globals(),
         )
 
-        self.wants_automatic_object_size = cellprofiler_core.setting.Binary(
+        self.wants_automatic_object_size = Binary(
             "Calculate artifact diameter automatically?",
             True,
             doc="""\
@@ -141,7 +141,7 @@ Select *No* to manually enter an artifact diameter.
             % globals(),
         )
 
-        self.object_size = cellprofiler_core.setting.Float(
+        self.object_size = Float(
             "Typical artifact diameter",
             16.0,
             doc="""\
@@ -150,36 +150,38 @@ Select *No* to manually enter an artifact diameter.
 
 Enter the approximate diameter (in pixels) of the features to be blurred
 by the smoothing algorithm. This value is used to calculate the size of
-the spatial filter. %(HELP_ON_MEASURING_DISTANCES)s For most
+the spatial filter. {} For most
 smoothing methods, selecting a diameter over ~50 will take substantial
 amounts of time to process.
-"""
-            % globals(),
+""".format(
+                HELP_ON_MEASURING_DISTANCES
+            ),
         )
 
-        self.sigma_range = cellprofiler_core.setting.Float(
+        self.sigma_range = Float(
             "Edge intensity difference",
             0.1,
             doc="""\
-*(Used only if “%(SMOOTH_KEEPING_EDGES)s” is selected)*
+*(Used only if “{smooth_help}” is selected)*
 
 Enter the intensity step (which indicates an edge in an image) that you
 want to preserve. Edges are locations where the intensity changes
 precipitously, so this setting is used to adjust the rough magnitude of
 these changes. A lower number will preserve weaker edges. A higher
 number will preserve only stronger edges. Values should be between zero
-and one. %(HELP_ON_PIXEL_INTENSITIES)s
-"""
-            % globals(),
+and one. {pixel_help}
+""".format(
+                smooth_help=SMOOTH_KEEPING_EDGES, pixel_help=HELP_ON_PIXEL_INTENSITIES
+            ),
         )
 
-        self.clip = cellprofiler_core.setting.Binary(
+        self.clip = Binary(
             "Clip intensities to 0 and 1?",
             True,
             doc="""\
-*(Used only if "%(FIT_POLYNOMIAL)s" is selected)*
+*(Used only if "{fit}" is selected)*
 
-The *%(FIT_POLYNOMIAL)s* method is the only smoothing option that can
+The *{fit}* method is the only smoothing option that can
 yield an output image whose values are outside of the values of the
 input image. This setting controls whether to limit the image
 intensity to the 0 - 1 range used by CellProfiler.
@@ -189,8 +191,9 @@ and all pixels greater than one to one.
 
 Select *No* to allow values less than zero and greater than one in
 the output image.
-"""
-            % globals(),
+""".format(
+                fit=FIT_POLYNOMIAL
+            ),
         )
 
     def settings(self):
@@ -222,23 +225,25 @@ the output image.
         )
         pixel_data = image.pixel_data
         if self.wants_automatic_object_size.value:
-            object_size = min(30, max(1, np.mean(pixel_data.shape) / 40))
+            object_size = min(30, max(1, numpy.mean(pixel_data.shape) / 40))
         else:
             object_size = float(self.object_size.value)
         sigma = object_size / 2.35
         if self.smoothing_method.value == GAUSSIAN_FILTER:
 
             def fn(image):
-                return scind.gaussian_filter(image, sigma, mode="constant", cval=0)
+                return scipy.ndimage.gaussian_filter(
+                    image, sigma, mode="constant", cval=0
+                )
 
             output_pixels = smooth_with_function_and_mask(pixel_data, fn, image.mask)
         elif self.smoothing_method.value == MEDIAN_FILTER:
             output_pixels = median_filter(pixel_data, image.mask, object_size / 2 + 1)
         elif self.smoothing_method.value == SMOOTH_KEEPING_EDGES:
-            sigma_range = np.float(self.sigma_range.value)
+            sigma_range = numpy.float(self.sigma_range.value)
 
             output_pixels = skimage.restoration.denoise_bilateral(
-                image=pixel_data.astype(np.float),
+                image=pixel_data.astype(numpy.float),
                 multichannel=image.multichannel,
                 sigma_color=sigma_range,
                 sigma_spatial=sigma,
@@ -251,15 +256,15 @@ the output image.
             )
         elif self.smoothing_method.value == SM_TO_AVERAGE:
             if image.has_mask:
-                mean = np.mean(pixel_data[image.mask])
+                mean = numpy.mean(pixel_data[image.mask])
             else:
-                mean = np.mean(pixel_data)
-            output_pixels = np.ones(pixel_data.shape, pixel_data.dtype) * mean
+                mean = numpy.mean(pixel_data)
+            output_pixels = numpy.ones(pixel_data.shape, pixel_data.dtype) * mean
         else:
             raise ValueError(
                 "Unsupported smoothing method: %s" % self.smoothing_method.value
             )
-        output_image = cellprofiler_core.image.Image(output_pixels, parent_image=image)
+        output_image = Image(output_pixels, parent_image=image)
         workspace.image_set.add(self.filtered_image_name.value, output_image)
         workspace.display_data.pixel_data = pixel_data
         workspace.display_data.output_pixels = output_pixels

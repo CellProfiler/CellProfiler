@@ -56,6 +56,7 @@ from cellprofiler_core.preferences import (
     get_intensity_mode,
 )
 from cellprofiler_core.utilities.core.object import overlay_labels
+from numpy.ma import MaskedArray
 from wx.lib.intctrl import IntCtrl
 from wx.lib.masked import NumCtrl, EVT_NUM
 from wx.lib.plot import PolyHistogram, PlotGraphics, PlotCanvas
@@ -1193,9 +1194,14 @@ class Figure(wx.Frame):
             }
             if params["normalize"]:
                 maxval = 1
+                minval = 0
             else:
                 imgmax = orig_params["vmax"]
+                imgmin = orig_params["vmin"]
                 maxval = max(1, imgmax)
+                minval = min(0, imgmin)
+            start_min = int((params["vmin"]/minval)*255 if minval != 0 else 0)
+            start_max = int((params["vmax"]/maxval)*255)
             axes = self.subplot(x, y)
             background = self.figure.canvas.copy_from_bbox(axes.bbox)
             size = self.images[(x, y)].shape[:2]
@@ -1228,13 +1234,13 @@ class Figure(wx.Frame):
                 slidermin = wx.Slider(
                     dlg,
                     id=0,
-                    value=0,
+                    value=start_min,
                     minValue=0,
                     maxValue=255,
                     style=wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS,
                     name="Minimum Intensity",
                 )
-                sliderminbox = IntCtrl(dlg, id=0, value=0, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
+                sliderminbox = IntCtrl(dlg, id=0, value=start_min, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
                                        style=wx.TE_CENTRE)
                 minbright_sizer = wx.BoxSizer()
                 minbright_sizer.Add(slidermin, 1, wx.EXPAND)
@@ -1250,13 +1256,13 @@ class Figure(wx.Frame):
                 slidermax = wx.Slider(
                     dlg,
                     id=1,
-                    value=(params["vmax"]/maxval)*255,
+                    value=start_max,
                     minValue=0,
                     maxValue=255,
                     style=wx.SL_HORIZONTAL | wx.SL_MIN_MAX_LABELS,
                     name="Maximum Intensity"
                 )
-                slidermaxbox = IntCtrl(dlg, id=1, value=255, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
+                slidermaxbox = IntCtrl(dlg, id=1, value=start_max, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
                                        style=wx.TE_CENTRE)
                 maxbright_sizer = wx.BoxSizer()
                 maxbright_sizer.Add(slidermax, 1, wx.EXPAND)
@@ -1300,10 +1306,11 @@ class Figure(wx.Frame):
                     normtext.Enable(False)
                     slidernorm.Enable(False)
                     slidernormbox.Enable(False)
+                if self.subplots.shape != (1, 1):
+                    sizer.Add(wx.Button(dlg, wx.ID_APPLY, label="Apply to all"), 0, wx.ALIGN_CENTER_HORIZONTAL)
                 button_sizer = wx.StdDialogButtonSizer()
                 button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
                 button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
-                button_sizer.AddButton(wx.Button(dlg, wx.ID_APPLY, label="Apply to all"))
                 dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
                 button_sizer.Realize()
 
@@ -1376,8 +1383,26 @@ class Figure(wx.Frame):
                     normtext.Enable(want_norm)
                     slidernorm.Enable(want_norm)
                     slidernormbox.Enable(want_norm)
-
                     refresh_figure(axes, background, axesdata)
+
+                def apply_to_all(event):
+                    if event.Id == wx.ID_APPLY:
+                        numx, numy = self.subplots.shape
+                        for xcoord in range(numx):
+                            for ycoord in range(numy):
+                                subplot_item = self.subplot(xcoord, ycoord)
+                                if hasattr(subplot_item, "displayed"):
+                                    plot_params = self.subplot_params[(xcoord, ycoord)]
+                                    plot_params["vmin"] = params["vmin"]
+                                    plot_params["vmax"] = params["vmax"]
+                                    plot_params["normalize"] = params["normalize"]
+                                    plot_params["normalize_args"] = params["normalize_args"]
+                                    image = self.images[(xcoord, ycoord)]
+                                    if not isinstance(image, MaskedArray):
+                                        subplot_item.displayed.set_data(self.normalize_image(image, **plot_params))
+                        self.figure.canvas.draw()
+                    else:
+                        event.Skip()
 
                 # For small images we can draw fast enough for a live preview.
                 # For large images, we draw when the slider is released.
@@ -1390,6 +1415,7 @@ class Figure(wx.Frame):
                 dlg.Bind(wx.EVT_SLIDER, on_slider)
                 dlg.Bind(wx.EVT_TEXT, on_int_entry)
                 dlg.Bind(EVT_NUM, on_int_entry)
+                dlg.Bind(wx.EVT_BUTTON, apply_to_all)
                 dlg.Layout()
                 if dlg.ShowModal() == wx.ID_OK:
                     return

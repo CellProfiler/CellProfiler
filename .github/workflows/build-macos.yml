@@ -1,0 +1,40 @@
+name: release
+on:
+  push:
+    branches: [ features/release-actions ]
+#  release:
+#    types: [created]
+jobs:
+  release:
+    runs-on: macos-10.15
+    steps:
+      - uses: actions/cache@v2
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          architecture: x64
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/setup-java@v1
+        with:
+          java-version: '14.0.1'
+          java-package: jdk
+          architecture: x64
+      - run: |
+          pip install --upgrade pip setuptools wheel
+          pip install numpy
+          git clone https://github.com/CellProfiler/distribution.git
+          git clone https://github.com/CellProfiler/pyinstaller.git
+      - run: |
+          git clone https://github.com/CellProfiler/pyinstaller.git
+          cd pyinstaller && pip install --editable .
+      - env:
+          LDFLAGS: -L/usr/local/opt/openssl/lib
+        run: |
+          brew install mysql
+          make
+        working-directory: ./distribution/macos

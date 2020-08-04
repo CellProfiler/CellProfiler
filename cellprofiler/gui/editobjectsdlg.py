@@ -1887,7 +1887,7 @@ class EditObjectsDialog(wx.Dialog):
                 self.orig_axes.add_line(self.delete_mode_rect_artist)
                 logging.info("Starting delete at %f, %f" % self.delete_mode_start)
             else:
-                self.on_exit_delete_mode(event)
+                self.exit_delete_mode(event)
 
     def on_mouse_moved_delete_mode(self, event):
         if self.delete_mode_start is not None and event.inaxes == self.orig_axes:

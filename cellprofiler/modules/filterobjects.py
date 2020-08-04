@@ -2,6 +2,7 @@ from cellprofiler_core.constants.measurement import (
     M_LOCATION_CENTER_X,
     M_LOCATION_CENTER_Y,
 )
+from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.preferences import (
     DEFAULT_INPUT_FOLDER_NAME,
     ABSOLUTE_FOLDER_NAME,
@@ -134,7 +135,7 @@ PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
 PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 
 
-class FilterObjects(cellprofiler_core.module.image_segmentation.ObjectProcessing):
+class FilterObjects(ObjectProcessing):
     module_name = "FilterObjects"
 
     variable_revision_number = 8

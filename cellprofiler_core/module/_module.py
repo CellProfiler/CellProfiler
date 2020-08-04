@@ -71,7 +71,7 @@ class Module:
         self.__wants_pause = False
         self.__svn_version = "Unknown"
         self.__enabled = True
-        self.variable_revision_number = 0
+        self.__variable_revision_number = 0
         self.shared_state = (
             {}
         )  # used for maintaining state between modules, see get_dictionary()

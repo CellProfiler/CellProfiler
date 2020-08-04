@@ -839,7 +839,7 @@ first image.
 
             if (event is not None) or (gridding[0] is None):
                 do_gridding(
-                    first_x.Value, first_y.Value, second_x.Value, second_y.Value
+                    first_x.GetValue(), first_y.GetValue(), second_x.GetValue(), second_y.GetValue()
                 )
             self.display_grid(background_image, gridding[0], image_set_number, axes)
             canvas.draw()
@@ -855,7 +855,7 @@ first image.
             frame.Close(True)
 
         def on_cell_selection(event):
-            if cell_choice.Selection == 0:
+            if cell_choice.GetSelection() == 0:
                 status_bar.SetStatusText(SELECT_FIRST_CELL)
             else:
                 status_bar.SetStatusText(SELECT_SECOND_CELL)
@@ -865,41 +865,41 @@ first image.
                 gridding[0] = self.build_grid_info(
                     int(x1),
                     int(y1),
-                    int(first_row.Value),
-                    int(first_column.Value),
+                    int(first_row.GetValue()),
+                    int(first_column.GetValue()),
                     int(x2),
                     int(y2),
-                    int(second_row.Value),
-                    int(second_column.Value),
+                    int(second_row.GetValue()),
+                    int(second_column.GetValue()),
                     image_shape,
                 )
             except Exception as e:
-                logging.error(e.message, exc_info=True)
-                status_bar.SetStatusText(e.message)
+                logging.error(e, exc_info=True)
+                status_bar.SetStatusText(str(e))
                 return False
             return True
 
         def button_release(event):
             if event.inaxes == figure.axes[0]:
-                if cell_choice.Selection == 0:
+                if cell_choice.GetSelection() == 0:
                     new_first_x = str(int(event.xdata))
                     new_first_y = str(int(event.ydata))
                     if do_gridding(
-                        new_first_x, new_first_y, second_x.Value, second_y.Value
+                        new_first_x, new_first_y, second_x.GetValue(), second_y.GetValue()
                     ):
-                        first_x.Value = new_first_x
-                        first_y.Value = new_first_y
-                        cell_choice.Selection = 1
+                        first_x.SetValue(new_first_x)
+                        first_y.SetValue(new_first_y)
+                        cell_choice.SetSelection(1)
                         status_bar.SetStatusText(SELECT_SECOND_CELL)
                 else:
                     new_second_x = str(int(event.xdata))
                     new_second_y = str(int(event.ydata))
                     if do_gridding(
-                        first_x.Value, first_y.Value, new_second_x, new_second_y
+                        first_x.GetValue(), first_y.GetValue(), new_second_x, new_second_y
                     ):
-                        second_x.Value = new_second_x
-                        second_y.Value = new_second_y
-                        cell_choice.Selection = 0
+                        second_x.SetValue(new_second_x)
+                        second_y.SetValue(new_second_y)
+                        cell_choice.SetSelection(0)
                         status_bar.SetStatusText(SELECT_FIRST_CELL)
                 redisplay(None)
 
@@ -911,7 +911,7 @@ first image.
         frame.Bind(wx.EVT_RADIOBOX, on_cell_selection, cell_choice)
         canvas.mpl_connect("button_release_event", button_release)
         frame.ShowModal()
-        do_gridding(first_x.Value, first_y.Value, second_x.Value, second_y.Value)
+        do_gridding(first_x.GetValue(), first_y.GetValue(), second_x.GetValue(), second_y.GetValue())
         frame.Destroy()
         if status[0] != wx.OK:
             raise RuntimeError("Pipeline aborted during grid editing")

@@ -101,7 +101,7 @@ def test_grid_automatic():
         measurement = "_".join(
             (cellprofiler.modules.definegrid.M_CATEGORY, GRID_NAME, feature)
         )
-        assert m.has_feature(cellprofiler_core.measurement.IMAGE, measurement)
+        assert m.has_feature("Image", measurement)
         assert m.get_current_image_measurement(measurement) == value
 
     image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -176,7 +176,7 @@ def test_coordinates_plus_savedimagesize():
         measurement = "_".join(
             (cellprofiler.modules.definegrid.M_CATEGORY, GRID_NAME, feature)
         )
-        assert m.has_feature(cellprofiler_core.measurement.IMAGE, measurement)
+        assert m.has_feature("Image", measurement)
         assert m.get_current_image_measurement(measurement) == value
 
     image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)

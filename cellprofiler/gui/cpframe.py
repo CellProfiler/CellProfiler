@@ -37,6 +37,7 @@ from .pipelinecontroller import PipelineController
 from .pipelinelistview import PipelineListView
 from .preferences_dialog._preferences_dialog import PreferencesDialog
 from .preferences_view import PreferencesView
+from .utilities.module_view import stop_validation_queue_thread
 
 HELP_ON_FILE_LIST = """\
 The *File List* panel displays the image files that are managed by the
@@ -531,7 +532,7 @@ class CPFrame(wx.Frame):
             logging.warning("Failed to close the pipeline controller", exc_info=True)
 
         try:
-            cellprofiler.gui.utilities.module_view.stop_validation_queue_thread()
+            stop_validation_queue_thread()
         except:
             logging.warning("Failed to stop pipeline validation thread", exc_info=True)
         wx.GetApp().ExitMainLoop()
@@ -1220,10 +1221,10 @@ class CPFrame(wx.Frame):
             style=wx.FD_OPEN,
         )
         if dlg.ShowModal() == wx.ID_OK:
-            from cellprofiler_core.image import LoadImagesImageProvider
+            from cellprofiler_core.image import FileImage
             from .figure import Figure
 
-            lip = LoadImagesImageProvider("dummy", "", dlg.GetPath())
+            lip = FileImage("dummy", "", dlg.GetPath())
             image = lip.provide_image(None).pixel_data
             frame = Figure(self, title=dlg.GetPath(), subplots=(1, 1))
             if image.ndim == 3:

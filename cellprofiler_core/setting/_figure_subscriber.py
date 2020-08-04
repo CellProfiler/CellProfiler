@@ -5,8 +5,8 @@ class FigureSubscriber(Setting):
     """A setting that subscribes to a figure indicator provider
     """
 
-    def __init(self, text, value="Do not use", *args, **kwargs):
-        super(Setting, self).__init(text, value, *args, **kwargs)
+    def __init__(self, text, value="Do not use", *args, **kwargs):
+        super(Setting, self).__init__(text, value, *args, **kwargs)
 
     def get_choices(self, pipeline):
         choices = []

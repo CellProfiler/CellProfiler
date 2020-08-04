@@ -9,7 +9,7 @@ import javabridge
 import zmq
 
 from ._pipeline_event_listener import PipelineEventListener
-from ..analysis.reply import ImageSetSuccess
+from ..analysis.reply import ImageSetSuccess, ServerExited
 from ..analysis.reply import ImageSetSuccessWithDictionary
 from ..analysis.reply import NoWork
 from ..analysis.request import AnalysisCancel, Display, DisplayPostGroup, OmeroLogin
@@ -421,7 +421,7 @@ class Worker:
                         )
                 if socket == work_socket and state == zmq.POLLIN:
                     response = req.recv(work_socket)
-        if isinstance(response, UpstreamExit):
+        if isinstance(response, (UpstreamExit, ServerExited)):
             self.raise_cancel(
                 "Received UpstreamExit for analysis %s during request %s"
                 % (self.current_analysis_id, str(req))

@@ -110,12 +110,12 @@ def main(args=None):
     if options.pipeline_filename:
         o = urllib.parse.urlparse(options.pipeline_filename)
         if o[0] in ("ftp", "http", "https"):
-            import urllib2
+            from urllib.request import urlopen
 
             temp_pipe_file = tempfile.NamedTemporaryFile(
                 mode="w+b", suffix=".cppipe", dir=temp_dir, delete=False
             )
-            downloaded_pipeline = urllib2.urlopen(options.pipeline_filename)
+            downloaded_pipeline = urlopen(options.pipeline_filename)
             for line in downloaded_pipeline:
                 temp_pipe_file.write(line)
             options.pipeline_filename = temp_pipe_file.name
@@ -124,12 +124,12 @@ def main(args=None):
     if options.image_set_file:
         o = urllib.parse.urlparse(options.image_set_file)
         if o[0] in ("ftp", "http", "https"):
-            import urllib2
+            from urllib.request import urlopen
 
             temp_set_file = tempfile.NamedTemporaryFile(
                 mode="w+b", suffix=".csv", dir=temp_dir, delete=False
             )
-            downloaded_set_csv = urllib2.urlopen(options.image_set_file)
+            downloaded_set_csv = urlopen(options.image_set_file)
             for line in downloaded_set_csv:
                 temp_set_file.write(line)
             options.image_set_file = temp_set_file.name
@@ -138,12 +138,12 @@ def main(args=None):
     if options.data_file:
         o = urllib.parse.urlparse(options.data_file)
         if o[0] in ("ftp", "http", "https"):
-            import urllib2
+            from urllib.request import urlopen
 
             temp_data_file = tempfile.NamedTemporaryFile(
                 mode="w+b", suffix=".csv", dir=temp_dir, delete=False
             )
-            downloaded_data_csv = urllib2.urlopen(options.data_file)
+            downloaded_data_csv = urlopen(options.data_file)
             for line in downloaded_data_csv:
                 temp_data_file.write(line)
             options.data_file = temp_data_file.name

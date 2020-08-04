@@ -23,9 +23,8 @@ YES          NO           NO
 .. _normalized cross-correlation: http://en.wikipedia.org/wiki/Cross-correlation#Normalized_cross-correlation
 .. _Pearson product-moment correlation coefficient: http://en.wikipedia.org/wiki/Pearson_product-moment_correlation_coefficient
 """
-
+import imageio
 import skimage.feature
-import skimage.io
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting.subscriber import ImageSubscriber
@@ -71,7 +70,7 @@ class MatchTemplate(Module):
 
         input_pixels = input_image.pixel_data
 
-        template = skimage.io.imread(template_name)
+        template = imageio.imread(template_name)
 
         output_pixels = skimage.feature.match_template(
             image=input_pixels, template=template, pad_input=True

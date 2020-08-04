@@ -50,6 +50,8 @@ from cellprofiler_core.analysis.request import (
     DebugWaiting,
     ExceptionReport,
 )
+from cellprofiler_core.analysis.request import Interaction as InteractionRequest
+from cellprofiler_core.analysis.request import OmeroLogin as OmeroLoginRequest
 from cellprofiler_core.constants.measurement import (
     EXPERIMENT,
     IMAGE,
@@ -2849,12 +2851,12 @@ class PipelineController(object):
             wx.CallAfter(self.module_display_post_run_request, evt)
         elif isinstance(evt, DisplayPostGroup):
             wx.CallAfter(self.module_display_post_group_request, evt)
-        elif isinstance(evt, Interaction):
+        elif isinstance(evt, InteractionRequest):
             self.interaction_request_queue.put(
                 (PRI_INTERACTION, self.module_interaction_request, evt)
             )
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, OmeroLogin):
+        elif isinstance(evt, OmeroLoginRequest):
             self.interaction_request_queue.put(
                 (PRI_INTERACTION, self.omero_login_request, evt)
             )

@@ -1143,9 +1143,9 @@ class Figure(wx.Frame):
             orig_params = params.copy()
             id_dict = {
                 False: "Raw",
-                True: "Normalised",
-                "log": "Log Normalised",
-                "gamma": "Gamma Normalised"
+                True: "Normalized",
+                "log": "Log Normalized",
+                "gamma": "Gamma Normalized"
             }
             if params["normalize"]:
                 maxval = 1
@@ -1166,13 +1166,13 @@ class Figure(wx.Frame):
             else:
                 slider_flags = wx.SL_HORIZONTAL
 
-            with wx.Dialog(self, title="Adjust contrast", size=wx.Size(250, 350)) as dlg:
+            with wx.Dialog(self, title="Adjust Contrast", size=wx.Size(250, 350)) as dlg:
                 dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
 
                 sizer = wx.BoxSizer(wx.VERTICAL)
                 dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, border=5)
                 sizer.Add(
-                    wx.StaticText(dlg, label="Normalisation Mode"),
+                    wx.StaticText(dlg, label="Normalization Mode"),
                     0,
                     wx.ALIGN_LEFT,
                 )
@@ -1186,7 +1186,7 @@ class Figure(wx.Frame):
                 sizer.Add(method_select, flag=wx.ALL | wx.EXPAND, border=3)
 
                 sizer.Add(
-                    wx.StaticText(dlg, label="Minimum brightness"),
+                    wx.StaticText(dlg, label="Minimum Brightness"),
                     0,
                     wx.ALIGN_LEFT,
                 )
@@ -1208,7 +1208,7 @@ class Figure(wx.Frame):
                 sizer.Add(minbright_sizer, 1, wx.EXPAND)
 
                 sizer.Add(
-                    wx.StaticText(dlg, label="Maximum brightness"),
+                    wx.StaticText(dlg, label="Maximum Brightness"),
                     0,
                     wx.ALIGN_LEFT,
                 )
@@ -1228,7 +1228,7 @@ class Figure(wx.Frame):
                 maxbright_sizer.AddSpacer(4)
                 maxbright_sizer.Add(slidermaxbox)
                 sizer.Add(maxbright_sizer, 1, wx.EXPAND)
-                normtext = wx.StaticText(dlg, label="Normalisation Factor")
+                normtext = wx.StaticText(dlg, label="Normalization Factor")
                 sizer.Add(
                     normtext,
                     0,
@@ -1237,11 +1237,11 @@ class Figure(wx.Frame):
                 slidernorm = wx.Slider(
                     dlg,
                     id=2,
-                    value=4.5,
+                    value=float(get_normalization_factor()),
                     minValue=0,
                     maxValue=20,
                     style=slider_flags,
-                    name="Normalisation Factor"
+                    name="Normalization Factor"
                 )
                 slidernormbox = NumCtrl(
                     dlg,

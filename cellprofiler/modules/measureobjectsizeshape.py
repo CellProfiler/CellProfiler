@@ -128,10 +128,10 @@ ellipse with the same second-moments as each object.
 -  *Spatial Moment features:* *(2D only)* A series of weighted averages 
    representing the shape, size, rotation and location of the object.
 -  *Central Moment features:* *(2D only)* Similar to spatial moments, but
-   normalised to the object's centroid. These are therefore not influenced
+   normalized to the object's centroid. These are therefore not influenced
    by an object's location within an image.
 -  *Normalized Moment features:* *(2D only)* Similar to central moments,
-   but further normalised to be scale invariant. These moments are therefore
+   but further normalized to be scale invariant. These moments are therefore
    not impacted by an object's size (or location).
 -  *Hu Moment features:* *(2D only)* Hu's set of image moment features. These
    are not altered by the object's location, size or rotation. This means that

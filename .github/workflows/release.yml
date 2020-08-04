@@ -1,17 +1,22 @@
-name: release
-on:
-  push:
-    branches: [ master ]
-#  release:
-#    types: [created]
 jobs:
-  release:
+  build:
+    name: build
     runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-10.15, ubuntu-20.04, windows-2019]
-        python-version: [ '3.8' ]
     steps:
+      - if: ${{ matrix.os == 'windows-2019' }}
+        uses: actions/cache@v2
+        with:
+          path: ~\AppData\Local\pip\Cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - if: ${{ matrix.os == 'macos-10.15' }}
+        uses: actions/cache@v2
+        with:
+          path: ~/Library/Caches/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
@@ -22,33 +27,87 @@ jobs:
           java-version: '14.0.1' # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
-      - run: python --version
-      - run: pip install --upgrade pip setuptools wheel
-      - run: git clone https://github.com/CellProfiler/pyinstaller.git
+      - run: |
+          pip install --upgrade pip setuptools wheel
+          pip install numpy
+          git clone https://github.com/CellProfiler/distribution.git
+          git clone https://github.com/CellProfiler/pyinstaller.git
       - run: pip install --editable .
         working-directory: pyinstaller
-      - run: git clone https://github.com/CellProfiler/distribution.git
-      - run: pip install numpy
-      - if: ${{ matrix.os == 'macos-10.15' }}
-        run: brew install mysql
       - env:
-          LDFLAGS: -L/usr/local/opt/mysql-client/lib
+          LDFLAGS: -L/usr/local/opt/openssl/lib
         if: ${{ matrix.os == 'macos-10.15' }}
-        run: make
+        run: |
+          brew install mysql
+          make
+          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS.zip
         working-directory: ./distribution/macos
-      - if: ${{ matrix.os == 'ubuntu-20.04' }}
-        run: echo
+      - env:
+          JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
+        if: ${{ matrix.os == 'windows-2019' }}
+        run: |
+          pip install cython
+          pip install mysqlclient==1.4.6
+          pip install --editable .
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
-          echo %JAVA_HOME%
-          #java -XshowSettings:properties -version
-          #echo "Installing dependencies"
-          pip install mysqlclient
-          pip install -e .
-        env:
-          JAVA_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
+          pyinstaller distribution/windows/cellprofiler.spec
+          iscc /dMyAppVersion="4.0.0rc5" "distribution/windows/cellprofiler.iss"
+      - if: ${{ matrix.os == 'macos-10.15' }}
+        uses: actions/upload-artifact@v1
+        with:
+          name: CellProfiler-macOS.zip
+          path: ./distribution/macos/dist/CellProfiler-macOS.zip
       - if: ${{ matrix.os == 'windows-2019' }}
-        run: |
-          echo "Freezing CellProfiler"
-          pyinstaller cellprofiler.spec
-        working-directory: ./distribution/windows
+        uses: actions/upload-artifact@v1
+        with:
+          name: CellProfiler.exe
+          path: ./distribution/windows/Output/CellProfiler.exe
+    strategy:
+      matrix:
+        os: [macos-10.15, windows-2019]
+        python-version: [ "3.8" ]
+  upload:
+    name: upload
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          draft: true
+          prerelease: true
+          release_name: ${{ github.ref }}
+          tag_name: ${{ github.ref }}
+      - uses: actions/download-artifact@v1
+        with:
+          name: CellProfiler-macOS.zip
+          path: ./
+      - uses: actions/download-artifact@v1
+        with:
+          name: CellProfiler.exe
+          path: ./
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-release-asset@v1
+        with:
+          asset_content_type: application/zip
+          asset_name: CellProfiler-macOS.zip
+          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS.zip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+      - env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-release-asset@v1
+        with:
+          asset_content_type: application/exe
+          asset_name: CellProfiler.exe
+          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler.exe
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+name: create-release
+on:
+  push:
+    tags:
+      - "v*"

@@ -1,4 +1,5 @@
 import wx
+import wx.lib.rcsizer
 from cellprofiler_core.setting import DataTypes
 
 from ._module_view import ModuleView

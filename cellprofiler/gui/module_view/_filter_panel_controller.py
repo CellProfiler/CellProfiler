@@ -1,8 +1,8 @@
 import logging
 
 import wx
-from cellprofiler_core.setting.filter import Filter
-from cellprofiler_core.setting.filter._filter import AND_PREDICATE, OR_PREDICATE
+from cellprofiler_core.setting.filter import Filter, FilterPredicate
+from cellprofiler_core.setting.filter._filter import AND_PREDICATE, OR_PREDICATE, LITERAL_PREDICATE
 
 from ._module_view import ModuleView
 from ..utilities.module_view import edit_control_name
@@ -219,7 +219,7 @@ class FilterPanelController(object):
         logging.debug("Add rules after " + str(address))
         structure = self.v.parse()
         sequence = self.find_address(structure, address[:-1])
-        new_rule = [Filter.OR_PREDICATE, self.v.default()]
+        new_rule = [OR_PREDICATE, self.v.default()]
         sequence.insert(address[-1] + 2, new_rule)
         new_text = self.v.build_string(structure)
         self.on_value_change(event, new_text)
@@ -273,7 +273,7 @@ class FilterPanelController(object):
         #
         for index in range(index + 1, len(sequence)):
             if isinstance(sequence[index], str):
-                is_good = Filter.LITERAL_PREDICATE in predicates
+                is_good = LITERAL_PREDICATE in predicates
             else:
                 matches = [p for p in predicates if sequence[index].symbol == p.symbol]
                 is_good = len(matches) == 1
@@ -283,7 +283,7 @@ class FilterPanelController(object):
                 del sequence[index:]
                 sequence += self.v.default(predicates)
                 break
-            if not isinstance(sequence[index], Filter.FilterPredicate):
+            if not isinstance(sequence[index], FilterPredicate):
                 break
             predicates = sequence[index].subpredicates
         new_text = self.v.build_string(structure)
@@ -463,7 +463,7 @@ class FilterPanelController(object):
                     #
                     if (
                         len(predicates) == 1
-                        and predicates[0] is Filter.LITERAL_PREDICATE
+                        and predicates[0] is LITERAL_PREDICATE
                     ):
                         self.make_literal("", i, subaddress, sizer)
                     else:

@@ -41,6 +41,7 @@ from cellprofiler_core.analysis.reply import (
     OmeroLogin,
     Interaction,
     Ack,
+    ServerExited,
 )
 from cellprofiler_core.analysis.request import (
     Display,
@@ -121,7 +122,6 @@ from cellprofiler_core.preferences import (
     get_show_analysis_complete_dlg,
     get_wants_pony,
     set_show_analysis_complete_dlg,
-    add_recent_file,
     set_default_output_directory,
     get_max_workers,
     set_default_image_directory,
@@ -145,7 +145,7 @@ import cellprofiler.gui.dialog
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
-import cellprofiler.gui.htmldialog
+from cellprofiler.gui.htmldialog import HTMLDialog
 import cellprofiler.gui.module_view._setting_edited_event
 import cellprofiler.gui.moduleview
 import cellprofiler.gui.omerologin
@@ -156,6 +156,7 @@ import cellprofiler.gui.workspace_view
 import cellprofiler.icons
 from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
 
+logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
 RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
 ED_STOP = "Stop"
@@ -1525,11 +1526,6 @@ class PipelineController(object):
             dlg.Fit()
             dlg.ShowModal()
 
-    def set_current_pipeline_path(self, pathname):
-        set_current_pipeline_path(pathname)
-        add_recent_file(pathname)
-        self.populate_recent_files()
-
     def populate_recent_files(self):
         """Populate the recent files menu"""
         for menu, ids, file_names, fn in (
@@ -2873,7 +2869,7 @@ class PipelineController(object):
                 # Things are in a bad state here, possibly because the
                 # user hasn't properly run the debugger. Chances are that
                 # the user knows that something is going wrong.
-                evt.reply(cellprofiler_core.analysis.ServerExited())
+                evt.reply(ServerExited())
             else:
                 self.debug_request_queue.put(evt)
         elif isinstance(evt, Paused):

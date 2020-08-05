@@ -4,6 +4,9 @@ import pytest
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_LOCATION_CENTER_Z, \
+    M_NUMBER_OBJECT_NUMBER, FF_COUNT
+
 import cellprofiler.modules.convertimagetoobjects
 
 instance = cellprofiler.modules.convertimagetoobjects.ConvertImageToObjects()
@@ -88,18 +91,18 @@ def test_run_boolean(image, module, workspace):
     measurements = workspace.measurements
 
     assert measurements.has_current_measurements(
-        "labeled", cellprofiler_core.measurement.M_LOCATION_CENTER_X
+        "labeled", M_LOCATION_CENTER_X
     )
     assert measurements.has_current_measurements(
-        "labeled", cellprofiler_core.measurement.M_LOCATION_CENTER_Y
+        "labeled", M_LOCATION_CENTER_Y
     )
     assert measurements.has_current_measurements(
-        "labeled", cellprofiler_core.measurement.M_LOCATION_CENTER_Z
+        "labeled", M_LOCATION_CENTER_Z
     )
     assert measurements.has_current_measurements(
-        "labeled", cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER
+        "labeled", M_NUMBER_OBJECT_NUMBER
     )
     assert measurements.has_current_measurements(
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.measurement.FF_COUNT % "labeled",
+        "Image",
+        FF_COUNT % "labeled",
     )

@@ -9,7 +9,9 @@ import skimage.segmentation
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-import cellprofiler_core.modules.identify
+from cellprofiler_core.constants.measurement import EXPERIMENT, COLTYPE_FLOAT, C_LOCATION
+
+
 import cellprofiler.modules.measureobjectintensity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -101,8 +103,8 @@ def assert_features_and_columns_match(measurements, module):
         for x in measurements.get_object_names()
         if x
         not in (
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.EXPERIMENT,
+            "Image",
+            EXPERIMENT,
         )
     ]
 
@@ -120,7 +122,7 @@ def assert_features_and_columns_match(measurements, module):
 
         assert column[1] in features[index]
 
-        assert column[2] == cellprofiler_core.measurement.COLTYPE_FLOAT
+        assert column[2] == COLTYPE_FLOAT
 
 
 def test_supplied_measurements(module):
@@ -133,7 +135,7 @@ def test_supplied_measurements(module):
         sorted(
             [
                 cellprofiler.modules.measureobjectintensity.INTENSITY,
-                cellprofiler_core.measurement.C_LOCATION,
+                C_LOCATION,
             ]
         )
     )
@@ -153,7 +155,7 @@ def test_supplied_measurements(module):
     )
 
     measurements = module.get_measurements(
-        None, "MyObjects1", cellprofiler_core.measurement.C_LOCATION
+        None, "MyObjects1", C_LOCATION
     )
 
     assert len(measurements) == len(
@@ -191,13 +193,13 @@ def test_get_measurement_columns(module):
     for column in columns:
         assert column[0] in ("MyObjects1", "MyObjects2")
 
-        assert column[2], cellprofiler_core.measurement.COLTYPE_FLOAT
+        assert column[2], COLTYPE_FLOAT
 
         category = column[1].split("_")[0]
 
         assert category in (
             cellprofiler.modules.measureobjectintensity.INTENSITY,
-            cellprofiler_core.measurement.C_LOCATION,
+            C_LOCATION,
         )
 
         if category == cellprofiler.modules.measureobjectintensity.INTENSITY:
@@ -226,7 +228,7 @@ def test_zero(image, measurements, module, objects, workspace):
             cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS,
         ),
         (
-            cellprofiler_core.measurement.C_LOCATION,
+            C_LOCATION,
             cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS,
         ),
     ):
@@ -361,12 +363,12 @@ def test_one(image, measurements, module, objects, workspace):
             1,
         ),
         (
-            cellprofiler_core.measurement.C_LOCATION,
+            C_LOCATION,
             cellprofiler.modules.measureobjectintensity.LOC_CMI_X,
             3,
         ),
         (
-            cellprofiler_core.measurement.C_LOCATION,
+            C_LOCATION,
             cellprofiler.modules.measureobjectintensity.LOC_CMI_Y,
             2,
         ),
@@ -469,7 +471,7 @@ def test_intensity_location(image, measurements, module, objects, workspace):
         (cellprofiler.modules.measureobjectintensity.LOC_MAX_Y, 2),
     ):
         feature_name = "%s_%s_%s" % (
-            cellprofiler_core.measurement.C_LOCATION,
+            C_LOCATION,
             feature,
             "MyImage",
         )
@@ -807,7 +809,7 @@ def test_median_intensity_masked(image, measurements, module, objects, workspace
 
     module.run(workspace)
 
-    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
+    assert isinstance(measurements,cellprofiler_core.measurement.Measurements)
 
     values = measurements.get_current_measurement(
         OBJECT_NAME,
@@ -880,7 +882,7 @@ def test_std_intensity_edge(image, measurements, module, objects, workspace):
 
     module.run(workspace)
 
-    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
+    assert isinstance(measurements,cellprofiler_core.measurement.Measurements)
 
     values = measurements.get_current_measurement(
         OBJECT_NAME,
@@ -940,7 +942,7 @@ def test_ijv(image, module, objects, workspace):
             cellprofiler.modules.measureobjectintensity.ALL_MEASUREMENTS,
         ),
         (
-            cellprofiler_core.measurement.C_LOCATION,
+            C_LOCATION,
             cellprofiler.modules.measureobjectintensity.ALL_LOCATION_MEASUREMENTS,
         ),
     ):

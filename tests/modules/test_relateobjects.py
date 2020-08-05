@@ -197,7 +197,7 @@ class TestRelateObjects(unittest.TestCase):
         )
         module.wants_per_parent_means.value = True
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cellprofiler_core.measurement.Measurements))
+        self.assertTrue(isinstance(m,cellprofiler_core.measurement.Measurements))
         m.add_measurement(CHILD_OBJECTS, MEASUREMENT, numpy.array([1.0, 2.0, 3.0, 4.0]))
         m.add_measurement(CHILD_OBJECTS, IGNORED_MEASUREMENT, numpy.array([1, 2, 3, 4]))
         expected = numpy.array([2.0, 3.0])
@@ -221,7 +221,7 @@ class TestRelateObjects(unittest.TestCase):
         )
         module.wants_per_parent_means.value = True
         m = workspace.measurements
-        self.assertTrue(isinstance(m, cellprofiler_core.measurement.Measurements))
+        self.assertTrue(isinstance(m,cellprofiler_core.measurement.Measurements))
         m.add_measurement(CHILD_OBJECTS, MEASUREMENT, numpy.zeros(0))
         m.add_measurement(CHILD_OBJECTS, IGNORED_MEASUREMENT, numpy.zeros(0, int))
         module.run(workspace)

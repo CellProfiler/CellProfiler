@@ -3,6 +3,10 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER, COLTYPE_FLOAT, NEIGHBORS, R_FIRST_OBJECT_NUMBER, \
+    R_SECOND_OBJECT_NUMBER
+from cellprofiler_core.measurement import RelationshipKey
+
 import cellprofiler.modules.measureobjectneighbors
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -95,9 +99,9 @@ def test_empty():
         assert column[0] == OBJECTS_NAME
         assert column[1] in features
         assert column[2] == (
-            cellprofiler_core.measurement.COLTYPE_INTEGER
+            COLTYPE_INTEGER
             if column[1].find("Number") != -1
-            else cellprofiler_core.measurement.COLTYPE_FLOAT
+            else COLTYPE_FLOAT
         )
 
 
@@ -518,7 +522,7 @@ def test_neighbors_zeros():
             )
             module.run(workspace)
             m = workspace.measurements
-            assert isinstance(m, cellprofiler_core.measurement.Measurements)
+            assert isinstance(m,cellprofiler_core.measurement.Measurements)
             for feature in module.all_features:
                 v = m.get_current_measurement(
                     OBJECTS_NAME, module.get_measurement_name(feature)
@@ -540,7 +544,7 @@ def test_one_neighbor():
         )
         module.run(workspace)
         m = workspace.measurements
-        assert isinstance(m, cellprofiler_core.measurement.Measurements)
+        assert isinstance(m,cellprofiler_core.measurement.Measurements)
         v = m.get_current_measurement(
             OBJECTS_NAME,
             module.get_measurement_name(
@@ -594,7 +598,7 @@ def test_two_neighbors():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
@@ -654,7 +658,7 @@ def test_different_neighbors_touching():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     v = m.get_current_measurement(
         OBJECTS_NAME,
         module.get_measurement_name(
@@ -719,21 +723,21 @@ def test_relationships():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     k = m.get_relationship_groups()
     assert len(k) == 1
     k = k[0]
-    assert isinstance(k, cellprofiler_core.measurement.RelationshipKey)
+    assert isinstance(k, RelationshipKey)
     assert k.module_number == 1
     assert k.object_name1 == OBJECTS_NAME
     assert k.object_name2 == OBJECTS_NAME
-    assert k.relationship == cellprofiler_core.measurement.NEIGHBORS
+    assert k.relationship == NEIGHBORS
     r = m.get_relationships(
         k.module_number, k.relationship, k.object_name1, k.object_name2
     )
     assert len(r) == 8
-    ro1 = r[cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER]
-    ro2 = r[cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER]
+    ro1 = r[R_FIRST_OBJECT_NUMBER]
+    ro2 = r[R_SECOND_OBJECT_NUMBER]
     numpy.testing.assert_array_equal(
         numpy.unique(ro1[ro2 == 3]), numpy.array([1, 2, 4, 5])
     )
@@ -780,21 +784,21 @@ def test_neighbors():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     k = m.get_relationship_groups()
     assert len(k) == 1
     k = k[0]
-    assert isinstance(k, cellprofiler_core.measurement.RelationshipKey)
+    assert isinstance(k, RelationshipKey)
     assert k.module_number == 1
     assert k.object_name1 == OBJECTS_NAME
     assert k.object_name2 == NEIGHBORS_NAME
-    assert k.relationship == cellprofiler_core.measurement.NEIGHBORS
+    assert k.relationship == NEIGHBORS
     r = m.get_relationships(
         k.module_number, k.relationship, k.object_name1, k.object_name2
     )
     assert len(r) == 3
-    ro1 = r[cellprofiler_core.measurement.R_FIRST_OBJECT_NUMBER]
-    ro2 = r[cellprofiler_core.measurement.R_SECOND_OBJECT_NUMBER]
+    ro1 = r[R_FIRST_OBJECT_NUMBER]
+    ro2 = r[R_SECOND_OBJECT_NUMBER]
     assert numpy.all(ro2 == 1)
     numpy.testing.assert_array_equal(numpy.unique(ro1), numpy.array([1, 3, 4]))
 
@@ -882,7 +886,7 @@ def test_object_is_missing():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     ftr = module.get_measurement_name(
         cellprofiler.modules.measureobjectneighbors.M_FIRST_CLOSEST_OBJECT_NUMBER
     )

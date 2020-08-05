@@ -1,5 +1,7 @@
 import numpy
 import pytest
+
+
 import cellprofiler.modules.combineobjects
 import cellprofiler_core.image
 import cellprofiler_core.measurement

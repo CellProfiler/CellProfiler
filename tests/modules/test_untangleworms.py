@@ -2029,7 +2029,7 @@ def test_A02():
     worm_ijv = worms.get_ijv()
     assert numpy.max(worm_ijv[:, 2]) == 15
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     ocount = m.get_current_image_measurement("Count_" + OVERLAP_OBJECTS_NAME)
     assert ocount == 15
     ncount = m.get_current_image_measurement("Count_" + NON_OVERLAPPING_OBJECTS_NAME)

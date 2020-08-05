@@ -15,6 +15,7 @@ from cellprofiler_core.constants.module._identify import TS_GLOBAL, TS_ADAPTIVE,
     O_THREE_CLASS, O_BACKGROUND, RB_MODE, RB_SD, RB_MEAN, RB_MEDIAN, RB_MAD, TS_MANUAL, TS_MEASUREMENT
 from cellprofiler_core.image import VanillaImage
 
+
 import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.modules.threshold
 import cellprofiler_core.object

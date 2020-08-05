@@ -5,6 +5,11 @@ import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
 import cellprofiler_core.modules
+from cellprofiler_core.constants.measurement import FF_COUNT, COLTYPE_INTEGER, M_LOCATION_CENTER_X, COLTYPE_FLOAT, \
+    M_LOCATION_CENTER_Y, FF_PARENT, M_NUMBER_OBJECT_NUMBER, FF_CHILDREN_COUNT, C_COUNT, C_LOCATION, C_NUMBER, C_PARENT, \
+    C_CHILDREN, FTR_CENTER_X, FTR_CENTER_Y, FTR_OBJECT_NUMBER
+
+
 import cellprofiler.modules.maskobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -202,34 +207,34 @@ def test_measurement_columns():
     assert len(columns) == 6
     for expected in (
         (
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.COLTYPE_INTEGER,
+            "Image",
+            FF_COUNT % OUTPUT_OBJECTS,
+            COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.M_LOCATION_CENTER_X,
-            cellprofiler_core.measurement.COLTYPE_FLOAT,
+            M_LOCATION_CENTER_X,
+            COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler_core.measurement.COLTYPE_FLOAT,
+            M_LOCATION_CENTER_Y,
+            COLTYPE_FLOAT,
         ),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS,
-            cellprofiler_core.measurement.COLTYPE_INTEGER,
+            FF_PARENT % INPUT_OBJECTS,
+            COLTYPE_INTEGER,
         ),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
-            cellprofiler_core.measurement.COLTYPE_INTEGER,
+            M_NUMBER_OBJECT_NUMBER,
+            COLTYPE_INTEGER,
         ),
         (
             INPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.COLTYPE_INTEGER,
+            FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+            COLTYPE_INTEGER,
         ),
     ):
         assert any(
@@ -247,26 +252,26 @@ def test_measurement_categories():
     assert len(categories) == 0
 
     categories = module.get_categories(
-        workspace.pipeline, cellprofiler_core.measurement.IMAGE
+        workspace.pipeline, "Image"
     )
     assert len(categories) == 1
-    assert categories[0] == cellprofiler_core.measurement.C_COUNT
+    assert categories[0] == C_COUNT
 
     categories = module.get_categories(workspace.pipeline, OUTPUT_OBJECTS)
     assert len(categories) == 3
     for category, expected in zip(
         sorted(categories),
         (
-            cellprofiler_core.measurement.C_LOCATION,
-            cellprofiler_core.measurement.C_NUMBER,
-            cellprofiler_core.measurement.C_PARENT,
+            C_LOCATION,
+            C_NUMBER,
+            C_PARENT,
         ),
     ):
         assert category == expected
 
     categories = module.get_categories(workspace.pipeline, INPUT_OBJECTS)
     assert len(categories) == 1
-    assert categories[0] == cellprofiler_core.measurement.C_CHILDREN
+    assert categories[0] == C_CHILDREN
 
 
 def test_measurements():
@@ -276,28 +281,28 @@ def test_measurements():
         numpy.zeros((20, 10), int),
     )
     ftr_count = (
-        cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
+        FF_CHILDREN_COUNT % OUTPUT_OBJECTS
     ).split("_", 1)[1]
     d = {
         "Foo": {},
-        cellprofiler_core.measurement.IMAGE: {
+        "Image": {
             "Foo": [],
-            cellprofiler_core.measurement.C_COUNT: [OUTPUT_OBJECTS],
+            C_COUNT: [OUTPUT_OBJECTS],
         },
         OUTPUT_OBJECTS: {
             "Foo": [],
-            cellprofiler_core.measurement.C_LOCATION: [
-                cellprofiler_core.measurement.FTR_CENTER_X,
-                cellprofiler_core.measurement.FTR_CENTER_Y,
+            C_LOCATION: [
+                FTR_CENTER_X,
+                FTR_CENTER_Y,
             ],
-            cellprofiler_core.measurement.C_PARENT: [INPUT_OBJECTS],
-            cellprofiler_core.measurement.C_NUMBER: [
-                cellprofiler_core.measurement.FTR_OBJECT_NUMBER
+            C_PARENT: [INPUT_OBJECTS],
+            C_NUMBER: [
+                FTR_OBJECT_NUMBER
             ],
         },
         INPUT_OBJECTS: {
             "Foo": [],
-            cellprofiler_core.measurement.C_CHILDREN: [ftr_count],
+            C_CHILDREN: [ftr_count],
         },
     }
     for object_name in list(d.keys()):
@@ -320,19 +325,19 @@ def test_mask_nothing():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     value = m.get_current_image_measurement(
-        cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS
+        FF_COUNT % OUTPUT_OBJECTS
     )
     assert value == 0
     for object_name, feature in (
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_X),
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_Y),
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER),
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS),
+        (OUTPUT_OBJECTS, M_LOCATION_CENTER_X),
+        (OUTPUT_OBJECTS, M_LOCATION_CENTER_Y),
+        (OUTPUT_OBJECTS, M_NUMBER_OBJECT_NUMBER),
+        (OUTPUT_OBJECTS, FF_PARENT % INPUT_OBJECTS),
         (
             INPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+            FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
         ),
     ):
         data = m.get_current_measurement(object_name, feature)
@@ -359,28 +364,28 @@ def test_mask_with_objects():
     expected_x = numpy.array([4, 4])
     expected_y = numpy.array([5, 14])
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     value = m.get_current_image_measurement(
-        cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS
+        FF_COUNT % OUTPUT_OBJECTS
     )
     assert value == 2
 
     for object_name, feature, expected in (
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_X, expected_x),
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, expected_y),
+        (OUTPUT_OBJECTS, M_LOCATION_CENTER_X, expected_x),
+        (OUTPUT_OBJECTS, M_LOCATION_CENTER_Y, expected_y),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            M_NUMBER_OBJECT_NUMBER,
             numpy.array([1, 2]),
         ),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS,
+            FF_PARENT % INPUT_OBJECTS,
             numpy.array([1, 2]),
         ),
         (
             INPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+            FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
             numpy.array([1, 1]),
         ),
     ):
@@ -408,28 +413,28 @@ def test_mask_with_image():
     expected_x = numpy.array([4, 4])
     expected_y = numpy.array([5, 14])
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     value = m.get_current_image_measurement(
-        cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS
+        FF_COUNT % OUTPUT_OBJECTS
     )
     assert value == 2
 
     for object_name, feature, expected in (
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_X, expected_x),
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, expected_y),
+        (OUTPUT_OBJECTS, M_LOCATION_CENTER_X, expected_x),
+        (OUTPUT_OBJECTS, M_LOCATION_CENTER_Y, expected_y),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            M_NUMBER_OBJECT_NUMBER,
             numpy.array([1, 2]),
         ),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS,
+            FF_PARENT % INPUT_OBJECTS,
             numpy.array([1, 2]),
         ),
         (
             INPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+            FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
             numpy.array([1, 1]),
         ),
     ):
@@ -459,28 +464,28 @@ def test_mask_renumber():
     expected_x = numpy.array([4, 4])
     expected_y = numpy.array([5, 14])
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     value = m.get_current_image_measurement(
-        cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS
+        FF_COUNT % OUTPUT_OBJECTS
     )
     assert value == 2
 
     for object_name, feature, expected in (
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_X, expected_x),
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, expected_y),
+        (OUTPUT_OBJECTS, M_LOCATION_CENTER_X, expected_x),
+        (OUTPUT_OBJECTS, M_LOCATION_CENTER_Y, expected_y),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            M_NUMBER_OBJECT_NUMBER,
             numpy.array([1, 2]),
         ),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS,
+            FF_PARENT % INPUT_OBJECTS,
             numpy.array([1, 3]),
         ),
         (
             INPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+            FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
             numpy.array([1, 0, 1]),
         ),
     ):
@@ -512,28 +517,28 @@ def test_mask_retain():
     expected_x = numpy.array([4, None, 4])
     expected_y = numpy.array([5, None, 14])
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     value = m.get_current_image_measurement(
-        cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS
+        FF_COUNT % OUTPUT_OBJECTS
     )
     assert value == 3
 
     for object_name, feature, expected in (
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_X, expected_x),
-        (OUTPUT_OBJECTS, cellprofiler_core.measurement.M_LOCATION_CENTER_Y, expected_y),
+        (OUTPUT_OBJECTS, M_LOCATION_CENTER_X, expected_x),
+        (OUTPUT_OBJECTS, M_LOCATION_CENTER_Y, expected_y),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            M_NUMBER_OBJECT_NUMBER,
             numpy.array([1, 2, 3]),
         ),
         (
             OUTPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS,
+            FF_PARENT % INPUT_OBJECTS,
             numpy.array([1, 2, 3]),
         ),
         (
             INPUT_OBJECTS,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
+            FF_CHILDREN_COUNT % OUTPUT_OBJECTS,
             numpy.array([1, 0, 1]),
         ),
     ):

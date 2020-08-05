@@ -1,5 +1,6 @@
 import numpy
 import pytest
+from centrosome.bg_compensate import MODE_AUTO, MODE_BRIGHT, MODE_DARK, MODE_GRAY
 from six.moves import StringIO
 
 import cellprofiler_core.image
@@ -11,7 +12,6 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 
-import os
 import tests.modules
 
 INPUT_IMAGE_NAME = "MyImage"
@@ -744,7 +744,7 @@ def test_splines():
     ) in (
         (
             True,
-            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            MODE_AUTO,
             5,
             2,
             0.001,
@@ -755,7 +755,7 @@ def test_splines():
         ),
         (
             True,
-            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            MODE_AUTO,
             5,
             2,
             0.001,
@@ -766,7 +766,7 @@ def test_splines():
         ),
         (
             True,
-            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            MODE_AUTO,
             5,
             2,
             0.001,
@@ -777,7 +777,7 @@ def test_splines():
         ),
         (
             False,
-            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            MODE_AUTO,
             5,
             2,
             0.001,
@@ -788,7 +788,7 @@ def test_splines():
         ),
         (
             False,
-            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            MODE_AUTO,
             5,
             2,
             0.001,
@@ -799,7 +799,7 @@ def test_splines():
         ),
         (
             False,
-            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            MODE_AUTO,
             5,
             2,
             0.001,
@@ -810,7 +810,7 @@ def test_splines():
         ),
         (
             False,
-            cellprofiler.modules.correctilluminationcalculate.MODE_BRIGHT,
+            MODE_BRIGHT,
             5,
             2,
             0.001,
@@ -821,7 +821,7 @@ def test_splines():
         ),
         (
             False,
-            cellprofiler.modules.correctilluminationcalculate.MODE_DARK,
+            MODE_DARK,
             5,
             2,
             0.001,
@@ -832,7 +832,7 @@ def test_splines():
         ),
         (
             False,
-            cellprofiler.modules.correctilluminationcalculate.MODE_GRAY,
+            MODE_GRAY,
             5,
             2,
             0.001,
@@ -843,7 +843,7 @@ def test_splines():
         ),
         (
             False,
-            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            MODE_AUTO,
             7,
             2,
             0.001,
@@ -854,7 +854,7 @@ def test_splines():
         ),
         (
             False,
-            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
+            MODE_AUTO,
             4,
             2,
             0.001,
@@ -865,7 +865,7 @@ def test_splines():
         ),
         (
             False,
-            cellprofiler.modules.correctilluminationcalculate.MODE_DARK,
+            MODE_DARK,
             5,
             2,
             0.001,
@@ -876,7 +876,7 @@ def test_splines():
         ),
         (
             False,
-            cellprofiler.modules.correctilluminationcalculate.MODE_BRIGHT,
+            MODE_BRIGHT,
             5,
             2,
             0.001,
@@ -1331,7 +1331,7 @@ def test_load_v2():
     assert not module.automatic_splines
     assert (
         module.spline_bg_mode
-        == cellprofiler.modules.correctilluminationcalculate.MODE_BRIGHT
+        == MODE_BRIGHT
     )
     assert module.spline_points == 4
     assert module.spline_threshold == 2
@@ -1344,9 +1344,9 @@ def test_load_v2():
     for module, spline_bg_mode in zip(
         pipeline.modules()[1:4],
         (
-            cellprofiler.modules.correctilluminationcalculate.MODE_AUTO,
-            cellprofiler.modules.correctilluminationcalculate.MODE_DARK,
-            cellprofiler.modules.correctilluminationcalculate.MODE_GRAY,
+            MODE_AUTO,
+            MODE_DARK,
+            MODE_GRAY,
         ),
     ):
         assert isinstance(

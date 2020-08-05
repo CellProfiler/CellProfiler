@@ -8,6 +8,8 @@ import skimage.io
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+
+
 import cellprofiler.modules.matchtemplate
 import cellprofiler_core.object
 import cellprofiler_core.pipeline

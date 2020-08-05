@@ -8,7 +8,6 @@ import cellprofiler.modules.createbatchfiles
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 
-import os
 import tests.modules
 
 

@@ -7,6 +7,9 @@ import scipy.stats
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+
+
 import cellprofiler.modules.measureobjectintensitydistribution
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -447,7 +450,7 @@ def test_01_get_measurement_columns():
     for object_name, feature, coltype in columns:
         key = (object_name, feature)
         assert not (key in column_dictionary)
-        assert coltype == cellprofiler_core.measurement.COLTYPE_FLOAT
+        assert coltype == COLTYPE_FLOAT
         column_dictionary[key] = (object_name, feature, coltype)
 
     for object_name in [x.object_name.value for x in module.objects]:
@@ -515,7 +518,7 @@ def test_02_get_zernike_columns():
                         col = (
                             object_name,
                             name,
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                         assert col in columns
 

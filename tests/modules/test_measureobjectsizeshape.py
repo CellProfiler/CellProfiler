@@ -7,6 +7,8 @@ import skimage.io
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.injectimage
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+
 import cellprofiler.modules.measureobjectsizeshape
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -406,7 +408,7 @@ def test_overlapping():
         if oname != "SomeObjects":
             continue
         measurements = mlist[0]
-        assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
+        assert isinstance(measurements,cellprofiler_core.measurement.Measurements)
         v1 = measurements.get_current_measurement(oname, feature)
         assert len(v1) == 1
         v1 = v1[0]
@@ -451,7 +453,7 @@ def features_and_columns_match(measurements, module, pipeline):
     for column in columns:
         assert column[0] in ["SomeObjects", "OtherObjects"]
         assert column[1] in features
-        assert column[2] == cellprofiler_core.measurement.COLTYPE_FLOAT
+        assert column[2] == COLTYPE_FLOAT
 
 
 def test_run_volume():

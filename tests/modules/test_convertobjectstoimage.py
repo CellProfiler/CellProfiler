@@ -5,6 +5,8 @@ import scipy.sparse.coo
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
+
+
 import cellprofiler.modules.convertobjectstoimage
 import cellprofiler_core.object
 import cellprofiler_core.pipeline

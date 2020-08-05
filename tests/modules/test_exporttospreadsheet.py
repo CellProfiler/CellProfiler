@@ -8,6 +8,8 @@ import numpy
 import pytest
 import six
 import six.moves
+from cellprofiler_core.constants.measurement import EXPERIMENT, AGG_NAMES, AGG_MEAN, GROUP_INDEX, GROUP_NUMBER, C_COUNT, \
+    M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, AGG_STD_DEV, AGG_MEDIAN, COLTYPE_VARCHAR, COLTYPE_FLOAT, IMAGE_NUMBER
 
 import tests.modules
 import cellprofiler_core.image
@@ -527,7 +529,7 @@ def test_experiment_measurement(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.EXPERIMENT
+    module.object_groups[0].name.value = EXPERIMENT
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler_core.measurement.Measurements()
@@ -559,7 +561,7 @@ def test_experiment_measurement(output_dir):
 
 def test_two_experiment_measurements(output_dir):
     """Test writing two experiment measurements"""
-    path = os.path.join(output_dir, "%s.csv" % cellprofiler_core.measurement.EXPERIMENT)
+    path = os.path.join(output_dir, "%s.csv" % EXPERIMENT)
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
     module.directory.dir_choice = (
@@ -568,7 +570,7 @@ def test_two_experiment_measurements(output_dir):
     module.directory.custom_path = output_dir
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.EXPERIMENT
+    module.object_groups[0].name.value = EXPERIMENT
     module.object_groups[0].file_name.value = "badfile"
     module.object_groups[0].wants_automatic_file_name.value = True
     m = cellprofiler_core.measurement.Measurements(mode="memory")
@@ -625,7 +627,7 @@ def test_img_887_no_experiment_file(output_dir):
     m.add_experiment_measurement("Exit_Status", "Complete")
     image_measurements = numpy.random.uniform(size=4)
     m.add_all_measurements(
-        cellprofiler_core.measurement.IMAGE, "my_measurement", image_measurements
+        "Image", "my_measurement", image_measurements
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
@@ -657,7 +659,7 @@ def test_prefix(output_dir):
     m = cellprofiler_core.measurement.Measurements()
     image_measurements = numpy.random.uniform(size=4)
     m.add_all_measurements(
-        cellprofiler_core.measurement.IMAGE, "my_measurement", image_measurements
+        "Image", "my_measurement", image_measurements
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
@@ -677,7 +679,7 @@ def test_image_measurement(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler_core.measurement.Measurements()
@@ -712,7 +714,7 @@ def test_three_by_two_image_measurements(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler_core.measurement.Measurements()
@@ -1002,7 +1004,7 @@ def test_nan_image_measurements(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     module.wants_aggregate_means.value = True
@@ -1011,7 +1013,7 @@ def test_nan_image_measurements(output_dir):
     )
     m = cellprofiler_core.measurement.Measurements()
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         "my_image_measurement",
         13,
         image_set_number=1,
@@ -1022,20 +1024,20 @@ def test_nan_image_measurements(output_dir):
         OBJECTS_NAME, OBJ_MEAS, mvalues, image_set_number=1, data_type=numpy.float64
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         "Count_%s" % OBJECTS_NAME,
         2,
         image_set_number=1,
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         IMG_MEAS,
         numpy.NaN,
         image_set_number=2,
         data_type=numpy.float64,
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         "Count_%s" % OBJECTS_NAME,
         0,
         image_set_number=2,
@@ -1079,7 +1081,7 @@ def test_null_image_measurements(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     module.wants_aggregate_means.value = True
@@ -1088,7 +1090,7 @@ def test_null_image_measurements(output_dir):
     )
     m = cellprofiler_core.measurement.Measurements()
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         "my_image_measurement",
         13,
         image_set_number=1,
@@ -1099,20 +1101,20 @@ def test_null_image_measurements(output_dir):
         OBJECTS_NAME, OBJ_MEAS, mvalues, image_set_number=1, data_type=numpy.float64
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         "Count_%s" % OBJECTS_NAME,
         2,
         image_set_number=1,
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         IMG_MEAS,
         numpy.NaN,
         image_set_number=2,
         data_type=numpy.float64,
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         "Count_%s" % OBJECTS_NAME,
         0,
         image_set_number=2,
@@ -1156,7 +1158,7 @@ def test_blob_image_measurements(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     module.wants_aggregate_means.value = False
@@ -1165,7 +1167,7 @@ def test_blob_image_measurements(output_dir):
     r.seed(38)
     my_blob = r.randint(0, 256, 100).astype(numpy.uint8)
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         IMG_MEAS,
         my_blob,
         image_set_number=1,
@@ -1196,7 +1198,7 @@ def test_blob_experiment_measurements(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.EXPERIMENT
+    module.object_groups[0].name.value = EXPERIMENT
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     module.wants_aggregate_means.value = False
@@ -1205,7 +1207,7 @@ def test_blob_experiment_measurements(output_dir):
     r.seed(38)
     my_blob = r.randint(0, 256, 100).astype(numpy.uint8)
     m.add_measurement(
-        cellprofiler_core.measurement.EXPERIMENT,
+        EXPERIMENT,
         IMG_MEAS,
         my_blob,
         image_set_number=1,
@@ -1355,7 +1357,7 @@ def test_image_with_metadata(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler_core.measurement.Measurements()
@@ -1418,7 +1420,7 @@ def test_image_with_path_metadata(output_dir):
         cellprofiler.modules.exporttospreadsheet.ABSOLUTE_FOLDER_NAME
     )
     module.directory.custom_path = path
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = "output.csv"
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler_core.measurement.Measurements()
@@ -1479,7 +1481,7 @@ def test_image_measurement_custom_directory(output_dir):
         cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME
     )
     module.directory.custom_path = "./my_dir"
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = "my_file.csv"
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler_core.measurement.Measurements(mode="memory")
@@ -1520,7 +1522,7 @@ def test_unicode_image_metadata(output_dir):
         cellprofiler.modules.exporttospreadsheet.DEFAULT_OUTPUT_SUBFOLDER_NAME
     )
     module.directory.custom_path = "./my_dir"
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = "my_file.csv"
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler_core.measurement.Measurements(mode="memory")
@@ -1571,8 +1573,8 @@ def test_overwrite_files_everything(output_dir):
         pipeline, module, m, None, m, None
     )
     for object_name in (
-        cellprofiler_core.measurement.EXPERIMENT,
-        cellprofiler_core.measurement.IMAGE,
+        EXPERIMENT,
+        "Image",
         OBJECTS_NAME,
     ):
         file_name = module.make_objects_file_name(object_name, workspace, 1)
@@ -1633,7 +1635,7 @@ def test_aggregate_image_columns(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     module.wants_aggregate_means.value = True
@@ -1656,21 +1658,21 @@ def test_aggregate_image_columns(output_dir):
     try:
         reader = csv.reader(fd, delimiter=module.delimiter_char)
         header = next(reader)
-        assert len(header) == len(cellprofiler_core.measurement.AGG_NAMES) + 2
+        assert len(header) == len(AGG_NAMES) + 2
         d = {}
         for index, caption in enumerate(header):
             d[caption] = index
 
         row = next(reader)
         assert row[d["Count_my_objects"]] == "6"
-        for agg in cellprofiler_core.measurement.AGG_NAMES:
+        for agg in AGG_NAMES:
             value = (
                 numpy.mean(data)
-                if agg == cellprofiler_core.measurement.AGG_MEAN
+                if agg == AGG_MEAN
                 else numpy.std(data)
-                if agg == cellprofiler_core.measurement.AGG_STD_DEV
+                if agg == AGG_STD_DEV
                 else numpy.median(data)
-                if agg == cellprofiler_core.measurement.AGG_MEDIAN
+                if agg == AGG_MEDIAN
                 else numpy.NAN
             )
             assert (
@@ -1692,7 +1694,7 @@ def test_no_aggregate_image_columns(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     module.wants_aggregate_means.value = False
@@ -1741,7 +1743,7 @@ def test_aggregate_and_filtered(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = image_path
     module.object_groups[0].wants_automatic_file_name.value = False
     module.add_object_group()
@@ -1755,9 +1757,9 @@ def test_aggregate_and_filtered(output_dir):
     columns = [
         module.columns.make_measurement_choice(ob, feature)
         for ob, feature in (
-            (cellprofiler_core.measurement.IMAGE, "ImageNumber"),
-            (cellprofiler_core.measurement.IMAGE, "Count_my_objects"),
-            (cellprofiler_core.measurement.IMAGE, "first_measurement"),
+            ("Image", "ImageNumber"),
+            ("Image", "Count_my_objects"),
+            ("Image", "first_measurement"),
             ("my_objects", "my_measurement"),
             ("my_objects", "ImageNumber"),
             ("my_objects", "Number_Object_Number"),
@@ -1848,7 +1850,7 @@ def test_image_number(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = image_path
     module.object_groups[0].wants_automatic_file_name.value = False
     module.wants_aggregate_means.value = False
@@ -1857,7 +1859,7 @@ def test_image_number(output_dir):
     module.pick_columns.value = True
     columns = [
         module.columns.make_measurement_choice(ob, feature)
-        for ob, feature in ((cellprofiler_core.measurement.IMAGE, "first_measurement"),)
+        for ob, feature in (("Image", "first_measurement"),)
     ]
     module.columns.value = module.columns.get_value_string(columns)
 
@@ -1893,7 +1895,7 @@ def test_image_index_columns(output_dir):
     module.set_module_num(1)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = path
     module.object_groups[0].wants_automatic_file_name.value = False
     m = cellprofiler_core.measurement.Measurements()
@@ -2138,21 +2140,21 @@ def test_missing_column_measurements(output_dir):
     module.add_metadata.value = False
     m = cellprofiler_core.measurement.Measurements()
     m[
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.measurement.GROUP_NUMBER,
+        "Image",
+        GROUP_NUMBER,
         1,
     ] = 1
     m[
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.measurement.GROUP_INDEX,
+        "Image",
+        GROUP_INDEX,
         1,
     ] = 1
     m[
-        cellprofiler_core.measurement.IMAGE,
-        "_".join((cellprofiler_core.measurement.C_COUNT, OBJECTS_NAME)),
+        "Image",
+        "_".join((C_COUNT, OBJECTS_NAME)),
         1,
     ] = 3
-    m[OBJECTS_NAME, cellprofiler_core.measurement.M_LOCATION_CENTER_X, 1] = numpy.array(
+    m[OBJECTS_NAME, M_LOCATION_CENTER_X, 1] = numpy.array(
         [1, 4, 9], float
     )
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -2170,13 +2172,13 @@ def test_missing_column_measurements(output_dir):
         d = {}
         for index, column in enumerate(header):
             d[column] = index
-        assert cellprofiler_core.measurement.M_LOCATION_CENTER_X in d
-        assert cellprofiler_core.measurement.M_LOCATION_CENTER_Y in d
+        assert M_LOCATION_CENTER_X in d
+        assert M_LOCATION_CENTER_Y in d
         for i in range(3):
             row = next(reader)
-            x = row[d[cellprofiler_core.measurement.M_LOCATION_CENTER_X]]
+            x = row[d[M_LOCATION_CENTER_X]]
             assert float(x) == (i + 1) ** 2
-            y = row[d[cellprofiler_core.measurement.M_LOCATION_CENTER_Y]]
+            y = row[d[M_LOCATION_CENTER_Y]]
             assert y.lower() == "nan"
         with pytest.raises(StopIteration):
             reader.__next__()
@@ -2209,7 +2211,7 @@ def make_pipeline(csv_text):
 
 def make_measurements_pipeline(m):
     """Pipeline reports measurements via get_measurement_columns"""
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     columns = []
     if len(m.get_image_numbers()) > 0:
         image_number = m.get_image_numbers()[0]
@@ -2217,12 +2219,12 @@ def make_measurements_pipeline(m):
         image_number = None
     for object_name in m.get_object_names():
         for feature in m.get_feature_names(object_name):
-            if object_name == cellprofiler_core.measurement.EXPERIMENT:
+            if object_name == EXPERIMENT:
                 columns.append(
                     (
                         object_name,
                         feature,
-                        cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                        COLTYPE_VARCHAR,
                     )
                 )
             elif image_number is not None:
@@ -2232,7 +2234,7 @@ def make_measurements_pipeline(m):
                         (
                             object_name,
                             feature,
-                            cellprofiler_core.measurement.COLTYPE_VARCHAR,
+                            COLTYPE_VARCHAR,
                         )
                     )
                 else:
@@ -2240,7 +2242,7 @@ def make_measurements_pipeline(m):
                         (
                             object_name,
                             feature,
-                            cellprofiler_core.measurement.COLTYPE_FLOAT,
+                            COLTYPE_FLOAT,
                         )
                     )
 
@@ -2259,23 +2261,23 @@ def make_measurements(d=None):
     """
     if d is None:
         d = {
-            cellprofiler_core.measurement.GROUP_NUMBER: [0],
-            cellprofiler_core.measurement.GROUP_INDEX: [0],
+            GROUP_NUMBER: [0],
+            GROUP_INDEX: [0],
         }
     m = cellprofiler_core.measurement.Measurements()
     for k, v in list(d.items()):
-        m[cellprofiler_core.measurement.IMAGE, k, numpy.arange(len(v)) + 1] = v
+        m["Image", k, numpy.arange(len(v)) + 1] = v
     image_numbers = m.get_image_numbers()
-    if cellprofiler_core.measurement.GROUP_NUMBER not in d:
+    if GROUP_NUMBER not in d:
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_NUMBER,
+            "Image",
+            GROUP_NUMBER,
             image_numbers,
         ] = [0] * len(image_numbers)
-    if cellprofiler_core.measurement.GROUP_INDEX not in d:
+    if GROUP_INDEX not in d:
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_INDEX,
+            "Image",
+            GROUP_INDEX,
             image_numbers,
         ] = numpy.arange(len(image_numbers))
     return m
@@ -2286,7 +2288,7 @@ def add_gct_settings(output_csv_filename):
     module.set_module_num(2)
     module.wants_everything.value = False
     module.wants_prefix.value = False
-    module.object_groups[0].name.value = cellprofiler_core.measurement.IMAGE
+    module.object_groups[0].name.value = "Image"
     module.object_groups[0].file_name.value = output_csv_filename
     module.object_groups[0].wants_automatic_file_name.value = False
     module.wants_aggregate_means.value = False
@@ -2329,7 +2331,7 @@ def test_basic_gct_check():
 
     try:
         m = pipeline.run()
-        assert isinstance(m, cellprofiler_core.measurement.Measurements)
+        assert isinstance(m,cellprofiler_core.measurement.Measurements)
         p, n = os.path.splitext(output_csv_filename)
         output_gct_filename = p + ".gct"
         fd = open(output_gct_filename, "r")
@@ -2390,7 +2392,7 @@ def test_make_gct_file_with_filename():
 
     try:
         m = pipeline.run()
-        assert isinstance(m, cellprofiler_core.measurement.Measurements)
+        assert isinstance(m,cellprofiler_core.measurement.Measurements)
         p, n = os.path.splitext(output_csv_filename)
         output_gct_filename = p + ".gct"
         fd = open(output_gct_filename, "r")
@@ -2442,7 +2444,7 @@ def test_make_gct_file_with_metadata():
 
     try:
         m = pipeline.run()
-        assert isinstance(m, cellprofiler_core.measurement.Measurements)
+        assert isinstance(m,cellprofiler_core.measurement.Measurements)
         p, n = os.path.splitext(output_csv_filename)
         output_gct_filename = p + ".gct"
         fd = open(output_gct_filename, "r")
@@ -2462,7 +2464,7 @@ def test_make_gct_file_with_metadata():
 
 def test_test_overwrite_gct_file(output_dir):
     output_csv_filename = os.path.join(
-        output_dir, "%s.gct" % cellprofiler_core.measurement.IMAGE
+        output_dir, "%s.gct" % "Image"
     )
     m = make_measurements()
     pipeline = make_measurements_pipeline(m)
@@ -2503,9 +2505,9 @@ def test_relationships_file(output_dir):
     image_set_list = cellprofiler_core.image.ImageSetList()
     for i in range(0, 10):
         image_set = image_set_list.get_image_set(i)
-        m.add_image_measurement(cellprofiler_core.pipeline.IMAGE_NUMBER, i + 1)
-        m.add_image_measurement(cellprofiler_core.pipeline.GROUP_NUMBER, 1)
-        m.add_image_measurement(cellprofiler_core.pipeline.GROUP_INDEX, i + 1)
+        m.add_image_measurement(IMAGE_NUMBER, i + 1)
+        m.add_image_measurement(GROUP_NUMBER, 1)
+        m.add_image_measurement(GROUP_INDEX, i + 1)
         if i < 9:
             m.next_image_set()
     my_relationship = "BlahBlah"

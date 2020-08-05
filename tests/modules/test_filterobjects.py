@@ -9,6 +9,10 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules
+from cellprofiler_core.constants.measurement import FF_PARENT, FF_COUNT, FF_CHILDREN_COUNT, M_LOCATION_CENTER_X, \
+    M_LOCATION_CENTER_Y, M_LOCATION_CENTER_Z, M_NUMBER_OBJECT_NUMBER
+
+
 import cellprofiler.modules.filterobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -154,17 +158,17 @@ def test_keep_single_min():
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
     assert numpy.all(labels.segmented == expected)
     parents = m.get_current_measurement(
-        OUTPUT_OBJECTS, cellprofiler_core.measurement.FF_PARENT % INPUT_OBJECTS
+        OUTPUT_OBJECTS, FF_PARENT % INPUT_OBJECTS
     )
     assert len(parents) == 1
     assert parents[0] == 2
     assert (
         m.get_current_image_measurement(
-            cellprofiler_core.measurement.FF_COUNT % OUTPUT_OBJECTS
+            FF_COUNT % OUTPUT_OBJECTS
         )
         == 1
     )
-    feature = cellprofiler_core.measurement.FF_CHILDREN_COUNT % OUTPUT_OBJECTS
+    feature = FF_CHILDREN_COUNT % OUTPUT_OBJECTS
     child_count = m.get_current_measurement(INPUT_OBJECTS, feature)
     assert len(child_count) == 2
     assert child_count[0] == 0
@@ -951,21 +955,21 @@ def test_measurements():
 
     for input_object_name, output_object_name in object_names:
         assert measurements.has_current_measurements(
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.FF_COUNT % output_object_name,
+            "Image",
+            FF_COUNT % output_object_name,
         )
 
         assert measurements.has_current_measurements(
             input_object_name,
-            cellprofiler_core.measurement.FF_CHILDREN_COUNT % output_object_name,
+            FF_CHILDREN_COUNT % output_object_name,
         )
 
         output_object_features = [
-            cellprofiler_core.measurement.FF_PARENT % input_object_name,
-            cellprofiler_core.measurement.M_LOCATION_CENTER_X,
-            cellprofiler_core.measurement.M_LOCATION_CENTER_Y,
-            cellprofiler_core.measurement.M_LOCATION_CENTER_Z,
-            cellprofiler_core.measurement.M_NUMBER_OBJECT_NUMBER,
+            FF_PARENT % input_object_name,
+            M_LOCATION_CENTER_X,
+            M_LOCATION_CENTER_Y,
+            M_LOCATION_CENTER_Z,
+            M_NUMBER_OBJECT_NUMBER,
         ]
 
         for feature in output_object_features:

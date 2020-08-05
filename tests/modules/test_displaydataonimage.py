@@ -5,12 +5,13 @@ import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+
+
 import cellprofiler.modules.displaydataonimage
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 
-import os
 import tests.modules
 
 INPUT_IMAGE_NAME = "inputimage"

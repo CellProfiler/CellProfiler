@@ -2,6 +2,8 @@ import numpy
 import pytest
 
 import cellprofiler_core.measurement
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
+
 import cellprofiler.modules.measureimageskeleton
 
 instance = cellprofiler.modules.measureimageskeleton.MeasureImageSkeleton()
@@ -48,7 +50,7 @@ def image(request):
 def test_get_categories_image(module, pipeline):
     expected_categories = ["Skeleton"]
 
-    categories = module.get_categories(pipeline, cellprofiler_core.measurement.IMAGE)
+    categories = module.get_categories(pipeline, "Image")
 
     assert categories == expected_categories
 
@@ -66,14 +68,14 @@ def test_get_measurement_columns(module, pipeline):
 
     expected_columns = [
         (
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             "Skeleton_Branches_example",
-            cellprofiler_core.measurement.COLTYPE_INTEGER,
+            COLTYPE_INTEGER,
         ),
         (
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             "Skeleton_Endpoints_example",
-            cellprofiler_core.measurement.COLTYPE_INTEGER,
+            COLTYPE_INTEGER,
         ),
     ]
 
@@ -88,7 +90,7 @@ def test_get_measurements_image_skeleton(module, pipeline):
     expected_measurements = ["Skeleton_Branches_example", "Skeleton_Endpoints_example"]
 
     measurements = module.get_measurements(
-        pipeline, cellprofiler_core.measurement.IMAGE, "Skeleton"
+        pipeline, "Image", "Skeleton"
     )
 
     assert measurements == expected_measurements
@@ -100,7 +102,7 @@ def test_get_measurements_image_other(module, pipeline):
     expected_measurements = []
 
     measurements = module.get_measurements(
-        pipeline, cellprofiler_core.measurement.IMAGE, "foo"
+        pipeline, "Image", "foo"
     )
 
     assert measurements == expected_measurements
@@ -123,7 +125,7 @@ def test_get_measurement_images(module, pipeline):
 
     images = module.get_measurement_images(
         pipeline,
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         "Skeleton",
         "Skeleton_Branches_example",
     )
@@ -137,11 +139,11 @@ def test_run(image, module, workspace):
     module.run(workspace)
 
     branches = workspace.measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, "Skeleton_Branches_example"
+        "Image", "Skeleton_Branches_example"
     )
 
     endpoints = workspace.measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, "Skeleton_Endpoints_example"
+        "Image", "Skeleton_Endpoints_example"
     )
 
     if image.volumetric:

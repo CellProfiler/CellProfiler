@@ -8,6 +8,9 @@ import scipy.ndimage
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+
+
 import cellprofiler.modules.measureimageoverlap
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -174,9 +177,9 @@ def test_zeros():
     )
     module.run(workspace)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
+    assert isinstance(measurements,cellprofiler_core.measurement.Measurements)
     assert measurements.get_current_image_measurement("Overlap_FalseNegRate_test") == 0
-    features = measurements.get_feature_names(cellprofiler_core.measurement.IMAGE)
+    features = measurements.get_feature_names("Image")
     for feature in cellprofiler.modules.measureimageoverlap.FTR_ALL + [
         cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE
     ]:
@@ -191,7 +194,7 @@ def test_zeros():
     ftr_emd = module.measurement_name(
         cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE
     )
-    assert measurements[cellprofiler_core.measurement.IMAGE, ftr_emd] == 0
+    assert measurements["Image", ftr_emd] == 0
 
 
 def test_ones():
@@ -206,7 +209,7 @@ def test_ones():
     )
     module.run(workspace)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
+    assert isinstance(measurements,cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0),
         (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0),
@@ -250,7 +253,7 @@ def test_masked():
     )
     module.run(workspace)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
+    assert isinstance(measurements,cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0),
         (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0),
@@ -291,7 +294,7 @@ def test_all_right():
     workspace, module = make_workspace(dict(image=image), dict(image=image))
     module.run(workspace)
     measurements = workspace.measurements
-    assert isinstance(measurements, cellprofiler_core.measurement.Measurements)
+    assert isinstance(measurements,cellprofiler_core.measurement.Measurements)
     for feature, expected in (
         (cellprofiler.modules.measureimageoverlap.FTR_FALSE_POS_RATE, 0),
         (cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE, 0),
@@ -656,8 +659,8 @@ def test_get_measurement_columns():
     assert len(columns) == len(set([x[1] for x in columns]))
     # All columns should be floats and done on images
     x = columns[-1]
-    assert all([x[0] == cellprofiler_core.measurement.IMAGE])
-    assert all([x[2] == cellprofiler_core.measurement.COLTYPE_FLOAT])
+    assert all([x[0] == "Image"])
+    assert all([x[2] == COLTYPE_FLOAT])
     for feature in cellprofiler.modules.measureimageoverlap.FTR_ALL:
         field = "_".join(
             (cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP, feature, name)
@@ -672,7 +675,7 @@ def test_get_categories():
     categories = module.get_categories(workspace.pipeline, "Foo")
     assert len(categories) == 0
     categories = module.get_categories(
-        workspace.pipeline, cellprofiler_core.measurement.IMAGE
+        workspace.pipeline, "Image"
     )
     assert len(categories) == 1
     assert categories[0] == cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP
@@ -693,7 +696,7 @@ def test_get_measurements():
         module.wants_emd.value = wants_emd
         mnames = module.get_measurements(
             workspace.pipeline,
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP,
         )
         assert len(mnames) == len(features)
@@ -706,7 +709,7 @@ def test_get_measurements():
         )
         assert len(mnames) == 0
         mnames = module.get_measurements(
-            workspace.pipeline, cellprofiler_core.measurement.IMAGE, "Foo"
+            workspace.pipeline, "Image", "Foo"
         )
         assert len(mnames) == 0
 
@@ -719,7 +722,7 @@ def test_get_measurement_images():
     for feature in cellprofiler.modules.measureimageoverlap.FTR_ALL:
         imnames = module.get_measurement_images(
             workspace.pipeline,
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP,
             feature,
         )
@@ -727,14 +730,14 @@ def test_get_measurement_images():
         assert imnames[0] == TEST_IMAGE_NAME
     imnames = module.get_measurement_images(
         workspace.pipeline,
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP,
         "Foo",
     )
     assert len(imnames) == 0
     imnames = module.get_measurement_images(
         workspace.pipeline,
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         "Foo",
         cellprofiler.modules.measureimageoverlap.FTR_FALSE_NEG_RATE,
     )
@@ -754,7 +757,7 @@ def test_get_measurement_scales():
     )
     scales = module.get_measurement_scales(
         workspace.pipeline,
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         cellprofiler.modules.measureimageoverlap.C_IMAGE_OVERLAP,
         cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX,
         None,
@@ -803,7 +806,7 @@ def test_no_emd():
     module.wants_emd.value = False
     module.run(workspace)
     assert not workspace.measurements.has_feature(
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         module.measurement_name(
             cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE
         ),
@@ -822,7 +825,7 @@ def test_one_pixel():
     module.run(workspace)
     assert (
         workspace.measurements[
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             module.measurement_name(
                 cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE
             ),
@@ -847,7 +850,7 @@ def test_missing_penalty():
     module.run(workspace)
     assert (
         workspace.measurements[
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             module.measurement_name(
                 cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE
             ),
@@ -868,7 +871,7 @@ def test_max_distance():
     module.run(workspace)
     assert (
         workspace.measurements[
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             module.measurement_name(
                 cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE
             ),
@@ -890,7 +893,7 @@ def test_decimate_k_means():
     module.run(workspace)
     assert (
         workspace.measurements[
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             module.measurement_name(
                 cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE
             ),
@@ -905,7 +908,7 @@ def test_decimate_k_means():
     module.max_points.value = 100
     module.run(workspace)
     emd = workspace.measurements[
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         module.measurement_name(
             cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE
         ),
@@ -919,7 +922,7 @@ def test_decimate_k_means():
     module.max_points.value = numpy.sum(img | img.transpose()) / 2
     module.run(workspace)
     decimated_emd = workspace.measurements[
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         module.measurement_name(
             cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE
         ),
@@ -941,7 +944,7 @@ def test_decimate_skel():
     module.decimation_method.value = cellprofiler.modules.measureimageoverlap.DM_SKEL
     module.run(workspace)
     emd = workspace.measurements[
-        cellprofiler_core.measurement.IMAGE,
+        "Image",
         module.measurement_name(
             cellprofiler.modules.measureimageoverlap.FTR_EARTH_MOVERS_DISTANCE
         ),

@@ -5,6 +5,8 @@ import numpy.testing
 import pytest
 import six.moves
 import skimage.util
+
+
 import tests.modules
 
 import cellprofiler_core.image

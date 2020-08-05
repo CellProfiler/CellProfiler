@@ -5,6 +5,8 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
+
+
 import cellprofiler.modules.expandorshrinkobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -60,7 +62,7 @@ def test_expand():
     assert numpy.all(objects.segmented == expected)
     assert OUTLINES_NAME not in workspace.get_outline_names()
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement("Count_" + OUTPUT_NAME)
     if not numpy.isscalar(count):
         count = count[0]

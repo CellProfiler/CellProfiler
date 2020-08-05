@@ -3,6 +3,9 @@ import numpy
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, R_PARENT
+
+
 import cellprofiler.modules.calculatemath
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -68,12 +71,12 @@ def test_add_image_image():
         cellprofiler.modules.calculatemath.O_ADD, True, 2, True, 2
     )
     assert measurements.has_feature(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     for i in range(2):
         assert not measurements.has_feature(OBJECT[i], MATH_OUTPUT_MEASUREMENTS)
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - 4), 7) == 0
 
@@ -84,7 +87,7 @@ def test_add_image_object():
         cellprofiler.modules.calculatemath.O_ADD, True, 2, False, numpy.array([1, 4, 9])
     )
     assert not measurements.has_feature(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
     data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
@@ -97,7 +100,7 @@ def test_add_object_image():
         cellprofiler.modules.calculatemath.O_ADD, False, numpy.array([1, 4, 9]), True, 2
     )
     assert not measurements.has_feature(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert measurements.has_feature(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
     data = measurements.get_current_measurement(OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
@@ -114,7 +117,7 @@ def test_add_premultiply():
     )
     expected = 2 * 5 + 3 * 7
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - expected), 7) == 0
 
@@ -129,7 +132,7 @@ def test_add_pre_exponentiate():
     )
     expected = 5 ** 2 + 7 ** 3
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - expected), 7) == 0
 
@@ -143,7 +146,7 @@ def test_add_postmultiply():
     )
     expected = (5 + 7) * 3
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - expected), 7) == 0
 
@@ -157,7 +160,7 @@ def test_add_postexponentiate():
     )
     expected = (5 + 7) ** 3
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - expected), 7) == 0
 
@@ -171,7 +174,7 @@ def test_add_log():
     )
     expected = numpy.log10(5 + 7)
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - expected), 7) == 0
 
@@ -185,7 +188,7 @@ def test_add_object_object():
         numpy.array([1, 4, 9]),
     )
     assert not measurements.has_feature(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     for i in range(2):
         assert measurements.has_feature(OBJECT[i], MATH_OUTPUT_MEASUREMENTS)
@@ -198,7 +201,7 @@ def test_subtract():
         cellprofiler.modules.calculatemath.O_SUBTRACT, True, 7, True, 5
     )
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - 2), 7) == 0
 
@@ -208,7 +211,7 @@ def test_multiply():
         cellprofiler.modules.calculatemath.O_MULTIPLY, True, 7, True, 5
     )
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - 35), 7) == 0
 
@@ -218,7 +221,7 @@ def test_divide():
         cellprofiler.modules.calculatemath.O_DIVIDE, True, 35, True, 5
     )
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - 7), 7) == 0
 
@@ -230,12 +233,12 @@ def test_measurement_columns_image():
         operand.operand_choice.value = cellprofiler.modules.calculatemath.MC_IMAGE
     columns = module.get_measurement_columns(None)
     assert len(columns) == 1
-    assert columns[0][0] == cellprofiler_core.measurement.IMAGE
+    assert columns[0][0] == "Image"
     assert columns[0][1] == MATH_OUTPUT_MEASUREMENTS
-    assert columns[0][2] == cellprofiler_core.measurement.COLTYPE_FLOAT
-    assert module.get_categories(None, cellprofiler_core.measurement.IMAGE)[0] == "Math"
+    assert columns[0][2] == COLTYPE_FLOAT
+    assert module.get_categories(None, "Image")[0] == "Math"
     assert (
-        module.get_measurements(None, cellprofiler_core.measurement.IMAGE, "Math")[0]
+        module.get_measurements(None, "Image", "Math")[0]
         == OUTPUT_MEASUREMENTS
     )
 
@@ -254,10 +257,10 @@ def test_measurement_columns_image_object():
     assert len(columns) == 1
     assert columns[0][0] == OBJECT[1]
     assert columns[0][1] == MATH_OUTPUT_MEASUREMENTS
-    assert columns[0][2] == cellprofiler_core.measurement.COLTYPE_FLOAT
+    assert columns[0][2] == COLTYPE_FLOAT
     assert module.get_categories(None, OBJECT[1])[0] == "Math"
     assert module.get_measurements(None, OBJECT[1], "Math")[0] == OUTPUT_MEASUREMENTS
-    assert len(module.get_categories(None, cellprofiler_core.measurement.IMAGE)) == 0
+    assert len(module.get_categories(None, "Image")) == 0
 
 
 def test_measurement_columns_object_image():
@@ -274,10 +277,10 @@ def test_measurement_columns_object_image():
     assert len(columns) == 1
     assert columns[0][0] == OBJECT[0]
     assert columns[0][1] == MATH_OUTPUT_MEASUREMENTS
-    assert columns[0][2] == cellprofiler_core.measurement.COLTYPE_FLOAT
+    assert columns[0][2] == COLTYPE_FLOAT
     assert module.get_categories(None, OBJECT[0])[0] == "Math"
     assert module.get_measurements(None, OBJECT[0], "Math")[0] == OUTPUT_MEASUREMENTS
-    assert len(module.get_categories(None, cellprofiler_core.measurement.IMAGE)) == 0
+    assert len(module.get_categories(None, "Image")) == 0
 
 
 def test_measurement_columns_object_object():
@@ -298,12 +301,12 @@ def test_measurement_columns_object_object():
     for i in range(2):
         assert columns[i][0] == OBJECT[i]
         assert columns[i][1] == MATH_OUTPUT_MEASUREMENTS
-        assert columns[i][2] == cellprofiler_core.measurement.COLTYPE_FLOAT
+        assert columns[i][2] == COLTYPE_FLOAT
         assert module.get_categories(None, OBJECT[i])[0] == "Math"
         assert (
             module.get_measurements(None, OBJECT[i], "Math")[0] == OUTPUT_MEASUREMENTS
         )
-    assert len(module.get_categories(None, cellprofiler_core.measurement.IMAGE)) == 0
+    assert len(module.get_categories(None, "Image")) == 0
 
 
 def test_add_object_object_same():
@@ -337,7 +340,7 @@ def test_img_379():
         cellprofiler.modules.calculatemath.O_DIVIDE, True, 35, True, 0
     )
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert numpy.isnan(data)
 
@@ -367,7 +370,7 @@ def test_none_operation():
         fn,
     )
     assert not measurements.has_feature(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     # There should be only one operand and a measurement for that operand only
     assert len(OBJECT), 1
@@ -454,7 +457,7 @@ def test_img_1566():
                 if not flip:
                     m.add_relate_measurement(
                         1,
-                        cellprofiler_core.measurement.R_PARENT,
+                        R_PARENT,
                         OBJECT[0],
                         OBJECT[1],
                         numpy.ones(len(oo0), int),
@@ -465,7 +468,7 @@ def test_img_1566():
                 else:
                     m.add_relate_measurement(
                         1,
-                        cellprofiler_core.measurement.R_PARENT,
+                        R_PARENT,
                         OBJECT[1],
                         OBJECT[0],
                         numpy.ones(len(oo0), int),
@@ -539,10 +542,10 @@ def test_02_different_image_sets():
 
         def setup_fn(module, workspace, oo0=oo0, oo1=oo1):
             m = workspace.measurements
-            assert isinstance(m, cellprofiler_core.measurement.Measurements)
+            assert isinstance(m,cellprofiler_core.measurement.Measurements)
             m.add_relate_measurement(
                 1,
-                cellprofiler_core.measurement.R_PARENT,
+                R_PARENT,
                 OBJECT[0],
                 OBJECT[1],
                 numpy.ones(len(oo0), int),
@@ -553,7 +556,7 @@ def test_02_different_image_sets():
             for i1, i2 in ((1, 2), (2, 1), (2, 2)):
                 m.add_relate_measurement(
                     1,
-                    cellprofiler_core.measurement.R_PARENT,
+                    R_PARENT,
                     OBJECT[0],
                     OBJECT[1],
                     numpy.ones(len(oo0), int) * i1,
@@ -627,7 +630,7 @@ def test_postadd():
     )
     expected = (5 + 7) + 1.5
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - expected), 7) == 0
 
@@ -644,7 +647,7 @@ def test_constrain_lower():
     )
     expected = 0
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - expected), 7) == 0
 
@@ -661,7 +664,7 @@ def test_constrain_upper():
     )
     expected = 10
     data = measurements.get_current_measurement(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert round(abs(data - expected), 7) == 0
 
@@ -682,7 +685,7 @@ def test_round_digit_1():
         fn,
     )
     assert not measurements.has_feature(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
     data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
@@ -705,7 +708,7 @@ def test_round_digit_0():
         fn,
     )
     assert not measurements.has_feature(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
     data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
@@ -727,7 +730,7 @@ def test_round_floor():
         fn,
     )
     assert not measurements.has_feature(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
     data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
@@ -749,7 +752,7 @@ def test_round_ceil():
         fn,
     )
     assert not measurements.has_feature(
-        cellprofiler_core.measurement.IMAGE, MATH_OUTPUT_MEASUREMENTS
+        "Image", MATH_OUTPUT_MEASUREMENTS
     )
     assert measurements.has_feature(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
     data = measurements.get_current_measurement(OBJECT[1], MATH_OUTPUT_MEASUREMENTS)

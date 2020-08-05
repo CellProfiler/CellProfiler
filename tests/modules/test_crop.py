@@ -2,6 +2,9 @@ import numpy
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+from cellprofiler_core.constants.measurement import GROUP_INDEX, GROUP_NUMBER, COLTYPE_INTEGER
+
+
 import cellprofiler.modules.crop
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -52,14 +55,14 @@ def make_workspace(input_pixels, crop_image=None, cropping=None, crop_objects=No
         pipeline, module, image_set, object_set, m, image_set_list
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.measurement.GROUP_INDEX,
+        "Image",
+        GROUP_INDEX,
         0,
         image_set_number=1,
     )
     m.add_measurement(
-        cellprofiler_core.measurement.IMAGE,
-        cellprofiler_core.measurement.GROUP_NUMBER,
+        "Image",
+        GROUP_NUMBER,
         1,
         image_set_number=1,
     )
@@ -82,8 +85,8 @@ def test_zeros():
     assert "Image" in m.get_object_names()
     columns = module.get_measurement_columns(workspace.pipeline)
     assert len(columns) == 2
-    assert all([x[0] == cellprofiler_core.measurement.IMAGE for x in columns])
-    assert all([x[2] == cellprofiler_core.measurement.COLTYPE_INTEGER for x in columns])
+    assert all([x[0] == "Image" for x in columns])
+    assert all([x[2] == COLTYPE_INTEGER for x in columns])
     feature = "Crop_OriginalImageArea_%s" % OUTPUT_IMAGE
     assert feature in [x[1] for x in columns]
     assert feature in m.get_feature_names("Image")

@@ -3,6 +3,8 @@ import pytest
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+
+
 import cellprofiler.modules.correctilluminationapply
 import cellprofiler_core.modules.injectimage
 import cellprofiler_core.object

@@ -1,6 +1,4 @@
-import base64
 import io
-import zlib
 
 import centrosome.filter
 import centrosome.smooth

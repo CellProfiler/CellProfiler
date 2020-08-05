@@ -4,7 +4,8 @@ import numpy
 import six.moves
 
 import cellprofiler_core.image
-import cellprofiler_core.measurement
+
+
 import cellprofiler.modules.measuregranularity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -109,10 +110,10 @@ def test_all_masked():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert numpy.isnan(value)
 
@@ -125,10 +126,10 @@ def test_zeros():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - 0), 7) == 0
 
@@ -147,10 +148,10 @@ def test_no_scaling():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
 
@@ -173,10 +174,10 @@ def test_subsampling():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
 
@@ -203,10 +204,10 @@ def test_background_sampling():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
 
@@ -250,10 +251,10 @@ def test_filter_background():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
 
@@ -270,10 +271,10 @@ def test_all_masked_alt():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert numpy.isnan(value)
         values = m.get_current_measurement(OBJECTS_NAME, feature)
@@ -291,10 +292,10 @@ def test_no_objects():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - 0), 7) == 0
         values = m.get_current_measurement(OBJECTS_NAME, feature)
@@ -313,10 +314,10 @@ def test_zeros_alt():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - 0), 7) == 0
         values = m.get_current_measurement(OBJECTS_NAME, feature)
@@ -340,10 +341,10 @@ def test_no_scaling_alt():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
         values = m.get_current_measurement(OBJECTS_NAME, feature)
@@ -371,10 +372,10 @@ def test_subsampling_alt():
     )
     module.run(workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for i in range(1, 16):
         feature = module.granularity_feature(i, IMAGE_NAME)
-        assert feature in m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+        assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
         assert round(abs(value - expected[i - 1]), 7) == 0
         values = m.get_current_measurement(OBJECTS_NAME, feature)

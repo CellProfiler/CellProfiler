@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+
 import cellprofiler.grid
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -89,7 +90,7 @@ def test_grid_automatic():
     assert np.all(gridding.spot_table == spot_table)
 
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for feature, value in (
         (cellprofiler.modules.definegrid.F_COLUMNS, columns),
         (cellprofiler.modules.definegrid.F_ROWS, rows),
@@ -164,7 +165,7 @@ def test_coordinates_plus_savedimagesize():
     assert np.all(gridding.spot_table == spot_table)
 
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     for feature, value in (
         (cellprofiler.modules.definegrid.F_COLUMNS, columns),
         (cellprofiler.modules.definegrid.F_ROWS, rows),

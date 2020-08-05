@@ -15,7 +15,7 @@ from cellprofiler_core.constants.measurement import (
     M_LOCATION_CENTER_Y,
 )
 from cellprofiler_core.image import ImageSetList
-from cellprofiler_core.measurement import Measurements
+import cellprofiler_core.measurement
 from cellprofiler_core.object import ObjectSet, Objects
 
 import cellprofiler.modules.trackobjects
@@ -200,7 +200,7 @@ def runTrackObjects(labels_list, fn=None, measurement=None):
     module.object_name.value = OBJECT_NAME
     module.pixel_radius.value = 50
     module.measurement.value = "measurement"
-    measurements = Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     measurements.add_all_measurements(
         "Image", GROUP_NUMBER, [1] * len(labels_list),
     )
@@ -1069,7 +1069,7 @@ def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
     pipeline.add_listener(callback)
     pipeline.add_module(module)
 
-    m = Measurements()
+    m = cellprofiler_core.measurement.Measurements()
     if objs.shape[0] > 0:
         nobjects = numpy.bincount(objs[:, 0].astype(int))
     else:
@@ -1228,7 +1228,7 @@ def check_measurements(workspace, d):
     d - dictionary of feature name and list of expected measurement values
     """
     m = workspace.measurements
-    assert isinstance(m, Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     module = workspace.module
     assert isinstance(module, cellprofiler.modules.trackobjects.TrackObjects)
     for feature, expected in list(d.items()):
@@ -1269,7 +1269,7 @@ def check_relationships(
     expected_child_image_numbers = numpy.atleast_1d(expected_child_image_numbers)
     expected_parent_object_numbers = numpy.atleast_1d(expected_parent_object_numbers)
     expected_child_object_numbers = numpy.atleast_1d(expected_child_object_numbers)
-    assert isinstance(m, Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     r = m.get_relationships(
         1, cellprofiler.modules.trackobjects.R_PARENT, OBJECT_NAME, OBJECT_NAME
     )
@@ -2506,7 +2506,7 @@ def test_save_image():
     module.pixel_radius.value = 50
     module.wants_image.value = True
     module.image_name.value = "outimage"
-    measurements = Measurements()
+    measurements = cellprofiler_core.measurement.Measurements()
     measurements.add_image_measurement(GROUP_NUMBER, 1)
     measurements.add_image_measurement(GROUP_INDEX, 1)
     pipeline = Pipeline()

@@ -184,7 +184,7 @@ def test_split_zero():
 
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement(FF_COUNT % OUTPUT_OBJECTS_NAME)
     assert count == 0
     for feature_name in (
@@ -254,7 +254,7 @@ def test_split_one():
 
     assert isinstance(workspace, cellprofiler_core.workspace.Workspace)
     m = workspace.measurements
-    assert isinstance(m, cellprofiler_core.measurement.Measurements)
+    assert isinstance(m,cellprofiler_core.measurement.Measurements)
     count = m.get_current_image_measurement(FF_COUNT % OUTPUT_OBJECTS_NAME)
     assert count == 1
     for feature_name, value in (

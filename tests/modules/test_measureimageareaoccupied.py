@@ -3,6 +3,9 @@ import six
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+
+
 import cellprofiler.modules.measureimageareaoccupied
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
@@ -56,7 +59,7 @@ def test_zeros():
     assert m.get_current_measurement("Image", mn("TotalArea")) == 100
 
     columns = module.get_measurement_columns(workspace.pipeline)
-    features = m.get_feature_names(cellprofiler_core.measurement.IMAGE)
+    features = m.get_feature_names("Image")
     assert len(columns) == len(features)
     for column in columns:
         assert column[1] in features
@@ -109,19 +112,19 @@ def test_get_measurement_columns():
     columns = module.get_measurement_columns(cellprofiler_core.pipeline.Pipeline())
     expected = (
         (
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             "AreaOccupied_AreaOccupied_%s" % OBJECTS_NAME,
-            cellprofiler_core.measurement.COLTYPE_FLOAT,
+            COLTYPE_FLOAT,
         ),
         (
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             "AreaOccupied_Perimeter_%s" % OBJECTS_NAME,
-            cellprofiler_core.measurement.COLTYPE_FLOAT,
+            COLTYPE_FLOAT,
         ),
         (
-            cellprofiler_core.measurement.IMAGE,
+            "Image",
             "AreaOccupied_TotalArea_%s" % OBJECTS_NAME,
-            cellprofiler_core.measurement.COLTYPE_FLOAT,
+            COLTYPE_FLOAT,
         ),
     )
     assert len(columns) == len(expected)

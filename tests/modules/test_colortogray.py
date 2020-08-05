@@ -1,10 +1,11 @@
 import numpy
-import os
 import pytest
 import six.moves
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
+
+
 import cellprofiler.modules.colortogray
 import cellprofiler_core.modules.injectimage
 import cellprofiler_core.object

@@ -514,7 +514,7 @@ class MeasureGranularity(Module):
     def get_categories(self, pipeline, object_name):
         """Return the categories supported by this module for the given object
 
-        object_name - name of the measured object or cellprofiler_core.measurement.IMAGE
+        object_name - name of the measured object or IMAGE
         """
         if object_name in self.objects_list.value and self.wants_objects.value:
             return ["Granularity"]

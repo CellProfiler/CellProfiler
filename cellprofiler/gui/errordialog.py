@@ -333,7 +333,7 @@ def on_report(event, dialog, traceback_text, pipeline):
         obfuscated_pipeline = pipeline.copy()
         obfuscated_pipeline.obfuscate()
         fd = io.StringIO()
-        obfuscated_pipeline.savetxt(fd)
+        obfuscated_pipeline.dump(fd)
         fd.seek(0)
         pipeline_text = fd.read()
         params["pipeline"] = pipeline_text

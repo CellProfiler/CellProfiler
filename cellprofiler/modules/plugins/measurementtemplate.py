@@ -550,7 +550,7 @@ radial degree you enter here.
         # for how this works.
         #
         # The first thing in the list is the object being measured. If it's
-        # the whole image, use cellprofiler_core.measurement.IMAGE as the name.
+        # the whole image, use IMAGE as the name.
         #
         # The second thing is the measurement name.
         #

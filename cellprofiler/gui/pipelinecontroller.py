@@ -3339,6 +3339,7 @@ class PipelineController(object):
             logging.error("Failed to run module %s", module.module_name, exc_info=True)
             event = RunException(instance, module)
             self.__pipeline.notify_listeners(event)
+            self.__pipeline_list_view.select_one_module(module.module_num)
             if event.cancel_run:
                 self.on_debug_stop(event)
                 failure = -1

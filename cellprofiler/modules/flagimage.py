@@ -701,7 +701,7 @@ image is not flagged.
                     "No such rules file: %s" % path_, self.rules_file_name
                 )
             else:
-                from sklearn.externals import joblib
+                import joblib
 
                 d[path_] = joblib.load(path_)
         return d[path_]

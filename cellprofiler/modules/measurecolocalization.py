@@ -80,6 +80,7 @@ from cellprofiler_core.setting.subscriber import (
     ImageListSubscriber,
 )
 from cellprofiler_core.setting.text import Float
+from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
 
@@ -620,10 +621,10 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             first_pixels = objects.crop_image_similarly(first_image.pixel_data)
             first_mask = objects.crop_image_similarly(first_image.mask)
         except ValueError:
-            first_pixels, m1 = cellprofiler_core.object.size_similarly(
+            first_pixels, m1 = size_similarly(
                 labels, first_image.pixel_data
             )
-            first_mask, m1 = cellprofiler_core.object.size_similarly(
+            first_mask, m1 = size_similarly(
                 labels, first_image.mask
             )
             first_mask[~m1] = False
@@ -631,10 +632,10 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             second_pixels = objects.crop_image_similarly(second_image.pixel_data)
             second_mask = objects.crop_image_similarly(second_image.mask)
         except ValueError:
-            second_pixels, m1 = cellprofiler_core.object.size_similarly(
+            second_pixels, m1 = size_similarly(
                 labels, second_image.pixel_data
             )
-            second_mask, m1 = cellprofiler_core.object.size_similarly(
+            second_mask, m1 = size_similarly(
                 labels, second_image.mask
             )
             second_mask[~m1] = False

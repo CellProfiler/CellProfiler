@@ -20,7 +20,6 @@ import numpy
 from .io import dump as dumpit
 from ..utilities.core.modules import instantiate_module, reload_modules
 from ..utilities.core.pipeline import read_file_list
-from ._image_plane import ImagePlane
 from ._listener import Listener
 from .dependency import ImageDependency
 from .dependency import MeasurementDependency
@@ -48,15 +47,9 @@ from .event import URLsRemoved
 from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_LONGBLOB
 from ..constants.measurement import COLTYPE_VARCHAR
-from ..constants.measurement import C_CHANNEL
 from ..constants.measurement import C_FRAME
 from ..constants.measurement import C_METADATA
-from ..constants.measurement import C_OBJECTS_CHANNEL
-from ..constants.measurement import C_OBJECTS_FRAME
-from ..constants.measurement import C_OBJECTS_SERIES
-from ..constants.measurement import C_OBJECTS_URL
 from ..constants.measurement import C_SERIES
-from ..constants.measurement import C_URL
 from ..constants.measurement import EXPERIMENT
 from ..constants.measurement import IMAGE
 from ..constants.measurement import IMAGE_NUMBER
@@ -87,7 +80,6 @@ from ..measurement import Measurements
 from ..object import ObjectSet
 from ..preferences import get_headless
 from ..preferences import report_progress
-from ..setting.subscriber import ExternalImageSubscriber
 from ..setting import Measurement
 from ..setting.subscriber import ImageSubscriber
 from ..setting.text import Name
@@ -99,10 +91,6 @@ from cellprofiler_core import __version__
 
 def _is_fp(x):
     return hasattr(x, "seek") and hasattr(x, "read")
-
-
-class ExternalImageNameSubscriber(object):
-    pass
 
 
 class Pipeline:
@@ -191,6 +179,7 @@ class Pipeline:
 
     @staticmethod
     def instantiate_module(module_name):
+        # Needed to populate modules list in workers
         import cellprofiler_core.modules
 
         return instantiate_module(module_name)
@@ -632,28 +621,6 @@ class Pipeline:
         m.clear()
         self.write_experiment_measurements(m)
 
-    def find_external_input_images(self):
-        """Find the names of the images that need to be supplied externally
-
-        run_external needs a dictionary of name -> image pixels with
-        one name entry for every external image that must be provided.
-        This function returns a list of those names.
-        """
-        result = []
-        for module in self.modules():
-            for setting in module.settings():
-                if isinstance(setting, ExternalImageSubscriber,):
-                    result.append(setting.value)
-        return result
-
-    def find_external_output_images(self):
-        result = []
-        for module in self.modules():
-            for setting in module.settings():
-                if isinstance(setting, ExternalImageNameSubscriber):
-                    result.append(setting.value)
-        return result
-
     def requires_aggregation(self):
         """Return True if the pipeline requires aggregation across image sets
 
@@ -673,48 +640,6 @@ class Pipeline:
         """
         for module in self.modules(False):
             module.obfuscate()
-
-    def run_external(self, image_dict):
-        """Runs a single iteration of the pipeline with the images provided in
-        image_dict and returns a dictionary mapping from image names to images
-        specified by ExternalImageNameSubscribers.
-
-        image_dict - dictionary mapping image names to image pixel data in the
-                     form of a numpy array.
-        """
-
-        output_image_names = self.find_external_output_images()
-        input_image_names = self.find_external_input_images()
-
-        # Check that the incoming dictionary matches the names expected by the
-        # ExternalImageProviders
-        for name in input_image_names:
-            assert name in image_dict, (
-                'Image named "%s" was not provided in the input dictionary' % name
-            )
-
-        # Create image set from provided dict
-        image_set_list = ImageSetList()
-        image_set = image_set_list.get_image_set(0)
-        for image_name in input_image_names:
-            input_pixels = image_dict[image_name]
-            image_set.add(image_name, ImageSubscriber(input_pixels))
-        object_set = ObjectSet()
-        measurements = Measurements()
-
-        # Run the modules
-        for module in self.modules():
-            workspace = Workspace(
-                self, module, image_set, object_set, measurements, image_set_list
-            )
-            self.run_module(module, workspace)
-
-        # Populate a dictionary for output with the images to be exported
-        output_dict = {}
-        for name in output_image_names:
-            output_dict[name] = image_set.get_image(name).pixel_data
-
-        return output_dict
 
     def run(
         self,

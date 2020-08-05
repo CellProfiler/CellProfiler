@@ -35,7 +35,6 @@ from ..constants.modules.load_data import IMAGE_CATEGORIES
 from ..constants.modules.load_data import OBJECTS_CATEGORIES
 from ..constants.modules.load_data import PATH_PADDING
 from ..image import FileImage
-from ..image import ObjectsImage
 from ..measurement import Measurements
 from ..module import Module
 from ..object import Objects

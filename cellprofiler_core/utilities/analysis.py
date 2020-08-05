@@ -4,8 +4,6 @@ import threading
 
 import cellprofiler
 
-import cellprofiler_core.worker
-
 
 def find_python():
     if hasattr(sys, "frozen"):

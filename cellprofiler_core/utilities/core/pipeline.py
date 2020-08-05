@@ -5,7 +5,6 @@ import numpy
 
 from ...constants.pipeline import make_cell_struct_dtype
 from ...constants.pipeline import PIPELINE
-from ...constants.pipeline import MEASUREMENTS
 from ...constants.pipeline import IMAGE_PLANE_DESCRIPTOR_VERSION
 from ...constants.pipeline import H_PLANE_COUNT
 from ...constants.pipeline import H_URL

@@ -3,6 +3,7 @@ import centrosome.outline
 import numpy
 import scipy.ndimage
 import scipy.sparse
+from numpy.random.mtrand import RandomState
 
 from ._segmentation import Segmentation
 from ..utilities.core.object import downsample_labels
@@ -287,7 +288,7 @@ class Objects:
             # There's some chance that overlapping objects will get
             # the same color. Give me more colors to work with please.
             colors = numpy.vstack([colors] * (1 + len(all_labels) // len(colors)))
-        r = numpy.random.mtrand.RandomState()
+        r = RandomState()
         alpha = numpy.zeros(all_labels[0][0].shape, numpy.float32)
         order = numpy.lexsort([counts])
         label_colors = []

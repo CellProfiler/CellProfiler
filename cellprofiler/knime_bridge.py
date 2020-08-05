@@ -13,6 +13,13 @@ from io import StringIO
 import javabridge
 import numpy
 import zmq
+from cellprofiler_core.constants.measurement import GROUP_NUMBER, GROUP_INDEX, OBJECT_NUMBER, EXPERIMENT, \
+    MCA_AVAILABLE_POST_RUN, COLTYPE_FLOAT, COLTYPE_INTEGER, COLTYPE_VARCHAR, IMAGE_NUMBER
+from cellprofiler_core.constants.workspace import DISPOSITION_SKIP, DISPOSITION_CANCEL
+from cellprofiler_core.image import Image
+from cellprofiler_core.measurement import Measurements
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting.text import ImageName
 
 if not hasattr(zmq, "Frame"):
     # Apparently, not in some versions of ZMQ?
@@ -132,9 +139,9 @@ class KnimeBridgeServer(threading.Thread):
                                         session_id, message_type, msg
                                     )
                                 except Exception as e:
-                                    logging.warn(e.message, exc_info=1)
+                                    logging.warning(e)
                                     self.raise_cellprofiler_exception(
-                                        session_id, e.message
+                                        session_id, e
                                     )
                     else:
                         continue
@@ -161,7 +168,7 @@ class KnimeBridgeServer(threading.Thread):
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
             logging.warning(
-                "Failed to load pipeline: sending pipeline exception", exc_info=1
+                "Failed to load pipeline: sending pipeline exception"
             )
             self.raise_pipeline_exception(session_id, str(e))
             return
@@ -187,7 +194,7 @@ class KnimeBridgeServer(threading.Thread):
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
             logging.warning(
-                "Failed to load pipeline: sending pipeline exception", exc_info=1
+                "Failed to load pipeline: sending pipeline exception"
             )
             self.raise_pipeline_exception(session_id, str(e))
             return
@@ -198,7 +205,7 @@ class KnimeBridgeServer(threading.Thread):
         for module in to_remove:
             pipeline.remove_module(module.module_num)
         pipeline_fd = StringIO()
-        pipeline.savetxt(pipeline_fd, save_image_plane_details=False)
+        pipeline.dump(pipeline_fd, save_image_plane_details=False)
         msg_out = [
             zmq.Frame(session_id),
             zmq.Frame(),
@@ -213,12 +220,12 @@ class KnimeBridgeServer(threading.Thread):
         if pipeline is None:
             return
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_NUMBER,
+            "Image",
+            GROUP_NUMBER,
         ] = 1
         m[
-            cellprofiler_core.measurement.IMAGE,
-            cellprofiler_core.measurement.GROUP_INDEX,
+            "Image",
+            GROUP_INDEX,
         ] = 1
         input_modules, other_modules = self.split_pipeline(pipeline)
         for module in other_modules:
@@ -236,16 +243,16 @@ class KnimeBridgeServer(threading.Thread):
                 )
                 pipeline.run_module(module, workspace)
                 if workspace.disposition in (
-                    cellprofiler_core.workspace.DISPOSITION_SKIP,
-                    cellprofiler_core.workspace.DISPOSITION_CANCEL,
+                    DISPOSITION_SKIP,
+                    DISPOSITION_CANCEL,
                 ):
                     break
             except Exception as e:
                 msg = 'Encountered error while running module, "%s": %s' % (
                     module.module_name,
-                    e.message,
+                    e,
                 )
-                logging.warning(msg, exc_info=1)
+                logging.warning(msg)
                 self.raise_cellprofiler_exception(session_id, msg)
                 return
         type_names, feature_dict = self.find_measurements(other_modules, pipeline)
@@ -318,7 +325,7 @@ class KnimeBridgeServer(threading.Thread):
     def run_group_request(self, session_id, message_type, message):
         """Handle a run-group request message"""
         pipeline = cellprofiler_core.pipeline.Pipeline()
-        m = cellprofiler_core.measurement.Measurements()
+        m = Measurements()
         image_group = m.hdf5_dict.hdf5_file.create_group("ImageData")
         if len(message) < 2:
             self.raise_cellprofiler_exception(
@@ -357,13 +364,13 @@ class KnimeBridgeServer(threading.Thread):
                     return
                 image_group.create_dataset(channel_name, data=pixel_data)
         except Exception as e:
-            self.raise_cellprofiler_exception(session_id, e.message)
+            self.raise_cellprofiler_exception(session_id, e)
             return None, None, None
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
             logging.warning(
-                "Failed to load pipeline: sending pipeline exception", exc_info=1
+                "Failed to load pipeline: sending pipeline exception"
             )
             self.raise_pipeline_exception(session_id, str(e))
             return
@@ -371,13 +378,13 @@ class KnimeBridgeServer(threading.Thread):
         image_numbers = numpy.arange(1, n_image_sets + 1)
         for image_number in image_numbers:
             m[
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.GROUP_NUMBER,
+                "Image",
+                GROUP_NUMBER,
                 image_number,
             ] = 1
             m[
-                cellprofiler_core.measurement.IMAGE,
-                cellprofiler_core.measurement.GROUP_INDEX,
+                "Image",
+                GROUP_INDEX,
                 image_number,
             ] = image_number
         input_modules, other_modules = self.split_pipeline(pipeline)
@@ -398,7 +405,7 @@ class KnimeBridgeServer(threading.Thread):
             for channel_name in channel_names:
                 dataset = image_group[channel_name]
                 pixel_data = dataset[image_index]
-                m.add(channel_name, cellprofiler_core.image.Image(pixel_data))
+                m.add(channel_name, Image(pixel_data))
 
             for module in other_modules:
                 workspace = cellprofiler_core.workspace.Workspace(
@@ -411,21 +418,21 @@ class KnimeBridgeServer(threading.Thread):
                     )
                     pipeline.run_module(module, workspace)
                     if workspace.disposition in (
-                        cellprofiler_core.workspace.DISPOSITION_SKIP,
-                        cellprofiler_core.workspace.DISPOSITION_CANCEL,
+                        DISPOSITION_SKIP,
+                        DISPOSITION_CANCEL,
                     ):
                         break
                 except Exception as e:
                     msg = 'Encountered error while running module, "%s": %s' % (
                         module.module_name,
-                        e.message,
+                        e,
                     )
-                    logging.warning(msg, exc_info=1)
+                    logging.warning(msg)
                     self.raise_cellprofiler_exception(session_id, msg)
                     return
             else:
                 continue
-            if workspace.disposition == cellprofiler_core.workspace.DISPOSITION_CANCEL:
+            if workspace.disposition == DISPOSITION_CANCEL:
                 break
         for module in other_modules:
             module.post_group(
@@ -454,12 +461,12 @@ class KnimeBridgeServer(threading.Thread):
             int_features.append((object_name, intf))
             sf = []
             string_features.append((object_name, sf))
-            if object_name == cellprofiler_core.measurement.IMAGE:
+            if object_name == "Image":
                 object_counts = [] * n_image_sets
             else:
                 object_numbers = m[
                     object_name,
-                    cellprofiler_core.measurement.OBJECT_NUMBER,
+                    OBJECT_NUMBER,
                     image_numbers,
                 ]
                 object_counts = [len(x) for x in object_numbers]
@@ -524,7 +531,7 @@ class KnimeBridgeServer(threading.Thread):
         grouping_allowed - true to allow grouped images
         """
         pipeline = cellprofiler_core.pipeline.Pipeline()
-        m = cellprofiler_core.measurement.Measurements()
+        m = Measurements()
         object_set = cellprofiler_core.object.ObjectSet()
         if len(message) < 2:
             self.raise_cellprofiler_exception(
@@ -548,14 +555,14 @@ class KnimeBridgeServer(threading.Thread):
                 )
                 m.add(channel_name, cellprofiler_core.image.Image(pixel_data))
         except Exception as e:
-            logging.warn("Failed to decode message", exc_info=1)
-            self.raise_cellprofiler_exception(session_id, e.message)
+            logging.warning("Failed to decode message")
+            self.raise_cellprofiler_exception(session_id, e)
             return None, None, None
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
             logging.warning(
-                "Failed to load pipeline: sending pipeline exception", exc_info=1
+                "Failed to load pipeline: sending pipeline exception"
             )
             self.raise_pipeline_exception(session_id, str(e))
             return None, None, None
@@ -611,7 +618,7 @@ class KnimeBridgeServer(threading.Thread):
         channels = []
         for module in input_modules:
             for setting in module.visible_settings():
-                if isinstance(setting, cellprofiler_core.setting.ImageName):
+                if isinstance(setting, ImageName):
                     channels.append(setting.value)
         return channels
 
@@ -630,23 +637,23 @@ class KnimeBridgeServer(threading.Thread):
         jtypes = ["java.lang.Integer"]
         features = {}
         for module in modules:
-            assert isinstance(module, cellprofiler_core.module.Module)
+            assert isinstance(module, Module)
             for column in module.get_measurement_columns(pipeline):
                 objects, name, dbtype = column[:3]
                 qualifiers = {} if len(column) < 4 else column[3]
                 if (
-                    objects == cellprofiler_core.measurement.EXPERIMENT
+                    objects == EXPERIMENT
                     and qualifiers.get(
-                        cellprofiler_core.measurement.MCA_AVAILABLE_POST_RUN, False
+                        MCA_AVAILABLE_POST_RUN, False
                     )
                     == True
                 ):
                     continue
-                if dbtype == cellprofiler_core.measurement.COLTYPE_FLOAT:
+                if dbtype == COLTYPE_FLOAT:
                     jtype = "java.lang.Double"
-                elif dbtype == cellprofiler_core.measurement.COLTYPE_INTEGER:
+                elif dbtype == COLTYPE_INTEGER:
                     jtype = "java.lang.Integer"
-                elif dbtype.startswith(cellprofiler_core.measurement.COLTYPE_VARCHAR):
+                elif dbtype.startswith(COLTYPE_VARCHAR):
                     jtype = "java.lang.String"
                 else:
                     continue
@@ -662,7 +669,7 @@ class KnimeBridgeServer(threading.Thread):
                 if name not in ofeatures:
                     ofeatures[name] = type_idx
         for key in features:
-            features[key][cellprofiler_core.measurement.IMAGE_NUMBER] = 0
+            features[key][IMAGE_NUMBER] = 0
         features_out = dict([(k, list(v.items())) for k, v in list(features.items())])
         return jtypes, features_out
 

@@ -11,6 +11,12 @@ import PIL.Image
 import numpy
 import pytest
 import six.moves
+from cellprofiler_core.constants.measurement import COLTYPE_INTEGER, COLTYPE_FLOAT, COLTYPE_VARCHAR_FORMAT, \
+    M_NUMBER_OBJECT_NUMBER, C_NUMBER, FTR_OBJECT_NUMBER, GROUP_NUMBER, GROUP_INDEX, OBJECT, EXPERIMENT, COLTYPE_VARCHAR, \
+    MCA_AVAILABLE_POST_RUN, MCA_AVAILABLE_POST_GROUP, MCA_AVAILABLE_EACH_CYCLE, C_FILE_NAME, C_PATH_NAME
+from cellprofiler_core.constants.pipeline import M_PIPELINE, M_VERSION, M_TIMESTAMP
+from cellprofiler_core.setting.text import ImageName, LabelName
+from cellprofiler_core.utilities.legacy import equals
 
 import tests.modules
 import cellprofiler_core.image
@@ -28,10 +34,10 @@ import cellprofiler_core.workspace
 
 ogmc = cellprofiler.modules.exporttodatabase.ExportToDatabase.get_measurement_columns
 
-if hasattr(unittest, "SkipTest"):
-    SkipTestException = unittest.SkipTest
+if hasattr(unittest, "pytest.skip"):
+    pytest.skipException = unittest.pytest.skip
 else:
-    SkipTestException = None
+    pytest.skipException = None
 
 numpy.random.seed(9804)
 
@@ -139,8 +145,9 @@ class TestExportToDatabase(unittest.TestCase):
             self.test_mysql = False
 
     def get_connection(self):
+
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, no DB configured.")
+            pytest.skip("Skipping actual DB work, no DB configured.")
         if self.connection is None:
             import MySQLdb
 
@@ -922,14 +929,14 @@ class TestExportToDatabase(unittest.TestCase):
             variable_revision_number = 1
 
             def create_settings(self):
-                self.image_name = cellprofiler_core.setting.ImageNameProvider(
+                self.image_name = ImageName(
                     "Foo", IMAGE_NAME
                 )
-                self.objects_name = cellprofiler_core.setting.ObjectNameProvider(
+                self.objects_name = LabelName(
                     "Bar", OBJECT_NAME
                 )
                 if alt_object:
-                    self.altobjects_name = cellprofiler_core.setting.ObjectNameProvider(
+                    self.altobjects_name = LabelName(
                         "Baz", ALTOBJECT_NAME
                     )
 
@@ -1089,7 +1096,7 @@ class TestExportToDatabase(unittest.TestCase):
                     [M_CATEGORY, C_NUMBER]
                     if (
                         object_name == OBJECT_NAME
-                        or ((object_name == ALTOBJECT_NAME) and in_module(alt_object))
+                        or ((object_name == ALTOBJECT_NAME) and self.in_module(alt_object))
                     )
                     else [M_CATEGORY, "Count", "Metadata"]
                     if object_name == "Image"
@@ -1099,19 +1106,19 @@ class TestExportToDatabase(unittest.TestCase):
             def get_measurements(self, pipeline, object_name, category):
                 if category == M_CATEGORY:
                     if object_name == OBJECT_NAME:
-                        if in_module(long_measurement):
+                        if self.in_module(long_measurement):
                             return [OBJ_FEATURE, LONG_OBJ_FEATURE]
                         else:
                             return [OBJ_FEATURE]
-                    elif (object_name == ALTOBJECT_NAME) and in_module(alt_object):
+                    elif (object_name == ALTOBJECT_NAME) and self.in_module(alt_object):
                         return [OBJ_FEATURE]
                     else:
                         return (
                             [INT_IMG_FEATURE, FLOAT_IMG_FEATURE, STRING_IMG_FEATURE]
                             + [LONG_IMG_FEATURE]
-                            if in_module(long_measurement)
+                            if self.in_module(long_measurement)
                             else [WIERD_IMG_FEATURE]
-                            if in_module(wierd_measurement)
+                            if self.in_module(wierd_measurement)
                             else []
                         )
                 elif (
@@ -1124,7 +1131,7 @@ class TestExportToDatabase(unittest.TestCase):
                     and object_name == "Image"
                 ):
                     result = [OBJECT_NAME]
-                    if in_module(alt_object):
+                    if self.in_module(alt_object):
                         result += [ALTOBJECT_NAME]
                     return result
                 elif (
@@ -1138,8 +1145,8 @@ class TestExportToDatabase(unittest.TestCase):
         for i in range(image_set_count):
             if i > 0:
                 m.next_image_set()
-            m.add_image_measurement(cellprofiler_core.pipeline.GROUP_NUMBER, 1)
-            m.add_image_measurement(cellprofiler_core.pipeline.GROUP_INDEX, i + 1)
+            m.add_image_measurement(GROUP_NUMBER, 1)
+            m.add_image_measurement(GROUP_INDEX, i + 1)
             m.add_image_measurement(INT_IMG_MEASUREMENT, INT_VALUE)
             m.add_image_measurement(FLOAT_IMG_MEASUREMENT, FLOAT_VALUE)
             m.add_image_measurement(STRING_IMG_MEASUREMENT, STRING_VALUE)
@@ -1482,7 +1489,7 @@ class TestExportToDatabase(unittest.TestCase):
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                cursor.execute(statement)
+                self.cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -1519,16 +1526,16 @@ class TestExportToDatabase(unittest.TestCase):
                     module.table_prefix.value,
                 )
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert row[3] == i + 1
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -1573,7 +1580,7 @@ class TestExportToDatabase(unittest.TestCase):
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                cursor.execute(statement)
+                self.cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -1591,8 +1598,8 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -1601,7 +1608,7 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == len(ALTOBJ_VALUE)
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s, %s_%s, "
                 "%s_%s, %s_%s "
@@ -1618,9 +1625,9 @@ class TestExportToDatabase(unittest.TestCase):
                     module.table_prefix.value,
                 )
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 6
                 assert row[0] == 1
                 assert row[1] == i + 1
@@ -1629,14 +1636,14 @@ class TestExportToDatabase(unittest.TestCase):
                 assert round(abs(row[4] - ALTOBJ_VALUE[i]), 4) == 0
                 assert row[5] == i + 1
             for i in range(len(OBJ_VALUE), len(ALTOBJ_VALUE)):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 6
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[4] - ALTOBJ_VALUE[i]), 4) == 0
                 assert row[5] == i + 1
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -1658,7 +1665,7 @@ class TestExportToDatabase(unittest.TestCase):
                 cellprofiler.modules.exporttodatabase.OT_COMBINE
             )
             if not self.test_mysql:
-                skipTest("Skipping actual DB work, not at the Broad.")
+                pytest.skip("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
@@ -1677,8 +1684,8 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 7
             assert row[0] == 1
             assert row[1] == 1
@@ -1688,21 +1695,21 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[5] == STRING_VALUE
             assert row[6] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -1751,8 +1758,8 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 7
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -1762,7 +1769,7 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[5] == 100
             assert round(abs(row[6] - numpy.mean(OBJ_VALUE)), 4) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -1773,16 +1780,16 @@ class TestExportToDatabase(unittest.TestCase):
                     module.table_prefix.value,
                 )
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -1841,8 +1848,8 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 7
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -1852,7 +1859,7 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[5] == 100
             assert round(abs(row[6] - numpy.mean(OBJ_VALUE)), 4) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -1863,16 +1870,16 @@ class TestExportToDatabase(unittest.TestCase):
                     module.table_prefix.value,
                 )
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -1932,7 +1939,7 @@ class TestExportToDatabase(unittest.TestCase):
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                cursor.execute(statement)
+                self.cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -1951,8 +1958,8 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -1961,15 +1968,15 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert round(abs(row[5] - numpy.mean(om[~numpy.isnan(om)])), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
@@ -1978,7 +1985,7 @@ class TestExportToDatabase(unittest.TestCase):
                 else:
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2036,10 +2043,11 @@ class TestExportToDatabase(unittest.TestCase):
             sql_text = fd.read()
             fd.close()
             os.chdir(output_dir)
+            
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                cursor.execute(statement)
+                self.cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -2058,8 +2066,8 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2069,15 +2077,15 @@ class TestExportToDatabase(unittest.TestCase):
             mask = ~(numpy.isnan(om) | numpy.isinf(om))
             assert round(abs(row[5] - numpy.mean(om[mask])), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
@@ -2086,7 +2094,7 @@ class TestExportToDatabase(unittest.TestCase):
                 else:
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2143,8 +2151,9 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2153,21 +2162,21 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert round(abs(row[5] - numpy.mean(om[numpy.isfinite(om)])), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert row[2] is None or i != 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2212,8 +2221,9 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2222,7 +2232,7 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == 100
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2233,16 +2243,16 @@ class TestExportToDatabase(unittest.TestCase):
                     module.table_prefix.value,
                 )
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2289,8 +2299,9 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2299,7 +2310,7 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == 100
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s,%s "
                 "from %sPer_Object order by ObjectNumber"
@@ -2310,16 +2321,16 @@ class TestExportToDatabase(unittest.TestCase):
                     module.table_prefix.value,
                 )
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
@@ -2346,12 +2357,13 @@ class TestExportToDatabase(unittest.TestCase):
                 STRING_IMG_MEASUREMENT,
                 module.table_prefix.value,
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 1
             assert row[0] == backslash_string
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Experiment"))
 
@@ -2391,9 +2403,10 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
+            
+            self.cursor.execute(statement)
             for i in range(2):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 7
                 assert row[0] == i + 1
                 assert row[1] == 1
@@ -2403,22 +2416,22 @@ class TestExportToDatabase(unittest.TestCase):
                 assert row[5] == STRING_VALUE
                 assert row[6] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == j + 1
                     assert row[1] == i + 1
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -2446,7 +2459,7 @@ class TestExportToDatabase(unittest.TestCase):
                 workspace.interaction_handler = self.get_interaction_handler(
                     ran_interaction_handler
                 )
-            cursor = None
+            self.cursor = None
             connection = None
             try:
                 assert isinstance(
@@ -2487,8 +2500,8 @@ class TestExportToDatabase(unittest.TestCase):
                         image_table,
                     )
                 )
-                cursor.execute(statement)
-                row = cursor.fetchone()
+                self.cursor.execute(statement)
+                row = self.cursor.fetchone()
                 assert len(row) == 5
                 assert row[0] == 1
                 assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2496,24 +2509,24 @@ class TestExportToDatabase(unittest.TestCase):
                 assert row[3] == STRING_VALUE
                 assert row[4] == len(OBJ_VALUE)
                 with pytest.raises(StopIteration):
-                    cursor.__next__()
+                    self.cursor.__next__()
                 statement = (
                     "select ImageNumber, ObjectNumber, %s_%s "
                     "from %sPer_Object order by ImageNumber, ObjectNumber"
                     % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
                 )
-                cursor.execute(statement)
+                self.cursor.execute(statement)
                 for i, value in enumerate(OBJ_VALUE):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == 1
                     assert row[1] == i + 1
                     assert round(abs(row[2] - value), 7) == 0
                 with pytest.raises(StopIteration):
-                    cursor.__next__()
+                    self.cursor.__next__()
             finally:
-                if cursor is not None:
-                    cursor.close()
+                if self.cursor is not None:
+                    self.cursor.close()
                 if connection is not None:
                     connection.close()
                 if hasattr(module, "cursor") and module.cursor is not None:
@@ -2528,7 +2541,7 @@ class TestExportToDatabase(unittest.TestCase):
         backslash_string = "\\Why doesn't he worry?"
         m = workspace.measurements
         m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
-        cursor = None
+        self.cursor = None
         connection = None
         try:
             assert isinstance(
@@ -2589,7 +2602,7 @@ class TestExportToDatabase(unittest.TestCase):
         )
         for i in range(len(iim)):
             iim[i] = numpy.int32(iim[i])
-        cursor = None
+        self.cursor = None
         connection = None
         try:
             assert isinstance(
@@ -2802,9 +2815,9 @@ class TestExportToDatabase(unittest.TestCase):
     def check_experiment_table(self, cursor, module, m):
         """Check the per_experiment table values against measurements"""
         statement = "select %s, %s, %s from %s" % (
-            cellprofiler_core.pipeline.M_PIPELINE,
-            cellprofiler_core.pipeline.M_VERSION,
-            cellprofiler_core.pipeline.M_TIMESTAMP,
+            M_PIPELINE,
+            M_VERSION,
+            M_TIMESTAMP,
             module.get_table_name(EXPERIMENT),
         )
         cursor.execute(statement)
@@ -2814,17 +2827,17 @@ class TestExportToDatabase(unittest.TestCase):
         assert len(row) == 3
         for feature, value in zip(
             (
-                cellprofiler_core.pipeline.M_PIPELINE,
-                cellprofiler_core.pipeline.M_VERSION,
-                cellprofiler_core.pipeline.M_TIMESTAMP,
+                M_PIPELINE,
+                M_VERSION,
+                M_TIMESTAMP,
             ),
             row,
         ):
-            assert cellprofiler.utilities.legacy.equals(
+            assert equals(
                 value, m.get_experiment_measurement(feature)
             )
 
-    def test_write_mysql_db(self):
+    def test_write_mysql_db_2(self):
         """Multiple objects / write - per-object tables"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
@@ -2845,7 +2858,8 @@ class TestExportToDatabase(unittest.TestCase):
             )
             module.post_run(workspace)
             self.load_database(output_dir, module)
-            self.check_experiment_table(cursor, module, workspace.measurements)
+            
+            self.check_experiment_table(self.cursor, module, workspace.measurements)
             #
             # Now read the image file from the database
             #
@@ -2861,8 +2875,8 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 5
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2870,25 +2884,25 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[3] == STRING_VALUE
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
-    def test_write_mysql_db_filter_objs(self):
+    def test_write_mysql_db_filter_objs_2(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
             assert isinstance(
@@ -2927,7 +2941,7 @@ class TestExportToDatabase(unittest.TestCase):
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                cursor.execute(statement)
+                self.cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -2943,8 +2957,8 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 5
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -2952,19 +2966,19 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[3] == STRING_VALUE
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -2988,7 +3002,8 @@ class TestExportToDatabase(unittest.TestCase):
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.check_experiment_table(cursor, module, workspace.measurements)
+            
+            self.check_experiment_table(self.cursor, module, workspace.measurements)
             #
             # Now read the image file from the database
             #
@@ -3004,8 +3019,8 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 5
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3013,19 +3028,19 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[3] == STRING_VALUE
             assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3070,8 +3085,9 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3080,20 +3096,20 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == 100
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT, long_obj_column]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3146,10 +3162,11 @@ class TestExportToDatabase(unittest.TestCase):
             sql_text = fd.read()
             fd.close()
             os.chdir(output_dir)
+            
             for statement in sql_text.split(";"):
                 if len(statement.strip()) == 0:
                     continue
-                cursor.execute(statement)
+                self.cursor.execute(statement)
             #
             # Now read the image file from the database
             #
@@ -3168,8 +3185,8 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3178,13 +3195,13 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert round(abs(row[5] - numpy.mean(om[~numpy.isnan(om)])), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
@@ -3193,7 +3210,7 @@ class TestExportToDatabase(unittest.TestCase):
                 else:
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3250,8 +3267,9 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3260,19 +3278,19 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert row[5] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert row[2] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3327,8 +3345,9 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3337,19 +3356,19 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert row[5] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert row[2] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3394,8 +3413,9 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3404,20 +3424,20 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == 100
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT, wierd_obj_column]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3464,8 +3484,9 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
-            row = cursor.fetchone()
+            
+            self.cursor.execute(statement)
+            row = self.cursor.fetchone()
             assert len(row) == 6
             assert row[0] == 1
             assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3474,20 +3495,20 @@ class TestExportToDatabase(unittest.TestCase):
             assert row[4] == len(OBJ_VALUE)
             assert row[5] == 100
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT, long_obj_column]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 4
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
                 assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -3516,30 +3537,31 @@ class TestExportToDatabase(unittest.TestCase):
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read from the other table
             #
             statement = self.per_object_statement(
                 module, ALTOBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(len(ALTOBJ_VALUE)):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - ALTOBJ_VALUE[i]), 4) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
@@ -3579,30 +3601,31 @@ class TestExportToDatabase(unittest.TestCase):
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            
+            self.cursor.execute(statement)
             for i, value in enumerate(OBJ_VALUE):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read from the other table
             #
             statement = self.per_object_statement(
                 module, ALTOBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(len(ALTOBJ_VALUE)):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == 1
                 assert row[1] == i + 1
                 assert round(abs(row[2] - ALTOBJ_VALUE[i]), 4) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3648,9 +3671,10 @@ class TestExportToDatabase(unittest.TestCase):
                     image_table,
                 )
             )
-            cursor.execute(statement)
+            
+            self.cursor.execute(statement)
             for j in range(2):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 5
                 assert row[0] == j + 1
                 assert round(abs(row[1] - INT_VALUE), 7) == 0
@@ -3658,20 +3682,20 @@ class TestExportToDatabase(unittest.TestCase):
                 assert row[3] == STRING_VALUE
                 assert row[4] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == j + 1
                     assert row[1] == i + 1
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             os.chdir(output_dir)
             finally_fn()
@@ -3710,9 +3734,9 @@ class TestExportToDatabase(unittest.TestCase):
                 OBJECT_NAME,
                 image_table,
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(2):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 7
                 assert row[0] == i + 1
                 assert row[1] == 1
@@ -3722,22 +3746,22 @@ class TestExportToDatabase(unittest.TestCase):
                 assert row[5] == STRING_VALUE
                 assert row[6] == len(OBJ_VALUE)
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s "
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == j + 1
                     assert row[1] == i + 1
                     assert round(abs(row[2] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -3780,9 +3804,9 @@ class TestExportToDatabase(unittest.TestCase):
                 long_mean_col,
                 image_table,
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(2):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 8
                 assert row[0] == i + 1
                 assert row[1] == 1
@@ -3793,7 +3817,7 @@ class TestExportToDatabase(unittest.TestCase):
                 assert row[6] == len(OBJ_VALUE)
                 assert abs(row[7] - numpy.mean(OBJ_VALUE)) < 0.0001
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             statement = (
                 "select ImageNumber, ObjectNumber, %s_%s, %s "
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
@@ -3804,24 +3828,24 @@ class TestExportToDatabase(unittest.TestCase):
                     module.table_prefix.value,
                 )
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for j in range(2):
                 for i, value in enumerate(OBJ_VALUE):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 4
                     assert row[0] == j + 1
                     assert row[1] == i + 1
                     assert round(abs(row[2] - value), 7) == 0
                     assert round(abs(row[3] - value), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
     def test_write_sqlite_direct(self):
         """Write directly to a SQLite database"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        cursor = None
+        self.cursor = None
         connection = None
         try:
             assert isinstance(
@@ -3891,7 +3915,7 @@ class TestExportToDatabase(unittest.TestCase):
                 module.connection.close()
             finally_fn()
 
-    def execute_well_sql(output_dir, module):
+    def execute_well_sql(self, output_dir, module):
         file_name = "SQL__Per_Well_SETUP.SQL"
         sql_file = os.path.join(output_dir, file_name)
         fd = open(sql_file, "rt")
@@ -3901,7 +3925,7 @@ class TestExportToDatabase(unittest.TestCase):
         for statement in sql_text.split(";"):
             if len(statement.strip()) == 0:
                 continue
-            cursor.execute(statement)
+            self.cursor.execute(statement)
 
     def select_well_agg(module, aggname, fields):
         field_string = ", ".join(["%s_%s" % (aggname, field) for field in fields])
@@ -3938,7 +3962,7 @@ class TestExportToDatabase(unittest.TestCase):
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
-            execute_well_sql(output_dir, module)
+            self.execute_well_sql(output_dir, module)
             meas = (
                 ("Image", FLOAT_IMG_MEASUREMENT),
                 ("Image", INT_IMG_MEASUREMENT),
@@ -3951,9 +3975,9 @@ class TestExportToDatabase(unittest.TestCase):
                 fields = [
                     "%s_%s" % (object_name, feature) for object_name, feature in meas
                 ]
-                statement = select_well_agg(module, aggname, fields)
-                cursor.execute(statement)
-                rows = cursor.fetchall()
+                statement = self.select_well_agg(module, aggname, fields)
+                self.cursor.execute(statement)
+                rows = self.cursor.fetchall()
                 assert len(rows) == 1
                 row = rows[0]
                 assert row[0] == PLATE
@@ -3999,7 +4023,7 @@ class TestExportToDatabase(unittest.TestCase):
             module.prepare_group(workspace, {}, [1, 2, 3])
             module.run(workspace)
             module.post_run(workspace)
-            execute_well_sql(output_dir, module)
+            self.execute_well_sql(output_dir, module)
             meas = (
                 ("Image", FLOAT_IMG_MEASUREMENT),
                 ("Image", INT_IMG_MEASUREMENT),
@@ -4012,9 +4036,9 @@ class TestExportToDatabase(unittest.TestCase):
                 fields = [
                     "%s_%s" % (object_name, feature) for object_name, feature in meas
                 ]
-                statement = select_well_agg(module, aggname, fields)
-                cursor.execute(statement)
-                rows = cursor.fetchall()
+                statement = self.select_well_agg(module, aggname, fields)
+                self.cursor.execute(statement)
+                rows = self.cursor.fetchall()
                 assert len(rows) == 1
                 row = rows[0]
                 assert row[0] == PLATE
@@ -4066,8 +4090,8 @@ class TestExportToDatabase(unittest.TestCase):
             module.post_run(workspace)
             image_table = module.table_prefix.value + "Per_Image"
             stmt = "select Image_%s from %s" % (expected_thumbnail_column, image_table)
-            cursor.execute(stmt)
-            result = cursor.fetchall()
+            self.cursor.execute(stmt)
+            result = self.cursor.fetchall()
             im = PIL.Image.open(six.moves.StringIO(result[0][0].decode("base64")))
             assert tuple(im.size) == (200, 200)
 
@@ -4076,7 +4100,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_image_thumbnails_sqlite(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        cursor = None
+        self.cursor = None
         connection = None
         try:
             assert isinstance(
@@ -4157,14 +4181,14 @@ class TestExportToDatabase(unittest.TestCase):
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read the object data too
             #
@@ -4174,17 +4198,17 @@ class TestExportToDatabase(unittest.TestCase):
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert row[2] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
-            close_connection()
+                self.cursor.__next__()
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4194,14 +4218,14 @@ class TestExportToDatabase(unittest.TestCase):
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] == INT_VALUE
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read the object data
             #
@@ -4211,16 +4235,16 @@ class TestExportToDatabase(unittest.TestCase):
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -4258,15 +4282,15 @@ class TestExportToDatabase(unittest.TestCase):
                 "select ImageNumber, Image_%s, Mean_%s_%s "
                 "from %s order by ImageNumber"
             ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == i + 1
                 assert row[1] is None
                 assert row[2] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read the object data too
             #
@@ -4276,17 +4300,17 @@ class TestExportToDatabase(unittest.TestCase):
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert row[2] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
-            close_connection()
+                self.cursor.__next__()
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4296,15 +4320,15 @@ class TestExportToDatabase(unittest.TestCase):
                 "select ImageNumber, Image_%s, Mean_%s_%s "
                 "from %s order by ImageNumber"
             ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == i + 1
                 assert row[1] == INT_VALUE
                 assert round(abs(row[2] - numpy.mean(OBJ_VALUE)), 4) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read the object data
             #
@@ -4314,16 +4338,16 @@ class TestExportToDatabase(unittest.TestCase):
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -4361,31 +4385,31 @@ class TestExportToDatabase(unittest.TestCase):
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read the object data too
             #
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert row[2] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
-            close_connection()
+                self.cursor.__next__()
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4395,30 +4419,30 @@ class TestExportToDatabase(unittest.TestCase):
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] == INT_VALUE
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read the object data
             #
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
@@ -4456,32 +4480,32 @@ class TestExportToDatabase(unittest.TestCase):
                 "select ImageNumber, Image_%s, Mean_%s_%s "
                 "from %s order by ImageNumber"
             ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == i + 1
                 assert row[1] is None
                 assert row[2] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read the object data too
             #
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert row[2] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
-            close_connection()
+                self.cursor.__next__()
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4491,31 +4515,31 @@ class TestExportToDatabase(unittest.TestCase):
                 "select ImageNumber, Image_%s, Mean_%s_%s "
                 "from %s order by ImageNumber"
             ) % (GROUP_IMG_MEASUREMENT, OBJECT_NAME, GROUP_OBJ_MEASUREMENT, image_table)
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 3
                 assert row[0] == i + 1
                 assert row[1] == INT_VALUE
                 assert round(abs(row[2] - numpy.mean(OBJ_VALUE)), 4) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read the object data
             #
             statement = self.per_object_statement(
                 module, OBJECT_NAME, [GROUP_OBJ_MEASUREMENT]
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
 
@@ -4637,7 +4661,6 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_post_group_object_view(self):
         """Write out measurements post_group to single object view"""
-        cursor = self.cursor
         count = 5
         workspace, module = self.make_workspace(
             False, image_set_count=count, group_measurement=True
@@ -4670,14 +4693,14 @@ class TestExportToDatabase(unittest.TestCase):
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read the object data too
             #
@@ -4687,17 +4710,17 @@ class TestExportToDatabase(unittest.TestCase):
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert row[2] is None
             with pytest.raises(StopIteration):
-                cursor.__next__()
-            close_connection()
+                self.cursor.__next__()
+            self.close_connection()
             #
             # Run post_group and see that the values do show up
             #
@@ -4707,14 +4730,14 @@ class TestExportToDatabase(unittest.TestCase):
                 GROUP_IMG_MEASUREMENT,
                 image_table,
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
-                row = cursor.fetchone()
+                row = self.cursor.fetchone()
                 assert len(row) == 2
                 assert row[0] == i + 1
                 assert row[1] == INT_VALUE
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Read the object data
             #
@@ -4724,16 +4747,16 @@ class TestExportToDatabase(unittest.TestCase):
                 "from %sPer_Object order by ImageNumber, ObjectNumber"
                 % (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, module.table_prefix.value)
             )
-            cursor.execute(statement)
+            self.cursor.execute(statement)
             for i in range(count):
                 for j in range(len(OBJ_VALUE)):
-                    row = cursor.fetchone()
+                    row = self.cursor.fetchone()
                     assert len(row) == 3
                     assert row[0] == i + 1
                     assert row[1] == j + 1
                     assert round(abs(row[2] - OBJ_VALUE[j]), 7) == 0
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             #
             # Finally, confirm that the Per_Object item is a view
             #
@@ -4741,8 +4764,8 @@ class TestExportToDatabase(unittest.TestCase):
                 "SELECT * FROM information_schema.views WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"
                 % (module.db_name.value, object_table)
             )
-            cursor.execute(statement)
-            assert len(cursor.fetchall()) != 0
+            self.cursor.execute(statement)
+            assert len(self.cursor.fetchall()) != 0
         finally:
             self.drop_tables(module, ["Per_Image"])
             self.drop_views(module, ["Per_Object"])
@@ -4887,7 +4910,7 @@ class TestExportToDatabase(unittest.TestCase):
             )
             module.location_object.value = OBJECT_NAME
             if not self.test_mysql:
-                skipTest("Skipping actual DB work, not at the Broad.")
+                pytest.skip("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
@@ -4902,10 +4925,10 @@ class TestExportToDatabase(unittest.TestCase):
                                 where field = 'image_table' and value = '%s'"""
                 % image_table
             )
-            cursor.execute(statement)
-            experiment_id = int(cursor.fetchone()[0])
+            self.cursor.execute(statement)
+            experiment_id = int(self.cursor.fetchone()[0])
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             properties = module.get_property_file_text(workspace)
             assert len(properties) == 1
             for k, v in list(properties[0].properties.items()):
@@ -4917,10 +4940,10 @@ class TestExportToDatabase(unittest.TestCase):
                     experiment_id,
                     properties[0].object_name,
                 )
-                cursor.execute(statement)
-                dbvalue = cursor.fetchone()[0]
+                self.cursor.execute(statement)
+                dbvalue = self.cursor.fetchone()[0]
                 with pytest.raises(StopIteration):
-                    cursor.__next__()
+                    self.cursor.__next__()
                 assert dbvalue == v
         finally:
             self.drop_tables(module, ("Per_Image", "Per_Object"))
@@ -4940,7 +4963,7 @@ class TestExportToDatabase(unittest.TestCase):
                 cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
             )
             if not self.test_mysql:
-                skipTest("Skipping actual DB work, not at the Broad.")
+                pytest.skip("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
@@ -4955,10 +4978,10 @@ class TestExportToDatabase(unittest.TestCase):
                                 where field = 'image_table' and value = '%s'"""
                 % image_table
             )
-            cursor.execute(statement)
-            experiment_id = int(cursor.fetchone()[0])
+            self.cursor.execute(statement)
+            experiment_id = int(self.cursor.fetchone()[0])
             with pytest.raises(StopIteration):
-                cursor.__next__()
+                self.cursor.__next__()
             properties = module.get_property_file_text(workspace)
             assert len(properties) == 2
             for k, v in list(properties[0].properties.items()):
@@ -4970,10 +4993,10 @@ class TestExportToDatabase(unittest.TestCase):
                     experiment_id,
                     properties[0].object_name,
                 )
-                cursor.execute(statement)
-                dbvalue = cursor.fetchone()[0]
+                self.cursor.execute(statement)
+                dbvalue = self.cursor.fetchone()[0]
                 with pytest.raises(StopIteration):
-                    cursor.__next__()
+                    self.cursor.__next__()
                 assert dbvalue == v
         finally:
             self.drop_tables(
@@ -4982,7 +5005,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_write_no_mysql_relationships(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True,
             relationship_type=MCA_AVAILABLE_EACH_CYCLE,
@@ -5005,7 +5028,7 @@ class TestExportToDatabase(unittest.TestCase):
             )
             module.post_run(workspace)
             self.load_database(output_dir, module)
-            self.tteesstt_no_relationships(module, cursor)
+            self.tteesstt_no_relationships(module, self.cursor)
         finally:
             self.drop_tables(module)
             os.chdir(output_dir)
@@ -5013,7 +5036,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_write_no_mysql_direct_relationships(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(
             False,
@@ -5034,20 +5057,20 @@ class TestExportToDatabase(unittest.TestCase):
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.tteesstt_no_relationships(module, cursor)
+            self.tteesstt_no_relationships(module, self.cursor)
 
         finally:
             self.drop_tables(module)
 
     def test_write_sqlite_no_relationships(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
 
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True,
             relationship_type=MCA_AVAILABLE_EACH_CYCLE,
         )
-        cursor = None
+        self.cursor = None
         try:
             assert isinstance(
                 module, cellprofiler.modules.exporttodatabase.ExportToDatabase
@@ -5082,7 +5105,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_write_mysql_relationships(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True,
             relationship_type=MCA_AVAILABLE_EACH_CYCLE,
@@ -5106,7 +5129,7 @@ class TestExportToDatabase(unittest.TestCase):
             )
             module.post_run(workspace)
             self.load_database(output_dir, module)
-            self.tteesstt_relate(workspace.measurements, module, cursor)
+            self.tteesstt_relate(workspace.measurements, module, self.cursor)
         finally:
             self.drop_tables(module)
             os.chdir(output_dir)
@@ -5114,7 +5137,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_write_mysql_direct_relationships(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(
             False,
@@ -5136,7 +5159,7 @@ class TestExportToDatabase(unittest.TestCase):
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.tteesstt_relate(workspace.measurements, module, cursor)
+            self.tteesstt_relate(workspace.measurements, module, self.cursor)
         finally:
             self.drop_tables(module)
 
@@ -5188,7 +5211,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_write_sqlite_duplicates(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
 
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True,
@@ -5232,7 +5255,7 @@ class TestExportToDatabase(unittest.TestCase):
         # Add a missing relationship ID
         #
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(
             False,
@@ -5259,15 +5282,15 @@ class TestExportToDatabase(unittest.TestCase):
             module.get_dictionary()[
                 cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
             ] = {}
-            cursor.execute(
+            self.cursor.execute(
                 "delete from %s"
                 % module.get_table_name(
                     cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
                 )
             )
-            close_connection()
+            self.close_connection()
             module.run(workspace)
-            self.tteesstt_relate(workspace.measurements, module, cursor)
+            self.tteesstt_relate(workspace.measurements, module, self.cursor)
         finally:
             self.drop_tables(module)
 
@@ -5276,7 +5299,7 @@ class TestExportToDatabase(unittest.TestCase):
         # Get a missing relationship ID (e.g., worker # 2 gets worker # 1's row)
         #
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(
             False,
@@ -5304,7 +5327,7 @@ class TestExportToDatabase(unittest.TestCase):
                 cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
             ] = {}
             module.run(workspace)
-            self.tteesstt_relate(workspace.measurements, module, cursor)
+            self.tteesstt_relate(workspace.measurements, module, self.cursor)
         finally:
             self.drop_tables(module)
 
@@ -5342,9 +5365,9 @@ class TestExportToDatabase(unittest.TestCase):
                 module.prepare_group(workspace, {}, [1])
                 with cellprofiler.modules.exporttodatabase.DBContext(module) as (
                     connection,
-                    cursor,
+                    self.cursor,
                 ):
-                    cursor.execute(
+                    self.cursor.execute(
                         "delete from %s"
                         % module.get_table_name(
                             cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
@@ -5356,9 +5379,9 @@ class TestExportToDatabase(unittest.TestCase):
                 module.run(workspace)
                 with cellprofiler.modules.exporttodatabase.DBContext(module) as (
                     connection,
-                    cursor,
+                    self.cursor,
                 ):
-                    self.tteesstt_relate(workspace.measurements, module, cursor)
+                    self.tteesstt_relate(workspace.measurements, module, self.cursor)
             finally:
                 finally_fn()
 
@@ -5374,7 +5397,7 @@ class TestExportToDatabase(unittest.TestCase):
                 workspace.interaction_handler = self.get_interaction_handler(
                     ran_interaction_handler
                 )
-            cursor = None
+            self.cursor = None
             connection = None
             try:
                 assert isinstance(
@@ -5413,14 +5436,14 @@ class TestExportToDatabase(unittest.TestCase):
                     module.connection.close()
                 finally_fn()
 
-    def test_write_mysql_direct_relationships(self):
+    def test_write_mysql_direct_relationships_2(self):
         # Regression test of #1757
         #
         # No relationships in relationships table and ExportToDatabase
         # is configured to display its window
         #
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, no database configured.")
+            pytest.skip("Skipping actual DB work, no database configured.")
 
         workspace, module = self.make_workspace(
             False,
@@ -5442,13 +5465,13 @@ class TestExportToDatabase(unittest.TestCase):
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
-            self.tteesstt_relate(workspace.measurements, module, cursor)
+            self.tteesstt_relate(workspace.measurements, module, self.cursor)
         finally:
             self.drop_tables(module)
 
     def test_mysql_no_overwrite(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(False)
         try:
@@ -5473,8 +5496,8 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_mysql_keep_schema(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
-        cursor = self.cursor
+            pytest.skip("Skipping actual DB work, not at the Broad.")
+        
         workspace, module = self.make_workspace(False)
         try:
             assert isinstance(
@@ -5498,28 +5521,28 @@ class TestExportToDatabase(unittest.TestCase):
             how_many = "select count('x') from %s" % module.get_table_name(
                 "Image"
             )
-            cursor.execute(how_many)
-            assert cursor.fetchall()[0][0] == 0
-            close_connection()
+            self.cursor.execute(how_many)
+            assert self.cursor.fetchall()[0][0] == 0
+            self.close_connection()
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
             # There should be one row after "run"
             #
-            cursor.execute(how_many)
-            assert cursor.fetchall()[0][0] == 1
+            self.cursor.execute(how_many)
+            assert self.cursor.fetchall()[0][0] == 1
             assert module.prepare_run(workspace)
             #
             # The row should still be there after the second prepare_run
             #
-            cursor.execute(how_many)
-            assert cursor.fetchall()[0][0] == 1
+            self.cursor.execute(how_many)
+            assert self.cursor.fetchall()[0][0] == 1
         finally:
             self.drop_tables(module)
 
     def test_mysql_drop_schema(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
 
         workspace, module = self.make_workspace(False)
         try:
@@ -5544,23 +5567,23 @@ class TestExportToDatabase(unittest.TestCase):
             how_many = "select count('x') from %s" % module.get_table_name(
                 "Image"
             )
-            cursor.execute(how_many)
-            assert cursor.fetchall()[0][0] == 0
-            close_connection()
+            self.cursor.execute(how_many)
+            assert self.cursor.fetchall()[0][0] == 0
+            self.close_connection()
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
             # There should be one row after "run"
             #
-            cursor.execute(how_many)
-            assert cursor.fetchall()[0][0] == 1
-            close_connection()
+            self.cursor.execute(how_many)
+            assert self.cursor.fetchall()[0][0] == 1
+            self.close_connection()
             assert module.prepare_run(workspace)
             #
             # The row should not be there after the second prepare_run
             #
-            cursor.execute(how_many)
-            assert cursor.fetchall()[0][0] == 0
+            self.cursor.execute(how_many)
+            assert self.cursor.fetchall()[0][0] == 0
         finally:
             self.drop_tables(module)
 
@@ -5682,7 +5705,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_dbcontext_mysql(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
         module = cellprofiler.modules.exporttodatabase.ExportToDatabase()
         module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.db_host.value = MYSQL_HOST
@@ -5691,10 +5714,10 @@ class TestExportToDatabase(unittest.TestCase):
         module.db_name.value = MYSQL_DATABASE
         with cellprofiler.modules.exporttodatabase.DBContext(module) as (
             connection,
-            cursor,
+            self.cursor,
         ):
-            cursor.execute("select 1")
-            result = cursor.fetchall()
+            self.cursor.execute("select 1")
+            result = self.cursor.fetchall()
             assert len(result) == 1
             assert result[0][0] == 1
 
@@ -5709,10 +5732,10 @@ class TestExportToDatabase(unittest.TestCase):
             module.directory.custom_path = output_dir
             with cellprofiler.modules.exporttodatabase.DBContext(module) as (
                 connection,
-                cursor,
+                self.cursor,
             ):
-                cursor.execute("select 1")
-                result = cursor.fetchall()
+                self.cursor.execute("select 1")
+                result = self.cursor.fetchall()
                 assert len(result) == 1
                 assert result[0][0] == 1
         finally:
@@ -5725,7 +5748,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_post_run_experiment_measurement_mysql(self):
         if not self.test_mysql:
-            skipTest("Skipping actual DB work, not at the Broad.")
+            pytest.skip("Skipping actual DB work, not at the Broad.")
         workspace, module = self.make_workspace(False, post_run_test=True)
         try:
             assert isinstance(
@@ -5746,24 +5769,24 @@ class TestExportToDatabase(unittest.TestCase):
                 EXPERIMENT, STRING_IMG_MEASUREMENT
             ] = STRING_VALUE
             assert module.prepare_run(workspace)
-            cursor.execute(
+            self.cursor.execute(
                 "select %s from %s"
                 % (
                     STRING_IMG_MEASUREMENT,
                     module.get_table_name(EXPERIMENT),
                 )
             )
-            result = cursor.fetchall()[0][0]
+            result = self.cursor.fetchall()[0][0]
             assert result is None
-            close_connection()
+            self.close_connection()
             module.post_run(workspace)
-            cursor.execute(
+            self.cursor.execute(
                 "select %s from %s"
                 % (
                     STRING_IMG_MEASUREMENT,
                     module.get_table_name(EXPERIMENT),
                 )
             )
-            assert cursor.fetchall()[0][0] == STRING_VALUE
+            assert self.cursor.fetchall()[0][0] == STRING_VALUE
         finally:
             self.drop_tables(module)

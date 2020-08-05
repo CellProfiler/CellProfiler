@@ -371,7 +371,6 @@ class PipelineListView(object):
         list_ctrl, index = self.get_ctrl_and_index(module)
         if list_ctrl is self.list_ctrl:
             self.list_ctrl.set_running_item(index)
-        self.select_one_module(module.module_num)
 
     def reset_debug_module(self):
         """Set the pipeline slider to the first module to be debugged
@@ -512,7 +511,7 @@ class PipelineListView(object):
             if module.module_num == module_num:
                 break
         else:
-            logging.warn("Could not find module %d" % module_num)
+            logging.warning("Could not find module %d" % module_num)
             for ctrl, idx in self.iter_list_items():
                 ctrl.Select(idx, False)
             self.__on_item_selected(None)
@@ -1694,9 +1693,6 @@ class PipelineListCtrl(wx.ScrolledWindow):
 
             if self.test_mode and self.running_item == index:
                 dc.SetFont(font.MakeUnderlined())
-                cellprofiler.gui.draw_item_selection_rect(
-                    self, dc, rectangle, flags | wx.CONTROL_SELECTED
-                )
 
             dc.SetBackgroundMode(wx.PENSTYLE_TRANSPARENT)
 

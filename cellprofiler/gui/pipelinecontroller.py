@@ -3278,7 +3278,7 @@ class PipelineController(object):
         self.__pipeline.end_run()
         self.show_launch_controls()
 
-    def do_step(self, module, select_next_module=True):
+    def do_step(self, module, select_next_module=False):
         """Do a debugging step by running a module
         """
         failure = 1

@@ -124,6 +124,7 @@ ID_DEBUG_PDB = wx.NewId()
 ID_DEBUG_RUN_FROM_THIS_MODULE = wx.NewId()
 ID_DEBUG_STEP_FROM_THIS_MODULE = wx.NewId()
 ID_DEBUG_HELP = wx.NewId()
+ID_DEBUG_VIEW_WORKSPACE = wx.NewId()
 
 # ~*~
 ID_SAMPLE_INIT = wx.NewId()
@@ -776,6 +777,11 @@ class CPFrame(wx.Frame):
             "Choose Image Group",
             "Choose which image set group to process in test-mode",
         )
+
+        self.__menu_debug.Append(
+            ID_DEBUG_VIEW_WORKSPACE, "View workspace", "View the current workspace",
+        )
+
         if not hasattr(sys, "frozen") or os.getenv("CELLPROFILER_DEBUG"):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_PDB, "Break Into Debugger")
@@ -784,6 +790,7 @@ class CPFrame(wx.Frame):
             #
             if os.environ.get("USERNAME", "").lower() == "leek":
                 self.__menu_debug.Append(ID_FILE_WIDGET_INSPECTOR, "Widget inspector")
+
         self.__menu_debug.Append(ID_DEBUG_HELP, "Pipeline Testing Help")
         self.__menu_debug.Enable(ID_DEBUG_STEP, False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET, False)

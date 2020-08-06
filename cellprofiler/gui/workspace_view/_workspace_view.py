@@ -11,11 +11,13 @@ from cellprofiler_core.preferences import IM_BILINEAR
 from cellprofiler_core.preferences import IM_NEAREST
 from cellprofiler_core.preferences import get_interpolation_mode
 
-import cellprofiler.gui.artist
-import cellprofiler.gui.figure
-import cellprofiler.gui.help
-import cellprofiler.gui.help.content
-import cellprofiler.gui.htmldialog
+from ..artist import INTERPOLATION_BILINEAR
+from ..artist import INTERPOLATION_NEAREST
+from ..artist import INTERPOLATION_BICUBIC
+from ..artist import MODE_HIDE
+from ..artist import CPImageArtist
+from ..help.content import FIGURE_HELP
+from ..htmldialog import HTMLDialog
 from ._workspace_view_figure import WorkspaceViewFigure
 from ._workspace_view_image_row import WorkspaceViewImageRow
 from ._workspace_view_mask_row import WorkspaceViewMaskRow
@@ -36,7 +38,7 @@ class WorkspaceView(object):
             parent,
             title="CellProfiler Workspace",
             secret_panel_class=wx.lib.scrolledpanel.ScrolledPanel,
-            help_menu_items=cellprofiler.gui.help.content.FIGURE_HELP,
+            help_menu_items=FIGURE_HELP,
         )
         self.workspace = workspace
         self.ignore_redraw = False
@@ -49,12 +51,12 @@ class WorkspaceView(object):
         self.axes.invert_yaxis()
         interpolation = get_interpolation_mode()
         if interpolation == IM_NEAREST:
-            interpolation = cellprofiler.gui.artist.INTERPOLATION_NEAREST
+            interpolation = INTERPOLATION_NEAREST
         elif interpolation == IM_BILINEAR:
-            interpolation = cellprofiler.gui.artist.INTERPOLATION_BILINEAR
+            interpolation = INTERPOLATION_BILINEAR
         else:
-            interpolation = cellprofiler.gui.artist.INTERPOLATION_BICUBIC
-        self.image = cellprofiler.gui.artist.CPImageArtist(interpolation=interpolation)
+            interpolation = INTERPOLATION_BICUBIC
+        self.image = CPImageArtist(interpolation=interpolation)
         assert isinstance(self.axes, matplotlib.axes.Axes)
         self.axes.add_artist(self.image)
         self.axes.set_aspect("equal")
@@ -202,11 +204,7 @@ class WorkspaceView(object):
         panel.Sizer.Add(help_button, 0, wx.ALIGN_RIGHT)
 
         def on_help(event):
-            cellprofiler.gui.htmldialog.HTMLDialog(
-                panel,
-                "Workspace viewer help",
-                cellprofiler.gui.help.WORKSPACE_VIEWER_HELP,
-            ).Show()
+            HTMLDialog(panel, "Workspace viewer help", "WORKSPACE_VIEWER_HELP",).Show()
 
         help_button.Bind(wx.EVT_BUTTON, on_help)
         self.image.add_to_menu(self.frame, self.frame.menu_subplots)
@@ -224,7 +222,7 @@ class WorkspaceView(object):
         if self.frame.navtoolbar.is_home():
             max_x = max_y = 0
             for image_row in self.image_rows:
-                if image_row.data.mode != cellprofiler.gui.artist.MODE_HIDE:
+                if image_row.data.mode != MODE_HIDE:
                     shape = image_row.data.pixel_data.shape
                     max_x = max(shape[1], max_x)
                     max_y = max(shape[0], max_y)

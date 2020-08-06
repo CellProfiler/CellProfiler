@@ -2,8 +2,6 @@ import wx
 import wx.lib
 import wx.lib.colourselect
 
-import cellprofiler.gui.workspace_view._workspace_view
-
 
 class WorkspaceViewMeasurementRow:
     """Container for measurement controls"""
@@ -28,12 +26,7 @@ class WorkspaceViewMeasurementRow:
         self.change_fn = on_change
         self.choice_panel = wx.Panel(panel)
         grid_sizer.Add(
-            self.choice_panel,
-            (
-                row_idx,
-                cellprofiler.gui.workspace_view._workspace_view.WorkspaceView.C_CHOOSER,
-            ),
-            flag=wx.EXPAND,
+            self.choice_panel, (row_idx, C_CHOOSER,), flag=wx.EXPAND,
         )
         self.choice_sizer = wx.BoxSizer(wx.VERTICAL)
         self.choice_panel.SetSizer(self.choice_sizer)
@@ -51,20 +44,14 @@ class WorkspaceViewMeasurementRow:
         self.font_button = wx.Button(panel, label="Font")
         grid_sizer.Add(
             self.font_button,
-            (
-                row_idx,
-                cellprofiler.gui.workspace_view._workspace_view.WorkspaceView.C_COLOR,
-            ),
+            (row_idx, C_COLOR,),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP,
         )
         self.font_button.Bind(wx.EVT_BUTTON, self.on_choose_font)
         self.show_ctrl = wx.CheckBox(panel)
         grid_sizer.Add(
             self.show_ctrl,
-            (
-                row_idx,
-                cellprofiler.gui.workspace_view._workspace_view.WorkspaceView.C_SHOW,
-            ),
+            (row_idx, C_SHOW,),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP,
         )
         #

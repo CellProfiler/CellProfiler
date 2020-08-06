@@ -155,6 +155,7 @@ import cellprofiler.gui.pipeline
 import cellprofiler.gui.workspace_view
 import cellprofiler.icons
 from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
+from .workspace_view import WorkspaceView
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
@@ -425,6 +426,12 @@ class PipelineController(object):
             wx.EVT_MENU,
             self.on_step_from_this_module,
             id=cellprofiler.gui.cpframe.ID_DEBUG_STEP_FROM_THIS_MODULE,
+        )
+
+        frame.Bind(
+            wx.EVT_MENU,
+            self.on_view_workspace,
+            id=cellprofiler.gui.cpframe.ID_DEBUG_VIEW_WORKSPACE,
         )
 
         frame.Bind(
@@ -3802,6 +3809,9 @@ class PipelineController(object):
         success = self.do_step(target_module)
         if success:
             self.next_debug_module()
+
+    def on_view_workspace(self, event):
+        workspace_view = WorkspaceView(self.__frame, self.__workspace)
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

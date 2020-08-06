@@ -1,6 +1,6 @@
 import wx
 
-from cellprofiler.gui.figure import Figure
+from ..figure import Figure
 
 
 class WorkspaceViewFigure(Figure):

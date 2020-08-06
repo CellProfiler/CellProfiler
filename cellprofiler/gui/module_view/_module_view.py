@@ -54,7 +54,7 @@ from cellprofiler_core.setting.multichoice import SubscriberMultiChoice
 from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.range import IntegerOrUnboundedRange
 from cellprofiler_core.setting.range import IntegerRange
-from cellprofiler_core.setting.subscriber import ImageListSubscriber, LabelSubscriber
+from cellprofiler_core.setting.subscriber import ImageListSubscriber, LabelSubscriber, GridSubscriber
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.subscriber import LabelListSubscriber
 from cellprofiler_core.setting.text import Directory
@@ -366,7 +366,7 @@ class ModuleView:
                         v, choices, control_name, control
                     )
                     flag = wx.EXPAND
-                elif isinstance(v, (ImageSubscriber, LabelSubscriber)):
+                elif isinstance(v, (ImageSubscriber, LabelSubscriber, GridSubscriber)):
                     choices = v.get_choices(self.__pipeline)
                     control = self.make_name_subscriber_control(
                         v, choices, control_name, control

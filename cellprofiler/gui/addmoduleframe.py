@@ -30,14 +30,8 @@ class AddModuleFrame(wx.Frame):
             left_panel, -1, "Module Categories", style=wx.ALIGN_CENTER
         )
         font = module_categories_text.GetFont()
-        module_categories_text.SetFont(
-            wx.Font(
-                font.GetPointSize() * 1.2,
-                font.GetFamily(),
-                font.GetStyle(),
-                wx.FONTWEIGHT_BOLD,
-            )
-        )
+        font.SetWeight(wx.FONTWEIGHT_BOLD)
+        module_categories_text.SetFont(font)
         self.__module_categories_list_box = wx.ListBox(left_panel, -1)
         # Control panel for the selected module
         selected_module_panel = wx.Panel(left_panel, -1)

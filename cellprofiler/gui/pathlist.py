@@ -583,12 +583,9 @@ class PathListCtrl(wx.ScrolledWindow):
             self.recalc()
         width, height = self.GetSize()
         rn = wx.RendererNative.Get()
-        background_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
-        background_brush = wx.Brush(background_color)
-        paint_dc.SetBrush(background_brush)
+        paint_dc.SetBackground(wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)))
         paint_dc.Clear()
         paint_dc.SetFont(self.GetFont())
-        paint_dc.SetBackgroundMode(wx.PENSTYLE_TRANSPARENT)
         has_focus = self.FindFocus() == self
         if has_focus:
             dir_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HOTLIGHT)
@@ -604,9 +601,8 @@ class PathListCtrl(wx.ScrolledWindow):
                 wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
             )
             paint_dc.SetFont(font)
-            text_width, text_height = paint_dc.GetTextExtent(text)
-            paint_dc.DrawText(
-                text, (width - text_width) / 2, (height - text_height) / 2
+            paint_dc.DrawLabel(
+                text, wx.Bitmap(), wx.Rect(self.GetSize()), alignment=wx.ALIGN_CENTER,
             )
             paint_dc.SetFont(self.GetFont())
 
@@ -691,9 +687,6 @@ class PathListCtrl(wx.ScrolledWindow):
                         yy,
                     )
         finally:
-            paint_dc.SetBrush(wx.NullBrush)
-            paint_dc.SetFont(wx.NullFont)
-            background_brush.Destroy()
             paint_dc.Destroy()
 
     def refresh_item(self, idx):

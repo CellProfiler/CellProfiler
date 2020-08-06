@@ -55,7 +55,7 @@ def make_workspace(image, mask=None, dimensions=2):
 
 
 def test_write_a_test_for_the_new_variable_revision_please():
-    assert cellprofiler.modules.threshold.Threshold.variable_revision_number == 10
+    assert cellprofiler.modules.threshold.Threshold.variable_revision_number == 11
 
 
 def test_load_v7():
@@ -185,6 +185,34 @@ def test_load_v10():
     assert module.adaptive_window_size == 50
     assert module.local_operation.value == centrosome.threshold.TM_OTSU
 
+
+def test_load_v11():
+    file = tests.modules.test_resources_directory("threshold/v11.pipeline")
+    with open(file, "r") as fd:
+        data = fd.read()
+
+    fd = io.StringIO(data)
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline.loadtxt(fd)
+    module = pipeline.modules()[-1]
+    assert isinstance(module, cellprofiler.modules.threshold.Threshold)
+    assert module.x_name == "DNA"
+    assert module.y_name == "Threshold"
+    assert module.threshold_scope == cellprofiler.modules.threshold.TS_ADAPTIVE
+    assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+    assert module.threshold_smoothing_scale == 0.01
+    assert module.threshold_correction_factor == 2
+    assert module.threshold_range.min == 0.01
+    assert module.threshold_range.max == 0.9
+    assert module.manual_threshold == 0.0
+    assert module.thresholding_measurement == "None"
+    assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
+    assert (
+        module.assign_middle_to_foreground
+        == cellprofiler.modules.threshold.O_FOREGROUND
+    )
+    assert module.adaptive_window_size == 51
+    assert module.local_operation.value == cellprofiler.modules.threshold.TM_SAUVOLA
 
 def test_binary_manual():
     """Test a binary threshold with manual threshold value"""

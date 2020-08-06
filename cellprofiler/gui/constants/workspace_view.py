@@ -1,0 +1,4 @@
+C_CHOOSER = 0
+C_COLOR = 1
+C_SHOW = 2
+C_REMOVE = 3

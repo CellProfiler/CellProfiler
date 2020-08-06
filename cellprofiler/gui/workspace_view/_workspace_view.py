@@ -1,4 +1,5 @@
 import matplotlib
+import matplotlib.axes
 import numpy
 import wx
 import wx.lib.scrolledpanel
@@ -16,6 +17,10 @@ from ..artist import INTERPOLATION_NEAREST
 from ..artist import INTERPOLATION_BICUBIC
 from ..artist import MODE_HIDE
 from ..artist import CPImageArtist
+from ..constants.workspace_view import C_CHOOSER
+from ..constants.workspace_view import C_COLOR
+from ..constants.workspace_view import C_SHOW
+from ..constants.workspace_view import C_REMOVE
 from ..help.content import FIGURE_HELP
 from ..htmldialog import HTMLDialog
 from ._workspace_view_figure import WorkspaceViewFigure
@@ -28,11 +33,6 @@ __the_workspace_viewer = None
 
 
 class WorkspaceView(object):
-    C_CHOOSER = 0
-    C_COLOR = 1
-    C_SHOW = 2
-    C_REMOVE = 3
-
     def __init__(self, parent, workspace):
         self.frame = WorkspaceViewFigure(
             parent,
@@ -75,22 +75,22 @@ class WorkspaceView(object):
         sub_sizer.Add(self.image_grid, 0, wx.ALIGN_LEFT)
         self.image_grid.Add(
             wx.StaticText(panel, label="Images"),
-            (0, self.C_CHOOSER),
+            (0, C_CHOOSER),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.image_grid.Add(
             wx.StaticText(panel, label="Color"),
-            (0, self.C_COLOR),
+            (0, C_COLOR),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.image_grid.Add(
             wx.StaticText(panel, label="Show"),
-            (0, self.C_SHOW),
+            (0, C_SHOW),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.image_grid.Add(
             wx.StaticText(panel, label="Remove"),
-            (0, self.C_REMOVE),
+            (0, C_REMOVE),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.add_image_row(can_delete=False)
@@ -109,22 +109,22 @@ class WorkspaceView(object):
         sub_sizer.Add(self.object_grid, 0, wx.ALIGN_LEFT)
         self.object_grid.Add(
             wx.StaticText(panel, label="Objects"),
-            (0, self.C_CHOOSER),
+            (0, C_CHOOSER),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.object_grid.Add(
             wx.StaticText(panel, label="Color"),
-            (0, self.C_COLOR),
+            (0, C_COLOR),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.object_grid.Add(
             wx.StaticText(panel, label="Show"),
-            (0, self.C_SHOW),
+            (0, C_SHOW),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.object_grid.Add(
             wx.StaticText(panel, label="Remove"),
-            (0, self.C_REMOVE),
+            (0, C_REMOVE),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.add_objects_row(can_delete=False)
@@ -143,22 +143,22 @@ class WorkspaceView(object):
         sub_sizer.Add(self.mask_grid, 0, wx.ALIGN_LEFT)
         self.mask_grid.Add(
             wx.StaticText(panel, label="Masks"),
-            (0, self.C_CHOOSER),
+            (0, C_CHOOSER),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.mask_grid.Add(
             wx.StaticText(panel, label="Color"),
-            (0, self.C_COLOR),
+            (0, C_COLOR),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.mask_grid.Add(
             wx.StaticText(panel, label="Show"),
-            (0, self.C_SHOW),
+            (0, C_SHOW),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.mask_grid.Add(
             wx.StaticText(panel, label="Remove"),
-            (0, self.C_REMOVE),
+            (0, C_REMOVE),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.add_mask_row(can_delete=False)
@@ -177,22 +177,22 @@ class WorkspaceView(object):
         sub_sizer.Add(self.m_grid, 0, wx.ALIGN_LEFT)
         self.m_grid.Add(
             wx.StaticText(panel, label="Measurement"),
-            (0, self.C_CHOOSER),
+            (0, C_CHOOSER),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.m_grid.Add(
             wx.StaticText(panel, label="Font"),
-            (0, self.C_COLOR),
+            (0, C_COLOR),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.m_grid.Add(
             wx.StaticText(panel, label="Show"),
-            (0, self.C_SHOW),
+            (0, C_SHOW),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.m_grid.Add(
             wx.StaticText(panel, label="Remove"),
-            (0, self.C_REMOVE),
+            (0, C_REMOVE),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_BOTTOM,
         )
         self.add_measurement_row(can_delete=False)
@@ -277,10 +277,10 @@ class WorkspaceView(object):
         )
         vw_row = row_class(self, color, can_delete)
 
-        grid_sizer.Add(vw_row.chooser, (row, self.C_CHOOSER), flag=wx.EXPAND)
-        grid_sizer.Add(vw_row.color_ctrl, (row, self.C_COLOR), flag=wx.EXPAND)
-        grid_sizer.Add(vw_row.show_check, (row, self.C_SHOW), flag=wx.ALIGN_CENTER)
-        grid_sizer.Add(vw_row.remove_button, (row, self.C_REMOVE), flag=wx.ALIGN_CENTER)
+        grid_sizer.Add(vw_row.chooser, (row, C_CHOOSER), flag=wx.EXPAND)
+        grid_sizer.Add(vw_row.color_ctrl, (row, C_COLOR), flag=wx.EXPAND)
+        grid_sizer.Add(vw_row.show_check, (row, C_SHOW), flag=wx.ALIGN_CENTER)
+        grid_sizer.Add(vw_row.remove_button, (row, C_REMOVE), flag=wx.ALIGN_CENTER)
         rows.append(vw_row)
         if can_delete:
 
@@ -346,7 +346,7 @@ class WorkspaceView(object):
         remove_button = wx.BitmapButton(panel, bitmap=bitmap)
         self.m_grid.Add(
             remove_button,
-            (row_idx, self.C_REMOVE),
+            (row_idx, C_REMOVE),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP,
         )
         remove_button.Bind(
@@ -364,7 +364,7 @@ class WorkspaceView(object):
             remove_button.Destroy()
             self.measurement_rows.remove(measurement_row)
             for ii in range(idx, len(self.measurement_rows)):
-                for j in (self.C_CHOOSER, self.C_COLOR, self.C_SHOW, self.C_REMOVE):
+                for j in (C_CHOOSER, C_COLOR, C_SHOW, C_REMOVE):
                     item = self.m_grid.FindItemAtPosition(wx.GBPosition(ii + 1, j))
                     self.m_grid.SetItemPosition(item, (ii, j))
             self.layout()

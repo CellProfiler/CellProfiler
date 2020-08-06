@@ -2,6 +2,10 @@ import wx
 import wx.lib
 import wx.lib.colourselect
 
+from ..constants.workspace_view import C_CHOOSER
+from ..constants.workspace_view import C_COLOR
+from ..constants.workspace_view import C_SHOW
+
 
 class WorkspaceViewMeasurementRow:
     """Container for measurement controls"""

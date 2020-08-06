@@ -41,9 +41,6 @@ class AddModuleFrame(wx.Frame):
         self.__module_categories_list_box = wx.ListBox(left_panel, -1)
         # Control panel for the selected module
         selected_module_panel = wx.Panel(left_panel, -1)
-        selected_module_static_box = wx.StaticBox(
-            selected_module_panel, -1, "For Selected Module"
-        )
         add_to_pipeline_button = wx.Button(
             selected_module_panel, -1, "+ Add to Pipeline"
         )

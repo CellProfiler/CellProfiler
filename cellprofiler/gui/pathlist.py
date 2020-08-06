@@ -687,8 +687,6 @@ class PathListCtrl(wx.ScrolledWindow):
                         yy,
                     )
         finally:
-            paint_dc.SetBrush(wx.NullBrush)
-            paint_dc.SetFont(wx.NullFont)
             paint_dc.Destroy()
 
     def refresh_item(self, idx):

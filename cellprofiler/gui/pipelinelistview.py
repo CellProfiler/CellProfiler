@@ -1079,7 +1079,7 @@ class PipelineListView(object):
         list_ctrl.SetItemState(index, flags, PLV_STATE_ERROR_MASK)
 
 
-PIPELINE_DATA_FORMAT = "cellprofiler_core.pipeline"
+PIPELINE_DATA_FORMAT = "application.cellprofiler.pipeline"
 
 
 class PipelineDataObject(wx.CustomDataObject):

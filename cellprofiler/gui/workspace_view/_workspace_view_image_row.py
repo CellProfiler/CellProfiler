@@ -14,9 +14,9 @@ from ..utilities.workspace_view import bind_data_class
 
 
 class WorkspaceViewImageRow(WorkspaceViewRow):
-    def __init__(self, vw, color, can_delete):
-        super(WorkspaceViewImageRow, self).__init__(vw, color, can_delete)
-        image_set = vw.workspace.image_set
+    def __init__(self, workspace_view, color, can_delete):
+        super(WorkspaceViewImageRow, self).__init__(workspace_view, color, can_delete)
+        image_set = workspace_view.workspace.image_set
         name = self.chooser.GetStringSelection()
 
         im = get_intensity_mode()
@@ -26,8 +26,8 @@ class WorkspaceViewImageRow(WorkspaceViewRow):
             normalization = NORMALIZE_LINEAR
         else:
             normalization = NORMALIZE_RAW
-        alpha = 1.0 / (len(vw.image_rows) + 1.0)
-        self.data = bind_data_class(ImageData, self.color_ctrl, vw.redraw)(
+        alpha = 1.0 / (len(workspace_view.image_rows) + 1.0)
+        self.data = bind_data_class(ImageData, self.color_ctrl, workspace_view.redraw)(
             name,
             None,
             mode=MODE_HIDE,
@@ -36,14 +36,14 @@ class WorkspaceViewImageRow(WorkspaceViewRow):
             alpha=alpha,
             normalization=normalization,
         )
-        vw.image.add(self.data)
+        workspace_view.image.add(self.data)
         self.last_mode = MODE_COLORIZE
 
     def get_names(self):
-        return self.vw.workspace.image_set.names
+        return self.workspace_view.workspace.image_set.names
 
     def update_data(self, name):
         """Update the image data from the workspace"""
-        image_set = self.vw.workspace.image_set
+        image_set = self.workspace_view.workspace.image_set
         image = image_set.get_image(name)
         self.data.pixel_data = image.pixel_data

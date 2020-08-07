@@ -29,10 +29,8 @@ from ._workspace_view_mask_row import WorkspaceViewMaskRow
 from ._workspace_view_measurement_row import WorkspaceViewMeasurementRow
 from ._workspace_view_objects_row import WorkspaceViewObjectsRow
 
-__the_workspace_viewer = None
 
-
-class WorkspaceView(object):
+class WorkspaceView:
     def __init__(self, parent, workspace):
         self.frame = WorkspaceViewFigure(
             parent,
@@ -380,6 +378,7 @@ class WorkspaceView(object):
         """Rebuild the workspace control panel"""
         self.workspace = workspace
         self.ignore_redraw = True
+
         try:
             self.update_menu(self.frame.menu_subplots)
             self.update_choices(self.image_rows)
@@ -389,6 +388,7 @@ class WorkspaceView(object):
                 measurement_row.update(workspace)
         finally:
             self.ignore_redraw = False
+
         self.redraw()
 
     def update_menu(self, menu):

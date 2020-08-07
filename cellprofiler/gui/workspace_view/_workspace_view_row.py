@@ -7,9 +7,9 @@ from ..artist import MODE_HIDE
 class WorkspaceViewRow:
     """A row of controls and a data item"""
 
-    def __init__(self, vw, color, can_delete):
-        self.vw = vw
-        panel = vw.panel
+    def __init__(self, workspace_view, color, can_delete):
+        self.workspace_view = workspace_view
+        panel = workspace_view.panel
         self.chooser = wx.Choice(panel)
         self.color_ctrl = wx.lib.colourselect.ColourSelect(panel, colour=color)
         self.show_check = wx.CheckBox(panel)
@@ -21,6 +21,7 @@ class WorkspaceViewRow:
         self.color_ctrl.Bind(wx.lib.colourselect.EVT_COLOURSELECT, self.on_color_change)
         self.show_check.Bind(wx.EVT_CHECKBOX, self.on_check_change)
         self.update_chooser(first=True)
+        self.last_mode = None
 
     @property
     def color(self):
@@ -29,19 +30,19 @@ class WorkspaceViewRow:
 
     def on_choice(self, event):
         self.data.name = self.chooser.GetStringSelection()
-        self.vw.redraw()
+        self.workspace_view.redraw()
 
     def on_color_change(self, event):
         self.data.color = tuple([float(c) / 255.0 for c in self.color_ctrl.GetColour()])
-        self.vw.redraw()
+        self.workspace_view.redraw()
 
     def on_check_change(self, event):
-        self.vw.redraw()
+        self.workspace_view.redraw()
 
     def update(self):
         name = self.chooser.GetStringSelection()
         names = sorted(self.get_names())
-        image_set = self.vw.workspace.image_set
+        image_set = self.workspace_view.workspace.image_set
         if self.show_check.IsChecked() and name in names:
             self.data.name = name
             self.update_data(name)
@@ -65,3 +66,12 @@ class WorkspaceViewRow:
         if first and len(names) > 0:
             name = names[0]
             self.chooser.SetStringSelection(name)
+
+    def get_names(self):
+        return []
+
+    def data(self):
+        pass
+
+    def update_data(self, name):
+        pass

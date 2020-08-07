@@ -10,11 +10,13 @@ from ..utilities.workspace_view import bind_data_class
 class WorkspaceViewObjectsRow(WorkspaceViewRow):
     """A row of controls for controlling objects"""
 
-    def __init__(self, vw, color, can_delete):
-        super(WorkspaceViewObjectsRow, self).__init__(vw, color, can_delete)
+    def __init__(self, workspace_view, color, can_delete):
+        super(WorkspaceViewObjectsRow, self).__init__(workspace_view, color, can_delete)
         self.update_chooser(first=True)
         name = self.chooser.GetStringSelection()
-        self.data = bind_data_class(ObjectsData, self.color_ctrl, vw.redraw)(
+        self.data = bind_data_class(
+            ObjectsData, self.color_ctrl, workspace_view.redraw
+        )(
             name,
             None,
             outline_color=self.color,
@@ -22,14 +24,14 @@ class WorkspaceViewObjectsRow(WorkspaceViewRow):
             alpha=0.5,
             mode=MODE_HIDE,
         )
-        vw.image.add(self.data)
+        workspace_view.image.add(self.data)
         self.last_mode = MODE_LINES
 
     def get_names(self):
-        object_set = self.vw.workspace.object_set
+        object_set = self.workspace_view.workspace.object_set
         return object_set.get_object_names()
 
     def update_data(self, name):
-        object_set = self.vw.workspace.object_set
+        object_set = self.workspace_view.workspace.object_set
         objects = object_set.get_objects(name)
         self.data.labels = [l for l, i in objects.get_labels()]

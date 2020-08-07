@@ -172,6 +172,7 @@ class PipelineController(object):
 
     def __init__(self, workspace, frame):
         self.__workspace = workspace
+
         pipeline = self.__pipeline = workspace.pipeline
         pipeline.add_listener(self.__on_pipeline_event)
         self.__analysis = None
@@ -456,6 +457,8 @@ class PipelineController(object):
         from bioformats.formatreader import set_omero_login_hook
 
         set_omero_login_hook(self.omero_login)
+
+        self.workspace_view = None
 
     def start(self, workspace_file, pipeline_path):
         """Do initialization after GUI hookup
@@ -3235,7 +3238,7 @@ class PipelineController(object):
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.gui.pipeline.Pipeline)
         self.__debug_image_set_list = ImageSetList(True)
-        workspace = cellprofiler.gui._workspace_model.Workspace(
+        workspace_model = cellprofiler.gui._workspace_model.Workspace(
             self.__pipeline,
             None,
             None,
@@ -3245,16 +3248,18 @@ class PipelineController(object):
             self.__frame,
         )
         try:
-            workspace.set_file_list(self.__workspace.file_list)
-            self.__keys, self.__groupings = self.__pipeline.get_groupings(workspace)
+            workspace_model.set_file_list(self.__workspace.file_list)
+            self.__keys, self.__groupings = self.__pipeline.get_groupings(
+                workspace_model
+            )
 
             self.__grouping_index = 0
             self.__within_group_index = 0
             self.__pipeline.prepare_group(
-                workspace, self.__groupings[0][0], self.__groupings[0][1]
+                workspace_model, self.__groupings[0][0], self.__groupings[0][1]
             )
         finally:
-            workspace.set_file_list(None)
+            workspace_model.set_file_list(None)
         self.__debug_outlines = {}
         if not self.debug_init_imageset():
             self.stop_debugging()
@@ -3302,7 +3307,7 @@ class PipelineController(object):
             self.__debug_measurements.add_image_measurement(
                 "Group_Length", len(self.__groupings[self.__grouping_index][1])
             )
-            workspace = cellprofiler.gui._workspace_model.Workspace(
+            workspace_model = cellprofiler.gui._workspace_model.Workspace(
                 self.__pipeline,
                 module,
                 self.__debug_measurements,
@@ -3312,7 +3317,7 @@ class PipelineController(object):
                 self.__frame if module.show_window else None,
                 outlines=self.__debug_outlines,
             )
-            self.__debug_grids = workspace.set_grids(self.__debug_grids)
+            self.__debug_grids = workspace_model.set_grids(self.__debug_grids)
             cancelled = [False]
 
             def cancel_handler(cancelled=None):
@@ -3320,18 +3325,18 @@ class PipelineController(object):
                     cancelled = []
                 cancelled[0] = True
 
-            workspace.cancel_handler = cancel_handler
-            self.__pipeline.run_module(module, workspace)
+            workspace_model.cancel_handler = cancel_handler
+            self.__pipeline.run_module(module, workspace_model)
             if cancelled[0]:
                 self.__frame.SetCursor(old_cursor)
                 return False
 
             if module.show_window:
-                fig = workspace.get_module_figure(module, image_set_number)
-                module.display(workspace, fig)
+                fig = workspace_model.get_module_figure(module, image_set_number)
+                module.display(workspace_model, fig)
                 fig.Refresh()
-            workspace.refresh()
-            if workspace.disposition == DISPOSITION_SKIP:
+            workspace_model.refresh()
+            if workspace_model.disposition == DISPOSITION_SKIP:
                 self.last_debug_module()
             elif (
                 module.module_num < len(self.__pipeline.modules())
@@ -3340,8 +3345,7 @@ class PipelineController(object):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
 
-            # TODO: wire up Workerspace View
-            # cellprofiler.gui.utilities.workspace_view.update_workspace_viewer(workspace)
+            self.workspace_view.set_workspace(workspace_model)
         except Exception as instance:
             logging.error("Failed to run module %s", module.module_name, exc_info=True)
             event = RunException(instance, module)
@@ -3500,7 +3504,7 @@ class PipelineController(object):
     def debug_choose_group(self, index):
         self.__grouping_index = index
         self.__within_group_index = 0
-        workspace = cellprofiler.gui._workspace_model.Workspace(
+        workspace_model = cellprofiler.gui._workspace_model.Workspace(
             self.__pipeline,
             None,
             None,
@@ -3511,7 +3515,7 @@ class PipelineController(object):
         )
 
         self.__pipeline.prepare_group(
-            workspace,
+            workspace_model,
             self.__groupings[self.__grouping_index][0],
             self.__groupings[self.__grouping_index][1],
         )
@@ -3811,7 +3815,11 @@ class PipelineController(object):
             self.next_debug_module()
 
     def on_view_workspace(self, event):
-        workspace_view = WorkspaceView(self.__frame, self.__workspace)
+        self.workspace_view = WorkspaceView(self.__frame, self.__workspace)
+
+        self.workspace_view.set_workspace(self.__workspace)
+
+        self.workspace_view.frame.Show()
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

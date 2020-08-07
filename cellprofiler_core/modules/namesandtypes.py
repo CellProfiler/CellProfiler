@@ -2,6 +2,7 @@
 
 import logging
 import re
+from collections import Counter
 
 import javabridge
 import numpy
@@ -1729,7 +1730,8 @@ requests an object selection.
         """
         if len(errors) == 0:
             return True
-
+        error_counts = Counter()
+        error_types = Counter()
         for error in errors:
             key = " / ".join(
                 javabridge.get_collection_wrapper(
@@ -1743,16 +1745,29 @@ requests an object selection.
                 "Error for image set, channel=%s, metadata=%s: %s"
                 % (str(key), echannel, message)
             )
+            if message.endswith("has no match"):
+                error_types["had unmatched images"] += 1
+            elif message.endswith("missing from channel"):
+                error_types["had missing images"] += 1
+            elif message.endswith("Duplicate entries"):
+                error_types["had duplicate matches"] += 1
+            else:
+                error_types["encountered other errors"] += 1
+            error_counts[echannel] += 1
         if not get_headless():
-            msg = (
-                "Warning: %d image set errors found (see log for details)\n"
-                "Do you want to continue?"
-            ) % (errors.size())
+            msg = f"Warning: found {errors.size()} image set errors (see log for details)\n \n"
+            for key, value in error_types.items():
+                msg += f"- {value} {key}.\n"
+            msg += "\nOf these:\n"
+            for key, value in error_counts.items():
+                msg += f"\n- {value} errors were in the '{key}' channel."
+            msg += "\n \nDo you want to continue?"
+
             import wx
 
             result = wx.MessageBox(
                 msg,
-                caption="NamesAndTypes: matching by order error",
+                caption="NamesAndTypes: image set matching error",
                 style=wx.YES_NO | wx.ICON_QUESTION,
             )
             if result == wx.NO:

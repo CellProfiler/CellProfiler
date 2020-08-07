@@ -586,7 +586,17 @@ store images in the subfolder, "*date*\/*plate-name*".""",
 
         image = workspace.image_set.get_image(self.image_name.value)
         pixels = image.pixel_data
-        pixels = pixels * 255
+        if self.get_bit_depth() == BIT_DEPTH_8:
+            pixels = skimage.util.img_as_ubyte(pixels)
+            pixel_type = bioformats.omexml.PT_UINT8
+        elif self.get_bit_depth() == BIT_DEPTH_16:
+            pixels = skimage.util.img_as_uint(pixels)
+            pixel_type = bioformats.omexml.PT_UINT16
+        elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
+            pixels = skimage.util.img_as_float(pixels).astype(numpy.float32)
+            pixel_type = bioformats.omexml.PT_FLOAT
+        else:
+            raise ValueError("Bit depth unsupported in movie mode")
         frames = d["N_FRAMES"]
         current_frame = d["CURRENT_FRAME"]
         d["CURRENT_FRAME"] += 1
@@ -594,7 +604,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             workspace,
             out_file,
             pixels,
-            bioformats.omexml.PT_UINT8,
+            pixel_type,
             t=current_frame,
             size_t=frames,
         )
@@ -883,10 +893,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         return self.file_format.value
 
     def get_bit_depth(self):
-        if self.save_image_or_figure == IF_IMAGE and self.get_file_format() in (
-            FF_TIFF,
-            FF_H5,
-        ):
+        if self.save_image_or_figure in (IF_IMAGE, IF_MOVIE) and self.get_file_format() in (FF_TIFF, FF_H5):
             return self.bit_depth.value
         else:
             return BIT_DEPTH_8

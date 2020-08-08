@@ -716,6 +716,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             target = numpy.fliplr(target)
         if self.axes.viewLim.height < 0:
             target = numpy.flipud(target)
+        # Todo: replace this
         im = matplotlib.image.fromarray(target[:, :, :3], 0)
         im.is_grayscale = False
         im.set_interpolation(self.mp_interpolation)
@@ -830,7 +831,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         )
         for start, item in enumerate(menu_items):
             assert isinstance(item, wx.MenuItem)
-            if item.Label == self.MI_INTERPOLATION:
+            if item.ItemLabel == self.MI_INTERPOLATION:
                 break
         else:
             return
@@ -862,7 +863,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                         # otherwise bad things happen on Mac
                         # Can't have blank name and non-stock ID
                         name = " "
-                    sub_menu_item = menu.InsertMenu(idx, my_id, name, sub_menu)
+                    sub_menu_item = menu.Insert(idx, my_id, name, sub_menu)
                     if data.mode == MODE_HIDE:
                         sub_menu_item.Enable(False)
                     menu_items.insert(idx, sub_menu_item)

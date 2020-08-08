@@ -35,7 +35,7 @@ def bind_data_class(data_class, color_select, fn_redraw):
         def _on_color_changed(self):
             super(bdc, self)._on_color_changed()
             r, g, b = [int(x * 255) for x in self.color]
-            rold, gold, bold = self.color_select.GetColour()
+            rold, gold, bold, alpha = self.color_select.GetColour()
             if r != rold or g != gold or b != bold:
                 self.color_select.SetColour(wx.Colour(r, g, b))
 

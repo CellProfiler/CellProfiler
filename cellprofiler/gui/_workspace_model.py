@@ -16,14 +16,18 @@ class Workspace(workspace.Workspace):
             title = self.__module.module_name
 
         if window_name is None:
-            window_name = cellprofiler.gui.figure.window_name(self.__module)
+            from .utilities.figure import window_name
+
+            window_name = window_name(self.__module)
 
         if self.__create_new_window:
-            figure = cellprofiler.gui.figure.Figure(
+            figure = cellprofiler.gui.figure.figure.Figure(
                 parent=self, title=title, name=window_name, subplots=subplots
             )
         else:
-            figure = cellprofiler.gui.figure.create_or_find(
+            from .utilities.figure import create_or_find
+
+            figure = create_or_find(
                 self.__frame, title=title, name=window_name, subplots=subplots
             )
 
@@ -35,7 +39,9 @@ class Workspace(workspace.Workspace):
     def get_module_figure(self, module, image_set_number, parent=None):
         assert not self.__in_background
 
-        window_name = cellprofiler.gui.figure.window_name(module)
+        from .utilities.figure import window_name
+
+        window_name = window_name(module)
 
         if self.measurements.has_feature(EXPERIMENT, M_GROUPING_TAGS,):
             group_number = self.measurements[
@@ -59,13 +65,16 @@ class Workspace(workspace.Workspace):
             )
 
         if self.__create_new_window:
-            figure = cellprofiler.gui.figure.Figure(
+            figure = cellprofiler.gui.figure.figure.Figure(
                 parent=parent or self.__frame, name=window_name, title=title
             )
         else:
-            figure = cellprofiler.gui.figure.create_or_find(
+            from .utilities.figure import create_or_find
+
+            figure = create_or_find(
                 parent=parent or self.__frame, name=window_name, title=title
             )
+
             figure.Title = title
 
         if figure not in self.__windows_used:

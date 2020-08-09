@@ -1,20 +1,12 @@
-# coding=utf-8
-
-"""
-figure.py - provides a frame with a figure inside
-"""
-
 import csv
-import functools
 import logging
 import os
 import sys
+import textwrap
 import uuid
-from textwrap import fill
 
 import centrosome.cpmorphology
 import centrosome.outline
-import javabridge
 import matplotlib
 import matplotlib.axes
 import matplotlib.backend_bases
@@ -34,303 +26,78 @@ import scipy.sparse
 import skimage.exposure
 import wx
 import wx.grid
-from cellprofiler_core.image import FileImage
-from cellprofiler_core.preferences import (
-    reset_cpfigure_position,
-    get_interpolation_mode,
-    IM_NEAREST,
-    IM_BILINEAR,
-    IM_BICUBIC,
-    get_next_cpfigure_position,
-    get_title_font_name,
-    get_title_font_size,
-    get_normalization_factor,
-    get_primary_outline_color,
-    get_secondary_outline_color,
-    get_tertiary_outline_color,
-    get_default_colormap,
-    INTENSITY_MODE_GAMMA,
-    INTENSITY_MODE_LOG,
-    INTENSITY_MODE_RAW,
-    get_intensity_mode,
-)
+import wx.lib.intctrl
+import wx.lib.masked
+from cellprofiler_core.preferences import INTENSITY_MODE_GAMMA
+from cellprofiler_core.preferences import INTENSITY_MODE_LOG
+from cellprofiler_core.preferences import INTENSITY_MODE_RAW
+from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.preferences import get_intensity_mode
+from cellprofiler_core.preferences import get_next_cpfigure_position
+from cellprofiler_core.preferences import get_normalization_factor
+from cellprofiler_core.preferences import get_primary_outline_color
+from cellprofiler_core.preferences import get_secondary_outline_color
+from cellprofiler_core.preferences import get_tertiary_outline_color
+from cellprofiler_core.preferences import get_title_font_name
+from cellprofiler_core.preferences import get_title_font_size
 from cellprofiler_core.utilities.core.object import overlay_labels
-from numpy.ma import MaskedArray
-from wx.lib.intctrl import IntCtrl
-from wx.lib.masked import NumCtrl, EVT_NUM
 
-import cellprofiler.gui
-import cellprofiler.gui.artist
-import cellprofiler.gui.errordialog
-import cellprofiler.gui.help
-import cellprofiler.gui.help.content
-import cellprofiler.gui.tools
+from ._navigation_toolbar import NavigationToolbar
+from ._outline_artist import OutlineArtist
+from ..artist import CPImageArtist
+from ..constants.figure import COLOR_NAMES
+from ..constants.figure import CPLDM_ALPHA
+from ..constants.figure import CPLDM_LINES
+from ..constants.figure import CPLDM_NONE
+from ..constants.figure import CPLDM_OUTLINES
+from ..constants.figure import CPLD_ALPHA_COLORMAP
+from ..constants.figure import CPLD_ALPHA_VALUE
+from ..constants.figure import CPLD_LABELS
+from ..constants.figure import CPLD_LINE_WIDTH
+from ..constants.figure import CPLD_MODE
+from ..constants.figure import CPLD_NAME
+from ..constants.figure import CPLD_OUTLINE_COLOR
+from ..constants.figure import CPLD_SHOW
+from ..constants.figure import EVT_NAV_MODE_CHANGE
+from ..constants.figure import MATPLOTLIB_FILETYPES
+from ..constants.figure import MATPLOTLIB_UNSUPPORTED_FILETYPES
+from ..constants.figure import MENU_CLOSE_ALL
+from ..constants.figure import MENU_CLOSE_WINDOW
+from ..constants.figure import MENU_FILE_SAVE
+from ..constants.figure import MENU_FILE_SAVE_TABLE
+from ..constants.figure import MENU_LABELS_ALPHA
+from ..constants.figure import MENU_LABELS_LINES
+from ..constants.figure import MENU_LABELS_OFF
+from ..constants.figure import MENU_LABELS_OUTLINE
+from ..constants.figure import MENU_LABELS_OVERLAY
+from ..constants.figure import MENU_RGB_CHANNELS
+from ..constants.figure import MENU_SAVE_SUBPLOT
+from ..constants.figure import MENU_TOOLS_MEASURE_LENGTH
+from ..constants.figure import MODE_MEASURE_LENGTH
+from ..constants.figure import MODE_NONE
+from ..constants.figure import NAV_MODE_NONE
+from ..constants.figure import WINDOW_IDS
+from ..help import make_help_menu
+from ..help.content import FIGURE_HELP
+from ..tools import renumber_labels_for_display
+from ..utilities.figure import allow_sharexy
+from ..utilities.figure import close_all
+from ..utilities.figure import create_or_find
+from ..utilities.figure import find_fig
+from ..utilities.figure import format_plate_data_as_array
+from ..utilities.figure import get_matplotlib_interpolation_preference
+from ..utilities.figure import get_menu_id
+from ..utilities.figure import is_color_image
+from ..utilities.figure import match_rgbmask_to_image
+from ..utilities.figure import wraparound
+from ..utilities.icon import get_cp_icon
 
-#
-# Monkey-patch the backend canvas to only report the truly supported filetypes
-#
-mpl_filetypes = ["png", "pdf"]
+for filetype in matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes:
+    if filetype not in MATPLOTLIB_FILETYPES:
+        MATPLOTLIB_UNSUPPORTED_FILETYPES.append(filetype)
 
-mpl_unsupported_filetypes = [
-    ft
-    for ft in matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes
-    if ft not in mpl_filetypes
-]
-for ft in mpl_unsupported_filetypes:
-    del matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes[ft]
-
-
-COLOR_NAMES = ["Red", "Green", "Blue", "Yellow", "Cyan", "Magenta", "White"]
-COLOR_VALS = [
-    [1, 0, 0],
-    [0, 1, 0],
-    [0, 0, 1],
-    [1, 1, 0],
-    [0, 1, 1],
-    [1, 0, 1],
-    [1, 1, 1],
-]
-
-"""subplot_imshow cplabels dictionary key: segmentation labels image"""
-CPLD_LABELS = "labels"
-"""subplot_imshow cplabels dictionary key: objects name"""
-CPLD_NAME = "name"
-"""subplot_imshow cplabels dictionary key: color to use for outlines"""
-CPLD_OUTLINE_COLOR = "outline_color"
-"""subplot_imshow cplabels dictionary key: display mode - outlines or alpha"""
-CPLD_MODE = "mode"
-"""subplot_imshow cplabels mode value: show outlines of objects"""
-CPLDM_OUTLINES = "outlines"
-"""subplot_imshow cplabels mode value: show objects as an alpha-transparent color overlay"""
-CPLDM_ALPHA = "alpha"
-"""subplot_imshow cplabels mode value: draw outlines using matplotlib plot"""
-CPLDM_LINES = "lines"
-"""subplot_imshow cplabels mode value: don't show these objects"""
-CPLDM_NONE = "none"
-"""subplot_imshow cplabels dictionary key: line width of outlines"""
-CPLD_LINE_WIDTH = "line_width"
-"""subplot_imshow cplabels dictionary key: color map to use in alpha mode"""
-CPLD_ALPHA_COLORMAP = "alpha_colormap"
-"""subplot_imshow cplabels dictionary key: alpha value to use in overlay mode"""
-CPLD_ALPHA_VALUE = "alpha_value"
-"""subplot_imshow cplabels dictionary key: show (TRUE) or hide (False)"""
-CPLD_SHOW = "show"
-
-EVT_NAV_MODE_CHANGE = wx.PyEventBinder(wx.NewEventType())
-NAV_MODE_ZOOM = "zoom rect"
-NAV_MODE_PAN = "pan/zoom"
-NAV_MODE_NONE = ""
-MENU_FILE_SAVE = wx.NewId()
-MENU_FILE_SAVE_TABLE = wx.NewId()
-MENU_CLOSE_WINDOW = wx.NewId()
-MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
-MENU_CLOSE_ALL = wx.NewId()
-MENU_LABELS_OUTLINE = {}
-MENU_LABELS_OVERLAY = {}
-MENU_LABELS_LINES = {}
-MENU_LABELS_OFF = {}
-MENU_LABELS_ALPHA = {}
-MENU_SAVE_SUBPLOT = {}
-MENU_RGB_CHANNELS = {}
-
-"""mouse tool mode - do nothing"""
-MODE_NONE = 0
-
-"""mouse tool mode - show pixel data"""
-MODE_MEASURE_LENGTH = 2
-
-window_ids = []
-
-__crosshair_cursor = None
-
-
-def is_color_image(image):
-    return image.ndim == 3 and image.shape[2] >= 2
-
-
-def wraparound(sequence):
-    while True:
-        for l in sequence:
-            yield l
-
-
-def match_rgbmask_to_image(rgb_mask, image):
-    rgb_mask = list(rgb_mask)  # copy
-    nchannels = image.shape[2]
-    del rgb_mask[nchannels:]
-    if len(rgb_mask) < nchannels:
-        rgb_mask = rgb_mask + [1] * (nchannels - len(rgb_mask))
-    return rgb_mask
-
-
-def window_name(module):
-    """Return a module's figure window name"""
-    return "CellProfiler:%s:%s" % (module.module_name, module.module_num)
-
-
-def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
-    """Find a figure frame window. Returns the window or None"""
-    for w in wx.GetTopLevelWindows():
-        if w.GetName() == name:
-            return w
-
-
-def create_or_find(
-    parent=None,
-    identifier=-1,
-    title="",
-    pos=wx.DefaultPosition,
-    size=wx.DefaultSize,
-    style=wx.DEFAULT_FRAME_STYLE,
-    name=wx.FrameNameStr,
-    subplots=None,
-    on_close=None,
-):
-    """Create or find a figure frame window"""
-    win = find_fig(parent, title, name, subplots)
-    return win or Figure(
-        parent, identifier, title, pos, size, style, name, subplots, on_close
-    )
-
-
-def close_all(parent):
-    windows = [x for x in parent.GetChildren() if isinstance(x, wx.Frame)]
-
-    for window in windows:
-        if isinstance(window, Figure):
-            window.on_close(None)
-        else:
-            window.Close()
-
-    reset_cpfigure_position()
-
-
-def allow_sharexy(fn):
-    @functools.wraps(fn)
-    def wrapper(*args, **kwargs):
-        if "sharexy" in kwargs:
-            assert ("sharex" not in kwargs) and (
-                "sharey" not in kwargs
-            ), "Cannot specify sharexy with sharex or sharey"
-            kwargs["sharex"] = kwargs["sharey"] = kwargs.pop("sharexy")
-        return fn(*args, **kwargs)
-
-    if wrapper.__doc__ is not None:
-        wrapper.__doc__ += (
-            "\n        sharexy=ax can be used to specify sharex=ax, sharey=ax"
-        )
-    return wrapper
-
-
-def get_menu_id(d, idx):
-    if idx not in d:
-        d[idx] = wx.NewId()
-    return d[idx]
-
-
-def format_plate_data_as_array(plate_dict, plate_type):
-    """ Returns an array shaped like the given plate type with the values from
-    plate_dict stored in it.  Wells without data will be set to np.NaN
-    plate_dict  -  dict mapping well names to data. eg: d["A01"] --> data
-                   data values must be of numerical or string types
-    plate_type  - '96' (return 8x12 array) or '384' (return 16x24 array)
-    """
-    if plate_type == "96":
-        plate_shape = (8, 12)
-    elif plate_type == "384":
-        plate_shape = (16, 24)
-    alphabet = "ABCDEFGHIJKLMNOP"
-    data = numpy.zeros(plate_shape)
-    data[:] = numpy.nan
-    display_error = True
-    for well, val in list(plate_dict.items()):
-        r = alphabet.index(well[0].upper())
-        c = int(well[1:]) - 1
-        if r >= data.shape[0] or c >= data.shape[1]:
-            if display_error:
-                logging.getLogger("cellprofiler.gui.cpfigure").warning(
-                    "A well value (%s) does not fit in the given plate type.\n" % well
-                )
-                display_error = False
-            continue
-        data[r, c] = val
-    return data
-
-
-def show_image(url, parent=None, needs_raise_after=True, dimensions=2):
-    filename = url[(url.rfind("/") + 1) :]
-
-    try:
-        provider = FileImage(
-            filename=filename,
-            name=os.path.splitext(filename)[0],
-            pathname=os.path.dirname(url),
-            volume=True if dimensions == 3 else False,
-        )
-        image = provider.provide_image(None).pixel_data
-    except IOError:
-        wx.MessageBox(
-            'Failed to open file, "{}"'.format(filename), caption="File open error"
-        )
-        return
-    except javabridge.JavaException as je:
-        wx.MessageBox(
-            'Could not open "{}" as an image.'.format(filename),
-            caption="File format error",
-        )
-        return
-    except Exception as e:
-        cellprofiler.gui.errordialog.display_error_dialog(
-            None, e, None, "Failed to load {}".format(url), continue_only=True
-        )
-        return
-
-    frame = Figure(parent=parent, title=filename)
-    frame.set_subplots(dimensions=dimensions, subplots=(1, 1))
-
-    if dimensions == 2 and image.ndim == 3:  # multichannel images
-        frame.subplot_imshow_color(0, 0, image[:, :, :3], title=filename)
-    else:  # grayscale image or volume
-        frame.subplot_imshow_grayscale(0, 0, image, title=filename)
-
-    frame.panel.draw()
-
-    if needs_raise_after:
-        # %$@ hack hack hack
-        wx.CallAfter(lambda: frame.Raise())
-
-    return True
-
-
-def get_matplotlib_interpolation_preference():
-    interpolation = get_interpolation_mode()
-    if interpolation == IM_NEAREST:
-        return "nearest"
-    elif interpolation == IM_BILINEAR:
-        return "bilinear"
-    elif interpolation == IM_BICUBIC:
-        return "bicubic"
-    return "nearest"
-
-
-def get_crosshair_cursor():
-    global __crosshair_cursor
-    if __crosshair_cursor is None:
-        if sys.platform.lower().startswith("win"):
-            #
-            # Build the crosshair cursor image as a numpy array.
-            #
-            buf = numpy.ones((16, 16, 3), dtype="uint8") * 255
-            buf[7, 1:-1, :] = buf[1:-1, 7, :] = 0
-            abuf = numpy.ones((16, 16), dtype="uint8") * 255
-            abuf[:6, :6] = abuf[9:, :6] = abuf[9:, 9:] = abuf[:6, 9:] = 0
-            image = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
-            image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
-            image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
-            __crosshair_cursor = wx.Cursor(image)
-        else:
-            __crosshair_cursor = wx.CROSS_CURSOR
-    return __crosshair_cursor
+for filetype in MATPLOTLIB_UNSUPPORTED_FILETYPES:
+    del matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes[filetype]
 
 
 class Figure(wx.Frame):
@@ -348,7 +115,7 @@ class Figure(wx.Frame):
         subplots=None,
         on_close=None,
         secret_panel_class=None,
-        help_menu_items=cellprofiler.gui.help.content.FIGURE_HELP,
+        help_menu_items=FIGURE_HELP,
     ):
         """Initialize the frame:
 
@@ -364,7 +131,6 @@ class Figure(wx.Frame):
         secret_panel_class - class to use to construct the secret panel
         help_menu_items - menu items to place in the help menu
         """
-        global window_ids
         if pos == wx.DefaultPosition:
             pos = get_next_cpfigure_position()
         super(Figure, self).__init__(parent, identifier, title, pos, size, style, name)
@@ -407,7 +173,7 @@ class Figure(wx.Frame):
         self.figure.canvas.mpl_connect("button_release_event", self.on_button_release)
         self.figure.canvas.mpl_connect("resize_event", self.on_resize)
         try:
-            self.SetIcon(cellprofiler.gui.get_cp_icon())
+            self.SetIcon(get_cp_icon())
         except:
             pass
         if size == wx.DefaultSize:
@@ -427,12 +193,12 @@ class Figure(wx.Frame):
                 for menu, label in parent_menu_bar.GetMenus():
                     if label == "Window":
                         menu_ids = [menu_item.Id for menu_item in menu.MenuItems]
-                        for window_id in window_ids + [None]:
+                        for window_id in WINDOW_IDS + [None]:
                             if window_id not in menu_ids:
                                 break
                         if window_id is None:
                             window_id = wx.NewId()
-                            window_ids.append(window_id)
+                            WINDOW_IDS.append(window_id)
                         assert isinstance(menu, wx.Menu)
                         menu.Append(window_id, title)
 
@@ -442,7 +208,7 @@ class Figure(wx.Frame):
                         parent.Bind(wx.EVT_MENU, on_menu_command, id=window_id)
                         self.remove_menu.append([menu, window_id])
 
-    def create_menu(self, figure_help=cellprofiler.gui.help.content.FIGURE_HELP):
+    def create_menu(self, figure_help=FIGURE_HELP):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE, "&Save")
@@ -483,9 +249,7 @@ class Figure(wx.Frame):
 
         self.SetAcceleratorTable(accelerators)
         self.Bind(wx.EVT_MENU, self.on_close, id=MENU_CLOSE_WINDOW)
-        self.MenuBar.Append(
-            cellprofiler.gui.help.make_help_menu(figure_help, self), "&Help"
-        )
+        self.MenuBar.Append(make_help_menu(figure_help, self), "&Help")
 
     def create_toolbar(self):
         self.navtoolbar = NavigationToolbar(self.figure.canvas)
@@ -811,7 +575,7 @@ class Figure(wx.Frame):
                 fields += self.get_pixel_data_fields_for_status_bar(im, x1, yi)
             elif isinstance(event.inaxes, matplotlib.axes.Axes):
                 for artist in event.inaxes.artists:
-                    if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
+                    if isinstance(artist, CPImageArtist):
                         fields += [
                             "%s: %.4f" % (k, v)
                             for k, v in list(artist.get_channel_values(xi, yi).items())
@@ -1012,7 +776,7 @@ class Figure(wx.Frame):
         """
         fontname = get_title_font_name()
         self.subplot(x, y).set_title(
-            fill(title, 30), fontname=fontname, fontsize=get_title_font_size(),
+            textwrap.fill(title, 30), fontname=fontname, fontsize=get_title_font_size(),
         )
 
     def clear_subplot(self, x, y):
@@ -1145,7 +909,7 @@ class Figure(wx.Frame):
                 False: "Raw",
                 True: "Normalized",
                 "log": "Log Normalized",
-                "gamma": "Gamma Normalized"
+                "gamma": "Gamma Normalized",
             }
             if params["normalize"]:
                 maxval = 1
@@ -1155,8 +919,8 @@ class Figure(wx.Frame):
                 imgmin = orig_params["vmin"]
                 maxval = max(1, imgmax)
                 minval = min(0, imgmin)
-            start_min = int((params["vmin"]/minval)*255 if minval != 0 else 0)
-            start_max = int((params["vmax"]/maxval)*255)
+            start_min = int((params["vmin"] / minval) * 255 if minval != 0 else 0)
+            start_max = int((params["vmax"] / maxval) * 255)
             axes = self.subplot(x, y)
             background = self.figure.canvas.copy_from_bbox(axes.bbox)
             size = self.images[(x, y)].shape[:2]
@@ -1166,29 +930,28 @@ class Figure(wx.Frame):
             else:
                 slider_flags = wx.SL_HORIZONTAL
 
-            with wx.Dialog(self, title="Adjust Contrast", size=wx.Size(250, 350)) as dlg:
+            with wx.Dialog(
+                self, title="Adjust Contrast", size=wx.Size(250, 350)
+            ) as dlg:
                 dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
 
                 sizer = wx.BoxSizer(wx.VERTICAL)
                 dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, border=5)
                 sizer.Add(
-                    wx.StaticText(dlg, label="Normalization Mode"),
-                    0,
-                    wx.ALIGN_LEFT,
+                    wx.StaticText(dlg, label="Normalization Mode"), 0, wx.ALIGN_LEFT,
                 )
 
-                method_select = wx.ComboBox(dlg,
-                                            id=2,
-                                            choices=list(id_dict.values()),
-                                            value=id_dict[params["normalize"]],
-                                            style=wx.CB_READONLY,
-                                            )
+                method_select = wx.ComboBox(
+                    dlg,
+                    id=2,
+                    choices=list(id_dict.values()),
+                    value=id_dict[params["normalize"]],
+                    style=wx.CB_READONLY,
+                )
                 sizer.Add(method_select, flag=wx.ALL | wx.EXPAND, border=3)
 
                 sizer.Add(
-                    wx.StaticText(dlg, label="Minimum Brightness"),
-                    0,
-                    wx.ALIGN_LEFT,
+                    wx.StaticText(dlg, label="Minimum Brightness"), 0, wx.ALIGN_LEFT,
                 )
                 slidermin = wx.Slider(
                     dlg,
@@ -1199,8 +962,16 @@ class Figure(wx.Frame):
                     style=slider_flags,
                     name="Minimum Intensity",
                 )
-                sliderminbox = IntCtrl(dlg, id=0, value=start_min, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
-                                       style=wx.TE_CENTRE)
+                sliderminbox = wx.lib.intctrl.IntCtrl(
+                    dlg,
+                    id=0,
+                    value=start_min,
+                    min=-999,
+                    max=9999,
+                    limited=True,
+                    size=wx.Size(35, 22),
+                    style=wx.TE_CENTRE,
+                )
                 minbright_sizer = wx.BoxSizer()
                 minbright_sizer.Add(slidermin, 1, wx.EXPAND)
                 minbright_sizer.AddSpacer(4)
@@ -1208,9 +979,7 @@ class Figure(wx.Frame):
                 sizer.Add(minbright_sizer, 1, wx.EXPAND)
 
                 sizer.Add(
-                    wx.StaticText(dlg, label="Maximum Brightness"),
-                    0,
-                    wx.ALIGN_LEFT,
+                    wx.StaticText(dlg, label="Maximum Brightness"), 0, wx.ALIGN_LEFT,
                 )
                 slidermax = wx.Slider(
                     dlg,
@@ -1219,10 +988,18 @@ class Figure(wx.Frame):
                     minValue=0,
                     maxValue=255,
                     style=slider_flags,
-                    name="Maximum Intensity"
+                    name="Maximum Intensity",
                 )
-                slidermaxbox = IntCtrl(dlg, id=1, value=start_max, min=-999, max=9999, limited=True, size=wx.Size(35, 22),
-                                       style=wx.TE_CENTRE)
+                slidermaxbox = wx.lib.intctrl.IntCtrl(
+                    dlg,
+                    id=1,
+                    value=start_max,
+                    min=-999,
+                    max=9999,
+                    limited=True,
+                    size=wx.Size(35, 22),
+                    style=wx.TE_CENTRE,
+                )
                 maxbright_sizer = wx.BoxSizer()
                 maxbright_sizer.Add(slidermax, 1, wx.EXPAND)
                 maxbright_sizer.AddSpacer(4)
@@ -1230,9 +1007,7 @@ class Figure(wx.Frame):
                 sizer.Add(maxbright_sizer, 1, wx.EXPAND)
                 normtext = wx.StaticText(dlg, label="Normalization Factor")
                 sizer.Add(
-                    normtext,
-                    0,
-                    wx.ALIGN_LEFT,
+                    normtext, 0, wx.ALIGN_LEFT,
                 )
                 slidernorm = wx.Slider(
                     dlg,
@@ -1241,9 +1016,9 @@ class Figure(wx.Frame):
                     minValue=0,
                     maxValue=20,
                     style=slider_flags,
-                    name="Normalization Factor"
+                    name="Normalization Factor",
                 )
-                slidernormbox = NumCtrl(
+                slidernormbox = wx.lib.masked.NumCtrl(
                     dlg,
                     id=2,
                     value=float(get_normalization_factor()),
@@ -1266,7 +1041,11 @@ class Figure(wx.Frame):
                     slidernorm.Enable(False)
                     slidernormbox.Enable(False)
                 if self.subplots.shape != (1, 1):
-                    sizer.Add(wx.Button(dlg, wx.ID_APPLY, label="Apply to all"), 0, wx.ALIGN_CENTER_HORIZONTAL)
+                    sizer.Add(
+                        wx.Button(dlg, wx.ID_APPLY, label="Apply to all"),
+                        0,
+                        wx.ALIGN_CENTER_HORIZONTAL,
+                    )
                 button_sizer = wx.StdDialogButtonSizer()
                 button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
                 button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
@@ -1307,16 +1086,23 @@ class Figure(wx.Frame):
                             sliderminbox.SetValue(current_max)
                     elif event.Id == 2:
                         if params["normalize"] == "log":
-                            params["normalize_args"] = {"gain": float(slidernormbox.GetValue())}
+                            params["normalize_args"] = {
+                                "gain": float(slidernormbox.GetValue())
+                            }
                         elif params["normalize"] == "gamma":
-                            params["normalize_args"] = {"gamma": float(slidernormbox.GetValue())}
+                            params["normalize_args"] = {
+                                "gamma": float(slidernormbox.GetValue())
+                            }
                     params["vmin"] = (sliderminbox.GetValue() / 255) * maxval
                     params["vmax"] = (slidermaxbox.GetValue() / 255) * maxval
                     refresh_figure(axes, background, axesdata)
 
                 def change_contrast_mode(event):
-                    newvalue = next(paramvalue for paramvalue, listvalue
-                                    in id_dict.items() if listvalue == method_select.GetValue())
+                    newvalue = next(
+                        paramvalue
+                        for paramvalue, listvalue in id_dict.items()
+                        if listvalue == method_select.GetValue()
+                    )
                     if newvalue == params["normalize"]:
                         return
                     params["normalize"] = newvalue
@@ -1355,10 +1141,14 @@ class Figure(wx.Frame):
                                     plot_params["vmin"] = params["vmin"]
                                     plot_params["vmax"] = params["vmax"]
                                     plot_params["normalize"] = params["normalize"]
-                                    plot_params["normalize_args"] = params["normalize_args"]
+                                    plot_params["normalize_args"] = params[
+                                        "normalize_args"
+                                    ]
                                     image = self.images[(xcoord, ycoord)]
-                                    if not isinstance(image, MaskedArray):
-                                        subplot_item.displayed.set_data(self.normalize_image(image, **plot_params))
+                                    if not isinstance(image, numpy.ma.MaskedArray):
+                                        subplot_item.displayed.set_data(
+                                            self.normalize_image(image, **plot_params)
+                                        )
                                 else:
                                     # Should be a table, make sure the invisible subplot stays hidden.
                                     subplot_item.axis("off")
@@ -1376,7 +1166,7 @@ class Figure(wx.Frame):
                 dlg.Bind(wx.EVT_COMBOBOX, change_contrast_mode)
                 dlg.Bind(wx.EVT_SLIDER, on_slider)
                 dlg.Bind(wx.EVT_TEXT, on_int_entry)
-                dlg.Bind(EVT_NUM, on_int_entry)
+                dlg.Bind(wx.lib.masked.EVT_NUM, on_int_entry)
                 dlg.Bind(wx.EVT_BUTTON, apply_to_all)
                 dlg.Layout()
                 if dlg.ShowModal() == wx.ID_OK:
@@ -1406,7 +1196,7 @@ class Figure(wx.Frame):
                 params["interpolation"] = "bicubic"
             axes = self.subplot(x, y)
             for artist in axes.artists:
-                if isinstance(artist, cellprofiler.gui.artist.CPImageArtist):
+                if isinstance(artist, CPImageArtist):
                     artist.interpolation = params["interpolation"]
                     artist.kwargs["interpolation"] = params["interpolation"]
                     self.figure.canvas.draw()
@@ -1830,7 +1620,9 @@ class Figure(wx.Frame):
 
             image = self.images[(x, y)]
 
-            self.subplot(x, y).displayed = subplot.imshow(self.normalize_image(image, **kwargs))
+            self.subplot(x, y).displayed = subplot.imshow(
+                self.normalize_image(image, **kwargs)
+            )
 
             self.update_line_labels(subplot, kwargs)
 
@@ -2260,10 +2052,7 @@ class Figure(wx.Frame):
                 elif cplabel[CPLD_MODE] == CPLDM_ALPHA:
                     #
                     # For alpha overlays, renumber
-                    lnumbers = (
-                        cellprofiler.gui.tools.renumber_labels_for_display(labels)
-                        + loffset
-                    )
+                    lnumbers = renumber_labels_for_display(labels) + loffset
                     mappable = matplotlib.cm.ScalarMappable(
                         cmap=cplabel[CPLD_ALPHA_COLORMAP]
                     )
@@ -2722,127 +2511,3 @@ class Figure(wx.Frame):
         axes.format_coord = format_coord
         axes.figure.canvas.draw()
         return plot
-
-
-class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg):
-    """Navigation toolbar for EditObjectsDialog"""
-
-    def __init__(self, canvas):
-        super(NavigationToolbar, self).__init__(canvas)
-
-    def set_cursor(self, cursor):
-        """Set the cursor based on the mode"""
-        if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
-            self.canvas.SetCursor(get_crosshair_cursor())
-        else:
-            matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.set_cursor(
-                self, cursor
-            )
-
-    def cancel_mode(self):
-        """Toggle the current mode to off"""
-        if self.mode == NAV_MODE_ZOOM:
-            self.zoom()
-
-            if "Zoom" in self.wx_ids:
-                self.ToggleTool(self.wx_ids["Zoom"], False)
-        elif self.mode == NAV_MODE_PAN:
-            self.pan()
-
-            if "Pan" in self.wx_ids:
-                self.ToggleTool(self.wx_ids["Pan"], False)
-
-    def zoom(self, *args):
-        matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.zoom(self, *args)
-
-        self.__send_mode_change_event()
-
-    def pan(self, *args):
-        matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg.pan(self, *args)
-
-        self.__send_mode_change_event()
-
-    def is_home(self):
-        """Return True if zoom/pan is at the home position"""
-        if self._views._pos <= 0:
-            return True
-
-        if self._views[0] == self._views[-1]:
-            return True
-
-        return False
-
-    def reset(self):
-        """Clear out the position stack"""
-        # We differ from the reference implementation because we clear
-        # the view stacks.
-        self._views.clear()
-
-        self._positions.clear()
-
-        self.home()
-
-    def save(self, event):
-        #
-        # Capture any file save event and redirect it to CPFigureFrame
-        # Fixes issue #829 - Mac & PC display invalid save options when
-        #                    you save using the icon.
-        #
-        parent = self.GetTopLevelParent()
-
-        if isinstance(parent, Figure):
-            parent.on_file_save(event)
-        else:
-            super(NavigationToolbar, self).save(event)
-
-    def __send_mode_change_event(self):
-        event = wx.NotifyEvent(EVT_NAV_MODE_CHANGE.evtType[0])
-
-        event.EventObject = self
-
-        self.GetEventHandler().ProcessEvent(event)
-
-
-class OutlineArtist(matplotlib.collections.LineCollection):
-    """An artist that is a plot of the outline around an object
-
-    This class is here so that we can add and remove artists for certain
-    outlines.
-    """
-
-    def __init__(self, name, labels, *args, **kwargs):
-        """Draw outlines for objects
-
-        name - the name of the outline
-
-        labels - a sequence of labels matrices
-
-        kwargs - further arguments for Line2D
-        """
-        # get_outline_pts has its faults:
-        # * it doesn't do holes
-        # * it only does one of two disconnected objects
-        #
-        # We get around the second failing by resegmenting with
-        # connected components and combining the original and new segmentation
-        #
-        lines = []
-        for l in labels:
-            new_labels, counts = scipy.ndimage.label(l != 0, numpy.ones((3, 3), bool))
-            if counts == 0:
-                continue
-            l = l.astype(numpy.uint64) * counts + new_labels
-            unique, idx = numpy.unique(l.flatten(), return_inverse=True)
-            if unique[0] == 0:
-                my_range = numpy.arange(len(unique))
-            else:
-                my_range = numpy.arange(1, len(unique))
-            idx.shape = l.shape
-            pts, offs, counts = centrosome.cpmorphology.get_outline_pts(idx, my_range)
-            pts = pts[:, ::-1]  # matplotlib x, y reversed from i,j
-            for off, count in zip(offs, counts):
-                lines.append(numpy.vstack((pts[off : off + count], pts[off : off + 1])))
-        matplotlib.collections.LineCollection.__init__(self, lines, *args, **kwargs)
-
-    def get_outline_name(self):
-        return self.__outline_name

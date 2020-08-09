@@ -10,6 +10,7 @@ from cellprofiler_core.preferences import set_startup_blurb
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html
 import cellprofiler.gui.html.utils
+import cellprofiler.gui.utilities.icon
 
 
 class WelcomeFrame(wx.Frame):
@@ -23,7 +24,7 @@ class WelcomeFrame(wx.Frame):
 
         self.SetSizer(wx.BoxSizer())
 
-        self.SetIcon(cellprofiler.gui.get_cp_icon())
+        self.SetIcon(cellprofiler.gui.utilities.icon.get_cp_icon())
 
         self.Bind(wx.EVT_CLOSE, self.__on_close)
         self.content = wx.html2.WebView.New(self)

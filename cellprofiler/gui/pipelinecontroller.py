@@ -1978,7 +1978,7 @@ class PipelineController(object):
 
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
-        from cellprofiler.gui.figure import show_image
+        from .utilities.figure import show_image
         from cellprofiler_core.utilities.pathname import url2pathname
 
         paths = self.__path_list_ctrl.get_paths(
@@ -3345,7 +3345,6 @@ class PipelineController(object):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
 
-            self.workspace_view.set_workspace(workspace_model)
         except Exception as instance:
             logging.error("Failed to run module %s", module.module_name, exc_info=True)
             event = RunException(instance, module)
@@ -3815,11 +3814,20 @@ class PipelineController(object):
             self.next_debug_module()
 
     def on_view_workspace(self, event):
-        self.workspace_view = WorkspaceView(self.__frame, self.__workspace)
-
-        self.workspace_view.set_workspace(self.__workspace)
-
-        self.workspace_view.frame.Show()
+        # Need to pack the measurements into the workspace
+        workspace = cellprofiler.gui._workspace_model.Workspace(
+            self.__pipeline,
+            None,
+            self.__debug_measurements,
+            self.__debug_object_set,
+            self.__debug_measurements,
+            self.__debug_image_set_list,
+        )
+        if self.workspace_view is None:
+            self.workspace_view = WorkspaceView(self.__frame, workspace)
+        else:
+            self.workspace_view.set_workspace(workspace)
+            self.workspace_view.frame.Show()
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

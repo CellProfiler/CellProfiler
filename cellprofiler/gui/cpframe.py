@@ -21,10 +21,11 @@ from cellprofiler_core.utilities.core.modules import instantiate_module
 
 import cellprofiler
 import cellprofiler.gui
+import cellprofiler.gui.utilities.icon
 from ._welcome_frame import WelcomeFrame
 from ._workspace_model import Workspace
 from .dialog import AboutDialogInfo
-from .figure import close_all
+from .utilities.figure import close_all
 from .help.content import read_content
 from .help.menu import Menu
 from .html.htmlwindow import HtmlClickableWindow
@@ -140,7 +141,7 @@ ID_WINDOW_ALL = (
     ID_WINDOW_HIDE_ALL_WINDOWS,
 )
 
-window_ids = []
+WINDOW_IDS = []
 
 ID_HELP_MODULE = wx.NewId()
 ID_HELP_SOURCE_CODE = wx.NewId()
@@ -1189,7 +1190,7 @@ class CPFrame(wx.Frame):
             ]
         )
         helpframe.SetAcceleratorTable(accelerator_table)
-        helpframe.SetIcon(cellprofiler.gui.get_cp_icon())
+        helpframe.SetIcon(cellprofiler.gui.utilities.icon.get_cp_icon())
         helpframe.Layout()
         helpframe.Show()
 
@@ -1298,7 +1299,7 @@ class CPFrame(wx.Frame):
         top_left_win.Layout()
 
     def __set_icon(self):
-        self.SetIcon(cellprofiler.gui.get_cp_icon())
+        self.SetIcon(cellprofiler.gui.utilities.icon.get_cp_icon())
 
     def __on_data_tool_help(self, event, tool_name):
         module = instantiate_module(tool_name)

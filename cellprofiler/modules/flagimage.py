@@ -606,7 +606,7 @@ image is not flagged.
         if image_set_count > 0:
             import wx
             from wx.grid import Grid, PyGridTableBase, EVT_GRID_LABEL_LEFT_CLICK
-            from cellprofiler.gui import get_cp_icon
+            from cellprofiler.gui.utilities.icon import get_cp_icon
 
             frame = wx.Frame(workspace.frame, -1, "Flag image results")
             sizer = wx.BoxSizer(wx.VERTICAL)

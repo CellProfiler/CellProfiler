@@ -580,8 +580,11 @@ class PipelineListView(object):
 
     @staticmethod
     def find_module_figure_window(module):
-        name = cellprofiler.gui.figure.window_name(module)
-        return cellprofiler.gui.figure.find_fig(name=name)
+        from ..gui.utilities.figure import find_fig
+        from ..gui.utilities.figure import window_name
+
+        name = window_name(module)
+        return find_fig(name=name)
 
     def __on_step_column_clicked(self, event):
         module = self.get_event_module(event)
@@ -1612,9 +1615,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
 
         if len(self.items) == 0:
             text = "Drop a pipeline file here (.cppipe or .cpproj)\n or double-click to add modules"
-            dc.SetTextForeground(
-                wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
-            )
+            dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
             dc.DrawLabel(
                 text, wx.Bitmap(), wx.Rect(self.GetSize()), alignment=wx.ALIGN_CENTER,
             )

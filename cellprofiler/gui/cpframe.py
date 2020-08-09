@@ -24,7 +24,7 @@ import cellprofiler.gui
 from ._welcome_frame import WelcomeFrame
 from ._workspace_model import Workspace
 from .dialog import AboutDialogInfo
-from .figure import close_all
+from .utilities.figure import close_all
 from .help.content import read_content
 from .help.menu import Menu
 from .html.htmlwindow import HtmlClickableWindow

@@ -1978,7 +1978,7 @@ class PipelineController(object):
 
     def on_pathlist_show(self, event=None):
         """Show the focused item's image"""
-        from cellprofiler.gui.figure import show_image
+        from .utilities.figure import show_image
         from cellprofiler_core.utilities.pathname import url2pathname
 
         paths = self.__path_list_ctrl.get_paths(
@@ -3821,7 +3821,8 @@ class PipelineController(object):
             self.__debug_measurements,
             self.__debug_object_set,
             self.__debug_measurements,
-            self.__debug_image_set_list)
+            self.__debug_image_set_list,
+        )
         if self.workspace_view is None:
             self.workspace_view = WorkspaceView(self.__frame, workspace)
         else:

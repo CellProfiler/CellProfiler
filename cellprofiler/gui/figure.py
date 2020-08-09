@@ -851,7 +851,7 @@ class Figure(wx.Frame):
         if not hasattr(self, "subplots"):
             return
 
-        if event.inaxes in self.subplots.flatten() and self.mouse_down:
+        if event.inaxes in self.subplots.flatten() and self.mouse_down and event.xdata is not None:
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
@@ -1596,6 +1596,18 @@ class Figure(wx.Frame):
             self.figure.add_subplot(ax)
 
             axes += [ax]
+
+            def on_release(evt):
+                if evt.inaxes == ax:
+                    if evt.button != 1:
+                        self.show_imshow_popup_menu(
+                            (evt.x, self.figure.canvas.GetSize()[1] - evt.y), (x, y)
+                        )
+
+            self.event_bindings[(x, y)] = [
+                self.figure.canvas.mpl_connect("button_release_event", on_release)
+            ]
+
 
         if colorbar:
             colormap.set_array(image)

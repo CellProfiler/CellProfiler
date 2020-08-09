@@ -12,6 +12,7 @@ import matplotlib.colors
 import matplotlib.image
 import numpy
 import scipy.ndimage
+import skimage.exposure
 
 import cellprofiler.gui.tools
 
@@ -564,7 +565,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                 result[image.name] = value
         return result
 
-    def draw(self, renderer):
+    def draw(self, renderer, *args, **kwargs):
         magnification = renderer.get_image_magnification()
         shape = [0, 0]
         for image in self.__images:
@@ -716,16 +717,16 @@ class CPImageArtist(matplotlib.artist.Artist):
             target = numpy.fliplr(target)
         if self.axes.viewLim.height < 0:
             target = numpy.flipud(target)
-        # Todo: replace this
-        im = matplotlib.image.fromarray(target[:, :, :3], 0)
-        im.is_grayscale = False
-        im.set_interpolation(self.mp_interpolation)
+
+        # im = matplotlib.image.fromarray(target[:, :, :3], 0)
+        # im.is_grayscale = False
+        # im.set_interpolation(self.mp_interpolation)
         fc = matplotlib.rcParams["axes.facecolor"]
         bg = matplotlib.colors.colorConverter.to_rgba(fc, 0)
-        im.set_bg(*bg)
+        # im.set_bg(*bg)
 
         # image input dimensions
-        im.reset_matrix()
+        # im.reset_matrix()
 
         # the viewport translation in the X direction
         tx = view_xmin - min(vl.x0, vl.x1) - 0.5
@@ -738,7 +739,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             ty = self.axes.viewLim.y0 - view_ymax + 0.5
         else:
             ty = view_ymin - self.axes.viewLim.y0 - 0.5
-        im.apply_translation(tx, ty)
+        # im.apply_translation(tx, ty)
         l, b, r, t = self.axes.bbox.extents
         if b > t:
             t, b = b, t
@@ -748,18 +749,19 @@ class CPImageArtist(matplotlib.artist.Artist):
         # resize viewport to display
         sx = width_display / self.axes.viewLim.width
         sy = abs(height_display / self.axes.viewLim.height)
-        im.apply_scaling(sx, sy)
-        im.resize(width_display, height_display, norm=1, radius=self.filterrad)
+        # im.apply_scaling(sx, sy)
+        # im.resize(width_display, height_display, norm=1, radius=self.filterrad)
         bbox = self.axes.bbox.frozen()
 
-        # Two ways to do this, try by version
-        mplib_version = matplotlib.__version__.split(".")
-        if mplib_version[0] == "0":
-            renderer.draw_image(l, b, im, bbox)
-        else:
-            gc = renderer.new_gc()
-            gc.set_clip_rectangle(bbox)
-            renderer.draw_image(gc, l, b, im)
+        gc = renderer.new_gc()
+        gc.set_clip_rectangle(bbox)
+
+        im = numpy.zeros((target.shape[0], target.shape[1], 4), numpy.uint8)
+        im[:, :, 3] = 255
+        im[:, :, :3] = skimage.exposure.rescale_intensity(target, out_range=numpy.uint8)
+
+        renderer.draw_image(gc, l, b, im)
+
         for om in list(self.__objects) + list(self.__masks):
             assert isinstance(om, OutlinesMixin)
             if om.mode == MODE_LINES:

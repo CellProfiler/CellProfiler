@@ -8,6 +8,7 @@ from cellprofiler_core.utilities.core.modules import (
 import cellprofiler.gui
 import cellprofiler.gui.cpframe
 import cellprofiler.gui.help.search
+import cellprofiler.gui.utilities.icon
 import cellprofiler.modules
 
 
@@ -126,7 +127,7 @@ class AddModuleFrame(wx.Frame):
         self.Hide()
 
     def __set_icon(self):
-        icon = cellprofiler.gui.get_cp_icon()
+        icon = cellprofiler.gui.utilities.icon.get_cp_icon()
         self.SetIcon(icon)
 
     def __get_module_files(self):
@@ -298,7 +299,7 @@ class AddModuleFrame(wx.Frame):
         window = HtmlClickableWindow(helpframe)
         sizer.Add(window, 1, wx.EXPAND)
         window.AppendToPage(help_text)
-        helpframe.SetIcon(cellprofiler.gui.get_cp_icon())
+        helpframe.SetIcon(cellprofiler.gui.utilities.icon.get_cp_icon())
         helpframe.Layout()
         helpframe.Show()
 

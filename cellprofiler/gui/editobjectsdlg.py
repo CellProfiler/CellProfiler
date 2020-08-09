@@ -34,6 +34,7 @@ from cellprofiler_core.preferences import (
 from cellprofiler_core.utilities.core.object import size_similarly
 
 import cellprofiler.gui.figure
+import cellprofiler.gui.figure._navigation_toolbar
 import cellprofiler.gui.tools
 
 
@@ -292,7 +293,9 @@ class EditObjectsDialog(wx.Dialog):
                     self.Parent.inside_print = False
 
         self.panel = CanvasPatch(self, -1, self.figure)
-        self.toolbar = cellprofiler.gui.figure.NavigationToolbar(self.panel)
+        self.toolbar = cellprofiler.gui.figure.figure._navigation_toolbar.NavigationToolbar(
+            self.panel
+        )
         self.toolbar.set_message = self.discard_message
         self.sash_parent = wx.Panel(self)
         #

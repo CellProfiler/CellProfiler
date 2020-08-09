@@ -12,6 +12,7 @@ from cellprofiler_core.utilities.core.modules import (
 import cellprofiler.gui
 import cellprofiler.gui.help.content
 import cellprofiler.gui.html.utils
+import cellprofiler.gui.utilities.icon
 import cellprofiler.modules
 
 MENU_HELP = {
@@ -112,7 +113,7 @@ class Search(wx.Frame):
 
         self.Layout()
 
-        self.SetIcon(cellprofiler.gui.get_cp_icon())
+        self.SetIcon(cellprofiler.gui.utilities.icon.get_cp_icon())
 
     def __create_results_view(self):
         html_window = cellprofiler.gui.html.htmlwindow.HtmlClickableWindow(self)

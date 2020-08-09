@@ -1597,18 +1597,6 @@ class Figure(wx.Frame):
 
             axes += [ax]
 
-            def on_release(evt):
-                if evt.inaxes == ax:
-                    if evt.button != 1:
-                        self.show_imshow_popup_menu(
-                            (evt.x, self.figure.canvas.GetSize()[1] - evt.y), (x, y)
-                        )
-
-            self.event_bindings[(x, y)] = [
-                self.figure.canvas.mpl_connect("button_release_event", on_release)
-            ]
-
-
         if colorbar:
             colormap.set_array(image)
 

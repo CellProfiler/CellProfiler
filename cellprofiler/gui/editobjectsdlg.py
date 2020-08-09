@@ -545,7 +545,6 @@ class EditObjectsDialog(wx.Dialog):
         self.Bind(wx.EVT_MENU, self.on_help, id=wx.ID_HELP)
         self.Bind(wx.EVT_CLOSE, lambda event: self.on_close(event, wx.CANCEL))
         self.Bind(wx.EVT_SIZE, self.on_size)
-        self.Bind(wx.EVT_CONTEXT_MENU, self.on_context_menu)
         self.figure.canvas.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
         self.toolbar.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
         self.help_sash.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
@@ -936,6 +935,7 @@ class EditObjectsDialog(wx.Dialog):
                     return
         lnum = self.get_mouse_event_object_number(event)
         if lnum is None:
+            self.on_context_menu(event)
             return
         if event.button == 1:
             # Move object into / out of working set

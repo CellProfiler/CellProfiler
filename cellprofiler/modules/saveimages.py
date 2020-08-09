@@ -63,7 +63,7 @@ from cellprofiler.modules import _help
 IF_IMAGE = "Image"
 IF_MASK = "Mask"
 IF_CROPPING = "Cropping"
-IF_MOVIE = "Movie"
+IF_MOVIE = "Movie/Stack"
 IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE]
 
 BIT_DEPTH_8 = "8-bit integer"
@@ -82,6 +82,8 @@ FF_NPY = "npy"
 FF_PNG = "png"
 FF_TIFF = "tiff"
 FF_H5 = "h5"
+AXIS_Z = "Z (Slice)"
+AXIS_T = "T (Time)"
 
 # This is the Axistag for zyxc images for Ilastik compatible h5 image
 # as described here: https://github.com/ilastik/ilastik/blob/master/bin/combine_channels_as_h5.py
@@ -106,7 +108,7 @@ WS_LAST_CYCLE = "Last cycle"
 class SaveImages(Module):
     module_name = "SaveImages"
 
-    variable_revision_number = 14
+    variable_revision_number = 15
 
     category = "File Processing"
 
@@ -351,6 +353,19 @@ TIFF formats.""".format(
             ),
         )
 
+        self.stack_axis = Choice(
+            "How to save the series",
+            [AXIS_T, AXIS_Z],
+            value=AXIS_T,
+            doc="""\
+*(Used only when saving movie/stack files)*
+
+This setting determines how planes are saved into a movie/stack.
+Selecting "T" will save planes as a time series. Selecting "Z"
+will save planes as slices in a 3D z-axis. 
+"""
+        )
+
         self.overwrite = Binary(
             "Overwrite existing files without warning?",
             False,
@@ -454,6 +469,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             self.update_file_names,
             self.create_subdirectories,
             self.root_dir,
+            self.stack_axis,
         ]
 
     def visible_settings(self):
@@ -485,6 +501,8 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         if supports_16_bit:
             # TIFF supports 8 & 16-bit, all others are written 8-bit
             result.append(self.bit_depth)
+        if self.save_image_or_figure == IF_MOVIE:
+            result.append(self.stack_axis)
         result.append(self.pathname)
         result.append(self.overwrite)
         if self.save_image_or_figure != IF_MOVIE:
@@ -586,18 +604,38 @@ store images in the subfolder, "*date*\/*plate-name*".""",
 
         image = workspace.image_set.get_image(self.image_name.value)
         pixels = image.pixel_data
-        pixels = pixels * 255
+        if self.get_bit_depth() == BIT_DEPTH_8:
+            pixels = skimage.util.img_as_ubyte(pixels)
+            pixel_type = bioformats.omexml.PT_UINT8
+        elif self.get_bit_depth() == BIT_DEPTH_16:
+            pixels = skimage.util.img_as_uint(pixels)
+            pixel_type = bioformats.omexml.PT_UINT16
+        elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
+            pixels = skimage.util.img_as_float(pixels).astype(numpy.float32)
+            pixel_type = bioformats.omexml.PT_FLOAT
+        else:
+            raise ValueError("Bit depth unsupported in movie mode")
         frames = d["N_FRAMES"]
         current_frame = d["CURRENT_FRAME"]
         d["CURRENT_FRAME"] += 1
-        self.do_save_image(
-            workspace,
-            out_file,
-            pixels,
-            bioformats.omexml.PT_UINT8,
-            t=current_frame,
-            size_t=frames,
-        )
+        if self.stack_axis == AXIS_T:
+            self.do_save_image(
+                workspace,
+                out_file,
+                pixels,
+                pixel_type,
+                t=current_frame,
+                size_t=frames,
+            )
+        else:
+            self.do_save_image(
+                workspace,
+                out_file,
+                pixels,
+                pixel_type,
+                z=current_frame,
+                size_z=frames,
+            )
 
     def post_group(self, workspace, *args):
         if self.when_to_save == WS_LAST_CYCLE and self.save_image_or_figure != IF_MOVIE:
@@ -883,10 +921,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         return self.file_format.value
 
     def get_bit_depth(self):
-        if self.save_image_or_figure == IF_IMAGE and self.get_file_format() in (
-            FF_TIFF,
-            FF_H5,
-        ):
+        if self.save_image_or_figure in (IF_IMAGE, IF_MOVIE) and self.get_file_format() in (FF_TIFF, FF_H5):
             return self.bit_depth.value
         else:
             return BIT_DEPTH_8
@@ -925,6 +960,15 @@ store images in the subfolder, "*date*\/*plate-name*".""",
                 setting_values[10] = BIT_DEPTH_FLOAT
 
             variable_revision_number = 13
+        if variable_revision_number == 13:
+            variable_revision_number = 14
+        if variable_revision_number == 14:
+            # Renamed "Movie" to "Movie/Stack"
+            if setting_values[0] == "Movie":
+                setting_values[0] = IF_MOVIE
+            # Added movie save axis
+            setting_values.append(AXIS_T)
+            variable_revision_number = 15
 
         return setting_values, variable_revision_number
 

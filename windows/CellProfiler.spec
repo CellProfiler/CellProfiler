@@ -31,6 +31,7 @@ hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.utilit
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("scipy")
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("scipy.special")
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("skimage.feature")
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk")
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations")
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations.modules")

@@ -1155,6 +1155,10 @@ class Figure(wx.Frame):
                                 else:
                                     # Should be a table, make sure the invisible subplot stays hidden.
                                     subplot_item.axis("off")
+                                    if not hasattr(subplot_item, "deleted") and self.dimensions == 3:
+                                        self.figure.delaxes(subplot_item)
+                                        subplot_item.deleted = True
+
                         self.figure.canvas.draw()
                     else:
                         event.Skip()
@@ -1718,7 +1722,10 @@ class Figure(wx.Frame):
                             subplot_item.displayed.set_data(img_data)
                         else:
                             # Should be a table, make sure the invisible subplot stays hidden.
-                            subplot_item.axis("off")
+#                            subplot_item.axis("off")
+                            if not hasattr(subplot_item, "deleted"):
+                                self.figure.delaxes(subplot_item)
+                                subplot_item.deleted = True
                         # Updating the slider will force a refresh, so we don't need to explicitly draw
             splane.on_changed(change_plane)
             self.sliders[subplot] = (axplane, splane)

@@ -24,7 +24,7 @@ def wraparound(sequence):
 
 def match_rgbmask_to_image(rgb_mask, image):
     rgb_mask = list(rgb_mask)  # copy
-    nchannels = image.shape[2]
+    nchannels = image.shape[-1]
     del rgb_mask[nchannels:]
     if len(rgb_mask) < nchannels:
         rgb_mask = rgb_mask + [1] * (nchannels - len(rgb_mask))

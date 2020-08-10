@@ -29,11 +29,23 @@ hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.module
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler_core.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.utilities')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations.modules")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations.threading")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations.stdlib")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations.excepthook")
+
 
 hiddenimports += [
     "scipy._lib.messagestream",
     "pywt._extensions._cwt",
-    "sklearn.utils.sparsetools"
+    "sklearn.utils.sparsetools",
+	"sentry_sdk",
+    "sentry_sdk.integrations.excepthook",
+    "sentry_sdk.integrations.stdlib",
+    "sentry_sdk.integrations.modules",
+    "sentry_sdk.integrations.threading",
 ]
 
 a = Analysis(['CellProfiler.py'],

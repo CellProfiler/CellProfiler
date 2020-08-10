@@ -140,7 +140,6 @@ class Figure(wx.Frame):
         self.table = None
         self.current_plane = 0
         self.images = {}
-        self.normalized_images = {}
         self.colorbar = {}
         self.sliders = {}
         self.subplot_params = {}
@@ -1149,8 +1148,7 @@ class Figure(wx.Frame):
                                     plot_params["normalize_args"] = params["normalize_args"]
                                     image = self.images[(xcoord, ycoord)]
                                     if not isinstance(image, numpy.ma.MaskedArray):
-                                        img_data = self.get_normalized_image(xcoord, ycoord,
-                                                                             refresh=True, params=plot_params)
+                                        img_data = self.normalize_image(self.images[(xcoord, ycoord)], **plot_params)
                                         subplot_item.displayed.set_data(img_data)
                                 else:
                                     # Should be a table, make sure the invisible subplot stays hidden.
@@ -1184,7 +1182,7 @@ class Figure(wx.Frame):
 
         def refresh_figure(axes=None, background=None, axesdata=None):
             subplot = self.subplot(x, y)
-            img_data = self.get_normalized_image(x, y, refresh=True, params=params)
+            img_data = self.normalize_image(self.images[(x, y)], **params)
             subplot.displayed.set_data(img_data)
             if axes is not None:
                 self.figure.canvas.restore_region(background)
@@ -1629,7 +1627,7 @@ class Figure(wx.Frame):
             z = image.shape[0]
             self.current_plane = z//2
 
-        image = self.get_normalized_image(x, y, params=kwargs)
+        image = self.normalize_image(self.images[(x, y)], **kwargs)
 
         self.subplot(x, y).displayed = subplot.imshow(image)
 
@@ -1698,7 +1696,7 @@ class Figure(wx.Frame):
 
         if self.dimensions == 3:
             aspect_ratio = 20 if len(self.subplots) == 1 else 10
-            axplane = matplotlib.colorbar.make_axes(subplot, location="bottom", aspect=aspect_ratio)[0]
+            axplane = matplotlib.colorbar.make_axes(subplot, location="bottom", aspect=aspect_ratio, panchor=False)[0]
             splane = Slider(axplane, 'Plane', 0, z-1, valinit=self.current_plane, valstep=1, valfmt='%02d')
 
             def change_plane(val):
@@ -1718,11 +1716,11 @@ class Figure(wx.Frame):
                     for ycoord in range(numy):
                         subplot_item = self.subplot(xcoord, ycoord)
                         if hasattr(subplot_item, "displayed"):
-                            img_data = self.get_normalized_image(xcoord, ycoord, refresh=False)
+                            params = self.subplot_params[(xcoord, ycoord)]
+                            img_data = self.normalize_image(self.images[(xcoord, ycoord)], **params)
                             subplot_item.displayed.set_data(img_data)
                         else:
-                            # Should be a table, make sure the invisible subplot stays hidden.
-#                            subplot_item.axis("off")
+                            # Should be a table, we don't need the axis.
                             if not hasattr(subplot_item, "deleted"):
                                 self.figure.delaxes(subplot_item)
                                 subplot_item.deleted = True
@@ -2002,9 +2000,10 @@ class Figure(wx.Frame):
         vmin = kwargs["vmin"]
         vmax = kwargs["vmax"]
         rgb_mask = kwargs["rgb_mask"]
+        in_range = (image.min(), image.max())
         image = image.astype(numpy.float32)
-        #if self.dimensions == 3:
-        #    image = image[self.current_plane, :, :]
+        if self.dimensions == 3:
+            image = image[self.current_plane, :, :]
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
 
@@ -2042,7 +2041,10 @@ class Figure(wx.Frame):
 
                 image = numpy.dstack(image)
             else:
-                image = skimage.exposure.rescale_intensity(image)
+                if in_range[0].dtype == numpy.bool:
+                    image = skimage.exposure.rescale_intensity(image)
+                else:
+                    image = skimage.exposure.rescale_intensity(image, in_range=in_range)
 
         # Apply rgb mask to hide/show channels
         if self.is_color_image(image):
@@ -2066,14 +2068,7 @@ class Figure(wx.Frame):
                 norm = None
             mappable = matplotlib.cm.ScalarMappable(cmap=colormap, norm=norm)
             mappable.set_clim(vmin, vmax)
-            if self.dimensions == 2:
-                image = mappable.to_rgba(image)[:, :, :3]
-            else:
-                newimage = numpy.zeros((image.shape[0], image.shape[1], image.shape[2], 4))
-                for index, array_slice in enumerate(numpy.rollaxis(image, 0)):
-                    array_slice = mappable.to_rgba(array_slice)
-                    newimage[index, :, :, :] = array_slice
-                image = newimage
+            image = mappable.to_rgba(image)[:, :, :3]
         #
         # add the segmentations
         #
@@ -2114,17 +2109,6 @@ class Figure(wx.Frame):
                     image[labels != 0, :] += limage * alpha
                 loffset += numpy.max(labels)
         return image
-
-    def get_normalized_image(self, x, y, refresh=True, params=None):
-        # Perform normalisation and cache a normalised image if we're working in 3D
-        if params is None:
-            params = self.subplot_params[(x, y)]
-        if self.dimensions == 3:
-            if refresh or (x, y) not in self.normalized_images:
-                self.normalized_images[(x, y)] = self.normalize_image(self.images[(x, y)], **params)
-            return self.normalized_images[(x, y)][self.current_plane, :, :]
-        else:
-            return self.normalize_image(self.images[(x, y)], **params)
 
     def subplot_table(
         self,

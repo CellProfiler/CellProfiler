@@ -52,7 +52,7 @@ jobs:
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
-          iscc /dMyAppVersion="${{ github.event.release.tag_name }}" "distribution/windows/cellprofiler.iss"
+          iscc /dMyAppVersion=${{ github.event.release.tag_name }} "distribution/windows/cellprofiler.iss"
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
         with:

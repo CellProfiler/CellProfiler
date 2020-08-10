@@ -43,4 +43,4 @@ NAV_MODE_NONE = ""
 NAV_MODE_PAN = "pan/zoom"
 NAV_MODE_ZOOM = "zoom rect"
 WINDOW_IDS = []
-__CROSSHAIR_CURSOR = None
+CROSSHAIR_CURSOR = None

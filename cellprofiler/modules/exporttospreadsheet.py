@@ -721,6 +721,23 @@ desired.
 
         returns False if analysis can't be done
         """
+        maximum_image_sets = 500
+        if workspace.measurements.image_set_count > maximum_image_sets:
+            msg = "You are using ExportToSpreadsheet to export " + str(maximum_image_sets) + " image sets. " \
+                                                                     "Instead we suggest using ExportToDatabase" \
+                                                                     "because ExportToSpreadsheet " \
+                                                                     "may fail on large image sets." \
+                                                                     " Do you want to continue?"
+            import wx
+            result = wx.MessageBox(
+                msg,
+                caption="ExportToSpreadsheet: Large number of image sets",
+                style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION,
+            )
+            if result != wx.YES:
+                return False
+            return True
+
         return self.check_overwrite(workspace)
 
     def run(self, workspace):
@@ -786,6 +803,7 @@ desired.
         #
         # Don't export in test mode
         #
+
         if workspace.pipeline.test_mode:
             return
         #

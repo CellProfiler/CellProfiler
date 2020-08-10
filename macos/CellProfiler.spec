@@ -33,10 +33,18 @@ hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.gui')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler_core.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("skimage.feature")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations.stdlib")
 
 hiddenimports += [
     "pkg_resources.py2_warn",
-    "pywt._extensions._cwt"
+    "pywt._extensions._cwt",
+    "sentry_sdk.integrations.excepthook",
+    "sentry_sdk.integrations.stdlib",
+    "sentry_sdk.integrations.modules",
+    "sentry_sdk.integrations.threading",
 ]
 
 excludes = []

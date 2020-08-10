@@ -3,8 +3,6 @@ jobs:
     name: build
     runs-on: ${{ matrix.os }}
     steps:
-      - name: tag number
-        run : echo ${{ github.event.release.tag_name }}
       - if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/cache@v2
         with:

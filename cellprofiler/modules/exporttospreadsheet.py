@@ -89,6 +89,7 @@ import logging
 import os
 
 import numpy
+import pkg_resources
 from cellprofiler_core.constants.image import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 from cellprofiler_core.constants.measurement import (
     EXPERIMENT,
@@ -723,20 +724,25 @@ desired.
         """
         maximum_image_sets = 500
         if workspace.measurements.image_set_count > maximum_image_sets:
-            msg = "You are using ExportToSpreadsheet to export " + str(maximum_image_sets) + " image sets. " \
-                                                                     "Instead we suggest using ExportToDatabase" \
-                                                                     "because ExportToSpreadsheet " \
-                                                                     "may fail on large image sets." \
-                                                                     " Do you want to continue?"
-            import wx
-            result = wx.MessageBox(
-                msg,
-                caption="ExportToSpreadsheet: Large number of image sets",
-                style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION,
-            )
-            if result != wx.YES:
-                return False
-            return True
+            msg = f'You are using ExportToSpreadsheet to export {workspace.measurements.image_set_count} image sets. ' \
+                  f'Instead we suggest using ExportToDatabase because ExportToSpreadsheet' \
+                  f' may fail on large image sets. Do you want to continue?'
+
+            try:
+                pkg_resources.get_distribution("wxpython")
+                import wx
+                result = wx.MessageBox(
+                    msg,
+                    caption="ExportToSpreadsheet: Large number of image sets",
+                    style=wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION,
+                )
+                if result == wx.NO:
+                    return False
+                return True
+
+            except pkg_resources.DistributionNotFound:
+                print("Given the large number of image sets, you may want to consider using ExportToDatabase "
+                      "as opposed to ExportToSpreadsheet.")
 
         return self.check_overwrite(workspace)
 

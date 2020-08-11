@@ -348,7 +348,11 @@ values are scaled within the range (0, 1). Floating point data is not
 rescaled.
 
 {BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only for
-TIFF formats.""".format(
+TIFF formats.
+
+Note: Opening exported multichannel 16-bit TIFF stacks in ImageJ may require  
+the BioFormats Importer plugin due to the compression method used by
+CellProfiler.""".format(
                 **{"BIT_DEPTH_FLOAT": BIT_DEPTH_FLOAT, "BIT_DEPTH_16": BIT_DEPTH_16}
             ),
         )

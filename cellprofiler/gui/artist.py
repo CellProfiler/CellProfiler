@@ -864,7 +864,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         label_fmt = "--- %s ---"
         for key, sequence in breaks:
             label = label_fmt % key
-            if idx >= len(menu_items) or menu_items[idx].Text != label:
+            if idx >= len(menu_items) or menu_items[idx].ItemLabel != label:
                 item = menu.Insert(idx, wx.NewId(), label)
                 item.Enable(False)
                 menu_items.insert(idx, item)
@@ -876,7 +876,7 @@ class CPImageArtist(matplotlib.artist.Artist):
                 name = data.name
                 if (
                     idx == len(menu_items)
-                    or menu_items[idx].Text.startswith("---")
+                    or menu_items[idx].ItemLabel.startswith("---")
                     or menu_items[idx].IsSeparator()
                 ):
                     sub_menu = wx.Menu()

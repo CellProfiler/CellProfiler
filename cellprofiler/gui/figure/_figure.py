@@ -1814,6 +1814,8 @@ class Figure(wx.Frame):
         )
 
     def return_cmap(self, nindexes=None):
+        if nindexes is not None:
+            nindexes = max(nindexes, 255)
         # Get the colormap from the user preferences
         colormap = matplotlib.cm.get_cmap(get_default_colormap(), lut=nindexes,)
         # Initialize the colormap so we have access to the LUT

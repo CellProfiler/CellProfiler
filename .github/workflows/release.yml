@@ -52,17 +52,17 @@ jobs:
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
-          iscc /dMyAppVersion="4.0.0rc7" "distribution/windows/cellprofiler.iss"
+          iscc /dMyAppVersion="4.0.0rc9" "distribution/windows/cellprofiler.iss"
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
         with:
           name: CellProfiler-macOS.zip
           path: ./distribution/macos/dist/CellProfiler-macOS.zip
       - if: ${{ matrix.os == 'windows-2019' }}
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
-          name: CellProfiler.exe
-          path: ./distribution/windows/Output/CellProfiler.exe
+          name: CellProfiler_4.0.0rc9.exe
+          path: ./distribution/windows/Output/CellProfiler_4.0.0rc9.exe
     strategy:
       matrix:
         os: [macos-10.15, windows-2019]
@@ -88,7 +88,7 @@ jobs:
           path: ./
       - uses: actions/download-artifact@v1
         with:
-          name: CellProfiler.exe
+          name: CellProfiler_4.0.0rc9.exe
           path: ./
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -103,8 +103,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/exe
-          asset_name: CellProfiler.exe
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler.exe
+          asset_name: CellProfiler_4.0.0rc9.exe
+          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler_4.0.0rc9.exe
           upload_url: ${{ steps.create_release.outputs.upload_url }}
 name: create-release
 on:

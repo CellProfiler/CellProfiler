@@ -1,36 +1,37 @@
 CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:300
+Version:5
+DateRevision:400
 GitHash:
 ModuleCount:16
 HasImagePlaneDetails:False
 
-Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Images:[module_num:1|svn_version:'Unknown'|variable_revision_number:2|show_window:False|notes:['To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     :
     Filter images?:Images only
-    Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "\x5B\\\\\\\\\\\\\\\\/\x5D\\\\\\\\.")
+    Select the rule criteria:and (extension does isimage) (directory doesnot containregexp "[\\\\\\\\/]\\\\.")
 
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:False|notes:\x5B\'The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Metadata:[module_num:2|svn_version:'Unknown'|variable_revision_number:6|show_window:False|notes:['The Metadata module optionally allows you to extract information describing your images (i.e, metadata) which will be stored along with your measurements. This information can be contained in the file name and/or location, or in an external file.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Extract metadata?:No
     Metadata data type:Text
     Metadata types:{}
     Extraction method count:1
     Metadata extraction method:Extract from image file headers
     Metadata source:File name
-    Regular expression to extract from file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
-    Regular expression to extract from folder name:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Regular expression to extract from file name:^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])
+    Regular expression to extract from folder name:(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$
     Extract metadata from:All images
     Select the filtering criteria:and (file does contain "")
-    Metadata file location:Elsewhere...\x7C
-    Match file and image metadata:\x5B\x5D
+    Metadata file location:Elsewhere...|
+    Match file and image metadata:[]
     Use case insensitive matching?:No
     Metadata file name:
+    Does cached metadata exist?:No
 
-NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:8|show_window:False|notes:\x5B\'The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+NamesAndTypes:[module_num:3|svn_version:'Unknown'|variable_revision_number:8|show_window:False|notes:['The NamesAndTypes module allows you to assign a meaningful name to each image by which other modules will refer to it.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Assign a name to:Images matching rules
     Select the image type:Grayscale image
     Name to assign these images:DNA
-    Match metadata:\x5B\x5D
+    Match metadata:[]
     Image set matching method:Order
     Set intensity range from:Image metadata
     Assignments count:3
@@ -59,17 +60,17 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:8|s
     Set intensity range from:Image metadata
     Maximum intensity:255.0
 
-Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\'The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Groups:[module_num:4|svn_version:'Unknown'|variable_revision_number:2|show_window:False|notes:['The Groups module optionally allows you to split your list of images into image subsets (groups) which will be processed independently of each other. Examples of groupings include screening batches, microtiter plates, time-lapse movies, etc.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Do you want to group your images?:No
     grouping metadata count:1
     Metadata category:None
 
-Crop:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\'Crop the DAPI image down to a 200 x 200 rectangle by entering specific coordinates.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Crop:[module_num:5|svn_version:'Unknown'|variable_revision_number:3|show_window:True|notes:['Crop the DAPI image down to a 200 x 200 rectangle by entering specific coordinates.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:OrigBlue
     Name the output image:CropBlue
     Select the cropping shape:Rectangle
     Select the cropping method:Coordinates
-    Apply which cycle\'s cropping pattern?:First
+    Apply which cycle's cropping pattern?:First
     Left and right rectangle positions:501,700
     Top and bottom rectangle positions:251,450
     Coordinates of ellipse center:200,500
@@ -80,12 +81,12 @@ Crop:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_windo
     Select the image with a cropping mask:None
     Select the objects:None
 
-Crop:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\'Use the same cropping from the DAPI image for FITC image.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Crop:[module_num:6|svn_version:'Unknown'|variable_revision_number:3|show_window:True|notes:['Use the same cropping from the DAPI image for FITC image.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:OrigGreen
     Name the output image:CropGreen
     Select the cropping shape:Previous cropping
     Select the cropping method:Coordinates
-    Apply which cycle\'s cropping pattern?:First
+    Apply which cycle's cropping pattern?:First
     Left and right rectangle positions:300,600
     Top and bottom rectangle positions:300,600
     Coordinates of ellipse center:500,500
@@ -96,12 +97,12 @@ Crop:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:3|show_windo
     Select the image with a cropping mask:CropBlue
     Select the objects:None
 
-Crop:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\'Use the same cropping from the DAPI image for the rhodamine image.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Crop:[module_num:7|svn_version:'Unknown'|variable_revision_number:3|show_window:True|notes:['Use the same cropping from the DAPI image for the rhodamine image.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:OrigRed
     Name the output image:CropRed
     Select the cropping shape:Previous cropping
     Select the cropping method:Coordinates
-    Apply which cycle\'s cropping pattern?:First
+    Apply which cycle's cropping pattern?:First
     Left and right rectangle positions:300,600
     Top and bottom rectangle positions:300,600
     Coordinates of ellipse center:500,500
@@ -112,28 +113,30 @@ Crop:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:3|show_windo
     Select the image with a cropping mask:CropBlue
     Select the objects:None
 
-IdentifyPrimaryObjects:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:13|show_window:True|notes:\x5B\'Identify the nuclei from the DAPI image. Three-class thresholding performs better than the default two-class thresholding in this case.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+IdentifyPrimaryObjects:[module_num:8|svn_version:'Unknown'|variable_revision_number:14|show_window:True|notes:['Identify the nuclei from the DAPI image. Three-class thresholding performs better than the default two-class thresholding in this case.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select the input image:CropBlue
     Name the primary objects to be identified:Nuclei
     Typical diameter of objects, in pixel units (Min,Max):10,40
     Discard objects outside the diameter range?:Yes
     Discard objects touching the border of the image?:Yes
-    Method to distinguish clumped objects:Intensity
-    Method to draw dividing lines between clumped objects:Intensity
+    Method to distinguish clumped objects:Shape
+    Method to draw dividing lines between clumped objects:Shape
     Size of smoothing filter:10
     Suppress local maxima that are closer than this minimum allowed distance:5
     Speed up by using lower-resolution image to find local maxima?:Yes
-    Fill holes in identified objects?:After both thresholding and declumping
+    Fill holes in identified objects?:After declumping only
     Automatically calculate size of smoothing filter for declumping?:Yes
     Automatically calculate minimum allowed distance between local maxima?:Yes
     Handling of objects if excessive number of objects identified:Continue
     Maximum number of objects:500
+    Display accepted local maxima?:No
+    Select maxima color:Blue
     Use advanced settings?:Yes
-    Threshold setting version:9
+    Threshold setting version:11
     Threshold strategy:Global
-    Thresholding method:Otsu
+    Thresholding method:Minimum Cross-Entropy
     Threshold smoothing scale:1.3488
-    Threshold correction factor:1.0
+    Threshold correction factor:1
     Lower and upper bounds on threshold:0,1
     Manual threshold:0.0
     Select the measurement to threshold with:None
@@ -147,7 +150,7 @@ IdentifyPrimaryObjects:[module_num:8|svn_version:\'Unknown\'|variable_revision_n
     # of deviations:2
     Thresholding method:Otsu
 
-IdentifySecondaryObjects:[module_num:9|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\'Identify the cells by using the nuclei as a "seed" region, then growing outwards until stopped by the image threshold or by a neighbor. The Propagation method is used to delineate the boundary between neighboring cells.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+IdentifySecondaryObjects:[module_num:9|svn_version:'Unknown'|variable_revision_number:10|show_window:True|notes:['Identify the cells by using the nuclei as a "seed" region, then growing outwards until stopped by the image threshold or by a neighbor. The Propagation method is used to delineate the boundary between neighboring cells.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select the input objects:Nuclei
     Name the objects to be identified:Cells
     Select the method to identify the secondary objects:Propagation
@@ -158,7 +161,7 @@ IdentifySecondaryObjects:[module_num:9|svn_version:\'Unknown\'|variable_revision
     Discard the associated primary objects?:No
     Name the new primary objects:FilteredNuclei
     Fill holes in identified objects?:Yes
-    Threshold setting version:9
+    Threshold setting version:11
     Threshold strategy:Global
     Thresholding method:Otsu
     Threshold smoothing scale:0
@@ -176,38 +179,31 @@ IdentifySecondaryObjects:[module_num:9|svn_version:\'Unknown\'|variable_revision
     # of deviations:2
     Thresholding method:Otsu
 
-IdentifyTertiaryObjects:[module_num:10|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\'Identify the cytoplasm by "subtracting" the nuclei objects from the cell objects.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+IdentifyTertiaryObjects:[module_num:10|svn_version:'Unknown'|variable_revision_number:3|show_window:True|notes:['Identify the cytoplasm by “subtracting” the nuclei objects from the cell objects.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select the larger identified objects:Cells
     Select the smaller identified objects:Nuclei
     Name the tertiary objects to be identified:Cytoplasm
     Shrink smaller object prior to subtraction?:Yes
 
-MeasureObjectSizeShape:[module_num:11|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\'Measure morphological features from the cell, nuclei and cytoplasm objects.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Select objects to measure:Cells
-    Select objects to measure:Nuclei
-    Select objects to measure:Cytoplasm
+MeasureObjectSizeShape:[module_num:11|svn_version:'Unknown'|variable_revision_number:3|show_window:True|notes:['Measure morphological features from the cell, nuclei and cytoplasm objects.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select object sets to measure:Cells, Nuclei, Cytoplasm
     Calculate the Zernike features?:No
+    Calculate the advanced features?:No
 
-MeasureObjectIntensity:[module_num:12|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\'Measure intensity features from nuclei and cell objects against the cropped DAPI image.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Hidden:1
-    Select an image to measure:CropBlue
-    Select objects to measure:Nuclei
-    Select objects to measure:Cells
-    Select objects to measure:Cytoplasm
+MeasureObjectIntensity:[module_num:12|svn_version:'Unknown'|variable_revision_number:4|show_window:True|notes:['Measure intensity features from nuclei and cell objects against the cropped DAPI image.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:True]
+    Select images to measure:CropBlue
+    Select objects to measure:Nuclei, Cells, Cytoplasm
 
-MeasureTexture:[module_num:13|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\'Measure texture features of the nuclei, cells and cytoplasm from the cropped DAPI image.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+MeasureTexture:[module_num:13|svn_version:'Unknown'|variable_revision_number:6|show_window:True|notes:['Measure texture features of the nuclei, cells and cytoplasm from the cropped DAPI image.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select images to measure:CropBlue
+    Select objects to measure:Cells, Nuclei, Cytoplasm
     Hidden:1
-    Hidden:3
-    Hidden:1
-    Select an image to measure:CropBlue
-    Select objects to measure:Nuclei
-    Select objects to measure:Cells
-    Select objects to measure:Cytoplasm
+    Measure whole images or objects?:Both
     Texture scale to measure:3
-    Measure images or objects?:Both
 
-GrayToColor:[module_num:14|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\'Combine the cropped grayscale channels into a color RGB image.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+GrayToColor:[module_num:14|svn_version:'Unknown'|variable_revision_number:4|show_window:True|notes:['Combine the cropped grayscale channels into a color RGB image.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select a color scheme:RGB
+    Rescale intensity:No
     Select the image to be colored red:CropRed
     Select the image to be colored green:CropGreen
     Select the image to be colored blue:CropBlue
@@ -228,7 +224,7 @@ GrayToColor:[module_num:14|svn_version:\'Unknown\'|variable_revision_number:3|sh
     Color:#ff0000
     Weight:1.0
 
-SaveImages:[module_num:15|svn_version:\'Unknown\'|variable_revision_number:13|show_window:True|notes:\x5B\'Save the color image as an 8-bit TIF, appending the text RBG to the original filename of the DAPI image.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+SaveImages:[module_num:15|svn_version:'Unknown'|variable_revision_number:15|show_window:True|notes:['Save the color image as an 8-bit TIF, appending the text RBG to the original filename of the DAPI image.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select the type of image to save:Image
     Select the image to save:RGBImage
     Select method for constructing file names:Sequential numbers
@@ -238,28 +234,30 @@ SaveImages:[module_num:15|svn_version:\'Unknown\'|variable_revision_number:13|sh
     Append a suffix to the image file name?:Yes
     Text to append to the image name:RGB
     Saved file format:tiff
-    Output file location:Default Output Folder\x7CNone
+    Output file location:Default Output Folder|None
     Image bit depth:8-bit integer
     Overwrite existing files without warning?:No
     When to save:Every cycle
     Record the file and path information to the saved image?:No
     Create subfolders in the output folder?:No
     Base image folder:Default Input Folder
+    How to save the series:T (Time)
 
-ExportToSpreadsheet:[module_num:16|svn_version:\'Unknown\'|variable_revision_number:12|show_window:True|notes:\x5B"Export any measurements to a comma-delimited file (.csv). The measurements made for the nuclei, cell and cytoplasm objects will be saved to separate .csv files, in addition to the per-image .csv\'s."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+ExportToSpreadsheet:[module_num:16|svn_version:'Unknown'|variable_revision_number:13|show_window:True|notes:["Export any measurements to a comma-delimited file (.csv). The measurements made for the nuclei, cell and cytoplasm objects will be saved to separate .csv files, in addition to the per-image .csv's."]|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select the column delimiter:Comma (",")
     Add image metadata columns to your object data file?:No
+    Add image file and folder names to your object data file?:No
     Select the measurements to export:No
     Calculate the per-image mean values for object measurements?:Yes
     Calculate the per-image median values for object measurements?:No
     Calculate the per-image standard deviation values for object measurements?:No
-    Output file location:Default Output Folder\x7C.
+    Output file location:Default Output Folder|.
     Create a GenePattern GCT file?:No
     Select source of sample row name:Metadata
     Select the image to use as the identifier:None
     Select the metadata to use as the identifier:None
     Export all measurement types?:No
-    Press button to select measurements:None\x7CNone
+    Press button to select measurements:None|None
     Representation of Nan/Inf:NaN
     Add a prefix to file names?:No
     Filename prefix:MyExpt_

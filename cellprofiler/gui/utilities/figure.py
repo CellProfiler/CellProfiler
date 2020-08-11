@@ -15,6 +15,8 @@ from cellprofiler_core.preferences import IM_BICUBIC
 
 from .. import errordialog
 
+CROSSHAIR_CURSOR = None
+
 
 def wraparound(sequence):
     while True:
@@ -188,7 +190,7 @@ def get_matplotlib_interpolation_preference():
 
 
 def get_crosshair_cursor():
-    from ..constants.figure import CROSSHAIR_CURSOR
+    global CROSSHAIR_CURSOR
     if CROSSHAIR_CURSOR is None:
         if sys.platform.lower().startswith("win"):
             #

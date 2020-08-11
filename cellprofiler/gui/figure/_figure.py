@@ -19,7 +19,8 @@ import matplotlib.gridspec
 import matplotlib.image
 import matplotlib.patches
 import matplotlib.pyplot
-from matplotlib.widgets import Slider
+import matplotlib.transforms
+import matplotlib.widgets
 import numpy
 import numpy.ma
 import scipy.ndimage
@@ -1696,12 +1697,41 @@ class Figure(wx.Frame):
 
         if self.dimensions == 3:
             aspect_ratio = 20 if len(self.subplots) == 1 else 10
-            #axplane = matplotlib.colorbar.make_axes(subplot, location="bottom", aspect=aspect_ratio, panchor=False)[0]
             axplane = self.add_helper_axis(subplot, aspect=aspect_ratio)
-            splane = Slider(axplane, 'Plane', 0, z-1, valinit=self.current_plane, valstep=1, valfmt='%02d')
+            if self.subplots.shape[0] < 3 and self.subplots.shape[1] < 3:
+                # Button placement is dumb and will only work with up to 2x2 subplots.
+                xprev = 0.88
+                xnext = 0.91
+                ybut = 0.075
+                if self.subplots.shape[0] > 1 and x == 0:
+                    xprev -= 0.5
+                    xnext -= 0.5
+                if self.subplots.shape[1] > 1 and y == 0:
+                    ybut = 0.47
+                axprev = self.figure.add_axes([xprev, ybut, 0.03, 0.04])
+                axnext = self.figure.add_axes([xnext, ybut, 0.03, 0.04])
+                subplot.bprev = matplotlib.widgets.Button(axprev, '<')
+                subplot.bnext = matplotlib.widgets.Button(axnext, '>')
+            splane = matplotlib.widgets.Slider(
+                axplane,
+                'Plane',
+                0,
+                z-1,
+                valstep=1,
+                valfmt='%02d',
+            )
+            splane.set_val(self.current_plane)
+
+            def next_plane(event):
+                if splane.val < z-1:
+                    change_plane(splane.val + 1)
+
+            def prev_plane(event):
+                if splane.val > 0:
+                    change_plane(splane.val - 1)
 
             def change_plane(val):
-                newplane = int(splane.val)
+                newplane = int(val)
                 if newplane == self.current_plane:
                     return
                 else:
@@ -1727,68 +1757,38 @@ class Figure(wx.Frame):
                                 subplot_item.deleted = True
                         # Updating the slider will force a refresh, so we don't need to explicitly draw
             splane.on_changed(change_plane)
+            if self.subplots.shape[0] < 3 and self.subplots.shape[1] < 3:
+                subplot.bprev.on_clicked(prev_plane)
+                subplot.bnext.on_clicked(next_plane)
             self.sliders[subplot] = (axplane, splane)
 
         return subplot
-        #else:
-        #    self.gridshow(x, y, image, title, colormap, colorbar, normalize)
 
     @staticmethod
-    def add_helper_axis(parents, location=None, fraction=0.3, pad=0.02,
-                        shrink=1.0, aspect=20):
-        '''
-        Resize and reposition parent axes, and return a child
-        axes suitable for a colorbar.
+    def add_helper_axis(parents, fraction=0.3, shrink=1.0, aspect=20):
+        # This is a modification of the matplotlib colorbar axis creation function,
+        # with some of the unnecessary bulk stripped out.
 
-        Keyword arguments may include the following (with defaults):
-
-            location : [None|'left'|'right'|'top'|'bottom']
-                The position, relative to **parents**, where the colorbar axes
-                should be created. If None, the value will either come from the
-                given ``orientation``, else it will default to 'right'.
-
-            orientation :  [None|'vertical'|'horizontal']
-                The orientation of the colorbar. Typically, this keyword shouldn't
-                be used, as it can be derived from the ``location`` keyword.
-
-        %s
-
-        Returns (cax, kw), the child axes and the reduced kw dictionary to be
-        passed when creating the colorbar instance.
-        '''
-
-
-        anchor = "N"
+        anchor = "C"
         parent_anchor = "C"
         parents_iterable = numpy.iterable(parents)
-        # turn parents into a list if it is not already. We do this w/ np
-        # because `plt.subplots` can return an ndarray and is natural to
-        # pass to `colorbar`.
         parents = numpy.atleast_1d(parents).ravel()
-
         # check if using constrained_layout:
         try:
             gs = parents[0].get_subplotspec().get_gridspec()
             using_constrained_layout = (gs._layoutbox is not None)
         except AttributeError:
             using_constrained_layout = False
-
-        # defaults are not appropriate for constrained_layout:
         pad = 0.15
         if using_constrained_layout:
             pad = 0.02
         fig = parents[0].get_figure()
-        if not all(fig is ax.get_figure() for ax in parents):
-            raise ValueError('Unable to create a axes as not all '
-                             'parents share the same figure.')
-        import matplotlib.transforms
         # take a bounding box around all of the given axes
         parents_bbox = matplotlib.transforms.Bbox.union(
             [ax.get_position(original=True).frozen() for ax in parents])
 
         pb = parents_bbox
         pbcb, _, pb1 = pb.splity(fraction, fraction + pad)
-        #pbcb = pbcb.shrunk(shrink, 1.0).anchored(anchor, pbcb)
 
         # define the aspect ratio in terms of y's per x rather than x's per y
         aspect = 1.0 / aspect
@@ -1804,11 +1804,9 @@ class Figure(wx.Frame):
             ax._set_position(new_posn)
             if parent_anchor is not False:
                 ax.set_anchor(parent_anchor)
-        print(pbcb)
         new_ax = fig.add_axes(pbcb, label="<colorbar>")
 
-        # OK, now make a layoutbox for the cb axis.  Later, we will use this
-        # to make the colorbar fit nicely.
+        # Make a layoutbox for the new axis.
         if not using_constrained_layout:
             # no layout boxes:
             lb = None
@@ -1829,11 +1827,8 @@ class Figure(wx.Frame):
 
                 lb, lbpos = constrained_layout.layoutcolorbargridspec(
                     parents, new_ax, shrink, aspect, "bottom", pad)
-        print(lb)
-        print(lbpos)
         new_ax._layoutbox = lb
         new_ax._poslayoutbox = lbpos
-
         return new_ax
 
     @staticmethod
@@ -1937,7 +1932,6 @@ class Figure(wx.Frame):
             # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
             if not colormap:
-                print(numpy.max(image))
                 colormap = self.return_cmap(
                     numpy.max(image) if numpy.max(image) > 255 else None
                 )

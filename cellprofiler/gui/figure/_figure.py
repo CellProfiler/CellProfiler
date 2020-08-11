@@ -1696,7 +1696,8 @@ class Figure(wx.Frame):
 
         if self.dimensions == 3:
             aspect_ratio = 20 if len(self.subplots) == 1 else 10
-            axplane = matplotlib.colorbar.make_axes(subplot, location="bottom", aspect=aspect_ratio, panchor=False)[0]
+            #axplane = matplotlib.colorbar.make_axes(subplot, location="bottom", aspect=aspect_ratio, panchor=False)[0]
+            axplane = self.add_helper_axis(subplot, aspect=aspect_ratio)
             splane = Slider(axplane, 'Plane', 0, z-1, valinit=self.current_plane, valstep=1, valfmt='%02d')
 
             def change_plane(val):
@@ -1731,6 +1732,109 @@ class Figure(wx.Frame):
         return subplot
         #else:
         #    self.gridshow(x, y, image, title, colormap, colorbar, normalize)
+
+    @staticmethod
+    def add_helper_axis(parents, location=None, fraction=0.3, pad=0.02,
+                        shrink=1.0, aspect=20):
+        '''
+        Resize and reposition parent axes, and return a child
+        axes suitable for a colorbar.
+
+        Keyword arguments may include the following (with defaults):
+
+            location : [None|'left'|'right'|'top'|'bottom']
+                The position, relative to **parents**, where the colorbar axes
+                should be created. If None, the value will either come from the
+                given ``orientation``, else it will default to 'right'.
+
+            orientation :  [None|'vertical'|'horizontal']
+                The orientation of the colorbar. Typically, this keyword shouldn't
+                be used, as it can be derived from the ``location`` keyword.
+
+        %s
+
+        Returns (cax, kw), the child axes and the reduced kw dictionary to be
+        passed when creating the colorbar instance.
+        '''
+
+
+        anchor = "N"
+        parent_anchor = "C"
+        parents_iterable = numpy.iterable(parents)
+        # turn parents into a list if it is not already. We do this w/ np
+        # because `plt.subplots` can return an ndarray and is natural to
+        # pass to `colorbar`.
+        parents = numpy.atleast_1d(parents).ravel()
+
+        # check if using constrained_layout:
+        try:
+            gs = parents[0].get_subplotspec().get_gridspec()
+            using_constrained_layout = (gs._layoutbox is not None)
+        except AttributeError:
+            using_constrained_layout = False
+
+        # defaults are not appropriate for constrained_layout:
+        pad = 0.15
+        if using_constrained_layout:
+            pad = 0.02
+        fig = parents[0].get_figure()
+        if not all(fig is ax.get_figure() for ax in parents):
+            raise ValueError('Unable to create a axes as not all '
+                             'parents share the same figure.')
+        import matplotlib.transforms
+        # take a bounding box around all of the given axes
+        parents_bbox = matplotlib.transforms.Bbox.union(
+            [ax.get_position(original=True).frozen() for ax in parents])
+
+        pb = parents_bbox
+        pbcb, _, pb1 = pb.splity(fraction, fraction + pad)
+        #pbcb = pbcb.shrunk(shrink, 1.0).anchored(anchor, pbcb)
+
+        # define the aspect ratio in terms of y's per x rather than x's per y
+        aspect = 1.0 / aspect
+
+        # define a transform which takes us from old axes coordinates to
+        # new axes coordinates
+        shrinking_trans = matplotlib.transforms.BboxTransform(parents_bbox, pb1)
+
+        # transform each of the axes in parents using the new transform
+        for ax in parents:
+            new_posn = shrinking_trans.transform(ax.get_position(original=True))
+            new_posn = matplotlib.transforms.Bbox(new_posn)
+            ax._set_position(new_posn)
+            if parent_anchor is not False:
+                ax.set_anchor(parent_anchor)
+        print(pbcb)
+        new_ax = fig.add_axes(pbcb, label="<colorbar>")
+
+        # OK, now make a layoutbox for the cb axis.  Later, we will use this
+        # to make the colorbar fit nicely.
+        if not using_constrained_layout:
+            # no layout boxes:
+            lb = None
+            lbpos = None
+            # and we need to set the aspect ratio by hand...
+            new_ax.set_aspect(aspect, anchor=anchor, adjustable='box')
+        else:
+            import matplotlib._constrained_layout as constrained_layout
+            if not parents_iterable:
+                # this is a single axis...
+                ax = parents[0]
+                lb, lbpos = constrained_layout.layoutcolorbarsingle(
+                    ax, new_ax, shrink, aspect, "bottom", pad=pad)
+            else:  # there is more than one parent, so lets use gridspec
+                # the colorbar will be a sibling of this gridspec, so the
+                # parent is the same parent as the gridspec.  Either the figure,
+                # or a subplotspec.
+
+                lb, lbpos = constrained_layout.layoutcolorbargridspec(
+                    parents, new_ax, shrink, aspect, "bottom", pad)
+        print(lb)
+        print(lbpos)
+        new_ax._layoutbox = lb
+        new_ax._poslayoutbox = lbpos
+
+        return new_ax
 
     @staticmethod
     def update_line_labels(subplot, kwargs):
@@ -1833,6 +1937,7 @@ class Figure(wx.Frame):
             # Mask the original labels
             label_image = numpy.ma.masked_where(image == 0, image)
             if not colormap:
+                print(numpy.max(image))
                 colormap = self.return_cmap(
                     numpy.max(image) if numpy.max(image) > 255 else None
                 )

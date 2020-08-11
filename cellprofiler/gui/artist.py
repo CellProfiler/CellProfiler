@@ -13,6 +13,7 @@ import matplotlib.image
 import numpy
 import scipy.ndimage
 import skimage.exposure
+import skimage.transform
 
 import cellprofiler.gui.tools
 
@@ -712,9 +713,12 @@ class CPImageArtist(matplotlib.artist.Artist):
             tv_image[tv_alpha != 0, :] /= tv_alpha[tv_alpha != 0][:, numpy.newaxis]
 
         target = target[:, :, :3]
+
         numpy.clip(target, 0, 1, target)
+
         if flip_lr:
             target = numpy.fliplr(target)
+
         if self.axes.viewLim.height < 0:
             target = numpy.flipud(target)
 
@@ -730,6 +734,7 @@ class CPImageArtist(matplotlib.artist.Artist):
 
         # the viewport translation in the X direction
         tx = view_xmin - min(vl.x0, vl.x1) - 0.5
+
         #
         # the viewport translation in the Y direction
         # which is from the bottom of the screen
@@ -739,28 +744,43 @@ class CPImageArtist(matplotlib.artist.Artist):
             ty = self.axes.viewLim.y0 - view_ymax + 0.5
         else:
             ty = view_ymin - self.axes.viewLim.y0 - 0.5
+
         # im.apply_translation(tx, ty)
+
         l, b, r, t = self.axes.bbox.extents
+
         if b > t:
             t, b = b, t
+
         width_display = (r - l + 1) * magnification
         height_display = (t - b + 1) * magnification
 
         # resize viewport to display
         sx = width_display / self.axes.viewLim.width
         sy = abs(height_display / self.axes.viewLim.height)
+
         # im.apply_scaling(sx, sy)
         # im.resize(width_display, height_display, norm=1, radius=self.filterrad)
-        bbox = self.axes.bbox.frozen()
 
-        gc = renderer.new_gc()
-        gc.set_clip_rectangle(bbox)
+        bounding_box = self.axes.bbox.frozen()
 
-        im = numpy.zeros((target.shape[0], target.shape[1], 4), numpy.uint8)
-        im[:, :, 3] = 255
-        im[:, :, :3] = skimage.exposure.rescale_intensity(target, out_range=numpy.uint8)
+        graphics_context = renderer.new_gc()
 
-        renderer.draw_image(gc, l, b, im)
+        graphics_context.set_clip_rectangle(bounding_box)
+
+        image = numpy.zeros((target.shape[0], target.shape[1], 4), numpy.uint8)
+
+        image[:, :, 3] = 255
+
+        image[:, :, :3] = skimage.exposure.rescale_intensity(
+            target, out_range=numpy.uint8
+        )
+
+        image = skimage.transform.rescale(image, (sx, sy, 1))
+
+        image = skimage.img_as_ubyte(image)
+
+        renderer.draw_image(graphics_context, l, b, image)
 
         for om in list(self.__objects) + list(self.__masks):
             assert isinstance(om, OutlinesMixin)

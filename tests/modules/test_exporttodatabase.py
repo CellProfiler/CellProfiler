@@ -143,6 +143,8 @@ class TestExportToDatabase(unittest.TestCase):
             self.test_mysql = True
         except:
             self.test_mysql = False
+        self.get_connection()
+        self.get_cursor()
 
     def get_connection(self):
 
@@ -164,8 +166,8 @@ class TestExportToDatabase(unittest.TestCase):
             self.connection = None
             self.cursor = None
 
-    @pytest.fixture
-    def cursor(self):
+    def get_cursor(self):
+        print("Setting up cursor")
         if not self.test_mysql:
             pytest.skip("Skipping actual DB work, database not configured.")
         if self.cursor is None:
@@ -1259,38 +1261,39 @@ class TestExportToDatabase(unittest.TestCase):
         )
         curdir = os.path.abspath(os.curdir)
         os.chdir(output_dir)
-        try:
-            sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
-            base_name = "SQL_1_%d" % image_set_count
-            image_file = os.path.join(
-                output_dir,
-                base_name + "_" + "Image" + ".CSV",
+        #try:
+        sql_file = os.path.join(output_dir, "SQL_SETUP.SQL")
+        base_name = "SQL_1_%d" % image_set_count
+        image_file = os.path.join(
+            output_dir,
+            base_name + "_" + "Image" + ".CSV",
+        )
+        if (
+            module.separate_object_tables
+            == cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
+        ):
+            object_file = os.path.join(
+                output_dir, base_name + "_" + OBJECT_NAME + ".CSV"
             )
-            if (
-                module.separate_object_tables
-                == cellprofiler.modules.exporttodatabase.OT_PER_OBJECT
-            ):
-                object_file = os.path.join(
-                    output_dir, base_name + "_" + OBJECT_NAME + ".CSV"
-                )
-            else:
-                object_file = "%s_%s.CSV" % (
-                    base_name,
-                    OBJECT,
-                )
-                object_file = os.path.join(output_dir, object_file)
-            for filename in (sql_file, image_file, object_file):
-                assert os.path.isfile(filename)
-            fd = open(sql_file, "rt")
-            sql_text = fd.read()
-            fd.close()
-            for statement in sql_text.split(";"):
-                if len(statement.strip()) == 0:
-                    continue
-                self.cursor.execute(statement)
-        finally:
-            self.connection.commit()
-            os.chdir(curdir)
+        else:
+            object_file = "%s_%s.CSV" % (
+                base_name,
+                OBJECT,
+            )
+            object_file = os.path.join(output_dir, object_file)
+        for filename in (sql_file, image_file, object_file):
+            print(filename)
+            assert os.path.isfile(filename)
+        fd = open(sql_file, "rt")
+        sql_text = fd.read()
+        fd.close()
+        for statement in sql_text.split(";"):
+            if len(statement.strip()) == 0:
+                continue
+            self.cursor.execute(statement)
+        #finally:
+        self.connection.commit()
+        os.chdir(curdir)
 
     def tteesstt_no_relationships(self, module, cursor):
         for t in (
@@ -1370,6 +1373,7 @@ class TestExportToDatabase(unittest.TestCase):
     def drop_views(self, module, table_suffixes=None):
         self.drop_tables(module)
 
+    @pytest.mark.skip("MySQL/CSV Mode Removed")
     def test_write_mysql_db(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
@@ -1448,6 +1452,7 @@ class TestExportToDatabase(unittest.TestCase):
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
+    @pytest.mark.skip("MySQL/CSV Mode Removed")
     def test_write_mysql_db_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
@@ -1541,6 +1546,7 @@ class TestExportToDatabase(unittest.TestCase):
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
+    @pytest.mark.skip("MySQL/CSV Mode Removed")
     def test_write_mysql_db_dont_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
@@ -1716,83 +1722,84 @@ class TestExportToDatabase(unittest.TestCase):
     def test_00_write_direct_long_colname(self):
         """Write to MySQL, ensuring some columns have long names"""
         workspace, module = self.make_workspace(False, long_measurement=True)
-        try:
-            assert isinstance(
-                module, cellprofiler.modules.exporttodatabase.ExportToDatabase
-            )
-            module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
-            module.wants_agg_mean.value = True
-            module.wants_agg_median.value = False
-            module.wants_agg_std_dev.value = False
-            module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
-            module.separate_object_tables.value = (
-                cellprofiler.modules.exporttodatabase.OT_COMBINE
-            )
-            module.prepare_run(workspace)
-            module.prepare_group(workspace, {}, [1])
-            module.run(workspace)
-            mappings = module.get_column_name_mappings(
-                workspace.pipeline, workspace.image_set_list
-            )
-            long_img_column = mappings["Image_%s" % LONG_IMG_MEASUREMENT]
-            long_obj_column = mappings["%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
-            long_aggregate_obj_column = mappings[
-                "Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)
-            ]
+        #try:
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
+        module.wants_agg_mean.value = True
+        module.wants_agg_median.value = False
+        module.wants_agg_std_dev.value = False
+        module.objects_choice.value = cellprofiler.modules.exporttodatabase.O_ALL
+        module.separate_object_tables.value = (
+            cellprofiler.modules.exporttodatabase.OT_COMBINE
+        )
+        module.prepare_run(workspace)
+        module.prepare_group(workspace, {}, [1])
+        module.run(workspace)
+        mappings = module.get_column_name_mappings(
+            workspace.pipeline, workspace.image_set_list
+        )
+        long_img_column = mappings["Image_%s" % LONG_IMG_MEASUREMENT]
+        long_obj_column = mappings["%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
+        long_aggregate_obj_column = mappings[
+            "Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)
+        ]
 
-            #
-            # Now read the image file from the database
-            #
-            image_table = module.table_prefix.value + "Per_Image"
-            statement = (
-                "select ImageNumber, Image_%s, Image_%s, Image_%s,"
-                "Image_Count_%s, %s, %s "
-                "from %s"
-                % (
-                    INT_IMG_MEASUREMENT,
-                    FLOAT_IMG_MEASUREMENT,
-                    STRING_IMG_MEASUREMENT,
-                    OBJECT_NAME,
-                    long_img_column,
-                    long_aggregate_obj_column,
-                    image_table,
-                )
+        #
+        # Now read the image file from the database
+        #
+        image_table = module.table_prefix.value + "Per_Image"
+        statement = (
+            "select ImageNumber, Image_%s, Image_%s, Image_%s,"
+            "Image_Count_%s, %s, %s "
+            "from %s"
+            % (
+                INT_IMG_MEASUREMENT,
+                FLOAT_IMG_MEASUREMENT,
+                STRING_IMG_MEASUREMENT,
+                OBJECT_NAME,
+                long_img_column,
+                long_aggregate_obj_column,
+                image_table,
             )
-            self.cursor.execute(statement)
+        )
+        self.cursor.execute(statement)
+        row = self.cursor.fetchone()
+        assert len(row) == 7
+        assert row[0] == 1
+        assert round(abs(row[1] - INT_VALUE), 7) == 0
+        assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
+        assert row[3] == STRING_VALUE
+        assert row[4] == len(OBJ_VALUE)
+        assert row[5] == 100
+        assert round(abs(row[6] - numpy.mean(OBJ_VALUE)), 4) == 0
+        with pytest.raises(StopIteration):
+            self.cursor.__next__()
+        statement = (
+            "select ImageNumber, ObjectNumber, %s_%s,%s "
+            "from %sPer_Object order by ObjectNumber"
+            % (
+                OBJECT_NAME,
+                OBJ_MEASUREMENT,
+                long_obj_column,
+                module.table_prefix.value,
+            )
+        )
+        self.cursor.execute(statement)
+        for i, value in enumerate(OBJ_VALUE):
             row = self.cursor.fetchone()
-            assert len(row) == 7
+            assert len(row) == 4
             assert row[0] == 1
-            assert round(abs(row[1] - INT_VALUE), 7) == 0
-            assert round(abs(row[2] - FLOAT_VALUE), 7) == 0
-            assert row[3] == STRING_VALUE
-            assert row[4] == len(OBJ_VALUE)
-            assert row[5] == 100
-            assert round(abs(row[6] - numpy.mean(OBJ_VALUE)), 4) == 0
-            with pytest.raises(StopIteration):
-                self.cursor.__next__()
-            statement = (
-                "select ImageNumber, ObjectNumber, %s_%s,%s "
-                "from %sPer_Object order by ObjectNumber"
-                % (
-                    OBJECT_NAME,
-                    OBJ_MEASUREMENT,
-                    long_obj_column,
-                    module.table_prefix.value,
-                )
-            )
-            self.cursor.execute(statement)
-            for i, value in enumerate(OBJ_VALUE):
-                row = self.cursor.fetchone()
-                assert len(row) == 4
-                assert row[0] == 1
-                assert row[1] == i + 1
-                assert round(abs(row[2] - value), 7) == 0
-                assert round(abs(row[3] - value), 7) == 0
-            with pytest.raises(StopIteration):
-                self.cursor.__next__()
-        finally:
-            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
+            assert row[1] == i + 1
+            assert round(abs(row[2] - value), 7) == 0
+            assert round(abs(row[3] - value), 7) == 0
+        with pytest.raises(StopIteration):
+            self.cursor.__next__()
+        #finally:
+        self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
+    @pytest.mark.skip("MySQL/CSV mode removed")
     def test_01_write_csv_long_colname(self):
         """Write to MySQL, ensuring some columns have long names
     
@@ -1885,6 +1892,7 @@ class TestExportToDatabase(unittest.TestCase):
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
+    @pytest.mark.skip("MySQL/CSV mode removed")
     def test_01_write_nulls(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         #
@@ -1991,6 +1999,7 @@ class TestExportToDatabase(unittest.TestCase):
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
 
+    @pytest.mark.skip("MySQL/CSV mode removed")
     def test_02_write_inf(self):
         """regression test of img-1149"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
@@ -2837,6 +2846,7 @@ class TestExportToDatabase(unittest.TestCase):
                 value, m.get_experiment_measurement(feature)
             )
 
+    @pytest.mark.skip("MySQL/CSV Mode Removed")
     def test_write_mysql_db_2(self):
         """Multiple objects / write - per-object tables"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
@@ -2902,6 +2912,7 @@ class TestExportToDatabase(unittest.TestCase):
             finally_fn()
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
+    @pytest.mark.skip("MySQL/CSV Mode Removed")
     def test_write_mysql_db_filter_objs_2(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
@@ -3113,6 +3124,7 @@ class TestExportToDatabase(unittest.TestCase):
         finally:
             self.drop_tables(module, ("Per_Image", "Per_%s" % OBJECT_NAME))
 
+    @pytest.mark.skip("MySQL/CSV Mode Removed")
     def test_write_nulls(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         #
@@ -3567,6 +3579,7 @@ class TestExportToDatabase(unittest.TestCase):
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
             )
 
+    @pytest.mark.skip("MySQL/CSV mode removed")
     def test_02_write_two_object_tables_csv(self):
         """Write two object tables using OT_PER_OBJECT"""
         workspace, module, output_dir, finally_fn = self.make_workspace(
@@ -3633,6 +3646,7 @@ class TestExportToDatabase(unittest.TestCase):
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
             )
 
+    @pytest.mark.skip("MySQL/CSV Mode Removed")
     def test_write_mysql_db_as_data_tool(self):
         """Multiple objects / write - per-object tables"""
         workspace, module, output_dir, finally_fn = self.make_workspace(
@@ -3927,7 +3941,7 @@ class TestExportToDatabase(unittest.TestCase):
                 continue
             self.cursor.execute(statement)
 
-    def select_well_agg(module, aggname, fields):
+    def select_well_agg(self, module, aggname, fields):
         field_string = ", ".join(["%s_%s" % (aggname, field) for field in fields])
         statement = (
             "select Image_Metadata_Plate, Image_Metadata_Well, %s "
@@ -4092,7 +4106,8 @@ class TestExportToDatabase(unittest.TestCase):
             stmt = "select Image_%s from %s" % (expected_thumbnail_column, image_table)
             self.cursor.execute(stmt)
             result = self.cursor.fetchall()
-            im = PIL.Image.open(six.moves.StringIO(result[0][0].decode("base64")))
+            imstring = base64.b64decode(result[0][0])
+            im = PIL.Image.open(six.moves.StringIO(imstring))
             assert tuple(im.size) == (200, 200)
 
         finally:
@@ -5003,6 +5018,7 @@ class TestExportToDatabase(unittest.TestCase):
                 module, ("Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME)
             )
 
+    @pytest.mark.skip("MySQL/CSV Mode Removed")
     def test_write_no_mysql_relationships(self):
         if not self.test_mysql:
             pytest.skip("Skipping actual DB work, not at the Broad.")
@@ -5103,6 +5119,7 @@ class TestExportToDatabase(unittest.TestCase):
                 module.connection.close()
             finally_fn()
 
+    @pytest.mark.skip("MySQL/CSV Mode Removed")
     def test_write_mysql_relationships(self):
         if not self.test_mysql:
             pytest.skip("Skipping actual DB work, not at the Broad.")
@@ -5543,7 +5560,6 @@ class TestExportToDatabase(unittest.TestCase):
     def test_mysql_drop_schema(self):
         if not self.test_mysql:
             pytest.skip("Skipping actual DB work, not at the Broad.")
-
         workspace, module = self.make_workspace(False)
         try:
             assert isinstance(
@@ -5567,7 +5583,8 @@ class TestExportToDatabase(unittest.TestCase):
             how_many = "select count('x') from %s" % module.get_table_name(
                 "Image"
             )
-            self.cursor.execute(how_many)
+            cursor = self.cursor
+            cursor.execute(how_many)
             assert self.cursor.fetchall()[0][0] == 0
             self.close_connection()
             module.prepare_group(workspace, {}, [1])
@@ -5575,14 +5592,14 @@ class TestExportToDatabase(unittest.TestCase):
             #
             # There should be one row after "run"
             #
-            self.cursor.execute(how_many)
+            cursor.execute(how_many)
             assert self.cursor.fetchall()[0][0] == 1
             self.close_connection()
             assert module.prepare_run(workspace)
             #
             # The row should not be there after the second prepare_run
             #
-            self.cursor.execute(how_many)
+            cursor.execute(how_many)
             assert self.cursor.fetchall()[0][0] == 0
         finally:
             self.drop_tables(module)

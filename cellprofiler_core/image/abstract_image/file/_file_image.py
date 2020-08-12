@@ -6,7 +6,7 @@ import urllib.parse
 import urllib.request
 
 import numpy
-import skimage
+import skimage.io
 
 import cellprofiler_core.preferences
 from .._abstract_image import AbstractImage
@@ -333,7 +333,7 @@ class FileImage(AbstractImage):
         if is_numpy_file(self.__filename):
             data = numpy.load(pathname)
         else:
-            data = skimage.external.tifffile.imread(pathname)
+            data = skimage.io.imread(pathname)
 
         # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
         if data.dtype in [numpy.int8, numpy.uint8]:

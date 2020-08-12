@@ -29,7 +29,7 @@ See also **CorrectIlluminationCalculate**.
 import numpy
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import Divider, Binary
 from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
@@ -69,6 +69,7 @@ class CorrectIlluminationApply(Module):
         self.images = []
         self.add_image(can_delete=False)
         self.add_image_button = DoSomething("", "Add another image", self.add_image)
+        self.clip = Binary("Clip", False, doc="Clip the values in the illumination function between 0 and 1")
 
     def add_image(self, can_delete=True):
         """Add an image and its settings to the list of images"""
@@ -160,6 +161,7 @@ somewhat empirical.
         """Return the list of displayed settings
         """
         result = []
+        result.append(self.clip)
         for image in self.images:
             result += [
                 image.image_name,
@@ -225,6 +227,8 @@ somewhat empirical.
         orig_image = workspace.image_set.get_image(image_name)
         illum_function = workspace.image_set.get_image(illum_correct_name)
         illum_function_pixel_data = illum_function.pixel_data
+        if self.clip.value:
+            illum_function_pixel_data = numpy.clip(illum_function_pixel_data, 0, 1)
         if orig_image.pixel_data.ndim == 2:
             illum_function = workspace.image_set.get_image(
                 illum_correct_name, must_be_grayscale=True

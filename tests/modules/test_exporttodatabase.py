@@ -108,12 +108,12 @@ DB_HOST = "MyHost"
 DB_USER = "MyUser"
 DB_PASSWORD = "MyPassword"
 
-MYSQL_HOST = "localhost" #os.environ.get("CP_MYSQL_TEST_HOST", "imgdb02.broadinstitute.org")
-MYSQL_DATABASE = "cellprofiler_test" #os.environ.get("CP_MYSQL_TEST_DB", "CPUnitTest")
-MYSQL_PASSWORD = "password" #os.environ.get("CP_MYSQL_TEST_PASSWORD", "cPus3r")
+MYSQL_HOST = os.environ.get("CP_MYSQL_TEST_HOST", "localhost")
+MYSQL_DATABASE = os.environ.get("CP_MYSQL_TEST_DB", "cellprofiler_test")
+MYSQL_PASSWORD = os.environ.get("CP_MYSQL_TEST_PASSWORD", "password")
 if MYSQL_PASSWORD == "None":
     MYSQL_PASSWORD = ""
-MYSQL_USER = "cellprofiler" #os.environ.get("CP_MYSQL_TEST_USER", "cpuser")
+MYSQL_USER = os.environ.get("CP_MYSQL_TEST_USER", "cellprofiler")
 
 RTEST_NONE = 0
 RTEST_SOME = 1

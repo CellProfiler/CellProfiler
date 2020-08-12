@@ -61,7 +61,7 @@ SETTINGS_PER_IMAGE = 4
 
 class CorrectIlluminationApply(Module):
     category = "Image Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     module_name = "CorrectIlluminationApply"
 
     def create_settings(self):
@@ -69,7 +69,8 @@ class CorrectIlluminationApply(Module):
         self.images = []
         self.add_image(can_delete=False)
         self.add_image_button = DoSomething("", "Add another image", self.add_image)
-        self.clip = Binary("Clip", False, doc="Clip the values in the illumination function between 0 and 1")
+        self.clip = Binary("Clip intensity values", False,
+                           doc="Clip the values in the illumination function between 0 and 1")
 
     def add_image(self, can_delete=True):
         """Add an image and its settings to the list of images"""
@@ -155,13 +156,13 @@ somewhat empirical.
                 image.illum_correct_function_image_name,
                 image.divide_or_subtract,
             ]
+        result.append(self.clip)
         return result
 
     def visible_settings(self):
         """Return the list of displayed settings
         """
         result = []
-        result.append(self.clip)
         for image in self.images:
             result += [
                 image.image_name,
@@ -177,6 +178,7 @@ somewhat empirical.
                 result.append(remover)
             result.append(image.divider)
         result.append(self.add_image_button)
+        result.append(self.clip)
         return result
 
     def prepare_settings(self, setting_values):
@@ -192,7 +194,7 @@ somewhat empirical.
         #
         # Figure out how many images there are based on the number of setting_values
         #
-        assert len(setting_values) % SETTINGS_PER_IMAGE == 0
+        assert len(setting_values) % SETTINGS_PER_IMAGE == 1
         image_count = len(setting_values) // SETTINGS_PER_IMAGE
         del self.images[image_count:]
         while len(self.images) < image_count:
@@ -372,5 +374,10 @@ somewhat empirical.
             # If revision >= 2, initialize rescaling option for validation warning
             for i, image in enumerate(self.images):
                 image.rescale_option = RE_NONE
+
+        if variable_revision_number == 3:
+            setting_values.append("No")
+            variable_revision_number = 4
+
 
         return setting_values, variable_revision_number

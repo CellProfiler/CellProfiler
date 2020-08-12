@@ -2,7 +2,6 @@ from ._grid_subscriber import GridSubscriber
 from ._label_subscriber import LabelSubscriber
 from ._subscriber import Subscriber
 from .image_subscriber import CropImageSubscriber
-from .image_subscriber import ExternalImageSubscriber
 from .image_subscriber import FileImageSubscriber
 from .image_subscriber import ImageSubscriber
 from .image_subscriber import OutlineImageSubscriber

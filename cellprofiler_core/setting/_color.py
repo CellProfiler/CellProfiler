@@ -7,8 +7,8 @@ class Color(Setting):
     These are coded in hex unless a valid HTML name is available.
     """
 
-    def __init(self, text, value="gray", *args, **kwargs):
-        super(Color, self).__init(text, value, *args, **kwargs)
+    def __init__(self, text, value="gray", *args, **kwargs):
+        super(Color, self).__init__(text, value, *args, **kwargs)
 
     def to_rgb(self):
         value = self.value.replace(" ", "")

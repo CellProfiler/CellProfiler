@@ -20,7 +20,6 @@ import numpy
 from .io import dump as dumpit
 from ..utilities.core.modules import instantiate_module, reload_modules
 from ..utilities.core.pipeline import read_file_list
-from ._image_plane import ImagePlane
 from ._listener import Listener
 from .dependency import ImageDependency
 from .dependency import MeasurementDependency
@@ -45,18 +44,12 @@ from .event import PrepareRunException
 from .event import RunException
 from .event import URLsAdded
 from .event import URLsRemoved
-from ..constants.measurement import COLTYPE_INTEGER
+from ..constants.measurement import COLTYPE_INTEGER, COLTYPE_FLOAT
 from ..constants.measurement import COLTYPE_LONGBLOB
 from ..constants.measurement import COLTYPE_VARCHAR
-from ..constants.measurement import C_CHANNEL
 from ..constants.measurement import C_FRAME
 from ..constants.measurement import C_METADATA
-from ..constants.measurement import C_OBJECTS_CHANNEL
-from ..constants.measurement import C_OBJECTS_FRAME
-from ..constants.measurement import C_OBJECTS_SERIES
-from ..constants.measurement import C_OBJECTS_URL
 from ..constants.measurement import C_SERIES
-from ..constants.measurement import C_URL
 from ..constants.measurement import EXPERIMENT
 from ..constants.measurement import IMAGE
 from ..constants.measurement import IMAGE_NUMBER
@@ -87,7 +80,6 @@ from ..measurement import Measurements
 from ..object import ObjectSet
 from ..preferences import get_headless
 from ..preferences import report_progress
-from ..setting.subscriber import ExternalImageSubscriber
 from ..setting import Measurement
 from ..setting.subscriber import ImageSubscriber
 from ..setting.text import Name
@@ -99,10 +91,6 @@ from cellprofiler_core import __version__
 
 def _is_fp(x):
     return hasattr(x, "seek") and hasattr(x, "read")
-
-
-class ExternalImageNameSubscriber(object):
-    pass
 
 
 class Pipeline:
@@ -191,6 +179,7 @@ class Pipeline:
 
     @staticmethod
     def instantiate_module(module_name):
+        # Needed to populate modules list in workers
         import cellprofiler_core.modules
 
         return instantiate_module(module_name)
@@ -632,28 +621,6 @@ class Pipeline:
         m.clear()
         self.write_experiment_measurements(m)
 
-    def find_external_input_images(self):
-        """Find the names of the images that need to be supplied externally
-
-        run_external needs a dictionary of name -> image pixels with
-        one name entry for every external image that must be provided.
-        This function returns a list of those names.
-        """
-        result = []
-        for module in self.modules():
-            for setting in module.settings():
-                if isinstance(setting, ExternalImageSubscriber,):
-                    result.append(setting.value)
-        return result
-
-    def find_external_output_images(self):
-        result = []
-        for module in self.modules():
-            for setting in module.settings():
-                if isinstance(setting, ExternalImageNameSubscriber):
-                    result.append(setting.value)
-        return result
-
     def requires_aggregation(self):
         """Return True if the pipeline requires aggregation across image sets
 
@@ -673,48 +640,6 @@ class Pipeline:
         """
         for module in self.modules(False):
             module.obfuscate()
-
-    def run_external(self, image_dict):
-        """Runs a single iteration of the pipeline with the images provided in
-        image_dict and returns a dictionary mapping from image names to images
-        specified by ExternalImageNameSubscribers.
-
-        image_dict - dictionary mapping image names to image pixel data in the
-                     form of a numpy array.
-        """
-
-        output_image_names = self.find_external_output_images()
-        input_image_names = self.find_external_input_images()
-
-        # Check that the incoming dictionary matches the names expected by the
-        # ExternalImageProviders
-        for name in input_image_names:
-            assert name in image_dict, (
-                'Image named "%s" was not provided in the input dictionary' % name
-            )
-
-        # Create image set from provided dict
-        image_set_list = ImageSetList()
-        image_set = image_set_list.get_image_set(0)
-        for image_name in input_image_names:
-            input_pixels = image_dict[image_name]
-            image_set.add(image_name, ImageSubscriber(input_pixels))
-        object_set = ObjectSet()
-        measurements = Measurements()
-
-        # Run the modules
-        for module in self.modules():
-            workspace = Workspace(
-                self, module, image_set, object_set, measurements, image_set_list
-            )
-            self.run_module(module, workspace)
-
-        # Populate a dictionary for output with the images to be exported
-        output_dict = {}
-        for name in output_image_names:
-            output_dict[name] = image_set.get_image(name).pixel_data
-
-        return output_dict
 
     def run(
         self,
@@ -1342,7 +1267,7 @@ class Pipeline:
             M_VERSION, __version__,
         )
         m.add_experiment_measurement(
-            M_TIMESTAMP, datetime.datetime.now().isoformat(),
+            M_TIMESTAMP, float(datetime.datetime.now().timestamp()),
         )
         m.flush()
 
@@ -1527,7 +1452,7 @@ class Pipeline:
                         exc_info=True,
                     )
         workspace.measurements.add_experiment_measurement(
-            M_MODIFICATION_TIMESTAMP, datetime.datetime.now().isoformat(),
+            M_MODIFICATION_TIMESTAMP, float(datetime.datetime.now().timestamp()),
         )
 
         return "Complete"
@@ -2120,94 +2045,6 @@ class Pipeline:
                 return True
         return False
 
-    def get_image_sets(self, workspace, end_module=None):
-        """Return the pipeline's image sets
-
-        end_module - if present, build the image sets by scanning up to this module
-
-        Return a three-tuple.
-
-        The first element of the two-tuple is a list of
-        ImageSetChannelDescriptors - the ordering in the list defines the
-        order of ipds in the rows of each image set
-
-        The second element of the two-tuple is a collection of metadata
-        key names appropriate for display.
-
-        The last element is a dictionary of lists where the dictionary keys
-        are the metadata values for the image set (or image numbers if
-        organized by number) and the values are lists of the IPDs for that
-        image set.
-
-        This function leaves out any image set that is ill-defined.
-        """
-
-        pipeline = self.copy(save_image_plane_details=False)
-        if end_module is not None:
-            end_module_idx = self.modules().index(end_module)
-            end_module = pipeline.modules()[end_module_idx]
-        temp_measurements = Measurements(mode="memory")
-        new_workspace = None
-        try:
-            new_workspace = Workspace(
-                pipeline, None, None, None, temp_measurements, ImageSetList(),
-            )
-            new_workspace.set_file_list(workspace.file_list)
-            pipeline.prepare_run(new_workspace, end_module)
-
-            iscds = temp_measurements.get_channel_descriptors()
-            metadata_key_names = temp_measurements.get_metadata_tags()
-
-            d = {}
-            all_image_numbers = temp_measurements.get_image_numbers()
-            if len(all_image_numbers) == 0:
-                return iscds, metadata_key_names, {}
-            metadata_columns = [
-                temp_measurements.get_measurement("Image", feature, all_image_numbers,)
-                for feature in metadata_key_names
-            ]
-
-            def get_column(image_category, objects_category, iscd):
-                if iscd.channel_type == iscd.CT_OBJECTS:
-                    category = objects_category
-                else:
-                    category = image_category
-                feature_name = "_".join((category, iscd.name))
-                if feature_name in temp_measurements.get_feature_names("Image"):
-                    return temp_measurements.get_measurement(
-                        "Image", feature_name, all_image_numbers,
-                    )
-                else:
-                    return [None] * len(all_image_numbers)
-
-            url_columns = [get_column(C_URL, C_OBJECTS_URL, iscd,) for iscd in iscds]
-            series_columns = [
-                get_column(C_SERIES, C_OBJECTS_SERIES, iscd,) for iscd in iscds
-            ]
-            index_columns = [
-                get_column(C_FRAME, C_OBJECTS_FRAME, iscd,) for iscd in iscds
-            ]
-            channel_columns = [
-                get_column(C_CHANNEL, C_OBJECTS_CHANNEL, iscd,) for iscd in iscds
-            ]
-            d = {}
-            for idx in range(len(all_image_numbers)):
-                key = tuple([mc[idx] for mc in metadata_columns])
-                value = [
-                    pipeline.find_image_plane_details(
-                        ImagePlane(u[idx], s[idx], i[idx], c[idx])
-                    )
-                    for u, s, i, c in zip(
-                        url_columns, series_columns, index_columns, channel_columns
-                    )
-                ]
-                d[key] = value
-            return iscds, metadata_key_names, d
-        finally:
-            if new_workspace is not None:
-                new_workspace.set_file_list(None)
-            temp_measurements.close()
-
     def has_undo(self):
         """True if an undo action can be performed"""
         return len(self.__undo_stack)
@@ -2392,139 +2229,6 @@ class Pipeline:
     def on_walk_completed(self):
         self.notify_listeners(FileWalkEnded())
 
-    def wp_add_files(self, dirpath, directories, filenames):
-        ipds = []
-        for filename in filenames:
-            path = os.path.join(dirpath, filename)
-            url = "file:" + urllib.request.pathname2url(path)
-            ipd = ImagePlane(url, None, None, None)
-            ipds.append(ipd)
-        self.add_image_plane_details(ipds)
-
-    def wp_add_image_metadata(self, path, metadata):
-        self.add_image_metadata("file:" + urllib.request.pathname2url(path), metadata)
-
-    def add_image_metadata(self, url, metadata, ipd=None):
-        if metadata.image_count == 1:
-            m = {}
-            pixels = metadata.image(0).Pixels
-            m[ImagePlane.MD_SIZE_C] = str(pixels.SizeC)
-            m[ImagePlane.MD_SIZE_Z] = str(pixels.SizeZ)
-            m[ImagePlane.MD_SIZE_T] = str(pixels.SizeT)
-
-            if pixels.SizeC == 1:
-                #
-                # Monochrome image
-                #
-                m[ImagePlane.MD_COLOR_FORMAT] = ImagePlane.MD_MONOCHROME
-                channel = pixels.Channel(0)
-                channel_name = Name
-                if channel_name is not None:
-                    m[ImagePlane.MD_CHANNEL_NAME] = channel_name
-            elif pixels.channel_count == 1:
-                #
-                # Oh contradictions! It's interleaved, really RGB or RGBA
-                #
-                m[ImagePlane.MD_COLOR_FORMAT] = ImagePlane.MD_RGB
-            else:
-                m[ImagePlane.MD_COLOR_FORMAT] = ImagePlane.MD_PLANAR
-            exemplar = ImagePlane(url, None, None, None)
-            if ipd is None:
-                ipd = self.find_image_plane_details(exemplar)
-            if ipd is not None:
-                ipd.metadata.update(m)
-
-        #
-        # If there are planes, we create image plane descriptors for them
-        #
-        n_series = metadata.image_count
-        to_add = []
-        for series in range(n_series):
-            pixels = metadata.image(series).Pixels
-            if pixels.plane_count > 0:
-                for index in range(pixels.plane_count):
-                    addr = (series, index, None)
-                    m = {}
-                    plane = pixels.Plane(index)
-                    c = plane.TheC
-                    m[ImagePlane.MD_C] = plane.TheC
-                    m[ImagePlane.MD_T] = plane.TheT
-                    m[ImagePlane.MD_Z] = plane.TheZ
-                    if pixels.channel_count > c:
-                        channel = pixels.Channel(c)
-                        channel_name = Name
-                        if channel_name is not None:
-                            m[ImagePlane.MD_CHANNEL_NAME] = channel_name
-                        if channel.SamplesPerPixel == 1:
-                            m[ImagePlane.MD_COLOR_FORMAT] = ImagePlane.MD_MONOCHROME
-                        else:
-                            m[ImagePlane.MD_COLOR_FORMAT] = ImagePlane.MD_RGB
-                    exemplar = ImagePlane(url, series, index, None)
-                    ipd = self.find_image_plane_details(exemplar)
-                    if ipd is None:
-                        exemplar.metadata.update(m)
-                        to_add.append(exemplar)
-                    else:
-                        ipd.metadata.update(m)
-
-            elif pixels.SizeZ > 1 or pixels.SizeT > 1:
-                #
-                # Movie metadata might not have planes
-                #
-                if pixels.SizeC == 1:
-                    color_format = ImagePlane.MD_MONOCHROME
-                    n_channels = 1
-                elif pixels.channel_count == 1:
-                    color_format = ImagePlane.MD_RGB
-                    n_channels = 1
-                else:
-                    color_format = ImagePlane.MD_MONOCHROME
-                    n_channels = pixels.SizeC
-                n = 1
-                dims = []
-                for d in pixels.DimensionOrder[2:]:
-                    if d == "C":
-                        dim = n_channels
-                        c_idx = len(dims)
-                    elif d == "Z":
-                        dim = pixels.SizeZ
-                        z_idx = len(dims)
-                    elif d == "T":
-                        dim = pixels.SizeT
-                        t_idx = len(dims)
-                    else:
-                        raise ValueError(
-                            "Unsupported dimension order for file %s: %s"
-                            % (url, pixels.DimensionOrder)
-                        )
-                    dims.append(dim)
-                index_order = numpy.mgrid[0 : dims[0], 0 : dims[1], 0 : dims[2]]
-                c_indexes = index_order[c_idx].flatten()
-                z_indexes = index_order[z_idx].flatten()
-                t_indexes = index_order[t_idx].flatten()
-                for index, (c_idx, z_idx, t_idx) in enumerate(
-                    zip(c_indexes, z_indexes, t_indexes)
-                ):
-                    channel = pixels.Channel(c_idx)
-                    exemplar = ImagePlane(url, series, index, None)
-                    metadata = {
-                        ImagePlane.MD_SIZE_C: channel.SamplesPerPixel,
-                        ImagePlane.MD_SIZE_Z: 1,
-                        ImagePlane.MD_SIZE_T: 1,
-                        ImagePlane.MD_COLOR_FORMAT: color_format,
-                    }
-                    channel_name = Name
-                    if channel_name is not None and len(channel_name) > 0:
-                        metadata[ImagePlane.MD_CHANNEL_NAME] = channel_name
-                    ipd = self.find_image_plane_details(exemplar)
-                    if ipd is None:
-                        exemplar.metadata.update(metadata)
-                        to_add.append(exemplar)
-                    else:
-                        ipd.metadata.update(metadata)
-        if len(to_add) > 0:
-            self.add_image_plane_details(to_add, False)
-
     def test_valid(self):
         """Throw a ValidationError if the pipeline isn't valid
 
@@ -2595,11 +2299,11 @@ class Pipeline:
         columns = [
             (EXPERIMENT, M_PIPELINE, COLTYPE_LONGBLOB,),
             (EXPERIMENT, M_VERSION, COLTYPE_VARCHAR,),
-            (EXPERIMENT, M_TIMESTAMP, COLTYPE_VARCHAR,),
+            (EXPERIMENT, M_TIMESTAMP, COLTYPE_FLOAT,),
             (
                 EXPERIMENT,
                 M_MODIFICATION_TIMESTAMP,
-                COLTYPE_VARCHAR,
+                COLTYPE_FLOAT,
                 {MCA_AVAILABLE_POST_RUN: True},
             ),
             ("Image", GROUP_NUMBER, COLTYPE_INTEGER,),

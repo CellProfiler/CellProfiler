@@ -385,7 +385,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Cancel and check for exit
         #
-        req.reply(anareply._server_exited.ServerExited())
+        req.reply(anareply.ServerExited())
         self.assertRaises(
             cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute
         )

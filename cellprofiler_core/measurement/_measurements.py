@@ -149,7 +149,6 @@ class Measurements:
         self.__image_providers = []
         self.__image_providers = []
         self.__image_number_relationships = {}
-        self.__image_cache_file = None
         if RELATIONSHIP in self.hdf5_dict.top_group:
             rgroup = self.hdf5_dict.top_group[RELATIONSHIP]
             for module_number in rgroup:
@@ -181,26 +180,6 @@ class Measurements:
         if hasattr(self, "hdf5_dict"):
             self.hdf5_dict.close()
             del self.hdf5_dict
-        if self.__image_cache_file is not None:
-            #
-            # Discard the contents of the image cache,
-            # "flush" in order to end any disk activity
-            #
-            keys = list(self.__image_cache_file.keys())
-            for key in keys:
-                del self.__image_cache_file[key]
-            self.__image_cache_file.flush()
-            self.__image_cache_file.close()
-            self.__image_cache_file = None
-            try:
-                os.remove(self.__image_cache_path)
-            except:
-                logging.warn(
-                    "So sorry: Failed to delete temporary file, %s"
-                    % self.__image_cache_path,
-                    exc_info=True,
-                )
-            del self.__image_cache_path
 
     def __getitem__(self, key):
         # we support slicing the last dimension for the limited case of [..., :]

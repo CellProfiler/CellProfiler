@@ -15,43 +15,6 @@ def downsample_labels(labels):
     return labels.astype(numpy.int32)
 
 
-def check_consistency(segmented, unedited_segmented, small_removed_segmented):
-    """Check the three components of Objects to make sure they are consistent
-    """
-    assert segmented is None or numpy.all(segmented >= 0)
-    assert unedited_segmented is None or numpy.all(unedited_segmented >= 0)
-    assert small_removed_segmented is None or numpy.all(small_removed_segmented >= 0)
-    assert (
-        segmented is None or segmented.ndim == 2
-    ), "Segmented label matrix must have two dimensions, has {:d}".format(
-        segmented.ndim
-    )
-    assert (
-        unedited_segmented is None or unedited_segmented.ndim == 2
-    ), "Unedited segmented label matrix must have two dimensions, has {:d}".format(
-        unedited_segmented.ndim
-    )
-    assert (
-        small_removed_segmented is None or small_removed_segmented.ndim == 2
-    ), "Small removed segmented label matrix must have two dimensions, has {:d}".format(
-        small_removed_segmented.ndim
-    )
-    assert (
-        segmented is None
-        or unedited_segmented is None
-        or segmented.shape == unedited_segmented.shape
-    ), "Segmented {} and unedited segmented {} shapes differ".format(
-        repr(segmented.shape), repr(unedited_segmented.shape)
-    )
-    assert (
-        segmented is None
-        or small_removed_segmented is None
-        or segmented.shape == small_removed_segmented.shape
-    ), "Segmented {} and small removed segmented {} shapes differ".format(
-        repr(segmented.shape), repr(small_removed_segmented.shape)
-    )
-
-
 def crop_labels_and_image(labels, image):
     """Crop a labels matrix and an image to the lowest common size
 

@@ -67,11 +67,11 @@ class Module:
         self.__module_num = -1
         self.__settings = []
         self.__notes = []
-        self.__variable_revision_number = 0
         self.__show_window = False
         self.__wants_pause = False
         self.__svn_version = "Unknown"
         self.__enabled = True
+        self.__variable_revision_number = 0
         self.shared_state = (
             {}
         )  # used for maintaining state between modules, see get_dictionary()
@@ -291,8 +291,8 @@ class Module:
         )
 
     def save_to_handles(self, handles):
-        from ..setting import Name
-        from ..setting import Subscriber
+        from ..setting.text import Name
+        from ..setting.subscriber import Subscriber
 
         module_idx = self.module_num - 1
         setting = handles[SETTINGS][0, 0]
@@ -859,7 +859,7 @@ class Module:
 
     def is_image_from_file(self, image_name):
         """Return True if this module loads this image name from a file."""
-        from ..setting import FileImageSubscriber
+        from ..setting.subscriber import FileImageSubscriber
 
         for setting in self.settings():
             if (

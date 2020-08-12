@@ -23,12 +23,8 @@ from ....constants.modules import (
 
 def plugin_list(plugin_dir):
     if plugin_dir is not None and os.path.isdir(plugin_dir):
-        file_list = glob.glob(os.path.join(plugin_dir, "*.py"))
-        return [
-            os.path.basename(f)[:-3]
-            for f in file_list
-            if not f.endswith(("__init__.py", "_help.py"))
-        ]
+        file_list = glob.glob(os.path.join(plugin_dir, "[!_]*.py"))
+        return [os.path.basename(f)[:-3] for f in file_list]
     return []
 
 

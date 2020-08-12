@@ -43,6 +43,7 @@ from cellprofiler_core.pipeline import (
     ImageDependency,
     ObjectDependency,
     MeasurementDependency,
+    LoadException,
 )
 from cellprofiler_core.preferences import (
     set_headless,
@@ -567,7 +568,7 @@ HasImagePlaneDetails:False"""
         pipeline = Pipeline()
 
         def callback(caller, event):
-            assert not isinstance(event, event.LoadException)
+            assert not isinstance(event, LoadException)
 
         pipeline.add_listener(callback)
         pipeline.load(fd)
@@ -690,7 +691,7 @@ HasImagePlaneDetails:False"""
         pipeline = get_empty_pipeline()
 
         def callback(caller, event):
-            assert not isinstance(event, event.LoadException)
+            assert not isinstance(event, LoadException)
 
         pipeline.add_listener(callback)
         module = MeasurementFixture()

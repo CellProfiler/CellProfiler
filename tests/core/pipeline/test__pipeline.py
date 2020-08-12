@@ -71,9 +71,6 @@ class TestPipeline:
     def test_obfuscate(self):
         pass
 
-    def test_run_external(self):
-        pass
-
     def test_run(self):
         pass
 

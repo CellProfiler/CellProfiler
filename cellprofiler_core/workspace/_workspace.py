@@ -9,6 +9,7 @@ import h5py
 
 import cellprofiler_core.utilities.measurement
 from ._disposition_changed_event import DispositionChangedEvent
+from ..constants.measurement import EXPERIMENT
 from ..constants.workspace import DISPOSITION_CONTINUE
 from ..utilities.hdf5_dict import HDF5FileList
 
@@ -369,12 +370,10 @@ class Workspace:
                 self.__file_list.remove_notification_callback(
                     self.__on_file_list_changed
                 )
-            self.__file_list = cellprofiler_core.utilities.hdf5_dict.HDF5FileList(
-                self.measurements.hdf5_dict.hdf5_file
-            )
+            self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
             self.__file_list.add_notification_callback(self.__on_file_list_changed)
             if load_pipeline and self.__measurements.has_feature(
-                cellprofiler_core.constants.measurement.EXPERIMENT, M_PIPELINE
+                EXPERIMENT, M_PIPELINE
             ):
                 pipeline_txt = self.__measurements.get_experiment_measurement(
                     M_PIPELINE
@@ -402,12 +401,8 @@ class Workspace:
                 (M_DEFAULT_INPUT_FOLDER, set_default_image_directory),
                 (M_DEFAULT_OUTPUT_FOLDER, set_default_output_directory),
             ):
-                if self.measurements.has_feature(
-                    cellprofiler_core.constants.measurement.EXPERIMENT, feature
-                ):
-                    path = self.measurements[
-                        cellprofiler_core.constants.measurement.EXPERIMENT, feature
-                    ]
+                if self.measurements.has_feature(EXPERIMENT, feature):
+                    path = self.measurements[EXPERIMENT, feature]
                     if os.path.isdir(path):
                         function(path)
             if image_set_and_measurements_are_same:

@@ -101,10 +101,7 @@ class Segmentation:
             return self.__sparse
 
         if not self.has_dense():
-            raise ValueError(
-                'Can\'t find object, "%s", segmentation, "%s".'
-                % (self.__objects_name, self.__segmentation_name)
-            )
+            raise ValueError("Can't find object dense segmentation.")
 
         return self.__convert_dense_to_sparse()
 
@@ -126,10 +123,7 @@ class Segmentation:
             return self.__dense, self.__indices
 
         if not self.has_sparse():
-            raise ValueError(
-                'Can\'t find object, "%s", segmentation, "%s".'
-                % (self.__objects_name, self.__segmentation_name)
-            )
+            raise ValueError("Can't find object sparse segmentation.")
 
         return self.__convert_sparse_to_dense()
 

@@ -9,6 +9,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
     ],
+    entry_points={"console_scripts": ["cellprofiler=cellprofiler_core.__main__:main"],},
     extras_require={
         "dev": [
             "black==19.10b0",
@@ -40,6 +41,6 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["tests"]),
     python_requires=">=3.8, <4",
     url="https://github.com/CellProfiler/core",
-    version="4.0.0rc9",
+    version="4.0.0rc8",
     zip_safe=False,
 )

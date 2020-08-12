@@ -17,10 +17,12 @@ behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
 Note also that CellProfiler in all 2.X versions increased speed by binning 
-the image into only 8 greyscale levels before calculating Haralick features; 
-this is not done in CellProfiler versions 3.0.0 and after. Values calculated in 
-MeasureTexture in CellProfiler 2 versions will therefore not directly correspond 
-to those in CellProfiler 3 and after. 
+the image into only 8 grayscale levels before calculating Haralick features; 
+in all 3.X CellProfiler versions the images were binned into 256 grayscale 
+levels. CellProfiler 4 alows you to select your own preferred number of 
+grayscale levels, but note that since we use a slightly different 
+implementation we do not guarantee concordance with either 
+CellProfiler 2.X or 3.X -generated texture values.
 
 |
 
@@ -104,6 +106,8 @@ References
 
 import mahotas.features
 import numpy
+import skimage.exposure
+import skimage.feature
 import skimage.util
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
@@ -136,7 +140,7 @@ IO_BOTH = "Both"
 class MeasureTexture(Module):
     module_name = "MeasureTexture"
 
-    variable_revision_number = 6
+    variable_revision_number = 7
 
     category = "Measurement"
 
@@ -160,6 +164,26 @@ class MeasureTexture(Module):
         are unnecessary. If you do not want this behavior, use multiple
         **MeasureTexture** modules to specify the particular image-object
         measures that you want.
+        """,
+        )
+
+        self.gray_levels = Integer(
+            "Enter how many gray levels to measure the texture at",
+            16,
+            2,
+            65536,
+            doc="""\
+        Enter the number of gray levels (ie, total possible values of intensity) 
+        you want to measure texture at.  Measuring at more levels gives you 
+        _potentially_ more detailed information about your image, but at the cost
+        of **significantly** decreased processing speed.  
+
+        Before processing, your image will be rescaled from its current pixel values
+        to 0 - [gray levels - 1]. The texture features will then be calculated. 
+
+        In all CellProfiler 2 versions, this value was fixed at 8; in all 
+        CellProfiler 3 versions it was fixed at 256.  We do not recommend values
+        above 256 for speed reasons, but you can enter values up to 65536.
         """,
         )
 
@@ -205,6 +229,7 @@ measurements, per-object measurements or both.
         settings = [
             self.images_list,
             self.objects_list,
+            self.gray_levels,
             self.scale_count,
             self.images_or_objects,
         ]
@@ -216,7 +241,7 @@ measurements, per-object measurements or both.
 
     def prepare_settings(self, setting_values):
         counts_and_sequences = [
-            (int(setting_values[2]), self.scale_groups, self.add_scale),
+            (int(setting_values[3]), self.scale_groups, self.add_scale),
         ]
 
         for count, sequence, fn in counts_and_sequences:
@@ -234,6 +259,8 @@ measurements, per-object measurements or both.
         if self.wants_object_measurements():
             visible_settings += [self.objects_list]
         visible_settings += [self.object_divider]
+
+        visible_settings += [self.gray_levels]
 
         for group in self.scale_groups:
             visible_settings += group.visible_settings()
@@ -690,6 +717,10 @@ measured and will result in a undefined value in the output file.
                 module_mode,
             ] + scales_list
             variable_revision_number = 6
+
+        if variable_revision_number == 6:
+            setting_values = setting_values[:2] + '16' + setting_values[2:]
+            variable_revision_number = 7
 
         return setting_values, variable_revision_number
 

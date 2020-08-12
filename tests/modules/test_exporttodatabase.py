@@ -1221,6 +1221,7 @@ class TestExportToDatabase(unittest.TestCase):
         table_prefix = "T_%s" % str(uuid.uuid4()).replace("-", "")
         module.table_prefix.value = table_prefix
         module.want_table_prefix.value = True
+        module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.db_host.value = MYSQL_HOST
         module.db_user.value = MYSQL_USER
         module.db_passwd.value = MYSQL_PASSWORD
@@ -4701,7 +4702,7 @@ class TestExportToDatabase(unittest.TestCase):
             # Read the image data after the run but before group.
             # It should be null.
             #
-            image_table = module.table_prefix.value + "_Per_Image"
+            image_table = module.table_prefix.value + "Per_Image"
             statement = "select ImageNumber, Image_%s from %s order by ImageNumber" % (
                 GROUP_IMG_MEASUREMENT,
                 image_table,

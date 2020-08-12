@@ -477,6 +477,7 @@ objects chosen in "Select objects to measure".""",
             "colormap",
             Colormap(
                 "Color map",
+                value="Blues",
                 doc="""\
 The color map setting chooses the color palette that will be
 used to render the different values for your measurement. If you
@@ -777,7 +778,7 @@ be selected in a later **SaveImages** or other module.
                         normalize=False,
                         vmin=numpy.min(heatmap_img),
                         vmax=numpy.max(heatmap_img),
-                        colorbar=True,
+                        colorbar=False,
                     )
                 else:
                     figure.subplot_imshow(
@@ -786,7 +787,7 @@ be selected in a later **SaveImages** or other module.
                         heatmap_img,
                         title=title,
                         colormap=colormap,
-                        colorbar=True,
+                        colorbar=False,
                         normalize=False,
                         vmin=numpy.min(heatmap_img),
                         vmax=numpy.max(heatmap_img),

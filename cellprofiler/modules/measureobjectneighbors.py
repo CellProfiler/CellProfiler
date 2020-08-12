@@ -206,6 +206,7 @@ of neighbors to be selected later in the pipeline.""",
 
         self.count_colormap = Colormap(
             "Select colormap",
+            value="Blues",
             doc="""\
 *(Used only if the image of objects colored by numbers of neighbors is
 to be retained for later use in the pipeline)*
@@ -241,6 +242,7 @@ of touching pixels to be selected later in the pipeline.""",
 
         self.touching_colormap = Colormap(
             "Select colormap",
+            value="Oranges",
             doc="""\
 *(Used only if the image of objects colored by percent touching is to be
 retained for later use in the pipeline)*
@@ -727,7 +729,7 @@ previously discarded objects.""".format(
             count_image = Image(img, masking_objects=objects)
             image_set.add(self.count_image_name.value, count_image)
         else:
-            neighbor_cm_name = get_default_colormap()
+            neighbor_cm_name = "Blues"
             neighbor_cm = matplotlib.cm.get_cmap(neighbor_cm_name)
         if self.wants_percent_touching_image:
             percent_touching_cm_name = self.touching_colormap.value
@@ -740,7 +742,7 @@ previously discarded objects.""".format(
             touching_image = Image(img, masking_objects=objects)
             image_set.add(self.touching_image_name.value, touching_image)
         else:
-            percent_touching_cm_name = get_default_colormap()
+            percent_touching_cm_name = "Oranges"
             percent_touching_cm = matplotlib.cm.get_cmap(percent_touching_cm_name)
 
         if self.show_window:

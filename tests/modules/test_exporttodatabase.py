@@ -108,12 +108,12 @@ DB_HOST = "MyHost"
 DB_USER = "MyUser"
 DB_PASSWORD = "MyPassword"
 
-MYSQL_HOST = os.environ.get("CP_MYSQL_TEST_HOST", "imgdb02.broadinstitute.org")
-MYSQL_DATABASE = os.environ.get("CP_MYSQL_TEST_DB", "CPUnitTest")
-MYSQL_PASSWORD = os.environ.get("CP_MYSQL_TEST_PASSWORD", "cPus3r")
+MYSQL_HOST = "localhost" #os.environ.get("CP_MYSQL_TEST_HOST", "imgdb02.broadinstitute.org")
+MYSQL_DATABASE = "cellprofiler_test" #os.environ.get("CP_MYSQL_TEST_DB", "CPUnitTest")
+MYSQL_PASSWORD = "password" #os.environ.get("CP_MYSQL_TEST_PASSWORD", "cPus3r")
 if MYSQL_PASSWORD == "None":
     MYSQL_PASSWORD = ""
-MYSQL_USER = os.environ.get("CP_MYSQL_TEST_USER", "cpuser")
+MYSQL_USER = "cellprofiler" #os.environ.get("CP_MYSQL_TEST_USER", "cpuser")
 
 RTEST_NONE = 0
 RTEST_SOME = 1
@@ -122,8 +122,8 @@ RTEST_DUPLICATE = 2
 
 class TestExportToDatabase(unittest.TestCase):
     def setUp(self):
-        self.cursor = None
-        self.connection = None
+        self.__cursor = None
+        self.__connection = None
         self.has_median = None
         try:
             if MYSQL_HOST.endswith("broadinstitute.org"):
@@ -143,44 +143,42 @@ class TestExportToDatabase(unittest.TestCase):
             self.test_mysql = True
         except:
             self.test_mysql = False
-        self.get_connection()
-        self.get_cursor()
 
-    def get_connection(self):
-
+    @property
+    def connection(self):
         if not self.test_mysql:
             pytest.skip("Skipping actual DB work, no DB configured.")
-        if self.connection is None:
+        if self.__connection is None:
             import MySQLdb
 
-            self.connection = MySQLdb.connect(
+            self.__connection = MySQLdb.connect(
                 host=MYSQL_HOST, user=MYSQL_USER, passwd=MYSQL_PASSWORD, local_infile=1
             )
-        return self.connection
+        return self.__connection
 
     def close_connection(self):
         if self.test_mysql and self.connection is not None:
-            if self.cursor is not None:
-                self.cursor.close()
-            self.connection.close()
-            self.connection = None
-            self.cursor = None
+            if self.__cursor is not None:
+                self.__cursor.close()
+            self.__connection.close()
+            self.__connection = None
+            self.__cursor = None
 
-    def get_cursor(self):
-        print("Setting up cursor")
+    @property
+    def cursor(self):
         if not self.test_mysql:
             pytest.skip("Skipping actual DB work, database not configured.")
-        if self.cursor is None:
+        if self.__cursor is None:
             import MySQLdb
             from MySQLdb.cursors import SSCursor
 
-            self.cursor = SSCursor(self.connection)
+            self.__cursor = SSCursor(self.connection)
             try:
-                self.cursor.execute("use " + MYSQL_DATABASE)
+                self.__cursor.execute("use " + MYSQL_DATABASE)
             except:
-                self.cursor.execute("create database " + MYSQL_DATABASE)
-                self.cursor.execute("use " + MYSQL_DATABASE)
-        return self.cursor
+                self.__cursor.execute("create database " + MYSQL_DATABASE)
+                self.__cursor.execute("use " + MYSQL_DATABASE)
+        return self.__cursor
 
     @property
     def mysql_has_median(self):
@@ -204,9 +202,9 @@ class TestExportToDatabase(unittest.TestCase):
         file_name = os.path.join(
             module.directory.get_absolute_path(), module.sqlite_file.value
         )
-        self.connection = sqlite3.connect(file_name)
-        self.cursor = self.connection.cursor()
-        return self.cursor, self.connection
+        connection = sqlite3.connect(file_name)
+        cursor = connection.cursor()
+        return cursor, connection
 
     def test_00_write_load_test(self):
         #
@@ -1282,7 +1280,6 @@ class TestExportToDatabase(unittest.TestCase):
             )
             object_file = os.path.join(output_dir, object_file)
         for filename in (sql_file, image_file, object_file):
-            print(filename)
             assert os.path.isfile(filename)
         fd = open(sql_file, "rt")
         sql_text = fd.read()
@@ -1338,7 +1335,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     def drop_tables(self, module, table_suffixes=None):
         """Drop all tables and views  that match the prefix"""
-        connection = self.get_connection()
+        connection = self.connection
         cursor = connection.cursor()
         try:
             for info_table, thing in (("VIEWS", "view"), ("TABLES", "table")):
@@ -2468,7 +2465,7 @@ class TestExportToDatabase(unittest.TestCase):
                 workspace.interaction_handler = self.get_interaction_handler(
                     ran_interaction_handler
                 )
-            self.cursor = None
+            cursor = None
             connection = None
             try:
                 assert isinstance(
@@ -2550,7 +2547,7 @@ class TestExportToDatabase(unittest.TestCase):
         backslash_string = "\\Why doesn't he worry?"
         m = workspace.measurements
         m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
-        self.cursor = None
+        cursor = None
         connection = None
         try:
             assert isinstance(
@@ -2611,7 +2608,7 @@ class TestExportToDatabase(unittest.TestCase):
         )
         for i in range(len(iim)):
             iim[i] = numpy.int32(iim[i])
-        self.cursor = None
+        cursor = None
         connection = None
         try:
             assert isinstance(
@@ -3859,7 +3856,7 @@ class TestExportToDatabase(unittest.TestCase):
     def test_write_sqlite_direct(self):
         """Write directly to a SQLite database"""
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        self.cursor = None
+        cursor = None
         connection = None
         try:
             assert isinstance(
@@ -4106,8 +4103,8 @@ class TestExportToDatabase(unittest.TestCase):
             stmt = "select Image_%s from %s" % (expected_thumbnail_column, image_table)
             self.cursor.execute(stmt)
             result = self.cursor.fetchall()
-            imstring = base64.b64decode(result[0][0])
-            im = PIL.Image.open(six.moves.StringIO(imstring))
+            print(result[0][0])
+            im = PIL.Image.open(io.BytesIO(base64.b64decode(result[0][0])))
             assert tuple(im.size) == (200, 200)
 
         finally:
@@ -4115,7 +4112,7 @@ class TestExportToDatabase(unittest.TestCase):
 
     def test_image_thumbnails_sqlite(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        self.cursor = None
+        cursor = None
         connection = None
         try:
             assert isinstance(
@@ -4149,6 +4146,7 @@ class TestExportToDatabase(unittest.TestCase):
             cursor, connection = self.get_sqlite_cursor(module)
             cursor.execute(stmt)
             result = cursor.fetchall()
+            print(result[0][0])
             im = PIL.Image.open(io.BytesIO(base64.b64decode(result[0][0])))
             assert tuple(im.size) == (200, 200)
         finally:
@@ -4703,7 +4701,7 @@ class TestExportToDatabase(unittest.TestCase):
             # Read the image data after the run but before group.
             # It should be null.
             #
-            image_table = module.table_prefix.value + "Per_Image"
+            image_table = module.table_prefix.value + "_Per_Image"
             statement = "select ImageNumber, Image_%s from %s order by ImageNumber" % (
                 GROUP_IMG_MEASUREMENT,
                 image_table,
@@ -5086,7 +5084,7 @@ class TestExportToDatabase(unittest.TestCase):
             True,
             relationship_type=MCA_AVAILABLE_EACH_CYCLE,
         )
-        self.cursor = None
+        cursor = None
         try:
             assert isinstance(
                 module, cellprofiler.modules.exporttodatabase.ExportToDatabase
@@ -5382,9 +5380,9 @@ class TestExportToDatabase(unittest.TestCase):
                 module.prepare_group(workspace, {}, [1])
                 with cellprofiler.modules.exporttodatabase.DBContext(module) as (
                     connection,
-                    self.cursor,
+                    cursor,
                 ):
-                    self.cursor.execute(
+                    cursor.execute(
                         "delete from %s"
                         % module.get_table_name(
                             cellprofiler.modules.exporttodatabase.T_RELATIONSHIP_TYPES
@@ -5396,9 +5394,9 @@ class TestExportToDatabase(unittest.TestCase):
                 module.run(workspace)
                 with cellprofiler.modules.exporttodatabase.DBContext(module) as (
                     connection,
-                    self.cursor,
+                    cursor,
                 ):
-                    self.tteesstt_relate(workspace.measurements, module, self.cursor)
+                    self.tteesstt_relate(workspace.measurements, module, cursor)
             finally:
                 finally_fn()
 
@@ -5414,7 +5412,7 @@ class TestExportToDatabase(unittest.TestCase):
                 workspace.interaction_handler = self.get_interaction_handler(
                     ran_interaction_handler
                 )
-            self.cursor = None
+            cursor = None
             connection = None
             try:
                 assert isinstance(
@@ -5583,8 +5581,7 @@ class TestExportToDatabase(unittest.TestCase):
             how_many = "select count('x') from %s" % module.get_table_name(
                 "Image"
             )
-            cursor = self.cursor
-            cursor.execute(how_many)
+            self.cursor.execute(how_many)
             assert self.cursor.fetchall()[0][0] == 0
             self.close_connection()
             module.prepare_group(workspace, {}, [1])
@@ -5592,14 +5589,14 @@ class TestExportToDatabase(unittest.TestCase):
             #
             # There should be one row after "run"
             #
-            cursor.execute(how_many)
+            self.cursor.execute(how_many)
             assert self.cursor.fetchall()[0][0] == 1
             self.close_connection()
             assert module.prepare_run(workspace)
             #
             # The row should not be there after the second prepare_run
             #
-            cursor.execute(how_many)
+            self.cursor.execute(how_many)
             assert self.cursor.fetchall()[0][0] == 0
         finally:
             self.drop_tables(module)
@@ -5731,10 +5728,10 @@ class TestExportToDatabase(unittest.TestCase):
         module.db_name.value = MYSQL_DATABASE
         with cellprofiler.modules.exporttodatabase.DBContext(module) as (
             connection,
-            self.cursor,
+            cursor,
         ):
-            self.cursor.execute("select 1")
-            result = self.cursor.fetchall()
+            cursor.execute("select 1")
+            result = cursor.fetchall()
             assert len(result) == 1
             assert result[0][0] == 1
 
@@ -5749,10 +5746,10 @@ class TestExportToDatabase(unittest.TestCase):
             module.directory.custom_path = output_dir
             with cellprofiler.modules.exporttodatabase.DBContext(module) as (
                 connection,
-                self.cursor,
+                cursor,
             ):
-                self.cursor.execute("select 1")
-                result = self.cursor.fetchall()
+                cursor.execute("select 1")
+                result = cursor.fetchall()
                 assert len(result) == 1
                 assert result[0][0] == 1
         finally:

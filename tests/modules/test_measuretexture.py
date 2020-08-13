@@ -286,12 +286,13 @@ def test_many_objects():
             INPUT_IMAGE_NAME,
         )
         for angle in range(4):
-            mname = "{}_{}_{}_{:d}_{:02d}".format(
+            mname = "{}_{}_{}_{:d}_{:02d}_{:d}".format(
                 cellprofiler.modules.measuretexture.TEXTURE,
                 measurement,
                 INPUT_IMAGE_NAME,
                 2,
                 angle,
+                256
             )
             assert mname in all_column_features
             values = m.get_current_measurement(INPUT_OBJECTS_NAME, mname)
@@ -431,10 +432,10 @@ def test_no_image_measurements():
     m = workspace.measurements
     assert not m.has_feature(
         "Image",
-        "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME,
+        "Texture_AngularSecondMoment_%s_2_00_256" % INPUT_IMAGE_NAME,
     )
     assert m.has_feature(
-        INPUT_OBJECTS_NAME, "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME
+        INPUT_OBJECTS_NAME, "Texture_AngularSecondMoment_%s_2_00_256" % INPUT_IMAGE_NAME
     )
 
 
@@ -449,10 +450,10 @@ def test_no_object_measurements():
     m = workspace.measurements
     assert m.has_feature(
         "Image",
-        "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME,
+        "Texture_AngularSecondMoment_%s_2_00_256" % INPUT_IMAGE_NAME,
     )
     assert not m.has_feature(
-        INPUT_OBJECTS_NAME, "Texture_AngularSecondMoment_%s_2_00" % INPUT_IMAGE_NAME
+        INPUT_OBJECTS_NAME, "Texture_AngularSecondMoment_%s_2_00_256" % INPUT_IMAGE_NAME
     )
 
 
@@ -494,7 +495,7 @@ def test_volume_image_measurements():
     for direction in range(13):
         assert measurements.has_feature(
             "Image",
-            "Texture_AngularSecondMoment_{}_2_{:02d}".format(
+            "Texture_AngularSecondMoment_{}_2_{:02d}_256".format(
                 INPUT_IMAGE_NAME, direction
             ),
         )
@@ -518,7 +519,7 @@ def test_volume_object_measurements_no_objects():
     for direction in range(13):
         assert measurements.has_feature(
             INPUT_OBJECTS_NAME,
-            "Texture_AngularSecondMoment_{}_2_{:02d}".format(
+            "Texture_AngularSecondMoment_{}_2_{:02d}_256".format(
                 INPUT_IMAGE_NAME, direction
             ),
         )
@@ -543,7 +544,7 @@ def test_volume_object_measurements():
     for direction in range(13):
         assert measurements.has_feature(
             INPUT_OBJECTS_NAME,
-            "Texture_AngularSecondMoment_{}_2_{:02d}".format(
+            "Texture_AngularSecondMoment_{}_2_{:02d}_256".format(
                 INPUT_IMAGE_NAME, direction
             ),
         )

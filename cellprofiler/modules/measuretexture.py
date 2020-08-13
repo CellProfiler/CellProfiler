@@ -17,10 +17,12 @@ behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
 Note also that CellProfiler in all 2.X versions increased speed by binning 
-the image into only 8 greyscale levels before calculating Haralick features; 
-this is not done in CellProfiler versions 3.0.0 and after. Values calculated in 
-MeasureTexture in CellProfiler 2 versions will therefore not directly correspond 
-to those in CellProfiler 3 and after. 
+the image into only 8 grayscale levels before calculating Haralick features; 
+in all 3.X CellProfiler versions the images were binned into 256 grayscale 
+levels. CellProfiler 4 alows you to select your own preferred number of 
+grayscale levels, but note that since we use a slightly different 
+implementation than CellProfiler 2 we do not guarantee concordance with 
+CellProfiler 2.X-generated texture values.
 
 |
 
@@ -102,9 +104,11 @@ References
 .. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 """
 
+import dask
 import mahotas.features
 import numpy
-import skimage.util
+import skimage.exposure
+import skimage.measure
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import (
@@ -136,7 +140,7 @@ IO_BOTH = "Both"
 class MeasureTexture(Module):
     module_name = "MeasureTexture"
 
-    variable_revision_number = 6
+    variable_revision_number = 7
 
     category = "Measurement"
 
@@ -160,6 +164,26 @@ class MeasureTexture(Module):
         are unnecessary. If you do not want this behavior, use multiple
         **MeasureTexture** modules to specify the particular image-object
         measures that you want.
+        """,
+        )
+
+        self.gray_levels = Integer(
+            "Enter how many gray levels to measure the texture at",
+            256,
+            2,
+            256,
+            doc="""\
+        Enter the number of gray levels (ie, total possible values of intensity) 
+        you want to measure texture at.  Measuring at more levels gives you 
+        _potentially_ more detailed information about your image, but at the cost
+        of somewhat decreased processing speed.  
+
+        Before processing, your image will be rescaled from its current pixel values
+        to 0 - [gray levels - 1]. The texture features will then be calculated. 
+
+        In all CellProfiler 2 versions, this value was fixed at 8; in all 
+        CellProfiler 3 versions it was fixed at 256.  The minimum number of levels is
+        2, the maximum is 256.
         """,
         )
 
@@ -205,6 +229,7 @@ measurements, per-object measurements or both.
         settings = [
             self.images_list,
             self.objects_list,
+            self.gray_levels,
             self.scale_count,
             self.images_or_objects,
         ]
@@ -216,7 +241,7 @@ measurements, per-object measurements or both.
 
     def prepare_settings(self, setting_values):
         counts_and_sequences = [
-            (int(setting_values[2]), self.scale_groups, self.add_scale),
+            (int(setting_values[3]), self.scale_groups, self.add_scale),
         ]
 
         for count, sequence, fn in counts_and_sequences:
@@ -234,6 +259,8 @@ measurements, per-object measurements or both.
         if self.wants_object_measurements():
             visible_settings += [self.objects_list]
         visible_settings += [self.object_divider]
+
+        visible_settings += [self.gray_levels]
 
         for group in self.scale_groups:
             visible_settings += group.visible_settings()
@@ -384,12 +411,13 @@ measured and will result in a undefined value in the output file.
                             columns += [
                                 (
                                     "Image",
-                                    "{}_{}_{}_{:d}_{:02d}".format(
+                                    "{}_{}_{}_{:d}_{:02d}_{:d}".format(
                                         TEXTURE,
                                         feature,
                                         image_name,
                                         scale_group.scale.value,
                                         angle,
+                                        self.gray_levels.value,
                                     ),
                                     COLTYPE_FLOAT,
                                 )
@@ -404,12 +432,13 @@ measured and will result in a undefined value in the output file.
                                 columns += [
                                     (
                                         object_name,
-                                        "{}_{}_{}_{:d}_{:02d}".format(
+                                        "{}_{}_{}_{:d}_{:02d}_{:d}".format(
                                             TEXTURE,
                                             feature,
                                             image_name,
                                             scale_group.scale.value,
                                             angle,
+                                            self.gray_levels.value,
                                         ),
                                         COLTYPE_FLOAT,
                                     )
@@ -466,6 +495,8 @@ measured and will result in a undefined value in the output file.
         objects = workspace.get_objects(object_name)
         labels = objects.segmented
 
+        gray_levels = int(self.gray_levels.value)
+
         unique_labels = numpy.unique(labels)
         if unique_labels[0] == 0:
             unique_labels = unique_labels[1:]
@@ -482,6 +513,7 @@ measured and will result in a undefined value in the output file.
                         result=numpy.zeros((0,)),
                         scale="{:d}_{:02d}".format(scale, direction),
                         workspace=workspace,
+                        gray_levels = "{:d}".format(gray_levels),
                     )
 
             return statistics
@@ -506,20 +538,11 @@ measured and will result in a undefined value in the output file.
 
         pixel_data[~mask] = 0
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
-        pixel_data = skimage.util.img_as_ubyte(pixel_data)
-
-        features = numpy.empty((n_directions, 13, len(unique_labels)))
-
-        for index, label in enumerate(unique_labels):
-            label_data = numpy.zeros_like(pixel_data)
-            label_data[labels == label] = pixel_data[labels == label]
-
-            try:
-                features[:, :, index] = mahotas.features.haralick(
-                    label_data, distance=scale, ignore_zeros=True
-                )
-            except ValueError:
-                features[:, :, index] = numpy.nan
+        pixel_data = skimage.exposure.rescale_intensity(pixel_data,out_range=(0,gray_levels-1)).astype(numpy.uint8)
+        props = skimage.measure.regionprops(labels, pixel_data)
+        per_label = [self.run_mahotas(prop, scale, n_directions) for prop in props]
+        features = dask.compute(per_label, scheduler='threads')
+        features = numpy.array(features)[0].transpose(1,2,0)
 
         for direction, direction_features in enumerate(features):
             for feature_name, feature in zip(F_HARALICK, direction_features):
@@ -530,9 +553,22 @@ measured and will result in a undefined value in the output file.
                     result=feature,
                     scale="{:d}_{:02d}".format(scale, direction),
                     workspace=workspace,
+                    gray_levels = "{:d}".format(gray_levels),
                 )
 
         return statistics
+
+    @dask.delayed
+    def run_mahotas(self, prop, scale, n_directions):
+        label_data = prop['intensity_image']
+        
+        try:
+            return mahotas.features.haralick(
+                label_data,
+                distance=scale,
+                ignore_zeros=True)
+        except ValueError:
+            return numpy.full([n_directions,13],numpy.nan)
 
     def run_image(self, image_name, scale, workspace):
         statistics = []
@@ -540,7 +576,8 @@ measured and will result in a undefined value in the output file.
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
-        pixel_data = skimage.util.img_as_ubyte(image.pixel_data)
+        gray_levels = int(self.gray_levels.value)
+        pixel_data = skimage.exposure.rescale_intensity(image.pixel_data,out_range=(0,gray_levels-1)).astype(numpy.uint8)
 
         features = mahotas.features.haralick(pixel_data, distance=scale)
 
@@ -554,15 +591,16 @@ measured and will result in a undefined value in the output file.
                     result=feature,
                     scale=object_name,
                     workspace=workspace,
+                    gray_levels = "{:d}".format(gray_levels),
                 )
 
         return statistics
 
-    def record_measurement(self, workspace, image, obj, scale, feature, result):
+    def record_measurement(self, workspace, image, obj, scale, feature, result, gray_levels):
         result[~numpy.isfinite(result)] = 0
 
         workspace.add_measurement(
-            obj, "{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale)), result
+            obj, "{}_{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale),gray_levels), result
         )
 
         # TODO: get outta crazee towne
@@ -589,13 +627,13 @@ measured and will result in a undefined value in the output file.
         return statistics
 
     def record_image_measurement(
-        self, workspace, image_name, scale, feature_name, result
+        self, workspace, image_name, scale, feature_name, result, gray_levels
     ):
         # TODO: this is very concerning
         if not numpy.isfinite(result):
             result = 0
 
-        feature = "{}_{}_{}_{}".format(TEXTURE, feature_name, image_name, str(scale))
+        feature = "{}_{}_{}_{}_{}".format(TEXTURE, feature_name, image_name, str(scale),gray_levels)
 
         workspace.measurements.add_image_measurement(feature, result)
 
@@ -690,6 +728,10 @@ measured and will result in a undefined value in the output file.
                 module_mode,
             ] + scales_list
             variable_revision_number = 6
+
+        if variable_revision_number == 6:
+            setting_values = setting_values[:2] + ['256'] + setting_values[2:]
+            variable_revision_number = 7
 
         return setting_values, variable_revision_number
 

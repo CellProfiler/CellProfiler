@@ -44,6 +44,7 @@ from .event import PrepareRunException
 from .event import RunException
 from .event import URLsAdded
 from .event import URLsRemoved
+from ..constants.measurement import COLTYPE_FLOAT
 from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_LONGBLOB
 from ..constants.measurement import COLTYPE_VARCHAR
@@ -1018,7 +1019,7 @@ class Pipeline:
                         measurements.add_measurement(
                             "Image",
                             execution_time_measurement,
-                            numpy.array([cpu_delta_sec]),
+                            numpy.array([float(cpu_delta_sec)]),
                         )
 
                     while (
@@ -1173,7 +1174,7 @@ class Pipeline:
                 measurements[
                     "Image",
                     "ExecutionTime_%02d%s" % (module.module_num, module.module_name),
-                ] = cpu_delta_secs
+                ] = float(cpu_delta_secs)
 
             measurements.flush()
             if workspace.disposition == DISPOSITION_SKIP:
@@ -2330,7 +2331,7 @@ class Pipeline:
                 )
                 columns += [
                     ("Image", module_error_measurement, COLTYPE_INTEGER,),
-                    ("Image", execution_time_measurement, COLTYPE_INTEGER,),
+                    ("Image", execution_time_measurement, COLTYPE_FLOAT,),
                 ]
         self.__measurement_columns[terminating_module_num] = columns
         return columns

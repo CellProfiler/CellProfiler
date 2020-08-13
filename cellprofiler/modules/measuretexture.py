@@ -21,8 +21,8 @@ the image into only 8 grayscale levels before calculating Haralick features;
 in all 3.X CellProfiler versions the images were binned into 256 grayscale 
 levels. CellProfiler 4 alows you to select your own preferred number of 
 grayscale levels, but note that since we use a slightly different 
-implementation we do not guarantee concordance with either 
-CellProfiler 2.X or 3.X -generated texture values.
+implementation than CellProfiler 2 we do not guarantee concordance with 
+CellProfiler 2.X-generated texture values.
 
 |
 
@@ -104,11 +104,11 @@ References
 .. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 """
 
+import dask
 import mahotas.features
 import numpy
 import skimage.exposure
-import skimage.feature
-import skimage.util
+import skimage.measure
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import (
@@ -169,14 +169,14 @@ class MeasureTexture(Module):
 
         self.gray_levels = Integer(
             "Enter how many gray levels to measure the texture at",
-            16,
+            256,
             2,
-            65536,
+            256,
             doc="""\
         Enter the number of gray levels (ie, total possible values of intensity) 
         you want to measure texture at.  Measuring at more levels gives you 
         _potentially_ more detailed information about your image, but at the cost
-        of **significantly** decreased processing speed.  
+        of somewhat decreased processing speed.  
 
         Before processing, your image will be rescaled from its current pixel values
         to 0 - [gray levels - 1]. The texture features will then be calculated. 
@@ -539,19 +539,10 @@ measured and will result in a undefined value in the output file.
         pixel_data[~mask] = 0
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
         pixel_data = skimage.exposure.rescale_intensity(pixel_data,out_range=(0,gray_levels-1)).astype(numpy.uint8)
-
-        features = numpy.empty((n_directions, 13, len(unique_labels)))
-
-        for index, label in enumerate(unique_labels):
-            label_data = numpy.zeros_like(pixel_data)
-            label_data[labels == label] = pixel_data[labels == label]
-
-            try:
-                features[:, :, index] = mahotas.features.haralick(
-                    label_data, distance=scale, ignore_zeros=True
-                )
-            except ValueError:
-                features[:, :, index] = numpy.nan
+        props = skimage.measure.regionprops(labels, pixel_data)
+        per_label = [self.run_mahotas(prop, scale, n_directions) for prop in props]
+        features = dask.compute(per_label, scheduler='threads')
+        features = numpy.array(features)[0].transpose(1,2,0)
 
         for direction, direction_features in enumerate(features):
             for feature_name, feature in zip(F_HARALICK, direction_features):
@@ -566,6 +557,18 @@ measured and will result in a undefined value in the output file.
                 )
 
         return statistics
+
+    @dask.delayed
+    def run_mahotas(self, prop, scale, n_directions):
+        label_data = prop['intensity_image']
+        
+        try:
+            return mahotas.features.haralick(
+                label_data,
+                distance=scale,
+                ignore_zeros=True)
+        except ValueError:
+            return numpy.full([n_directions,13],numpy.nan)
 
     def run_image(self, image_name, scale, workspace):
         statistics = []
@@ -727,7 +730,7 @@ measured and will result in a undefined value in the output file.
             variable_revision_number = 6
 
         if variable_revision_number == 6:
-            setting_values = setting_values[:2] + ['16'] + setting_values[2:]
+            setting_values = setting_values[:2] + ['256'] + setting_values[2:]
             variable_revision_number = 7
 
         return setting_values, variable_revision_number

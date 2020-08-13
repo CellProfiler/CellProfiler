@@ -109,6 +109,7 @@ import mahotas.features
 import numpy
 import skimage.exposure
 import skimage.measure
+import skimage.util
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import (
@@ -538,7 +539,10 @@ measured and will result in a undefined value in the output file.
 
         pixel_data[~mask] = 0
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
-        pixel_data = skimage.exposure.rescale_intensity(pixel_data,out_range=(0,gray_levels-1)).astype(numpy.uint8)
+        pixel_data = skimage.util.img_as_ubyte(pixel_data)
+        if gray_levels!= 256:
+            pixel_data = skimage.exposure.rescale_intensity(pixel_data,in_range = (0,255),
+            out_range=(0,gray_levels-1)).astype(numpy.uint8)
         props = skimage.measure.regionprops(labels, pixel_data)
         per_label = [self.run_mahotas(prop, scale, n_directions) for prop in props]
         features = dask.compute(per_label, scheduler='threads')
@@ -577,7 +581,10 @@ measured and will result in a undefined value in the output file.
 
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
         gray_levels = int(self.gray_levels.value)
-        pixel_data = skimage.exposure.rescale_intensity(image.pixel_data,out_range=(0,gray_levels-1)).astype(numpy.uint8)
+        pixel_data = skimage.util.img_as_ubyte(image.pixel_data)
+        if gray_levels!= 256:
+            pixel_data = skimage.exposure.rescale_intensity(pixel_data,in_range = (0,255),
+            out_range=(0,gray_levels-1)).astype(numpy.uint8)
 
         features = mahotas.features.haralick(pixel_data, distance=scale)
 

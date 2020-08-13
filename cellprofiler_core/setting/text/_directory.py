@@ -61,7 +61,7 @@ class Directory(Text):
 
     def join_parts(self, dir_choice=None, custom_path=None):
         """Join the directory choice and custom path to form a value"""
-        if custom_path is not None:
+        if custom_path is not None and "\\\\" not in custom_path:
             custom_path = custom_path.replace("\\", "\\\\")
         self.value = self.join_string(dir_choice, custom_path)
 

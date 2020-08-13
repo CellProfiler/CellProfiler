@@ -15,9 +15,7 @@ from cellprofiler_core.preferences import IM_BICUBIC
 
 from .. import errordialog
 
-
-def is_color_image(image):
-    return image.ndim == 3 and image.shape[2] >= 2
+CROSSHAIR_CURSOR = None
 
 
 def wraparound(sequence):
@@ -28,7 +26,7 @@ def wraparound(sequence):
 
 def match_rgbmask_to_image(rgb_mask, image):
     rgb_mask = list(rgb_mask)  # copy
-    nchannels = image.shape[2]
+    nchannels = image.shape[-1]
     del rgb_mask[nchannels:]
     if len(rgb_mask) < nchannels:
         rgb_mask = rgb_mask + [1] * (nchannels - len(rgb_mask))
@@ -192,8 +190,8 @@ def get_matplotlib_interpolation_preference():
 
 
 def get_crosshair_cursor():
-    global __crosshair_cursor
-    if __crosshair_cursor is None:
+    global CROSSHAIR_CURSOR
+    if CROSSHAIR_CURSOR is None:
         if sys.platform.lower().startswith("win"):
             #
             # Build the crosshair cursor image as a numpy array.
@@ -205,7 +203,7 @@ def get_crosshair_cursor():
             image = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
             image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
             image.SetOption(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
-            __crosshair_cursor = wx.Cursor(image)
+            CROSSHAIR_CURSOR = wx.Cursor(image)
         else:
-            __crosshair_cursor = wx.CROSS_CURSOR
-    return __crosshair_cursor
+            CROSSHAIR_CURSOR = wx.CROSS_CURSOR
+    return CROSSHAIR_CURSOR

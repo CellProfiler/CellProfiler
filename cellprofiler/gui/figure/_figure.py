@@ -19,6 +19,8 @@ import matplotlib.gridspec
 import matplotlib.image
 import matplotlib.patches
 import matplotlib.pyplot
+import matplotlib.transforms
+import matplotlib.widgets
 import numpy
 import numpy.ma
 import scipy.ndimage
@@ -87,7 +89,6 @@ from ..utilities.figure import find_fig
 from ..utilities.figure import format_plate_data_as_array
 from ..utilities.figure import get_matplotlib_interpolation_preference
 from ..utilities.figure import get_menu_id
-from ..utilities.figure import is_color_image
 from ..utilities.figure import match_rgbmask_to_image
 from ..utilities.figure import wraparound
 from ..utilities.icon import get_cp_icon
@@ -138,8 +139,10 @@ class Figure(wx.Frame):
         self.mouse_mode = MODE_NONE
         self.length_arrow = None
         self.table = None
+        self.current_plane = 0
         self.images = {}
         self.colorbar = {}
+        self.sliders = {}
         self.subplot_params = {}
         self.subplot_user_params = {}
         self.event_bindings = {}
@@ -461,7 +464,6 @@ class Figure(wx.Frame):
 
         if image.dtype.type == numpy.uint8:
             image = image.astype(numpy.float32) / 255.0
-
         if image.ndim == 2:
             if is_float:
                 fields += ["Intensity: {:.4f}".format(image[y, x] or 0)]
@@ -555,7 +557,7 @@ class Figure(wx.Frame):
         if event.inaxes:
             fields = ["X: %d" % xi, "Y: %d" % yi]
 
-            if self.dimensions == 2:
+            if self.dimensions >= 2:
                 im = self.find_image_for_axes(event.inaxes)
             else:  # self.dimensions == 3
                 axes = event.inaxes
@@ -607,8 +609,10 @@ class Figure(wx.Frame):
         for i, sl in enumerate(self.subplots):
             for j, slax in enumerate(sl):
                 if axes == slax:
-                    return self.images.get((i, j), None)
-
+                    rtnimg = self.images.get((i, j), None)
+                    if self.dimensions == 3 and rtnimg is not None:
+                        rtnimg = rtnimg[self.current_plane, :, :]
+                    return rtnimg
         return None
 
     def on_button_release(self, event):
@@ -730,7 +734,7 @@ class Figure(wx.Frame):
             if hasattr(self, "subplots"):
                 delattr(self, "subplots")
         else:
-            if dimensions == 2:
+            if dimensions >= 2:
                 self.subplots = numpy.zeros(subplots, dtype=object)
                 self.__gridspec = matplotlib.gridspec.GridSpec(
                     subplots[1], subplots[0], figure=self.figure
@@ -749,7 +753,7 @@ class Figure(wx.Frame):
         sharey - If creating a new subplot, you can specify a subplot instance
                  here to share the Y axis with. eg: for zooming, panning
         """
-        if self.dimensions == 3:
+        if self.dimensions == 4:
             return None
         if not self.subplots[x, y]:
             if self.__gridspec:
@@ -881,6 +885,7 @@ class Figure(wx.Frame):
             fig = create_or_find(
                 self, -1, new_title, subplots=(1, 1), name=str(uuid.uuid4())
             )
+            fig.dimensions = self.dimensions
             fig.subplot_imshow(0, 0, self.images[(x, y)], **params)
 
             # XXX: Cheat here so the home button works.
@@ -1141,24 +1146,25 @@ class Figure(wx.Frame):
                                     plot_params["vmin"] = params["vmin"]
                                     plot_params["vmax"] = params["vmax"]
                                     plot_params["normalize"] = params["normalize"]
-                                    plot_params["normalize_args"] = params[
-                                        "normalize_args"
-                                    ]
+                                    plot_params["normalize_args"] = params["normalize_args"]
                                     image = self.images[(xcoord, ycoord)]
                                     if not isinstance(image, numpy.ma.MaskedArray):
-                                        subplot_item.displayed.set_data(
-                                            self.normalize_image(image, **plot_params)
-                                        )
+                                        img_data = self.normalize_image(self.images[(xcoord, ycoord)], **plot_params)
+                                        subplot_item.displayed.set_data(img_data)
                                 else:
                                     # Should be a table, make sure the invisible subplot stays hidden.
                                     subplot_item.axis("off")
+                                    if not hasattr(subplot_item, "deleted") and self.dimensions == 3:
+                                        self.figure.delaxes(subplot_item)
+                                        subplot_item.deleted = True
+
                         self.figure.canvas.draw()
                     else:
                         event.Skip()
 
                 # For small images we can draw fast enough for a live preview.
                 # For large images, we draw when the slider is released.
-                if size[0] * size[1] > 262144:  # 512x512
+                if size[0] * size[1] > 262144 or self.dimensions > 2:  # 512x512
                     dlg.Bind(wx.EVT_SCROLL_THUMBRELEASE, apply_contrast)
                     dlg.Bind(wx.EVT_SCROLL_CHANGED, apply_contrast)
                 else:
@@ -1176,9 +1182,9 @@ class Figure(wx.Frame):
                     refresh_figure()
 
         def refresh_figure(axes=None, background=None, axesdata=None):
-            image = self.images[(x, y)]
             subplot = self.subplot(x, y)
-            subplot.displayed.set_data(self.normalize_image(image, **params))
+            img_data = self.normalize_image(self.images[(x, y)], **params)
+            subplot.displayed.set_data(img_data)
             if axes is not None:
                 self.figure.canvas.restore_region(background)
                 axes.draw_artist(axesdata)
@@ -1238,7 +1244,7 @@ class Figure(wx.Frame):
                     labels[CPLD_ALPHA_VALUE] = float(slider.GetValue()) / 100.0
                     refresh_figure()
 
-        if is_color_image(self.images[x, y]):
+        if self.is_color_image(self.images[x, y]):
             submenu = wx.Menu()
             rgb_mask = match_rgbmask_to_image(params["rgb_mask"], self.images[x, y])
             ids = [
@@ -1444,252 +1450,386 @@ class Figure(wx.Frame):
         if normalize_args is None:
             normalize_args = {}
 
-        if self.dimensions == 2:
-            orig_vmin = vmin
-            orig_vmax = vmax
+        orig_vmin = vmin
+        orig_vmax = vmax
 
-            if interpolation is None:
-                interpolation = get_matplotlib_interpolation_preference()
+        if interpolation is None:
+            interpolation = get_matplotlib_interpolation_preference()
 
-            if normalize is None:
-                normalize = get_intensity_mode()
+        if normalize is None:
+            normalize = get_intensity_mode()
 
-                if normalize == INTENSITY_MODE_RAW:
-                    normalize = False
-                elif normalize == False:
-                    normalize = False
-                elif normalize == INTENSITY_MODE_LOG:
-                    normalize = "log"
-                    normalize_args["gain"] = float(get_normalization_factor())
-                elif normalize == INTENSITY_MODE_GAMMA:
-                    normalize = "gamma"
-                    normalize_args["gamma"] = float(get_normalization_factor())
-                else:
-                    normalize = True
-
-            if cplabels is None:
-                cplabels = []
+            if normalize == INTENSITY_MODE_RAW:
+                normalize = False
+            elif normalize == False:
+                normalize = False
+            elif normalize == INTENSITY_MODE_LOG:
+                normalize = "log"
+                normalize_args["gain"] = float(get_normalization_factor())
+            elif normalize == INTENSITY_MODE_GAMMA:
+                normalize = "gamma"
+                normalize_args["gamma"] = float(get_normalization_factor())
             else:
-                use_imshow = False
+                normalize = True
 
-                new_cplabels = []
+        if cplabels is None:
+            cplabels = []
+        else:
+            use_imshow = False
 
-                for i, d in enumerate(cplabels):
-                    d = d.copy()
+            new_cplabels = []
 
-                    if CPLD_OUTLINE_COLOR not in d:
-                        if i == 0:
-                            d[CPLD_OUTLINE_COLOR] = get_primary_outline_color()
-                        elif i == 1:
-                            d[CPLD_OUTLINE_COLOR] = get_secondary_outline_color()
-                        elif i == 2:
-                            d[CPLD_OUTLINE_COLOR] = get_tertiary_outline_color()
-                        else:
-                            d[CPLD_OUTLINE_COLOR] = wx.Colour(255, 255, 255)
+            for i, d in enumerate(cplabels):
+                d = d.copy()
 
-                    if CPLD_MODE not in d:
-                        d[CPLD_MODE] = CPLDM_OUTLINES
+                if CPLD_OUTLINE_COLOR not in d:
+                    if i == 0:
+                        d[CPLD_OUTLINE_COLOR] = get_primary_outline_color()
+                    elif i == 1:
+                        d[CPLD_OUTLINE_COLOR] = get_secondary_outline_color()
+                    elif i == 2:
+                        d[CPLD_OUTLINE_COLOR] = get_tertiary_outline_color()
+                    else:
+                        d[CPLD_OUTLINE_COLOR] = wx.Colour(255, 255, 255)
 
-                    if CPLD_LINE_WIDTH not in d:
-                        d[CPLD_LINE_WIDTH] = 1
+                if CPLD_MODE not in d:
+                    d[CPLD_MODE] = CPLDM_OUTLINES
 
-                    if CPLD_ALPHA_COLORMAP not in d:
-                        d[CPLD_ALPHA_COLORMAP] = get_default_colormap()
+                if CPLD_LINE_WIDTH not in d:
+                    d[CPLD_LINE_WIDTH] = 1
 
-                    if CPLD_ALPHA_VALUE not in d:
-                        d[CPLD_ALPHA_VALUE] = 0.25
+                if CPLD_ALPHA_COLORMAP not in d:
+                    d[CPLD_ALPHA_COLORMAP] = get_default_colormap()
 
-                    new_cplabels.append(d)
+                if CPLD_ALPHA_VALUE not in d:
+                    d[CPLD_ALPHA_VALUE] = 0.25
 
-                cplabels = new_cplabels
+                new_cplabels.append(d)
 
-            # NOTE: self.subplot_user_params is used to store changes that are made
-            #    to the display through GUI interactions (eg: hiding a channel).
-            #    Once a subplot that uses this mechanism has been drawn, it will
-            #    continually load defaults from self.subplot_user_params instead of
-            #    the default values specified in the function definition.
-            kwargs = {
-                "title": title,
-                "clear": False,
-                "colormap": colormap,
-                "colorbar": colorbar,
-                "normalize": normalize,
-                "vmin": vmin,
-                "vmax": vmax,
-                "rgb_mask": rgb_mask,
-                "use_imshow": use_imshow,
-                "interpolation": interpolation,
-                "cplabels": cplabels,
-                "normalize_args": normalize_args,
-            }
+            cplabels = new_cplabels
 
-            if (x, y) not in self.subplot_user_params:
-                self.subplot_user_params[(x, y)] = {}
+        # NOTE: self.subplot_user_params is used to store changes that are made
+        #    to the display through GUI interactions (eg: hiding a channel).
+        #    Once a subplot that uses this mechanism has been drawn, it will
+        #    continually load defaults from self.subplot_user_params instead of
+        #    the default values specified in the function definition.
+        kwargs = {
+            "title": title,
+            "clear": False,
+            "colormap": colormap,
+            "colorbar": colorbar,
+            "normalize": normalize,
+            "vmin": vmin,
+            "vmax": vmax,
+            "rgb_mask": rgb_mask,
+            "use_imshow": use_imshow,
+            "interpolation": interpolation,
+            "cplabels": cplabels,
+            "normalize_args": normalize_args,
+        }
 
-            if (x, y) not in self.subplot_params:
-                self.subplot_params[(x, y)] = {}
+        if (x, y) not in self.subplot_user_params:
+            self.subplot_user_params[(x, y)] = {}
 
-            # overwrite keyword arguments with user-set values
-            kwargs.update(self.subplot_user_params[(x, y)])
+        if (x, y) not in self.subplot_params:
+            self.subplot_params[(x, y)] = {}
 
-            self.subplot_params[(x, y)].update(kwargs)
+        # overwrite keyword arguments with user-set values
+        kwargs.update(self.subplot_user_params[(x, y)])
 
-            if kwargs["colormap"] is None:
-                kwargs["colormap"] = get_default_colormap()
+        self.subplot_params[(x, y)].update(kwargs)
 
-            # and fetch back out
-            title = kwargs["title"]
-            colormap = kwargs["colormap"]
-            colorbar = kwargs["colorbar"]
-            normalize = kwargs["normalize"]
-            vmin = kwargs["vmin"]
-            vmax = kwargs["vmax"]
-            rgb_mask = kwargs["rgb_mask"]
-            interpolation = kwargs["interpolation"]
+        if kwargs["colormap"] is None:
+            kwargs["colormap"] = get_default_colormap()
 
-            # Note: if we do not do this, then passing in vmin,vmax without setting
-            # normalize=False will cause the normalized image to be stretched
-            # further which makes no sense.
-            # ??? - We may want to change the normalize vs vmin,vmax behavior so if
-            # vmin,vmax are passed in, then normalize is ignored.
-            if normalize:
-                vmin, vmax = 0, 1
+        # and fetch back out
+        title = kwargs["title"]
+        colormap = kwargs["colormap"]
+        colorbar = kwargs["colorbar"]
+        normalize = kwargs["normalize"]
+        vmin = kwargs["vmin"]
+        vmax = kwargs["vmax"]
+        rgb_mask = kwargs["rgb_mask"]
+        interpolation = kwargs["interpolation"]
 
-            if clear:
-                self.clear_subplot(x, y)
+        # Note: if we do not do this, then passing in vmin,vmax without setting
+        # normalize=False will cause the normalized image to be stretched
+        # further which makes no sense.
+        # ??? - We may want to change the normalize vs vmin,vmax behavior so if
+        # vmin,vmax are passed in, then normalize is ignored.
+        if normalize:
+            vmin, vmax = 0, 1
 
-            # Store the raw image keyed by it's subplot location
-            self.images[(x, y)] = image
+        if clear:
+            self.clear_subplot(x, y)
 
-            # Draw (actual image drawing in on_redraw() below)
-            subplot = self.subplot(x, y, sharex=sharex, sharey=sharey)
-            subplot.set_adjustable("box", True)
-            subplot.plot([0, 0], list(image.shape[:2]), "k")
-            subplot.set_xlim([0, image.shape[1]])
-            subplot.set_ylim([image.shape[0] - 0.5, -0.5])
-            subplot.set_aspect("equal")
+        # Store the raw image keyed by it's subplot location
+        self.images[(x, y)] = image
 
-            # Set title
-            if title is not None:
-                self.set_subplot_title(title, x, y)
+        # Draw (actual image drawing in on_redraw() below)
+        imshape = image.shape if self.dimensions == 2 else image.shape[1:]
+        subplot = self.subplot(x, y, sharex=sharex, sharey=sharey)
+        subplot.set_adjustable("box", True)
+        subplot.plot([0, 0], list(imshape[:2]), "k")
+        subplot.set_xlim([0, imshape[1]])
+        subplot.set_ylim([imshape[0] - 0.5, -0.5])
+        subplot.set_aspect("equal")
 
-            # Update colorbar
-            if orig_vmin is not None:
-                tick_vmin = orig_vmin
-            elif normalize == "log":
-                tick_vmin = image[image > 0].min()
-            else:
-                tick_vmin = image.min()
+        # Set title
+        if title is not None:
+            self.set_subplot_title(title, x, y)
 
-            if orig_vmax is not None:
-                tick_vmax = orig_vmax
-            else:
-                tick_vmax = image.max()
+        # Update colorbar
+        if orig_vmin is not None:
+            tick_vmin = orig_vmin
+        elif normalize == "log":
+            tick_vmin = image[image > 0].min()
+        else:
+            tick_vmin = image.min()
 
-            if isinstance(colormap, str):
-                colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
+        if orig_vmax is not None:
+            tick_vmax = orig_vmax
+        else:
+            tick_vmax = image.max()
 
-            # NOTE: We bind this event each time imshow is called to a new closure
-            #    of on_release so that each function will be called when a
-            #    button_release_event is fired.  It might be cleaner to bind the
-            #    event outside of subplot_imshow, and define a handler that iterates
-            #    through each subplot to determine what kind of action should be
-            #    taken. In this case each subplot_xxx call would have to append
-            #    an action response to a dictionary keyed by subplot.
-            if (x, y) in self.event_bindings:
-                [
-                    self.figure.canvas.mpl_disconnect(b)
-                    for b in self.event_bindings[(x, y)]
-                ]
+        if isinstance(colormap, str):
+            colormap = matplotlib.cm.ScalarMappable(cmap=colormap)
 
-            def on_release(evt):
-                if evt.inaxes == subplot:
-                    if evt.button != 1:
-                        self.show_imshow_popup_menu(
-                            (evt.x, self.figure.canvas.GetSize()[1] - evt.y), (x, y)
-                        )
-
-            self.event_bindings[(x, y)] = [
-                self.figure.canvas.mpl_connect("button_release_event", on_release)
+        # NOTE: We bind this event each time imshow is called to a new closure
+        #    of on_release so that each function will be called when a
+        #    button_release_event is fired.  It might be cleaner to bind the
+        #    event outside of subplot_imshow, and define a handler that iterates
+        #    through each subplot to determine what kind of action should be
+        #    taken. In this case each subplot_xxx call would have to append
+        #    an action response to a dictionary keyed by subplot.
+        if (x, y) in self.event_bindings:
+            [
+                self.figure.canvas.mpl_disconnect(b)
+                for b in self.event_bindings[(x, y)]
             ]
 
-            if colorbar and not is_color_image(image):
-                colormap.set_array(self.images[(x, y)])
-
-                colormap.autoscale()
-
-            image = self.images[(x, y)]
-
-            self.subplot(x, y).displayed = subplot.imshow(
-                self.normalize_image(image, **kwargs)
-            )
-
-            self.update_line_labels(subplot, kwargs)
-
-            #
-            # Colorbar support
-            #
-            if colorbar and not is_color_image(image):
-                if subplot not in self.colorbar:
-                    cax = matplotlib.colorbar.make_axes(subplot)[0]
-
-                    bar = subplot.figure.colorbar(
-                        colormap, cax, subplot, use_gridspec=False
+        def on_release(evt):
+            if evt.inaxes == subplot:
+                if evt.button != 1:
+                    self.show_imshow_popup_menu(
+                        (evt.x, self.figure.canvas.GetSize()[1] - evt.y), (x, y)
                     )
 
-                    self.colorbar[subplot] = (cax, bar)
-                else:
-                    cax, bar = self.colorbar[subplot]
+        self.event_bindings[(x, y)] = [
+            self.figure.canvas.mpl_connect("button_release_event", on_release)
+        ]
 
-                    bar.set_array(self.images[(x, y)])
+        if colorbar and not self.is_color_image(image):
+            colormap.set_array(self.images[(x, y)])
 
-                    bar.update_normal(colormap)
+            colormap.autoscale()
 
-                    bar.update_ticks()
+        if self.dimensions == 3:
+            z = image.shape[0]
+            self.current_plane = z//2
 
-            # Also add this menu to the main menu
-            if (x, y) in self.subplot_menus:
-                # First trash the existing menu if there is one
-                self.menu_subplots.Remove(self.subplot_menus[(x, y)])
+        image = self.normalize_image(self.images[(x, y)], **kwargs)
 
-            menu_pos = 0
+        self.subplot(x, y).displayed = subplot.imshow(image)
 
-            for yy in range(y + 1):
-                if yy == y:
-                    cols = x
-                else:
-                    cols = self.subplots.shape[0]
+        self.update_line_labels(subplot, kwargs)
 
-                for xx in range(cols):
-                    if (xx, yy) in self.images:
-                        menu_pos += 1
+        #
+        # Colorbar support
+        #
+        if colorbar and not self.is_color_image(image):
+            if subplot not in self.colorbar:
+                cax = matplotlib.colorbar.make_axes(subplot)[0]
 
-            self.subplot_menus[(x, y)] = self.menu_subplots.Insert(
-                menu_pos,
-                -1,
-                (title or "Subplot (%s,%s)" % (x, y)),
-                self.get_imshow_menu((x, y)),
-            )
-
-            # Attempt to update histogram plot if one was created
-            hist_fig = find_fig(
-                self, name="%s %s image histogram" % (self.Name, (x, y))
-            )
-
-            if hist_fig:
-                hist_fig.subplot_histogram(
-                    0,
-                    0,
-                    self.images[(x, y)].flatten(),
-                    bins=200,
-                    xlabel="pixel intensity",
+                bar = subplot.figure.colorbar(
+                    colormap, cax, subplot, use_gridspec=False
                 )
 
-                hist_fig.figure.canvas.draw()
+                self.colorbar[subplot] = (cax, bar)
+            else:
+                cax, bar = self.colorbar[subplot]
 
-            return subplot
+                bar.set_array(self.images[(x, y)])
+
+                bar.update_normal(colormap)
+
+                bar.update_ticks()
+
+        # Also add this menu to the main menu
+        if (x, y) in self.subplot_menus:
+            # First trash the existing menu if there is one
+            self.menu_subplots.Remove(self.subplot_menus[(x, y)])
+
+        menu_pos = 0
+
+        for yy in range(y + 1):
+            if yy == y:
+                cols = x
+            else:
+                cols = self.subplots.shape[0]
+
+            for xx in range(cols):
+                if (xx, yy) in self.images:
+                    menu_pos += 1
+
+        self.subplot_menus[(x, y)] = self.menu_subplots.Insert(
+            menu_pos,
+            -1,
+            (title or "Subplot (%s,%s)" % (x, y)),
+            self.get_imshow_menu((x, y)),
+        )
+
+        # Attempt to update histogram plot if one was created
+        hist_fig = find_fig(
+            self, name="%s %s image histogram" % (self.Name, (x, y))
+        )
+
+        if hist_fig:
+            hist_fig.subplot_histogram(
+                0,
+                0,
+                self.images[(x, y)].flatten(),
+                bins=200,
+                xlabel="pixel intensity",
+            )
+
+            hist_fig.figure.canvas.draw()
+
+        if self.dimensions == 3:
+            aspect_ratio = 20 if len(self.subplots) == 1 else 10
+            axplane = self.add_helper_axis(subplot, aspect=aspect_ratio)
+            if self.subplots.shape[0] < 3 and self.subplots.shape[1] < 3:
+                # Button placement is dumb and will only work with up to 2x2 subplots.
+                xprev = 0.88
+                xnext = 0.91
+                ybut = 0.075
+                if self.subplots.shape[0] > 1 and x == 0:
+                    xprev -= 0.5
+                    xnext -= 0.5
+                if self.subplots.shape[1] > 1 and y == 0:
+                    ybut = 0.47
+                axprev = self.figure.add_axes([xprev, ybut, 0.03, 0.04])
+                axnext = self.figure.add_axes([xnext, ybut, 0.03, 0.04])
+                subplot.bprev = matplotlib.widgets.Button(axprev, '<')
+                subplot.bnext = matplotlib.widgets.Button(axnext, '>')
+            splane = matplotlib.widgets.Slider(
+                axplane,
+                'Plane',
+                0,
+                z-1,
+                valstep=1,
+                valfmt='%02d',
+            )
+            splane.set_val(self.current_plane)
+
+            def next_plane(event):
+                if splane.val < z-1:
+                    change_plane(splane.val + 1)
+
+            def prev_plane(event):
+                if splane.val > 0:
+                    change_plane(splane.val - 1)
+
+            def change_plane(val):
+                newplane = int(val)
+                if newplane == self.current_plane:
+                    return
+                else:
+                    self.current_plane = newplane
+                    for _, axis_slider in self.sliders.values():
+                        # Use initial value to keep all sliders matched
+                        axis_slider.set_val(newplane)
+                    display_plane()
+
+            def display_plane():
+                numx, numy = self.subplots.shape
+                for xcoord in range(numx):
+                    for ycoord in range(numy):
+                        subplot_item = self.subplot(xcoord, ycoord)
+                        if hasattr(subplot_item, "displayed"):
+                            params = self.subplot_params[(xcoord, ycoord)]
+                            img_data = self.normalize_image(self.images[(xcoord, ycoord)], **params)
+                            subplot_item.displayed.set_data(img_data)
+                        else:
+                            # Should be a table, we don't need the axis.
+                            if not hasattr(subplot_item, "deleted"):
+                                self.figure.delaxes(subplot_item)
+                                subplot_item.deleted = True
+                        # Updating the slider will force a refresh, so we don't need to explicitly draw
+            splane.on_changed(change_plane)
+            if self.subplots.shape[0] < 3 and self.subplots.shape[1] < 3:
+                subplot.bprev.on_clicked(prev_plane)
+                subplot.bnext.on_clicked(next_plane)
+            self.sliders[subplot] = (axplane, splane)
+
+        return subplot
+
+    @staticmethod
+    def add_helper_axis(parents, fraction=0.3, shrink=1.0, aspect=20):
+        # This is a modification of the matplotlib colorbar axis creation function,
+        # with some of the unnecessary bulk stripped out.
+
+        anchor = "C"
+        parent_anchor = "C"
+        parents_iterable = numpy.iterable(parents)
+        parents = numpy.atleast_1d(parents).ravel()
+        # check if using constrained_layout:
+        try:
+            gs = parents[0].get_subplotspec().get_gridspec()
+            using_constrained_layout = (gs._layoutbox is not None)
+        except AttributeError:
+            using_constrained_layout = False
+        pad = 0.15
+        if using_constrained_layout:
+            pad = 0.02
+        fig = parents[0].get_figure()
+        # take a bounding box around all of the given axes
+        parents_bbox = matplotlib.transforms.Bbox.union(
+            [ax.get_position(original=True).frozen() for ax in parents])
+
+        pb = parents_bbox
+        pbcb, _, pb1 = pb.splity(fraction, fraction + pad)
+
+        # define the aspect ratio in terms of y's per x rather than x's per y
+        aspect = 1.0 / aspect
+
+        # define a transform which takes us from old axes coordinates to
+        # new axes coordinates
+        shrinking_trans = matplotlib.transforms.BboxTransform(parents_bbox, pb1)
+
+        # transform each of the axes in parents using the new transform
+        for ax in parents:
+            new_posn = shrinking_trans.transform(ax.get_position(original=True))
+            new_posn = matplotlib.transforms.Bbox(new_posn)
+            ax._set_position(new_posn)
+            if parent_anchor is not False:
+                ax.set_anchor(parent_anchor)
+        new_ax = fig.add_axes(pbcb, label="<colorbar>")
+
+        # Make a layoutbox for the new axis.
+        if not using_constrained_layout:
+            # no layout boxes:
+            lb = None
+            lbpos = None
+            # and we need to set the aspect ratio by hand...
+            new_ax.set_aspect(aspect, anchor=anchor, adjustable='box')
         else:
-            self.gridshow(x, y, image, title, colormap, colorbar, normalize)
+            import matplotlib._constrained_layout as constrained_layout
+            if not parents_iterable:
+                # this is a single axis...
+                ax = parents[0]
+                lb, lbpos = constrained_layout.layoutcolorbarsingle(
+                    ax, new_ax, shrink, aspect, "bottom", pad=pad)
+            else:  # there is more than one parent, so lets use gridspec
+                # the colorbar will be a sibling of this gridspec, so the
+                # parent is the same parent as the gridspec.  Either the figure,
+                # or a subplotspec.
+
+                lb, lbpos = constrained_layout.layoutcolorbargridspec(
+                    parents, new_ax, shrink, aspect, "bottom", pad)
+        new_ax._layoutbox = lb
+        new_ax._poslayoutbox = lbpos
+        return new_ax
 
     @staticmethod
     def update_line_labels(subplot, kwargs):
@@ -1949,8 +2089,7 @@ class Figure(wx.Frame):
         kwargs["colormap"] = "binary_r"
         return self.subplot_imshow(x, y, image, title=title, **kwargs)
 
-    @staticmethod
-    def normalize_image(image, **kwargs):
+    def normalize_image(self, image, **kwargs):
         """Produce a color image normalized according to user spec"""
         if 0 in image.shape:
             # No normalization to perform for images with an empty dimension.
@@ -1962,13 +2101,16 @@ class Figure(wx.Frame):
         vmin = kwargs["vmin"]
         vmax = kwargs["vmax"]
         rgb_mask = kwargs["rgb_mask"]
+        in_range = (image.min(), image.max())
         image = image.astype(numpy.float32)
+        if self.dimensions == 3:
+            image = image[self.current_plane, :, :]
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
 
         # Perform normalization
         if normalize == "log":
-            if is_color_image(image):
+            if self.is_color_image(image):
                 image = [
                     skimage.exposure.adjust_log(
                         image[:, :, ch], **kwargs["normalize_args"]
@@ -1980,7 +2122,7 @@ class Figure(wx.Frame):
             else:
                 image = skimage.exposure.adjust_log(image, **kwargs["normalize_args"])
         elif normalize == "gamma":
-            if is_color_image(image):
+            if self.is_color_image(image):
                 image = [
                     skimage.exposure.adjust_gamma(
                         image[:, :, ch], **kwargs["normalize_args"]
@@ -1992,7 +2134,7 @@ class Figure(wx.Frame):
             else:
                 image = skimage.exposure.adjust_gamma(image, **kwargs["normalize_args"])
         elif normalize:
-            if is_color_image(image):
+            if self.is_color_image(image):
                 image = [
                     skimage.exposure.rescale_intensity(image[:, :, ch])
                     for ch in range(image.shape[2])
@@ -2000,10 +2142,13 @@ class Figure(wx.Frame):
 
                 image = numpy.dstack(image)
             else:
-                image = skimage.exposure.rescale_intensity(image)
+                if in_range[0].dtype == numpy.bool:
+                    image = skimage.exposure.rescale_intensity(image)
+                else:
+                    image = skimage.exposure.rescale_intensity(image, in_range=in_range)
 
         # Apply rgb mask to hide/show channels
-        if is_color_image(image):
+        if self.is_color_image(image):
             rgb_mask = match_rgbmask_to_image(rgb_mask, image)
             image *= rgb_mask
             if image.shape[2] == 2:
@@ -2014,7 +2159,7 @@ class Figure(wx.Frame):
                         numpy.zeros(image.shape[:2], image.dtype),
                     ]
                 )
-        if not is_color_image(image):
+        if not self.is_color_image(image):
             if not normalize:
                 if image.max() < 255:
                     norm = matplotlib.colors.Normalize(vmin=0, vmax=255)
@@ -2513,3 +2658,10 @@ class Figure(wx.Frame):
         axes.format_coord = format_coord
         axes.figure.canvas.draw()
         return plot
+
+    def is_color_image(self, image):
+        if self.dimensions == 2:
+            return image.ndim == 3 and image.shape[2] >= 2
+        else:
+            return image.ndim == 4 and image.shape[3] >= 2
+

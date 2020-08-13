@@ -44,7 +44,7 @@ from .event import PrepareRunException
 from .event import RunException
 from .event import URLsAdded
 from .event import URLsRemoved
-from ..constants.measurement import COLTYPE_INTEGER, COLTYPE_FLOAT
+from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_LONGBLOB
 from ..constants.measurement import COLTYPE_VARCHAR
 from ..constants.measurement import C_FRAME
@@ -1267,7 +1267,7 @@ class Pipeline:
             M_VERSION, __version__,
         )
         m.add_experiment_measurement(
-            M_TIMESTAMP, float(datetime.datetime.now().timestamp()),
+            M_TIMESTAMP, datetime.datetime.now().isoformat(),
         )
         m.flush()
 
@@ -1452,7 +1452,7 @@ class Pipeline:
                         exc_info=True,
                     )
         workspace.measurements.add_experiment_measurement(
-            M_MODIFICATION_TIMESTAMP, float(datetime.datetime.now().timestamp()),
+            M_MODIFICATION_TIMESTAMP, datetime.datetime.now().isoformat(),
         )
 
         return "Complete"
@@ -2299,11 +2299,11 @@ class Pipeline:
         columns = [
             (EXPERIMENT, M_PIPELINE, COLTYPE_LONGBLOB,),
             (EXPERIMENT, M_VERSION, COLTYPE_VARCHAR,),
-            (EXPERIMENT, M_TIMESTAMP, COLTYPE_FLOAT,),
+            (EXPERIMENT, M_TIMESTAMP, COLTYPE_VARCHAR,),
             (
                 EXPERIMENT,
                 M_MODIFICATION_TIMESTAMP,
-                COLTYPE_FLOAT,
+                COLTYPE_VARCHAR,
                 {MCA_AVAILABLE_POST_RUN: True},
             ),
             ("Image", GROUP_NUMBER, COLTYPE_INTEGER,),

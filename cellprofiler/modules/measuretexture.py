@@ -182,8 +182,8 @@ class MeasureTexture(Module):
         to 0 - [gray levels - 1]. The texture features will then be calculated. 
 
         In all CellProfiler 2 versions, this value was fixed at 8; in all 
-        CellProfiler 3 versions it was fixed at 256.  We do not recommend values
-        above 256 for speed reasons, but you can enter values up to 65536.
+        CellProfiler 3 versions it was fixed at 256.  The minimum number of levels is
+        2, the maximum is 256.
         """,
         )
 
@@ -411,12 +411,13 @@ measured and will result in a undefined value in the output file.
                             columns += [
                                 (
                                     "Image",
-                                    "{}_{}_{}_{:d}_{:02d}".format(
+                                    "{}_{}_{}_{:d}_{:02d}_{:d}".format(
                                         TEXTURE,
                                         feature,
                                         image_name,
                                         scale_group.scale.value,
                                         angle,
+                                        self.gray_levels.value,
                                     ),
                                     COLTYPE_FLOAT,
                                 )
@@ -431,12 +432,13 @@ measured and will result in a undefined value in the output file.
                                 columns += [
                                     (
                                         object_name,
-                                        "{}_{}_{}_{:d}_{:02d}".format(
+                                        "{}_{}_{}_{:d}_{:02d}_{:d}".format(
                                             TEXTURE,
                                             feature,
                                             image_name,
                                             scale_group.scale.value,
                                             angle,
+                                            self.gray_levels.value,
                                         ),
                                         COLTYPE_FLOAT,
                                     )
@@ -493,6 +495,8 @@ measured and will result in a undefined value in the output file.
         objects = workspace.get_objects(object_name)
         labels = objects.segmented
 
+        gray_levels = int(self.gray_levels.value)
+
         unique_labels = numpy.unique(labels)
         if unique_labels[0] == 0:
             unique_labels = unique_labels[1:]
@@ -509,6 +513,7 @@ measured and will result in a undefined value in the output file.
                         result=numpy.zeros((0,)),
                         scale="{:d}_{:02d}".format(scale, direction),
                         workspace=workspace,
+                        gray_levels = "{:d}".format(gray_levels),
                     )
 
             return statistics
@@ -533,7 +538,7 @@ measured and will result in a undefined value in the output file.
 
         pixel_data[~mask] = 0
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
-        pixel_data = skimage.util.img_as_ubyte(pixel_data)
+        pixel_data = skimage.exposure.rescale_intensity(pixel_data,out_range=(0,gray_levels-1)).astype(numpy.uint8)
 
         features = numpy.empty((n_directions, 13, len(unique_labels)))
 
@@ -557,6 +562,7 @@ measured and will result in a undefined value in the output file.
                     result=feature,
                     scale="{:d}_{:02d}".format(scale, direction),
                     workspace=workspace,
+                    gray_levels = "{:d}".format(gray_levels),
                 )
 
         return statistics
@@ -567,7 +573,8 @@ measured and will result in a undefined value in the output file.
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
-        pixel_data = skimage.util.img_as_ubyte(image.pixel_data)
+        gray_levels = int(self.gray_levels.value)
+        pixel_data = skimage.exposure.rescale_intensity(image.pixel_data,out_range=(0,gray_levels-1)).astype(numpy.uint8)
 
         features = mahotas.features.haralick(pixel_data, distance=scale)
 
@@ -581,15 +588,16 @@ measured and will result in a undefined value in the output file.
                     result=feature,
                     scale=object_name,
                     workspace=workspace,
+                    gray_levels = "{:d}".format(gray_levels),
                 )
 
         return statistics
 
-    def record_measurement(self, workspace, image, obj, scale, feature, result):
+    def record_measurement(self, workspace, image, obj, scale, feature, result, gray_levels):
         result[~numpy.isfinite(result)] = 0
 
         workspace.add_measurement(
-            obj, "{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale)), result
+            obj, "{}_{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale),gray_levels), result
         )
 
         # TODO: get outta crazee towne
@@ -616,13 +624,13 @@ measured and will result in a undefined value in the output file.
         return statistics
 
     def record_image_measurement(
-        self, workspace, image_name, scale, feature_name, result
+        self, workspace, image_name, scale, feature_name, result, gray_levels
     ):
         # TODO: this is very concerning
         if not numpy.isfinite(result):
             result = 0
 
-        feature = "{}_{}_{}_{}".format(TEXTURE, feature_name, image_name, str(scale))
+        feature = "{}_{}_{}_{}_{}".format(TEXTURE, feature_name, image_name, str(scale),gray_levels)
 
         workspace.measurements.add_image_measurement(feature, result)
 
@@ -719,7 +727,7 @@ measured and will result in a undefined value in the output file.
             variable_revision_number = 6
 
         if variable_revision_number == 6:
-            setting_values = setting_values[:2] + '16' + setting_values[2:]
+            setting_values = setting_values[:2] + ['16'] + setting_values[2:]
             variable_revision_number = 7
 
         return setting_values, variable_revision_number

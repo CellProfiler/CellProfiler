@@ -17,11 +17,11 @@ behavior, use multiple **MeasureTexture** modules to specify the
 particular image-object measures that you want.
 
 Note also that CellProfiler in all 2.X versions increased speed by binning 
-the image into only 8 grayscale levels before calculating Haralick features; 
-in all 3.X CellProfiler versions the images were binned into 256 grayscale 
-levels. CellProfiler 4 alows you to select your own preferred number of 
-grayscale levels, but note that since we use a slightly different 
-implementation than CellProfiler 2 we do not guarantee concordance with 
+the image into only 8 grayscale levels before calculating Haralick features;
+in all 3.X CellProfiler versions the images were binned into 256 grayscale
+levels. CellProfiler 4 alows you to select your own preferred number of
+grayscale levels, but note that since we use a slightly different
+implementation than CellProfiler 2 we do not guarantee concordance with
 CellProfiler 2.X-generated texture values.
 
 |
@@ -104,7 +104,6 @@ References
 .. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 """
 
-import dask
 import mahotas.features
 import numpy
 import skimage.exposure
@@ -514,7 +513,7 @@ measured and will result in a undefined value in the output file.
                         result=numpy.zeros((0,)),
                         scale="{:d}_{:02d}".format(scale, direction),
                         workspace=workspace,
-                        gray_levels = "{:d}".format(gray_levels),
+                        gray_levels="{:d}".format(gray_levels),
                     )
 
             return statistics
@@ -540,13 +539,21 @@ measured and will result in a undefined value in the output file.
         pixel_data[~mask] = 0
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
         pixel_data = skimage.util.img_as_ubyte(pixel_data)
-        if gray_levels!= 256:
-            pixel_data = skimage.exposure.rescale_intensity(pixel_data,in_range = (0,255),
-            out_range=(0,gray_levels-1)).astype(numpy.uint8)
+        if gray_levels != 256:
+            pixel_data = skimage.exposure.rescale_intensity(pixel_data, in_range=(0, 255),
+                                                            out_range=(0, gray_levels-1)).astype(numpy.uint8)
         props = skimage.measure.regionprops(labels, pixel_data)
-        per_label = [self.run_mahotas(prop, scale, n_directions) for prop in props]
-        features = dask.compute(per_label, scheduler='threads')
-        features = numpy.array(features)[0].transpose(1,2,0)
+
+        features = numpy.empty((n_directions, 13, len(unique_labels)))
+
+        for index, prop in enumerate(props):
+            label_data = prop['intensity_image']
+            try:
+                features[:, :, index] = mahotas.features.haralick(
+                    label_data, distance=scale, ignore_zeros=True
+                )
+            except ValueError:
+                features[:, :, index] = numpy.nan
 
         for direction, direction_features in enumerate(features):
             for feature_name, feature in zip(F_HARALICK, direction_features):
@@ -557,22 +564,10 @@ measured and will result in a undefined value in the output file.
                     result=feature,
                     scale="{:d}_{:02d}".format(scale, direction),
                     workspace=workspace,
-                    gray_levels = "{:d}".format(gray_levels),
+                    gray_levels="{:d}".format(gray_levels),
                 )
 
         return statistics
-
-    @dask.delayed
-    def run_mahotas(self, prop, scale, n_directions):
-        label_data = prop['intensity_image']
-        
-        try:
-            return mahotas.features.haralick(
-                label_data,
-                distance=scale,
-                ignore_zeros=True)
-        except ValueError:
-            return numpy.full([n_directions,13],numpy.nan)
 
     def run_image(self, image_name, scale, workspace):
         statistics = []
@@ -582,9 +577,9 @@ measured and will result in a undefined value in the output file.
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
         gray_levels = int(self.gray_levels.value)
         pixel_data = skimage.util.img_as_ubyte(image.pixel_data)
-        if gray_levels!= 256:
-            pixel_data = skimage.exposure.rescale_intensity(pixel_data,in_range = (0,255),
-            out_range=(0,gray_levels-1)).astype(numpy.uint8)
+        if gray_levels != 256:
+            pixel_data = skimage.exposure.rescale_intensity(pixel_data, in_range=(0, 255),
+                                                            out_range=(0, gray_levels-1)).astype(numpy.uint8)
 
         features = mahotas.features.haralick(pixel_data, distance=scale)
 
@@ -598,7 +593,7 @@ measured and will result in a undefined value in the output file.
                     result=feature,
                     scale=object_name,
                     workspace=workspace,
-                    gray_levels = "{:d}".format(gray_levels),
+                    gray_levels="{:d}".format(gray_levels),
                 )
 
         return statistics

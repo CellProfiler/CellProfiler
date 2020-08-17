@@ -49,10 +49,10 @@ class TestHaralick(unittest.TestCase):
 
     def test_H3(self):
         h = haralick.Haralick(gray, labels, 0, 1, nlevels=4)
-        self.assertAlmostEqual(h.mux, 2.0833, 4)
-        self.assertAlmostEqual(h.muy, 2.5000, 4)
-        self.assertAlmostEqual(h.sigmax, 1.0375, 4)
-        self.assertAlmostEqual(h.sigmay, 0.9574, 4)
+        self.assertAlmostEqual(h.mux[0], 2.0833, 4)
+        self.assertAlmostEqual(h.muy[0], 2.5000, 4)
+        self.assertAlmostEqual(h.sigmax[0], 1.0375, 4)
+        self.assertAlmostEqual(h.sigmay[0], 0.9574, 4)
         self.assertAlmostEqual(h.H3()[0], 0.7970, 4)
 
     def test_H4(self):

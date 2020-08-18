@@ -776,6 +776,9 @@ class CPImageArtist(matplotlib.artist.Artist):
             target, out_range=numpy.uint8
         )
 
+        affine_matrix = numpy.array([[1, 0, tx], [0, 1, ty], [0, 0, 1]])
+        image = scipy.ndimage.affine_transform(image, affine_matrix)
+
         image = skimage.transform.rescale(image, (sx, sy, 1))
 
         image = skimage.img_as_ubyte(image)

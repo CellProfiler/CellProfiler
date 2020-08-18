@@ -464,7 +464,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         self.__objects = objects or []
         self.__masks = masks or []
         self.__interpolation = interpolation
-        self.filterrad = 4.0
+        self.filterrad = 0  # This was 4.0 but WHY?!?!
 
     def set_interpolation(self, interpolation):
         self.__interpolation = interpolation
@@ -739,11 +739,11 @@ class CPImageArtist(matplotlib.artist.Artist):
         # the viewport translation in the Y direction
         # which is from the bottom of the screen
         #
-        if self.axes.viewLim.height < 0:
+        # if self.axes.viewLim.height < 0:
             # ty = (view_ymin - self.axes.viewLim.y1) - .5
-            ty = self.axes.viewLim.y0 - view_ymax + 0.5
-        else:
-            ty = view_ymin - self.axes.viewLim.y0 - 0.5
+            # ty = self.axes.viewLim.y0 - view_ymax + 0.5
+        # else:
+        #     ty = view_ymin - self.axes.viewLim.y0 - 0.5
 
         # im.apply_translation(tx, ty)
 
@@ -776,12 +776,19 @@ class CPImageArtist(matplotlib.artist.Artist):
             target, out_range=numpy.uint8
         )
 
-        affine_matrix = numpy.array([[1, 0, tx], [0, 1, ty], [0, 0, 1]])
-        image = scipy.ndimage.affine_transform(image, affine_matrix)
-
         image = skimage.transform.rescale(image, (sx, sy, 1))
 
         image = skimage.img_as_ubyte(image)
+
+        im_xmin = int(min(vl.x0, vl.x1))
+        im_xmax = int(max(vl.x0, vl.x1))
+        im_ymin = int(min(vl.y0, vl.y1))
+        im_ymax = int(max(vl.y0, vl.y1))
+        # Correct drawing start point when origin is not 0
+        if im_xmin < 0:
+            l = ((0 - im_xmin) / (im_xmax - im_xmin) * (r - l)) + l
+        if im_ymax > shape[0]:  # origin corresponds to max y, not 0:
+            b = ((im_ymax - shape[0]) / (im_ymax - im_ymin) * (t - b)) + b
 
         renderer.draw_image(graphics_context, l, b, image)
 

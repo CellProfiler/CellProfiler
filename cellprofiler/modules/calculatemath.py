@@ -411,7 +411,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
             [operand.object == IMAGE for operand in self.get_operands()]
         )
         all_object_names = list(
-            set(
+            dict.fromkeys(
                 [
                     operand.operand_objects.value
                     for operand in self.get_operands()

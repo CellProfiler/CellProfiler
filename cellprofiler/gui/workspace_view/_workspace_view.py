@@ -314,7 +314,6 @@ class WorkspaceView:
             vw_row.show_check,
             vw_row.remove_button,
         ):
-            grid_sizer.Remove(control)
             control.Destroy()
         self.image.remove(vw_row.data)
         rows.remove(vw_row)

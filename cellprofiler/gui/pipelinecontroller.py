@@ -3814,6 +3814,13 @@ class PipelineController(object):
             self.next_debug_module()
 
     def on_view_workspace(self, event):
+        if not self.is_in_debug_mode():
+            wx.MessageBox(
+                "Workspace Viewer is only available in Test Mode",
+                style=wx.OK | wx.ICON_ERROR,
+                parent=self.__frame,
+            )
+            return
         # Need to pack the measurements into the workspace
         workspace = cellprofiler.gui._workspace_model.Workspace(
             self.__pipeline,
@@ -3828,6 +3835,7 @@ class PipelineController(object):
         else:
             self.workspace_view.set_workspace(workspace)
             self.workspace_view.frame.Show()
+            self.workspace_view.frame.Raise()
 
     def on_sample_init(self, event):
         if self.__module_view is not None:

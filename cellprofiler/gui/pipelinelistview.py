@@ -161,12 +161,18 @@ class PipelineListView(object):
         self.outputs_panel.SetSizer(wx.BoxSizer())
         self.outputs_panel.SetBackgroundStyle(wx.BG_STYLE_ERASE)
         self.outputs_button = wx.Button(
-            self.outputs_panel, label="View output settings", style=wx.BU_EXACTFIT
+            self.outputs_panel, label="Output Settings", style=wx.BU_EXACTFIT
+        )
+        self.wsv_button = wx.Button(
+            self.outputs_panel, label="View Workspace", style=wx.BU_EXACTFIT
         )
         self.outputs_panel.GetSizer().AddStretchSpacer(1)
         self.outputs_panel.GetSizer().Add(self.outputs_button, 0, wx.ALL, 2)
+        self.outputs_panel.GetSizer().Add(self.wsv_button, 0, wx.ALL, 2)
         self.outputs_panel.GetSizer().AddStretchSpacer(1)
         self.outputs_button.Bind(wx.EVT_BUTTON, self.on_outputs_button)
+        self.wsv_button.Bind(wx.EVT_BUTTON, self.on_wsv_button)
+        self.wsv_button.Enable(False)
         self.outputs_panel.SetAutoLayout(True)
         self.__panel.Layout()
         self.outputs_panel.Layout()
@@ -308,6 +314,9 @@ class PipelineListView(object):
     def on_outputs_button(self, event):
         self.__frame.show_preferences(True)
 
+    def on_wsv_button(self, event):
+        self.__frame.pipeline_controller.on_view_workspace(event)
+
     def request_validation(self, module=None):
         """Request validation of the pipeline, starting at the given module"""
         if module is None:
@@ -353,6 +362,7 @@ class PipelineListView(object):
             if len(modules) > 0:
                 self.select_one_module(modules[0].module_num)
         self.list_ctrl.set_test_mode(mode)
+        self.wsv_button.Enable(mode)
         self.__debug_mode = mode
         self.__sizer.Layout()
         self.request_validation()

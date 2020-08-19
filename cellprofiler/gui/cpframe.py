@@ -979,6 +979,7 @@ class CPFrame(wx.Frame):
         ID_DEBUG_CHOOSE_IMAGE_SET,
         ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET,
         ID_DEBUG_CHOOSE_RANDOM_IMAGE_GROUP,
+        ID_DEBUG_VIEW_WORKSPACE,
     )
 
     def enable_debug_commands(self):

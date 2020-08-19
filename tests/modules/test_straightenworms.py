@@ -119,7 +119,7 @@ def make_workspace(control_points, lengths, radii, image, mask=None, auximage=No
 
     class P:
         def __init__(self):
-            radii_from_training = radii
+            self.radii_from_training = radii
 
     module.training_set_directory.dir_choice = (
         cellprofiler_core.preferences.URL_FOLDER_NAME

@@ -3344,7 +3344,8 @@ class PipelineController(object):
             ):
                 self.__pipeline_list_view.select_one_module(module.module_num + 1)
             failure = 0
-
+            if self.workspace_view is not None:
+                self.workspace_view.set_workspace(workspace_model)
         except Exception as instance:
             logging.error("Failed to run module %s", module.module_name, exc_info=True)
             event = RunException(instance, module)

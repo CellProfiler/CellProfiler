@@ -222,20 +222,19 @@ class WorkspaceView:
                 shape = image_row.data.pixel_data.shape
                 max_x = max(shape[1], max_x)
                 max_y = max(shape[0], max_y)
-        ax = self.image.axes
         if self.__axes_scale is not None:
             init_x, init_y = self.__axes_scale
-            # if float(max_x) != init_x[1] or float(max_y) != init_y[0]:
-            #     self.__axes_scale = None
-            if init_x != ax.get_xlim() or init_y != ax.get_ylim():
+            if float(max_x) != init_x[1] or float(max_y) != init_y[0]:
+                self.__axes_scale = None
+                self.frame.navtoolbar._nav_stack.clear()
+            elif init_x != self.axes.get_xlim() or init_y != self.axes.get_ylim():
                 return
         if max_x > 0 and max_y > 0:
-            self.image.axes.set_xlim(0, max_x)
-            self.image.axes.set_ylim(0, max_y)
-            self.image.axes.invert_yaxis()
+            self.axes.set_xlim(0, max_x)
+            self.axes.set_ylim(0, max_y)
+            self.axes.invert_yaxis()
             self.__axes_scale = ((0.0, float(max_x)), (float(max_y), 0.0))
             self.frame.navtoolbar.reset()
-            self.image.refresh()
 
     def layout(self):
         self.panel.SetMinSize(

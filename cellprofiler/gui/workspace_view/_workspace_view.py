@@ -17,11 +17,12 @@ from ..artist import INTERPOLATION_NEAREST
 from ..artist import INTERPOLATION_BICUBIC
 from ..artist import MODE_HIDE
 from ..artist import CPImageArtist
-from ..constants.workspace_view import C_CHOOSER
+from ..constants.workspace_view import C_CHOOSER, WORKSPACE_VIEWER_HELP
 from ..constants.workspace_view import C_COLOR
 from ..constants.workspace_view import C_SHOW
 from ..constants.workspace_view import C_REMOVE
 from ..help.content import FIGURE_HELP
+from ..html.utils import rst_to_html_fragment
 from ..htmldialog import HTMLDialog
 from ._workspace_view_figure import WorkspaceViewFigure
 from ._workspace_view_image_row import WorkspaceViewImageRow
@@ -202,7 +203,11 @@ class WorkspaceView:
         panel.Sizer.Add(help_button, 0, wx.ALIGN_RIGHT)
 
         def on_help(event):
-            HTMLDialog(panel, "Workspace viewer help", "WORKSPACE_VIEWER_HELP",).Show()
+            HTMLDialog(
+                panel,
+                "Workspace viewer help",
+                rst_to_html_fragment(WORKSPACE_VIEWER_HELP),
+            ).Show()
 
         help_button.Bind(wx.EVT_BUTTON, on_help)
         self.image.add_to_menu(self.frame, self.frame.menu_subplots)

@@ -622,6 +622,8 @@ class CPImageArtist(matplotlib.artist.Artist):
             pixel_data, target_view = get_tile_and_target(image.pixel_data)
             tv_alpha = target_view[:, :, 3]
             tv_image = target_view[:, :, :3]
+            if pixel_data.dtype == "bool":
+                image.normalization = NORMALIZE_RAW
             if image.normalization in (NORMALIZE_LINEAR, NORMALIZE_LOG):
                 pd_max = numpy.max(pixel_data)
                 pd_min = numpy.min(pixel_data)

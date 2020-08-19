@@ -260,7 +260,7 @@ class OutlinesMixin(ColorMixin):
                     self._outlines = centrosome.outline.outline(labels) != 0
                 else:
                     self._outlines |= centrosome.outline.outline(labels) != 0
-            if self.line_width > 1:
+            if self.line_width is not None and self.line_width > 1:
                 hw = float(self.line_width) / 2
                 d = scipy.ndimage.distance_transform_edt(~self._outlines)
                 dti, dtj = numpy.where((d < hw + 0.5) & ~self._outlines)
@@ -680,6 +680,10 @@ class CPImageArtist(matplotlib.artist.Artist):
 
         for om in list(self.__objects) + list(self.__masks):
             assert isinstance(om, OutlinesMixin)
+            if isinstance(om, MaskData) and om.mode == MODE_LINES:
+                # Lines mode currently not working with Masks
+                om.mode = MODE_OUTLINES
+                om.alpha = 0.8
             if om.mode in (MODE_LINES, MODE_HIDE):
                 continue
             if om.mode == MODE_OUTLINES:

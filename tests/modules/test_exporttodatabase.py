@@ -213,7 +213,7 @@ class TestExportToDatabase(unittest.TestCase):
         #
         assert (
             cellprofiler.modules.exporttodatabase.ExportToDatabase.variable_revision_number
-            == 27
+            == 28
         )
 
     def test_load_v11(self):
@@ -238,7 +238,7 @@ class TestExportToDatabase(unittest.TestCase):
             module.directory.dir_choice
             == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
         )
-        assert module.directory.custom_path == r"./\g<Plate>"
+        assert module.directory.custom_path == r"./\\g<Plate>"
         assert module.db_name == "DefaultDB"
 
     def test_load_v12(self):
@@ -263,7 +263,7 @@ class TestExportToDatabase(unittest.TestCase):
             module.directory.dir_choice
             == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
         )
-        assert module.directory.custom_path == r"./\g<Plate>"
+        assert module.directory.custom_path == r"./\\g<Plate>"
         assert module.db_name == "DefaultDB"
         assert module.max_column_size == 64
 
@@ -289,7 +289,7 @@ class TestExportToDatabase(unittest.TestCase):
             module.directory.dir_choice
             == cellprofiler_core.preferences.DEFAULT_OUTPUT_SUBFOLDER_NAME
         )
-        assert module.directory.custom_path == r"./\g<Plate>"
+        assert module.directory.custom_path == r"./\\g<Plate>"
         assert module.db_name == "DefaultDB"
         assert module.max_column_size == 61
 
@@ -441,7 +441,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert len(module.filter_field_groups) == 1
         g = module.filter_field_groups[0]
         assert g.filter_name == "Site1Filter"
-        assert g.filter_statement.value == "Image_Metadata_Plate = '1'"
+        assert g.filter_statement.value == r"Image_Metadata_Plate = \'1\'"
 
     def test_load_v23(self):
         file = tests.modules.test_resources_directory("exporttodatabase/v23.pipeline")
@@ -548,7 +548,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert len(module.filter_field_groups) == 1
         g = module.filter_field_groups[0]
         assert g.filter_name == "Site1Filter"
-        assert g.filter_statement.value == "Image_Metadata_Plate = '1'"
+        assert g.filter_statement.value == r"Image_Metadata_Plate = \'1\'"
 
     def test_load_v24(self):
         file = tests.modules.test_resources_directory("exporttodatabase/v24.pipeline")
@@ -655,7 +655,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert len(module.filter_field_groups) == 1
         g = module.filter_field_groups[0]
         assert g.filter_name == "Site1Filter"
-        assert g.filter_statement.value == "Image_Metadata_Plate = '1'"
+        assert g.filter_statement.value == r"Image_Metadata_Plate = \'1\'"
         assert (
             module.allow_overwrite
             == cellprofiler.modules.exporttodatabase.OVERWRITE_DATA
@@ -767,7 +767,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert len(module.filter_field_groups) == 1
         g = module.filter_field_groups[0]
         assert g.filter_name == "Site1Filter"
-        assert g.filter_statement.value == "Image_Metadata_Plate = '1'"
+        assert g.filter_statement.value == r"Image_Metadata_Plate = \'1\'"
         assert (
             module.allow_overwrite
             == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
@@ -883,7 +883,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert len(module.filter_field_groups) == 1
         g = module.filter_field_groups[0]
         assert g.filter_name == "Site1Filter"
-        assert g.filter_statement.value == "Image_Metadata_Plate = '1'"
+        assert g.filter_statement.value == r"Image_Metadata_Plate = \'1\'"
         assert (
             module.allow_overwrite
             == cellprofiler.modules.exporttodatabase.OVERWRITE_NEVER
@@ -904,6 +904,22 @@ class TestExportToDatabase(unittest.TestCase):
             module.properties_classification_type
             == cellprofiler.modules.exporttodatabase.CT_IMAGE
         )
+        assert len(module.workspace_measurement_groups) == 1
+        g = module.workspace_measurement_groups[0]
+        assert g.y_object_name == "MyObjects"
+
+    def test_load_v28(self):
+        file = tests.modules.test_resources_directory("exporttodatabase/v28.pipeline")
+        with open(file, "r") as fd:
+            data = fd.read()
+
+        pipeline = cellprofiler_core.pipeline.Pipeline()
+        pipeline.load(six.moves.StringIO(data))
+        module = pipeline.modules()[0]
+        assert isinstance(
+            module, cellprofiler.modules.exporttodatabase.ExportToDatabase
+        )
+        assert module.db_type.value == cellprofiler.modules.exporttodatabase.DB_SQLITE
         assert len(module.workspace_measurement_groups) == 1
         g = module.workspace_measurement_groups[0]
         assert g.y_object_name == "MyObjects"

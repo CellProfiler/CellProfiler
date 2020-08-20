@@ -9,6 +9,14 @@ have been identified in an image.
 
 `(Jump to top)`_
 
+.. automodule:: cellprofiler.modules.combineobjects
+
+`(Jump to top)`_
+
+.. automodule:: cellprofiler.modules.convertimagetoobjects
+
+`(Jump to top)`_
+
 .. automodule:: cellprofiler.modules.convertobjectstoimage
 
 `(Jump to top)`_

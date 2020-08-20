@@ -1,17 +1,13 @@
 """test_cellprofiler - test the CellProfiler command-line interface
 """
 
-import datetime
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
-import urllib.request, urllib.parse, urllib.error
-import six.moves
-
-import dateutil.parser
+from tests.modules import test_resources_directory
 
 if hasattr(sys, "frozen"):
     ARGLIST_START = [sys.executable]
@@ -40,55 +36,17 @@ class TestCellProfiler(unittest.TestCase):
                 sys.executable,
                 "-m",
                 "cellprofiler",
-                "--do-not-build",
                 "--do-not-fetch",
             ] + list(args)
             return subprocess.check_output(args, cwd=root_dir)
 
-    def test_01_01_html(self):
-        path = tempfile.mkdtemp()
-        try:
-            self.run_cellprofiler("--html", "-o", path)
-            filenames = os.listdir(path)
-            self.assertTrue("index.html" in filenames)
-        finally:
-            shutil.rmtree(path)
-
-    @unittest.skipIf(
-        hasattr(sys, "frozen"), "Code statistics are not available in frozen-mode"
-    )
-    def test_01_02_code_statistics(self):
-        old_stdout = sys.stdout
-        fake_stdout = six.moves.StringIO(self.run_cellprofiler("--code-statistics"))
-        fake_stdout.seek(0)
-        found_module_stats = False
-        found_setting_stats = False
-        found_lines_of_code = False
-        for line in fake_stdout.readlines():
-            if line.startswith("# of built-in modules"):
-                found_module_stats = True
-            elif line.startswith("# of settings"):
-                found_setting_stats = True
-            elif line.startswith("# of lines of code"):
-                found_lines_of_code = True
-        self.assertTrue(found_module_stats)
-        self.assertTrue(found_setting_stats)
-        self.assertTrue(found_lines_of_code)
-
-    def test_01_03_version(self):
+    def test_get_version(self):
         import cellprofiler
-
         output = self.run_cellprofiler("--version")
-        version = dict(
-            [
-                tuple(line.strip().split(" "))
-                for line in output.split("\n")
-                if " " in line
-            ]
-        )
-        self.assertEqual(version["CellProfiler"], cellprofiler.__version__)
+        version = output.decode().rstrip()
+        assert version == cellprofiler.__version__
 
-    def test_02_01_run_headless(self):
+    def test_run_headless(self):
         output_directory = tempfile.mkdtemp()
         temp_directory = os.path.join(output_directory, "temp")
         os.mkdir(temp_directory)
@@ -96,8 +54,7 @@ class TestCellProfiler(unittest.TestCase):
             #
             # Run with a .cp file
             #
-            fly_pipe = "http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cppipe"
-            urllib.request.URLopener().open(fly_pipe).close()
+            fly_pipe = test_resources_directory("../ExampleFlyURL.cppipe")
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
             self.run_cellprofiler(

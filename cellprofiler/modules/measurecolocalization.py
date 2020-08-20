@@ -141,7 +141,14 @@ Select the objects to be measured.""",
             15,
             minval=0,
             maxval=99,
-            doc="You may choose to measure colocalization metrics only for those pixels above a certain threshold. Select the threshold as a percentage of the maximum intensity of the above image [0-99].",
+            doc="""\
+You may choose to measure colocalization metrics only for those pixels above 
+a certain threshold. Select the threshold as a percentage of the maximum intensity 
+of the above image [0-99].
+
+This value is used by the Overlap, Manders, and Rank Weighted Colocalization 
+measurements.
+""",
         )
 
         self.images_or_objects = Choice(
@@ -198,10 +205,10 @@ Select *{YES}* to run the Manders coefficients.
         )
 
         self.do_rwc = Binary(
-            "Calculate the Rank Weighted Coloalization coefficients?",
+            "Calculate the Rank Weighted Colocalization coefficients?",
             True,
             doc="""\
-Select *{YES}* to run the Rank Weighted Coloalization coefficients.
+Select *{YES}* to run the Rank Weighted Colocalization coefficients.
 """.format(
                 **{"YES": "Yes"}
             ),

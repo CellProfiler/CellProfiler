@@ -45,6 +45,10 @@ produced by prior modules.
 
 `(Jump to top)`_
 
+.. automodule:: cellprofiler.modules.measureobjectoverlap
+
+`(Jump to top)`_
+
 .. automodule:: cellprofiler.modules.measureobjectsizeshape
 
 `(Jump to top)`_

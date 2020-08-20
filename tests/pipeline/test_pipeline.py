@@ -706,10 +706,17 @@ HasImagePlaneDetails:False"""
         assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
         assert isinstance(result_module, MeasurementFixture,)
-        assert module.notes == eval(result_module.notes)
+        assert module.notes == result_module.notes
         assert module.my_variable.value == result_module.my_variable.value
 
     def test_deprecated_unicode_load(self):
+        import cellprofiler_core.constants.modules
+        from cellprofiler_core.utilities.core.modules import fill_modules
+
+        cellprofiler_core.constants.modules.builtin_modules[
+            "measurementfixture"
+        ] = "MeasurementFixture"
+        fill_modules()
         pipeline = get_empty_pipeline()
         deprecated_pipeline_file = os.path.realpath(
             os.path.join(os.path.dirname(__file__), "../data/pipeline/v3.cppipe")
@@ -718,7 +725,7 @@ HasImagePlaneDetails:False"""
         module = MeasurementFixture()
         module.my_variable.value = "∑"
         module.set_module_num(1)
-        module.notes = "\\'αβ\\'"
+        module.notes = "αβ"
         assert len(pipeline.modules()) == 1
         result_module = pipeline.modules()[0]
         assert isinstance(result_module, MeasurementFixture,)

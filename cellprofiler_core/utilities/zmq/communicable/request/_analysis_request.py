@@ -12,3 +12,6 @@ class AnalysisRequest(Request):
     def __init__(self, analysis_id, **kwargs):
         Request.__init__(self, **kwargs)
         self.analysis_id = analysis_id
+
+    def __lt__(self, other):
+        return True

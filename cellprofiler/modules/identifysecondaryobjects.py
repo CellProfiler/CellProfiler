@@ -2,7 +2,7 @@
 import centrosome.propagate
 import numpy
 import scipy.ndimage
-import skimage.morphology
+import skimage.segmentation
 from cellprofiler_core.constants.measurement import (
     FF_CHILDREN_COUNT,
     FF_PARENT,
@@ -636,7 +636,7 @@ segmentation.""",
             # Perform the first watershed
             #
 
-            labels_out = skimage.morphology.watershed(
+            labels_out = skimage.segmentation.watershed(
                 connectivity=numpy.ones((3, 3), bool),
                 image=sobel_image,
                 markers=labels_in,
@@ -668,7 +668,7 @@ segmentation.""",
             # Perform the watershed
             #
 
-            labels_out = skimage.morphology.watershed(
+            labels_out = skimage.segmentation.watershed(
                 connectivity=numpy.ones((3, 3), bool),
                 image=inverted_img,
                 markers=labels_in,

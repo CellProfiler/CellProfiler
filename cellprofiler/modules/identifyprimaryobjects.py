@@ -9,7 +9,7 @@ import centrosome.threshold
 import numpy
 import scipy.ndimage
 import scipy.sparse
-import skimage.morphology
+import skimage.segmentation
 from cellprofiler_core.setting import Binary, Color
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import IntegerRange
@@ -1382,7 +1382,7 @@ If "*{NO}*" is selected, the following settings are used:
             # will be split up.
             #
 
-            watershed_boundaries = skimage.morphology.watershed(
+            watershed_boundaries = skimage.segmentation.watershed(
                 connectivity=numpy.ones((3, 3), bool),
                 image=watershed_image,
                 markers=markers,

@@ -3240,12 +3240,12 @@ def table_lookup(image, table, border_value, iterations=None):
     center_is_zero = np.array([(x & 2 ** 4) == 0 for x in range(2 ** 9)])
     use_index_trick = False
     if not np.any(table[center_is_zero]) and (
-        np.issubdtype(image.dtype, np.bool) or np.issubdtype(image.dtype, np.integer)
+        np.issubdtype(image.dtype, np.bool_) or np.issubdtype(image.dtype, np.integer)
     ):
         # Use the index trick
         use_index_trick = True
         invert = False
-    elif np.all(table[~center_is_zero]) and np.issubdtype(image.dtype, np.bool):
+    elif np.all(table[~center_is_zero]) and np.issubdtype(image.dtype, np.bool_):
         # All ones stay ones, invert the table and the image and do the trick
         use_index_trick = True
         invert = True

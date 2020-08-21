@@ -131,7 +131,7 @@ class RegexpDialog(wx.Dialog):
         self.test_text_ctl = wx.TextCtrl(self, value=self.__test_text)
         self.test_text_ctl.Font = self.font
         hsizer.Add(self.test_text_ctl, 1, wx.ALIGN_CENTER | wx.ALL, 5)
-        sizer.Add(hsizer, 0, wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.ALL, 5)
+        sizer.Add(hsizer, 0, wx.GROW | wx.ALL, 5)
 
         style = wx.NO_BORDER
         self.test_display = wx.stc.StyledTextCtrl(self, -1, style=style)
@@ -247,14 +247,14 @@ class RegexpDialog(wx.Dialog):
     def refresh_regexp(self):
         state = RegexpState()
         regexp_text = self.__value
-        self.regexp_display.StartStyling(0, 0xFF)
+        self.regexp_display.StartStyling(0)
         self.regexp_display.SetStyling(len(regexp_text), STYLE_ERROR)
         try:
             parse(regexp_text, state)
         except:
             pass
         for i in range(state.position):
-            self.regexp_display.StartStyling(i, 0xFF)
+            self.regexp_display.StartStyling(i)
             self.regexp_display.SetStyling(1, state.token_labels[i])
         pos = self.regexp_display.CurrentPos
         if state.open_expression_start is not None:
@@ -276,7 +276,7 @@ class RegexpDialog(wx.Dialog):
             parse(self.__value, RegexpState())
         except ValueError as e:
             self.test_display.Text = e.args[0]
-            self.test_display.StartStyling(0, 0xFF)
+            self.test_display.StartStyling(0)
             self.test_display.SetStyling(len(self.test_display.Text), STYLE_ERROR)
             return
         try:
@@ -285,15 +285,15 @@ class RegexpDialog(wx.Dialog):
                 for i in range(len(match.groups()) + 1):
                     start = match.start(i)
                     end = match.end(i)
-                    self.test_display.StartStyling(start, 0xFF)
+                    self.test_display.StartStyling(start)
                     self.test_display.SetStyling(end - start, i + 1)
             else:
                 self.test_display.Text = "Regular expression does not match"
-                self.test_display.StartStyling(0, 0xFF)
+                self.test_display.StartStyling(0)
                 self.test_display.SetStyling(len(self.test_display.Text), STYLE_ERROR)
         except:
             self.test_display.Text = "Regular expression is not valid"
-            self.test_display.StartStyling(0, 0xFF)
+            self.test_display.StartStyling(0)
             self.test_display.SetStyling(len(self.test_display.GetText()), STYLE_ERROR)
         self.test_display.SetReadOnly(True)
 

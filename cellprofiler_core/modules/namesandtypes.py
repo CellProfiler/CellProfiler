@@ -1056,9 +1056,10 @@ requests an object selection.
                 LOAD_AS_COLOR_IMAGE,
                 LOAD_AS_GRAYSCALE_IMAGE,
             ):
-                result += [self.single_rescale]
-                if self.single_rescale == INTENSITY_MANUAL:
-                    result += [self.manual_rescale]
+                if not self.process_as_3d.value:
+                    result += [self.single_rescale]
+                    if self.single_rescale == INTENSITY_MANUAL:
+                        result += [self.manual_rescale]
         elif self.assignment_method == ASSIGN_RULES:
             for assignment in self.assignments:
                 if assignment.can_remove:
@@ -1073,9 +1074,10 @@ requests an object selection.
                     LOAD_AS_COLOR_IMAGE,
                     LOAD_AS_GRAYSCALE_IMAGE,
                 ):
-                    result += [assignment.rescale]
-                    if assignment.rescale == INTENSITY_MANUAL:
-                        result += [self.manual_rescale]
+                    if not self.process_as_3d.value:
+                        result += [assignment.rescale]
+                        if assignment.rescale == INTENSITY_MANUAL:
+                            result += [self.manual_rescale]
                 result += [assignment.copy_button]
                 if assignment.can_remove:
                     result += [assignment.remover]
@@ -1090,9 +1092,10 @@ requests an object selection.
                     LOAD_AS_COLOR_IMAGE,
                     LOAD_AS_GRAYSCALE_IMAGE,
                 ):
-                    result += [single_image.rescale]
-                    if single_image.rescale == INTENSITY_MANUAL:
-                        result += [single_image.manual_rescale]
+                    if not self.process_as_3d.value:
+                        result += [single_image.rescale]
+                        if single_image.rescale == INTENSITY_MANUAL:
+                            result += [single_image.manual_rescale]
                 result += [single_image.copy_button, single_image.remover]
             result += [self.add_assignment_divider, self.add_assignment_button]
             if len(self.assignments) > 1:

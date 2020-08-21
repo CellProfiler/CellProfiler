@@ -134,5 +134,5 @@ setuptools.setup(
     packages=["centrosome"],
     setup_requires=["cython", "numpy", "pytest",],
     url="https://github.com/CellProfiler/centrosome",
-    version="1.1.7",
+    version="1.2.0",
 )

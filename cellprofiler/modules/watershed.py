@@ -6,7 +6,7 @@ import skimage.color
 import skimage.feature
 import skimage.filters
 import skimage.measure
-import skimage.morphology
+import skimage.segmentation
 import skimage.transform
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
 from cellprofiler_core.setting import Binary
@@ -316,7 +316,7 @@ the image is not downsampled.
 
                 mask_data = mask.pixel_data
 
-            y_data = skimage.morphology.watershed(
+            y_data = skimage.segmentation.watershed(
                 image=x_data,
                 markers=markers_data,
                 mask=mask_data,

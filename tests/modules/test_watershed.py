@@ -8,7 +8,6 @@ import skimage.feature
 import skimage.filters
 import skimage.filters.rank
 import skimage.measure
-import skimage.morphology
 import skimage.segmentation
 import skimage.transform
 import skimage.util
@@ -112,7 +111,7 @@ def test_run_markers(
 
         markers = skimage.color.rgb2gray(markers)
 
-    expected = skimage.morphology.watershed(
+    expected = skimage.segmentation.watershed(
         gradient,
         markers,
         connectivity=connectivity,

@@ -14,6 +14,8 @@ from ..constants.image import C_SCALING
 from ..constants.image import C_SERIES
 from ..constants.image import C_WIDTH
 from ..constants.measurement import COLTYPE_FLOAT
+from ..constants.measurement import FTR_CENTER_Z
+from ..constants.measurement import M_LOCATION_CENTER_Z
 from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_VARCHAR
 from ..constants.measurement import COLTYPE_VARCHAR_FILE_NAME
@@ -2126,14 +2128,29 @@ requests an object selection.
                 url = ipds[0].url
 
         url = workspace.measurements.alter_url_post_create_batch(url)
-        provider = ObjectsImage(name, url, series, index)
+        volume = self.process_as_3d.value
+        spacing = (self.z.value, self.x.value, self.y.value) if volume else None
+        provider = ObjectsImage(
+            name, url, series, index, volume=volume, spacing=spacing
+        )
         self.add_provider_measurements(
             provider, workspace.measurements, "Object",
         )
         image = provider.provide_image(workspace.image_set)
         o = Objects()
-        if image.pixel_data.shape[2] == 1:
+        shape = image.pixel_data.shape
+        if shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
+            add_object_location_measurements(
+                workspace.measurements, name, o.segmented, o.count
+            )
+        elif volume:
+            if len(shape) == 3:
+                o.segmented = image.pixel_data
+            elif len(shape) == 4 and shape[-1] == 1:
+                o.segmented = image.pixel_data[:, :, :, 0]
+            else:
+                raise NotImplementedError("ijv volumes not yet supported")
             add_object_location_measurements(
                 workspace.measurements, name, o.segmented, o.count
             )
@@ -2248,10 +2265,11 @@ requests an object selection.
                 )
             ]
             result += get_object_measurement_columns(object_name)
+            if self.process_as_3d.value:
+                result += ((object_name, M_LOCATION_CENTER_Z, COLTYPE_FLOAT,),)
         result += [
             ("Image", ftr, COLTYPE_VARCHAR,) for ftr in self.get_metadata_features()
         ]
-
         return result
 
     def get_categories(self, pipeline, object_name):
@@ -2310,10 +2328,13 @@ requests an object selection.
             if category == C_NUMBER:
                 return [FTR_OBJECT_NUMBER]
             elif category == C_LOCATION:
-                return [
+                result = [
                     FTR_CENTER_X,
                     FTR_CENTER_Y,
                 ]
+                if self.process_as_3d.value:
+                    result += [FTR_CENTER_Z]
+                return result
         return []
 
     def validate_module(self, pipeline):

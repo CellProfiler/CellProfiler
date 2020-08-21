@@ -1,22 +1,38 @@
 import bioformats
+import imageio
 import numpy
 
 from .... import Image
 from .....utilities.image import convert_image_to_objects
+from .....utilities.pathname import url2pathname
 from ._url_image import URLImage
 
 
 class ObjectsImage(URLImage):
     """Provide a multi-plane integer image, interpreting an image file as objects"""
 
-    def __init__(self, name, url, series, index):
+    def __init__(self, name, url, series, index, volume=False, spacing=None):
+        self.__data = None
+        self.volume = volume
+        if volume:
+            index = self.get_indexes(url)
+            series = None
+        self.__image = None
+        self.__spacing = spacing
         URLImage.__init__(
-            self, name, url, rescale=False, series=series, index=index, volume=False
+            self, name, url, rescale=False, series=series, index=index, volume=volume
         )
 
     def provide_image(self, image_set):
         """Load an image from a pathname
         """
+
+        if self.__image is not None:
+            return self.__image
+
+        if self.volume:
+            return self.get_image_volume()
+
         self.cache_file()
         filename = self.get_filename()
         channel_names = []
@@ -58,4 +74,29 @@ class ObjectsImage(URLImage):
             file_name=self.get_filename(),
             convert=False,
         )
+        self.__image = image
+        return image
+
+    def get_indexes(self, url):
+        pathname = url2pathname(url)
+        # Javabridge gave us dud indexes, let's find our own planes
+        self.__data = imageio.volread(pathname).astype(int)
+        indexes = list(range(self.__data.shape[0]))
+        return indexes
+
+    def get_image_volume(self):
+        imdata = self.__data
+        planes = []  # newplanes = numpy.zeros_like(test2)
+        for planeid in range(imdata.shape[0]):
+            planes.append(convert_image_to_objects(imdata[planeid]).astype(numpy.int32))
+        imdata = numpy.stack(planes)
+
+        image = Image(
+            imdata,
+            path_name=self.get_pathname(),
+            file_name=self.get_filename(),
+            convert=False,
+            dimensions=3,
+        )
+        self.__image = image
         return image

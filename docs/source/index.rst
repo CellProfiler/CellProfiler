@@ -212,11 +212,22 @@ in a future version of CellProfiler.
    :caption: Legacy Features
    :titlesonly:
 
-   help/legacy_load_modules
    help/legacy_matlab_image
 
 `(Jump to top)`_
 
 :ref:`search`
+
+.. _(Jump to top): index.html#
+
+License
+=======
+
+.. toctree::
+   :caption: License
+
+   modules/license
+
+   :ref:`search`
 
 .. _(Jump to top): index.html#

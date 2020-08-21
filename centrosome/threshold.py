@@ -79,7 +79,7 @@ def get_threshold(
     threshold_range_max=None,
     threshold_correction_factor=1.0,
     adaptive_window_size=10,
-    **kwargs,
+    **kwargs
 ):
     """Compute a threshold for an image
     
@@ -140,7 +140,7 @@ def get_threshold(
             global_threshold,
             mask,
             adaptive_window_size=adaptive_window_size,
-            **kwargs,
+            **kwargs
         )
         local_threshold = local_threshold * threshold_correction_factor
     elif threshold_modifier == TM_PER_OBJECT:
@@ -152,7 +152,7 @@ def get_threshold(
             labels,
             threshold_range_min,
             threshold_range_max,
-            **kwargs,
+            **kwargs
         )
         local_threshold = local_threshold * threshold_correction_factor
     else:
@@ -293,7 +293,7 @@ def get_per_object_threshold(
     labels=None,
     threshold_range_min=None,
     threshold_range_max=None,
-    **kwargs,
+    **kwargs
 ):
     """Return a matrix giving threshold per pixel calculated per-object
     

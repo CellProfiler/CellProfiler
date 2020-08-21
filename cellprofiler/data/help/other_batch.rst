@@ -68,10 +68,9 @@ cluster.
    processing large batches of images, you may also consider adding
    **ExportToDatabase** to your pipeline, after your measurement modules
    but before the CreateBatchFiles module. This module will export your
-   data either directly to a MySQL/SQLite database or into a set of
-   comma-separated files (CSV) along with a script to import your data
-   into a MySQL database. Please refer to the help for these modules in
-   order learn more about which settings are appropriate.
+   data either directly to a MySQL or SQLite database. Please refer to 
+   the help for these modules in order learn more about which settings 
+   are appropriate.
 #. *Run the pipeline to create a batch file.* Click the *Analyze images*
    button and the analysis will begin processing locally. Do not be
    surprised if this initial step takes a while: CellProfiler must
@@ -94,7 +93,7 @@ cluster.
    ::
 
       ./python -m cellprofiler -p <Default_Output_Folder_path>/Batch_data.h5 \\
-      -c -r -b \\
+      -c -r \\
       -f <first_image_set_number> \\
       -l <last_image_set_number>
 
@@ -109,8 +108,6 @@ cluster.
    -  ``-c``: Run “headless”, i.e., without the GUI
    -  ``-r``: Run the pipeline specified on startup, which is contained
       in the batch file.
-   -  ``-b``: Do not build extensions, since by this point, they should
-      already be built.
    -  ``-f <first_image_set_number>``: Start processing with the image
       set specified, <first\_image\_set\_number>
    -  ``-l <last_image_set_number>``: Finish processing with the image

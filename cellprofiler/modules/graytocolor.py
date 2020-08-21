@@ -115,7 +115,7 @@ available, which is useful for displaying images in other software.
 
 This rescaling is applied before any multiplication factors set in this 
 module's options. Using a multiplication factor >1 would therefore result 
-in clipping."""
+in clipping.""",
         )
 
         # # # # # # # # # # # # # # # #
@@ -581,9 +581,7 @@ pixel values are multiplied by this weight before assigning the color.
                         / 255
                     )
                     colors.append(color[numpy.newaxis, numpy.newaxis, :])
-                rgb_pixel_data = (
-                    pixel_data[:, :, numpy.newaxis] * colors[0]
-                )
+                rgb_pixel_data = pixel_data[:, :, numpy.newaxis] * colors[0]
                 for image, color in zip(source_channels[1:], colors[1:]):
                     if self.wants_rescale.value:
                         image = image / numpy.max(image)

@@ -2840,7 +2840,12 @@ available:
         return False
 
     def ignore_feature(
-        self, object_name, feature_name, measurements=None, strict=False, wanttime=False,
+        self,
+        object_name,
+        feature_name,
+        measurements=None,
+        strict=False,
+        wanttime=False,
     ):
         """Return true if we should ignore a feature"""
         if (
@@ -3174,7 +3179,9 @@ CREATE TABLE %s (
         columns = self.get_pipeline_measurement_columns(pipeline, image_set_list)
         for column in columns:
             obname, feature, ftype = column[:3]
-            if obname == "Image" and not self.ignore_feature(obname, feature, wanttime=True):
+            if obname == "Image" and not self.ignore_feature(
+                obname, feature, wanttime=True
+            ):
                 if ftype.startswith(COLTYPE_VARCHAR):
                     ftype = "TEXT"
                 feature_name = "%s_%s" % (obname, feature)
@@ -4786,7 +4793,11 @@ CP version : %d\n""" % int(
 
     def filter_measurement_columns(self, columns):
         """Filter out and properly sort measurement columns"""
-        columns = [x for x in columns if not self.ignore_feature(x[0], x[1], True, wanttime=True)]
+        columns = [
+            x
+            for x in columns
+            if not self.ignore_feature(x[0], x[1], True, wanttime=True)
+        ]
 
         #
         # put Image ahead of any other object

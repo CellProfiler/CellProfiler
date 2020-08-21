@@ -13,8 +13,17 @@ from io import StringIO
 import javabridge
 import numpy
 import zmq
-from cellprofiler_core.constants.measurement import GROUP_NUMBER, GROUP_INDEX, OBJECT_NUMBER, EXPERIMENT, \
-    MCA_AVAILABLE_POST_RUN, COLTYPE_FLOAT, COLTYPE_INTEGER, COLTYPE_VARCHAR, IMAGE_NUMBER
+from cellprofiler_core.constants.measurement import (
+    GROUP_NUMBER,
+    GROUP_INDEX,
+    OBJECT_NUMBER,
+    EXPERIMENT,
+    MCA_AVAILABLE_POST_RUN,
+    COLTYPE_FLOAT,
+    COLTYPE_INTEGER,
+    COLTYPE_VARCHAR,
+    IMAGE_NUMBER,
+)
 from cellprofiler_core.constants.workspace import DISPOSITION_SKIP, DISPOSITION_CANCEL
 from cellprofiler_core.image import Image
 from cellprofiler_core.measurement import Measurements
@@ -140,9 +149,7 @@ class KnimeBridgeServer(threading.Thread):
                                     )
                                 except Exception as e:
                                     logging.warning(e)
-                                    self.raise_cellprofiler_exception(
-                                        session_id, e
-                                    )
+                                    self.raise_cellprofiler_exception(session_id, e)
                     else:
                         continue
                     break
@@ -167,9 +174,7 @@ class KnimeBridgeServer(threading.Thread):
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
-            logging.warning(
-                "Failed to load pipeline: sending pipeline exception"
-            )
+            logging.warning("Failed to load pipeline: sending pipeline exception")
             self.raise_pipeline_exception(session_id, str(e))
             return
         input_modules, other_modules = self.split_pipeline(pipeline)
@@ -193,9 +198,7 @@ class KnimeBridgeServer(threading.Thread):
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
-            logging.warning(
-                "Failed to load pipeline: sending pipeline exception"
-            )
+            logging.warning("Failed to load pipeline: sending pipeline exception")
             self.raise_pipeline_exception(session_id, str(e))
             return
         to_remove = []
@@ -219,14 +222,8 @@ class KnimeBridgeServer(threading.Thread):
         pipeline, m, object_set = self.prepare_run(message, session_id)
         if pipeline is None:
             return
-        m[
-            "Image",
-            GROUP_NUMBER,
-        ] = 1
-        m[
-            "Image",
-            GROUP_INDEX,
-        ] = 1
+        m["Image", GROUP_NUMBER,] = 1
+        m["Image", GROUP_INDEX,] = 1
         input_modules, other_modules = self.split_pipeline(pipeline)
         for module in other_modules:
             workspace = cellprofiler_core.workspace.Workspace(
@@ -242,10 +239,7 @@ class KnimeBridgeServer(threading.Thread):
                     "Running module # %d: %s" % (module.module_num, module.module_name)
                 )
                 pipeline.run_module(module, workspace)
-                if workspace.disposition in (
-                    DISPOSITION_SKIP,
-                    DISPOSITION_CANCEL,
-                ):
+                if workspace.disposition in (DISPOSITION_SKIP, DISPOSITION_CANCEL,):
                     break
             except Exception as e:
                 msg = 'Encountered error while running module, "%s": %s' % (
@@ -369,24 +363,14 @@ class KnimeBridgeServer(threading.Thread):
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
-            logging.warning(
-                "Failed to load pipeline: sending pipeline exception"
-            )
+            logging.warning("Failed to load pipeline: sending pipeline exception")
             self.raise_pipeline_exception(session_id, str(e))
             return
 
         image_numbers = numpy.arange(1, n_image_sets + 1)
         for image_number in image_numbers:
-            m[
-                "Image",
-                GROUP_NUMBER,
-                image_number,
-            ] = 1
-            m[
-                "Image",
-                GROUP_INDEX,
-                image_number,
-            ] = image_number
+            m["Image", GROUP_NUMBER, image_number,] = 1
+            m["Image", GROUP_INDEX, image_number,] = image_number
         input_modules, other_modules = self.split_pipeline(pipeline)
         workspace = cellprofiler_core.workspace.Workspace(
             pipeline, None, m, None, m, None
@@ -417,10 +401,7 @@ class KnimeBridgeServer(threading.Thread):
                         % (module.module_num, module.module_name)
                     )
                     pipeline.run_module(module, workspace)
-                    if workspace.disposition in (
-                        DISPOSITION_SKIP,
-                        DISPOSITION_CANCEL,
-                    ):
+                    if workspace.disposition in (DISPOSITION_SKIP, DISPOSITION_CANCEL,):
                         break
                 except Exception as e:
                     msg = 'Encountered error while running module, "%s": %s' % (
@@ -465,9 +446,7 @@ class KnimeBridgeServer(threading.Thread):
                 object_counts = [] * n_image_sets
             else:
                 object_numbers = m[
-                    object_name,
-                    OBJECT_NUMBER,
-                    image_numbers,
+                    object_name, OBJECT_NUMBER, image_numbers,
                 ]
                 object_counts = [len(x) for x in object_numbers]
             for feature, data_type in features:
@@ -561,9 +540,7 @@ class KnimeBridgeServer(threading.Thread):
         try:
             pipeline.loadtxt(StringIO(pipeline_txt))
         except Exception as e:
-            logging.warning(
-                "Failed to load pipeline: sending pipeline exception"
-            )
+            logging.warning("Failed to load pipeline: sending pipeline exception")
             self.raise_pipeline_exception(session_id, str(e))
             return None, None, None
 
@@ -643,10 +620,7 @@ class KnimeBridgeServer(threading.Thread):
                 qualifiers = {} if len(column) < 4 else column[3]
                 if (
                     objects == EXPERIMENT
-                    and qualifiers.get(
-                        MCA_AVAILABLE_POST_RUN, False
-                    )
-                    == True
+                    and qualifiers.get(MCA_AVAILABLE_POST_RUN, False) == True
                 ):
                     continue
                 if dbtype == COLTYPE_FLOAT:

@@ -619,7 +619,11 @@ class Figure(wx.Frame):
         if not hasattr(self, "subplots"):
             return
 
-        if event.inaxes in self.subplots.flatten() and self.mouse_down and event.xdata is not None:
+        if (
+            event.inaxes in self.subplots.flatten()
+            and self.mouse_down
+            and event.xdata is not None
+        ):
             x0 = min(self.mouse_down[0], event.xdata)
             x1 = max(self.mouse_down[0], event.xdata)
             y0 = min(self.mouse_down[1], event.ydata)
@@ -1146,15 +1150,22 @@ class Figure(wx.Frame):
                                     plot_params["vmin"] = params["vmin"]
                                     plot_params["vmax"] = params["vmax"]
                                     plot_params["normalize"] = params["normalize"]
-                                    plot_params["normalize_args"] = params["normalize_args"]
+                                    plot_params["normalize_args"] = params[
+                                        "normalize_args"
+                                    ]
                                     image = self.images[(xcoord, ycoord)]
                                     if not isinstance(image, numpy.ma.MaskedArray):
-                                        img_data = self.normalize_image(self.images[(xcoord, ycoord)], **plot_params)
+                                        img_data = self.normalize_image(
+                                            self.images[(xcoord, ycoord)], **plot_params
+                                        )
                                         subplot_item.displayed.set_data(img_data)
                                 else:
                                     # Should be a table, make sure the invisible subplot stays hidden.
                                     subplot_item.axis("off")
-                                    if not hasattr(subplot_item, "deleted") and self.dimensions == 3:
+                                    if (
+                                        not hasattr(subplot_item, "deleted")
+                                        and self.dimensions == 3
+                                    ):
                                         self.figure.delaxes(subplot_item)
                                         subplot_item.deleted = True
 
@@ -1603,10 +1614,7 @@ class Figure(wx.Frame):
         #    taken. In this case each subplot_xxx call would have to append
         #    an action response to a dictionary keyed by subplot.
         if (x, y) in self.event_bindings:
-            [
-                self.figure.canvas.mpl_disconnect(b)
-                for b in self.event_bindings[(x, y)]
-            ]
+            [self.figure.canvas.mpl_disconnect(b) for b in self.event_bindings[(x, y)]]
 
         def on_release(evt):
             if evt.inaxes == subplot:
@@ -1626,7 +1634,7 @@ class Figure(wx.Frame):
 
         if self.dimensions == 3:
             z = image.shape[0]
-            self.current_plane = z//2
+            self.current_plane = z // 2
 
         image = self.normalize_image(self.images[(x, y)], **kwargs)
 
@@ -1680,17 +1688,11 @@ class Figure(wx.Frame):
         )
 
         # Attempt to update histogram plot if one was created
-        hist_fig = find_fig(
-            self, name="%s %s image histogram" % (self.Name, (x, y))
-        )
+        hist_fig = find_fig(self, name="%s %s image histogram" % (self.Name, (x, y)))
 
         if hist_fig:
             hist_fig.subplot_histogram(
-                0,
-                0,
-                self.images[(x, y)].flatten(),
-                bins=200,
-                xlabel="pixel intensity",
+                0, 0, self.images[(x, y)].flatten(), bins=200, xlabel="pixel intensity",
             )
 
             hist_fig.figure.canvas.draw()
@@ -1710,20 +1712,15 @@ class Figure(wx.Frame):
                     ybut = 0.47
                 axprev = self.figure.add_axes([xprev, ybut, 0.03, 0.04])
                 axnext = self.figure.add_axes([xnext, ybut, 0.03, 0.04])
-                subplot.bprev = matplotlib.widgets.Button(axprev, '<')
-                subplot.bnext = matplotlib.widgets.Button(axnext, '>')
+                subplot.bprev = matplotlib.widgets.Button(axprev, "<")
+                subplot.bnext = matplotlib.widgets.Button(axnext, ">")
             splane = matplotlib.widgets.Slider(
-                axplane,
-                'Plane',
-                0,
-                z-1,
-                valstep=1,
-                valfmt='%02d',
+                axplane, "Plane", 0, z - 1, valstep=1, valfmt="%02d",
             )
             splane.set_val(self.current_plane)
 
             def next_plane(event):
-                if splane.val < z-1:
+                if splane.val < z - 1:
                     change_plane(splane.val + 1)
 
             def prev_plane(event):
@@ -1748,7 +1745,9 @@ class Figure(wx.Frame):
                         subplot_item = self.subplot(xcoord, ycoord)
                         if hasattr(subplot_item, "displayed"):
                             params = self.subplot_params[(xcoord, ycoord)]
-                            img_data = self.normalize_image(self.images[(xcoord, ycoord)], **params)
+                            img_data = self.normalize_image(
+                                self.images[(xcoord, ycoord)], **params
+                            )
                             subplot_item.displayed.set_data(img_data)
                         else:
                             # Should be a table, we don't need the axis.
@@ -1756,6 +1755,7 @@ class Figure(wx.Frame):
                                 self.figure.delaxes(subplot_item)
                                 subplot_item.deleted = True
                         # Updating the slider will force a refresh, so we don't need to explicitly draw
+
             splane.on_changed(change_plane)
             if self.subplots.shape[0] < 3 and self.subplots.shape[1] < 3:
                 subplot.bprev.on_clicked(prev_plane)
@@ -1776,7 +1776,7 @@ class Figure(wx.Frame):
         # check if using constrained_layout:
         try:
             gs = parents[0].get_subplotspec().get_gridspec()
-            using_constrained_layout = (gs._layoutbox is not None)
+            using_constrained_layout = gs._layoutbox is not None
         except AttributeError:
             using_constrained_layout = False
         pad = 0.15
@@ -1785,7 +1785,8 @@ class Figure(wx.Frame):
         fig = parents[0].get_figure()
         # take a bounding box around all of the given axes
         parents_bbox = matplotlib.transforms.Bbox.union(
-            [ax.get_position(original=True).frozen() for ax in parents])
+            [ax.get_position(original=True).frozen() for ax in parents]
+        )
 
         pb = parents_bbox
         pbcb, _, pb1 = pb.splity(fraction, fraction + pad)
@@ -1812,21 +1813,24 @@ class Figure(wx.Frame):
             lb = None
             lbpos = None
             # and we need to set the aspect ratio by hand...
-            new_ax.set_aspect(aspect, anchor=anchor, adjustable='box')
+            new_ax.set_aspect(aspect, anchor=anchor, adjustable="box")
         else:
             import matplotlib._constrained_layout as constrained_layout
+
             if not parents_iterable:
                 # this is a single axis...
                 ax = parents[0]
                 lb, lbpos = constrained_layout.layoutcolorbarsingle(
-                    ax, new_ax, shrink, aspect, "bottom", pad=pad)
+                    ax, new_ax, shrink, aspect, "bottom", pad=pad
+                )
             else:  # there is more than one parent, so lets use gridspec
                 # the colorbar will be a sibling of this gridspec, so the
                 # parent is the same parent as the gridspec.  Either the figure,
                 # or a subplotspec.
 
                 lb, lbpos = constrained_layout.layoutcolorbargridspec(
-                    parents, new_ax, shrink, aspect, "bottom", pad)
+                    parents, new_ax, shrink, aspect, "bottom", pad
+                )
         new_ax._layoutbox = lb
         new_ax._poslayoutbox = lbpos
         return new_ax
@@ -2664,4 +2668,3 @@ class Figure(wx.Frame):
             return image.ndim == 3 and image.shape[2] >= 2
         else:
             return image.ndim == 4 and image.shape[3] >= 2
-

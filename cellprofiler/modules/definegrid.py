@@ -839,7 +839,10 @@ first image.
 
             if (event is not None) or (gridding[0] is None):
                 do_gridding(
-                    first_x.GetValue(), first_y.GetValue(), second_x.GetValue(), second_y.GetValue()
+                    first_x.GetValue(),
+                    first_y.GetValue(),
+                    second_x.GetValue(),
+                    second_y.GetValue(),
                 )
             self.display_grid(background_image, gridding[0], image_set_number, axes)
             canvas.draw()
@@ -885,7 +888,10 @@ first image.
                     new_first_x = str(int(event.xdata))
                     new_first_y = str(int(event.ydata))
                     if do_gridding(
-                        new_first_x, new_first_y, second_x.GetValue(), second_y.GetValue()
+                        new_first_x,
+                        new_first_y,
+                        second_x.GetValue(),
+                        second_y.GetValue(),
                     ):
                         first_x.SetValue(new_first_x)
                         first_y.SetValue(new_first_y)
@@ -895,7 +901,10 @@ first image.
                     new_second_x = str(int(event.xdata))
                     new_second_y = str(int(event.ydata))
                     if do_gridding(
-                        first_x.GetValue(), first_y.GetValue(), new_second_x, new_second_y
+                        first_x.GetValue(),
+                        first_y.GetValue(),
+                        new_second_x,
+                        new_second_y,
                     ):
                         second_x.SetValue(new_second_x)
                         second_y.SetValue(new_second_y)
@@ -911,7 +920,12 @@ first image.
         frame.Bind(wx.EVT_RADIOBOX, on_cell_selection, cell_choice)
         canvas.mpl_connect("button_release_event", button_release)
         frame.ShowModal()
-        do_gridding(first_x.GetValue(), first_y.GetValue(), second_x.GetValue(), second_y.GetValue())
+        do_gridding(
+            first_x.GetValue(),
+            first_y.GetValue(),
+            second_x.GetValue(),
+            second_y.GetValue(),
+        )
         frame.Destroy()
         if status[0] != wx.OK:
             raise RuntimeError("Pipeline aborted during grid editing")

@@ -628,23 +628,15 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             first_pixels = objects.crop_image_similarly(first_image.pixel_data)
             first_mask = objects.crop_image_similarly(first_image.mask)
         except ValueError:
-            first_pixels, m1 = size_similarly(
-                labels, first_image.pixel_data
-            )
-            first_mask, m1 = size_similarly(
-                labels, first_image.mask
-            )
+            first_pixels, m1 = size_similarly(labels, first_image.pixel_data)
+            first_mask, m1 = size_similarly(labels, first_image.mask)
             first_mask[~m1] = False
         try:
             second_pixels = objects.crop_image_similarly(second_image.pixel_data)
             second_mask = objects.crop_image_similarly(second_image.mask)
         except ValueError:
-            second_pixels, m1 = size_similarly(
-                labels, second_image.pixel_data
-            )
-            second_mask, m1 = size_similarly(
-                labels, second_image.mask
-            )
+            second_pixels, m1 = size_similarly(labels, second_image.pixel_data)
+            second_mask, m1 = size_similarly(labels, second_image.mask)
             second_mask[~m1] = False
         mask = (labels > 0) & first_mask & second_mask
         first_pixels = first_pixels[mask]

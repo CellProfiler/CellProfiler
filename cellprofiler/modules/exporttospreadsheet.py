@@ -724,13 +724,16 @@ desired.
         """
         maximum_image_sets = 500
         if workspace.measurements.image_set_count > maximum_image_sets:
-            msg = f'You are using ExportToSpreadsheet to export {workspace.measurements.image_set_count} image sets. ' \
-                  f'Instead we suggest using ExportToDatabase because ExportToSpreadsheet' \
-                  f' may fail on large image sets. Do you want to continue?'
+            msg = (
+                f"You are using ExportToSpreadsheet to export {workspace.measurements.image_set_count} image sets. "
+                f"Instead we suggest using ExportToDatabase because ExportToSpreadsheet"
+                f" may fail on large image sets. Do you want to continue?"
+            )
 
             try:
                 pkg_resources.get_distribution("wxpython")
                 import wx
+
                 result = wx.MessageBox(
                     msg,
                     caption="ExportToSpreadsheet: Large number of image sets",
@@ -741,8 +744,10 @@ desired.
                 return True
 
             except pkg_resources.DistributionNotFound:
-                print("Given the large number of image sets, you may want to consider using ExportToDatabase "
-                      "as opposed to ExportToSpreadsheet.")
+                print(
+                    "Given the large number of image sets, you may want to consider using ExportToDatabase "
+                    "as opposed to ExportToSpreadsheet."
+                )
 
         return self.check_overwrite(workspace)
 

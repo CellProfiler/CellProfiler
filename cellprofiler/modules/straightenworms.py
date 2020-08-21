@@ -811,7 +811,7 @@ of the straightened worms.""",
                 #
                 # # # # # # # # # # # # # # # # # # # # # #
                 labels1 = labels.copy()
-                i, j = numpy.mgrid[0: labels.shape[0], 0: labels.shape[1]]
+                i, j = numpy.mgrid[0 : labels.shape[0], 0 : labels.shape[1]]
                 i_frac = (i - min_i[labels]).astype(float) / heights[labels]
                 i_frac_end = i_frac + 1.0 / heights[labels].astype(float)
                 i_radius_frac = (i - min_i[labels]).astype(float) / (

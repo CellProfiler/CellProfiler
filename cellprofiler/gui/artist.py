@@ -746,8 +746,8 @@ class CPImageArtist(matplotlib.artist.Artist):
         # which is from the bottom of the screen
         #
         # if self.axes.viewLim.height < 0:
-            # ty = (view_ymin - self.axes.viewLim.y1) - .5
-            # ty = self.axes.viewLim.y0 - view_ymax + 0.5
+        # ty = (view_ymin - self.axes.viewLim.y1) - .5
+        # ty = self.axes.viewLim.y0 - view_ymax + 0.5
         # else:
         #     ty = view_ymin - self.axes.viewLim.y0 - 0.5
 

@@ -988,9 +988,7 @@ fewer iterations, but less accuracy.
             rescaled_pixel_data = pixel_data * 65535
             rescaled_pixel_data = rescaled_pixel_data.astype(numpy.uint16)
             rescaled_pixel_data *= mask
-            output_pixels = skimage.filters.median(
-                rescaled_pixel_data, strel
-            )
+            output_pixels = skimage.filters.median(rescaled_pixel_data, strel)
         elif self.smoothing_method == SM_TO_AVERAGE:
             mean = numpy.mean(pixel_data[mask])
             output_pixels = numpy.ones(pixel_data.shape, pixel_data.dtype) * mean

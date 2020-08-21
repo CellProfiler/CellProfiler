@@ -54,7 +54,11 @@ from cellprofiler_core.setting.multichoice import SubscriberMultiChoice
 from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.range import IntegerOrUnboundedRange
 from cellprofiler_core.setting.range import IntegerRange
-from cellprofiler_core.setting.subscriber import ImageListSubscriber, LabelSubscriber, GridSubscriber
+from cellprofiler_core.setting.subscriber import (
+    ImageListSubscriber,
+    LabelSubscriber,
+    GridSubscriber,
+)
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.subscriber import LabelListSubscriber
 from cellprofiler_core.setting.text import Directory

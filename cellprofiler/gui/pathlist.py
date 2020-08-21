@@ -583,7 +583,9 @@ class PathListCtrl(wx.ScrolledWindow):
             self.recalc()
         width, height = self.GetSize()
         rn = wx.RendererNative.Get()
-        paint_dc.SetBackground(wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)))
+        paint_dc.SetBackground(
+            wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
+        )
         paint_dc.Clear()
         paint_dc.SetFont(self.GetFont())
         has_focus = self.FindFocus() == self

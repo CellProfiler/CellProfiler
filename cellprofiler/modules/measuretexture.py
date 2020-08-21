@@ -540,14 +540,15 @@ measured and will result in a undefined value in the output file.
         # mahotas.features.haralick bricks itself when provided a dtype larger than uint8 (version 1.4.3)
         pixel_data = skimage.util.img_as_ubyte(pixel_data)
         if gray_levels != 256:
-            pixel_data = skimage.exposure.rescale_intensity(pixel_data, in_range=(0, 255),
-                                                            out_range=(0, gray_levels-1)).astype(numpy.uint8)
+            pixel_data = skimage.exposure.rescale_intensity(
+                pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
+            ).astype(numpy.uint8)
         props = skimage.measure.regionprops(labels, pixel_data)
 
         features = numpy.empty((n_directions, 13, len(unique_labels)))
 
         for index, prop in enumerate(props):
-            label_data = prop['intensity_image']
+            label_data = prop["intensity_image"]
             try:
                 features[:, :, index] = mahotas.features.haralick(
                     label_data, distance=scale, ignore_zeros=True
@@ -578,8 +579,9 @@ measured and will result in a undefined value in the output file.
         gray_levels = int(self.gray_levels.value)
         pixel_data = skimage.util.img_as_ubyte(image.pixel_data)
         if gray_levels != 256:
-            pixel_data = skimage.exposure.rescale_intensity(pixel_data, in_range=(0, 255),
-                                                            out_range=(0, gray_levels-1)).astype(numpy.uint8)
+            pixel_data = skimage.exposure.rescale_intensity(
+                pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
+            ).astype(numpy.uint8)
 
         features = mahotas.features.haralick(pixel_data, distance=scale)
 
@@ -598,11 +600,15 @@ measured and will result in a undefined value in the output file.
 
         return statistics
 
-    def record_measurement(self, workspace, image, obj, scale, feature, result, gray_levels):
+    def record_measurement(
+        self, workspace, image, obj, scale, feature, result, gray_levels
+    ):
         result[~numpy.isfinite(result)] = 0
 
         workspace.add_measurement(
-            obj, "{}_{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale),gray_levels), result
+            obj,
+            "{}_{}_{}_{}_{}".format(TEXTURE, feature, image, str(scale), gray_levels),
+            result,
         )
 
         # TODO: get outta crazee towne
@@ -635,7 +641,9 @@ measured and will result in a undefined value in the output file.
         if not numpy.isfinite(result):
             result = 0
 
-        feature = "{}_{}_{}_{}_{}".format(TEXTURE, feature_name, image_name, str(scale),gray_levels)
+        feature = "{}_{}_{}_{}_{}".format(
+            TEXTURE, feature_name, image_name, str(scale), gray_levels
+        )
 
         workspace.measurements.add_image_measurement(feature, result)
 
@@ -732,7 +740,7 @@ measured and will result in a undefined value in the output file.
             variable_revision_number = 6
 
         if variable_revision_number == 6:
-            setting_values = setting_values[:2] + ['256'] + setting_values[2:]
+            setting_values = setting_values[:2] + ["256"] + setting_values[2:]
             variable_revision_number = 7
 
         return setting_values, variable_revision_number

@@ -2,7 +2,11 @@ import logging
 
 import wx
 from cellprofiler_core.setting.filter import Filter, FilterPredicate
-from cellprofiler_core.setting.filter._filter import AND_PREDICATE, OR_PREDICATE, LITERAL_PREDICATE
+from cellprofiler_core.setting.filter._filter import (
+    AND_PREDICATE,
+    OR_PREDICATE,
+    LITERAL_PREDICATE,
+)
 
 from ._module_view import ModuleView
 from ..utilities.module_view import edit_control_name
@@ -461,10 +465,7 @@ class FilterPanelController(object):
                     # chosen or none existed because of some error, but now
                     # they do.
                     #
-                    if (
-                        len(predicates) == 1
-                        and predicates[0] is LITERAL_PREDICATE
-                    ):
+                    if len(predicates) == 1 and predicates[0] is LITERAL_PREDICATE:
                         self.make_literal("", i, subaddress, sizer)
                     else:
                         self.make_predicate_choice(predicates, i, subaddress, sizer)

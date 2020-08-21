@@ -69,8 +69,11 @@ class CorrectIlluminationApply(Module):
         self.images = []
         self.add_image(can_delete=False)
         self.add_image_button = DoSomething("", "Add another image", self.add_image)
-        self.clip = Binary("Clip intensity values", False,
-                           doc="Clip the values in the illumination function between 0 and 1")
+        self.clip = Binary(
+            "Clip intensity values",
+            False,
+            doc="Clip the values in the illumination function between 0 and 1",
+        )
 
     def add_image(self, can_delete=True):
         """Add an image and its settings to the list of images"""
@@ -378,6 +381,5 @@ somewhat empirical.
         if variable_revision_number == 3:
             setting_values.append("No")
             variable_revision_number = 4
-
 
         return setting_values, variable_revision_number

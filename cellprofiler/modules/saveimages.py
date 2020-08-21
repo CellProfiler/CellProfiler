@@ -367,7 +367,7 @@ CellProfiler.""".format(
 This setting determines how planes are saved into a movie/stack.
 Selecting "T" will save planes as a time series. Selecting "Z"
 will save planes as slices in a 3D z-axis. 
-"""
+""",
         )
 
         self.overwrite = Binary(
@@ -624,21 +624,11 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         d["CURRENT_FRAME"] += 1
         if self.stack_axis == AXIS_T:
             self.do_save_image(
-                workspace,
-                out_file,
-                pixels,
-                pixel_type,
-                t=current_frame,
-                size_t=frames,
+                workspace, out_file, pixels, pixel_type, t=current_frame, size_t=frames,
             )
         else:
             self.do_save_image(
-                workspace,
-                out_file,
-                pixels,
-                pixel_type,
-                z=current_frame,
-                size_z=frames,
+                workspace, out_file, pixels, pixel_type, z=current_frame, size_z=frames,
             )
 
     def post_group(self, workspace, *args):
@@ -925,7 +915,10 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         return self.file_format.value
 
     def get_bit_depth(self):
-        if self.save_image_or_figure in (IF_IMAGE, IF_MOVIE) and self.get_file_format() in (FF_TIFF, FF_H5):
+        if self.save_image_or_figure in (
+            IF_IMAGE,
+            IF_MOVIE,
+        ) and self.get_file_format() in (FF_TIFF, FF_H5):
             return self.bit_depth.value
         else:
             return BIT_DEPTH_8

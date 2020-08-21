@@ -9,6 +9,7 @@ from cellprofiler.gui.module_view._validation_request_controller import (
     ValidationRequestController,
 )
 
+
 def text_control_name(v):
     """Return the name of a setting's text control
     v - the setting
@@ -236,7 +237,9 @@ def request_module_validation(validation_request):
 
     """
     if mv_constants.pipeline_queue_thread is None:
-        mv_constants.pipeline_queue_thread = threading.Thread(target=validation_queue_handler)
+        mv_constants.pipeline_queue_thread = threading.Thread(
+            target=validation_queue_handler
+        )
         mv_constants.pipeline_queue_thread.setName("Pipeline vaidation thread")
         mv_constants.pipeline_queue_thread.setDaemon(True)
         mv_constants.pipeline_queue_thread.start()

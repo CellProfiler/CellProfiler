@@ -7,7 +7,7 @@ using a neighborhood of pixels around a central pixel for denoising, such
 as in **GaussianFilter**, multiple neighborhoods are pooled together. The
 neighborhood pool is determined by scanning the image for regions similar to
 the area around the central pixel using a correlation metric and a cutoff value.
-See `this tutorial`_ for more information.
+See `this tutorial <http://scikit-image.org/docs/dev/auto_examples/filters/plot_nonlocal_means.html>`__ for more information.
 
 |
 
@@ -17,7 +17,6 @@ Supports 2D? Supports 3D? Respects masks?
 YES          YES          NO
 ============ ============ ===============
 
-.. _this tutorial: http://scikit-image.org/docs/dev/auto_examples/filters/plot_nonlocal_means.html
 """
 
 import skimage.restoration

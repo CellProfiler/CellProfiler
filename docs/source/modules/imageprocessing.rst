@@ -4,7 +4,7 @@ Image Processing
 ----------------
 Image Processing modules apply an operation to an image and output a new image.
 
-.. automodule:: cellprofiler.modules.align
+.. automodule:: cellprofiler_core.modules.align
 
 `(Jump to top)`_
 

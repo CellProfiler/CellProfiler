@@ -4,7 +4,7 @@ Closing
 
 **Closing** is the erosion of the dilation of an image. It’s used to
 remove pepper noise (small dark spots) and connect small bright cracks. 
-See `this tutorial`_ for more information.
+See `this tutorial <https://scikit-image.org/docs/dev/auto_examples/applications/plot_morphology.html#closing>`__ for more information.
 
 |
 
@@ -13,8 +13,6 @@ Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
 YES          YES           NO
 ============ ============ ===============
-
-.. _this tutorial: https://scikit-image.org/docs/dev/auto_examples/applications/plot_morphology.html#closing
 
 """
 

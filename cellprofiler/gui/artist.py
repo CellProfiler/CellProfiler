@@ -260,7 +260,7 @@ class OutlinesMixin(ColorMixin):
                     self._outlines = centrosome.outline.outline(labels) != 0
                 else:
                     self._outlines |= centrosome.outline.outline(labels) != 0
-            if self.line_width > 1:
+            if self.line_width is not None and self.line_width > 1:
                 hw = float(self.line_width) / 2
                 d = scipy.ndimage.distance_transform_edt(~self._outlines)
                 dti, dtj = numpy.where((d < hw + 0.5) & ~self._outlines)
@@ -464,7 +464,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         self.__objects = objects or []
         self.__masks = masks or []
         self.__interpolation = interpolation
-        self.filterrad = 4.0
+        self.filterrad = 0  # This was 4.0 but WHY?!?!
 
     def set_interpolation(self, interpolation):
         self.__interpolation = interpolation
@@ -622,6 +622,8 @@ class CPImageArtist(matplotlib.artist.Artist):
             pixel_data, target_view = get_tile_and_target(image.pixel_data)
             tv_alpha = target_view[:, :, 3]
             tv_image = target_view[:, :, :3]
+            if pixel_data.dtype == "bool":
+                image.normalization = NORMALIZE_RAW
             if image.normalization in (NORMALIZE_LINEAR, NORMALIZE_LOG):
                 pd_max = numpy.max(pixel_data)
                 pd_min = numpy.min(pixel_data)
@@ -678,6 +680,10 @@ class CPImageArtist(matplotlib.artist.Artist):
 
         for om in list(self.__objects) + list(self.__masks):
             assert isinstance(om, OutlinesMixin)
+            if isinstance(om, MaskData) and om.mode == MODE_LINES:
+                # Lines mode currently not working with Masks
+                om.mode = MODE_OUTLINES
+                om.alpha = 0.8
             if om.mode in (MODE_LINES, MODE_HIDE):
                 continue
             if om.mode == MODE_OUTLINES:
@@ -739,11 +745,11 @@ class CPImageArtist(matplotlib.artist.Artist):
         # the viewport translation in the Y direction
         # which is from the bottom of the screen
         #
-        if self.axes.viewLim.height < 0:
+        # if self.axes.viewLim.height < 0:
             # ty = (view_ymin - self.axes.viewLim.y1) - .5
-            ty = self.axes.viewLim.y0 - view_ymax + 0.5
-        else:
-            ty = view_ymin - self.axes.viewLim.y0 - 0.5
+            # ty = self.axes.viewLim.y0 - view_ymax + 0.5
+        # else:
+        #     ty = view_ymin - self.axes.viewLim.y0 - 0.5
 
         # im.apply_translation(tx, ty)
 
@@ -779,6 +785,16 @@ class CPImageArtist(matplotlib.artist.Artist):
         image = skimage.transform.rescale(image, (sx, sy, 1))
 
         image = skimage.img_as_ubyte(image)
+
+        im_xmin = int(min(vl.x0, vl.x1))
+        im_xmax = int(max(vl.x0, vl.x1))
+        im_ymin = int(min(vl.y0, vl.y1))
+        im_ymax = int(max(vl.y0, vl.y1))
+        # Correct drawing start point when origin is not 0
+        if im_xmin < 0:
+            l = ((0 - im_xmin) / (im_xmax - im_xmin) * (r - l)) + l
+        if im_ymax > shape[0]:  # origin corresponds to max y, not 0:
+            b = ((im_ymax - shape[0]) / (im_ymax - im_ymin) * (t - b)) + b
 
         renderer.draw_image(graphics_context, l, b, image)
 

@@ -47,19 +47,6 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
 
         self.__send_mode_change_event()
 
-    def is_home(self):
-        """Return True if zoom/pan is at the home position""" 
-        # Todo: Fix this
-        return True
-        # print(self._zoom_mode)
-        # if self._views._pos <= 0:
-        #     return True
-        #
-        # if self._views[0] == self._views[-1]:
-        #     return True
-        #
-        # return False
-
     def reset(self):
         """Clear out the position stack"""
         # We differ from the reference implementation because we clear

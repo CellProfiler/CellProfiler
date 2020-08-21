@@ -49,7 +49,7 @@ def make_workspace(labels, mode, distance=0, neighbors_labels=None):
 
 
 def test_load_v2():
-    file = tests.modules.test_resources_directory("measureobjectneighbors/v2.pipeline")
+    file = tests.modules.get_test_resources_directory("measureobjectneighbors/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

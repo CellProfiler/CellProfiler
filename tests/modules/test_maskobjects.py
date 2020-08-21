@@ -24,7 +24,7 @@ OUTPUT_OUTLINES = "outputoutlines"
 
 
 def test_load_v1():
-    file = tests.modules.test_resources_directory("maskobjects/v1.pipeline")
+    file = tests.modules.get_test_resources_directory("maskobjects/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -89,7 +89,7 @@ def test_load_v1():
 
 
 def test_load_v2():
-    file = tests.modules.test_resources_directory("maskobjects/v2.pipeline")
+    file = tests.modules.get_test_resources_directory("maskobjects/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -116,7 +116,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    file = tests.modules.test_resources_directory("maskobjects/v3.pipeline")
+    file = tests.modules.get_test_resources_directory("maskobjects/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

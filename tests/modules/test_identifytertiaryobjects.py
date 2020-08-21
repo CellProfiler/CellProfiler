@@ -472,7 +472,7 @@ def test_relationships():
 
 
 def test_load_v3():
-    file = tests.modules.test_resources_directory("identifytertiaryobjects/v3.pipeline")
+    file = tests.modules.get_test_resources_directory("identifytertiaryobjects/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

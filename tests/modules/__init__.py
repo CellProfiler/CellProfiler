@@ -49,7 +49,7 @@ def example_images_directory():
     return __temp_example_images_folder
 
 
-def test_resources_directory(file):
+def get_test_resources_directory(file):
     folder = os.path.dirname(cellprofiler.utilities.__file__)
     return os.path.abspath(
         os.path.join(folder, "../..", "tests/resources/modules", file)

@@ -51,7 +51,7 @@ def make_workspace(image1, image2, objects=None):
 
 
 def test_load_v2():
-    file = tests.modules.test_resources_directory("measurecolocalization/v2.pipeline")
+    file = tests.modules.get_test_resources_directory("measurecolocalization/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -80,7 +80,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    file = tests.modules.test_resources_directory("measurecolocalization/v3.pipeline")
+    file = tests.modules.get_test_resources_directory("measurecolocalization/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

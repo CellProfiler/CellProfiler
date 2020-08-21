@@ -28,7 +28,7 @@ OUTLINE_NAME = "outlines"
 
 
 def test_load_v5():
-    file = tests.modules.test_resources_directory("splitormergeobjects/v5.pipeline")
+    file = tests.modules.get_test_resources_directory("splitormergeobjects/v5.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -55,7 +55,7 @@ def test_load_v5():
 
 
 def test_load_v4():
-    file = tests.modules.test_resources_directory("splitormergeobjects/v4.pipeline")
+    file = tests.modules.get_test_resources_directory("splitormergeobjects/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

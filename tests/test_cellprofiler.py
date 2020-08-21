@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from tests.modules import test_resources_directory
+from tests.modules import get_test_resources_directory
 
 if hasattr(sys, "frozen"):
     ARGLIST_START = [sys.executable]
@@ -54,7 +54,7 @@ class TestCellProfiler(unittest.TestCase):
             #
             # Run with a .cp file
             #
-            fly_pipe = test_resources_directory("../ExampleFlyURL.cppipe")
+            fly_pipe = get_test_resources_directory("../ExampleFlyURL.cppipe")
             measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
             self.run_cellprofiler(

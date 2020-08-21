@@ -17,7 +17,7 @@ def output_image_name(idx):
 
 
 def test_load_v1():
-    file = tests.modules.test_resources_directory("unmixcolors/v1.pipeline")
+    file = tests.modules.get_test_resources_directory("unmixcolors/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

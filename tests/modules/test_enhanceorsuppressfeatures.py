@@ -949,7 +949,7 @@ def test_enhance_dic(image, module, workspace):
 
 
 def test_load_v2():
-    file = tests.modules.test_resources_directory(
+    file = tests.modules.get_test_resources_directory(
         "enhanceorsuppressfeatures/v2.pipeline"
     )
     with open(file, "r") as fd:
@@ -1039,7 +1039,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    file = tests.modules.test_resources_directory(
+    file = tests.modules.get_test_resources_directory(
         "enhanceorsuppressfeatures/v3.pipeline"
     )
     with open(file, "r") as fd:
@@ -1082,7 +1082,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.test_resources_directory(
+    file = tests.modules.get_test_resources_directory(
         "enhanceorsuppressfeatures/v4.pipeline"
     )
     with open(file, "r") as fd:
@@ -1129,7 +1129,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    file = tests.modules.test_resources_directory(
+    file = tests.modules.get_test_resources_directory(
         "enhanceorsuppressfeatures/v5.pipeline"
     )
     with open(file, "r") as fd:

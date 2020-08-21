@@ -258,7 +258,7 @@ def test_load_split():
 
 
 def test_load_v2():
-    file = tests.modules.test_resources_directory("colortogray/v2.pipeline")
+    file = tests.modules.get_test_resources_directory("colortogray/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -307,7 +307,7 @@ def test_load_v3():
     Thus it can be easily checked via the new image name, if the channel
     number is correctly parsed.
     """
-    file = tests.modules.test_resources_directory("colortogray/v3.pipeline")
+    file = tests.modules.get_test_resources_directory("colortogray/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

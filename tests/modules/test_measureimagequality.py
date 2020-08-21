@@ -631,7 +631,7 @@ def check_error(caller, event):
 
 
 def test_load_v3():
-    file = tests.modules.test_resources_directory("measureimagequality/v3.pipeline")
+    file = tests.modules.get_test_resources_directory("measureimagequality/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -686,7 +686,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.test_resources_directory("measureimagequality/v4.pipeline")
+    file = tests.modules.get_test_resources_directory("measureimagequality/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

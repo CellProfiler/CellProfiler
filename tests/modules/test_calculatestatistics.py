@@ -23,7 +23,7 @@ FIGURE_NAME = "figname"
 
 
 def test_load_v2():
-    path = tests.modules.test_resources_directory("calculatestatistics/v2.pipeline")
+    path = tests.modules.get_test_resources_directory("calculatestatistics/v2.pipeline")
     with open(path, "r") as fd:
         data = fd.read()
 

@@ -36,7 +36,7 @@ MEASUREMENT_NAME = "_".join((MEASUREMENT_CATEGORY, MEASUREMENT_FEATURE))
 
 
 def test_load_v2():
-    file = tests.modules.test_resources_directory("flagimages/v2.pipeline")
+    file = tests.modules.get_test_resources_directory("flagimages/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -94,7 +94,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    file = tests.modules.test_resources_directory("flagimages/v3.pipeline")
+    file = tests.modules.get_test_resources_directory("flagimages/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -154,7 +154,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.test_resources_directory("flagimages/v4.pipeline")
+    file = tests.modules.get_test_resources_directory("flagimages/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

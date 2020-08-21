@@ -217,7 +217,7 @@ class TestExportToDatabase(unittest.TestCase):
         )
 
     def test_load_v11(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v11.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v11.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 
@@ -242,7 +242,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert module.db_name == "DefaultDB"
 
     def test_load_v12(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v12.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v12.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 
@@ -268,7 +268,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert module.max_column_size == 64
 
     def test_load_v13(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v13.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v13.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 
@@ -294,7 +294,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert module.max_column_size == 61
 
     def test_load_v15(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v15.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v15.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 
@@ -339,7 +339,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert not module.wants_properties_image_url_prepend
 
     def test_load_v22(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v22.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v22.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 
@@ -444,7 +444,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert g.filter_statement.value == r"Image_Metadata_Plate = \'1\'"
 
     def test_load_v23(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v23.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v23.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 
@@ -551,7 +551,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert g.filter_statement.value == r"Image_Metadata_Plate = \'1\'"
 
     def test_load_v24(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v24.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v24.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 
@@ -662,7 +662,7 @@ class TestExportToDatabase(unittest.TestCase):
         )
 
     def test_load_v25(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v25.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v25.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 
@@ -774,7 +774,7 @@ class TestExportToDatabase(unittest.TestCase):
         )
 
     def test_load_v26(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v26.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v26.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 
@@ -890,7 +890,7 @@ class TestExportToDatabase(unittest.TestCase):
         )
 
     def test_load_v27(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v27.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v27.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 
@@ -909,7 +909,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert g.y_object_name == "MyObjects"
 
     def test_load_v28(self):
-        file = tests.modules.test_resources_directory("exporttodatabase/v28.pipeline")
+        file = tests.modules.get_test_resources_directory("exporttodatabase/v28.pipeline")
         with open(file, "r") as fd:
             data = fd.read()
 

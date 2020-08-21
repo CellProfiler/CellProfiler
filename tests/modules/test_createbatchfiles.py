@@ -20,7 +20,7 @@ def test_test_load_version_9_please():
 
 @pytest.mark.skip(reason="Outdated pipeline")
 def test_load_v7():
-    file = tests.modules.test_resources_directory("createbatchfiles/v7.pipeline")
+    file = tests.modules.get_test_resources_directory("createbatchfiles/v7.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -43,7 +43,7 @@ def test_load_v7():
 
 
 def test_load_v8():
-    file = tests.modules.test_resources_directory("createbatchfiles/v8.pipeline")
+    file = tests.modules.get_test_resources_directory("createbatchfiles/v8.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

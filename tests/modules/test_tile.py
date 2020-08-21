@@ -18,7 +18,7 @@ def input_image_name(index):
 
 
 def test_load_v1():
-    file = tests.modules.test_resources_directory("tile/v1.pipeline")
+    file = tests.modules.get_test_resources_directory("tile/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

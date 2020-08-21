@@ -270,7 +270,7 @@ A02_image = bioformats.load_image(path, rescale=False)[:, :, 0] > 0
 
 
 def test_load_v1():
-    file = tests.modules.test_resources_directory("untangleworms/v1.pipeline")
+    file = tests.modules.get_test_resources_directory("untangleworms/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -306,7 +306,7 @@ def test_load_v1():
 
 
 def test_load_v2():
-    file = tests.modules.test_resources_directory("untangleworms/v2.pipeline")
+    file = tests.modules.get_test_resources_directory("untangleworms/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -933,7 +933,7 @@ def test_load_params():
 
 
 def test_load_xml_params():
-    file = tests.modules.test_resources_directory("untangleworms/parameters.xml")
+    file = tests.modules.get_test_resources_directory("untangleworms/parameters.xml")
     with open(file, "r") as fd:
         data = fd.read()
     data = data.encode()

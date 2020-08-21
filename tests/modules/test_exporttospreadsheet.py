@@ -49,7 +49,7 @@ def output_dir():
 
 @pytest.mark.skip(reason="Outdated pipeline")
 def test_load_v3():
-    file = tests.modules.test_resources_directory("exporttospreadsheet/v3.pipeline")
+    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -86,7 +86,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.test_resources_directory("exporttospreadsheet/v4.pipeline")
+    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -131,7 +131,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    file = tests.modules.test_resources_directory("exporttospreadsheet/v5.pipeline")
+    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v5.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -197,7 +197,7 @@ def test_load_v5():
 
 
 def test_load_v6():
-    file = tests.modules.test_resources_directory("exporttospreadsheet/v6.pipeline")
+    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v6.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -300,7 +300,7 @@ def test_load_v6():
 
 
 def test_load_v8():
-    file = tests.modules.test_resources_directory("exporttospreadsheet/v8.pipeline")
+    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v8.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -344,7 +344,7 @@ def test_load_v8():
 
 
 def test_load_v9():
-    file = tests.modules.test_resources_directory("exporttospreadsheet/v9.pipeline")
+    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v9.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -390,7 +390,7 @@ def test_load_v9():
 
 
 def test_load_v10():
-    file = tests.modules.test_resources_directory("exporttospreadsheet/v10.pipeline")
+    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v10.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -437,7 +437,7 @@ def test_load_v10():
 
 
 def test_load_v11():
-    file = tests.modules.test_resources_directory("exporttospreadsheet/v11.pipeline")
+    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v11.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

@@ -59,7 +59,7 @@ def test_write_a_test_for_the_new_variable_revision_please():
 
 
 def test_load_v7():
-    file = tests.modules.test_resources_directory("threshold/v7.pipeline")
+    file = tests.modules.get_test_resources_directory("threshold/v7.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -87,7 +87,7 @@ def test_load_v7():
 
 
 def test_load_v8():
-    file = tests.modules.test_resources_directory("threshold/v8.pipeline")
+    file = tests.modules.get_test_resources_directory("threshold/v8.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -115,7 +115,7 @@ def test_load_v8():
 
 
 def test_load_v9():
-    file = tests.modules.test_resources_directory("threshold/v9.pipeline")
+    file = tests.modules.get_test_resources_directory("threshold/v9.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -158,7 +158,7 @@ def test_load_v9():
 
 
 def test_load_v10():
-    file = tests.modules.test_resources_directory("threshold/v10.pipeline")
+    file = tests.modules.get_test_resources_directory("threshold/v10.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -187,7 +187,7 @@ def test_load_v10():
 
 
 def test_load_v11():
-    file = tests.modules.test_resources_directory("threshold/v11.pipeline")
+    file = tests.modules.get_test_resources_directory("threshold/v11.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

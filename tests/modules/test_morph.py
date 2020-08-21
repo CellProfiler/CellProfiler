@@ -17,7 +17,7 @@ import tests.modules
 
 
 def test_load_v2():
-    file = tests.modules.test_resources_directory("morph/v2.pipeline")
+    file = tests.modules.get_test_resources_directory("morph/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -57,7 +57,7 @@ def test_load_v2():
 
 # https://github.com/CellProfiler/CellProfiler/issues/3349
 def test_load_with_extracted_operations():
-    file = tests.modules.test_resources_directory("morph/extracted_operations.pipeline")
+    file = tests.modules.get_test_resources_directory("morph/extracted_operations.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

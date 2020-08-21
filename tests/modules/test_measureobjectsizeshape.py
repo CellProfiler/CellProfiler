@@ -46,7 +46,7 @@ def make_workspace(labels):
 
 
 def test_01_load_v1():
-    file = tests.modules.test_resources_directory("measureobjectsizeshape/v1.pipeline")
+    file = tests.modules.get_test_resources_directory("measureobjectsizeshape/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

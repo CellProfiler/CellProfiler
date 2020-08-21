@@ -1004,7 +1004,7 @@ def test_propagate():
 
 def test_fly():
     """Run identify on the fly image"""
-    file = tests.modules.test_resources_directory("identifyprimaryobjects/fly.pipeline")
+    file = tests.modules.get_test_resources_directory("identifyprimaryobjects/fly.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -1124,7 +1124,7 @@ def test_maxima_suppression_zero():
 def test_load_v10():
     # Sorry about this overly-long pipeline, it seemed like we need to
     # revisit many of the choices.
-    file = tests.modules.test_resources_directory("identifyprimaryobjects/v10.pipeline")
+    file = tests.modules.get_test_resources_directory("identifyprimaryobjects/v10.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -1309,7 +1309,7 @@ def test_01_load_new_robust_background():
     #
     # Test custom robust background parameters.
     #
-    file = tests.modules.test_resources_directory(
+    file = tests.modules.get_test_resources_directory(
         "identifyprimaryobjects/robust_background.pipeline"
     )
     with open(file, "r") as fd:

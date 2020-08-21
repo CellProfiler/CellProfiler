@@ -150,7 +150,7 @@ Maximum radius:50
 
 
 def test_load_v3():
-    file = tests.modules.test_resources_directory(
+    file = tests.modules.get_test_resources_directory(
         "measureobjectintensitydistribution/v3.pipeline"
     )
     with open(file, "r") as fd:
@@ -198,7 +198,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.test_resources_directory(
+    file = tests.modules.get_test_resources_directory(
         "measureobjectintensitydistribution/v4.pipeline"
     )
     with open(file, "r") as fd:
@@ -303,7 +303,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    file = tests.modules.test_resources_directory(
+    file = tests.modules.get_test_resources_directory(
         "measureobjectintensitydistribution/v5.pipeline"
     )
     with open(file, "r") as fd:

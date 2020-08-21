@@ -25,7 +25,7 @@ AUX_STRAIGHTENED_IMAGE_NAME = "auxstraightenedimage"
 
 
 def test_load_v1():
-    file = tests.modules.test_resources_directory("straightenworms/v1.pipeline")
+    file = tests.modules.get_test_resources_directory("straightenworms/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -57,7 +57,7 @@ def test_load_v1():
 
 
 def test_load_v2():
-    file = tests.modules.test_resources_directory("straightenworms/v2.pipeline")
+    file = tests.modules.get_test_resources_directory("straightenworms/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

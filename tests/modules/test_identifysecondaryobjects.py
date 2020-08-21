@@ -27,7 +27,7 @@ THRESHOLD_IMAGE_NAME = "threshold"
 
 
 def test_load_v9():
-    file = tests.modules.test_resources_directory(
+    file = tests.modules.get_test_resources_directory(
         "identifysecondaryobjects/v9.pipeline"
     )
     with open(file, "r") as fd:
@@ -78,7 +78,7 @@ def test_load_v9():
 
 
 def test_load_v10():
-    file = tests.modules.test_resources_directory(
+    file = tests.modules.get_test_resources_directory(
         "identifysecondaryobjects/v10.pipeline"
     )
     with open(file, "r") as fd:

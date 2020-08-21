@@ -40,7 +40,7 @@ def make_workspace(image, mask):
 
 
 def test_load_v02():
-    file = tests.modules.test_resources_directory("smooth/v2.pipeline")
+    file = tests.modules.get_test_resources_directory("smooth/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

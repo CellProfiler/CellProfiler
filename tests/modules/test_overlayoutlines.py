@@ -52,7 +52,7 @@ def make_workspace(image, labels=None, dimensions=2):
 
 
 def test_load_v2():
-    file = tests.modules.test_resources_directory("overlayoutlines/v2.pipeline")
+    file = tests.modules.get_test_resources_directory("overlayoutlines/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -76,7 +76,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    file = tests.modules.test_resources_directory("overlayoutlines/v3.pipeline")
+    file = tests.modules.get_test_resources_directory("overlayoutlines/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

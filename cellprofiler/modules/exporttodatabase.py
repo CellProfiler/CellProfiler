@@ -2840,7 +2840,7 @@ available:
         return False
 
     def ignore_feature(
-        self, object_name, feature_name, measurements=None, strict=False
+        self, object_name, feature_name, measurements=None, strict=False, wanttime=False,
     ):
         """Return true if we should ignore a feature"""
         if (
@@ -2848,7 +2848,7 @@ available:
             or feature_name.startswith("Description_")
             or feature_name.startswith("ModuleError_")
             or feature_name.startswith("TimeElapsed_")
-            or feature_name.startswith("ExecutionTime_")
+            or (feature_name.startswith("ExecutionTime_") and not wanttime)
             or (
                 self.db_type not in (DB_MYSQL, DB_SQLITE)
                 and feature_name.startswith("Thumbnail_")
@@ -2865,7 +2865,7 @@ available:
         mappings.add(C_OBJECT_NUMBER)
         for column in columns:
             object_name, feature_name, coltype = column[:3]
-            if self.ignore_feature(object_name, feature_name):
+            if self.ignore_feature(object_name, feature_name, wanttime=True):
                 continue
             mappings.add("%s_%s" % (object_name, feature_name))
             if object_name != "Image":
@@ -3174,7 +3174,7 @@ CREATE TABLE %s (
         columns = self.get_pipeline_measurement_columns(pipeline, image_set_list)
         for column in columns:
             obname, feature, ftype = column[:3]
-            if obname == "Image" and not self.ignore_feature(obname, feature):
+            if obname == "Image" and not self.ignore_feature(obname, feature, wanttime=True):
                 if ftype.startswith(COLTYPE_VARCHAR):
                     ftype = "TEXT"
                 feature_name = "%s_%s" % (obname, feature)
@@ -4786,7 +4786,7 @@ CP version : %d\n""" % int(
 
     def filter_measurement_columns(self, columns):
         """Filter out and properly sort measurement columns"""
-        columns = [x for x in columns if not self.ignore_feature(x[0], x[1], True)]
+        columns = [x for x in columns if not self.ignore_feature(x[0], x[1], True, wanttime=True)]
 
         #
         # put Image ahead of any other object

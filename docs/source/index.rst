@@ -228,6 +228,6 @@ License
 
    modules/license
 
-   :ref:`search`
+:ref:`search`
 
 .. _(Jump to top): index.html#

@@ -14,7 +14,7 @@ class AboutDialogInfo(wx.adv.AboutDialogInfo):
 
         self.SetName("CellProfiler")
 
-        self.SetVersion("4.0.0rc9")
+        self.SetVersion("4.0.0rc10")
 
 
 class Error(wx.MessageDialog):

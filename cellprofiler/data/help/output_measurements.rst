@@ -51,14 +51,16 @@ Below is the description for each of the terms:
    -  Measurements from *Intensity*, *Granularity*, *Children*,
       *RadialDistribution*, *Parent* and *AreaOccupied* categories will
       have an associated image as the Parameter.
-   -  *Measurements from the *Neighbors* and *Texture* category will
-      have a spatial scale ``Parameter``.*
+   -  Measurements from the *Neighbors* and *Texture* category will
+      have a spatial scale ``Parameter``.
    -  Measurements from the *Texture* and *RadialDistribution*
       categories will have both a spatial scale and an image
       ``Parameter``.
+   -  Measurements from the *Texture* category will have a spacial 
+      scale, image, and grayscale count ``Parameter``.
 
 As an example, consider a measurement specified as
-``Nuclei_Texture_DifferenceVariance_ER_3``:
+``Nuclei_Texture_DifferenceVariance_ER_3_256``:
 
 -  ``MeasurementType`` is “Nuclei,” the name given to the detected
    objects by the user.
@@ -66,12 +68,14 @@ As an example, consider a measurement specified as
    **MeasureTexture** produced the measurements.
 -  ``SpecificFeatureName`` is “DifferenceVariance,” which is one of the
    many texture measurements made by the **MeasureTexture** module.
--  There are two ``Parameters``, the first of which is “ER”. “ER” is the
+-  There are three ``Parameters``, the first of which is “ER”. “ER” is the
    user-provided name of the image in which this texture measurement was
    made.
 -  The second ``Parameter`` is “3”, which is the spatial scale at which
    this texture measurement was made, according to the user-provided
    settings for the module.
+-  The final ``Parameter`` is "256", which is the number of gray levels
+   used in calculating the texture.
 
 See also the *Available measurements* heading under the main help for
 many of the modules, as well as **ExportToSpreadsheet** and

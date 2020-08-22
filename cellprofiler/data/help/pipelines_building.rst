@@ -111,8 +111,7 @@ panel* (located on the left-hand side of the CellProfiler window).
       time remaining to process the full image set.
 
    At the end of each cycle:
-
-   -  If you are creating a MATLAB or HDF5 output file, CellProfiler saves the measurements in the output file.
+   
    -  If you are using the **ExportToDatabase** module, CellProfiler saves the measurements in the
       output database.
    -  If you are using the **ExportToSpreadsheet** module, CellProfiler saves the measurements *into a

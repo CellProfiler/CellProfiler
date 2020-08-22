@@ -2,7 +2,7 @@
 MorphologicalSkeleton
 =====================
 
-**MorphologicalSkeleton** thins an image into a single-pixel wide skeleton. See `this tutorial`_ for more information.
+**MorphologicalSkeleton** thins an image into a single-pixel wide skeleton. See `this tutorial <https://scikit-image.org/docs/0.14.x/auto_examples/xx_applications/plot_morphology.html#skeletonize>`__ for more information.
 
 |
 
@@ -11,8 +11,6 @@ Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
 YES          YES          NO
 ============ ============ ===============
-
-.. _this tutorial: https://scikit-image.org/docs/0.14.x/auto_examples/xx_applications/plot_morphology.html#skeletonize
 
 """
 

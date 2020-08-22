@@ -65,6 +65,11 @@ References
 
 For a full list of references, visit our `citation`_ page.
 
+-  McQuin C, Goodman A, Chernyshev V, Kamentsky L, Cimini BA, Karhohs KW,
+   Doan M, Ding L, Rafelski SM, Thirstrup D, Wiegraebe W. (2018)
+   "CellProfiler 3.0: Next-generation image processing for biology."
+   *PLoS biology* 16(7), e2005970
+   (`link <https://doi.org/10.1371/journal.pbio.2005970>`__)
 -  Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O,
    Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM
    (2006) “CellProfiler: image analysis software for identifying and
@@ -212,10 +217,21 @@ in a future version of CellProfiler.
    :caption: Legacy Features
    :titlesonly:
 
-   help/legacy_load_modules
    help/legacy_matlab_image
 
 `(Jump to top)`_
+
+:ref:`search`
+
+.. _(Jump to top): index.html#
+
+License
+=======
+
+.. toctree::
+   :caption: License
+
+   modules/license
 
 :ref:`search`
 

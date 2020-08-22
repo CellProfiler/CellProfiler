@@ -9,6 +9,9 @@ This document provides guidelines for contributing to CellProfiler. You'll find 
 
 We'd like to ensure this document is always accurate and understandable. Please [file an issue](https://github.com/CellProfiler/CellProfiler/issues/new) if any information is missing, unclear, or incorrect.  
 
+You may also check out our [YouTube tutorial](https://youtu.be/fgF_YueM1b8) for a discussion of many of these issues and demonstration of editing and creating 
+modules.
+
 ## Creating an Issue
 
 The CellProfiler team uses [GitHub issues](https://github.com/CellProfiler/CellProfiler/issues) to track upcoming and ongoing work. Examples of issues are:
@@ -146,6 +149,16 @@ In this section we provide a general outline of the process for submitting chang
   ```
 
   Your master branch now includes your change. Congratulations on a successful contribution!
+  
+## Creating entirely new modules
+
+We love when our users create entirely new functionalities that have never existed in CellProfiler before! If you think your new module is useful to the 
+community, we invite you to contribute it as a plugin to the [CellProfiler-plugins](https://github.com/CellProfiler/CellProfiler-plugins) repository.  
+Contributed plugins may be moved into the main CellProfiler program (with author permission), depending on a number of factors including (but not limited to)
+1. Additional complexity and/or package dependencies added to the code
+1. Broad usefulness to the community
+1. Conflicts or overlap with other modules
+1. Our team's bandwidth to commit to maintaining your module in the future
 
 ## Style Guide
 

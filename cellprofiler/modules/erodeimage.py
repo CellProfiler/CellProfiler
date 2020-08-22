@@ -2,9 +2,9 @@
 
 """
 ErodeImage
-=======
+==========
 
-**ErodeImage** shrinks bright shapes in an image. See `this tutorial`_ for more information.
+**ErodeImage** shrinks bright shapes in an image. See `this tutorial <https://scikit-image.org/docs/stable/auto_examples/applications/plot_morphology.html#erosion>`__ for more information.
 
 |
 
@@ -13,8 +13,6 @@ Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
 YES          YES          NO
 ============ ============ ===============
-
-.. _this tutorial: https://scikit-image.org/docs/stable/auto_examples/applications/plot_morphology.html#erosion
 
 """
 

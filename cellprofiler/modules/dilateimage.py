@@ -2,7 +2,7 @@
 DilateImage
 ===========
 
-**DilateImage** expands bright shapes in an image. See `this tutorial`_ for more information.
+**DilateImage** expands bright shapes in an image. See `this tutorial <https://scikit-image.org/docs/dev/auto_examples/applications/plot_morphology.html#dilation>`__ for more information.
 
 |
 
@@ -11,8 +11,6 @@ Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
 YES          YES          NO
 ============ ============ ===============
-
-.. _this tutorial: https://scikit-image.org/docs/dev/auto_examples/applications/plot_morphology.html#dilation
 
 """
 

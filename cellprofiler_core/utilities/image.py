@@ -207,11 +207,24 @@ def make_dictionary_key(key):
 
 def image_resource(filename):
     try:
-        abspath = os.path.abspath(
-            pkg_resources.resource_filename(
-                "cellprofiler", os.path.join("data", "images", filename)
+        if os.path.join("CellProfiler","docs") in os.path.abspath(os.curdir):
+            #We're probably trying to buld the manual
+            abspath = os.path.relpath(
+                os.path.abspath(
+                    pkg_resources.resource_filename(
+                        "cellprofiler", os.path.join("..", "images", filename)
+                    )
+                ),
+                os.path.abspath(
+                    os.curdir
+                    )
             )
-        )
+        else:
+            abspath = os.path.abspath(
+                pkg_resources.resource_filename(
+                    "cellprofiler", os.path.join("data", "images", filename)
+                )
+            )
         return abspath.replace("\\", "/")
     except ModuleNotFoundError:
         # CellProfiler is not installed so the assets are missing.

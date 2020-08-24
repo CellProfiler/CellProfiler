@@ -242,8 +242,8 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             [M_FAST, M_ACCURATE],
             doc=f"""\
 This setting determines the method used to calculate the threshold for use within the
-Costes calculations. Selecting *{M_FAST}* will prioritise testing relevant potential
-thresholds to identify the optimal value. Selecting {M_ACCURATE} will test every possible
+Costes calculations. Selecting *{M_FAST}* will prioritise testing the most relevant potential
+thresholds to identify the optimal value. Selecting *{M_ACCURATE}* will test every possible
 threshold value. The latter method becomes particularly time-consuming with larger images.
 In most instances the results of both strategies should be identical.
 """

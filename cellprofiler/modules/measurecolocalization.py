@@ -88,6 +88,9 @@ M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
 M_IMAGES_AND_OBJECTS = "Both"
 
+M_FAST = "Fast"
+M_ACCURATE = "Accurate"
+
 """Feature name format for the correlation measurement"""
 F_CORRELATION_FORMAT = "Correlation_Correlation_%s_%s"
 
@@ -116,7 +119,7 @@ F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 class MeasureColocalization(Module):
     module_name = "MeasureColocalization"
     category = "Measurement"
-    variable_revision_number = 4
+    variable_revision_number = 5
 
     def create_settings(self):
         """Create the initial settings for the module"""
@@ -234,6 +237,18 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             ),
         )
 
+        self.fast_costes = Choice(
+            "Method for Costes thresholding",
+            [M_FAST, M_ACCURATE],
+            doc=f"""\
+This setting determines the method used to calculate the threshold for use within the
+Costes calculations. Selecting *{M_FAST}* will prioritise testing relevant potential
+thresholds to identify the optimal value. Selecting {M_ACCURATE} will test every possible
+threshold value. The latter method becomes particularly time-consuming with larger images.
+In most instances the results of both strategies should be identical.
+"""
+        )
+
     def settings(self):
         """Return the settings to be saved in the pipeline"""
         result = [
@@ -247,6 +262,7 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
             self.do_rwc,
             self.do_overlap,
             self.do_costes,
+            self.fast_costes,
         ]
         return result
 
@@ -268,6 +284,8 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 self.do_overlap,
                 self.do_costes,
             ]
+        if self.do_all or self.do_costes:
+            result += [self.fast_costes]
         return result
 
     def help_settings(self):
@@ -503,23 +521,6 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 )
                 a = num / denom
                 b = ymean - a * xmean
-                import time
-                start = time.perf_counter()
-                i = 1
-                while i > 0.003921568627:
-                    Thr_fi_c = i
-                    Thr_si_c = (a * i) + b
-                    combt = (fi < Thr_fi_c) | (si < Thr_si_c)
-                    try:
-                        costReg = scipy.stats.pearsonr(fi[combt], si[combt])
-                        #print(costReg[0], i)
-                        if costReg[0] <= 0:
-                            break
-                        i = i - 0.003921568627
-                    except ValueError:
-                        break
-                print(f"Looped in {time.perf_counter() - start}, i was {i}")
-                start = time.perf_counter()
                 i = 1
                 while i > 0.003921568627:
                     Thr_fi_c = i
@@ -529,17 +530,21 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                         costReg = scipy.stats.pearsonr(fi[combt], si[combt])
                         if costReg[0] <= 0:
                             break
+                        elif self.fast_costes.value == M_ACCURATE:
+                            i -= 0.003921568627
                         elif costReg[0] > 0.45 and i > 0.05:
+                            # We're way off, step down 10x
                             i -= 0.03921568627
                         elif costReg[0] > 0.35 and i > 0.03:
+                            # Still far from 0, step 5x
                             i -= 0.019607843135
                         elif costReg[0] > 0.25 and i > 0.03:
+                            # Step 2x
                             i -= 0.007843137254
                         else:
                             i -= 0.003921568627
                     except ValueError:
                         break
-                print(f"Short Looped in {time.perf_counter() - start}, i was {i}")
                 # Costes' thershold calculation
                 combined_thresh_c = (fi > Thr_fi_c) & (si > Thr_si_c)
                 fi_thresh_c = fi[combined_thresh_c]
@@ -1080,7 +1085,19 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                         costReg = scipy.stats.pearsonr(fi[combt], si[combt])
                         if costReg[0] <= 0:
                             break
-                        i = i - 0.003921568627
+                        elif self.fast_costes.value == M_ACCURATE:
+                            i -= 0.003921568627
+                        elif costReg[0] > 0.45 and i > 0.05:
+                            # We're way off, step down 10x
+                            i -= 0.03921568627
+                        elif costReg[0] > 0.35 and i > 0.03:
+                            # Still far from 0, step 5x
+                            i -= 0.019607843135
+                        elif costReg[0] > 0.25 and i > 0.03:
+                            # Step 2x
+                            i -= 0.007843137254
+                        else:
+                            i -= 0.003921568627
                     except ValueError:
                         break
 
@@ -1503,6 +1520,10 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 [images_string] + thr_mode + [objects_string] + other_settings
             )
             variable_revision_number = 4
+        if variable_revision_number == 4:
+            # Add costes mode switch
+            setting_values += [M_ACCURATE]
+            variable_revision_number = 5
         return setting_values, variable_revision_number
 
     def volumetric(self):

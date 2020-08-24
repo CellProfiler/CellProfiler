@@ -305,6 +305,8 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
         """Calculate measurements on an image set"""
         col_labels = ["First image", "Second image", "Objects", "Measurement", "Value"]
         statistics = []
+        if len(self.images_list.value) < 2:
+            raise ValueError("At least 2 images must be selected for analysis.")
         for first_image_name, second_image_name in self.get_image_pairs():
             if self.wants_images():
                 statistics += self.run_image_pair_images(
@@ -1437,8 +1439,8 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
 
     def validate_module(self, pipeline):
         """Make sure chosen objects are selected only once"""
-        if len(self.images_list.value) == 0:
-            raise ValidationError("No images selected", self.images_list)
+        if len(self.images_list.value) < 2:
+            raise ValidationError("This module needs at least 2 images to be selected", self.images_list)
 
         if self.wants_objects():
             if len(self.objects_list.value) == 0:

@@ -46,7 +46,8 @@ from cellprofiler_core.utilities.hdf5_dict import HDF5FileList
 from cellprofiler_core.utilities.java import start_java, stop_java
 from cellprofiler_core.utilities.measurement import load_measurements
 from cellprofiler_core.utilities.zmq import join_to_the_boundary
-from cellprofiler_core.worker import aw_parse_args, main
+from cellprofiler_core.worker import aw_parse_args
+from cellprofiler_core.worker import main as worker_main
 from cellprofiler_core.workspace import Workspace
 
 if sys.platform.startswith("win") and hasattr(sys, "frozen"):
@@ -93,7 +94,7 @@ def main(args=None):
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         set_headless()
         aw_parse_args()
-        main()
+        worker_main()
         return exit_code
 
     options, args = parse_args(args)

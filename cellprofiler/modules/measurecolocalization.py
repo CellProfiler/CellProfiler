@@ -503,7 +503,23 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                 )
                 a = num / denom
                 b = ymean - a * xmean
-
+                import time
+                start = time.perf_counter()
+                i = 1
+                while i > 0.003921568627:
+                    Thr_fi_c = i
+                    Thr_si_c = (a * i) + b
+                    combt = (fi < Thr_fi_c) | (si < Thr_si_c)
+                    try:
+                        costReg = scipy.stats.pearsonr(fi[combt], si[combt])
+                        #print(costReg[0], i)
+                        if costReg[0] <= 0:
+                            break
+                        i = i - 0.003921568627
+                    except ValueError:
+                        break
+                print(f"Looped in {time.perf_counter() - start}, i was {i}")
+                start = time.perf_counter()
                 i = 1
                 while i > 0.003921568627:
                     Thr_fi_c = i
@@ -513,10 +529,17 @@ Select *{YES}* to run the Manders coefficients using Costes auto threshold.
                         costReg = scipy.stats.pearsonr(fi[combt], si[combt])
                         if costReg[0] <= 0:
                             break
-                        i = i - 0.003921568627
+                        elif costReg[0] > 0.45 and i > 0.05:
+                            i -= 0.03921568627
+                        elif costReg[0] > 0.35 and i > 0.03:
+                            i -= 0.019607843135
+                        elif costReg[0] > 0.25 and i > 0.03:
+                            i -= 0.007843137254
+                        else:
+                            i -= 0.003921568627
                     except ValueError:
                         break
-
+                print(f"Short Looped in {time.perf_counter() - start}, i was {i}")
                 # Costes' thershold calculation
                 combined_thresh_c = (fi > Thr_fi_c) & (si > Thr_si_c)
                 fi_thresh_c = fi[combined_thresh_c]

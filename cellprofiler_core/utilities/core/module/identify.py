@@ -36,8 +36,7 @@ def add_object_location_measurements(
         )
         centers = numpy.array(centers)
         centers = centers.reshape((object_count, len(labels.shape)))
-        vol = centers.shape[1] == 3
-        if not vol:
+        if centers.shape[1] != 3:
             location_center_y = centers[:, 0]
             location_center_x = centers[:, 1]
         else:
@@ -56,7 +55,7 @@ def add_object_location_measurements(
     measurements.add_measurement(
         object_name, M_LOCATION_CENTER_Y, location_center_y,
     )
-    if vol:
+    if len(labels.shape) > 2:
         measurements.add_measurement(
             object_name, M_LOCATION_CENTER_Z, location_center_z,
         )

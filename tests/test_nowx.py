@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from urllib.request import urlopen
 
-from tests.modules import example_images_directory
+from tests.modules import example_images_directory, get_test_resources_directory
 
 
 def import_all_but_wx(
@@ -14,7 +14,7 @@ def import_all_but_wx(
     globals=builtins.globals(),
     locals=builtins.locals(),
     fromlist=[],
-    level=-1,
+    level=0,
     default_import=builtins.__import__,
 ):
     if name == "wx" or name.startswith("wx."):
@@ -67,49 +67,38 @@ class TestNoWX(unittest.TestCase):
 
     def test_01_05_load_pipeline(self):
         import cellprofiler_core.pipeline as cpp
-
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.event.LoadException))
 
         pipeline = cpp.Pipeline()
         pipeline.add_listener(callback)
-        try:
-            fd = urlopen(self.fly_url)
-        except IOError as e:
+        fly_pipe = get_test_resources_directory("../ExampleFlyURL.cppipe")
+        pipeline.load(fly_pipe)
 
-            def bad_url(e=e):
-                raise e
+    def test_01_06_run_pipeline(self):
+        import cellprofiler_core.pipeline as cpp
+        import cellprofiler_core.module as cpm
 
-            unittest.expectedFailure(bad_url)()
-        pipeline.load(fd)
-        fd.close()
-
-        # def test_01_06_run_pipeline(self):
-        #     import cellprofiler_core.pipeline as cpp
-        #     import cellprofiler.cpmodule as cpm
-        #     from cellprofiler_core.preferences import \
-        #          set_default_image_directory, set_default_output_directory
-        #     def callback(caller, event):
-        #         self.assertFalse(isinstance(event, (cpp.event.LoadException,
-        #                                             cpp.event.RunException)))
-        #     pipeline = cpp.Pipeline()
-        #     pipeline.add_listener(callback)
-        #     fd = urlopen(self.fly_url)
-        #     pipeline.load(fd)
-        #     fd.close()
-        #     while True:
-        #         removed_something = False
-        #         for module in reversed(pipeline.modules()):
-        #             self.assertTrue(isinstance(module, cpm.CPModule))
-        #             if module.module_name in ("SaveImages",
-        #                                       "CalculateStatistics",
-        #                                       "ExportToSpreadsheet",
-        #                                       "ExportToDatabase"):
-        #                 pipeline.remove_module(module.module_num)
-        #                 removed_something = True
-        #                 break
-        #         if not removed_something:
-        #             break
-        #     for module in pipeline.modules():
-        #         module.show_window = False
-        #     m = pipeline.run(image_set_end = 1)
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, (cpp.event.LoadException,
+                                                cpp.event.RunException)))
+        pipeline = cpp.Pipeline()
+        pipeline.add_listener(callback)
+        fly_pipe = get_test_resources_directory("../ExampleFlyURL.cppipe")
+        pipeline.load(fly_pipe)
+        while True:
+            removed_something = False
+            for module in reversed(pipeline.modules()):
+                self.assertTrue(isinstance(module, cpm.Module))
+                if module.module_name in ("SaveImages",
+                                          "CalculateStatistics",
+                                          "ExportToSpreadsheet",
+                                          "ExportToDatabase"):
+                    pipeline.remove_module(module.module_num)
+                    removed_something = True
+                    break
+            if not removed_something:
+                break
+        for module in pipeline.modules():
+            module.show_window = False
+        m = pipeline.run(image_set_end=1)

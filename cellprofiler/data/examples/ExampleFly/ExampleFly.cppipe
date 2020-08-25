@@ -190,7 +190,7 @@ MeasureObjectSizeShape:[module_num:11|svn_version:'Unknown'|variable_revision_nu
     Calculate the Zernike features?:No
     Calculate the advanced features?:No
 
-MeasureObjectIntensity:[module_num:12|svn_version:'Unknown'|variable_revision_number:4|show_window:True|notes:['Measure intensity features from nuclei and cell objects against the cropped DAPI image.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:True]
+MeasureObjectIntensity:[module_num:12|svn_version:'Unknown'|variable_revision_number:4|show_window:True|notes:['Measure intensity features from nuclei and cell objects against the cropped DAPI image.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select images to measure:CropBlue
     Select objects to measure:Nuclei, Cells, Cytoplasm
 

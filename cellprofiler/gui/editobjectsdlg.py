@@ -935,7 +935,8 @@ class EditObjectsDialog(wx.Dialog):
                     return
         lnum = self.get_mouse_event_object_number(event)
         if lnum is None:
-            self.on_context_menu(event)
+            if event.button == 3 or wx.GetKeyState(wx.WXK_CONTROL):
+                self.on_context_menu(event)
             return
         if event.button == 1:
             # Move object into / out of working set

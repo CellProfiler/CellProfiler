@@ -68,6 +68,7 @@ from ..utilities.image import generate_presigned_url
 from ..utilities.image import image_resource
 from ..utilities.image import url_to_modpath
 from ..utilities.measurement import find_metadata_tokens
+from ..utilities.pathname import url2pathname
 
 __doc__ = """\
 Metadata
@@ -920,7 +921,8 @@ not being applied, your choice on this setting may be the culprit.
             else:
                 urls = self.pipeline.file_list
             if len(urls) > 0:
-                return urllib.request.url2pathname(urls[0])
+                file_url = url2pathname(urls[0])
+                return os.path.split(file_url)[1]
         return "PLATE_A01_s1_w11C78E18A-356E-48EC-B204-3F4379DC43AB.tif"
 
     def example_directory_fn(self):
@@ -933,7 +935,8 @@ not being applied, your choice on this setting may be the culprit.
             else:
                 urls = self.pipeline.file_list
             if len(urls) > 0:
-                return urllib.request.url2pathname(urls[0])
+                dir_url = url2pathname(urls[0])
+                return os.path.split(dir_url)[0]
         return "/images/2012_01_12"
 
     def change_causes_prepare_run(self, setting):

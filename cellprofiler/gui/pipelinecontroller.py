@@ -2075,7 +2075,7 @@ class PipelineController(object):
         t0 = datetime.datetime.now()
         with wx.ProgressDialog(
             "Processing files",
-            "Initializing\n\n",
+            "Initializing",
             parent=self.__frame,
             style=wx.PD_APP_MODAL | wx.PD_CAN_ABORT,
         ) as dlg:
@@ -2110,7 +2110,7 @@ class PipelineController(object):
                     if isWindows:
                         pathname = os.path.normpath(pathname[:2]) + pathname[2:]
 
-                    message[0] = "Processing " + pathname
+                    message[0] = "\nProcessing " + pathname
                     if os.path.isfile(pathname):
                         urls.append(pathname2url(pathname))
                         if len(urls) > 100:
@@ -2123,7 +2123,7 @@ class PipelineController(object):
                                     break
                                 path = os.path.join(dirpath, filename)
                                 urls.append(pathname2url(path))
-                                message[0] = "Processing " + path
+                                message[0] = "\nProcessing " + path
                                 if len(urls) > 100:
                                     queue.put(urls)
                                     urls = []
@@ -2140,12 +2140,13 @@ class PipelineController(object):
 
             def update_pulse(msg):
                 waiting_for = int((datetime.datetime.now() - t0).total_seconds())
-                if waiting_for > 60:
+                if waiting_for > 10:
                     minutes = int(waiting_for) / 60
                     seconds = waiting_for % 60
-                    msg += "\nElapsed time: %d minutes, %d seconds" % (minutes, seconds)
+                    msg += "\n\nElapsed time: %d minutes, %d seconds" % (minutes, seconds)
                     msg += "\nConsider using the LoadData module for loading large numbers of images."
                 keep_going, skip = dlg.Pulse(msg)
+                dlg.Fit()
                 return keep_going
 
             while not interrupt[0]:
@@ -2156,7 +2157,7 @@ class PipelineController(object):
                             urls += queue.get(block=False)
                     except Empty:
                         keep_going = update_pulse(
-                            "Adding %d files to file list" % len(urls)
+                            "\nAdding %d files to file list" % len(urls)
                         )
                         self.add_urls(urls)
                 except Empty as err:

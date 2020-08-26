@@ -2140,7 +2140,7 @@ class PipelineController(object):
 
             def update_pulse(msg):
                 waiting_for = int((datetime.datetime.now() - t0).total_seconds())
-                if waiting_for > 10:
+                if waiting_for > 60:
                     minutes = int(waiting_for) / 60
                     seconds = waiting_for % 60
                     msg += "\n\nElapsed time: %d minutes, %d seconds" % (minutes, seconds)

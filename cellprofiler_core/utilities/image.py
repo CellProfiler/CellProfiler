@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import sys
 import tempfile
 import urllib.request
 
@@ -207,25 +208,31 @@ def make_dictionary_key(key):
 
 def image_resource(filename):
     try:
-        if os.path.join("CellProfiler","docs") in os.path.abspath(os.curdir):
-            #We're probably trying to buld the manual
-            abspath = os.path.relpath(
+        if os.path.join("CellProfiler", "docs") in os.path.abspath(os.curdir):
+            # We're probably trying to buld the manual
+            thepath = os.path.relpath(
                 os.path.abspath(
                     pkg_resources.resource_filename(
                         "cellprofiler", os.path.join("..", "images", filename)
                     )
                 ),
-                os.path.abspath(
-                    os.curdir
-                    )
+                os.path.abspath(os.curdir),
             )
         else:
-            abspath = os.path.abspath(
-                pkg_resources.resource_filename(
-                    "cellprofiler", os.path.join("data", "images", filename)
+            if hasattr(sys, "frozen"):
+                # Use relative paths if we're frozen.
+                thepath = os.path.relpath(
+                    pkg_resources.resource_filename(
+                        "cellprofiler", os.path.join("data", "images", filename)
+                    )
                 )
-            )
-        return abspath.replace("\\", "/")
+            else:
+                thepath = os.path.abspath(
+                    pkg_resources.resource_filename(
+                        "cellprofiler", os.path.join("data", "images", filename)
+                    )
+                )
+        return thepath.replace("\\", "/")
     except ModuleNotFoundError:
         # CellProfiler is not installed so the assets are missing.
         # In theory an icon should never be called without the GUI anyway

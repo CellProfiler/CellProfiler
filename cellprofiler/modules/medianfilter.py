@@ -14,9 +14,11 @@ YES          YES          NO
 ============ ============ ===============
 """
 
-import scipy.signal
+import scipy.ndimage
+
+from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
-from cellprofiler_core.setting.text import OddInteger
+from cellprofiler_core.setting.text import Integer
 
 
 class MedianFilter(ImageProcessing):
@@ -29,12 +31,12 @@ class MedianFilter(ImageProcessing):
     def create_settings(self):
         super(MedianFilter, self).create_settings()
 
-        self.window = OddInteger(
+        self.window = Integer(
             text="Window",
             value=3,
             minval=0,
             doc="""\
-Dimension in each direction for computing the median filter. Must be odd. Use a window with a small size to
+Dimension in each direction for computing the median filter. Use a window with a small size to
 remove noise that's small in size. A larger window will remove larger scales of noise at the
 risk of blurring other features.
 """,
@@ -51,6 +53,29 @@ risk of blurring other features.
         return __settings__ + [self.window]
 
     def run(self, workspace):
-        self.function = scipy.signal.medfilt
 
-        super(MedianFilter, self).run(workspace)
+        x_name = self.x_name.value
+
+        y_name = self.y_name.value
+
+        images = workspace.image_set
+
+        x = images.get_image(x_name)
+
+        dimensions = x.dimensions
+
+        x_data = x.pixel_data
+
+        y_data = scipy.ndimage.median_filter(x_data, self.window.value, mode='constant')
+
+        y = Image(dimensions=dimensions, image=y_data, parent_image=x, convert=False)
+
+        images.add(y_name, y)
+
+        if self.show_window:
+            workspace.display_data.x_data = x_data
+
+            workspace.display_data.y_data = y_data
+
+            workspace.display_data.dimensions = dimensions
+

@@ -21,6 +21,11 @@ datas += [
     ("./CellProfiler/cellprofiler/data/icons/*", "cellprofiler/data/icons"),
 ]
 
+for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):
+    _, subdir_split = subdir.split('Contents/')
+    for file in files:
+        datas += [(os.path.join(subdir, file), subdir_split)]
+
 hiddenimports = []
 
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("numpy")

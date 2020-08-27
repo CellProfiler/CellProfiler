@@ -2,48 +2,55 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleDevelopmentRegion</key>
-    <string>English</string>
-    <key>CFBundleDisplayName</key>
-    <string>CellProfiler</string>
-    <key>CFBundleExecutable</key>
-    <string>MacOS/cp</string>
-    <key>CFBundleIconFile</key>
-    <string>CellProfiler.icns</string>
-    <key>CFBundleIdentifier</key>
-    <string>org.cellprofiler.CellProfiler</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleName</key>
-    <string>CellProfiler</string>
-    <key>CFBundleVersion</key>
-    <string>4.0.0</string>
-    <key>CFBundleDocumentTypes</key>
-    <array>
-        <dict>
-            <key>CFBundleTypeExtensions</key>
-            <array>
-                <string>cppipe</string>
-            </array>
-            <key>CFBundleTypeIconFile</key>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleDisplayName</key>
+	<string>CellProfiler</string>
+	<key>CFBundleExecutable</key>
+	<string>MacOS/cp</string>
+	<key>CFBundleIconFile</key>
+	<string>CellProfiler.icns</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.cellprofiler.CellProfiler</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>CellProfiler</string>
+	<key>CFBundleVersion</key>
+	<string>4.0.0</string>
+	<key>LSApplicationCategoryType</key>
+	<string></string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>cppipe</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
 			<string>CellProfiler.icns</string>
-            <key>CFBundleTypeName</key>
-            <string>CellProfiler pipeline</string>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-        </dict>
-        <dict>
-            <key>CFBundleTypeExtensions</key>
-            <array>
-                <string>cpproj</string>
-            </array>
-            <key>CFBundleTypeIconFile</key>
+			<key>CFBundleTypeName</key>
+			<string>CellProfiler pipeline</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>cpproj</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
 			<string>CellProfiler.icns</string>
-            <key>CFBundleTypeName</key>
-            <string>CellProfile project</string>
-            <key>CFBundleTypeRole</key>
-            <string>Editor</string>
-        </dict>
-    </array>
+			<key>CFBundleTypeName</key>
+			<string>CellProfile project</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+		</dict>
+	</array>
+	<key>LSEnvironment</key>
+	<dict>
+		<key>JAVA_HOME</key>
+		<string>./Contents</string>
+	</dict>
 </dict>
 </plist>

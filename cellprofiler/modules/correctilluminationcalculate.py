@@ -324,16 +324,17 @@ time-consuming process, but some methods are faster than others.
 -  *%(SM_CONVEX_HULL)s:* This method can be used on an image whose objects are
    darker than their background and whose illumination intensity
    decreases monotonically from the brightest point. It proceeds as follows:
+   
    -  Choose 256 evenly-spaced intensity levels between the minimum and
       maximum intensity for the image
    -  Set the intensity of the output image to the minimum intensity of
       the input image
    -  Iterate over the intensity levels, from lowest to highest
-      -  For a given intensity, find all pixels with equal or higher
-         intensities
-      -  Find the convex hull that encloses those pixels
-      -  Set the intensity of the output image within the convex hull to
-         the current intensity
+   -  For a given intensity, find all pixels with equal or higher
+      intensities
+   -  Find the convex hull that encloses those pixels
+   -  Set the intensity of the output image within the convex hull to
+      the current intensity
 
    The *%(SM_CONVEX_HULL)s* method is useful for calculating illumination correction
    images in empty brightfield images. It is a good option if the image contains a whole well.

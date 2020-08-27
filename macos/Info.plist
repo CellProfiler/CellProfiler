@@ -50,7 +50,7 @@
 	<key>LSEnvironment</key>
 	<dict>
 		<key>JAVA_HOME</key>
-		<string>./Home</string>
+		<string>./Contents</string>
 	</dict>
 </dict>
 </plist>

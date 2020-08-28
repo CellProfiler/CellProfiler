@@ -223,7 +223,7 @@ Preferences*.
                 title="Original: %s" % self.object_name.value,
             )
         else:
-            figure.subplot_imshow(
+            figure.subplot_imshow_labels(
                 0,
                 0,
                 workspace.display_data.segmented,

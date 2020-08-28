@@ -71,7 +71,7 @@ setuptools.setup(
         "Pillow>=7.1.0",
         "prokaryote==2.4.2",
         "python-bioformats==4.0.0rc4",
-        "python-javabridge==4.0.0rc2",
+        "python-javabridge==4.0.0rc3",
         "pyzmq==18.0.1",
         "sentry-sdk>=0.16.0",
         "requests>=2.22",

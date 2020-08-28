@@ -50,22 +50,31 @@ from cellprofiler_core.worker import aw_parse_args
 from cellprofiler_core.worker import main as worker_main
 from cellprofiler_core.workspace import Workspace
 
-if sys.platform.startswith("win") and hasattr(sys, "frozen"):
-    # For Windows builds, use built-in Java for CellProfiler, otherwise try to use Java from elsewhere on the system.
-    # Users can use a custom java installation by removing CP_JAVA_HOME.
-    # JAVA_HOME must be set before bioformats import.
-    try:
-        if "CP_JAVA_HOME" in os.environ:
-            os.environ["JAVA_HOME"] = os.environ["CP_JAVA_HOME"]
-        assert "JAVA_HOME" in os.environ
-    except AssertionError:
-        print(
-            "CellProfiler Startup ERROR: Could not find path to Java environment directory.\n"
-            "Please set the CP_JAVA_HOME system environment variable.\n"
-            "Visit http://broad.io/cpjava for instructions."
-        )
-        os.system("pause")  # Keep console window open until keypress.
-        os._exit(1)
+if hasattr(sys, "frozen"):
+    if sys.platform.startswith("win"):
+        # Clear out deprecation warnings from PyInstaller
+        os.system('cls')
+        # For Windows builds use built-in Java for CellProfiler, otherwise try to use Java from elsewhere on the system.
+        # Users can use a custom java installation by removing CP_JAVA_HOME.
+        # JAVA_HOME must be set before bioformats import.
+        try:
+            if "CP_JAVA_HOME" in os.environ:
+                os.environ["JAVA_HOME"] = os.environ["CP_JAVA_HOME"]
+            assert "JAVA_HOME" in os.environ
+        except AssertionError:
+            print(
+                "CellProfiler Startup ERROR: Could not find path to Java environment directory.\n"
+                "Please set the CP_JAVA_HOME system environment variable.\n"
+                "Visit http://broad.io/cpjava for instructions."
+            )
+            os.system("pause")  # Keep console window open until keypress.
+            os._exit(1)
+    else:
+        # Clear out deprecation warnings from PyInstaller
+        os.system('clear')
+    from cellprofiler import __version__ as ver
+    print(f"Starting CellProfiler {ver}")
+
 
 OMERO_CK_HOST = "host"
 OMERO_CK_PORT = "port"

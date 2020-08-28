@@ -21,6 +21,8 @@ datas += [
     ("./CellProfiler/cellprofiler/data/icons/*", "cellprofiler/data/icons"),
 ]
 
+print("JAVA HOME JAVA HOME JAVA HOME LOOK HERE")
+print(os.environ["JAVA_HOME"])
 for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):
     _, subdir_split = subdir.split('Contents/')
     for file in files:

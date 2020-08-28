@@ -69,7 +69,7 @@ setuptools.setup(
         "mysqlclient==1.4.6",
         "numpy>=1.18.2",
         "Pillow>=7.1.0",
-        "prokaryote==2.4.1",
+        "prokaryote==2.4.2",
         "python-bioformats==4.0.0rc4",
         "python-javabridge==4.0.0rc2",
         "pyzmq==18.0.1",

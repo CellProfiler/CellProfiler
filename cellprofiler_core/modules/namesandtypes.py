@@ -702,7 +702,18 @@ You can match corresponding channels to each other in one of two ways:
             ),
         )
 
-        self.join = Joiner("Match metadata")
+        self.join = Joiner(
+            "Match metadata",
+            doc="""
+Select metadata keys which will be used to pair images.
+
+Holding the *Shift* key while selecting a value will automatically fill any other
+empty entries in that row with the same value.
+
+See the help for "Image set matching method" for more information on how to match
+keys across images.
+            """,
+        )
 
         self.imageset_setting = ImageSetDisplay("", "Update image set table")
 

@@ -215,6 +215,11 @@ class JoinerController:
             joins.append(dict([(cn, "") for cn in self.column_names]))
         join = joins[row].copy()
         join[self.column_names[column]] = new_value
+        if wx.GetKeyState(wx.WXK_SHIFT):
+            # Fill other empty fields if present.
+            for col in self.column_names:
+                if join[col] in ("", None) and new_value in self.v.entities[col]:
+                    join[col] = new_value
         joins[row] = join
         self.module_view.on_value_change(
             self.v, self.panel, self.v.build_string(joins), event

@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import pkg_resources
 import wx
 import wx.adv
 
@@ -13,8 +13,7 @@ class AboutDialogInfo(wx.adv.AboutDialogInfo):
         )
 
         self.SetName("CellProfiler")
-
-        self.SetVersion("4.0.0rc11")
+        self.SetVersion(pkg_resources.get_distribution("CellProfiler").version)
 
 
 class Error(wx.MessageDialog):

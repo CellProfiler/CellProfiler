@@ -21,14 +21,13 @@ datas += [
     ("./CellProfiler/cellprofiler/data/icons/*", "cellprofiler/data/icons"),
 ]
 
-print("JAVA HOME JAVA HOME JAVA HOME LOOK HERE")
-print(os.environ["JAVA_HOME"])
 for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):
-    #_, subdir_split = subdir.split('Contents/')
-    _, subdir_split = subdir.split('14.0.1/')
-    for file in files:
-        print(os.path.join(subdir, file))
-        datas += [(os.path.join(subdir, file), subdir_split)]
+    try:
+        _, subdir_split = subdir.split('14.0.1/x64/zulu-14.jdk/Contents/')
+        for file in files:
+            datas += [(os.path.join(subdir, file), subdir_split)]
+    except:
+        pass
 
 hiddenimports = []
 

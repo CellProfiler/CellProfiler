@@ -22,12 +22,10 @@ datas += [
 ]
 
 for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):
-    try:
-        _, subdir_split = subdir.split('14.0.1/x64/zulu-14.jdk/Contents/')
+    if 'Contents' in subdir:
+        _, subdir_split = subdir.split('Contents/')
         for file in files:
             datas += [(os.path.join(subdir, file), subdir_split)]
-    except:
-        pass
 
 hiddenimports = []
 

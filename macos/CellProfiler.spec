@@ -22,10 +22,11 @@ datas += [
 ]
 
 for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):
-    if 'Contents' in subdir:
-        _, subdir_split = subdir.split('Contents/')
-        for file in files:
-            datas += [(os.path.join(subdir, file), subdir_split)]
+    if 'Contents/' in subdir:
+        if len(subdir.split('Contents/')) >1:
+            _, subdir_split = subdir.split('Contents/')
+            for file in files:
+                datas += [(os.path.join(subdir, file), subdir_split)]
 
 hiddenimports = []
 

@@ -940,7 +940,7 @@ to the foreground pixels or the background pixels.
         if object_name == "Image" and category == C_IMAGE_QUALITY:
             result = []
             if self.any_scaling():
-                result += [cellprofiler_core.utilities.image.C_SCALING]
+                result += [cellprofiler_core.constants.image.C_SCALING]
             if self.any_blur():
                 result += [
                     F_FOCUS_SCORE,
@@ -1103,7 +1103,7 @@ to the foreground pixels or the background pixels.
         result = []
         for image_name in self.images_to_process(image_group, workspace):
             feature = "{}_{}_{}".format(
-                C_IMAGE_QUALITY, cellprofiler_core.utilities.image.C_SCALING, image_name
+                C_IMAGE_QUALITY, cellprofiler_core.constants.image.C_SCALING, image_name
             )
             value = workspace.image_set.get_image(image_name).scale
             if not value:  # Set to NaN if not defined, such as for derived images

@@ -150,7 +150,7 @@ IdentifyPrimaryObjects:[module_num:8|svn_version:'Unknown'|variable_revision_num
     # of deviations:2
     Thresholding method:Otsu
 
-IdentifySecondaryObjects:[module_num:9|svn_version:'Unknown'|variable_revision_number:10|show_window:True|notes:['Identify the cells by using the nuclei as a "seed" region, then growing outwards until stopped by the image threshold or by a neighbor. The Propagation method is used to delineate the boundary between neighboring cells.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+IdentifySecondaryObjects:[module_num:9|svn_version:'Unknown'|variable_revision_number:10|show_window:True|notes:['Identify the cells by using the nuclei as a “seed” region, then growing outwards until stopped by the image threshold or by a neighbor. The Propagation method is used to delineate the boundary between neighboring cells.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select the input objects:Nuclei
     Name the objects to be identified:Cells
     Select the method to identify the secondary objects:Propagation
@@ -163,7 +163,7 @@ IdentifySecondaryObjects:[module_num:9|svn_version:'Unknown'|variable_revision_n
     Fill holes in identified objects?:Yes
     Threshold setting version:11
     Threshold strategy:Global
-    Thresholding method:Otsu
+    Thresholding method:Minimum Cross-Entropy
     Threshold smoothing scale:0
     Threshold correction factor:1
     Lower and upper bounds on threshold:0,1
@@ -194,9 +194,10 @@ MeasureObjectIntensity:[module_num:12|svn_version:'Unknown'|variable_revision_nu
     Select images to measure:CropBlue
     Select objects to measure:Nuclei, Cells, Cytoplasm
 
-MeasureTexture:[module_num:13|svn_version:'Unknown'|variable_revision_number:6|show_window:True|notes:['Measure texture features of the nuclei, cells and cytoplasm from the cropped DAPI image.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+MeasureTexture:[module_num:13|svn_version:'Unknown'|variable_revision_number:7|show_window:True|notes:['Measure texture features of the nuclei, cells and cytoplasm from the cropped DAPI image.']|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Select images to measure:CropBlue
     Select objects to measure:Cells, Nuclei, Cytoplasm
+    Enter how many gray levels to measure the texture at:256
     Hidden:1
     Measure whole images or objects?:Both
     Texture scale to measure:3

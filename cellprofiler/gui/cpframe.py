@@ -825,7 +825,6 @@ class CPFrame(wx.Frame):
             "Open the plate viewer to inspect the images in the current workspace",
         )
 
-        self.__menu_window.AppendSeparator()
 
         self.__menu_help = Menu(self)
 
@@ -841,7 +840,7 @@ class CPFrame(wx.Frame):
                 "Initialize sampling up to current module",
             )
             self.__menu_bar.Append(self.__menu_sample, "&Sample")
-        self.__menu_bar.Append(self.__menu_window, "&Window")
+        self.__menu_bar.Append(self.__menu_window, "&Windows")
         if wx.VERSION <= (2, 8, 10, 1, "") and wx.Platform == "__WXMAC__":
             self.__menu_bar.Append(self.__menu_help, "CellProfiler Help")
         else:

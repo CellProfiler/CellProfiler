@@ -1,7 +1,9 @@
 # coding:utf-8
 
 import webbrowser
+import wx.adv
 
+from cellprofiler.gui.dialog import AboutDialogInfo
 import cellprofiler.gui.help.content
 import cellprofiler.gui.help.search
 import cellprofiler.gui.htmldialog
@@ -96,6 +98,13 @@ class Menu(cellprofiler.gui.menu.Menu):
         self.AppendSeparator()
 
         self.append("Search help...", event_fn=lambda _: self.__on_search_help())
+
+        self.append("About CellProfiler", event_fn=lambda _: self.about())
+
+    @staticmethod
+    def about():
+        info = AboutDialogInfo()
+        wx.adv.AboutBox(info)
 
     def __figure_menu(self):
         figure_menu = cellprofiler.gui.menu.Menu(self.frame)

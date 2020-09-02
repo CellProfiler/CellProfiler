@@ -2123,12 +2123,16 @@ class ModuleView:
     def __on_checklistbox_change(self, event, setting, control):
         if not self.__handle_change:
             return
+        if hasattr(event, "refresh_now"):
+            timeout = None
+        else:
+            timeout = CHECK_TIMEOUT_SEC * 1000
         self.on_value_change(
             setting,
             control,
             control.GetChecked(),
             event,
-            timeout=CHECK_TIMEOUT_SEC * 1000,
+            timeout=timeout,
         )
 
     def __on_multichoice_change(self, event, setting, control):

@@ -227,10 +227,13 @@ class NameSubscriberListBox(wx.Panel):
         menu = wx.Menu()
         sel_all = wx.MenuItem(menu, wx.NewId(), "Select All")
         sel_none = wx.MenuItem(menu, wx.NewId(), "Select None")
+        force_refresh = wx.MenuItem(menu, wx.NewId(), "Refresh List")
         menu.Append(sel_all)
         menu.Append(sel_none)
+        menu.Append(force_refresh)
         menu.Bind(wx.EVT_MENU, self.select_all, sel_all)
         menu.Bind(wx.EVT_MENU, self.select_none, sel_none)
+        menu.Bind(wx.EVT_MENU, self.force_refresh, force_refresh)
         self.PopupMenu(menu)
         menu.Destroy()
 
@@ -243,6 +246,11 @@ class NameSubscriberListBox(wx.Panel):
     def select_none(self, evt):
         self.SetChecked([])
         self.checked = self.GetChecked()
+        for cb in self.callbacks:
+            cb(evt)
+
+    def force_refresh(self, evt):
+        evt.refresh_now = True
         for cb in self.callbacks:
             cb(evt)
 

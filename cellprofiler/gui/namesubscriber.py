@@ -267,6 +267,11 @@ class NameSubscriberListBox(wx.Panel):
         self.list_dlg.Deselect(evt.Selection)
 
     def choice_made(self, evt):
+        # Prevent selection of duplicate entires, marked with "Duplicate ___ Name!"
+        if self.list_dlg.GetItems()[evt.Selection].endswith("Name!)"):
+            if self.list_dlg.IsChecked(evt.Selection):
+                self.list_dlg.Check(evt.Selection, False)
+            return
         for cb in self.callbacks:
             cb(evt)
         self.Refresh()
@@ -331,6 +336,9 @@ class NameSubscriberListBox(wx.Panel):
     def SetChecked(self, values):
         if values != "None":
             selections = [self.choice_names.index(i) for i in values]
+            # Filter out invalid duplicate entries
+            labels = self.list_dlg.GetItems()
+            selections = [i for i in selections if not labels[i].endswith("Name!)")]
             self.list_dlg.SetCheckedItems(selections)
         self.Refresh()
 

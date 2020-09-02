@@ -878,18 +878,13 @@ def run_pipeline_headless(options, args):
                     options.image_directory
                 )
 
-    use_hdf5 = len(args) > 0 and not args[0].lower().endswith(".mat")
-
     measurements = pipeline.run(
         image_set_start=image_set_start,
         image_set_end=image_set_end,
         grouping=groups,
-        measurements_filename=None if not use_hdf5 else args[0],
+        measurements_filename=None,
         initial_measurements=initial_measurements,
     )
-
-    if len(args) > 0 and not use_hdf5:
-        pipeline.save_measurements(args[0], measurements)
 
     if options.done_file is not None:
         if measurements is not None and measurements.has_feature(

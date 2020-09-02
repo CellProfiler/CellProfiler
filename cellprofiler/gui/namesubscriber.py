@@ -227,10 +227,13 @@ class NameSubscriberListBox(wx.Panel):
         menu = wx.Menu()
         sel_all = wx.MenuItem(menu, wx.NewId(), "Select All")
         sel_none = wx.MenuItem(menu, wx.NewId(), "Select None")
+        force_refresh = wx.MenuItem(menu, wx.NewId(), "Refresh List")
         menu.Append(sel_all)
         menu.Append(sel_none)
+        menu.Append(force_refresh)
         menu.Bind(wx.EVT_MENU, self.select_all, sel_all)
         menu.Bind(wx.EVT_MENU, self.select_none, sel_none)
+        menu.Bind(wx.EVT_MENU, self.force_refresh, force_refresh)
         self.PopupMenu(menu)
         menu.Destroy()
 
@@ -243,6 +246,11 @@ class NameSubscriberListBox(wx.Panel):
     def select_none(self, evt):
         self.SetChecked([])
         self.checked = self.GetChecked()
+        for cb in self.callbacks:
+            cb(evt)
+
+    def force_refresh(self, evt):
+        evt.refresh_now = True
         for cb in self.callbacks:
             cb(evt)
 
@@ -259,6 +267,11 @@ class NameSubscriberListBox(wx.Panel):
         self.list_dlg.Deselect(evt.Selection)
 
     def choice_made(self, evt):
+        # Prevent selection of duplicate entires, marked with "Duplicate ___ Name!"
+        if self.list_dlg.GetItems()[evt.Selection].endswith("Name!)"):
+            if self.list_dlg.IsChecked(evt.Selection):
+                self.list_dlg.Check(evt.Selection, False)
+            return
         for cb in self.callbacks:
             cb(evt)
         self.Refresh()
@@ -323,6 +336,9 @@ class NameSubscriberListBox(wx.Panel):
     def SetChecked(self, values):
         if values != "None":
             selections = [self.choice_names.index(i) for i in values]
+            # Filter out invalid duplicate entries
+            labels = self.list_dlg.GetItems()
+            selections = [i for i in selections if not labels[i].endswith("Name!)")]
             self.list_dlg.SetCheckedItems(selections)
         self.Refresh()
 

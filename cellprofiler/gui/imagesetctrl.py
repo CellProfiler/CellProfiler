@@ -5,7 +5,7 @@
 
 import functools
 import re
-import urllib
+import urllib.parse
 
 import numpy
 import wx

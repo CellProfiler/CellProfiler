@@ -370,7 +370,7 @@ degrees.
         import cellprofiler.gui.figure
 
         figure.set_subplots((2, 1))
-        assert isinstance(figure, cellprofiler.gui.figure.figure.Figure)
+        assert isinstance(figure, cellprofiler.gui.figure.Figure)
 
         i = workspace.display_data.i
         j = workspace.display_data.j

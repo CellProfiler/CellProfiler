@@ -21,7 +21,7 @@ class Workspace(workspace.Workspace):
             window_name = window_name(self.__module)
 
         if self.__create_new_window:
-            figure = cellprofiler.gui.figure.figure.Figure(
+            figure = cellprofiler.gui.figure.Figure(
                 parent=self, title=title, name=window_name, subplots=subplots
             )
         else:
@@ -65,7 +65,7 @@ class Workspace(workspace.Workspace):
             )
 
         if self.__create_new_window:
-            figure = cellprofiler.gui.figure.figure.Figure(
+            figure = cellprofiler.gui.figure.Figure(
                 parent=parent or self.__frame, name=window_name, title=title
             )
         else:

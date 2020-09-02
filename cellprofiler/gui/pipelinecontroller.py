@@ -1134,7 +1134,7 @@ class PipelineController(object):
         "/images/A01_w1.tif","/images/A01_w2.tif"
         "/images/A02_w1.tif","/images/A02_w2.tif"
         """
-        with open(path, mode="rb") as fd:
+        with open(path, mode="r") as fd:
             rdr = csv.reader(fd)
             pathnames = sum(rdr, [])
             self.__pipeline.add_pathnames_to_file_list(pathnames)
@@ -1155,7 +1155,7 @@ class PipelineController(object):
         or end of the line, maybe you're asking too much :-)
         """
         with open(path) as fd:
-            pathnames = [p.strip().decode() for p in fd]
+            pathnames = [p.strip() for p in fd]
             self.__pipeline.add_pathnames_to_file_list(pathnames)
 
     def do_export_text_file_list(self, path):

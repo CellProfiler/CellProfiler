@@ -107,6 +107,20 @@ def main(args=None):
         return exit_code
 
     options, args = parse_args(args)
+    
+    if options.print_version:
+        set_headless()
+        __version__(exit_code)
+
+    if (not options.show_gui) or options.write_schema_and_exit:
+        set_headless()
+
+        options.run_pipeline = True
+
+    if options.batch_commands_file:
+        set_headless()
+        options.run_pipeline = False
+        options.show_gui = False
 
     if options.temp_dir is not None:
         if not os.path.exists(options.temp_dir):
@@ -158,19 +172,6 @@ def main(args=None):
                 temp_data_file.write(line)
             options.data_file = temp_data_file.name
             to_clean.append(os.path.join(temp_dir, temp_data_file.name))
-
-    if options.print_version:
-        __version__(exit_code)
-
-    if (not options.show_gui) or options.write_schema_and_exit:
-        set_headless()
-
-        options.run_pipeline = True
-
-    if options.batch_commands_file:
-        set_headless()
-        options.run_pipeline = False
-        options.show_gui = False
 
     set_log_level(options)
 

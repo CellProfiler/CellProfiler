@@ -31,6 +31,13 @@ def package_data():
             for filename in filenames
         ]
 
+    for root, _, filenames in os.walk(os.path.join("cellprofiler", "gui")):
+        resources += [
+            os.path.relpath(os.path.join(root, filename), "cellprofiler")
+            for filename in filenames
+            if '.html' in filename
+        ]        
+        
     return {"cellprofiler": resources}
 
 

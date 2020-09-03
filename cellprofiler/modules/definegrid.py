@@ -64,7 +64,7 @@ from cellprofiler_core.setting.text import GridName
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
 
-from cellprofiler.grid import Grid
+from cellprofiler_core.utilities.grid import Grid
 
 NUM_TOP_LEFT = "Top left"
 NUM_BOTTOM_LEFT = "Bottom left"

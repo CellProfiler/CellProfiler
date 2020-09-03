@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 
-import cellprofiler.grid
+import cellprofiler_core.utilities.grid
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.definegrid
@@ -76,7 +76,7 @@ def test_grid_automatic():
     module.wants_image.value = True
     module.run(workspace)
     gridding = workspace.get_grid(GRID_NAME)
-    assert isinstance(gridding, cellprofiler.grid.Grid)
+    assert isinstance(gridding, cellprofiler_core.utilities.grid.Grid)
     assert gridding.rows == rows
     assert gridding.columns == columns
     assert gridding.x_spacing == spacing_x
@@ -151,7 +151,7 @@ def test_coordinates_plus_savedimagesize():
     module.wants_image.value = True
     module.run(workspace)
     gridding = workspace.get_grid(GRID_NAME)
-    assert isinstance(gridding, cellprofiler.grid.Grid)
+    assert isinstance(gridding, cellprofiler_core.utilities.grid.Grid)
     assert gridding.rows == rows
     assert gridding.columns == columns
     assert gridding.x_spacing == spacing_x

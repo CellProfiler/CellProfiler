@@ -7,10 +7,10 @@ import sys
 import threading
 import uuid
 
-import cellprofiler.grid
 import numpy
 import zmq
 
+import cellprofiler_core.utilities.grid
 from cellprofiler_core.utilities.zmq._boundary import Boundary
 from cellprofiler_core.utilities.zmq.communicable.reply import LockStatusReply, Reply
 from cellprofiler_core.utilities.zmq.communicable.request import (
@@ -58,7 +58,7 @@ def make_CP_encoder(buffers):
         if isinstance(data, numpy.generic):
             # http://docs.scipy.org/doc/numpy/reference/arrays.scalars.html
             return data.astype(object)
-        if isinstance(data, cellprofiler.grid.Grid):
+        if isinstance(data, cellprofiler_core.utilities.grid.Grid):
             d = data.serialize()
             d["__CPGridInfo__"] = True
             return d
@@ -84,7 +84,7 @@ def make_CP_decoder(buffers):
         if "__buffer__" in dct:
             return memoryview(buffers[dct["idx"]])
         if "__CPGridInfo__" in dct:
-            grid = cellprofiler.grid.Grid()
+            grid = cellprofiler_core.utilities.grid.Grid()
             grid.deserialize(dct)
             return grid
         return dct

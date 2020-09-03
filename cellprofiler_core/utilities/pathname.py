@@ -17,6 +17,8 @@ def url2pathname(url):
         url = url
     if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url
-    assert is_file_url(url)
-    utf8_url = urllib.request.url2pathname(url[len(FILE_SCHEME) :])
-    return utf8_url
+    if is_file_url(url):
+        utf8_url = urllib.request.url2pathname(url[len(FILE_SCHEME) :])
+        return utf8_url
+    else:
+        return url

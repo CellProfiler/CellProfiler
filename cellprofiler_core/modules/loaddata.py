@@ -626,7 +626,7 @@ safe to press it.""",
 
     def browse_csv(self):
         import wx
-        from cellprofiler.gui import get_cp_icon
+        from cellprofiler.gui.utilities.icon import get_cp_icon
 
         try:
             fd = self.open_csv()

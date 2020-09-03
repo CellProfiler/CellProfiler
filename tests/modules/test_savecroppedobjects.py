@@ -204,7 +204,7 @@ def test_create_subfolders_from_metadata(
 
     module.directory.value = "{}|{}".format(
         cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME,
-        directory + r"\\\g<Plate>\\\g<Well>",
+        directory + r"/\g<Plate>/\g<Well>",
     )
 
     module.run(workspace)

@@ -2,6 +2,7 @@ import ast
 import base64
 import csv
 import os
+import sys
 import tempfile
 
 import numpy
@@ -1290,6 +1291,7 @@ def test_01_object_with_metadata(output_dir):
             fd.close()
 
 
+@pytest.mark.skipif("win32" not in sys.platform,reason="only works on Windows")
 def test_02_object_with_path_metadata(output_dir):
     #
     # Regression test of issue #1142
@@ -1407,6 +1409,8 @@ def test_image_with_metadata(output_dir):
             fd.close()
 
 
+
+@pytest.mark.skipif("win32" not in sys.platform,reason="only works on Windows")
 def test_image_with_path_metadata(output_dir):
     """Test writing image data with 2 pairs of 2 image sets w same metadata"""
     path = os.path.join(output_dir, "+++backslash+++g<tag>")

@@ -408,8 +408,8 @@ degrees.
             for ii in range(count):
                 diamond = self.get_diamond(angles[ii])
                 hshape = ((numpy.array(diamond.shape) - 1) / 2).astype(int)
-                iii = i[ii]
-                jjj = j[ii]
+                iii = int(i[ii])
+                jjj = int(j[ii])
                 color_image[
                     iii - hshape[0] : iii + hshape[0] + 1,
                     jjj - hshape[1] : jjj + hshape[1] + 1,

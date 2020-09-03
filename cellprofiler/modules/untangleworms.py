@@ -95,7 +95,6 @@ import xml.dom.minidom as DOM
 from urllib.request import urlopen
 
 import centrosome.cpmorphology
-import matplotlib.mlab as mlab
 import numpy
 import scipy.ndimage
 from cellprofiler_core.constants.measurement import C_LOCATION
@@ -971,21 +970,21 @@ should be processed.
                 radial_profiles[:, i] = training_data.radial_profile
             areas.sort()
             lengths.sort()
-            min_area = this.min_area_factor.value * mlab.prctile(
+            min_area = this.min_area_factor.value * numpy.percentile(
                 areas, this.min_area_percentile.value
             )
-            max_area = this.max_area_factor.value * mlab.prctile(
+            max_area = this.max_area_factor.value * numpy.percentile(
                 areas, this.max_area_percentile.value
             )
             median_area = numpy.median(areas)
-            min_length = this.min_length_factor.value * mlab.prctile(
+            min_length = this.min_length_factor.value * numpy.percentile(
                 lengths, this.min_length_percentile.value
             )
-            max_length = this.max_length_factor.value * mlab.prctile(
+            max_length = this.max_length_factor.value * numpy.percentile(
                 lengths, this.max_length_percentile.value
             )
-            max_skel_length = mlab.prctile(lengths, this.max_length_percentile.value)
-            max_radius = this.max_radius_factor.value * mlab.prctile(
+            max_skel_length = numpy.percentile(lengths, this.max_length_percentile.value)
+            max_radius = this.max_radius_factor.value * numpy.percentile(
                 radial_profiles.flatten(), this.max_radius_percentile.value
             )
             mean_radial_profile = numpy.mean(radial_profiles, 1)
@@ -1004,7 +1003,7 @@ should be processed.
                 numpy.dot(numpy.dot(fv, inv_angles_covariance_matrix), fv)
                 for fv in fv_adjusted.transpose()
             ]
-            max_cost = this.max_cost_factor.value * mlab.prctile(
+            max_cost = this.max_cost_factor.value * numpy.percentile(
                 angle_costs, this.max_cost_percentile.value
             )
             #

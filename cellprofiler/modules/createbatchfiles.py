@@ -113,14 +113,14 @@ Unix or Macintosh file separator (slash / )."""
             % globals(),
         )
 
-        self.batch_mode = Binary("Hidden: in batch mode", False)
-        self.distributed_mode = Binary("Hidden: in distributed mode", False)
+        self.batch_mode = Binary("Hidden- in batch mode", False)
+        self.distributed_mode = Binary("Hidden- in distributed mode", False)
         self.default_image_directory = Setting(
-            "Hidden: default input folder at time of save",
+            "Hidden- default input folder at time of save",
             get_default_image_directory(),
         )
-        self.revision = Integer("Hidden: revision number", 0)
-        self.from_old_matlab = Binary("Hidden: from old matlab", False)
+        self.revision = Integer("Hidden- revision number", 0)
+        self.from_old_matlab = Binary("Hidden- from old matlab", False)
         self.acknowledge_old_matlab = DoSomething(
             "Could not update CP1.0 pipeline to be compatible with CP2.0.  See module notes.",
             "OK",

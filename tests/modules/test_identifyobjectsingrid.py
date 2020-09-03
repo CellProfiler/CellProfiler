@@ -1,7 +1,7 @@
 import numpy
 
 
-import cellprofiler.grid
+import cellprofiler_core.utilities.grid
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.definegrid
@@ -47,7 +47,7 @@ def make_workspace(gridding, labels=None):
 
 
 def make_rectangular_grid(gridding):
-    assert isinstance(gridding, cellprofiler.grid.Grid)
+    assert isinstance(gridding, cellprofiler_core.utilities.grid.Grid)
     i0 = gridding.y_location_of_lowest_y_spot
     j0 = gridding.x_location_of_lowest_x_spot
     di = gridding.y_spacing

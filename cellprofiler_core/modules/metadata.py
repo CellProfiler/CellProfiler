@@ -796,6 +796,14 @@ not being applied, your choice on this setting may be the culprit.
                 "java/io/InputStreamReader", "(Ljava/io/InputStream;)V", stream
             )
         else:
+            if not os.path.exists(
+                the_csv := self.csv_path(group)
+            ) or not the_csv.endswith(".csv"):
+                print(
+                    f"WARNING: Could not find a valid CSV file at {the_csv}",
+                    "\nMetadata was not imported with this method.",
+                )
+                return None
             stream = javabridge.make_instance(
                 "java/io/FileInputStream", "(Ljava/lang/String;)V", self.csv_path(group)
             )

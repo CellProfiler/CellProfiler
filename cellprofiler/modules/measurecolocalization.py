@@ -67,7 +67,6 @@ Measurements made by this module
 .. _SVI website: http://svi.nl/ColocalizationTheory   
 """
 
-import cellprofiler_core.object
 import numpy
 import scipy.ndimage
 import scipy.stats
@@ -1077,30 +1076,33 @@ In most instances the results of both strategies should be identical.
                 b = ymean - a * xmean
 
                 i = 1
+                num_true = None
                 while i > 0.003921568627:
                     thr_fi_c = i
                     thr_si_c = (a * i) + b
                     combt = (fi < thr_fi_c) | (si < thr_si_c)
                     try:
-                        costReg = scipy.stats.pearsonr(fi[combt], si[combt])
-                        if costReg[0] <= 0:
+                        # In fast mode, only run pearsonr if the input has changed.
+                        if self.fast_costes.value == M_ACCURATE or numpy.count_nonzero(combt) != num_true:
+                            costReg, _ = scipy.stats.pearsonr(fi[combt], si[combt])
+                            num_true = numpy.count_nonzero(combt)
+                        if costReg <= 0:
                             break
                         elif self.fast_costes.value == M_ACCURATE:
                             i -= 0.003921568627
-                        elif costReg[0] > 0.45 and i > 0.05:
+                        elif costReg > 0.45 and i > 0.05:
                             # We're way off, step down 10x
                             i -= 0.03921568627
-                        elif costReg[0] > 0.35 and i > 0.03:
+                        elif costReg > 0.35 and i > 0.03:
                             # Still far from 0, step 5x
                             i -= 0.019607843135
-                        elif costReg[0] > 0.25 and i > 0.03:
+                        elif costReg > 0.25 and i > 0.03:
                             # Step 2x
                             i -= 0.007843137254
                         else:
                             i -= 0.003921568627
                     except ValueError:
                         break
-
                 # Costes' thershold for entire image is applied to each object
                 fi_above_thr = first_pixels > thr_fi_c
                 si_above_thr = second_pixels > thr_si_c

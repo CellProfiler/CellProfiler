@@ -494,12 +494,12 @@ class Pipeline:
                     if len(line.split(":", 1)) != 2:
                         raise ValueError("Invalid format for setting: %s" % line)
                     text, setting = line.split(":", 1)
-                    #handle metadata from v3 pipelines
+                    # handle metadata from v3 pipelines
                     if r"\\\\g<" in setting:
                         if r"\x7C" in setting:
-                            setting = setting.replace(r"\x7C\\\\g<",r"|\g<")
-                        else: 
-                            setting = setting.replace(r"\\\\g<",r"\g<")
+                            setting = setting.replace(r"\x7C\\\\g<", r"|\g<")
+                        else:
+                            setting = setting.replace(r"\\\\g<", r"\g<")
                     if "\\x" in setting:
                         try:
                             setting = setting.encode("utf-8").decode("unicode_escape")

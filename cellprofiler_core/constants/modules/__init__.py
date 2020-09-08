@@ -13,6 +13,14 @@ badmodules: list = []
 do_not_override = ["set_settings", "create_from_handles", "test_valid", "module_class"]
 should_override = ["create_settings", "settings", "run"]
 renamed_modules = {
+    "ApplyThreshold": "Threshold",
+    "CalculateImageOverlap": "MeasureImageOverlap",
+    "CropObjects": "SaveCroppedObjects",
+    "Dilation": "DilateImage",
+    "MeasureNeurons": "MeasureObjectSkeleton",
+    "MeasureCorrelation": "MeasureColocalization",
+    "NoiseReduction": "ReduceNoise",
+    "ReassignObjectNumbers": "SplitOrMergeObjects",
     "Erosion": "ErodeImage",
 }
 replaced_modules = {

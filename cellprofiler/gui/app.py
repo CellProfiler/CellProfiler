@@ -6,6 +6,7 @@ import sentry_sdk
 import wx
 import wx.lib.inspection
 from cellprofiler_core.preferences import get_telemetry_prompt
+from cellprofiler_core.preferences import get_telemetry
 from cellprofiler_core.preferences import set_telemetry
 from cellprofiler_core.preferences import set_telemetry_prompt
 from cellprofiler_core.utilities.java import start_java
@@ -13,23 +14,24 @@ from cellprofiler_core.utilities.java import stop_java
 
 from .dialog import Telemetry
 
-dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
+if get_telemetry():
+    dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
 
-sentry = sentry_sdk.init(dsn=dsn, release="4.0.1")
+    sentry = sentry_sdk.init(dsn=dsn, release="4.0.1")
 
-sentry_sdk.set_user(
-    {
-        "architecture": platform.architecture(),
-        "machine": platform.machine(),
-        "node": platform.node(),
-        "processor": platform.processor(),
-        "python_implementation": platform.python_implementation(),
-        "python_version": platform.python_version(),
-        "release": platform.release(),
-        "system": platform.system(),
-        "version": platform.version(),
-    }
-)
+    sentry_sdk.set_user(
+        {
+            "architecture": platform.architecture(),
+            "machine": platform.machine(),
+            "node": platform.node(),
+            "processor": platform.processor(),
+            "python_implementation": platform.python_implementation(),
+            "python_version": platform.python_version(),
+            "release": platform.release(),
+            "system": platform.system(),
+            "version": platform.version(),
+        }
+    )
 
 
 class App(wx.App):

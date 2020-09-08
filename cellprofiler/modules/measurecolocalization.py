@@ -23,6 +23,8 @@ between the following:
 
 A good primer on colocalization theory can be found on the `SVI website`_.
 
+You can find a helpful review on colocalization from Aaron *et al*. `here`_.
+
 |
 
 ============ ============ ===============
@@ -63,8 +65,17 @@ Measurements made by this module
    G) and Ri_coloc = Ri when Gi > 0, 0 otherwise and Gi_coloc = Gi
    when Ri >0, 0 otherwise. (Singan et al. 2011, BMC Bioinformatics
    12:407).
+
+References
+^^^^^^^^^^
+
+-  Aaron JS, Taylor AB, Chew TL. Image co-localization - co-occurrence versus correlation.
+   J Cell Sci. 2018;131(3):jcs211847. Published 2018 Feb 8. doi:10.1242/jcs.211847
+
+
    
-.. _SVI website: http://svi.nl/ColocalizationTheory   
+.. _SVI website: http://svi.nl/ColocalizationTheory
+.. _here: https://jcs.biologists.org/content/joces/131/3/jcs211847.full.pdf
 """
 
 import numpy

@@ -21,6 +21,7 @@ renamed_modules = {
     "MeasureCorrelation": "MeasureColocalization",
     "NoiseReduction": "ReduceNoise",
     "ReassignObjectNumbers": "SplitOrMergeObjects",
+    "SplitIntoContiguousObjects": "SplitOrMergeObjects",
     "Erosion": "ErodeImage",
 }
 replaced_modules = {

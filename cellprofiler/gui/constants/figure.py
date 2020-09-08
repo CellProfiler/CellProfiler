@@ -1,5 +1,7 @@
 import wx
 
+from cellprofiler.icons import get_builtin_image
+
 COLOR_NAMES = ["Red", "Green", "Blue", "Yellow", "Cyan", "Magenta", "White"]
 COLOR_VALS = [
     [1, 0, 0],
@@ -42,4 +44,6 @@ MODE_NONE = 0
 NAV_MODE_NONE = ""
 NAV_MODE_PAN = "pan/zoom"
 NAV_MODE_ZOOM = "zoom rect"
+NAV_MODE_MEASURE = "measure"
+BMP_MEASURE = wx.Bitmap(get_builtin_image("IMG_MEASURE"))
 WINDOW_IDS = []

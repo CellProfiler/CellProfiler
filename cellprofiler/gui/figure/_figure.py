@@ -221,12 +221,6 @@ class Figure(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_file_save_table, id=MENU_FILE_SAVE_TABLE)
         self.MenuBar.Append(self.__menu_file, "&File")
 
-        self.__menu_tools = wx.Menu()
-        self.__menu_item_measure_length = self.__menu_tools.AppendCheckItem(
-            MENU_TOOLS_MEASURE_LENGTH, "Measure &length"
-        )
-        self.MenuBar.Append(self.__menu_tools, "&Tools")
-
         self.menu_subplots = wx.Menu()
         self.MenuBar.Append(self.menu_subplots, "Subplots")
 
@@ -255,7 +249,7 @@ class Figure(wx.Frame):
         self.MenuBar.Append(make_help_menu(figure_help, self), "&Help")
 
     def create_toolbar(self):
-        self.navtoolbar = NavigationToolbar(self.figure.canvas)
+        self.navtoolbar = NavigationToolbar(self.figure.canvas, want_measure=True)
         if wx.VERSION < (2, 9, 1, 1, ""):
             # avoid crash on latest wx 2.9
             self.navtoolbar.DeleteToolByPos(6)
@@ -400,24 +394,20 @@ class Figure(wx.Frame):
         self.Destroy()
 
     def on_navtool_changed(self, event):
-        if (
-            event.EventObject.mode != NAV_MODE_NONE
-            and self.mouse_mode == MODE_MEASURE_LENGTH
-        ):
+        if event.EventObject.mode == "measure":
+            self.on_measure_length(event)
+        elif self.mouse_mode == MODE_MEASURE_LENGTH:
             self.mouse_mode = MODE_NONE
 
-            self.__menu_item_measure_length.Check(False)
 
     def on_measure_length(self, event):
         """Measure length menu item selected."""
-        if self.__menu_item_measure_length.IsChecked():
+        if self.mouse_mode == MODE_NONE:
             self.mouse_mode = MODE_MEASURE_LENGTH
-
-            self.navtoolbar.cancel_mode()
-
-            self.Layout()
-        elif self.mouse_mode == MODE_MEASURE_LENGTH:
+        else:
             self.mouse_mode = MODE_NONE
+            self.navtoolbar.cancel_mode()
+            self.Layout()
 
     def on_button_press(self, event):
         if not hasattr(self, "subplots"):

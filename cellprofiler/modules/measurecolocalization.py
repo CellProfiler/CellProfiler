@@ -527,10 +527,10 @@ In most instances the results of both strategies should be identical.
                     Thr_si_c = (a * i) + b
                     combt = (fi < Thr_fi_c) | (si < Thr_si_c)
                     try:
-                        # In fast mode, only run pearsonr if the input has changed.
-                        if self.fast_costes.value == M_ACCURATE or numpy.count_nonzero(combt) != num_true:
+                        # Only run pearsonr if the input has changed.
+                        if (positives := numpy.count_nonzero(combt)) != num_true:
                             costReg, _ = scipy.stats.pearsonr(fi[combt], si[combt])
-                            num_true = numpy.count_nonzero(combt)
+                            num_true = positives
                         if costReg <= 0:
                             break
                         elif self.fast_costes.value == M_ACCURATE:
@@ -1086,10 +1086,10 @@ In most instances the results of both strategies should be identical.
                     thr_si_c = (a * i) + b
                     combt = (fi < thr_fi_c) | (si < thr_si_c)
                     try:
-                        # In fast mode, only run pearsonr if the input has changed.
-                        if self.fast_costes.value == M_ACCURATE or numpy.count_nonzero(combt) != num_true:
+                        # Only run pearsonr if the input has changed.
+                        if (positives := numpy.count_nonzero(combt)) != num_true:
                             costReg, _ = scipy.stats.pearsonr(fi[combt], si[combt])
-                            num_true = numpy.count_nonzero(combt)
+                            num_true = positives
                         if costReg <= 0:
                             break
                         elif self.fast_costes.value == M_ACCURATE:

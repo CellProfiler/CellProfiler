@@ -1,54 +1,31 @@
 FROM ubuntu:16.04
 
-# Install CellProfiler dependencies
-RUN   apt-get -y update &&                                          \
-      apt-get -y install                                            \
-        build-essential    \
-        cython             \
-        git                \
-        libmysqlclient-dev \
-        libhdf5-dev        \
-        libxml2-dev        \
-        libxslt1-dev       \
-        openjdk-8-jdk      \
-        python-dev         \
-        python-pip         \
-        python-h5py        \
-        python-matplotlib  \
-        python-mysqldb     \
-        python-scipy       \
-        python-numpy       \
-        python-wxgtk3.0    \
-        python-zmq
+ARG version=4.0.1
 
-WORKDIR /usr/local/src
+# Install CellProfiler dependencies
+RUN apt-get update && apt-get install -y software-properties-common
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt -y update
+RUN apt -y upgrade
+RUN apt install -y python3.8-dev python3.8-distutils python3-pip openjdk-8-jdk-headless libmysqlclient-dev libnotify-dev libsdl2-dev wget
+
+# Set up environment
+RUN export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+RUN export PATH=$PATH:/home/ubuntu/.local/bin
+
+# This is needed for a Python 3.8 quirk
+RUN apt remove -y python3-pip
+RUN python3.8 -m easy_install pip
+
+#Install wx from a wheel
+RUN wget https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04/wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
+RUN python3.8 -m pip install wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
+RUN rm wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
 
 # Install CellProfiler
-RUN git clone https://github.com/CellProfiler/CellProfiler.git
+RUN python3.8 -m pip install cellprofiler==$version
 
-WORKDIR /usr/local/src/CellProfiler
-
-ARG version=3.1.5
-
-RUN git fetch -a
-
-RUN git pull
-
-RUN git checkout tags/v$version
-
-RUN pip install --upgrade pytest
-
-RUN pip install --upgrade Pillow
-
-RUN pip install matplotlib==2.2.2
-
-RUN pip install -e .
-
-# Fix init and zombie process reaping problems using s6 overlay
-ADD https://github.com/just-containers/s6-overlay/releases/download/v1.21.2.2/s6-overlay-amd64.tar.gz /tmp/
-
-RUN tar -xzf /tmp/s6-overlay-amd64.tar.gz -C /
-
-ENTRYPOINT ["/init", "cellprofiler"]
+WORKDIR /usr/local/src
+ENTRYPOINT ["cellprofiler"]
 
 CMD ["--run", "--run-headless", "--help"]

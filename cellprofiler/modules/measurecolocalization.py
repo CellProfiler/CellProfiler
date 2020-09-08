@@ -256,6 +256,9 @@ Costes calculations. Selecting *{M_FAST}* will prioritise testing the most relev
 thresholds to identify the optimal value. Selecting *{M_ACCURATE}* will test every possible
 threshold value. The latter method becomes particularly time-consuming with larger images.
 In most instances the results of both strategies should be identical.
+
+In both modes Costes automatic thresholding can seriously impact performance when working with 16-bit images.
+You may want to disable these specific measurements (available when "*Run All Metrics?*" is set to "*No*").
 """
         )
 
@@ -531,9 +534,15 @@ In most instances the results of both strategies should be identical.
                 )
                 a = num / denom
                 b = ymean - a * xmean
-                i = 1
+
+                i_step = get_scale(first_image.scale, second_image.scale)
+
+                # Start at 1 step above the maximum
+                img_max = max(fi.max(), si.max())
+                i = i_step * ((img_max // i_step) + 1)
+
                 num_true = None
-                while i > 0.003921568627:
+                while i > i_step:
                     Thr_fi_c = i
                     Thr_si_c = (a * i) + b
                     combt = (fi < Thr_fi_c) | (si < Thr_si_c)
@@ -544,19 +553,19 @@ In most instances the results of both strategies should be identical.
                             num_true = positives
                         if costReg <= 0:
                             break
-                        elif self.fast_costes.value == M_ACCURATE:
-                            i -= 0.003921568627
-                        elif costReg > 0.45 and i > 0.05:
+                        elif self.fast_costes.value == M_ACCURATE or i < i_step * 10:
+                            i -= i_step
+                        elif costReg > 0.45:
                             # We're way off, step down 10x
-                            i -= 0.03921568627
-                        elif costReg > 0.35 and i > 0.03:
+                            i -= i_step * 10
+                        elif costReg > 0.35:
                             # Still far from 0, step 5x
-                            i -= 0.019607843135
-                        elif costReg > 0.25 and i > 0.03:
+                            i -= i_step * 5
+                        elif costReg > 0.25:
                             # Step 2x
-                            i -= 0.007843137254
+                            i -= i_step * 2
                         else:
-                            i -= 0.003921568627
+                            i -= i_step
                     except ValueError:
                         break
                 # Costes' thershold calculation
@@ -1090,9 +1099,13 @@ In most instances the results of both strategies should be identical.
                 a = num / denom
                 b = ymean - a * xmean
 
-                i = 1
+                i_step = get_scale(first_image.scale, second_image.scale)
+
+                # Start at 1 step above the maximum
+                img_max = max(fi.max(), si.max())
+                i = i_step * ((img_max // i_step) + 1)
                 num_true = None
-                while i > 0.003921568627:
+                while i > i_step:
                     thr_fi_c = i
                     thr_si_c = (a * i) + b
                     combt = (fi < thr_fi_c) | (si < thr_si_c)
@@ -1103,19 +1116,19 @@ In most instances the results of both strategies should be identical.
                             num_true = positives
                         if costReg <= 0:
                             break
-                        elif self.fast_costes.value == M_ACCURATE:
-                            i -= 0.003921568627
-                        elif costReg > 0.45 and i > 0.05:
+                        elif self.fast_costes.value == M_ACCURATE or i < i_step * 10:
+                            i -= i_step
+                        elif costReg > 0.45:
                             # We're way off, step down 10x
-                            i -= 0.03921568627
-                        elif costReg > 0.35 and i > 0.03:
+                            i -= i_step * 10
+                        elif costReg > 0.35:
                             # Still far from 0, step 5x
-                            i -= 0.019607843135
-                        elif costReg > 0.25 and i > 0.03:
+                            i -= i_step * 5
+                        elif costReg > 0.25:
                             # Step 2x
-                            i -= 0.007843137254
+                            i -= i_step * 2
                         else:
-                            i -= 0.003921568627
+                            i -= i_step
                     except ValueError:
                         break
                 # Costes' thershold for entire image is applied to each object
@@ -1545,3 +1558,14 @@ In most instances the results of both strategies should be identical.
 
     def volumetric(self):
         return True
+
+
+def get_scale(scale_1, scale_2):
+    if scale_1 is not None and scale_2 is not None:
+        return 1 / max(scale_1, scale_2)
+    elif scale_1 is not None:
+        return 1 / scale_1
+    elif scale_2 is not None:
+        return 1 / scale_2
+    else:
+        return 1 / 255

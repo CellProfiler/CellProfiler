@@ -2,6 +2,7 @@ import matplotlib
 import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
 import wx
+import wx.lib.intctrl
 
 from ..constants.figure import NAV_MODE_ZOOM
 from ..constants.figure import NAV_MODE_PAN
@@ -14,6 +15,44 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
 
     def __init__(self, canvas):
         super(NavigationToolbar, self).__init__(canvas)
+        self.volumetric = False
+        self.Realize()
+
+    def set_volumetric(self):
+        if not self.volumetric:
+            self.planelabel = wx.StaticText(self, label="Plane:")
+            self.slider = wx.Slider(
+                self,
+                value=100,
+                minValue=0,
+                maxValue=255,
+                style=wx.SL_HORIZONTAL,
+                size=wx.Size(150, 22),
+            )
+            self.slider.SetPageSize(5)
+            self.planetext = wx.lib.intctrl.IntCtrl(
+                self,
+                id=0,
+                value=0,
+                min=-0,
+                max=9999,
+                limited=True,
+                size=wx.Size(30, 20),
+                style=wx.TE_CENTRE,
+            )
+            self.prevplane = wx.Button(self, label="<", size=wx.Size(22, 22))
+            self.nextplane = wx.Button(self, label=">", size=wx.Size(22, 22))
+            self.AddSeparator()
+            self.AddStretchableSpace()
+            self.AddControl(self.planelabel, "Plane")
+            self.AddControl(self.slider, "Plane Slider")
+            self.AddControl(self.prevplane, "Previous Plane")
+            self.AddControl(self.planetext, "Plane Number")
+            self.AddControl(self.nextplane, "Next Plane")
+            self.AddStretchableSpace()
+            self.Realize()
+            self.volumetric = True
+
 
     def set_cursor(self, cursor):
         """Set the cursor based on the mode"""

@@ -3823,6 +3823,13 @@ class PipelineController(object):
                 parent=self.__frame,
             )
             return
+        elif self.__pipeline.volumetric():
+            wx.MessageBox(
+                "Workspace Viewer is currently only available with 2D Pipelines",
+                style=wx.OK | wx.ICON_ERROR,
+                parent=self.__frame,
+            )
+            return
         # Need to pack the measurements into the workspace
         workspace = cellprofiler.gui._workspace_model.Workspace(
             self.__pipeline,

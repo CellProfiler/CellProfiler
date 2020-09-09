@@ -88,6 +88,8 @@ from cellprofiler_core.preferences import set_title_font_name
 from cellprofiler_core.preferences import set_title_font_size
 from cellprofiler_core.preferences import set_wants_pony
 
+from cellprofiler.gui.app import init_telemetry, stop_telemetry
+
 from ._integer_preference import IntegerPreference
 from ..constants.preferences_dialog import CHOICE
 from ..constants.preferences_dialog import COLOR
@@ -278,6 +280,11 @@ class PreferencesDialog(wx.Dialog):
             else:
                 value = control.Value
             if value != getter():
+                if 'Send Telemetry' in text:
+                    if value:
+                        init_telemetry()
+                    else:
+                        stop_telemetry()
                 setter(value)
         self.Close()
 

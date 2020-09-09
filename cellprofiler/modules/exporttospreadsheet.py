@@ -1084,7 +1084,9 @@ desired.
                 if isinstance(v, numpy.ndarray) and v.dtype == numpy.uint8:
                     v = base64.b64encode(v.data)
                 else:
-                    str(v)
+                    v = str(v)
+                    if not v.isascii():
+                        v = "".join([x if ord(x) < 128 else x.decode("utf-16",error='ignore') for x in v])
                 writer.writerow((feature_name, v))
         finally:
             fd.close()

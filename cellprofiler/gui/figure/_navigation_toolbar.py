@@ -20,7 +20,14 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
             self.bmp_error = wx.Bitmap(BMP_MEASURE)
             self.wx_ids["Measure"] = wx.NewId()
             self.Bind(wx.EVT_TOOL, self.measure, id=self.wx_ids["Measure"])
-            self.AddCheckTool(self.wx_ids["Measure"], "MeasureLength", self.bmp_error, shortHelp="Measure Length")
+            self.measure_tool = self.CreateTool(
+                self.wx_ids["Measure"],
+                "MeasureLength",
+                self.bmp_error,
+                kind=wx.ITEM_CHECK,
+                shortHelp="Measure Length"
+            )
+            self.InsertTool(6, self.measure_tool)
         self.Realize()
 
     def set_cursor(self, cursor):

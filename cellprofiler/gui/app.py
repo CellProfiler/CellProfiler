@@ -14,7 +14,7 @@ from cellprofiler_core.utilities.java import stop_java
 
 from .dialog import Telemetry
 
-if get_telemetry():
+def init_telemetry():
     dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
 
     sentry = sentry_sdk.init(dsn=dsn, release="4.0.1")
@@ -33,6 +33,11 @@ if get_telemetry():
         }
     )
 
+def stop_telemetry():
+    sentry = sentry_sdk.init()
+
+if get_telemetry():
+    init_telemetry()
 
 class App(wx.App):
     def __init__(self, *args, **kwargs):
@@ -75,8 +80,10 @@ class App(wx.App):
 
             if telemetry.status == wx.ID_YES:
                 set_telemetry(True)
+                init_telemetry()
             else:
                 set_telemetry(False)
+                stop_telemetry()
 
             set_telemetry_prompt(False)
 

@@ -259,6 +259,14 @@ class Pipeline:
             needs_close = False
         elif os.path.exists(fd_or_filename):
             fd = open(fd_or_filename, "r", encoding="utf-8")
+            # Verify that we can read from the file in utf-8 mode
+            try:
+                fd.read(10)
+                fd.seek(0)
+            except UnicodeDecodeError:
+                # Newer pipelines may need unicode encoding
+                fd.close()
+                fd = open(fd_or_filename, "r", encoding="unicode_escape")
             needs_close = True
             filename = fd_or_filename
         else:
@@ -325,7 +333,6 @@ class Pipeline:
 
     def parse_pipeline(self, fd, raise_on_error, count=sys.maxsize):
         header = readline(fd)
-        # FIXME:
         if not self.is_pipeline_txt_fd(io.StringIO(header)):
             raise NotImplementedError('Invalid header: "%s"' % header)
         checksum, details, count, version = self.validate_pipeline_file(fd, count)

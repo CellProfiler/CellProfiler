@@ -223,7 +223,8 @@ def config_write(key, value):
         get_config().WriteFloat(key, float(value))
     else:
         get_config().Write(key, value)
-    get_config().Flush()
+    if not __is_headless:
+        get_config().Flush()
 
 
 def config_exists(key):
@@ -1033,8 +1034,10 @@ def get_skip_version():
 
 
 def set_skip_version(ver):
+    global __is_headless
     get_config().Write(SKIPVERSION, str(ver))
-    get_config().Flush()
+    if not __is_headless:
+        get_config().Flush()
 
 
 __show_sampling = None
@@ -1051,10 +1054,11 @@ def get_show_sampling():
 
 
 def set_show_sampling(value):
-    global __show_sampling
+    global __show_sampling, __is_headless
     get_config().WriteBool(SHOW_SAMPLING, bool(value))
     __show_sampling = bool(value)
-    get_config().Flush()
+    if not __is_headless:
+        get_config().Flush()
 
 
 __recent_files: dict = {}
@@ -1196,8 +1200,10 @@ def get_telemetry():
 
 
 def set_telemetry(val):
+    global __is_headless
     get_config().WriteBool(TELEMETRY, val)
-    get_config().Flush()
+    if not __is_headless:
+        get_config().Flush()
 
 
 def get_telemetry_prompt():
@@ -1208,8 +1214,10 @@ def get_telemetry_prompt():
 
 
 def set_telemetry_prompt(val):
+    global __is_headless
     get_config().WriteBool(TELEMETRY_PROMPT, val)
-    get_config().Flush()
+    if not __is_headless:
+        get_config().Flush()
 
 
 def get_startup_blurb():
@@ -1219,8 +1227,10 @@ def get_startup_blurb():
 
 
 def set_startup_blurb(val):
+    global __is_headless
     get_config().WriteBool(STARTUPBLURB, val)
-    get_config().Flush()
+    if not __is_headless:
+        get_config().Flush()
 
 
 def get_primary_outline_color():
@@ -1479,10 +1489,11 @@ def get_max_workers():
 
 def set_max_workers(value):
     """Set the maximum number of worker processes allowed during analysis"""
-    global __max_workers
+    global __max_workers, __is_headless
     get_config().WriteInt(MAX_WORKERS, value)
     __max_workers = value
-    get_config().Flush()
+    if not __is_headless:
+        get_config().Flush()
 
 
 __temp_dir = None

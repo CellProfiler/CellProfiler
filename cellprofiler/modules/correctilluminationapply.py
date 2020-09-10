@@ -313,6 +313,7 @@ somewhat empirical.
     def display(self, workspace, figure):
         """ Display one row of orig / illum / output per image setting group"""
         figure.set_subplots((3, len(self.images)))
+        nametemplate = "Illumination function:" if len(self.images) < 3 else "Illum:"
         for j, image in enumerate(self.images):
             image_name = image.image_name.value
             illum_correct_function_image_name = (
@@ -339,11 +340,8 @@ somewhat empirical.
                 "Original image: %s" % image_name,
                 sharexy=figure.subplot(0, 0),
             )
-            title = "Illumination function: %s\nmin=%f, max=%f" % (
-                illum_correct_function_image_name,
-                round(illum_image.min(), 4),
-                round(illum_image.max(), 4),
-            )
+            title = f"{nametemplate} {illum_correct_function_image_name}, " \
+                    f"min={illum_image.min():0.4f}, max={illum_image.max():0.4f}"
 
             imshow(1, j, illum_image, title, sharexy=figure.subplot(0, 0))
             imshow(

@@ -450,7 +450,7 @@ desired behavior.
                 is_valid = False
         if is_valid:
             if needs_prepare_run:
-                result = self.prepare_run(self.workspace)
+                result = self.prepare_run(self.workspace, changed_setting = True)
                 if not result:
                     return
             self.update_tables()
@@ -605,7 +605,7 @@ desired behavior.
     def is_input_module(self):
         return True
 
-    def prepare_run(self, workspace):
+    def prepare_run(self, workspace, changed_setting = False):
         """Reorder the image sets and assign group number and index"""
         if workspace.pipeline.in_batch_mode():
             return True
@@ -618,9 +618,12 @@ desired behavior.
                 return False
 
         if len(workspace.measurements.get_image_numbers()) == 0:
-            # Refresh image set to make sure it's actually empty
-            workspace.refresh_image_set()
-            if len(workspace.measurements.get_image_numbers()) == 0:
+            # Refresh image set to make sure it's actually empty, if and only if there was a settings change
+            if changed_setting:
+                workspace.refresh_image_set()
+                if len(workspace.measurements.get_image_numbers()) == 0:
+                    return False
+            else:
                 return False
 
         result = self.get_groupings(workspace)

@@ -1724,7 +1724,8 @@ class Figure(wx.Frame):
                 change_plane(event.GetInt())
 
             def change_text(event):
-                change_plane(int(event.String))
+                if event.String != '':
+                    change_plane(int(event.String))
 
             def display_plane():
                 numx, numy = self.subplots.shape

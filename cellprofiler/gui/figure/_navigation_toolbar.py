@@ -51,6 +51,10 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
             self.InsertControl(pos + 3, self.planetext, "Plane Number")
             self.InsertControl(pos + 4, self.nextplane, "Next Plane")
             self.AddStretchableSpace()
+            for control in (self.planelabel, self.slider, self.prevplane, self.planetext, self.nextplane):
+                # Hacky fix for OSX display issues
+                control.Hide()
+                control.Show()
             self.Realize()
             self.volumetric = True
 

@@ -107,7 +107,8 @@ class WelcomeFrame(wx.Frame):
         if href.startswith("help:"):
             self.__display_help(href[5:])
         elif href.startswith("file:"):
-            self.__display_help(href[8:])
+            # Ignore incorrect navigation calls on Mac
+            return
         elif href.startswith("loadexample:"):
             self.__load_example_pipeline(href[12:])
         elif href.startswith("pref:"):

@@ -150,6 +150,7 @@ class Figure(wx.Frame):
         self.subplot_menus = {}
         self.widgets = []
         self.mouse_down = None
+        self.many_plots = False
         self.remove_menu = []
         self.figure = matplotlib.pyplot.Figure(constrained_layout=True)
         self.figure.set_constrained_layout_pads(
@@ -724,6 +725,9 @@ class Figure(wx.Frame):
 
         self.dimensions = dimensions
 
+        if max(subplots) > 3:
+            self.many_plots = True
+
         if subplots is None:
             if hasattr(self, "subplots"):
                 delattr(self, "subplots")
@@ -773,8 +777,12 @@ class Figure(wx.Frame):
         y - subplot's row
         """
         fontname = get_title_font_name()
+        if self.many_plots:
+            fontsize = 8
+        else:
+            fontsize = get_title_font_size()
         self.subplot(x, y).set_title(
-            textwrap.fill(title, 30), fontname=fontname, fontsize=get_title_font_size(),
+            textwrap.fill(title, 30 if fontsize > 10 else 50), fontname=fontname, fontsize=fontsize,
         )
 
     def clear_subplot(self, x, y):
@@ -1575,6 +1583,8 @@ class Figure(wx.Frame):
         subplot.set_xlim([0, imshape[1]])
         subplot.set_ylim([imshape[0] - 0.5, -0.5])
         subplot.set_aspect("equal")
+        if self.many_plots:
+            subplot.tick_params(labelsize=6)
 
         # Set title
         if title is not None:

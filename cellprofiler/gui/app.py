@@ -57,6 +57,11 @@ class App(wx.App):
     def OnInit(self):
         from .cpframe import CPFrame
         from cellprofiler import __version__
+        if platform.system() == "Windows":
+            import locale
+            # Windows system locale names follow the pattern "en-US", but python expects "en_US".
+            # So we set this up properly using the valid name populated by wx
+            locale.setlocale(locale.LC_ALL, wx.GetLocale().Name)
 
         # This import is needed to populate the modules list
         import cellprofiler_core.modules

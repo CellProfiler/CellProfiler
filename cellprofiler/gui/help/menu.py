@@ -21,6 +21,8 @@ class Menu(cellprofiler.gui.menu.Menu):
             event_fn=lambda _: self.frame.show_welcome_screen(True),
         )
 
+        self.append("Search help...", event_fn=lambda _: self.__on_search_help())
+
         self.append("Online Manual", event_fn=self.__on_help_online_manual)
 
         self.AppendSeparator()
@@ -97,7 +99,7 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.AppendSeparator()
 
-        self.append("Search help...", event_fn=lambda _: self.__on_search_help())
+        self.append("Check for updates", event_fn=self.find_update)
 
         self.append("About CellProfiler", event_fn=lambda _: self.about())
 
@@ -105,6 +107,10 @@ class Menu(cellprofiler.gui.menu.Menu):
     def about():
         info = AboutDialogInfo()
         wx.adv.AboutBox(info)
+
+    def find_update(self, event):
+        from cellprofiler.gui.checkupdate import check_update
+        check_update(self.frame, force=True)
 
     def __figure_menu(self):
         figure_menu = cellprofiler.gui.menu.Menu(self.frame)

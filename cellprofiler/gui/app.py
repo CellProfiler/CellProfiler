@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import platform
+import sys
 
 import sentry_sdk
 import wx
@@ -74,6 +75,10 @@ class App(wx.App):
         self.SetTopWindow(self.frame)
 
         self.frame.Show()
+
+        if hasattr(sys, "frozen"):
+            from cellprofiler.gui.checkupdate import check_update
+            check_update(self.frame)
 
         if get_telemetry_prompt():
             telemetry = Telemetry()

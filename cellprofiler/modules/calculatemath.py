@@ -396,7 +396,6 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
         result += [self.constrain_upper_bound]
         if self.constrain_upper_bound:
             result += [self.upper_bound]
-            result += [self.upper_bound]
 
         return result
 

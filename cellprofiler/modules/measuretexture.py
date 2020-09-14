@@ -380,7 +380,7 @@ measured and will result in a undefined value in the output file.
     ):
         def format_measurement(scale_group):
             return [
-                "{:d}_{:02d}".format(scale_group.scale.value, angle)
+                "{:d}_{:02d}_{:d}".format(scale_group.scale.value, angle,self.gray_levels.value)
                 for angle in range(13 if pipeline.volumetric() else 4)
             ]
 

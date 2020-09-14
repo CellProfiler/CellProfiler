@@ -55,13 +55,14 @@ class App(wx.App):
         super(App, self).__init__(*args, **kwargs)
 
     def OnInit(self):
-        from .cpframe import CPFrame
-        from cellprofiler import __version__
         if platform.system() == "Windows":
             import locale
-            # Windows system locale names follow the pattern "en-US", but python expects "en_US".
-            # So we set this up properly using the valid name populated by wx
-            locale.setlocale(locale.LC_ALL, wx.GetLocale().Name)
+            # Need to startup wx in English, otherwise C++ can't load images.
+            self.locale = wx.Locale(wx.LANGUAGE_ENGLISH)
+            # Ensure Python uses the same locale as wx
+            locale.setlocale(locale.LC_ALL, self.locale.GetName())
+        from .cpframe import CPFrame
+        from cellprofiler import __version__
 
         # This import is needed to populate the modules list
         import cellprofiler_core.modules

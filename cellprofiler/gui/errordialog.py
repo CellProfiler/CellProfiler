@@ -97,7 +97,7 @@ def _display_error_dialog(
 
     import wx
 
-    assert wx.IsMainThread(frame), "Can only display errors from WX thread."
+    assert wx.IsMainThread(), "Can only display errors from WX thread."
 
     if remote_exc_info:
         from_subprocess = True

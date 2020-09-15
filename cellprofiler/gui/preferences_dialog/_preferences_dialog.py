@@ -34,7 +34,9 @@ from cellprofiler_core.preferences import SPP_ALL
 from cellprofiler_core.preferences import TABLE_FONT_HELP
 from cellprofiler_core.preferences import TEMP_DIR_HELP
 from cellprofiler_core.preferences import TERTIARY_OUTLINE_COLOR_HELP
+from cellprofiler_core.preferences import UPDATER_HELP
 from cellprofiler_core.preferences import default_max_workers
+from cellprofiler_core.preferences import get_check_update_bool
 from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.preferences import get_default_image_directory
 from cellprofiler_core.preferences import get_default_output_directory
@@ -61,6 +63,7 @@ from cellprofiler_core.preferences import get_tertiary_outline_color
 from cellprofiler_core.preferences import get_title_font_name
 from cellprofiler_core.preferences import get_title_font_size
 from cellprofiler_core.preferences import get_wants_pony
+from cellprofiler_core.preferences import set_check_update
 from cellprofiler_core.preferences import set_default_colormap
 from cellprofiler_core.preferences import set_default_image_directory
 from cellprofiler_core.preferences import set_default_output_directory
@@ -309,6 +312,13 @@ class PreferencesDialog(wx.Dialog):
                 set_telemetry,
                 CHOICE,
                 SHOW_TELEMETRY_HELP,
+            ],
+            [
+                "Automatically check for updates",
+                get_check_update_bool,
+                set_check_update,
+                CHOICE,
+                UPDATER_HELP,
             ],
             [
                 "Default Input Folder",

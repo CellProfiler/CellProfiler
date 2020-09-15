@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import platform
+import sys
 
 import sentry_sdk
 import wx
@@ -54,6 +55,12 @@ class App(wx.App):
         super(App, self).__init__(*args, **kwargs)
 
     def OnInit(self):
+        if platform.system() == "Windows":
+            import locale
+            # Need to startup wx in English, otherwise C++ can't load images.
+            self.locale = wx.Locale(wx.LANGUAGE_ENGLISH)
+            # Ensure Python uses the same locale as wx
+            locale.setlocale(locale.LC_ALL, self.locale.GetName())
         from .cpframe import CPFrame
         from cellprofiler import __version__
 
@@ -74,6 +81,10 @@ class App(wx.App):
         self.SetTopWindow(self.frame)
 
         self.frame.Show()
+
+        if hasattr(sys, "frozen"):
+            from cellprofiler.gui.checkupdate import check_update
+            check_update(self.frame)
 
         if get_telemetry_prompt():
             telemetry = Telemetry()

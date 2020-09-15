@@ -318,7 +318,7 @@ PRIMARY_OUTLINE_COLOR = "PrimaryOutlineColor"
 SECONDARY_OUTLINE_COLOR = "SecondaryOutlineColor"
 TERTIARY_OUTLINE_COLOR = "TertiaryOutlineColor"
 JVM_ERROR = "JVMError"
-PLUGIN_DIRECTORY = "PluginDirectory"
+PLUGIN_DIRECTORY = "PluginDirectoryCP4"
 SHOW_ANALYSIS_COMPLETE_DLG = "ShowAnalysisCompleteDlg"
 SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
 SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
@@ -1110,6 +1110,10 @@ def get_plugin_directory():
         __plugin_directory = config_read(PLUGIN_DIRECTORY)
     elif get_headless():
         return None
+    elif config_exists("PluginDirectory"):
+        # Import and store directory from CP3
+        __plugin_directory = config_read("PluginDirectory")
+        set_plugin_directory(__plugin_directory)
     else:
         import wx
 

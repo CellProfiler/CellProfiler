@@ -1083,8 +1083,10 @@ desired.
                 v = m.get_all_measurements(EXPERIMENT, feature_name)
                 if isinstance(v, numpy.ndarray) and v.dtype == numpy.uint8:
                     v = base64.b64encode(v.data)
+                elif isinstance(v, bytes):
+                    v = v.decode("unicode_escape", errors='ignore')
                 else:
-                    str(v)
+                    v = str(v)
                 writer.writerow((feature_name, v))
         finally:
             fd.close()

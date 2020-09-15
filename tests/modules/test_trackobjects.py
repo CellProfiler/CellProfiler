@@ -21,7 +21,7 @@ from cellprofiler_core.object import ObjectSet, Objects
 import cellprofiler.modules.trackobjects
 import tests.modules
 from cellprofiler_core.pipeline import Pipeline, LoadException, RunException
-from cellprofiler.gui._workspace_model import Workspace
+from cellprofiler_core.workspace import Workspace
 
 OBJECT_NAME = "objects"
 

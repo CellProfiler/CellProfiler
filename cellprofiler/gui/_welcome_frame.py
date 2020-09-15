@@ -106,6 +106,9 @@ class WelcomeFrame(wx.Frame):
         href = event.URL
         if href.startswith("help:"):
             self.__display_help(href[5:])
+        elif href.startswith("file:"):
+            # Ignore incorrect navigation calls on Mac
+            return
         elif href.startswith("loadexample:"):
             self.__load_example_pipeline(href[12:])
         elif href.startswith("pref:"):
@@ -118,7 +121,10 @@ class WelcomeFrame(wx.Frame):
         if href == "welcome":
             self.__display_welcome()
             return
-        html_path = self.href_to_help[href]
+        if href in self.href_to_help:
+            html_path = self.href_to_help[href]
+        else:
+            html_path = href
         with open(os.path.join(os.path.dirname(__file__), html_path)) as fp:
             template = jinja2.Template(fp.read())
             self.content.SetPage(

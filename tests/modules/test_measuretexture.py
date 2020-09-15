@@ -297,7 +297,7 @@ def test_many_objects():
             assert mname in all_column_features
             values = m.get_current_measurement(INPUT_OBJECTS_NAME, mname)
             assert numpy.all(values != 0)
-            assert "{:d}_{:02d}".format(2, angle) in all_scales
+            assert "{:d}_{:02d}_{:d}".format(2, angle,256) in all_scales
 
 
 # def test_measurement_columns():

@@ -10,7 +10,6 @@ import wx.grid
 import wx.lib.colourselect
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
-from cellprofiler_core.pipeline import ImagePlane
 from cellprofiler_core.pipeline import ModuleEdited
 from cellprofiler_core.pipeline import ModuleRemoved
 from cellprofiler_core.pipeline import PipelineCleared
@@ -34,6 +33,7 @@ from cellprofiler_core.setting import DoThings
 from cellprofiler_core.setting import FigureSubscriber
 from cellprofiler_core.setting import FileCollectionDisplay
 from cellprofiler_core.setting import HTMLText
+from cellprofiler_core.setting import ImagePlane
 from cellprofiler_core.setting import Joiner
 from cellprofiler_core.setting import Measurement
 from cellprofiler_core.setting import RegexpText

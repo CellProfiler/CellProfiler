@@ -990,6 +990,11 @@ Often a good choice is some multiple of the largest expected object size.
                 elif numpy.all(block == block[0]):
                     # Don't compute blocks with only 1 value.
                     threshold_out = block[0]
+                elif (self.threshold_operation == TM_OTSU and
+                      self.two_class_otsu.value == O_THREE_CLASS and
+                      len(numpy.unique(block)) < 3):
+                    # Can't run 3-class otsu on only 2 values.
+                    threshold_out = skimage.filters.threshold_otsu(block)
                 else:
                     threshold_out = threshold_method(block, **kwargs)
                 if isinstance(threshold_out, numpy.ndarray):

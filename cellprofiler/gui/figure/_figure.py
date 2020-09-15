@@ -150,6 +150,7 @@ class Figure(wx.Frame):
         self.subplot_menus = {}
         self.widgets = []
         self.mouse_down = None
+        self.many_plots = False
         self.remove_menu = []
         self.figure = matplotlib.pyplot.Figure(constrained_layout=True)
         self.figure.set_constrained_layout_pads(
@@ -221,12 +222,6 @@ class Figure(wx.Frame):
         self.Bind(wx.EVT_MENU, self.on_file_save_table, id=MENU_FILE_SAVE_TABLE)
         self.MenuBar.Append(self.__menu_file, "&File")
 
-        self.__menu_tools = wx.Menu()
-        self.__menu_item_measure_length = self.__menu_tools.AppendCheckItem(
-            MENU_TOOLS_MEASURE_LENGTH, "Measure &length"
-        )
-        self.MenuBar.Append(self.__menu_tools, "&Tools")
-
         self.menu_subplots = wx.Menu()
         self.MenuBar.Append(self.menu_subplots, "Subplots")
 
@@ -255,7 +250,7 @@ class Figure(wx.Frame):
         self.MenuBar.Append(make_help_menu(figure_help, self), "&Help")
 
     def create_toolbar(self):
-        self.navtoolbar = NavigationToolbar(self.figure.canvas)
+        self.navtoolbar = NavigationToolbar(self.figure.canvas, want_measure=True)
         self.navtoolbar.Bind(EVT_NAV_MODE_CHANGE, self.on_navtool_changed)
 
     def clf(self):
@@ -397,24 +392,20 @@ class Figure(wx.Frame):
         self.Destroy()
 
     def on_navtool_changed(self, event):
-        if (
-            event.EventObject.mode != NAV_MODE_NONE
-            and self.mouse_mode == MODE_MEASURE_LENGTH
-        ):
+        if event.EventObject.mode == "measure":
+            self.on_measure_length(event)
+        elif self.mouse_mode == MODE_MEASURE_LENGTH:
             self.mouse_mode = MODE_NONE
 
-            self.__menu_item_measure_length.Check(False)
 
     def on_measure_length(self, event):
         """Measure length menu item selected."""
-        if self.__menu_item_measure_length.IsChecked():
+        if self.mouse_mode == MODE_NONE:
             self.mouse_mode = MODE_MEASURE_LENGTH
-
-            self.navtoolbar.cancel_mode()
-
-            self.Layout()
-        elif self.mouse_mode == MODE_MEASURE_LENGTH:
+        else:
             self.mouse_mode = MODE_NONE
+            self.navtoolbar.cancel_mode()
+            self.Layout()
 
     def on_button_press(self, event):
         if not hasattr(self, "subplots"):
@@ -731,6 +722,9 @@ class Figure(wx.Frame):
 
         self.dimensions = dimensions
 
+        if max(subplots) > 3:
+            self.many_plots = True
+
         if subplots is None:
             if hasattr(self, "subplots"):
                 delattr(self, "subplots")
@@ -780,8 +774,12 @@ class Figure(wx.Frame):
         y - subplot's row
         """
         fontname = get_title_font_name()
+        if self.many_plots:
+            fontsize = 8
+        else:
+            fontsize = get_title_font_size()
         self.subplot(x, y).set_title(
-            textwrap.fill(title, 30), fontname=fontname, fontsize=get_title_font_size(),
+            textwrap.fill(title, 30 if fontsize > 10 else 50), fontname=fontname, fontsize=fontsize,
         )
 
     def clear_subplot(self, x, y):
@@ -1582,6 +1580,8 @@ class Figure(wx.Frame):
         subplot.set_xlim([0, imshape[1]])
         subplot.set_ylim([imshape[0] - 0.5, -0.5])
         subplot.set_aspect("equal")
+        if self.many_plots:
+            subplot.tick_params(labelsize=6)
 
         # Set title
         if title is not None:

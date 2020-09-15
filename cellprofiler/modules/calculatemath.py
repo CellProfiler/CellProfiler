@@ -67,10 +67,10 @@ from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import Measurement
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Alphanumeric
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import Integer
-from cellprofiler_core.setting.text import LabelName
 
 O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"
@@ -113,7 +113,7 @@ class CalculateMath(Module):
                     doc="""Indicate whether the operand is an image or object measurement.""",
                 )
 
-                self.__operand_objects = LabelName(
+                self.__operand_objects = LabelSubscriber(
                     self.operand_objects_text(),
                     "None",
                     doc="""Choose the objects you want to measure for this operation.""",
@@ -395,7 +395,6 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
             result += [self.lower_bound]
         result += [self.constrain_upper_bound]
         if self.constrain_upper_bound:
-            result += [self.upper_bound]
             result += [self.upper_bound]
 
         return result

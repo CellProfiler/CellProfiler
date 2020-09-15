@@ -2,6 +2,7 @@ import matplotlib
 import matplotlib.backend_bases
 import matplotlib.backends.backend_wxagg
 import wx
+import wx.lib.intctrl
 
 from ..constants.figure import NAV_MODE_ZOOM
 from ..constants.figure import NAV_MODE_MEASURE
@@ -16,6 +17,7 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
 
     def __init__(self, canvas, want_measure=False):
         super(NavigationToolbar, self).__init__(canvas)
+        self.volumetric = False
         if want_measure:
             self.bmp_error = wx.Bitmap(BMP_MEASURE)
             self.wx_ids["Measure"] = wx.NewId()
@@ -29,6 +31,46 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
             )
             self.InsertTool(6, self.measure_tool)
         self.Realize()
+
+    def set_volumetric(self):
+        if not self.volumetric:
+            self.planelabel = wx.StaticText(self, label="Plane:")
+            self.slider = wx.Slider(
+                self,
+                value=100,
+                minValue=0,
+                maxValue=255,
+                style=wx.SL_HORIZONTAL,
+                size=wx.Size(150, 22),
+            )
+            self.slider.SetPageSize(5)
+            self.planetext = wx.lib.intctrl.IntCtrl(
+                self,
+                id=0,
+                value=0,
+                min=-0,
+                max=9999,
+                limited=True,
+                size=wx.Size(30, 20),
+                style=wx.TE_CENTRE,
+            )
+            self.prevplane = wx.Button(self, label="<", size=wx.Size(22, 22))
+            self.nextplane = wx.Button(self, label=">", size=wx.Size(22, 22))
+            self.AddSeparator()
+            self.AddStretchableSpace()
+            pos = self.GetToolsCount()
+            self.InsertControl(pos, self.planelabel, "Plane")
+            self.InsertControl(pos + 1, self.slider, "Plane Slider")
+            self.InsertControl(pos + 2, self.prevplane, "Previous Plane")
+            self.InsertControl(pos + 3, self.planetext, "Plane Number")
+            self.InsertControl(pos + 4, self.nextplane, "Next Plane")
+            self.AddStretchableSpace()
+            for control in (self.planelabel, self.slider, self.prevplane, self.planetext, self.nextplane):
+                # Hacky fix for OSX display issues
+                control.Hide()
+                control.Show()
+            self.Realize()
+            self.volumetric = True
 
     def set_cursor(self, cursor):
         """Set the cursor based on the mode"""

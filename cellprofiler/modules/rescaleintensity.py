@@ -479,7 +479,10 @@ Select the measurement value to use as the divisor for the final image.
             newchannels = []
             for channel in singlechannels:
                 channel = numpy.squeeze(channel, axis=splitaxis)
-                in_range = (min(channel[mask]), max(channel[mask]))
+                if (masked_channel := channel[mask]).size == 0:
+                    in_range = (0, 1)
+                else:
+                    in_range = (min(masked_channel), max(masked_channel))
 
                 channelholder = Image(channel, convert=False)
 
@@ -487,8 +490,10 @@ Select the measurement value to use as the divisor for the final image.
                 newchannels.append(rescaled)
             full_rescaled = numpy.stack(newchannels, axis=-1)
             return full_rescaled
-
-        in_range = (min(data[mask]), max(data[mask]))
+        if (masked_data := data[mask]).size == 0:
+            in_range = (0, 1)
+        else:
+            in_range = (min(masked_data), max(masked_data))
         return self.rescale(input_image, in_range)
 
     def manual_input_range(self, input_image, workspace):
@@ -512,14 +517,20 @@ Select the measurement value to use as the divisor for the final image.
     def divide_by_image_minimum(self, input_image):
         data = input_image.pixel_data
 
-        src_min = numpy.min(data[input_image.mask])
+        if (masked_data := data[input_image.mask]).size == 0:
+            src_min = 0
+        else:
+            src_min = numpy.min(masked_data)
 
         return self.divide(data, src_min)
 
     def divide_by_image_maximum(self, input_image):
         data = input_image.pixel_data
 
-        src_max = numpy.max(data[input_image.mask])
+        if (masked_data := data[input_image.mask]).size == 0:
+            src_max = 1
+        else:
+            src_max = numpy.max(masked_data)
 
         return self.divide(data, src_max)
 
@@ -542,16 +553,20 @@ Select the measurement value to use as the divisor for the final image.
         # by the input maximum to scale the input image to the same
         # range as the reference image
         ###
-        image_max = numpy.max(input_image.pixel_data[input_image.mask])
+        if (masked_input := input_image.pixel_data[input_image.mask]).size == 0:
+            return input_image.pixel_data
+        else:
+            image_max = numpy.max(masked_input)
 
         if image_max == 0:
             return input_image.pixel_data
 
         reference_image = workspace.image_set.get_image(self.matching_image_name.value)
 
-        reference_pixels = reference_image.pixel_data[reference_image.mask]
-
-        reference_max = numpy.max(reference_pixels)
+        if (masked_ref := reference_image.pixel_data[reference_image.mask]).size == 0:
+            reference_max = 1
+        else:
+            reference_max = numpy.max(masked_ref)
 
         return self.divide(input_image.pixel_data * reference_max, image_max)
 
@@ -570,6 +585,8 @@ Select the measurement value to use as the divisor for the final image.
             input_pixels = input_image.pixel_data
             if input_image.has_mask:
                 input_pixels = input_pixels[input_image.mask]
+                if input_pixels.size == 0:
+                    return 0, 1
 
         if self.wants_automatic_low == LOW_ALL_IMAGES:
             src_min = self.get_automatic_minimum(workspace.image_set_list)

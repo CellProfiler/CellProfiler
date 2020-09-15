@@ -312,6 +312,7 @@ FF_RECENTFILES = "RecentFile%d"
 STARTUPBLURB = "StartupBlurb"
 TELEMETRY = "Telemetry"
 TELEMETRY_PROMPT = "Telemetry prompt"
+CHECK_FOR_UPDATES = "CheckForUpdates"
 RECENT_FILE_COUNT = 10
 PRIMARY_OUTLINE_COLOR = "PrimaryOutlineColor"
 SECONDARY_OUTLINE_COLOR = "SecondaryOutlineColor"
@@ -624,6 +625,12 @@ saved. CellProfiler will also save images accessed by http URL
 temporarily to disk (but will efficiently access OMERO image planes
 directly from the server).\
 """
+
+UPDATER_HELP = """\
+Allow CellProfiler to automatically check for and notify the user of new versions.
+If enabled, CellProfiler will check GitHub once per week for updates.\
+"""
+
 
 NORMALIZATION_FACTOR_HELP = """\
 Sets the normalization factor for intensity normalization methods:
@@ -1216,6 +1223,33 @@ def get_telemetry_prompt():
 def set_telemetry_prompt(val):
     global __is_headless
     get_config().WriteBool(TELEMETRY_PROMPT, val)
+    if not __is_headless:
+        get_config().Flush()
+
+
+def get_check_update():
+    if not config_exists(CHECK_FOR_UPDATES):
+        return "Never"
+    return get_config().Read(CHECK_FOR_UPDATES)
+
+
+def get_check_update_bool():
+    if not config_exists(CHECK_FOR_UPDATES):
+        return True
+    update_str = get_config().Read(CHECK_FOR_UPDATES)
+    if update_str == "Disabled":
+        return False
+    else:
+        return True
+
+
+def set_check_update(val):
+    if str(val) == "False":
+        val = "Disabled"
+    elif str(val) == "True":
+        val = "Never"
+    global __is_headless
+    get_config().Write(CHECK_FOR_UPDATES, val)
     if not __is_headless:
         get_config().Flush()
 

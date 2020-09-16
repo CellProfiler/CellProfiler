@@ -3158,11 +3158,12 @@ class PipelineController(object):
                 # Sentry hard limits context content to >~10000 characters per container.
                 # To avoid this we send in chunks if the pipeline is large.
                 for idx, part in enumerate(pipeline_parts):
+                    idx += 1
                     keyname = f"Pipeline_{index:02d}"
                     buffer += len(part)
                     module_name = f"{idx:02d}_{part.split(':', 1)[0]}"
                     buffer_dict[module_name] = part
-                    if buffer > 7500 or idx == len(pipeline_parts) - 1:
+                    if buffer > 7500 or idx == len(pipeline_parts):
                         scope.set_context(f"{keyname}", buffer_dict)
                         buffer = 0
                         buffer_dict = {}

@@ -14,7 +14,6 @@ import re
 import string
 import sys
 import threading
-import traceback
 from functools import reduce, cmp_to_key
 from queue import PriorityQueue, Queue, Empty
 from urllib.request import urlretrieve, url2pathname
@@ -2953,14 +2952,10 @@ class PipelineController(object):
                 if hasattr(fig.figure.canvas, "_isDrawn"):
                     fig.figure.canvas._isDrawn = False
                 fig.figure.canvas.Refresh()
-        except:
-            _, exc, tb = sys.exc_info()
-
-            traceback.print_tb(tb, logger)
-
-            error = cellprofiler.gui.dialog.Error("Error", exc.message)
-
-            if error.status is wx.ID_CANCEL:
+        except Exception as exc:
+            logger.exception(exc.__traceback__)
+            error = cellprofiler.gui.dialog.Error("Error", str(exc))
+            if error.status == wx.ID_CANCEL:
                 cancel_progress()
         finally:
             # we need to ensure that the reply_cb gets a reply
@@ -2982,14 +2977,10 @@ class PipelineController(object):
                 )
                 module.display_post_run(self.__workspace, fig)
                 fig.Refresh()
-        except:
-            _, exc, tb = sys.exc_info()
-
-            traceback.print_tb(tb, logger)
-
-            error = cellprofiler.gui.dialog.Error("Error", exc.message)
-
-            if error.status is wx.ID_CANCEL:
+        except Exception as exc:
+            logger.exception(exc.__traceback__)
+            error = cellprofiler.gui.dialog.Error("Error", str(exc))
+            if error.status == wx.ID_CANCEL:
                 cancel_progress()
 
     def module_display_post_group_request(self, evt):
@@ -3008,14 +2999,10 @@ class PipelineController(object):
                 )
                 module.display_post_group(self.__workspace, fig)
                 fig.Refresh()
-        except:
-            _, exc, tb = sys.exc_info()
-
-            traceback.print_tb(tb, logger)
-
-            error = cellprofiler.gui.dialog.Error("Error", exc.message)
-
-            if error.status is wx.ID_CANCEL:
+        except Exception as exc:
+            logger.exception(exc.__traceback__)
+            error = cellprofiler.gui.dialog.Error("Error", str(exc))
+            if error.status == wx.ID_CANCEL:
                 cancel_progress()
         finally:
             evt.reply(Ack())
@@ -3035,14 +3022,10 @@ class PipelineController(object):
         try:
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
             result = module.handle_interaction(*args, **kwargs)
-        except:
-            _, exc, tb = sys.exc_info()
-
-            traceback.print_tb(tb, logger)
-
-            error = cellprofiler.gui.dialog.Error("Error", exc.message)
-
-            if error.status is wx.ID_CANCEL:
+        except Exception as exc:
+            logger.exception(exc.__traceback__)
+            error = cellprofiler.gui.dialog.Error("Error", str(exc))
+            if error.status == wx.ID_CANCEL:
                 cancel_progress()
         finally:
             # we need to ensure that the reply_cb gets a reply (even if it

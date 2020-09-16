@@ -124,7 +124,8 @@ from cellprofiler_core.preferences import (
     set_show_analysis_complete_dlg,
     set_default_output_directory,
     get_max_workers,
-    set_default_image_directory, get_telemetry,
+    set_default_image_directory,
+    get_telemetry,
 )
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.utilities.core.modules import (

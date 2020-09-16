@@ -124,6 +124,7 @@ from cellprofiler_core.preferences import (
     set_default_output_directory,
     get_max_workers,
     set_default_image_directory,
+    get_telemetry,
 )
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.utilities.core.modules import (
@@ -3119,6 +3120,40 @@ class PipelineController(object):
 
         wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
 
+    def sentry_pack_pipeline(self, err_module_name="", err_module_num=0):
+        from sentry_sdk import utils, serializer, push_scope
+        utils.MAX_STRING_LENGTH = 15000
+        serializer.MAX_DATABAG_BREADTH = 25
+        # push_scope will attach data to the next event only
+        with push_scope() as scope:
+            with io.StringIO() as fp:
+                self.__pipeline.dump(fp, save_image_plane_details=False, sanitize=False)
+                pipeline_parts = fp.getvalue().split("\n\n")
+                pipeline_info = {
+                    "error_module": f"{err_module_num:02d}_{err_module_name}",
+                    "header": pipeline_parts.pop(0),
+                    "modules": [module.module_name for module in self.__pipeline.modules(exclude_disabled=False)]
+                }
+                scope.set_context("Pipeline_Info", pipeline_info)
+                index = 1
+                buffer = 0
+                buffer_dict = {}
+                # Sentry hard limits context content to >~10000 characters per container.
+                # To avoid this we send in chunks if the pipeline is large.
+                for idx, part in enumerate(pipeline_parts):
+                    idx += 1
+                    keyname = f"Pipeline_{index:02d}"
+                    buffer += len(part)
+                    module_name = f"{idx:02d}_{part.split(':', 1)[0]}"
+                    buffer_dict[module_name] = part
+                    if buffer > 7500 or idx == len(pipeline_parts):
+                        scope.set_context(f"{keyname}", buffer_dict)
+                        buffer = 0
+                        buffer_dict = {}
+                        index += 1
+            # Log step needs to be here since this triggers sentry
+            logging.error("Failed to run module %s", err_module_name, exc_info=True)
+
     def on_pause(self, event):
         self.__frame.preferences_view.pause(True)
         self.__pause_pipeline = True
@@ -3331,7 +3366,10 @@ class PipelineController(object):
             if self.workspace_view is not None:
                 self.workspace_view.set_workspace(workspace_model)
         except Exception as instance:
-            logging.error("Failed to run module %s", module.module_name, exc_info=True)
+            if get_telemetry():
+                self.sentry_pack_pipeline(module.module_name, module.module_num)
+            else:
+                logging.error("Failed to run module %s", module.module_name, exc_info=True)
             event = RunException(instance, module)
             self.__pipeline.notify_listeners(event)
             self.__pipeline_list_view.select_one_module(module.module_num)

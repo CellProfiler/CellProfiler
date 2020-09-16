@@ -6,7 +6,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.utilities.core.pipeline
 
 
-def dump(pipeline, fp, save_image_plane_details):
+def dump(pipeline, fp, save_image_plane_details, sanitize=False):
     if len(pipeline.file_list) == 0:
         save_image_plane_details = False
 
@@ -44,6 +44,11 @@ def dump(pipeline, fp, save_image_plane_details):
         fp.write(f"{module.module_name}:[{'|'.join(module_attributes)}]\n")
 
         for setting in module.settings():
+            if sanitize and any(
+                phrase in setting.text.lower()
+                for phrase in ("username", "password", "host")
+            ):
+                setting.unicode_value = "*****"
             fp.write(f"    {setting.text}:{setting.unicode_value}\n")
 
     if save_image_plane_details:

@@ -18,7 +18,8 @@ from .dialog import Telemetry
 def init_telemetry():
     dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
 
-    sentry = sentry_sdk.init(dsn=dsn, release="4.0.3")
+    from cellprofiler import __version__
+    sentry = sentry_sdk.init(dsn=dsn, release=__version__)
 
     sentry_sdk.set_user(
         {

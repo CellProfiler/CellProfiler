@@ -152,7 +152,7 @@ class TestExportToDatabase(unittest.TestCase):
             import MySQLdb
 
             self.__connection = MySQLdb.connect(
-                host=MYSQL_HOST, user=MYSQL_USER, passwd=MYSQL_PASSWORD, local_infile=1
+                host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, local_infile=1
             )
         return self.__connection
 
@@ -322,7 +322,7 @@ class TestExportToDatabase(unittest.TestCase):
         assert not module.save_cpa_properties
         assert module.db_host == "Zeus"
         assert module.db_user == "Hera"
-        assert module.db_passwd == "Athena"
+        assert module.db_password == "Athena"
         assert module.sqlite_file == "Poseidon"
         assert module.wants_agg_mean
         assert not module.wants_agg_median
@@ -1240,7 +1240,7 @@ class TestExportToDatabase(unittest.TestCase):
         module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.db_host.value = MYSQL_HOST
         module.db_user.value = MYSQL_USER
-        module.db_passwd.value = MYSQL_PASSWORD
+        module.db_password.value = MYSQL_PASSWORD
         module.db_name.value = MYSQL_DATABASE
         module.wants_relationship_table_setting.value = relationship_type is not None
         pipeline.add_module(module)
@@ -4852,7 +4852,7 @@ class TestExportToDatabase(unittest.TestCase):
             module.db_name.value = DB_NAME
             module.db_host.value = DB_HOST
             module.db_user.value = DB_USER
-            module.db_passwd.value = DB_PASSWORD
+            module.db_password.value = DB_PASSWORD
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -4887,7 +4887,7 @@ class TestExportToDatabase(unittest.TestCase):
                 ("db_host", DB_HOST),
                 ("db_name", DB_NAME),
                 ("db_user", DB_USER),
-                ("db_passwd", DB_PASSWORD),
+                ("db_password", DB_PASSWORD),
                 ("image_table", "%sPer_Image" % module.get_table_prefix()),
                 ("object_table", "%sPer_Object" % module.get_table_prefix()),
                 ("image_id", "ImageNumber"),
@@ -5741,7 +5741,7 @@ class TestExportToDatabase(unittest.TestCase):
         module.db_type.value = cellprofiler.modules.exporttodatabase.DB_MYSQL
         module.db_host.value = MYSQL_HOST
         module.db_user.value = MYSQL_USER
-        module.db_passwd.value = MYSQL_PASSWORD
+        module.db_password.value = MYSQL_PASSWORD
         module.db_name.value = MYSQL_DATABASE
         with cellprofiler.modules.exporttodatabase.DBContext(module) as (
             connection,

@@ -25,6 +25,11 @@ from cellprofiler_core.pipeline import (
     Pipeline,
 )
 from cellprofiler_core.preferences import EXT_PROJECT_CHOICES, EXT_PIPELINE_CHOICES
+from cellprofiler_core.setting.subscriber import Subscriber
+from cellprofiler_core.setting.text import Name
+from cellprofiler_core.setting.subscriber import ImageListSubscriber
+from cellprofiler_core.setting.subscriber import LabelListSubscriber
+from cellprofiler_core.setting import Measurement
 
 import cellprofiler.gui
 import cellprofiler.gui.figure
@@ -42,6 +47,9 @@ IMG_STEP = cellprofiler.icons.get_builtin_image("IMG_ANALYZE_16")
 IMG_STEPPED = cellprofiler.icons.get_builtin_image("IMG_ANALYZED")
 IMG_PAUSE = cellprofiler.icons.get_builtin_image("IMG_PAUSE")
 IMG_GO = cellprofiler.icons.get_builtin_image("IMG_GO_DIM")
+IMG_INPUT = cellprofiler.icons.get_builtin_image("IMG_USE_INPUT")
+IMG_OUTPUT = cellprofiler.icons.get_builtin_image("IMG_USE_OUTPUT")
+IMG_SOURCE = cellprofiler.icons.get_builtin_image("IMG_USE_SOURCE")
 IMG_DISABLED = cellprofiler.icons.get_builtin_image("unchecked")
 IMG_UNAVAILABLE = cellprofiler.icons.get_builtin_image("IMG_UNAVAILABLE")
 IMG_SLIDER = cellprofiler.icons.get_builtin_image("IMG_SLIDER")
@@ -427,6 +435,7 @@ class PipelineListView(object):
         """Pipeline event notifications come through here
 
         """
+        self.list_ctrl.show_io_trace = False
         if isinstance(event, PipelineLoaded):
             self.__on_pipeline_loaded(pipeline, event)
         elif isinstance(event, ModuleAdded):
@@ -642,6 +651,7 @@ class PipelineListView(object):
             ID_EDIT_ENABLE_MODULE,
             ID_DEBUG_RUN_FROM_THIS_MODULE,
             ID_DEBUG_STEP_FROM_THIS_MODULE,
+            ID_FIND_USAGES,
         )
 
         if event.EventObject is not self.list_ctrl:
@@ -697,6 +707,18 @@ class PipelineListView(object):
                                     module.module_name, module.module_num
                                 ),
                             )
+                    else:
+                        menu.Append(
+                            ID_FIND_USAGES,
+                            f"Trace inputs/outputs for {module.module_name} (#{module.module_num})",
+                        )
+
+                        menu.Bind(
+                            wx.EVT_MENU,
+                            self.on_io_trace,
+                            id=cellprofiler.gui.cpframe.ID_FIND_USAGES,
+                        )
+
                 elif num_modules > 1:
                     # Multiple modules are selected
                     menu.Append(
@@ -1071,6 +1093,56 @@ class PipelineListView(object):
     def on_stop_debugging(self):
         self.list_ctrl.set_test_mode(False)
 
+    def on_io_trace(self, event):
+        self.list_ctrl.show_io_trace = False
+        self.list_ctrl.Refresh(eraseBackground=False)
+
+        # Get the selected module
+        tgt_module = self.get_selected_modules()
+        if len(tgt_module) != 1:
+            return
+        else:
+            tgt_module = tgt_module[0]
+        inputs, outputs, measures_in, measures_out = self._get_inputs_outputs(tgt_module)
+        after_tgt = False
+        for module in self.__pipeline.modules():
+            module.io_status = None
+            if module == tgt_module:
+                after_tgt = True
+                module.io_status = "source"
+                continue
+            mod_inputs, mod_outputs, mod_m_in, mod_m_out = self._get_inputs_outputs(module)
+            if not after_tgt and "Export" in tgt_module.module_name and "Measure" in module.module_name:
+                module.io_status = "output"
+            elif after_tgt and "Export" in module.module_name and len(measures_out) > 0:
+                module.io_status = "input"
+            elif not inputs.isdisjoint(mod_outputs):
+                module.io_status = "output"
+            elif not outputs.isdisjoint(mod_inputs):
+                module.io_status = "input"
+            elif not after_tgt and not measures_in.isdisjoint(mod_m_out):
+                module.io_status = "output"
+            elif after_tgt and not measures_out.isdisjoint(mod_m_in):
+                module.io_status = "input"
+        self.list_ctrl.show_io_trace = True
+        self.list_ctrl.Refresh(eraseBackground=False)
+
+    def _get_inputs_outputs(self, module):
+        inputs = []
+        outputs = []
+        measures_in = []
+        for setting in module.visible_settings():
+            if isinstance(setting, (ImageListSubscriber, LabelListSubscriber)):
+                inputs += setting.value
+            elif isinstance(setting, Subscriber):
+                inputs.append(setting.value)
+            elif isinstance(setting, Name):
+                outputs.append(setting.value)
+            elif isinstance(setting, Measurement):
+                measures_in.append(setting.value)
+        measures_out = set([measure[1] for measure in module.get_measurement_columns(self.__pipeline)])
+        return set(inputs), set(outputs), set(measures_in), measures_out
+
     def on_validate_module(
         self, setting_idx, message, level, module_num, settings_hash
     ):
@@ -1209,6 +1281,13 @@ class PipelineListCtrl(wx.ScrolledWindow):
             """The module is breakpointed in test mode"""
             return self.module.wants_pause
 
+        def get_io_status(self):
+            """The module is breakpointed in test mode"""
+            if hasattr(self.module, "io_status"):
+                return self.module.io_status
+            else:
+                return None
+
         def is_unavailable(self):
             """The module is unavailable = not in pipeline"""
             return bool(self.__state & PLV_STATE_UNAVAILABLE)
@@ -1223,6 +1302,9 @@ class PipelineListCtrl(wx.ScrolledWindow):
         self.bmp_stepped = plv_get_bitmap(IMG_STEPPED)
         self.bmp_go = plv_get_bitmap(IMG_GO)
         self.bmp_pause = plv_get_bitmap(IMG_PAUSE)
+        self.bmp_input = plv_get_bitmap(IMG_INPUT)
+        self.bmp_output = plv_get_bitmap(IMG_OUTPUT)
+        self.bmp_source = plv_get_bitmap(IMG_SOURCE)
         self.bmp_unavailable = plv_get_bitmap(IMG_UNAVAILABLE)
         self.bmp_disabled = plv_get_bitmap(IMG_DISABLED)
         self.bmp_slider = plv_get_bitmap(IMG_SLIDER)
@@ -1246,6 +1328,8 @@ class PipelineListCtrl(wx.ScrolledWindow):
         self.show_step = True
         # True to show the pause column, false to hide
         self.show_go_pause = True
+        # True to show inheritence icons, false to hide
+        self.show_io_trace = False
         # True to show the eyeball column, false to hide it
         self.show_show_frame_column = True
         # Space reserved for test mode slider
@@ -1648,6 +1732,19 @@ class PipelineListCtrl(wx.ScrolledWindow):
                 bitmap = self.bmp_pause if item.is_paused() else self.bmp_go
 
                 dc.DrawBitmap(bitmap, rectangle.GetLeft(), rectangle.GetTop(), True)
+
+            if self.show_io_trace and not self.test_mode:
+                rectangle = self.get_go_pause_rect(index)
+                status = item.get_io_status()
+                bitmap = False
+                if status == "input":
+                    bitmap = self.bmp_input
+                elif status == "output":
+                    bitmap = self.bmp_output
+                elif status == "source":
+                    bitmap = self.bmp_source
+                if bitmap:
+                    dc.DrawBitmap(bitmap, rectangle.GetLeft(), rectangle.GetTop(), True)
 
             if self.show_show_frame_column:
                 rectangle = self.get_eye_rect(index)

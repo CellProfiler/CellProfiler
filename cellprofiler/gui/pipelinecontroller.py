@@ -3127,7 +3127,7 @@ class PipelineController(object):
         # push_scope will attach data to the next event only
         with push_scope() as scope:
             with io.StringIO() as fp:
-                self.__pipeline.dump(fp, save_image_plane_details=False, sanitize=False)
+                self.__pipeline.dump(fp, save_image_plane_details=False, sanitize=True)
                 pipeline_parts = fp.getvalue().split("\n\n")
                 pipeline_info = {
                     "error_module": f"{err_module_num:02d}_{err_module_name}",

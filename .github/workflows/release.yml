@@ -38,6 +38,7 @@ jobs:
           LDFLAGS: -L/usr/local/opt/openssl/lib
         if: ${{ matrix.os == 'macos-10.15' }}
         run: |
+          sed -i '' 's/4.0.0/4.0.4/' Info.plist
           brew install mysql
           make
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.0.4.zip

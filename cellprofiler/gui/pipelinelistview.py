@@ -707,17 +707,18 @@ class PipelineListView(object):
                                     module.module_name, module.module_num
                                 ),
                             )
-                    else:
+                    elif module.enabled:
                         menu.Append(
                             ID_FIND_USAGES,
                             f"Trace inputs/outputs for {module.module_name} (#{module.module_num})",
                         )
 
-                        menu.Bind(
-                            wx.EVT_MENU,
-                            self.on_io_trace,
-                            id=cellprofiler.gui.cpframe.ID_FIND_USAGES,
-                        )
+                        if module.enabled:
+                            menu.Bind(
+                                wx.EVT_MENU,
+                                self.on_io_trace,
+                                id=cellprofiler.gui.cpframe.ID_FIND_USAGES,
+                            )
 
                 elif num_modules > 1:
                     # Multiple modules are selected
@@ -1106,8 +1107,10 @@ class PipelineListView(object):
         inputs, outputs, measures_in, measures_out = self._get_inputs_outputs(tgt_module)
         need_measures_out = len(measures_in) > 0
         after_tgt = False
-        for module in self.__pipeline.modules():
+        for module in self.__pipeline.modules(exclude_disabled=False):
             module.io_status = None
+            if not module.enabled:
+                continue
             if module == tgt_module:
                 after_tgt = True
                 module.io_status = "source"
@@ -1864,7 +1867,9 @@ class PipelineListCtrl(wx.ScrolledWindow):
                 if new_item_id == item_id:
                     self.activate_item(index, toggle_selection, multiple_selection)
         elif hit_test & wx.LIST_HITTEST_ONITEMICON:
-            if column != ERROR_COLUMN or self.CanSelect():
+            if column == PAUSE_COLUMN and not self.test_mode:
+                return
+            elif column != ERROR_COLUMN or self.CanSelect():
                 self.pressed_row = index
                 self.pressed_column = column
                 self.button_is_active = True

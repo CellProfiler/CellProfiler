@@ -1104,6 +1104,7 @@ class PipelineListView(object):
         else:
             tgt_module = tgt_module[0]
         inputs, outputs, measures_in, measures_out = self._get_inputs_outputs(tgt_module)
+        need_measures_out = len(measures_in) > 0
         after_tgt = False
         for module in self.__pipeline.modules():
             module.io_status = None
@@ -1111,7 +1112,7 @@ class PipelineListView(object):
                 after_tgt = True
                 module.io_status = "source"
                 continue
-            mod_inputs, mod_outputs, mod_m_in, mod_m_out = self._get_inputs_outputs(module)
+            mod_inputs, mod_outputs, mod_m_in, mod_m_out = self._get_inputs_outputs(module, need_measures_out)
             if not after_tgt and "Export" in tgt_module.module_name and "Measure" in module.module_name:
                 module.io_status = "output"
             elif after_tgt and "Export" in module.module_name and len(measures_out) > 0:
@@ -1127,7 +1128,7 @@ class PipelineListView(object):
         self.list_ctrl.show_io_trace = True
         self.list_ctrl.Refresh(eraseBackground=False)
 
-    def _get_inputs_outputs(self, module):
+    def _get_inputs_outputs(self, module, need_measure_outputs=True):
         inputs = []
         outputs = []
         measures_in = []
@@ -1140,7 +1141,10 @@ class PipelineListView(object):
                 outputs.append(setting.value)
             elif isinstance(setting, Measurement):
                 measures_in.append(setting.value)
-        measures_out = set([measure[1] for measure in module.get_measurement_columns(self.__pipeline)])
+        if need_measure_outputs:
+            measures_out = set([measure[1] for measure in module.get_measurement_columns(self.__pipeline)])
+        else:
+            measures_out = set()
         return set(inputs), set(outputs), set(measures_in), measures_out
 
     def on_validate_module(
@@ -1409,9 +1413,7 @@ class PipelineListCtrl(wx.ScrolledWindow):
         elif x < x0:
             return None, wx.LIST_HITTEST_NOWHERE, None
         column = int((x - x0) / self.column_width)
-        if not (self.show_go_pause and self.test_mode) and column == PAUSE_COLUMN:
-            return None, wx.LIST_HITTEST_NOWHERE, None
-        if not (self.show_go_pause and self.test_mode) and column == PAUSE_COLUMN:
+        if (not (self.show_go_pause and self.test_mode) and not self.show_io_trace) and column == PAUSE_COLUMN:
             return None, wx.LIST_HITTEST_NOWHERE, None
         if not self.show_show_frame_column and column == EYE_COLUMN:
             return None, wx.LIST_HITTEST_NOWHERE, None
@@ -1980,7 +1982,17 @@ class PipelineListCtrl(wx.ScrolledWindow):
                             % item.module.module_name
                         )
                 elif column == PAUSE_COLUMN:
-                    if item.module.wants_pause:
+                    if self.show_io_trace:
+                        status = item.get_io_status()
+                        if status == "output":
+                            tooltip_text = f"This module produces images, objects or measurements needed by the " \
+                                           f"inspected module. "
+                        elif status == "input":
+                            tooltip_text = f"This module uses images, objects or measurements produced by the " \
+                                           f"inspected module. "
+                        elif status == "source":
+                            tooltip_text = "This is the inspected module"
+                    elif item.module.wants_pause:
                         tooltip_text = (
                             "Test mode will stop before executing %s. Click icon to change"
                             % item.module.module_name

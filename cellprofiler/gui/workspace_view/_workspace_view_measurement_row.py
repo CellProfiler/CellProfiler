@@ -242,10 +242,7 @@ class WorkspaceViewMeasurementRow:
         self.update_choices(self.category_choice, sorted(categories))
         self.update_choices(self.measurement_choice, sorted(measurements))
 
-    def destroy(self, grid_sizer):
-        grid_sizer.Remove(self.choice_panel)
-        grid_sizer.Remove(self.font_button)
-        grid_sizer.Remove(self.show_ctrl)
+    def destroy(self):
         self.object_choice.Destroy()
         self.category_choice.Destroy()
         self.measurement_choice.Destroy()

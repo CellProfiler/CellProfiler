@@ -21,8 +21,8 @@ def check_update(parent, force=False):
             latest_version = response['name'][1:]
             if current_version < latest_version or len(current_version) != len(latest_version):
                 body_text = response['body']
-                if len(body_text) > 100:
-                    body_text = body_text[:100] + "..."
+                if len(body_text) > 1000:
+                    body_text = body_text[:1000] + "..."
                 elif len(body_text) == 0:
                     body_text = "No information available"
                 show_message(parent, latest_version, body_text)

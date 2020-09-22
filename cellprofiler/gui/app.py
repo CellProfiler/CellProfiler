@@ -61,7 +61,11 @@ class App(wx.App):
             # Need to startup wx in English, otherwise C++ can't load images.
             self.locale = wx.Locale(wx.LANGUAGE_ENGLISH)
             # Ensure Python uses the same locale as wx
-            locale.setlocale(locale.LC_ALL, self.locale.GetName())
+            try:
+                locale.setlocale(locale.LC_ALL, self.locale.GetName())
+            except:
+                print(f"Python rejected the system locale detected by WX ('{self.locale.GetName()}').\n"
+                      "This shouldn't cause problems, but please let us know if you encounter errors.")
         from .cpframe import CPFrame
         from cellprofiler import __version__
 

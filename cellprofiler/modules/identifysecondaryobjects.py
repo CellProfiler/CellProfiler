@@ -824,7 +824,7 @@ segmentation.""",
         statistics = workspace.display_data.statistics
 
         if global_threshold is not None:
-            statistics.append(["Threshold", "%.3f" % global_threshold])
+            statistics.append(["Threshold", "%0.3g" % global_threshold])
 
         if object_count > 0:
             areas = scipy.ndimage.sum(

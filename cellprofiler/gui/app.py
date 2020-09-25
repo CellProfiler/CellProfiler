@@ -85,7 +85,10 @@ class App(wx.App):
 
         if hasattr(sys, "frozen"):
             from cellprofiler.gui.checkupdate import check_update
-            check_update(self.frame)
+            try:
+                check_update(self.frame)
+            except Exception as e:
+                print(f"Failed to check for updates - {e}")
 
         if get_telemetry_prompt():
             telemetry = Telemetry()

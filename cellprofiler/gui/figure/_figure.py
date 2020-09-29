@@ -79,6 +79,9 @@ from ..constants.figure import MODE_MEASURE_LENGTH
 from ..constants.figure import MODE_NONE
 from ..constants.figure import NAV_MODE_NONE
 from ..constants.figure import WINDOW_IDS
+from ..constants.figure import MENU_INTERPOLATION_NEAREST
+from ..constants.figure import MENU_INTERPOLATION_BILINEAR
+from ..constants.figure import MENU_INTERPOLATION_BICUBIC
 from ..help import make_help_menu
 from ..help.content import FIGURE_HELP
 from ..tools import renumber_labels_for_display
@@ -815,9 +818,6 @@ class Figure(wx.Frame):
         Note: Each item is bound to a handler.
         """
         (x, y) = coordinates
-        MENU_INTERPOLATION_NEAREST = wx.NewId()
-        MENU_INTERPOLATION_BILINEAR = wx.NewId()
-        MENU_INTERPOLATION_BICUBIC = wx.NewId()
 
         params = self.subplot_params[(x, y)]
 

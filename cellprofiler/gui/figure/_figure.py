@@ -198,7 +198,7 @@ class Figure(wx.Frame):
                 parent_menu_bar = None
             if parent_menu_bar is not None and isinstance(parent_menu_bar, wx.MenuBar):
                 for menu, label in parent_menu_bar.GetMenus():
-                    if label == "Window":
+                    if "Window" in label:
                         menu_ids = [menu_item.Id for menu_item in menu.MenuItems]
                         for window_id in WINDOW_IDS + [None]:
                             if window_id not in menu_ids:

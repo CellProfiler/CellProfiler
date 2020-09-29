@@ -824,6 +824,8 @@ class CPFrame(wx.Frame):
             "Open the plate viewer to inspect the images in the current workspace",
         )
 
+        if sys.platform == "win32":
+            self.__menu_window.AppendSeparator()
 
         self.__menu_help = Menu(self)
 

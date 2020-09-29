@@ -3896,8 +3896,6 @@ CREATE TABLE %s (
                 if (field[1] == COLTYPE_FLOAT)
                 else int(field[0])
                 if (field[1] == "integer")
-                else field[0].encode()
-                if field[1] in (COLTYPE_BLOB, COLTYPE_LONGBLOB, COLTYPE_MEDIUMBLOB,)
                 else field[0]
                 for field in image_row
             ]

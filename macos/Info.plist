@@ -18,6 +18,8 @@
 	<string>CellProfiler</string>
 	<key>CFBundleVersion</key>
 	<string>4.0.0</string>
+	<key>CFBundleShortVersionString</key>
+	<string>4.0</string>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>CFBundleDocumentTypes</key>

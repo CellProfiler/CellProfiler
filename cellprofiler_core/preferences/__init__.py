@@ -336,6 +336,7 @@ WORKSPACE_CHOICE = "WorkspaceChoice"
 ERROR_COLOR = "ErrorColor"
 INTERPOLATION_MODE = "InterpolationMode"
 INTENSITY_MODE = "IntensityMode"
+NORMALIZATION_FACTOR = "NormalizationFactor"
 SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
 FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
 PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
@@ -1796,19 +1797,31 @@ def set_choose_image_set_frame_size(w, h):
     config_write(CHOOSE_IMAGE_SET_FRAME_SIZE, "%d,%d" % (w, h))
 
 
-__normalization_factor = "1.0"
+__normalization_factor = None
 
 
 def get_normalization_factor():
     global __normalization_factor
-
+    if __normalization_factor is not None:
+        return __normalization_factor
+    if config_exists(NORMALIZATION_FACTOR):
+        __normalization_factor = config_read(NORMALIZATION_FACTOR)
+    else:
+        __normalization_factor = "1.0"
     return __normalization_factor
 
 
 def set_normalization_factor(normalization_factor):
     global __normalization_factor
-
+    try:
+        float(normalization_factor)
+    except ValueError:
+        print(
+            f"Unable to set {NORMALIZATION_FACTOR} to {normalization_factor}, value must be a number."
+        )
+        return
     __normalization_factor = normalization_factor
+    config_write(NORMALIZATION_FACTOR, normalization_factor)
 
 
 def add_progress_callback(callback):

@@ -2080,6 +2080,8 @@ class Figure(wx.Frame):
                         numpy.zeros(image.shape[:2], image.dtype),
                     ]
                 )
+            # Apply display bounds
+            image = skimage.exposure.rescale_intensity(image, in_range=(vmin, vmax))
         if not self.is_color_image(image):
             if not normalize:
                 if image.max() < 255:
@@ -2583,5 +2585,7 @@ class Figure(wx.Frame):
     def is_color_image(self, image):
         if self.dimensions == 2:
             return image.ndim == 3 and image.shape[2] >= 2
+        elif image.ndim == 3:
+            return image.shape[2] >= 2
         else:
             return image.ndim == 4 and image.shape[3] >= 2

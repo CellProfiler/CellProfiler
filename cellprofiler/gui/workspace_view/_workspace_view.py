@@ -344,34 +344,40 @@ class WorkspaceView:
         row = WorkspaceViewMeasurementRow(
             panel, self.m_grid, row_idx, lambda: self.on_measurement_changed(mr[0])
         )
+        bitmap = wx.ArtProvider.GetBitmap(wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
+        row.remove_button = wx.BitmapButton(panel, bitmap=bitmap)
         mr.append(row)
         self.measurement_rows.append(row)
-        bitmap = wx.ArtProvider.GetBitmap(wx.ART_DELETE, wx.ART_TOOLBAR, (16, 16))
 
-        remove_button = wx.BitmapButton(panel, bitmap=bitmap)
         self.m_grid.Add(
-            remove_button,
+            row.remove_button,
             (row_idx, C_REMOVE),
             flag=wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP,
         )
-        remove_button.Bind(
-            wx.EVT_BUTTON, lambda event: self.remove_measurement_row(row, remove_button)
+        row.remove_button.Bind(
+            wx.EVT_BUTTON, lambda event: self.remove_measurement_row(row, row.remove_button)
         )
         if not can_delete:
-            remove_button.Hide()
+            row.remove_button.Hide()
         row.update(self.workspace)
 
     def remove_measurement_row(self, measurement_row, remove_button):
         if measurement_row in self.measurement_rows:
             idx = self.measurement_rows.index(measurement_row)
-            measurement_row.destroy(self.m_grid)
-            self.m_grid.Remove(remove_button)
+            measurement_row.destroy()
             remove_button.Destroy()
             self.measurement_rows.remove(measurement_row)
             for ii in range(idx, len(self.measurement_rows)):
-                for j in (C_CHOOSER, C_COLOR, C_SHOW, C_REMOVE):
-                    item = self.m_grid.FindItemAtPosition(wx.GBPosition(ii + 1, j))
-                    self.m_grid.SetItemPosition(item, (ii, j))
+                m_row = self.measurement_rows[ii]
+                for j, control in enumerate(
+                        (
+                                m_row.choice_panel,
+                                m_row.font_button,
+                                m_row.show_ctrl,
+                                m_row.remove_button,
+                        )
+                ):
+                    self.m_grid.SetItemPosition(control, (ii + 1, j))
             self.layout()
             self.redraw()
 

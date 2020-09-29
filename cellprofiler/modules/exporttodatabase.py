@@ -349,9 +349,9 @@ def get_next_result(cursor):
         return None
 
 
-def connect_mysql(host, user, pw, db):
+def connect_mysql(host, user, password, db):
     """Creates and returns a db connection and cursor."""
-    connection = MySQLdb.connect(host=host, user=user, passwd=pw, db=db)
+    connection = MySQLdb.connect(host=host, user=user, password=password, db=db)
     cursor = SSCursor(connection)
 
     rv = cursor.execute("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
@@ -401,7 +401,7 @@ class DBContext(object):
             self.connection, self.cursor = connect_mysql(
                 self.module.db_host.value,
                 self.module.db_user.value,
-                self.module.db_passwd.value,
+                self.module.db_password.value,
                 self.module.db_name.value,
             )
         elif self.module.db_type == DB_SQLITE:
@@ -892,7 +892,7 @@ the *classification\_type* field.
             text="Username", value="", doc="""Enter your database username."""
         )
 
-        self.db_passwd = Text(
+        self.db_password = Text(
             text="Password",
             value="",
             doc="""Enter your database password. Note that this will be saved in your pipeline file and thus you should never share the pipeline file with anyone else.""",
@@ -1728,7 +1728,7 @@ available:
             result += [self.db_name]
             result += [self.db_host]
             result += [self.db_user]
-            result += [self.db_passwd]
+            result += [self.db_password]
             result += [self.test_connection_button]
         elif self.db_type == DB_SQLITE:
             result += [self.sqlite_file]
@@ -1899,7 +1899,7 @@ available:
             self.save_cpa_properties,
             self.db_host,
             self.db_user,
-            self.db_passwd,
+            self.db_password,
             self.sqlite_file,
             self.wants_agg_mean,
             self.wants_agg_median,
@@ -1975,7 +1975,7 @@ available:
             self.db_name,
             self.db_host,
             self.db_user,
-            self.db_passwd,
+            self.db_password,
             self.sqlite_file,
             self.allow_overwrite,
             self.want_table_prefix,
@@ -2245,7 +2245,7 @@ available:
             connection = connect_mysql(
                 self.db_host.value,
                 self.db_user.value,
-                self.db_passwd.value,
+                self.db_password.value,
                 self.db_name.value,
             )
         except MySQLdb.Error as error:
@@ -2308,7 +2308,7 @@ available:
                 self.connection, self.cursor = connect_mysql(
                     self.db_host.value,
                     self.db_user.value,
-                    self.db_passwd.value,
+                    self.db_password.value,
                     self.db_name.value,
                 )
                 needs_close = True
@@ -2537,7 +2537,7 @@ available:
                 self.connection, self.cursor = connect_mysql(
                     self.db_host.value,
                     self.db_user.value,
-                    self.db_passwd.value,
+                    self.db_password.value,
                     self.db_name.value,
                 )
                 self.write_data_to_db(workspace)
@@ -2758,7 +2758,7 @@ available:
                 self.connection, self.cursor = connect_mysql(
                     self.db_host.value,
                     self.db_user.value,
-                    self.db_passwd.value,
+                    self.db_password.value,
                     self.db_name.value,
                 )
             elif self.db_type == DB_SQLITE:
@@ -4183,7 +4183,7 @@ CREATE TABLE %s (
             or ""
         )
         db_host = self.db_host
-        db_pwd = self.db_passwd
+        db_password = self.db_password
         db_name = self.db_name
         db_user = self.db_user
         db_sqlite_file = (
@@ -4196,7 +4196,7 @@ CREATE TABLE %s (
             db_info += "db_host      = %(db_host)s\n" % (locals())
             db_info += "db_name      = %(db_name)s\n" % (locals())
             db_info += "db_user      = %(db_user)s\n" % (locals())
-            db_info += "db_passwd    = %(db_pwd)s" % (locals())
+            db_info += "db_password    = %(db_password)s" % (locals())
         elif self.db_type == DB_SQLITE:
             db_info = "db_type         = %(db_type)s\n" % (locals())
             db_info += "db_sqlite_file  = %(db_sqlite_file)s" % (locals())
@@ -4834,7 +4834,7 @@ CP version : %d\n""" % int(
         self.db_host.value = "".join(["*"] * len(self.db_host.value))
         self.db_user.value = "".join(["*"] * len(self.db_user.value))
         self.db_name.value = "".join(["*"] * len(self.db_name.value))
-        self.db_passwd.value = "".join(["*"] * len(self.db_passwd.value))
+        self.db_password.value = "".join(["*"] * len(self.db_password.value))
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
 
@@ -4843,7 +4843,7 @@ CP version : %d\n""" % int(
 
         if variable_revision_number == 6:
             # Append default values for store_csvs, db_host, db_user,
-            #  db_passwd, and sqlite_file to update to revision 7
+            #  db_password, and sqlite_file to update to revision 7
             setting_values += [False, "imgdb01", "cpuser", "", "DefaultDB.db"]
             variable_revision_number = 7
 

@@ -81,11 +81,11 @@ from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.do_something import RemoveSettingButton
+from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Alphanumeric
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
-from cellprofiler_core.setting.text import LabelName
 from cellprofiler_core.setting.text import Text
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
@@ -153,7 +153,7 @@ classifications decision for each object:
         #
         # The object for the contrasting method
         #
-        self.object_name = LabelName(
+        self.object_name = LabelSubscriber(
             "Select the object name",
             "None",
             doc="""\
@@ -341,7 +341,7 @@ Enter the name to be given to the classified object image.""",
 
         group.append(
             "object_name",
-            LabelName(
+            LabelSubscriber(
                 "Select the object to be classified",
                 "None",
                 doc="""\

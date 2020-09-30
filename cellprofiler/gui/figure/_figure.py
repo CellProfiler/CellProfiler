@@ -2081,7 +2081,8 @@ class Figure(wx.Frame):
                     ]
                 )
             # Apply display bounds
-            image = skimage.exposure.rescale_intensity(image, in_range=(vmin, vmax))
+            if vmin is not None and vmax is not None:
+                image = skimage.exposure.rescale_intensity(image, in_range=(vmin, vmax))
         if not self.is_color_image(image):
             if not normalize:
                 if image.max() < 255:

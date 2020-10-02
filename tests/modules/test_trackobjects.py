@@ -1035,7 +1035,7 @@ def test_measurements():
 def make_lap2_workspace(objs, nimages, group_numbers=None, group_indexes=None):
     """Make a workspace to test the second half of LAP
 
-    objs - a N x 5 array of "objects" composed of the
+    objs - a N x 7 array of "objects" composed of the
            following pieces per object
            objs[0] - image set # for object
            objs[1] - label for object

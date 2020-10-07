@@ -1574,6 +1574,7 @@ class ModuleView:
                 if url is not None:
                     value = v.build(url)
                     self.on_value_change(v, control, value, event)
+                    url_control.Value = url2pathname(v.value)
 
             browse_button.Bind(wx.EVT_BUTTON, on_button)
         else:

@@ -1030,6 +1030,7 @@ class Figure(wx.Frame):
                     max=1000,
                     limited=True,
                     size=wx.Size(35, 22),
+                    integerWidth=4,
                     fractionWidth=1,
                     autoSize=False,
                     style=wx.TE_CENTRE,

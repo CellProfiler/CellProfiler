@@ -2242,7 +2242,7 @@ class PipelineController(object):
                 print("Unable to build file selection panel", e)
             finally:
                 self.__path_list_ctrl.Reparent(old_parent)
-                old_sizer.Insert(0, self.__path_list_ctrl)
+                old_sizer.Insert(0, self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
 
     def add_urls(self, urls):
         """Add URLS to the pipeline"""

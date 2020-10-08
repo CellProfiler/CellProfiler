@@ -429,11 +429,11 @@ resized with the same settings as the first image.""",
             )
         ):
             if multichannel:
-                figure.subplot_imshow(
+                figure.subplot_imshow_color(
                     0, i, input_image_pixels, title=input_image_name,
                 )
 
-                figure.subplot_imshow(
+                figure.subplot_imshow_color(
                     1, i, output_image_pixels, title=output_image_name,
                 )
             else:

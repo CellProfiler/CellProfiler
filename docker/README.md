@@ -1,4 +1,4 @@
-Authors: [@purohit](https://github.com/purohit), [@mcquin](https://github.com/mcquin), [@0x00b1](https://github.com/0x00b1)
+Authors: [@purohit](https://github.com/purohit), [@mcquin](https://github.com/mcquin), [@0x00b1](https://github.com/0x00b1), [@bethac07](https://github.com/bethac07)
 
 This is configured to build a docker image for `3.0.0`. To build a different version, edit these lines:
 

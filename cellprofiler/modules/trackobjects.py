@@ -1562,7 +1562,6 @@ Enter a name to give the color-coded image of tracked labels.""",
             #
             # Linear assignment setup
             #
-            n = len(old_i) + len(new_i)
             t = np.argwhere((d < minDist))
             x = np.sqrt(
                 (old_i[t[0 : t.size, 0]] - new_i[t[0 : t.size, 1]]) ** 2

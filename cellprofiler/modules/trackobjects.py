@@ -3196,8 +3196,8 @@ Enter a name to give the color-coded image of tracked labels.""",
         """Record the mapping of old to new objects and vice-versa
 
         workspace - workspace for current image set
-        new_to_old - an array of the new labels for every old label
-        old_to_new - an array of the old labels for every new label
+        new_of_old - an array of the new labels for every old label
+        old_of_new - an array of the old labels for every new label
         i, j - the coordinates for each new object.
         """
         m = workspace.measurements

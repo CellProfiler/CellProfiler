@@ -14,6 +14,10 @@ class Number(Text):
             value = self.str_to_value(value)
         else:
             text_value = self.value_to_str(value)
+
+        if kwargs.pop("metadata", False):
+            raise ValueError("metadata=True is not a valid argument for a numeric setting.")
+
         super(Number, self).__init__(text, text_value, *args, **kwargs)
         self.__default = self.str_to_value(text_value)
         self.__minval = minval

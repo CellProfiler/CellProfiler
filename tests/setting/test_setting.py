@@ -61,6 +61,10 @@ class TestIntegerSetting(unittest.TestCase):
         with pytest.raises(ValidationError):
             (lambda: s.test_valid(None))()
 
+    def test_03_01_no_metadata(self):
+        with self.assertRaises(ValueError):
+            Integer("foo", value=5, maxval=10, metadata=True)
+
 
 class TestFloatSetting(unittest.TestCase):
     def test_01_01_default(self):

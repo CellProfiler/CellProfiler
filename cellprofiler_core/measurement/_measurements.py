@@ -4,6 +4,7 @@ import os
 import re
 import sys
 import urllib.request
+from urllib.request import url2pathname as os_url2pathname
 import warnings
 
 import h5py
@@ -56,7 +57,6 @@ from ..utilities.hdf5_dict import HDF5Dict, NullLock
 from ..utilities.measurement import agg_ignore_feature
 from ..utilities.measurement import get_agg_measurement_name
 from ..utilities.measurement import make_temporary_file
-from ..utilities.pathname import url2pathname
 
 
 class Measurements:
@@ -1441,7 +1441,6 @@ class Measurements:
         if not self.has_feature(EXPERIMENT, M_PATH_MAPPINGS,):
             return url
         d = json.loads(self.get_experiment_measurement(M_PATH_MAPPINGS))
-        os_url2pathname = url2pathname
         full_name = os_url2pathname(url[5:])
         full_name_c = full_name if d[K_CASE_SENSITIVE] else full_name.lower()
         if d[K_LOCAL_SEPARATOR] != os.path.sep:
@@ -1454,8 +1453,6 @@ class Measurements:
                 if full_name_c.startswith(local_directory.lower()):
                     full_name = remote_directory + full_name[len(local_directory) :]
         url = "file:" + urllib.request.pathname2url(full_name)
-        if isinstance(url, str):
-            url = url
         return url
 
     ###########################################################

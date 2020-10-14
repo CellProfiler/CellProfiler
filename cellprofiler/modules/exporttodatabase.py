@@ -349,9 +349,44 @@ def get_next_result(cursor):
         return None
 
 
+def unpack_hostname(host):
+    """Picks out the hostname and port number, if any, from the specified MySQL host.
+    Has to be in one of the following formats:
+        * IPv4 no port specified
+        192.168.1.10
+
+        * IPv4 with port specified
+        192.168.1.10:3306
+
+        * IPv6 no port specified
+        9001:0db8:85a3:0000:0000:8a2e:0370:7334
+
+        * IPv6 with port specified
+        [9001:0db8:85a3:0000:0000:8a2e:0370:7334]:3306
+    """
+    port = 3306
+    host_port = host.split(':')
+
+    # IPv4 with port specified
+    if len(host_port) == 2:
+        host, port = host_port
+
+    # IPv6
+    elif len(host_port) > 2:
+
+        # with port specified
+        match = re.match('\[([0-9a-fA-F\:]+)\]:(\d+)', host)
+        if match:
+            host, port = match.groups()
+
+    return host, int(port)
+
+
 def connect_mysql(host, user, password, db):
     """Creates and returns a db connection and cursor."""
-    connection = MySQLdb.connect(host=host, user=user, password=password, db=db)
+
+    host, port = unpack_hostname(host)
+    connection = MySQLdb.connect(host=host, port=port, user=user, password=password, db=db)
     cursor = SSCursor(connection)
 
     rv = cursor.execute("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")

@@ -45,6 +45,9 @@ def module():
 
     module.objects_list.value = "objects"
 
+    module.wants_percentiles.value = True
+    module.percentiles.value = "10, 50, 90"
+
     return module
 
 
@@ -89,6 +92,9 @@ def test_volume_zeros(image, measurements, module, workspace):
         "Intensity_PercentMaximal_image": 100.0,
         "Intensity_UpperQuartileIntensity_image": 0.0,
         "Intensity_LowerQuartileIntensity_image": 0.0,
+        "Intensity_Percentile_10_image": 0.0,
+        "Intensity_Percentile_50_image": 0.0,
+        "Intensity_Percentile_90_image": 0.0,
     }
 
     for feature, value in list(expected.items()):
@@ -118,6 +124,9 @@ def test_volume(image, measurements, module, workspace):
         "Intensity_PercentMaximal_image": 35.8600583090379,
         "Intensity_UpperQuartileIntensity_image": 1.0,
         "Intensity_LowerQuartileIntensity_image": 0.0,
+        "Intensity_Percentile_10_image": 0.0,
+        "Intensity_Percentile_50_image": 0.0,
+        "Intensity_Percentile_90_image": 1.0,
     }
 
     for feature, value in list(expected.items()):
@@ -151,6 +160,10 @@ def test_volume_and_mask(image, measurements, module, workspace):
         "Intensity_PercentMaximal_image": 100.0,
         "Intensity_UpperQuartileIntensity_image": 1.0,
         "Intensity_LowerQuartileIntensity_image": 1.0,
+        "Intensity_Percentile_10_image": 1.0,
+        "Intensity_Percentile_50_image": 1.0,
+        "Intensity_Percentile_90_image": 1.0,
+
     }
 
     for feature, value in list(expected.items()):
@@ -186,6 +199,9 @@ def test_volume_and_objects(image, measurements, module, objects, workspace):
         "Intensity_PercentMaximal_image_objects": 100.0,
         "Intensity_UpperQuartileIntensity_image_objects": 1.0,
         "Intensity_LowerQuartileIntensity_image_objects": 1.0,
+        "Intensity_Percentile_10_image_objects": 1.0,
+        "Intensity_Percentile_50_image_objects": 1.0,
+        "Intensity_Percentile_90_image_objects": 1.0,
     }
 
     for feature, value in list(expected.items()):
@@ -225,6 +241,9 @@ def test_volume_and_objects_and_mask(image, measurements, module, objects, works
         "Intensity_PercentMaximal_image_objects": 100.0,
         "Intensity_UpperQuartileIntensity_image_objects": 1.0,
         "Intensity_LowerQuartileIntensity_image_objects": 1.0,
+        "Intensity_Percentile_10_image_objects": 1.0,
+        "Intensity_Percentile_50_image_objects": 1.0,
+        "Intensity_Percentile_90_image_objects": 1.0,
     }
 
     for feature, value in list(expected.items()):
@@ -589,6 +608,87 @@ def test_get_measurement_columns_object_mode(module):
         ):
             # feature names are now formatting strings
             feature_name = feature % expected_suffix
+            assert any(
+                [
+                    (column[1] == feature_name and column[2] == coltype)
+                    for column in columns
+                ]
+            )
+
+def test_get_measurement_columns_percentile_mode(module):
+    image_names = ["image%d" % i for i in range(3)]
+
+    module.wants_objects.value = False
+    module.wants_percentiles.value = True
+    module.percentiles.value = "5,10,15"
+
+    expected_suffixes = []
+
+    for image_name in image_names:
+        im = module.images_list.value[-1]
+
+        module.images_list.value.append(image_name)
+
+        expected_suffixes.append(image_name)
+
+    columns = module.get_measurement_columns(None)
+
+    assert all([column[0] == "Image" for column in columns])
+
+    for expected_suffix in expected_suffixes:
+        for feature, coltype in (
+            (
+                cellprofiler.modules.measureimageintensity.F_TOTAL_INTENSITY,
+                COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_MEAN_INTENSITY,
+                COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_MIN_INTENSITY,
+                COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_MAX_INTENSITY,
+                COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_TOTAL_AREA,
+                COLTYPE_INTEGER,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_PERCENT_MAXIMAL,
+                COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_MAD_INTENSITY,
+                COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_LOWER_QUARTILE,
+                COLTYPE_FLOAT,
+            ),
+            (
+                cellprofiler.modules.measureimageintensity.F_UPPER_QUARTILE,
+                COLTYPE_FLOAT,
+            ),
+            (
+                "Intensity_Percentile_5_%s",
+                COLTYPE_FLOAT,
+            ),
+            (
+                "Intensity_Percentile_10_%s",
+                COLTYPE_FLOAT,
+            ),
+            (
+                "Intensity_Percentile_15_%s",
+                COLTYPE_FLOAT,
+            ),
+        ):
+            # feature names are now formatting strings
+            feature_name = feature % expected_suffix
+
             assert any(
                 [
                     (column[1] == feature_name and column[2] == coltype)

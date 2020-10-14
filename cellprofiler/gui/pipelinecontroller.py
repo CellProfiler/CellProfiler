@@ -2203,6 +2203,8 @@ class PipelineController(object):
                 sizer.Add(wx.StaticText(dlg, label=instructions), 0, wx.EXPAND)
                 sizer.AddSpacer(2)
             old_parent = self.__path_list_ctrl.Parent
+            old_sizer = self.__path_list_ctrl.GetContainingSizer()
+            old_sizer.Detach(self.__path_list_ctrl)
             self.__path_list_ctrl.Reparent(dlg)
             try:
                 sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND)
@@ -2226,6 +2228,7 @@ class PipelineController(object):
                     cellprofiler.gui.pathlist.EVT_PLC_SELECTION_CHANGED, on_plc_change
                 )
                 result = dlg.ShowModal()
+                sizer.Detach(self.__path_list_ctrl)
                 self.__path_list_ctrl.Unbind(
                     cellprofiler.gui.pathlist.EVT_PLC_SELECTION_CHANGED
                 )
@@ -2235,8 +2238,11 @@ class PipelineController(object):
                     )
                     return None if len(paths) == 0 else paths[0]
                 return None
+            except Exception as e:
+                print("Unable to build file selection panel", e)
             finally:
                 self.__path_list_ctrl.Reparent(old_parent)
+                old_sizer.Insert(0, self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
 
     def add_urls(self, urls):
         """Add URLS to the pipeline"""

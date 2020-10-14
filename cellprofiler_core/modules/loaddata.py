@@ -615,6 +615,8 @@ safe to press it.""",
                 fd = io.StringIO()
                 while True:
                     text = url_fd.read()
+                    if isinstance(text, bytes):
+                        text = text.decode()
                     if len(text) == 0:
                         break
                     fd.write(text)

@@ -1488,13 +1488,8 @@ class ModuleView:
             ):
                 custom_label.Label = "Sub-folder:"
             elif v.dir_choice == URL_FOLDER_NAME:
-                if v.support_urls:
-                    custom_label.Label = "URL:"
-                    custom_label.Show()
-                    custom_ctrl.Show()
-                else:
-                    custom_label.Hide()
-                    custom_ctrl.Hide()
+                custom_label.Hide()
+                custom_ctrl.Hide()
                 browse_ctrl.Hide()
             if custom_ctrl.Value != v.custom_path:
                 custom_ctrl.Value = v.custom_path

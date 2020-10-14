@@ -35,14 +35,17 @@ import numpy
 import scipy.ndimage
 import skimage.morphology
 import skimage.segmentation
-from cellprofiler_core.module import Module
+from cellprofiler_core.module import Identify
 from cellprofiler_core.object import Objects
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import LabelName
+from cellprofiler_core.utilities.core.module.identify import add_object_count_measurements
+from cellprofiler_core.utilities.core.module.identify import get_object_measurement_columns
+from cellprofiler_core.utilities.core.module.identify import add_object_location_measurements
 
 
-class CombineObjects(Module):
+class CombineObjects(Identify):
     category = "Object Processing"
 
     module_name = "CombineObjects"
@@ -126,6 +129,11 @@ subsequent modules.""",
         output_objects.segmented = output_labels
 
         workspace.object_set.add_objects(output_objects, self.output_object.value)
+
+        m = workspace.measurements
+        object_count = numpy.max(output_labels)
+        add_object_count_measurements(m, self.output_object.value, object_count)
+        add_object_location_measurements(m, self.output_object.value, output_labels)
 
         if self.show_window:
             workspace.display_data.input_object_x_name = self.objects_x.value
@@ -213,3 +221,14 @@ subsequent modules.""",
             output[to_segment] = labels_x[i[to_segment], j[to_segment]]
 
         return output
+
+    def get_categories(self, pipeline, object_name):
+        return self.get_object_categories(pipeline, object_name, {self.output_object.value: []})
+
+    def get_measurements(self, pipeline, object_name, category):
+        return self.get_object_measurements(
+            pipeline, object_name, category, {self.output_object.value: []}
+        )
+
+    def get_measurement_columns(self, pipeline):
+        return get_object_measurement_columns(self.output_object.value)

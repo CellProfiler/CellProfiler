@@ -38,10 +38,10 @@ jobs:
           LDFLAGS: -L/usr/local/opt/openssl/lib
         if: ${{ matrix.os == 'macos-10.15' }}
         run: |
-          sed -i '' 's/4.0.0/4.0.5/' Info.plist
+          sed -i '' 's/4.0.0/4.0.6/' Info.plist
           brew install mysql
           make
-          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.0.5.zip
+          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.0.6.zip
         working-directory: ./distribution/macos
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
@@ -53,17 +53,17 @@ jobs:
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
-          iscc /dMyAppVersion="4.0.5" "distribution/windows/cellprofiler.iss"
+          iscc /dMyAppVersion="4.0.6" "distribution/windows/cellprofiler.iss"
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
         with:
-          name: CellProfiler-macOS-4.0.5.zip
-          path: ./distribution/macos/dist/CellProfiler-macOS-4.0.5.zip
+          name: CellProfiler-macOS-4.0.6.zip
+          path: ./distribution/macos/dist/CellProfiler-macOS-4.0.6.zip
       - if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/upload-artifact@v2
         with:
-          name: CellProfiler-Windows-4.0.5.exe
-          path: ./distribution/windows/Output/CellProfiler-Windows-4.0.5.exe
+          name: CellProfiler-Windows-4.0.6.exe
+          path: ./distribution/windows/Output/CellProfiler-Windows-4.0.6.exe
     strategy:
       matrix:
         os: [macos-10.15, windows-2019]
@@ -85,27 +85,27 @@ jobs:
           tag_name: ${{ github.ref }}
       - uses: actions/download-artifact@v1
         with:
-          name: CellProfiler-macOS-4.0.5.zip
+          name: CellProfiler-macOS-4.0.6.zip
           path: ./
       - uses: actions/download-artifact@v1
         with:
-          name: CellProfiler-Windows-4.0.5.exe
+          name: CellProfiler-Windows-4.0.6.exe
           path: ./
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/zip
-          asset_name: CellProfiler-macOS-4.0.5.zip
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.0.5.zip
+          asset_name: CellProfiler-macOS-4.0.6.zip
+          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.0.6.zip
           upload_url: ${{ steps.create_release.outputs.upload_url }}
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/exe
-          asset_name: CellProfiler-Windows-4.0.5.exe
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.0.5.exe
+          asset_name: CellProfiler-Windows-4.0.6.exe
+          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.0.6.exe
           upload_url: ${{ steps.create_release.outputs.upload_url }}
 name: create-release
 on:

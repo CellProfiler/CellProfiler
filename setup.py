@@ -80,7 +80,7 @@ setuptools.setup(
         "python-bioformats==4.0.0",
         "python-javabridge==4.0.0",
         "pyzmq==18.0.1",
-        "sentry-sdk>=0.16.0",
+        "sentry-sdk==0.18.0",
         "requests>=2.22",
         "scikit-image>=0.17.2",
         "scikit-learn>=0.20",

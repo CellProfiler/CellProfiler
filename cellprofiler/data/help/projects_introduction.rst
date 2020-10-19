@@ -63,6 +63,8 @@ file by selecting *File > Save Project As…*, which will save your
 project, complete with the current image file list and pipeline, to a
 file with the extension *.cpproj*.
 
+As an alternative, you can save the pipeline by itself to a file with the extention *.cppipe*, by selecting *File > Export > Pipeline*. *.cppipe* files contain only the list of steps and their corresponding settings and do not contain information about images.
+
 You also have the option of automatically saving the associated pipeline
 file and the file list in addition to the project file. See *File >
 Preferences…* for more details.

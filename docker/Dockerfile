@@ -8,6 +8,8 @@ RUN add-apt-repository ppa:deadsnakes/ppa
 RUN apt -y update
 RUN apt -y upgrade
 RUN apt install -y python3.8-dev python3.8-distutils python3-pip openjdk-8-jdk-headless libmysqlclient-dev libnotify-dev libsdl2-dev wget
+# Uncomment the below if you want to make a version with the GUI
+# RUN apt install -y libwebkitgtk-3.0
 
 # Set up environment
 RUN export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64

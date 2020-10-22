@@ -667,7 +667,12 @@ def print_groups(filename):
 
     groupings = m.get_groupings(metadata_tags)
 
-    json.dump(groupings, sys.stdout)
+    # Groupings are np.int64 which cannot be dumped to json
+    groupings_export = []
+    for g in groupings:
+        groupings_export.append((g[0], [int(imgnr) for imgnr in g[1]]))
+
+    json.dump(groupings_export, sys.stdout)
 
 
 def get_batch_commands(filename, n_per_job=1):

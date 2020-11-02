@@ -64,7 +64,7 @@ def _neighbors(image):
     :return: neighbor pixels for each pixel of an image
 
     """
-    padding = skimage.util.pad(image, 1, "constant")
+    padding = numpy.pad(image, 1, "constant")
 
     mask = padding > 0
 
@@ -136,8 +136,8 @@ You can create a morphological skeleton with the
         if self.show_window:
             workspace.display_data.skeleton = pixels
 
-            a = numpy.copy(branch_nodes)
-            b = numpy.copy(endpoint_nodes)
+            a = numpy.copy(branch_nodes).astype(numpy.uint16)
+            b = numpy.copy(endpoint_nodes).astype(numpy.uint16)
 
             a[a == 1] = 1
             b[b == 1] = 2
@@ -155,20 +155,24 @@ You can create a morphological skeleton with the
     def display(self, workspace, figure=None):
         layout = (2, 2)
 
+        cmap = figure.return_cmap()
+
         figure.set_subplots(
             dimensions=workspace.display_data.dimensions, subplots=layout
         )
 
-        figure.subplot_imshow(
-            image=workspace.display_data.skeleton, title="Skeleton", x=0, y=0
+        figure.subplot_imshow_labels(
+            image=workspace.display_data.skeleton, title="Skeleton", x=0, y=0, colormap=cmap,
         )
 
-        figure.subplot_imshow(
+        figure.subplot_imshow_labels(
             image=workspace.display_data.nodes,
             title="Nodes",
             x=1,
             y=0,
             sharexy=figure.subplot(0, 0),
+            colormap=cmap,
+
         )
 
         figure.subplot_table(

@@ -150,5 +150,5 @@ installing CellProfiler on a Unix system, our
 environment, or post your questions on the CellProfiler `forum`_.
 
 .. _wiki: http://github.com/CellProfiler/CellProfiler/wiki/Source-installation-%28Linux%29
-.. _forum: https://forum.image.sc/tags/cellprofiler
+.. _forum: https://forum.image.sc/tag/cellprofiler
 .. _blog post: https://carpenterlab.broadinstitute.org/blog/making-it-easier-to-run-image-analysis-in-the-cloud-announcing-distributed-cellprofiler

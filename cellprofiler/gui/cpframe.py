@@ -1029,11 +1029,7 @@ class CPFrame(wx.Frame):
     @staticmethod
     def __on_new_cp(event):
         if hasattr(sys, "frozen"):
-            os.system(
-                "open -na /Applications/CellProfiler-{}.app".format(
-                    cellprofiler.__version__
-                )
-            )
+            os.system("open -na /Applications/CellProfiler.app")
         else:
             os.system("python3 -m cellprofiler")
 

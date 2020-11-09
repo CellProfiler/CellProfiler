@@ -1029,7 +1029,8 @@ class CPFrame(wx.Frame):
     @staticmethod
     def __on_new_cp(event):
         if hasattr(sys, "frozen"):
-            os.system("open -na /Applications/CellProfiler.app")
+            app_path = sys.executable.split("/Contents")[0]
+            os.system(f"open -na {app_path}")
         else:
             os.system("python3 -m cellprofiler")
 

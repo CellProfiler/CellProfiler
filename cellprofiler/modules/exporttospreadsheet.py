@@ -1142,8 +1142,8 @@ desired.
                             row.append("")
                         elif isinstance(value, str):
                             row.append(value)
-                        elif isinstance(value, str):
-                            row.append(value)
+                        elif isinstance(value, bytes):
+                            row.append(value.decode())
                         elif (
                             isinstance(value, numpy.ndarray)
                             and value.dtype == numpy.uint8

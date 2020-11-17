@@ -30,7 +30,7 @@ jobs:
       - run: |
           pip install --upgrade pip setuptools wheel
           pip install numpy
-          git clone --single-branch --branch codesign https://github.com/CellProfiler/distribution.git
+          git clone https://github.com/CellProfiler/distribution.git
           git clone https://github.com/CellProfiler/pyinstaller.git
       - run: pip install --editable .
         working-directory: pyinstaller
@@ -70,7 +70,7 @@ jobs:
           path: ./distribution/windows/Output/CellProfiler-Windows-4.0.6.exe
     strategy:
       matrix:
-        os: [macos-10.15]
+        os: [macos-10.15, windows-2019]
         python-version: [ "3.8" ]
   upload:
     name: upload

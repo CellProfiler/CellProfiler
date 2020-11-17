@@ -28,10 +28,6 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
                 "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT
             }))
 
-        # def get_directory_fn_executable():
-        #     '''Get the directory for the executable'''
-        #     return self.executable_directory.get_absolute_path()
-
         def set_directory_fn_executable(path):
             dir_choice, custom_path = self.executable_directory.get_parts_from_path(path)
             self.executable_directory.join_parts(dir_choice, custom_path)
@@ -50,6 +46,7 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
                 "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT
             }))
 
+
         def set_directory_fn_macro(path):
             dir_choice, custom_path = self.macro_directory.get_parts_from_path(path)
             self.macro_directory.join_parts(dir_choice, custom_path)
@@ -60,9 +57,6 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             set_directory_fn=set_directory_fn_macro,
             browse_msg="Choose macro file"
         )
-
-        # self.executable = Filename("Executable", "ImageJ.exe" ,doc="TODO")
-        # self.macro_file = Filename("Macro", "macro.py", doc="TODO")
 
         self.image_groups_in = []
         self.image_groups_out = []
@@ -79,7 +73,6 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
                                   "Directory",
                                   doc="What variable in your macro defines the folder ImageJ should use?")
         self.add_variable_button_out = DoSomething("", "Add another variable", self.add_macro_variables)
-
 
 
     def add_macro_variables(self, can_delete=True):
@@ -208,9 +201,13 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
     def run(self, workspace):
 
         # Making a temp directory
-        tag = str(random.randint(100000, 999999))
-        tempdir = os.path.join(DEFAULT_OUTPUT_FOLDER_NAME, tag)
-        os.makedirs(tempdir, exist_ok=True)
+        # tag = str(random.randint(100000, 999999))
+        # tempdir = os.path.join(DEFAULT_OUTPUT_FOLDER_NAME, tag)
+        # os.makedirs(tempdir, exist_ok=True)
+
+        #TEMPORARY CHANGE
+        tempdir = "/Users/alucas/Downloads/tmp/"
+
         # Save image to the temp directory
         for image_group in self.image_groups_in:
             image = workspace.image_set.get_image(image_group.image_name.value)
@@ -218,12 +215,21 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             skimage.io.imsave(os.path.join(tempdir, image_group.output_filename.value), image_pixels)
 
         # Execute the macro
-        if self.executable_file.value[:-4] == ".app":
-            executable = os.path.join(self.executable_directory.value, self.executable_file.value, "Contents/MacOS/ImageJ-macosx")
+
+        if self.executable_file.value[-4:] == ".app":
+            executable = os.path.join(self.executable_directory.value.split("|")[1], self.executable_file.value, "Contents/MacOS/ImageJ-macosx")
         else:
-            executable = os.path.join(self.executable_directory.value, self.executable_file.value)
-        cmd = [executable, "--headless", "console", "--run", os.path.join(self.macro_directory.value, self.macro_file.value)]
-        cmd += self.stringify_metadata(tempdir)
+            executable = os.path.join(self.executable_directory.value.split("|")[1], self.executable_file.value)
+        #cmd = [executable, "--headless", "console", "--run", os.path.join(self.macro_directory.value.split("|")[1], self.macro_file.value)]
+        #TEMPORARY CHANGE
+        cmd = [executable, "--headless", "console", "--run",
+               "/Users/alucas/Downloads/SillyMacro.py"]
+        cmd += ["directory='/Users/alucas/Downloads/tmp/',size='5'"]
+        #cmd += ["size='5'"]
+
+        #cmd += ["size='5'"]
+        #cmd += [self.stringify_metadata(tempdir)]
+
 
         subp = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 

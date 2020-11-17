@@ -4,6 +4,7 @@ import time
 import urllib.request
 
 import javabridge
+from javabridge.jutil import JavaException
 
 from ..constants.measurement import COLTYPE_FLOAT
 from ..constants.measurement import COLTYPE_INTEGER
@@ -1072,9 +1073,13 @@ not being applied, your choice on this setting may be the culprit.
                     fltr,
                 )
             elif group.extraction_method == X_IMPORTED_EXTRACTION:
-                imported_extractor = self.build_imported_metadata_extractor(
-                    group, extractor, for_metadata_only
-                )
+                try:
+                    imported_extractor = self.build_imported_metadata_extractor(
+                        group, extractor, for_metadata_only
+                    )
+                except JavaException:
+                    imported_extractor = None
+
                 if imported_extractor is not None:
                     javabridge.call(
                         extractor,

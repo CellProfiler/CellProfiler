@@ -64,3 +64,25 @@ def test_get_batch_commands_grouped_by_metadata_batch_data(resources, capsys):
     ]
 
     assert groups == expected_groups
+
+def test_print_groups(resources, capsys):
+    batch_file = os.path.join(resources, "batch_data.h5")
+
+    cellprofiler.__main__.print_groups(batch_file)
+
+    print_groups_str = capsys.readouterr()[0].strip()
+    print_groups = eval(print_groups_str)
+
+    assert len(print_groups) == 9
+
+    for i, g in enumerate(print_groups):
+        # Assert only 1 image per group
+        assert len(g[1]) == 1
+
+        imnr = g[1][0]
+        # Assert internal consistency between group metadata and image number
+        assert int(g[0]['ImageNumber']) == imnr
+        # Assert order correctly
+        assert i+1 == imnr
+
+

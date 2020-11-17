@@ -114,5 +114,5 @@ jobs:
 name: create-release
 on:
   push:
-    branches:
-      - "codesign"
+    tags:
+      - "v*"

@@ -3,13 +3,6 @@ jobs:
     name: build
     runs-on: ${{ matrix.os }}
     steps:
-      - if: ${{ matrix.os == 'windows-2019' }}
-        uses: actions/cache@v2
-        with:
-          path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/cache@v2
         with:
@@ -49,28 +42,14 @@ jobs:
         working-directory: ./distribution/macos
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
-        if: ${{ matrix.os == 'windows-2019' }}
-        run: |
-          pip install cython
-          pip install mysqlclient==1.4.6
-          pip install --editable .
-      - if: ${{ matrix.os == 'windows-2019' }}
-        run: |
-          pyinstaller distribution/windows/cellprofiler.spec
-          iscc /dMyAppVersion="4.0.6" "distribution/windows/cellprofiler.iss"
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
         with:
           name: CellProfiler-macOS-4.0.6.zip
           path: ./distribution/macos/dist/CellProfiler-macOS-4.0.6.zip
-      - if: ${{ matrix.os == 'windows-2019' }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: CellProfiler-Windows-4.0.6.exe
-          path: ./distribution/windows/Output/CellProfiler-Windows-4.0.6.exe
     strategy:
       matrix:
-        os: [macos-10.15, windows-2019]
+        os: [macos-10.15]
         python-version: [ "3.8" ]
   upload:
     name: upload

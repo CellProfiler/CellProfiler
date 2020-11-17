@@ -920,7 +920,12 @@ the *classification\_type* field.
         self.db_host = Text(
             text="Database host",
             value="",
-            doc="""Enter the address CP must contact to write to the database.""",
+            doc="""Enter the address CellProfiler must contact to write to the database.
+        
+Database port can also be specified in the format [host]:[port], e.g. "127.0.0.1:1234".
+        
+If not provided the default port of 3306 is used.
+            """,
         )
 
         self.db_user = Text(

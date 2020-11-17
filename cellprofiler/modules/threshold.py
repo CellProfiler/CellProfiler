@@ -1309,15 +1309,20 @@ staining.
             else:
                 setting_values += [centrosome.threshold.TM_OTSU]
             variable_revision_number = 10
+        used_log_otsu = False
         if variable_revision_number == 10:
             # Relabel method names
             if setting_values[3] == "RobustBackground":
                 setting_values[3] = TM_ROBUST_BACKGROUND
             elif setting_values[3] == "Minimum cross entropy":
                 setting_values[3] = TM_LI
+            if (setting_values[2] == TS_GLOBAL and setting_values[3] == TM_OTSU) or (
+                    setting_values[2] == TS_ADAPTIVE and setting_values[-1] == TM_OTSU):
+                if setting_values[9] == O_THREE_CLASS:
+                    used_log_otsu = True
             variable_revision_number = 11
         if variable_revision_number == 11:
-            setting_values.insert(10, False)
+            setting_values.insert(10, used_log_otsu)
             variable_revision_number = 12
         return setting_values, variable_revision_number
 

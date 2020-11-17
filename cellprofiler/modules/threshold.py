@@ -40,7 +40,7 @@ from cellprofiler_core.constants.measurement import (
 )
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
-from cellprofiler_core.setting import Measurement, ValidationError
+from cellprofiler_core.setting import Measurement, ValidationError, Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.text import Float, Integer
@@ -79,7 +79,7 @@ TECH_NOTE_ICON = "gear.png"
 class Threshold(ImageProcessing):
     module_name = "Threshold"
 
-    variable_revision_number = 11
+    variable_revision_number = 12
 
     def create_settings(self):
         super(Threshold, self).create_settings()
@@ -662,6 +662,27 @@ Often a good choice is some multiple of the largest expected object size.
                 **{"TS_ADAPTIVE": TS_ADAPTIVE}
             ),
         )
+        self.log_transform = Binary(
+            "Log transform before thresholding?",
+            value=False,
+            doc=f"""\
+*(Used only with the "{TM_LI}" and "{TM_OTSU}" methods)*
+
+Choose whether to log-transform intensity values before thresholding.
+The log transformation is applied before calculating the threshold, and the resulting 
+threshold values will be converted back onto a linear scale.
+
+Automatic thresholding is usually performed using histograms of pixel intensities. Areas of similar intensity, 
+such as positive staining, form a peak which is used to determine the threshold. Log transformation 
+helps to enhance peaks of intensity which are particularly wide. This helps to detect areas of staining 
+which have a wide dynamic range.
+
+In practice this tends to increase the sensitivity of the resulting threshold, which is useful when trying to detect 
+objects such as cells which are not stained uniformly throughout. You might want to enable this option if you're
+trying to detect autofluorescence or to pick up the entire cytoplasm of cells which contain smaller areas of intense 
+staining.
+""",
+        )
 
     @property
     def threshold_operation(self):
@@ -706,6 +727,9 @@ Often a good choice is some multiple of the largest expected object size.
         if self.threshold_scope == TS_ADAPTIVE:
             visible_settings += [self.adaptive_window_size]
 
+        if self.threshold_operation in (TM_LI, TM_OTSU):
+            visible_settings += [self.log_transform]
+
         return visible_settings
 
     def settings(self):
@@ -720,6 +744,7 @@ Often a good choice is some multiple of the largest expected object size.
             self.manual_threshold,
             self.thresholding_measurement,
             self.two_class_otsu,
+            self.log_transform,
             self.assign_middle_to_foreground,
             self.adaptive_window_size,
             self.lower_outlier_fraction,
@@ -821,6 +846,17 @@ Often a good choice is some multiple of the largest expected object size.
         return (blurred_image >= threshold) & mask, sigma
 
     def get_threshold(self, image, workspace, automatic=False):
+        need_transform = (
+                not automatic and
+                self.threshold_operation in (TM_LI, TM_OTSU) and
+                self.log_transform
+        )
+
+        if need_transform:
+            image_data, conversion_dict = centrosome.threshold.log_transform(image.pixel_data)
+        else:
+            image_data = image.pixel_data
+
         if self.threshold_operation == TM_MANUAL:
             return self.manual_threshold.value, self.manual_threshold.value, None
 
@@ -834,16 +870,23 @@ Often a good choice is some multiple of the largest expected object size.
             return self._correct_global_threshold(orig_threshold), orig_threshold, None
 
         elif self.threshold_scope.value == TS_GLOBAL or automatic:
-            return self.get_global_threshold(image, automatic=automatic)
+            th_corrected, th_original, th_guide = self.get_global_threshold(image_data, image.mask, automatic=automatic)
 
         elif self.threshold_scope.value == TS_ADAPTIVE:
-            return self.get_local_threshold(image)
-
+            th_corrected, th_original, th_guide = self.get_local_threshold(image_data, image.mask, image.volumetric)
         else:
             raise ValueError("Invalid thresholding settings")
 
-    def get_global_threshold(self, image, automatic=False):
-        image_data = image.pixel_data[image.mask]
+        if need_transform:
+            th_corrected = centrosome.threshold.inverse_log_transform(th_corrected, conversion_dict)
+            th_original = centrosome.threshold.inverse_log_transform(th_original, conversion_dict)
+            if th_guide is not None:
+                th_guide = centrosome.threshold.inverse_log_transform(th_guide, conversion_dict)
+
+        return th_corrected, th_original, th_guide
+
+    def get_global_threshold(self, image, mask, automatic=False):
+        image_data = image[mask]
 
         # Shortcuts - Check if image array is empty or all pixels are the same value.
         if len(image_data) == 0:
@@ -873,9 +916,9 @@ Often a good choice is some multiple of the largest expected object size.
             raise ValueError("Invalid thresholding settings")
         return self._correct_global_threshold(threshold), threshold, None
 
-    def get_local_threshold(self, image):
-        guide_threshold, _, _ = self.get_global_threshold(image)
-        image_data = numpy.where(image.mask, image.pixel_data, numpy.nan)
+    def get_local_threshold(self, image, mask, volumetric):
+        guide_threshold, _, _ = self.get_global_threshold(image, mask)
+        image_data = numpy.where(mask, image, numpy.nan)
 
         if len(image_data) == 0 or numpy.all(image_data == numpy.nan):
             local_threshold = numpy.zeros_like(image_data)
@@ -887,21 +930,21 @@ Often a good choice is some multiple of the largest expected object size.
             local_threshold = self._run_local_threshold(
                 image_data,
                 method=skimage.filters.threshold_li,
-                volumetric=image.volumetric,
+                volumetric=volumetric,
             )
         elif self.threshold_operation == TM_OTSU:
             if self.two_class_otsu.value == O_TWO_CLASS:
                 local_threshold = self._run_local_threshold(
                     image_data,
                     method=skimage.filters.threshold_otsu,
-                    volumetric=image.volumetric,
+                    volumetric=volumetric,
                 )
 
             elif self.two_class_otsu.value == O_THREE_CLASS:
                 local_threshold = self._run_local_threshold(
                     image_data,
                     method=skimage.filters.threshold_multiotsu,
-                    volumetric=image.volumetric,
+                    volumetric=volumetric,
                     nbins=128,
                 )
 
@@ -909,11 +952,11 @@ Often a good choice is some multiple of the largest expected object size.
             local_threshold = self._run_local_threshold(
                 image_data,
                 method=self.get_threshold_robust_background,
-                volumetric=image.volumetric,
+                volumetric=volumetric,
             )
 
         elif self.threshold_operation == TM_SAUVOLA:
-            image_data = numpy.where(image.mask, image.pixel_data, 0)
+            image_data = numpy.where(mask, image, 0)
             adaptive_window = self.adaptive_window_size.value
             if adaptive_window % 2 == 0:
                 adaptive_window += 1
@@ -1266,13 +1309,21 @@ Often a good choice is some multiple of the largest expected object size.
             else:
                 setting_values += [centrosome.threshold.TM_OTSU]
             variable_revision_number = 10
+        used_log_otsu = False
         if variable_revision_number == 10:
             # Relabel method names
             if setting_values[3] == "RobustBackground":
                 setting_values[3] = TM_ROBUST_BACKGROUND
             elif setting_values[3] == "Minimum cross entropy":
                 setting_values[3] = TM_LI
+            if (setting_values[2] == TS_GLOBAL and setting_values[3] == TM_OTSU) or (
+                    setting_values[2] == TS_ADAPTIVE and setting_values[-1] == TM_OTSU):
+                if setting_values[9] == O_THREE_CLASS:
+                    used_log_otsu = True
             variable_revision_number = 11
+        if variable_revision_number == 11:
+            setting_values.insert(10, used_log_otsu)
+            variable_revision_number = 12
         return setting_values, variable_revision_number
 
     def upgrade_threshold_settings(self, setting_values):

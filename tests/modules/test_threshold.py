@@ -9,18 +9,17 @@ import skimage.filters
 import skimage.filters.rank
 import skimage.morphology
 
+import cellprofiler.modules.threshold
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-from cellprofiler_core.constants.measurement import FF_ORIG_THRESHOLD
-from cellprofiler_core.constants.module._identify import TS_GLOBAL
-
-import cellprofiler.modules.threshold
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 import tests.modules
+from cellprofiler_core.constants.measurement import FF_ORIG_THRESHOLD
+from cellprofiler_core.constants.module._identify import TS_GLOBAL
 
 cellprofiler_core.preferences.set_headless()
 
@@ -55,7 +54,7 @@ def make_workspace(image, mask=None, dimensions=2):
 
 
 def test_write_a_test_for_the_new_variable_revision_please():
-    assert cellprofiler.modules.threshold.Threshold.variable_revision_number == 11
+    assert cellprofiler.modules.threshold.Threshold.variable_revision_number == 12
 
 
 def test_load_v7():
@@ -214,6 +213,36 @@ def test_load_v11():
     assert module.adaptive_window_size == 51
     assert module.local_operation.value == cellprofiler.modules.threshold.TM_SAUVOLA
 
+
+def test_load_v12():
+    file = tests.modules.get_test_resources_directory("threshold/v12.pipeline")
+    with open(file, "r") as fd:
+        data = fd.read()
+
+    fd = io.StringIO(data)
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    pipeline.loadtxt(fd)
+    module = pipeline.modules()[-1]
+    assert isinstance(module, cellprofiler.modules.threshold.Threshold)
+    assert module.x_name == "DNA"
+    assert module.y_name == "Threshold"
+    assert module.threshold_scope == cellprofiler.modules.threshold.TS_GLOBAL
+    assert module.global_operation.value == cellprofiler.modules.threshold.TM_LI
+    assert module.threshold_smoothing_scale == 0.01
+    assert module.threshold_correction_factor == 2
+    assert module.threshold_range.min == 0.01
+    assert module.threshold_range.max == 0.9
+    assert module.manual_threshold == 0.0
+    assert module.log_transform
+    assert module.thresholding_measurement == "None"
+    assert module.two_class_otsu == cellprofiler.modules.threshold.O_TWO_CLASS
+    assert (
+        module.assign_middle_to_foreground
+        == cellprofiler.modules.threshold.O_FOREGROUND
+    )
+    assert module.adaptive_window_size == 51
+    assert module.local_operation.value == cellprofiler.modules.threshold.TM_SAUVOLA
+
 def test_binary_manual():
     """Test a binary threshold with manual threshold value"""
     numpy.random.seed(0)
@@ -363,35 +392,6 @@ def test_otsu3_high():
         "Image", FF_ORIG_THRESHOLD % module.y_name.value,
     ]
     assert round(abs(m_threshold - threshold), 7) == 0
-
-
-def test_adaptive_otsu_small():
-    """Test the function, get_threshold, using Otsu adaptive / small
-
-    Use a small image (125 x 125) to break the image into four
-    pieces, check that the threshold is different in each block
-    and that there are four blocks broken at the 75 boundary
-    """
-    numpy.random.seed(0)
-    image = numpy.zeros((120, 110))
-    for i0, i1 in ((0, 60), (60, 120)):
-        for j0, j1 in ((0, 55), (55, 110)):
-            dmin = float(i0 * 2 + j0) / 500.0
-            dmult = 1.0 - dmin
-            # use the sine here to get a bimodal distribution of values
-            r = numpy.random.uniform(0, numpy.pi * 2, (60, 55))
-            rsin = (numpy.sin(r) + 1) / 2
-            image[i0:i1, j0:j1] = dmin + rsin * dmult
-    workspace, x = make_workspace(image)
-    x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
-    x.global_operation.value = centrosome.threshold.TM_OTSU
-    threshold, global_threshold = x.get_threshold(
-        cellprofiler_core.image.Image(image, mask=numpy.ones_like(image, bool)),
-        workspace,
-    )
-    assert threshold[0, 0] != threshold[0, 109]
-    assert threshold[0, 0] != threshold[119, 0]
-    assert threshold[0, 0] != threshold[119, 109]
 
 
 def test_adaptive_otsu_small():
@@ -656,6 +656,39 @@ def test_threshold_li_image_automatic():
 
     numpy.testing.assert_almost_equal(t_global, expected)
 
+
+def test_threshold_li_image_log():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10)
+
+    mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+    mask[1:-1, 1:-1] = True
+
+    workspace, module = make_workspace(data, mask=mask)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+
+    module.global_operation.value = cellprofiler.modules.threshold.TM_LI
+
+    module.log_transform.value = True
+
+    t_local, t_global, t_guide = module.get_threshold(image, workspace)
+
+    transformed_data, d = centrosome.threshold.log_transform(data)
+
+    t_expected = skimage.filters.threshold_li(transformed_data[mask])
+
+    t_expected = centrosome.threshold.inverse_log_transform(t_expected, d)
+
+    t_expected = module._correct_global_threshold(
+        t_expected
+    )
+
+    numpy.testing.assert_almost_equal(t_global, t_expected, decimal=5)
 
 def test_threshold_li_volume():
     numpy.random.seed(73)
@@ -1175,6 +1208,101 @@ def test_threshold_otsu3_volume():
 
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
+
+def test_threshold_otsu3_image_log():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10)
+
+    mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+    mask[1:-1, 1:-1] = True
+
+    workspace, module = make_workspace(data, mask=mask)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+
+    module.global_operation.value = centrosome.threshold.TM_OTSU
+
+    module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
+
+    module.assign_middle_to_foreground.value = (
+        cellprofiler.modules.threshold.O_FOREGROUND
+    )
+
+    module.log_transform.value = True
+
+    t_local, t_global, t_guide = module.get_threshold(image, workspace)
+
+    transformed_data, d = centrosome.threshold.log_transform(data)
+
+    t_expected = skimage.filters.threshold_multiotsu(transformed_data[mask], nbins=128)[0]
+
+    t_expected = centrosome.threshold.inverse_log_transform(t_expected, d)
+
+    t_expected = module._correct_global_threshold(
+        t_expected
+    )
+
+    numpy.testing.assert_almost_equal(t_global, t_expected, decimal=5)
+
+
+def test_threshold_otsu3_volume_log():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10, 10)
+
+    mask = numpy.zeros_like(data, dtype=numpy.bool)
+
+    mask[1:-1, 1:-1, 1:-1] = True
+
+    workspace, module = make_workspace(data, mask=mask, dimensions=3)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+
+    module.local_operation.value = centrosome.threshold.TM_OTSU
+
+    module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
+
+    module.assign_middle_to_foreground.value = (
+        cellprofiler.modules.threshold.O_FOREGROUND
+    )
+
+    module.adaptive_window_size.value = 3
+
+    module.log_transform.value = True
+
+    module.log_transform.value = True
+
+    t_local, t_global, t_guide = module.get_threshold(image, workspace)
+
+    transformed_data, d = centrosome.threshold.log_transform(data)
+
+    t_guide_expected = skimage.filters.threshold_multiotsu(transformed_data[mask], nbins=128)[0]
+
+    t_local_expected = numpy.zeros_like(data)
+    masked = numpy.where(mask, transformed_data, numpy.nan)
+    for index, plane in enumerate(masked):
+        t_local_expected[index] = module._get_adaptive_threshold(
+            plane, skimage.filters.threshold_multiotsu, nbins=128,
+        )
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
+
+    t_guide_expected = centrosome.threshold.inverse_log_transform(t_guide_expected, d)
+    t_local_expected = centrosome.threshold.inverse_log_transform(t_local_expected, d)
+
+
+    numpy.testing.assert_almost_equal(t_guide, t_guide_expected, decimal=5)
+
+    assert t_local.ndim == 3
+
+    numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
 def test_threshold_sauvola_image():
     numpy.random.seed(73)

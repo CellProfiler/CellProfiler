@@ -261,7 +261,7 @@ class Pipeline:
             fd = open(fd_or_filename, "r", encoding="utf-8")
             # Verify that we can read from the file in utf-8 mode
             try:
-                fd.read(10)
+                fd.read()
                 fd.seek(0)
             except UnicodeDecodeError:
                 # Newer pipelines may need unicode encoding

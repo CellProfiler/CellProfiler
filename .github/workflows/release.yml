@@ -43,8 +43,8 @@ jobs:
           sed -i '' 's/4.0.0/4.0.6/' Info.plist
           brew install mysql
           make
-          chmod +x add-osx-cert.sh && ./add-osx-cert.sh
-          chmod +x osx-codesign.sh && ./osx-codesign.sh
+          chmod +x ./distribution/macos/add-osx-cert.sh && ./distribution/macos/add-osx-cert.sh
+          chmod +x ./distribution/macos/osx-codesign.sh && ./distribution/macos/osx-codesign.sh
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.0.6.zip
         working-directory: ./distribution/macos
       - env:

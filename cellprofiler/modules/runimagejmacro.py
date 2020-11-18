@@ -8,7 +8,7 @@ from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingBut
 from cellprofiler_core.setting._settings_group import SettingsGroup
 from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
+from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME, get_default_output_directory
 
 import random
 import skimage.io
@@ -193,20 +193,19 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
         return visible_settings
 
     def stringify_metadata(self, dir):
-        met_string = self.add_directory.value + "='" + dir +  "', "
+        met_string = ""
+        met_string += self.add_directory.value + "=\"" + dir +  "\", "
         for var in self.macro_variables_list:
             met_string += var.variable_name.value + "='" + var.variable_value.value + "', "
         return met_string[:-2]
 
     def run(self, workspace):
 
-        # Making a temp directory
-        # tag = str(random.randint(100000, 999999))
-        # tempdir = os.path.join(DEFAULT_OUTPUT_FOLDER_NAME, tag)
-        # os.makedirs(tempdir, exist_ok=True)
-
-        #TEMPORARY CHANGE
-        tempdir = "/Users/alucas/Downloads/tmp/"
+        default_output_directory = get_default_output_directory()
+        #Making a temp directory
+        tag = str(random.randint(100000, 999999))
+        tempdir = os.path.join(default_output_directory, tag)
+        os.makedirs(tempdir, exist_ok=True)
 
         # Save image to the temp directory
         for image_group in self.image_groups_in:
@@ -215,21 +214,13 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             skimage.io.imsave(os.path.join(tempdir, image_group.output_filename.value), image_pixels)
 
         # Execute the macro
-
         if self.executable_file.value[-4:] == ".app":
             executable = os.path.join(self.executable_directory.value.split("|")[1], self.executable_file.value, "Contents/MacOS/ImageJ-macosx")
         else:
             executable = os.path.join(self.executable_directory.value.split("|")[1], self.executable_file.value)
-        #cmd = [executable, "--headless", "console", "--run", os.path.join(self.macro_directory.value.split("|")[1], self.macro_file.value)]
-        #TEMPORARY CHANGE
-        cmd = [executable, "--headless", "console", "--run",
-               "/Users/alucas/Downloads/SillyMacro.py"]
-        cmd += ["directory='/Users/alucas/Downloads/tmp/',size='5'"]
-        #cmd += ["size='5'"]
+        cmd = [executable, "--headless", "console", "--run", os.path.join(default_output_directory, self.macro_directory.value.split("|")[1], self.macro_file.value)]
 
-        #cmd += ["size='5'"]
-        #cmd += [self.stringify_metadata(tempdir)]
-
+        cmd += [self.stringify_metadata(tempdir)]
 
         subp = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 

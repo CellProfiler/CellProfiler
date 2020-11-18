@@ -222,12 +222,15 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
 
         cmd += [self.stringify_metadata(tempdir)]
 
-        subp = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        subp = subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
         # Load images from the temp directory
+        for image_group in self.image_groups_out:
+            image_pixels = skimage.io.imread(os.path.join(tempdir,image_group.input_filename.value))
+            #add pixels to a measurement object?
 
-        # Delete the temp directory
-
-
-
-    # ./ImageJ-win64.exe --headless --console -macro ./RunBatch.ijm 'folder=../folder1 parameters=a.properties output=../samples/Output'
+        #remove temp content and directory
+        for subdir, dirs, files in os.walk(tempdir):
+            for file in files:
+                os.remove(os.path.join(tempdir, file))
+        os.removedirs(tempdir)

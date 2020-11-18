@@ -726,6 +726,10 @@ desired.
         if workspace.measurements.has_groups():
             group_numbers = workspace.measurements["Image", "Group_Number", workspace.measurements.get_image_numbers()]
             max_image_set_len = max(numpy.bincount(group_numbers))
+        elif workspace.measurements.has_measurements("Image", "Group_Length", 1):
+            num_images = workspace.measurements.image_set_count
+            max_image_set_len = max(workspace.measurements.get_measurement(
+                "Image", "Group_Length", range(1, num_images + 1)))
         else:
             max_image_set_len = workspace.measurements.image_set_count
         if max_image_set_len > maximum_image_sets:

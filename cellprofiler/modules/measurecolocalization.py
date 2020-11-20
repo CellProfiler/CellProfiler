@@ -130,7 +130,7 @@ F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 class MeasureColocalization(Module):
     module_name = "MeasureColocalization"
     category = "Measurement"
-    variable_revision_number = 6
+    variable_revision_number = 5
 
     def create_settings(self):
         """Create the initial settings for the module"""
@@ -1607,9 +1607,6 @@ Alternatively, you may want to disable these specific measurements entirely
             # Add costes mode switch
             setting_values += [M_ACCURATE]
             variable_revision_number = 5
-        if variable_revision_number == 5:
-            # Added "Faster" mode, no settings change
-            variable_revision_number = 6
         return setting_values, variable_revision_number
 
     def volumetric(self):

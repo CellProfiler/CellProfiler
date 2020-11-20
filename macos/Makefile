@@ -24,6 +24,8 @@ dist/CellProfiler.app: CellProfiler dependencies Info.plist
 
 	cp $(word 3, $^) $@/Contents
 
+	cp entitlements.plist $@/Contents/MacOS
+
 .PHONY: clean
 clean:
 	if [ -d CellProfiler ]; then rm -rf CellProfiler; fi

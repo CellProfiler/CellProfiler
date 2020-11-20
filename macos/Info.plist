@@ -54,5 +54,7 @@
 		<key>JAVA_HOME</key>
 		<string>./Contents</string>
 	</dict>
+<key>NSHighResolutionCapable</key>
+    <true/>
 </dict>
 </plist>

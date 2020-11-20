@@ -30,10 +30,8 @@ jobs:
       - run: |
           pip install --upgrade pip setuptools wheel
           pip install numpy
+          pip install pyinstaller
           git clone https://github.com/CellProfiler/distribution.git
-          git clone https://github.com/CellProfiler/pyinstaller.git
-      - run: pip install --editable .
-        working-directory: pyinstaller
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}

@@ -870,18 +870,25 @@ staining.
             return self._correct_global_threshold(orig_threshold), orig_threshold, None
 
         elif self.threshold_scope.value == TS_GLOBAL or automatic:
-            th_corrected, th_original, th_guide = self.get_global_threshold(image_data, image.mask, automatic=automatic)
+            th_guide = None
+            th_original = self.get_global_threshold(image_data, image.mask, automatic=automatic)
 
         elif self.threshold_scope.value == TS_ADAPTIVE:
-            th_corrected, th_original, th_guide = self.get_local_threshold(image_data, image.mask, image.volumetric)
+            th_guide = self.get_global_threshold(image_data, image.mask)
+            th_original = self.get_local_threshold(image_data, image.mask, image.volumetric)
         else:
             raise ValueError("Invalid thresholding settings")
 
         if need_transform:
-            th_corrected = centrosome.threshold.inverse_log_transform(th_corrected, conversion_dict)
             th_original = centrosome.threshold.inverse_log_transform(th_original, conversion_dict)
             if th_guide is not None:
                 th_guide = centrosome.threshold.inverse_log_transform(th_guide, conversion_dict)
+
+        if self.threshold_scope.value == TS_GLOBAL or automatic:
+            th_corrected = self._correct_global_threshold(th_original)
+        else:
+            th_guide = self._correct_global_threshold(th_guide)
+            th_corrected = self._correct_local_threshold(th_original, th_guide)
 
         return th_corrected, th_original, th_guide
 
@@ -897,8 +904,6 @@ staining.
 
         elif automatic or self.threshold_operation in (TM_LI, TM_SAUVOLA):
             threshold = skimage.filters.threshold_li(image_data)
-            if automatic:
-                return threshold, threshold, None
 
         elif self.threshold_operation == TM_ROBUST_BACKGROUND:
             threshold = self.get_threshold_robust_background(image_data)
@@ -914,10 +919,9 @@ staining.
                 threshold = threshold[bin_wanted]
         else:
             raise ValueError("Invalid thresholding settings")
-        return self._correct_global_threshold(threshold), threshold, None
+        return threshold
 
     def get_local_threshold(self, image, mask, volumetric):
-        guide_threshold, _, _ = self.get_global_threshold(image, mask)
         image_data = numpy.where(mask, image, numpy.nan)
 
         if len(image_data) == 0 or numpy.all(image_data == numpy.nan):
@@ -966,11 +970,7 @@ staining.
 
         else:
             raise ValueError("Invalid thresholding settings")
-        return (
-            self._correct_local_threshold(local_threshold, guide_threshold),
-            local_threshold,
-            guide_threshold,
-        )
+        return local_threshold
 
     def _run_local_threshold(self, image_data, method, volumetric=False, **kwargs):
         if volumetric:

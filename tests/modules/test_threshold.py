@@ -1290,13 +1290,13 @@ def test_threshold_otsu3_volume_log():
         t_local_expected[index] = module._get_adaptive_threshold(
             plane, skimage.filters.threshold_multiotsu, nbins=128,
         )
-    t_local_expected = module._correct_local_threshold(
-        t_local_expected, t_guide_expected
-    )
 
     t_guide_expected = centrosome.threshold.inverse_log_transform(t_guide_expected, d)
     t_local_expected = centrosome.threshold.inverse_log_transform(t_local_expected, d)
 
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected, decimal=5)
 

@@ -1,3 +1,4 @@
+import itertools
 import os
 import subprocess
 
@@ -252,10 +253,54 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
         # Load images from the temp directory
         for image_group in self.image_groups_out:
             image_pixels = skimage.io.imread(os.path.join(tempdir,image_group.input_filename.value))
-            workspace.image_set.add(image_group.image_name.value, Image(image_pixels.astype("uint16"), convert=False))
+            workspace.image_set.add(image_group.image_name.value, Image(image_pixels, convert=False))
 
         #remove temp content and directory
         for subdir, dirs, files in os.walk(tempdir):
             for file in files:
                 os.remove(os.path.join(tempdir, file))
         os.removedirs(tempdir)
+
+        # Display results
+        pixel_data = []
+        image_names = []
+        if self.show_window:
+            for x in itertools.chain(self.image_groups_in, self.image_groups_out):
+                pixel_data.append(workspace.image_set.get_image(x.image_name.value).pixel_data)
+                image_names.append(x.image_name.value)
+
+        workspace.display_data.pixel_data = pixel_data
+        workspace.display_data.display_names = image_names
+        workspace.display_data.dimensions = workspace.image_set.get_image(
+            self.image_groups_out[0].image_name.value).dimensions
+
+    def display(self, workspace, figure):
+        import matplotlib.cm
+
+        pixel_data = workspace.display_data.pixel_data
+        display_names = workspace.display_data.display_names
+
+        columns = (len(pixel_data) + 1) // 2
+
+        figure.set_subplots((columns, 2), dimensions=workspace.display_data.dimensions)
+
+        for i in range(len(pixel_data)):
+            if pixel_data[i].shape[-1] in (3, 4):
+                cmap = None
+            elif pixel_data[i].dtype.kind == "b":
+                cmap = matplotlib.cm.binary_r
+            else:
+                cmap = matplotlib.cm.Greys_r
+
+            figure.subplot_imshow(
+                i % columns,
+                int(i / columns),
+                pixel_data[i],
+                title=display_names[i],
+                sharexy=figure.subplot(0, 0),
+                colormap=cmap,
+            )
+
+
+
+

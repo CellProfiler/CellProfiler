@@ -8,7 +8,7 @@ from cellprofiler_core.module import Module
 from cellprofiler_core.setting.text import Pathname, Filename, ImageName, Text, Directory
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting._settings_group import SettingsGroup
-from cellprofiler_core.setting import Divider
+from cellprofiler_core.setting import Divider, HiddenCount
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME, get_default_output_directory
 
@@ -65,11 +65,16 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
 
         self.macro_variables_list = []
 
+        self.image_groups_in_count = HiddenCount(self.image_groups_in)
+        self.image_groups_out_count = HiddenCount(self.image_groups_out)
+        self.macro_variable_count = HiddenCount(self.macro_variables_list)
+
         self.add_image_in(can_delete=False)
         self.add_image_button_in = DoSomething("", 'Add another image', self.add_image_in)
 
         self.add_image_out(can_delete=False)
         self.add_image_button_out = DoSomething("", 'Add another image', self.add_image_out)
+
 
         self.add_directory = Text("What variable in your macro defines the folder ImageJ should use?",
                                   "Directory",
@@ -170,7 +175,8 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
         self.image_groups_out.append(group)
 
     def settings(self):
-        result = [self.executable_directory, self.executable_file, self.macro_directory, self.macro_file]
+        result = [self.image_groups_in_count, self.image_groups_out_count, self.macro_variable_count]
+        result += [self.executable_directory, self.executable_file, self.macro_directory, self.macro_file]
         for image_group_in in self.image_groups_in:
             result += [image_group_in.image_name, image_group_in.output_filename]
         for image_group_out in self.image_groups_out:
@@ -193,6 +199,23 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             visible_settings += macro_variable.visible_settings()
         visible_settings += [self.add_variable_button_out]
         return visible_settings
+
+    def prepare_settings(self, setting_values):
+        image_groups_in_count = int(setting_values[0])
+        image_groups_out_count = int(setting_values[1])
+        macro_variable_count = int(setting_values[2])
+
+        del self.image_groups_in[image_groups_in_count:]
+        del self.image_groups_out[image_groups_out_count:]
+        del self.macro_variables_list[macro_variable_count:]
+
+        while len(self.image_groups_in) < image_groups_in_count:
+            self.add_image_in()
+        while len(self.image_groups_out) < image_groups_out_count:
+            self.add_image_out()
+        while len(self.macro_variables_list) < macro_variable_count:
+            self.add_macro_variables()
+
 
     def stringify_metadata(self, dir):
         met_string = ""

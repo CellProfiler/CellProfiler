@@ -3,15 +3,14 @@ import os
 import subprocess
 
 from cellprofiler_core.image import Image
-
 from cellprofiler.modules import _help
 from cellprofiler_core.module import Module
-from cellprofiler_core.setting.text import Pathname, Filename, ImageName, Text, Directory
+from cellprofiler_core.setting.text import Filename, ImageName, Text, Directory
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting._settings_group import SettingsGroup
 from cellprofiler_core.setting import Divider, HiddenCount
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME, get_default_output_directory
+from cellprofiler_core.preferences import get_default_output_directory
 
 import random
 import skimage.io

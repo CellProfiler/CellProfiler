@@ -264,6 +264,7 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
         # Display results
         pixel_data = []
         image_names = []
+
         if self.show_window:
             for x in itertools.chain(self.image_groups_in, self.image_groups_out):
                 pixel_data.append(workspace.image_set.get_image(x.image_name.value).pixel_data)

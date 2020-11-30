@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+from cellprofiler_core.image import Image
+
 from cellprofiler.modules import _help
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting.text import Pathname, Filename, ImageName, Text, Directory
@@ -227,7 +229,7 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
         # Load images from the temp directory
         for image_group in self.image_groups_out:
             image_pixels = skimage.io.imread(os.path.join(tempdir,image_group.input_filename.value))
-            #add pixels to a measurement object?
+            workspace.image_set.add(image_group.image_name.value, Image(image_pixels.astype("uint16"), convert=False))
 
         #remove temp content and directory
         for subdir, dirs, files in os.walk(tempdir):

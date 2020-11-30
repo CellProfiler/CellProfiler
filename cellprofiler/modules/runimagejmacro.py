@@ -35,7 +35,7 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             self.executable_directory.join_parts(dir_choice, custom_path)
 
         self.executable_file = Filename(
-            "Executable", "ImageJ.exe", doc="TODO",
+            "Executable", "ImageJ.exe", doc="Select your executable. MacOS users should select the Fiji.app application.",
             get_directory_fn=self.executable_directory.get_absolute_path,
             set_directory_fn=set_directory_fn_executable,
             browse_msg="Choose executable file"
@@ -54,7 +54,7 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             self.macro_directory.join_parts(dir_choice, custom_path)
 
         self.macro_file = Filename(
-            "Macro", "macro.py", doc="TODO",
+            "Macro", "macro.py", doc="Select your macro file.",
             get_directory_fn=self.macro_directory.get_absolute_path,
             set_directory_fn=set_directory_fn_macro,
             browse_msg="Choose macro file"
@@ -70,15 +70,17 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
         self.macro_variable_count = HiddenCount(self.macro_variables_list)
 
         self.add_image_in(can_delete=False)
-        self.add_image_button_in = DoSomething("", 'Add another image', self.add_image_in)
+        self.add_image_button_in = DoSomething("", 'Add another input image', self.add_image_in)
 
         self.add_image_out(can_delete=False)
-        self.add_image_button_out = DoSomething("", 'Add another image', self.add_image_out)
-
+        self.add_image_button_out = DoSomething("", 'Add another output image', self.add_image_out)
 
         self.add_directory = Text("What variable in your macro defines the folder ImageJ should use?",
                                   "Directory",
-                                  doc="What variable in your macro defines the folder ImageJ should use?")
+                                  doc="Because CellProfiler will save the output images in a temporary directory, "
+                                      "this directory should be specified as a variable in the macro script. Enter "
+                                      "the variable name here. CellProfiler will automatically assign this variable "
+                                      "to the temporary directory being used.")
         self.add_variable_button_out = DoSomething("", "Add another variable", self.add_macro_variables)
 
 
@@ -91,7 +93,7 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             Text(
                 'What variable name is your macro expecting?',
                 "None",
-                doc='What variable name is your macro expecting?'
+                doc='Enter the variable name that your macro is expecting. '
             )
         )
         group.append(
@@ -99,7 +101,7 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             Text(
                 "What value should this variable have?",
                 "None",
-                doc="What value should this variable have?"),
+                doc="Enter the desire value for this variable."),
         )
         if len(self.macro_variables_list) == 0:  # Insert space between 1st two images for aesthetics
             group.append("extra_divider", Divider(line=False))
@@ -123,7 +125,7 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             ImageSubscriber(
                 'Select an image to send to your macro',
                 "None",
-                doc='Select an image to send to your macro'
+                doc="Select an image to send to your macro. "
             )
         )
         group.append(
@@ -131,7 +133,8 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             Text(
                 "What should this image temporarily saved as?",
                 "None.tiff",
-                doc="What should this image temporarily saved as?"),
+                doc='Enter the filename of the image to be used by the macro. This should be set to the name expected '
+                    'by the macro file.'),
         )
         if len(self.image_groups_in) == 0:  # Insert space between 1st two images for aesthetics
             group.append("extra_divider", Divider(line=False))
@@ -152,9 +155,11 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
         group.append(
             "input_filename",
             Text(
-                "What is the image name CellProfiler should load?",
+                "What is the image filename CellProfiler should load?",
                 "None.tiff",
-                doc="What is the image name CellProfiler should load?"),
+                doc="Enter the image filename CellProfiler should load. This should be set to the output filename "
+                    "written in the macro file. The image written by the macro will be saved in a temporary directory "
+                    "and read by CellProfiler."),
         )
 
         group.append(
@@ -162,7 +167,8 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             ImageName(
                 r'What should CellProfiler call the loaded image?',
                 "None",
-                doc='What should CellProfiler call the loaded image?'
+                doc='Enter a name to assign to the new image loaded by CellProfiler. This image will be added to your '
+                    'workspace. '
             )
         )
 

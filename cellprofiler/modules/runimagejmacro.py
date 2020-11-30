@@ -60,6 +60,14 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             browse_msg="Choose macro file"
         )
 
+        self.add_directory = Text("What variable in your macro defines the folder ImageJ should use?",
+                                  "Directory",
+                                  doc="Because CellProfiler will save the output images in a temporary directory, "
+                                      "this directory should be specified as a variable in the macro script. It is "
+                                      "assumed that the macro will use this directory variable to obtain the full path"
+                                      "to the inputted image. Enter the variable name here. CellProfiler will create "
+                                      "a temporary directory and assign its path as a value to this variable. ")
+
         self.image_groups_in = []
         self.image_groups_out = []
 
@@ -75,13 +83,7 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
         self.add_image_out(can_delete=False)
         self.add_image_button_out = DoSomething("", 'Add another output image', self.add_image_out)
 
-        self.add_directory = Text("What variable in your macro defines the folder ImageJ should use?",
-                                  "Directory",
-                                  doc="Because CellProfiler will save the output images in a temporary directory, "
-                                      "this directory should be specified as a variable in the macro script. Enter "
-                                      "the variable name here. CellProfiler will automatically assign this variable "
-                                      "to the temporary directory being used.")
-        self.add_variable_button_out = DoSomething("", "Add another variable", self.add_macro_variables)
+        self.add_variable_button_out = DoSomething("Does your macro expect variables?", "Add another variable", self.add_macro_variables)
 
 
     def add_macro_variables(self, can_delete=True):
@@ -182,25 +184,23 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
 
     def settings(self):
         result = [self.image_groups_in_count, self.image_groups_out_count, self.macro_variable_count]
-        result += [self.executable_directory, self.executable_file, self.macro_directory, self.macro_file]
+        result += [self.executable_directory, self.executable_file, self.macro_directory, self.macro_file, self.add_directory]
         for image_group_in in self.image_groups_in:
             result += [image_group_in.image_name, image_group_in.output_filename]
         for image_group_out in self.image_groups_out:
             result += [image_group_out.input_filename, image_group_out.image_name]
-        result += [self.add_directory]
         for macro_variable in self.macro_variables_list:
             result +=[macro_variable.variable_name, macro_variable.variable_value]
         return result
 
     def visible_settings(self):
-        visible_settings = [self.executable_directory, self.executable_file, self.macro_directory, self.macro_file]
+        visible_settings = [self.executable_directory, self.executable_file, self.macro_directory, self.macro_file, self.add_directory]
         for image_group_in in self.image_groups_in:
             visible_settings += image_group_in.visible_settings()
         visible_settings += [self.add_image_button_in]
         for image_group_out in self.image_groups_out:
             visible_settings += image_group_out.visible_settings()
         visible_settings += [self.add_image_button_out]
-        visible_settings += [self.add_directory]
         for macro_variable in self.macro_variables_list:
             visible_settings += macro_variable.visible_settings()
         visible_settings += [self.add_variable_button_out]
@@ -231,20 +231,16 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
         return met_string[:-2]
 
     def run(self, workspace):
-
         default_output_directory = get_default_output_directory()
-        #Making a temp directory
         tag = str(random.randint(100000, 999999))
         tempdir = os.path.join(default_output_directory, tag)
         os.makedirs(tempdir, exist_ok=True)
 
-        # Save image to the temp directory
         for image_group in self.image_groups_in:
             image = workspace.image_set.get_image(image_group.image_name.value)
             image_pixels = image.pixel_data
             skimage.io.imsave(os.path.join(tempdir, image_group.output_filename.value), image_pixels)
 
-        # Execute the macro
         if self.executable_file.value[-4:] == ".app":
             executable = os.path.join(self.executable_directory.value.split("|")[1], self.executable_file.value, "Contents/MacOS/ImageJ-macosx")
         else:
@@ -255,18 +251,15 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
 
         subp = subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-        # Load images from the temp directory
         for image_group in self.image_groups_out:
             image_pixels = skimage.io.imread(os.path.join(tempdir,image_group.input_filename.value))
             workspace.image_set.add(image_group.image_name.value, Image(image_pixels, convert=False))
 
-        #remove temp content and directory
         for subdir, dirs, files in os.walk(tempdir):
             for file in files:
                 os.remove(os.path.join(tempdir, file))
         os.removedirs(tempdir)
 
-        # Display results
         pixel_data = []
         image_names = []
 

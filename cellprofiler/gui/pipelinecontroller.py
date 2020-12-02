@@ -1291,49 +1291,6 @@ class PipelineController(object):
                 self.__frame,
             )
 
-    def do_save_json_pipeline(self):
-        """Save the pipeline as json, asking the user for the name
-
-        return True if the user saved the pipeline
-        """
-        default_filename = get_current_workspace_path()
-        if default_filename is None:
-            default_filename = "pipeline.%s" % EXT_JSON_PIPELINE
-            default_path = None
-        else:
-            default_path, default_filename = os.path.split(default_filename)
-            default_filename = (
-                os.path.splitext(default_filename)[0] + "." + EXT_PIPELINE
-            )
-        wildcard = (
-            "CellProfiler pipeline (*.%s)|*.%s|"
-            "CellProfiler pipeline and file list (*.%s)|*.%s"
-        ) % (EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE,)
-        with wx.FileDialog(
-            self.__frame,
-            "Save pipeline",
-            wildcard=wildcard,
-            defaultFile=default_filename,
-            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
-        ) as dlg:
-            assert isinstance(dlg, wx.FileDialog)
-            if default_path is not None:
-                dlg.SetPath(os.path.join(default_path, default_filename))
-            if dlg.ShowModal() == wx.ID_OK:
-                save_image_plane_details = dlg.GetFilterIndex() == 1
-                file_name = dlg.GetFilename()
-                pathname = dlg.GetPath()
-                if not sys.platform.startswith("win"):
-                    dot_ext_pipeline = "." + EXT_PIPELINE
-                    if not file_name.endswith(dot_ext_pipeline):
-                        # on platforms other than Windows, add the default suffix
-                        pathname += dot_ext_pipeline
-                self.__pipeline.save(
-                    pathname, save_image_plane_details=save_image_plane_details
-                )
-                return True
-            return False
-
     def do_save_pipeline(self):
         """Save the pipeline, asking the user for the name
 

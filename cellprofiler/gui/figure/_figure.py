@@ -2585,9 +2585,7 @@ class Figure(wx.Frame):
         return plot
 
     def is_color_image(self, image):
-        if self.dimensions == 2:
-            return image.ndim == 3 and image.shape[2] >= 2
-        elif image.ndim == 3:
-            return image.shape[2] >= 2
+        if self.dimensions < image.ndim or len(image.shape) > image.ndim:
+            return image.shape[-1] >= 2
         else:
-            return image.ndim == 4 and image.shape[3] >= 2
+            return False

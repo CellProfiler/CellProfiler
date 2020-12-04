@@ -25,7 +25,8 @@ class RunImageJMacro(Module):
 
         self.executable_directory = Directory(
             "Executable directory", allow_metadata=False, doc="""\
-Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
+Select the folder containing the executable. MacOS users should select the directory where Fiji.app lives. Windows users 
+should select the directory containing ImageJ-win64.exe (usually corresponding to the Fiji.app folder).  {IO_FOLDER_CHOICE_HELP_TEXT}
 """.format(**{
                 "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT
             }))
@@ -35,7 +36,8 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             self.executable_directory.join_parts(dir_choice, custom_path)
 
         self.executable_file = Filename(
-            "Executable", "ImageJ.exe", doc="Select your executable. MacOS users should select the Fiji.app application.",
+            "Executable", "ImageJ.exe", doc="Select your executable. MacOS users should select the Fiji.app "
+                                            "application. Windows user should select the ImageJ-win64.exe executable",
             get_directory_fn=self.executable_directory.get_absolute_path,
             set_directory_fn=set_directory_fn_executable,
             browse_msg="Choose executable file"
@@ -225,7 +227,7 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
 
     def stringify_metadata(self, dir):
         met_string = ""
-        met_string += self.add_directory.value + "=\"" + dir +  "\", "
+        met_string += self.add_directory.value + "='" + dir + "', "
         for var in self.macro_variables_list:
             met_string += var.variable_name.value + "='" + var.variable_value.value + "', "
         return met_string[:-2]
@@ -242,9 +244,9 @@ Select the folder containing the executable. {IO_FOLDER_CHOICE_HELP_TEXT}
             skimage.io.imsave(os.path.join(tempdir, image_group.output_filename.value), image_pixels)
 
         if self.executable_file.value[-4:] == ".app":
-            executable = os.path.join(self.executable_directory.value.split("|")[1], self.executable_file.value, "Contents/MacOS/ImageJ-macosx")
+            executable = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value, "Contents/MacOS/ImageJ-macosx")
         else:
-            executable = os.path.join(self.executable_directory.value.split("|")[1], self.executable_file.value)
+            executable = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value)
         cmd = [executable, "--headless", "console", "--run", os.path.join(default_output_directory, self.macro_directory.value.split("|")[1], self.macro_file.value)]
 
         cmd += [self.stringify_metadata(tempdir)]

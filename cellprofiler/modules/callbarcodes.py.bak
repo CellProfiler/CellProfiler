@@ -10,12 +10,12 @@ import csv
 import numpy
 import os
 import re
-import urllib.request, urllib.error, urllib.parse
+import urllib2
 
 try:
-    from io import StringIO
+    from cStringIO import StringIO
 except ImportError:
-    from io import StringIO
+    from StringIO import StringIO
 
 #################################
 #
@@ -374,7 +374,7 @@ Enter the name to be given to the barcode score image.""",
                     raise RuntimeError("Need to fetch URL manually.")
                 try:
                     url = cellprofiler.misc.generate_presigned_url(self.csv_path)
-                    url_fd = urllib.request.urlopen(url)
+                    url_fd = urllib2.urlopen(url)
                 except Exception as e:
                     entry["URLEXCEPTION"] = e
                     raise e
@@ -536,7 +536,7 @@ Enter the name to be given to the barcode score image.""",
                 find_base = re.search("[A-Z]", to_parse)
                 parsed_base = find_base.group(0)
                 if parsed_cycle <= ncycles:
-                    if parsed_cycle not in list(measurementdict.keys()):
+                    if parsed_cycle not in measurementdict.keys():
                         measurementdict[parsed_cycle] = {eachmeas: parsed_base}
                     else:
                         measurementdict[parsed_cycle].update({eachmeas: parsed_base})
@@ -550,7 +550,7 @@ Enter the name to be given to the barcode score image.""",
             cycles_measures_perobj = []
             cyclecode = []
             cycledict = measurementdict[eachcycle]
-            cyclemeasures = list(cycledict.keys())
+            cyclemeasures = cycledict.keys()
             for eachmeasure in cyclemeasures:
                 cycles_measures_perobj.append(
                     measurements.get_current_measurement(object_name, eachmeasure)
@@ -562,7 +562,7 @@ Enter the name to be given to the barcode score image.""",
             max_per_obj = [cyclecode[x] for x in max_per_obj]
             master_cycles.append(list(max_per_obj))
 
-        return list(map("".join, list(zip(*master_cycles))))
+        return list(map("".join, zip(*master_cycles)))
 
     def barcodeset(self, barcodecol, genecol):
         fd = self.open_csv()
@@ -577,7 +577,7 @@ Enter the name to be given to the barcode score image.""",
         return barcodeset
 
     def queryall(self, barcodeset, query):
-        barcodelist = list(barcodeset.keys())
+        barcodelist = barcodeset.keys()
         scoredict = {
             sum([1 for x in range(len(query)) if query[x] == y[x]])
             / float(len(query)): y

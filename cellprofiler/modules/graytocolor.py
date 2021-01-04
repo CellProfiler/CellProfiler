@@ -414,10 +414,10 @@ pixel values are multiplied by this weight before assigning the color.
                     self.cyan_image_name, self.cyan_adjustment_factor, 0, 0.5, 0.5
                 ),
                 ColorSchemeSettings(
-                    self.magenta_image_name, self.magenta_adjustment_factor, 0.5, 0.5, 0
+                    self.magenta_image_name, self.magenta_adjustment_factor, 0.5, 0, 0.5
                 ),
                 ColorSchemeSettings(
-                    self.yellow_image_name, self.yellow_adjustment_factor, 0.5, 0, 0.5
+                    self.yellow_image_name, self.yellow_adjustment_factor, 0.5, 0.5, 0
                 ),
                 ColorSchemeSettings(
                     self.gray_image_name,

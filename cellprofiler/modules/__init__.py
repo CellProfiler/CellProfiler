@@ -1,4 +1,5 @@
 builtin_modules = {
+    "callbarcodes": "CallBarcodes",
     "calculatemath": "CalculateMath",
     "calculatestatistics": "CalculateStatistics",
     "classifyobjects": "ClassifyObjects",

@@ -24,11 +24,11 @@ except ImportError:
 ##################################
 
 from cellprofiler.modules import _help
-import cellprofiler.image
-import cellprofiler.module
-import cellprofiler.measurement
-import cellprofiler.object
-import cellprofiler.setting
+import cellprofiler_core.image
+import cellprofiler_core.module
+import cellprofiler_core.measurement
+import cellprofiler_core.object
+import cellprofiler_core.setting
 
 
 __doc__ = """\
@@ -139,7 +139,7 @@ C_CALL_BARCODES = "Barcode"
 # you re-implement them. You can let Module do most of the work and
 # implement only what you need.
 #
-class CallBarcodes(cellprofiler.module.Module):
+class CallBarcodes(cellprofiler_core.module.Module):
     #
     # The module starts by declaring the name that's used for display,
     # the category under which it is stored and the variable revision
@@ -158,7 +158,7 @@ class CallBarcodes(cellprofiler.module.Module):
     # settings you can use.
     #
     def create_settings(self):
-        self.csv_directory = cellprofiler.setting.DirectoryPath(
+        self.csv_directory = cellprofiler_core.setting.DirectoryPath(
             "Input data file location",
             allow_metadata=False,
             doc="""\
@@ -176,9 +176,9 @@ Select the folder containing the CSV file to be loaded. {IO_FOLDER_CHOICE_HELP_T
             dir_choice, custom_path = self.csv_directory.get_parts_from_path(path)
             self.csv_directory.join_parts(dir_choice, custom_path)
 
-        self.csv_file_name = cellprofiler.setting.FilenameText(
+        self.csv_file_name = cellprofiler_core.setting.FilenameText(
             "Name of the file",
-            cellprofiler.setting.NONE,
+            cellprofiler_core.setting.NONE,
             doc="""Provide the file name of the CSV file containing the data you want to load.""",
             get_directory_fn=get_directory_fn,
             set_directory_fn=set_directory_fn,
@@ -191,19 +191,19 @@ Select the folder containing the CSV file to be loaded. {IO_FOLDER_CHOICE_HELP_T
         # It will ask the user which object to pick from the list of
         # objects provided by upstream modules.
         #
-        self.input_object_name = cellprofiler.setting.ObjectNameSubscriber(
+        self.input_object_name = cellprofiler_core.setting.ObjectNameSubscriber(
             text="Input object name",
             doc="These are the objects that the module operates on.",
         )
 
-        self.ncycles = cellprofiler.setting.Integer(
+        self.ncycles = cellprofiler_core.setting.Integer(
             doc="""\
 Enter the number of cycles present in the data.
 """,
             text="Number of cycles",
             value=8,
         )
-        self.cycle1measure = cellprofiler.setting.Measurement(
+        self.cycle1measure = cellprofiler_core.setting.Measurement(
             "Select one of the measures from Cycle 1 to use for calling",
             self.input_object_name.get_value,
             "AreaShape_Area",
@@ -211,7 +211,7 @@ Enter the number of cycles present in the data.
 This measurement should be """,
         )
 
-        self.metadata_field_barcode = cellprofiler.setting.Choice(
+        self.metadata_field_barcode = cellprofiler_core.setting.Choice(
             "Select the column of barcodes to match against",
             ["No CSV file"],
             choices_fn=self.get_choices,
@@ -219,7 +219,7 @@ This measurement should be """,
 """,
         )
 
-        self.metadata_field_tag = cellprofiler.setting.Choice(
+        self.metadata_field_tag = cellprofiler_core.setting.Choice(
             "Select the column with gene/transcript barcode names",
             ["No CSV file"],
             choices_fn=self.get_choices,
@@ -227,7 +227,7 @@ This measurement should be """,
 """,
         )
 
-        self.wants_call_image = cellprofiler.setting.Binary(
+        self.wants_call_image = cellprofiler_core.setting.Binary(
             "Retain an image of the barcodes color coded by call?",
             False,
             doc="""\
@@ -235,20 +235,20 @@ Select "*{YES}*" to retain the image of the objects color-coded
 according to which line of the CSV their barcode call matches to,
 for use later in the pipeline (for example, to be saved by a **SaveImages**
 module).""".format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.outimage_calls_name = cellprofiler.setting.ImageNameProvider(
+        self.outimage_calls_name = cellprofiler_core.setting.ImageNameProvider(
             "Enter the called barcode image name",
-            cellprofiler.setting.NONE,
+            cellprofiler_core.setting.NONE,
             doc="""\
 *(Used only if the called barcode image is to be retained for later use in the pipeline)*
 
 Enter the name to be given to the called barcode image.""",
         )
 
-        self.wants_score_image = cellprofiler.setting.Binary(
+        self.wants_score_image = cellprofiler_core.setting.Binary(
             "Retain an image of the barcodes color coded by score match?",
             False,
             doc="""\
@@ -256,13 +256,13 @@ Select "*{YES}*" to retain the image of the objects where the intensity of the s
 indicates the match score between the called barcode and its closest match,
 for use later in the pipeline (for example, to be saved by a **SaveImages**
 module).""".format(
-                **{"YES": cellprofiler.setting.YES}
+                **{"YES": cellprofiler_core.setting.YES}
             ),
         )
 
-        self.outimage_score_name = cellprofiler.setting.ImageNameProvider(
+        self.outimage_score_name = cellprofiler_core.setting.ImageNameProvider(
             "Enter the barcode score image name",
-            cellprofiler.setting.NONE,
+            cellprofiler_core.setting.NONE,
             doc="""\
 *(Used only if the barcode score image is to be retained for later use in the pipeline)*
 
@@ -320,7 +320,7 @@ Enter the name to be given to the barcode score image.""",
         csv_path = self.csv_path
 
         if not os.path.isfile(csv_path):
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "No such CSV file: %s" % csv_path, self.csv_file_name
             )
 
@@ -330,13 +330,13 @@ Enter the name to be given to the barcode score image.""",
             import errno
 
             if e.errno == errno.EWOULDBLOCK:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Another program (Excel?) is locking the CSV file %s."
                     % self.csv_path,
                     self.csv_file_name,
                 )
             else:
-                raise cellprofiler.setting.ValidationError(
+                raise cellprofiler_core.setting.ValidationError(
                     "Could not open CSV file %s (error: %s)" % (self.csv_path, e),
                     self.csv_file_name,
                 )
@@ -344,7 +344,7 @@ Enter the name to be given to the barcode score image.""",
         try:
             self.get_header()
         except Exception as e:
-            raise cellprofiler.setting.ValidationError(
+            raise cellprofiler_core.setting.ValidationError(
                 "The CSV file, %s, is not in the proper format."
                 " See this module's help for details on CSV format. (error: %s)"
                 % (self.csv_path, e),
@@ -361,7 +361,7 @@ Enter the name to be given to the barcode score image.""",
         """Open the csv file or URL, returning a file descriptor"""
         global header_cache
 
-        if cellprofiler.preferences.is_url_path(self.csv_path):
+        if cellprofiler_core.preferences.is_url_path(self.csv_path):
             if self.csv_path not in header_cache:
                 header_cache[self.csv_path] = {}
             entry = header_cache[self.csv_path]
@@ -373,7 +373,7 @@ Enter the name to be given to the barcode score image.""",
                 if do_not_cache:
                     raise RuntimeError("Need to fetch URL manually.")
                 try:
-                    url = cellprofiler.misc.generate_presigned_url(self.csv_path)
+                    url = cellprofiler_core.misc.generate_presigned_url(self.csv_path)
                     url_fd = urllib.request.urlopen(url)
                 except Exception as e:
                     entry["URLEXCEPTION"] = e
@@ -491,14 +491,14 @@ Enter the name to be given to the barcode score image.""",
         if self.wants_call_image:
             workspace.image_set.add(
                 self.outimage_calls_name.value,
-                cellprofiler.image.Image(
+                cellprofiler_core.image.Image(
                     pixel_data_call.astype("uint16"), convert=False
                 ),
             )
         if self.wants_score_image:
             workspace.image_set.add(
                 self.outimage_score_name.value,
-                cellprofiler.image.Image(
+                cellprofiler_core.image.Image(
                     pixel_data_score.astype("uint16"), convert=False
                 ),
             )
@@ -614,27 +614,27 @@ Enter the name to be given to the barcode score image.""",
             (
                 input_object_name,
                 "_".join([C_CALL_BARCODES, "BarcodeCalled"]),
-                cellprofiler.measurement.COLTYPE_VARCHAR,
+                cellprofiler_core.measurement.COLTYPE_VARCHAR,
             ),
             (
                 input_object_name,
                 "_".join([C_CALL_BARCODES, "MatchedTo_Barcode"]),
-                cellprofiler.measurement.COLTYPE_VARCHAR,
+                cellprofiler_core.measurement.COLTYPE_VARCHAR,
             ),
             (
                 input_object_name,
                 "_".join([C_CALL_BARCODES, "MatchedTo_ID"]),
-                cellprofiler.measurement.COLTYPE_INTEGER,
+                cellprofiler_core.measurement.COLTYPE_INTEGER,
             ),
             (
                 input_object_name,
                 "_".join([C_CALL_BARCODES, "MatchedTo_GeneCode"]),
-                cellprofiler.measurement.COLTYPE_VARCHAR,
+                cellprofiler_core.measurement.COLTYPE_VARCHAR,
             ),
             (
                 input_object_name,
                 "_".join([C_CALL_BARCODES, "MatchedTo_Score"]),
-                cellprofiler.measurement.COLTYPE_FLOAT,
+                cellprofiler_core.measurement.COLTYPE_FLOAT,
             ),
         ]
 

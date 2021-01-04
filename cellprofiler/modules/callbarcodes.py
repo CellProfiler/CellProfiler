@@ -365,19 +365,24 @@ Enter the name to be given to the barcode score image.""",
 
     def open_csv(self, do_not_cache=False):
         """Open the csv file or URL, returning a file descriptor"""
-        global header_cache
+
+        print(f"self.csv_path: {self.csv_path}")
 
         if cellprofiler_core.preferences.is_url_path(self.csv_path):
-            if self.csv_path not in header_cache:
-                header_cache[self.csv_path] = {}
-            entry = header_cache[self.csv_path]
+            if self.csv_path not in self.header_cache:
+                self.header_cache[self.csv_path] = {}
+
+            entry = self.header_cache[self.csv_path]
+
             if "URLEXCEPTION" in entry:
                 raise entry["URLEXCEPTION"]
+
             if "URLDATA" in entry:
                 fd = StringIO(entry["URLDATA"])
             else:
                 if do_not_cache:
                     raise RuntimeError("Need to fetch URL manually.")
+
                 try:
                     url = cellprofiler_core.utilities.image.generate_presigned_url(
                         self.csv_path
@@ -385,18 +390,26 @@ Enter the name to be given to the barcode score image.""",
                     url_fd = urllib.request.urlopen(url)
                 except Exception as e:
                     entry["URLEXCEPTION"] = e
+
                     raise e
+
                 fd = StringIO()
+
                 while True:
                     text = url_fd.read()
+
                     if len(text) == 0:
                         break
+
                     fd.write(text)
+
                 fd.seek(0)
+
                 entry["URLDATA"] = fd.getvalue()
+
             return fd
         else:
-            return open(self.csv_path, "rb")
+            return open(self.csv_path, "r")
 
     def get_header(self, do_not_cache=False):
         """Read the header fields from the csv file
@@ -404,17 +417,17 @@ Enter the name to be given to the barcode score image.""",
         Open the csv file indicated by the settings and read the fields
         of its first line. These should be the measurement columns.
         """
-        fd = self.open_csv(do_not_cache=do_not_cache)
-        reader = csv.reader(fd)
-        header = next(reader)
-        fd.close()
-        return header
+        with open(self.csv_path, "r") as fp:
+            reader = csv.DictReader(fp)
+
+            return reader.fieldnames
 
     def get_choices(self, pipeline):
-        try:
-            choices = self.get_header()
-        except:
+        choices = self.get_header()
+
+        if not choices:
             choices = ["No CSV file"]
+
         return choices
 
     #

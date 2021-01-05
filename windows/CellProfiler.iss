@@ -43,6 +43,3 @@ Source: "C:\hostedtoolcache\windows\jdk\14.0.1\x64\*"; DestDir: "{app}\java"; Fl
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
-
-[Registry]
-Root: HKCU; Subkey: "Environment"; ValueType: string; ValueName: "CP_JAVA_HOME"; ValueData: "{app}\java"; Flags: createvalueifdoesntexist

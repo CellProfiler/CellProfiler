@@ -1059,13 +1059,13 @@ class Figure(wx.Frame):
 
                 def on_slider(event):
                     if event.Id == 0:
-                        sliderminbox.SetValue(slidermin.GetValue())
+                        sliderminbox.ChangeValue(slidermin.GetValue())
                         sliderminbox.Update()
                     elif event.Id == 1:
-                        slidermaxbox.SetValue(slidermax.GetValue())
+                        slidermaxbox.ChangeValue(slidermax.GetValue())
                         slidermaxbox.Update()
                     elif event.Id == 2:
-                        slidernormbox.SetValue(slidernorm.GetValue())
+                        slidernormbox.ChangeValue(slidernorm.GetValue())
                         slidernormbox.Update()
                     event.Skip()
 
@@ -1171,7 +1171,7 @@ class Figure(wx.Frame):
 
                 # For small images we can draw fast enough for a live preview.
                 # For large images, we draw when the slider is released.
-                if size[0] * size[1] > 262144 or self.dimensions > 2:  # 512x512
+                if size[0] * size[1] > 1048576 or self.dimensions > 2:  # 1024x1024
                     dlg.Bind(wx.EVT_SCROLL_THUMBRELEASE, apply_contrast)
                     dlg.Bind(wx.EVT_SCROLL_CHANGED, apply_contrast)
                 else:

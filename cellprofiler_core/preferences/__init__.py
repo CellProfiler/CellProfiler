@@ -362,7 +362,7 @@ WC_OPEN_OLD_WORKSPACE = "OpenOldWorkspace"
 EXT_PIPELINE = "cppipe"
 
 """Possible CellProfiler pipeline extensions"""
-EXT_PIPELINE_CHOICES = [EXT_PIPELINE, "cp", "cpi", "cpproj"]
+EXT_PIPELINE_CHOICES = [EXT_PIPELINE, "cp", "cpi", "cpproj", "json"]
 
 """Default project extension"""
 EXT_PROJECT = "cpproj"

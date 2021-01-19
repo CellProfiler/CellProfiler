@@ -167,6 +167,7 @@ class Images(Module):
     MI_REMOVE = FileCollectionDisplay.DeleteMenuItem("Remove from list")
     MI_REFRESH = "Refresh"
 
+
     def create_settings(self):
         self.workspace = None
         module_explanation = [

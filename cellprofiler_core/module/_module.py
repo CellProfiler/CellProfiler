@@ -1,3 +1,4 @@
+import abc
 import sys
 import uuid
 
@@ -63,6 +64,7 @@ class Module:
     def __init__(self):
         if self.__doc__ is None:
             self.__doc__ = sys.modules[self.__module__].__doc__
+
         self.function = None
         self.__module_num = -1
         self.__settings = []
@@ -85,11 +87,42 @@ class Module:
             self.module_name = self.__class__.__name__
         self.create_settings()
 
+    def to_dict(self) -> dict:
+        return {"module_num": self.module_num,
+                "notes": self.notes,
+                "show_window": self.show_window,
+                "wants_pause": self.wants_pause,
+                "svn_version": self.svn_version,
+                "enabled": self.enabled,
+                "variable_revision_number": self.variable_revision_number,
+                "batch_state": repr(self.batch_state),
+                "module_name": self.__class__.__qualname__,
+                "module_path": ".".join([self.__module__, self.__class__.__qualname__])
+                }
+
+    def from_dict(self, settings: list, attributes: dict):
+        self.module_num = attributes["module_num"]
+        self.show_window = attributes["show_window"]
+        self.wants_pause = attributes["wants_pause"]
+        self.svn_version = attributes["svn_version"]
+        self.enabled = attributes["enabled"]
+        self.variable_revision_number = attributes["variable_revision_number"]
+        self.module_path = attributes["module_path"]
+        self.module_name = attributes["module_name"]
+        setting_values = [setting["value"] for setting in settings]
+        self.set_settings_from_values(
+            setting_values, self.variable_revision_number, self.module_path
+        )
+
+    @abc.abstractmethod
+    def update_settings(self, setting: list):
+        pass
+
     def __setattr__(self, slot, value):
         if hasattr(self, slot) and isinstance(getattr(self, slot), Setting):
             assert isinstance(value, Setting), (
-                "Overwriting %s's %s existing Setting with value of type %s.\nUse __dict__['%s'] = ... to override."
-                % (self.module_name, slot, type(value), slot)
+                    "Overwriting %s's %s existing Setting with value of type %s.\nUse __dict__['%s'] = ... to override."
+                    % (self.module_name, slot, type(value), slot)
             )
         object.__setattr__(self, slot, value)
 
@@ -120,8 +153,8 @@ class Module:
         setting_values = []
         self.__notes = []
         if (
-            MODULE_NOTES in settings.dtype.fields
-            and settings[MODULE_NOTES].shape[1] > idx
+                MODULE_NOTES in settings.dtype.fields
+                and settings[MODULE_NOTES].shape[1] > idx
         ):
             n = settings[MODULE_NOTES][0, idx].flatten()
             for x in n:
@@ -168,7 +201,7 @@ class Module:
         pass
 
     def set_settings_from_values(
-        self, setting_values, variable_revision_number, module_name
+            self, setting_values, variable_revision_number, module_name
     ):
         """Set the settings in a module, given a list of values
 
@@ -178,7 +211,6 @@ class Module:
         whatever values are in the list or however many values
         are in the list.
         """
-
         setting_values, variable_revision_number = self.upgrade_settings(
             setting_values, int(variable_revision_number), module_name
         )
@@ -851,7 +883,7 @@ class Module:
         return []
 
     def get_measurement_scales(
-        self, pipeline, object_name, category, measurement, image_name
+            self, pipeline, object_name, category, measurement, image_name
     ):
         """Return a list of scales (eg for texture) at which a measurement was taken
         """
@@ -863,8 +895,8 @@ class Module:
 
         for setting in self.settings():
             if (
-                isinstance(setting, FileImageSubscriber,)
-                and setting.value == image_name
+                    isinstance(setting, FileImageSubscriber, )
+                    and setting.value == image_name
             ):
                 return True
         return False

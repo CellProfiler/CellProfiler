@@ -144,7 +144,7 @@ Two options for the alignment method are available:
    degrees of brightness.
 
 """
-            % globals(),
+                % globals(),
         )
 
         self.crop_mode = Choice(
@@ -181,8 +181,10 @@ excluded from analysis. There are three choices for cropping:
    align the entire group’s images similarly, then the aligned images
    could be combined in a module such as **MakeProjection**.
    """
-            % globals(),
+                % globals(),
         )
+
+
 
     def add_image(self, can_remove=True):
         """Add an image + associated questions and buttons"""
@@ -225,7 +227,7 @@ a separate alignment to the first image can be calculated:
    calculated for this additional image using the alignment method
    specified with respect to the first input image.
 """
-                % globals(),
+                    % globals(),
             ),
         )
 
@@ -239,6 +241,7 @@ a separate alignment to the first image can be calculated:
         self.additional_images.append(group)
 
     def settings(self):
+
         result = [self.alignment_method, self.crop_mode]
 
         result += [
@@ -351,8 +354,8 @@ a separate alignment to the first image can be calculated:
         first_input_pixels = image_info[0][1]
         first_output_pixels = image_info[0][3]
         for (
-            j,
-            (input_name, input_pixels, output_name, output_pixels, off_x, off_y, shape),
+                j,
+                (input_name, input_pixels, output_name, output_pixels, off_x, off_y, shape),
         ) in enumerate(image_info[1:]):
             unaligned_title = "Unaligned images: %s and %s" % (
                 first_input_name,
@@ -446,7 +449,7 @@ a separate alignment to the first image can be calculated:
         #
         # Calculate the # of pixels at a particular point
         #
-        i, j = np.mgrid[-s[0] : s[0], -s[1] : s[1]]
+        i, j = np.mgrid[-s[0]: s[0], -s[1]: s[1]]
         unit = np.abs(i * j).astype(float)
         unit[unit < 1] = 1  # keeps from dividing by zero in some places
         #
@@ -591,7 +594,7 @@ a separate alignment to the first image can be calculated:
 
     @staticmethod
     def apply_alignment(
-        workspace, input_image_name, output_image_name, off_x, off_y, shape
+            workspace, input_image_name, output_image_name, off_x, off_y, shape
     ):
         """Apply an alignment to the input image to result in the output image
 
@@ -727,9 +730,9 @@ a separate alignment to the first image can be calculated:
         if variable_revision_number == 2:
             # wants_cropping changed to crop_mode
             setting_values = (
-                setting_values[:1]
-                + [C_CROP if setting_values[1] == "Yes" else C_SAME_SIZE]
-                + setting_values[2:]
+                    setting_values[:1]
+                    + [C_CROP if setting_values[1] == "Yes" else C_SAME_SIZE]
+                    + setting_values[2:]
             )
             variable_revision_number = 3
 

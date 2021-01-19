@@ -82,7 +82,6 @@ from ..object import ObjectSet
 from ..preferences import get_headless
 from ..preferences import report_progress
 from ..setting import Measurement
-from ..setting.subscriber import ImageSubscriber
 from ..setting.text import Name
 from ..utilities.measurement import load_measurements
 from ..workspace import Workspace

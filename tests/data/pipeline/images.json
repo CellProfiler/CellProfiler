@@ -1,0 +1,40 @@
+{
+  "has_image_plane_details": false,
+  "date_revision": 407,
+  "module_count": 1,
+  "version": "v6",
+  "modules": [
+    {
+      "attributes": {
+        "module_num": 1,
+        "batch_state": "array([], dtype=uint8)",
+        "show_window": false,
+        "wants_pause": false,
+        "snv_version": "Unknown",
+        "enabled": true,
+        "variable_revision_number": 2,
+        "module_name": "Images",
+        "module_path": "cellprofiler_core.modules.images.Images",
+        "notes": ["To begin creating your project, use the Images module to compile a list of files and/or folders that you want to analyze. You can also specify a set of rules to include only the desired files in your selected folders."]
+      },
+    "settings": [
+                {
+                    "name": "cellprofiler_core.setting._path_list_display.PathListDisplay",
+                    "text": "",
+                    "value": ""
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Filter images?",
+                    "value": "Images only"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the rule criteria",
+                    "value": "and (extension does isimage) (directory doesnot containregexp \"[\\\\\\\\/]\\\\.\")"
+                }
+            ]
+
+    }
+  ]
+}

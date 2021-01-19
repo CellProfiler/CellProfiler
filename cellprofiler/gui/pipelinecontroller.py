@@ -15,6 +15,7 @@ import string
 import sys
 import threading
 from functools import reduce, cmp_to_key
+from json import JSONDecodeError
 from queue import PriorityQueue, Queue, Empty
 from urllib.request import urlretrieve, url2pathname
 
@@ -90,6 +91,7 @@ from cellprofiler_core.pipeline import (
     Listener,
     PrepareRunError,
 )
+from cellprofiler_core.pipeline.io._v6 import load
 from cellprofiler_core.preferences import (
     RECENT_FILE_COUNT,
     add_image_directory_listener,
@@ -1193,7 +1195,11 @@ class PipelineController(object):
                 if not self.load_hdf5_pipeline(pathname):
                     return
             else:
-                self.__pipeline.load(pathname)
+                try:
+                    with open(pathname, "r") as fd:
+                        load(self.__pipeline, fd)
+                except JSONDecodeError:
+                    self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()
             self.__workspace.save_pipeline_to_measurements()
@@ -1301,8 +1307,9 @@ class PipelineController(object):
             )
         wildcard = (
             "CellProfiler pipeline (*.%s)|*.%s|"
-            "CellProfiler pipeline and file list (*.%s)|*.%s"
-        ) % (EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE,)
+            "CellProfiler pipeline and file list (*.%s)|*.%s|"
+            "JSON object (*.json)|*.json"
+        ) % (EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE)
         with wx.FileDialog(
             self.__frame,
             "Save pipeline",
@@ -1319,8 +1326,8 @@ class PipelineController(object):
                 pathname = dlg.GetPath()
                 if not sys.platform.startswith("win"):
                     dot_ext_pipeline = "." + EXT_PIPELINE
-                    if not file_name.endswith(dot_ext_pipeline):
-                        # on platforms other than Windows, add the default suffix
+                    if not file_name.endswith(dot_ext_pipeline) and not file_name.endswith(".json"):
+                        # on platforms other than Windows, add the default suffix, unless user specified json export
                         pathname += dot_ext_pipeline
                 self.__pipeline.save(
                     pathname, save_image_plane_details=save_image_plane_details

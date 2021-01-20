@@ -3947,13 +3947,7 @@ class PipelineController(object):
                     )
                 elif sys.platform == "win32":
                     subprocess.call(
-                        [
-                            "cmd",
-                            "/C",
-                            "start",
-                            "explorer",
-                            get_default_output_directory(),
-                        ]
+                        ["explorer", os.path.abspath(get_default_output_directory())]
                     )
 
             open_default_output_folder_button.Bind(

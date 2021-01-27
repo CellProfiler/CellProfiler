@@ -55,7 +55,7 @@ jobs:
         if: ${{ matrix.os == 'windows-2019' }}
         name: Windows build
         run: |
-          cd core && pip3 install --editable . --upgrade
+          git clone https://github.com/emilroz/core.git && cd core && git checkout compat-4-0 && pip3 install --editable . --upgrade
           pip install cython
           pip install mysqlclient==1.4.6
           pip install --editable .

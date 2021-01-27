@@ -37,6 +37,7 @@ jobs:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         if: ${{ matrix.os == 'macos-10.15' }}
         run: |
+          ls -la
           sed -i '' 's/4.0.0/4.0.7/' Info.plist
           brew install mysql
           make

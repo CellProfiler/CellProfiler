@@ -10,6 +10,12 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+      - if: ${{ matrix.os == 'windows-2019' }}
+        name: Checkout CellProfiler-core
+        uses: actions/checkout@compat-4-0
+        with:
+          repository: emilroz/core
+          path: core
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/cache@v2
         with:
@@ -46,21 +52,26 @@ jobs:
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
         if: ${{ matrix.os == 'windows-2019' }}
+        name: MacOS build
         run: |
           pip install cython
           pip install mysqlclient==1.4.6
           pip install --editable .
       - if: ${{ matrix.os == 'windows-2019' }}
+        name: Windows build
         run: |
+          pip3 install --editable "core[test]" --upgrade
           pyinstaller distribution/windows/cellprofiler.spec
           iscc /dMyAppVersion="4.0.7" "distribution/windows/cellprofiler.iss"
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
+        name: MacOS artifact upload
         with:
           name: CellProfiler-macOS-4.0.7.zip
           path: ./distribution/macos/dist/CellProfiler-macOS-4.0.7.zip
       - if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/upload-artifact@v2
+        name: Windows artifact upload
         with:
           name: CellProfiler-Windows-4.0.7.exe
           path: ./distribution/windows/Output/CellProfiler-Windows-4.0.7.exe

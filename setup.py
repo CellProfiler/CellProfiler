@@ -62,7 +62,7 @@ setuptools.setup(
         "test": ["pytest>=3.3.2,<4"],
     },
     install_requires=[
-        "boto3==1.12.28",
+        "boto3==1.14.23",
         "cellprofiler-core==4.0.7",
         "centrosome==1.2.0",
         "docutils==0.15.2",

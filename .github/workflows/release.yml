@@ -55,11 +55,14 @@ jobs:
         if: ${{ matrix.os == 'windows-2019' }}
         name: Windows build
         run: |
-          git clone https://github.com/emilroz/core.git && cd core && git checkout compat-4-0
-          cd core && pip install --editable . --upgrade
+          git clone https://github.com/emilroz/core.git
+          cd core
+          git checkout compat-4-0
+          pip install --editable . --upgrade
           pip install cython
           pip install mysqlclient==1.4.6
-          cd ../ && pip install --editable .
+          cd ..
+          pip install --editable .
       - if: ${{ matrix.os == 'windows-2019' }}
         name: Windows pyinstaller build
         run: |

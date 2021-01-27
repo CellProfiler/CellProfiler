@@ -31,7 +31,6 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install numpy
           pip install pyinstaller
-#          git clone https://github.com/CellProfiler/distribution.git
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
@@ -41,8 +40,6 @@ jobs:
           sed -i '' 's/4.0.0/4.0.7/' Info.plist
           brew install mysql
           make
-#          chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
-#          chmod +x osx-codesign.sh && ./osx-codesign.sh
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.0.7.zip
         working-directory: ./CellProfiler/distribution/macos
       - env:

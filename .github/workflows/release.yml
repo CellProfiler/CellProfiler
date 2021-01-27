@@ -42,7 +42,7 @@ jobs:
           brew install mysql
           make
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.0.7.zip
-        working-directory: ./CellProfiler/distribution/macos
+        working-directory: ./distribution/macos
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
         if: ${{ matrix.os == 'windows-2019' }}
@@ -63,7 +63,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: CellProfiler-Windows-4.0.7.exe
-          path: ./CellProfiler/distribution/windows/Output/CellProfiler-Windows-4.0.7.exe
+          path: ./distribution/windows/Output/CellProfiler-Windows-4.0.7.exe
     strategy:
       matrix:
         os: [macos-10.15, windows-2019]

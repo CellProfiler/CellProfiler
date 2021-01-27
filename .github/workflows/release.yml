@@ -12,7 +12,7 @@ jobs:
             ${{ runner.os }}-pip-
       - if: ${{ matrix.os == 'windows-2019' }}
         name: Checkout CellProfiler-core
-        uses: actions/checkout@compat-4-0
+        uses: actions/checkout@v2
         with:
           repository: emilroz/core
           path: core

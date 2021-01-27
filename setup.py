@@ -75,7 +75,7 @@ setuptools.setup(
         "matplotlib==3.1.3",
         "mysqlclient==1.4.6",
         "numpy==1.19.3",
-        "Pillow==7.1.0",
+        "Pillow==8.1.0",
         "prokaryote==2.4.2",
         "python-bioformats==4.0.0",
         "python-javabridge==4.0.0",

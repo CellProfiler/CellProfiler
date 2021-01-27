@@ -20,7 +20,7 @@ dependencies: CellProfiler
 
 	git clone https://github.com/emilroz/core.git
 	cd core && git checkout compat-4-0
-	pip3 install --editable "core[build, test]" --upgrade
+	pip3 install --editable "core[test]" --upgrade
 
 	pip3 install --editable "CellProfiler[build, test]" --upgrade
 

@@ -425,7 +425,8 @@ def check_expected(image, expected, mask=None, ignore=False):
             assert numpy.all(mask == image.mask)
 
         numpy.testing.assert_array_almost_equal(
-            image.pixel_data[image.mask], expected[image.mask]
+            #image.pixel_data[image.mask], expected[image.mask]
+            image.pixel_data, expected
         )
 
 

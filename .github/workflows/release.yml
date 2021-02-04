@@ -10,12 +10,6 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - if: ${{ matrix.os == 'windows-2019' }}
-        name: Checkout CellProfiler-core
-        uses: actions/checkout@v2
-        with:
-          repository: emilroz/core
-          path: core
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/cache@v2
         with:
@@ -35,7 +29,7 @@ jobs:
           architecture: x64
       - run: |
           pip install --upgrade pip setuptools wheel
-          pip install numpy
+          pip install numpy==1.19.3
           pip install pyinstaller
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib

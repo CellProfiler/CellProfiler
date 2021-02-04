@@ -29,42 +29,48 @@ jobs:
           architecture: x64
       - run: |
           pip install --upgrade pip setuptools wheel
-          pip install numpy
-          git clone https://github.com/CellProfiler/distribution.git
-          git clone https://github.com/CellProfiler/pyinstaller.git
-      - run: pip install --editable .
-        working-directory: pyinstaller
+          pip install numpy==1.19.3
+          pip install pyinstaller
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         if: ${{ matrix.os == 'macos-10.15' }}
+        name: MacOS build
         run: |
+          ls -la
           sed -i '' 's/4.0.0/4.0.7/' Info.plist
           brew install mysql
           make
-          chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
-          chmod +x osx-codesign.sh && ./osx-codesign.sh
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.0.7.zip
         working-directory: ./distribution/macos
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
         if: ${{ matrix.os == 'windows-2019' }}
+        name: Windows build
         run: |
           pip install cython
           pip install mysqlclient==1.4.6
+          git clone https://github.com/glencoesoftware/core.git
+          cd core
+          git checkout compat-4-0
+          pip install --editable . --upgrade
+          cd ..
           pip install --editable .
       - if: ${{ matrix.os == 'windows-2019' }}
+        name: Windows pyinstaller build
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
           iscc /dMyAppVersion="4.0.7" "distribution/windows/cellprofiler.iss"
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
+        name: MacOS artifact upload
         with:
           name: CellProfiler-macOS-4.0.7.zip
           path: ./distribution/macos/dist/CellProfiler-macOS-4.0.7.zip
       - if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/upload-artifact@v2
+        name: Windows artifact upload
         with:
           name: CellProfiler-Windows-4.0.7.exe
           path: ./distribution/windows/Output/CellProfiler-Windows-4.0.7.exe
@@ -100,7 +106,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/zip
-          asset_name: CellProfiler-macOS-4.0.7.zip
+          asset_name: CellProfiler-macOS-4.0.7-gs.zip
           asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.0.7.zip
           upload_url: ${{ steps.create_release.outputs.upload_url }}
       - env:
@@ -108,7 +114,7 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/exe
-          asset_name: CellProfiler-Windows-4.0.7.exe
+          asset_name: CellProfiler-Windows-4.0.7-gs.exe
           asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.0.7.exe
           upload_url: ${{ steps.create_release.outputs.upload_url }}
 name: create-release

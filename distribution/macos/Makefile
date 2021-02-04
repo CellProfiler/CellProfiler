@@ -11,14 +11,14 @@ SHELL := bash
 .SUFFIXES:
 
 CellProfiler:
-	git clone https://github.com/emilroz/CellProfiler
+	git clone https://github.com/glencoesoftware/CellProfiler
 
 	cd $@ && git checkout compat-4-0
 
 .PHONY: dependencies
 dependencies: CellProfiler
 
-	git clone https://github.com/emilroz/core.git
+	git clone https://github.com/glencoesoftware/core.git
 	cd core && git checkout compat-4-0
 	pip3 install --editable "core[test]" --upgrade
 

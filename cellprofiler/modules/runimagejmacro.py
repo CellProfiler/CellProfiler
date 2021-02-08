@@ -82,7 +82,6 @@ should select the directory containing ImageJ-win64.exe (usually corresponding t
             "Macro directory", allow_metadata=False, doc=f"""Select the folder containing the macro.
 {_help.IO_FOLDER_CHOICE_HELP_TEXT}""")
 
-
         def set_directory_fn_macro(path):
             dir_choice, custom_path = self.macro_directory.get_parts_from_path(path)
             self.macro_directory.join_parts(dir_choice, custom_path)
@@ -120,7 +119,6 @@ temporary directory and assign its path as a value to this variable."""
 
         self.add_variable_button_out = DoSomething("Does your macro expect variables?", "Add another variable", self.add_macro_variables)
 
-
     def add_macro_variables(self, can_delete=True):
         group = SettingsGroup()
         if can_delete:
@@ -147,7 +145,6 @@ temporary directory and assign its path as a value to this variable."""
             group.append("remover", RemoveSettingButton("", "Remove this variable", self.macro_variables_list, group))
 
         self.macro_variables_list.append(group)
-
 
     def add_image_in(self, can_delete=True):
         """Add an image to the image_groups collection

@@ -903,7 +903,8 @@ staining.
             threshold = image_data[0]
 
         elif automatic or self.threshold_operation in (TM_LI, TM_SAUVOLA):
-            threshold = skimage.filters.threshold_li(image_data)
+            tol = max(numpy.min(numpy.diff(numpy.unique(image_data))) / 2, 0.5 / 65536)
+            threshold = skimage.filters.threshold_li(image_data, tolerance=tol)
 
         elif self.threshold_operation == TM_ROBUST_BACKGROUND:
             threshold = self.get_threshold_robust_background(image_data)
@@ -935,6 +936,7 @@ staining.
                 image_data,
                 method=skimage.filters.threshold_li,
                 volumetric=volumetric,
+                tolerance=max(numpy.min(numpy.diff(numpy.unique(image))) / 2, 0.5 / 65536)
             )
         elif self.threshold_operation == TM_OTSU:
             if self.two_class_otsu.value == O_TWO_CLASS:

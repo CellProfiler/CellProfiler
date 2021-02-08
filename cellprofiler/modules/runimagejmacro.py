@@ -7,6 +7,7 @@ then loads resulting image(s) back into CellProfiler.
 
 To operate, this module requires that the user has installed ImageJ (or FIJI)
 elsewhere on their system. It can be downloaded `here`_.
+
 You should point the module to the ImageJ executable in it's installation folder.
 
 The ImageJ macro itself should specify which input images and variables are needed.
@@ -25,9 +26,9 @@ Supports 2D? Supports 3D? Respects masks?
 YES          NO           NO
 ============ ============ ===============
 
-
 .. _here: https://imagej.nih.gov/ij/download.html
 .. _this guide: https://github.com/CellProfiler/CellProfiler/wiki/RunImageJMacro
+
 """
 
 import itertools
@@ -58,7 +59,9 @@ class RunImageJMacro(Module):
         self.executable_directory = Directory(
             "Executable directory", allow_metadata=False, doc="""\
 Select the folder containing the executable. MacOS users should select the directory where Fiji.app lives. Windows users 
-should select the directory containing ImageJ-win64.exe (usually corresponding to the Fiji.app folder).  {IO_FOLDER_CHOICE_HELP_TEXT}
+should select the directory containing ImageJ-win64.exe (usually corresponding to the Fiji.app folder).
+
+{IO_FOLDER_CHOICE_HELP_TEXT}
 """.format(**{
                 "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT
             }))
@@ -76,11 +79,8 @@ should select the directory containing ImageJ-win64.exe (usually corresponding t
         )
 
         self.macro_directory = Directory(
-            "Macro directory", allow_metadata=False, doc="""\
-        Select the folder containing the macro. {IO_FOLDER_CHOICE_HELP_TEXT}
-        """.format(**{
-                "IO_FOLDER_CHOICE_HELP_TEXT": _help.IO_FOLDER_CHOICE_HELP_TEXT
-            }))
+            "Macro directory", allow_metadata=False, doc=f"""Select the folder containing the macro.
+{_help.IO_FOLDER_CHOICE_HELP_TEXT}""")
 
 
         def set_directory_fn_macro(path):
@@ -94,13 +94,14 @@ should select the directory containing ImageJ-win64.exe (usually corresponding t
             browse_msg="Choose macro file"
         )
 
-        self.add_directory = Text("What variable in your macro defines the folder ImageJ should use?",
-                                  "Directory",
-                                  doc="Because CellProfiler will save the output images in a temporary directory, "
-                                      "this directory should be specified as a variable in the macro script. It is "
-                                      "assumed that the macro will use this directory variable to obtain the full path"
-                                      "to the inputted image. Enter the variable name here. CellProfiler will create "
-                                      "a temporary directory and assign its path as a value to this variable. ")
+        self.add_directory = Text(
+            "What variable in your macro defines the folder ImageJ should use?",
+            "Directory",
+            doc="""Because CellProfiler will save the output images in a temporary directory, this directory should be 
+specified as a variable in the macro script. It is assumed that the macro will use this directory variable 
+to obtain the full path to the inputted image. Enter the variable name here. CellProfiler will create a 
+temporary directory and assign its path as a value to this variable."""
+        )
 
         self.image_groups_in = []
         self.image_groups_out = []

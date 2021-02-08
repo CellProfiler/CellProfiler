@@ -1,3 +1,35 @@
+"""
+RunImageJMacro
+==============
+
+**RunImageJMacro** exports image(s), executes an ImageJ macro on them and
+then loads resulting image(s) back into CellProfiler.
+
+To operate, this module requires that the user has installed ImageJ (or FIJI)
+elsewhere on their system. It can be downloaded `here`_.
+You should point the module to the ImageJ executable in it's installation folder.
+
+The ImageJ macro itself should specify which input images and variables are needed.
+
+On running, CellProfiler saves required images into a temporary folder, executes the
+macro and then attempts to load images which the macro should save into that same
+temporary folder.
+
+See `this guide`_ for a full tutorial.
+
+|
+
+============ ============ ===============
+Supports 2D? Supports 3D? Respects masks?
+============ ============ ===============
+YES          NO           NO
+============ ============ ===============
+
+
+.. _here: https://imagej.nih.gov/ij/download.html
+.. _this guide: https://github.com/CellProfiler/CellProfiler/wiki/RunImageJMacro
+"""
+
 import itertools
 import os
 import subprocess

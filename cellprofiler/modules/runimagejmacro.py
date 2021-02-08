@@ -234,33 +234,38 @@ should select the directory containing ImageJ-win64.exe (usually corresponding t
 
     def run(self, workspace):
         default_output_directory = get_default_output_directory()
-        tag = str(random.randint(100000, 999999))
+        tag = "runimagejmacro_" + str(random.randint(100000, 999999))
         tempdir = os.path.join(default_output_directory, tag)
         os.makedirs(tempdir, exist_ok=True)
+        try:
+            for image_group in self.image_groups_in:
+                image = workspace.image_set.get_image(image_group.image_name.value)
+                image_pixels = image.pixel_data
+                skimage.io.imsave(os.path.join(tempdir, image_group.output_filename.value), image_pixels)
 
-        for image_group in self.image_groups_in:
-            image = workspace.image_set.get_image(image_group.image_name.value)
-            image_pixels = image.pixel_data
-            skimage.io.imsave(os.path.join(tempdir, image_group.output_filename.value), image_pixels)
+            if self.executable_file.value[-4:] == ".app":
+                executable = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value, "Contents/MacOS/ImageJ-macosx")
+            else:
+                executable = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value)
+            cmd = [executable, "--headless", "console", "--run", os.path.join(default_output_directory, self.macro_directory.value.split("|")[1], self.macro_file.value)]
 
-        if self.executable_file.value[-4:] == ".app":
-            executable = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value, "Contents/MacOS/ImageJ-macosx")
-        else:
-            executable = os.path.join(default_output_directory, self.executable_directory.value.split("|")[1], self.executable_file.value)
-        cmd = [executable, "--headless", "console", "--run", os.path.join(default_output_directory, self.macro_directory.value.split("|")[1], self.macro_file.value)]
+            cmd += [self.stringify_metadata(tempdir)]
 
-        cmd += [self.stringify_metadata(tempdir)]
+            subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-        subp = subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-        for image_group in self.image_groups_out:
-            image_pixels = skimage.io.imread(os.path.join(tempdir,image_group.input_filename.value))
-            workspace.image_set.add(image_group.image_name.value, Image(image_pixels, convert=False))
-
-        for subdir, dirs, files in os.walk(tempdir):
-            for file in files:
-                os.remove(os.path.join(tempdir, file))
-        os.removedirs(tempdir)
+            for image_group in self.image_groups_out:
+                if not os.path.exists(os.path.join(tempdir, image_group.input_filename.value)):
+                    msg = f"CellProfiler couldn't find the output expected from the ImageJ Macro," \
+                          f"\n File {image_group.input_filename.value} was missing"
+                    raise FileNotFoundError("Missing file", msg)
+                image_pixels = skimage.io.imread(os.path.join(tempdir, image_group.input_filename.value))
+                workspace.image_set.add(image_group.image_name.value, Image(image_pixels, convert=False))
+        finally:
+            # Clean up temp directory regardless of macro success
+            for subdir, dirs, files in os.walk(tempdir):
+                for file in files:
+                    os.remove(os.path.join(tempdir, file))
+            os.removedirs(tempdir)
 
         pixel_data = []
         image_names = []

@@ -469,8 +469,8 @@ a separate alignment to the first image can be calculated:
         # leaving f(x,y)*(t(x-u,y-v)-t_mean) which is a convolution of f
         # by t-t_mean.
         #
-        fp1 = fft2(pixels1, fshape)
-        fp2 = fft2(pixels2, fshape)
+        fp1 = fft2(pixels1, fshape.tolist())
+        fp2 = fft2(pixels2, fshape.tolist())
         corr12 = ifft2(fp1 * fp2.conj()).real
 
         #

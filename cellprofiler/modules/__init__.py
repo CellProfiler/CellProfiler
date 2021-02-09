@@ -72,6 +72,7 @@ builtin_modules = {
     "rescaleintensity": "RescaleIntensity",
     "resizeobjects": "ResizeObjects",
     "resize": "Resize",
+    "runimagejmacro": "RunImageJMacro",
     "savecroppedobjects": "SaveCroppedObjects",
     "saveimages": "SaveImages",
     "shrinktoobjectcenters": "ShrinkToObjectCenters",

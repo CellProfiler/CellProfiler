@@ -5,6 +5,7 @@
 
 import csv
 import datetime
+import gc
 import hashlib
 import io
 import logging
@@ -127,6 +128,7 @@ from cellprofiler_core.preferences import (
     get_max_workers,
     set_default_image_directory,
     get_telemetry,
+    get_conserve_memory,
 )
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.utilities.core.modules import (
@@ -3321,6 +3323,8 @@ class PipelineController(object):
         self.__pipeline_list_view.on_stop_debugging()
         self.__pipeline.end_run()
         self.show_launch_controls()
+        if get_conserve_memory():
+            gc.collect()
 
     def do_step(self, module, select_next_module=False):
         """Do a debugging step by running a module

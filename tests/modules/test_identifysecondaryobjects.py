@@ -1331,16 +1331,16 @@ def test_relationships_missing():
         )
         assert len(result) == 2
         for i in range(2):
-            object_number = i + 1
-            if object_number >= missing:
-                object_number += 1
+            first_object_number = second_object_number = i + 1
+            if first_object_number >= missing:
+                first_object_number += 1
             assert result[R_FIRST_IMAGE_NUMBER][i] == 1
             assert result[R_SECOND_IMAGE_NUMBER][i] == 1
             assert (
                 result[R_FIRST_OBJECT_NUMBER][i]
-                == object_number
+                == first_object_number
             )
             assert (
                 result[R_SECOND_OBJECT_NUMBER][i]
-                == object_number
+                == second_object_number
             )

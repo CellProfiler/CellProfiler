@@ -606,7 +606,8 @@ HasImagePlaneDetails:False"""
                     assert setting_v6["name"] == setting_gt["name"]
                     assert setting_v6["text"] == setting_gt["text"]
             else:
-                assert pipeline_groundtruth[key] == pipeline_v6[key]
+                if key != "date_revision":
+                    assert pipeline_groundtruth[key] == pipeline_v6[key]
 
     def test_load_and_dump_json(self):
         pipeline = get_empty_pipeline()

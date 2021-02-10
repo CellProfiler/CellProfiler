@@ -32,6 +32,7 @@ from cellprofiler_core.constants.worker import (
     the_zmq_context,
     all_measurements,
 )
+from cellprofiler_core.preferences import set_conserve_memory
 from cellprofiler_core.worker._worker import Worker
 
 """Set the log level through the environment by specifying AW_LOG_LEVEL"""
@@ -74,6 +75,12 @@ def aw_parse_args():
         default=None,
     )
     parser.add_option(
+        "--conserve-memory",
+        dest="conserve_memory",
+        default=None,
+        help="CellProfiler will attempt to release unused memory after each image set.",
+    )
+    parser.add_option(
         "--jvm-heap-size",
         dest="jvm_heap_size",
         default=None,
@@ -107,6 +114,8 @@ def aw_parse_args():
     #
     if options.plugins_directory is not None:
         set_plugin_directory(options.plugins_directory, globally=False)
+    if options.conserve_memory is not None:
+        set_conserve_memory(options.conserve_memory, globally=False)
     else:
         logging.warning("Plugins directory not set")
 

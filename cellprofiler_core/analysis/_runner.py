@@ -25,6 +25,7 @@ from ..measurement import Measurements
 from ..utilities.measurement import load_measurements_from_buffer
 from ..pipeline import dump
 from ..preferences import get_plugin_directory
+from ..preferences import get_conserve_memory
 from ..preferences import get_temporary_directory
 from ..preferences import preferences_as_dict
 from ..utilities.analysis import close_all_on_exec, start_daemon_thread
@@ -661,6 +662,8 @@ class Runner:
                 cls.work_announce_address,
                 "--plugins-directory",
                 get_plugin_directory(),
+                "--conserve-memory",
+                str(get_conserve_memory()),
             ]
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.

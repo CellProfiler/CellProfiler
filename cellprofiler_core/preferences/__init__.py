@@ -306,6 +306,7 @@ TABLE_FONT_SIZE = "TableFontSize"
 BACKGROUND_COLOR = "BackgroundColor"
 PIXEL_SIZE = "PixelSize"
 COLORMAP = "Colormap"
+CONSERVE_MEMORY = "ConserveMemory"
 MODULEDIRECTORY = "ModuleDirectory"
 SKIPVERSION = "SkipVersion2.1"
 FF_RECENTFILES = "RecentFile%d"
@@ -389,7 +390,7 @@ SPP_ALL = [
 ]
 
 # Registry Key Types
-BOOL_KEYS = {SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB}
+BOOL_KEYS = {SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB, CONSERVE_MEMORY}
 INT_KEYS = {SKIPVERSION, OMERO_PORT, MAX_WORKERS, JVM_HEAP_MB}
 FLOAT_KEYS = {TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE}
 
@@ -398,6 +399,14 @@ FLOAT_KEYS = {TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE}
 # Preferences help text
 #
 #######################
+CONSERVE_MEMORY_HELP = """\
+If enabled, CellProfiler will attempt to release unused system memory
+after processing each image in an analysis run. This can help to
+conserve system resources if the user is running other tasks in the
+background. Enabling this setting may slightly impact analysis speed,
+particularly during large runs.\
+"""
+
 DEFAULT_COLORMAP_HELP = """\
 Specifies the color map that sets the colors for labels and other
 elements. See this `page`_ for pictures of available colormaps.
@@ -1099,6 +1108,7 @@ def add_recent_file(filename, category=""):
 
 
 __plugin_directory = None
+__conserve_memory = None
 
 
 def get_plugin_directory():
@@ -1822,6 +1832,22 @@ def set_normalization_factor(normalization_factor):
         return
     __normalization_factor = normalization_factor
     config_write(NORMALIZATION_FACTOR, normalization_factor)
+
+
+def get_conserve_memory():
+    global __conserve_memory
+    if __conserve_memory is not None:
+        return __conserve_memory in (True, "True")
+    if not config_exists(CONSERVE_MEMORY):
+        return False
+    return get_config().ReadBool(CONSERVE_MEMORY)
+
+
+def set_conserve_memory(val, globally=True):
+    global __conserve_memory
+    __conserve_memory = val
+    if globally:
+        config_write(CONSERVE_MEMORY, val)
 
 
 def add_progress_callback(callback):

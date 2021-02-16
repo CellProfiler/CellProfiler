@@ -1085,7 +1085,7 @@ class ModuleView:
                 not hasattr(control, "bad_color_name")
                 or control.bad_color_name != v.value
             ):
-                logging.warn("Failed to set color to %s" % v.value)
+                logging.warning("Failed to set color to %s" % v.value)
                 control.bad_color_name = v.value
         if control is None:
             control = wx.lib.colourselect.ColourSelect(

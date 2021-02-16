@@ -1120,7 +1120,7 @@ def test_3D_no_overlap():
     ftr_Earth_Movers_Distance_measurement = measurements.get_current_image_measurement(
         ftr_Earth_Movers_Distance
     )
-    assert round(abs(ftr_Earth_Movers_Distance_measurement - 52785), 7) == 0
+    assert round(abs(ftr_Earth_Movers_Distance_measurement - 52812), 7) == 0
 
     ftr_rand_index = module.measurement_name(
         cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX
@@ -1218,7 +1218,7 @@ def test_3D_half_overlap():
     ftr_Earth_Movers_Distance_measurement = measurements.get_current_image_measurement(
         ftr_Earth_Movers_Distance
     )
-    assert round(abs(ftr_Earth_Movers_Distance_measurement - 52948), 7) == 0
+    assert round(abs(ftr_Earth_Movers_Distance_measurement - 52921), 7) == 0
 
     ftr_rand_index = module.measurement_name(
         cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX

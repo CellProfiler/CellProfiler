@@ -18,7 +18,7 @@ setuptools.setup(
             "twine==3.1.1",
         ],
         "test": ["pytest==5.4.1"],
-        "wx": ["wxPython==4.0.7.post2"],
+        "wx": ["wxPython==4.1.0"],
     },
     install_requires=[
         "boto3>=1.12.28",
@@ -41,6 +41,6 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["tests"]),
     python_requires=">=3.8",
     url="https://github.com/CellProfiler/core",
-    version="4.1.2",
+    version="4.1.3",
     zip_safe=False,
 )

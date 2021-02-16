@@ -231,7 +231,7 @@ You can create a morphological skeleton with the
     def measure(self, image, workspace):
         data = image.pixel_data
 
-        data = data.astype(numpy.bool)
+        data = data.astype(bool)
 
         measurements = workspace.measurements
 

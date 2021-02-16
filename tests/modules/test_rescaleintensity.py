@@ -36,7 +36,7 @@ def image():
 def mask(image):
     data = image.pixel_data
 
-    mask = numpy.ones_like(data, dtype=numpy.bool)
+    mask = numpy.ones_like(data, dtype=bool)
 
     mask[data < 50] = False
 

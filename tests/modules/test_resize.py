@@ -345,7 +345,7 @@ def test_resize_volume_factor_grayscale():
 
     mask = data > 0.5
 
-    crop_mask = numpy.zeros_like(data, dtype=numpy.bool)
+    crop_mask = numpy.zeros_like(data, dtype=bool)
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
@@ -392,7 +392,7 @@ def test_resize_volume_factor_color():
 
     mask = data[:, :, :, 0] > 0.5
 
-    crop_mask = numpy.zeros_like(mask, dtype=numpy.bool)
+    crop_mask = numpy.zeros_like(mask, dtype=bool)
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
@@ -442,7 +442,7 @@ def test_resize_volume_manual_grayscale():
 
     mask = data > 0.5
 
-    crop_mask = numpy.zeros_like(data, dtype=numpy.bool)
+    crop_mask = numpy.zeros_like(data, dtype=bool)
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
@@ -493,7 +493,7 @@ def test_resize_volume_manual_color():
 
     mask = data[:, :, :, 0] > 0.5
 
-    crop_mask = numpy.zeros_like(mask, dtype=numpy.bool)
+    crop_mask = numpy.zeros_like(mask, dtype=bool)
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
@@ -547,7 +547,7 @@ def test_resize_volume_grayscale_other_volume_grayscale():
 
     mask = data > 0.5
 
-    crop_mask = numpy.zeros_like(data, dtype=numpy.bool)
+    crop_mask = numpy.zeros_like(data, dtype=bool)
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
@@ -602,7 +602,7 @@ def test_resize_volume_grayscale_other_volume_color():
 
     mask = data > 0.5
 
-    crop_mask = numpy.zeros_like(data, dtype=numpy.bool)
+    crop_mask = numpy.zeros_like(data, dtype=bool)
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
@@ -660,7 +660,7 @@ def test_resize_volume_color_other_volume_grayscale():
 
     mask = data[:, :, :, 0] > 0.5
 
-    crop_mask = numpy.zeros_like(mask, dtype=numpy.bool)
+    crop_mask = numpy.zeros_like(mask, dtype=bool)
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 
@@ -718,7 +718,7 @@ def test_resize_volume_color_other_volume_color():
 
     mask = data[:, :, :, 0] > 0.5
 
-    crop_mask = numpy.zeros_like(mask, dtype=numpy.bool)
+    crop_mask = numpy.zeros_like(mask, dtype=bool)
 
     crop_mask[1:-1, 1:-1, 1:-1] = True
 

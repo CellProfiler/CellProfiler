@@ -691,7 +691,7 @@ def test_multiply_binary():
         {"pixel_data": numpy.random.uniform(size=(10, 10)) > 0.5} for i in range(2)
     ]
     output = run_imagemath(images, fn)
-    assert output.pixel_data.dtype == numpy.bool
+    assert output.pixel_data.dtype == bool
 
 
 def test_divide():

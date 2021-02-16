@@ -2064,7 +2064,7 @@ class Figure(wx.Frame):
 
                 image = numpy.dstack(image)
             else:
-                if in_range[0].dtype == numpy.bool:
+                if in_range[0].dtype == bool:
                     image = skimage.exposure.rescale_intensity(image)
                 else:
                     image = skimage.exposure.rescale_intensity(image, in_range=in_range)

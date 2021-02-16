@@ -432,7 +432,7 @@ is applied before other operations.""",
 
     def use_logical_operation(self, pixel_data):
         return all(
-            [pd.dtype == numpy.bool for pd in pixel_data if not numpy.isscalar(pd)]
+            [pd.dtype == bool for pd in pixel_data if not numpy.isscalar(pd)]
         )
 
     def run(self, workspace):

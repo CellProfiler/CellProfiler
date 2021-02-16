@@ -63,7 +63,7 @@ setuptools.setup(
     },
     install_requires=[
         "boto3>=1.12.28",
-        "cellprofiler-core==4.1.2",
+        "cellprofiler-core==4.1.3",
         "centrosome==1.2.0",
         "docutils==0.15.2",
         "h5py==2.10.0",
@@ -93,7 +93,7 @@ setuptools.setup(
     package_data=package_data(),
     include_package_data=True,
     packages=setuptools.find_packages(exclude=["tests*"]),
-    python_requires=">=3.8, <3.9",
+    python_requires=">=3.8",
     setup_requires=["pytest"],
     url="https://github.com/CellProfiler/CellProfiler",
     version=find_version("cellprofiler", "__init__.py"),

@@ -1783,7 +1783,7 @@ class Figure(wx.Frame):
 
         # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
         if image.shape[2] > 3:
-            logging.warn(
+            logging.warning(
                 "Multichannel display is only supported for RGB (3-channel) data."
                 " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
                     image.shape[2]
@@ -1930,7 +1930,7 @@ class Figure(wx.Frame):
             else:
                 shape = [numpy.max(ijv[:, 0]) + 1, numpy.max(ijv[:, 1]) + 1]
 
-        image = numpy.zeros(list(shape) + [3], numpy.float)
+        image = numpy.zeros(list(shape) + [3], float)
 
         if len(ijv) > 0:
             cm = matplotlib.cm.get_cmap(get_default_colormap())
@@ -2064,7 +2064,7 @@ class Figure(wx.Frame):
 
                 image = numpy.dstack(image)
             else:
-                if in_range[0].dtype == numpy.bool:
+                if in_range[0].dtype == bool:
                     image = skimage.exposure.rescale_intensity(image)
                 else:
                     image = skimage.exposure.rescale_intensity(image, in_range=in_range)

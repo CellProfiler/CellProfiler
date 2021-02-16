@@ -2533,12 +2533,12 @@ available:
 
                 if (
                     issubclass(pixels.dtype.type, numpy.floating)
-                    or pixels.dtype == numpy.bool
+                    or pixels.dtype == bool
                 ):
                     factor = 255
                     if (
                         self.auto_scale_thumbnail_intensities
-                        and pixels.dtype != numpy.bool
+                        and pixels.dtype != bool
                     ):
                         pixels = (pixels - pixels.min()) / pixels.max()
                 else:

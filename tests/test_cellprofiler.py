@@ -55,7 +55,6 @@ class TestCellProfiler(unittest.TestCase):
             # Run with a .cp file
             #
             fly_pipe = get_test_resources_directory("../ExampleFlyURL.cppipe")
-            measurements_file = os.path.join(output_directory, "Measurements.h5")
             done_file = os.path.join(output_directory, "Done.txt")
             self.run_cellprofiler(
                 "-c",
@@ -72,30 +71,11 @@ class TestCellProfiler(unittest.TestCase):
                 "1",
                 "-l",
                 "1",
-                measurements_file,
             )
             import cellprofiler_core.preferences as cpprefs
 
-            self.assertTrue(os.path.exists(measurements_file))
             self.assertTrue(os.path.exists(done_file))
-            #
-            # Re-run using the measurements file.
-            #
-            m2_file = os.path.join(output_directory, "M2.h5")
-            self.run_cellprofiler(
-                "-c",
-                "-r",
-                "-o",
-                output_directory,
-                "-f",
-                "1",
-                "-l",
-                "1",
-                "-p",
-                measurements_file,
-                m2_file,
-            )
-            self.assertTrue(os.path.exists(m2_file))
+
         except IOError as e:
             if e.args[0] != "http error":
                 raise e

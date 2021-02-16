@@ -294,7 +294,7 @@ class MeasureObjectIntensity(Module):
                     image_mask = image.mask
                 else:
                     masked_image = img
-                    image_mask = numpy.ones_like(img, dtype=numpy.bool)
+                    image_mask = numpy.ones_like(img, dtype=bool)
 
                 if image.dimensions == 2:
                     img = img.reshape(1, *img.shape)

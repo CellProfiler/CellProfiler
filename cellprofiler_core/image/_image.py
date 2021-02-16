@@ -241,7 +241,7 @@ class Image:
         if self.multichannel:
             shape = shape[:-1]
 
-        return numpy.ones(shape, dtype=numpy.bool)
+        return numpy.ones(shape, dtype=bool)
 
     @mask.setter
     def mask(self, mask):
@@ -252,7 +252,7 @@ class Image:
         """
         m = numpy.array(mask)
 
-        if not (m.dtype.type is numpy.bool):
+        if not (m.dtype.type is bool):
             m = m != 0
 
         self.__mask = m

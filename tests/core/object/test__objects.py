@@ -30,7 +30,7 @@ class TestObjects:
     def test_masked(self):
         x = numpy.zeros((224, 224, 3), numpy.float32)
 
-        mask = numpy.ones((224, 224), numpy.bool)
+        mask = numpy.ones((224, 224), bool)
 
         parent_image = Image(x, mask=mask)
 
@@ -50,7 +50,7 @@ class TestObjects:
         assert objects.shape == (224, 224)
 
     def test_segmented(self):
-        segmented = numpy.ones((224, 224), numpy.bool)
+        segmented = numpy.ones((224, 224), bool)
 
         objects = Objects()
 

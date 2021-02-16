@@ -20,7 +20,7 @@ import cellprofiler_core.utilities.hdf5_dict
 
 @pytest.fixture
 def image10():
-    image = numpy.zeros((10, 10), dtype=numpy.bool)
+    image = numpy.zeros((10, 10), dtype=bool)
 
     image[2:4, 2:4] = 1
     image[5:7, 5:7] = 1

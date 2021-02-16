@@ -342,15 +342,15 @@ class TestHDF5Dict(unittest.TestCase):
 class TestHDF5FileList(unittest.TestCase):
     def setUp(self):
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
-        self.hdf_file = h5py.File(self.temp_filename)
+        self.hdf_file = h5py.File(self.temp_filename,"w")
         self.filelist = H5DICT.HDF5FileList(self.hdf_file)
 
         self.temp_fd_nocache, self.temp_filename_nocache = tempfile.mkstemp(".h5")
-        self.hdf_file_nocache = h5py.File(self.temp_filename_nocache)
+        self.hdf_file_nocache = h5py.File(self.temp_filename_nocache,"w")
         self.filelist_nocache = H5DICT.HDF5FileList(self.hdf_file_nocache)
 
         self.temp_fd_empty, self.temp_filename_empty = tempfile.mkstemp(".h5")
-        self.hdf_file_empty = h5py.File(self.temp_filename_empty)
+        self.hdf_file_empty = h5py.File(self.temp_filename_empty,"w")
 
     def tearDown(self):
         if isinstance(self.hdf_file, h5py.File):

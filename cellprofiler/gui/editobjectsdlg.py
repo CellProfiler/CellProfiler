@@ -783,7 +783,7 @@ class EditObjectsDialog(wx.Dialog):
                         * ((numpy.e - 1) / (max_intensity - min_intensity))
                     )
         else:
-            cimage = numpy.zeros((self.shape[0], self.shape[1], 3), numpy.float)
+            cimage = numpy.zeros((self.shape[0], self.shape[1], 3), float)
         if len(self.to_keep) > 1:
             in_artist = numpy.zeros(len(self.to_keep), bool)
             for d in list(self.artists.values()):

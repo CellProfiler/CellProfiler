@@ -430,7 +430,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
             elif not numpy.isscalar(value):
                 value = value.copy()
                 # ensure that the data can be changed in-place by floating point ops
-                value = value.astype(numpy.float)
+                value = value.astype(float)
 
             if isinstance(value, str):
                 try:

@@ -1930,7 +1930,7 @@ class Figure(wx.Frame):
             else:
                 shape = [numpy.max(ijv[:, 0]) + 1, numpy.max(ijv[:, 1]) + 1]
 
-        image = numpy.zeros(list(shape) + [3], numpy.float)
+        image = numpy.zeros(list(shape) + [3], float)
 
         if len(ijv) > 0:
             cm = matplotlib.cm.get_cmap(get_default_colormap())

@@ -370,7 +370,7 @@ def test_track_one_moving():
 
     def m(feature, expected):
         name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "3"))
-        value_set = measurements.get_all_measurements(OBJECT_NAME, name)
+        value_set = measurements.get_measurement(OBJECT_NAME, name, measurements.get_image_numbers())
         assert len(expected) == len(value_set)
         for values, x in zip(value_set, expected):
             assert len(values) == 1
@@ -443,7 +443,7 @@ def test_track_split():
         name = "_".join(
             (cellprofiler.modules.trackobjects.F_PREFIX, feature, OBJECT_NAME, "5")
         )
-        return measurements.get_all_measurements("Image", name)[1]
+        return measurements.get_measurement("Image", name, measurements.get_image_numbers())[1]
 
     assert m(cellprofiler.modules.trackobjects.F_NEW_OBJECT_COUNT) == 0
     assert m(cellprofiler.modules.trackobjects.F_LOST_OBJECT_COUNT) == 0
@@ -1234,7 +1234,7 @@ def check_measurements(workspace, d):
     for feature, expected in list(d.items()):
         if numpy.isscalar(expected[0]):
             mname = module.image_measurement_name(feature)
-            values = m.get_all_measurements("Image", mname)
+            values = m.get_measurement("Image", mname, m.get_image_numbers())
             assert len(expected) == len(values), (
                 "Expected # image sets (%d) != actual (%d) for %s"
                 % (len(expected), len(values), feature)
@@ -1244,7 +1244,7 @@ def check_measurements(workspace, d):
             )
         else:
             mname = module.measurement_name(feature)
-            values = m.get_all_measurements(OBJECT_NAME, mname)
+            values = m.get_measurement(OBJECT_NAME, mname, m.get_image_numbers())
             assert len(expected) == len(values), (
                 "Expected # image sets (%d) != actual (%d) for %s"
                 % (len(expected), len(values), feature)
@@ -1801,8 +1801,8 @@ def test_dont_merge():
     module.merge_cost.value = 28
     module.max_merge_score.value = 30
     module.run_as_data_tool(workspace)
-    labels = workspace.measurements.get_all_measurements(
-        OBJECT_NAME, module.measurement_name(cellprofiler.modules.trackobjects.F_LABEL)
+    labels = workspace.measurements.get_measurement(
+        OBJECT_NAME, module.measurement_name(cellprofiler.modules.trackobjects.F_LABEL), workspace.measurements.get_image_numbers()
     )
     assert len(labels) == 3
     assert len(labels[0]) == 2
@@ -1836,8 +1836,8 @@ def test_filter_merge():
     module.merge_cost.value = 30
     module.max_merge_score.value = 28
     module.run_as_data_tool(workspace)
-    labels = workspace.measurements.get_all_measurements(
-        OBJECT_NAME, module.measurement_name(cellprofiler.modules.trackobjects.F_LABEL)
+    labels = workspace.measurements.get_measurement(
+        OBJECT_NAME, module.measurement_name(cellprofiler.modules.trackobjects.F_LABEL), workspace.measurements.get_image_numbers()
     )
     assert len(labels) == 3
     assert len(labels[0]) == 2
@@ -2714,7 +2714,7 @@ def test_neighbour_track_one_moving():
 
     def m(feature, expected):
         name = "_".join((cellprofiler.modules.trackobjects.F_PREFIX, feature, "3"))
-        value_set = measurements.get_all_measurements(OBJECT_NAME, name)
+        value_set = measurements.get_measurement(OBJECT_NAME, name, measurements.get_image_numbers())
         assert len(expected) == len(value_set)
         for values, x in zip(value_set, expected):
             assert len(values) == 1

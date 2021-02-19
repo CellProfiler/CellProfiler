@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-Please include all requested information- reports without specification of OS/Version information or without SPECIFIC information on how to reproduce, including an attached/link image set and pipeline, may be closed without investigation. You may delete this section before posting your issue below.
+Please include all requested information- reports without specification of OS/Version information or without SPECIFIC information on how to reproduce, including an attached/linked image set and pipeline, may be closed without investigation. You may delete this section before posting your issue below.
 ---
 
 **Describe the bug**

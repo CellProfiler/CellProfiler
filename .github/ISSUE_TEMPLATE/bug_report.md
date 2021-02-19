@@ -7,6 +7,9 @@ assignees: ''
 
 ---
 
+Please include all requested information- reports without specification of OS/Version information or without SPECIFIC information on how to reproduce, including an attached/link image set and pipeline, may be closed without investigation. You may delete this section before posting your issue below.
+---
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
@@ -27,7 +30,7 @@ If applicable, add screenshots to help explain your problem.
  - OS: [e.g. Windows 10, OSX 14.6]
  - CellProfiler Version [e.g. 2.2, 3.1.9]
  - Downloaded from the website or installed from source?
- - If the latter, how?
+ - If the latter, how (cloned, installed from pypi, etc)?
 
 **Additional context**
 Add any other context about the problem here.

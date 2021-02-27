@@ -29,7 +29,7 @@ jobs:
           architecture: x64
       - run: |
           pip install --upgrade pip setuptools wheel
-          pip install numpy==1.19.3
+          pip install numpy==1.20.1
           pip install pyinstaller
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib

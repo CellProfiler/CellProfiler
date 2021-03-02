@@ -2,6 +2,7 @@
 
 import os
 import os.path
+import pkgutil
 
 import PyInstaller.compat
 import PyInstaller.utils.hooks
@@ -24,6 +25,14 @@ datas += [
 ]
 
 hiddenimports = []
+
+for module_name in list(pkgutil.iter_modules()):
+    if module_name[1].startswith("omero_"):
+        hiddenimports.append(module_name[1])
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("Ice")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("IceImport")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("omero")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("omero.all")
 
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler_core.modules')

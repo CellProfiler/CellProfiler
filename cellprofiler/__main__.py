@@ -287,7 +287,7 @@ def stop_cellprofiler():
     # readers open leaves the OMERO.server services open which in turn leads to
     # high memory consumption.
     bioformats.formatreader.clear_image_reader_cache()
-
+    bioformats.formatreader.omero_logout()
     stop_java()
 
 

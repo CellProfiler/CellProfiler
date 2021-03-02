@@ -41,6 +41,7 @@ jobs:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         if: ${{ matrix.os == 'macos-10.14' }}
         name: MacOS build
+        continue-on-error: true
         run: |
           ls -la /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/
           ls -la /Library/Developer/CommandLineTools/SDKs/

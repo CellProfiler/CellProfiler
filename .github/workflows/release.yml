@@ -44,6 +44,8 @@ jobs:
         run: |
           ls -la /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/
           ls -la /Library/Developer/CommandLineTools/SDKs/
+          export CPATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include
+          export C_INCLUDE_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include
           ls -la
           sed -i '' 's/4.0.0/4.0.7/' Info.plist
           brew install mysql

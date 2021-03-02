@@ -18,6 +18,8 @@ CellProfiler:
 .PHONY: dependencies
 dependencies: CellProfiler
 
+	pip install https://github.com/emilroz/CellProfiler/releases/download/v4.0.7-omero-3d/zeroc_ice-3.6.5-cp38-cp38-macosx_10_14_x86_64.whl
+
 	git clone https://github.com/glencoesoftware/omero-reader.git
 	cd omero-reader && git checkout master && pip install --editable . --upgrade
 

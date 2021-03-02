@@ -41,12 +41,8 @@ jobs:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         if: ${{ matrix.os == 'macos-10.14' }}
         name: MacOS build
-        continue-on-error: true
         run: |
-          ls -la /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/
-          ls -la /Library/Developer/CommandLineTools/SDKs/
-          export CPATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include
-          export C_INCLUDE_PATH=/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include
+          pip install https://github.com/emilroz/CellProfiler/releases/download/v4.0.7-omero-3d/zeroc_ice-3.6.5-cp38-cp38-macosx_10_14_x86_64.whl
           ls -la
           sed -i '' 's/4.0.0/4.0.7/' Info.plist
           brew install mysql
@@ -84,7 +80,6 @@ jobs:
       - if: ${{ matrix.os == 'macos-10.14' }}
         uses: actions/upload-artifact@v1
         name: MacOS artifact upload
-        continue-on-error: true
         with:
           name: CellProfiler-macOS-4.0.7.zip
           path: ./distribution/macos/dist/CellProfiler-macOS-4.0.7.zip
@@ -117,7 +112,6 @@ jobs:
         with:
           name: CellProfiler-macOS-4.0.7.zip
           path: ./
-          continue-on-error: true
       - uses: actions/download-artifact@v1
         with:
           name: CellProfiler-Windows-4.0.7.exe
@@ -130,7 +124,6 @@ jobs:
           asset_name: CellProfiler-macOS-4.0.7-gs.zip
           asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.0.7.zip
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          continue-on-error: true
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/upload-release-asset@v1

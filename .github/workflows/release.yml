@@ -51,6 +51,16 @@ jobs:
         run: |
           pip install cython
           pip install mysqlclient==1.4.6
+          git clone https://github.com/glencoesoftware/omero-reader.git
+          cd omero-reader
+          git checkout master
+          pip install --editable . --upgrade
+          cd ..
+          git clone https://github.com/emilroz/python-bioformats.git
+          cd python-bioformats
+          git checkout compat-4-0
+          pip install --editable . --upgrade
+          cd ..
           git clone https://github.com/emilroz/core.git
           cd core
           git checkout compat-4-0

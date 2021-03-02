@@ -19,7 +19,7 @@ CellProfiler:
 dependencies: CellProfiler
 
 	git clone https://github.com/glencoesoftware/omero-reader.git
-	cd omero-reader && git checkout master & pip install --editable . --upgrade
+	cd omero-reader && git checkout master && pip install --editable . --upgrade
 
 	git clone https://github.com/emilroz/python-bioformats.git
 	cd python-bioformats && git checkout compat-4-0 && pip install --editable . --upgrade

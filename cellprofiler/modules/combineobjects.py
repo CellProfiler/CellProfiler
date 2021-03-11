@@ -116,15 +116,17 @@ subsequent modules.""",
 
         objects_y = workspace.object_set.get_objects(self.objects_y.value)
 
+        dimensions = objects_x.dimensions
+
         assert (
             objects_x.shape == objects_y.shape
         ), "Objects sets must have the same dimensions"
 
-        labels_x = objects_x.segmented.copy()
-        labels_y = objects_y.segmented.copy()
+        labels_x = objects_x.segmented.copy().astype("uint16")
+        labels_y = objects_y.segmented.copy().astype("uint16")
 
         output = self.combine_arrays(labels_x, labels_y)
-        output_labels = skimage.morphology.label(output)
+        output_labels = skimage.morphology.label(output).astype("uint16")
         output_objects = Objects()
         output_objects.segmented = output_labels
 
@@ -142,9 +144,10 @@ subsequent modules.""",
             workspace.display_data.input_object_y = objects_y.segmented
             workspace.display_data.output_object_name = self.output_object.value
             workspace.display_data.output_object = output_objects.segmented
+            workspace.display_data.dimensions = dimensions
 
     def display(self, workspace, figure):
-        figure.set_subplots((2, 2))
+        figure.set_subplots(dimensions=workspace.display_data.dimensions, subplots=(2, 2))
         cmap = figure.return_cmap()
 
         ax = figure.subplot_imshow_labels(
@@ -172,7 +175,7 @@ subsequent modules.""",
         )
 
     def combine_arrays(self, labels_x, labels_y):
-        output = numpy.zeros_like(labels_x)
+        output = numpy.zeros_like(labels_x).astype("uint16")
         method = self.merge_method.value
 
         # Ensure labels in each set are unique
@@ -199,6 +202,8 @@ subsequent modules.""",
                 output[mapped] = label
                 labels_y[mapped] = 0
 
+        is_2d = labels_x.ndim == 2
+
         # Resolve conflicting labels
         if method == "Discard":
             return numpy.where(labels_x > 0, labels_x, output)
@@ -208,17 +213,31 @@ subsequent modules.""",
             disputed = numpy.logical_and(labels_x > 0, labels_y > 0)
             seeds = numpy.add(labels_x, labels_y)
             seeds[disputed] = 0
-            distances, (i, j) = scipy.ndimage.distance_transform_edt(
-                seeds == 0, return_indices=True
-            )
-            output[to_segment] = seeds[i[to_segment], j[to_segment]]
+            if is_2d:
+                distances, (i, j) = scipy.ndimage.distance_transform_edt(
+                    seeds == 0, return_indices=True
+                )
+                output[to_segment] = seeds[i[to_segment], j[to_segment]]
+            else:
+                distances, (i, j, v) = scipy.ndimage.distance_transform_edt(
+                    seeds == 0, return_indices=True
+                )
+                output[to_segment] = seeds[i[to_segment], j[to_segment], v[to_segment]]
+
 
         elif method == "Merge":
             to_segment = numpy.logical_or(labels_x > 0, labels_y > 0)
-            distances, (i, j) = scipy.ndimage.distance_transform_edt(
-                labels_x == 0, return_indices=True
-            )
-            output[to_segment] = labels_x[i[to_segment], j[to_segment]]
+            if is_2d:
+                distances, (i, j) = scipy.ndimage.distance_transform_edt(
+                    labels_x == 0, return_indices=True
+                )
+                output[to_segment] = labels_x[i[to_segment], j[to_segment]]
+            else:
+                distances, (i, j, v) = scipy.ndimage.distance_transform_edt(
+                    labels_x == 0, return_indices=True
+                )
+                output[to_segment] = labels_x[i[to_segment], j[to_segment], v[to_segment]]
+
 
         return output
 
@@ -232,3 +251,6 @@ subsequent modules.""",
 
     def get_measurement_columns(self, pipeline):
         return get_object_measurement_columns(self.output_object.value)
+
+    def volumetric(self):
+        return True

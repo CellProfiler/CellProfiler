@@ -26,7 +26,7 @@ segments will be reassigned as seperate objects.
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           NO
+YES          YES           NO
 ============ ============ ===============
 
 """
@@ -71,7 +71,7 @@ class CombineObjects(Identify):
             doc="""\
 When combining sets of objects, it is possible that both sets had an object in the
 same location. Use this setting to choose how to handle objects which overlap with
-eachother.
+each other.
         
 - Selecting "Merge" will make overlapping objects combine into a single object, taking
   on the label of the object from the initial set. When an added object would overlap
@@ -126,7 +126,7 @@ subsequent modules.""",
         labels_y = objects_y.segmented.copy().astype("uint16")
 
         output = self.combine_arrays(labels_x, labels_y)
-        output_labels = skimage.morphology.label(output).astype("uint16")
+        output_labels = skimage.morphology.label(output)
         output_objects = Objects()
         output_objects.segmented = output_labels
 
@@ -175,7 +175,7 @@ subsequent modules.""",
         )
 
     def combine_arrays(self, labels_x, labels_y):
-        output = numpy.zeros_like(labels_x).astype("uint16")
+        output = numpy.zeros_like(labels_x)
         method = self.merge_method.value
 
         # Ensure labels in each set are unique

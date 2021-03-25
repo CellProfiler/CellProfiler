@@ -17,7 +17,7 @@ def image():
     return cellprofiler_core.image.Image(data)
 
 @pytest.fixture
-def image_3D():
+def image_volume():
     data = numpy.zeros((10, 10, 10))
 
     return cellprofiler_core.image.Image(data)
@@ -36,7 +36,7 @@ def objects_x():
     return segmented
 
 @pytest.fixture
-def objects_x_3D():
+def objects_x_volume():
     segmented = cellprofiler_core.object.Objects()
 
     segmented.segmented = numpy.zeros((10, 10, 10))
@@ -52,7 +52,7 @@ def objects_y():
     return segmented
 
 @pytest.fixture
-def objects_y_3D():
+def objects_y_volume():
     segmented = cellprofiler_core.object.Objects()
 
     segmented.segmented = numpy.zeros((10, 10, 10))
@@ -100,11 +100,11 @@ def workspace(images, objects_x, objects_y, measurements, module, objects, pipel
     )
 
 @pytest.fixture
-def workspace_3D(images, objects_x, objects_y, measurements, module, objects, pipeline):
-    images.add("example", image_3D)
+def workspace_volume(images, objects_x_volume, objects_y_volume, measurements, module, objects, pipeline):
+    images.add("example", image_volume)
 
-    objects.add_objects(objects_x_3D, "m")
-    objects.add_objects(objects_y_3D, "n")
+    objects.add_objects(objects_x_volume, "m")
+    objects.add_objects(objects_y_volume, "n")
 
     module.objects_x.value = "m"
     module.objects_y.value = "n"
@@ -142,6 +142,22 @@ class TestCombineObjects:
                 module.output_object.value = method
                 module.run(workspace)
                 assert (workspace.get_objects(method).segmented == segment).all()
+                
+        def test_one_object_first_image_volume(
+            self, objects_x_volume, module, workspace_volume, merge_methods
+        ):
+            # Test merge methods with one object in initial set
+            segment = numpy.zeros((10, 10, 10))
+            segment[2:4,2:4,2:4] = 1
+
+            objects_x_volume.segmented = segment
+
+            for method in merge_methods:
+                module.merge_method.value = method
+                module.output_object.value = method
+                module.run(workspace_volume)
+                assert (workspace_volume.get_objects(method).segmented == segment).all()
+
 
         def test_one_object_second_image(
             self, objects_y, module, workspace, merge_methods

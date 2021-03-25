@@ -16,6 +16,11 @@ def image():
 
     return cellprofiler_core.image.Image(data)
 
+@pytest.fixture
+def image_3D():
+    data = numpy.zeros((10, 10, 10))
+
+    return cellprofiler_core.image.Image(data)
 
 @pytest.fixture
 def images():
@@ -30,6 +35,13 @@ def objects_x():
 
     return segmented
 
+@pytest.fixture
+def objects_x_3D():
+    segmented = cellprofiler_core.object.Objects()
+
+    segmented.segmented = numpy.zeros((10, 10, 10))
+
+    return segmented
 
 @pytest.fixture
 def objects_y():
@@ -39,6 +51,13 @@ def objects_y():
 
     return segmented
 
+@pytest.fixture
+def objects_y_3D():
+    segmented = cellprofiler_core.object.Objects()
+
+    segmented.segmented = numpy.zeros((10, 10, 10))
+
+    return segmented
 
 @pytest.fixture
 def measurements():
@@ -80,6 +99,20 @@ def workspace(images, objects_x, objects_y, measurements, module, objects, pipel
         pipeline, module, images, objects, measurements, None
     )
 
+@pytest.fixture
+def workspace_3D(images, objects_x, objects_y, measurements, module, objects, pipeline):
+    images.add("example", image_3D)
+
+    objects.add_objects(objects_x_3D, "m")
+    objects.add_objects(objects_y_3D, "n")
+
+    module.objects_x.value = "m"
+    module.objects_y.value = "n"
+    module.output_object.value = "merged"
+
+    return cellprofiler_core.workspace.Workspace(
+        pipeline, module, images, objects, measurements, None
+    )
 
 class TestCombineObjects:
     def test_display(self):

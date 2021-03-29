@@ -361,11 +361,13 @@ CellProfiler.""".format(
             "Save with lossless compression?",
             value=True,
             doc="""\
-*(Used only when saving as file type tiff)*
+*(Used only when saving 2D images as file type tiff)*
 
 Choose whether or not to use lossless compression when saving
 images. This will lead to smaller file sizes, but somewhat longer 
-module execution time."""
+module execution time.  Note that the value of this setting will
+be ignored when saving 3D tiff images, which have been saved by
+default with compression since CellProfiler 3.1."""
         )
 
         self.stack_axis = Choice(
@@ -756,10 +758,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
 
             save_kwargs = {}
 
-            if image.volumetric and self.file_format.value == FF_TIFF:
-                save_kwargs.update({"compress": 6})
-
-            if self.tiff_compress.value and self.file_format.value == FF_TIFF:
+            if (image.volumetric or self.tiff_compress.value) and self.file_format.value == FF_TIFF:
                 save_kwargs.update({"compress": 6})
 
             if self.file_format.value == FF_H5:

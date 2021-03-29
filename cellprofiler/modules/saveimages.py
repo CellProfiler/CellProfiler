@@ -108,7 +108,7 @@ WS_LAST_CYCLE = "Last cycle"
 class SaveImages(Module):
     module_name = "SaveImages"
 
-    variable_revision_number = 15
+    variable_revision_number = 16
 
     category = "File Processing"
 
@@ -357,6 +357,17 @@ CellProfiler.""".format(
             ),
         )
 
+        self.tiff_compress = Binary(
+            "Save with lossless compression?",
+            value=True,
+            doc="""\
+*(Used only when saving as file type tiff)*
+
+Choose whether or not to use lossless compression when saving
+images. This will lead to smaller file sizes, but somewhat longer 
+module execution time."""
+        )
+
         self.stack_axis = Choice(
             "How to save the series",
             [AXIS_T, AXIS_Z],
@@ -474,6 +485,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             self.create_subdirectories,
             self.root_dir,
             self.stack_axis,
+            self.tiff_compress,
         ]
 
     def visible_settings(self):
@@ -505,6 +517,8 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         if supports_16_bit:
             # TIFF supports 8 & 16-bit, all others are written 8-bit
             result.append(self.bit_depth)
+        if self.file_format == FF_TIFF:
+            result.append(self.tiff_compress)
         if self.save_image_or_figure == IF_MOVIE:
             result.append(self.stack_axis)
         result.append(self.pathname)
@@ -745,6 +759,9 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             if image.volumetric and self.file_format.value == FF_TIFF:
                 save_kwargs.update({"compress": 6})
 
+            if self.tiff_compress.value and self.file_format.value == FF_TIFF:
+                save_kwargs.update({"compress": 6})
+
             if self.file_format.value == FF_H5:
                 save_h5(filename, pixels, volumetric=image.volumetric)
             else:
@@ -966,6 +983,9 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             # Added movie save axis
             setting_values.append(AXIS_T)
             variable_revision_number = 15
+        if variable_revision_number == 15:
+            setting_values.append(False)
+            variable_revision_number == 16
 
         return setting_values, variable_revision_number
 

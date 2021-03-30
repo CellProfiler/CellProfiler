@@ -174,6 +174,21 @@ class TestCombineObjects:
                 module.run(workspace)
                 assert (workspace.get_objects(method).segmented == segment).all()
 
+        def test_one_object_second_image_volume(
+                self, objects_y_volume, module, workspace_volume, merge_methods
+        ):
+            # Test merge methods with one object in target set
+            segment = numpy.zeros((10, 10, 10))
+            segment[2:4, 2:4, 2:4] = 1
+
+            objects_y_volume.segmented = segment
+
+            for method in merge_methods:
+                module.merge_method.value = method
+                module.output_object.value = method
+                module.run(workspace_volume)
+                assert (workspace_volume.get_objects(method).segmented == segment).all()
+
         def test_duplicate_object(self, objects_x, module, workspace, merge_methods):
             # Test merge methods with same object in both sets
             segment = numpy.zeros((10, 10))
@@ -187,6 +202,20 @@ class TestCombineObjects:
                 module.output_object.value = method
                 module.run(workspace)
                 assert (workspace.get_objects(method).segmented == segment).all()
+
+        def test_duplicate_object_volume(self, objects_x_volume, module, workspace_volume, merge_methods):
+            # Test merge methods with same object in both sets
+            segment = numpy.zeros((10, 10, 10))
+            segment[2:4, 2:4, 2:4] = 1
+
+            objects_x_volume.segmented = segment
+            objects_y_volume.segmented = segment
+
+            for method in merge_methods:
+                module.merge_method.value = method
+                module.output_object.value = method
+                module.run(workspace_volume)
+                assert (workspace_volume.get_objects(method).segmented == segment).all()
 
         def test_not_touching(
             self, objects_x, objects_y, module, workspace, merge_methods
@@ -205,6 +234,26 @@ class TestCombineObjects:
                 module.output_object.value = method
                 module.run(workspace)
                 combined = workspace.get_objects(method)
+                assert len(combined.indices) == 2
+                assert (combined.segmented == segment_x + 2 * segment_y).all()
+
+        def test_not_touching_volume(
+            self, objects_x_volume, objects_y_volume, module, workspace_volume, merge_methods
+        ):
+            # Test merge methods with two distinct objects
+            segment_x = numpy.zeros((10, 10, 10))
+            segment_x[2:4, 2:4, 2:4] = 1
+            objects_x_volume.segmented = segment_x
+
+            segment_y = numpy.zeros((10, 10, 10))
+            segment_y[8:10, 8:10, 8:10] = 1
+            objects_y_volume.segmented = segment_y
+
+            for method in merge_methods:
+                module.merge_method.value = method
+                module.output_object.value = method
+                module.run(workspace_volume)
+                combined = workspace_volume.get_objects(method)
                 assert len(combined.indices) == 2
                 assert (combined.segmented == segment_x + 2 * segment_y).all()
 

@@ -448,11 +448,11 @@ class TestCombineObjects:
         def test_overlap_segment_volume(self, objects_x_volume, objects_y_volume, module, workspace_volume):
             # Test handling of overlapping objects in 'segment' mode for volumes
             segment_x = numpy.zeros((10, 10, 10))
-            segment_x[1:5, 1:6, 0] = 1
+            segment_x[1:5, 1:6, 1:6] = 1
             objects_x_volume.segmented = segment_x
 
             segment_y = numpy.zeros((10, 10, 10))
-            segment_y[1:6, 4:9, 0] = 1
+            segment_y[1:9, 4:9, 4:9] = 1
             objects_y_volume.segmented = segment_y
 
             module.merge_method.value = "Segment"
@@ -461,6 +461,11 @@ class TestCombineObjects:
 
             assert len(merged.indices) == 2
             expected_segment = numpy.zeros_like(segment_x)
-            expected_segment[1:6, 4:9, 0] = 2
-            expected_segment[1:5, 1:5, 0] = 1
+            # in 3D, the objects get segmented on a diagonal
+            expected_segment[1:5, 1:6, 1:5] = 1
+            expected_segment[1:5, 1:5, 5:6] = 1
+            expected_segment[1:5, 6:9, 4:5] = 2
+            expected_segment[1:5, 5:9, 5:6] = 2
+            expected_segment[1:5, 4:9, 6:9] = 2
+            expected_segment[5:9, 4:9, 4:9] = 2
             assert (merged.segmented == expected_segment).all()

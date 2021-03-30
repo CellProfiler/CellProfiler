@@ -146,7 +146,7 @@ class TestCombineObjects:
         def test_one_object_first_image_volume(
             self, objects_x_volume, module, workspace_volume, merge_methods
         ):
-            # Test merge methods with one object in initial set
+            # Test merge methods with one object in initial set for volumes
             segment = numpy.zeros((10, 10, 10))
             segment[2:4,2:4,2:4] = 1
 
@@ -177,7 +177,7 @@ class TestCombineObjects:
         def test_one_object_second_image_volume(
                 self, objects_y_volume, module, workspace_volume, merge_methods
         ):
-            # Test merge methods with one object in target set
+            # Test merge methods with one object in target set for volumes
             segment = numpy.zeros((10, 10, 10))
             segment[2:4, 2:4, 2:4] = 1
 
@@ -204,7 +204,7 @@ class TestCombineObjects:
                 assert (workspace.get_objects(method).segmented == segment).all()
 
         def test_duplicate_object_volume(self, objects_x_volume, module, workspace_volume, merge_methods):
-            # Test merge methods with same object in both sets
+            # Test merge methods with same object in both sets for volumes
             segment = numpy.zeros((10, 10, 10))
             segment[2:4, 2:4, 2:4] = 1
 
@@ -240,7 +240,7 @@ class TestCombineObjects:
         def test_not_touching_volume(
             self, objects_x_volume, objects_y_volume, module, workspace_volume, merge_methods
         ):
-            # Test merge methods with two distinct objects
+            # Test merge methods with two distinct objects for volumes
             segment_x = numpy.zeros((10, 10, 10))
             segment_x[2:4, 2:4, 2:4] = 1
             objects_x_volume.segmented = segment_x
@@ -280,6 +280,32 @@ class TestCombineObjects:
                 assert len(merged.indices) == 3
                 assert (merged.segmented == segmentation_expected).all()
 
+        def test_for_inappropriate_merge_volume(
+            self, objects_x_volume, objects_y_volume, module, workspace_volume, merge_methods
+        ):
+            # Test that adjacent objects in the source set aren't merged inappropriately for volumes.
+            # This creates two adjacent planes in the source set
+            segmentation_x = numpy.zeros((10, 10, 10))
+            segmentation_x[2, 2:4, 2:4] = 1
+            segmentation_x[3, 2:4, 2:4] = 2
+
+            segmentation_y = numpy.zeros((10, 10, 10))
+            # single point in the second set
+            segmentation_y[6,6,6] = 3
+            objects_x_volume.segmented = segmentation_x
+            objects_y_volume.segmented = segmentation_y
+
+            segmentation_expected = segmentation_x + segmentation_y
+
+            for method in merge_methods:
+                module.merge_method.value = method
+                module.output_object.value = method
+                module.run(workspace_volume)
+                merged = workspace_volume.get_objects(method)
+                assert len(merged.indices) == 3
+                assert (merged.segmented == segmentation_expected).all()
+
+
         def test_overlap_discard(self, objects_x, objects_y, module, workspace):
             # Test handling of overlapping objects in 'discard' mode
             segment_x = numpy.zeros((10, 10))
@@ -297,6 +323,25 @@ class TestCombineObjects:
             assert len(merged.indices) == 1
             expected_segment = segment_x
             assert (merged.segmented == expected_segment).all()
+
+        def test_overlap_discard_volume(self, objects_x_volume, objects_y_volume, module, workspace_volume):
+            # Test handling of overlapping objects in 'discard' mode for volumes
+            segment_x = numpy.zeros((10, 10, 10))
+            segment_x[2:4, 2:4, 2:4] = 1
+            objects_x_volume.segmented = segment_x
+
+            segment_y = numpy.zeros((10, 10, 10))
+            segment_y[3, 3:5, 3:5] = 1
+            objects_y_volume.segmented = segment_y
+
+            module.merge_method.value = "Discard"
+            module.run(workspace_volume)
+
+            merged = workspace_volume.get_objects("merged")
+            assert len(merged.indices) == 1
+            expected_segment = segment_x
+            assert (merged.segmented == expected_segment).all()
+
 
         def test_overlap_preserve(self, objects_x, objects_y, module, workspace):
             # Test handling of overlapping objects in 'preserve' mode
@@ -318,6 +363,27 @@ class TestCombineObjects:
             expected_segment[segment_x > 0] = 1
             assert (merged.segmented == expected_segment).all()
 
+        def test_overlap_preserve_volume(self, objects_x_volume, objects_y_volume, module, workspace_volume):
+            # Test handling of overlapping objects in 'preserve' mode for volumes
+            segment_x = numpy.zeros((10, 10, 10))
+            segment_x[2:4, 2:4, 2:4] = 1
+            objects_x_volume.segmented = segment_x
+
+            segment_y = numpy.zeros((10, 10, 10))
+            segment_y[3, 3:5, 3:5] = 1
+            objects_y_volume.segmented = segment_y
+
+            module.merge_method.value = "Preserve"
+            module.run(workspace_volume)
+
+            merged = workspace_volume.get_objects("merged")
+            assert len(merged.indices) == 2
+            expected_segment = numpy.zeros_like(segment_x)
+            expected_segment[segment_y > 0] = 2
+            expected_segment[segment_x > 0] = 1
+            assert (merged.segmented == expected_segment).all()
+
+
         def test_overlap_merge(self, objects_x, objects_y, module, workspace):
             # Test handling of overlapping objects in 'merge' mode
             segment_x = numpy.zeros((10, 10))
@@ -325,7 +391,7 @@ class TestCombineObjects:
             objects_x.segmented = segment_x
 
             segment_y = numpy.zeros((10, 10))
-            segment_y[3:5, 3:5]
+            segment_y[3:5, 3:5] = 1
             objects_y.segmented = segment_y
 
             module.merge_method.value = "Merge"
@@ -333,6 +399,27 @@ class TestCombineObjects:
             merged = workspace.get_objects("merged")
 
             assert len(merged.indices) == 1
+            expected_segment = numpy.zeros_like(segment_x)
+            expected_segment[segment_y > 0] = 1
+            expected_segment[segment_x > 0] = 1
+            assert (merged.segmented == expected_segment).all()
+
+        def test_overlap_merge_volume(self, objects_x_volume, objects_y_volume, module, workspace_volume):
+            # Test handling of overlapping objects in 'merge' mode for volumes
+            segment_x = numpy.zeros((10, 10, 10))
+            segment_x[2:4, 2:4, 2:4] = 1
+            objects_x_volume.segmented = segment_x
+
+            segment_y = numpy.zeros((10, 10, 10))
+            segment_y[3:5, 3:5, 3:5] = 1
+            objects_y_volume.segmented = segment_y
+
+            module.merge_method.value = "Merge"
+            module.run(workspace_volume)
+            merged = workspace_volume.get_objects("merged")
+
+            assert len(merged.indices) == 1
+            # the expected segmentation includes segment_x and segment_y as a single object
             expected_segment = numpy.zeros_like(segment_x)
             expected_segment[segment_y > 0] = 1
             expected_segment[segment_x > 0] = 1
@@ -356,4 +443,24 @@ class TestCombineObjects:
             expected_segment = numpy.zeros_like(segment_x)
             expected_segment[1:6, 4:9] = 2
             expected_segment[1:5, 1:5] = 1
+            assert (merged.segmented == expected_segment).all()
+
+        def test_overlap_segment_volume(self, objects_x_volume, objects_y_volume, module, workspace_volume):
+            # Test handling of overlapping objects in 'segment' mode for volumes
+            segment_x = numpy.zeros((10, 10, 10))
+            segment_x[0, 1:7, 1:7] = 1
+            objects_x_volume.segmented = segment_x
+
+            segment_y = numpy.zeros((10, 10, 10))
+            segment_y[0, 5:9, 1:7] = 1
+            objects_y_volume.segmented = segment_y
+
+            module.merge_method.value = "Segment"
+            module.run(workspace_volume)
+            merged = workspace_volume.get_objects("merged")
+
+            assert len(merged.indices) == 2
+            expected_segment = numpy.zeros_like(segment_x)
+            expected_segment[0, 1:6, 1:7] = 1
+            expected_segment[0, 6:9, 1:7] = 2
             assert (merged.segmented == expected_segment).all()

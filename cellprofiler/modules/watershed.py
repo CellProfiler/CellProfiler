@@ -483,6 +483,80 @@ the image is not downsampled.
                 watershed_line=self.watershed_line.value,
             )
 
+
+        if self.use_advanced.value:
+            # check the dimensions of the structuring element
+            strel_dim = self.structuring_element.value.ndim
+
+            # test if the structuring element dimensions match the image dimensions
+            if strel_dim != dimensions:
+                raise ValueError("Structuring element does not match object dimensions: "
+                                 "{} != {}".format(strel_dim, dimensions))
+
+            # Get the segmentation distance transform
+            peak_image = scipy.ndimage.distance_transform_edt(y_data > 0)
+
+            # Generate a watershed ready image
+            if self.declump_method.value == O_SHAPE:
+                # Use the reverse of the image to get basins at peaks
+                watershed_image = -peak_image
+                watershed_image -= watershed_image.min()
+
+            else:
+                reference_name = self.reference_name.value
+                reference = images.get_image(reference_name)
+                reference_data = reference.pixel_data
+
+                # Set the image as a float and rescale to full bit depth
+                watershed_image = skimage.img_as_float(reference_data, force_copy=True)
+                watershed_image -= watershed_image.min()
+                watershed_image = 1 - watershed_image
+
+            # Smooth the image
+            watershed_image = skimage.filters.gaussian(watershed_image, sigma=self.gaussian_sigma.value)
+
+            # Generate local peaks
+            seeds = skimage.feature.peak_local_max(peak_image,
+                                                   min_distance=self.min_dist.value,
+                                                   threshold_rel=self.min_intensity.value,
+                                                   exclude_border=self.exclude_border.value,
+                                                   num_peaks=self.max_seeds.value if self.max_seeds.value != -1 else numpy.inf,
+                                                   indices=False)
+
+            # Dilate seeds based on settings
+            seeds = skimage.morphology.binary_dilation(seeds, self.structuring_element.value)
+            seeds_dtype = (numpy.int16 if x.count < numpy.iinfo(numpy.int16).max else numpy.int32)
+
+            # NOTE: Not my work, the comments below are courtesy of Ray
+            #
+            # Create a marker array where the unlabeled image has a label of
+            # -(nobjects+1)
+            # and every local maximum has a unique label which will become
+            # the object's label. The labels are negative because that
+            # makes the watershed algorithm use FIFO for the pixels which
+            # yields fair boundaries when markers compete for pixels.
+            #
+            seeds = scipy.ndimage.label(seeds)[0]
+
+            markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
+            markers[seeds > 0] = -seeds[seeds > 0]
+
+            # Perform the watershed
+            watershed_boundaries = skimage.morphology.watershed(
+                connectivity=self.connectivity.value,
+                image=watershed_image,
+                markers=markers,
+                mask=x_data != 0
+            )
+
+            y_data = watershed_boundaries.copy()
+            # Copy the location of the "background"
+            zeros = numpy.where(y_data == 0)
+            # Re-shift all of the labels into the positive realm
+            y_data += numpy.abs(numpy.min(y_data)) + 1
+            # Re-apply the background
+            y_data[zeros] = 0
+
         y_data = skimage.measure.label(y_data)
 
         objects = cellprofiler_core.object.Objects()

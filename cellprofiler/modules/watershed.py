@@ -98,6 +98,16 @@ class Watershed(ImageSegmentation):
     def create_settings(self):
         super(Watershed, self).create_settings()
 
+        self.use_advanced = Binary(
+            "Use advanced settings?",
+            value=False,
+            doc="""\
+        The advanced settings provide additional segmentation options to improve 
+        the separation of adjacent objects. If this option is not selected,
+        then the watershed algorithm is applied according to the basic settings. 
+""",
+        )
+
         self.operation = Choice(
             text="Generate from",
             choices=[O_DISTANCE, O_MARKERS],
@@ -206,6 +216,7 @@ the image is not downsampled.
         __settings__ = super(Watershed, self).settings()
 
         return __settings__ + [
+            self.use_advanced,
             self.operation,
             self.markers_name,
             self.mask_name,
@@ -217,7 +228,9 @@ the image is not downsampled.
         ]
 
     def visible_settings(self):
-        __settings__ = super(Watershed, self).settings()
+        __settings__ = [self.use_advanced]
+
+        __settings__ = __settings__ + super(Watershed, self).settings()
 
         __settings__ = __settings__ + [self.operation]
 

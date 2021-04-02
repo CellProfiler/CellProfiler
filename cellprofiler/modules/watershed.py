@@ -16,6 +16,8 @@ from cellprofiler_core.setting.text import Integer, Float
 
 O_DISTANCE = "Distance"
 O_MARKERS = "Markers"
+O_SHAPE = "Shape"
+O_INTENSITY = "Intensity"
 
 __doc__ = """
 Watershed
@@ -83,6 +85,25 @@ This module has two operating modes:
        Higher values result in more regularly-shaped watershed basins. 
        
        .. _compact watershed: http://scikit-image.org/docs/0.13.x/api/skimage.morphology.html#r395
+
+Selecting *Advanced Settings* will split the detected objects into smaller objects based on a seeded watershed method 
+that will:
+
+    - Compute the `local maxima`_ (either through the `Euclidean distance transformation`_ of the 
+      segmented objects or through the intensity values of a reference image
+
+    - Dilate the seeds as specified
+
+    - Use these seeds as markers for watershed
+
+    - NOTE: This implementation is based off of the **IdentifyPrimaryObjects** declumping implementation.
+      For more information, see the aforementioned module.
+
+    .. _Euclidean distance transformation: 
+      https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.distance_transform_edt.html
+    .. _local maxima: http://scikit-image.org/docs/dev/api/skimage.feature.html#peak-local-max 
+       
+       
 """.format(
     **{"O_DISTANCE": O_DISTANCE, "O_MARKERS": O_MARKERS}
 )
@@ -212,6 +233,100 @@ the image is not downsampled.
             value=1,
         )
 
+        self.declump_method = cellprofiler_core.setting.choice.Choice(
+            text="Declump method",
+            choices=[O_SHAPE, O_INTENSITY],
+            value=O_SHAPE,
+            doc="""\
+        This setting allows you to choose the method that is used to draw the
+        line between segmented objects. 
+
+        -  *{O_SHAPE}:* Dividing lines between clumped objects are based on
+           the shape of the clump. For example, when a clump contains two
+           objects, the dividing line will be placed where indentations occur
+           between the two objects. The intensity of the original image is
+           not necessary in this case. 
+
+           **Technical description:** The distance transform of the segmentation 
+           is used to identify local maxima as seeds (i.e. the centers of the 
+           individual objects), and the seeds are then used on the inverse of 
+           that distance transform to determine new segmentations via watershed.
+
+        -  *{O_INTENSITY}:* Dividing lines between clumped objects are determined
+           based on the intensity of the original image. This works best if the
+           dividing line between objects is dimmer than the objects themselves.
+
+           **Technical description:** The distance transform of the segmentation 
+           is used to identify local maxima as seeds (i.e. the centers of the 
+           individual objects). Those seeds are then used as markers for a 
+           watershed on the inverted original intensity image.
+        """.format(**{
+                "O_SHAPE": O_SHAPE,
+                "O_INTENSITY": O_INTENSITY
+            })
+        )
+
+        self.reference_name = ImageSubscriber(
+            text="Reference Image",
+            doc="Image to reference for the *{O_INTENSITY}* method".format(**{"O_INTENSITY": O_INTENSITY})
+        )
+
+        self.gaussian_sigma = cellprofiler_core.setting.text.Float(
+            text="Segmentation distance transform smoothing factor",
+            value=1.,
+            doc="Sigma defines how 'smooth' the Gaussian kernel makes the image. Higher sigma means a smoother image."
+        )
+
+        self.min_dist = cellprofiler_core.setting.text.Integer(
+            text="Minimum distance between seeds",
+            value=1,
+            minval=0,
+            doc="""\
+        Minimum number of pixels separating peaks in a region of `2 * min_distance + 1 `
+        (i.e. peaks are separated by at least min_distance). 
+        To find the maximum number of peaks, set this value to `1`. 
+        """
+        )
+
+        self.min_intensity = cellprofiler_core.setting.text.Float(
+            text="Minimum absolute internal distance",
+            value=0.,
+            minval=0.,
+            doc="""\
+        Minimum absolute intensity threshold for seed generation. Since this threshold is
+        applied to the distance transformed image, this defines a minimum object
+        "size". Objects smaller than this size will not contain seeds. 
+
+        By default, the absolute threshold is the minimum value of the image.
+        For distance transformed images, this value is `0` (or the background).
+        """
+        )
+
+        self.exclude_border = cellprofiler_core.setting.text.Integer(
+            text="Pixels from border to exclude",
+            value=0,
+            minval=0,
+            doc="Exclude seed generation from within `n` pixels of the image border."
+        )
+
+        self.max_seeds = cellprofiler_core.setting.text.Integer(
+            text="Maximum number of seeds",
+            value=-1,
+            doc="""\
+        Maximum number of seeds to generate. Default is no limit. 
+        When the number of seeds exceeds this number, seeds are chosen 
+        based on largest internal distance.
+        """
+        )
+
+        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+            text="Structuring element for seed dilation",
+            doc="""\
+        Structuring element to use for dilating the seeds. 
+        Volumetric images will require volumetric structuring elements.
+        """
+        )
+
     def settings(self):
         __settings__ = super(Watershed, self).settings()
 
@@ -225,6 +340,14 @@ the image is not downsampled.
             self.footprint,
             self.downsample,
             self.watershed_line,
+            self.declump_method,
+            self.reference_name,
+            self.gaussian_sigma,
+            self.min_dist,
+            self.min_intensity,
+            self.exclude_border,
+            self.max_seeds,
+            self.structuring_element,
         ]
 
     def visible_settings(self):
@@ -244,6 +367,28 @@ the image is not downsampled.
                 self.compactness,
                 self.watershed_line,
             ]
+        if self.use_advanced.value:
+            if self.declump_method == O_SHAPE:
+                __settings__ = __settings__ + [
+                    self.declump_method,
+                    self.gaussian_sigma,
+                    self.min_dist,
+                    self.min_intensity,
+                    self.exclude_border,
+                    self.max_seeds,
+                    self.structuring_element,
+                ]
+            else:
+                __settings__ = __settings__ + [
+                    self.declump_method,
+                    self.reference_name,
+                    self.gaussian_sigma,
+                    self.min_dist,
+                    self.min_intensity,
+                    self.exclude_border,
+                    self.max_seeds,
+                    self.structuring_element,
+                ]
 
         return __settings__
 

@@ -114,7 +114,7 @@ class Watershed(ImageSegmentation):
 
     module_name = "Watershed"
 
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         super(Watershed, self).create_settings()
@@ -605,6 +605,21 @@ the image is not downsampled.
             __settings__ += setting_values[-2:]
 
             variable_revision_number = 2
+
+        if variable_revision_number == 2:
+            # Use advanced? is a new parameter
+
+            # first two settings are unchanged
+            __settings__ = setting_values[0:2]
+
+            # add False for "Use advanced?"
+            __settings__ += [False]
+
+            # add remainder of settings
+            __settings__ += setting_values[2:]
+
+            variable_revision_number = 3
+
 
         else:
             __settings__ = setting_values

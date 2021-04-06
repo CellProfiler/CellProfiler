@@ -405,6 +405,7 @@ the image is not downsampled.
 
         x_data = x.pixel_data
 
+        # watershed algorithm for distance-based method:
         if self.operation.value == O_DISTANCE:
             original_shape = x_data.shape
 
@@ -446,12 +447,15 @@ the image is not downsampled.
 
             y_data = y_data * x_data
 
+            # resize back to the original size if downsampled
             if factor > 1:
                 y_data = skimage.transform.resize(
                     y_data, original_shape, mode="edge", order=0, preserve_range=True
                 )
 
                 y_data = numpy.rint(y_data).astype(numpy.uint16)
+
+        # watershed algorithm for marker-based method:
         else:
             markers_name = self.markers_name.value
 
@@ -483,7 +487,7 @@ the image is not downsampled.
                 watershed_line=self.watershed_line.value,
             )
 
-
+        # watershed segmentation is stored in y_data variable
         if self.use_advanced.value:
             # check the dimensions of the structuring element
             strel_dim = self.structuring_element.value.ndim
@@ -493,16 +497,18 @@ the image is not downsampled.
                 raise ValueError("Structuring element does not match object dimensions: "
                                  "{} != {}".format(strel_dim, dimensions))
 
-            # Get the segmentation distance transform
+            # Get the segmentation distance transform for the watershed segmentation
             peak_image = scipy.ndimage.distance_transform_edt(y_data > 0)
 
-            # Generate a watershed ready image
+            # shape-based method; generate a watershed ready image
             if self.declump_method.value == O_SHAPE:
                 # Use the reverse of the image to get basins at peaks
                 watershed_image = -peak_image
                 watershed_image -= watershed_image.min()
 
+            # intensity-based method
             else:
+                # get the intensity image data
                 reference_name = self.reference_name.value
                 reference = images.get_image(reference_name)
                 reference_data = reference.pixel_data
@@ -515,17 +521,26 @@ the image is not downsampled.
             # Smooth the image
             watershed_image = skimage.filters.gaussian(watershed_image, sigma=self.gaussian_sigma.value)
 
-            # Generate local peaks
-            seeds = skimage.feature.peak_local_max(peak_image,
+            # Generate local peaks; returns a list of coords for each peak
+            seed_coords = skimage.feature.peak_local_max(peak_image,
                                                    min_distance=self.min_dist.value,
                                                    threshold_rel=self.min_intensity.value,
                                                    exclude_border=self.exclude_border.value,
-                                                   num_peaks=self.max_seeds.value if self.max_seeds.value != -1 else numpy.inf,
-                                                   indices=False)
+                                                   num_peaks=self.max_seeds.value if self.max_seeds.value != -1 else numpy.inf)
+
+            # generate an array w/ same dimensions as the original image with all elements having value False
+            seeds = numpy.zeros_like(peak_image, dtype=bool)
+
+            # set value to True at every local peak
+            seeds[tuple(seed_coords.T)] = True
 
             # Dilate seeds based on settings
             seeds = skimage.morphology.binary_dilation(seeds, self.structuring_element.value)
-            seeds_dtype = (numpy.int16 if x.count < numpy.iinfo(numpy.int16).max else numpy.int32)
+
+            # get the number of objects from the shape-based or marker-based watershed run above
+            number_objects = skimage.measure.label(y_data, return_num=True)[1]
+
+            seeds_dtype = (numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32)
 
             # NOTE: Not my work, the comments below are courtesy of Ray
             #
@@ -542,7 +557,7 @@ the image is not downsampled.
             markers[seeds > 0] = -seeds[seeds > 0]
 
             # Perform the watershed
-            watershed_boundaries = skimage.morphology.watershed(
+            watershed_boundaries = skimage.segmentation.watershed(
                 connectivity=self.connectivity.value,
                 image=watershed_image,
                 markers=markers,
@@ -557,6 +572,7 @@ the image is not downsampled.
             # Re-apply the background
             y_data[zeros] = 0
 
+        # finalize and convert watershed to objects to export
         y_data = skimage.measure.label(y_data)
 
         objects = cellprofiler_core.object.Objects()

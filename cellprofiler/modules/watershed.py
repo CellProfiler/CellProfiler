@@ -608,7 +608,6 @@ the image is not downsampled.
 
         if variable_revision_number == 2:
             # Use advanced? is a new parameter
-
             # first two settings are unchanged
             __settings__ = setting_values[0:2]
 

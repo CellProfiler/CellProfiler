@@ -537,7 +537,7 @@ the image is not downsampled.
             # Dilate seeds based on settings
             seeds = skimage.morphology.binary_dilation(seeds, self.structuring_element.value)
 
-            # get the number of objects from the shape-based or marker-based watershed run above
+            # get the number of objects from the distance-based or marker-based watershed run above
             number_objects = skimage.measure.label(y_data, return_num=True)[1]
 
             seeds_dtype = (numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32)

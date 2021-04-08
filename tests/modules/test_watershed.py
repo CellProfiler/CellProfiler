@@ -40,6 +40,8 @@ def watershed_line(request):
 def test_run_markers(
     image, module, image_set, workspace, connectivity, compactness, watershed_line
 ):
+    module.use_advanced.value = False
+
     module.operation.value = "Markers"
 
     module.x_name.value = "gradient"
@@ -127,6 +129,8 @@ def test_run_markers(
 
 
 def test_run_distance(image, module, image_set, workspace):
+    module.use_advanced.value = False
+
     module.operation.value = "Distance"
 
     module.x_name.value = "binary"
@@ -197,8 +201,6 @@ def test_run_markers_declump_shape(
 
     module.y_name.value = "watershed"
 
-    data = image.pixel_data
-
     module.markers_name.value = "markers"
 
     module.connectivity.value = connectivity
@@ -209,21 +211,16 @@ def test_run_markers_declump_shape(
 
     module.declump_method.value = "Shape"
 
-    module.gaussian_sigma.value = 2
-
-    module.min_dist.value = 2
-
-    module.min_intesity.value = 0
-
-    module.exclude_border.value = 0
-
-    module.max_seeds.value = -1
-
     if image.dimensions == 3:
-        module.structuring_element.value = "ball"
+        module.structuring_element.value = "Ball,1"
+        # module.structuring_element.size = 1
+        # module.structuring_element.ndim = 3
+        selem = skimage.morphology.ball(1)
 
     else:
-        module.structuring_element.value = "disk"
+        module.structuring_element.value = "Disk,1"
+        # module.structuring_element.ndim = 2
+        selem = skimage.morphology.disk(1)
 
     if image.multichannel or image.dimensions == 3:
         denoised = numpy.zeros_like(image.pixel_data)
@@ -246,7 +243,6 @@ def test_run_markers_declump_shape(
             markers[idx] = skimage.filters.rank.gradient(
                 data, skimage.morphology.disk(5)
             )
-
     else:
         markers = skimage.filters.rank.median(denoised, skimage.morphology.disk(5))
 
@@ -283,8 +279,7 @@ def test_run_markers_declump_shape(
 
         markers = skimage.color.rgb2gray(markers)
 
-    # store the marker-based segmentation
-    y_data = skimage.segmentation.watershed(
+    watershed_markers = skimage.segmentation.watershed(
         gradient,
         markers,
         connectivity=connectivity,
@@ -292,10 +287,8 @@ def test_run_markers_declump_shape(
         watershed_line=watershed_line,
     )
 
-    # add declumping
-    peak_image = scipy.ndimage.distance_transform_edt(y_data > 0)
+    peak_image = scipy.ndimage.distance_transform_edt(watershed_markers > 0)
 
-    # generate watershed ready image
     watershed_image = -peak_image
     watershed_image -= watershed_image.min()
 
@@ -303,43 +296,32 @@ def test_run_markers_declump_shape(
 
     seed_coords = skimage.feature.peak_local_max(peak_image,
                                                  min_distance=module.min_dist.value,
-                                                 threshold_rel=module.min_intesity.value,
+                                                 threshold_rel=module.min_intensity.value,
                                                  exclude_border=module.exclude_border.value,
                                                  num_peaks=module.max_seeds.value if module.max_seeds.value != -1 else numpy.inf)
 
-    # generate an array w/ same dimensions as the original image with all elements having value False
     seeds = numpy.zeros_like(peak_image, dtype=bool)
-
-    # set value to True at every local peak
     seeds[tuple(seed_coords.T)] = True
 
-    # Dilate seeds based on settings
-    seeds = skimage.morphology.binary_dilation(seeds, module.structuring_element.value)
+    seeds = skimage.morphology.binary_dilation(seeds, selem)
 
-    # get the number of objects from the shape-based or marker-based watershed run above
-    number_objects = skimage.measure.label(y_data, return_num=True)[1]
+    number_objects = skimage.measure.label(watershed_markers, return_num=True)[1]
 
     seeds_dtype = (numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32)
 
     seeds = scipy.ndimage.label(seeds)[0]
-
     markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
     markers[seeds > 0] = -seeds[seeds > 0]
 
-    # Perform the watershed
     watershed_boundaries = skimage.segmentation.watershed(
         connectivity=module.connectivity.value,
         image=watershed_image,
         markers=markers,
-        mask=data != 0
+        mask=gradient !=0
     )
-
     expected = watershed_boundaries.copy()
-    # Copy the location of the "background"
-    zeros = numpy.where(expected == 0)
-    # Re-shift all of the labels into the positive realm
+    zeros = numpy.where(gradient==0)
     expected += numpy.abs(numpy.min(expected)) + 1
-    # Re-apply the background
     expected[zeros] = 0
 
     expected = skimage.measure.label(expected)
@@ -347,3 +329,172 @@ def test_run_markers_declump_shape(
     actual = workspace.get_objects("watershed")
 
     numpy.testing.assert_array_equal(expected, actual.segmented)
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    # module.use_advanced.value = True
+    #
+    # module.operation.value = "Markers"
+    #
+    # module.x_name.value = "gradient"
+    #
+    # module.y_name.value = "watershed"
+    #
+    # data = image.pixel_data
+    #
+    # module.markers_name.value = "markers"
+    #
+    # module.connectivity.value = connectivity
+    #
+    # module.compactness.value = compactness
+    #
+    # module.watershed_line.value = watershed_line
+    #
+    # module.declump_method.value = "Shape"
+    #
+    # module.gaussian_sigma.value = 2
+    #
+    # module.min_dist.value = 2
+    #
+    # module.min_intensity.value = 0
+    #
+    # module.exclude_border.value = 0
+    #
+    # module.max_seeds.value = -1
+    #
+    # if image.dimensions == 3:
+    #     module.structuring_element.shape = "ball"
+    #     selem = skimage.morphology.ball(1)
+    #
+    # else:
+    #     module.structuring_element.shape = "disk"
+    #     selem = skimage.morphology.disk(1)
+    #
+    #
+    # if image.multichannel or image.dimensions == 3:
+    #     denoised = numpy.zeros_like(image.pixel_data)
+    #
+    #     for idx, data in enumerate(image.pixel_data):
+    #         denoised[idx] = skimage.filters.rank.median(
+    #             data, skimage.morphology.disk(2)
+    #         )
+    # else:
+    #     denoised = skimage.filters.rank.median(
+    #         image.pixel_data, skimage.morphology.disk(2)
+    #     )
+    #
+    # denoised = denoised.astype(numpy.uint8)
+    #
+    # if image.multichannel or image.dimensions == 3:
+    #     markers = numpy.zeros_like(denoised)
+    #
+    #     for idx, data in enumerate(denoised):
+    #         markers[idx] = skimage.filters.rank.gradient(
+    #             data, skimage.morphology.disk(5)
+    #         )
+    # else:
+    #     markers = skimage.filters.rank.median(denoised, skimage.morphology.disk(5))
+    #
+    # markers = skimage.measure.label(markers)
+    #
+    # image_set.add(
+    #     "markers",
+    #     cellprofiler_core.image.Image(
+    #         image=markers, convert=False, dimensions=image.dimensions
+    #     ),
+    # )
+    #
+    # if image.multichannel or image.dimensions == 3:
+    #     gradient = numpy.zeros_like(denoised)
+    #
+    #     for idx, data in enumerate(denoised):
+    #         gradient[idx] = skimage.filters.rank.gradient(
+    #             data, skimage.morphology.disk(2)
+    #         )
+    # else:
+    #     gradient = skimage.filters.rank.median(denoised, skimage.morphology.disk(2))
+    #
+    # image_set.add(
+    #     "gradient",
+    #     cellprofiler_core.image.Image(
+    #         image=gradient, convert=False, dimensions=image.dimensions
+    #     ),
+    # )
+    #
+    # module.run(workspace)
+    #
+    # if image.multichannel:
+    #     gradient = skimage.color.rgb2gray(gradient)
+    #
+    #     markers = skimage.color.rgb2gray(markers)
+    #
+    # # store the marker-based segmentation
+    # y_data = skimage.segmentation.watershed(
+    #     gradient,
+    #     markers,
+    #     connectivity=connectivity,
+    #     compactness=compactness,
+    #     watershed_line=watershed_line,
+    # )
+    #
+    # # add declumping
+    # peak_image = scipy.ndimage.distance_transform_edt(y_data > 0)
+    #
+    # # generate watershed ready image
+    # watershed_image = -peak_image
+    # watershed_image -= watershed_image.min()
+    #
+    # watershed_image = skimage.filters.gaussian(watershed_image, sigma=module.gaussian_sigma.value)
+    #
+    # seed_coords = skimage.feature.peak_local_max(peak_image,
+    #                                              min_distance=module.min_dist.value,
+    #                                              threshold_rel=module.min_intensity.value,
+    #                                              exclude_border=module.exclude_border.value,
+    #                                              num_peaks=module.max_seeds.value if module.max_seeds.value != -1 else numpy.inf)
+    #
+    # # generate an array w/ same dimensions as the original image with all elements having value False
+    # seeds = numpy.zeros_like(peak_image, dtype=bool)
+    #
+    # # set value to True at every local peak
+    # seeds[tuple(seed_coords.T)] = True
+    #
+    # # Dilate seeds based on settings
+    # seeds = skimage.morphology.binary_dilation(seeds, selem)
+    #
+    # # get the number of objects from the shape-based or marker-based watershed run above
+    # number_objects = skimage.measure.label(y_data, return_num=True)[1]
+    #
+    # seeds_dtype = (numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32)
+    #
+    # seeds = scipy.ndimage.label(seeds)[0]
+    #
+    # markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
+    # markers[seeds > 0] = -seeds[seeds > 0]
+    #
+    # mask_data = None
+    #
+    # # Perform the watershed
+    # watershed_boundaries = skimage.segmentation.watershed(
+    #     connectivity=module.connectivity.value,
+    #     image=watershed_image,
+    #     markers=markers,
+    #     mask=mask_data
+    # )
+    #
+    # expected = watershed_boundaries.copy()
+    # # Copy the location of the "background"
+    # zeros = numpy.where(expected == 0)
+    # # Re-shift all of the labels into the positive realm
+    # expected += numpy.abs(numpy.min(expected)) + 1
+    # # Re-apply the background
+    # expected[zeros] = 0
+    #
+    # expected = skimage.measure.label(expected)
+    #
+    # actual = workspace.get_objects("watershed")
+    #
+    # numpy.testing.assert_array_equal(expected, actual.segmented)

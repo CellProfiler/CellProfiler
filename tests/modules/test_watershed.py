@@ -273,6 +273,7 @@ def test_run_markers_declump_shape(
 
     if image.multichannel:
         gradient = skimage.color.rgb2gray(gradient)
+
         markers = skimage.color.rgb2gray(markers)
 
     watershed_markers = skimage.segmentation.watershed(
@@ -310,14 +311,14 @@ def test_run_markers_declump_shape(
     markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
     markers[seeds > 0] = -seeds[seeds > 0]
 
-    watershed_boundaries = skimage.segmentation.watershed(
+    expected = skimage.segmentation.watershed(
         connectivity=connectivity,
         image=watershed_image,
         markers=markers,
         mask=gradient !=0
     )
-    expected = watershed_boundaries.copy()
-    zeros = numpy.where(gradient==0)
+
+    zeros = numpy.where(expected==0)
     expected += numpy.abs(numpy.min(expected)) + 1
     expected[zeros] = 0
 

@@ -16,7 +16,6 @@ import string
 import sys
 import threading
 from functools import reduce, cmp_to_key
-from json import JSONDecodeError
 from queue import PriorityQueue, Queue, Empty
 from urllib.request import urlretrieve, url2pathname
 
@@ -1200,7 +1199,8 @@ class PipelineController(object):
                 try:
                     with open(pathname, "r") as fd:
                         load(self.__pipeline, fd)
-                except JSONDecodeError:
+                except:
+                    # Todo: Find a better way of picking a load method
                     self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()

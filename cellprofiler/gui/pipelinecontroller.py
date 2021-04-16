@@ -1170,8 +1170,8 @@ class PipelineController(object):
         """
         with open(path, mode="w") as fd:
             for url in self.__workspace.file_list.get_filelist():
-                if isinstance(url, str):
-                    url = url.encode()
+                if isinstance(url, bytes):
+                    url = url.decode()
                 fd.write(url + "\n")
 
     def is_running(self):

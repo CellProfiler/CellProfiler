@@ -1195,13 +1195,11 @@ class PipelineController(object):
             if h5py.is_hdf5(pathname):
                 if not self.load_hdf5_pipeline(pathname):
                     return
+            elif pathname.endswith('.json'):
+                with open(pathname, "r") as fd:
+                    load(self.__pipeline, fd)
             else:
-                try:
-                    with open(pathname, "r") as fd:
-                        load(self.__pipeline, fd)
-                except:
-                    # Todo: Find a better way of picking a load method
-                    self.__pipeline.load(pathname)
+                self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()
             self.__workspace.save_pipeline_to_measurements()

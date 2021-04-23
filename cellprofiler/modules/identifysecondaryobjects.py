@@ -1019,10 +1019,10 @@ segmentation.""",
 
             if category == C_CHILDREN:
                 if object_name == self.x_name.value:
-                    measurements += [FF_COUNT % self.new_primary_objects_name.value]
+                    measurements += ["%s_Count" % self.new_primary_objects_name.value]
 
                 if object_name == self.new_primary_objects_name.value:
-                    measurements += [FF_COUNT % self.y_name.value]
+                    measurements += ["%s_Count" % self.y_name.value]
 
         return measurements
 

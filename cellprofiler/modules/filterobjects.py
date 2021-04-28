@@ -1075,6 +1075,8 @@ value will be retained.""".format(
                 for feature_name in features
             ]
         )
+        if hasattr(classifier, 'scaler') and classifier.scaler is not None:
+            feature_vector = classifier.scaler.transform(feature_vector)
         predicted_classes = classifier.predict(feature_vector)
         hits = predicted_classes == target_class
         indexes = numpy.argwhere(hits) + 1

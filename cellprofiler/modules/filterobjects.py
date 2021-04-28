@@ -649,6 +649,27 @@ value will be retained.""".format(
                     % self.rules_file_name.value,
                     self.rules_file_name,
                 )
+            features = []
+            for feature_name in self.get_classifier_features():
+                feature_name = feature_name.split("_", 1)[1]
+                if feature_name == "x_loc":
+                    feature_name = M_LOCATION_CENTER_X
+                elif feature_name == "y_loc":
+                    feature_name = M_LOCATION_CENTER_Y
+                features.append(feature_name)
+            available_features = set([col[1] for col in pipeline.get_measurement_columns(self) if col[0] == self.x_name.value])
+            for feature in features:
+                if feature not in available_features:
+                    raise ValidationError(
+                        (
+                            "The classifier %s, requires the measurement, %s "
+                            "for object %s, but that measurement is not available "
+                            "at this stage of the pipeline. Consider adding "
+                            "modules to produce the measurement."
+                        )
+                        % (self.rules_file_name, feature, self.x_name.value),
+                        self.rules_file_name,
+                    )
 
     def run(self, workspace):
         """Filter objects for this image set, display results"""

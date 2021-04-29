@@ -138,7 +138,7 @@ PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 class FilterObjects(ObjectProcessing):
     module_name = "FilterObjects"
 
-    variable_revision_number = 8
+    variable_revision_number = 9
 
     def create_settings(self):
         super(FilterObjects, self).create_settings()
@@ -369,13 +369,32 @@ with data processed as 3D.
             ),
         )
 
+
+        self.keep_removed_objects = Binary(
+            "Keep removed objects as a seperate set?",
+            False,
+            doc="""
+Select *Yes* to create an object set from objects that did not pass your filter.
+            
+This may be useful if you want to make use of the negative (filtered out) population as well."""
+        )
+
+        self.removed_objects_name = LabelName(
+            "Name the objects removed by the filter",
+            "RemovedObjects",
+            doc="Enter the name you want to call the objects removed by the filter.",
+
+        )
+
         self.additional_objects = []
 
         self.additional_object_count = HiddenCount(
             self.additional_objects, "Additional object count"
         )
 
-        self.spacer_3 = Divider(line=False)
+        self.spacer_3 = Divider(line=True)
+
+        self.spacer_4 = Divider(line=False)
 
         self.additional_object_button = DoSomething(
             "Relabel additional objects to match the filtered object?",
@@ -522,6 +541,8 @@ value will be retained.""".format(
             self.measurement_count,
             self.additional_object_count,
             self.per_object_assignment,
+            self.keep_removed_objects,
+            self.removed_objects_name,
         ]
 
         for x in self.measurements:
@@ -542,6 +563,8 @@ value will be retained.""".format(
             self.rules_directory,
             self.rules_file_name,
             self.rules_class,
+            self.keep_removed_objects,
+            self.removed_objects_name,
             self.enclosing_object_name,
             self.additional_object_button,
         ]
@@ -591,7 +614,10 @@ value will be retained.""".format(
                         visible_settings += [group.remover]
                     visible_settings += [group.divider]
                 visible_settings += [self.add_measurement_button]
-        visible_settings.append(self.spacer_3)
+        visible_settings += [self.spacer_3, self.keep_removed_objects]
+        if self.keep_removed_objects.value:
+            visible_settings += [self.removed_objects_name]
+        visible_settings += [self.spacer_4]
         for x in self.additional_objects:
             visible_settings += x.visible_settings()
         visible_settings += [self.additional_object_button]
@@ -735,9 +761,47 @@ value will be retained.""".format(
 
             self.add_measurements(workspace, src_name, target_name)
 
+        if self.keep_removed_objects.value:
+            # Isolate objects removed by the filter
+            removed_indexes = [x for x in range(1, max_label+1) if x not in indexes]
+            removed_object_count = len(removed_indexes)
+            removed_label_indexes = numpy.zeros((max_label + 1,), int)
+            removed_label_indexes[removed_indexes] = numpy.arange(1, removed_object_count + 1)
+
+            src_objects = workspace.get_objects(self.x_name.value)
+            removed_labels = src_objects.segmented.copy()
+            #
+            # Reindex the labels of the old source image
+            #
+            removed_labels[removed_labels > max_label] = 0
+            removed_labels = removed_label_indexes[removed_labels]
+            #
+            # Make a new set of objects - retain the old set's unedited
+            # segmentation for the new and generally try to copy stuff
+            # from the old to the new.
+            #
+            removed_objects = cellprofiler_core.object.Objects()
+            removed_objects.segmented = removed_labels
+            removed_objects.unedited_segmented = src_objects.unedited_segmented
+            #
+            # Remove the filtered objects from the small_removed_segmented
+            # if present. "small_removed_segmented" should really be
+            # "filtered_removed_segmented".
+            #
+            small_removed = src_objects.small_removed_segmented.copy()
+            small_removed[(removed_labels == 0) & (src_objects.segmented != 0)] = 0
+            removed_objects.small_removed_segmented = small_removed
+            if src_objects.has_parent_image:
+                removed_objects.parent_image = src_objects.parent_image
+            workspace.object_set.add_objects(removed_objects, self.removed_objects_name.value)
+
+            self.add_measurements(workspace, self.x_name.value, self.removed_objects_name.value)
+
         if self.show_window:
             workspace.display_data.src_objects_segmented = src_objects.segmented
             workspace.display_data.target_objects_segmented = target_objects.segmented
+            if self.keep_removed_objects.value:
+                workspace.display_data.removed_objects_segmented = removed_objects.segmented
             workspace.display_data.dimensions = src_objects.dimensions
 
     def display(self, workspace, figure):
@@ -777,6 +841,17 @@ value will be retained.""".format(
                 "Number of objects post-filtering",
             ),
         )
+
+        if self.keep_removed_objects:
+            removed_objects_segmented = workspace.display_data.removed_objects_segmented
+            figure.subplot_imshow_labels(
+                1,
+                1,
+                removed_objects_segmented,
+                title="Removed: %s" % self.removed_objects_name,
+                sharexy=figure.subplot(0, 0),
+            )
+
 
     def keep_one(self, workspace, src_objects):
         """Return an array containing the single object to keep
@@ -1246,6 +1321,12 @@ value will be retained.""".format(
             )
 
             variable_revision_number = 8
+
+        if variable_revision_number == 8:
+            # Add default values for "keep removed objects".
+            setting_values.insert(11, "No")
+            setting_values.insert(12, "RemovedObjects")
+            variable_revision_number = 9
 
         slot_directory = 5
 

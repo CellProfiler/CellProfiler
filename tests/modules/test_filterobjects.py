@@ -920,6 +920,30 @@ def test_classify_many():
         numpy.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
 
 
+def test_classify_keep_removed():
+    labels = numpy.zeros((10, 10), int)
+    labels[1:4, 1:4] = 1
+    labels[5:7, 5:7] = 2
+    workspace, module = make_workspace({INPUT_OBJECTS: labels})
+    module.x_name.value = INPUT_OBJECTS
+    module.y_name.value = OUTPUT_OBJECTS
+    module.keep_removed_objects.value = True
+    module.removed_objects_name.value = "RemovedObjects"
+    with make_classifier(module, numpy.array([1, 2]), classes=[1, 2]):
+        workspace.measurements[INPUT_OBJECTS, TEST_FTR] = numpy.zeros(2)
+        module.run(workspace)
+        output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+        removed_objects = workspace.object_set.get_objects("RemovedObjects")
+        assert output_objects.count == 1
+        assert removed_objects.count == 1
+        labels_out = output_objects.get_labels()[0][0]
+        numpy.testing.assert_array_equal(labels_out[1:4, 1:4], 1)
+        numpy.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
+        removed_labels_out = removed_objects.get_labels()[0][0]
+        numpy.testing.assert_array_equal(removed_labels_out[1:4, 1:4], 0)
+        numpy.testing.assert_array_equal(removed_labels_out[5:7, 5:7], 1)
+
+
 def test_measurements():
     workspace, module = make_workspace(
         object_dict={
@@ -1141,6 +1165,44 @@ def test_keep_maximal_volume():
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
 
     assert numpy.all(labels.segmented == expected)
+
+
+def test_keep_removed_volume():
+    labels = numpy.zeros((2, 10, 20), int)
+    labels[:, 2, 4] = 1
+    labels[:, 4:6, 8:15] = 2
+    labels[:, 8, 15] = 3
+
+    expected = numpy.zeros_like(labels)
+    expected[labels == 2] = 1
+
+    expected_removed = numpy.zeros_like(labels)
+    expected_removed[labels == 1] = 1
+    expected_removed[labels == 3] = 2
+
+
+    workspace, module = make_workspace({INPUT_OBJECTS: labels})
+
+    module.x_name.value = INPUT_OBJECTS
+    module.y_name.value = OUTPUT_OBJECTS
+    module.keep_removed_objects.value = True
+    module.removed_objects_name.value = "RemovedObjects"
+    module.measurements[0].measurement.value = TEST_FTR
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_MAXIMAL
+
+    m = workspace.measurements
+
+    m.add_measurement(INPUT_OBJECTS, TEST_FTR, numpy.array([1, 4, 2]))
+
+    module.run(workspace)
+
+    labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+
+    removed_labels = workspace.object_set.get_objects("RemovedObjects")
+
+    assert numpy.all(labels.segmented == expected)
+
+    assert numpy.all(removed_labels.segmented == expected_removed)
 
 
 class FakeClassifier(object):

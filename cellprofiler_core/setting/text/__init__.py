@@ -2,6 +2,7 @@ from ._directory import Directory
 from ._filename import Filename
 from ._text import Text
 from .alphanumeric import Alphanumeric
+from .alphanumeric import Character
 from .alphanumeric import CropImageName
 from .alphanumeric import ExternalImageName
 from .alphanumeric import FileImageName

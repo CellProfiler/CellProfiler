@@ -1,4 +1,5 @@
 from ._alphanumeric import Alphanumeric
+from ._character import Character
 from .name import CropImageName
 from .name import ExternalImageName
 from .name import FileImageName

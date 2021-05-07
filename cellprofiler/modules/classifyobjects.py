@@ -64,9 +64,12 @@ Measurements made by this module
 """
 
 import functools
+import os
 
 import numpy
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+
+from cellprofiler.modules import _help
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.image import Image
@@ -82,7 +85,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.do_something import RemoveSettingButton
 from cellprofiler_core.setting.subscriber import LabelSubscriber
-from cellprofiler_core.setting.text import Alphanumeric
+from cellprofiler_core.setting.text import Alphanumeric, Directory, Filename, LabelName
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
@@ -90,6 +93,7 @@ from cellprofiler_core.setting.text import Text
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"
+BY_MODEL = "Classifier Model"
 TM_MEAN = "Mean"
 TM_MEDIAN = "Median"
 TM_CUSTOM = "Custom"
@@ -105,7 +109,7 @@ F_NUM_PER_BIN = "NumObjectsPerBin"
 class ClassifyObjects(Module):
     category = "Object Processing"
     module_name = "ClassifyObjects"
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         """Create the settings for the module
@@ -113,8 +117,8 @@ class ClassifyObjects(Module):
         Create the settings for the module during initialization.
         """
         self.contrast_choice = Choice(
-            "Make each classification decision on how many measurements?",
-            [BY_SINGLE_MEASUREMENT, BY_TWO_MEASUREMENTS],
+            "Make classification decision based on",
+            [BY_SINGLE_MEASUREMENT, BY_TWO_MEASUREMENTS, BY_MODEL],
             doc="""\
 This setting controls how many measurements are used to make a
 classifications decision for each object:
@@ -261,8 +265,7 @@ for “Intensity_MeanIntensity_Green” and
 “Intensity_TotalIntensity_Blue”, the module generates measurements
 such as
 “Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low”.
-"""
-            % globals(),
+""",
         )
 
         self.low_low_custom_name = Alphanumeric(
@@ -316,8 +319,7 @@ are above the threshold for both measurements.""",
 Select "*Yes*" to retain the image of the objects color-coded
 according to their classification, for use later in the pipeline (for
 example, to be saved by a **SaveImages** module).
-"""
-            % globals(),
+""",
         )
 
         self.image_name = ImageName(
@@ -433,8 +435,7 @@ thresholds of bins between the lowest and highest.
 Select "*Yes*" if you want to create a bin for objects whose values
 fall below the low threshold. Select "*No*" if you do not want a bin
 for these objects.
-"""
-                % globals(),
+""",
             ),
         )
 
@@ -465,8 +466,7 @@ Select "*Yes*" if you want to create a bin for objects whose values
 are above the high threshold.
 
 Select "*No*" if you do not want a bin for these objects.
-"""
-                % globals(),
+""",
             ),
         )
 
@@ -499,8 +499,7 @@ Select "*Yes*" to assign custom names to bins you have specified.
 
 Select "*No*" for the module to automatically assign names based on
 the measurements and the bin number.
-"""
-                % globals(),
+""",
             ),
         )
 
@@ -526,8 +525,7 @@ An example including three bins might be *First,Second,Third*.""",
 Select "*Yes*" to keep an image of the objects which is color-coded
 according to their classification, for use later in the pipeline (for
 example, to be saved by a **SaveImages** module).
-"""
-                % globals(),
+""",
             ),
         )
 
@@ -631,12 +629,150 @@ example, to be saved by a **SaveImages** module).
             )
         self.single_measurements.append(group)
 
+        self.model_directory = Directory(
+            "Select the location of the classifier model file",
+            doc=f"""\
+            *(Used only when using {BY_MODEL} mode)*
+
+            Select the location of the classifier file that will be used for
+            classification.
+
+            {_help.IO_FOLDER_CHOICE_HELP_TEXT}
+            """,
+        )
+
+        self.create_class_sets = Binary(
+            "Save classes as new object sets?",
+            False,
+            doc="FFFFFFFFF",
+        )
+
+        def get_directory_fn():
+            """Get the directory for the rules file name"""
+            try:
+                self.load_classifier()
+            except:
+                pass
+            return self.model_directory.get_absolute_path()
+
+        def set_directory_fn(path):
+            dir_choice, custom_path = self.model_directory.get_parts_from_path(path)
+
+            self.model_directory.join_parts(dir_choice, custom_path)
+
+        self.model_file_name = Filename(
+            "Rules or classifier file name",
+            "mymodel.model",
+            get_directory_fn=get_directory_fn,
+            set_directory_fn=set_directory_fn,
+            doc=f"""\
+            *(Used only when using {BY_MODEL} mode*
+
+            The name of the classifier model file.
+
+            A classifier file is a trained classifier exported from CellProfiler Analyst.
+            You will need to ensure that the measurements specified by the file are
+            produced by upstream modules in the pipeline. This setting is not compatible
+            with data processed as 3D.
+            """,
+        )
+
+        self.want_class_object_sets = Binary(
+            "Create object sets from classes?",
+            value=False,
+            doc="""\
+                Choose whether to generate object sets from classes identified by the classifier model
+                """
+        )
+
+        ############### Classifier class settings ##################
+        #
+        # A list holding groupings for each of the classifier classes
+        # to be extracted
+        #
+        self.desired_classes = []
+        #
+        # A count of # of measurements
+        #
+        self.desired_classes_count = HiddenCount(self.desired_classes)
+        #
+        # Add one single measurement to start off
+        #
+        # self.add_single_class(False)
+        #
+        # A button to press to get another measurement
+        #
+        self.add_class_button = DoSomething(
+            "", "Add another class", self.add_single_class
+        )
+
+    def add_single_class(self, can_delete=True):
+        """Add a class for the classifier to save
+
+        can_delete - True to include a "remove" button, False if you're not
+                     allowed to remove it.
+        """
+        group = SettingsGroup()
+        if can_delete:
+            group.append("divider", Divider(line=True))
+
+        group.append(
+            "class_name",
+            Choice(
+                "Select a class",
+                choices=self.get_class_choices(None),
+                choices_fn=self.get_class_choices,
+                doc="""\
+                            *(Used only when using {BY_MODEL} mode*
+    Select which of the class from the classifier you'd like to create
+    an object set from.
+    Please note the following:
+
+        -  An object is retained if it falls into the selected class.
+        -  You can save multiple classes by using the "Add a class"
+        button. Each becomes a separate object set.
+        -  If you want to merge classes together, try the CombineObjects module.
+        """,
+            ),
+        )
+
+        group.append(
+            "class_objects_name",
+            LabelName(
+                "Name the output objects",
+                "ClassifiedObjects",
+                doc="""\
+    *(Used only if using a classifier to create classes)*
+
+    Select a name for the object set generated by your classifier.
+    """,
+            ),
+        )
+
+        group.can_delete = can_delete
+
+        if can_delete:
+            group.remove_settings_button = RemoveSettingButton(
+                "", "Remove this class", self.desired_classes, group
+            )
+        self.desired_classes.append(group)
+
+    def get_class_choices(self, pipeline):
+        if self.contrast_choice == BY_MODEL:
+            return self.get_bin_labels()
+        return ['None']
+
     def settings(self):
-        result = [self.contrast_choice, self.single_measurement_count]
+        result = [self.contrast_choice, self.single_measurement_count, self.desired_classes_count]
         result += functools.reduce(
             lambda x, y: x + y,
             [group.pipeline_settings() for group in self.single_measurements],
         )
+        if self.desired_classes_count.value:
+            result += functools.reduce(
+                lambda x, y: x + y,
+                [group.pipeline_settings() for group in self.desired_classes],
+            )
         result += [
             self.object_name,
             self.first_measurement,
@@ -652,6 +788,9 @@ example, to be saved by a **SaveImages** module).
             self.high_high_custom_name,
             self.wants_image,
             self.image_name,
+            self.create_class_sets,
+            self.model_directory,
+            self.model_file_name,
         ]
         return result
 
@@ -688,7 +827,7 @@ example, to be saved by a **SaveImages** module).
             result += [self.wants_image]
             if self.wants_image:
                 result += [self.image_name]
-        else:
+        elif self.contrast_choice == BY_SINGLE_MEASUREMENT:
             #
             # Visible results per single measurement
             #
@@ -719,6 +858,17 @@ example, to be saved by a **SaveImages** module).
                 if group.can_delete:
                     result += [group.remove_settings_button]
             result += [self.add_measurement_button]
+        else:
+            # Classifier model mode
+            result += [self.model_directory, self.model_file_name, self.create_class_sets]
+            if self.create_class_sets.value:
+                for group in self.desired_classes:
+                    if group.can_delete:
+                        result += [group.divider]
+                    result += [group.class_name, group.class_objects_name]
+                    if group.can_delete:
+                        result += [group.remove_settings_button]
+                result += [self.add_class_button]
         return result
 
     def run(self, workspace):
@@ -732,6 +882,8 @@ example, to be saved by a **SaveImages** module).
                 self.run_single_measurement(group, workspace)
         elif self.contrast_choice == BY_TWO_MEASUREMENTS:
             self.run_two_measurements(workspace)
+        elif self.contrast_choice == BY_MODEL:
+            self.run_classifier_model(workspace)
         else:
             raise ValueError(
                 "Invalid classification method: %s" % self.contrast_choice.value
@@ -740,8 +892,10 @@ example, to be saved by a **SaveImages** module).
     def display(self, workspace, figure):
         if self.contrast_choice == BY_TWO_MEASUREMENTS:
             self.display_two_measurements(workspace, figure)
-        else:
+        elif self.contrast_choice == BY_SINGLE_MEASUREMENT:
             self.display_single_measurement(workspace, figure)
+        else:
+            self.display_classifier_model(workspace, figure)
 
     def get_feature_name_matrix(self):
         """Get a 2x2 matrix of feature names for two measurements"""
@@ -1021,6 +1175,12 @@ example, to be saved by a **SaveImages** module).
                 sharexy=figure.subplot(2, 0),
             )
 
+    def run_classifier_model(self, workspace):
+        pass
+
+    def display_classifier_model(self, workspace, figure):
+        pass
+
     def get_colors(self, count):
         """Get colors used for two-measurement labels image"""
         import matplotlib.cm as cm
@@ -1033,6 +1193,66 @@ example, to be saved by a **SaveImages** module).
         colors = sm.to_rgba(numpy.arange(count) + 1)
         return numpy.vstack((numpy.zeros(colors.shape[1]), colors))
 
+    def load_classifier(self):
+        """Load the classifier pickle if not cached
+
+        returns classifier, bin_labels, name and features
+        """
+        d = self.get_dictionary()
+        file_ = self.model_file_name.value
+        directory_ = self.model_directory.get_absolute_path()
+        path_ = os.path.join(directory_, file_)
+        if path_ not in d:
+            if not os.path.isfile(path_):
+                raise ValidationError(
+                    "No such classifier file: %s" % path_, self.model_file_name
+                )
+            else:
+                import joblib
+
+                d[path_] = joblib.load(path_)
+        return d[path_]
+
+    def get_classifier(self):
+        return self.load_classifier()[0]
+
+    def get_bin_labels(self):
+        return self.load_classifier()[1]
+
+    def get_classifier_features(self):
+        return self.load_classifier()[3]
+
+    def keep_by_class(self, workspace, src_objects):
+        """ Keep objects according to their predicted class
+        :param workspace: workspace holding the measurements for the rules
+        :param src_objects: filter these objects (uses measurement indexes instead)
+        :return: indexes (base 1) of the objects that pass
+        """
+        classifier = self.get_classifier()
+        target_idx = self.get_bin_labels().index(self.rules_class.value)
+        target_class = classifier.classes_[target_idx]
+        features = []
+        for feature_name in self.get_classifier_features():
+            feature_name = feature_name.split("_", 1)[1]
+            if feature_name == "x_loc":
+                feature_name = M_LOCATION_CENTER_X
+            elif feature_name == "y_loc":
+                feature_name = M_LOCATION_CENTER_Y
+            features.append(feature_name)
+
+        feature_vector = numpy.column_stack(
+            [
+                workspace.measurements[self.x_name.value, feature_name]
+                for feature_name in features
+            ]
+        )
+        if hasattr(classifier, 'scaler') and classifier.scaler is not None:
+            feature_vector = classifier.scaler.transform(feature_vector)
+        predicted_classes = classifier.predict(feature_vector)
+        hits = predicted_classes == target_class
+        indexes = numpy.argwhere(hits) + 1
+        return indexes.flatten()
+
     def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
 
@@ -1044,10 +1264,13 @@ example, to be saved by a **SaveImages** module).
         the number of relevant settings so they map correctly to the values."""
 
         single_measurement_count = int(setting_values[1])
+        desired_classes_count = int(setting_values[2])
         if single_measurement_count < len(self.single_measurements):
             del self.single_measurements[single_measurement_count:]
         while single_measurement_count > len(self.single_measurements):
             self.add_single_measurement(True)
+        while desired_classes_count > len(self.desired_classes):
+            self.add_single_class(True)
 
     def validate_module(self, pipeline):
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
@@ -1091,6 +1314,9 @@ example, to be saved by a **SaveImages** module).
             new_setting_values += setting_values
             setting_values = new_setting_values
             variable_revision_number = 2
+        if variable_revision_number == 2:
+            setting_values.insert(2, 0)
+            variable_revision_number = 3
 
         return setting_values, variable_revision_number
 
@@ -1122,7 +1348,7 @@ example, to be saved by a **SaveImages** module).
                     )
                     for feature_name in group.bin_feature_names()
                 ]
-        else:
+        elif self.contrast_choice == BY_TWO_MEASUREMENTS:
             names = self.get_feature_name_matrix()
             columns += [
                 (IMAGE, "_".join((M_CATEGORY, name, F_NUM_PER_BIN)), COLTYPE_INTEGER,)
@@ -1136,6 +1362,9 @@ example, to be saved by a **SaveImages** module).
                 (self.object_name.value, "_".join((M_CATEGORY, name)), COLTYPE_INTEGER,)
                 for name in names.flatten()
             ]
+        else:
+            # TODO: This
+            pass
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -1154,6 +1383,11 @@ example, to be saved by a **SaveImages** module).
                 self.contrast_choice == BY_TWO_MEASUREMENTS
                 and object_name == self.object_name
             )
+            or (
+                self.contrast_choice == BY_MODEL
+                and object_name == self.object_name
+            )
+
         ):
             return [M_CATEGORY]
 
@@ -1188,4 +1422,7 @@ example, to be saved by a **SaveImages** module).
                     ):
                         result += ["_".join((bin_feature_names, image_features))]
                 return result
+        elif self.contrast_choice == BY_MODEL:
+            # TODO: Add measurement fetcher
+            pass
         return []

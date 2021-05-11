@@ -74,6 +74,7 @@ from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
+from cellprofiler_core.object import Objects
 from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Divider
@@ -90,6 +91,12 @@ from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.setting.text import Text
+
+from cellprofiler_core.constants.measurement import FF_CHILDREN_COUNT
+from cellprofiler_core.constants.measurement import FF_COUNT
+from cellprofiler_core.constants.measurement import FF_PARENT
+
+from cellprofiler_core.module.image_segmentation import ImageSegmentation
 
 BY_SINGLE_MEASUREMENT = "Single measurement"
 BY_TWO_MEASUREMENTS = "Pair of measurements"
@@ -860,7 +867,7 @@ example, to be saved by a **SaveImages** module).
             result += [self.add_measurement_button]
         else:
             # Classifier model mode
-            result += [self.model_directory, self.model_file_name, self.create_class_sets]
+            result += [self.object_name, self.model_directory, self.model_file_name, self.create_class_sets]
             if self.create_class_sets.value:
                 for group in self.desired_classes:
                     if group.can_delete:
@@ -1176,7 +1183,99 @@ example, to be saved by a **SaveImages** module).
             )
 
     def run_classifier_model(self, workspace):
-        pass
+
+        classifier = self.get_classifier()
+        class_labels = self.get_bin_labels()
+        class_id_dict = dict(zip(class_labels, classifier.classes_))
+        features = []
+        for feature_name in self.get_classifier_features():
+            feature_name = feature_name.split("_", 1)[1]
+            if feature_name == "x_loc":
+                feature_name = M_LOCATION_CENTER_X
+            elif feature_name == "y_loc":
+                feature_name = M_LOCATION_CENTER_Y
+            features.append(feature_name)
+
+        feature_vector = numpy.column_stack(
+            [
+                workspace.measurements[self.object_name.value, feature_name]
+                for feature_name in features
+            ]
+        )
+        predicted_classes = classifier.predict(feature_vector)
+        class_name_column = [class_labels[i - 1] for i in predicted_classes]
+
+        src_objects = workspace.get_objects(self.object_name.value)
+        m = workspace.measurements
+
+        for group in self.desired_classes:
+            target_id = class_id_dict[group.class_name.value]
+            hits = predicted_classes == target_id
+            indexes = numpy.flatnonzero(hits) + 1
+
+            #
+            # Create an array that maps label indexes to their new values
+            # All labels to be deleted have a value in this array of zero
+            #
+            new_object_count = len(indexes)
+            max_label = numpy.max(src_objects.segmented)
+            label_indexes = numpy.zeros((max_label + 1,), int)
+            label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
+            #
+            # Loop over both the primary and additional objects
+            #
+            target_labels = src_objects.segmented.copy()
+            #
+            # Reindex the labels of the old source image
+            #
+            target_labels[target_labels > max_label] = 0
+            target_labels = label_indexes[target_labels]
+            #
+            # Make a new set of objects - retain the old set's unedited
+            # segmentation for the new and generally try to copy stuff
+            # from the old to the new.
+            #
+            target_objects = Objects()
+            target_objects.segmented = target_labels
+            target_objects.unedited_segmented = src_objects.unedited_segmented
+            #
+            # Remove the filtered objects from the small_removed_segmented
+            # if present. "small_removed_segmented" should really be
+            # "filtered_removed_segmented".
+            #
+            small_removed = src_objects.small_removed_segmented.copy()
+            small_removed[(target_labels == 0) & (src_objects.segmented != 0)] = 0
+            target_objects.small_removed_segmented = small_removed
+            if src_objects.has_parent_image:
+                target_objects.parent_image = src_objects.parent_image
+            workspace.object_set.add_objects(target_objects, group.class_objects_name.value)
+
+            self.add_measurements(workspace, self.object_name.value, group.class_objects_name.value)
+
+
+    def add_measurements(
+        self, workspace, input_object_name, output_object_name
+    ):
+
+        ImageSegmentation.add_measurements(self, workspace, output_object_name)
+
+        objects = workspace.object_set.get_objects(output_object_name)
+
+        parent_objects = workspace.object_set.get_objects(input_object_name)
+
+        children_per_parent, parents_of_children = parent_objects.relate_children(
+            objects
+        )
+
+        workspace.measurements.add_measurement(
+            input_object_name,
+            FF_CHILDREN_COUNT % output_object_name,
+            children_per_parent,
+        )
+
+        workspace.measurements.add_measurement(
+            output_object_name, FF_PARENT % input_object_name, parents_of_children,
+        )
 
     def display_classifier_model(self, workspace, figure):
         pass

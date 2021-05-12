@@ -1336,6 +1336,9 @@ value will be retained.""".format(
 
         return setting_values, variable_revision_number
 
+    def get_dictionary_for_worker(self):
+        # Sklearn models can't be serialized, so workers will need to read them from disk.
+        return {}
 
 #
 # backwards compatibility

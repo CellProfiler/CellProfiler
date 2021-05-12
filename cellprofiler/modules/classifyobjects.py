@@ -1215,9 +1215,10 @@ example, to be saved by a **SaveImages** module).
             self.object_name.value, f"{M_CATEGORY}_Class", [class_labels[i - 1] for i in predicted_classes]
         )
 
+        class_counts = []
         for label in class_labels:
             class_count = numpy.count_nonzero(predicted_classes == class_id_dict[label])
-            print("Adding ", IMAGE, f"{M_CATEGORY}_{FF_COUNT % label}", class_count)
+            class_counts.append(class_count)
             m.add_measurement(
                 IMAGE, f"{M_CATEGORY}_{FF_COUNT % label}", class_count
             )
@@ -1268,7 +1269,36 @@ example, to be saved by a **SaveImages** module).
 
             self.add_measurements(workspace, self.object_name.value, group.class_objects_name.value)
 
-    # TODO: Add display data
+        if self.show_window:
+            workspace.display_data.identities = class_id_dict
+            object_labels = src_objects.segmented.copy()
+            object_labels = numpy.insert(predicted_classes, 0, 0)[object_labels]
+
+            workspace.display_data.labeled_classes = object_labels
+            workspace.display_data.class_counts = class_counts
+
+    def display_classifier_model(self, workspace, figure):
+        figure.set_subplots((2, 2))
+
+        input_objects = workspace.object_set.get_objects(self.object_name.value)
+        input_labels = input_objects.segmented
+        ax = figure.subplot_imshow_labels(
+            0, 0, input_labels, self.object_name.value
+        )
+
+        class_labels = workspace.display_data.labeled_classes
+        figure.subplot_imshow_labels(
+            1, 0, class_labels, "Classified Objects", sharexy=ax,
+        )
+        class_counts = workspace.display_data.class_counts
+        ids_dict = workspace.display_data.identities
+        data = list(zip(ids_dict.values(), ids_dict.keys(), class_counts)) * 7
+        figure.subplot_table(
+            1,
+            1,
+            data,
+            col_labels=("ID", "Class Name", "Count"),
+        )
 
     def add_measurements(self, workspace, input_object_name, output_object_name):
 
@@ -1291,9 +1321,6 @@ example, to be saved by a **SaveImages** module).
         workspace.measurements.add_measurement(
             output_object_name, FF_PARENT % input_object_name, parents_of_children,
         )
-
-    def display_classifier_model(self, workspace, figure):
-        pass
 
     def get_colors(self, count):
         """Get colors used for two-measurement labels image"""

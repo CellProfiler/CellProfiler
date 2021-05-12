@@ -77,7 +77,7 @@ from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import Module
 from cellprofiler_core.object import Objects
-from cellprofiler_core.preferences import get_default_colormap
+from cellprofiler_core.preferences import get_default_colormap, get_headless
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import Divider
 from cellprofiler_core.setting import HiddenCount
@@ -1278,6 +1278,13 @@ example, to be saved by a **SaveImages** module).
             workspace.display_data.class_counts = class_counts
 
     def display_classifier_model(self, workspace, figure):
+        if get_headless():
+            return
+        import wx
+        import matplotlib.cm as cm
+
+        cmap = cm.get_cmap(get_default_colormap())
+
         figure.set_subplots((2, 2))
 
         input_objects = workspace.object_set.get_objects(self.object_name.value)
@@ -1288,17 +1295,23 @@ example, to be saved by a **SaveImages** module).
 
         class_labels = workspace.display_data.labeled_classes
         figure.subplot_imshow_labels(
-            1, 0, class_labels, "Classified Objects", sharexy=ax,
+            1, 0, class_labels, "Classified Objects", sharexy=ax, colormap=cmap
         )
         class_counts = workspace.display_data.class_counts
         ids_dict = workspace.display_data.identities
-        data = list(zip(ids_dict.values(), ids_dict.keys(), class_counts)) * 7
+        data = list(zip([""] * len(class_counts), ids_dict.values(), ids_dict.keys(), class_counts))
         figure.subplot_table(
             1,
             1,
             data,
-            col_labels=("ID", "Class Name", "Count"),
+            col_labels=("     ", "ID", "Class Name", "Count"),
         )
+        # Fetch the grid object and recolour the left column to match the displayed plot cmap
+        table = figure.widgets[-1][-1]
+        for i in ids_dict.values():
+            color = cmap(i)
+            col = wx.Colour(color[0] * 255, color[1] * 255, color[2] * 255)
+            table.SetCellBackgroundColour(i-1, 0, col)
 
     def add_measurements(self, workspace, input_object_name, output_object_name):
 

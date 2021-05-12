@@ -69,7 +69,9 @@ import os
 import numpy
 
 from cellprofiler.modules import _help
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, \
+    COLTYPE_VARCHAR, C_COUNT, C_CHILDREN, C_LOCATION, C_NUMBER, C_PARENT, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, \
+    FTR_CENTER_Z
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.image import Image
@@ -1202,11 +1204,25 @@ example, to be saved by a **SaveImages** module).
                 for feature_name in features
             ]
         )
+
+        if hasattr(classifier, 'scaler') and classifier.scaler is not None:
+            feature_vector = classifier.scaler.transform(feature_vector)
         predicted_classes = classifier.predict(feature_vector)
-        class_name_column = [class_labels[i - 1] for i in predicted_classes]
+
+        m = workspace.measurements
+
+        m.add_measurement(
+            self.object_name.value, f"{M_CATEGORY}_Class", [class_labels[i - 1] for i in predicted_classes]
+        )
+
+        for label in class_labels:
+            class_count = numpy.count_nonzero(predicted_classes == class_id_dict[label])
+            print("Adding ", IMAGE, f"{M_CATEGORY}_{FF_COUNT % label}", class_count)
+            m.add_measurement(
+                IMAGE, f"{M_CATEGORY}_{FF_COUNT % label}", class_count
+            )
 
         src_objects = workspace.get_objects(self.object_name.value)
-        m = workspace.measurements
 
         for group in self.desired_classes:
             target_id = class_id_dict[group.class_name.value]
@@ -1252,10 +1268,9 @@ example, to be saved by a **SaveImages** module).
 
             self.add_measurements(workspace, self.object_name.value, group.class_objects_name.value)
 
+    # TODO: Add display data
 
-    def add_measurements(
-        self, workspace, input_object_name, output_object_name
-    ):
+    def add_measurements(self, workspace, input_object_name, output_object_name):
 
         ImageSegmentation.add_measurements(self, workspace, output_object_name)
 
@@ -1320,37 +1335,6 @@ example, to be saved by a **SaveImages** module).
 
     def get_classifier_features(self):
         return self.load_classifier()[3]
-
-    def keep_by_class(self, workspace, src_objects):
-        """ Keep objects according to their predicted class
-        :param workspace: workspace holding the measurements for the rules
-        :param src_objects: filter these objects (uses measurement indexes instead)
-        :return: indexes (base 1) of the objects that pass
-        """
-        classifier = self.get_classifier()
-        target_idx = self.get_bin_labels().index(self.rules_class.value)
-        target_class = classifier.classes_[target_idx]
-        features = []
-        for feature_name in self.get_classifier_features():
-            feature_name = feature_name.split("_", 1)[1]
-            if feature_name == "x_loc":
-                feature_name = M_LOCATION_CENTER_X
-            elif feature_name == "y_loc":
-                feature_name = M_LOCATION_CENTER_Y
-            features.append(feature_name)
-
-        feature_vector = numpy.column_stack(
-            [
-                workspace.measurements[self.x_name.value, feature_name]
-                for feature_name in features
-            ]
-        )
-        if hasattr(classifier, 'scaler') and classifier.scaler is not None:
-            feature_vector = classifier.scaler.transform(feature_vector)
-        predicted_classes = classifier.predict(feature_vector)
-        hits = predicted_classes == target_class
-        indexes = numpy.argwhere(hits) + 1
-        return indexes.flatten()
 
     def prepare_settings(self, setting_values):
         """Do any sort of adjustment to the settings required for the given values
@@ -1462,8 +1446,21 @@ example, to be saved by a **SaveImages** module).
                 for name in names.flatten()
             ]
         else:
-            # TODO: This
-            pass
+            columns += [
+                (IMAGE, f"{M_CATEGORY}_{FF_COUNT % label}", COLTYPE_INTEGER,) for label in self.get_bin_labels()
+            ]
+            columns += [
+                (self.object_name.value, f"{M_CATEGORY}_Class", COLTYPE_VARCHAR,)
+            ]
+            for group in self.desired_classes:
+                columns += ImageSegmentation.get_measurement_columns(self, pipeline, group.class_objects_name.value)
+                columns += [(
+                            self.object_name.value,
+                            FF_CHILDREN_COUNT % group.class_objects_name.value,
+                            COLTYPE_INTEGER,
+                        ),
+                        (group.class_objects_name.value, FF_PARENT % self.object_name.value, COLTYPE_INTEGER,),
+                    ]
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -1471,24 +1468,31 @@ example, to be saved by a **SaveImages** module).
 
         object_name - return measurements made on this object (or 'Image' for image measurements)
         """
-        if (
-            (object_name == IMAGE)
-            or (
-                self.contrast_choice == BY_SINGLE_MEASUREMENT
-                and object_name
-                in [group.object_name.value for group in self.single_measurements]
-            )
-            or (
-                self.contrast_choice == BY_TWO_MEASUREMENTS
-                and object_name == self.object_name
-            )
-            or (
-                self.contrast_choice == BY_MODEL
-                and object_name == self.object_name
-            )
-
-        ):
-            return [M_CATEGORY]
+        if self.contrast_choice == BY_MODEL:
+            if object_name == IMAGE:
+                if len(self.desired_classes) > 0:
+                    return [M_CATEGORY, C_COUNT]
+                return [M_CATEGORY]
+            if object_name == self.object_name.value:
+                if len(self.desired_classes) > 0:
+                    return [M_CATEGORY, C_CHILDREN]
+                return [M_CATEGORY]
+            elif object_name in [group.class_objects_name for group in self.desired_classes]:
+                return [C_LOCATION, C_NUMBER, C_PARENT]
+        else:
+            if (
+                (object_name == IMAGE)
+                or (
+                    self.contrast_choice == BY_SINGLE_MEASUREMENT
+                    and object_name
+                    in [group.object_name.value for group in self.single_measurements]
+                )
+                or (
+                    self.contrast_choice == BY_TWO_MEASUREMENTS
+                    and object_name == self.object_name
+                )
+            ):
+                return [M_CATEGORY]
 
         return []
 
@@ -1498,10 +1502,8 @@ example, to be saved by a **SaveImages** module).
         object_name - return measurements made on this object (or 'Image' for image measurements)
         category - return measurements made in this category
         """
-        if category != M_CATEGORY:
-            return []
+        result = []
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
-            result = []
             for group in self.single_measurements:
                 if group.object_name == object_name:
                     return group.bin_feature_names()
@@ -1514,7 +1516,6 @@ example, to be saved by a **SaveImages** module).
             if self.object_name == object_name:
                 return self.get_feature_name_matrix().flatten().tolist()
             elif object_name == IMAGE:
-                result = []
                 for image_features in (F_NUM_PER_BIN, F_PCT_PER_BIN):
                     for bin_feature_names in (
                         self.get_feature_name_matrix().flatten().tolist()
@@ -1522,6 +1523,22 @@ example, to be saved by a **SaveImages** module).
                         result += ["_".join((bin_feature_names, image_features))]
                 return result
         elif self.contrast_choice == BY_MODEL:
-            # TODO: Add measurement fetcher
-            pass
-        return []
+            if object_name == IMAGE:
+                if category == C_COUNT:
+                    result += [group.class_objects_name.value for group in self.desired_classes]
+                elif category == M_CATEGORY:
+                    result += [FF_COUNT % label for label in self.get_bin_labels()]
+            elif object_name == self.object_name.value:
+                if category == M_CATEGORY:
+                    result += [f"Class"]
+                elif category == C_CHILDREN:
+                    result += [f"{group.class_objects_name.value}_Count" for group in self.desired_classes]
+            for group in self.desired_classes:
+                if object_name == group.class_objects_name.value:
+                    if category == C_NUMBER:
+                        result += [FTR_OBJECT_NUMBER]
+                    elif category == C_LOCATION:
+                        result += [FTR_CENTER_X, FTR_CENTER_Y, FTR_CENTER_Z]
+                    elif category == C_PARENT:
+                        result += [self.object_name.value]
+        return result

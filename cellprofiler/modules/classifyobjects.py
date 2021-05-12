@@ -1542,3 +1542,7 @@ example, to be saved by a **SaveImages** module).
                     elif category == C_PARENT:
                         result += [self.object_name.value]
         return result
+
+    def get_dictionary_for_worker(self):
+        # Sklearn models can't be serialized, so workers will need to read them from disk.
+        return {}

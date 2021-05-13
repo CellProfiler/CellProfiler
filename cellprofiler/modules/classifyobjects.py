@@ -1208,6 +1208,7 @@ example, to be saved by a **SaveImages** module).
         if hasattr(classifier, 'scaler') and classifier.scaler is not None:
             feature_vector = classifier.scaler.transform(feature_vector)
         predicted_classes = classifier.predict(feature_vector)
+        probabilities = classifier.predict_proba(feature_vector)
 
         m = workspace.measurements
 
@@ -1216,12 +1217,16 @@ example, to be saved by a **SaveImages** module).
         )
 
         class_counts = []
-        for label in class_labels:
+        for index, label in enumerate(class_labels):
             class_count = numpy.count_nonzero(predicted_classes == class_id_dict[label])
             class_counts.append(class_count)
             m.add_measurement(
                 IMAGE, f"{M_CATEGORY}_{FF_COUNT % label}", class_count
             )
+            m.add_measurement(
+                self.object_name.value, f"{M_CATEGORY}_Probability_{label}", probabilities[:, index]
+            )
+
 
         src_objects = workspace.get_objects(self.object_name.value)
 
@@ -1274,6 +1279,7 @@ example, to be saved by a **SaveImages** module).
             object_labels = src_objects.segmented.copy()
             object_labels = numpy.insert(predicted_classes, 0, 0)[object_labels]
 
+            workspace.display_data.input_objects = src_objects.segmented
             workspace.display_data.labeled_classes = object_labels
             workspace.display_data.class_counts = class_counts
 
@@ -1287,8 +1293,7 @@ example, to be saved by a **SaveImages** module).
 
         figure.set_subplots((2, 2))
 
-        input_objects = workspace.object_set.get_objects(self.object_name.value)
-        input_labels = input_objects.segmented
+        input_labels = workspace.display_data.input_objects
         ax = figure.subplot_imshow_labels(
             0, 0, input_labels, self.object_name.value
         )
@@ -1492,6 +1497,10 @@ example, to be saved by a **SaveImages** module).
             columns += [
                 (self.object_name.value, f"{M_CATEGORY}_Class", COLTYPE_VARCHAR,)
             ]
+            columns += [
+                (self.object_name.value, f"{M_CATEGORY}_Probability_{label}", COLTYPE_FLOAT,)
+                for label in self.get_bin_labels()
+            ]
             for group in self.desired_classes:
                 columns += ImageSegmentation.get_measurement_columns(self, pipeline, group.class_objects_name.value)
                 columns += [(
@@ -1571,6 +1580,7 @@ example, to be saved by a **SaveImages** module).
             elif object_name == self.object_name.value:
                 if category == M_CATEGORY:
                     result += [f"Class"]
+                    result += [f"Probability_{label}" for label in self.get_bin_labels()]
                 elif category == C_CHILDREN:
                     result += [f"{group.class_objects_name.value}_Count" for group in self.desired_classes]
             for group in self.desired_classes:

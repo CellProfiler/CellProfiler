@@ -1404,6 +1404,29 @@ example, to be saved by a **SaveImages** module).
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
             for group in self.single_measurements:
                 group.validate_group()
+        elif self.contrast_choice == BY_MODEL:
+            features = []
+            for feature_name in self.get_classifier_features():
+                feature_name = feature_name.split("_", 1)[1]
+                if feature_name == "x_loc":
+                    feature_name = M_LOCATION_CENTER_X
+                elif feature_name == "y_loc":
+                    feature_name = M_LOCATION_CENTER_Y
+                features.append(feature_name)
+            available_features = set(
+                [col[1] for col in pipeline.get_measurement_columns(self) if col[0] == self.object_name.value])
+            for feature in features:
+                if feature not in available_features:
+                    raise ValidationError(
+                        (
+                            "The classifier %s, requires the measurement, %s "
+                            "for object %s, but that measurement is not available "
+                            "at this stage of the pipeline. Consider adding "
+                            "modules to produce the measurement."
+                        )
+                        % (self.model_file_name, feature, self.object_name.value),
+                        self.model_file_name,
+                    )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust setting values if they came from a previous revision

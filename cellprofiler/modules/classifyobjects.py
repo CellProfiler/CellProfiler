@@ -1230,49 +1230,50 @@ example, to be saved by a **SaveImages** module).
 
         src_objects = workspace.get_objects(self.object_name.value)
 
-        for group in self.desired_classes:
-            target_id = class_id_dict[group.class_name.value]
-            hits = predicted_classes == target_id
-            indexes = numpy.flatnonzero(hits) + 1
+        if self.create_class_sets.value:
+            for group in self.desired_classes:
+                target_id = class_id_dict[group.class_name.value]
+                hits = predicted_classes == target_id
+                indexes = numpy.flatnonzero(hits) + 1
 
-            #
-            # Create an array that maps label indexes to their new values
-            # All labels to be deleted have a value in this array of zero
-            #
-            new_object_count = len(indexes)
-            max_label = numpy.max(src_objects.segmented)
-            label_indexes = numpy.zeros((max_label + 1,), int)
-            label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
-            #
-            # Loop over both the primary and additional objects
-            #
-            target_labels = src_objects.segmented.copy()
-            #
-            # Reindex the labels of the old source image
-            #
-            target_labels[target_labels > max_label] = 0
-            target_labels = label_indexes[target_labels]
-            #
-            # Make a new set of objects - retain the old set's unedited
-            # segmentation for the new and generally try to copy stuff
-            # from the old to the new.
-            #
-            target_objects = Objects()
-            target_objects.segmented = target_labels
-            target_objects.unedited_segmented = src_objects.unedited_segmented
-            #
-            # Remove the filtered objects from the small_removed_segmented
-            # if present. "small_removed_segmented" should really be
-            # "filtered_removed_segmented".
-            #
-            small_removed = src_objects.small_removed_segmented.copy()
-            small_removed[(target_labels == 0) & (src_objects.segmented != 0)] = 0
-            target_objects.small_removed_segmented = small_removed
-            if src_objects.has_parent_image:
-                target_objects.parent_image = src_objects.parent_image
-            workspace.object_set.add_objects(target_objects, group.class_objects_name.value)
+                #
+                # Create an array that maps label indexes to their new values
+                # All labels to be deleted have a value in this array of zero
+                #
+                new_object_count = len(indexes)
+                max_label = numpy.max(src_objects.segmented)
+                label_indexes = numpy.zeros((max_label + 1,), int)
+                label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
+                #
+                # Loop over both the primary and additional objects
+                #
+                target_labels = src_objects.segmented.copy()
+                #
+                # Reindex the labels of the old source image
+                #
+                target_labels[target_labels > max_label] = 0
+                target_labels = label_indexes[target_labels]
+                #
+                # Make a new set of objects - retain the old set's unedited
+                # segmentation for the new and generally try to copy stuff
+                # from the old to the new.
+                #
+                target_objects = Objects()
+                target_objects.segmented = target_labels
+                target_objects.unedited_segmented = src_objects.unedited_segmented
+                #
+                # Remove the filtered objects from the small_removed_segmented
+                # if present. "small_removed_segmented" should really be
+                # "filtered_removed_segmented".
+                #
+                small_removed = src_objects.small_removed_segmented.copy()
+                small_removed[(target_labels == 0) & (src_objects.segmented != 0)] = 0
+                target_objects.small_removed_segmented = small_removed
+                if src_objects.has_parent_image:
+                    target_objects.parent_image = src_objects.parent_image
+                workspace.object_set.add_objects(target_objects, group.class_objects_name.value)
 
-            self.add_measurements(workspace, self.object_name.value, group.class_objects_name.value)
+                self.add_measurements(workspace, self.object_name.value, group.class_objects_name.value)
 
         if self.show_window:
             workspace.display_data.identities = class_id_dict
@@ -1524,15 +1525,16 @@ example, to be saved by a **SaveImages** module).
                 (self.object_name.value, f"{M_CATEGORY}_Probability_{label}", COLTYPE_FLOAT,)
                 for label in self.get_bin_labels()
             ]
-            for group in self.desired_classes:
-                columns += ImageSegmentation.get_measurement_columns(self, pipeline, group.class_objects_name.value)
-                columns += [(
-                            self.object_name.value,
-                            FF_CHILDREN_COUNT % group.class_objects_name.value,
-                            COLTYPE_INTEGER,
-                        ),
-                        (group.class_objects_name.value, FF_PARENT % self.object_name.value, COLTYPE_INTEGER,),
-                    ]
+            if self.create_class_sets.value:
+                for group in self.desired_classes:
+                    columns += ImageSegmentation.get_measurement_columns(self, pipeline, group.class_objects_name.value)
+                    columns += [(
+                                self.object_name.value,
+                                FF_CHILDREN_COUNT % group.class_objects_name.value,
+                                COLTYPE_INTEGER,
+                                ),
+                                (group.class_objects_name.value, FF_PARENT % self.object_name.value, COLTYPE_INTEGER,),
+                                ]
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -1542,15 +1544,17 @@ example, to be saved by a **SaveImages** module).
         """
         if self.contrast_choice == BY_MODEL:
             if object_name == IMAGE:
-                if len(self.desired_classes) > 0:
+                if self.create_class_sets.value and len(self.desired_classes) > 0:
                     return [M_CATEGORY, C_COUNT]
                 return [M_CATEGORY]
             if object_name == self.object_name.value:
-                if len(self.desired_classes) > 0:
+                if self.create_class_sets.value and len(self.desired_classes) > 0:
                     return [M_CATEGORY, C_CHILDREN]
                 return [M_CATEGORY]
             elif object_name in [group.class_objects_name for group in self.desired_classes]:
-                return [C_LOCATION, C_NUMBER, C_PARENT]
+                if self.create_class_sets.value:
+                    return [C_LOCATION, C_NUMBER, C_PARENT]
+                return []
         else:
             if (
                 (object_name == IMAGE)
@@ -1600,7 +1604,7 @@ example, to be saved by a **SaveImages** module).
                 return result
         elif self.contrast_choice == BY_MODEL:
             if object_name == IMAGE:
-                if category == C_COUNT:
+                if category == C_COUNT and self.create_class_sets.value:
                     result += [group.class_objects_name.value for group in self.desired_classes]
                 elif category == M_CATEGORY:
                     result += [FF_COUNT % label for label in self.get_bin_labels()]
@@ -1608,10 +1612,10 @@ example, to be saved by a **SaveImages** module).
                 if category == M_CATEGORY:
                     result += [f"Class"]
                     result += [f"Probability_{label}" for label in self.get_bin_labels()]
-                elif category == C_CHILDREN:
+                elif category == C_CHILDREN and self.create_class_sets.value:
                     result += [f"{group.class_objects_name.value}_Count" for group in self.desired_classes]
             for group in self.desired_classes:
-                if object_name == group.class_objects_name.value:
+                if self.create_class_sets.value and object_name == group.class_objects_name.value:
                     if category == C_NUMBER:
                         result += [FTR_OBJECT_NUMBER]
                     elif category == C_LOCATION:

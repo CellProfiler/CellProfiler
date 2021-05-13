@@ -1576,6 +1576,8 @@ example, to be saved by a **SaveImages** module).
         """
         result = []
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
+            if category != M_CATEGORY:
+                return []
             for group in self.single_measurements:
                 if group.object_name == object_name:
                     return group.bin_feature_names()
@@ -1585,6 +1587,8 @@ example, to be saved by a **SaveImages** module).
                             result += ["_".join((bin_feature_names, image_features))]
                     return result
         elif self.contrast_choice == BY_TWO_MEASUREMENTS:
+            if category != M_CATEGORY:
+                return []
             if self.object_name == object_name:
                 return self.get_feature_name_matrix().flatten().tolist()
             elif object_name == IMAGE:

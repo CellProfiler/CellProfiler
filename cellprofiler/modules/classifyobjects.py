@@ -658,16 +658,26 @@ example, to be saved by a **SaveImages** module).
 
         def get_directory_fn():
             """Get the directory for the rules file name"""
-            try:
-                self.load_classifier()
-            except:
-                pass
             return self.model_directory.get_absolute_path()
 
         def set_directory_fn(path):
             dir_choice, custom_path = self.model_directory.get_parts_from_path(path)
 
             self.model_directory.join_parts(dir_choice, custom_path)
+            if not get_headless():
+                import wx
+                wx.CallAfter(update_choices)
+
+        def update_choices():
+            # Very hacky, but we can force the UI to update the list of available classes
+            # by running the Choice object validation function. Otherwise new class names
+            # won't be available until the user changes another setting.
+            for groupid in self.desired_classes:
+                try:
+                    groupid.class_name.test_valid(None)
+                except ValidationError:
+                    # There will almost always be errors, but we just want the box updated.
+                    pass
 
         self.model_file_name = Filename(
             "Rules or classifier file name",
@@ -707,7 +717,7 @@ example, to be saved by a **SaveImages** module).
         #
         # Add one single measurement to start off
         #
-        # self.add_single_class(False)
+        self.add_single_class(False)
         #
         # A button to press to get another measurement
         #
@@ -1427,6 +1437,13 @@ example, to be saved by a **SaveImages** module).
                         )
                         % (self.model_file_name, feature, self.object_name.value),
                         self.model_file_name,
+                    )
+            if self.create_class_sets.value:
+                names = set([group.class_objects_name.value for group in self.desired_classes])
+                if len(names) != len(self.desired_classes):
+                    raise ValidationError(
+                        "Classes being extracted as object sets must have unique names",
+                        self.desired_classes[0].class_objects_name
                     )
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):

@@ -653,7 +653,7 @@ example, to be saved by a **SaveImages** module).
         self.create_class_sets = Binary(
             "Save classes as new object sets?",
             False,
-            doc="FFFFFFFFF",
+            doc="Choose whether to create new object sets from classes specified by the classifier model",
         )
 
         def get_directory_fn():

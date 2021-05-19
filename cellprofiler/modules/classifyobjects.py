@@ -675,7 +675,7 @@ example, to be saved by a **SaveImages** module).
             for groupid in self.desired_classes:
                 try:
                     groupid.class_name.test_valid(None)
-                except ValidationError:
+                except:
                     # There will almost always be errors, but we just want the box updated.
                     pass
 
@@ -1195,30 +1195,40 @@ example, to be saved by a **SaveImages** module).
             )
 
     def run_classifier_model(self, workspace):
-
         classifier = self.get_classifier()
         class_labels = self.get_bin_labels()
-        class_id_dict = dict(zip(class_labels, classifier.classes_))
-        features = []
-        for feature_name in self.get_classifier_features():
-            feature_name = feature_name.split("_", 1)[1]
-            if feature_name == "x_loc":
-                feature_name = M_LOCATION_CENTER_X
-            elif feature_name == "y_loc":
-                feature_name = M_LOCATION_CENTER_Y
-            features.append(feature_name)
+        if self.get_classifier_type() == 'Rules':
+            # Working with CPA rules.
+            class_id_dict = dict(zip(class_labels, [int(i) for i in class_labels]))
+            probabilities = classifier.score(workspace.measurements)
+            if len(probabilities) > 0:
+                is_not_nan = numpy.any(~numpy.isnan(probabilities), 1)
+                predicted_classes = numpy.argmax(probabilities[is_not_nan], 1).flatten() + 1
+            else:
+                predicted_classes = []
+        else:
+            # Working with a CPA sklearn-based model
+            class_id_dict = dict(zip(class_labels, classifier.classes_))
+            features = []
+            for feature_name in self.get_classifier_features():
+                feature_name = feature_name.split("_", 1)[1]
+                if feature_name == "x_loc":
+                    feature_name = M_LOCATION_CENTER_X
+                elif feature_name == "y_loc":
+                    feature_name = M_LOCATION_CENTER_Y
+                features.append(feature_name)
 
-        feature_vector = numpy.column_stack(
-            [
-                workspace.measurements[self.object_name.value, feature_name]
-                for feature_name in features
-            ]
-        )
+            feature_vector = numpy.column_stack(
+                [
+                    workspace.measurements[self.object_name.value, feature_name]
+                    for feature_name in features
+                ]
+            )
 
-        if hasattr(classifier, 'scaler') and classifier.scaler is not None:
-            feature_vector = classifier.scaler.transform(feature_vector)
-        predicted_classes = classifier.predict(feature_vector)
-        probabilities = classifier.predict_proba(feature_vector)
+            if hasattr(classifier, 'scaler') and classifier.scaler is not None:
+                feature_vector = classifier.scaler.transform(feature_vector)
+            predicted_classes = classifier.predict(feature_vector)
+            probabilities = classifier.predict_proba(feature_vector)
 
         m = workspace.measurements
 
@@ -1378,9 +1388,17 @@ example, to be saved by a **SaveImages** module).
                     "No such classifier file: %s" % path_, self.model_file_name
                 )
             else:
-                import joblib
-
-                d[path_] = joblib.load(path_)
+                if not file_.endswith('.txt'):
+                    # Probably a model file
+                    import joblib
+                    d[path_] = joblib.load(path_)
+                else:
+                    # Probably a rules list
+                    import cellprofiler.utilities.rules
+                    rules = cellprofiler.utilities.rules.Rules()
+                    rules.parse(path_)
+                    # Construct a classifier-like object
+                    d[path_] = (rules, rules.get_classes(), "Rules", rules.get_features())
         return d[path_]
 
     def get_classifier(self):
@@ -1388,6 +1406,9 @@ example, to be saved by a **SaveImages** module).
 
     def get_bin_labels(self):
         return self.load_classifier()[1]
+
+    def get_classifier_type(self):
+        return self.load_classifier()[2]
 
     def get_classifier_features(self):
         return self.load_classifier()[3]
@@ -1424,8 +1445,14 @@ example, to be saved by a **SaveImages** module).
                 elif feature_name == "y_loc":
                     feature_name = M_LOCATION_CENTER_Y
                 features.append(feature_name)
-            available_features = set(
-                [col[1] for col in pipeline.get_measurement_columns(self) if col[0] == self.object_name.value])
+            if self.get_classifier_type() == "Rules":
+                # Rules lists don't supply source module names on their measurements...
+                available_features = set(
+                    [col[1].split('_', 1)[-1] for col in pipeline.get_measurement_columns(self)
+                     if col[0] == self.object_name.value])
+            else:
+                available_features = set(
+                    [col[1] for col in pipeline.get_measurement_columns(self) if col[0] == self.object_name.value])
             for feature in features:
                 if feature not in available_features:
                     raise ValidationError(

@@ -138,3 +138,11 @@ class Rules(object):
             if score.shape[0] > partial_score.shape[0]:
                 score[score_len:, :] = numpy.NAN
         return score
+
+    def get_classes(self):
+        if len(self.rules) == 0:
+            return []
+        return [str(i + 1) for i in range(self.rules[0].weights.shape[0])]
+
+    def get_features(self):
+        return [rule.feature for rule in self.rules]

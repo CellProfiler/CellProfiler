@@ -1150,9 +1150,9 @@ class HDF5FileList(object):
         if schema == "":
             schema = None
         if schema is not None:
-            rest = url.split(schema)[1]
-            if rest[0]==':':
-                rest=rest[1:]
+            rest = url.split(schema, 1)[1]
+            if rest[0] == ":":
+                rest = rest[1:]
         else:
             rest = url
 

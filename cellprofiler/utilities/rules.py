@@ -146,3 +146,11 @@ class Rules(object):
 
     def get_features(self):
         return [rule.feature for rule in self.rules]
+
+    def load(self, rules):
+        # Convert a FastGentleBoosting classifier object into a set of rules
+        for name, th, pos, neg, _ in rules:
+            object_name, feature = name.split('_', 1)
+            weights = numpy.vstack((pos, neg))
+            rule = self.Rule(object_name, feature, ">", th, weights)
+            self.rules.append(rule)

@@ -2839,6 +2839,9 @@ available:
             self.cursor = None
 
     def post_run(self, workspace):
+        if self.show_window:
+            workspace.display_data.header = ["Output", "File Location"]
+            workspace.display_data.columns = []
         if self.save_cpa_properties.value:
             self.write_properties_file(workspace)
         if self.create_workspace_file.value:
@@ -4085,6 +4088,9 @@ CREATE TABLE %s (
             )
 
     def display_post_run(self, workspace, figure):
+        if not workspace.display_data.columns:
+            # Nothing to display
+            return
         figure.set_subplots((1, 1))
         figure.subplot_table(
             0,
@@ -4127,6 +4133,8 @@ CREATE TABLE %s (
             fid = open(properties.file_name, "wt")
             fid.write(properties.text)
             fid.close()
+            if self.show_window:
+                workspace.display_data.columns.append(("Properties_File", properties.file_name))
 
     def get_property_file_text(self, workspace):
         """Get the text for all property files
@@ -4773,6 +4781,8 @@ CP version : %d\n""" % int(
 
         fd.write(display_tool_text)
         fd.close()
+        if self.show_window:
+            workspace.display_data.columns.append(("Workspace_File", file_name))
 
     def get_file_path_width(self, workspace):
         """Compute the file name and path name widths needed in table defs"""

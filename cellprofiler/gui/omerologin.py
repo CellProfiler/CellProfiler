@@ -45,24 +45,20 @@ class OmeroLoginDlg(wx.Dialog):
             max_width = max(w, max_width)
             max_height = max(h, max_height)
 
-        lsize = wx.Size(max_width, max_height)
+        # Add extra padding
+        lsize = wx.Size(max_width + 5, max_height)
         sub_sizer.Add(
             wx.StaticText(self, label="Server:", size=lsize),
-            0,
-            wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM,
-        )
-        sub_sizer.AddSpacer(2)
+            0, wx.ALIGN_CENTER_VERTICAL)
         self.omero_server_ctrl = wx.TextCtrl(self, value=self.server)
         sub_sizer.Add(self.omero_server_ctrl, 1, wx.EXPAND)
 
-        sizer.AddSpacer(2)
+        sizer.AddSpacer(5)
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(sub_sizer, 0, wx.EXPAND)
         sub_sizer.Add(
             wx.StaticText(self, label="Port:", size=lsize),
-            0,
-            wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM,
-        )
+            0, wx.ALIGN_CENTER_VERTICAL)
         self.omero_port_ctrl = wx.TextCtrl(self, value=str(self.port))
         sub_sizer.Add(self.omero_port_ctrl, 1, wx.EXPAND)
 
@@ -71,9 +67,7 @@ class OmeroLoginDlg(wx.Dialog):
         sizer.Add(sub_sizer, 0, wx.EXPAND)
         sub_sizer.Add(
             wx.StaticText(self, label="User:", size=lsize),
-            0,
-            wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM,
-        )
+            0, wx.ALIGN_CENTER_VERTICAL)
         self.omero_user_ctrl = wx.TextCtrl(self, value=self.user)
         sub_sizer.Add(self.omero_user_ctrl, 1, wx.EXPAND)
 
@@ -82,9 +76,7 @@ class OmeroLoginDlg(wx.Dialog):
         sizer.Add(sub_sizer, 0, wx.EXPAND)
         sub_sizer.Add(
             wx.StaticText(self, label="Password:", size=lsize),
-            0,
-            wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM,
-        )
+            0, wx.ALIGN_CENTER_VERTICAL)
         self.omero_password_ctrl = wx.TextCtrl(self, value="", style=wx.TE_PASSWORD)
         sub_sizer.Add(self.omero_password_ctrl, 1, wx.EXPAND)
 

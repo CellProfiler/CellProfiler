@@ -684,6 +684,7 @@ value will be retained.""".format(
             (x.object_name.value, x.target_name.value) for x in self.additional_objects
         ]
         m = workspace.measurements
+        first_set = True
         for src_name, target_name in object_list:
             src_objects = workspace.get_objects(src_name)
             target_labels = src_objects.segmented.copy()
@@ -714,10 +715,11 @@ value will be retained.""".format(
 
             self.add_measurements(workspace, src_name, target_name)
 
-        if self.show_window:
-            workspace.display_data.src_objects_segmented = src_objects.segmented
-            workspace.display_data.target_objects_segmented = target_objects.segmented
-            workspace.display_data.dimensions = src_objects.dimensions
+            if self.show_window and first_set:
+                workspace.display_data.src_objects_segmented = src_objects.segmented
+                workspace.display_data.target_objects_segmented = target_objects.segmented
+                workspace.display_data.dimensions = src_objects.dimensions
+                first_set = False
 
     def display(self, workspace, figure):
         """Display what was filtered"""

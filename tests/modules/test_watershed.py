@@ -327,3 +327,103 @@ def test_run_markers_declump_shape(
     actual = workspace.get_objects("watershed")
 
     numpy.testing.assert_array_equal(expected, actual.segmented)
+
+def test_run_markers_declump_intensity(
+    image, module, image_set, workspace, connectivity, compactness, watershed_line
+):
+    module.use_advanced.value = True
+
+    module.operation.value = "Markers"
+
+    module.x_name.value = "gradient"
+
+    module.y_name.value = "watershed"
+
+    module.markers_name.value = "markers"
+
+    module.connectivity.value = connectivity
+
+    module.compactness.value = compactness
+
+    module.watershed_line.value = watershed_line
+
+    module.declump_method.value = "Shape"
+
+    # if image.dimensions == 3:
+    #     module.structuring_element.value = "Ball,1"
+    #     selem = skimage.morphology.ball(1)
+    #
+    # else:
+    #     module.structuring_element.value = "Disk,1"
+    #     selem = skimage.morphology.disk(1)
+
+    if image.multichannel or image.dimensions == 3:
+        denoised = numpy.zeros_like(image.pixel_data)
+
+        for idx, data in enumerate(image.pixel_data):
+            denoised[idx] = skimage.filters.rank.median(
+                data, skimage.morphology.disk(2)
+            )
+    else:
+        denoised = skimage.filters.rank.median(
+            image.pixel_data, skimage.morphology.disk(2)
+        )
+
+    denoised = denoised.astype(numpy.uint8)
+
+    if image.multichannel or image.dimensions == 3:
+        markers = numpy.zeros_like(denoised)
+
+        for idx, data in enumerate(denoised):
+            markers[idx] = skimage.filters.rank.gradient(
+                data, skimage.morphology.disk(5)
+            )
+    else:
+        markers = skimage.filters.rank.median(denoised, skimage.morphology.disk(5))
+
+    markers = skimage.measure.label(markers)
+
+    image_set.add(
+        "markers",
+        cellprofiler_core.image.Image(
+            image=markers, convert=False, dimensions=image.dimensions
+        ),
+    )
+
+    if image.multichannel or image.dimensions == 3:
+        gradient = numpy.zeros_like(denoised)
+
+        for idx, data in enumerate(denoised):
+            gradient[idx] = skimage.filters.rank.gradient(
+                data, skimage.morphology.disk(2)
+            )
+    else:
+        gradient = skimage.filters.rank.median(denoised, skimage.morphology.disk(2))
+
+    image_set.add(
+        "gradient",
+        cellprofiler_core.image.Image(
+            image=gradient, convert=False, dimensions=image.dimensions
+        ),
+    )
+
+    module.run(workspace)
+
+    if image.multichannel:
+        gradient = skimage.color.rgb2gray(gradient)
+
+        markers = skimage.color.rgb2gray(markers)
+
+    watershed_markers = skimage.segmentation.watershed(
+        image=gradient,
+        markers=markers,
+        connectivity=connectivity,
+        compactness=compactness,
+        watershed_line=watershed_line,
+    )
+
+    peak_image = scipy.ndimage.distance_transform_edt(watershed_markers > 0)
+
+    actual = workspace.get_objects("watershed")
+
+    numpy.testing.assert_array_equal(expected, actual.segmented)

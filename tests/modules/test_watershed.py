@@ -347,15 +347,19 @@ def test_run_markers_declump_intensity(
 
     module.watershed_line.value = watershed_line
 
-    module.declump_method.value = "Shape"
+    module.declump_method.value = "Intensity"
 
-    # if image.dimensions == 3:
-    #     module.structuring_element.value = "Ball,1"
-    #     selem = skimage.morphology.ball(1)
-    #
-    # else:
-    #     module.structuring_element.value = "Disk,1"
-    #     selem = skimage.morphology.disk(1)
+    module.reference_name.value = "gradient"
+
+    module.gaussian_sigma.value = 1
+
+    if image.dimensions == 3:
+        module.structuring_element.value = "Ball,1"
+        selem = skimage.morphology.ball(1)
+
+    else:
+        module.structuring_element.value = "Disk,1"
+        selem = skimage.morphology.disk(1)
 
     if image.multichannel or image.dimensions == 3:
         denoised = numpy.zeros_like(image.pixel_data)
@@ -423,6 +427,48 @@ def test_run_markers_declump_intensity(
     )
 
     peak_image = scipy.ndimage.distance_transform_edt(watershed_markers > 0)
+
+    image_data = image.pixel_data
+
+    # Set the image as a float and rescale to full bit depth
+    watershed_image = skimage.img_as_float(image_data, force_copy=True)
+    watershed_image -= watershed_image.min()
+    watershed_image = 1 - watershed_image
+
+    watershed_image = skimage.filters.gaussian(watershed_image, sigma=module.gaussian_sigma.value)
+
+    seed_coords = skimage.feature.peak_local_max(peak_image,
+                                                 min_distance=module.min_dist.value,
+                                                 threshold_rel=module.min_intensity.value,
+                                                 exclude_border=module.exclude_border.value,
+                                                 num_peaks=module.max_seeds.value if module.max_seeds.value != -1
+                                                 else numpy.inf)
+
+    seeds = numpy.zeros_like(peak_image, dtype=bool)
+    seeds[tuple(seed_coords.T)] = True
+
+    seeds = skimage.morphology.binary_dilation(seeds, selem)
+
+    number_objects = skimage.measure.label(watershed_markers, return_num=True)[1]
+
+    seeds_dtype = (numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32)
+
+    seeds = scipy.ndimage.label(seeds)[0]
+    markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
+    markers[seeds > 0] = -seeds[seeds > 0]
+
+    expected = skimage.segmentation.watershed(
+        connectivity=connectivity,
+        image=watershed_image,
+        markers=markers,
+        mask=gradient != 0
+    )
+
+    zeros = numpy.where(expected == 0)
+    expected += numpy.abs(numpy.min(expected)) + 1
+    expected[zeros] = 0
+
+    expected = skimage.measure.label(expected)
 
     actual = workspace.get_objects("watershed")
 

@@ -518,6 +518,9 @@ the image is not downsampled.
                 watershed_image -= watershed_image.min()
                 watershed_image = 1 - watershed_image
 
+                if reference.multichannel:
+                    watershed_image = skimage.color.rgb2gray(watershed_image)
+
             # Smooth the image
             watershed_image = skimage.filters.gaussian(watershed_image, sigma=self.gaussian_sigma.value)
 
@@ -555,6 +558,11 @@ the image is not downsampled.
 
             markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
             markers[seeds > 0] = -seeds[seeds > 0]
+
+            # if len(watershed_image.shape) > len(x_data.shape):
+            #     x_mask = numpy.stack([x_data != 0] * watershed_image.shape[-1], -1)
+            # else:
+            #     x_mask = x_data != 0
 
             # Perform the watershed
             watershed_boundaries = skimage.segmentation.watershed(

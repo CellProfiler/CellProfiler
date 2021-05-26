@@ -189,7 +189,7 @@ def test_run_distance(image, module, image_set, workspace):
 
     numpy.testing.assert_array_equal(expected, actual)
 
-
+# test for marker-based watershed with shape-based declumping
 def test_run_markers_declump_shape(
     image, module, image_set, workspace, connectivity, compactness, watershed_line
 ):
@@ -328,6 +328,7 @@ def test_run_markers_declump_shape(
 
     numpy.testing.assert_array_equal(expected, actual.segmented)
 
+# test for distance-based watershed with shape-based declumping
 def test_run_distance_declump_shape(
     image, module, image_set, workspace, connectivity, compactness, watershed_line
 ):
@@ -441,6 +442,7 @@ def test_run_distance_declump_shape(
 
     numpy.testing.assert_array_equal(expected, actual.segmented)
 
+# test for marker-based watershed with intensity-based declumping
 def test_run_markers_declump_intensity(
     image, module, image_set, workspace, connectivity, compactness, watershed_line
 ):
@@ -547,6 +549,9 @@ def test_run_markers_declump_intensity(
     watershed_image = skimage.img_as_float(image_data, force_copy=True)
     watershed_image -= watershed_image.min()
     watershed_image = 1 - watershed_image
+
+    if image.multichannel:
+        watershed_image = skimage.color.rgb2gray(watershed_image)
 
     watershed_image = skimage.filters.gaussian(watershed_image, sigma=module.gaussian_sigma.value)
 

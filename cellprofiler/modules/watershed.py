@@ -559,11 +559,6 @@ the image is not downsampled.
             markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
             markers[seeds > 0] = -seeds[seeds > 0]
 
-            # if len(watershed_image.shape) > len(x_data.shape):
-            #     x_mask = numpy.stack([x_data != 0] * watershed_image.shape[-1], -1)
-            # else:
-            #     x_mask = x_data != 0
-
             # Perform the watershed
             watershed_boundaries = skimage.segmentation.watershed(
                 connectivity=self.connectivity.value,

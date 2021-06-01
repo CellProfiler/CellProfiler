@@ -30,6 +30,7 @@ YES          NO           NO
 .. _this guide: https://github.com/CellProfiler/CellProfiler/wiki/RunImageJMacro
 
 """
+import logging
 
 import itertools
 import os
@@ -41,7 +42,7 @@ from cellprofiler_core.module import Module
 from cellprofiler_core.setting.text import Filename, ImageName, Text, Directory
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting._settings_group import SettingsGroup
-from cellprofiler_core.setting import Divider, HiddenCount
+from cellprofiler_core.setting import Divider, HiddenCount, Binary
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.preferences import get_default_output_directory
 
@@ -91,6 +92,15 @@ should select the directory containing ImageJ-win64.exe (usually corresponding t
             get_directory_fn=self.macro_directory.get_absolute_path,
             set_directory_fn=set_directory_fn_macro,
             browse_msg="Choose macro file"
+        )
+
+        self.debug_mode = Binary(
+            "Debug mode: Prevent deletion of temporary files",
+            False,
+            doc="This setting only applies when running in Test Mode."
+                "If enabled, temporary folders used to communicate with ImageJ will not be cleared automatically."
+                "You'll need to remove them manually. This can be helpful when trying to debug a macro."
+                "Temporary folder location will be printed to the console."
         )
 
         self.add_directory = Text(
@@ -226,7 +236,8 @@ temporary directory and assign its path as a value to this variable."""
         return result
 
     def visible_settings(self):
-        visible_settings = [self.executable_directory, self.executable_file, self.macro_directory, self.macro_file, self.add_directory]
+        visible_settings = [self.executable_directory, self.executable_file, self.macro_directory, self.macro_file,
+                            self.debug_mode, self.add_directory]
         for image_group_in in self.image_groups_in:
             visible_settings += image_group_in.visible_settings()
         visible_settings += [self.add_image_button_in]
@@ -305,10 +316,13 @@ temporary directory and assign its path as a value to this variable."""
                 workspace.image_set.add(image_group.image_name.value, Image(image_pixels, convert=False))
         finally:
             # Clean up temp directory regardless of macro success
-            for subdir, dirs, files in os.walk(tempdir):
-                for file in files:
-                    os.remove(os.path.join(tempdir, file))
-            os.removedirs(tempdir)
+            if workspace.pipeline.test_mode and self.debug_mode:
+                logging.error(f"Debugging was enabled.\nDid not remove temporary folder at {tempdir}")
+            else:
+                for subdir, dirs, files in os.walk(tempdir):
+                    for file in files:
+                        os.remove(os.path.join(tempdir, file))
+                os.removedirs(tempdir)
 
         pixel_data = []
         image_names = []

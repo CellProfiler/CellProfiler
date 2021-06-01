@@ -281,12 +281,25 @@ temporary directory and assign its path as a value to this variable."""
 
             cmd += [self.stringify_metadata(tempdir)]
 
-            subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             for image_group in self.image_groups_out:
                 if not os.path.exists(os.path.join(tempdir, image_group.input_filename.value)):
+                    # Cleanup the error logs for display, we want to remove less-useful lines to keep it succinct.
+                    reject = ('console:', 'Java Hot', 'at org', 'at java', '[WARNING]', '\t')
+                    # ImageJ tends to report the same few lines over and over, so we'll use a dict as an ordered set.
+                    err = {}
+                    for line in result.stdout.splitlines():
+                        if len(line.strip()) > 0 and not line.startswith(reject):
+                            err[line] = None
+                    if len(err) > 1:
+                        # Error appears when file loading fails, but can also show up if the macro failed to generate
+                        # an output image. We remove this if it wasn't the only error, as it can be confusing.
+                        err.pop('Unsupported format or not found', None)
+                    err = "\n".join(err.keys())
                     msg = f"CellProfiler couldn't find the output expected from the ImageJ Macro," \
-                          f"\n File {image_group.input_filename.value} was missing"
+                          f"\n File {image_group.input_filename.value} was missing."
+                    if err:
+                        msg += f"\n\nImageJ logs contained the following: \n{err}"
                     raise FileNotFoundError("Missing file", msg)
                 image_pixels = skimage.io.imread(os.path.join(tempdir, image_group.input_filename.value))
                 workspace.image_set.add(image_group.image_name.value, Image(image_pixels, convert=False))

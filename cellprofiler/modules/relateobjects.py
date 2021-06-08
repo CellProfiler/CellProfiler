@@ -112,7 +112,7 @@ FF_CENTROID = "%s_%s_%%s" % (C_DISTANCE, FEAT_CENTROID)
 """Minimum distance measurement (FF_MINIMUM % parent)"""
 FF_MINIMUM = "%s_%s_%%s" % (C_DISTANCE, FEAT_MINIMUM)
 
-FIXED_SETTING_COUNT = 5
+FIXED_SETTING_COUNT = 7
 VARIABLE_SETTING_COUNT = 1
 
 

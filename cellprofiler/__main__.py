@@ -522,19 +522,11 @@ def parse_args(args):
     )
 
     options, result_args = parser.parse_args(args[1:])
-
-    if sys.platform == "darwin" and len(args) == 2:
-        if args[1].lower().endswith(".cpproj"):
-            # Assume fakey open of .cpproj and OS can't be configured to
-            # add the switch as it can in Windows.
-            options.project_filename = args[1]
-
-            result_args = []
-        elif args[1].lower().endswith(".cpproj"):
+    if len(args) == 2:
+        if args[1].lower().endswith((".cpproj", ".cppipe")):
+            # Opening a file with CellProfiler will supply the file as an argument
             options.pipeline_filename = args[1]
-
             result_args = []
-
     return options, result_args
 
 

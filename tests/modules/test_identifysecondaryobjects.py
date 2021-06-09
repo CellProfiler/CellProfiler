@@ -691,7 +691,7 @@ def test_measurements_no_new_primary():
         features = module.get_measurements(None, INPUT_OBJECTS_NAME, "Children")
         assert len(features) == 1
         assert (
-            features[0] == FF_COUNT % OUTPUT_OBJECTS_NAME
+            features[0] == "%s_Count" % OUTPUT_OBJECTS_NAME
         )
 
         features = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Parent")
@@ -826,8 +826,8 @@ def test_measurements_new_primary():
         [
             any([x == y for x in features])
             for y in (
-                FF_COUNT % OUTPUT_OBJECTS_NAME,
-                FF_COUNT % NEW_OBJECTS_NAME,
+                "%s_Count" % OUTPUT_OBJECTS_NAME,
+                "%s_Count" % NEW_OBJECTS_NAME,
             )
         ]
     )

@@ -916,7 +916,7 @@ parents or children of the parent object.""",
 
                 return measurements
             elif category == "Children":
-                return ["{}_Count".format(self.y_name.value)]
+                return ["%s_Count" % self.y_name.value]
         elif object_name == self.y_name.value and category == "Parent":
             return [self.x_name.value]
         elif object_name == self.y_name.value and category == C_DISTANCE:

@@ -20,10 +20,9 @@ class TestMeasurements:
         x = cellprofiler_core.measurement.Measurements()
 
     def test_00_01_wrap_unwrap(self):
-        test0 = ["foo", "foo\\", "foo\\u0384", "foo\\u0384"]
-        test = test0 + [x.encode("utf-8") for x in test0]
+        test = ["foo", "foo\\", "foo\\u0384", "foo\\u0384"]
         # numpy.object_
-        test += numpy.array(test0, object).tolist()
+        test += numpy.array(test, object).tolist()
         for case in test:
             result = cellprofiler_core.measurement.Measurements.unwrap_string(
                 cellprofiler_core.measurement.Measurements.wrap_string(case)

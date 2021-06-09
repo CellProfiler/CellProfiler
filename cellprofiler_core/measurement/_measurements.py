@@ -815,6 +815,8 @@ class Measurements:
         #
         if getattr(v, "__class__") == str:
             return v
+        elif getattr(v, "__class__") == bytes:
+                return v.decode()
         return v
 
     def get_measurement(self, object_name, feature_name, image_set_number=None):

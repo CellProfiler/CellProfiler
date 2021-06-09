@@ -434,6 +434,26 @@ class HDF5Dict(object):
                 # if fetching more than 1/2 of indices
                 #
                 dataset = dataset[:]
+            if dataset.dtype == numpy.object:
+                # Strings come back out as bytes, we need to decode them.
+                try:
+                    return [
+                        None
+                        if (
+                            isinstance(dest, slice)
+                            and dest.start is not None
+                            and dest.start == dest.stop
+                        )
+                        else dataset[dest].astype(str)
+                        for dest in [
+                            indices.get(image_number, (slice(0, 0), 0))[0]
+                            for image_number in num_idx
+                        ]
+                    ]
+                except Exception as e:
+                    logging.error(
+                        "Unable to decode object measurement. You may find bytes in your output sheet."
+                    )
             return [
                 None
                 if (

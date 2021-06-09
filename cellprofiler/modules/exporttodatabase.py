@@ -3831,7 +3831,8 @@ CREATE TABLE %s (
                             values = list(values) + [None] * (max_count - len(values))
                         values = [
                             None
-                            if v is None or numpy.isnan(v) or numpy.isinf(v)
+                            if v is None or
+                            (numpy.issubdtype(type(v), numpy.number) and (numpy.isnan(v) or numpy.isinf(v)))
                             else str(v)
                             for v in values
                         ]

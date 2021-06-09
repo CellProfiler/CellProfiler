@@ -1195,6 +1195,9 @@ class Measurements:
                     continue
                 feature_name = "%s_%s" % (object_name, feature)
                 values = self.get_measurement(object_name, feature, image_set_number)
+                if not numpy.issubdtype(values.dtype, numpy.number):
+                    # Can't generate aggregate values for non-numeric measurements
+                    values = None
                 if values is not None:
                     values = values[numpy.isfinite(values)]
                 #

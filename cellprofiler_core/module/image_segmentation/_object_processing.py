@@ -105,7 +105,7 @@ class ObjectProcessing(ImageSegmentation):
 
     def get_measurements(self, pipeline, object_name, category):
         if object_name == self.x_name.value and category == C_CHILDREN:
-            return [FF_COUNT % self.y_name.value]
+            return ["%s_Count" % self.y_name.value]
 
         if object_name == self.y_name.value:
             if category == C_NUMBER:

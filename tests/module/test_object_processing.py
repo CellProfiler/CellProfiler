@@ -251,7 +251,7 @@ class TestObjectProcessing:
         )
 
         expected = [
-            cellprofiler_core.constants.measurement.FF_COUNT % "ObjectProcessing"
+            "%s_Count" % "ObjectProcessing"
         ]
 
         assert actual == expected

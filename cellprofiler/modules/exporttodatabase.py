@@ -1408,7 +1408,7 @@ Enter a name for the specified image.""",
 
 Enter a color to display this channel.
 
-Multichannel images will use this colour for all 3 image components""",
+Multichannel images will use this color for all 3 image components""",
             ),
         )
 

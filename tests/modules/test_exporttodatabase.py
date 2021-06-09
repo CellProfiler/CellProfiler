@@ -5732,7 +5732,9 @@ class TestExportToDatabase(unittest.TestCase):
             cursor.execute(how_many)
             assert cursor.fetchall()[0][0] == 0
         finally:
-            self.drop_tables(module)
+            cursor.close()
+            connection.close()
+            finally_fn()
 
     def test_dbcontext_mysql(self):
         if not self.test_mysql:

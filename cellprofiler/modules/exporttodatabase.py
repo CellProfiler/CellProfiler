@@ -732,7 +732,8 @@ images. This option will do the following:
    **SaveImages** will be included.
 -  The CellProfiler image name will be used for the *image\_name* field.
 -  A channel color listed in the *image\_channel\_colors* field will be
-   assigned to the image by default order.
+   assigned to the image by default order. Multichannel images will be 
+   added as separate R, G and B channels.
 
 Select "*{NO}*" to specify which images should be included or to
 override the automatic values.""".format(
@@ -1405,7 +1406,9 @@ Enter a name for the specified image.""",
                 doc="""\
 *(Used only if creating a properties file and specifying the image information)*
 
-Enter a color to display this channel.""",
+Enter a color to display this channel.
+
+Multichannel images will use this colour for all 3 image components""",
             ),
         )
 

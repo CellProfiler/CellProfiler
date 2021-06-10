@@ -315,14 +315,52 @@ temporary directory and assign its path as a value to this variable."""
                 image_pixels = skimage.io.imread(os.path.join(tempdir, image_group.input_filename.value))
                 workspace.image_set.add(image_group.image_name.value, Image(image_pixels, convert=False))
         finally:
-            # Clean up temp directory regardless of macro success
+            want_delete = True
+            # Optionally clean up temp directory regardless of macro success
             if workspace.pipeline.test_mode and self.debug_mode:
-                logging.error(f"Debugging was enabled.\nDid not remove temporary folder at {tempdir}")
+                want_delete = False
+                if not get_headless():
+                    import wx
+                    message = f"Debugging was enabled.\nTemporary folder was not deleted automatically" \
+                              f"\n\nFolder is {os.path.split(tempdir)[-1]}\n\nDo you want to delete it now?"
+                    with wx.Dialog(None, title="RunImageJMacro Debug Mode") as dlg:
+                        text_sizer = dlg.CreateTextSizer(message)
+                        sizer = wx.BoxSizer(wx.VERTICAL)
+                        dlg.SetSizer(sizer)
+                        button_sizer = dlg.CreateStdDialogButtonSizer(flags=wx.YES | wx.NO)
+                        open_temp_folder_button = wx.Button(
+                            dlg, -1, "Open temporary folder"
+                        )
+                        button_sizer.Insert(0, open_temp_folder_button)
+
+                        def on_open_temp_folder(event):
+                            import sys
+                            if sys.platform == "win32":
+                                os.startfile(tempdir)
+                            else:
+                                import subprocess
+                                subprocess.call(["open", tempdir, ])
+
+                        open_temp_folder_button.Bind(wx.EVT_BUTTON, on_open_temp_folder)
+                        sizer.Add(text_sizer, 0, wx.EXPAND | wx.ALL, 10)
+                        sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
+                        dlg.SetEscapeId(wx.ID_NO)
+                        dlg.SetAffirmativeId(wx.ID_YES)
+                        dlg.Fit()
+                        dlg.CenterOnParent()
+                        if dlg.ShowModal() == wx.ID_YES:
+                            want_delete = True
+            if want_delete:
+                try:
+                    for subdir, dirs, files in os.walk(tempdir):
+                        for file in files:
+                            os.remove(os.path.join(tempdir, file))
+                    os.removedirs(tempdir)
+                except:
+                    logging.error("Unable to delete temporary directory, files may be in use by another program.")
+                    logging.error("Folder is located at {tempdir}.\nYou may need to remove it manually.")
             else:
-                for subdir, dirs, files in os.walk(tempdir):
-                    for file in files:
-                        os.remove(os.path.join(tempdir, file))
-                os.removedirs(tempdir)
+                logging.error(f"Debugging was enabled.\nDid not remove temporary folder at {tempdir}")
 
         pixel_data = []
         image_names = []

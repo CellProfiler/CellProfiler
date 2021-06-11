@@ -367,7 +367,8 @@ Choose whether or not to use lossless compression when saving
 images. This will lead to smaller file sizes, but somewhat longer 
 module execution time.  Note that the value of this setting will
 be ignored when saving 3D tiff images, which have been saved by
-default with compression since CellProfiler 3.1."""
+default with compression since CellProfiler 3.1. Do not use for
+multichannel tiff images"""
         )
 
         self.stack_axis = Choice(
@@ -737,6 +738,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
         if self.file_format == FF_NPY:
             numpy.save(filename, pixels)
         else:
+            save_kwargs = {}
             if self.get_bit_depth() == BIT_DEPTH_8:
                 pixels = skimage.util.img_as_ubyte(pixels)
             elif self.get_bit_depth() == BIT_DEPTH_16:
@@ -751,12 +753,11 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             if (
                 not image.volumetric
                 and len(pixels.shape) > 2
-                and pixels.shape[2] > 4
-                and self.file_format.value != FF_H5
+                and pixels.shape[2] != 3
+                and self.file_format.value == FF_TIFF
             ):
                 pixels = numpy.transpose(pixels, (2, 0, 1))
-
-            save_kwargs = {}
+                save_kwargs.update({'imagej':True})
 
             if (image.volumetric or self.tiff_compress.value) and self.file_format.value == FF_TIFF:
                 save_kwargs.update({"compress": 6})

@@ -188,7 +188,7 @@ class TestCombineObjects:
                 module.run(workspace_volume)
                 numpy.testing.assert_array_equal(workspace_volume.get_objects(method).segmented, segment)
 
-        def test_duplicate_object(self, objects_x, module, workspace, merge_methods):
+        def test_duplicate_object(self, objects_x, objects_y, module, workspace, merge_methods):
             # Test merge methods with same object in both sets
             segment = numpy.zeros((10, 10))
             segment[2:4, 2:4] = 1

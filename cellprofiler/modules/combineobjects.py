@@ -212,6 +212,22 @@ subsequent modules.""",
             to_segment = numpy.logical_or(labels_x > 0, labels_y > 0)
             disputed = numpy.logical_and(labels_x > 0, labels_y > 0)
             seeds = numpy.add(labels_x, labels_y)
+            # Find objects which will be completely removed due to 100% overlap.
+            will_be_lost = numpy.setdiff1d(labels_x[disputed], labels_x[~disputed])
+            # Check whether this was because an identical object is in both arrays.
+            for label in will_be_lost:
+                x_mask = labels_x == label
+                y_lab = numpy.unique(labels_y[x_mask])
+                if not y_lab or len(y_lab) > 1:
+                    # Labels are not identical
+                    continue
+                else:
+                    # Get mask of object on y, check if identical to x
+                    y_mask = labels_y == y_lab[0]
+                    if numpy.array_equal(x_mask, y_mask):
+                        # Label is identical
+                        output[x_mask] = label
+                        to_segment[x_mask] = False
             seeds[disputed] = 0
             if is_2d:
                 distances, (i, j) = scipy.ndimage.distance_transform_edt(

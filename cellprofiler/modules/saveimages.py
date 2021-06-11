@@ -368,7 +368,7 @@ images. This will lead to smaller file sizes, but somewhat longer
 module execution time.  Note that the value of this setting will
 be ignored when saving 3D tiff images, which have been saved by
 default with compression since CellProfiler 3.1. Do not use for
-multichannel tiff images"""
+multichannel tiff images created as Stacks in GrayToColor."""
         )
 
         self.stack_axis = Choice(

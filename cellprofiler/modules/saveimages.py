@@ -753,7 +753,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             if (
                 not image.volumetric
                 and len(pixels.shape) > 2
-                and pixels.shape[2] != 3
+                and image.channelstack
                 and self.file_format.value == FF_TIFF
             ):
                 pixels = numpy.transpose(pixels, (2, 0, 1))

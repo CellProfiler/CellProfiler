@@ -515,6 +515,7 @@ pixel values are multiplied by this weight before assigning the color.
         rgb_pixel_data = None
         input_image_names = []
         channel_names = []
+        channelstack =  self.scheme_choice == SCHEME_STACK
         if self.scheme_choice not in (SCHEME_STACK, SCHEME_COMPOSITE):
             for color_scheme_setting in self.color_scheme_settings:
                 if color_scheme_setting.image_name.is_blank:
@@ -590,7 +591,7 @@ pixel values are multiplied by this weight before assigning the color.
         ##############
         # Save image #
         ##############
-        rgb_image = Image(rgb_pixel_data, parent_image=parent_image)
+        rgb_image = Image(rgb_pixel_data, parent_image=parent_image, channelstack=channelstack)
         rgb_image.channel_names = channel_names
         imgset.add(self.rgb_image_name.value, rgb_image)
 

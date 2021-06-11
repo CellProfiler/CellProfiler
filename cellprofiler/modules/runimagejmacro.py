@@ -30,6 +30,7 @@ YES          NO           NO
 .. _this guide: https://github.com/CellProfiler/CellProfiler/wiki/RunImageJMacro
 
 """
+import logging
 
 import itertools
 import os
@@ -41,9 +42,9 @@ from cellprofiler_core.module import Module
 from cellprofiler_core.setting.text import Filename, ImageName, Text, Directory
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting._settings_group import SettingsGroup
-from cellprofiler_core.setting import Divider, HiddenCount
+from cellprofiler_core.setting import Divider, HiddenCount, Binary
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-from cellprofiler_core.preferences import get_default_output_directory
+from cellprofiler_core.preferences import get_default_output_directory, get_headless
 
 import random
 import skimage.io
@@ -91,6 +92,15 @@ should select the directory containing ImageJ-win64.exe (usually corresponding t
             get_directory_fn=self.macro_directory.get_absolute_path,
             set_directory_fn=set_directory_fn_macro,
             browse_msg="Choose macro file"
+        )
+
+        self.debug_mode = Binary(
+            "Debug mode: Prevent deletion of temporary files",
+            False,
+            doc="This setting only applies when running in Test Mode."
+                "If enabled, temporary folders used to communicate with ImageJ will not be cleared automatically."
+                "You'll need to remove them manually. This can be helpful when trying to debug a macro."
+                "Temporary folder location will be printed to the console."
         )
 
         self.add_directory = Text(
@@ -226,7 +236,8 @@ temporary directory and assign its path as a value to this variable."""
         return result
 
     def visible_settings(self):
-        visible_settings = [self.executable_directory, self.executable_file, self.macro_directory, self.macro_file, self.add_directory]
+        visible_settings = [self.executable_directory, self.executable_file, self.macro_directory, self.macro_file,
+                            self.debug_mode, self.add_directory]
         for image_group_in in self.image_groups_in:
             visible_settings += image_group_in.visible_settings()
         visible_settings += [self.add_image_button_in]
@@ -281,21 +292,75 @@ temporary directory and assign its path as a value to this variable."""
 
             cmd += [self.stringify_metadata(tempdir)]
 
-            subprocess.call(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             for image_group in self.image_groups_out:
                 if not os.path.exists(os.path.join(tempdir, image_group.input_filename.value)):
+                    # Cleanup the error logs for display, we want to remove less-useful lines to keep it succinct.
+                    reject = ('console:', 'Java Hot', 'at org', 'at java', '[WARNING]', '\t')
+                    # ImageJ tends to report the same few lines over and over, so we'll use a dict as an ordered set.
+                    err = {}
+                    for line in result.stdout.splitlines():
+                        if len(line.strip()) > 0 and not line.startswith(reject):
+                            err[line] = None
+                    if len(err) > 1:
+                        # Error appears when file loading fails, but can also show up if the macro failed to generate
+                        # an output image. We remove this if it wasn't the only error, as it can be confusing.
+                        err.pop('Unsupported format or not found', None)
+                    err = "\n".join(err.keys())
                     msg = f"CellProfiler couldn't find the output expected from the ImageJ Macro," \
-                          f"\n File {image_group.input_filename.value} was missing"
+                          f"\n File {image_group.input_filename.value} was missing."
+                    if err:
+                        msg += f"\n\nImageJ logs contained the following: \n{err}"
                     raise FileNotFoundError("Missing file", msg)
                 image_pixels = skimage.io.imread(os.path.join(tempdir, image_group.input_filename.value))
                 workspace.image_set.add(image_group.image_name.value, Image(image_pixels, convert=False))
         finally:
-            # Clean up temp directory regardless of macro success
-            for subdir, dirs, files in os.walk(tempdir):
-                for file in files:
-                    os.remove(os.path.join(tempdir, file))
-            os.removedirs(tempdir)
+            want_delete = True
+            # Optionally clean up temp directory regardless of macro success
+            if workspace.pipeline.test_mode and self.debug_mode:
+                want_delete = False
+                if not get_headless():
+                    import wx
+                    message = f"Debugging was enabled.\nTemporary folder was not deleted automatically" \
+                              f"\n\nTemporary subfolder is {os.path.split(tempdir)[-1]} in your Default Output Folder\n\nDo you want to delete it now?"
+                    with wx.Dialog(None, title="RunImageJMacro Debug Mode") as dlg:
+                        text_sizer = dlg.CreateTextSizer(message)
+                        sizer = wx.BoxSizer(wx.VERTICAL)
+                        dlg.SetSizer(sizer)
+                        button_sizer = dlg.CreateStdDialogButtonSizer(flags=wx.YES | wx.NO)
+                        open_temp_folder_button = wx.Button(
+                            dlg, -1, "Open temporary folder"
+                        )
+                        button_sizer.Insert(0, open_temp_folder_button)
+
+                        def on_open_temp_folder(event):
+                            import sys
+                            if sys.platform == "win32":
+                                os.startfile(tempdir)
+                            else:
+                                import subprocess
+                                subprocess.call(["open", tempdir, ])
+
+                        open_temp_folder_button.Bind(wx.EVT_BUTTON, on_open_temp_folder)
+                        sizer.Add(text_sizer, 0, wx.EXPAND | wx.ALL, 10)
+                        sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
+                        dlg.SetEscapeId(wx.ID_NO)
+                        dlg.SetAffirmativeId(wx.ID_YES)
+                        dlg.Fit()
+                        dlg.CenterOnParent()
+                        if dlg.ShowModal() == wx.ID_YES:
+                            want_delete = True
+            if want_delete:
+                try:
+                    for subdir, dirs, files in os.walk(tempdir):
+                        for file in files:
+                            os.remove(os.path.join(tempdir, file))
+                    os.removedirs(tempdir)
+                except:
+                    logging.error("Unable to delete temporary directory, files may be in use by another program.")
+                    logging.error("Temp folder is subfolder {tempdir} in your Default Output Folder.\nYou may need to remove it manually.")
+            else:
+                logging.error(f"Debugging was enabled.\nDid not remove temporary folder at {tempdir}")
 
         pixel_data = []
         image_names = []

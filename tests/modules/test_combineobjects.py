@@ -156,7 +156,7 @@ class TestCombineObjects:
                 module.merge_method.value = method
                 module.output_object.value = method
                 module.run(workspace_volume)
-                numpy.testing.assert_array_equal(workspace.get_objects(method).segmented, segment)
+                numpy.testing.assert_array_equal(workspace_volume.get_objects(method).segmented, segment)
 
         def test_one_object_second_image(
             self, objects_y, module, workspace, merge_methods
@@ -186,7 +186,7 @@ class TestCombineObjects:
                 module.merge_method.value = method
                 module.output_object.value = method
                 module.run(workspace_volume)
-                numpy.testing.assert_array_equal(workspace.get_objects(method).segmented, segment)
+                numpy.testing.assert_array_equal(workspace_volume.get_objects(method).segmented, segment)
 
         def test_duplicate_object(self, objects_x, module, workspace, merge_methods):
             # Test merge methods with same object in both sets
@@ -214,7 +214,7 @@ class TestCombineObjects:
                 module.merge_method.value = method
                 module.output_object.value = method
                 module.run(workspace_volume)
-                numpy.testing.assert_array_equal(workspace.get_objects(method).segmented, segment)
+                numpy.testing.assert_array_equal(workspace_volume.get_objects(method).segmented, segment)
 
         def test_not_touching(
             self, objects_x, objects_y, module, workspace, merge_methods

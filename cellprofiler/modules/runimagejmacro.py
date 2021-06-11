@@ -44,7 +44,7 @@ from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingBut
 from cellprofiler_core.setting._settings_group import SettingsGroup
 from cellprofiler_core.setting import Divider, HiddenCount, Binary
 from cellprofiler_core.setting.subscriber import ImageSubscriber
-from cellprofiler_core.preferences import get_default_output_directory
+from cellprofiler_core.preferences import get_default_output_directory, get_headless
 
 import random
 import skimage.io
@@ -322,7 +322,7 @@ temporary directory and assign its path as a value to this variable."""
                 if not get_headless():
                     import wx
                     message = f"Debugging was enabled.\nTemporary folder was not deleted automatically" \
-                              f"\n\nFolder is {os.path.split(tempdir)[-1]}\n\nDo you want to delete it now?"
+                              f"\n\nTemporary subfolder is {os.path.split(tempdir)[-1]} in your Default Output Folder\n\nDo you want to delete it now?"
                     with wx.Dialog(None, title="RunImageJMacro Debug Mode") as dlg:
                         text_sizer = dlg.CreateTextSizer(message)
                         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -358,7 +358,7 @@ temporary directory and assign its path as a value to this variable."""
                     os.removedirs(tempdir)
                 except:
                     logging.error("Unable to delete temporary directory, files may be in use by another program.")
-                    logging.error("Folder is located at {tempdir}.\nYou may need to remove it manually.")
+                    logging.error("Temp folder is subfolder {tempdir} in your Default Output Folder.\nYou may need to remove it manually.")
             else:
                 logging.error(f"Debugging was enabled.\nDid not remove temporary folder at {tempdir}")
 

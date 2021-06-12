@@ -90,7 +90,7 @@ Selecting *Advanced Settings* will split the detected objects into smaller objec
 that will:
 
     - Compute the `local maxima`_ (either through the `Euclidean distance transformation`_ of the 
-      segmented objects or through the intensity values of a reference image
+      segmented objects or through the intensity va add lues of a reference image
 
     - Dilate the seeds as specified
 
@@ -102,7 +102,9 @@ that will:
     .. _Euclidean distance transformation: 
       https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.distance_transform_edt.html
     .. _local maxima: http://scikit-image.org/docs/dev/api/skimage.feature.html#peak-local-max 
-       
+
+    - The Advanced Settings declumping code was originally written by Madison Bowden as the DeclumpObjects plugin.
+
        
 """.format(
     **{"O_DISTANCE": O_DISTANCE, "O_MARKERS": O_MARKERS}

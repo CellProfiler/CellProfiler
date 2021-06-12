@@ -1,6 +1,7 @@
 from cellprofiler_core.constants.measurement import (
     M_LOCATION_CENTER_X,
-    M_LOCATION_CENTER_Y,
+    M_LOCATION_CENTER_Y, C_CHILDREN, C_PARENT, C_LOCATION, C_NUMBER, FTR_OBJECT_NUMBER, C_COUNT, FTR_CENTER_X,
+    FTR_CENTER_Y, FTR_CENTER_Z,
 )
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.preferences import (
@@ -761,6 +762,11 @@ value will be retained.""".format(
             workspace.object_set.add_objects(target_objects, target_name)
 
             self.add_measurements(workspace, src_name, target_name)
+            if self.show_window and first_set:
+                workspace.display_data.src_objects_segmented = src_objects.segmented
+                workspace.display_data.target_objects_segmented = target_objects.segmented
+                workspace.display_data.dimensions = src_objects.dimensions
+                first_set = False
 
         if self.keep_removed_objects.value:
             # Isolate objects removed by the filter
@@ -797,14 +803,8 @@ value will be retained.""".format(
             workspace.object_set.add_objects(removed_objects, self.removed_objects_name.value)
 
             self.add_measurements(workspace, self.x_name.value, self.removed_objects_name.value)
-
-        if self.show_window and first_set:
-            workspace.display_data.src_objects_segmented = src_objects.segmented
-            workspace.display_data.target_objects_segmented = target_objects.segmented
-            if self.keep_removed_objects.value:
+            if self.show_window:
                 workspace.display_data.removed_objects_segmented = removed_objects.segmented
-            workspace.display_data.dimensions = src_objects.dimensions
-            first_set = False
 
     def display(self, workspace, figure):
         """Display what was filtered"""
@@ -829,10 +829,10 @@ value will be retained.""".format(
             sharexy=figure.subplot(0, 0),
         )
 
-        statistics = [
-            [numpy.max(src_objects_segmented)],
-            [numpy.max(target_objects_segmented)],
-        ]
+        pre = numpy.max(src_objects_segmented)
+        post = numpy.max(target_objects_segmented)
+
+        statistics = [[pre], [post], [pre - post]]
 
         figure.subplot_table(
             0,
@@ -841,6 +841,7 @@ value will be retained.""".format(
             row_labels=(
                 "Number of objects pre-filtering",
                 "Number of objects post-filtering",
+                "Number of objects removed",
             ),
         )
 
@@ -1092,9 +1093,24 @@ value will be retained.""".format(
                     "No such classifier file: %s" % path_, self.rules_file_name
                 )
             else:
-                import joblib
-
-                d[path_] = joblib.load(path_)
+                if not file_.endswith('.txt'):
+                    # Probably a model file
+                    import joblib
+                    d[path_] = joblib.load(path_)
+                    if len(d[path_]) < 3:
+                        raise IOError("The selected model file doesn't look like a CellProfiler Analyst classifier."
+                                      "See the help dialog for more info on model formats.")
+                    if d[path_][2] == "FastGentleBoosting":
+                        # FGB model files are not sklearn-based, we'll load it as rules instead.
+                        rules = cellprofiler.utilities.rules.Rules()
+                        rules.load(d[path_][0])
+                        d[path_] = (rules, d[path_][1], "Rules", rules.get_features())
+                else:
+                    # Probably a rules list
+                    rules = cellprofiler.utilities.rules.Rules()
+                    rules.parse(path_)
+                    # Construct a classifier-like object
+                    d[path_] = (rules, rules.get_classes(), "Rules", rules.get_features())
         return d[path_]
 
     def get_classifier(self):
@@ -1165,8 +1181,37 @@ value will be retained.""".format(
             additional_objects=[
                 (x.object_name.value, x.target_name.value)
                 for x in self.additional_objects
-            ],
+            ] + ([self.removed_objects_name.value] if self.keep_removed_objects.value else []),
         )
+
+    def get_categories(self, pipeline, object_name):
+        categories = super(FilterObjects, self).get_categories(pipeline, object_name)
+        if self.keep_removed_objects.value and object_name == self.removed_objects_name.value:
+            categories += [C_PARENT, C_LOCATION, C_NUMBER]
+        return categories
+
+    def get_measurements(self, pipeline, object_name, category):
+        if object_name == self.x_name.value and category == C_CHILDREN:
+            measures = ["%s_Count" % self.y_name.value]
+            if self.keep_removed_objects.value and object_name == self.removed_objects_name.value:
+                measures += ["%s_Count" % self.removed_objects_name.value]
+            return measures
+
+        if object_name == self.y_name.value or (
+                self.keep_removed_objects.value and object_name == self.removed_objects_name.value):
+            if category == C_NUMBER:
+                return [FTR_OBJECT_NUMBER]
+            if category == C_PARENT:
+                return [self.x_name.value]
+            if category == C_LOCATION:
+                return [FTR_CENTER_X, FTR_CENTER_Y, FTR_CENTER_Z,]
+
+        if object_name == "Image" and category == C_COUNT:
+            measures = [self.y_name.value]
+            if self.keep_removed_objects.value:
+                measures.append(self.removed_objects_name.value)
+            return measures
+        return []
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         """Prepare to create a batch file

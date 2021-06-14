@@ -90,7 +90,7 @@ Selecting *Advanced Settings* will split the detected objects into smaller objec
 that will:
 
     - Compute the `local maxima`_ (either through the `Euclidean distance transformation`_ of the 
-      segmented objects or through the intensity va add lues of a reference image
+      segmented objects or through the intensity values of a reference image
 
     - Dilate the seeds as specified
 

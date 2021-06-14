@@ -63,6 +63,8 @@ ellipse with the same second-moments as each object.
    each region in the image.
 -  *FormFactor:* *(2D only)* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
    for a perfectly circular object.
+-  *Convex Area:* The area of a convex polygon containing the whole object.
+   Best imagined as a rubber band stretched around the object. 
 -  *Solidity:* The proportion of the pixels in the convex hull that are
    also in the object, i.e., *ObjectArea/ConvexHullArea*.
 -  *Extent:* The proportion of the pixels (2D) or voxels (3D) in the bounding box
@@ -201,6 +203,7 @@ F_VOLUME = "Volume"
 F_SURFACE_AREA = "SurfaceArea"
 F_ECCENTRICITY = "Eccentricity"
 F_SOLIDITY = "Solidity"
+F_CONVEX_AREA = "ConvexArea"
 F_EXTENT = "Extent"
 F_CENTER_X = "Center_X"
 F_CENTER_Y = "Center_Y"
@@ -550,6 +553,7 @@ module.""".format(
                 "equivalent_diameter",
                 "extent",
                 "eccentricity",
+                "convex_area",
                 "solidity",
                 "euler_number",
             ]
@@ -688,6 +692,7 @@ module.""".format(
                 F_MAXIMUM_RADIUS: max_radius,
                 F_MEAN_RADIUS: mean_radius,
                 F_MEDIAN_RADIUS: median_radius,
+                F_CONVEX_AREA: props["convex_area"],
                 F_MIN_FERET_DIAMETER: min_feret_diameter,
                 F_MAX_FERET_DIAMETER: max_feret_diameter,
                 F_EQUIVALENT_DIAMETER: props["equivalent_diameter"],

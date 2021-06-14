@@ -16,6 +16,8 @@ from cellprofiler_core.setting.text import Integer, Float
 
 O_DISTANCE = "Distance"
 O_MARKERS = "Markers"
+O_SHAPE = "Shape"
+O_INTENSITY = "Intensity"
 
 __doc__ = """
 Watershed
@@ -83,6 +85,27 @@ This module has two operating modes:
        Higher values result in more regularly-shaped watershed basins. 
        
        .. _compact watershed: http://scikit-image.org/docs/0.13.x/api/skimage.morphology.html#r395
+
+Selecting *Advanced Settings* will split the detected objects into smaller objects based on a seeded watershed method 
+that will:
+
+    - Compute the `local maxima`_ (either through the `Euclidean distance transformation`_ of the 
+      segmented objects or through the intensity values of a reference image
+
+    - Dilate the seeds as specified
+
+    - Use these seeds as markers for watershed
+
+    - NOTE: This implementation is based off of the **IdentifyPrimaryObjects** declumping implementation.
+      For more information, see the aforementioned module.
+
+    .. _Euclidean distance transformation: 
+      https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.distance_transform_edt.html
+    .. _local maxima: http://scikit-image.org/docs/dev/api/skimage.feature.html#peak-local-max 
+
+    - The Advanced Settings declumping code was originally written by Madison Bowden as the DeclumpObjects plugin.
+
+       
 """.format(
     **{"O_DISTANCE": O_DISTANCE, "O_MARKERS": O_MARKERS}
 )
@@ -93,10 +116,20 @@ class Watershed(ImageSegmentation):
 
     module_name = "Watershed"
 
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         super(Watershed, self).create_settings()
+
+        self.use_advanced = Binary(
+            "Use advanced settings?",
+            value=False,
+            doc="""\
+        The advanced settings provide additional segmentation options to improve 
+        the separation of adjacent objects. If this option is not selected,
+        then the watershed algorithm is applied according to the basic settings. 
+""",
+        )
 
         self.operation = Choice(
             text="Generate from",
@@ -202,10 +235,105 @@ the image is not downsampled.
             value=1,
         )
 
+        self.declump_method = cellprofiler_core.setting.choice.Choice(
+            text="Declump method",
+            choices=[O_SHAPE, O_INTENSITY],
+            value=O_SHAPE,
+            doc="""\
+        This setting allows you to choose the method that is used to draw the
+        line between segmented objects. 
+
+        -  *{O_SHAPE}:* Dividing lines between clumped objects are based on
+           the shape of the clump. For example, when a clump contains two
+           objects, the dividing line will be placed where indentations occur
+           between the two objects. The intensity of the original image is
+           not necessary in this case. 
+
+           **Technical description:** The distance transform of the segmentation 
+           is used to identify local maxima as seeds (i.e. the centers of the 
+           individual objects), and the seeds are then used on the inverse of 
+           that distance transform to determine new segmentations via watershed.
+
+        -  *{O_INTENSITY}:* Dividing lines between clumped objects are determined
+           based on the intensity of the original image. This works best if the
+           dividing line between objects is dimmer than the objects themselves.
+
+           **Technical description:** The distance transform of the segmentation 
+           is used to identify local maxima as seeds (i.e. the centers of the 
+           individual objects). Those seeds are then used as markers for a 
+           watershed on the inverted original intensity image.
+        """.format(**{
+                "O_SHAPE": O_SHAPE,
+                "O_INTENSITY": O_INTENSITY
+            })
+        )
+
+        self.reference_name = ImageSubscriber(
+            text="Reference Image",
+            doc="Image to reference for the *{O_INTENSITY}* method".format(**{"O_INTENSITY": O_INTENSITY})
+        )
+
+        self.gaussian_sigma = cellprofiler_core.setting.text.Float(
+            text="Segmentation distance transform smoothing factor",
+            value=1.,
+            doc="Sigma defines how 'smooth' the Gaussian kernel makes the image. Higher sigma means a smoother image."
+        )
+
+        self.min_dist = cellprofiler_core.setting.text.Integer(
+            text="Minimum distance between seeds",
+            value=1,
+            minval=0,
+            doc="""\
+        Minimum number of pixels separating peaks in a region of `2 * min_distance + 1 `
+        (i.e. peaks are separated by at least min_distance). 
+        To find the maximum number of peaks, set this value to `1`. 
+        """
+        )
+
+        self.min_intensity = cellprofiler_core.setting.text.Float(
+            text="Minimum absolute internal distance",
+            value=0.,
+            minval=0.,
+            doc="""\
+        Minimum absolute intensity threshold for seed generation. Since this threshold is
+        applied to the distance transformed image, this defines a minimum object
+        "size". Objects smaller than this size will not contain seeds. 
+
+        By default, the absolute threshold is the minimum value of the image.
+        For distance transformed images, this value is `0` (or the background).
+        """
+        )
+
+        self.exclude_border = cellprofiler_core.setting.text.Integer(
+            text="Pixels from border to exclude",
+            value=0,
+            minval=0,
+            doc="Exclude seed generation from within `n` pixels of the image border."
+        )
+
+        self.max_seeds = cellprofiler_core.setting.text.Integer(
+            text="Maximum number of seeds",
+            value=-1,
+            doc="""\
+        Maximum number of seeds to generate. Default is no limit. 
+        When the number of seeds exceeds this number, seeds are chosen 
+        based on largest internal distance.
+        """
+        )
+
+        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+            text="Structuring element for seed dilation",
+            doc="""\
+        Structuring element to use for dilating the seeds. 
+        Volumetric images will require volumetric structuring elements.
+        """
+        )
+
     def settings(self):
         __settings__ = super(Watershed, self).settings()
 
         return __settings__ + [
+            self.use_advanced,
             self.operation,
             self.markers_name,
             self.mask_name,
@@ -214,10 +342,20 @@ the image is not downsampled.
             self.footprint,
             self.downsample,
             self.watershed_line,
+            self.declump_method,
+            self.reference_name,
+            self.gaussian_sigma,
+            self.min_dist,
+            self.min_intensity,
+            self.exclude_border,
+            self.max_seeds,
+            self.structuring_element,
         ]
 
     def visible_settings(self):
-        __settings__ = super(Watershed, self).settings()
+        __settings__ = [self.use_advanced]
+
+        __settings__ = __settings__ + super(Watershed, self).settings()
 
         __settings__ = __settings__ + [self.operation]
 
@@ -231,6 +369,28 @@ the image is not downsampled.
                 self.compactness,
                 self.watershed_line,
             ]
+        if self.use_advanced.value:
+            if self.declump_method == O_SHAPE:
+                __settings__ = __settings__ + [
+                    self.declump_method,
+                    self.gaussian_sigma,
+                    self.min_dist,
+                    self.min_intensity,
+                    self.exclude_border,
+                    self.max_seeds,
+                    self.structuring_element,
+                ]
+            else:
+                __settings__ = __settings__ + [
+                    self.declump_method,
+                    self.reference_name,
+                    self.gaussian_sigma,
+                    self.min_dist,
+                    self.min_intensity,
+                    self.exclude_border,
+                    self.max_seeds,
+                    self.structuring_element,
+                ]
 
         return __settings__
 
@@ -247,6 +407,7 @@ the image is not downsampled.
 
         x_data = x.pixel_data
 
+        # watershed algorithm for distance-based method:
         if self.operation.value == O_DISTANCE:
             original_shape = x_data.shape
 
@@ -288,12 +449,15 @@ the image is not downsampled.
 
             y_data = y_data * x_data
 
+            # resize back to the original size if downsampled
             if factor > 1:
                 y_data = skimage.transform.resize(
                     y_data, original_shape, mode="edge", order=0, preserve_range=True
                 )
 
                 y_data = numpy.rint(y_data).astype(numpy.uint16)
+
+        # watershed algorithm for marker-based method:
         else:
             markers_name = self.markers_name.value
 
@@ -325,6 +489,95 @@ the image is not downsampled.
                 watershed_line=self.watershed_line.value,
             )
 
+        # watershed segmentation is stored in y_data variable
+        if self.use_advanced.value:
+            # check the dimensions of the structuring element
+            strel_dim = self.structuring_element.value.ndim
+
+            # test if the structuring element dimensions match the image dimensions
+            if strel_dim != dimensions:
+                raise ValueError("Structuring element does not match object dimensions: "
+                                 "{} != {}".format(strel_dim, dimensions))
+
+            # Get the segmentation distance transform for the watershed segmentation
+            peak_image = scipy.ndimage.distance_transform_edt(y_data > 0)
+
+            # shape-based method; generate a watershed ready image
+            if self.declump_method.value == O_SHAPE:
+                # Use the reverse of the image to get basins at peaks
+                watershed_image = -peak_image
+                watershed_image -= watershed_image.min()
+
+            # intensity-based method
+            else:
+                # get the intensity image data
+                reference_name = self.reference_name.value
+                reference = images.get_image(reference_name)
+                reference_data = reference.pixel_data
+
+                # Set the image as a float and rescale to full bit depth
+                watershed_image = skimage.img_as_float(reference_data, force_copy=True)
+                watershed_image -= watershed_image.min()
+                watershed_image = 1 - watershed_image
+
+                if reference.multichannel:
+                    watershed_image = skimage.color.rgb2gray(watershed_image)
+
+            # Smooth the image
+            watershed_image = skimage.filters.gaussian(watershed_image, sigma=self.gaussian_sigma.value)
+
+            # Generate local peaks; returns a list of coords for each peak
+            seed_coords = skimage.feature.peak_local_max(peak_image,
+                                                   min_distance=self.min_dist.value,
+                                                   threshold_rel=self.min_intensity.value,
+                                                   exclude_border=self.exclude_border.value,
+                                                   num_peaks=self.max_seeds.value if self.max_seeds.value != -1 else numpy.inf)
+
+            # generate an array w/ same dimensions as the original image with all elements having value False
+            seeds = numpy.zeros_like(peak_image, dtype=bool)
+
+            # set value to True at every local peak
+            seeds[tuple(seed_coords.T)] = True
+
+            # Dilate seeds based on settings
+            seeds = skimage.morphology.binary_dilation(seeds, self.structuring_element.value)
+
+            # get the number of objects from the distance-based or marker-based watershed run above
+            number_objects = skimage.measure.label(y_data, return_num=True)[1]
+
+            seeds_dtype = (numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32)
+
+            # NOTE: Not my work, the comments below are courtesy of Ray
+            #
+            # Create a marker array where the unlabeled image has a label of
+            # -(nobjects+1)
+            # and every local maximum has a unique label which will become
+            # the object's label. The labels are negative because that
+            # makes the watershed algorithm use FIFO for the pixels which
+            # yields fair boundaries when markers compete for pixels.
+            #
+            seeds = scipy.ndimage.label(seeds)[0]
+
+            markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
+            markers[seeds > 0] = -seeds[seeds > 0]
+
+            # Perform the watershed
+            watershed_boundaries = skimage.segmentation.watershed(
+                connectivity=self.connectivity.value,
+                image=watershed_image,
+                markers=markers,
+                mask=x_data != 0
+            )
+
+            y_data = watershed_boundaries.copy()
+            # Copy the location of the "background"
+            zeros = numpy.where(y_data == 0)
+            # Re-shift all of the labels into the positive realm
+            y_data += numpy.abs(numpy.min(y_data)) + 1
+            # Re-apply the background
+            y_data[zeros] = 0
+
+        # finalize and convert watershed to objects to export
         y_data = skimage.measure.label(y_data)
 
         objects = cellprofiler_core.object.Objects()
@@ -357,6 +610,20 @@ the image is not downsampled.
             __settings__ += setting_values[-2:]
 
             variable_revision_number = 2
+
+        if variable_revision_number == 2:
+            # Use advanced? is a new parameter
+            # first two settings are unchanged
+            __settings__ = setting_values[0:2]
+
+            # add False for "Use advanced?"
+            __settings__ += [False]
+
+            # add remainder of settings
+            __settings__ += setting_values[2:]
+
+            variable_revision_number = 3
+
 
         else:
             __settings__ = setting_values

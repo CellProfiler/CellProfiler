@@ -676,7 +676,7 @@ module.""".format(
                 F_MAJOR_AXIS_LENGTH: props["major_axis_length"],
                 F_MINOR_AXIS_LENGTH: props["minor_axis_length"],
                 F_ECCENTRICITY: props["eccentricity"],
-                F_ORIENTATION: props["orientation"],
+                F_ORIENTATION: props["orientation"] * (180 / numpy.pi),
                 F_CENTER_X: props["centroid-1"],
                 F_CENTER_Y: props["centroid-0"],
                 F_BBOX_AREA: props["bbox_area"],

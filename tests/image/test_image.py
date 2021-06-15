@@ -148,3 +148,14 @@ class TestImage:
         )
 
         assert x.spacing == (0.77 / 0.33, 1.0, 1.0)
+
+    def test_channelstack(self):
+        data = numpy.ones((5, 10, 10))
+
+        x = cellprofiler_core.image.Image(image=data)
+
+        assert x.channelstack == False
+
+        x.channelstack = True
+
+        assert x.channelstack == True

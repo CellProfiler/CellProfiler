@@ -66,6 +66,7 @@ class Image:
         scale=None,
         dimensions=2,
         spacing=None,
+        channelstack=False
     ):
         self.__image = None
 
@@ -101,6 +102,8 @@ class Image:
         self.dimensions = dimensions
 
         self.__spacing = spacing
+
+        self.__channelstack = channelstack
 
     @property
     def multichannel(self):
@@ -382,3 +385,12 @@ class Image:
             return self.parent_image.scale
 
         return self.__scale
+
+    @property
+    def channelstack(self):
+        if self.__channelstack is not None:
+            return self.__channelstack
+
+    @channelstack.setter
+    def channelstack(self, channelstack):
+        self.__channelstack = channelstack

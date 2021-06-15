@@ -684,7 +684,14 @@ value will be retained.""".format(
                 elif feature_name == "y_loc":
                     feature_name = M_LOCATION_CENTER_Y
                 features.append(feature_name)
-            available_features = set([col[1] for col in pipeline.get_measurement_columns(self) if col[0] == self.x_name.value])
+            if self.get_classifier_type() == "Rules":
+                # Rules lists don't supply source module names on their measurements...
+                available_features = set(
+                    [col[1].split('_', 1)[-1] for col in pipeline.get_measurement_columns(self)
+                     if col[0] == self.x_name.value])
+            else:
+                available_features = set([col[1] for col in pipeline.get_measurement_columns(self) if col[0] ==
+                                          self.x_name.value])
             for feature in features:
                 if feature not in available_features:
                     raise ValidationError(
@@ -1119,20 +1126,27 @@ value will be retained.""".format(
     def get_bin_labels(self):
         return self.load_classifier()[1]
 
+    def get_classifier_type(self):
+        return self.load_classifier()[2]
+
     def get_classifier_features(self):
         return self.load_classifier()[3]
 
-    def keep_by_rules(self, workspace, src_objects):
+    def keep_by_rules(self, workspace, src_objects, rules=None):
         """Keep objects according to rules
 
         workspace - workspace holding the measurements for the rules
         src_objects - filter these objects (uses measurement indexes instead)
+        rules - supply pre-generated rules loaded from a classifier model file
 
         Open the rules file indicated by the settings and score the
         objects by the rules. Return the indexes of the objects that pass.
         """
-        rules = self.get_rules()
-        rules_class = int(self.rules_class.value) - 1
+        if not rules:
+            rules = self.get_rules()
+            rules_class = int(self.rules_class.value) - 1
+        else:
+            rules_class = self.get_bin_labels().index(self.rules_class.value)
         scores = rules.score(workspace.measurements)
         if len(scores) > 0:
             is_not_nan = numpy.any(~numpy.isnan(scores), 1)
@@ -1151,6 +1165,8 @@ value will be retained.""".format(
         :return: indexes (base 1) of the objects that pass
         """
         classifier = self.get_classifier()
+        if self.get_classifier_type() == "Rules":
+            return self.keep_by_rules(workspace, src_objects, rules=classifier)
         target_idx = self.get_bin_labels().index(self.rules_class.value)
         target_class = classifier.classes_[target_idx]
         features = []

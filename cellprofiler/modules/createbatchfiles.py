@@ -344,6 +344,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
                 path = get_default_output_directory()
             else:
                 path = get_absolute_path(self.custom_output_directory.value)
+                os.makedirs(path, exist_ok=True)
             h5_path = os.path.join(path, F_BATCH_DATA_H5)
         else:
             h5_path = outf

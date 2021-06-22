@@ -2,7 +2,7 @@ import os
 import sys
 import threading
 
-import cellprofiler
+from importlib.util import find_spec
 
 
 def find_python():
@@ -19,9 +19,13 @@ def find_worker_env(idx):
     idx - index of the worker, e.g., 0 for the first, 1 for the second...
     """
     newenv = os.environ.copy()
-    root_dir = os.path.abspath(
-        os.path.join(os.path.dirname(cellprofiler.__file__), "..")
-    )
+    cp_install = find_spec("cellprofiler")
+    if cp_install:
+        root_dir = os.path.abspath(
+            os.path.join(os.path.dirname(cp_install.origin), "..")
+        )
+    else:
+        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
     added_paths = []
     if "PYTHONPATH" in newenv:
         old_path = newenv["PYTHONPATH"]

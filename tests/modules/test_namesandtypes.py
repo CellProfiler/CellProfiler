@@ -10,6 +10,7 @@ import javabridge
 import numpy
 import pytest
 import six
+import skimage.morphology
 import zlib
 
 import cellprofiler_core.constants.image
@@ -1911,6 +1912,8 @@ def test_load_objects():
         ["ExampleSBSImages"], "Channel2-01-A-01.tif"
     )
     target = bioformats.load_image(path, rescale=False)
+    target = skimage.morphology.label(target)
+
     with open(path, "rb") as fd:
         md5 = hashlib.md5(fd.read()).hexdigest()
     workspace = run_workspace(
@@ -2038,6 +2041,7 @@ def test_load_single_object():
         ["ExampleSBSImages"], "Channel2-01-A-01.tif"
     )
     target = bioformats.load_image(lsi_path, rescale=False)
+    target = skimage.morphology.label(target)
     with open(lsi_path, "rb") as fd:
         md5 = hashlib.md5(fd.read()).hexdigest()
     workspace = run_workspace(

@@ -6,6 +6,7 @@ from collections import Counter
 
 import javabridge
 import numpy
+import skimage.morphology
 
 from ..constants.image import C_FRAME
 from ..constants.image import C_HEIGHT
@@ -2150,6 +2151,7 @@ requests an object selection.
         image = provider.provide_image(workspace.image_set)
         o = Objects()
         shape = image.pixel_data.shape
+        image.set_image(skimage.morphology.label(image.pixel_data), convert=False)
         if shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
             add_object_location_measurements(

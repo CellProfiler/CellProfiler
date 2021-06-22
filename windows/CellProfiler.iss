@@ -54,7 +54,7 @@ Root: HKA; Subkey: "Software\Classes\CellProfiler.cpproj"; ValueType: string; Va
 Root: HKA; Subkey: "Software\Classes\CellProfiler.cppipe"; ValueType: string; ValueName: ""; ValueData: "CellProfiler Pipeline"; Flags: uninsdeletekey
 Root: HKA; Subkey: "Software\Classes\CellProfiler.cpproj\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\CellProfiler.exe,0"
 Root: HKA; Subkey: "Software\Classes\CellProfiler.cppipe\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\CellProfiler.exe,0"
-Root: HKA; Subkey: "Software\Classes\CellProfiler.cpproj\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\CelLProfiler.exe"" ""%1"""
-Root: HKA; Subkey: "Software\Classes\CellProfiler.cppipe\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\CelLProfiler.exe"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\CellProfiler.cpproj\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """cmd /c {drive:{app}} & {app}\CellProfiler.exe"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\CellProfiler.cppipe\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """cmd /c {drive:{app}} & {app}\CellProfiler.exe"" ""%1"""
 Root: HKA; Subkey: "Software\Classes\Applications\CellProfiler.exe\SupportedTypes"; ValueType: string; ValueName: ".cpproj"; ValueData: ""
 Root: HKA; Subkey: "Software\Classes\Applications\CellProfiler.exe\SupportedTypes"; ValueType: string; ValueName: ".cppipe"; ValueData: ""

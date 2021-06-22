@@ -1197,7 +1197,7 @@ value will be retained.""".format(
             additional_objects=[
                 (x.object_name.value, x.target_name.value)
                 for x in self.additional_objects
-            ] + ([self.removed_objects_name.value] if self.keep_removed_objects.value else []),
+            ] + [(self.x_name.value,self.removed_objects_name.value)] if self.keep_removed_objects.value else [],
         )
 
     def get_categories(self, pipeline, object_name):

@@ -63,7 +63,7 @@ setuptools.setup(
     },
     install_requires=[
         "boto3>=1.12.28",
-        "cellprofiler-core==4.1.3",
+        "cellprofiler-core==4.2.0",
         "centrosome==1.2.0",
         "docutils==0.15.2",
         "h5py==3.2.1",
@@ -77,7 +77,7 @@ setuptools.setup(
         "numpy>=1.20.1",
         "Pillow>=7.1.0",
         "prokaryote==2.4.2",
-        "python-bioformats==4.0.4",
+        "python-bioformats==4.0.5",
         "python-javabridge==4.0.3",
         "pyzmq==18.0.1",
         "sentry-sdk==0.18.0",

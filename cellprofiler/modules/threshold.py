@@ -988,9 +988,6 @@ staining.
 
         Break the image into blocks, computing the threshold per block.
         Afterwards, constrain the block threshold to .7 T < t < 1.5 T.
-
-        Block sizes must be at least 50x50. Images > 500 x 500 get 10x10
-        blocks.
         """
         # for the X and Y direction, find the # of blocks, given the
         # size constraints

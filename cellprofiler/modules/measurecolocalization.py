@@ -316,6 +316,7 @@ Alternatively, you may want to disable these specific measurements entirely
             self.images_list,
             self.objects_list,
             self.do_all,
+            self.fast_costes,
         ]
         return help_settings
 

@@ -4256,7 +4256,7 @@ CREATE TABLE %s (
             db_info += "db_host      = %(db_host)s\n" % (locals())
             db_info += "db_name      = %(db_name)s\n" % (locals())
             db_info += "db_user      = %(db_user)s\n" % (locals())
-            db_info += "db_password    = %(db_password)s" % (locals())
+            db_info += "db_passwd    = %(db_password)s" % (locals())
         elif self.db_type == DB_SQLITE:
             db_info = "db_type         = %(db_type)s\n" % (locals())
             db_info += "db_sqlite_file  = %(db_sqlite_file)s" % (locals())

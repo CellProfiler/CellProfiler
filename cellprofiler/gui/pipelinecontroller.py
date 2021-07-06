@@ -1702,7 +1702,7 @@ class PipelineController(object):
             except:
                 pass
             if error_msg is None:
-                if isinstance(event.error, EnvironmentError):
+                if isinstance(event.error, EnvironmentError) and event.error.strerror is not None:
                     error_msg = event.error.strerror
                 else:
                     error_msg = str(event.error)

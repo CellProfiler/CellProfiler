@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-ARG version=4.0.1
+ARG version=4.2.0
 
 # Install CellProfiler dependencies
 RUN apt-get update && apt-get install -y software-properties-common
@@ -17,7 +17,9 @@ RUN export PATH=$PATH:/home/ubuntu/.local/bin
 
 # This is needed for a Python 3.8 quirk
 RUN apt remove -y python3-pip
-RUN python3.8 -m easy_install pip
+RUN wget https://bootstrap.pypa.io/get-pip.py
+RUN python3.8 get-pip.py
+RUN rm get-pip.py
 
 #Install wx from a wheel
 RUN wget https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04/wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
@@ -25,6 +27,7 @@ RUN python3.8 -m pip install wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
 RUN rm wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
 
 # Install CellProfiler
+RUN python3.8 -m pip install numpy cython
 RUN python3.8 -m pip install cellprofiler==$version
 
 WORKDIR /usr/local/src

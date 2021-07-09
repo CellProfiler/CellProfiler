@@ -1879,7 +1879,7 @@ class Figure(wx.Frame):
         if nindexes is not None:
             nindexes = max(nindexes, 255)
         # Get the colormap from the user preferences
-        colormap = matplotlib.cm.get_cmap(get_default_colormap(), lut=nindexes,)
+        colormap = matplotlib.cm.get_cmap(get_default_colormap(), lut=nindexes,).copy()
         # Initialize the colormap so we have access to the LUT
         colormap._init()
         # N is the number of "entries" in the LUT. `_lut` goes a little bit beyond that,

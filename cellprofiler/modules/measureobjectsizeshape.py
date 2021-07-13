@@ -102,10 +102,9 @@ ellipse with the same second-moments as each object.
 -  *Orientation:* *(2D only)* The angle (in degrees ranging from -90 to 90 degrees)
    between the x-axis and the major axis of the ellipse that has the
    same second-moments as the region.
--  *Compactness:* *(2D only)* The mean squared distance of the object’s pixels from
-   the centroid divided by the area. A filled circle will have a
-   compactness of 1, with irregular objects or objects with holes having
-   a value greater than 1.
+-  *Compactness:* *(2D only)* Calculated as Perimeter\ :sup:`2`/4\*π\*Area, related to 
+   Form Factor. A filled circle will have a compactness of 1, with irregular objects or 
+   objects with holes having a value greater than 1.
 -  *MaximumRadius:* *(2D only)* The maximum distance of any pixel in the object to
    the closest pixel outside of the object. For skinny objects, this is
    1/2 of the maximum width of the object.

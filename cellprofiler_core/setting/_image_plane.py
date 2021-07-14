@@ -55,7 +55,10 @@ class ImagePlane(Setting):
         )
 
     def __get_field(self, index):
-        f = self.value_text.split(" ")[index]
+        split = self.value_text.split(" ")
+        if index >= len(split):
+            return None
+        f = split[index]
         if len(f) == 0:
             return None
         return f

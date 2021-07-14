@@ -387,6 +387,16 @@ class Workspace:
                         .decode("unicode_escape")
                         .replace("ÿþ", "")
                     )
+                if "\\n" in pipeline_txt:
+                    # Loaded pipeline text from a pre-h5py 3 hdf5 will have escaped characters in need of decoding.
+                    try:
+                        pipeline_txt = pipeline_txt.encode(
+                            "latin-1", "backslashreplace"
+                        ).decode("unicode-escape")
+                    except Exception as e:
+                        print(
+                            f"Unable to fully decode pipeline, you may encounter some errors. Issue was: {e}"
+                        )
                 self.pipeline.load(io.StringIO(pipeline_txt))
             elif load_pipeline:
                 self.pipeline.clear()

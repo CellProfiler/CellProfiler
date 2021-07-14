@@ -4266,6 +4266,11 @@ CREATE TABLE %s (
             "image" if self.properties_classification_type.value == CT_IMAGE else ""
         )
 
+        if not object_names:
+            # If we're in pre-run phase, store the image names we'll need
+            if not workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
+                workspace.measurements.add_experiment_measurement("ExportToDb_Images", default_image_names)
+
         for object_name in object_names:
             if object_name:
                 if self.objects_choice != O_NONE:

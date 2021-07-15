@@ -61,7 +61,7 @@ def make_classifier(
     class_names=None,
     rules_class=None,
     name="Classifier",
-    feature_names=["Foo_" + TEST_FTR],
+    feature_names=[f"{INPUT_OBJECTS}_{TEST_FTR}"],
 ):
     """Returns the filename of the classifier pickle"""
     assert isinstance(module, cellprofiler.modules.filterobjects.FilterObjects)

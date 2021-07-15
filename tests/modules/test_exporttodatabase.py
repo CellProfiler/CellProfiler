@@ -4887,7 +4887,7 @@ class TestExportToDatabase(unittest.TestCase):
                 ("db_host", DB_HOST),
                 ("db_name", DB_NAME),
                 ("db_user", DB_USER),
-                ("db_password", DB_PASSWORD),
+                ("db_passwd", DB_PASSWORD),
                 ("image_table", "%sPer_Image" % module.get_table_prefix()),
                 ("object_table", "%sPer_Object" % module.get_table_prefix()),
                 ("image_id", "ImageNumber"),

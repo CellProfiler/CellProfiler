@@ -676,22 +676,14 @@ value will be retained.""".format(
                     % self.rules_file_name.value,
                     self.rules_file_name,
                 )
-            features = []
-            for feature_name in self.get_classifier_features():
-                obj, feature_name = feature_name.split("_", 1)
-                if feature_name == "x_loc":
-                    feature_name = M_LOCATION_CENTER_X
-                elif feature_name == "y_loc":
-                    feature_name = M_LOCATION_CENTER_Y
-                features.append((obj, feature_name))
-            available_features = set([(col[0], col[1]) for col in pipeline.get_measurement_columns(self)])
+            features = self.get_classifier_features()
+            available_features = set([f"{col[0]}_{col[1]}" for col in pipeline.get_measurement_columns(self)])
 
             for feature in features:
                 if feature not in available_features:
                     raise ValidationError(
-                        f"""The classifier {self.rules_file_name}, requires the measurement, {feature[1]} for object 
-{feature[0]}, but that measurement is not available at this stage of the pipeline. 
-Consider adding modules to produce the measurement.""",
+                        f"""The classifier {self.rules_file_name}, requires the measurement "{feature}", but that 
+measurement is not available at this stage of the pipeline. Consider adding modules to produce the measurement.""",
                         self.rules_file_name
                     )
 
@@ -1165,14 +1157,7 @@ Consider adding modules to produce the measurement.""",
             return self.keep_by_rules(workspace, src_objects, rules=classifier)
         target_idx = self.get_bin_labels().index(self.rules_class.value)
         target_class = classifier.classes_[target_idx]
-        features = []
-        for feature_name in self.get_classifier_features():
-            obj, feature_name = feature_name.split("_", 1)
-            if feature_name == "x_loc":
-                feature_name = M_LOCATION_CENTER_X
-            elif feature_name == "y_loc":
-                feature_name = M_LOCATION_CENTER_Y
-            features.append((obj, feature_name))
+        features = self.split_feature_names(self.get_classifier_features(), workspace.object_set.get_object_names())
 
         feature_vector = numpy.column_stack(
             [
@@ -1399,6 +1384,17 @@ Consider adding modules to produce the measurement.""",
     def get_dictionary_for_worker(self):
         # Sklearn models can't be serialized, so workers will need to read them from disk.
         return {}
+
+    def split_feature_names(self, features, available_objects):
+        # Attempts to split measurement names into object and feature pairs. Tests against a list of available objects.
+        features_list = []
+        # We want to test the longest keys first, so that "Cells_Edited" is matched before "Cells".
+        available_objects = tuple(sorted(available_objects, key=len, reverse=True))
+        for feature_name in features:
+            obj, feature_name = next(((s, feature_name.split(f"{s}_", 1)[-1]) for s in available_objects if
+                                      feature_name.startswith(s)), feature_name.split("_", 1))
+            features_list.append((obj, feature_name))
+        return features_list
 
 #
 # backwards compatibility

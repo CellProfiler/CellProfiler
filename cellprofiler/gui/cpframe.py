@@ -22,7 +22,6 @@ from cellprofiler_core.utilities.core.modules import instantiate_module
 import cellprofiler
 import cellprofiler.gui
 import cellprofiler.gui.utilities.icon
-from ._welcome_frame import WelcomeFrame
 from ._workspace_model import Workspace
 from .utilities.figure import close_all
 from .help.content import read_content
@@ -346,11 +345,11 @@ class CPFrame(wx.Frame):
         self.__set_properties()
         self.__set_icon()
         self.__do_layout()
-        self.startup_blurb_frame = WelcomeFrame(self)
+        self.startup_blurb_frame = None
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.SetAutoLayout(True)
-        if get_startup_blurb():
+        if get_startup_blurb() and sys.platform != "linux":
             self.show_welcome_screen(True)
         self.show_module_ui(True)
 
@@ -367,13 +366,6 @@ class CPFrame(wx.Frame):
         """
         self.__pipeline_controller.start(workspace_path, pipeline_path)
         self.__module_view.start()
-        #
-        # Do a little placement after the UI has been constructed
-        #
-        # Put the welcome screen over the module settings.
-        #
-        r = self.__right_win.GetScreenRect()
-        self.startup_blurb_frame.SetRect(r)
 
     def show_path_list_ctrl(self, show):
         """Show or hide the path list control
@@ -460,6 +452,16 @@ class CPFrame(wx.Frame):
         show - If True, show the welcome screen and hide the preferences
                and module UI, otherwise hide the welcome screen.
         """
+        if self.startup_blurb_frame is None:
+            if not show:
+                return
+            else:
+                from ._welcome_frame import WelcomeFrame
+                self.startup_blurb_frame = WelcomeFrame(self)
+                # Put the welcome screen over the module settings.
+                r = self.__right_win.GetScreenRect()
+                self.startup_blurb_frame.SetRect(r)
+
         self.startup_blurb_frame.Show(show)
         if show:
             self.startup_blurb_frame.Raise()

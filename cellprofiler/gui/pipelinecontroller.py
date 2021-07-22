@@ -2076,7 +2076,7 @@ class PipelineController(object):
             self.__workspace.invalidate_image_set()
 
     def on_pathlist_drop_files(self, x, y, filenames):
-        self.add_paths_to_pathlist(filenames)
+        wx.CallAfter(self.add_paths_to_pathlist, filenames)
 
     def add_paths_to_pathlist(self, filenames):
         t0 = datetime.datetime.now()

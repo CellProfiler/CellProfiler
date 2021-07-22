@@ -27,7 +27,7 @@ setuptools.setup(
         "h5py==3.2.1",
         "matplotlib>=3.1.3",
         "numpy>=1.18.2",
-        "prokaryote==2.4.2",
+        "prokaryote==2.4.4",
         "psutil>=5.7.0",
         "python-bioformats==4.0.5",
         "python-javabridge==4.0.3",
@@ -41,6 +41,6 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["tests"]),
     python_requires=">=3.8",
     url="https://github.com/CellProfiler/core",
-    version="4.2.0",
+    version="4.2.1",
     zip_safe=False,
 )

@@ -9,6 +9,7 @@ import centrosome.threshold
 import numpy
 import scipy.ndimage
 import scipy.sparse
+import skimage.morphology
 import skimage.segmentation
 from cellprofiler_core.setting import Binary, Color
 from cellprofiler_core.setting.choice import Choice
@@ -277,7 +278,7 @@ OFF_FILL_HOLES_V10 = 12
 OFF_N_SETTINGS = 16
 
 """The number of settings, exclusive of threshold settings"""
-N_SETTINGS = 18
+N_SETTINGS = 16
 
 UN_INTENSITY = "Intensity"
 UN_SHAPE = "Shape"
@@ -325,7 +326,7 @@ SHAPE_DECLUMPING_ICON = cellprofiler.gui.help.content.image_resource(
 class IdentifyPrimaryObjects(
     cellprofiler_core.module.image_segmentation.ImageSegmentation
 ):
-    variable_revision_number = 14
+    variable_revision_number = 15
 
     category = "Object Processing"
 
@@ -783,16 +784,18 @@ documentation for the previous setting for details.""",
             "Display accepted local maxima?",
             False,
             doc="""\
-            *(Used only when distinguishing between clumped objects)*
+*(Used only when distinguishing between clumped objects)*
+            
+Note: As this only effects figure previews, maxima display settings will not be saved to the pipeline.
 
-            Select "*{YES}*" to display detected local maxima on the object outlines plot. This can be
-            helpful for fine-tuning segmentation parameters.
+Select "*{YES}*" to display detected local maxima on the object outlines plot. This can be
+helpful for fine-tuning segmentation parameters.
 
-            Local maxima are small cluster of pixels from which objects are 'grown' during segmentation.
-            Each object in a declumped segmentation will have a single maxima.
+Local maxima are small cluster of pixels from which objects are 'grown' during segmentation.
+Each object in a declumped segmentation will have a single maxima.
 
-            For example, for intensity-based declumping, maxima should appear at the brightest points in an object.
-            If obvious intensity peaks are missing they were probably removed by the filters set above.""".format(
+For example, for intensity-based declumping, maxima should appear at the brightest points in an object.
+If obvious intensity peaks are missing they were probably removed by the filters set above.""".format(
                 **{"YES": "Yes"}
             ),
         )
@@ -801,6 +804,14 @@ documentation for the previous setting for details.""",
             "Select maxima color",
             DEFAULT_MAXIMA_COLOR,
             doc="Maxima will be displayed in this color.",
+        )
+
+        self.maxima_size = Integer(
+            "Select maxima size",
+            value=1,
+            minval=1,
+            doc="Radius of the visible marker for each maxima."
+                "You may want to increase this when working with large images.",
         )
 
         self.use_advanced = Binary(
@@ -879,8 +890,6 @@ If "*{NO}*" is selected, the following settings are used:
             self.automatic_suppression,
             self.limit_choice,
             self.maximum_object_count,
-            self.want_plot_maxima,
-            self.maxima_color,
             self.use_advanced,
         ]
 
@@ -924,20 +933,31 @@ If "*{NO}*" is selected, the following settings are used:
         if variable_revision_number == 12:
             new_setting_values = setting_values[: OFF_N_SETTINGS - 1]
             new_setting_values += ["Yes"]
-            new_setting_values += setting_values[OFF_N_SETTINGS - 1 :]
+            new_setting_values += setting_values[OFF_N_SETTINGS - 1:]
 
             setting_values = new_setting_values
 
             variable_revision_number = 13
 
         if variable_revision_number == 13:
-            new_setting_values = setting_values[: N_SETTINGS - 3]
+            # Added maxima settings
+            new_setting_values = setting_values[: 15]
             new_setting_values += ["No", DEFAULT_MAXIMA_COLOR]
-            new_setting_values += setting_values[N_SETTINGS - 3 :]
+            new_setting_values += setting_values[15:]
 
             setting_values = new_setting_values
 
             variable_revision_number = 14
+
+        if variable_revision_number == 14:
+            # Removed maxima settings
+            new_setting_values = setting_values[: 15]
+            new_setting_values += setting_values[17:]
+
+            setting_values = new_setting_values
+
+            variable_revision_number = 15
+
 
         threshold_setting_values = setting_values[N_SETTINGS:]
 
@@ -1024,7 +1044,7 @@ If "*{NO}*" is selected, the following settings are used:
                 visible_settings += [self.low_res_maxima, self.want_plot_maxima]
 
                 if self.want_plot_maxima.value:
-                    visible_settings += [self.maxima_color]
+                    visible_settings += [self.maxima_color, self.maxima_size]
 
             else:  # self.unclump_method == UN_NONE or self.watershed_method == WA_NONE
                 visible_settings = visible_settings[:-2]
@@ -1564,10 +1584,15 @@ If "*{NO}*" is selected, the following settings are used:
                 from matplotlib.colors import ListedColormap
 
                 cmap = ListedColormap(self.maxima_color.value)
+                if self.maxima_size.value > 1:
+                    strel = skimage.morphology.disk(self.maxima_size.value - 1)
+                    labels = skimage.morphology.dilation(self.labeled_maxima, selem=strel)
+                else:
+                    labels = self.labeled_maxima
                 cplabels.append(
                     dict(
                         name="Detected maxima",
-                        labels=[self.labeled_maxima],
+                        labels=[labels],
                         mode="alpha",
                         alpha_value=1,
                         alpha_colormap=cmap,

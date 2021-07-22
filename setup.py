@@ -63,7 +63,7 @@ setuptools.setup(
     },
     install_requires=[
         "boto3>=1.12.28",
-        "cellprofiler-core==4.2.0",
+        "cellprofiler-core==4.2.1",
         "centrosome==1.2.0",
         "docutils==0.15.2",
         "h5py==3.2.1",
@@ -76,7 +76,7 @@ setuptools.setup(
         "mysqlclient==1.4.6",
         "numpy>=1.20.1",
         "Pillow>=7.1.0",
-        "prokaryote==2.4.2",
+        "prokaryote==2.4.4",
         "python-bioformats==4.0.5",
         "python-javabridge==4.0.3",
         "pyzmq==18.0.1",

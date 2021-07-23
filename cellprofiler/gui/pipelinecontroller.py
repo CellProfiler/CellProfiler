@@ -2107,16 +2107,6 @@ class PipelineController(object):
                     if not interrupt or interrupt[0]:
                         break
 
-                    # Hack - convert drive names to lower case in
-                    #        Windows to normalize them.
-                    isWindows = (
-                        sys.platform == "win32"
-                        and pathname[0].isalpha()
-                        and pathname[1] == ":"
-                    )
-                    if isWindows:
-                        pathname = os.path.normpath(pathname[:2]) + pathname[2:]
-
                     message[0] = "\nProcessing " + pathname
                     if os.path.isfile(pathname):
                         urls.append(pathname2url(pathname))

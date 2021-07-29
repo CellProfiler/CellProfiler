@@ -29,6 +29,7 @@ builtin_modules = {
     "exporttospreadsheet": "ExportToSpreadsheet",
     "fillobjects": "FillObjects",
     "filterobjects": "FilterObjects",
+    "findmaxima": "FindMaxima",
     "flagimage": "FlagImage",
     "flipandrotate": "FlipAndRotate",
     "gaussianfilter": "GaussianFilter",

@@ -53,7 +53,14 @@ from cellprofiler_core.worker import main as worker_main
 from cellprofiler_core.workspace import Workspace
 
 if hasattr(sys, "frozen"):
-    if sys.platform.startswith("win"):
+    if sys.platform == "darwin":
+        # Some versions of Macos like to put CP in a sandbox. If we're frozen Java should be packed in,
+        # so let's just figure out the directory at run time.
+        try:
+            os.environ["CP_JAVA_HOME"] = os.path.abspath(os.path.join(sys.prefix, "..", "Resources/Home"))
+        except:
+            print("Unable to set JAVA directory to inbuilt java environment")
+    elif sys.platform.startswith("win"):
         # Clear out deprecation warnings from PyInstaller
         os.system('cls')
         # For Windows builds use built-in Java for CellProfiler, otherwise try to use Java from elsewhere on the system.
@@ -61,8 +68,16 @@ if hasattr(sys, "frozen"):
         # JAVA_HOME must be set before bioformats import.
         try:
             if "CP_JAVA_HOME" in os.environ:
+                # Use user-provided Java
                 os.environ["JAVA_HOME"] = os.environ["CP_JAVA_HOME"]
-            assert "JAVA_HOME" in os.environ
+            elif "JAVA_HOME" not in os.environ:
+                # Use built-in java
+                test_dir = os.path.abspath(os.path.join(sys.prefix, "java"))
+                if os.path.exists(test_dir):
+                    os.environ["JAVA_HOME"] = os.path.abspath(os.path.join(sys.prefix, "java"))
+                else:
+                    print(f"Failed to detect java automatically. Searched in: {test_dir}.")
+            assert "JAVA_HOME" in os.environ and os.path.exists(os.environ['JAVA_HOME'])
         except AssertionError:
             print(
                 "CellProfiler Startup ERROR: Could not find path to Java environment directory.\n"
@@ -71,6 +86,8 @@ if hasattr(sys, "frozen"):
             )
             os.system("pause")  # Keep console window open until keypress.
             os._exit(1)
+        except Exception as e:
+            print(f"Encountered unknown error during startup: {e}")
     else:
         # Clear out deprecation warnings from PyInstaller
         os.system('clear')

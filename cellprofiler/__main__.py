@@ -74,7 +74,7 @@ if hasattr(sys, "frozen"):
                 # Use built-in java
                 test_dir = os.path.abspath(os.path.join(sys.prefix, "java"))
                 if os.path.exists(test_dir):
-                    os.environ["JAVA_HOME"] = os.path.abspath(os.path.join(sys.prefix, "java"))
+                    os.environ["JAVA_HOME"] = test_dir
                 else:
                     print(f"Failed to detect java automatically. Searched in: {test_dir}.")
             assert "JAVA_HOME" in os.environ and os.path.exists(os.environ['JAVA_HOME'])

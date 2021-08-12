@@ -365,7 +365,12 @@ color map.
                 self.objects_name.value, M_LOCATION_CENTER_Y
             )
             y += self.offset.value * y_offset
-            mask = ~(numpy.isnan(values) | numpy.isnan(x) | numpy.isnan(y))
+            if numpy.issubdtype(values.dtype, str):
+                if self.use_color_map():
+                    raise NotImplementedError("Cannot interpret a text measurement for display with a color scale")
+                mask = ~(numpy.isnan(x) | numpy.isnan(y))
+            else:
+                mask = ~(numpy.isnan(values) | numpy.isnan(x) | numpy.isnan(y))
             values = values[mask]
             x = x[mask]
             y = y[mask]

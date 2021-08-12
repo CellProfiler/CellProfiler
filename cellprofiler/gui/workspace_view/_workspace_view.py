@@ -490,7 +490,7 @@ class WorkspaceView:
                     continue
                 height = 0
                 for j, measurement_row in enumerate(measurement_rows):
-                    if len(values[j]) <= i or numpy.isnan(values[j][i]):
+                    if len(values[j]) <= i or (not isinstance(values[j][i], str) and numpy.isnan(values[j][i])):
                         continue
                     value = values[j][i]
                     font = measurement_row.font
@@ -506,10 +506,11 @@ class WorkspaceView:
                             measurement_row.background_color,
                         )
                     ]
-
-                    fmt = "%%.%df" % measurement_row.precision
+                    if not isinstance(value, str):
+                        fmt = "%%.%df" % measurement_row.precision
+                        value = fmt % value
                     a = self.axes.annotate(
-                        fmt % value,
+                        value,
                         (xi, yi),
                         xytext=(0, -height),
                         textcoords="offset points",

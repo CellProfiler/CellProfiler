@@ -3833,7 +3833,8 @@ CREATE TABLE %s (
                         count = measurements.get_measurement(
                             "Image", ftr_count, image_number
                         )
-                        max_count = max(max_count, int(count))
+                        if count:
+                            max_count = max(max_count, int(count))
                     column_values = []
                     for column in columns:
                         object_name, feature, coltype = column[:3]

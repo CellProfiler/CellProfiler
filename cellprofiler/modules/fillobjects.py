@@ -23,17 +23,21 @@ YES          YES          NO
 
 import numpy
 import skimage.morphology
+import skimage.measure
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.text import Float
 
+MODE_HOLES = "Holes"
+MODE_CHULL = "Convex hull"
 
 class FillObjects(ObjectProcessing):
     category = "Advanced"
 
     module_name = "FillObjects"
 
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         super(FillObjects, self).create_settings()
@@ -59,22 +63,51 @@ are the result of segmentation.
             ),
         )
 
+        self.mode = Choice(
+            "Filling method",
+            [MODE_HOLES, MODE_CHULL],
+            value=MODE_HOLES,
+            doc="Docs go here"
+        )
+
     def settings(self):
         __settings__ = super(FillObjects, self).settings()
 
-        return __settings__ + [self.size, self.planewise]
+        return __settings__ + [self.size, self.planewise, self.mode]
 
     def visible_settings(self):
         __settings__ = super(FillObjects, self).visible_settings()
-
-        return __settings__ + [self.size, self.planewise]
+        __settings__ += [self.mode]
+        if self.mode.value == MODE_HOLES:
+            __settings__ += [self.size, self.planewise]
+        return __settings__
 
     def run(self, workspace):
-        self.function = lambda labels, diameter, planewise: fill_object_holes(
-            labels, diameter, planewise
-        )
+        if self.mode.value == MODE_HOLES:
+            self.function = lambda labels, diameter, planewise, mode: fill_object_holes(
+                labels, diameter, planewise
+            )
+        else:
+            self.function = lambda labels, d, p, m: fill_convex_hulls(labels)
 
         super(FillObjects, self).run(workspace)
+
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
+            setting_values += MODE_HOLES
+            variable_revision_number = 2
+        return setting_values, variable_revision_number
+
+
+def fill_convex_hulls(labels):
+    data = skimage.measure.regionprops(labels)
+    output = numpy.zeros_like(labels)
+    for prop in data:
+        label = prop['label']
+        x, y, x2, y2 = prop['bbox']
+        cmask = prop['convex_image']
+        output[x:x2, y:y2][cmask] = label
+    return output
 
 
 def _fill_holes(labels, min_obj_size):

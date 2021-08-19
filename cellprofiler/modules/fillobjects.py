@@ -11,6 +11,9 @@ entirely within the boundary of labeled objects are filled with the surrounding 
 **FillObjects** can also be optionally run on a "per-plane" basis working with volumetric data.
 Holes will be filled for each XY plane, rather than on the whole volume.
 
+Alternatively, objects can be filled on the basis of a convex hull.  
+This is the smallest convex polygon that surrounds all pixels in the object.
+
 |
 
 ============ ============ ===============
@@ -67,7 +70,16 @@ are the result of segmentation.
             "Filling method",
             [MODE_HOLES, MODE_CHULL],
             value=MODE_HOLES,
-            doc="Docs go here"
+            doc=f"""\
+Choose the mode for hole filling.
+
+In {MODE_HOLES} mode, the module will search for and fill holes entirely enclosed by
+each object. Size of the holes to be removed can be controlled. 
+
+In {MODE_CHULL} mode, the module will apply the convex hull of each object to fill 
+missing pixels. This can be useful when round objects have partial holes that are 
+not entirely enclosed.
+"""           
         )
 
     def settings(self):

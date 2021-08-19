@@ -80,6 +80,7 @@ def test_2d_fill_holes(
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
     module.size.value = 2.0
+    module.mode.value = "Holes"
 
     module.run(workspace_empty)
 
@@ -103,6 +104,7 @@ def test_3d_fill_holes(
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
     module.size.value = 2.0
+    module.mode.value = "Holes"
 
     module.run(workspace_empty)
 
@@ -172,6 +174,7 @@ def test_fail_3d_fill_bowl(
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
     module.size.value = 2.0
+    module.mode.value = "Holes"
 
     module.run(workspace_empty)
 
@@ -197,6 +200,7 @@ def test_pass_3d_fill_bowl(
     module.size.value = 3.0
     # Set to planewise so the bowl is "filled" on each plane
     module.planewise.value = True
+    module.mode.value = "Holes"
 
     module.run(workspace_empty)
 

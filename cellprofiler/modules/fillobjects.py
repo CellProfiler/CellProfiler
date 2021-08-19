@@ -79,6 +79,9 @@ each object. Size of the holes to be removed can be controlled.
 In {MODE_CHULL} mode, the module will apply the convex hull of each object to fill 
 missing pixels. This can be useful when round objects have partial holes that are 
 not entirely enclosed.
+
+Note: Convex hulls for each object are applied sequentially and may overlap. This means 
+that touching objects may not be perfectly convex if there was a region of overlap. 
 """           
         )
 

@@ -35,6 +35,8 @@ NORMALIZE_LINEAR = "linear"
 INTERPOLATION_NEAREST = "nearest"
 INTERPOLATION_BILINEAR = "bilinear"
 INTERPOLATION_BICUBIC = "bicubic"
+# Map MPL interpolation modes to skimage order values
+INTERPOLATION_MAP = {INTERPOLATION_NEAREST: 0, INTERPOLATION_BILINEAR: 1, INTERPOLATION_BICUBIC: 3}
 
 MODE_OUTLINES = "outlines"
 MODE_LINES = "lines"
@@ -782,7 +784,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             target, out_range=numpy.uint8
         )
 
-        image = skimage.transform.rescale(image, (sx, sy, 1))
+        image = skimage.transform.rescale(image, (sx, sy, 1), order=INTERPOLATION_MAP[self.mp_interpolation])
 
         image = skimage.img_as_ubyte(image)
 

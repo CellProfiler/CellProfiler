@@ -9,6 +9,9 @@ from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_X
 from cellprofiler_core.constants.measurement import M_LOCATION_CENTER_Y
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.preferences import IM_BILINEAR
+from cellprofiler_core.preferences import get_primary_outline_color
+from cellprofiler_core.preferences import get_secondary_outline_color
+from cellprofiler_core.preferences import get_tertiary_outline_color
 from cellprofiler_core.preferences import IM_NEAREST
 from cellprofiler_core.preferences import get_interpolation_mode
 
@@ -272,15 +275,23 @@ class WorkspaceView:
 
     def add_row(self, row_class, rows, grid_sizer, can_delete):
         row = len(rows) + 1
-        color = (
-            wx.RED
-            if row == 1
-            else wx.GREEN
-            if row == 2
-            else wx.BLUE
-            if row == 3
-            else wx.WHITE
-        )
+        if row_class == WorkspaceViewObjectsRow:
+            color = (
+                get_primary_outline_color() if row == 1
+                else get_secondary_outline_color() if row == 2
+                else get_tertiary_outline_color() if row == 3
+                else wx.WHITE
+            )
+        else:
+            color = (
+                wx.BLUE
+                if row == 1
+                else wx.GREEN
+                if row == 2
+                else wx.RED
+                if row == 3
+                else wx.WHITE
+            )
         vw_row = row_class(self, color, can_delete)
 
         grid_sizer.Add(vw_row.chooser, (row, C_CHOOSER), flag=wx.EXPAND)

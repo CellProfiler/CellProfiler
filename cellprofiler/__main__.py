@@ -78,6 +78,9 @@ if hasattr(sys, "frozen"):
                 else:
                     print(f"Failed to detect java automatically. Searched in: {test_dir}.")
             assert "JAVA_HOME" in os.environ and os.path.exists(os.environ['JAVA_HOME'])
+            # Ensure we start in the correct directory when launching a build.
+            print(f"Startup params: {sys.prefix=}, {os.getcwd()=}")
+            os.chdir(sys.prefix)
         except AssertionError:
             print(
                 "CellProfiler Startup ERROR: Could not find path to Java environment directory.\n"

@@ -112,5 +112,7 @@ jobs:
 name: create-release
 on:
   push:
-    tags:
-      - "v*"
+#    tags:
+#      - "v*"
+    branches:
+      - java_detection

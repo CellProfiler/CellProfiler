@@ -103,10 +103,19 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append("About CellProfiler", event_fn=lambda _: self.about())
 
-    @staticmethod
-    def about():
+    def about(self):
         info = AboutDialogInfo()
         wx.adv.AboutBox(info)
+        if wx.GetKeyState(wx.WXK_SHIFT):
+            from wx.py.shell import ShellFrame
+            from cellprofiler.__init__ import __version__
+            cpapp = wx.FindWindowByName(f'CellProfiler {__version__}')
+            s = ShellFrame(self.frame,
+                           title="CellProfiler Shell",
+                           locals={'app': cpapp, 'pipeline': cpapp.pipeline, 'workspace': cpapp.workspace},
+                           )
+            s.SetStatusText("CellProfiler Debug Interpeter - Use 'app', 'pipeline' and 'workspace' to inspect objects")
+            s.Show()
 
     def find_update(self, event):
         from cellprofiler.gui.checkupdate import check_update

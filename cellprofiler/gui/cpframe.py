@@ -1323,6 +1323,12 @@ class CPFrame(wx.Frame):
 
     pipeline = property(get_pipeline)
 
+    def get_workspace(self):
+        """Get the pipeline - mostly to drive testing"""
+        return self.__workspace
+
+    workspace = property(get_workspace)
+
     def get_module_view(self):
         """Return the module view window"""
         return self.__module_view

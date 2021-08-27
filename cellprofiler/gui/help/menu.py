@@ -109,10 +109,15 @@ class Menu(cellprofiler.gui.menu.Menu):
         if wx.GetKeyState(wx.WXK_SHIFT):
             from wx.py.shell import ShellFrame
             from cellprofiler.__init__ import __version__
-            cpapp = wx.FindWindowByName(f'CellProfiler {__version__}')
+            cpapp = wx.GetApp()
+            if cpapp:
+                cpapp = cpapp.frame
+                locs = {'app': cpapp, 'pipeline': cpapp.pipeline, 'workspace': cpapp.workspace}
+            else:
+                locs = None
             s = ShellFrame(self.frame,
                            title="CellProfiler Shell",
-                           locals={'app': cpapp, 'pipeline': cpapp.pipeline, 'workspace': cpapp.workspace},
+                           locals=locs,
                            )
             s.SetStatusText("CellProfiler Debug Interpeter - Use 'app', 'pipeline' and 'workspace' to inspect objects")
             s.Show()

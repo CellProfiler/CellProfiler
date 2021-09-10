@@ -1255,7 +1255,8 @@ class Pipeline:
         orig_image_number = m.image_set_number
 
         progress_dialog = self.create_progress_dialog(message, pipeline, title)
-
+        if progress_dialog is not None:
+            progress_dialog.SetRange(len(image_numbers))
         try:
             for i, image_number in enumerate(image_numbers):
                 m.image_set_number = image_number

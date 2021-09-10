@@ -2076,7 +2076,7 @@ class PipelineController(object):
             self.__workspace.invalidate_image_set()
 
     def on_pathlist_drop_files(self, x, y, filenames):
-        self.add_paths_to_pathlist(filenames)
+        wx.CallAfter(self.add_paths_to_pathlist, filenames)
 
     def add_paths_to_pathlist(self, filenames):
         t0 = datetime.datetime.now()
@@ -2103,19 +2103,49 @@ class PipelineController(object):
                 filenames=filenames, interrupt=[True], message=["Default"], queue=queue
             ):
                 urls = []
+                if len(filenames) > 100:
+                    # If we have many files to process, it's faster to just scan the whole parent folder.
+                    desired = set(filenames)
+                    # All files added in 1 operation should come from the same parent directory.
+                    parent = os.path.dirname(filenames[0])
+                    # Scandir produces a generator that'll automatically distinguish files from folders
+                    options = os.scandir(parent)
+                    for path in options:
+                        if not interrupt or interrupt[0]:
+                            break
+                        if path.path in desired:
+                            message[0] = "\nProcessing " + path.path
+                            desired.remove(path.path)
+                            if path.is_file():
+                                urls.append(pathname2url(path.path))
+                                if len(urls) > 100:
+                                    queue.put(urls)
+                                    urls = []
+                            elif path.is_dir():
+                                for dirpath, dirnames, filenames in os.walk(path.path):
+                                    for filename in filenames:
+                                        if not interrupt or interrupt[0]:
+                                            break
+                                        path = os.path.join(dirpath, filename)
+                                        urls.append(pathname2url(path))
+                                        message[0] = "\nProcessing " + path
+                                        if len(urls) > 100:
+                                            queue.put(urls)
+                                            urls = []
+                                    else:
+                                        continue
+                                    break
+                            if not desired:
+                                # Stop the generator once all paths are found
+                                break
+                    queue.put(urls)
+                    urls = []
+                    # In case of missing files or mixed parent directories, we'll use the old method to fetch the rest.
+                    filenames = list(desired)
+
                 for pathname in filenames:
                     if not interrupt or interrupt[0]:
                         break
-
-                    # Hack - convert drive names to lower case in
-                    #        Windows to normalize them.
-                    isWindows = (
-                        sys.platform == "win32"
-                        and pathname[0].isalpha()
-                        and pathname[1] == ":"
-                    )
-                    if isWindows:
-                        pathname = os.path.normpath(pathname[:2]) + pathname[2:]
 
                     message[0] = "\nProcessing " + pathname
                     if os.path.isfile(pathname):
@@ -2124,8 +2154,8 @@ class PipelineController(object):
                             queue.put(urls)
                             urls = []
                     elif os.path.isdir(pathname):
-                        for dirpath, dirnames, filenames in os.walk(pathname):
-                            for filename in filenames:
+                        for dirpath, dirnames, files in os.walk(pathname):
+                            for filename in files:
                                 if not interrupt or interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)

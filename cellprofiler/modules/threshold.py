@@ -765,6 +765,7 @@ staining.
             self.manual_threshold,
             self.thresholding_measurement,
             self.two_class_otsu,
+            self.log_transform,
             self.assign_middle_to_foreground,
             self.lower_outlier_fraction,
             self.upper_outlier_fraction,

@@ -20,8 +20,9 @@ YES          YES          NO
 ============ ============ ===============
 """
 
+import numpy
 from skimage.feature import peak_local_max
-from skimage.morphology import disk, dilation
+from skimage.morphology import disk, ball, dilation
 
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
@@ -29,6 +30,7 @@ from cellprofiler_core.setting import Color, Divider
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
 from cellprofiler_core.setting.text import Integer, Float
+from cellprofiler_core.utilities.core.object import overlay_labels
 
 MODE_THRESHOLD = "Threshold"
 MODE_MASK = "Mask"
@@ -92,7 +94,7 @@ maxima are within objects of interest."""
 
         self.maxima_color = Color(
             "Select maxima preview color",
-            "Blue",
+            "Red",
             doc="Maxima will be displayed in this color.",
         )
 
@@ -181,7 +183,12 @@ maxima are within objects of interest."""
 
     def display(self, workspace, figure, cmap=None):
         """Display the image and labeling"""
-        figure.set_subplots((2, 2))
+        layout = (2, 2)
+        dimensions = workspace.display_data.dimensions
+
+        figure.set_subplots(
+            dimensions=dimensions, subplots=layout
+        )
 
         title = "Input image, cycle #%d" % (workspace.measurements.image_number,)
         image = workspace.display_data.x_data
@@ -196,22 +203,19 @@ maxima are within objects of interest."""
 
         cmap = ListedColormap(self.maxima_color.value)
         if self.maxima_size.value > 1:
-            strel = disk(self.maxima_size.value - 1)
+            if dimensions == 2:
+                strel = disk(self.maxima_size.value - 1)
+            else:
+                strel = ball(self.maxima_size.value - 1)
             labels = dilation(maxima_image, footprint=strel)
         else:
             labels = maxima_image
-        cplabels = [
-            dict(
-                name="Detected maxima",
-                labels=[labels],
-                mode="alpha",
-                alpha_value=1,
-                alpha_colormap=cmap,
-            )
-        ]
+
+        overlay_display = overlay_labels(overlay_base, labels, opacity=numpy.max(overlay_base))
+        
         title = "Overlay"
         figure.subplot_imshow_grayscale(
-            0, 1, overlay_base, title, cplabels=cplabels, sharexy=ax
+            0, 1, overlay_display, title, colormap=None, sharexy=ax
         )
 
     def update_settings(self, settings):

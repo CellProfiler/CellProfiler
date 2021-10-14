@@ -23,10 +23,13 @@ DisableProgramGroupPage=yes
 LicenseFile=..\..\LICENSE
 OutputBaseFilename=CellProfiler-Windows-{#MyAppVersion}
 SetupIconFile=..\..\cellprofiler\data\icons\CellProfiler.ico
+UninstallDisplayIcon={app}\cellprofiler\data\icons\CellProfiler.ico
 Compression=lzma
 SolidCompression=yes
 DisableDirPage=no
 ChangesEnvironment=yes
+ChangesAssociations=yes
+WizardStyle=modern
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -45,4 +48,13 @@ Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
-Root: HKCU; Subkey: "Environment"; ValueType: string; ValueName: "CP_JAVA_HOME"; ValueData: "{app}\java"; Flags: createvalueifdoesntexist
+Root: HKA; Subkey: "Software\Classes\.cpproj\OpenWithProgids"; ValueType: string; ValueName: "CellProfiler.cpproj"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\.cppipe\OpenWithProgids"; ValueType: string; ValueName: "CellProfiler.cppipe"; ValueData: ""; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\CellProfiler.cpproj"; ValueType: string; ValueName: ""; ValueData: "CellProfiler Project"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\CellProfiler.cppipe"; ValueType: string; ValueName: ""; ValueData: "CellProfiler Pipeline"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\CellProfiler.cpproj\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\CellProfiler.exe,0"
+Root: HKA; Subkey: "Software\Classes\CellProfiler.cppipe\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\CellProfiler.exe,0"
+Root: HKA; Subkey: "Software\Classes\CellProfiler.cpproj\shell\open\command"; ValueType: string; ValueName: ""; ValueData: "cmd /c ""{drive:{app}} & ""{app}\CellProfiler.exe"" ""%1"""""
+Root: HKA; Subkey: "Software\Classes\CellProfiler.cppipe\shell\open\command"; ValueType: string; ValueName: ""; ValueData: "cmd /c ""{drive:{app}} & ""{app}\CellProfiler.exe"" ""%1"""""
+Root: HKA; Subkey: "Software\Classes\Applications\CellProfiler.exe\SupportedTypes"; ValueType: string; ValueName: ".cpproj"; ValueData: ""
+Root: HKA; Subkey: "Software\Classes\Applications\CellProfiler.exe\SupportedTypes"; ValueType: string; ValueName: ".cppipe"; ValueData: ""

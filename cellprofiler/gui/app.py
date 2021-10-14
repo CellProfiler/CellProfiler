@@ -106,7 +106,7 @@ class App(wx.App):
 
             set_telemetry_prompt(False)
 
-        if self.frame.startup_blurb_frame.IsShownOnScreen():
+        if self.frame.startup_blurb_frame is not None and self.frame.startup_blurb_frame.IsShownOnScreen():
             self.frame.startup_blurb_frame.Raise()
 
         return True

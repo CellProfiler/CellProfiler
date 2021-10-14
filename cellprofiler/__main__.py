@@ -24,7 +24,9 @@ from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.object import ObjectSet
 from cellprofiler_core.pipeline import LoadException
 from cellprofiler_core.pipeline import Pipeline
-from cellprofiler_core.preferences import get_image_set_file, get_temporary_directory
+from cellprofiler_core.preferences import get_image_set_file
+from cellprofiler_core.preferences import get_temporary_directory
+from cellprofiler_core.preferences import set_conserve_memory
 from cellprofiler_core.preferences import get_omero_port
 from cellprofiler_core.preferences import get_omero_server
 from cellprofiler_core.preferences import get_omero_session_id
@@ -193,6 +195,10 @@ def main(args=None):
 
     if options.plugins_directory is not None:
         set_plugin_directory(options.plugins_directory, globally=False)
+
+    if options.conserve_memory is not None:
+        set_conserve_memory(options.conserve_memory, globally=False)
+
 
     if not options.allow_schema_write:
         set_allow_schema_write(False)
@@ -384,6 +390,13 @@ def parse_args(args):
     )
 
     parser.add_option(
+        "--conserve-memory",
+        dest="conserve_memory",
+        default=None,
+        help="CellProfiler will attempt to release unused memory after each image set.",
+    )
+
+    parser.add_option(
         "--version",
         dest="print_version",
         default=False,
@@ -509,19 +522,11 @@ def parse_args(args):
     )
 
     options, result_args = parser.parse_args(args[1:])
-
-    if sys.platform == "darwin" and len(args) == 2:
-        if args[1].lower().endswith(".cpproj"):
-            # Assume fakey open of .cpproj and OS can't be configured to
-            # add the switch as it can in Windows.
-            options.project_filename = args[1]
-
-            result_args = []
-        elif args[1].lower().endswith(".cpproj"):
+    if len(args) == 2:
+        if args[1].lower().endswith((".cpproj", ".cppipe")):
+            # Opening a file with CellProfiler will supply the file as an argument
             options.pipeline_filename = args[1]
-
             result_args = []
-
     return options, result_args
 
 

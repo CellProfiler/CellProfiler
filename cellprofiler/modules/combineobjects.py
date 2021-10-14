@@ -26,7 +26,7 @@ segments will be reassigned as seperate objects.
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           NO
+YES          YES           NO
 ============ ============ ===============
 
 """
@@ -71,7 +71,7 @@ class CombineObjects(Identify):
             doc="""\
 When combining sets of objects, it is possible that both sets had an object in the
 same location. Use this setting to choose how to handle objects which overlap with
-eachother.
+each other.
         
 - Selecting "Merge" will make overlapping objects combine into a single object, taking
   on the label of the object from the initial set. When an added object would overlap
@@ -116,12 +116,14 @@ subsequent modules.""",
 
         objects_y = workspace.object_set.get_objects(self.objects_y.value)
 
+        dimensions = objects_x.dimensions
+
         assert (
             objects_x.shape == objects_y.shape
         ), "Objects sets must have the same dimensions"
 
-        labels_x = objects_x.segmented.copy()
-        labels_y = objects_y.segmented.copy()
+        labels_x = objects_x.segmented.copy().astype("uint16")
+        labels_y = objects_y.segmented.copy().astype("uint16")
 
         output = self.combine_arrays(labels_x, labels_y)
         output_labels = skimage.morphology.label(output)
@@ -142,9 +144,10 @@ subsequent modules.""",
             workspace.display_data.input_object_y = objects_y.segmented
             workspace.display_data.output_object_name = self.output_object.value
             workspace.display_data.output_object = output_objects.segmented
+            workspace.display_data.dimensions = dimensions
 
     def display(self, workspace, figure):
-        figure.set_subplots((2, 2))
+        figure.set_subplots(dimensions=workspace.display_data.dimensions, subplots=(2, 2))
         cmap = figure.return_cmap()
 
         ax = figure.subplot_imshow_labels(
@@ -188,16 +191,18 @@ subsequent modules.""",
 
         # Resolve non-conflicting labels first
         undisputed = numpy.logical_xor(labels_x > 0, labels_y > 0)
-        for label in indices_x:
-            mapped = labels_x == label
-            if numpy.all(undisputed[mapped]):
-                output[mapped] = label
-                labels_x[mapped] = 0
-        for label in indices_y:
-            mapped = labels_y == label
-            if numpy.all(undisputed[mapped]):
-                output[mapped] = label
-                labels_y[mapped] = 0
+
+        undisputed_x = numpy.setdiff1d(indices_x, labels_x[~undisputed])
+        mask = numpy.isin(labels_x, undisputed_x)
+        output = numpy.where(mask, labels_x, output)
+        labels_x[mask] = 0
+
+        undisputed_y = numpy.setdiff1d(indices_y, labels_y[~undisputed])
+        mask = numpy.isin(labels_y, undisputed_y)
+        output = numpy.where(mask, labels_y, output)
+        labels_y[mask] = 0
+
+        is_2d = labels_x.ndim == 2
 
         # Resolve conflicting labels
         if method == "Discard":
@@ -207,18 +212,48 @@ subsequent modules.""",
             to_segment = numpy.logical_or(labels_x > 0, labels_y > 0)
             disputed = numpy.logical_and(labels_x > 0, labels_y > 0)
             seeds = numpy.add(labels_x, labels_y)
+            # Find objects which will be completely removed due to 100% overlap.
+            will_be_lost = numpy.setdiff1d(labels_x[disputed], labels_x[~disputed])
+            # Check whether this was because an identical object is in both arrays.
+            for label in will_be_lost:
+                x_mask = labels_x == label
+                y_lab = numpy.unique(labels_y[x_mask])
+                if not y_lab or len(y_lab) > 1:
+                    # Labels are not identical
+                    continue
+                else:
+                    # Get mask of object on y, check if identical to x
+                    y_mask = labels_y == y_lab[0]
+                    if numpy.array_equal(x_mask, y_mask):
+                        # Label is identical
+                        output[x_mask] = label
+                        to_segment[x_mask] = False
             seeds[disputed] = 0
-            distances, (i, j) = scipy.ndimage.distance_transform_edt(
-                seeds == 0, return_indices=True
-            )
-            output[to_segment] = seeds[i[to_segment], j[to_segment]]
+            if is_2d:
+                distances, (i, j) = scipy.ndimage.distance_transform_edt(
+                    seeds == 0, return_indices=True
+                )
+                output[to_segment] = seeds[i[to_segment], j[to_segment]]
+            else:
+                distances, (i, j, v) = scipy.ndimage.distance_transform_edt(
+                    seeds == 0, return_indices=True
+                )
+                output[to_segment] = seeds[i[to_segment], j[to_segment], v[to_segment]]
+
 
         elif method == "Merge":
             to_segment = numpy.logical_or(labels_x > 0, labels_y > 0)
-            distances, (i, j) = scipy.ndimage.distance_transform_edt(
-                labels_x == 0, return_indices=True
-            )
-            output[to_segment] = labels_x[i[to_segment], j[to_segment]]
+            if is_2d:
+                distances, (i, j) = scipy.ndimage.distance_transform_edt(
+                    labels_x == 0, return_indices=True
+                )
+                output[to_segment] = labels_x[i[to_segment], j[to_segment]]
+            else:
+                distances, (i, j, v) = scipy.ndimage.distance_transform_edt(
+                    labels_x == 0, return_indices=True
+                )
+                output[to_segment] = labels_x[i[to_segment], j[to_segment], v[to_segment]]
+
 
         return output
 
@@ -232,3 +267,6 @@ subsequent modules.""",
 
     def get_measurement_columns(self, pipeline):
         return get_object_measurement_columns(self.output_object.value)
+
+    def volumetric(self):
+        return True

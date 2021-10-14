@@ -546,7 +546,7 @@ class PipelineListView(object):
             if module.module_num == module_num:
                 break
         else:
-            logging.warn("Could not find module %d" % module_num)
+            logging.warning("Could not find module %d" % module_num)
             return
         ctrl, idx = self.get_ctrl_and_index(module)
         ctrl.Select(idx, selected)

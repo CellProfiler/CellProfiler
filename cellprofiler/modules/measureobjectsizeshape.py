@@ -63,6 +63,8 @@ ellipse with the same second-moments as each object.
    each region in the image.
 -  *FormFactor:* *(2D only)* Calculated as 4\*π\*Area/Perimeter\ :sup:`2`. Equals 1
    for a perfectly circular object.
+-  *Convex Area:* The area of a convex polygon containing the whole object.
+   Best imagined as a rubber band stretched around the object. 
 -  *Solidity:* The proportion of the pixels in the convex hull that are
    also in the object, i.e., *ObjectArea/ConvexHullArea*.
 -  *Extent:* The proportion of the pixels (2D) or voxels (3D) in the bounding box
@@ -100,10 +102,9 @@ ellipse with the same second-moments as each object.
 -  *Orientation:* *(2D only)* The angle (in degrees ranging from -90 to 90 degrees)
    between the x-axis and the major axis of the ellipse that has the
    same second-moments as the region.
--  *Compactness:* *(2D only)* The mean squared distance of the object’s pixels from
-   the centroid divided by the area. A filled circle will have a
-   compactness of 1, with irregular objects or objects with holes having
-   a value greater than 1.
+-  *Compactness:* *(2D only)* Calculated as Perimeter\ :sup:`2`/4\*π\*Area, related to 
+   Form Factor. A filled circle will have a compactness of 1, with irregular objects or 
+   objects with holes having a value greater than 1.
 -  *MaximumRadius:* *(2D only)* The maximum distance of any pixel in the object to
    the closest pixel outside of the object. For skinny objects, this is
    1/2 of the maximum width of the object.
@@ -201,6 +202,7 @@ F_VOLUME = "Volume"
 F_SURFACE_AREA = "SurfaceArea"
 F_ECCENTRICITY = "Eccentricity"
 F_SOLIDITY = "Solidity"
+F_CONVEX_AREA = "ConvexArea"
 F_EXTENT = "Extent"
 F_CENTER_X = "Center_X"
 F_CENTER_Y = "Center_Y"
@@ -294,6 +296,7 @@ F_STD_2D = [
     F_ECCENTRICITY,
     F_FORM_FACTOR,
     F_SOLIDITY,
+    F_CONVEX_AREA,
     F_COMPACTNESS,
     F_BBOX_AREA,
 ]
@@ -550,6 +553,7 @@ module.""".format(
                 "equivalent_diameter",
                 "extent",
                 "eccentricity",
+                "convex_area",
                 "solidity",
                 "euler_number",
             ]
@@ -672,7 +676,7 @@ module.""".format(
                 F_MAJOR_AXIS_LENGTH: props["major_axis_length"],
                 F_MINOR_AXIS_LENGTH: props["minor_axis_length"],
                 F_ECCENTRICITY: props["eccentricity"],
-                F_ORIENTATION: props["orientation"],
+                F_ORIENTATION: props["orientation"] * (180 / numpy.pi),
                 F_CENTER_X: props["centroid-1"],
                 F_CENTER_Y: props["centroid-0"],
                 F_BBOX_AREA: props["bbox_area"],
@@ -688,6 +692,7 @@ module.""".format(
                 F_MAXIMUM_RADIUS: max_radius,
                 F_MEAN_RADIUS: mean_radius,
                 F_MEDIAN_RADIUS: median_radius,
+                F_CONVEX_AREA: props["convex_area"],
                 F_MIN_FERET_DIAMETER: min_feret_diameter,
                 F_MAX_FERET_DIAMETER: max_feret_diameter,
                 F_EQUIVALENT_DIAMETER: props["equivalent_diameter"],

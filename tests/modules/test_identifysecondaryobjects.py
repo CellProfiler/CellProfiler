@@ -691,7 +691,7 @@ def test_measurements_no_new_primary():
         features = module.get_measurements(None, INPUT_OBJECTS_NAME, "Children")
         assert len(features) == 1
         assert (
-            features[0] == FF_COUNT % OUTPUT_OBJECTS_NAME
+            features[0] == "%s_Count" % OUTPUT_OBJECTS_NAME
         )
 
         features = module.get_measurements(None, OUTPUT_OBJECTS_NAME, "Parent")
@@ -826,8 +826,8 @@ def test_measurements_new_primary():
         [
             any([x == y for x in features])
             for y in (
-                FF_COUNT % OUTPUT_OBJECTS_NAME,
-                FF_COUNT % NEW_OBJECTS_NAME,
+                "%s_Count" % OUTPUT_OBJECTS_NAME,
+                "%s_Count" % NEW_OBJECTS_NAME,
             )
         ]
     )
@@ -1331,16 +1331,16 @@ def test_relationships_missing():
         )
         assert len(result) == 2
         for i in range(2):
-            object_number = i + 1
-            if object_number >= missing:
-                object_number += 1
+            first_object_number = second_object_number = i + 1
+            if first_object_number >= missing:
+                first_object_number += 1
             assert result[R_FIRST_IMAGE_NUMBER][i] == 1
             assert result[R_SECOND_IMAGE_NUMBER][i] == 1
             assert (
                 result[R_FIRST_OBJECT_NUMBER][i]
-                == object_number
+                == first_object_number
             )
             assert (
                 result[R_SECOND_OBJECT_NUMBER][i]
-                == object_number
+                == second_object_number
             )

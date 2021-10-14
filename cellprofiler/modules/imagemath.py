@@ -56,6 +56,7 @@ O_DIVIDE = "Divide"
 O_AVERAGE = "Average"
 O_MINIMUM = "Minimum"
 O_MAXIMUM = "Maximum"
+O_STDEV = "Standard Deviation"
 O_INVERT = "Invert"
 O_COMPLEMENT = "Complement"
 O_LOG_TRANSFORM_LEGACY = "Log transform (legacy)"
@@ -106,6 +107,7 @@ class ImageMath(ImageProcessing):
                 O_AVERAGE,
                 O_MINIMUM,
                 O_MAXIMUM,
+                O_STDEV,
                 O_INVERT,
                 O_LOG_TRANSFORM,
                 O_LOG_TRANSFORM_LEGACY,
@@ -136,6 +138,8 @@ last, e.g., for “Divide”, (Image1 / Image2) / Image3
    pixel location.
 -  *%(O_MAXIMUM)s:* Returns the element-wise maximum value at each
    pixel location.
+-  *%(O_STDEV)s:* Returns the element-wise standard deviation value at each
+   pixel location.   
 -  *%(O_INVERT)s:* Subtracts the image intensities from 1. This makes
    the darkest color the brightest and vice-versa. Note that if a
    mask has been applied to the image, the mask will also be inverted.
@@ -428,7 +432,7 @@ is applied before other operations.""",
 
     def use_logical_operation(self, pixel_data):
         return all(
-            [pd.dtype == numpy.bool for pd in pixel_data if not numpy.isscalar(pd)]
+            [pd.dtype == bool for pd in pixel_data if not numpy.isscalar(pd)]
         )
 
     def run(self, workspace):
@@ -555,6 +559,12 @@ is applied before other operations.""",
             if opval == O_AVERAGE:
                 if not self.use_logical_operation(pixel_data):
                     output_pixel_data /= sum(image_factors)
+        elif opval == O_STDEV:
+            pixel_array = numpy.array(pixel_data)
+            output_pixel_data = numpy.std(pixel_array,axis=0)
+            if not self.ignore_mask:
+                mask_array = numpy.array(masks)
+                output_mask = mask_array.all(axis=0) 
         elif opval == O_INVERT:
             output_pixel_data = skimage.util.invert(output_pixel_data)
         elif opval == O_NOT:
@@ -604,6 +614,11 @@ is applied before other operations.""",
             if smallest_image.has_masking_objects
             else None
         )
+
+        if not self.ignore_mask:
+            if type(output_mask) == numpy.ndarray:
+                output_pixel_data = output_pixel_data * output_mask
+
         output_image = Image(
             output_pixel_data,
             mask=output_mask,

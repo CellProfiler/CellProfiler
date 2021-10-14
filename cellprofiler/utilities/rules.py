@@ -138,3 +138,19 @@ class Rules(object):
             if score.shape[0] > partial_score.shape[0]:
                 score[score_len:, :] = numpy.NAN
         return score
+
+    def get_classes(self):
+        if len(self.rules) == 0:
+            return []
+        return [str(i + 1) for i in range(self.rules[0].weights.shape[0])]
+
+    def get_features(self):
+        return [rule.feature for rule in self.rules]
+
+    def load(self, rules):
+        # Convert a FastGentleBoosting classifier object into a set of rules
+        for name, th, pos, neg, _ in rules:
+            object_name, feature = name.split('_', 1)
+            weights = numpy.vstack((pos, neg))
+            rule = self.Rule(object_name, feature, ">", th, weights)
+            self.rules.append(rule)

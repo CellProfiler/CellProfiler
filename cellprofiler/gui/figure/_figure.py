@@ -1059,13 +1059,13 @@ class Figure(wx.Frame):
 
                 def on_slider(event):
                     if event.Id == 0:
-                        sliderminbox.SetValue(slidermin.GetValue())
+                        sliderminbox.ChangeValue(slidermin.GetValue())
                         sliderminbox.Update()
                     elif event.Id == 1:
-                        slidermaxbox.SetValue(slidermax.GetValue())
+                        slidermaxbox.ChangeValue(slidermax.GetValue())
                         slidermaxbox.Update()
                     elif event.Id == 2:
-                        slidernormbox.SetValue(slidernorm.GetValue())
+                        slidernormbox.ChangeValue(slidernorm.GetValue())
                         slidernormbox.Update()
                     event.Skip()
 
@@ -1171,7 +1171,7 @@ class Figure(wx.Frame):
 
                 # For small images we can draw fast enough for a live preview.
                 # For large images, we draw when the slider is released.
-                if size[0] * size[1] > 262144 or self.dimensions > 2:  # 512x512
+                if size[0] * size[1] > 1048576 or self.dimensions > 2:  # 1024x1024
                     dlg.Bind(wx.EVT_SCROLL_THUMBRELEASE, apply_contrast)
                     dlg.Bind(wx.EVT_SCROLL_CHANGED, apply_contrast)
                 else:
@@ -1783,7 +1783,7 @@ class Figure(wx.Frame):
 
         # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
         if image.shape[2] > 3:
-            logging.warn(
+            logging.warning(
                 "Multichannel display is only supported for RGB (3-channel) data."
                 " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
                     image.shape[2]
@@ -1930,7 +1930,7 @@ class Figure(wx.Frame):
             else:
                 shape = [numpy.max(ijv[:, 0]) + 1, numpy.max(ijv[:, 1]) + 1]
 
-        image = numpy.zeros(list(shape) + [3], numpy.float)
+        image = numpy.zeros(list(shape) + [3], float)
 
         if len(ijv) > 0:
             cm = matplotlib.cm.get_cmap(get_default_colormap())
@@ -2064,7 +2064,7 @@ class Figure(wx.Frame):
 
                 image = numpy.dstack(image)
             else:
-                if in_range[0].dtype == numpy.bool:
+                if in_range[0].dtype == bool:
                     image = skimage.exposure.rescale_intensity(image)
                 else:
                     image = skimage.exposure.rescale_intensity(image, in_range=in_range)
@@ -2585,9 +2585,7 @@ class Figure(wx.Frame):
         return plot
 
     def is_color_image(self, image):
-        if self.dimensions == 2:
-            return image.ndim == 3 and image.shape[2] >= 2
-        elif image.ndim == 3:
-            return image.shape[2] >= 2
+        if self.dimensions < image.ndim or len(image.shape) > image.ndim:
+            return image.shape[-1] >= 2
         else:
-            return image.ndim == 4 and image.shape[3] >= 2
+            return False

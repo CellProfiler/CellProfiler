@@ -68,7 +68,7 @@ def _neighbors(image):
 
     mask = padding > 0
 
-    padding = padding.astype(numpy.float)
+    padding = padding.astype(float)
 
     if image.ndim == 2:
         response = 3 ** 2 * scipy.ndimage.uniform_filter(padding) - 1
@@ -231,7 +231,7 @@ You can create a morphological skeleton with the
     def measure(self, image, workspace):
         data = image.pixel_data
 
-        data = data.astype(numpy.bool)
+        data = data.astype(bool)
 
         measurements = workspace.measurements
 

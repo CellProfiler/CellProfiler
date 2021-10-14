@@ -999,6 +999,54 @@ def test_null_measurements(output_dir):
         fd.close()
 
 
+def test_string_measurements(output_dir):
+    # Test that we can extract string variables without them becoming bytes
+    path = os.path.join(output_dir, "my_file.csv")
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
+    module.set_module_num(1)
+    module.wants_everything.value = False
+    module.wants_prefix.value = False
+    module.object_groups[0].name.value = "my_object"
+    module.object_groups[0].file_name.value = path
+    module.object_groups[0].wants_automatic_file_name.value = False
+    module.nan_representation.value = (
+        cellprofiler.modules.exporttospreadsheet.NANS_AS_NANS
+    )
+    m = cellprofiler_core.measurement.Measurements()
+    numpy.random.seed(0)
+    mvalues = ["yes", "no"]
+    m.add_measurement("my_object", "my_measurement", mvalues)
+    m.add_image_measurement("Count_my_object", 2)
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    image_set = image_set_list.get_image_set(0)
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
+        make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
+    )
+    module.post_run(workspace)
+    try:
+        fd = open(path, "r")
+        reader = csv.reader(fd, delimiter=module.delimiter_char)
+        header = next(reader)
+        assert len(header) == 3
+        assert header[0] == "ImageNumber"
+        assert header[1] == "ObjectNumber"
+        assert header[2] == "my_measurement"
+        row = next(reader)
+        assert len(row) == 3
+        assert type(row[2]) == str
+        assert row[2] == mvalues[0]
+        row = next(reader)
+        assert len(row) == 3
+        assert type(row[2]) == str
+        assert row[2] == mvalues[1]
+        with pytest.raises(StopIteration):
+            reader.__next__()
+    finally:
+        fd.close()
+
+
 def test_nan_image_measurements(output_dir):
     path = os.path.join(output_dir, "my_file.csv")
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()

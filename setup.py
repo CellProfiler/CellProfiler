@@ -71,7 +71,7 @@ setuptools.setup(
         "inflect==2.1",
         "Jinja2==2.11.2",
         "joblib==0.13",
-        "mahotas==1.4",
+        "mahotas==1.4.11",
         "matplotlib==3.1.3",
         "mysqlclient==1.4.6",
         "numpy==1.20.1",

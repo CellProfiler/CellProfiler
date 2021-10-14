@@ -70,7 +70,7 @@ setuptools.setup(
         "imageio==2.5",
         "inflect==2.1",
         "Jinja2==2.11.2",
-        "joblib==0.13",
+        "joblib==1.1.0",
         "mahotas==1.4.11",
         "matplotlib==3.1.3",
         "mysqlclient==1.4.6",

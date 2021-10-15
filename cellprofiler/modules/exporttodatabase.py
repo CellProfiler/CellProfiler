@@ -4282,6 +4282,7 @@ CREATE TABLE %s (
                         object_count = "Image_Count_%s" % self.location_object.value
                         cell_x_loc = "%s_Location_Center_X" % self.location_object.value
                         cell_y_loc = "%s_Location_Center_Y" % self.location_object.value
+                        cell_z_loc = "%s_Location_Center_Z" % self.location_object.value
                     elif self.separate_object_tables == OT_PER_OBJECT:
                         cell_tables = "%sPer_%s" % (
                             self.get_table_prefix(),
@@ -4293,6 +4294,7 @@ CREATE TABLE %s (
                         object_count = "Image_Count_%s" % object_name
                         cell_x_loc = "%s_Location_Center_X" % object_name
                         cell_y_loc = "%s_Location_Center_Y" % object_name
+                        cell_z_loc = "%s_Location_Center_Z" % object_name
             else:
                 """If object_name = None, it's either per_image only or a view """
                 if self.objects_choice == O_NONE:
@@ -4303,6 +4305,7 @@ CREATE TABLE %s (
                     object_count = ""
                     cell_x_loc = ""
                     cell_y_loc = ""
+                    cell_z_loc = ""
                 elif self.separate_object_tables == OT_VIEW:
                     cell_tables = "%sPer_Object" % (self.get_table_prefix())
                     object_id = C_OBJECT_NUMBER
@@ -4311,6 +4314,7 @@ CREATE TABLE %s (
                     object_count = "Image_Count_%s" % self.location_object.value
                     cell_x_loc = "%s_Location_Center_X" % self.location_object.value
                     cell_y_loc = "%s_Location_Center_Y" % self.location_object.value
+                    cell_z_loc = "%s_Location_Center_Z" % self.location_object.value
 
             file_name = self.make_full_filename(filename, workspace)
             unique_id = C_IMAGE_NUMBER
@@ -4587,6 +4591,8 @@ timepoint_id  = Image_Group_Index
 # object within an image.
 cell_x_loc    = {cell_x_loc}
 cell_y_loc    = {cell_y_loc}
+cell_z_loc    = {cell_z_loc}
+
 # ==== Image Path and File Name Columns ====
 # Classifier needs to know where to find the images from your experiment.
 # Specify the column names from your per-image table that contain the image
@@ -4760,6 +4766,15 @@ force_bioformats = no
 # fetching and randomisation.
 
 use_legacy_fetcher = no
+
+
+# ======== Process as 3D (visualize a different z position per object) ========
+# OPTIONAL
+# [yes/no]  In 3D datasets, this optionally displays in CPA classifier a separate
+# z slice for each object depending on that object's center position in z. Useful
+# for classifying cells from 3D data.
+
+process_3D = {process_3D}
 
     """ % (
                 locals()

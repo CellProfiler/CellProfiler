@@ -4181,6 +4181,8 @@ CREATE TABLE %s (
                     self.properties[k] = v
 
         result = []
+        #Is image processed as 3D?
+        process_3D = self.process_as_3d
         #
         # Get appropriate object names
         #

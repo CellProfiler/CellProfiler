@@ -4182,7 +4182,7 @@ CREATE TABLE %s (
 
         result = []
         #Is image processed as 3D?
-        process_3D = self.process_as_3d
+        process_3D = workspace.pipeline.volumetric()
         #
         # Get appropriate object names
         #

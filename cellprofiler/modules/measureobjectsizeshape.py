@@ -777,8 +777,12 @@ module.""".format(
             # SurfaceArea
             surface_areas = numpy.zeros(len(props["label"]))
             for index, label in enumerate(props["label"]):
-                volume = numpy.zeros_like(labels, dtype="bool")
-                volume[labels == label] = True
+                # this seems less elegant than you might wish, given that regionprops returns a slice,
+                # but we need to expand the slice out by one voxel in each direction, or surface area freaks out
+                volume= labels[max(props['bbox-0'][index]-1,0):min(props['bbox-3'][index]+1,labels.shape[0]),
+                          max(props['bbox-1'][index]-1,0):min(props['bbox-4'][index]+1,labels.shape[1]),
+                          max(props['bbox-2'][index]-1,0):min(props['bbox-5'][index]+1,labels.shape[2])] 
+                volume = volume == label
                 verts, faces, _, _ = skimage.measure.marching_cubes_lewiner(
                     volume,
                     spacing=objects.parent_image.spacing

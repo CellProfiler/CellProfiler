@@ -185,6 +185,7 @@ This option reverses the foreground/background relationship of the mask.
             parent_image=orig_image,
             masking_objects=objects,
             dimensions=orig_image.dimensions,
+            convert=False
         )
 
         image_set.add(self.masked_image_name.value, masked_image)

@@ -13,13 +13,13 @@ SHELL := bash
 CellProfiler:
 	git clone https://github.com/glencoesoftware/CellProfiler
 
-	cd $@ && git checkout compat-4-0
+	cd $@ && git checkout compat-4-2
 
 .PHONY: dependencies
 dependencies: CellProfiler
 
 	git clone https://github.com/glencoesoftware/core.git
-	cd core && git checkout compat-4-0
+	cd core && git checkout compat-4-2
 	pip3 install --editable "core[test]" --upgrade
 
 	pip3 install --editable "CellProfiler[build, test]" --upgrade

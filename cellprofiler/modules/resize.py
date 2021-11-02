@@ -281,7 +281,7 @@ resized with the same settings as the first image.""",
     def resized_shape(self, image, workspace):
         image_pixels = image.pixel_data
 
-        shape = numpy.array(image_pixels.shape).astype(numpy.float)
+        shape = numpy.array(image_pixels.shape).astype(float)
 
         if self.size_method.value == R_BY_FACTOR:
             factor = self.resizing_factor.value

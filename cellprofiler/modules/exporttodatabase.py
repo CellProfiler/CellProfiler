@@ -732,7 +732,8 @@ images. This option will do the following:
    **SaveImages** will be included.
 -  The CellProfiler image name will be used for the *image\_name* field.
 -  A channel color listed in the *image\_channel\_colors* field will be
-   assigned to the image by default order.
+   assigned to the image by default order. Multichannel images will be 
+   added as separate R, G and B channels.
 
 Select "*{NO}*" to specify which images should be included or to
 override the automatic values.""".format(
@@ -1405,7 +1406,9 @@ Enter a name for the specified image.""",
                 doc="""\
 *(Used only if creating a properties file and specifying the image information)*
 
-Enter a color to display this channel.""",
+Enter a color to display this channel.
+
+Multichannel images will use this color for all 3 image components""",
             ),
         )
 
@@ -2339,6 +2342,12 @@ available:
         if pipeline.test_mode:
             return True
 
+        # Clear out any redundant records from previous runs.
+        if workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
+            workspace.measurements.remove_measurement("Experiment", "ExportToDb_Images")
+        if workspace.measurements.hdf5_dict.has_feature("ExportToDb", "ExportToDb_Channels"):
+            workspace.measurements.remove_measurement("ExportToDb", "ExportToDb_Channels")
+
         needs_close = False
         try:
             # This is necessary to prevent python from thinking cellprofiler doesn't exist in this scope
@@ -2533,12 +2542,12 @@ available:
 
                 if (
                     issubclass(pixels.dtype.type, numpy.floating)
-                    or pixels.dtype == numpy.bool
+                    or pixels.dtype == bool
                 ):
                     factor = 255
                     if (
                         self.auto_scale_thumbnail_intensities
-                        and pixels.dtype != numpy.bool
+                        and pixels.dtype != bool
                     ):
                         pixels = (pixels - pixels.min()) / pixels.max()
                 else:
@@ -2572,6 +2581,8 @@ available:
                 )
         if workspace.pipeline.test_mode:
             return
+        if self.save_cpa_properties.value:
+            self.record_image_channels(workspace)
         if self.db_type == DB_MYSQL and not workspace.pipeline.test_mode:
             try:
                 self.connection, self.cursor = connect_mysql(
@@ -2839,6 +2850,9 @@ available:
             self.cursor = None
 
     def post_run(self, workspace):
+        if self.show_window:
+            workspace.display_data.header = ["Output", "File Location"]
+            workspace.display_data.columns = []
         if self.save_cpa_properties.value:
             self.write_properties_file(workspace)
         if self.create_workspace_file.value:
@@ -3831,7 +3845,8 @@ CREATE TABLE %s (
                             values = list(values) + [None] * (max_count - len(values))
                         values = [
                             None
-                            if v is None or numpy.isnan(v) or numpy.isinf(v)
+                            if v is None or
+                            (numpy.issubdtype(type(v), numpy.number) and (numpy.isnan(v) or numpy.isinf(v)))
                             else str(v)
                             for v in values
                         ]
@@ -4085,6 +4100,9 @@ CREATE TABLE %s (
             )
 
     def display_post_run(self, workspace, figure):
+        if not workspace.display_data.columns:
+            # Nothing to display
+            return
         figure.set_subplots((1, 1))
         figure.subplot_table(
             0,
@@ -4127,6 +4145,8 @@ CREATE TABLE %s (
             fid = open(properties.file_name, "wt")
             fid.write(properties.text)
             fid.close()
+            if self.show_window:
+                workspace.display_data.columns.append(("Properties_File", properties.file_name))
 
     def get_property_file_text(self, workspace):
         """Get the text for all property files
@@ -4236,7 +4256,7 @@ CREATE TABLE %s (
             db_info += "db_host      = %(db_host)s\n" % (locals())
             db_info += "db_name      = %(db_name)s\n" % (locals())
             db_info += "db_user      = %(db_user)s\n" % (locals())
-            db_info += "db_password    = %(db_password)s" % (locals())
+            db_info += "db_passwd    = %(db_password)s" % (locals())
         elif self.db_type == DB_SQLITE:
             db_info = "db_type         = %(db_type)s\n" % (locals())
             db_info += "db_sqlite_file  = %(db_sqlite_file)s" % (locals())
@@ -4245,6 +4265,11 @@ CREATE TABLE %s (
         classification_type = (
             "image" if self.properties_classification_type.value == CT_IMAGE else ""
         )
+
+        if not object_names:
+            # If we're in pre-run phase, store the image names we'll need
+            if not workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
+                workspace.measurements.add_experiment_measurement("ExportToDb_Images", default_image_names)
 
         for object_name in object_names:
             if object_name:
@@ -4313,18 +4338,30 @@ CREATE TABLE %s (
                         for name in default_image_names
                     ]
                 )
+                channels_per_image = []
+
+                if workspace.measurements.hdf5_dict.has_feature("ExportToDb", "ExportToDb_Channels"):
+                    # We're in the post-run phase, fetch out the image channel counts
+                    images_list = workspace.measurements.get_experiment_measurement("ExportToDb_Images")
+                    if isinstance(images_list, str):
+                        images_list = [images_list]
+                    channels_list = workspace.measurements.get_measurement("ExportToDb", "ExportToDb_Channels")
+                    channels_dict = dict(zip(images_list, channels_list))
+                else:
+                    channels_dict = {}
+
+                for image in default_image_names:
+                    channels_per_image.append(channels_dict.get(image, 1))
+                num_images = sum(channels_per_image)
 
                 # Provide default colors
-                if len(default_image_names) == 1:
-                    image_channel_colors = "gray,"
+                if num_images == 1:
+                    image_channel_colors = ["gray"]
                 else:
-                    image_channel_colors = (
-                        "red, green, blue, cyan, magenta, yellow, gray, "
-                        + ("none, " * 10)
-                    )
+                    image_channel_colors = ["red", "green", "blue", "cyan", "magenta", "yellow", "gray"]
                     num_images = (
-                        len(default_image_names)
-                        + len(
+                        num_images
+                        + (len(
                             set(
                                 [
                                     name
@@ -4332,15 +4369,22 @@ CREATE TABLE %s (
                                 ]
                             ).difference(default_image_names)
                         )
-                        if self.want_image_thumbnails
-                        else 0
+                           if self.want_image_thumbnails
+                           else 0)
                     )
-                    image_channel_colors = ",".join(
-                        image_channel_colors.split(",")[:num_images]
-                    )
-                image_names_csl = ",".join(
-                    default_image_names
-                )  # Convert to comma-separated list
+                if len(image_channel_colors) > num_images:
+                    image_channel_colors = image_channel_colors[:num_images]
+                elif len(image_channel_colors) < num_images:
+                    image_channel_colors += ["none"] * (num_images - len(image_channel_colors))
+
+                # If we're in pre-run phase, store the image names we'll need
+                if not workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
+                    workspace.measurements.add_experiment_measurement("ExportToDb_Images", default_image_names)
+
+                # Convert to comma-separated lists
+                image_names_csl = ",".join(default_image_names)
+                image_channel_colors = ",".join(image_channel_colors)
+                channels_per_image = ",".join(map(str, channels_per_image))
 
                 if self.want_image_thumbnails:
                     selected_thumbs = [
@@ -4367,13 +4411,32 @@ CREATE TABLE %s (
                 user_image_names = []
                 image_channel_colors = []
                 selected_image_names = []
+                channels_per_image = []
+
+                if workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
+                    # We're in the post-run phase, fetch out the image channel counts
+                    images_list = workspace.measurements.get_experiment_measurement("ExportToDb_Images")
+                    if isinstance(images_list, str):
+                        images_list = [images_list]
+                    channels_list = workspace.measurements.get_measurement("ExportToDb", "ExportToDb_Channels")
+                    channels_dict = dict(zip(images_list, channels_list))
+                else:
+                    channels_dict = {}
+
                 for group in self.image_groups:
                     selected_image_names += [group.image_cols.value]
+                    num_channels = channels_dict.get(group.image_cols.value, 1)
+                    channels_per_image.append(num_channels)
                     if group.wants_automatic_image_name:
                         user_image_names += [group.image_cols.value]
                     else:
                         user_image_names += [group.image_name.value]
-                    image_channel_colors += [group.image_channel_colors.value]
+                    image_channel_colors += [group.image_channel_colors.value] * num_channels
+                channels_per_image = ",".join(map(str, channels_per_image))
+
+                # If we're in pre-run phase, store the image names we'll need
+                if not workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
+                    workspace.measurements.add_experiment_measurement("ExportToDb_Images", selected_image_names)
 
                 image_file_cols = ",".join(
                     [
@@ -4487,19 +4550,19 @@ CREATE TABLE %s (
                 self.get_table_prefix() + self.properties_class_table_name.value
             )
 
-            contents = """#%(date)s
+            contents = f"""#{date}
 # ==============================================
 #
-# CellProfiler Analyst 2.0 properties file
+# CellProfiler Analyst 3.0 properties file
 #
 # ==============================================
 
 # ==== Database Info ====
-%(db_info)s
+{db_info}
 
 # ==== Database Tables ====
-image_table   = %(spot_tables)s
-object_table  = %(cell_tables)s
+image_table   = {spot_tables}
+object_table  = {cell_tables}
 
 # ==== Database Columns ====
 # Specify the database column names that contain unique IDs for images and
@@ -4512,19 +4575,18 @@ object_table  = %(cell_tables)s
 #           tables
 # object_id: the object key column from your per-object table
 
-image_id      = %(unique_id)s
-object_id     = %(object_id)s
-plate_id      = %(plate_id)s
-well_id       = %(well_id)s
+image_id      = {unique_id}
+object_id     = {object_id}
+plate_id      = {plate_id}
+well_id       = {well_id}
 series_id     = Image_Group_Number
 group_id      = Image_Group_Number
 timepoint_id  = Image_Group_Index
 
 # Also specify the column names that contain X and Y coordinates for each
 # object within an image.
-cell_x_loc    = %(cell_x_loc)s
-cell_y_loc    = %(cell_y_loc)s
-
+cell_x_loc    = {cell_x_loc}
+cell_y_loc    = {cell_y_loc}
 # ==== Image Path and File Name Columns ====
 # Classifier needs to know where to find the images from your experiment.
 # Specify the column names from your per-image table that contain the image
@@ -4536,21 +4598,36 @@ cell_y_loc    = %(cell_y_loc)s
 # adding those column names here.
 #
 # Note that these lists must have equal length!
-image_path_cols = %(image_path_cols)s
-image_file_cols = %(image_file_cols)s
+image_path_cols = {image_path_cols}
+image_file_cols = {image_file_cols}
 
 # CellProfiler Analyst will now read image thumbnails directly from the database, if chosen in ExportToDatabase.
-image_thumbnail_cols = %(image_thumbnail_cols)s
+image_thumbnail_cols = {image_thumbnail_cols}
 
 # Give short names for each of the channels (respectively)...
-image_names = %(image_names_csl)s
+image_names = {image_names_csl}
 
 # Specify a default color for each of the channels (respectively)
 # Valid colors are: [red, green, blue, magenta, cyan, yellow, gray, none]
-image_channel_colors = %(image_channel_colors)s
+image_channel_colors = {image_channel_colors}
+
+# Number of channels present in each image file?  If left blank, CPA will expect 
+# to find 1 channel per image.
+# eg: If the image specified by the first image_channel_file field is RGB, but
+# the second image had only 1 channel you would set: channels_per_image = 3, 1
+# Doing this would require that you pass 4 values into image_names,
+# image_channel_colors, and image_channel_blend_modes
+channels_per_image  = {channels_per_image}
+
+# How to blend in each channel into the image. Use: add, subtract, or solid.
+# If left blank all channels are blended additively, this is best for 
+# fluorescent images.
+# Subtract or solid may be desirable when you wish to display outlines over a 
+# brightfield image so the outlines are visible against the light background.
+image_channel_blend_modes =
 
 # ==== Image Accesss Info ====
-image_url_prepend = %(image_url)s
+image_url_prepend = {image_url}
 
 # ==== Dynamic Groups ====
 # Here you can define groupings to choose from when classifier scores your experiment.  (e.g., per-well)
@@ -4563,7 +4640,7 @@ image_url_prepend = %(image_url)s
 #   group_SQL_Gene       =  SELECT Per_Image_Table.TableNumber, Per_Image_Table.ImageNumber, Well_ID_Table.gene FROM Per_Image_Table, Well_ID_Table WHERE Per_Image_Table.well=Well_ID_Table.well
 #   group_SQL_Well+Gene  =  SELECT Per_Image_Table.TableNumber, Per_Image_Table.ImageNumber, Well_ID_Table.well, Well_ID_Table.gene FROM Per_Image_Table, Well_ID_Table WHERE Per_Image_Table.well=Well_ID_Table.well
 
-%(group_statements)s
+{group_statements}
 
 # ==== Image Filters ====
 # Here you can define image filters to let you select objects from a subset of your experiment when training the classifier.
@@ -4574,7 +4651,7 @@ image_url_prepend = %(image_url)s
 #   filter_SQL_EMPTY  =  SELECT TableNumber, ImageNumber FROM CPA_per_image, Well_ID_Table WHERE CPA_per_image.well=Well_ID_Table.well AND Well_ID_Table.Gene="EMPTY"
 #   filter_SQL_CDKs   =  SELECT TableNumber, ImageNumber FROM CPA_per_image, Well_ID_Table WHERE CPA_per_image.well=Well_ID_Table.well AND Well_ID_Table.Gene REGEXP 'CDK.*'
 
-%(filter_statements)s
+{filter_statements}
 
 # ==== Meta data ====
 # What are your objects called?
@@ -4583,7 +4660,7 @@ image_url_prepend = %(image_url)s
 object_name  =  cell, cells,
 
 # What size plates were used?  96, 384 or 5600?  This is for use in the PlateViewer. Leave blank if none
-plate_type  = %(plate_type)s
+plate_type  = {plate_type}
 
 # ==== Excluded Columns ====
 # OPTIONAL
@@ -4628,7 +4705,7 @@ image_size =
 # If left blank or set to "object", then Classifier will fetch objects (default).
 # If set to "image", then Classifier will fetch whole images instead of objects.
 
-classification_type  = %(classification_type)s
+classification_type  = {classification_type}
 
 # ======== Auto Load Training Set ========
 # OPTIONAL
@@ -4651,21 +4728,59 @@ area_scoring_column =
 # Classifier to write out class information for each object in the
 # object_table
 
-class_table  = %(class_table)s
+class_table  = {class_table}
 
 # ======== Check Tables ========
 # OPTIONAL
 # [yes/no]  You can ask classifier to check your tables for anomalies such
-# as orphaned objects or missing column indices.  Default is on.
+# as orphaned objects or missing column indices.  Default is off.
 # This check is run when Classifier starts and may take up to a minute if
 # your object_table is extremely large.
 
-check_tables = yes
+check_tables = no
+
+
+# ======== Force BioFormats ========
+# OPTIONAL
+# [yes/no]  By default, CPA will try to use the imageio library to load images
+# which are in supported formats, then fall back to using the older BioFormats
+# loader if something goes wrong. ImageIO is faster but some unusual file
+# compression formats can cause errors when loading. This option forces CPA to
+# always use the BioFormats reader. Try this if images aren't displayed correctly.
+
+force_bioformats = no
+
+
+# ======== Use Legacy Fetcher ========
+# OPTIONAL
+# [yes/no]  In CPA 3.0 the object fetching system has been revised to be more
+# efficient. In the vast majority of cases it should be faster than the previous
+# versions. However, some complex object filters can still cause problems. If you
+# encounter slowdowns this setting allows you to switch back to the old method of
+# fetching and randomisation.
+
+use_legacy_fetcher = no
+
     """ % (
                 locals()
             )
             result.append(Properties(properties_object_name, file_name, contents))
         return result
+
+    def record_image_channels(self, workspace):
+        # We only have access to the image details during the run itself.
+        # Fetch out the images we want in the properties file and log their channel counts.
+        image_list = workspace.measurements.get_experiment_measurement("ExportToDb_Images")
+        channel_list = []
+        if isinstance(image_list, str):
+            image_list = [image_list]
+        for image_name in image_list:
+            img = workspace.image_set.get_image(image_name)
+            if img.multichannel:
+                channel_list.append(img.image.shape[-1])
+            else:
+                channel_list.append(1)
+        workspace.measurements.add_measurement("ExportToDb", "ExportToDb_Channels", channel_list)
 
     def write_workspace_file(self, workspace):
         """If requested, write a workspace file with selected measurements"""
@@ -4773,6 +4888,8 @@ CP version : %d\n""" % int(
 
         fd.write(display_tool_text)
         fd.close()
+        if self.show_window:
+            workspace.display_data.columns.append(("Workspace_File", file_name))
 
     def get_file_path_width(self, workspace):
         """Compute the file name and path name widths needed in table defs"""

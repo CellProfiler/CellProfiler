@@ -1,5 +1,6 @@
 import wx
 from cellprofiler_core import pipeline
+from cellprofiler_core.pipeline.io._v6 import dump
 from cellprofiler_core.pipeline import PipelineLoadCancelledException
 
 
@@ -29,4 +30,8 @@ class Pipeline(pipeline.Pipeline):
 
     def save(self, fd_or_filename, save_image_plane_details=True):
         with open(fd_or_filename, "wt") as fd:
-            super(Pipeline, self).dump(fd, save_image_plane_details)
+            if fd_or_filename.endswith(".json"):
+                dump(self, fd, save_image_plane_details=False)
+            else:
+                super(Pipeline, self).dump(fd, save_image_plane_details)
+

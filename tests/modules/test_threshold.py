@@ -496,7 +496,7 @@ def test_threshold_li_uniform_partial_mask():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:3, 1:3] = True
 
@@ -522,7 +522,7 @@ def test_threshold_li_full_mask():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     workspace, module = make_workspace(data, mask)
 
@@ -598,7 +598,7 @@ def test_threshold_li_adaptive_image_masked():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:3, 1:3] = True
 
@@ -662,7 +662,7 @@ def test_threshold_li_image_log():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:-1, 1:-1] = True
 
@@ -903,7 +903,7 @@ def test_threshold_otsu_full_mask():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     workspace, module = make_workspace(data, mask=mask)
 
@@ -935,7 +935,7 @@ def test_threshold_otsu_partial_mask_uniform_data():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[2:5, 2:5] = True
 
@@ -1009,7 +1009,7 @@ def test_threshold_otsu_image():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:-1, 1:-1] = True
 
@@ -1047,7 +1047,7 @@ def test_threshold_otsu_volume():
 
     data = numpy.random.rand(10, 10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:-1, 1:-1, 1:-1] = True
 
@@ -1090,7 +1090,7 @@ def test_threshold_otsu3_full_mask():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     workspace, module = make_workspace(data, mask=mask)
 
@@ -1124,7 +1124,7 @@ def test_threshold_otsu3_image():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:-1, 1:-1] = True
 
@@ -1168,7 +1168,7 @@ def test_threshold_otsu3_volume():
 
     data = numpy.random.rand(10, 10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:-1, 1:-1, 1:-1] = True
 
@@ -1214,7 +1214,7 @@ def test_threshold_otsu3_image_log():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:-1, 1:-1] = True
 
@@ -1254,7 +1254,7 @@ def test_threshold_otsu3_volume_log():
 
     data = numpy.random.rand(10, 10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:-1, 1:-1, 1:-1] = True
 
@@ -1290,13 +1290,13 @@ def test_threshold_otsu3_volume_log():
         t_local_expected[index] = module._get_adaptive_threshold(
             plane, skimage.filters.threshold_multiotsu, nbins=128,
         )
-    t_local_expected = module._correct_local_threshold(
-        t_local_expected, t_guide_expected
-    )
 
     t_guide_expected = centrosome.threshold.inverse_log_transform(t_guide_expected, d)
     t_local_expected = centrosome.threshold.inverse_log_transform(t_local_expected, d)
 
+    t_local_expected = module._correct_local_threshold(
+        t_local_expected, t_guide_expected
+    )
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected, decimal=5)
 
@@ -1339,7 +1339,7 @@ def test_threshold_sauvola_image_masked():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype=numpy.bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:3, 1:3] = True
 

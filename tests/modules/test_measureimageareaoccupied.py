@@ -170,7 +170,7 @@ def test_objects_volume():
 
 
 def test_image_volume():
-    pixel_data = numpy.zeros((5, 10, 10), dtype=numpy.bool)
+    pixel_data = numpy.zeros((5, 10, 10), dtype=bool)
     pixel_data[:2, :2, :2] = True
     pixel_data[3:, 8:, 8:] = True
 

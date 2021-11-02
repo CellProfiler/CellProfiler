@@ -523,7 +523,7 @@ measured and will result in a undefined value in the output file.
             mask = (
                 image.mask
                 if image.has_mask
-                else numpy.ones_like(image.pixel_data, dtype=numpy.bool)
+                else numpy.ones_like(image.pixel_data, dtype=bool)
             )
             pixel_data = objects.crop_image_similarly(image.pixel_data)
         except ValueError:

@@ -1,6 +1,7 @@
 from cellprofiler_core.constants.measurement import (
     M_LOCATION_CENTER_X,
-    M_LOCATION_CENTER_Y,
+    M_LOCATION_CENTER_Y, C_CHILDREN, C_PARENT, C_LOCATION, C_NUMBER, FTR_OBJECT_NUMBER, C_COUNT, FTR_CENTER_X,
+    FTR_CENTER_Y, FTR_CENTER_Z,
 )
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.preferences import (
@@ -138,7 +139,7 @@ PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 class FilterObjects(ObjectProcessing):
     module_name = "FilterObjects"
 
-    variable_revision_number = 8
+    variable_revision_number = 9
 
     def create_settings(self):
         super(FilterObjects, self).create_settings()
@@ -369,13 +370,32 @@ with data processed as 3D.
             ),
         )
 
+
+        self.keep_removed_objects = Binary(
+            "Keep removed objects as a seperate set?",
+            False,
+            doc="""
+Select *Yes* to create an object set from objects that did not pass your filter.
+            
+This may be useful if you want to make use of the negative (filtered out) population as well."""
+        )
+
+        self.removed_objects_name = LabelName(
+            "Name the objects removed by the filter",
+            "RemovedObjects",
+            doc="Enter the name you want to call the objects removed by the filter.",
+
+        )
+
         self.additional_objects = []
 
         self.additional_object_count = HiddenCount(
             self.additional_objects, "Additional object count"
         )
 
-        self.spacer_3 = Divider(line=False)
+        self.spacer_3 = Divider(line=True)
+
+        self.spacer_4 = Divider(line=False)
 
         self.additional_object_button = DoSomething(
             "Relabel additional objects to match the filtered object?",
@@ -522,6 +542,8 @@ value will be retained.""".format(
             self.measurement_count,
             self.additional_object_count,
             self.per_object_assignment,
+            self.keep_removed_objects,
+            self.removed_objects_name,
         ]
 
         for x in self.measurements:
@@ -542,6 +564,8 @@ value will be retained.""".format(
             self.rules_directory,
             self.rules_file_name,
             self.rules_class,
+            self.keep_removed_objects,
+            self.removed_objects_name,
             self.enclosing_object_name,
             self.additional_object_button,
         ]
@@ -591,7 +615,10 @@ value will be retained.""".format(
                         visible_settings += [group.remover]
                     visible_settings += [group.divider]
                 visible_settings += [self.add_measurement_button]
-        visible_settings.append(self.spacer_3)
+        visible_settings += [self.spacer_3, self.keep_removed_objects]
+        if self.keep_removed_objects.value:
+            visible_settings += [self.removed_objects_name]
+        visible_settings += [self.spacer_4]
         for x in self.additional_objects:
             visible_settings += x.visible_settings()
         visible_settings += [self.additional_object_button]
@@ -649,6 +676,16 @@ value will be retained.""".format(
                     % self.rules_file_name.value,
                     self.rules_file_name,
                 )
+            features = self.get_classifier_features()
+            available_features = set([f"{col[0]}_{col[1]}" for col in pipeline.get_measurement_columns(self)])
+
+            for feature in features:
+                if feature not in available_features:
+                    raise ValidationError(
+                        f"""The classifier {self.rules_file_name}, requires the measurement "{feature}", but that 
+measurement is not available at this stage of the pipeline. Consider adding modules to produce the measurement.""",
+                        self.rules_file_name
+                    )
 
     def run(self, workspace):
         """Filter objects for this image set, display results"""
@@ -684,6 +721,7 @@ value will be retained.""".format(
             (x.object_name.value, x.target_name.value) for x in self.additional_objects
         ]
         m = workspace.measurements
+        first_set = True
         for src_name, target_name in object_list:
             src_objects = workspace.get_objects(src_name)
             target_labels = src_objects.segmented.copy()
@@ -713,11 +751,49 @@ value will be retained.""".format(
             workspace.object_set.add_objects(target_objects, target_name)
 
             self.add_measurements(workspace, src_name, target_name)
+            if self.show_window and first_set:
+                workspace.display_data.src_objects_segmented = src_objects.segmented
+                workspace.display_data.target_objects_segmented = target_objects.segmented
+                workspace.display_data.dimensions = src_objects.dimensions
+                first_set = False
 
-        if self.show_window:
-            workspace.display_data.src_objects_segmented = src_objects.segmented
-            workspace.display_data.target_objects_segmented = target_objects.segmented
-            workspace.display_data.dimensions = src_objects.dimensions
+        if self.keep_removed_objects.value:
+            # Isolate objects removed by the filter
+            removed_indexes = [x for x in range(1, max_label+1) if x not in indexes]
+            removed_object_count = len(removed_indexes)
+            removed_label_indexes = numpy.zeros((max_label + 1,), int)
+            removed_label_indexes[removed_indexes] = numpy.arange(1, removed_object_count + 1)
+
+            src_objects = workspace.get_objects(self.x_name.value)
+            removed_labels = src_objects.segmented.copy()
+            #
+            # Reindex the labels of the old source image
+            #
+            removed_labels[removed_labels > max_label] = 0
+            removed_labels = removed_label_indexes[removed_labels]
+            #
+            # Make a new set of objects - retain the old set's unedited
+            # segmentation for the new and generally try to copy stuff
+            # from the old to the new.
+            #
+            removed_objects = cellprofiler_core.object.Objects()
+            removed_objects.segmented = removed_labels
+            removed_objects.unedited_segmented = src_objects.unedited_segmented
+            #
+            # Remove the filtered objects from the small_removed_segmented
+            # if present. "small_removed_segmented" should really be
+            # "filtered_removed_segmented".
+            #
+            small_removed = src_objects.small_removed_segmented.copy()
+            small_removed[(removed_labels == 0) & (src_objects.segmented != 0)] = 0
+            removed_objects.small_removed_segmented = small_removed
+            if src_objects.has_parent_image:
+                removed_objects.parent_image = src_objects.parent_image
+            workspace.object_set.add_objects(removed_objects, self.removed_objects_name.value)
+
+            self.add_measurements(workspace, self.x_name.value, self.removed_objects_name.value)
+            if self.show_window:
+                workspace.display_data.removed_objects_segmented = removed_objects.segmented
 
     def display(self, workspace, figure):
         """Display what was filtered"""
@@ -742,10 +818,10 @@ value will be retained.""".format(
             sharexy=figure.subplot(0, 0),
         )
 
-        statistics = [
-            [numpy.max(src_objects_segmented)],
-            [numpy.max(target_objects_segmented)],
-        ]
+        pre = numpy.max(src_objects_segmented)
+        post = numpy.max(target_objects_segmented)
+
+        statistics = [[pre], [post], [pre - post]]
 
         figure.subplot_table(
             0,
@@ -754,8 +830,20 @@ value will be retained.""".format(
             row_labels=(
                 "Number of objects pre-filtering",
                 "Number of objects post-filtering",
+                "Number of objects removed",
             ),
         )
+
+        if self.keep_removed_objects:
+            removed_objects_segmented = workspace.display_data.removed_objects_segmented
+            figure.subplot_imshow_labels(
+                1,
+                1,
+                removed_objects_segmented,
+                title="Removed: %s" % self.removed_objects_name,
+                sharexy=figure.subplot(0, 0),
+            )
+
 
     def keep_one(self, workspace, src_objects):
         """Return an array containing the single object to keep
@@ -994,9 +1082,30 @@ value will be retained.""".format(
                     "No such classifier file: %s" % path_, self.rules_file_name
                 )
             else:
-                import joblib
-
-                d[path_] = joblib.load(path_)
+                if not file_.endswith('.txt'):
+                    # Probably a model file
+                    import joblib
+                    d[path_] = joblib.load(path_)
+                    if len(d[path_]) < 3:
+                        raise IOError("The selected model file doesn't look like a CellProfiler Analyst classifier."
+                                      "See the help dialog for more info on model formats.")
+                    if d[path_][2] == "FastGentleBoosting":
+                        # FGB model files are not sklearn-based, we'll load it as rules instead.
+                        rules = cellprofiler.utilities.rules.Rules()
+                        rules.load(d[path_][0])
+                        d[path_] = (rules,
+                                    d[path_][1],
+                                    "Rules",
+                                    [f"{rule.object_name}_{rule.feature}" for rule in rules.rules])
+                else:
+                    # Probably a rules list
+                    rules = cellprofiler.utilities.rules.Rules()
+                    rules.parse(path_)
+                    # Construct a classifier-like object
+                    d[path_] = (rules,
+                                rules.get_classes(),
+                                "Rules",
+                                [f"{rule.object_name}_{rule.feature}" for rule in rules.rules])
         return d[path_]
 
     def get_classifier(self):
@@ -1005,20 +1114,27 @@ value will be retained.""".format(
     def get_bin_labels(self):
         return self.load_classifier()[1]
 
+    def get_classifier_type(self):
+        return self.load_classifier()[2]
+
     def get_classifier_features(self):
         return self.load_classifier()[3]
 
-    def keep_by_rules(self, workspace, src_objects):
+    def keep_by_rules(self, workspace, src_objects, rules=None):
         """Keep objects according to rules
 
         workspace - workspace holding the measurements for the rules
         src_objects - filter these objects (uses measurement indexes instead)
+        rules - supply pre-generated rules loaded from a classifier model file
 
         Open the rules file indicated by the settings and score the
         objects by the rules. Return the indexes of the objects that pass.
         """
-        rules = self.get_rules()
-        rules_class = int(self.rules_class.value) - 1
+        if not rules:
+            rules = self.get_rules()
+            rules_class = int(self.rules_class.value) - 1
+        else:
+            rules_class = self.get_bin_labels().index(self.rules_class.value)
         scores = rules.score(workspace.measurements)
         if len(scores) > 0:
             is_not_nan = numpy.any(~numpy.isnan(scores), 1)
@@ -1037,23 +1153,21 @@ value will be retained.""".format(
         :return: indexes (base 1) of the objects that pass
         """
         classifier = self.get_classifier()
+        if self.get_classifier_type() == "Rules":
+            return self.keep_by_rules(workspace, src_objects, rules=classifier)
         target_idx = self.get_bin_labels().index(self.rules_class.value)
         target_class = classifier.classes_[target_idx]
-        features = []
-        for feature_name in self.get_classifier_features():
-            feature_name = feature_name.split("_", 1)[1]
-            if feature_name == "x_loc":
-                feature_name = M_LOCATION_CENTER_X
-            elif feature_name == "y_loc":
-                feature_name = M_LOCATION_CENTER_Y
-            features.append(feature_name)
+        features = self.split_feature_names(self.get_classifier_features(), workspace.object_set.get_object_names())
 
         feature_vector = numpy.column_stack(
             [
-                workspace.measurements[self.x_name.value, feature_name]
-                for feature_name in features
+                workspace.measurements[object_name, feature_name]
+                for object_name, feature_name in features
             ]
         )
+        if hasattr(classifier, 'scaler') and classifier.scaler is not None:
+            feature_vector = classifier.scaler.transform(feature_vector)
+        numpy.nan_to_num(feature_vector, copy=False)
         predicted_classes = classifier.predict(feature_vector)
         hits = predicted_classes == target_class
         indexes = numpy.argwhere(hits) + 1
@@ -1065,8 +1179,37 @@ value will be retained.""".format(
             additional_objects=[
                 (x.object_name.value, x.target_name.value)
                 for x in self.additional_objects
-            ],
+            ] + [(self.x_name.value,self.removed_objects_name.value)] if self.keep_removed_objects.value else [],
         )
+
+    def get_categories(self, pipeline, object_name):
+        categories = super(FilterObjects, self).get_categories(pipeline, object_name)
+        if self.keep_removed_objects.value and object_name == self.removed_objects_name.value:
+            categories += [C_PARENT, C_LOCATION, C_NUMBER]
+        return categories
+
+    def get_measurements(self, pipeline, object_name, category):
+        if object_name == self.x_name.value and category == C_CHILDREN:
+            measures = ["%s_Count" % self.y_name.value]
+            if self.keep_removed_objects.value and object_name == self.removed_objects_name.value:
+                measures += ["%s_Count" % self.removed_objects_name.value]
+            return measures
+
+        if object_name == self.y_name.value or (
+                self.keep_removed_objects.value and object_name == self.removed_objects_name.value):
+            if category == C_NUMBER:
+                return [FTR_OBJECT_NUMBER]
+            if category == C_PARENT:
+                return [self.x_name.value]
+            if category == C_LOCATION:
+                return [FTR_CENTER_X, FTR_CENTER_Y, FTR_CENTER_Z,]
+
+        if object_name == "Image" and category == C_COUNT:
+            measures = [self.y_name.value]
+            if self.keep_removed_objects.value:
+                measures.append(self.removed_objects_name.value)
+            return measures
+        return []
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         """Prepare to create a batch file
@@ -1224,6 +1367,12 @@ value will be retained.""".format(
 
             variable_revision_number = 8
 
+        if variable_revision_number == 8:
+            # Add default values for "keep removed objects".
+            setting_values.insert(11, "No")
+            setting_values.insert(12, "RemovedObjects")
+            variable_revision_number = 9
+
         slot_directory = 5
 
         setting_values[slot_directory] = Directory.upgrade_setting(
@@ -1232,6 +1381,20 @@ value will be retained.""".format(
 
         return setting_values, variable_revision_number
 
+    def get_dictionary_for_worker(self):
+        # Sklearn models can't be serialized, so workers will need to read them from disk.
+        return {}
+
+    def split_feature_names(self, features, available_objects):
+        # Attempts to split measurement names into object and feature pairs. Tests against a list of available objects.
+        features_list = []
+        # We want to test the longest keys first, so that "Cells_Edited" is matched before "Cells".
+        available_objects = tuple(sorted(available_objects, key=len, reverse=True))
+        for feature_name in features:
+            obj, feature_name = next(((s, feature_name.split(f"{s}_", 1)[-1]) for s in available_objects if
+                                      feature_name.startswith(s)), feature_name.split("_", 1))
+            features_list.append((obj, feature_name))
+        return features_list
 
 #
 # backwards compatibility

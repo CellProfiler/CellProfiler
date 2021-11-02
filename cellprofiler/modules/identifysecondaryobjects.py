@@ -686,10 +686,7 @@ segmentation.""",
                 small_removed_segmented_out, objects, workspace
             )
 
-        if self.wants_discard_edge and self.wants_discard_primary:
-            #
-            # Make a new primary object
-            #
+        if self.wants_discard_edge:
             lookup = scipy.ndimage.maximum(
                 segmented_out,
                 objects.segmented,
@@ -700,13 +697,19 @@ segmentation.""",
             lookup[lookup != 0] = numpy.arange(numpy.sum(lookup != 0)) + 1
             segmented_labels = lookup[objects.segmented]
             segmented_out = lookup[segmented_out]
-            new_objects = Objects()
-            new_objects.segmented = segmented_labels
-            if objects.has_unedited_segmented:
-                new_objects.unedited_segmented = objects.unedited_segmented
-            if objects.has_small_removed_segmented:
-                new_objects.small_removed_segmented = objects.small_removed_segmented
-            new_objects.parent_image = objects.parent_image
+
+        
+            if self.wants_discard_primary:
+                #
+                # Make a new primary object
+                #
+                new_objects = Objects()
+                new_objects.segmented = segmented_labels
+                if objects.has_unedited_segmented:
+                    new_objects.unedited_segmented = objects.unedited_segmented
+                if objects.has_small_removed_segmented:
+                    new_objects.small_removed_segmented = objects.small_removed_segmented
+                new_objects.parent_image = objects.parent_image
 
         #
         # Add the objects to the object set
@@ -1016,10 +1019,10 @@ segmentation.""",
 
             if category == C_CHILDREN:
                 if object_name == self.x_name.value:
-                    measurements += [FF_COUNT % self.new_primary_objects_name.value]
+                    measurements += ["%s_Count" % self.new_primary_objects_name.value]
 
                 if object_name == self.new_primary_objects_name.value:
-                    measurements += [FF_COUNT % self.y_name.value]
+                    measurements += ["%s_Count" % self.y_name.value]
 
         return measurements
 

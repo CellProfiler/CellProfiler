@@ -345,7 +345,7 @@ class FileCollectionDisplayController:
         logging.debug("On tree item menu")
         path = self.get_path_from_event(event)
         if len(path) == 0:
-            logging.warn("Could not find item associated with tree event")
+            logging.warning("Could not find item associated with tree event")
             return
         context_menu = self.v.get_context_menu(path)
         if len(context_menu) > 0:

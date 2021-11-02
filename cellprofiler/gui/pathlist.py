@@ -113,7 +113,7 @@ class PathListCtrl(wx.ScrolledWindow):
                 self.DROP_FILES_AND_FOLDERS_HERE
             )[:2]
         except:
-            logging.warn(
+            logging.warning(
                 'Failed to get text extend for "%s" message'
                 % self.DROP_FILES_AND_FOLDERS_HERE,
                 exc_info=True,

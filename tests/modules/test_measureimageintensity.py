@@ -138,7 +138,7 @@ def test_volume(image, measurements, module, workspace):
 
 
 def test_volume_and_mask(image, measurements, module, workspace):
-    mask = skimage.morphology.ball(3, dtype=numpy.bool)
+    mask = skimage.morphology.ball(3, dtype=bool)
 
     image.set_image(numpy.ones_like(mask, dtype=numpy.uint8), convert=False)
 
@@ -213,7 +213,7 @@ def test_volume_and_objects(image, measurements, module, objects, workspace):
 
 
 def test_volume_and_objects_and_mask(image, measurements, module, objects, workspace):
-    mask = skimage.morphology.ball(3, dtype=numpy.bool)
+    mask = skimage.morphology.ball(3, dtype=bool)
 
     image.set_image(numpy.ones_like(mask, dtype=numpy.uint8), convert=False)
 

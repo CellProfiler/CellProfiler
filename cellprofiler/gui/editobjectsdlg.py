@@ -763,6 +763,8 @@ class EditObjectsDialog(wx.Dialog):
             image, _ = size_similarly(self.orig_labels[0], self.guide_image)
             if image.ndim == 2:
                 image = numpy.dstack((image, image, image))
+            if image.dtype == bool:
+                image = image.astype(int)
             if self.scaling_mode == self.SM_RAW:
                 cimage = image.copy()
             elif self.scaling_mode in (self.SM_NORMALIZED, self.SM_LOG_NORMALIZED):
@@ -783,7 +785,7 @@ class EditObjectsDialog(wx.Dialog):
                         * ((numpy.e - 1) / (max_intensity - min_intensity))
                     )
         else:
-            cimage = numpy.zeros((self.shape[0], self.shape[1], 3), numpy.float)
+            cimage = numpy.zeros((self.shape[0], self.shape[1], 3), float)
         if len(self.to_keep) > 1:
             in_artist = numpy.zeros(len(self.to_keep), bool)
             for d in list(self.artists.values()):

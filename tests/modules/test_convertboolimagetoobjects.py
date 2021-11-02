@@ -14,7 +14,7 @@ instance = cellprofiler.modules.convertimagetoobjects.ConvertImageToObjects()
 
 @pytest.fixture
 def binary_image():
-    data = numpy.zeros((100, 100), dtype=numpy.bool)
+    data = numpy.zeros((100, 100), dtype=bool)
 
     data[10:30, 10:30] = True
 
@@ -26,7 +26,7 @@ def binary_image():
 
 @pytest.fixture
 def binary_volume():
-    data = numpy.zeros((10, 100, 100), dtype=numpy.bool)
+    data = numpy.zeros((10, 100, 100), dtype=bool)
 
     data[2:6, 10:30, 10:30] = True
 

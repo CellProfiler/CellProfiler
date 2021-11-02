@@ -316,6 +316,7 @@ Alternatively, you may want to disable these specific measurements entirely
             self.images_list,
             self.objects_list,
             self.do_all,
+            self.fast_costes,
         ]
         return help_settings
 
@@ -1605,7 +1606,7 @@ Alternatively, you may want to disable these specific measurements entirely
             variable_revision_number = 4
         if variable_revision_number == 4:
             # Add costes mode switch
-            setting_values += [M_ACCURATE]
+            setting_values += [M_FASTER]
             variable_revision_number = 5
         return setting_values, variable_revision_number
 

@@ -5,6 +5,7 @@
 
 import csv
 import datetime
+import gc
 import hashlib
 import io
 import logging
@@ -90,6 +91,7 @@ from cellprofiler_core.pipeline import (
     Listener,
     PrepareRunError,
 )
+from cellprofiler_core.pipeline.io._v6 import load
 from cellprofiler_core.preferences import (
     RECENT_FILE_COUNT,
     add_image_directory_listener,
@@ -125,6 +127,7 @@ from cellprofiler_core.preferences import (
     get_max_workers,
     set_default_image_directory,
     get_telemetry,
+    get_conserve_memory,
 )
 from cellprofiler_core.setting import ValidationError
 from cellprofiler_core.utilities.core.modules import (
@@ -1167,8 +1170,8 @@ class PipelineController(object):
         """
         with open(path, mode="w") as fd:
             for url in self.__workspace.file_list.get_filelist():
-                if isinstance(url, str):
-                    url = url.encode()
+                if isinstance(url, bytes):
+                    url = url.decode()
                 fd.write(url + "\n")
 
     def is_running(self):
@@ -1192,6 +1195,9 @@ class PipelineController(object):
             if h5py.is_hdf5(pathname):
                 if not self.load_hdf5_pipeline(pathname):
                     return
+            elif pathname.endswith('.json'):
+                with open(pathname, "r") as fd:
+                    load(self.__pipeline, fd)
             else:
                 self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
@@ -1301,8 +1307,9 @@ class PipelineController(object):
             )
         wildcard = (
             "CellProfiler pipeline (*.%s)|*.%s|"
-            "CellProfiler pipeline and file list (*.%s)|*.%s"
-        ) % (EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE,)
+            "CellProfiler pipeline and file list (*.%s)|*.%s|"
+            "JSON object (*.json)|*.json"
+        ) % (EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE, EXT_PIPELINE)
         with wx.FileDialog(
             self.__frame,
             "Save pipeline",
@@ -1319,8 +1326,8 @@ class PipelineController(object):
                 pathname = dlg.GetPath()
                 if not sys.platform.startswith("win"):
                     dot_ext_pipeline = "." + EXT_PIPELINE
-                    if not file_name.endswith(dot_ext_pipeline):
-                        # on platforms other than Windows, add the default suffix
+                    if not file_name.endswith(dot_ext_pipeline) and not file_name.endswith(".json"):
+                        # on platforms other than Windows, add the default suffix, unless user specified json export
                         pathname += dot_ext_pipeline
                 self.__pipeline.save(
                     pathname, save_image_plane_details=save_image_plane_details
@@ -1695,7 +1702,7 @@ class PipelineController(object):
             except:
                 pass
             if error_msg is None:
-                if isinstance(event.error, EnvironmentError):
+                if isinstance(event.error, EnvironmentError) and event.error.strerror is not None:
                     error_msg = event.error.strerror
                 else:
                     error_msg = str(event.error)
@@ -2069,7 +2076,7 @@ class PipelineController(object):
             self.__workspace.invalidate_image_set()
 
     def on_pathlist_drop_files(self, x, y, filenames):
-        self.add_paths_to_pathlist(filenames)
+        wx.CallAfter(self.add_paths_to_pathlist, filenames)
 
     def add_paths_to_pathlist(self, filenames):
         t0 = datetime.datetime.now()
@@ -2096,19 +2103,49 @@ class PipelineController(object):
                 filenames=filenames, interrupt=[True], message=["Default"], queue=queue
             ):
                 urls = []
+                if len(filenames) > 100:
+                    # If we have many files to process, it's faster to just scan the whole parent folder.
+                    desired = set(filenames)
+                    # All files added in 1 operation should come from the same parent directory.
+                    parent = os.path.dirname(filenames[0])
+                    # Scandir produces a generator that'll automatically distinguish files from folders
+                    options = os.scandir(parent)
+                    for path in options:
+                        if not interrupt or interrupt[0]:
+                            break
+                        if path.path in desired:
+                            message[0] = "\nProcessing " + path.path
+                            desired.remove(path.path)
+                            if path.is_file():
+                                urls.append(pathname2url(path.path))
+                                if len(urls) > 100:
+                                    queue.put(urls)
+                                    urls = []
+                            elif path.is_dir():
+                                for dirpath, dirnames, filenames in os.walk(path.path):
+                                    for filename in filenames:
+                                        if not interrupt or interrupt[0]:
+                                            break
+                                        path = os.path.join(dirpath, filename)
+                                        urls.append(pathname2url(path))
+                                        message[0] = "\nProcessing " + path
+                                        if len(urls) > 100:
+                                            queue.put(urls)
+                                            urls = []
+                                    else:
+                                        continue
+                                    break
+                            if not desired:
+                                # Stop the generator once all paths are found
+                                break
+                    queue.put(urls)
+                    urls = []
+                    # In case of missing files or mixed parent directories, we'll use the old method to fetch the rest.
+                    filenames = list(desired)
+
                 for pathname in filenames:
                     if not interrupt or interrupt[0]:
                         break
-
-                    # Hack - convert drive names to lower case in
-                    #        Windows to normalize them.
-                    isWindows = (
-                        sys.platform == "win32"
-                        and pathname[0].isalpha()
-                        and pathname[1] == ":"
-                    )
-                    if isWindows:
-                        pathname = os.path.normpath(pathname[:2]) + pathname[2:]
 
                     message[0] = "\nProcessing " + pathname
                     if os.path.isfile(pathname):
@@ -2117,8 +2154,8 @@ class PipelineController(object):
                             queue.put(urls)
                             urls = []
                     elif os.path.isdir(pathname):
-                        for dirpath, dirnames, filenames in os.walk(pathname):
-                            for filename in filenames:
+                        for dirpath, dirnames, files in os.walk(pathname):
+                            for filename in files:
                                 if not interrupt or interrupt[0]:
                                     break
                                 path = os.path.join(dirpath, filename)
@@ -3314,6 +3351,8 @@ class PipelineController(object):
         self.__pipeline_list_view.on_stop_debugging()
         self.__pipeline.end_run()
         self.show_launch_controls()
+        if get_conserve_memory():
+            gc.collect()
 
     def do_step(self, module, select_next_module=False):
         """Do a debugging step by running a module
@@ -3947,13 +3986,7 @@ class PipelineController(object):
                     )
                 elif sys.platform == "win32":
                     subprocess.call(
-                        [
-                            "cmd",
-                            "/C",
-                            "start",
-                            "explorer",
-                            get_default_output_directory(),
-                        ]
+                        ["explorer", os.path.abspath(get_default_output_directory())]
                     )
 
             open_default_output_folder_button.Bind(

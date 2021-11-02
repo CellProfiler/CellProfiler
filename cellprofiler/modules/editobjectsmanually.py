@@ -231,6 +231,8 @@ supplied by a previous module.
         if self.wants_image_display:
             guide_image = workspace.image_set.get_image(self.image_name.value)
             guide_image = guide_image.pixel_data
+            if guide_image.dtype == bool:
+                guide_image = guide_image.astype(int)
             if numpy.any(guide_image != numpy.min(guide_image)):
                 guide_image = (guide_image - numpy.min(guide_image)) / (
                     numpy.max(guide_image) - numpy.min(guide_image)

@@ -485,7 +485,7 @@ input for a measurement module."""
                     for plane in range(1, pixel_data.shape[2])
                 ]
             ):
-                logging.warn("Image is color, converting to grayscale")
+                logging.warning("Image is color, converting to grayscale")
             pixel_data = numpy.sum(pixel_data, 2) / pixel_data.shape[2]
         for function in self.functions:
             pixel_data = self.run_function(function, pixel_data, mask)
@@ -681,7 +681,7 @@ input for a measurement module."""
 
         if variable_revision_number == 5:
             # Removed "life" operation
-            logging.warn(
+            logging.warning(
                 "Morph's 'Life' option has been removed, this pipeline might "
                 "not be compatible with the current version of CellProfiler."
             )

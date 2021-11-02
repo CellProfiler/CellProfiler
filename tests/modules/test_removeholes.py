@@ -59,7 +59,7 @@ def test_run_label_image(module):
 
     actual = workspace.image_set.get_image("output").pixel_data
 
-    expected = numpy.zeros((10, 10), dtype=numpy.bool)
+    expected = numpy.zeros((10, 10), dtype=bool)
     expected[3:8, 3:8] = True
 
     numpy.testing.assert_array_equal(actual, expected)

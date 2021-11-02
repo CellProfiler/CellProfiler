@@ -125,6 +125,8 @@ class AddModuleFrame(wx.Frame):
 
     def __on_close(self, event):
         self.Hide()
+        self.search_text.SetFocus()
+        self.search_text.SelectAll()
 
     def __set_icon(self):
         icon = cellprofiler.gui.utilities.icon.get_cp_icon()

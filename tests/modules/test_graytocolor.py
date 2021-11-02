@@ -197,8 +197,8 @@ def test_cmyk():
                 / numpy.sum(multiplier)
                 for image, multiplier, adjustment in (
                     (images[3], (0, 1, 1), adjustments[3]),
-                    (images[4], (1, 1, 0), adjustments[4]),
-                    (images[5], (1, 0, 1), adjustments[5]),
+                    (images[4], (1, 0, 1), adjustments[4]),
+                    (images[5], (1, 1, 0), adjustments[5]),
                     (images[6], (1, 1, 1), adjustments[6]),
                 )
             ]
@@ -316,8 +316,8 @@ def test_cmyk_rescale():
                 / numpy.sum(multiplier)
                 for image, multiplier, adjustment in (
                     (images[3], (0, 1, 1), adjustments[3]),
-                    (images[4], (1, 1, 0), adjustments[4]),
-                    (images[5], (1, 0, 1), adjustments[5]),
+                    (images[4], (1, 0, 1), adjustments[4]),
+                    (images[5], (1, 1, 0), adjustments[5]),
                     (images[6], (1, 1, 1), adjustments[6]),
                 )
             ]

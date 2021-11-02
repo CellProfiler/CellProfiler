@@ -143,6 +143,12 @@ class TestVolumes(object):
         run_operation(operation, expected, module, workspace)
 
     @staticmethod
+    def test_stdev(image_a, image_b, module, workspace):
+        operation = "Standard Deviation"
+        expected = numpy.std(numpy.array([image_a.pixel_data, image_b.pixel_data]),axis=0)
+        run_operation(operation, expected, module, workspace)
+
+    @staticmethod
     def test_invert(image_a, module, workspace):
         operation = "Invert"
         expected = skimage.util.invert(image_a.pixel_data)
@@ -419,7 +425,7 @@ def check_expected(image, expected, mask=None, ignore=False):
             assert numpy.all(mask == image.mask)
 
         numpy.testing.assert_array_almost_equal(
-            image.pixel_data[image.mask], expected[image.mask]
+            image.pixel_data, expected * mask
         )
 
 
@@ -685,7 +691,7 @@ def test_multiply_binary():
         {"pixel_data": numpy.random.uniform(size=(10, 10)) > 0.5} for i in range(2)
     ]
     output = run_imagemath(images, fn)
-    assert output.pixel_data.dtype == numpy.bool
+    assert output.pixel_data.dtype == bool
 
 
 def test_divide():
@@ -719,6 +725,22 @@ def test_average():
             for i in range(n)
         ]
         expected = functools.reduce(numpy.add, [x["pixel_data"] for x in images]) / n
+        output = run_imagemath(images, fn)
+        check_expected(output, expected)
+
+def test_stdev():
+    def fn(module):
+        module.operation.value = cellprofiler.modules.imagemath.O_STDEV
+        module.truncate_low.value = False
+
+    numpy.random.seed(0)
+    for n in range(2, 5):
+        images = [
+            {"pixel_data": numpy.random.uniform(size=(10, 10)).astype(numpy.float32)}
+            for i in range(n)
+        ]
+        image_array=numpy.array([x['pixel_data'] for x in images])
+        expected = numpy.std(image_array,axis=0)
         output = run_imagemath(images, fn)
         check_expected(output, expected)
 

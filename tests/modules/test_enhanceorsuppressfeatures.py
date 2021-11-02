@@ -167,7 +167,7 @@ def test_enhance_volume(accuracy, image, module, workspace):
 def test_enhance_masked(accuracy, image, module, workspace):
     data = numpy.zeros((20, 30))
 
-    mask = numpy.ones_like(data, dtype=numpy.bool)
+    mask = numpy.ones_like(data, dtype=bool)
 
     i, j = numpy.mgrid[-10:10, -10:20]
 
@@ -205,7 +205,7 @@ def test_enhance_masked(accuracy, image, module, workspace):
 def test_enhance_masked_volume(accuracy, image, module, workspace):
     data = numpy.zeros((20, 20, 30))
 
-    mask = numpy.ones_like(data, dtype=numpy.bool)
+    mask = numpy.ones_like(data, dtype=bool)
 
     k, i, j = numpy.mgrid[-10:10, -10:10, -10:20]
 
@@ -307,7 +307,7 @@ def test_suppress_volume(image, module, workspace):
 def test_suppress_masked(image, module, workspace):
     data = numpy.zeros((20, 30))
 
-    mask = numpy.ones_like(data, dtype=numpy.bool)
+    mask = numpy.ones_like(data, dtype=bool)
 
     i, j = numpy.mgrid[-10:10, -10:20]
 
@@ -341,7 +341,7 @@ def test_suppress_masked(image, module, workspace):
 def test_suppress_masked_volume(image, module, workspace):
     data = numpy.zeros((20, 20, 30))
 
-    mask = numpy.ones_like(data, dtype=numpy.bool)
+    mask = numpy.ones_like(data, dtype=bool)
 
     k, i, j = numpy.mgrid[-10:10, -10:10, -10:20]
 
@@ -619,7 +619,7 @@ def test_enhance_circles(image, module, workspace):
 def test_enhance_circles_masked(image, module, workspace):
     data = numpy.zeros((31, 62))
 
-    mask = numpy.ones_like(data, dtype=numpy.bool)
+    mask = numpy.ones_like(data, dtype=bool)
 
     i, j = numpy.mgrid[-15:16, -15:16]
 
@@ -682,7 +682,7 @@ def test_enhance_circles_volume(image, module, workspace):
 def test_enhance_circles_masked_volume(image, module, workspace):
     data = numpy.zeros((31, 31, 62))
 
-    mask = numpy.ones_like(data, dtype=numpy.bool)
+    mask = numpy.ones_like(data, dtype=bool)
 
     k, i, j = numpy.mgrid[-15:16, -15:16, -15:16]
 

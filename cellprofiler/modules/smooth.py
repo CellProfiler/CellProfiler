@@ -240,10 +240,10 @@ the output image.
         elif self.smoothing_method.value == MEDIAN_FILTER:
             output_pixels = median_filter(pixel_data, image.mask, object_size / 2 + 1)
         elif self.smoothing_method.value == SMOOTH_KEEPING_EDGES:
-            sigma_range = numpy.float(self.sigma_range.value)
+            sigma_range = float(self.sigma_range.value)
 
             output_pixels = skimage.restoration.denoise_bilateral(
-                image=pixel_data.astype(numpy.float),
+                image=pixel_data.astype(float),
                 multichannel=image.multichannel,
                 sigma_color=sigma_range,
                 sigma_spatial=sigma,

@@ -149,7 +149,6 @@ Enter the desired height of the final objects, in pixels.""",
 
         y = Objects()
         y.segmented = y_data
-        y.parent_image = x.parent_image
         objects.add_objects(y, y_name)
         self.add_measurements(workspace)
 

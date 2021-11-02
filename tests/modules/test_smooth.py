@@ -159,7 +159,7 @@ def test_bilateral():
     mask = numpy.ones(image.shape, bool)
     mask[40:60, 45:65] = False
     expected = skimage.restoration.denoise_bilateral(
-        image=image.astype(numpy.float),
+        image=image.astype(float),
         multichannel=False,
         sigma_color=sigma_range,
         sigma_spatial=sigma,

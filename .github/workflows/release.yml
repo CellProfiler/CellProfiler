@@ -28,7 +28,6 @@ jobs:
           java-package: jdk
           architecture: x64
       - run: |
-          git checkout compat-4-2
           pip install --upgrade pip setuptools wheel
           pip install numpy==1.20.1
           pip install pyinstaller==4.2

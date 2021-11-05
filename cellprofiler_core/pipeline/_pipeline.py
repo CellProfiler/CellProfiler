@@ -278,9 +278,22 @@ class Pipeline:
             fd = urllib.request.urlopen(fd_or_filename)
             return self.load(fd)
 
+        if hasattr(fd, 'name') and fd.name.endswith('.json'):
+            # Load a JSON format pipeline
+            from cellprofiler_core.pipeline.io._v6 import load
+            load(self, fd)
+            # Perform proper pipeline setup after loading.
+            self.__settings = [
+                self.capture_module_settings(module) for module in
+                self.modules(False)
+            ]
+            for module in self.modules(False):
+                module.post_pipeline_load(self)
+            self.notify_listeners(PipelineLoaded())
+            self.__undo_stack = []
+            return
         if Pipeline.is_pipeline_txt_fd(fd):
             self.loadtxt(fd)
-
             return
 
         if needs_close:

@@ -53,17 +53,12 @@ def dump(pipeline, fp, save_image_plane_details):
 
 def load(pipeline, fd):
     pipeline_dict = json.load(fd)
-
-    for module in pipeline.modules():
-        pipeline.remove_module(module.module_num)
-
+    pipeline_modules = pipeline.modules(False)
+    pipeline_modules.clear()
     for module in pipeline_dict["modules"]:
-        module_path = module["attributes"]["module_path"]
+        module_name = module["attributes"]["module_name"]
         settings = [setting_dict for setting_dict in module["settings"]]
-        parts = module_path.split(".")
-        module_class = __import__(parts[0])
-        for part in parts[1:]:
-            module_class = getattr(module_class, part)
-        new_module = module_class()
+        new_module = pipeline.instantiate_module(module_name)
         new_module.from_dict(settings, module["attributes"])
-        pipeline.add_module(new_module)
+        pipeline_modules.append(new_module)
+

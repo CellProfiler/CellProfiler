@@ -456,10 +456,7 @@ the image is not downsampled.
                 )
 
                 y_data = numpy.rint(y_data).astype(numpy.uint16)
-                x_data = skimage.transform.resize(
-                    x_data, original_shape, mode="edge", order=0, preserve_range=True
-                )
-                x_data = numpy.rint(x_data).astype(numpy.uint16)
+                x_data = x.pixel_data > threshold
 
         # watershed algorithm for marker-based method:
         else:

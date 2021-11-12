@@ -1,4 +1,5 @@
 import abc
+import logging
 import sys
 import uuid
 
@@ -106,12 +107,15 @@ class Module:
         self.wants_pause = attributes["wants_pause"]
         self.svn_version = attributes["svn_version"]
         self.enabled = attributes["enabled"]
-        self.variable_revision_number = attributes["variable_revision_number"]
         self.module_path = attributes["module_path"]
         self.module_name = attributes["module_name"]
         setting_values = [setting["value"] for setting in settings]
+        if attributes["variable_revision_number"] > self.variable_revision_number:
+            logging.warning(f"Loaded module '{self.module_name}' is from a newer version of CellProfiler - "
+                            f"v{attributes['variable_revision_number']}, current version is "
+                            f"v{self.variable_revision_number}. Settings may load incorrectly.")
         self.set_settings_from_values(
-            setting_values, self.variable_revision_number, self.module_path
+            setting_values, attributes['variable_revision_number'], self.module_path
         )
 
     @abc.abstractmethod

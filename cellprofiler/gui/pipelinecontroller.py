@@ -2116,7 +2116,7 @@ class PipelineController(object):
                         if path.path in desired:
                             message[0] = "\nProcessing " + path.path
                             desired.remove(path.path)
-                            if path.is_file():
+                            if path.is_file() or path.path.lower().endswith('.zarr'):
                                 urls.append(pathname2url(path.path))
                                 if len(urls) > 100:
                                     queue.put(urls)
@@ -2148,7 +2148,7 @@ class PipelineController(object):
                         break
 
                     message[0] = "\nProcessing " + pathname
-                    if os.path.isfile(pathname):
+                    if os.path.isfile(pathname) or pathname.lower().endswith('.zarr'):
                         urls.append(pathname2url(pathname))
                         if len(urls) > 100:
                             queue.put(urls)

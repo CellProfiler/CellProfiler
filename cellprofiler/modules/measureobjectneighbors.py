@@ -393,7 +393,7 @@ previously discarded objects.""".format(
             # order[:,1] should be the nearest neighbor
             # order[:,2] should be the next nearest neighbor
             #
-            order = numpy.zeros((nobjects, min(nobjects, 3)), dtype=numpy.uint32)
+            order = numpy.zeros((nobjects, min(nneighbors, 3)), dtype=numpy.uint32)
             j = numpy.arange(nneighbors)
             # (0, 1, 2) unless there are less than 3 neighbors
             partition_keys = tuple(range(min(nneighbors, 3)))

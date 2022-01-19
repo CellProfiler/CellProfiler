@@ -374,7 +374,7 @@ def test_save_image_tiff_float32_no_conversion(tmpdir, image, module, workspace)
     numpy.testing.assert_array_equal(data, skimage.util.img_as_float(image.pixel_data))
 
 
-def test_save_image_tiff_float32_large_ints(tmpdir, module, workspace):
+def test_save_image_tiff_int32(tmpdir, module, workspace):
 
     image = cellprofiler_core.image.Image(image = numpy.array(range(257**2)).reshape([257,257]),convert=False)
 

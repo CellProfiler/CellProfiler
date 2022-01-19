@@ -1208,6 +1208,9 @@ class Figure(wx.Frame):
             elif evt.Id == MENU_INTERPOLATION_BICUBIC:
                 params["interpolation"] = "bicubic"
             axes = self.subplot(x, y)
+            if hasattr(axes, 'displayed') and hasattr(axes.displayed, "_interpolation"):
+                # Directly update interpolation if the subplot is an image object
+                axes.displayed._interpolation = params["interpolation"]
             for artist in axes.artists:
                 if isinstance(artist, CPImageArtist):
                     artist.interpolation = params["interpolation"]
@@ -1636,7 +1639,7 @@ class Figure(wx.Frame):
 
         image = self.normalize_image(self.images[(x, y)], **kwargs)
 
-        self.subplot(x, y).displayed = subplot.imshow(image)
+        self.subplot(x, y).displayed = subplot.imshow(image, interpolation=interpolation)
 
         self.update_line_labels(subplot, kwargs)
 

@@ -3833,7 +3833,8 @@ CREATE TABLE %s (
                         count = measurements.get_measurement(
                             "Image", ftr_count, image_number
                         )
-                        max_count = max(max_count, int(count))
+                        if count:
+                            max_count = max(max_count, int(count))
                     column_values = []
                     for column in columns:
                         object_name, feature, coltype = column[:3]
@@ -3882,7 +3883,11 @@ CREATE TABLE %s (
 
                         for column, values in zip(columns, column_values):
                             object_name, feature, coltype = column[:3]
-                            object_row.append(values[j])
+                            if coltype == COLTYPE_VARCHAR:
+                                # String values need to be in quotes
+                                object_row.append(f"'{values[j]}'")
+                            else:
+                                object_row.append(values[j])
                         if post_group:
                             object_row.append(object_numbers[j])
                         object_rows.append(object_row)

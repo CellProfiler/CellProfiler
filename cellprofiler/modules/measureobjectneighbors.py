@@ -388,22 +388,19 @@ previously discarded objects.""".format(
                 )
             )
 
-            i, j = numpy.mgrid[0:nobjects, 0:nneighbors]
-            distance_matrix = numpy.sqrt(
-                (ocenters[i, 0] - ncenters[j, 0]) ** 2
-                + (ocenters[i, 1] - ncenters[j, 1]) ** 2
-            )
             #
             # order[:,0] should be arange(nobjects)
             # order[:,1] should be the nearest neighbor
             # order[:,2] should be the next nearest neighbor
             #
-            if distance_matrix.shape[1] == 1:
-                # a little buggy, lexsort assumes that a 2-d array of
-                # second dimension = 1 is a 1-d array
-                order = numpy.zeros(distance_matrix.shape, int)
-            else:
-                order = numpy.lexsort([distance_matrix])
+            order = numpy.zeros((nobjects, min(nneighbors, 3)), dtype=numpy.uint32)
+            j = numpy.arange(nneighbors)
+            # (0, 1, 2) unless there are less than 3 neighbors
+            partition_keys = tuple(range(min(nneighbors, 3)))
+            for i in range(nobjects):
+                dr = numpy.sqrt((ocenters[i, 0] - ncenters[j, 0])**2 + (ocenters[i, 1] - ncenters[j, 1])**2)
+                order[i, :] = numpy.argpartition(dr, partition_keys)[:3]
+
             first_neighbor = 1 if self.neighbors_are_objects else 0
             first_object_index = order[:, first_neighbor]
             first_x_vector = ncenters[first_object_index, 1] - ocenters[:, 1]

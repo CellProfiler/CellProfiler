@@ -231,6 +231,11 @@ class Menu(cellprofiler.gui.menu.Menu):
             contents=cellprofiler.gui.help.content.read_content("other_plugins.rst"),
         )
 
+        other_menu.append(
+            "Debug Shell",
+            contents=cellprofiler.gui.help.content.read_content("other_shell.rst"),
+        )
+
         return other_menu
 
     def __output_menu(self):

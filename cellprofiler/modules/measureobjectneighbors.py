@@ -393,13 +393,13 @@ previously discarded objects.""".format(
             # order[:,1] should be the nearest neighbor
             # order[:,2] should be the next nearest neighbor
             #
-            order = np.zeros((nobjects, min(nobjects, 3)), dtype=np.uint32)
-            j = np.arange(nneighbors)
+            order = numpy.zeros((nobjects, min(nobjects, 3)), dtype=numpy.uint32)
+            j = numpy.arange(nneighbors)
             # (0, 1, 2) unless there are less than 3 neighbors
             partition_keys = tuple(range(min(nneighbors, 3)))
             for i in range(nobjects):
-                dr = np.sqrt((ocenters[i, 0] - ncenters[j, 0])**2 + (ocenters[i, 1] - ncenters[j, 1])**2)
-                order[i, :] = np.argpartition(dr, partition_keys)[:3]
+                dr = numpy.sqrt((ocenters[i, 0] - ncenters[j, 0])**2 + (ocenters[i, 1] - ncenters[j, 1])**2)
+                order[i, :] = numpy.argpartition(dr, partition_keys)[:3]
 
             first_neighbor = 1 if self.neighbors_are_objects else 0
             first_object_index = order[:, first_neighbor]

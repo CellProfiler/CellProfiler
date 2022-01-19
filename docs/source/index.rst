@@ -188,6 +188,7 @@ Learn about the other features of CellProfiler.
    help/other_logging
    help/other_omero
    help/other_plugins
+   help/other_shell
 
 `(Jump to top)`_
 

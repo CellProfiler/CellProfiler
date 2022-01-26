@@ -143,6 +143,7 @@ ID_WINDOW_ALL = (
 WINDOW_IDS = []
 
 ID_HELP_MODULE = wx.NewId()
+ID_CITE_MODULE = wx.NewId()
 ID_HELP_SOURCE_CODE = wx.NewId()
 
 
@@ -873,6 +874,10 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.__on_help_module, id=ID_HELP_MODULE)
         self.Bind(wx.EVT_BUTTON, self.__on_help_module, id=ID_HELP_MODULE)
 
+        # ID_CITE_MODULE is used in button contexts only I think so will only have button event bindings
+        #self.Bind(wx.EVT_MENU, self.__on_help_module, id=ID_HELP_MODULE)
+        self.Bind(wx.EVT_BUTTON, self.__on_cite_module, id=ID_CITE_MODULE)
+
         self.Bind(wx.EVT_MENU, self.__on_preferences, id=ID_OPTIONS_PREFERENCES)
         self.Bind(wx.EVT_MENU, self.__on_close_all, id=ID_WINDOW_CLOSE_ALL)
         self.Bind(wx.EVT_MENU, self.__debug_pdb, id=ID_DEBUG_PDB)
@@ -1069,7 +1074,14 @@ class CPFrame(wx.Frame):
                 "No module selected",
                 style=wx.OK | wx.ICON_INFORMATION,
             )
-
+    def __on_cite_module(self, event):
+        #modules = self.__pipeline_list_view.get_selected_modules()
+        print(self.__module_list_panel.GetHelpText())
+        # if len(modules) > 0:
+        #     self.do_help_module(pipeline_name, citation_text)
+        # else:
+        #     citation_text=base_citation_text
+        # self.do_help_module(pipeline_name, citation_text)
     @staticmethod
     def __debug_pdb(event):
         pdb.set_trace()

@@ -1090,13 +1090,19 @@ class CPFrame(wx.Frame):
                 style=wx.OK | wx.ICON_INFORMATION,
             )
     def __on_cite_module(self, event):
-        #modules = self.__pipeline_list_view.get_selected_modules()
-        print(self.__module_list_panel.GetHelpText())
-        # if len(modules) > 0:
-        #     self.do_help_module(pipeline_name, citation_text)
-        # else:
-        #     citation_text=base_citation_text
-        # self.do_help_module(pipeline_name, citation_text)
+        modules = self.__pipeline_list_view.get_selected_modules()
+        active_module = self.__pipeline_list_view.get_active_module()
+        if len(modules) > 0:
+            self.do_help_modules(modules)
+        elif active_module is not None:
+            print(active_module.get_cite())
+            self.do_help_module(active_module.module_name, active_module.get_cite())
+        else:
+            wx.MessageBox(
+                HELP_ON_MODULE_BUT_NONE_SELECTED,
+                "No module selected",
+                style=wx.OK | wx.ICON_INFORMATION,
+            )
     @staticmethod
     def __debug_pdb(event):
         pdb.set_trace()

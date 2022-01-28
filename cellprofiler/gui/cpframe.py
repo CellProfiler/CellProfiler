@@ -1077,11 +1077,18 @@ class CPFrame(wx.Frame):
     def __on_cite_module(self, event):
         modules = self.__pipeline_list_view.get_selected_modules()
         active_module = self.__pipeline_list_view.get_active_module()
+        myCite=active_module.get_help()
+        refstart=myCite.find("<div class=\"section\" id=\"references\">")
+        myCite=myCite[refstart:]
+        refend=myCite.find("</div>")
+        myCite=myCite[:(refend+6)]
+        myCite=myCite.replace("ul", "ol")
+        print(myCite)
+        self.do_help_module(active_module.module_name, myCite)
         if len(modules) > 0:
             self.do_help_modules(modules)
         elif active_module is not None:
-            print(active_module.get_cite())
-            self.do_help_module(active_module.module_name, active_module.get_cite())
+            self.do_help_module(active_module.module_name, myCite)
         else:
             wx.MessageBox(
                 HELP_ON_MODULE_BUT_NONE_SELECTED,

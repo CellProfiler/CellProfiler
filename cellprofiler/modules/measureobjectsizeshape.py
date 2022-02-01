@@ -783,8 +783,9 @@ module.""".format(
                           max(props['bbox-1'][index]-1,0):min(props['bbox-4'][index]+1,labels.shape[1]),
                           max(props['bbox-2'][index]-1,0):min(props['bbox-5'][index]+1,labels.shape[2])] 
                 volume = volume == label
-                verts, faces, _, _ = skimage.measure.marching_cubes_lewiner(
+                verts, faces, _normals, _values = skimage.measure.marching_cubes(
                     volume,
+                    method="lewiner",
                     spacing=objects.parent_image.spacing
                     if objects.has_parent_image
                     else (1.0,) * labels.ndim,

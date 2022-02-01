@@ -368,4 +368,6 @@ def test_composite_rescale():
                 for image, color, weight in zip(images, colors, weights)
             ]
         )
+        channel = numpy.where(channel >1, 1, channel)
+
         numpy.testing.assert_array_almost_equal(output[:, :, i], channel)

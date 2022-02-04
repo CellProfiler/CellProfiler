@@ -743,7 +743,6 @@ class Measurements:
         """The list of object names (including Image) that have measurements
         """
         return [x for x in self.hdf5_dict.top_level_names() if x not in (DB_TEMP, RELATIONSHIP)]
-        # return [x for x in self.hdf5_dict.top_level_names() if x not in (RELATIONSHIP)]
 
     object_names = property(get_object_names)
 

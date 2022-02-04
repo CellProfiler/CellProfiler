@@ -33,6 +33,7 @@ from ..constants.measurement import C_OBJECTS_URL
 from ..constants.measurement import C_PATH_NAME
 from ..constants.measurement import C_SERIES
 from ..constants.measurement import C_URL
+from ..constants.measurement import DB_TEMP
 from ..constants.measurement import EXPERIMENT
 from ..constants.measurement import GROUP_INDEX
 from ..constants.measurement import GROUP_NUMBER
@@ -741,7 +742,8 @@ class Measurements:
     def get_object_names(self):
         """The list of object names (including Image) that have measurements
         """
-        return [x for x in self.hdf5_dict.top_level_names() if x != RELATIONSHIP]
+        return [x for x in self.hdf5_dict.top_level_names() if x not in (DB_TEMP, RELATIONSHIP)]
+        # return [x for x in self.hdf5_dict.top_level_names() if x not in (RELATIONSHIP)]
 
     object_names = property(get_object_names)
 

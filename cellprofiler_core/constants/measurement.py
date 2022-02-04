@@ -5,6 +5,7 @@ AGG_NAMES = [AGG_MEAN, AGG_MEDIAN, AGG_STD_DEV]
 IMAGE = "Image"
 EXPERIMENT = "Experiment"
 RELATIONSHIP = "Relationship"
+DB_TEMP = "ExportToDb"
 NEIGHBORS = "Neighbors"
 OBJECT = "Object"
 disallowed_object_names = [IMAGE, EXPERIMENT, RELATIONSHIP]

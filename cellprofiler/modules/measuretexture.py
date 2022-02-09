@@ -93,10 +93,10 @@ These are indicated in the results table in the *scale* column as n_00, n_01,
 n_02... for each scale *n*. In 2D, the directions and correspondence vectors *(y, x)* 
 for each measurement are given below:
 
-- _00 = horizontal, 0 degrees   (0, 1)
-- _01 = diagonal, 135 degrees   (1, 1)
-- _02 = vertical, 90 degrees   (1, 0)
-- _03 = diagonal, 45 degrees   (1, -1)
+- _00 = horizontal -, 0 degrees   (0, 1)
+- _01 = diagonal \\\\, 135 degrees or NW-SE   (1, 1)
+- _02 = vertical \|, 90 degrees   (1, 0)
+- _03 = diagonal /, 45 degrees or NE-SW  (1, -1)
 
 When analyzing 3D images, there are 13 correspondence vectors *(y, x, z)*:
 
@@ -116,7 +116,8 @@ When analyzing 3D images, there are 13 correspondence vectors *(y, x, z)*:
 
 In this case, an image makes understanding their directions easier. 
 Imagine the origin (0, 0, 0) is at the upper left corner of the first image
-in your z-stack.
+in your z-stack. Yellow vectors fall along the axes, and pairs of vectors with 
+matching colors are reflections of each other across the x axis. Image made in `GeoGebra`_.
 
 |MT_image0|
 
@@ -138,6 +139,7 @@ References
    SMC-3(6):610-621. `(link) <https://doi.org/10.1109/TSMC.1973.4309314>`__
 
 .. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
+.. _GeoGebra: https://www.geogebra.org/ 
 .. |MT_image0| image:: {MEASURE_TEXTURE_3D_INFO}
 """.format(
     **{

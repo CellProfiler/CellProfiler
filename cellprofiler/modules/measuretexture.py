@@ -117,9 +117,10 @@ When analyzing 3D images, there are 13 correspondence vectors *(y, x, z)*:
 In this case, an image makes understanding their directions easier. 
 Imagine the origin (0, 0, 0) is at the upper left corner of the first image
 in your z-stack. Yellow vectors fall along the axes, and pairs of vectors with 
-matching colors are reflections of each other across the x axis. Image made in `GeoGebra`_.
+matching colors are reflections of each other across the x axis. The two
+images represent two views of the same vectors. Images made in `GeoGebra`_.
 
-|MT_image0|
+|MT_image0| |MT_image1|
 
 Technical notes
 ^^^^^^^^^^^^^^^
@@ -141,10 +142,14 @@ References
 .. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
 .. _GeoGebra: https://www.geogebra.org/ 
 .. |MT_image0| image:: {MEASURE_TEXTURE_3D_INFO}
+.. |MT_image1| image:: {MEASURE_TEXTURE_3D_INFO2}
 """.format(
     **{
         "MEASURE_TEXTURE_3D_INFO": cellprofiler.gui.help.content.image_resource(
-            "Measure_texture_3D_correspondences_lowres.png"
+            "Measure_texture_3D_correspondences_1.png"
+        ),
+        "MEASURE_TEXTURE_3D_INFO2": cellprofiler.gui.help.content.image_resource(
+            "Measure_texture_3D_correspondences_2.png"
         )
     }
 )

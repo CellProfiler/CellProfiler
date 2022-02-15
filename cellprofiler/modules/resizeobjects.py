@@ -40,7 +40,7 @@ See also
 class ResizeObjects(ObjectProcessing):
     module_name = "ResizeObjects"
 
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         super(ResizeObjects, self).create_settings()
@@ -57,7 +57,7 @@ The following options are available:
         )
 
         self.factor_x = Float(
-            "Factor X",
+            "X Factor",
             0.25,
             minval=0,
             doc="""\
@@ -68,7 +68,7 @@ enlarge the objects.""",
         )
 
         self.factor_y = Float(
-            "Factor Y",
+            "Y Factor",
             0.25,
             minval=0,
             doc="""\
@@ -79,7 +79,7 @@ enlarge the objects.""",
         )
 
         self.factor_z = Float(
-            "Factor Z",
+            "Z Factor",
             0.25,
             minval=0,
             doc="""\
@@ -111,7 +111,7 @@ Enter the desired height of the final objects, in pixels.""",
 
         self.planes = Integer(
             "Planes (Z)",
-            100,
+            10,
             minval=1,
             doc="""\
 *(Used only if resizing by "Dimensions")*
@@ -222,6 +222,13 @@ Enter the desired planes in the final objects.""",
         if variable_revision_number == 1:
             setting_values += ["None"]
             variable_revision_number = 2
+
+        if variable_revision_number == 2:
+            setting_values = (
+                setting_values[:1] + ["0.25", "0.25", "0.25"] + setting_values[3:4] + ["10"] + setting_values[5:]
+            )
+            variable_revision_number = 3
+
         return setting_values, variable_revision_number
 
 

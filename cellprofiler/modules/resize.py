@@ -55,7 +55,7 @@ S_ADDITIONAL_IMAGE_COUNT = 9
 
 
 class Resize=(ImageProcessing):
-    variable_revision_number = 4
+    variable_revision_number = 5
 
     module_name = "Resize"
 
@@ -73,7 +73,7 @@ The following options are available:
         )
 
         self.resizing_factor_x = Float(
-            "Resizing factor X",
+            "X Resizing factor",
             0.25,
             minval=0,
             doc="""\
@@ -84,7 +84,7 @@ numbers greater than one (that is, multiples) will enlarge the image.""",
         )
 
         self.resizing_factor_y= Float(
-            "Resizing factor Y",
+            "Y Resizing factor",
             0.25,
             minval=0,
             doc="""\
@@ -95,7 +95,7 @@ numbers greater than one (that is, multiples) will enlarge the image.""",
         )
 
         self.resizing_factor_z= Float(
-            "Resizing factor Z",
+            "Z Resizing factor",
             0.25,
             minval=0,
             doc="""\
@@ -121,7 +121,7 @@ You have two options on how to resize your image:
         )
 
         self.specific_width = Integer(
-            "Width of the final image",
+            "Width (x) of the final image",
             100,
             minval=1,
             doc="""\
@@ -131,7 +131,7 @@ Enter the desired width of the final image, in pixels.""",
         )
 
         self.specific_height = Integer(
-            "Height of the final image",
+            "Height (y) of the final image",
             100,
             minval=1,
             doc="""\
@@ -141,8 +141,8 @@ Enter the desired height of the final image, in pixels.""",
         )
 
         self.specific_planes = Integer(
-            "# of planes in the final image",
-            100,
+            "# of planes (z) in the final image",
+            10,
             minval=1,
             doc="""\
 *(Used only if resizing by specifying desired final dimensions)*
@@ -250,8 +250,8 @@ resized with the same settings as the first image.""",
             self.use_manual_or_image,
             self.specific_image,
             self.specific_width,
-            self.specific_planes,
             self.specific_height,
+            self.specific_planes,
             self.interpolation,
         ]
 
@@ -511,5 +511,12 @@ resized with the same settings as the first image.""",
                 setting_values[:7] + [C_MANUAL, "None"] + setting_values[7:]
             )
             variable_revision_number = 4
+        
+        if variable_revision_number == 4:
+            # Add resizing to another image size
+            setting_values = (
+                setting_values[:1] + ["0.25", "0.25", "0.25"] + setting_values[3:4] + ["10"] + setting_values[5:]
+            )
+            variable_revision_number = 5
 
         return setting_values, variable_revision_number

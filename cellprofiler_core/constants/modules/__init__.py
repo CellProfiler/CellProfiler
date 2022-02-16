@@ -1,7 +1,7 @@
 builtin_modules = {
     "align": "Align",
     "groups": "Groups",
-    "images": "Images",
+    "images2": "Images",
     "loaddata": "LoadData",
     "metadata": "Metadata",
     "namesandtypes": "NamesAndTypes",

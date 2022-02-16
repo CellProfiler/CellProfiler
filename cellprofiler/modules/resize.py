@@ -54,7 +54,7 @@ I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 S_ADDITIONAL_IMAGE_COUNT = 9
 
 
-class Resize=(ImageProcessing):
+class Resize (ImageProcessing):
     variable_revision_number = 5
 
     module_name = "Resize"
@@ -513,9 +513,9 @@ resized with the same settings as the first image.""",
             variable_revision_number = 4
         
         if variable_revision_number == 4:
-            # Add resizing to another image size
+            #Add X, Y and Z resizing factor 
             setting_values = (
-                setting_values[:1] + ["0.25", "0.25", "0.25"] + setting_values[3:4] + ["10"] + setting_values[5:]
+                setting_values[:3] + ["0.25", "0.25", "0.25"] + setting_values[4:6] + ["10"] + setting_values[6:]
             )
             variable_revision_number = 5
 

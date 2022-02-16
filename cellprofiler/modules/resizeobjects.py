@@ -225,7 +225,7 @@ Enter the desired planes in the final objects.""",
 
         if variable_revision_number == 2:
             setting_values = (
-                setting_values[:1] + ["0.25", "0.25", "0.25"] + setting_values[3:4] + ["10"] + setting_values[5:]
+                setting_values[:3] + ["0.25", "0.25", "0.25"] + setting_values[4:6] + ["10"] + setting_values[6:]
             )
             variable_revision_number = 3
 

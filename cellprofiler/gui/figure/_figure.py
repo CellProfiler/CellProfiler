@@ -2029,6 +2029,7 @@ class Figure(wx.Frame):
         in_range = (image.min(), image.max())
         image = image.astype(numpy.float32)
         if self.dimensions == 3:
+            orig_image_max = image.max()
             image = image[self.current_plane, :, :]
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
@@ -2087,12 +2088,16 @@ class Figure(wx.Frame):
             # Apply display bounds
             if vmin is not None and vmax is not None:
                 image = skimage.exposure.rescale_intensity(image, in_range=(vmin, vmax))
+        
         if not self.is_color_image(image):
             if not normalize:
-                if image.max() < 255:
-                    norm = matplotlib.colors.Normalize(vmin=0, vmax=255)
+                if self.dimensions == 3:
+                    norm = matplotlib.colors.Normalize(vmin=0, vmax=orig_image_max)
                 else:
-                    norm = matplotlib.colors.Normalize(vmin=0, vmax=image.max())
+                    if image.max() < 255:
+                        norm = matplotlib.colors.Normalize(vmin=0, vmax=255)
+                    else:
+                        norm = matplotlib.colors.Normalize(vmin=0, vmax=orig_image_max)
             else:
                 norm = None
             mappable = matplotlib.cm.ScalarMappable(cmap=colormap, norm=norm)

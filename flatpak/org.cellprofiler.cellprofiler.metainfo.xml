@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.cellprofiler.cellprofiler</id>
+
+  <name>CellProfiler</name>
+  <summary>Cell image analysis software</summary>
+
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>BSD-3-Clause-Modification</project_license>
+
+  <description>
+    <p>
+      CellProfiler is a free open-source software designed to enable biologists without training in computer vision or programming to quantitatively measure phenotypes from thousands of images automatically.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">org.cellprofiler.cellprofiler.desktop</launchable>
+</component>

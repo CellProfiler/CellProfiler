@@ -1,0 +1,58 @@
+{
+    "name": "mariadb-connector-c",
+    "buildsystem": "cmake",
+    "config-opts": [
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DINSTALL_BINDIR=bin",
+        "-DINSTALL_LIBDIR=lib",
+        "-DINSTALL_INCLUDEDIR=include",
+        "-DINSTALL_PLUGINDIR=lib/mariadb/plugin",
+        "-DINSTALL_PCDIR=lib/pkgconfig"
+    ],
+    "sources": [
+        {
+            "type": "archive",
+            "url": "https://mirror.jaleco.com/mariadb/connector-c-3.2.3/mariadb-connector-c-3.2.3-src.tar.gz",
+            "sha256": "b6aa38656438e092242a95d01d3a80a5ce95c7fc02ec81009f4f0f46262331f4"
+        }
+    ],
+    "modules": [
+        {
+            "name": "jemalloc",
+            "cleanup": [
+                "/bin/",
+                "/share"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://github.com/jemalloc/jemalloc/releases/download/5.2.1/jemalloc-5.2.1.tar.bz2",
+                    "sha256": "34330e5ce276099e2e8950d9335db5a875689a4c6a56751ef3b1d8c537f887f6"
+                }
+            ]
+        },
+        {
+            "name": "libaio",
+            "no-autogen": true,
+            "make-install-args": [
+                "prefix=/app"
+            ],
+            "sources": [
+                {
+                    "type": "archive",
+                    "url": "https://deb.debian.org/debian/pool/main/liba/libaio/libaio_0.3.110.orig.tar.gz",
+                    "sha256": "e019028e631725729376250e32b473012f7cb68e1f7275bfc1bbcdd0f8745f7e"
+                },
+                {
+                    "type": "patch",
+                    "paths": [
+                        "patches/link-libs.patch",
+                        "patches/fix-install-dirs.patch",
+                        "patches/no-werror.patch",
+                        "patches/fix-build-flags.patch"
+                    ]
+                }
+            ]
+        }
+    ]
+}

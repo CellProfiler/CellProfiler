@@ -1,0 +1,24 @@
+Description: Fix FTBFS with newer gcc 4.6
+ Using -Werror on a released project is in general not a good idea, as changes
+ in the toolchain and environment can trigger unexpected build failures.
+Author: Guillem Jover <guillem@debian.org>
+Origin: vendor
+Forwarded: no
+Last-Update: 2014-10-09
+
+
+---
+ harness/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/harness/Makefile
++++ b/harness/Makefile
+@@ -6,7 +6,7 @@ PROGS:=$(PARTPROGS) $(EXTRAPROGS)
+ HARNESS_SRCS:=main.c
+ # io_queue.c
+ 
+-CFLAGS+=-Wall -Werror -I../src -g -O
++CFLAGS+=-Wall -I../src -g -O
+ #-lpthread -lrt
+ 
+ all: $(PROGS)

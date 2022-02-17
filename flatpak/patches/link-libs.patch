@@ -1,0 +1,29 @@
+Description: Link against libgcc and libc to avoid unresolved symbols
+ We need to link agaisnt -lgcc, on at least hppa.
+ .
+ We also link against -lc and -Wl,--as-needed, this way we pull the
+ required fortified functions from the internal libc_nonshared.a, but
+ do not link against the shared library because we do not use any of
+ its symbols.
+Author: Guillem Jover <guillem@debian.org>
+Origin: vendor
+Bug-Debian: 764509
+Forwarded: no
+Last-Update: 2014-10-09
+
+
+---
+ src/Makefile |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -6,7 +6,7 @@ CFLAGS ?= -g -fomit-frame-pointer -O2
+ CFLAGS += -nostdlib -nostartfiles -Wall -I. -fPIC
+ SO_CFLAGS=-shared $(CFLAGS)
+ L_CFLAGS=$(CFLAGS)
+-LINK_FLAGS=
++LINK_FLAGS=-Wl,--as-needed -lgcc -lc
+ LINK_FLAGS+=$(LDFLAGS)
+ 
+ soname=libaio.so.1

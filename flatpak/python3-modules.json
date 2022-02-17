@@ -1,0 +1,242 @@
+{
+    "name": "python3-modules",
+    "buildsystem": "simple",
+    "build-commands": [],
+    "modules": [
+        {
+            "name": "cellprofiler",
+            "buildsystem": "simple",
+            "build-commands": [
+                "pip3 install --verbose --exists-action=i --no-index --find-links=\"file://${PWD}\" --prefix=${FLATPAK_DEST} \"${PWD}/cellprofiler-core\" \"${PWD}/cellprofiler-src\" --no-build-isolation"
+            ],
+            "sources": [
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/03/a3/f61a9a7ff7969cdef2a6e0383a346eb327495d20d25a2de5a088dbb543a6/Pillow-9.0.1.tar.gz",
+                    "sha256": "6c8bc8238a7dfdaf7a75f5ec5a663f4173f8c367e5a39f87e720495e1eed75fa"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/36/7a/87837f39d0296e723bb9b62bbb257d0355c7f6128853c78955f57342a56d/python_dateutil-2.8.2-py2.py3-none-any.whl",
+                    "sha256": "961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/be/74/24d058c17b155d131359f1cd01e120b3954686bf8b7853172b279237e1dc/matplotlib-3.1.3.tar.gz",
+                    "sha256": "db3121f12fb9b99f105d1413aebaeb3d943f269f3d262b45586d12765866f0c6"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/61/cf/6e354304bcb9c6413c4e02a747b600061c21d38ba51e7e544ac7bc66aecc/threadpoolctl-3.1.0-py3-none-any.whl",
+                    "sha256": "8b99adda265feb6773280df41eece7b2e6561b772d21ffd52e372f999024907b"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/20/9a/e5d9ec41927401e41aea8af6d16e78b5e612bca4699d417f646a9610a076/Jinja2-3.0.3-py3-none-any.whl",
+                    "sha256": "077ce6014f7b40d03b47d1f1ca4b0fc8328a692bd284016f806ed0eaca390ad8"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/cd/df/1145dc9389138eb47649806b42aaad5b0ecdfd3e93c7c51c1fffd80a8f90/sentry_sdk-0.18.0-py2.py3-none-any.whl",
+                    "sha256": "6222cf623e404c3e62b8e0e81c6db866ac2d12a663b7c1f7963350e3f397522a"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/45/0b/38b06fd9b92dc2b68d58b75f900e97884c45bedd2ff83203d933cf5851c9/future-0.18.2.tar.gz",
+                    "sha256": "b1bead90b70cf6ec3f0710ae53a525360fa360d306a86583adc6bf83a4db537d"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/d0/97/7326248ac8d5049968bf4ec708a5d3d4806e412a42e74160d7f266a3e03a/mysqlclient-1.4.6.tar.gz",
+                    "sha256": "f3fdaa9a38752a3b214a6fe79d7cae3653731a53e577821f9187e67cbecb2e16"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/2d/61/08076519c80041bc0ffa1a8af0cbd3bf3e2b62af10435d269a9d0f40564d/requests-2.27.1-py2.py3-none-any.whl",
+                    "sha256": "f22fa1e554c9ddfd16e6e41ac79759e17be9e492b3587efa038054674760e72d"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/40/2f/e862d428c5e475faf22b0a8d12a3359b694bc49e54bc2a4fa95b6cca1aef/prokaryote-2.4.4.tar.gz",
+                    "sha256": "0a147b8b9a0a7279aa773e6a8fe459eb49f6de479f7afe7203dc4ac10dc8b587"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/e7/54/4b57761f25be6e2536130ca3bc8742dee45bb9047c5df798197203220e37/scikit-image-0.19.1.tar.gz",
+                    "sha256": "48f00ee1e8ec2818ae6a152c72df15f4db7f566e839f5c34e1a0c3c9e5210138"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/49/f9/4986d7ea281875be92f7780b1d77c1e2e1d1b8f6669c9bb784065c7777cc/imageio-2.15.0-py3-none-any.whl",
+                    "sha256": "d5e553c8e8fd01ac27094df32bf020b553f640a71b042c960c8341bf7d313a8e"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/5c/f9/695d6bedebd747e5eb0fe8fad57b72fdf25411273a39791cde838d5a8f51/cycler-0.11.0-py3-none-any.whl",
+                    "sha256": "3a27e95f763a428a739d2add979fa7494c912a32c17c4c38c4d5f082cad165a3"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/22/cd/a6aa959dca619918ccb55023b4cb151949c64d4d5d55b3f4ffd7eee0c6e8/docutils-0.15.2-py3-none-any.whl",
+                    "sha256": "6c4f696463b79f1fb8ba0c594b63840ebd41f059e92b31957c46b74a4599b6d0"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/cb/4f/1e21d3c079c973ba862a18f3be73c2bbe2e6bc25c96d94df605b5cbb494d/wxPython-4.1.0.tar.gz",
+                    "sha256": "2e2475cb755ac8d93d2f9335c39c060b4d17ecb5d4e0e86626d1e2834b64a48b"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/07/cb/5f001272b6faeb23c1c9e0acc04d48eaaf5c862c17709d20e3469c6e0139/jmespath-0.10.0-py2.py3-none-any.whl",
+                    "sha256": "cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/37/45/946c02767aabb873146011e665728b680884cd8fe70dde973c640e45b775/certifi-2021.10.8-py2.py3-none-any.whl",
+                    "sha256": "d62a0163eb4c2344ac042ab2bdf75399a71a2d8c7d47eac2e2ee91b9d6339569"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/17/7c/4b60191e38bed78c65e817f7506ef1038a4246a703cb36fb5390a5eaf7ce/s3transfer-0.5.1-py3-none-any.whl",
+                    "sha256": "25c140f5c66aa79e1ac60be50dcd45ddc59e83895f062a3aab263b870102911f"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/e9/6c/c0a8130fe198f27bab92f1b28631e0cc2572295f6b7a31e87efe7448aa1c/numpy-1.22.2.zip",
+                    "sha256": "076aee5a3763d41da6bef9565fdf3cb987606f567cd8b104aded2b38b7b47abf"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/6f/92/dcf824c76c5e6c5e4ec0ce93c9157483d225fb557e42d7e7cd97280e22f7/tifffile-2022.2.2-py3-none-any.whl",
+                    "sha256": "6c2e603246ed9978888df6b3e1b9170acf862b32dde0cb7189140e32dd2cdea4"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/6c/95/d37e7db364d7f569e71068882b1848800f221c58026670e93a4c6d50efe7/pyzmq-22.3.0.tar.gz",
+                    "sha256": "8eddc033e716f8c91c6a2112f0a8ebc5e00532b4a6ae1eb0ccc48e027f9c671c"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/80/c1/23fd82ad3121656b585351aba6c19761926bb0db2ebed9e4ff09a43a3fcc/pyparsing-3.0.7-py3-none-any.whl",
+                    "sha256": "a6c06a88f252e6c322f65faf8f418b16213b51bdfaece0524c1c1bc30c63c484"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/32/27/4f3c7eaab8b6c8cae4db8161589342d593fd89c5e1d2eb096daaadea4844/boto3-1.20.49-py3-none-any.whl",
+                    "sha256": "09d7ffbbfcc212d22c92acf127ebc8c8ab89a2c03fa6360ab35b14d52b0df8ab"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/0c/8e/73ef5366e5c04c2410dab1c74493ca9617a56a27a50f11e01aa4fac2a16c/charset_normalizer-2.0.11-py3-none-any.whl",
+                    "sha256": "2842d8f5e82a1f6aa437380934d5e1cd4fcf2003b06fed6940769c164a480a45"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/35/e9/decd467448cde227aad94ff2976046afd3a51ad461ba9a325840687e8836/PyWavelets-1.2.0.tar.gz",
+                    "sha256": "6cbd69b047bb4e00873097472133425f5f08a4e6bc8b3f0ae709274d4d5e9a8d"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/8e/87/259fde8cf07d06677f0a749cb157d079ebd00d40fe52faaab1a882a66159/kiwisolver-1.3.2.tar.gz",
+                    "sha256": "fc4453705b81d03568d5b808ad8f09c77c47534f6ac2e72e733f9ca4714aa75c"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/d9/b5/a601f54b670bf84cb2dca24ca56be2fc7bd8d86a3eb678579956c922981e/mahotas-1.4.11.tar.gz",
+                    "sha256": "3f0109f167fc9b599f77b4d30d57c45bcc34dea019ff79fe29eb43c866d87ce9"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/4e/b8/f5a25b22e803f0578e668daa33ba3701bb37858ec80e08a150bd7d2cf1b1/urllib3-1.26.8-py2.py3-none-any.whl",
+                    "sha256": "000ca7f471a233c2251c6c7023ee85305721bfdf18621ebff4fd17a8653427ed"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/b4/a2/4faa34bf0cdbefd5c706625f1234987795f368eb4e97bde9d6f46860843e/scipy-1.8.0.tar.gz",
+                    "sha256": "31d4f2d6b724bc9a98e527b5849b8a7e589bf1ea630c33aa563eda912c9ff0bd"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/61/c7/e1a31b6a092a5b91952fe96801b2d3167fcb3bad8386c023dd83de4c4ab8/centrosome-1.2.0.tar.gz",
+                    "sha256": "c0b834e2e749c586077af95ab307c15d9bf498c4667f6031b0915efb94674bff"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/bf/10/ff66fea6d1788c458663a84d88787bae15d45daa16f6b3ef33322a51fc7e/MarkupSafe-2.0.1.tar.gz",
+                    "sha256": "594c67807fb16238b30c44bdf74f36c02cdf22d1c8cda91ef8a0ed8dabf5620a"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/47/b6/ea8a7728f096a597f0032564e8013b705aa992a0990becd773dcc4d7b4a7/psutil-5.9.0.tar.gz",
+                    "sha256": "869842dbd66bb80c3217158e629d6fceaecc3a3166d3d1faee515b05dd26ca25"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/15/79/a880aff078397a36326273d8b1e3efdecc10a271a29c5518a6c7e90e238c/botocore-1.23.49-py3-none-any.whl",
+                    "sha256": "3f72d20c65c89b694d9c7d164eb499877331783577f0207739088d11eaf315e7"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/e9/93/aa6613aa70d6eb4868e667068b5a11feca9645498fd31b954b6c4bb82fa5/networkx-2.6.3-py3-none-any.whl",
+                    "sha256": "80b6b89c77d1dfb64a4c7854981b60aeea6360ac02c6d4e4913319e0a313abef"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/5d/48/0873186982a2800060e63095cfd6b299e815e866ab0fa8bfe2a9cb1d8a08/python_bioformats-4.0.5-py3-none-any.whl",
+                    "sha256": "9c5cc32dd78c7b6e891513f0dc897c4c74a8fd4d9e9afb69d40edd0eb481320f"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/5e/d5/78f75ee0a6beb51a606c50cc17d8f99782653f04dce6d5e12feaef089692/python-javabridge-4.0.3.tar.gz",
+                    "sha256": "3fee0c235efcfe866f95695fdc0b6289eab2371043b32ff4ca6feff098de59c5"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/04/a2/d918dcd22354d8958fe113e1a3630137e0fc8b44859ade3063982eacd2a4/idna-3.3-py3-none-any.whl",
+                    "sha256": "84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/05/8e/8de486cbd03baba4deef4142bd643a3e7bbe954a784dc1bb17142572d127/packaging-21.3-py3-none-any.whl",
+                    "sha256": "ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/75/44/074b780d8ac0b0899937e9b8ba6d5d8873a71b99aa915219251ef85a8890/scikit-learn-1.0.2.tar.gz",
+                    "sha256": "b5870959a5484b614f26d31ca4c17524b1b0317522199dc985c3b4256e030767"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/b1/97/028b36146944c3d887c70d68117d5ab8aa191137e8e5629a3be7a02911f4/inflect-5.4.0-py3-none-any.whl",
+                    "sha256": "2eb3f9a481e12849370d5a74acc546cc128d79df6e483928aa78b5bb18244ef6"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/02/c3/253a89ee03fc9b9682f1541728eb66db7db22148cd94f89ab22528cd1e1b/deprecation-2.1.0-py2.py3-none-any.whl",
+                    "sha256": "a10811591210e1fb0e768a8c25517cabeabcba6f0bf96564f8ff45189f90b14a"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/3e/d5/0163eb0cfa0b673aa4fe1cd3ea9d8a81ea0f32e50807b0c295871e4aab2e/joblib-1.1.0-py2.py3-none-any.whl",
+                    "sha256": "f21f109b3c7ff9d95f8387f752d0d9c34a02aa2f7060c2135f465da0e5160ff6"
+                },
+                {
+                    "type": "file",
+                    "url": "https://files.pythonhosted.org/packages/d9/b5/a601f54b670bf84cb2dca24ca56be2fc7bd8d86a3eb678579956c922981e/mahotas-1.4.11.tar.gz",
+                    "sha256": "3f0109f167fc9b599f77b4d30d57c45bcc34dea019ff79fe29eb43c866d87ce9"
+                },
+
+                {
+                    "type": "git",
+                    "url": "https://github.com/CellProfiler/core.git",
+                    "dest": "cellprofiler-core"
+                },
+                {
+                    "type": "dir",
+                    "path": "../",
+                    "dest": "cellprofiler-src"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,231 @@
+id: org.cellprofiler.cellprofiler
+runtime: org.freedesktop.Platform
+runtime-version: '21.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.openjdk
+command: cellprofiler
+
+finish-args:
+  - --share=ipc
+  - --share=network
+  - --socket=x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=host
+  - --env=PATH=/app/bin:/app/jre/bin:/usr/bin
+  - --env=JAVA_HOME=/app/jre
+  - --env=JDK_HOME=/app/jdk
+
+build-options:
+  env:
+    PATH: /app/bin:/app/jre/bin:/app/jdk/bin:/usr/bin
+    JAVA_HOME: /app/jre
+    JDK_HOME: /app/jdk
+    BLAS: /app/lib
+    LAPACK: /app/lib
+
+modules:
+- name: openjdk
+  buildsystem: simple
+  build-commands:
+    - /usr/lib/sdk/openjdk/install.sh
+    - /usr/lib/sdk/openjdk/installjdk.sh
+
+- glu-9.json
+- mariadb.json
+
+- name: hdf5
+  buildsystem: cmake-ninja
+  builddir: true
+  config-opts:
+    - -DCMAKE_BUILD_TYPE=RelWithDebInfo
+    - -DBUILD_TESTING:BOOL=OFF
+    - -DHDF5_BUILD_EXAMPLES:BOOL=OFF
+    - -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON
+  cleanup:
+    - /share/hdf5_examples
+  sources:
+    - type: archive
+      url: https://github.com/HDFGroup/hdf5/archive/refs/tags/hdf5-1_12_1.tar.gz
+      sha256: e6dde173c2d243551922d23a0387a79961205b018502e6a742acb30b61bc2d5f
+
+- name: wxWidgets
+  cleanup:
+  - /bin
+  config-opts:
+  - --with-opengl
+  sources:
+  - type: archive
+    url: https://github.com/wxWidgets/wxWidgets/releases/download/v3.1.5/wxWidgets-3.1.5.tar.bz2
+    sha256: d7b3666de33aa5c10ea41bb9405c40326e1aeb74ee725bb88f90f1d50270a224
+  - type: script
+    commands:
+    - cp -p /usr/share/automake-*/config.{sub,guess} .
+    - autoconf -f -B build/autoconf_prepend-include
+
+- name: lapack
+  buildsystem: cmake
+  builddir: true
+  config-opts:
+    - -DCMAKE_BUILD_TYPE=Release
+    - -DBUILD_SHARED_LIBS=ON
+    - -DBUILD_TESTING=OFF
+    - -DLAPACKE=ON
+    - -DCBLAS=ON
+  sources:
+    - type: archive
+      url: http://www.netlib.org/lapack/lapack-3.8.0.tar.gz
+      sha512: 17786cb7306fccdc9b4a242de7f64fc261ebe6a10b6ec55f519deb4cb673cb137e8742aa5698fd2dc52f1cd56d3bd116af3f593a01dcf6770c4dcc86c50b2a7f
+  cleanup:
+    - '/lib/cmake'
+
+- name: python3-numpy
+  buildsystem: simple
+  build-commands:
+    - python3 setup.py build -j6
+    - python3 setup.py install --prefix=/app --root=/ --optimize=1
+  build-options:
+    env:
+      ATLAS: None
+      BLAS: "/app/lib"
+      LAPACK: "/app/lib"
+  cleanup:
+    - "/bin"
+  sources:
+    - type: archive
+      url: https://github.com/numpy/numpy/releases/download/v1.22.2/numpy-1.22.2.tar.gz
+      sha256: 093d513a460fd94f94c16193c3ef29b2d69a33e482071e3d6d6e561a700587a6
+
+- name: pybind11
+  buildsystem: simple
+  build-commands:
+    - python3 setup.py build
+    - cmake -DPYBIND11_INSTALL=ON -DPYBIND11_TEST=OFF -DCMAKE_INSTALL_INCLUDEDIR:PATH=${FLATPAK_DEST}/include
+      -DCMAKE_INSTALL_LIBDIR:PATH=${FLATPAK_DEST}/lib -DCMAKE_INSTALL_DATAROOTDIR:PATH=${FLATPAK_DEST}/share
+      .
+    - python3 setup.py install --prefix=${FLATPAK_DEST}
+    - cmake --build .
+    - cmake --install .
+  sources:
+    - type: archive
+      url: https://github.com/pybind/pybind11/archive/v2.9.0.tar.gz
+      sha256: 057fb68dafd972bc13afb855f3b0d8cf0fa1a78ef053e815d9af79be7ff567cb
+
+- name: zeromq
+  buildsystem: cmake-ninja
+  builddir: true
+  config-opts:
+    - -DCMAKE_BUILD_TYPE=Release
+  cleanup:
+    - /bin
+  sources:
+    - type: archive
+      url: https://github.com/zeromq/libzmq/releases/download/v4.3.3/zeromq-4.3.3.tar.gz
+      sha256: 9d9285db37ae942ed0780c016da87060497877af45094ff9e1a1ca736e3875a2
+
+- name: python-pkgconfig
+  buildsystem: simple
+  build-commands:
+    - python3 setup.py install --prefix=${FLATPAK_DEST} --root=/ --optimize=1
+  sources:
+    - type: archive
+      url: https://files.pythonhosted.org/packages/c4/e0/e05fee8b5425db6f83237128742e7e5ef26219b687ab8f0d41ed0422125e/pkgconfig-1.5.5.tar.gz
+      sha256: deb4163ef11f75b520d822d9505c1f462761b4309b1bb713d08689759ea8b899
+
+- name: python-gast
+  buildsystem: simple
+  build-commands:
+    - python3 setup.py install --prefix=${FLATPAK_DEST} --root=/ --optimize=1
+  sources:
+    - type: archive
+      url: https://files.pythonhosted.org/packages/48/a3/0bd844c54ae8141642088b7ae09dd38fec2ec7faa9b7d25bb6a23c1f266f/gast-0.5.3.tar.gz
+      sha256: cfbea25820e653af9c7d1807f659ce0a0a9c64f2439421a7bba4f0983f532dea
+
+- name: python-pythran
+  buildsystem: simple
+  build-commands:
+    - python3 setup.py install --prefix=${FLATPAK_DEST} --root=/ --optimize=1
+  sources:
+    - type: archive
+      url: https://files.pythonhosted.org/packages/88/9f/161f08131abf7f23920cee29b691de27f10fd97ac09fb2f3532b3a7f9b96/pythran-0.11.0.tar.gz
+      sha256: 0b2cba712e09f7630879dff69f268460bfe34a6d6000451b47d598558a92a875
+
+- name: python-beniget
+  buildsystem: simple
+  build-commands:
+    - python3 setup.py install --prefix=${FLATPAK_DEST} --root=/ --optimize=1
+  sources:
+    - type: archive
+      url: https://files.pythonhosted.org/packages/14/e7/50cbac38f77eca8efd39516be6651fdb9f3c4c0fab8cf2cf05f612578737/beniget-0.4.1.tar.gz
+      sha256: 75554b3b8ad0553ce2f607627dad3d95c60c441189875b98e097528f8e23ac0c
+
+- name: python-ply
+  buildsystem: simple
+  build-commands:
+    - python3 setup.py install --prefix=${FLATPAK_DEST} --root=/ --optimize=1
+  sources:
+    - type: archive
+      url: https://files.pythonhosted.org/packages/e5/69/882ee5c9d017149285cab114ebeab373308ef0f874fcdac9beb90e0ac4da/ply-3.11.tar.gz
+      sha256: 00c7c1aaa88358b9c765b6d3000c6eec0ba42abca5351b095321aef446081da3
+
+- name: cppy
+  buildsystem: simple
+  build-commands:
+    - pip3 install --no-index --find-links="file://${PWD}" --prefix=${FLATPAK_DEST} cppy
+  sources:
+    - type: file
+      url: https://files.pythonhosted.org/packages/36/64/be592e84c443a70ea5dcfb1c30bfe6f10ba7d8eb05c2264c7ceca8498548/cppy-1.1.0.tar.gz
+      sha256: 4eda6f1952054a270f32dc11df7c5e24b259a09fddf7bfaa5f33df9fb4a29642
+
+- name: python3-kiwisolver
+  buildsystem: simple
+  build-commands:
+    - pip3 install --verbose --exists-action=i --no-index --find-links="file://${PWD}"
+      --prefix=${FLATPAK_DEST} "kiwisolver==1.3.2" --no-build-isolation
+  sources:
+    - type: file
+      url: https://files.pythonhosted.org/packages/8e/87/259fde8cf07d06677f0a749cb157d079ebd00d40fe52faaab1a882a66159/kiwisolver-1.3.2.tar.gz
+      sha256: fc4453705b81d03568d5b808ad8f09c77c47534f6ac2e72e733f9ca4714aa75c
+
+- name: python-scipy
+  buildsystem: simple
+  build-commands:
+    - python3 setup.py build -j6
+    - python3 setup.py install --prefix=/app --root=/ --optimize=1
+  build-options:
+    env:
+      ATLAS: None
+      BLAS: /app/lib
+      LAPACK: /app/lib
+      LDFLAGS: -shared
+  sources:
+    - type: archive
+      url: https://files.pythonhosted.org/packages/b4/a2/4faa34bf0cdbefd5c706625f1234987795f368eb4e97bde9d6f46860843e/scipy-1.8.0.tar.gz
+      sha256: 31d4f2d6b724bc9a98e527b5849b8a7e589bf1ea630c33aa563eda912c9ff0bd
+
+- name: python-h5py
+  buildsystem: simple
+  build-commands:
+    - python3 setup.py install --prefix=${FLATPAK_DEST} --root=/ --optimize=1
+  sources:
+    - type: archive
+      url: https://files.pythonhosted.org/packages/0a/39/62ec4c1cc96408f6cf27c1d10a26409b98eb6aa2dda7d9c48d204c09b970/h5py-3.6.0.tar.gz
+      sha256: 8752d2814a92aba4e2b2a5922d2782d0029102d99caaf3c201a566bc0b40db29
+
+- python3-packaging.json
+- python3-modules.json
+
+- name: cellprofiler-metadata
+  buildsystem: simple
+  build-commands:
+    - install -D org.cellprofiler.cellprofiler.metainfo.xml /app/share/metainfo/org.cellprofiler.cellprofiler.metainfo.xml
+    - install -D cellprofiler.svg /app/share/icons/hicolor/scalable/apps/org.cellprofiler.cellprofiler.svg
+    - install -D org.cellprofiler.cellprofiler.desktop /app/share/applications/org.cellprofiler.cellprofiler.desktop
+  sources:
+    - type: file
+      path: org.cellprofiler.cellprofiler.metainfo.xml
+    - type: file
+      path: org.cellprofiler.cellprofiler.desktop
+    - type: file
+      path: cellprofiler.svg

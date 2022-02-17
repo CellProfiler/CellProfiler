@@ -1,0 +1,21 @@
+[Desktop Entry]
+Categories=Science;Biology;ImageProcessing;
+Comment[de_DE]=Cell image analysis software
+Comment=Cell image analysis software
+Exec=cellprofiler
+GenericName[de_DE]=
+GenericName=
+Icon=org.cellprofiler.cellprofiler
+MimeType=
+Name[de_DE]=CellProfiler
+Name=CellProfiler
+Path=
+StartupNotify=true
+Terminal=false
+TerminalOptions=
+Type=Application
+Version=1.0
+X-DBUS-ServiceName=
+X-DBUS-StartupType=
+X-KDE-SubstituteUID=false
+X-KDE-Username=

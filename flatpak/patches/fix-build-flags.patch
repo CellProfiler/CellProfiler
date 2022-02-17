@@ -1,0 +1,79 @@
+Description: Honour user build flags
+ CPPFLAGS, CFLAGS and LDFLAGS are user flags, which we need to preserve, any
+ required flag that the build system needs, has to be set in some other flag
+ so that the build will succeed even of the user flags are passed.
+Author: Guillem Jover <guillem@debian.org>
+Origin: vendor
+Forwarded: no
+Last-Update: 2014-10-09
+
+
+---
+ harness/Makefile |    7 +++++--
+ src/Makefile     |   18 +++++++++---------
+ 2 files changed, 14 insertions(+), 11 deletions(-)
+
+--- a/harness/Makefile
++++ b/harness/Makefile
+@@ -6,13 +6,16 @@ PROGS:=$(PARTPROGS) $(EXTRAPROGS)
+ HARNESS_SRCS:=main.c
+ # io_queue.c
+ 
+-CFLAGS+=-Wall -I../src -g -O
++MK_CPPFLAGS:=-I../src
++CFLAGS=-Wall -g -O
+ #-lpthread -lrt
++MK_CFLAGS=$(CFLAGS)
++MK_LDFLAGS=main.c ../src/libaio.a $(LDFLAGS)
+ 
+ all: $(PROGS)
+ 
+ $(PROGS): %.p: %.t $(HARNESS_SRCS)
+-	$(CC) $(CFLAGS) -DTEST_NAME=\"$<\" -o $@ main.c ../src/libaio.a
++	$(CC) $(MK_CPPFLAGS) $(MK_CFLAGS) -DTEST_NAME=\"$<\" -o $@ $(MK_LDFLAGS)
+ 
+ clean:
+ 	rm -f $(PROGS) *.o runtests.out rofile wofile rwfile
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -4,12 +4,12 @@ includedir=$(prefix)/include
+ libdir=$(prefix)/lib
+ libdevdir=$(prefix)/lib
+ 
+-CFLAGS ?= -g -fomit-frame-pointer -O2
+-CFLAGS += -nostdlib -nostartfiles -Wall -I. -fPIC
+-SO_CFLAGS=-shared $(CFLAGS)
+-L_CFLAGS=$(CFLAGS)
+-LINK_FLAGS=-Wl,--as-needed -lgcc -lc
+-LINK_FLAGS+=$(LDFLAGS)
++MK_CPPFLAGS=-I.
++MK_CFLAGS=-nostdlib -nostartfiles -fomit-frame-pointer -fPIC $(CFLAGS)
++CFLAGS=-Wall -g -O2
++SO_CFLAGS=-shared $(MK_CFLAGS)
++L_CFLAGS=$(MK_CFLAGS)
++MK_LDFLAGS=-Wl,--as-needed -lgcc -lc $(LDFLAGS)
+ 
+ soname=libaio.so.1
+ minor=0
+@@ -39,10 +39,10 @@ libaio_sobjs := $(patsubst %.c,%.os,$(li
+ $(libaio_objs) $(libaio_sobjs): libaio.h vsys_def.h
+ 
+ %.os: %.c
+-	$(CC) $(SO_CFLAGS) -c -o $@ $<
++	$(CC) $(MK_CPPFLAGS) $(SO_CFLAGS) -c -o $@ $<
+ 
+ %.ol: %.c
+-	$(CC) $(L_CFLAGS) -c -o $@ $<
++	$(CC) $(MK_CPPFLAGS) $(L_CFLAGS) -c -o $@ $<
+ 
+ AR ?= ar
+ RANLIB ?= ranlib
+@@ -52,7 +52,7 @@ libaio.a: $(libaio_objs)
+ 	$(RANLIB) libaio.a
+ 
+ $(libname): $(libaio_sobjs) libaio.map
+-	$(CC) $(SO_CFLAGS) -Wl,--version-script=libaio.map -Wl,-soname=$(soname) -o $@ $(libaio_sobjs) $(LINK_FLAGS)
++	$(CC) $(SO_CFLAGS) -Wl,--version-script=libaio.map -Wl,-soname=$(soname) -o $@ $(libaio_sobjs) $(MK_LDFLAGS)
+ 
+ install: $(all_targets)
+ 	install -D -m 644 libaio.h $(DESTDIR)$(includedir)/libaio.h

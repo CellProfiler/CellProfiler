@@ -1,0 +1,68 @@
+Description: Fix installation of shared vs static libraries
+Author: Guillem Jover <guillem@debian.org>
+Origin: vendor
+Forwarded: no
+Last-Update: 2007-09-11
+
+
+---
+ Makefile     |    9 ++++++++-
+ src/Makefile |   12 +++++++-----
+ 2 files changed, 15 insertions(+), 6 deletions(-)
+
+--- a/Makefile
++++ b/Makefile
+@@ -5,9 +5,11 @@ RELEASE=$(shell awk '/Release:/ { print
+ CVSTAG = $(NAME)_$(subst .,-,$(VERSION))_$(subst .,-,$(RELEASE))
+ RPMBUILD=$(shell `which rpmbuild >&/dev/null` && echo "rpmbuild" || echo "rpm")
+ 
++DESTDIR=
+ prefix=/usr
+ includedir=$(prefix)/include
+ libdir=$(prefix)/lib
++libdevdir=$(prefix)/lib
+ 
+ default: all
+ 
+@@ -15,7 +17,12 @@ all:
+ 	@$(MAKE) -C src
+ 
+ install:
+-	@$(MAKE) -C src install prefix=$(prefix) includedir=$(includedir) libdir=$(libdir)
++	@$(MAKE) -C src install \
++	  DESTDIR=$(DESTDIR) \
++	  prefix=$(prefix) \
++	  includedir=$(includedir) \
++	  libdir=$(libdir) \
++	  libdevdir=$(libdevdir)
+ 
+ check:
+ 	@$(MAKE) -C harness check
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -1,6 +1,8 @@
++DESTDIR=
+ prefix=/usr
+ includedir=$(prefix)/include
+ libdir=$(prefix)/lib
++libdevdir=$(prefix)/lib
+ 
+ CFLAGS ?= -g -fomit-frame-pointer -O2
+ CFLAGS += -nostdlib -nostartfiles -Wall -I. -fPIC
+@@ -53,11 +55,11 @@ $(libname): $(libaio_sobjs) libaio.map
+ 	$(CC) $(SO_CFLAGS) -Wl,--version-script=libaio.map -Wl,-soname=$(soname) -o $@ $(libaio_sobjs) $(LINK_FLAGS)
+ 
+ install: $(all_targets)
+-	install -D -m 644 libaio.h $(includedir)/libaio.h
+-	install -D -m 644 libaio.a $(libdir)/libaio.a
+-	install -D -m 755 $(libname) $(libdir)/$(libname)
+-	ln -sf $(libname) $(libdir)/$(soname)
+-	ln -sf $(libname) $(libdir)/libaio.so
++	install -D -m 644 libaio.h $(DESTDIR)$(includedir)/libaio.h
++	install -D -m 644 libaio.a $(DESTDIR)$(libdevdir)/libaio.a
++	install -D -m 755 $(libname) $(DESTDIR)$(libdir)/$(libname)
++	ln -sf $(libdir)/$(libname) $(DESTDIR)$(libdir)/$(soname)
++	ln -sf $(libdir)/$(libname) $(DESTDIR)$(libdevdir)/libaio.so
+ 
+ $(libaio_objs): libaio.h
+ 

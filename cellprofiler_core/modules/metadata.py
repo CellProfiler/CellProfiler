@@ -972,7 +972,8 @@ not being applied, your choice on this setting may be the culprit.
         scls = env.find_class("java/lang/String")
         url_array = env.make_object_array(len(filtered_file_list), scls)
         metadata_array = env.make_object_array(len(filtered_file_list), scls)
-        for i, url in enumerate(filtered_file_list):
+        for i, image_file in enumerate(filtered_file_list):
+            url = image_file.url
             if url.startswith("s3:"):
                 url = url.replace(" ", "+")
 

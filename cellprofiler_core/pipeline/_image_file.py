@@ -44,6 +44,30 @@ class ImageFile:
     def __repr__(self):
         return f"ImageFile object for {self.url}. Metadata extracted:{self.extracted}, Indexed:{self.index_mode}"
 
+    def __lt__(self, other):
+        if isinstance(other, str):
+            return self.url < other
+        elif isinstance(other, ImageFile):
+            return self.url < other.url
+        else:
+            raise NotImplementedError("Unsupported comparison")
+
+    def __gt__(self, other):
+        if isinstance(other, str):
+            return self.url > other
+        elif isinstance(other, ImageFile):
+            return self.url > other.url
+        else:
+            raise NotImplementedError("Unsupported comparison")
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self.url == other
+        elif isinstance(other, ImageFile):
+            return self.url == other.url
+        else:
+            raise NotImplementedError("Unsupported comparison")
+
     def extract_planes(self):
         if self._extracted:
             return

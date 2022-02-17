@@ -295,36 +295,31 @@ pass the current filter.
         file_list = workspace.pipeline.file_list
         if self.filter_choice != FILTER_CHOICE_NONE:
             if self.filter_choice == FILTER_CHOICE_IMAGES:
-                file_list = [file_name for file_name in file_list if is_image(file_name)]
+                file_list = [image_file for image_file in file_list if is_image(image_file.url)]
             else:
                 new_file_list = []
-                for file_name in file_list:
-                    modpath = url_to_modpath(file_name)
+                for image_file in file_list:
+                    modpath = url_to_modpath(image_file.url)
                     if self.filter.evaluate(
                         (FileCollectionDisplay.NODE_FILE, modpath, None,)
                     ):
-                        new_file_list.append(file_name)
+                        new_file_list.append(image_file)
                 file_list = new_file_list
 
         workspace.pipeline.set_filtered_file_list(file_list, self)
-        im_file_list = []
         planes = []
-        for file_url in file_list:
-            im_file = ImageFile(file_url)
-            im_file_list.append(im_file)
-
+        for image_file in file_list:
             if self.want_split:
-                for seriesIdx, (sizeC, sizeZ, sizeT) in enumerate(im_file.get_plane_iterator()):
+                for seriesIdx, (sizeC, sizeZ, sizeT) in enumerate(image_file.get_plane_iterator()):
                     to_split = [range(sizeC) if self.split_C.value else [None],
                                 range(sizeZ) if self.split_Z.value else [None],
                                 range(sizeT) if self.split_T.value else [None]]
                     is_color = sizeC > 1 and not self.split_C.value
 
                     for C, Z, T in itertools.product(*to_split):
-                        planes.append(ImagePlaneV2(im_file, series=seriesIdx, channel=C, z=Z, t=T, color=is_color))
+                        planes.append(ImagePlaneV2(image_file, series=seriesIdx, channel=C, z=Z, t=T, color=is_color))
             else:
-                planes.append(ImagePlaneV2(im_file))
-        workspace.pipeline.set_image_file_list(im_file_list)
+                planes.append(ImagePlaneV2(image_file))
         workspace.pipeline.set_image_plane_list(planes)
         return True
 
@@ -385,7 +380,7 @@ if __name__ == "__main__":
     )
     pipeline.load_file_list(workspace)
     images_module.prepare_run(workspace)
-    print(len(pipeline.image_file_list), "images")
+    print(len(pipeline.file_list), "images")
     print(len(pipeline.image_plane_list), "planes")
     print("Done")
 

@@ -1821,7 +1821,7 @@ class PipelineController(object):
         self.exit_test_mode()
 
     def on_update_pathlist(self, event=None):
-        enabled_urls = set(self.__pipeline.get_filtered_file_list(self.__workspace))
+        enabled_urls = set([f.url for f in self.__pipeline.get_filtered_file_list(self.__workspace)])
         disabled_urls = set(self.__path_list_ctrl.get_paths())
         disabled_urls.difference_update(enabled_urls)
         self.__path_list_ctrl.enable_paths(enabled_urls, True)

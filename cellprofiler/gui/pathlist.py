@@ -10,6 +10,8 @@ from urllib.request import url2pathname
 import numpy
 import wx
 import wx.lib.scrolledpanel
+
+from cellprofiler_core.pipeline import ImageFile
 from cellprofiler_core.preferences import report_progress
 
 import cellprofiler.gui
@@ -377,6 +379,8 @@ class PathListCtrl(wx.ScrolledWindow):
     def remove_paths(self, paths):
         """Remove a sequence of URLs from the UI"""
         for path in paths:
+            if isinstance(path, ImageFile):
+                path = path.url
             folder, filename = self.splitpath(path)
             idx = bisect.bisect_left(self.folder_names, folder)
             if idx < len(self.folder_names) and self.folder_names[idx] == folder:

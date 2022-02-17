@@ -1,4 +1,7 @@
-"""
+import cellprofiler.gui.help.content
+import cellprofiler.icons
+
+__doc__ = """\
 MeasureTexture
 ==============
 
@@ -19,7 +22,7 @@ particular image-object measures that you want.
 Note also that CellProfiler in all 2.X versions increased speed by binning 
 the image into only 8 grayscale levels before calculating Haralick features;
 in all 3.X CellProfiler versions the images were binned into 256 grayscale
-levels. CellProfiler 4 alows you to select your own preferred number of
+levels. CellProfiler 4 allows you to select your own preferred number of
 grayscale levels, but note that since we use a slightly different
 implementation than CellProfiler 2 we do not guarantee concordance with
 CellProfiler 2.X-generated texture values.
@@ -84,6 +87,41 @@ Measurements made by this module
       relationship between specific intensity values. It is a complementary
       value to InfoMeas1 and is on a different scale.
 
+**Note**: each of the above measurements are computed for different 
+'directions' in the image, specified by a series of correspondence vectors. 
+These are indicated in the results table in the *scale* column as n_00, n_01,
+n_02... for each scale *n*. In 2D, the directions and correspondence vectors *(y, x)* 
+for each measurement are given below:
+
+- _00 = horizontal -, 0 degrees   (0, 1)
+- _01 = diagonal \\\\, 135 degrees or NW-SE   (1, 1)
+- _02 = vertical \|, 90 degrees   (1, 0)
+- _03 = diagonal /, 45 degrees or NE-SW  (1, -1)
+
+When analyzing 3D images, there are 13 correspondence vectors *(y, x, z)*:
+
+- (1, 0, 0)
+- (1, 1, 0)
+- (0, 1, 0)
+- (1,-1, 0)
+- (0, 0, 1)
+- (1, 0, 1)
+- (0, 1, 1)
+- (1, 1, 1)
+- (1,-1, 1)
+- (1, 0,-1)
+- (0, 1,-1)
+- (1, 1,-1)
+- (1,-1,-1)
+
+In this case, an image makes understanding their directions easier. 
+Imagine the origin (0, 0, 0) is at the upper left corner of the first image
+in your z-stack. Yellow vectors fall along the axes, and pairs of vectors with 
+matching colors are reflections of each other across the x axis. The two
+images represent two views of the same vectors. Images made in `GeoGebra`_.
+
+|MT_image0| |MT_image1|
+
 Technical notes
 ^^^^^^^^^^^^^^^
 
@@ -102,7 +140,19 @@ References
    SMC-3(6):610-621. `(link) <https://doi.org/10.1109/TSMC.1973.4309314>`__
 
 .. _here: http://murphylab.web.cmu.edu/publications/boland/boland_node26.html
-"""
+.. _GeoGebra: https://www.geogebra.org/ 
+.. |MT_image0| image:: {MEASURE_TEXTURE_3D_INFO}
+.. |MT_image1| image:: {MEASURE_TEXTURE_3D_INFO2}
+""".format(
+    **{
+        "MEASURE_TEXTURE_3D_INFO": cellprofiler.gui.help.content.image_resource(
+            "Measure_texture_3D_correspondences_1.png"
+        ),
+        "MEASURE_TEXTURE_3D_INFO2": cellprofiler.gui.help.content.image_resource(
+            "Measure_texture_3D_correspondences_2.png"
+        )
+    }
+)
 
 import mahotas.features
 import numpy

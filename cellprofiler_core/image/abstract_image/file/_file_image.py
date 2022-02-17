@@ -280,7 +280,7 @@ class FileImage(AbstractImage):
                     c=self.channel,
                     series=self.series,
                     index=self.index,
-                    rescale=self.rescale,
+                    rescale=self.rescale if isinstance(self.rescale, bool) else False,
                     wants_max_intensity=True,
                     channel_names=channel_names,
                 )
@@ -302,7 +302,7 @@ class FileImage(AbstractImage):
                         c=channel,
                         series=series,
                         index=index,
-                        rescale=self.rescale,
+                        rescale=self.rescale if isinstance(self.rescale, bool) else False,
                         wants_max_intensity=True,
                         channel_names=channel_names,
                     )

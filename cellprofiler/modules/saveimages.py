@@ -69,6 +69,7 @@ IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE]
 BIT_DEPTH_8 = "8-bit integer"
 BIT_DEPTH_16 = "16-bit integer"
 BIT_DEPTH_FLOAT = "32-bit floating point"
+BIT_DEPTH_RAW = "No conversion"
 
 FN_FROM_IMAGE = "From image filename"
 FN_SEQUENTIAL = "Sequential numbers"
@@ -338,8 +339,8 @@ between the various operating systems.
 
         self.bit_depth = Choice(
             "Image bit depth",
-            [BIT_DEPTH_8, BIT_DEPTH_16, BIT_DEPTH_FLOAT],
-            doc="""\
+            [BIT_DEPTH_8, BIT_DEPTH_16, BIT_DEPTH_FLOAT, BIT_DEPTH_RAW],
+            doc=f"""\
 Select the bit-depth at which you want to save the images.
 
 *{BIT_DEPTH_FLOAT}* saves the image as floating-point decimals with
@@ -347,14 +348,21 @@ Select the bit-depth at which you want to save the images.
 values are scaled within the range (0, 1). Floating point data is not
 rescaled.
 
-{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only for
+*{BIT_DEPTH_16}* and *{BIT_DEPTH_FLOAT}* images are supported only for
 TIFF formats.
+
+Data is normally checked and transformed to ensure that it matches the 
+selected format's requirements. Selecting *{BIT_DEPTH_RAW}* will attempt 
+to automatically save to a compatible format without applying any 
+transformations to the data. This could be used to save integer labels 
+in 32-bit float format if you had more labels than the 16-bit format can 
+handle (without rescaling to the 0-1 range of *{BIT_DEPTH_FLOAT}*). 
+Note that because the data validation step is skipped some images may 
+fail to save if they contain unusable data.
 
 Note: Opening exported multichannel 16-bit TIFF stacks in ImageJ may require  
 the BioFormats Importer plugin due to the compression method used by
-CellProfiler.""".format(
-                **{"BIT_DEPTH_FLOAT": BIT_DEPTH_FLOAT, "BIT_DEPTH_16": BIT_DEPTH_16}
-            ),
+CellProfiler.""",
         )
 
         self.tiff_compress = Binary(
@@ -632,7 +640,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             pixels = skimage.util.img_as_uint(pixels)
             pixel_type = bioformats.omexml.PT_UINT16
         elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
-            pixels = skimage.util.img_as_float(pixels).astype(numpy.float32)
+            pixels = skimage.util.img_as_float32(pixels)
             pixel_type = bioformats.omexml.PT_FLOAT
         else:
             raise ValueError("Bit depth unsupported in movie mode")
@@ -744,7 +752,10 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             elif self.get_bit_depth() == BIT_DEPTH_16:
                 pixels = skimage.util.img_as_uint(pixels)
             elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
-                pixels = skimage.util.img_as_float(pixels).astype(numpy.float32)
+                pixels = skimage.util.img_as_float32(pixels)
+            elif self.get_bit_depth() == BIT_DEPTH_RAW:
+                # No bit depth transformation
+                pass
 
             # skimage will save out color images (M,N,3) or (M,N,4) appropriately
             # but any more than that will need to be transposed so they conform to the

@@ -51,7 +51,7 @@ def test_resize_by_factor_shrink_image_labels(
 
     module.method.value = "Factor"
 
-    module.factor.value = 0.5
+    module.factor_x.value = module.factor_y.value = 0.5
 
     module.run(workspace_empty)
 
@@ -93,7 +93,7 @@ def test_resize_by_factor_enlarge_image_labels(
 
     module.method.value = "Factor"
 
-    module.factor.value = 2.0
+    module.factor_x.value = module.factor_y.value = 2.0
 
     module.run(workspace_empty)
 
@@ -223,7 +223,9 @@ def test_resize_by_factor_shrink_volume_labels(
 
     module.method.value = "Factor"
 
-    module.factor.value = 0.5
+    module.factor_x.value = module.factor_y.value = 0.5
+
+    module.factor_z.value = 1
 
     module.run(workspace_empty)
 
@@ -256,6 +258,51 @@ def test_resize_by_factor_shrink_volume_labels(
     )
 
 
+def test_resize_by_factor_shrink_volume_labels_in_z(
+    module, object_set_empty, objects_empty, volume_labels, workspace_empty
+):
+    objects_empty.segmented = volume_labels
+
+    module.x_name.value = "InputObjects"
+
+    module.method.value = "Factor"
+
+    module.factor_x.value = module.factor_y.value = 0.5
+
+    module.factor_z.value = 0.5
+
+    module.run(workspace_empty)
+
+    expected_labels = numpy.zeros((4, 10, 10), dtype=numpy.uint8)
+
+    expected_labels[0:4, 1:4, 1:4] = 1
+
+    expected_labels[0:2, 0:4, 6:9] = 2
+
+    expected_labels[2:4, 6:9, 0:4] = 3
+
+    expected_labels[1:3, 6:10, 6:10] = 4
+
+    numpy.testing.assert_array_equal(
+        object_set_empty.get_objects("ResizeObjects").segmented, expected_labels
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "InputObjects", FF_CHILDREN_COUNT % "ResizeObjects",
+        ),
+        [1, 1, 1, 1],
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "ResizeObjects", FF_PARENT % "InputObjects"
+        ),
+        [1, 2, 3, 4],
+    )
+
+
+
 def test_resize_by_factor_enlarge_volume_labels(
     module, object_set_empty, objects_empty, volume_labels, workspace_empty
 ):
@@ -265,7 +312,9 @@ def test_resize_by_factor_enlarge_volume_labels(
 
     module.method.value = "Factor"
 
-    module.factor.value = 2.0
+    module.factor_x.value = module.factor_y.value = 2.0
+
+    module.factor_z.value = 1
 
     module.run(workspace_empty)
 
@@ -297,6 +346,48 @@ def test_resize_by_factor_enlarge_volume_labels(
         [1, 2, 3, 4],
     )
 
+def test_resize_by_factor_enlarge_volume_labels_in_z(
+    module, object_set_empty, objects_empty, volume_labels, workspace_empty
+):
+    objects_empty.segmented = volume_labels
+
+    module.x_name.value = "InputObjects"
+
+    module.method.value = "Factor"
+
+    module.factor_x.value = module.factor_y.value = 2.0
+
+    module.factor_z.value = 2
+
+    module.run(workspace_empty)
+
+    expected_labels = numpy.zeros((18, 40, 40), dtype=numpy.uint8)
+
+    expected_labels[0:18, 4:16, 4:16] = 1
+
+    expected_labels[0:10, 0:16, 24:36] = 2
+
+    expected_labels[8:18, 24:36, 0:16] = 3
+
+    expected_labels[2:16, 24:40, 24:40] = 4
+
+    numpy.testing.assert_array_equal(
+        object_set_empty.get_objects("ResizeObjects").segmented, expected_labels
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "InputObjects", FF_CHILDREN_COUNT % "ResizeObjects",
+        ),
+        [1, 1, 1, 1],
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "ResizeObjects", FF_PARENT % "InputObjects"
+        ),
+        [1, 2, 3, 4],
+    )
 
 def test_resize_by_dimensions_shrink_volume_labels(
     module, object_set_empty, objects_empty, volume_labels, workspace_empty
@@ -310,6 +401,8 @@ def test_resize_by_dimensions_shrink_volume_labels(
     module.width.value = 5
 
     module.height.value = 10
+
+    module.planes.value = 9
 
     module.run(workspace_empty)
 
@@ -341,6 +434,50 @@ def test_resize_by_dimensions_shrink_volume_labels(
         [1, 2, 3, 4],
     )
 
+def test_resize_by_dimensions_shrink_volume_labels_in_z(
+    module, object_set_empty, objects_empty, volume_labels, workspace_empty
+):
+    objects_empty.segmented = volume_labels
+
+    module.x_name.value = "InputObjects"
+
+    module.method.value = "Dimensions"
+
+    module.width.value = 5
+
+    module.height.value = 10
+
+    module.planes.value = 4
+
+    module.run(workspace_empty)
+
+    expected_labels = numpy.zeros((4, 10, 5), dtype=numpy.uint8)
+
+    expected_labels[0:4, 1:4, 1:2] = 1
+
+    expected_labels[0:2, 0:4, 3:4] = 2
+
+    expected_labels[2:4, 6:9, 0:2] = 3
+
+    expected_labels[1:3, 6:10, 3:5] = 4
+
+    numpy.testing.assert_array_equal(
+        object_set_empty.get_objects("ResizeObjects").segmented, expected_labels
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "InputObjects", FF_CHILDREN_COUNT % "ResizeObjects",
+        ),
+        [1, 1, 1, 1],
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "ResizeObjects", FF_PARENT % "InputObjects"
+        ),
+        [1, 2, 3, 4],
+    )
 
 def test_resize_by_dimensions_enlarge_volume_labels(
     module, object_set_empty, objects_empty, volume_labels, workspace_empty
@@ -355,6 +492,8 @@ def test_resize_by_dimensions_enlarge_volume_labels(
 
     module.height.value = 40
 
+    module.planes.value = 9
+
     module.run(workspace_empty)
 
     expected_labels = numpy.zeros((9, 40, 80), dtype=numpy.uint8)
@@ -366,6 +505,51 @@ def test_resize_by_dimensions_enlarge_volume_labels(
     expected_labels[4:9, 24:36, 0:32] = 3
 
     expected_labels[1:8, 24:40, 48:80] = 4
+
+    numpy.testing.assert_array_equal(
+        object_set_empty.get_objects("ResizeObjects").segmented, expected_labels
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "InputObjects", FF_CHILDREN_COUNT % "ResizeObjects",
+        ),
+        [1, 1, 1, 1],
+    )
+
+    numpy.testing.assert_array_equal(
+        workspace_empty.measurements.get_current_measurement(
+            "ResizeObjects", FF_PARENT % "InputObjects"
+        ),
+        [1, 2, 3, 4],
+    )
+
+def test_resize_by_dimensions_enlarge_volume_labels_in_z(
+    module, object_set_empty, objects_empty, volume_labels, workspace_empty
+):
+    objects_empty.segmented = volume_labels
+
+    module.x_name.value = "InputObjects"
+
+    module.method.value = "Dimensions"
+
+    module.width.value = 80
+
+    module.height.value = 40
+
+    module.planes.value = 18
+
+    module.run(workspace_empty)
+
+    expected_labels = numpy.zeros((18, 40, 80), dtype=numpy.uint8)
+
+    expected_labels[0:18, 4:16, 7:32] = 1
+
+    expected_labels[0:10, 0:16, 48:73] = 2
+
+    expected_labels[8:18, 24:36, 0:32] = 3
+
+    expected_labels[2:16, 24:40, 48:80] = 4
 
     numpy.testing.assert_array_equal(
         object_set_empty.get_objects("ResizeObjects").segmented, expected_labels

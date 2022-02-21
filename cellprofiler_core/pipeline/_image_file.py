@@ -1,3 +1,4 @@
+import os
 import urllib.request
 import logging
 
@@ -40,6 +41,7 @@ class ImageFile:
             MD_SIZE_X: [],
         }
         self._url = url
+        self._plane_details = []
 
     def __repr__(self):
         return f"ImageFile object for {self.url}. Metadata extracted:{self.extracted}, Indexed:{self.index_mode}"
@@ -88,6 +90,8 @@ class ImageFile:
             self.metadata[MD_SIZE_T].append(reader.getSizeT())
             self.metadata[MD_SIZE_Y].append(reader.getSizeY())
             self.metadata[MD_SIZE_X].append(reader.getSizeX())
+        for S, C, Z, T, Y, X in self.get_plane_iterator():
+            self._plane_details.append(f"Series {S:>2}: {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
         self._extracted = True
 
     @property
@@ -101,6 +105,10 @@ class ImageFile:
     @property
     def url(self):
         return self._url
+
+    @property
+    def filename(self):
+        return os.path.basename(self.path)
 
     @property
     def path(self):
@@ -126,8 +134,12 @@ class ImageFile:
 
     def get_plane_iterator(self):
         # Returns an iterator which provides an entry for each series
-        # in the file consisting of a tuple of the C, Z and T dimension sizes.
-        self.extract_planes()
-        return zip(self.metadata[MD_SIZE_C], self.metadata[MD_SIZE_Z], self.metadata[MD_SIZE_T])
+        # in the file consisting of a tuple of the Series number, C, Z, T, Y and X dimension sizes.
+        return zip(range(self.metadata[MD_SIZE_S]), self.metadata[MD_SIZE_C], self.metadata[MD_SIZE_Z],
+                   self.metadata[MD_SIZE_T], self.metadata[MD_SIZE_Y], self.metadata[MD_SIZE_X])
+
+    @property
+    def plane_details_text(self):
+        return self._plane_details
 
 

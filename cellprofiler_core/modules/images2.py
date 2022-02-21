@@ -1,11 +1,11 @@
 # coding=utf-8
 import itertools
+import logging
 import os
 
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.object import ObjectSet
 from cellprofiler_core.pipeline import Pipeline
-from cellprofiler_core.pipeline import ImageFile
 from cellprofiler_core.pipeline import ImagePlaneV2
 from cellprofiler_core.utilities.java import start_java
 from cellprofiler_core.workspace import Workspace
@@ -19,12 +19,12 @@ from cellprofiler_core.module import Module
 from cellprofiler_core.setting import FileCollectionDisplay, Binary
 from cellprofiler_core.setting import PathListDisplay
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import PathListRefreshButton, DoSomething
+from cellprofiler_core.setting.do_something import PathListRefreshButton
+from cellprofiler_core.setting.do_something import PathListExtractButton
 from cellprofiler_core.setting.filter import DirectoryPredicate
 from cellprofiler_core.setting.filter import ExtensionPredicate
 from cellprofiler_core.setting.filter import FilePredicate
 from cellprofiler_core.setting.filter import Filter
-from cellprofiler_core.utilities.hdf5_dict import HDF5FileList
 from cellprofiler_core.utilities.image import image_resource, is_image, url_to_modpath
 from cellprofiler_core.utilities.pathname import pathname2url
 
@@ -162,7 +162,7 @@ particular wavelength.
 
 
 class Images(Module):
-    variable_revision_number = 2
+    variable_revision_number = 3
     module_name = "Images"
     category = "File Processing"
 
@@ -228,8 +228,8 @@ Specify a set of rules to narrow down the files to be analyzed.
         )
 
         self.update_button = PathListRefreshButton(
-            "Apply filters to the file list 2",
-            "Apply filters to the file list 2",
+            "Apply filters to the file list",
+            "Apply filters to the file list",
             doc="""\
 *(Only displayed if filtering based on rules)*
 
@@ -247,8 +247,9 @@ pass the current filter.
         self.split_T = Binary("Split timepoints", True,
                               doc="Choose whether to split time series into individual planes")
 
-        self.extract_metadata = DoSomething("Run extraction", "Extract", callback=self.do_extraction,
-                                            doc="Perform extraction to identify multiple images within a single file.")
+        self.extract_metadata = PathListExtractButton(
+            "Run extraction", "Scan files",
+            doc="Perform extraction to identify multiple images within a single file.")
 
     def help_settings(self):
         return [self.filter_choice, self.filter, self.update_button,
@@ -287,11 +288,10 @@ pass the current filter.
     def is_input_module(self):
         return True
 
-    def prepare_run(self, workspace):
-        print("Preparing for run")
-        """Create an IPD for every url that passes the filter"""
-        if workspace.pipeline.in_batch_mode():
-            return True
+    def on_activated(self, workspace):
+        self.pipeline = workspace.pipeline
+
+    def filter_file_list(self, workspace):
         file_list = workspace.pipeline.file_list
         if self.filter_choice != FILTER_CHOICE_NONE:
             if self.filter_choice == FILTER_CHOICE_IMAGES:
@@ -305,12 +305,29 @@ pass the current filter.
                     ):
                         new_file_list.append(image_file)
                 file_list = new_file_list
-
         workspace.pipeline.set_filtered_file_list(file_list, self)
+        return file_list
+
+    def prepare_run(self, workspace):
+        """Create an IPD for every url that passes the filter"""
+        if workspace.pipeline.in_batch_mode():
+            return True
+        file_list = self.filter_file_list(workspace)
+        if self.want_split.value:
+            logging.info("Metadata extraction will be performed now")
+            if self.extract_metadata.callback is not None:
+                # If GUI is present perform extraction and refresh the file list GUI
+                self.extract_metadata.callback()
+            else:
+                # Otherwise, just do the extraction here
+                for file_object in file_list:
+                    if not file_object.extracted:
+                        file_object.extract_planes()
+
         planes = []
         for image_file in file_list:
             if self.want_split:
-                for seriesIdx, (sizeC, sizeZ, sizeT) in enumerate(image_file.get_plane_iterator()):
+                for seriesIdx, sizeC, sizeZ, sizeT, sizeY, sizeX in image_file.get_plane_iterator():
                     to_split = [range(sizeC) if self.split_C.value else [None],
                                 range(sizeZ) if self.split_Z.value else [None],
                                 range(sizeT) if self.split_T.value else [None]]
@@ -348,10 +365,6 @@ pass the current filter.
 
     def volumetric(self):
         return True
-
-    def do_extraction(self):
-        print("Would extract now")
-        pass
 
 
 if __name__ == "__main__":

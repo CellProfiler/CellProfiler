@@ -2,6 +2,8 @@
 """
 
 import logging
+import os
+import sys
 import uuid
 from urllib.request import url2pathname
 
@@ -22,6 +24,7 @@ DROP_FILES_AND_FOLDERS_HERE = "Drop files and folders here"
 ENABLED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
 DISABLED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
 FOLDER_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUHILIGHT)
+PLANE_COLOR = ENABLED_COLOR.ChangeLightness(130)
 
 
 class PathListCtrl(wx.TreeCtrl):
@@ -29,7 +32,6 @@ class PathListCtrl(wx.TreeCtrl):
     def __init__(self, *args, **kwargs):
         super(self.__class__, self).__init__(*args, **kwargs)
         self.font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
-        self.font.SetPointSize(11)
         self.SetFont(self.font)
         self.SetDoubleBuffered(True)
 
@@ -67,9 +69,19 @@ class PathListCtrl(wx.TreeCtrl):
         self.Bind(wx.EVT_CONTEXT_MENU, self.on_context_menu)
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.on_double_click)
 
-        self._plane_details_font = wx.Font(
-            11, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL
-        )
+        if sys.platform == "win32":
+            # Choose a slightly less ugly font.
+            self._plane_details_font = wx.Font(
+                pointSize=11, family=wx.FONTFAMILY_TELETYPE,
+                style=wx.FONTSTYLE_NORMAL, weight=wx.FONTWEIGHT_NORMAL,
+                faceName="Consolas"
+            )
+            # Windows gets really confused by pointSize
+            self._plane_details_font.SetPixelSize((0, 12))
+        else:
+            self._plane_details_font = wx.Font(
+                11, wx.FONTFAMILY_TELETYPE, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL
+            )
 
         self._drop_files_font = wx.Font(
             36, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD
@@ -216,7 +228,7 @@ class PathListCtrl(wx.TreeCtrl):
             url = file_object.url
             if i % 100 == 0:
                 report_progress(uid, float(i) / npaths, "Loading %s into UI" % path)
-            folder, filename = self.splitpath(path)
+            folder, filename = os.path.split(path)
             if folder in self.folder_id_map:
                 folder_id = self.folder_id_map[folder]
             else:
@@ -236,6 +248,7 @@ class PathListCtrl(wx.TreeCtrl):
                     for detail in file_object.plane_details_text:
                         plane_id = self.AppendItem(file_id, detail, data=file_object)
                         self.SetItemFont(plane_id, self._plane_details_font)
+                        self.SetItemTextColour(plane_id, PLANE_COLOR)
                     self.Expand(file_id)
 
             self.Expand(folder_id)
@@ -246,6 +259,8 @@ class PathListCtrl(wx.TreeCtrl):
         if npaths:
             report_progress(uid, 1, "Done")
         self._metadata_extracted = False
+        # Needed to remove 'Drop files' text
+        self.Refresh()
 
     def remove_files(self, urls):
         for url in urls:
@@ -269,6 +284,7 @@ class PathListCtrl(wx.TreeCtrl):
                 for detail in file_object.plane_details_text:
                     plane_id = self.AppendItem(file_id, detail, data=file_object)
                     self.SetItemFont(plane_id, self._plane_details_font)
+                    self.SetItemTextColour(plane_id, PLANE_COLOR)
                 self.Expand(file_id)
         self._metadata_extracted = True
 
@@ -513,6 +529,8 @@ class PathListCtrl(wx.TreeCtrl):
         return self.GetItemText(idx) in self.folder_id_map
 
     def is_file(self, idx):
+        if idx == self.root_id:
+            return False
         return self.is_folder(self.GetItemParent(idx))
 
     def on_mouse_down(self, event):

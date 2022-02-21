@@ -1803,8 +1803,10 @@ class PipelineController(object):
     def on_urls_added(self, event):
         """Callback from pipeline when paths are added to the pipeline"""
         urls = event.urls
-        self.__path_list_ctrl.add_paths(urls)
         self.__workspace.file_list.add_files_to_filelist(urls)
+        urlset = set(urls)
+        file_objects = [image_file for image_file in self.__pipeline.file_list if image_file.url in urlset]
+        self.__path_list_ctrl.add_files(file_objects)
         self.__pipeline_list_view.notify_has_file_list(
             len(self.__pipeline.file_list) > 0
         )
@@ -1813,7 +1815,7 @@ class PipelineController(object):
     def on_urls_removed(self, event):
         """Callback from pipeline when paths are removed from the pipeline"""
         urls = event.urls
-        self.__path_list_ctrl.remove_paths(urls)
+        self.__path_list_ctrl.remove_files(urls)
         self.__workspace.file_list.remove_files_from_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(
             len(self.__pipeline.file_list) > 0
@@ -1826,6 +1828,29 @@ class PipelineController(object):
         disabled_urls.difference_update(enabled_urls)
         self.__path_list_ctrl.enable_paths(enabled_urls, True)
         self.__path_list_ctrl.enable_paths(disabled_urls, False)
+
+    def on_extract_metadata(self, event=None):
+        if self.__path_list_ctrl.metadata_already_extracted:
+            return
+        file_objects = self.__pipeline.get_filtered_file_list(self.__workspace)
+        cap = len(file_objects)
+        with wx.ProgressDialog(
+            parent=self.__frame,
+            title="Extracting metadata",
+            message="Extracting metadata fr:om file headers...",
+            maximum=cap,
+            style=wx.PD_CAN_ABORT | wx.PD_APP_MODAL,
+        ) as dlg:
+            urls = []
+            for idx, file_object in enumerate(file_objects):
+                if dlg.WasCancelled():
+                    break
+                if not file_object.extracted:
+                    dlg.Update(idx, f"Working on {file_object.filename}")
+                    file_object.extract_planes()
+                    urls.append(file_object.url)
+            self.__path_list_ctrl.update_metadata(urls)
+            self.__path_list_ctrl.set_metadata_extracted(not dlg.WasCancelled())
 
     def on_update_pathlist_ui(self, event):
         """Called with an UpdateUIEvent for a pathlist command ID"""
@@ -2025,6 +2050,7 @@ class PipelineController(object):
     def on_pathlist_file_delete(self, paths):
         self.__pipeline.remove_urls(paths)
         self.__workspace.file_list.remove_files_from_filelist(paths)
+        self.__path_list_ctrl.remove_files(paths)
         self.__workspace.invalidate_image_set()
 
     def on_pathlist_refresh(self, urls):
@@ -2070,6 +2096,8 @@ class PipelineController(object):
         if result == wx.YES:
             self.__pipeline.clear_urls()
             self.__workspace.file_list.clear_filelist()
+            self.__path_list_ctrl.hidden_files = []
+            self.__path_list_ctrl.disabled_urls = set()
             self.__workspace.invalidate_image_set()
 
     def on_pathlist_drop_files(self, x, y, filenames):

@@ -249,7 +249,8 @@ class CPFrame(wx.Frame):
         #
         # Path list control
         #
-        self.__path_list_ctrl = PathListCtrl(self.__path_list_sash)
+        self.__path_list_ctrl = PathListCtrl(self.__path_list_sash, style=wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS |
+                                             wx.TR_MULTIPLE | wx.TR_FULL_ROW_HIGHLIGHT)
         self.__path_list_ctrl.SetBackgroundColour(wx.WHITE)
         sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
         #

@@ -45,6 +45,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.choice import Colormap
 from cellprofiler_core.setting.choice import CustomChoice
 from cellprofiler_core.setting.do_something import DoSomething, ImageSetDisplay
+from cellprofiler_core.setting.do_something import PathListExtractButton
 from cellprofiler_core.setting.do_something import PathListRefreshButton
 from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.setting.multichoice import MeasurementMultiChoice
@@ -385,6 +386,8 @@ class ModuleView:
                 elif isinstance(v, DoSomething):
                     if isinstance(v, PathListRefreshButton) and v.callback is None:
                         v.callback = self.__frame.pipeline_controller.on_update_pathlist
+                    if isinstance(v, PathListExtractButton) and v.callback is None:
+                        v.callback = self.__frame.pipeline_controller.on_extract_metadata
                     control = self.make_callback_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, DoThings):

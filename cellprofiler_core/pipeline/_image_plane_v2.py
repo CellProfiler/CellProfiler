@@ -1,9 +1,9 @@
 import collections
 import logging
 
+from cellprofiler_core.constants.pipeline import RESERVED_KEYS
 from cellprofiler_core.pipeline._image_file import ImageFile
 
-RESERVED_KEYS = ("URL", "Series", "Index", "Channel", "ZPlane", "Timepoint", "TileXYWH")
 logger = logging.getLogger(__name__)
 
 

@@ -2,6 +2,9 @@ import os
 import urllib.request
 import logging
 
+from cellprofiler_core.constants.modules.metadata import COL_PATH, COL_SERIES, COL_INDEX, COL_URL
+from cellprofiler_core.constants.pipeline import RESERVED_KEYS
+
 logger = logging.getLogger(__name__)
 
 MD_RGB = "RGB"
@@ -28,11 +31,16 @@ class ImageFile:
     """
 
     def __init__(self, url):
+        self._url = url
         self._extracted = False
         self._index_mode = False
         self._reader = None
         self._xml_metadata = None
         self._metadata_dict = {
+            COL_PATH: self.path,
+            COL_SERIES: 0,
+            COL_INDEX: 0,
+            COL_URL: url,
             MD_SIZE_S: 0,
             MD_SIZE_C: [],
             MD_SIZE_Z: [],
@@ -40,7 +48,6 @@ class ImageFile:
             MD_SIZE_Y: [],
             MD_SIZE_X: [],
         }
-        self._url = url
         self._plane_details = []
 
     def __repr__(self):
@@ -76,8 +83,9 @@ class ImageFile:
         # Figure out the number of planes, indexes or series in the file.
         try:
             reader = self.get_reader().rdr
-        except:
+        except Exception as e:
             logger.error(f"May not be an image: {self.url}")
+            logger.error(e)
             self.metadata[MD_SIZE_S] = 0
             return
         # self._xml_metadata = reader.get_omexml_metadata()
@@ -111,6 +119,10 @@ class ImageFile:
         return os.path.basename(self.path)
 
     @property
+    def dirname(self):
+        return os.path.dirname(self.path)
+
+    @property
     def path(self):
         """The file path if a file: URL, otherwise the URL"""
         if self.url.startswith("file:"):
@@ -142,4 +154,24 @@ class ImageFile:
     def plane_details_text(self):
         return self._plane_details
 
+    def add_metadata(self, meta_dict):
+        # Used to bulk-add metadata keys from the Metadata module. Other modules should use set_metadata method.
+        for key, value in meta_dict.items():
+            if key in RESERVED_KEYS:
+                logger.error(f"Unable to set protected metadata key '{key}' to '{value}' for file {self.filename}. "
+                             f"Please choose another key name.")
+                continue
+            self._metadata_dict[key] = value
 
+    def set_metadata(self, key, value, force=False):
+        if key in RESERVED_KEYS and not force:
+            raise PermissionError(f"Cannot override protected metadata key '{key}'")
+        else:
+            if force:
+                logger.warning(f"Overwriting protected key {key}. This may break functionality.")
+            self._metadata_dict[key] = value
+
+    def clear_metadata(self):
+        keep = (COL_PATH, COL_URL, COL_SERIES, COL_INDEX, MD_SIZE_S,
+                MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X)
+        self._metadata_dict = {k: self._metadata_dict[k] for k in keep}

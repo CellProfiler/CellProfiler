@@ -133,3 +133,4 @@ RF_STATE_BACKSLASH_ESCAPE = 2
 RF_STATE_SEPARATOR = 3
 DIRECTION_UP = "up"
 DIRECTION_DOWN = "down"
+RESERVED_KEYS = ("URL", "Series", "Index", "Channel", "ZPlane", "Timepoint", "TileXYWH")

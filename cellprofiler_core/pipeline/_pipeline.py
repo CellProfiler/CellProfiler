@@ -1723,7 +1723,7 @@ class Pipeline:
         Initialize the modules list to contain the four file modules.
         """
         from cellprofiler_core.modules.images2 import Images
-        from cellprofiler_core.modules.metadata import Metadata
+        from cellprofiler_core.modules.metadata2 import Metadata
         from cellprofiler_core.modules.namesandtypes import NamesAndTypes
         from cellprofiler_core.modules.groups import Groups
 

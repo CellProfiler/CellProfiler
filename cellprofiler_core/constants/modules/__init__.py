@@ -3,7 +3,7 @@ builtin_modules = {
     "groups": "Groups",
     "images2": "Images",
     "loaddata": "LoadData",
-    "metadata": "Metadata",
+    "metadata2": "Metadata",
     "namesandtypes": "NamesAndTypes",
 }
 all_modules: dict = {}

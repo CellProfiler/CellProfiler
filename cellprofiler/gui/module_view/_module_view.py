@@ -1566,11 +1566,11 @@ class ModuleView:
             control.GetSizer().Add(browse_button, 0, wx.EXPAND)
 
             def on_button(event):
-                url = self.__frame.pipeline_controller.pick_from_pathlist(
-                    v.url, instructions="Select an image file from the list below"
+                selected_plane = self.__frame.pipeline_controller.pick_from_pathlist(
+                    v.get_plane(), instructions="Select an image plane from the list below"
                 )
-                if url is not None:
-                    value = v.build(url)
+                if selected_plane is not None:
+                    value = v.build(selected_plane)
                     self.on_value_change(v, control, value, event)
                     url_control.Value = url2pathname(v.value)
 

@@ -2238,7 +2238,7 @@ class PipelineController(object):
         pathnames = [p.strip() for p in re.split("[\r\n]+", text.strip())]
         self.__pipeline.add_pathnames_to_file_list(pathnames)
 
-    def pick_from_pathlist(self, selected_url, title=None, instructions=None):
+    def pick_from_pathlist(self, selected_plane, title=None, instructions=None):
         """Pick a file from the pathlist control
 
         This function displays the pathlist control within a dialog box. The
@@ -2249,6 +2249,7 @@ class PipelineController(object):
 
         returns the URL or None if the user cancelled.
         """
+        # Todo: Replace
         if title is None:
             title = "Select an image file"
         with wx.Dialog(
@@ -2264,47 +2265,54 @@ class PipelineController(object):
             if instructions is not None:
                 sizer.Add(wx.StaticText(dlg, label=instructions), 0, wx.EXPAND)
                 sizer.AddSpacer(2)
-            old_parent = self.__path_list_ctrl.Parent
-            old_sizer = self.__path_list_ctrl.GetContainingSizer()
-            old_sizer.Detach(self.__path_list_ctrl)
-            self.__path_list_ctrl.Reparent(dlg)
-            try:
-                sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND)
-                button_sizer = wx.StdDialogButtonSizer()
-                ok_button = wx.Button(dlg, wx.ID_OK)
-                button_sizer.AddButton(ok_button)
-                button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
-                button_sizer.Realize()
-                dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
-                self.__path_list_ctrl.clear_selections()
-                if selected_url is None:
-                    any_selected = False
+            planes = self.__pipeline.get_image_plane_list(self.__workspace)
+            treectrl = wx.TreeCtrl(dlg, style=wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS |
+                                              wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_LINES_AT_ROOT)
+            root_id = treectrl.AddRoot("File List")
+            folder_id_map = {}
+            FOLDER_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUHILIGHT)
+            for i, plane_object in enumerate(planes):
+                folder = plane_object.file.dirname
+                filename = plane_object.file.filename
+                if folder in folder_id_map:
+                    folder_id = folder_id_map[folder]
                 else:
-                    any_selected = self.__path_list_ctrl.select_path(selected_url)
-                ok_button.Enable(any_selected)
+                    folder_id = treectrl.AppendItem(root_id, folder)
+                    treectrl.SetItemTextColour(folder_id, FOLDER_COLOR)
+                    folder_id_map[folder] = folder_id
+                plane_id = treectrl.AppendItem(folder_id, str(plane_object), data=plane_object)
+                treectrl.Expand(folder_id)
+                if plane_object == selected_plane:
+                    print("Selected plane found")
+                    treectrl.SelectItem(plane_id)
+            sizer.Add(treectrl, 1, wx.EXPAND)
+            button_sizer = wx.StdDialogButtonSizer()
+            ok_button = wx.Button(dlg, wx.ID_OK)
+            button_sizer.AddButton(ok_button)
+            button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+            button_sizer.Realize()
+            dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
+            any_selected = treectrl.GetSelection().IsOk()
+            ok_button.Enable(any_selected)
 
-                def on_plc_change(event):
-                    ok_button.Enable(self.__path_list_ctrl.has_selections())
+            def on_selection_change(event=None):
+                item_id = treectrl.GetSelection()
+                if item_id.IsOk() and treectrl.GetItemParent(item_id) != root_id:
+                    ok_button.Enable(True)
+                else:
+                    ok_button.Enable(False)
 
-                self.__path_list_ctrl.Bind(
-                    cellprofiler.gui.pathlist.EVT_PLC_SELECTION_CHANGED, on_plc_change
-                )
-                result = dlg.ShowModal()
-                sizer.Detach(self.__path_list_ctrl)
-                self.__path_list_ctrl.Unbind(
-                    cellprofiler.gui.pathlist.EVT_PLC_SELECTION_CHANGED
-                )
-                if result == wx.ID_OK:
-                    paths = self.__path_list_ctrl.get_paths(
-                        self.__path_list_ctrl.FLAG_SELECTED_ONLY
-                    )
-                    return None if len(paths) == 0 else paths[0]
-                return None
-            except Exception as e:
-                print("Unable to build file selection panel", e)
-            finally:
-                self.__path_list_ctrl.Reparent(old_parent)
-                old_sizer.Insert(0, self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
+            treectrl.Bind(
+                wx.EVT_TREE_SEL_CHANGED, on_selection_change
+            )
+            result = dlg.ShowModal()
+            if result == wx.ID_OK:
+                plane_id = treectrl.GetSelection()
+                if not plane_id.IsOk():
+                    return None
+                return treectrl.GetItemData(plane_id)
+
+            return None
 
     def add_urls(self, urls):
         """Add URLS to the pipeline"""

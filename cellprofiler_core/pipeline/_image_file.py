@@ -4,6 +4,7 @@ import logging
 
 from cellprofiler_core.constants.modules.metadata import COL_PATH, COL_SERIES, COL_INDEX, COL_URL
 from cellprofiler_core.constants.pipeline import RESERVED_KEYS
+from cellprofiler_core.utilities.image import url_to_modpath
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,7 @@ class ImageFile:
             MD_SIZE_X: [],
         }
         self._plane_details = []
+        self._modpath = None
 
     def __repr__(self):
         return f"ImageFile object for {self.url}. Metadata extracted:{self.extracted}, Indexed:{self.index_mode}"
@@ -128,6 +130,13 @@ class ImageFile:
         if self.url.startswith("file:"):
             return urllib.request.url2pathname(self.url[5:])
         return self.url
+
+    @property
+    def modpath(self):
+        """The directory, filename and extension broken up into a tuple"""
+        if self._modpath is None:
+            self._modpath = url_to_modpath(self.url)
+        return self._modpath
 
     @property
     def metadata(self):

@@ -68,7 +68,6 @@ from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.setting.text import Filename
 from cellprofiler_core.utilities.image import generate_presigned_url
 from cellprofiler_core.utilities.image import image_resource
-from cellprofiler_core.utilities.image import url_to_modpath
 from cellprofiler_core.utilities.measurement import find_metadata_tokens
 
 __doc__ = """\
@@ -828,7 +827,9 @@ not being applied, your choice on this setting may be the culprit.
         return True
 
     def run_extraction(self, file_objects):
-        # We first run through the groups and
+        if not self.wants_metadata.value:
+            return
+        # We first run through the methods and pre-prepare objects we'll use repeatedly.
         for group in self.extraction_methods:
             if group.extraction_method == X_MANUAL_EXTRACTION:
                 # Compile regular expressions into proper objects. You can call regex.search directly with
@@ -841,7 +842,7 @@ not being applied, your choice on this setting may be the culprit.
             file_object.clear_metadata()
             for group in self.extraction_methods:
                 if group.filter_choice == F_FILTERED_IMAGES:
-                    modpath = url_to_modpath(file_object.url)
+                    modpath = file_object.modpath
                     if not group.filter.evaluate((FileCollectionDisplay.NODE_FILE, modpath, None,)):
                         # Doesn't pass file filter for this extraction method
                         continue
@@ -1260,7 +1261,7 @@ not being applied, your choice on this setting may be the culprit.
                     continue
                 new_setting_values += group[:-1]
                 new_n_groups += 1
-            new_setting_values[3] = new_n_groups
+            new_setting_values[3] = str(new_n_groups)
             setting_values = new_setting_values
             variable_revision_number = 7
 

@@ -25,7 +25,7 @@ from cellprofiler_core.setting.filter import DirectoryPredicate
 from cellprofiler_core.setting.filter import ExtensionPredicate
 from cellprofiler_core.setting.filter import FilePredicate
 from cellprofiler_core.setting.filter import Filter
-from cellprofiler_core.utilities.image import image_resource, is_image, url_to_modpath
+from cellprofiler_core.utilities.image import image_resource, is_image
 from cellprofiler_core.utilities.pathname import pathname2url
 
 __doc__ = """\
@@ -299,7 +299,7 @@ pass the current filter.
             else:
                 new_file_list = []
                 for image_file in file_list:
-                    modpath = url_to_modpath(image_file.url)
+                    modpath = image_file.modpath
                     if self.filter.evaluate(
                         (FileCollectionDisplay.NODE_FILE, modpath, None,)
                     ):

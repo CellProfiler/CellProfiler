@@ -1724,7 +1724,7 @@ class Pipeline:
         """
         from cellprofiler_core.modules.images2 import Images
         from cellprofiler_core.modules.metadata2 import Metadata
-        from cellprofiler_core.modules.namesandtypes import NamesAndTypes
+        from cellprofiler_core.modules.namesandtypes2 import NamesAndTypes
         from cellprofiler_core.modules.groups import Groups
 
         for i, module in enumerate((Images(), Metadata(), NamesAndTypes(), Groups())):
@@ -2050,6 +2050,10 @@ class Pipeline:
         if metadata_settings is None:
             return False
         return self.__image_plane_details_metadata_settings == metadata_settings
+
+    def get_image_plane_list(self, workspace):
+        self.__prepare_run_module("Images", workspace)
+        return self.__image_plane_list
 
     def get_image_plane_details(self, workspace):
         """Return the image plane details with metadata computed

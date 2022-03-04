@@ -2,6 +2,7 @@ import logging
 
 from ._setting import Setting
 from ._validation_error import ValidationError
+from ..pipeline import ImagePlaneV2, ImageFile
 
 
 class ImagePlane(Setting):
@@ -20,6 +21,11 @@ class ImagePlane(Setting):
     Field 3: index (or None if blank)
 
     Field 4: channel (or None if blank)
+
+    Field 5: Z (or None if blank)
+
+    Field 6: T (or None if blank)
+
     """
 
     def __init__(self, text, *args, **kwargs):
@@ -30,10 +36,10 @@ class ImagePlane(Setting):
         super(ImagePlane, self).__init__(text, ImagePlane.build(""), *args, **kwargs)
 
     @staticmethod
-    def build(url, series=None, index=None, channel=None):
+    def build(plane: ImagePlaneV2):
         """Build the string representation of the setting
 
-        url - the URL of the file containing the plane
+        plane - the ImagePlane object
 
         series - the series for a multi-series stack or None if the whole file
 
@@ -43,16 +49,26 @@ class ImagePlane(Setting):
         channel - the channel of an interlaced color image or None if all
                   channels
         """
+        if not plane:
+            return ""
+        url = plane.file.url
         if " " in url:
             # Spaces are not legal characters in URLs, nevertheless, I try
-            # to accomodate
+            # to accommodate
             logging.warning(
                 "URLs should not contain spaces. %s is the offending URL" % url
             )
             url = url.replace(" ", "%20")
         return " ".join(
-            [str(x) if x is not None else "" for x in (url, series, index, channel)]
+            [str(x) if x is not None else "" for x in (url, plane.series, plane.index, plane.channel, plane.z, plane.t)]
         )
+
+    def get_plane(self):
+        url = self.url
+        if url is None:
+            url = ""
+        im_file = ImageFile(url)
+        return ImagePlaneV2(im_file, series=self.series, index=self.index, channel=self.channel, z=self.z, t=self.t)
 
     def __get_field(self, index):
         split = self.value_text.split(" ")
@@ -91,6 +107,16 @@ class ImagePlane(Setting):
     def channel(self):
         """The channel portion of the image plane descriptor"""
         return self.__get_int_field(3)
+
+    @property
+    def z(self):
+        """The channel portion of the image plane descriptor"""
+        return self.__get_int_field(4)
+
+    @property
+    def t(self):
+        """The channel portion of the image plane descriptor"""
+        return self.__get_int_field(5)
 
     def test_valid(self, pipeline):
         if self.url is None:

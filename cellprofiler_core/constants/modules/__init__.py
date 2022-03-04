@@ -4,7 +4,7 @@ builtin_modules = {
     "images2": "Images",
     "loaddata": "LoadData",
     "metadata2": "Metadata",
-    "namesandtypes": "NamesAndTypes",
+    "namesandtypes2": "NamesAndTypes",
 }
 all_modules: dict = {}
 svn_revisions: dict = {}

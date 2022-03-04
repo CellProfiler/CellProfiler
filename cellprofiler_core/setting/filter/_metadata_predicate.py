@@ -35,8 +35,7 @@ class MetadataPredicate(FilterPredicate):
             FilterPredicate(
                 key,
                 self.display_fmt % key,
-                lambda ipd, match, key=key: key in ipd.metadata
-                and ipd.metadata[key] == match,
+                lambda plane, match, key=key: str(plane.get_metadata(key)) == match,
                 [LITERAL_PREDICATE],
             )
             for key in keys
@@ -55,9 +54,8 @@ class MetadataPredicate(FilterPredicate):
         The metadata predicate has subpredicates that look up their
         metadata key in the ipd and compare it against a literal.
         """
-        node_type, modpath, resolver = arg
-        ipd = resolver.get_image_plane_details(modpath)
-        return vargs[0](ipd, *vargs[1:])
+        node_type, modpath, plane = arg
+        return vargs[0](plane, *vargs[1:])
 
     def test_valid(self, pipeline, *args):
         class FakeModpathResolver(object):

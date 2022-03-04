@@ -6,6 +6,9 @@ from cellprofiler_core.pipeline._image_file import ImageFile
 
 logger = logging.getLogger(__name__)
 
+MD_COLOR_FORMAT = "ColorFormat"
+MD_MONOCHROME = "monochrome"
+MD_RGB = "RGB"
 
 class ImagePlaneV2:
     """This class represents the location and metadata for a 2-d image plane
@@ -31,7 +34,7 @@ class ImagePlaneV2:
 
     def __init__(self, file: ImageFile, series=None, index=None, channel=None, z=None, t=None, xywh=None, color=None):
         self._file = file
-        self._metadata_dict = collections.defaultdict(lambda: None)
+        self._metadata_dict = collections.defaultdict(get_missing)
         self._metadata_dict['URL'] = file.url
         self._metadata_dict['Series'] = series
         self._metadata_dict['Index'] = index
@@ -43,6 +46,25 @@ class ImagePlaneV2:
 
     def __repr__(self):
         return f"ImagePlane object Series:{self.series}, C:{self.channel}, Z:{self.z}, T:{self.t} for {self.url}"
+
+    def __eq__(self, other):
+        return all((self.url == other.url, self.series == other.series,
+                   self.channel == other.channel, self.z == other.z, self.t == other.t))
+
+    def __str__(self):
+        plane_string = self.file.filename
+        if self.series is not None:
+            plane_string += f", Series {self.series}"
+        if self.index is not None:
+            plane_string += f", Index {self.index}"
+        if self.channel is not None:
+            plane_string += f", Channel {self.channel}"
+        if self.z is not None:
+            plane_string += f", Z {self.z}"
+        if self.t is not None:
+            plane_string += f", T {self.t}"
+        return plane_string
+
 
     @property
     def file(self):
@@ -86,6 +108,16 @@ class ImagePlaneV2:
         return self._multichannel
 
     @property
+    def color_format(self):
+        if self.multichannel is None or not self.multichannel:
+            return MD_MONOCHROME
+        return MD_RGB
+
+    @property
+    def modpath(self):
+        return self._file.modpath
+
+    @property
     def metadata(self):
         return self._metadata_dict.items()
 
@@ -103,3 +135,7 @@ class ImagePlaneV2:
                 logger.warning(f"Overwriting protected key {key}. This may break functionality.")
             self._metadata_dict[key] = value
 
+
+def get_missing():
+    # Return None for missing keys. Can't be a lambda function if we want to use Pickle.
+    return None

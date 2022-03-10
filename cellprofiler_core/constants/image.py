@@ -104,3 +104,9 @@ SUB_ALL = "All"
 SUB_SOME = "Some"
 FILE_SCHEME = "file:"
 PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3")
+
+CT_GRAYSCALE = "Grayscale"
+CT_COLOR = "Color"
+CT_MASK = "Mask"
+CT_OBJECTS = "Objects"
+CT_FUNCTION = "Function"

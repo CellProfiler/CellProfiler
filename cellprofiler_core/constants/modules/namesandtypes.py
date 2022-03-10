@@ -189,3 +189,9 @@ DEFAULT_MANUAL_RESCALE = 255
 M_IMAGE_SET_ZIP_DICTIONARY = "ImageSet_Zip_Dictionary"
 """The image measurement that holds the compressed image set"""
 M_IMAGE_SET = "ImageSet_ImageSet"
+
+# Image set error types
+E_WRONG_LENGTH = "missing images"
+E_MISSING = "no matches"
+E_TOO_MANY = "too many matches"
+

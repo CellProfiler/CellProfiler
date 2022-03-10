@@ -746,16 +746,15 @@ def do_teest(module, channels, expected_tags, expected_metadata, additional=None
                 break
         else:
             pytest.fail("%s not in %s" % (tag, ",".join(expected_tag)))
-    iscds = m.get_channel_descriptors()
-    assert len(iscds) == len(channels)
+    channel_descriptors = m.get_channel_descriptors()
+    assert len(channel_descriptors) == len(channels)
     for channel_name in list(channels.keys()):
-        iscd_match = [x for x in iscds if x.name == channel_name]
-        assert len(iscd_match) == 1
-        iscd = iscd_match[0]
-        assert isinstance(iscd, cellprofiler_core.pipeline.ImageSetChannelDescriptor)
+        assert channel_name in channel_descriptors
+        channel_type = channel_descriptors[channel_name]
+        from cellprofiler_core.constants.image import CT_OBJECTS
         for i, (expected_url, metadata) in enumerate(channels[channel_name]):
             image_number = i + 1
-            if iscd.channel_type == iscd.CT_OBJECTS:
+            if channel_type == CT_OBJECTS:
                 url_ftr = "_".join(
                     (
                         cellprofiler_core.constants.measurement.C_OBJECTS_URL,

@@ -12,6 +12,7 @@ import numpy
 
 from ._metadata_group import MetadataGroup
 from ._relationship_key import RelationshipKey
+from ..constants.image import CT_OBJECTS
 from ..constants.measurement import AGG_MEAN
 from ..constants.measurement import AGG_MEDIAN
 from ..constants.measurement import AGG_NAMES
@@ -1671,9 +1672,8 @@ class Measurements:
         channel_descriptors - pipeline channel descriptors describing the
                               channels in the image set.
         """
-        for iscd in channel_descriptors:
-            feature = "_".join((C_CHANNEL_TYPE, iscd.name))
-            self.add_experiment_measurement(feature, iscd.channel_type)
+        for name, channel_type in channel_descriptors.items():
+            self.add_experiment_measurement(f"{C_CHANNEL_TYPE}_{name}", channel_type)
 
     def get_channel_descriptors(self):
         """Read the channel descriptors
@@ -1681,28 +1681,25 @@ class Measurements:
         Returns pipeline.ImageSetChannelDescriptor instances for each
         channel descriptor specified in the experiment measurements.
         """
-        from cellprofiler_core.pipeline import ImageSetChannelDescriptor
-
-        image_set_channel_descriptor = ImageSetChannelDescriptor
-        iscds = []
+        channel_descriptors = {}
         for feature_name in self.get_feature_names(EXPERIMENT):
             if feature_name.startswith(C_CHANNEL_TYPE):
-                channel_name = feature_name[(len(C_CHANNEL_TYPE) + 1) :]
+                channel_name = feature_name[(len(C_CHANNEL_TYPE) + 1):]
                 channel_type = self.get_experiment_measurement(feature_name)
-                if channel_type == image_set_channel_descriptor.CT_OBJECTS:
+                if channel_type == CT_OBJECTS:
                     url_feature = "_".join([C_OBJECTS_URL, channel_name])
                 else:
                     url_feature = "_".join([C_URL, channel_name])
                 if url_feature not in self.get_feature_names(IMAGE):
                     continue
-                iscds.append(image_set_channel_descriptor(channel_name, channel_type))
-        return iscds
+                channel_descriptors[channel_name] = channel_type
+        return channel_descriptors
 
     def get_channel_descriptor(self, name):
         """Return the channel descriptor with the given name"""
-        for iscd in self.get_channel_descriptors():
-            if iscd.name == name:
-                return iscd
+        feature_name = f"{C_CHANNEL_TYPE}_{name}"
+        if self.has_measurements(EXPERIMENT, feature_name, None):
+            return self.get_experiment_measurement(feature_name)
         return None
 
     def set_metadata_tags(self, metadata_tags):

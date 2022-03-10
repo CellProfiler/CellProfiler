@@ -1,14 +1,17 @@
 # coding=utf-8
+import ast
 import collections
 import logging
+import pickle
 import re
+import zlib
 from collections import Counter
 
 import javabridge
 import numpy
 import skimage.morphology
 
-from ..constants.image import C_FRAME
+from ..constants.image import C_FRAME, CT_COLOR, CT_GRAYSCALE, CT_FUNCTION, CT_MASK, CT_OBJECTS
 from ..constants.image import C_HEIGHT
 from ..constants.image import C_MD5_DIGEST
 from ..constants.image import C_SCALING
@@ -54,7 +57,6 @@ from ..module import Module
 from ..object import Objects
 from ..pipeline import ImagePlane
 from ..pipeline import ImageSetChannelDescriptor
-from ..pipeline._image_set_map import ImageSetMap
 from ..preferences import get_headless
 from ..setting import Binary, FileCollectionDisplay
 from ..setting import Divider
@@ -80,13 +82,13 @@ from ..setting.filter import (
 )
 from ..setting.filter import MetadataPredicate
 from ..setting.text import Float, FileImageName, LabelName
+from ..utilities.channel_hasher import ChannelHasher
 from ..utilities.core.module.identify import (
     add_object_location_measurements,
     add_object_location_measurements_ijv,
     add_object_count_measurements,
     get_object_measurement_columns,
 )
-from ..utilities.core.pipeline import find_image_plane_details
 from ..utilities.image import image_resource
 
 __doc__ = """\
@@ -1047,22 +1049,21 @@ requests an object selection.
                 m.set_metadata_tags(self.get_metadata_features())
             else:
                 m.set_metadata_tags([IMAGE_NUMBER])
+        else:
+            raise NotImplementedError(f"Unsupported assignment method {self.assignment_method.value}")
 
         image_set_channel_descriptor = ImageSetChannelDescriptor
         descriptor_map = {
-            LOAD_AS_COLOR_IMAGE: image_set_channel_descriptor.CT_COLOR,
-            LOAD_AS_GRAYSCALE_IMAGE: image_set_channel_descriptor.CT_GRAYSCALE,
-            LOAD_AS_ILLUMINATION_FUNCTION: image_set_channel_descriptor.CT_FUNCTION,
-            LOAD_AS_MASK: image_set_channel_descriptor.CT_MASK,
-            LOAD_AS_OBJECTS: image_set_channel_descriptor.CT_OBJECTS,
+            LOAD_AS_COLOR_IMAGE: CT_COLOR,
+            LOAD_AS_GRAYSCALE_IMAGE: CT_GRAYSCALE,
+            LOAD_AS_ILLUMINATION_FUNCTION: CT_FUNCTION,
+            LOAD_AS_MASK: CT_MASK,
+            LOAD_AS_OBJECTS: CT_OBJECTS,
         }
-        channel_descriptor_list = [
-            image_set_channel_descriptor(column_name, descriptor_map[load_choice])
-            for column_name, load_choice in zip(column_names, load_choices)
-        ]
-        m.set_channel_descriptors(channel_descriptor_list)
-        # Todo: Pickle
-        image_set_blobs = [self.compress_imageset(image_set) for image_set in image_sets]
+        channel_descriptors = {column_name: descriptor_map[load_choice] for column_name, load_choice in zip(column_names, load_choices)}
+
+        m.set_channel_descriptors(channel_descriptors)
+        image_set_blobs = self.compress_imagesets(workspace, image_sets)
 
         m.add_all_measurements(
             "Image",
@@ -1070,9 +1071,9 @@ requests an object selection.
             image_set_blobs,
         )
 
-        for image_set_column_idx, channel_descriptor in enumerate(channel_descriptor_list):
+        for channel_name, channel_type in channel_descriptors.items():
             # Todo: See if idx holds when pairing by metadata
-            if channel_descriptor.channel_type == image_set_channel_descriptor.CT_OBJECTS:
+            if channel_type == CT_OBJECTS:
                 url_category = C_OBJECTS_URL
                 path_name_category = C_OBJECTS_PATH_NAME
                 file_name_category = C_OBJECTS_FILE_NAME
@@ -1100,7 +1101,7 @@ requests an object selection.
                 z_feature,
                 t_feature
             ) = [
-                "%s_%s" % (category, channel_descriptor.name)
+                "%s_%s" % (category, channel_name)
                 for category in (
                     url_category,
                     path_name_category,
@@ -1121,7 +1122,7 @@ requests an object selection.
             z_planes = []
             timepoints = []
             for image_set in image_sets:
-                plane = image_set[channel_descriptor.name]
+                plane = image_set[channel_name]
                 urls.append(plane.file.url)
                 path_names.append(plane.file.dirname)
                 file_names.append(plane.file.filename)
@@ -1147,9 +1148,16 @@ requests an object selection.
 
         required = dict([(x[1], x[2]) for x in measurement_columns if x[1].startswith(C_METADATA)])
         aggregated = {key: [] for key in required.keys()}
+        offset = len(C_METADATA) + 1
         for image_set in image_sets:
             for key in required.keys():
-                orig_values = [plane.get_metadata(key) for plane in image_set.values()]
+                plane_key = key[offset:]
+                # We need to ignore missing keys ('None')
+                orig_values = [plane.get_metadata(plane_key) for plane in image_set.values()
+                               if plane.get_metadata(plane_key) is not None]
+                if not orig_values:
+                    aggregated[key].append(None)
+                    continue
                 if type_dict[key].startswith('varchar'):
                     compare_values = list(map(str, orig_values))
                     if workspace.pipeline.use_case_insensitive_metadata_matching(key):
@@ -1161,22 +1169,45 @@ requests an object selection.
                 else:
                     aggregated[key].append(None)
         for feature, data_type in required.items():
-            feature_name = "_".join((C_METADATA, feature))
             values = aggregated[feature]
             if data_type == COLTYPE_INTEGER:
                 values = [int(v) for v in values]
             elif data_type == COLTYPE_FLOAT:
                 values = [float(v) for v in values]
-            m.add_all_measurements("Image", feature_name, values)
+            m.add_all_measurements("Image", feature, values)
         # Todo: Make metadata indexing measurements per channel, not per image
 
         return True
 
     @staticmethod
-    def compress_imageset(image_set):
-        import pickle
-        import zlib
-        return zlib.compress(pickle.dumps(image_set))
+    def compress_imagesets(workspace, image_sets):
+        """Pickles imagesets and applies zlib compression.
+        We use the first imageset pickle as a compression dictionary template.
+        Most pickled imagesets are very similar and match most
+        of the template, so this improves compression substantially.
+        There are probably ways to do this more effectively, but
+        for our purposes it should be good enough.
+
+        The compression template is stored in measurements.
+        We'll need it to decompress the data.
+        """
+        pickles = [pickle.dumps(image_set) for image_set in image_sets]
+
+        compression_dict = pickles[0]
+        m = workspace.measurements
+        m.add_experiment_measurement(M_IMAGE_SET_ZIP_DICTIONARY, compression_dict)
+        compressor = zlib.compressobj(zdict=compression_dict)
+        out = []
+        for to_compress in pickles:
+            comp = compressor.copy()
+            out.append(comp.compress(to_compress) + comp.flush())
+        return out
+
+    def decompress_imageset(self, workspace, compressed_image_set):
+        compression_dict = self.get_compression_dictionary(workspace)
+        decompressor = zlib.decompressobj(zdict=compression_dict)
+        data = decompressor.decompress(compressed_image_set)
+        return pickle.loads(data)
 
     @property
     def matching_method(self):
@@ -1200,195 +1231,13 @@ requests an object selection.
         elif self.matching_method == MATCH_BY_ORDER:
             image_sets = self.make_image_sets_by_order(image_planes)
         else:
-            # Todo: Match by metadata
-            image_sets, channels = self.java_make_image_sets_by_metadata(
-                workspace, ipd_list
-            )
+            image_sets = self.make_image_sets_by_metadata(image_planes)
 
         return image_sets
-
-
-    @staticmethod
-    def get_axes_for_load_as_choice(load_as_choice):
-        """Get the appropriate set of axes for a given way of loading an image
-
-        load_as_choice - one of the LOAD_AS_ constants
-
-        returns the CellProfiler java PlaneStack prebuilt axes list that
-        is the appropriate shape for the channel's image stack, e.g., XYCAxes
-        for color.
-        """
-        script = "Packages.org.cellprofiler.imageset.PlaneStack.%s;"
-        if load_as_choice == LOAD_AS_COLOR_IMAGE:
-            return javabridge.run_script(script % "XYCAxes")
-        elif load_as_choice == LOAD_AS_OBJECTS:
-            return javabridge.run_script(script % "XYOAxes")
-        else:
-            return javabridge.run_script(script % "XYAxes")
-
-    def make_channel_filter(self, group, name):
-        """Make a channel filter to get images for this group"""
-        script = """
-        importPackage(Packages.org.cellprofiler.imageset);
-        importPackage(Packages.org.cellprofiler.imageset.filter);
-        var ipdscls = java.lang.Class.forName(
-            "org.cellprofiler.imageset.ImagePlaneDetailsStack");
-        var filter = new Filter(expr, ipdscls);
-        new ChannelFilter(name, filter, axes);
-        """
-        axes = self.get_axes_for_load_as_choice(group.load_as_choice.value)
-        return javabridge.run_script(
-            script, dict(expr=group.rule_filter.value, name=name, axes=axes)
-        )
-
-    @staticmethod
-    def get_metadata_comparator(workspace, key):
-        """Get a Java Comparator<String> for a metadata key"""
-        pipeline = workspace.pipeline
-        if pipeline.get_available_metadata_keys().get(key) in (
-            COLTYPE_FLOAT,
-            COLTYPE_INTEGER,
-        ):
-            script = """importPackage(Packages.org.cellprofiler.imageset);
-                MetadataKeyPair.getNumericComparator();
-                """
-        elif pipeline.use_case_insensitive_metadata_matching(key):
-            script = """importPackage(Packages.org.cellprofiler.imageset);
-                MetadataKeyPair.getCaseInsensitiveComparator();
-                """
-        else:
-            script = """importPackage(Packages.org.cellprofiler.imageset);
-                MetadataKeyPair.getCaseSensitiveComparator();
-                """
-        return javabridge.run_script(script)
-
-    def make_metadata_key_pair(self, workspace, left_key, right_key):
-        c = self.get_metadata_comparator(workspace, left_key)
-        return javabridge.run_script(
-            """
-        importPackage(Packages.org.cellprofiler.imageset);
-        new MetadataKeyPair(left_key, right_key, c);
-        """,
-            dict(left_key=left_key, right_key=right_key, c=c),
-        )
-
-    def java_make_image_sets_by_metadata(self, workspace, ipd_list):
-        """Make image sets by matching images by metadata
-
-        workspace - current workspace
-        ipd_list - a wrapped Java List<ImagePlaneDetails> containing
-                   the IPDs to be composed into channels.
-
-        returns a Java list of ImageSet objects and a dictionary of
-        channel name to index in the image set.
-        """
-        metadata_types = workspace.pipeline.get_available_metadata_keys()
-        #
-        # Find the anchor channel - it's the first one which has metadata
-        # definitions for all joins
-        #
-        joins = self.join.parse()
-        anchor_channel = None
-        channel_names = self.get_column_names()
-        anchor_cf = None
-        for i, group in enumerate(self.assignments):
-            name = channel_names[i]
-            if anchor_channel is None:
-                anchor_keys = []
-                for join in joins:
-                    if join.get(name) is None:
-                        break
-                    anchor_keys.append(join[name])
-                else:
-                    anchor_channel = i
-                    anchor_cf = self.make_channel_filter(group, name)
-        if anchor_cf is None:
-            raise ValueError(
-                "Please choose valid metadata keys for at least one channel in the metadata matcher"
-            )
-        channels = dict(
-            [
-                (c, 0 if i == anchor_channel else i + 1 if i < anchor_channel else i)
-                for i, c in enumerate(channel_names)
-            ]
-        )
-        #
-        # Make the joiner
-        #
-        jkeys = javabridge.make_list(anchor_keys)
-        jcomparators = javabridge.make_list(
-            [self.get_metadata_comparator(workspace, key) for key in anchor_keys]
-        )
-
-        script = """
-        importPackage(Packages.org.cellprofiler.imageset);
-        new Joiner(anchor_cf, keys, comparators)
-        """
-        joiner = javabridge.run_script(
-            script, dict(anchor_cf=anchor_cf, keys=jkeys, comparators=jcomparators)
-        )
-        #
-        # Make the column filters and joins for the others
-        #
-        for i, (group, name) in enumerate(zip(self.assignments, channel_names)):
-            if i == anchor_channel:
-                continue
-            cf = self.make_channel_filter(group, name)
-            joining_keys = javabridge.make_list()
-            for j, join in enumerate(joins):
-                if join.get(name) is not None:
-                    joining_keys.add(
-                        self.make_metadata_key_pair(
-                            workspace, anchor_keys[j], join[name]
-                        )
-                    )
-            javabridge.run_script(
-                """
-            joiner.addChannel(cf, joiningKeys);
-            """,
-                dict(joiner=joiner, cf=cf, joiningKeys=joining_keys),
-            )
-        errors = javabridge.make_list()
-        image_sets = javabridge.run_script(
-            """
-        joiner.join(ipds, errors);
-        """,
-            dict(joiner=joiner, ipds=ipd_list.o, errors=errors.o),
-        )
-        if len(errors) > 0:
-            if not self.handle_errors(errors):
-                return None, None
-
-        self.append_single_images(image_sets)
-        return image_sets, channels
 
     def make_image_sets_assign_all(self, image_planes):
         name = self.single_image_provider.value
         return [{name: plane} for plane in image_planes]
-
-    def java_make_image_sets_assign_all(self, workspace, ipd_list):
-        """Group all IPDs into stacks and assign to a single channel
-
-        workspace - workspace for the analysis
-        ipd_list - a wrapped Java List<ImagePlaneDetails> containing
-                   the IPDs to be composed into channels.
-        """
-        axes = self.get_axes_for_load_as_choice(self.single_load_as_choice.value)
-        name = self.single_image_provider.value
-        errors = javabridge.make_list()
-        image_sets = javabridge.run_script(
-            """
-        importPackage(Packages.org.cellprofiler.imageset);
-        var cf = new ChannelFilter(name, axes);
-        var cfs = java.util.Collections.singletonList(cf);
-        ChannelFilter.makeImageSets(cfs, ipds, errors);
-        """,
-            dict(axes=axes, name=name, ipds=ipd_list.o, errors=errors),
-        )
-        if len(errors) > 0:
-            if not self.handle_errors(errors):
-                return None
-        return image_sets
 
     def make_image_sets_by_order(self, image_planes):
         groups = collections.defaultdict(list)
@@ -1398,14 +1247,13 @@ requests an object selection.
             for rule_filter, name in filters:
                 if rule_filter.evaluate(plane_comparator):
                     groups[name].append(plane)
-                    print(f"Assigned {plane.file.filename} to {name}")
                     break
         errors = []
         group_lengths = [len(grp) for grp in groups.values()]
         desired = max(group_lengths)
         for length, group in zip(group_lengths, groups.keys()):
             if length < desired:
-                errors.append(f"Channel {group} had {desired - length} missing images")
+                errors.append((E_WRONG_LENGTH, group, desired - length))
         group_names = list(groups.keys())
         image_sets = []
         for pack in zip(*groups.values()):
@@ -1416,10 +1264,79 @@ requests an object selection.
         self.append_single_images(image_sets)
         return image_sets
 
+    def make_image_sets_by_metadata(self, image_planes):
+        joins = self.join.parse()
+        #
+        # Find the anchor channel - it's the first one which has metadata
+        # definitions for all joins
+        #
+        anchor_channel = None
+        channel_names = self.get_column_names()
+        for name in channel_names:
+            anchor_keys = []
+            for join in joins:
+                if join.get(name) is None:
+                    break
+                anchor_keys.append(join[name])
+            else:
+                anchor_channel = name
+                break
+        if anchor_channel is None:
+            raise ValueError(
+                "Please choose valid metadata keys for at least one channel in the metadata matcher"
+            )
+        channel_names.remove(anchor_channel)
+        channel_names.insert(0, anchor_channel)
+
+        """
+        Now to filter the ImagePlanes into each channel.
+        Unlike the other matching methods, for each channel 
+        we're going to create a dictionary which maps tuples of
+        metadata values to a list of ImagePlanes with that set
+        of values. The ChannelHasher class handles channels 
+        which don't use all possible keys.
+        """
+        groups = {name: ChannelHasher(name, [join[name] for join in joins]) for name in channel_names}
+        filters = [(group.rule_filter, name) for group, name in zip(self.assignments, self.get_column_names())]
+        for plane in image_planes:
+            plane_comparator = (FileCollectionDisplay.NODE_IMAGE_PLANE, plane.modpath, plane)
+            for rule_filter, name in filters:
+                if rule_filter.evaluate(plane_comparator):
+                    groups[name].add(plane)
+                    break
+
+        # Planes should now be assigned to hasher objects.
+        # Let's make some image sets.
+        image_sets = []
+        errors = []
+        for key in groups[anchor_channel].keys():
+            image_set = {}
+            for channel_name in channel_names:
+                match = groups[channel_name][key]
+                if len(match) < 1:
+                    # This is a bad image set.
+                    errors.append((E_MISSING, channel_name, key))
+                    break
+                elif len(match) > 1:
+                    errors.append((E_TOO_MANY, channel_name, key))
+                else:
+                    # One match, yay!
+                    image_set[channel_name] = match[0]
+            else:
+                image_sets.append(image_set)
+        print("Done")
+
+        if len(errors) > 0:
+            if not self.handle_error_messages(errors):
+                return None
+
+        self.append_single_images(image_sets)
+        return image_sets
+
     def append_single_images(self, image_sets):
         """Append the single image channels to every image set
 
-        image_sets - a java list of image sets
+        image_sets - a list of image sets
         """
         to_add = {}
         for group in self.single_images:
@@ -1434,83 +1351,29 @@ requests an object selection.
 
     @staticmethod
     def handle_error_messages(errors):
+        # Errors should be a list of tuples.
+        # Each tuple is (error type, channel name, optional extra data)
         if len(errors) == 0:
             return True
-        error_counts = Counter()
         error_types = Counter()
-        for error in errors:
-            logging.warning(error)
-            # if message.endswith("has no match"):
-            #     error_types["had unmatched images"] += 1
-            # elif message.endswith("missing from channel"):
-            #     error_types["had missing images"] += 1
-            # elif message.endswith("Duplicate entries"):
-            #     error_types["had duplicate matches"] += 1
-            # else:
-            #     error_types["encountered other errors"] += 1
-            # error_counts[echannel] += 1
+        for error_type, error_chan, error_info in errors:
+            if error_info is not None:
+                if error_type == E_WRONG_LENGTH:
+                    text = f"Channel {error_chan} had {error_info} missing images"
+                else:
+                    text = f"Metadata {error_info} for channel {error_chan} had {error_type}"
+            else:
+                text = f"Channel {error_chan} had {error_type}"
+            logging.warning(text)
+            error_types[(error_type, error_chan)] += 1
         if not get_headless():
             msg = f"Warning: found {len(errors)} image set errors (see log for details)\n \n"
-            # for key, value in error_types.items():
-            #     msg += f"- {value} {key}.\n"
-            # msg += "\nOf these:\n"
-            # for key, value in error_counts.items():
-            #     msg += f"\n- {value} errors were in the '{key}' channel."
-            msg += "\n \nDo you want to continue?"
-
-            import wx
-
-            result = wx.MessageBox(
-                msg,
-                caption="NamesAndTypes: image set matching error",
-                style=wx.YES_NO | wx.ICON_QUESTION,
-            )
-            if result == wx.NO:
-                return False
-        return True
-
-    @staticmethod
-    def handle_errors(errors):
-        """Handle UI presentation of errors and user's response
-
-        errors - a wrapped Java list of ImageSetError objects
-
-        returns True if no errors or if user is OK with them
-                False if user wants to abort.
-        """
-        if len(errors) == 0:
-            return True
-        error_counts = Counter()
-        error_types = Counter()
-        for error in errors:
-            key = " / ".join(
-                javabridge.get_collection_wrapper(
-                    javabridge.call(error, "getKey", "()Ljava/util/List;"),
-                    javabridge.to_string,
-                )
-            )
-            echannel = javabridge.call(error, "getChannelName", "()Ljava/lang/String;")
-            message = javabridge.call(error, "getMessage", "()Ljava/lang/String;")
-            logging.warning(
-                "Error for image set, channel=%s, metadata=%s: %s"
-                % (str(key), echannel, message)
-            )
-            if message.endswith("has no match"):
-                error_types["had unmatched images"] += 1
-            elif message.endswith("missing from channel"):
-                error_types["had missing images"] += 1
-            elif message.endswith("Duplicate entries"):
-                error_types["had duplicate matches"] += 1
-            else:
-                error_types["encountered other errors"] += 1
-            error_counts[echannel] += 1
-        if not get_headless():
-            msg = f"Warning: found {errors.size()} image set errors (see log for details)\n \n"
-            for key, value in error_types.items():
-                msg += f"- {value} {key}.\n"
             msg += "\nOf these:\n"
-            for key, value in error_counts.items():
-                msg += f"\n- {value} errors were in the '{key}' channel."
+            for (error_type, error_chan), count in sorted(error_types.items()):
+                if error_type == E_WRONG_LENGTH:
+                    msg += f"Channel {error_chan} had {error_type}.\n"
+                else:
+                    msg += f"Channel {error_chan} had {error_type} in {count} sets.\n"
             msg += "\n \nDo you want to continue?"
 
             import wx
@@ -1525,104 +1388,65 @@ requests an object selection.
         return True
 
     @staticmethod
-    def create_imageset_dictionary(workspace, image_sets, channel_names):
-        """Create a compression dictionary for OME-encoded image sets
+    def create_compression_dictionary(workspace, image_sets):
+        """Create a compression dictionary for pickled image sets
 
-        Image sets are serialized as OME-XML which is bulky and repetitive.
-        ZLIB has a facility for using an input dictionary for priming
-        the deflation and inflation process.
+        Zlib can be provided with a series of common byte sequences to
+        improve compression ratios.
 
-        This writes the dictionary to the experiment measurements.
+        The resulting "dict" is a single long sequence of bytes lumped
+        together. There is no need for a list, all chunks are in one object.
+
+        To generate this dictionary we randomly sample 4 pickled objects
+        and look for shared sequences. It's crude but usually effective.
+
+        This writes the "dictionary" to the experiment measurements.
         """
+        assert image_sets
         if len(image_sets) < 4:
             dlist = image_sets
         else:
-            # Pick somewhere between four and 8 image sets from the whole
-            dlist = javabridge.make_list(image_sets[:: int(len(image_sets) / 4)])
-        cd = javabridge.run_script(
-            """importPackage(Packages.org.cellprofiler.imageset);
-                   ImageSet.createCompressionDictionary(image_sets, channel_names);
-                """,
-            dict(image_sets=dlist, channel_names=javabridge.make_list(channel_names).o),
-        )
+            import random
+            dlist = random.sample(image_sets, 4)
+        # Equalize lengths. Yes this is a lazy way to do it.
+        tgt_len = min([len(x) for x in dlist])
+
+        arrays = [numpy.frombuffer(x[:tgt_len], dtype=numpy.int8) for x in dlist]
+        block = numpy.vstack(arrays)
+        chunks = []
+        constructor = []
+        for i in range(len(arrays[0])):
+            col = block[..., i]
+            if numpy.all(col == col[-1]):
+                constructor.append(col[0])
+            else:
+                if len(constructor) > 4:
+                    chunks.append(numpy.array(constructor, dtype=numpy.int8))
+                constructor = []
+        compression_dict = numpy.concatenate(sorted(chunks, key=len)).tobytes()
         m = workspace.measurements
-        np_d = javabridge.get_env().get_byte_array_elements(cd)
-        m[EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY, 0, numpy.uint8,] = np_d
-        return cd
+        m.add_experiment_measurement(M_IMAGE_SET_ZIP_DICTIONARY, compression_dict)
+        return compression_dict
 
     @staticmethod
-    def get_imageset_dictionary(workspace):
+    def get_compression_dictionary(workspace):
         """Returns the imageset dictionary as a Java byte array"""
         m = workspace.measurements
         if m.has_feature(EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY,):
             d = m[
                 EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY,
             ]
-            return javabridge.get_env().make_byte_array(d.astype(numpy.uint8))
+            return ast.literal_eval(d)
         return None
 
     def get_imageset(self, workspace):
-        """Get the Java ImageSet for the current image number"""
-        compression_dictionary = self.get_imageset_dictionary(workspace)
         m = workspace.measurements
-        blob = m["Image", M_IMAGE_SET]
-        if blob is None:
-            return None
-        jblob = javabridge.get_env().make_byte_array(blob)
-        column_names = javabridge.make_list(self.get_column_names())
-        if self.assignment_method == ASSIGN_ALL:
-            load_choices = [self.single_load_as_choice.value]
-        elif self.assignment_method == ASSIGN_RULES:
-            load_choices = [
-                group.load_as_choice.value
-                for group in self.assignments + self.single_images
-            ]
-        axes = javabridge.make_list(
-            [
-                self.get_axes_for_load_as_choice(load_as_choice)
-                for load_as_choice in load_choices
-            ]
-        )
-        image_set = javabridge.run_script(
-            """
-        importPackage(Packages.org.cellprofiler.imageset);
-        ImageSet.decompress(blob, column_names, axes, dictionary);
-        """,
-            dict(
-                blob=jblob,
-                column_names=column_names.o,
-                axes=axes.o,
-                dictionary=compression_dictionary,
-            ),
-        )
-        return javabridge.get_collection_wrapper(image_set)
-
-    def append_single_image_columns(self, columns, ipds):
-        max_len = numpy.max([len(x) for x in columns])
-        for single_image in self.single_images:
-            ipd = self.get_single_image_ipd(single_image, ipds)
-            columns.append([ipd] * max_len)
-
-    @staticmethod
-    def get_single_image_ipd(single_image, ipds):
-        """Get an image plane descriptor for this single_image group"""
-        if single_image.image_plane.url is None:
-            raise ValueError("Single image is not yet specified")
-        ipd = find_image_plane_details(
-            ImagePlaneSetting(
-                single_image.image_plane.url,
-                single_image.image_plane.series,
-                single_image.image_plane.index,
-                single_image.image_plane.channel,
-            ),
-            ipds,
-        )
-        if ipd is None:
-            raise ValueError(
-                "Could not find single image %s in file list",
-                single_image.image_plane.url,
-            )
-        return ipd
+        compressed_imageset = m["Image", M_IMAGE_SET]
+        # The HDF5 Dict is currently set up to store bytes as a string and return
+        # a stringified object. We need to consider it as bytes again.
+        compressed_imageset = ast.literal_eval(compressed_imageset)
+        print("Fetching compressed imageset ", compressed_imageset)
+        return self.decompress_imageset(workspace, compressed_imageset)
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         """Alter pathnames in preparation for batch processing
@@ -1650,7 +1474,7 @@ requests an object selection.
             )
 
     @classmethod
-    def is_input_module(self):
+    def is_input_module(cls):
         return True
 
     def run(self, workspace):
@@ -1661,11 +1485,11 @@ requests an object selection.
             rescale = self.single_rescale.value
             if rescale == INTENSITY_MANUAL:
                 rescale = self.manual_rescale.value
-            self.add_image_provider(workspace, name, load_choice, rescale, image_set[0])
+            self.add_image_provider(workspace, name, load_choice, rescale, image_set)
         else:
-            for group, stack in zip(self.assignments + self.single_images, image_set):
+            for group in self.assignments + self.single_images:
                 if group.load_as_choice == LOAD_AS_OBJECTS:
-                    self.add_objects(workspace, group.object_name.value, stack)
+                    self.add_objects(workspace, group.object_name.value, image_set)
                 else:
                     rescale = group.rescale.value
                     if rescale == INTENSITY_MANUAL:
@@ -1675,10 +1499,10 @@ requests an object selection.
                         group.image_name.value,
                         group.load_as_choice.value,
                         rescale,
-                        stack,
+                        image_set,
                     )
 
-    def add_image_provider(self, workspace, name, load_choice, rescale, stack):
+    def add_image_provider(self, workspace, name, load_choice, rescale, image_set):
         """Put an image provider into the image set
 
         workspace - current workspace
@@ -1695,68 +1519,74 @@ requests an object selection.
         elif rescale == INTENSITY_RESCALING_BY_DATATYPE:
             rescale = False
         # else it's a manual rescale.
-        num_dimensions = javabridge.call(stack, "numDimensions", "()I")
-        if num_dimensions == 2:
-            coords = javabridge.get_env().make_int_array(numpy.zeros(2, numpy.int32))
-            ipds = [
-                ImagePlane(
-                    javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
-                )
-            ]
-        else:
-            coords = numpy.zeros(num_dimensions, numpy.int32)
-            ipds = []
-            for i in range(javabridge.call(stack, "size", "(I)I", 2)):
-                coords[2] = i
-                jcoords = javabridge.get_env().make_int_array(coords)
-                ipds.append(
-                    ImagePlane(
-                        javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
-                    )
-                )
 
-        if len(ipds) == 1:
-            interleaved = javabridge.get_static_field(
-                "org/cellprofiler/imageset/ImagePlane", "INTERLEAVED", "I"
-            )
-            monochrome = javabridge.get_static_field(
-                "org/cellprofiler/imageset/ImagePlane", "ALWAYS_MONOCHROME", "I"
-            )
-            ipd = ipds[0]
-            url = ipd.url
-            series = ipd.series
-            index = ipd.index
-            channel = ipd.channel
-            if channel == monochrome:
-                channel = None
-            elif channel == interleaved:
-                channel = None
-                if index == 0:
-                    index = None
-            self.add_simple_image(
-                workspace, name, load_choice, rescale, url, series, index, channel
-            )
-        elif all([ipd.url == ipds[0].url for ipd in ipds[1:]]):
-            # Can load a simple image with a vector of series/index/channel
-            url = ipds[0].url
-            series = [ipd.series for ipd in ipds]
-            index = [ipd.index for ipd in ipds]
-            channel = [None if ipd.channel < 0 else ipd.channel for ipd in ipds]
-            self.add_simple_image(
-                workspace, name, load_choice, rescale, url, series, index, channel
-            )
-        else:
-            # Different URLs - someone is a clever sadist
-            # At this point, I believe there's no way to do this using
-            # NamesAndTypes. When implemented, pay attention to
-            # cacheing multiple readers for the same channel.
-            #
-            raise NotImplementedError(
-                "To do: support assembling image files into a stack"
-            )
+        image_plane = image_set[name]
+        # Todo: Handle RGB
+        # num_dimensions = javabridge.call(stack, "numDimensions", "()I")
+        # if num_dimensions == 2:
+        #     coords = javabridge.get_env().make_int_array(numpy.zeros(2, numpy.int32))
+        #     ipds = [
+        #         ImagePlane(
+        #             javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
+        #         )
+        #     ]
+        # else:
+        #     coords = numpy.zeros(num_dimensions, numpy.int32)
+        #     ipds = []
+        #     for i in range(javabridge.call(stack, "size", "(I)I", 2)):
+        #         coords[2] = i
+        #         jcoords = javabridge.get_env().make_int_array(coords)
+        #         ipds.append(
+        #             ImagePlane(
+        #                 javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
+        #             )
+        #         )
+
+        # Todo: Figure out interleaved vs monochrome stuff
+        # if len(image_plane) == 1:
+            # interleaved = javabridge.get_static_field(
+            #     "org/cellprofiler/imageset/ImagePlane", "INTERLEAVED", "I"
+            # )
+            # monochrome = javabridge.get_static_field(
+            #     "org/cellprofiler/imageset/ImagePlane", "ALWAYS_MONOCHROME", "I"
+            # )
+            # ipd = ipds[0]
+        url = image_plane.url
+        series = image_plane.series
+        index = image_plane.index
+        channel = image_plane.channel
+        z = image_plane.z
+        t = image_plane.t
+        # if channel == monochrome:
+        #     channel = None
+        # elif channel == interleaved:
+        #     channel = None
+        #     if index == 0:
+        #         index = None
+        self.add_simple_image(
+            workspace, name, load_choice, rescale, url, series, index, channel, z, t
+        )
+        # elif all([ipd.url == ipds[0].url for ipd in ipds[1:]]):
+        #     # Can load a simple image with a vector of series/index/channel
+        #     url = ipds[0].url
+        #     series = [ipd.series for ipd in ipds]
+        #     index = [ipd.index for ipd in ipds]
+        #     channel = [None if ipd.channel < 0 else ipd.channel for ipd in ipds]
+        #     self.add_simple_image(
+        #         workspace, name, load_choice, rescale, url, series, index, channel
+        #     )
+        # else:
+        #     # Different URLs - someone is a clever sadist
+        #     # At this point, I believe there's no way to do this using
+        #     # NamesAndTypes. When implemented, pay attention to
+        #     # cacheing multiple readers for the same channel.
+        #     #
+        #     raise NotImplementedError(
+        #         "To do: support assembling image files into a stack"
+        #     )
 
     def add_simple_image(
-        self, workspace, name, load_choice, rescale, url, series, index, channel
+        self, workspace, name, load_choice, rescale, url, series, index, channel, z=None, t=None
     ):
         m = workspace.measurements
 
@@ -1789,6 +1619,8 @@ requests an object selection.
             provider = MaskImage(
                 name, url, series, index, channel, volume=volume, spacing=spacing
             )
+        else:
+            raise NotImplementedError(f"Unknown load choice: {load_choice}")
 
         workspace.image_set.providers.append(provider)
 

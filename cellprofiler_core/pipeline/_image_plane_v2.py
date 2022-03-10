@@ -2,13 +2,14 @@ import collections
 import logging
 
 from cellprofiler_core.constants.pipeline import RESERVED_KEYS
-from cellprofiler_core.pipeline._image_file import ImageFile
+from cellprofiler_core.pipeline import ImageFile
 
 logger = logging.getLogger(__name__)
 
 MD_COLOR_FORMAT = "ColorFormat"
 MD_MONOCHROME = "monochrome"
 MD_RGB = "RGB"
+
 
 class ImagePlaneV2:
     """This class represents the location and metadata for a 2-d image plane
@@ -64,6 +65,17 @@ class ImagePlaneV2:
         if self.t is not None:
             plane_string += f", T {self.t}"
         return plane_string
+
+    def __getstate__(self):
+        # This is the object supplied to pickle.
+        # We don't want to compress the parent file.
+        return self._metadata_dict
+
+    def __setstate__(self, state):
+        # State should be a dictionary.
+        self._metadata_dict = state
+        # Rebuild the parent file from the URL.
+        self._file = ImageFile(self._metadata_dict['URL'])
 
 
     @property
@@ -122,10 +134,14 @@ class ImagePlaneV2:
         return self._metadata_dict.items()
 
     def get_metadata(self, key):
-        # Check global metadata
-        if key in self.file.metadata:
+        if key in self._metadata_dict:
+            # Use Plane metadata
+            return self._metadata_dict[key]
+        elif key in self.file.metadata:
+            # Use File metadata
             return self.file.metadata[key]
-        return self._metadata_dict[key]
+        else:
+            return None
 
     def set_metadata(self, key, value, force=False):
         if key in RESERVED_KEYS and not force:

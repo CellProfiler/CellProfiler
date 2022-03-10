@@ -103,6 +103,7 @@ class ImageFile:
         for S, C, Z, T, Y, X in self.get_plane_iterator():
             self._plane_details.append(f"Series {S:>2}: {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
         self._extracted = True
+        self.release_reader()
 
     @property
     def extracted(self):
@@ -147,6 +148,12 @@ class ImageFile:
             from bioformats.formatreader import get_image_reader
             self._reader = get_image_reader(key=self.url, url=self.url)
         return self._reader
+
+    def release_reader(self):
+        if self._reader is None:
+            from bioformats.formatreader import release_image_reader
+            release_image_reader(self.url)
+            self._reader = None
 
     def get_xml_metadata(self):
         if self._xml_metadata is None:

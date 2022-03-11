@@ -249,7 +249,6 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         value = self.cache[column.feature, image_set]
         if isinstance(value, bytes):
             value = value.decode("unicode_escape")
-        # Todo: Replace with better image descriptor
         if (
             column.column_type == COL_URL
             and self.display_mode == DISPLAY_MODE_SIMPLE

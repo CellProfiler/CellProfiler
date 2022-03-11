@@ -2054,7 +2054,8 @@ class ModuleView:
                 self.sort_reverse = not self.sort_reverse
             tab = self.GetTable()
             tab.v.data.sort(
-                key=lambda thedata: thedata[tgtcolumn], reverse=self.sort_reverse
+                key=lambda thedata: thedata[tgtcolumn] if thedata[tgtcolumn] is not None else "",
+                reverse=self.sort_reverse
             )
             self.SetSortingColumn(tgtcolumn)
             self.ClearSelection()

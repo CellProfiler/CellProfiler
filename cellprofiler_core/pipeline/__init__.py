@@ -1,6 +1,7 @@
 from ._image_plane import ImagePlane
-from ._image_plane_v2 import ImagePlaneV2
+# ImageFile must be imported before ImagePlane
 from ._image_file import ImageFile
+from ._image_plane_v2 import ImagePlaneV2
 from ._image_set_channel_descriptor import ImageSetChannelDescriptor
 from ._listener import Listener
 from ._pipeline import Pipeline

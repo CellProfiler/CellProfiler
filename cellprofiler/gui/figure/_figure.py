@@ -2097,7 +2097,7 @@ class Figure(wx.Frame):
                     if image.max() < 255:
                         norm = matplotlib.colors.Normalize(vmin=0, vmax=255)
                     else:
-                        norm = matplotlib.colors.Normalize(vmin=0, vmax=orig_image_max)
+                        norm = matplotlib.colors.Normalize(vmin=0, vmax=image.max())
             else:
                 norm = None
             mappable = matplotlib.cm.ScalarMappable(cmap=colormap, norm=norm)

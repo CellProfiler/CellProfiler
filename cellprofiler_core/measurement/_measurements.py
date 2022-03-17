@@ -13,7 +13,7 @@ import numpy
 from ._metadata_group import MetadataGroup
 from ._relationship_key import RelationshipKey
 from ..constants.image import CT_OBJECTS
-from ..constants.measurement import AGG_MEAN
+from ..constants.measurement import AGG_MEAN, C_Z, C_T, C_OBJECTS_Z, C_OBJECTS_T
 from ..constants.measurement import AGG_MEDIAN
 from ..constants.measurement import AGG_NAMES
 from ..constants.measurement import AGG_STD_DEV
@@ -1304,12 +1304,16 @@ class Measurements:
             C_SERIES,
             C_FRAME,
             C_CHANNEL,
+            C_Z,
+            C_T,
             C_OBJECTS_URL,
             C_OBJECTS_PATH_NAME,
             C_OBJECTS_FILE_NAME,
             C_OBJECTS_SERIES,
             C_OBJECTS_FRAME,
             C_OBJECTS_CHANNEL,
+            C_OBJECTS_Z,
+            C_OBJECTS_T,
             C_METADATA,
         ]
 

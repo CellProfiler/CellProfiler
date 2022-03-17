@@ -2036,10 +2036,10 @@ class Pipeline:
             self.__image_plane_details_metadata_settings = None
             # Images module should always be the first module.
             # PLEASE never let this be untrue.
-            images_module = self.module(1)
+            first_module = self.module(1)
             from cellprofiler_core.modules.images2 import Images
-            assert isinstance(images_module, Images)
-            images_module.filter_file_list(workspace)
+            if isinstance(first_module, Images):
+                first_module.filter_file_list(workspace)
         return self.__filtered_file_list
 
     def has_cached_image_plane_details(self):

@@ -1059,7 +1059,10 @@ safe to press it.""",
         for feature in (series_feature, frame_feature, channel_feature,
                         plane_feature, timepoint_feature):
             if measurements.has_feature("Image", feature):
-                keyword_args[feature] = measurements["Image", feature]
+                val = measurements["Image", feature]
+                if numpy.isnan(val):
+                    val = None
+                keyword_args[feature] = val
             else:
                 keyword_args[feature] = None
         return FileImage(
@@ -1067,7 +1070,11 @@ safe to press it.""",
             path,
             filename,
             rescale=self.rescale.value and is_image_name,
-            **keyword_args
+            series=keyword_args[series_feature],
+            index=keyword_args[frame_feature],
+            channel=keyword_args[channel_feature],
+            z=keyword_args[plane_feature],
+            t=keyword_args[timepoint_feature],
         )
 
     def run(self, workspace):

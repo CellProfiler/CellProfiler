@@ -289,7 +289,6 @@ class FileImage(AbstractImage):
             else:
                 rdr = get_image_reader(self.get_name(), url=self.get_url())
             if numpy.isscalar(self.index) or self.index is None:
-                print("Reading data", self.t, self.z, self.index, self.channel)
                 img, self.scale = rdr.read(
                     c=self.channel,
                     z=self.z,

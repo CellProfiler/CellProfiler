@@ -2,7 +2,7 @@ from ._filter_predicate import FilterPredicate
 from ._does_predicate import DoesPredicate
 from ._does_not_predicate import DoesNotPredicate
 from .._file_collection_display import FileCollectionDisplay
-from ...pipeline import ImagePlane
+from ...constants.image import MD_SIZE_T, MD_SIZE_Z, MD_MONOCHROME, MD_RGB
 
 
 class ImagePredicate(FilterPredicate):
@@ -12,7 +12,7 @@ class ImagePredicate(FilterPredicate):
         "iscolor",
         "Color",
         lambda plane: (
-                plane.color_format == ImagePlane.MD_RGB
+                plane.color_format == MD_RGB
         ),
         [],
         doc="The image is an interleaved color image (for example, a PNG image)",
@@ -22,7 +22,7 @@ class ImagePredicate(FilterPredicate):
         "ismonochrome",
         "Monochrome",
         lambda plane: (
-            plane.color_format == ImagePlane.MD_MONOCHROME
+            plane.color_format == MD_MONOCHROME
         ),
         [],
         doc="The image is monochrome",
@@ -30,9 +30,9 @@ class ImagePredicate(FilterPredicate):
 
     @staticmethod
     def is_stack(x):
-        if ImagePlane.MD_SIZE_T in x.metadata and x.metadata[ImagePlane.MD_SIZE_T] > 1:
+        if MD_SIZE_T in x.metadata and x.metadata[MD_SIZE_T] > 1:
             return True
-        if ImagePlane.MD_SIZE_Z in x.metadata and x.metadata[ImagePlane.MD_SIZE_Z] > 1:
+        if MD_SIZE_Z in x.metadata and x.metadata[MD_SIZE_Z] > 1:
             return True
         return False
 

@@ -1722,9 +1722,9 @@ class Pipeline:
 
         Initialize the modules list to contain the four file modules.
         """
-        from cellprofiler_core.modules.images2 import Images
-        from cellprofiler_core.modules.metadata2 import Metadata
-        from cellprofiler_core.modules.namesandtypes2 import NamesAndTypes
+        from cellprofiler_core.modules.images import Images
+        from cellprofiler_core.modules.metadata import Metadata
+        from cellprofiler_core.modules.namesandtypes import NamesAndTypes
         from cellprofiler_core.modules.groups import Groups
 
         for i, module in enumerate((Images(), Metadata(), NamesAndTypes(), Groups())):
@@ -2037,7 +2037,7 @@ class Pipeline:
             # Images module should always be the first module.
             # PLEASE never let this be untrue.
             first_module = self.module(1)
-            from cellprofiler_core.modules.images2 import Images
+            from cellprofiler_core.modules.images import Images
             if isinstance(first_module, Images):
                 first_module.filter_file_list(workspace)
         return self.__filtered_file_list

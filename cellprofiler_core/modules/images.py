@@ -1,29 +1,27 @@
 # coding=utf-8
+import itertools
+import logging
 
-import os
-import urllib.parse
-import urllib.request
-
-import javabridge
-
-from ..constants.module import FILTER_RULES_BUTTONS_HELP
-from ..constants.modules.images import FILTER_CHOICE_ALL
-from ..constants.modules.images import FILTER_CHOICE_CUSTOM
-from ..constants.modules.images import FILTER_CHOICE_IMAGES
-from ..constants.modules.images import FILTER_CHOICE_NONE
-from ..constants.modules.images import FILTER_DEFAULT
-from ..module import Module
-from ..setting import FileCollectionDisplay
-from ..setting import PathListDisplay
-from ..setting.choice import Choice
-from ..setting.do_something import PathListRefreshButton
-from ..setting.filter import DirectoryPredicate
-from ..setting.filter import ExtensionPredicate
-from ..setting.filter import FilePredicate
-from ..setting.filter import Filter
-from ..utilities.hdf5_dict import HDF5FileList
-from ..utilities.image import image_resource
-from ..utilities.pathname import pathname2url
+from cellprofiler_core.pipeline import ImagePlane
+from cellprofiler_core.constants.module import FILTER_RULES_BUTTONS_HELP
+from cellprofiler_core.constants.modules.images import FILTER_CHOICE_ALL
+from cellprofiler_core.constants.modules.images import FILTER_CHOICE_CUSTOM
+from cellprofiler_core.constants.modules.images import FILTER_CHOICE_IMAGES
+from cellprofiler_core.constants.modules.images import FILTER_CHOICE_NONE
+from cellprofiler_core.constants.modules.images import FILTER_DEFAULT
+from cellprofiler_core.module import Module
+from cellprofiler_core.setting import FileCollectionDisplay
+from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import PathListDisplay
+from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting.do_something import PathListRefreshButton
+from cellprofiler_core.setting.do_something import PathListExtractButton
+from cellprofiler_core.setting.filter import DirectoryPredicate
+from cellprofiler_core.setting.filter import ExtensionPredicate
+from cellprofiler_core.setting.filter import FilePredicate
+from cellprofiler_core.setting.filter import Filter
+from cellprofiler_core.utilities.image import image_resource
+from cellprofiler_core.utilities.image import is_image
 
 __doc__ = """\
 Images
@@ -159,7 +157,7 @@ particular wavelength.
 
 
 class Images(Module):
-    variable_revision_number = 2
+    variable_revision_number = 3
     module_name = "Images"
     category = "File Processing"
 
@@ -167,16 +165,12 @@ class Images(Module):
     MI_REMOVE = FileCollectionDisplay.DeleteMenuItem("Remove from list")
     MI_REFRESH = "Refresh"
 
-
     def create_settings(self):
         self.workspace = None
-        module_explanation = [
-            "To begin creating your project, use the %s module to compile"
-            % self.module_name,
-            "a list of files and/or folders that you want to analyze. You can also specify a set of rules",
-            "to include only the desired files in your selected folders.",
-        ]
-        self.set_notes([" ".join(module_explanation)])
+        module_explanation = f"To begin creating your project, use the {self.module_name} module to compile a list " \
+                             f"of files and/or folders that you want to analyze. You can also specify a set of rules " \
+                             f"to include only the desired files in your selected folders."
+        self.set_notes(module_explanation)
 
         self.path_list_display = PathListDisplay()
         predicates = [FilePredicate(), DirectoryPredicate(), ExtensionPredicate()]
@@ -185,7 +179,7 @@ class Images(Module):
             "Filter images?",
             FILTER_CHOICE_ALL,
             value=FILTER_CHOICE_IMAGES,
-            doc="""\
+            doc=f"""\
 The **Images** module will pass all the files specified in the file list
 panel downstream to have a meaningful name assigned to it (so other
 modules can access it) or optionally, to define the relationships
@@ -212,13 +206,7 @@ Several options are available for this setting:
    other files that you want to ignore.
 
 .. _here: http://www.openmicroscopy.org/site/support/bio-formats5/supported-formats.html
-""".format(
-                **{
-                    "FILTER_CHOICE_CUSTOM": FILTER_CHOICE_CUSTOM,
-                    "FILTER_CHOICE_IMAGES": FILTER_CHOICE_IMAGES,
-                    "FILTER_CHOICE_NONE": FILTER_CHOICE_NONE,
-                }
-            ),
+""",
         )
 
         self.filter = Filter(
@@ -245,57 +233,27 @@ pass the current filter.
 """,
         )
 
+        self.want_split = Binary("Extract image planes", False,
+                                 doc="Choose whether to search for multiple images within files")
+        self.split_C = Binary("Split channels", True,
+                              doc="Choose whether to split color images into greyscale channels")
+        self.split_Z = Binary("Split z-planes", True,
+                              doc="Choose whether to split z-stacks into individual planes")
+        self.split_T = Binary("Split timepoints", True,
+                              doc="Choose whether to split time series into individual planes")
+
+        self.extract_metadata = PathListExtractButton(
+            "Run extraction", "Scan files",
+            doc="Perform extraction to identify multiple images within a single file.")
+
     def help_settings(self):
-        return [self.filter_choice, self.filter, self.update_button]
+        return [self.filter_choice, self.filter, self.update_button,
+                self.want_split, self.split_C, self.split_Z, self.split_T, self.extract_metadata]
 
-    @staticmethod
-    def modpath_to_url(modpath):
-        if modpath[0] in ("http", "https", "ftp", "s3"):
-            if len(modpath) == 1:
-                return modpath[0] + ":"
-            elif len(modpath) == 2:
-                return modpath[0] + ":" + modpath[1]
-            else:
-                return (
-                    modpath[0]
-                    + ":"
-                    + modpath[1]
-                    + "/"
-                    + "/".join([urllib.parse.quote(part) for part in modpath[2:]])
-                )
-        path = os.path.join(*modpath)
-        return pathname2url(path)
-
-    @staticmethod
-    def url_to_modpath(url):
-        if not url.lower().startswith("file:"):
-            schema, rest = HDF5FileList.split_url(url)
-            return (
-                [schema] + rest[0:1] + [urllib.parse.unquote(part) for part in rest[1:]]
-            )
-        path = urllib.request.url2pathname(url[5:])
-        parts = []
-        while True:
-            new_path, part = os.path.split(path)
-            if len(new_path) == 0 or len(part) == 0:
-                parts.insert(0, path)
-                break
-            parts.insert(0, part)
-            path = new_path
-        return parts
-
-    @classmethod
-    def make_modpath_from_path(cls, path):
-        result = []
-        while True:
-            new_path, part = os.path.split(path)
-            if len(new_path) == 0 or len(part) == 0:
-                return [path] + result
-            result.insert(0, part)
-            path = new_path
 
     def settings(self):
-        return [self.path_list_display, self.filter_choice, self.filter]
+        return [self.path_list_display, self.filter_choice, self.filter,
+                self.want_split, self.split_C, self.split_Z, self.split_T]
 
     def visible_settings(self):
         result = [self.path_list_display, self.filter_choice]
@@ -307,6 +265,9 @@ pass the current filter.
             self.path_list_display.using_filter = True
         else:
             self.path_list_display.using_filter = False
+        result += [self.want_split]
+        if self.want_split.value:
+            result += [self.split_C, self.split_Z, self.split_T, self.extract_metadata]
         return result
 
     def change_causes_prepare_run(self, setting):
@@ -322,44 +283,56 @@ pass the current filter.
     def is_input_module(self):
         return True
 
+    def on_activated(self, workspace):
+        self.pipeline = workspace.pipeline
+
+    def filter_file_list(self, workspace):
+        file_list = workspace.pipeline.file_list
+        if self.filter_choice != FILTER_CHOICE_NONE:
+            if self.filter_choice == FILTER_CHOICE_IMAGES:
+                file_list = [image_file for image_file in file_list if is_image(image_file.url)]
+            else:
+                new_file_list = []
+                for image_file in file_list:
+                    modpath = image_file.modpath
+                    if self.filter.evaluate(
+                        (FileCollectionDisplay.NODE_FILE, modpath, None,)
+                    ):
+                        new_file_list.append(image_file)
+                file_list = new_file_list
+        workspace.pipeline.set_filtered_file_list(file_list, self)
+        return file_list
+
     def prepare_run(self, workspace):
         """Create an IPD for every url that passes the filter"""
         if workspace.pipeline.in_batch_mode():
             return True
-        file_list = workspace.pipeline.file_list
-        if self.filter_choice != FILTER_CHOICE_NONE:
-            if self.filter_choice == FILTER_CHOICE_IMAGES:
-                expression = FILTER_DEFAULT
+        file_list = self.filter_file_list(workspace)
+        if self.want_split.value:
+            logging.info("Metadata extraction will be performed now")
+            if self.extract_metadata.callback is not None:
+                # If GUI is present perform extraction and refresh the file list GUI
+                self.extract_metadata.callback()
             else:
-                expression = self.filter.value_text
-            env = javabridge.get_env()
-            ifcls = javabridge.class_for_name("org.cellprofiler.imageset.ImageFile")
-            scls = env.find_class("java/lang/String")
-            iffilter = javabridge.make_instance(
-                "org/cellprofiler/imageset/filter/Filter",
-                "(Ljava/lang/String;Ljava/lang/Class;)V",
-                expression,
-                ifcls,
-            )
-            file_array = env.make_object_array(len(file_list), scls)
-            for i, url in enumerate(file_list):
-                if url.startswith("s3:"):
-                    url = url.replace(" ", "+")
+                # Otherwise, just do the extraction here
+                for file_object in file_list:
+                    if not file_object.extracted:
+                        file_object.extract_planes()
 
-                if isinstance(url, str):
-                    ourl = env.new_string(url)
-                else:
-                    ourl = env.new_string_utf(url)
-                env.set_object_array_element(file_array, i, ourl)
-            passes_filter = javabridge.call(
-                iffilter, "filterURLs", "([Ljava/lang/String;)[Z", file_array
-            )
-            if isinstance(passes_filter, javabridge.JB_Object):
-                passes_filter = javabridge.get_env().get_boolean_array_elements(
-                    passes_filter
-                )
-            file_list = [f for f, passes in zip(file_list, passes_filter) if passes]
-        workspace.pipeline.set_filtered_file_list(file_list, self)
+        planes = []
+        for image_file in file_list:
+            if self.want_split:
+                for seriesIdx, sizeC, sizeZ, sizeT, sizeY, sizeX in image_file.get_plane_iterator():
+                    to_split = [range(sizeC) if self.split_C.value else [None],
+                                range(sizeZ) if self.split_Z.value else [None],
+                                range(sizeT) if self.split_T.value else [None]]
+                    is_color = sizeC > 1 and not self.split_C.value
+
+                    for C, Z, T in itertools.product(*to_split):
+                        planes.append(ImagePlane(image_file, series=seriesIdx, channel=C, z=Z, t=T, color=is_color))
+            else:
+                planes.append(ImagePlane(image_file))
+        workspace.pipeline.set_image_plane_list(planes)
         return True
 
     def run(self, workspace):

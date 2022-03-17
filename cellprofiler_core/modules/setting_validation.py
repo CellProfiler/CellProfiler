@@ -2,7 +2,7 @@ import os.path
 import urllib.parse
 
 from ..module import Module
-from ..pipeline import ImagePlane
+from ..pipeline import ImagePlane as ImagePlane
 from ..utilities.pathname import pathname2url
 
 
@@ -29,4 +29,4 @@ class SettingValidation(Module):
 
         url = pathname2url(path)
 
-        return ImagePlane(url)
+        return ImagePlane(ImageFile(url))

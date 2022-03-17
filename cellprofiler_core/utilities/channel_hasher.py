@@ -1,6 +1,6 @@
 import collections
 
-from cellprofiler_core.pipeline import ImagePlaneV2
+from cellprofiler_core.pipeline import ImagePlane
 
 
 class ChannelHasher:
@@ -36,7 +36,7 @@ class ChannelHasher:
         self.keymap = keymap
         self.hash_keys = [key for key in keymap if key is not None]
 
-    def add(self, image_plane: ImagePlaneV2):
+    def add(self, image_plane: ImagePlane):
         plane_hash = tuple([image_plane.get_metadata(key) for key in self.hash_keys])
         self.mapper[plane_hash].append(image_plane)
 

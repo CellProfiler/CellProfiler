@@ -1,10 +1,10 @@
 builtin_modules = {
     "align": "Align",
     "groups": "Groups",
-    "images2": "Images",
+    "images": "Images",
     "loaddata": "LoadData",
-    "metadata2": "Metadata",
-    "namesandtypes2": "NamesAndTypes",
+    "metadata": "Metadata",
+    "namesandtypes": "NamesAndTypes",
 }
 all_modules: dict = {}
 svn_revisions: dict = {}

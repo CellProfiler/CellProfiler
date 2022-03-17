@@ -2,21 +2,12 @@ import os
 import urllib.request
 import logging
 
+from cellprofiler_core.constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
 from cellprofiler_core.constants.modules.metadata import COL_PATH, COL_SERIES, COL_INDEX, COL_URL
 from cellprofiler_core.constants.pipeline import RESERVED_KEYS
 from cellprofiler_core.utilities.image import url_to_modpath
 
 logger = logging.getLogger(__name__)
-
-MD_RGB = "RGB"
-MD_PLANAR = "Planar"
-MD_SIZE_S = "SizeS"
-MD_SIZE_C = "SizeC"
-MD_SIZE_Z = "SizeZ"
-MD_SIZE_T = "SizeT"
-MD_SIZE_X = "SizeX"
-MD_SIZE_Y = "SizeY"
-MD_CHANNEL_NAME = "ChannelName"
 
 
 class ImageFile:

@@ -2,7 +2,7 @@ import logging
 
 from ._setting import Setting
 from ._validation_error import ValidationError
-from ..pipeline import ImagePlaneV2, ImageFile
+from ..pipeline import ImagePlane, ImageFile
 
 
 class ImagePlane(Setting):
@@ -36,7 +36,7 @@ class ImagePlane(Setting):
         super(ImagePlane, self).__init__(text, ImagePlane.build(""), *args, **kwargs)
 
     @staticmethod
-    def build(plane: ImagePlaneV2):
+    def build(plane: ImagePlane):
         """Build the string representation of the setting
 
         plane - the ImagePlane object
@@ -68,7 +68,7 @@ class ImagePlane(Setting):
         if url is None:
             url = ""
         im_file = ImageFile(url)
-        return ImagePlaneV2(im_file, series=self.series, index=self.index, channel=self.channel, z=self.z, t=self.t)
+        return ImagePlane(im_file, series=self.series, index=self.index, channel=self.channel, z=self.z, t=self.t)
 
     def __get_field(self, index):
         split = self.value_text.split(" ")

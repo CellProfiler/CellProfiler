@@ -7,7 +7,6 @@ import re
 import zlib
 from collections import Counter
 
-import javabridge
 import numpy
 import skimage.morphology
 
@@ -55,8 +54,6 @@ from ..image.abstract_image.file.url import ObjectsImage
 from ..measurement import Measurements
 from ..module import Module
 from ..object import Objects
-from ..pipeline import ImagePlane
-from ..pipeline import ImageSetChannelDescriptor
 from ..preferences import get_headless
 from ..setting import Binary, FileCollectionDisplay
 from ..setting import Divider
@@ -942,7 +939,6 @@ requests an object selection.
             self.add_single_image()
 
     def post_pipeline_load(self, pipeline):
-        # Todo: Refactor
         """Fix up metadata predicates after the pipeline loads"""
         if self.assignment_method == ASSIGN_RULES:
             filters = []
@@ -1018,7 +1014,7 @@ requests an object selection.
         return result
 
     def prepare_run(self, workspace):
-        """Write the image set to the measurements"""
+        """Write the image sets to the measurements"""
         if workspace.pipeline.in_batch_mode():
             return True
         column_names = self.get_column_names()
@@ -1038,6 +1034,9 @@ requests an object selection.
             "Image", IMAGE_NUMBER, image_numbers,
         )
 
+        # Alongside image sets we also need to store
+        # instructions on how to load each channel.
+        # These are called channel descriptors.
         if self.assignment_method == ASSIGN_ALL:
             load_choices = [self.single_load_as_choice.value]
         elif self.assignment_method == ASSIGN_RULES:
@@ -1052,7 +1051,6 @@ requests an object selection.
         else:
             raise NotImplementedError(f"Unsupported assignment method {self.assignment_method.value}")
 
-        image_set_channel_descriptor = ImageSetChannelDescriptor
         descriptor_map = {
             LOAD_AS_COLOR_IMAGE: CT_COLOR,
             LOAD_AS_GRAYSCALE_IMAGE: CT_GRAYSCALE,
@@ -1060,17 +1058,15 @@ requests an object selection.
             LOAD_AS_MASK: CT_MASK,
             LOAD_AS_OBJECTS: CT_OBJECTS,
         }
-        channel_descriptors = {column_name: descriptor_map[load_choice] for column_name, load_choice in zip(column_names, load_choices)}
+        channel_descriptors = {column_name: descriptor_map[load_choice]
+                               for column_name, load_choice in zip(column_names, load_choices)}
 
         m.set_channel_descriptors(channel_descriptors)
-        image_set_blobs = self.compress_imagesets(workspace, image_sets)
 
-        m.add_all_measurements(
-            "Image",
-            M_IMAGE_SET,
-            image_set_blobs,
-        )
+        # With the descriptors done, let's store the image sets.
+        self.compress_imagesets(workspace, image_sets)
 
+        # Now we store the metadata for each image set.
         for channel_name, channel_type in channel_descriptors.items():
             # Todo: See if idx holds when pairing by metadata
             if channel_type == CT_OBJECTS:
@@ -1091,28 +1087,7 @@ requests an object selection.
                 channel_category = C_CHANNEL
                 z_category = C_Z
                 t_category = C_T
-            (
-                url_feature,
-                path_name_feature,
-                file_name_feature,
-                series_feature,
-                frame_feature,
-                channel_feature,
-                z_feature,
-                t_feature
-            ) = [
-                "%s_%s" % (category, channel_name)
-                for category in (
-                    url_category,
-                    path_name_category,
-                    file_name_category,
-                    series_category,
-                    frame_category,
-                    channel_category,
-                    z_category,
-                    t_category,
-                )
-            ]
+
             urls = []
             path_names = []
             file_names = []
@@ -1122,7 +1097,9 @@ requests an object selection.
             z_planes = []
             timepoints = []
             for image_set in image_sets:
-                plane = image_set[channel_name]
+                plane = image_set.get(channel_name, None)
+                if plane is None:
+                    raise ValueError(f"No images are assigned to channel {channel_name}, cannot create image sets")
                 urls.append(plane.file.url)
                 path_names.append(plane.file.dirname)
                 file_names.append(plane.file.filename)
@@ -1132,42 +1109,60 @@ requests an object selection.
                 z_planes.append(plane.z)
                 timepoints.append(plane.t)
             for feature_name, feature_values in (
-                    (url_feature, urls),
-                    (path_name_feature, path_names),
-                    (file_name_feature, file_names),
-                    (series_feature, series),
-                    (frame_feature, frames),
-                    (channel_feature, channels),
-                    (z_feature, z_planes),
-                    (t_feature, timepoints),
+                    (f"{url_category}_{channel_name}", urls),
+                    (f"{path_name_category}_{channel_name}", path_names),
+                    (f"{file_name_category}_{channel_name}", file_names),
+                    (f"{series_category}_{channel_name}", series),
+                    (f"{frame_category}_{channel_name}", frames),
+                    (f"{channel_category}_{channel_name}", channels),
+                    (f"{z_category}_{channel_name}", z_planes),
+                    (f"{t_category}_{channel_name}", timepoints),
             ):
                 m.add_all_measurements("Image", feature_name, feature_values)
 
-        measurement_columns = workspace.pipeline.get_measurement_columns(self)
-        type_dict = dict([(c[1], c[2]) for c in measurement_columns if c[0] == "Image"])
+        # Now we aggregate the metadata to create a summary stat per image.
+        self.aggregate_metadata(workspace, image_sets)
+        # Todo: Make metadata indexing measurements per channel, not per image?
 
+        return True
+
+    def aggregate_metadata(self, workspace, image_sets):
+        """
+        This function finds Metadata measurements and aggregates them
+        into a single value per image.
+        If all images in a set have the same key, that key becomes the
+        imageset-level Metadata key. If they differ, we use "None" as
+        this can't be aggregated.
+        """
+        m = workspace.measurements
+        measurement_columns = workspace.pipeline.get_measurement_columns(self)
         required = dict([(x[1], x[2]) for x in measurement_columns if x[1].startswith(C_METADATA)])
         aggregated = {key: [] for key in required.keys()}
         offset = len(C_METADATA) + 1
         for image_set in image_sets:
-            for key in required.keys():
+            for key, key_type in required.items():
                 plane_key = key[offset:]
                 # We need to ignore missing keys ('None')
                 orig_values = [plane.get_metadata(plane_key) for plane in image_set.values()
                                if plane.get_metadata(plane_key) is not None]
                 if not orig_values:
+                    # No data or everything was None.
                     aggregated[key].append(None)
                     continue
-                if type_dict[key].startswith('varchar'):
+                if key_type.startswith('varchar'):
+                    # String data, we may need to be case-insensitive
                     compare_values = list(map(str, orig_values))
                     if workspace.pipeline.use_case_insensitive_metadata_matching(key):
                         compare_values = list(map(str.lower, compare_values))
                 else:
                     compare_values = orig_values
                 if all(val == compare_values[0] for val in compare_values):
+                    # All metadata values identical, so aggregate as the first entry.
                     aggregated[key].append(orig_values[0])
                 else:
+                    # Ambiguous metadata can't be aggregated.
                     aggregated[key].append(None)
+        # Add Image-level metadata measurements
         for feature, data_type in required.items():
             values = aggregated[feature]
             if data_type == COLTYPE_INTEGER:
@@ -1175,9 +1170,6 @@ requests an object selection.
             elif data_type == COLTYPE_FLOAT:
                 values = [float(v) for v in values]
             m.add_all_measurements("Image", feature, values)
-        # Todo: Make metadata indexing measurements per channel, not per image
-
-        return True
 
     @staticmethod
     def compress_imagesets(workspace, image_sets):
@@ -1188,6 +1180,8 @@ requests an object selection.
         There are probably ways to do this more effectively, but
         for our purposes it should be good enough.
 
+        Compressed image sets are stored in the measurements dict.
+
         The compression template is stored in measurements.
         We'll need it to decompress the data.
         """
@@ -1197,11 +1191,15 @@ requests an object selection.
         m = workspace.measurements
         m.add_experiment_measurement(M_IMAGE_SET_ZIP_DICTIONARY, compression_dict)
         compressor = zlib.compressobj(zdict=compression_dict)
-        out = []
-        for to_compress in pickles:
+        compressed_image_sets = []
+        for pickled in pickles:
             comp = compressor.copy()
-            out.append(comp.compress(to_compress) + comp.flush())
-        return out
+            compressed_image_sets.append(comp.compress(pickled) + comp.flush())
+        m.add_all_measurements(
+            "Image",
+            M_IMAGE_SET,
+            compressed_image_sets,
+        )
 
     def decompress_imageset(self, workspace, compressed_image_set):
         compression_dict = self.get_compression_dictionary(workspace)
@@ -1241,7 +1239,8 @@ requests an object selection.
 
     def make_image_sets_by_order(self, image_planes):
         groups = collections.defaultdict(list)
-        filters = [(group.rule_filter, name) for group, name in zip(self.assignments, self.get_column_names())]
+        filters = [(group.rule_filter, name) for group, name in
+                   zip(self.assignments, self.get_column_names())]
         for plane in image_planes:
             plane_comparator = (FileCollectionDisplay.NODE_IMAGE_PLANE, plane.modpath, plane)
             for rule_filter, name in filters:
@@ -1249,11 +1248,12 @@ requests an object selection.
                     groups[name].append(plane)
                     break
         errors = []
-        group_lengths = [len(grp) for grp in groups.values()]
-        desired = max(group_lengths)
-        for length, group in zip(group_lengths, groups.keys()):
-            if length < desired:
-                errors.append((E_WRONG_LENGTH, group, desired - length))
+        desired_length = max([len(grp) for grp in groups.values()])
+        for name in self.get_column_names():
+            if name not in groups:
+                errors.append((E_WRONG_LENGTH, name, desired_length))
+            elif len(groups[name]) < desired_length:
+                errors.append((E_WRONG_LENGTH, name, desired_length - len(groups[name])))
         group_names = list(groups.keys())
         image_sets = []
         for pack in zip(*groups.values()):
@@ -1296,8 +1296,10 @@ requests an object selection.
         of values. The ChannelHasher class handles channels 
         which don't use all possible keys.
         """
-        groups = {name: ChannelHasher(name, [join[name] for join in joins]) for name in channel_names}
-        filters = [(group.rule_filter, name) for group, name in zip(self.assignments, self.get_column_names())]
+        groups = {name: ChannelHasher(name, [join[name] for join in joins])
+                  for name in channel_names}
+        filters = [(group.rule_filter, name) for group, name in
+                   zip(self.assignments, self.get_column_names())]
         for plane in image_planes:
             plane_comparator = (FileCollectionDisplay.NODE_IMAGE_PLANE, plane.modpath, plane)
             for rule_filter, name in filters:
@@ -1324,7 +1326,6 @@ requests an object selection.
                     image_set[channel_name] = match[0]
             else:
                 image_sets.append(image_set)
-        print("Done")
 
         if len(errors) > 0:
             if not self.handle_error_messages(errors):
@@ -1388,54 +1389,12 @@ requests an object selection.
         return True
 
     @staticmethod
-    def create_compression_dictionary(workspace, image_sets):
-        """Create a compression dictionary for pickled image sets
-
-        Zlib can be provided with a series of common byte sequences to
-        improve compression ratios.
-
-        The resulting "dict" is a single long sequence of bytes lumped
-        together. There is no need for a list, all chunks are in one object.
-
-        To generate this dictionary we randomly sample 4 pickled objects
-        and look for shared sequences. It's crude but usually effective.
-
-        This writes the "dictionary" to the experiment measurements.
-        """
-        assert image_sets
-        if len(image_sets) < 4:
-            dlist = image_sets
-        else:
-            import random
-            dlist = random.sample(image_sets, 4)
-        # Equalize lengths. Yes this is a lazy way to do it.
-        tgt_len = min([len(x) for x in dlist])
-
-        arrays = [numpy.frombuffer(x[:tgt_len], dtype=numpy.int8) for x in dlist]
-        block = numpy.vstack(arrays)
-        chunks = []
-        constructor = []
-        for i in range(len(arrays[0])):
-            col = block[..., i]
-            if numpy.all(col == col[-1]):
-                constructor.append(col[0])
-            else:
-                if len(constructor) > 4:
-                    chunks.append(numpy.array(constructor, dtype=numpy.int8))
-                constructor = []
-        compression_dict = numpy.concatenate(sorted(chunks, key=len)).tobytes()
-        m = workspace.measurements
-        m.add_experiment_measurement(M_IMAGE_SET_ZIP_DICTIONARY, compression_dict)
-        return compression_dict
-
-    @staticmethod
     def get_compression_dictionary(workspace):
-        """Returns the imageset dictionary as a Java byte array"""
+        """Returns the imageset compression byte array"""
         m = workspace.measurements
         if m.has_feature(EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY,):
-            d = m[
-                EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY,
-            ]
+            d = m[EXPERIMENT, M_IMAGE_SET_ZIP_DICTIONARY]
+            # This comes out of hdf5 as str. Make bytes.
             return ast.literal_eval(d)
         return None
 
@@ -1445,7 +1404,6 @@ requests an object selection.
         # The HDF5 Dict is currently set up to store bytes as a string and return
         # a stringified object. We need to consider it as bytes again.
         compressed_imageset = ast.literal_eval(compressed_imageset)
-        print("Fetching compressed imageset ", compressed_imageset)
         return self.decompress_imageset(workspace, compressed_imageset)
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
@@ -1508,7 +1466,7 @@ requests an object selection.
         workspace - current workspace
         name - name of the image
         load_choice - one of the LOAD_AS_... choices
-        rescale - whether or not to rescale the image intensity (ignored
+        rescale - whether to rescale the image intensity (ignored
                   for mask and illumination function). Either
                   INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE
                   or a floating point manual value.
@@ -1521,48 +1479,13 @@ requests an object selection.
         # else it's a manual rescale.
 
         image_plane = image_set[name]
-        # Todo: Handle RGB
-        # num_dimensions = javabridge.call(stack, "numDimensions", "()I")
-        # if num_dimensions == 2:
-        #     coords = javabridge.get_env().make_int_array(numpy.zeros(2, numpy.int32))
-        #     ipds = [
-        #         ImagePlane(
-        #             javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
-        #         )
-        #     ]
-        # else:
-        #     coords = numpy.zeros(num_dimensions, numpy.int32)
-        #     ipds = []
-        #     for i in range(javabridge.call(stack, "size", "(I)I", 2)):
-        #         coords[2] = i
-        #         jcoords = javabridge.get_env().make_int_array(coords)
-        #         ipds.append(
-        #             ImagePlane(
-        #                 javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
-        #             )
-        #         )
 
-        # Todo: Figure out interleaved vs monochrome stuff
-        # if len(image_plane) == 1:
-            # interleaved = javabridge.get_static_field(
-            #     "org/cellprofiler/imageset/ImagePlane", "INTERLEAVED", "I"
-            # )
-            # monochrome = javabridge.get_static_field(
-            #     "org/cellprofiler/imageset/ImagePlane", "ALWAYS_MONOCHROME", "I"
-            # )
-            # ipd = ipds[0]
         url = image_plane.url
         series = image_plane.series
         index = image_plane.index
         channel = image_plane.channel
         z = image_plane.z
         t = image_plane.t
-        # if channel == monochrome:
-        #     channel = None
-        # elif channel == interleaved:
-        #     channel = None
-        #     if index == 0:
-        #         index = None
         self.add_simple_image(
             workspace, name, load_choice, rescale, url, series, index, channel, z, t
         )
@@ -1598,7 +1521,7 @@ requests an object selection.
 
         if load_choice == LOAD_AS_COLOR_IMAGE:
             provider = ColorImage(
-                name, url, series, index, rescale, volume=volume, spacing=spacing
+                name, url, series, index, rescale, volume=volume, spacing=spacing, z=z, t=t
             )
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
             provider = MonochromeImage(
@@ -1610,14 +1533,16 @@ requests an object selection.
                 rescale,
                 volume=volume,
                 spacing=spacing,
+                z=z,
+                t=t
             )
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
             provider = MonochromeImage(
-                name, url, series, index, channel, False, volume=volume, spacing=spacing
+                name, url, series, index, channel, False, volume=volume, spacing=spacing, z=z, t=t
             )
         elif load_choice == LOAD_AS_MASK:
             provider = MaskImage(
-                name, url, series, index, channel, volume=volume, spacing=spacing
+                name, url, series, index, channel, volume=volume, spacing=spacing, z=z, t=t
             )
         else:
             raise NotImplementedError(f"Unknown load choice: {load_choice}")
@@ -1652,63 +1577,28 @@ requests an object selection.
         """Get an md5 checksum from the (cached) file courtesy of the provider"""
         return provider.get_md5_hash(measurements)
 
-    def add_objects(self, workspace, name, stack):
+    def add_objects(self, workspace, name, image_set):
         """Add objects loaded from a file to the object set
 
         workspace - the workspace for the analysis
         name - the objects' name in the pipeline
         stack - the ImagePlaneDetailsStack representing the planes to be loaded
         """
-        num_dimensions = javabridge.call(stack, "numDimensions", "()I")
-        if num_dimensions == 2:
-            # Should never reach here - should be 3D, but we defensively code
-            num_frames = 1
-            index = None  # signal that we haven't read the metadata
-            series = None
-            coords = javabridge.get_env().make_int_array(numpy.zeros(2, int))
-            ipd = ImagePlane(
-                javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
-            )
-            url = ipd.url
-        else:
-            coords = numpy.zeros(num_dimensions, numpy.int32)
-            ipds = []
-            for i in range(javabridge.call(stack, "size", "(I)I", 2)):
-                coords[2] = i
-                jcoords = javabridge.get_env().make_int_array(coords)
-                ipds.append(
-                    ImagePlane(
-                        javabridge.call(stack, "get", "([I)Ljava/lang/Object;", coords)
-                    )
-                )
-            objects_channels = javabridge.get_static_field(
-                "org/cellprofiler/imageset/ImagePlane", "OBJECT_PLANES", "I"
-            )
-            if (
-                len(ipds) == 1
-                and ipds[0].channel == objects_channels
-                and ipds[0].series == 0
-                and ipds[0].index == 0
-            ):
-                # Most likely metadata has not been read.
-                # Not much harm in rereading
-                index = None
-                series = None
-                url = ipds[0].url
-            else:
-                if any([ipd.url != ipds[0].url for ipd in ipds[1:]]):
-                    raise NotImplementedError(
-                        "Planes from different files not yet supported."
-                    )
-                index = [ipd.index for ipd in ipds]
-                series = [ipd.series for ipd in ipds]
-                url = ipds[0].url
 
+        image_plane = image_set[name]
+
+        url = image_plane.url
+        series = image_plane.series
+        index = image_plane.index
+        channel = image_plane.channel
+        z = image_plane.z
+        t = image_plane.t
+        # Todo: Make provider handle czt
         url = workspace.measurements.alter_url_post_create_batch(url)
         volume = self.process_as_3d.value
         spacing = (self.z.value, self.x.value, self.y.value) if volume else None
         provider = ObjectsImage(
-            name, url, series, index, volume=volume, spacing=spacing
+            name, url, series, index, volume=volume, spacing=spacing, z=z, t=t,
         )
         self.add_provider_measurements(
             provider, workspace.measurements, "Object",

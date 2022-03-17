@@ -7,7 +7,7 @@ class ColorImage(URLImage):
     """Provide a color image, tripling a monochrome plane if needed"""
 
     def __init__(
-        self, name, url, series, index, rescale=True, volume=False, spacing=None
+        self, name, url, series, index, rescale=True, volume=False, spacing=None, z=None, t=None
     ):
         URLImage.__init__(
             self,
@@ -18,6 +18,8 @@ class ColorImage(URLImage):
             index=index,
             volume=volume,
             spacing=spacing,
+            z=z,
+            t=t
         )
 
     def provide_image(self, image_set):

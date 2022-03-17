@@ -261,20 +261,11 @@ class Filter(_setting.Setting):
 
     def test_valid(self, pipeline):
         try:
-            import javabridge as J
-
-            J.run_script(
-                """
-            importPackage(Packages.org.cellprofiler.imageset.filter);
-            new Filter(expr, klass);
-            """,
-                dict(
-                    expr=self.value_text,
-                    klass=J.class_for_name(
-                        "org.cellprofiler.imageset.ImagePlaneDetailsStack"
-                    ),
-                ),
-            )
+            tokens = self.parse()
+            for token in tokens:
+                if isinstance(token, list):
+                    if isinstance(token[2], RegexpFilterPredicate):
+                        re.compile(token[3])
         except Exception as e:
             raise ValidationError(str(e), self)
 

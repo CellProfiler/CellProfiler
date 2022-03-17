@@ -6,7 +6,6 @@ import tempfile
 import urllib.request
 
 import boto3
-import javabridge
 import numpy
 import pkg_resources
 import scipy.io
@@ -18,6 +17,10 @@ from ..constants.image import SUPPORTED_MOVIE_EXTENSIONS
 from ..constants.image import PASSTHROUGH_SCHEMES
 from ..constants.image import FILE_SCHEME
 from ..constants.measurement import FTR_WELL
+
+from bioformats import READABLE_FORMATS
+
+IMAGE_EXTENSIONS = set(READABLE_FORMATS)
 
 
 def convert_image_to_objects(image):
@@ -153,14 +156,7 @@ def is_file_url(url):
 
 def is_image_extension(suffix):
     """Return True if the extension is one of those recongized by bioformats"""
-    extensions = javabridge.get_collection_wrapper(
-        javabridge.static_call(
-            "org/cellprofiler/imageset/filter/IsImagePredicate",
-            "getImageSuffixes",
-            "()Ljava/util/Set;",
-        )
-    )
-    return extensions.contains(suffix.lower())
+    return suffix.lower() in IMAGE_EXTENSIONS
 
 
 def crop_image(image, crop_mask, crop_internal=False):

@@ -11,7 +11,7 @@ from ._url_image import URLImage
 class ObjectsImage(URLImage):
     """Provide a multi-plane integer image, interpreting an image file as objects"""
 
-    def __init__(self, name, url, series, index, volume=False, spacing=None):
+    def __init__(self, name, url, series, index, volume=False, spacing=None, z=None, t=None):
         self.__data = None
         self.volume = volume
         if volume:
@@ -20,7 +20,7 @@ class ObjectsImage(URLImage):
         self.__image = None
         self.__spacing = spacing
         URLImage.__init__(
-            self, name, url, rescale=False, series=series, index=index, volume=volume
+            self, name, url, rescale=False, series=series, index=index, volume=volume, z=z, t=t
         )
 
     def provide_image(self, image_set):

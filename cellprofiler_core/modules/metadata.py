@@ -723,11 +723,11 @@ not being applied, your choice on this setting may be the culprit.
         csv_path = self.csv_path(group)
         if csv_path == group.imported_metadata_header_path:
             if group.csv_location.is_url():
-                return group.imported_metadata_header_line
+                return group.imported_metadata_col_names
             if os.path.isfile(csv_path):
                 timestamp = os.stat(csv_path).st_mtime
                 if timestamp <= group.imported_metadata_header_timestamp:
-                    return group.imported_metadata_header_line
+                    return group.imported_metadata_col_names
         group.imported_metadata_header_timestamp = time.time()
         group.imported_metadata_header_path = csv_path
         try:
@@ -736,14 +736,14 @@ not being applied, your choice on this setting may be the culprit.
                 fd = urllib.request.urlopen(url)
             else:
                 fd = open(csv_path, "rb")
-            group.imported_metadata_header_line = fd.readline()
-            if isinstance(group.imported_metadata_header_line, bytes):
-                group.imported_metadata_header_line = group.imported_metadata_header_line.decode(
+            group.imported_metadata_col_names = fd.readline()
+            if isinstance(group.imported_metadata_col_names, bytes):
+                group.imported_metadata_col_names = group.imported_metadata_col_names.decode(
                     "utf-8"
                 )
         except Exception as e:
             return None
-        return group.imported_metadata_header_line
+        return group.imported_metadata_col_names
 
     def build_imported_metadata_extractor(self, group, extractor, for_metadata_only):
         """Build an extractor of imported metadata for this group
@@ -1122,7 +1122,7 @@ not being applied, your choice on this setting may be the culprit.
 
     def do_update_metadata(self, group):
         filelist = self.workspace.file_list
-        urls = set(self.pipeline.get_filtered_file_list(self.workspace))
+        urls = set([x.url for x in self.pipeline.get_filtered_file_list(self.workspace)])
         if len(urls) == 0:
             return
 

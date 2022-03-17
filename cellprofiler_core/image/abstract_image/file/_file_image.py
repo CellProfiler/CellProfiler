@@ -35,6 +35,8 @@ class FileImage(AbstractImage):
         channel=None,
         volume=False,
         spacing=None,
+        z=None,
+        t=None
     ):
         """
         :param name: Name of image to be provided
@@ -84,6 +86,9 @@ class FileImage(AbstractImage):
         self.__index = index
         self.__volume = volume
         self.__spacing = spacing
+        # TODO: Find a way to gracefully load stacks
+        self.__z = z if z is not None else 0
+        self.__t = t if t is not None else 0
         self.scale = None
 
     @property
@@ -115,6 +120,14 @@ class FileImage(AbstractImage):
         # Invalidate the cached image
         self.__image = None
         self.__index = index
+
+    @property
+    def z(self):
+        return self.__z
+
+    @property
+    def t(self):
+        return self.__t
 
     def get_name(self):
         return self.__name
@@ -276,8 +289,11 @@ class FileImage(AbstractImage):
             else:
                 rdr = get_image_reader(self.get_name(), url=self.get_url())
             if numpy.isscalar(self.index) or self.index is None:
+                print("Reading data", self.t, self.z, self.index, self.channel)
                 img, self.scale = rdr.read(
                     c=self.channel,
+                    z=self.z,
+                    t=self.t,
                     series=self.series,
                     index=self.index,
                     rescale=self.rescale,
@@ -286,6 +302,7 @@ class FileImage(AbstractImage):
                 )
             else:
                 # It's a stack
+                # Todo: Rework this
                 stack = []
                 if numpy.isscalar(self.series):
                     series_list = [self.series] * len(self.index)
@@ -300,6 +317,8 @@ class FileImage(AbstractImage):
                 ):
                     img, self.scale = rdr.read(
                         c=channel,
+                        z=self.z,
+                        t=self.t,
                         series=series,
                         index=index,
                         rescale=self.rescale,

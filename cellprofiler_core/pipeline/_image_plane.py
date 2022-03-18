@@ -1,8 +1,7 @@
 import collections
 import logging
 
-from cellprofiler_core.constants.image import MD_MONOCHROME, MD_RGB
-from cellprofiler_core.constants.pipeline import RESERVED_KEYS
+from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS, C_MONOCHROME, C_RGB
 from cellprofiler_core.pipeline import ImageFile
 
 logger = logging.getLogger(__name__)
@@ -119,8 +118,8 @@ class ImagePlane:
     @property
     def color_format(self):
         if self.multichannel is None or not self.multichannel:
-            return MD_MONOCHROME
-        return MD_RGB
+            return C_MONOCHROME
+        return C_RGB
 
     @property
     def modpath(self):
@@ -141,7 +140,7 @@ class ImagePlane:
             return None
 
     def set_metadata(self, key, value, force=False):
-        if key in RESERVED_KEYS and not force:
+        if key in RESERVED_METADATA_KEYS and not force:
             raise PermissionError(f"Cannot override protected metadata key '{key}'")
         else:
             if force:

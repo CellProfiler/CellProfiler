@@ -44,8 +44,15 @@ C_SERIES = "Series"
 C_FRAME = "Frame"
 C_FRAMES = "Frames"
 C_CHANNEL = "Channel"
-C_Z = "ZPlane"
-C_T = "Timepoint"
+C_C = "C"
+C_Z = "Z"
+C_T = "T"
+C_TILE = "TileXYWH"
+C_CHANNEL_NAME = "ChannelName"
+C_COLOR_FORMAT = "ColorFormat"
+C_MONOCHROME = "monochrome"
+C_RGB = "RGB"
+
 C_OBJECTS_FILE_NAME = "ObjectsFileName"
 C_OBJECTS_PATH_NAME = "ObjectsPathName"
 C_OBJECTS_URL = "ObjectsURL"
@@ -58,16 +65,8 @@ C_CHANNEL_TYPE = "ChannelType"
 C_FILE_LOCATION = "File_Location"
 M_METADATA_TAGS = "_".join((C_METADATA, "Tags"))
 M_GROUPING_TAGS = "_".join((C_METADATA, "GroupingTags"))
-RESERVED_METADATA_TAGS = (
-    "C",
-    "T",
-    "Z",
-    "ColorFormat",
-    "ChannelName",
-    C_SERIES,
-    C_FRAME,
-    C_FILE_LOCATION,
-)
+RESERVED_METADATA_KEYS = (C_URL, C_SERIES, C_FRAME, C_FILE_LOCATION, C_COLOR_FORMAT,
+                          C_CHANNEL_NAME, C_CHANNEL, C_C, C_Z, C_T, C_TILE)
 M_PATH_MAPPINGS = "Path_Mappings"
 K_CASE_SENSITIVE = "CaseSensitive"
 K_PATH_MAPPINGS = "PathMappings"

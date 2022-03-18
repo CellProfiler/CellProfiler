@@ -9,21 +9,21 @@ from ...utilities.image import is_image_extension
 IS_TIF_PREDICATE = FilterPredicate(
     "istif",
     '"tif", "tiff", "ome.tif" or "ome.tiff"',
-    lambda x: x.lower() in ("tif", "tiff", "ome.tif", "ome.tiff"),
+    lambda x: x.lower() in (".tif", ".tiff", ".ome.tif", ".ome.tiff"),
     [],
     doc="The extension is associated with TIFF image files",
 )
 IS_JPEG_PREDICATE = FilterPredicate(
     "isjpeg",
     '"jpg" or "jpeg"',
-    lambda x: x.lower() in ("jpg", "jpeg"),
+    lambda x: x.lower() in (".jpg", ".jpeg"),
     [],
     doc="The extension is associated with JPEG image files",
 )
 IS_PNG_PREDICATE = FilterPredicate(
     "ispng",
     '"png"',
-    lambda x: x.lower() == "png",
+    lambda x: x.lower() == ".png",
     [],
     doc="The extension is associated with PNG image files",
 )
@@ -37,14 +37,14 @@ IS_IMAGE_PREDICATE = FilterPredicate(
 IS_FLEX_PREDICATE = FilterPredicate(
     "isflex",
     '"flex"',
-    lambda x: x.lower() == "flex",
+    lambda x: x.lower() == ".flex",
     [],
     doc="The extension is associated with .flex files",
 )
 IS_MOVIE_PREDICATE = FilterPredicate(
     "ismovie",
     '"mov" or "avi"',
-    lambda x: x.lower() in ("mov", "avi"),
+    lambda x: x.lower() in (".mov", ".avi"),
     [],
     doc="The extension is associated with movie files",
 )
@@ -89,14 +89,13 @@ class ExtensionPredicate(FilterPredicate):
             filename = modpath[-2]
         else:
             filename = modpath[-1]
-        exts = []
+        exts = ""
         while True:
             filename, ext = os.path.splitext(filename)
             if len(filename) == 0 or len(ext) == 0:
                 return False
-            exts.insert(0, ext[1:])
-            ext = ".".join(exts)
-            if args[0](ext, *args[1:]):
+            exts = ext + exts
+            if args[0](exts, *args[1:]):
                 return True
 
     def test_valid(self, pipeline, *args):

@@ -12,15 +12,11 @@ import scipy.io
 
 from .measurement import is_well_row_token
 from .measurement import is_well_column_token
-from ..constants.image import SUPPORTED_IMAGE_EXTENSIONS
+from ..constants.image import ALL_IMAGE_EXTENSIONS
 from ..constants.image import SUPPORTED_MOVIE_EXTENSIONS
 from ..constants.image import PASSTHROUGH_SCHEMES
 from ..constants.image import FILE_SCHEME
 from ..constants.measurement import FTR_WELL
-
-from bioformats import READABLE_FORMATS
-
-IMAGE_EXTENSIONS = set(READABLE_FORMATS)
 
 
 def convert_image_to_objects(image):
@@ -103,7 +99,7 @@ def needs_well_metadata(tokens):
 def is_image(filename):
     """Determine if a filename is a potential image file based on extension"""
     ext = os.path.splitext(filename)[1].lower()
-    return ext in SUPPORTED_IMAGE_EXTENSIONS
+    return ext in ALL_IMAGE_EXTENSIONS
 
 
 def is_movie(filename):
@@ -156,7 +152,7 @@ def is_file_url(url):
 
 def is_image_extension(suffix):
     """Return True if the extension is one of those recongized by bioformats"""
-    return suffix.lower() in IMAGE_EXTENSIONS
+    return suffix.lower() in ALL_IMAGE_EXTENSIONS
 
 
 def crop_image(image, crop_mask, crop_internal=False):

@@ -4,15 +4,15 @@ import re
 import time
 import urllib.request
 
-from cellprofiler_core.constants.image import MD_T, MD_Z, MD_SIZE_C, MD_SIZE_T, MD_SIZE_Z, MD_SIZE_X, MD_SIZE_Y
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_core.constants.image import MD_SIZE_C, MD_SIZE_T, MD_SIZE_Z, MD_SIZE_X, MD_SIZE_Y
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, C_Z, C_T, C_CHANNEL
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.constants.measurement import COLTYPE_VARCHAR
 from cellprofiler_core.constants.measurement import COLTYPE_VARCHAR_FILE_NAME
 from cellprofiler_core.constants.measurement import C_FRAME
 from cellprofiler_core.constants.measurement import C_METADATA
 from cellprofiler_core.constants.measurement import C_SERIES
-from cellprofiler_core.constants.measurement import RESERVED_METADATA_TAGS
+from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS
 from cellprofiler_core.constants.module import FILTER_RULES_BUTTONS_HELP
 from cellprofiler_core.constants.module import PROTIP_RECOMMEND_ICON
 from cellprofiler_core.constants.modules.metadata import COL_INDEX
@@ -1026,7 +1026,7 @@ not being applied, your choice on this setting may be the culprit.
                 )
                 for token in find_metadata_tokens(re_setting.value):
                     if token.upper() in [
-                        reservedtag.upper() for reservedtag in RESERVED_METADATA_TAGS
+                        reservedtag.upper() for reservedtag in RESERVED_METADATA_KEYS
                     ]:
                         raise ValidationError(
                             'The metadata tag, "%s", is reserved for use by CellProfiler.'
@@ -1060,8 +1060,6 @@ not being applied, your choice on this setting may be the culprit.
         )
 
     NUMERIC_DATA_TYPES = (
-        MD_T,
-        MD_Z,
         MD_SIZE_C,
         MD_SIZE_T,
         MD_SIZE_Z,
@@ -1069,6 +1067,9 @@ not being applied, your choice on this setting may be the culprit.
         MD_SIZE_Y,
         C_SERIES,
         C_FRAME,
+        C_CHANNEL,
+        C_T,
+        C_Z,
     )
 
     def get_data_type(self, key):

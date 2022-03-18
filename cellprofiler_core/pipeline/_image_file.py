@@ -4,7 +4,7 @@ import logging
 
 from cellprofiler_core.constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
 from cellprofiler_core.constants.modules.metadata import COL_PATH, COL_SERIES, COL_INDEX, COL_URL
-from cellprofiler_core.constants.pipeline import RESERVED_KEYS
+from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS
 from cellprofiler_core.utilities.image import url_to_modpath
 
 logger = logging.getLogger(__name__)
@@ -164,14 +164,14 @@ class ImageFile:
     def add_metadata(self, meta_dict):
         # Used to bulk-add metadata keys from the Metadata module. Other modules should use set_metadata method.
         for key, value in meta_dict.items():
-            if key in RESERVED_KEYS:
+            if key in RESERVED_METADATA_KEYS:
                 logger.error(f"Unable to set protected metadata key '{key}' to '{value}' for file {self.filename}. "
                              f"Please choose another key name.")
                 continue
             self._metadata_dict[key] = value
 
     def set_metadata(self, key, value, force=False):
-        if key in RESERVED_KEYS and not force:
+        if key in RESERVED_METADATA_KEYS and not force:
             raise PermissionError(f"Cannot override protected metadata key '{key}'")
         else:
             if force:

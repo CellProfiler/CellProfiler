@@ -115,7 +115,6 @@ class ImageFile:
             return
         if len(data) == 5 and numpy.all(data == -1):
             # Unfilled metadata
-            self._extracted = True
             return
         num_series = len(data) // 5
         self.metadata[MD_SIZE_S] = num_series

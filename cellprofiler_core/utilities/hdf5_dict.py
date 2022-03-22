@@ -31,8 +31,8 @@ VERSION = "Version"
 INDEX = "index"
 DATA = "data"
 
-FILES = "files"
-METADATA = "metadata"
+FILES = ":filelist:"
+METADATA = ":metadata:"
 
 # h5py is nice, but not being able to make zero-length selections is a pain.
 orig_hdf5_getitem = h5py.Dataset.__getitem__
@@ -946,8 +946,8 @@ class HDF5FileList(object):
           directory name
               ....
               sub directory name
-                   files
-                   metadata
+                   :filelist:
+                   :metadata:
 
     File names are stored as an array of strings per directory, sorted in
     alphabetical order. H5Py automatically creates subgroups representing

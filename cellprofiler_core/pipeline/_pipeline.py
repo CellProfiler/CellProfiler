@@ -45,6 +45,7 @@ from .event import PrepareRunError
 from .event import PrepareRunException
 from .event import RunException
 from .event import URLsAdded
+from .event import URLsCleared
 from .event import URLsRemoved
 from ..constants.measurement import COLTYPE_FLOAT
 from ..constants.measurement import COLTYPE_INTEGER
@@ -1836,7 +1837,7 @@ class Pipeline:
             )
             self.__undo_stack.append((undo, message))
 
-    def add_urls(self, urls, add_undo=True):
+    def add_urls(self, urls, add_undo=True, metadata=None):
         """Add URLs to the file list
 
         urls - a collection of URLs
@@ -1849,6 +1850,9 @@ class Pipeline:
         n = len(urls)
         for i, url in enumerate(urls):
             file_object = ImageFile(url)
+            if metadata is not None:
+                meta = metadata[i]
+                file_object.load_plane_metadata(meta)
             if i % 100 == 0:
                 path = urllib.parse.urlparse(url).path
                 if "/" in path:
@@ -1906,12 +1910,10 @@ class Pipeline:
             self.__filtered_file_list_images_settings = None
             self.__image_plane_details_metadata_settings = None
             self.__image_plane_details = []
-            self.notify_listeners(URLsRemoved(old_urls))
+            self.notify_listeners(URLsCleared())
             if add_undo:
-
                 def undo():
                     self.add_urls(old_urls, False)
-
                 self.__undo_stack.append((undo, "Remove images"))
 
     def load_file_list(self, workspace):
@@ -1922,7 +1924,7 @@ class Pipeline:
         if self.__file_list_generation == file_list.generation:
             return
         try:
-            urls = file_list.get_filelist()
+            urls, metadata = file_list.get_filelist(want_metadata=True)
         except Exception as instance:
             logging.error("Failed to get file list from workspace", exc_info=True)
             x = IPDLoadException("Failed to get file list from workspace")
@@ -1931,7 +1933,7 @@ class Pipeline:
                 raise instance
         self.start_undoable_action()
         self.clear_urls()
-        self.add_urls(urls)
+        self.add_urls(urls, metadata=metadata)
         self.stop_undoable_action(name="Load file list")
         self.__filtered_image_plane_details_images_settings = tuple()
         self.__filtered_image_plane_details_metadata_settings = tuple()

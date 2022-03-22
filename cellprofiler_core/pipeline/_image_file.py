@@ -2,6 +2,8 @@ import os
 import urllib.request
 import logging
 
+import numpy
+
 from cellprofiler_core.constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
 from cellprofiler_core.constants.modules.metadata import COL_PATH, COL_SERIES, COL_INDEX, COL_URL
 from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS
@@ -70,7 +72,7 @@ class ImageFile:
         else:
             raise NotImplementedError("Unsupported comparison")
 
-    def extract_planes(self):
+    def extract_planes(self, workspace=None):
         if self._extracted:
             return
         # Figure out the number of planes, indexes or series in the file.
@@ -93,8 +95,37 @@ class ImageFile:
             self.metadata[MD_SIZE_X].append(reader.getSizeX())
         for S, C, Z, T, Y, X in self.get_plane_iterator():
             self._plane_details.append(f"Series {S:>2}: {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
+        if workspace is not None:
+            metadata_array = numpy.transpose([
+                self.metadata[MD_SIZE_C],
+                self.metadata[MD_SIZE_Z],
+                self.metadata[MD_SIZE_T],
+                self.metadata[MD_SIZE_Y],
+                self.metadata[MD_SIZE_X]])
+            workspace.file_list.add_metadata(self.url, metadata_array.flatten())
         self._extracted = True
         self.release_reader()
+
+    def load_plane_metadata(self, data):
+        # Metadata is stored in the HDF5 file as an array of int values, 5 per series for axis sizes (CZTYX)
+        if len(data) < 5 or len(data) % 5 == 0:
+            # No metadata or bad format
+            if data:
+                logger.warning(f"Unable to load saved metadata for {self.filename}")
+            return
+        num_series = len(data) // 5
+        self.metadata[MD_SIZE_S] = num_series
+        for i in range(num_series):
+            C, Z, T, Y, X = data[:5]
+            self.metadata[MD_SIZE_C].append(int(C))
+            self.metadata[MD_SIZE_Z].append(int(Z))
+            self.metadata[MD_SIZE_T].append(int(T))
+            self.metadata[MD_SIZE_Y].append(int(Y))
+            self.metadata[MD_SIZE_X].append(int(X))
+        for S, C, Z, T, Y, X in self.get_plane_iterator():
+            self._plane_details.append(
+                f"Series {S:>2}: {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
+        self._extracted = True
 
     @property
     def extracted(self):

@@ -317,7 +317,7 @@ pass the current filter.
                 # Otherwise, just do the extraction here
                 for file_object in file_list:
                     if not file_object.extracted:
-                        file_object.extract_planes()
+                        file_object.extract_planes(workspace)
 
         planes = []
         for image_file in file_list:

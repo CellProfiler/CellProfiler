@@ -249,13 +249,11 @@ class PathListCtrl(wx.TreeCtrl):
                         plane_id = self.AppendItem(file_id, detail, data=file_object)
                         self.SetItemFont(plane_id, self._plane_details_font)
                         self.SetItemTextColour(plane_id, PLANE_COLOR)
-                    self.Expand(file_id)
-
-            self.Expand(folder_id)
         if added_folders:
             self.SortChildren(self.root_id)
         for folder_id in changed_folders:
             self.SortChildren(folder_id)
+        self.ExpandAll()
         if npaths:
             report_progress(uid, 1, "Done")
         self._metadata_extracted = False

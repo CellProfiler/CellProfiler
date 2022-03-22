@@ -1844,7 +1844,10 @@ class Pipeline:
         add_undo - True to add the undo operation of this to the undo stack
         """
         real_list = []
-        urls = sorted(urls)
+        if metadata is not None:
+            urls, metadata = list(zip(*sorted(zip(urls, metadata), key=lambda x: x[0])))
+        else:
+            urls = sorted(urls)
         start = 0
         uid = uuid.uuid4()
         n = len(urls)

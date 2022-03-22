@@ -108,10 +108,14 @@ class ImageFile:
 
     def load_plane_metadata(self, data):
         # Metadata is stored in the HDF5 file as an array of int values, 5 per series for axis sizes (CZTYX)
-        if len(data) < 5 or len(data) % 5 == 0:
+        if len(data) < 5 or len(data) % 5 != 0:
             # No metadata or bad format
-            if data:
+            if len(data) > 0:
                 logger.warning(f"Unable to load saved metadata for {self.filename}")
+            return
+        if len(data) == 5 and numpy.all(data == -1):
+            # Unfilled metadata
+            self._extracted = True
             return
         num_series = len(data) // 5
         self.metadata[MD_SIZE_S] = num_series

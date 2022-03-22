@@ -1115,8 +1115,8 @@ class HDF5FileList(object):
     def add_files_to_filelist(self, urls):
         self.__generation = uuid.uuid4()
         dt = string_dtype(encoding='utf-8')
-        dtm = vlen_dtype(numpy.dtype('int32'))
-        blank_metadata = numpy.empty((5),  dtype=int)
+        dtm = vlen_dtype(int)
+        blank_metadata = numpy.full(5, -1, dtype=int)
         parent = self.get_filelist_group()
         storage_map = collections.defaultdict(list)
         for url in urls:
@@ -1157,14 +1157,16 @@ class HDF5FileList(object):
                                               chunks=True,
                                               maxshape=(None,)
                                               )
-                    path_group.create_dataset(METADATA,
-                                              compression="gzip",
-                                              shuffle=True,
-                                              shape=(len(filenames)),
-                                              dtype=dtm,
-                                              chunks=True,
-                                              maxshape=(None,)
-                                              )
+                    md = path_group.create_dataset(METADATA,
+                                                   compression="gzip",
+                                                   shuffle=True,
+                                                   shape=(len(filenames)),
+                                                   dtype=dtm,
+                                                   chunks=True,
+                                                   maxshape=(None,)
+                                                   )
+                    md[:] = numpy.array([blank_metadata] * len(filenames),
+                                        dtype=numpy.object)
             self.hdf5_file.flush()
         self.notify()
 
@@ -1266,8 +1268,8 @@ class HDF5FileList(object):
     def get_filelist(self, root_url=None, want_metadata=False):
         group = self.get_filelist_group()
         if group.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
-            LOGGER.error("Project file is from an older version of CellProfiler, "
-                         "cannot load file list")
+            LOGGER.error("Project file is from an older version of "
+                         "CellProfiler, cannot load file list")
             return []
         self._temp = []
         with self.lock:
@@ -1287,7 +1289,6 @@ class HDF5FileList(object):
         if want_metadata:
             return result, meta
         return result
-
 
 
 class HDF5ImageSet(object):

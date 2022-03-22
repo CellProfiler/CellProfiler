@@ -502,9 +502,11 @@ class PathListCtrl(wx.TreeCtrl):
     def find_invisible_above(self):
         # Returns the index of the invisible item above the last index.
         first, _ = self.GetFirstChild(self.root_id)
-        if self.IsVisible(first):
+        if not first.IsOk() or self.IsVisible(first):
             return first
         idx = self.GetFirstVisibleItem()
+        if not idx.IsOk():
+            return idx
         parent = self.GetItemParent(idx)
         target_idx = parent
         assert not self.IsVisible(parent)
@@ -518,6 +520,8 @@ class PathListCtrl(wx.TreeCtrl):
 
     def find_invisible_below(self):
         next_vis = self.GetFirstVisibleItem()
+        if not next_vis.IsOk():
+            return next_vis
         last_vis = next_vis
         while next_vis.IsOk():
             last_vis = next_vis
@@ -589,9 +593,13 @@ class PathListCtrl(wx.TreeCtrl):
             show_idx = self.find_invisible_below()
             if isinstance(show_idx, tuple):
                 show_idx = show_idx[0]
+            if not show_idx.IsOk():
+                return
             self.ScrollTo(show_idx)
         elif y < 20:
             show_idx = self.find_invisible_above()
+            if not show_idx.IsOk():
+                return
             self.ScrollTo(show_idx)
 
     def on_key_down(self, event):

@@ -90,6 +90,7 @@ from cellprofiler_core.pipeline import (
     RunException,
     Listener,
     PrepareRunError,
+    ImageFile,
 )
 from cellprofiler_core.pipeline.io._v6 import load
 from cellprofiler_core.preferences import (
@@ -1815,6 +1816,8 @@ class PipelineController(object):
     def on_urls_removed(self, event):
         """Callback from pipeline when paths are removed from the pipeline"""
         urls = event.urls
+        if isinstance(urls[0], ImageFile):
+            urls = [imfile.url for imfile in urls]
         self.__path_list_ctrl.remove_files(urls)
         self.__workspace.file_list.remove_files_from_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(
@@ -1847,7 +1850,7 @@ class PipelineController(object):
                     break
                 if not file_object.extracted:
                     dlg.Update(idx, f"Working on {file_object.filename}")
-                    file_object.extract_planes()
+                    file_object.extract_planes(self.__workspace)
                     urls.append(file_object.url)
             self.__path_list_ctrl.update_metadata(urls)
             self.__path_list_ctrl.set_metadata_extracted(not dlg.WasCancelled())

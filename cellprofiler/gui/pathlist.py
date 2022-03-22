@@ -276,6 +276,12 @@ class PathListCtrl(wx.TreeCtrl):
                     del self.folder_id_map[self.GetItemText(folder_id)]
                     self.Delete(folder_id)
 
+    def clear_files(self):
+        self.file_id_map = {}
+        for folder_id in self.folder_id_map.values():
+            self.Delete(folder_id)
+        self.folder_id_map = {}
+
     def update_metadata(self, urls):
         for url in urls:
             file_id = self.file_id_map[url]
@@ -423,7 +429,9 @@ class PathListCtrl(wx.TreeCtrl):
     def SelectAll(self):
         """Select all files in the control"""
         # Annoyingly this selects the parent folders non-recursively, but keyboard shortcuts will still work.
-        self.SelectChildren(self.root_id)
+        self.UnselectAll()
+        for node in self.folder_id_map.values():
+            self.SelectItem(node)
         self.notify_selection_changed()
 
     def select_path(self, url):

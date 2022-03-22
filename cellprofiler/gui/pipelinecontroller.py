@@ -80,6 +80,7 @@ from cellprofiler_core.pipeline import (
     PostRunException,
     PrepareRunException,
     URLsAdded,
+    URLsCleared,
     URLsRemoved,
     LoadException,
     ModuleAdded,
@@ -1734,6 +1735,8 @@ class PipelineController(object):
             self.on_urls_added(event)
         elif isinstance(event, URLsRemoved):
             self.on_urls_removed(event)
+        elif isinstance(event, URLsCleared):
+            self.on_urls_cleared(event)
         elif event.is_pipeline_modification:
             self.__dirty_workspace = True
             self.set_title()
@@ -1823,6 +1826,13 @@ class PipelineController(object):
         self.__pipeline_list_view.notify_has_file_list(
             len(self.__pipeline.file_list) > 0
         )
+        self.exit_test_mode()
+
+    def on_urls_cleared(self, event):
+        """Callback from pipeline when all paths are cleared from the pipeline"""
+        self.__path_list_ctrl.clear_files()
+        self.__workspace.file_list.clear_filelist()
+        self.__pipeline_list_view.notify_has_file_list(False)
         self.exit_test_mode()
 
     def on_update_pathlist(self, event=None):

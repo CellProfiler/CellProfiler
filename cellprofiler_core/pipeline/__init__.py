@@ -27,6 +27,7 @@ from .event import PipelineLoadCancelledException
 from .event import PipelineLoaded
 from .event import PrepareRunError
 from .event import URLsAdded
+from .event import URLsCleared
 from .event import URLsRemoved
 from .event.run_exception import PostRunException
 from .event.run_exception import PrepareRunException

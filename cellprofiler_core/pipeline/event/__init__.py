@@ -15,5 +15,6 @@ from ._pipeline_cleared import PipelineCleared
 from ._pipeline_loaded import PipelineLoaded
 from ._prepare_run_error import PrepareRunError
 from ._urls_added import URLsAdded
+from ._urls_cleared import URLsCleared
 from ._urls_removed import URLsRemoved
 from .run_exception import PostRunException, PrepareRunException, RunException

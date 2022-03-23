@@ -33,6 +33,7 @@ IMAGE_NUMBER = "ImageNumber"
 OBJECT_NUMBER = "ObjectNumber"
 GROUP_NUMBER = "Group_Number"  # 1-based group index
 GROUP_INDEX = "Group_Index"  # 1-based index within group
+GROUP_LENGTH = "Group_Length"
 R_FIRST_IMAGE_NUMBER = IMAGE_NUMBER + "_" + "First"
 R_FIRST_OBJECT_NUMBER = OBJECT_NUMBER + "_" + "First"
 R_SECOND_IMAGE_NUMBER = IMAGE_NUMBER + "_" + "Second"

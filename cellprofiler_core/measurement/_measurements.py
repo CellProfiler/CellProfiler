@@ -36,6 +36,7 @@ from ..constants.measurement import C_URL
 from ..constants.measurement import EXPERIMENT
 from ..constants.measurement import GROUP_INDEX
 from ..constants.measurement import GROUP_NUMBER
+from ..constants.measurement import GROUP_LENGTH
 from ..constants.measurement import IMAGE
 from ..constants.measurement import IMAGE_NUMBER
 from ..constants.measurement import K_CASE_SENSITIVE
@@ -363,6 +364,15 @@ class Measurements:
         self.add_image_measurement(GROUP_INDEX, group_index)
 
     group_index = property(get_group_index, set_group_index)
+
+    def get_group_length(self):
+        """The group length of the current image group"""
+        return self.get_current_image_measurement(GROUP_LENGTH)
+
+    def set_group_length(self, group_length):
+        self.add_image_measurement(GROUP_LENGTH, group_length)
+
+    group_length = property(get_group_length, set_group_length)
 
     def get_groupings(self, features):
         """Return groupings of image sets based on feature values

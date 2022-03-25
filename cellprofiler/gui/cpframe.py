@@ -518,12 +518,12 @@ class CPFrame(wx.Frame):
                 exc_info=True,
             )
         try:
-            from bioformats.formatreader import clear_image_reader_cache
-
-            clear_image_reader_cache()
+            from cellprofiler_core.constants.reader import all_readers
+            for reader in all_readers.values():
+                reader.clear_cached_readers()
         except:
             logging.warning(
-                "Failed to clear bioformats reader cache during close", exc_info=True,
+                "Failed to clear reader cache during close", exc_info=True,
             )
         try:
             self.__preferences_view.close()
@@ -791,7 +791,7 @@ class CPFrame(wx.Frame):
             #
             # Lee wants the wx debugger
             #
-            if os.environ.get("USERNAME", "").lower() == "leek":
+            if os.environ.get("USER", "").lower() == "david":
                 self.__menu_debug.Append(ID_FILE_WIDGET_INSPECTOR, "Widget inspector")
 
         self.__menu_debug.Append(ID_DEBUG_HELP, "Pipeline Testing Help")

@@ -312,8 +312,9 @@ def stop_cellprofiler():
     # This is especially important when using OmeroReaders as leaving the
     # readers open leaves the OMERO.server services open which in turn leads to
     # high memory consumption.
-    bioformats.formatreader.clear_image_reader_cache()
-
+    from cellprofiler_core.constants.reader import all_readers
+    for reader in all_readers.values():
+        reader.clear_cached_readers()
     stop_java()
 
 

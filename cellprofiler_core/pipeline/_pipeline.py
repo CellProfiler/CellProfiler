@@ -15,11 +15,11 @@ import urllib.parse
 import urllib.request
 import uuid
 
-import bioformats.formatreader
 import numpy
 
 from . import ImageFile
 from .io import dump as dumpit
+from ..constants.reader import all_readers
 from ..utilities.core.modules import instantiate_module, reload_modules
 from ..utilities.core.pipeline import read_file_list
 from ._listener import Listener
@@ -1097,7 +1097,8 @@ class Pipeline:
             # Close cached readers.
             # This may play a big role with cluster deployments or long standing jobs
             # by freeing up memory and resources.
-            bioformats.formatreader.clear_image_reader_cache()
+            for reader in all_readers.values():
+                reader.clear_cached_readers()
             if measurements is not None:
                 workspace = Workspace(
                     self, None, None, None, measurements, image_set_list, frame

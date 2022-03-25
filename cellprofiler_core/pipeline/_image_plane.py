@@ -73,7 +73,6 @@ class ImagePlane:
         # Rebuild the parent file from the URL.
         self._file = ImageFile(self._metadata_dict['URL'])
 
-
     @property
     def file(self):
         return self._file
@@ -85,6 +84,10 @@ class ImagePlane:
     @property
     def url(self):
         return self._file.url
+
+    @property
+    def reader_name(self):
+        return self._file.preferred_reader
 
     @property
     def series(self):

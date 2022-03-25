@@ -1,12 +1,15 @@
 import os
 import urllib.request
 import logging
+from functools import cached_property
 
 import numpy
 
-from cellprofiler_core.constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
+from cellprofiler_core.constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, \
+    MD_SIZE_KEYS
 from cellprofiler_core.constants.modules.metadata import COL_PATH, COL_SERIES, COL_INDEX, COL_URL
 from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS
+from cellprofiler_core.reader import get_image_reader, Reader
 from cellprofiler_core.utilities.image import url_to_modpath
 
 logger = logging.getLogger(__name__)
@@ -44,6 +47,8 @@ class ImageFile:
         }
         self._plane_details = []
         self._modpath = None
+        # Records the name of the reader class selected for this file.
+        self.preferred_reader = None
 
     def __repr__(self):
         return f"ImageFile object for {self.url}. Metadata extracted:{self.extracted}, Indexed:{self.index_mode}"
@@ -77,22 +82,15 @@ class ImageFile:
             return
         # Figure out the number of planes, indexes or series in the file.
         try:
-            reader = self.get_reader().rdr
-        except Exception as e:
-            logger.error(f"May not be an image: {self.url}")
-            logger.error(e)
+            reader = self.get_reader()
+        except:
+            logger.error(f"May not be an image: {self.url}", exc_info=True)
             self.metadata[MD_SIZE_S] = 0
             return
         # self._xml_metadata = reader.get_omexml_metadata()
-        series_count = reader.getSeriesCount()
-        self.metadata[MD_SIZE_S] = series_count
-        for i in range(series_count):
-            reader.setSeries(i)
-            self.metadata[MD_SIZE_C].append(reader.getSizeC())
-            self.metadata[MD_SIZE_Z].append(reader.getSizeZ())
-            self.metadata[MD_SIZE_T].append(reader.getSizeT())
-            self.metadata[MD_SIZE_Y].append(reader.getSizeY())
-            self.metadata[MD_SIZE_X].append(reader.getSizeX())
+        meta_dict = reader.get_series_dimensions()
+        assert set(meta_dict.keys()) == MD_SIZE_KEYS, "Returned metadata keys were incorrect"
+        self.metadata.update(meta_dict)
         for S, C, Z, T, Y, X in self.get_plane_iterator():
             self._plane_details.append(f"Series {S:>2}: {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
         if workspace is not None:
@@ -142,27 +140,31 @@ class ImageFile:
     def url(self):
         return self._url
 
-    @property
+    @cached_property
     def filename(self):
         return os.path.basename(self.path)
 
-    @property
+    @cached_property
     def dirname(self):
         return os.path.dirname(self.path)
 
-    @property
+    @cached_property
     def path(self):
         """The file path if a file: URL, otherwise the URL"""
         if self.url.startswith("file:"):
             return urllib.request.url2pathname(self.url[5:])
         return self.url
 
-    @property
+    @cached_property
     def modpath(self):
         """The directory, filename and extension broken up into a tuple"""
         if self._modpath is None:
             self._modpath = url_to_modpath(self.url)
         return self._modpath
+
+    @cached_property
+    def file_extension(self):
+        return os.path.splitext(self.path)[-1].lower()
 
     @property
     def metadata(self):
@@ -170,14 +172,13 @@ class ImageFile:
 
     def get_reader(self):
         if self._reader is None:
-            from bioformats.formatreader import get_image_reader
-            self._reader = get_image_reader(key=self.url, url=self.url)
+            self._reader = get_image_reader(self)
         return self._reader
 
     def release_reader(self):
-        if self._reader is None:
-            from bioformats.formatreader import release_image_reader
-            release_image_reader(self.url)
+        if self._reader is not None:
+            if isinstance(self._reader, Reader):
+                self._reader.close()
             self._reader = None
 
     def get_xml_metadata(self):

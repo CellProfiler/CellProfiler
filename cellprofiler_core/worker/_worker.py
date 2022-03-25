@@ -101,10 +101,10 @@ class Worker:
         self.notify_socket.connect(NOTIFY_ADDR)
 
     def exit_thread(self):
-        from bioformats.formatreader import clear_image_reader_cache
-
         self.notify_socket.close()
-        clear_image_reader_cache()
+        from cellprofiler_core.constants.reader import all_readers
+        for reader in all_readers.values():
+            reader.clear_cached_readers()
         javabridge.detach()
 
     def run(self):

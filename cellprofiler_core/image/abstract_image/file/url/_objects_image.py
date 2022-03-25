@@ -1,8 +1,8 @@
-import bioformats
 import imageio
 import numpy
 
 from .... import Image
+from .....constants.image import MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T
 from .....utilities.image import convert_image_to_objects
 from .....utilities.pathname import url2pathname
 from ._url_image import URLImage
@@ -39,13 +39,12 @@ class ObjectsImage(URLImage):
         url = self.get_url()
         properties = {}
         if self.index is None:
-            metadata = bioformats.get_omexml_metadata(self.get_full_name())
-
-            ometadata = bioformats.omexml.OMEXML(metadata)
-            pixel_metadata = ometadata.image(
-                0 if self.series is None else self.series
-            ).Pixels
-            nplanes = pixel_metadata.SizeC * pixel_metadata.SizeZ * pixel_metadata.SizeT
+            reader = self.get_reader()
+            meta = reader.get_series_dimensions()
+            series = self.series
+            if self.series is None:
+                series = 0
+            nplanes = meta[MD_SIZE_C][series] * meta[MD_SIZE_Z][series] * meta[MD_SIZE_T][series]
             indexes = list(range(nplanes))
         elif numpy.isscalar(self.index):
             indexes = [self.index]
@@ -60,9 +59,8 @@ class ObjectsImage(URLImage):
                     properties["series"] = self.series
                 else:
                     properties["series"] = self.series[i]
-            img = bioformats.load_image(
-                self.get_full_name(), rescale=False, **properties
-            ).astype(int)
+            rdr = self.get_reader()
+            rdr.read(rescale=False, **properties).astype(int)
             img = convert_image_to_objects(img).astype(numpy.int32)
             img[img != 0] += offset
             offset += numpy.max(img)

@@ -1486,8 +1486,9 @@ requests an object selection.
         channel = image_plane.channel
         z = image_plane.z
         t = image_plane.t
+        reader_name = image_plane.reader_name
         self.add_simple_image(
-            workspace, name, load_choice, rescale, url, series, index, channel, z, t
+            workspace, name, load_choice, rescale, url, series, index, channel, z, t, reader_name
         )
         # elif all([ipd.url == ipds[0].url for ipd in ipds[1:]]):
         #     # Can load a simple image with a vector of series/index/channel
@@ -1509,7 +1510,7 @@ requests an object selection.
         #     )
 
     def add_simple_image(
-        self, workspace, name, load_choice, rescale, url, series, index, channel, z=None, t=None
+        self, workspace, name, load_choice, rescale, url, series, index, channel, z=None, t=None, reader_name=None,
     ):
         m = workspace.measurements
 
@@ -1546,7 +1547,7 @@ requests an object selection.
             )
         else:
             raise NotImplementedError(f"Unknown load choice: {load_choice}")
-
+        provider.reader_name = reader_name
         workspace.image_set.providers.append(provider)
 
         self.add_provider_measurements(provider, m, "Image")

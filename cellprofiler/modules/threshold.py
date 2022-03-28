@@ -876,7 +876,7 @@ staining.
 
         elif self.threshold_scope.value == TS_ADAPTIVE:
             th_guide = self.get_global_threshold(image_data, image.mask)
-            th_original = self.get_local_threshold(image_data, image.mask, image.volumetric)
+            th_original = self.get_local_threshold(image_data, image.mask, th_guide, image.volumetric)
         else:
             raise ValueError("Invalid thresholding settings")
 
@@ -917,13 +917,16 @@ staining.
                 bin_wanted = (
                     0 if self.assign_middle_to_foreground.value == "Foreground" else 1
                 )
-                threshold = skimage.filters.threshold_multiotsu(image_data, nbins=128)
-                threshold = threshold[bin_wanted]
+                if len(numpy.unique(image))==2:
+                    threshold = skimage.filters.threshold_otsu(image_data)
+                else:
+                    threshold = skimage.filters.threshold_multiotsu(image_data, nbins=128)
+                    threshold = threshold[bin_wanted]
         else:
             raise ValueError("Invalid thresholding settings")
         return threshold
 
-    def get_local_threshold(self, image, mask, volumetric):
+    def get_local_threshold(self, image, mask, guide_threshold, volumetric):
         image_data = numpy.where(mask, image, numpy.nan)
 
         if len(image_data) == 0 or numpy.all(image_data == numpy.nan):
@@ -951,6 +954,7 @@ staining.
                 local_threshold = self._run_local_threshold(
                     image_data,
                     method=skimage.filters.threshold_multiotsu,
+                    guide_threshold = guide_threshold,
                     volumetric=volumetric,
                     nbins=128,
                 )
@@ -975,16 +979,16 @@ staining.
             raise ValueError("Invalid thresholding settings")
         return local_threshold
 
-    def _run_local_threshold(self, image_data, method, volumetric=False, **kwargs):
+    def _run_local_threshold(self, image_data, method, guide_threshold=0, volumetric=False, **kwargs):
         if volumetric:
             t_local = numpy.zeros_like(image_data)
             for index, plane in enumerate(image_data):
-                t_local[index] = self._get_adaptive_threshold(plane, method, **kwargs)
+                t_local[index] = self._get_adaptive_threshold(plane, method, guide_threshold, **kwargs)
         else:
-            t_local = self._get_adaptive_threshold(image_data, method, **kwargs)
+            t_local = self._get_adaptive_threshold(image_data, method, guide_threshold, **kwargs)
         return skimage.img_as_float(t_local)
 
-    def _get_adaptive_threshold(self, image_data, threshold_method, **kwargs):
+    def _get_adaptive_threshold(self, image_data, threshold_method, guide_threshold, **kwargs):
         """Given a global threshold, compute a threshold per pixel
 
         Break the image into blocks, computing the threshold per block.
@@ -1037,7 +1041,8 @@ staining.
                       self.two_class_otsu.value == O_THREE_CLASS and
                       len(numpy.unique(block)) < 3):
                     # Can't run 3-class otsu on only 2 values.
-                    threshold_out = skimage.filters.threshold_otsu(block)
+                    #threshold_out = skimage.filters.threshold_otsu(block)
+                    threshold_out = guide_threshold
                 else:
                     threshold_out = threshold_method(block, **kwargs)
                 if isinstance(threshold_out, numpy.ndarray):

@@ -1935,13 +1935,14 @@ class Pipeline:
             self.notify_listeners(x)
             if x.cancel_run:
                 raise instance
-        self.start_undoable_action()
-        self.clear_urls()
-        self.add_urls(urls, metadata=metadata)
-        self.stop_undoable_action(name="Load file list")
+        if urls:
+            self.start_undoable_action()
+            self.clear_urls()
+            self.add_urls(urls, metadata=metadata)
+            self.stop_undoable_action(name="Load file list")
+            self.__image_plane_details_generation = file_list.generation
         self.__filtered_image_plane_details_images_settings = tuple()
         self.__filtered_image_plane_details_metadata_settings = tuple()
-        self.__image_plane_details_generation = file_list.generation
 
     def read_file_list(self, path_or_fd, add_undo=True):
         """Read a file of one file or URL per line into the file list

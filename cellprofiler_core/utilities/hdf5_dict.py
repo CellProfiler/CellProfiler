@@ -1270,6 +1270,11 @@ class HDF5FileList(object):
         if group.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
             LOGGER.error("Project file is from an older version of "
                          "CellProfiler, cannot load file list")
+            # Remove old-format data from cloned HDF5.
+            parent = group.parent
+            del parent[group.name]
+            if want_metadata:
+                return [], []
             return []
         self._temp = []
         with self.lock:

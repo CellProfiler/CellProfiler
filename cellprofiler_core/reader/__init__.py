@@ -88,7 +88,7 @@ def find_cp_reader(rdr):
 
 def get_image_reader(image_file, use_cached_name=True):
     print("Getting reader for ", image_file)
-    if use_cached_name and image_file.preferred_reader is not None:
+    if use_cached_name and image_file.preferred_reader in all_readers:
         reader_class = get_image_reader_by_name(image_file.preferred_reader)
         print("Found preferred reader: ", image_file.preferred_reader)
         return reader_class(image_file)

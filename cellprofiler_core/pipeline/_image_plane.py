@@ -65,6 +65,8 @@ class ImagePlane:
     def __getstate__(self):
         # This is the object supplied to pickle.
         # We don't want to compress the parent file.
+        # Let's also compress a record of the selected reader.
+        self._metadata_dict[':PREFERRED_READER:'] = self.file.preferred_reader
         return self._metadata_dict
 
     def __setstate__(self, state):
@@ -72,6 +74,9 @@ class ImagePlane:
         self._metadata_dict = state
         # Rebuild the parent file from the URL.
         self._file = ImageFile(self._metadata_dict['URL'])
+        if ':PREFERRED_READER:' in self._metadata_dict:
+            self._file.preferred_reader = self._metadata_dict[':PREFERRED_READER:']
+            del self._metadata_dict[':PREFERRED_READER:']
 
     @property
     def file(self):

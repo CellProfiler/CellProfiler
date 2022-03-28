@@ -297,10 +297,9 @@ class Runner:
                     if group_status[group_number] != self.STATUS_DONE:
                         needs_reset = True
                 if needs_reset:
-                    measurements[
-                        "Image", self.STATUS, image_set_number,
-                    ] = self.STATUS_UNPROCESSED
                     new_image_sets_to_process.append(image_set_number)
+            measurements["Image", self.STATUS, new_image_sets_to_process] = \
+                [self.STATUS_UNPROCESSED] * len(new_image_sets_to_process)
             image_sets_to_process = new_image_sets_to_process
 
             # Find image groups.  These are written into measurements prior to
@@ -627,7 +626,7 @@ class Runner:
 
     def pipeline_as_string(self):
         s = io.StringIO()
-        dump(self.pipeline, s, version=5)
+        dump(self.pipeline, s, version=5, save_image_plane_details=False)
         return s.getvalue()
 
     # Class methods for managing the worker pool

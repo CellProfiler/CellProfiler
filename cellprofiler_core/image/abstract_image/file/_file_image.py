@@ -5,9 +5,7 @@ import tempfile
 import urllib.parse
 import urllib.request
 
-import imageio
 import numpy
-import skimage.io
 
 import cellprofiler_core.preferences
 from .._abstract_image import AbstractImage
@@ -21,6 +19,8 @@ from ....utilities.image import load_data_file
 from ....utilities.image import generate_presigned_url
 from ....constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES
 from ....utilities.pathname import pathname2url, url2pathname
+
+LOGGER = logging.getLogger(__name__)
 
 
 class FileImage(AbstractImage):
@@ -90,7 +90,10 @@ class FileImage(AbstractImage):
         self.__index = index
         self.__volume = volume
         self.__spacing = spacing
-        # TODO: Find a way to gracefully load stacks
+        if volume and z is not None:
+            LOGGER.warning(f"Z-plane index was specified while in 3D mode, this will be ignored."
+                           f"If extracting planes you should disable separation of z-series to "
+                           f"work in 3D.")
         self.__z = z if z is not None else 0
         self.__t = t if t is not None else 0
         self.scale = None
@@ -133,10 +136,10 @@ class FileImage(AbstractImage):
     def t(self):
         return self.__t
 
-    def get_reader(self, create=True):
+    def get_reader(self, create=True, volume=False):
         if self.__reader is None and create:
             image_file = self.get_image_file()
-            self.__reader = get_image_reader(image_file)
+            self.__reader = get_image_reader(image_file, volume=volume)
         return self.__reader
 
     def get_name(self):
@@ -362,7 +365,13 @@ class FileImage(AbstractImage):
         if is_numpy_file(self.__filename):
             data = numpy.load(pathname)
         else:
-            data = imageio.volread(pathname)
+            reader = self.get_reader(volume=True)
+            data = reader.read_volume(c=self.channel,
+                                      z=None,
+                                      t=self.t,
+                                      series=self.series,
+                                      rescale=self.rescale,
+                                      wants_max_intensity=False)
 
         # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
         if data.dtype in [numpy.int8, numpy.uint8]:

@@ -11,7 +11,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 def add_reader(reader_name, check_svn, class_name=None):
-    print("Registering ", reader_name)
+    LOGGER.debug("Registering ", reader_name)
     try:
         rdr = __import__(reader_name, globals(), locals(), ["__all__"], 0)
         if class_name:
@@ -39,7 +39,6 @@ def add_reader(reader_name, check_svn, class_name=None):
         bad_readers.append((reader_name, e))
         if name in all_readers:
             del all_readers[name]
-    print("Success")
 
 
 def fill_readers():
@@ -86,17 +85,16 @@ def find_cp_reader(rdr):
     )
 
 
-def get_image_reader(image_file, use_cached_name=True):
-    print("Getting reader for ", image_file)
+def get_image_reader(image_file, use_cached_name=True, volume=False):
     if use_cached_name and image_file.preferred_reader in all_readers:
         reader_class = get_image_reader_by_name(image_file.preferred_reader)
-        print("Found preferred reader: ", image_file.preferred_reader)
         return reader_class(image_file)
+    LOGGER.debug(f"Choosing reader for {image_file.filename}")
     reader_options = {}
     for reader_name, reader_class in all_readers.items():
-        result = reader_class.supports_format(image_file)
+        result = reader_class.supports_format(image_file, volume=volume, allow_open=False)
         if result == 1:
-            print("Found ", image_file.preferred_reader)
+            LOGGER.debug(f"Selected {reader_name}")
             image_file.preferred_reader = reader_name
             return reader_class(image_file)
         elif result == -1:
@@ -114,7 +112,7 @@ def get_image_reader(image_file, use_cached_name=True):
             selected_reader = candidates[0]
             image_file.preferred_reader = selected_reader
             reader_class = get_image_reader_by_name(selected_reader)
-            print("Found ", image_file.preferred_reader)
+            LOGGER.debug(f"Selected {selected_reader}")
             return reader_class(image_file)
 
 

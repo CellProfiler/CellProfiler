@@ -50,9 +50,37 @@ class Reader(ABC):
         """
         return None
 
+    def read_volume(self,
+                    series=None,
+                    c=None,
+                    z=None,
+                    t=None,
+                    rescale=True,
+                    xywh=None,
+                    wants_max_intensity=False,
+                    channel_names=None,
+                    ):
+        """Read a series of planes from the image file. Mimics the Bioformats API
+        :param c: read from this channel. `None` = read color image if multichannel
+            or interleaved RGB.
+        :param z: z-stack index
+        :param t: time index
+        n.b. either z or t should be "None" to specify which channel to read across.
+        :param series: series for ``.flex`` and similar multi-stack formats
+        :param rescale: `True` to rescale the intensity scale to 0 and 1; `False` to
+                  return the raw values native to the file.
+        :param xywh: a (x, y, w, h) tuple
+        :param wants_max_intensity: if `False`, only return the image; if `True`,
+                  return a tuple of image and max intensity
+        :param channel_names: provide the channel names for the OME metadata
+
+        Should return a data array with channel order Z, X, Y, (C)
+        """
+        raise NotImplementedError(f"This reader ({self.reader_name}) does not support 3D reading.")
+
     @classmethod
     @abstractmethod
-    def supports_format(cls, image_file, allow_open=True):
+    def supports_format(cls, image_file, allow_open=True, volume=False):
         """This function needs to evaluate whether a given ImageFile object
         can be read by this reader class.
 
@@ -62,18 +90,19 @@ class Reader(ABC):
         2 - 'I am well-suited to this format'
         3 - 'I can read this format, but I might not be the best',
         4 - 'I can give it a go, if you must'
-        5 - 'Please don't, but I'll try'
 
         The allow_open parameter dictates whether the reader is permitted to read the file when
         making this decision. If False the decision should be made using file extension only.
         Any opened files should be closed before returning.
+
+        The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
         # Todo: Allow_open is a setting
         return -1
 
     @classmethod
-    @abstractmethod
     def clear_cached_readers(cls):
+        # This should clear any cached reader objects if your class stores unused readers.
         pass
 
     @abstractmethod

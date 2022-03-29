@@ -1,5 +1,7 @@
 import collections
 
+import numpy
+
 from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, \
     BIOFORMATS_IMAGE_EXTENSIONS
 
@@ -65,8 +67,39 @@ class BioformatsReader(Reader):
             channel_names=channel_names,
         )
 
+    def read_volume(self,
+                    series=None,
+                    c=None,
+                    z=None,
+                    t=None,
+                    rescale=True,
+                    xywh=None,
+                    wants_max_intensity=False,
+                    channel_names=None,
+                    ):
+        reader = self.get_reader()
+        bf_reader = reader.rdr
+        if series is None:
+            series = 0
+        bf_reader.setSeries(series)
+        num_planes = bf_reader.getSizeZ()
+        image_stack = []
+        for i in range(num_planes):
+            data = reader.read(
+                series=series,
+                c=c,
+                z=i,
+                t=t,
+                rescale=rescale,
+                XYWH=xywh,
+                wants_max_intensity=False,
+                channel_names=channel_names,
+            )
+            image_stack.append(data)
+        return numpy.stack(image_stack)
+
     @classmethod
-    def supports_format(cls, image_file, allow_open=True):
+    def supports_format(cls, image_file, allow_open=True, volume=False):
         """This function needs to evaluate whether a given ImageFile object
         can be read by this reader class.
 
@@ -76,11 +109,12 @@ class BioformatsReader(Reader):
         2 - 'I am well-suited to this format'
         3 - 'I can read this format, but I might not be the best',
         4 - 'I can give it a go, if you must'
-        5 - 'Please don't, but I'll try'
 
         The allow_open parameter dictates whether the reader is permitted to read the file when
         making this decision. If False the decision should be made using file extension only.
         Any opened files should be closed before returning.
+
+        The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
         if image_file.url.lower().startswith("omero:"):
             return 1

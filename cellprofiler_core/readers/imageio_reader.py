@@ -9,7 +9,7 @@ from ..reader import Reader
 
 import imageio
 
-SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif'}
+SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif', '.tif', '.tiff'}
 
 
 class ImageIOReader(Reader):
@@ -23,15 +23,19 @@ class ImageIOReader(Reader):
     def __init__(self, image_file):
         self.variable_revision_number = 1
         self._reader = None
+        self._volume = False
         super().__init__(image_file)
 
-    def get_reader(self):
-        if self._reader is None:
+    def get_reader(self, volume=False):
+        if self._reader is None or volume != self._volume:
             url = self.file.url
             if url.startswith("file:/") and url[6] != '/':
                 url = url.replace("file:/", 'file:///')
-
-            self._reader = imageio.get_reader(url)
+            if volume:
+                self._reader = imageio.get_reader(url, mode='v')
+            else:
+                self._reader = imageio.get_reader(url, mode='i')
+            self._volume = volume
         return self._reader
 
     def read(self,
@@ -64,9 +68,10 @@ class ImageIOReader(Reader):
             series = 0
         data = reader.get_data(series)
         if c is not None and len(data.shape) > 2:
-            data = data[:,:,2, ...]
+            data = data[:, :, c, ...]
         if rescale:
-            data = skimage.exposure.rescale_intensity(data, out_range=numpy.float32)
+            imax = self.find_scale_to_match_bioformats(data)
+            data = data.astype(numpy.float32) / float(imax)
             if wants_max_intensity:
                 return data, 1
             return data
@@ -74,9 +79,48 @@ class ImageIOReader(Reader):
             return data, numpy.iinfo(data.dtype).max
         return data
 
+    def read_volume(self,
+                    series=None,
+                    c=None,
+                    z=None,
+                    t=None,
+                    rescale=True,
+                    xywh=None,
+                    wants_max_intensity=False,
+                    channel_names=None,
+                    ):
+        reader = self.get_reader(volume=True)
+        if series is None:
+            series = 0
+        data = reader.get_data(series)
+        if c is not None and len(data.shape) > 3:
+            data = data[:, :, :,  c, ...]
+        if rescale:
+            imax = self.find_scale_to_match_bioformats(data)
+            data = data.astype(numpy.float32) / float(imax)
+
+            if wants_max_intensity:
+                return data, 1
+            return data
+        return data
+
+    @staticmethod
+    def find_scale_to_match_bioformats(data):
+        # We'd love to use skimage.exposure.rescale_intensity.
+        # But instead we follow the funky custom rescaling that bf uses.
+        if data.dtype in (numpy.int8, numpy.uint8):
+            return 255
+        elif data.dtype in (numpy.int16, numpy.uint16):
+            return 65535
+        elif data.dtype == numpy.int32:
+            return 2 ** 32 - 1
+        elif data.dtype == numpy.uint32:
+            return 2 ** 32
+        else:
+            return 1
 
     @classmethod
-    def supports_format(cls, image_file, allow_open=True):
+    def supports_format(cls, image_file, allow_open=True, volume=False):
         """This function needs to evaluate whether a given ImageFile object
         can be read by this reader class.
 
@@ -86,11 +130,12 @@ class ImageIOReader(Reader):
         2 - 'I am well-suited to this format'
         3 - 'I can read this format, but I might not be the best',
         4 - 'I can give it a go, if you must'
-        5 - 'Please don't, but I'll try'
 
         The allow_open parameter dictates whether the reader is permitted to read the file when
         making this decision. If False the decision should be made using file extension only.
         Any opened files should be closed before returning.
+
+        The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
         if image_file.url.lower().startswith("omero:"):
             return -1

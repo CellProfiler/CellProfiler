@@ -351,7 +351,7 @@ class FileImage(AbstractImage):
     def provide_image(self, image_set):
         """Load an image from a pathname
         """
-        if self.__image is None or image_set is not None:
+        if self.__image is None:
             self.__set_image()
         return self.__image
 

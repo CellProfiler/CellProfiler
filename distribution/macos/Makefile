@@ -18,7 +18,7 @@ CellProfiler:
 .PHONY: dependencies
 dependencies: CellProfiler
 
-	git clone https://github.com/glencoesoftware/core.git
+	git clone https://github.com/davidstirling/core.git
 	cd core && git checkout compat-4-2
 	pip3 install --editable "core[test]" --upgrade
 

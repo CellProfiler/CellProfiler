@@ -11,7 +11,7 @@ SHELL := bash
 .SUFFIXES:
 
 CellProfiler:
-	git clone https://github.com/glencoesoftware/CellProfiler
+	git clone https://github.com/davidstirling/CellProfiler
 
 	cd $@ && git checkout compat-4-2
 

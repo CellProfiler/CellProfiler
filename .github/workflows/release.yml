@@ -2,6 +2,11 @@ jobs:
   build:
     name: build
     runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-10.15, windows-2019 ]
+        python-version: [ "3.8" ]
+      fail-fast: false
     steps:
       - if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/cache@v2
@@ -76,10 +81,6 @@ jobs:
         with:
           name: CellProfiler-Windows-4.2.10001.exe
           path: ./distribution/windows/Output/CellProfiler-Windows-4.2.10001.exe
-    strategy:
-      matrix:
-        os: [macos-10.15, windows-2019]
-        python-version: [ "3.8" ]
   upload:
     name: upload
     needs: build

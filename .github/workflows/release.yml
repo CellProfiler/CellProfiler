@@ -8,25 +8,13 @@ jobs:
         python-version: [ "3.8" ]
       fail-fast: false
     steps:
-      - if: ${{ matrix.os == 'windows-2019' }}
-        uses: actions/cache@v2
-        with:
-          path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - if: ${{ matrix.os == 'macos-10.15' }}
-        uses: actions/cache@v2
-        with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v3
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: setup.py
       - uses: actions/setup-java@v1
         with:
           java-version: '14.0.1' # The JDK version to make available on the path.
@@ -55,15 +43,16 @@ jobs:
         name: Windows build
         run: |
           pip install cython
+          pip install centrosome --no-binary :none: --no-cache-dir
           pip install mysqlclient==1.4.6
-          git clone https://github.com/glencoesoftware/core.git
+          git clone https://github.com/davidstirling/core.git
           cd core
           git checkout compat-4-2
           pip install --editable . --upgrade
           cd ..
           pip install --editable .
-          pip uninstall centrosome
-          pip install centrosome --no-binary :none: --no-cache-dir
+      - name: Display installed packages
+        run: pip list
       - if: ${{ matrix.os == 'windows-2019' }}
         name: Windows pyinstaller build
         run: |

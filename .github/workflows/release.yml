@@ -30,7 +30,7 @@ jobs:
       - run: |
           pip install --upgrade pip setuptools wheel
           pip install numpy==1.20.1
-          pip install pyinstaller
+          pip install pyinstaller==4.2
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}

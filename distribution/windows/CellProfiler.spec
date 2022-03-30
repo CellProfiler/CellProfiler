@@ -41,6 +41,7 @@ hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrat
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations.threading")
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations.stdlib")
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations.excepthook")
+hiddenimports += PyInstaller.utils.hooks.collect_submodules("numcodecs")
 
 
 hiddenimports += [

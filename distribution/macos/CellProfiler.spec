@@ -131,7 +131,7 @@ exe = EXE(
     pyz,
     a.scripts,
     exclude_binaries=True,
-    name="CellProfiler",
+    name="cp",
     debug=True,
     strip=False,
     upx=True,

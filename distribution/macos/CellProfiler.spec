@@ -17,8 +17,8 @@ datas += PyInstaller.utils.hooks.collect_data_files("prokaryote")
 datas += PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
 
 datas += [
-    ("./CellProfiler/cellprofiler/data/images/*", "cellprofiler/data/images"),
-    ("./CellProfiler/cellprofiler/data/icons/*", "cellprofiler/data/icons"),
+    ("../../cellprofiler/data/images/*", "cellprofiler/data/images"),
+    ("../../cellprofiler/data/icons/*", "cellprofiler/data/icons"),
 ]
 
 for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):

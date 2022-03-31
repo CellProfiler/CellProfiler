@@ -76,7 +76,7 @@ jobs:
         name: MacOS artifact upload
         with:
           name: CellProfiler-macOS-4.2.10001.zip
-          path: ./distribution/macos/dist/CellProfiler-macOS-4.2.10001.zip
+          path: ./dist/CellProfiler-macOS-4.2.10001.zip
       - if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/upload-artifact@v2
         name: Windows artifact upload

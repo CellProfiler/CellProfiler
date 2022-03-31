@@ -68,7 +68,6 @@ jobs:
         run: |
           sed -i '' 's/4.0.0/4.2.10001/' Info.plist
           pyinstaller ./distribution/macos/CellProfiler.spec
-#	      cp $(word 3, $^) $@/Contents
 	      cp ./distribution/macos/entitlements.plist ./dist/CellProfiler.app/Contents/MacOS
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.2.10001.zip
       - if: ${{ matrix.os == 'macos-10.15' }}

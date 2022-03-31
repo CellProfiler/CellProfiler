@@ -131,7 +131,7 @@ exe = EXE(
     pyz,
     a.scripts,
     exclude_binaries=True,
-    name="cp",
+    name="CellProfiler",
     debug=True,
     strip=False,
     upx=True,
@@ -143,13 +143,13 @@ coll = COLLECT(
     a.binaries,
     a.zipfiles,
     a.datas,
-    icon="./CellProfiler/cellprofiler/data/icons/CellProfiler.icns",
-    name="CellProfiler.app"
+    icon="../../cellprofiler/data/icons/CellProfiler.icns",
+    name="CellProfiler"
 )
 
 app = BUNDLE(
     coll,
     name="CellProfiler.app",
-    icon="./CellProfiler/cellprofiler/data/icons/CellProfiler.icns",
+    icon="../../cellprofiler/data/icons/CellProfiler.icns",
     bundle_identifier=None
 )

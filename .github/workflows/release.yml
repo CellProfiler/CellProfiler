@@ -9,18 +9,22 @@ jobs:
       fail-fast: false
     steps:
       - uses: actions/checkout@v2
+        name: Checkout Repo
       - uses: actions/setup-python@v3
+        name: Install Python
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}
           cache: pip
           cache-dependency-path: setup.py
       - uses: actions/setup-java@v1
+        name: Install Java
         with:
           java-version: '14.0.1' # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
-      - run: |
+      - name: Install build-time dependencies
+        run: |
           pip install --upgrade pip wheel setuptools
           pip install numpy==1.20.1
           pip install pyinstaller
@@ -31,8 +35,6 @@ jobs:
         if: ${{ matrix.os == 'macos-10.15' }}
         name: MacOS dependency install
         run: |
-          ls -la
-          
           brew install mysql
           pip install centrosome --no-cache-dir --no-build-isolation
           git clone https://github.com/davidstirling/core.git
@@ -41,7 +43,6 @@ jobs:
           pip install --editable . --upgrade
           cd ..
           pip install --editable .
-        working-directory: ./distribution/macos
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
         if: ${{ matrix.os == 'windows-2019' }}

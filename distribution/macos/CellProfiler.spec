@@ -144,7 +144,7 @@ coll = COLLECT(
     a.zipfiles,
     a.datas,
     icon="../../cellprofiler/data/icons/CellProfiler.icns",
-    name="CellProfiler"
+    name="CellProfiler.app"
 )
 
 app = BUNDLE(

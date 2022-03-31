@@ -13,7 +13,7 @@ SHELL := bash
 CellProfiler:
 	git clone https://github.com/davidstirling/CellProfiler
 
-	cd $@ && git checkout compat-4-2
+	cd $@ && git checkout builder
 
 .PHONY: dependencies
 dependencies: CellProfiler

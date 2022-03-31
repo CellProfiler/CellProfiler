@@ -72,6 +72,7 @@ setuptools.setup(
         "Jinja2==2.11.2",
         "joblib==1.1.0",
         "mahotas==1.4.11",
+        "markupsafe==2.0.1",
         "matplotlib==3.1.3",
         "mysqlclient==1.4.6",
         "numpy==1.20.1",

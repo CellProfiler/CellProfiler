@@ -89,7 +89,7 @@ excludes += [
 
 a = Analysis(
     [
-        'CellProfiler.py'
+        'CellProfilerLauncher.py'
     ],
     binaries=binaries,
     cipher=block_cipher,
@@ -144,7 +144,7 @@ coll = COLLECT(
     a.zipfiles,
     a.datas,
     icon="../../cellprofiler/data/icons/CellProfiler.icns",
-    name="CellProfiler.app"
+    name="CellProfiler"
 )
 
 app = BUNDLE(

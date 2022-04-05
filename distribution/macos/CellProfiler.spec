@@ -4,6 +4,8 @@ import os.path
 
 import PyInstaller.utils.hooks
 
+from cellprofiler import __version__ as cp_version
+
 binaries = []
 
 block_cipher = None
@@ -21,7 +23,10 @@ datas += [
     ("../../cellprofiler/data/icons/*", "cellprofiler/data/icons"),
 ]
 
-for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):
+# Handle symlinks more gracefully.
+source = os.path.realpath(os.environ["JAVA_HOME"])
+
+for subdir, dirs, files in os.walk(source):
     if 'Contents/' in subdir:
         if len(subdir.split('Contents/')) >1:
             _, subdir_split = subdir.split('Contents/')
@@ -114,7 +119,6 @@ a.binaries += [
     ("libpng16.16.dylib", libpng_pathname, "BINARY"),
     ("libjava.dylib", java_pathname, "BINARY")
 ]
-
 exclude_binaries = [
     ('libpng16.16.dylib', '/usr/local/lib/python3.8/site-packages/matplotlib/.dylibs/libpng16.16.dylib', 'BINARY'),
 ]
@@ -127,15 +131,21 @@ pyz = PYZ(
     cipher=block_cipher
 )
 
+# entitlements file must be provided as absolute path going into codesign.
 exe = EXE(
     pyz,
     a.scripts,
     exclude_binaries=True,
-    name="cp",
+    name="cellprofilerapp",
     debug=True,
     strip=False,
     upx=True,
-    console=True
+    console=True,
+    disable_windowed_traceback=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=os.path.join(os.getcwd(),
+                                   'distribution/macos/entitlements.plist')
 )
 
 coll = COLLECT(
@@ -151,5 +161,33 @@ app = BUNDLE(
     coll,
     name="CellProfiler.app",
     icon="../../cellprofiler/data/icons/CellProfiler.icns",
-    bundle_identifier=None
+    bundle_identifier=None,
+    version=cp_version,
+    info_plist={
+        'CFBundleDevelopmentRegion': 'English',
+        'CFBundleExecutable': 'MacOS/cellprofilerapp',
+        'CFBundleIdentifier': 'org.cellprofiler.CellProfiler',
+        'CFBundleVersion': cp_version,
+        'CFBundleDocumentTypes': [
+            {
+                'CFBundleTypeExtensions': ['cppipe'],
+                'CFBundleTypeName': 'CellProfiler pipeline',
+                'CFBundleTypeIconFile': 'CellProfiler.icns',
+                'CFBundleTypeRole': 'Editor',
+                },
+            {
+                'CFBundleTypeExtensions': ['cpproj'],
+                'CFBundleTypeName': 'CellProfiler project',
+                'CFBundleTypeIconFile': 'CellProfiler.icns',
+                'CFBundleTypeRole': 'Editor',
+                }
+            ],
+        'LSApplicationCategoryType': '',
+        'LSBackgroundOnly': False,
+        'LSEnvironment': {
+            'JAVA_HOME': './Contents',
+        },
+        'NSHighResolutionCapable': True,
+        'NSPrincipalClass': 'NSApplication'
+    },
 )

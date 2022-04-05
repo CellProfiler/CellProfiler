@@ -36,6 +36,7 @@ jobs:
         name: MacOS dependency install
         run: |
           brew install mysql
+          brew install create-dmg
           pip install centrosome --no-cache-dir --no-build-isolation
           git clone https://github.com/davidstirling/core.git
           cd core
@@ -69,13 +70,23 @@ jobs:
         run: |
           sed -i '' 's/4.0.0/4.2.10001/' ./distribution/macos/Info.plist
           pyinstaller -y ./distribution/macos/CellProfiler.spec
-          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.2.10001.zip
+          create-dmg \
+            --volname "CellProfiler" \
+            --window-pos 200 120 \
+            --window-size 800 529 \
+            --icon-size 130 \
+            --text-size 14 \
+            --icon "CellProfiler.app" 260 250 \
+            --app-drop-link 540 250 \
+            --hdiutil-quiet \
+            "./dist/CellProfiler-macOS-4.2.10001.dmg" \
+            "./dist/CellProfiler.app"
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
         name: MacOS artifact upload
         with:
-          name: CellProfiler-macOS-4.2.10001.zip
-          path: ./dist/CellProfiler-macOS-4.2.10001.zip
+          name: CellProfiler-macOS-4.2.10001.dmg
+          path: ./dist/CellProfiler-macOS-4.2.10001.dmg
       - if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/upload-artifact@v2
         name: Windows artifact upload

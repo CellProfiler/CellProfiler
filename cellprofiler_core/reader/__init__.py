@@ -90,30 +90,21 @@ def get_image_reader(image_file, use_cached_name=True, volume=False):
         reader_class = get_image_reader_by_name(image_file.preferred_reader)
         return reader_class(image_file)
     LOGGER.debug(f"Choosing reader for {image_file.filename}")
-    reader_options = {}
+    best_reader = None
+    best_value = 5
     for reader_name, reader_class in all_readers.items():
         result = reader_class.supports_format(image_file, volume=volume, allow_open=False)
         if result == 1:
             LOGGER.debug(f"Selected {reader_name}")
             image_file.preferred_reader = reader_name
             return reader_class(image_file)
-        elif result == -1:
-            continue
-        else:
-            if result in reader_options:
-                reader_options[result].append(reader_name)
-            else:
-                reader_options[result] = [reader_name]
-    if not reader_options:
+        elif 1 < result < best_value:
+            best_value = result
+            best_reader = reader_class
+    if best_reader is None:
         raise NotImplementedError(f"No reader available for {image_file.filename}")
-    for i in range(2, 5):
-        candidates = reader_options.get(i, None)
-        if candidates:
-            selected_reader = candidates[0]
-            image_file.preferred_reader = selected_reader
-            reader_class = get_image_reader_by_name(selected_reader)
-            LOGGER.debug(f"Selected {selected_reader}")
-            return reader_class(image_file)
+    LOGGER.debug(f"Selected {best_reader}")
+    return best_reader(image_file)
 
 
 def get_image_reader_by_name(reader_name):

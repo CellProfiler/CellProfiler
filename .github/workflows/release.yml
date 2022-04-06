@@ -38,7 +38,7 @@ jobs:
           brew install mysql
           brew install create-dmg
           pip install centrosome --no-cache-dir --no-build-isolation
-          git clone https://github.com/davidstirling/core.git
+          git clone https://github.com/glencoesoftware/core.git
           cd core
           git checkout compat-4-2
           pip install --editable . --upgrade
@@ -52,7 +52,7 @@ jobs:
           pip install cython
           pip install mysqlclient==1.4.6
           pip install centrosome --no-cache-dir --no-build-isolation
-          git clone https://github.com/davidstirling/core.git
+          git clone https://github.com/glencoesoftware/core.git
           cd core
           git checkout compat-4-2
           pip install --editable . --upgrade
@@ -138,4 +138,3 @@ on:
   push:
     tags:
       - "v*"
-    branches: [builder]

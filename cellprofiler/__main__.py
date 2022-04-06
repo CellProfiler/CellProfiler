@@ -71,9 +71,9 @@ if hasattr(sys, "frozen"):
             )
             os.system("pause")  # Keep console window open until keypress.
             os._exit(1)
-    # else:
+    else:
         # Clear out deprecation warnings from PyInstaller
-        # os.system('clear')
+        os.system('clear')
     from cellprofiler import __version__ as ver
     print(f"Starting CellProfiler {ver}")
 

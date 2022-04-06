@@ -22,6 +22,7 @@ from . import reply as anareply
 from . import request as anarequest
 from ..image import ImageSetList
 from ..measurement import Measurements
+from ..utilities.java import JAVA_STARTED
 from ..utilities.measurement import load_measurements_from_buffer
 from ..pipeline import dump
 from ..preferences import get_plugin_directory
@@ -214,7 +215,6 @@ class Runner:
         acknowledged_thread_start = False
         measurements = None
         workspace = None
-        attach()
         try:
             # listen for pipeline events, and pass them upstream
             self.pipeline.add_listener(lambda pipe, evt: self.post_event(evt))
@@ -419,7 +419,9 @@ class Runner:
                     ):
                         self.interface_work_cv.wait()  # wait for a change of status or work to arrive
         finally:
-            detach()
+            if JAVA_STARTED:
+                import javabridge
+                javabridge.detach()
             # Note - the measurements file is owned by the queue consumer
             #        after this post_event.
             #

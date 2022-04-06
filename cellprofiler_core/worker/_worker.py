@@ -28,6 +28,7 @@ from ..constants.worker import NOTIFY_STOP
 from ..constants.worker import all_measurements
 from ..constants.worker import the_zmq_context
 from ..measurement import Measurements
+from ..utilities.java import JAVA_STARTED
 from ..utilities.measurement import load_measurements_from_buffer
 from ..pipeline import CancelledException
 from ..preferences import get_awt_headless
@@ -93,7 +94,6 @@ class Worker:
             self.worker.exit_thread()
 
     def enter_thread(self):
-        javabridge.attach()
         if not get_awt_headless():
             javabridge.activate_awt()
         self.notify_socket = the_zmq_context.socket(zmq.SUB)
@@ -105,7 +105,8 @@ class Worker:
         from cellprofiler_core.constants.reader import all_readers
         for reader in all_readers.values():
             reader.clear_cached_readers()
-        javabridge.detach()
+        if JAVA_STARTED:
+            javabridge.detach()
 
     def run(self):
         from cellprofiler_core.pipeline.event import CancelledException

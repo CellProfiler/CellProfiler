@@ -173,8 +173,6 @@ def main():
     # Start the JVM
     from cellprofiler_core.utilities.java import start_java, stop_java
 
-    start_java()
-
     deadman_start_socket = the_zmq_context.socket(zmq.PAIR)
     deadman_start_socket.bind(DEADMAN_START_ADDR)
 

@@ -9,6 +9,8 @@ from ..reader import Reader
 
 from bioformats.formatreader import get_image_reader, release_image_reader, clear_image_reader_cache
 
+from ..utilities.java import start_java
+
 
 class BioformatsReader(Reader):
     """ Derive from this abstract Reader class to create your own image reader in Python
@@ -21,6 +23,7 @@ class BioformatsReader(Reader):
     def __init__(self, image_file):
         self.variable_revision_number = 1
         self._reader = None
+        start_java()
         super().__init__(image_file)
 
     def get_reader(self):
@@ -116,8 +119,11 @@ class BioformatsReader(Reader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
-        if image_file.url.lower().startswith("omero:"):
+        file_url = image_file.url.lower()
+        if file_url.startswith("omero:"):
             return 1
+        if file_url.endswith(".ome.tif"):
+            return 2
         if not allow_open:
             if image_file.file_extension in BIOFORMATS_IMAGE_EXTENSIONS:
                 return 3

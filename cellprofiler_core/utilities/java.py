@@ -5,11 +5,18 @@ java.py - CellProfiler-specific JVM utilities
 import logging
 import os
 import sys
+import threading
 
 import javabridge
 import prokaryote
 
 import cellprofiler_core.preferences
+
+
+JAVA_STARTED = False
+ATTACHED_THREADS = set()
+
+LOGGER = logging.getLogger(__name__)
 
 
 def get_jars():
@@ -20,10 +27,10 @@ def get_jars():
     class_path = []
     if "CLASSPATH" in os.environ:
         class_path += os.environ["CLASSPATH"].split(os.pathsep)
-        logging.debug(
+        LOGGER.debug(
             "Adding Java class path from environment variable, " "CLASSPATH" ""
         )
-        logging.debug("    CLASSPATH=" + os.environ["CLASSPATH"])
+        LOGGER.debug("    CLASSPATH=" + os.environ["CLASSPATH"])
 
     pathname = os.path.dirname(prokaryote.__file__)
 
@@ -44,7 +51,7 @@ def get_jars():
             tools_jar = os.path.join(jdk_path, "lib", "tools.jar")
             class_path.append(tools_jar)
         else:
-            logging.warning("Failed to find tools.jar")
+            LOGGER.warning("Failed to find tools.jar")
     return class_path
 
 
@@ -81,6 +88,13 @@ def start_java():
     cpprefs.get_awt_headless() - controls java.awt.headless to prevent
         awt from being invoked
     """
+    thread_id = threading.get_ident()
+    if javabridge.get_env() is not None:
+        if thread_id not in ATTACHED_THREADS:
+            javabridge.attach()
+            ATTACHED_THREADS.add(thread_id)
+        return
+    LOGGER.info("Initializing Java Virtual Machine")
     args = [
         "-Dloci.bioformats.loaded=true",
         "-Djava.util.prefs.PreferencesFactory="
@@ -100,7 +114,7 @@ def start_java():
     class_path = get_jars()
     awt_headless = cellprofiler_core.preferences.get_awt_headless()
     if awt_headless:
-        logging.debug("JVM will be started with AWT in headless mode")
+        LOGGER.debug("JVM will be started with AWT in headless mode")
         args.append("-Djava.awt.headless=true")
 
     if "CP_JDWP_PORT" in os.environ:
@@ -118,7 +132,10 @@ def start_java():
 
     c_location = javabridge.JClassWrapper("loci.common.Location")
     c_location.cacheDirectoryListings(True)
-    logging.debug("Enabled Bio-formats directory cacheing")
+    LOGGER.debug("Enabled Bio-formats directory cacheing")
+    ATTACHED_THREADS.add(thread_id)
+    global JAVA_STARTED
+    JAVA_STARTED = True
 
 
 def stop_java():

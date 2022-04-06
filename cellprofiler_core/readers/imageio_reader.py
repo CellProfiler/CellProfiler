@@ -1,7 +1,6 @@
 import collections
 
 import numpy
-import skimage.exposure
 
 from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
 
@@ -9,7 +8,7 @@ from ..reader import Reader
 
 import imageio
 
-SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif', '.tif', '.tiff'}
+SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif'}
 
 
 class ImageIOReader(Reader):

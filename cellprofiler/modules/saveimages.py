@@ -704,6 +704,8 @@ store images in the subfolder, "*date*\/*plate-name*".""",
 
         channel_names - names of the channels (make up names if not present
         """
+        from cellprofiler_core.utilities.java import start_java
+        start_java()
         bioformats.formatwriter.write_image(
             filename,
             pixels,

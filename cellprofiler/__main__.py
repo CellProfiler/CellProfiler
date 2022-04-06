@@ -10,7 +10,6 @@ import sys
 import tempfile
 import urllib.parse
 
-import bioformats.formatreader
 import h5py
 import matplotlib
 import numpy
@@ -239,8 +238,6 @@ def main(args=None):
         set_data_file(os.path.abspath(options.data_file))
 
     try:
-        if not options.show_gui:
-            start_java()
 
         if options.image_set_file is not None:
             set_image_set_file(options.image_set_file)
@@ -575,6 +572,8 @@ def set_omero_credentials_from_string(credentials_string):
                         user - the user name
                         session-id - the session ID used for authentication
     """
+    import bioformats.formatreader
+
     if re.match("([^=^,]+=[^=^,]+,)*([^=^,]+=[^=^,]+)", credentials_string) is None:
         logging.root.error(
             'The OMERO credentials string, "%s", is badly-formatted.'

@@ -323,7 +323,8 @@ supplied by a previous module.
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
-        from bioformats import load_image
+        from cellprofiler_core.reader import get_image_reader
+        import imageio
 
         with wx.Dialog(None) as dlg:
             dlg.Title = "Choose files for editing"
@@ -382,14 +383,14 @@ supplied by a previous module.
             provider = ObjectsImage("InputObjects", pathname2url(fullname), None, None)
             image = provider.provide_image(None)
             pixel_data = image.pixel_data
-            shape = pixel_data.shape[:2]
             labels = [pixel_data[:, :, i] for i in range(pixel_data.shape[2])]
         else:
             labels = None
         #
         # Load the guide image
         #
-        guide_image = load_image(guidename)
+        guide_image_reader = get_image_reader(guidename)
+        guide_image = guide_image_reader.read()
         if numpy.min(guide_image) != numpy.max(guide_image):
             guide_image = (guide_image - numpy.min(guide_image)) / (
                 numpy.max(guide_image) - numpy.min(guide_image)
@@ -404,7 +405,6 @@ supplied by a previous module.
             if result != wx.OK:
                 return
             labels = dialog_box.labels
-        n_frames = len(labels)
         with wx.FileDialog(None, style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
 
             dlg.Path = fullname
@@ -418,13 +418,9 @@ supplied by a previous module.
                 if fullname.endswith(".ilp"):
                     self.save_into_ilp(fullname, labels, guidename)
                 else:
-                    from bioformats.formatwriter import write_image
-                    from bioformats.omexml import PT_UINT16
-
                     if os.path.exists(fullname):
                         os.unlink(fullname)
-                    for i, l in enumerate(labels):
-                        write_image(fullname, l, PT_UINT16, t=i, size_t=len(labels))
+                    imageio.volwrite(fullname, numpy.stack(labels, axis=-1))
 
     def save_into_ilp(self, project_name, labels, guidename):
         import h5py

@@ -1042,6 +1042,7 @@ staining.
                     try: 
                         threshold_out = threshold_method(block, **kwargs)
                     except ValueError:
+                        # Drop nbins kwarg when multi-otsu fails. See issue #6324 scikit-image
                         threshold_out = threshold_method(block)
                 if isinstance(threshold_out, numpy.ndarray):
                     # Select correct bin if running multiotsu

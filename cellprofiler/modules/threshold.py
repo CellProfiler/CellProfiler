@@ -1039,7 +1039,10 @@ staining.
                     # Can't run 3-class otsu on only 2 values.
                     threshold_out = skimage.filters.threshold_otsu(block)
                 else:
-                    threshold_out = threshold_method(block, **kwargs)
+                    try: 
+                        threshold_out = threshold_method(block, **kwargs)
+                    except ValueError:
+                        threshold_out = threshold_method(block)
                 if isinstance(threshold_out, numpy.ndarray):
                     # Select correct bin if running multiotsu
                     threshold_out = threshold_out[bin_wanted]

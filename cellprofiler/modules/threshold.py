@@ -1040,8 +1040,7 @@ staining.
                 elif (self.threshold_operation == TM_OTSU and
                       self.two_class_otsu.value == O_THREE_CLASS and
                       len(numpy.unique(block)) < 3):
-                    # Can't run 3-class otsu on only 2 values.
-                    #threshold_out = skimage.filters.threshold_otsu(block)
+                    # Can't run 3-class otsu on only 2 values. Default back to guide_threshold
                     threshold_out = guide_threshold
                 else:
                     threshold_out = threshold_method(block, **kwargs)

@@ -85,10 +85,10 @@ def find_cp_reader(rdr):
     )
 
 
-def get_image_reader(image_file, use_cached_name=True, volume=False):
+def get_image_reader_class(image_file, use_cached_name=True, volume=False):
     if use_cached_name and image_file.preferred_reader in all_readers:
         reader_class = get_image_reader_by_name(image_file.preferred_reader)
-        return reader_class(image_file)
+        return reader_class
     LOGGER.debug(f"Choosing reader for {image_file.filename}")
     best_reader = None
     best_value = 5
@@ -104,7 +104,12 @@ def get_image_reader(image_file, use_cached_name=True, volume=False):
     if best_reader is None:
         raise NotImplementedError(f"No reader available for {image_file.filename}")
     LOGGER.debug(f"Selected {best_reader}")
-    return best_reader(image_file)
+    return best_reader
+
+
+def get_image_reader(image_file, use_cached_name=True, volume=False):
+    reader_class = get_image_reader_class(image_file, use_cached_name=use_cached_name, volume=volume)
+    return reader_class(image_file)
 
 
 def get_image_reader_by_name(reader_name):

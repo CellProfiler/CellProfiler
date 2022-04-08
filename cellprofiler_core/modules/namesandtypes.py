@@ -999,19 +999,18 @@ requests an object selection.
         Unfortunately, these are the only predictable metadata keys that
         we can harvest in a reasonable amount of time.
         """
-        column_names = self.get_column_names()
-        result = []
+        result = set()
         if self.matching_method == MATCH_BY_METADATA:
             md_keys = self.join.parse()
-            for column_name in column_names:
-                if all([k[column_name] is not None for k in md_keys]):
-                    for k in md_keys:
-                        if k[column_name] in (C_FRAME, C_SERIES,):
-                            result.append("_".join((k[column_name], column_name)))
-                        else:
-                            result.append("_".join((C_METADATA, k[column_name],)))
-                    break
-        return result
+            for md_dict in md_keys:
+                for name, val in md_dict.items():
+                    if val is None:
+                        continue
+                    elif val in (C_FRAME, C_SERIES,):
+                        result.add(f"{val}_{name}")
+                    else:
+                        result.add(f"{C_METADATA}_{val}")
+        return list(result)
 
     def prepare_run(self, workspace):
         """Write the image sets to the measurements"""
@@ -1135,7 +1134,7 @@ requests an object selection.
         this can't be aggregated.
         """
         m = workspace.measurements
-        measurement_columns = workspace.pipeline.get_measurement_columns(self)
+        measurement_columns = workspace.pipeline.get_measurement_columns(self) + self.get_measurement_columns(workspace.pipeline)
         required = dict([(x[1], x[2]) for x in measurement_columns if x[1].startswith(C_METADATA)])
         aggregated = {key: [] for key in required.keys()}
         offset = len(C_METADATA) + 1
@@ -1238,9 +1237,11 @@ requests an object selection.
         return [{name: plane} for plane in image_planes]
 
     def make_image_sets_by_order(self, image_planes):
+        if not image_planes:
+            return []
         groups = collections.defaultdict(list)
         filters = [(group.rule_filter, name) for group, name in
-                   zip(self.assignments, self.get_column_names())]
+                   zip(self.assignments, self.get_column_names(want_singles=False))]
         for plane in image_planes:
             plane_comparator = (FileCollectionDisplay.NODE_IMAGE_PLANE, plane.modpath, plane)
             for rule_filter, name in filters:
@@ -1249,7 +1250,7 @@ requests an object selection.
                     break
         errors = []
         desired_length = max([len(grp) for grp in groups.values()])
-        for name in self.get_column_names():
+        for name in self.get_column_names(want_singles=False):
             if name not in groups:
                 errors.append((E_WRONG_LENGTH, name, desired_length))
             elif len(groups[name]) < desired_length:
@@ -1271,7 +1272,7 @@ requests an object selection.
         # definitions for all joins
         #
         anchor_channel = None
-        channel_names = self.get_column_names()
+        channel_names = self.get_column_names(want_singles=False)
         for name in channel_names:
             anchor_keys = []
             for join in joins:
@@ -1299,7 +1300,7 @@ requests an object selection.
         groups = {name: ChannelHasher(name, [join[name] for join in joins])
                   for name in channel_names}
         filters = [(group.rule_filter, name) for group, name in
-                   zip(self.assignments, self.get_column_names())]
+                   zip(self.assignments, self.get_column_names(want_singles=False))]
         for plane in image_planes:
             plane_comparator = (FileCollectionDisplay.NODE_IMAGE_PLANE, plane.modpath, plane)
             for rule_filter, name in filters:
@@ -1321,6 +1322,7 @@ requests an object selection.
                     break
                 elif len(match) > 1:
                     errors.append((E_TOO_MANY, channel_name, key))
+                    break
                 else:
                     # One match, yay!
                     image_set[channel_name] = match[0]
@@ -1683,11 +1685,15 @@ requests an object selection.
             ]
         return []
 
-    def get_column_names(self):
+    def get_column_names(self, want_singles=True):
         if self.assignment_method == ASSIGN_ALL:
             return self.get_image_names()
         column_names = []
-        for group in self.assignments + self.single_images:
+        if want_singles:
+            groups = self.assignments + self.single_images
+        else:
+            groups = self.assignments
+        for group in groups:
             if group.load_as_choice == LOAD_AS_OBJECTS:
                 column_names.append(group.object_name.value)
             else:

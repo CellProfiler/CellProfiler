@@ -4,10 +4,10 @@ import tempfile
 
 import cellprofiler_core.constants.modules.images
 import cellprofiler_core.measurement
-import cellprofiler_core.modules.images
 import cellprofiler_core.pipeline
 import cellprofiler_core.pipeline.event._load_exception
 import cellprofiler_core.workspace
+import cellprofiler_core.modules.images
 
 
 def get_data_directory():
@@ -135,7 +135,7 @@ class TestImages:
         file_list = pipeline.get_filtered_file_list(workspace)
         if expected:
             assert len(file_list) == 1
-            assert file_list[0] == url
+            assert file_list[0].url == url
         else:
             assert len(file_list) == 0
 
@@ -146,7 +146,7 @@ class TestImages:
         )
         for url, expected in (
             ("file:/TestImages/NikonTIF.tif", True),
-            ("file:/foo/.bar/baz.tif", False),
+            ("file:/foo/.bar/baz.tif", True),
             ("file:/TestImages/foo.bar", False),
         ):
             self.check(module, url, expected)

@@ -105,6 +105,13 @@ class Reader(ABC):
         # This should clear any cached reader objects if your class stores unused readers.
         pass
 
+    @classmethod
+    def supports_url(cls):
+        # This function defines whether the reader class supports reading data directly from a URL.
+        # If False, CellProfiler will download compatible web-based images to a temporary directory.
+        # If True, the reader will be passed the source URL.
+        return False
+
     @abstractmethod
     def close(self):
         # If your reader opens a file, this needs to release any active lock,

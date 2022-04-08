@@ -1,4 +1,5 @@
 import collections
+import itertools
 
 import numpy
 
@@ -80,19 +81,34 @@ class BioformatsReader(Reader):
                     wants_max_intensity=False,
                     channel_names=None,
                     ):
+        # Whether a volume has planes stored in the z or t axis is often ambiguous.
+        # If z-size > 1 we'll use z, else we'll use t. Otherwise user should choose
+        # an axis to split in Images.
         reader = self.get_reader()
         bf_reader = reader.rdr
         if series is None:
             series = 0
         bf_reader.setSeries(series)
-        num_planes = bf_reader.getSizeZ()
+        z_len = 0
+        if z is None:
+            z_len = bf_reader.getSizeZ()
+            z_range = range(z_len)
+        else:
+            z_range = [z]
+        if t is None:
+            if z_len > 1:
+                t_range = 1
+            else:
+                t_range = range(bf_reader.getSizeT())
+        else:
+            t_range = [t]
         image_stack = []
-        for i in range(num_planes):
+        for z_index, t_index in itertools.product(z_range, t_range):
             data = reader.read(
                 series=series,
                 c=c,
-                z=i,
-                t=t,
+                z=z_index,
+                t=t_index,
                 rescale=rescale,
                 XYWH=xywh,
                 wants_max_intensity=False,

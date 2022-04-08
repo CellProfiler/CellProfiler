@@ -4,6 +4,7 @@ import shutil
 import sys
 import tempfile
 import urllib.request
+from urllib.parse import urlparse, unquote
 
 import boto3
 import numpy
@@ -272,3 +273,33 @@ def url_to_modpath(url):
         parts.insert(0, part)
         path = new_path
     return parts
+
+
+def download_to_temp_file(url):
+    parsed = urlparse(url)
+    scheme = parsed.scheme
+    path = parsed.path
+    ext = os.path.splitext(path)[-1]
+    # urlpath = urlparse(url)[2]
+    # filename = os.path.split(path)[-1]
+
+    if scheme == 's3':
+        client = boto3.client('s3')
+        bucket_name, key = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
+        url = client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': key.replace("+", " ")}
+        )
+
+    from urllib.request import urlopen
+    print("Opening URL")
+    src = urlopen(url)
+    dest_file = tempfile.NamedTemporaryFile(suffix=ext)
+    print("Made temp file")
+    try:
+        shutil.copyfileobj(src, dest_file)
+        print("Copy successful")
+    except:
+        dest_file.close()
+        return None
+    return dest_file

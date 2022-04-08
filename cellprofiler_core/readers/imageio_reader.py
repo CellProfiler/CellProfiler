@@ -68,6 +68,9 @@ class ImageIOReader(Reader):
         data = reader.get_data(series)
         if c is not None and len(data.shape) > 2:
             data = data[:, :, c, ...]
+        elif c is None and len(data.shape) > 2 and data.shape[2] == 4:
+            # Remove alpha channel
+            data = data[:, :, :3, ...]
         if rescale:
             imax = self.find_scale_to_match_bioformats(data)
             data = data.astype(numpy.float32) / float(imax)

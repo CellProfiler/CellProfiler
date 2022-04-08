@@ -10,9 +10,8 @@ import numpy
 import cellprofiler_core.preferences
 from .._abstract_image import AbstractImage
 from ..._image import Image
-from ....pipeline import ImageFile
-from ....reader import get_image_reader
-from ....utilities.image import is_numpy_file
+from ....reader import get_image_reader, get_image_reader_class
+from ....utilities.image import is_numpy_file, download_to_temp_file
 from ....utilities.image import is_matlab_file
 from ....utilities.image import loadmat
 from ....utilities.image import load_data_file
@@ -66,6 +65,7 @@ class FileImage(AbstractImage):
         self.__pathname = pathname
         self.__filename = filename
         self.__cached_file = None
+        self.__cache_fd = None
         self.__is_cached = False
         self.__cacheing_tried = False
         self.__image = None
@@ -90,12 +90,16 @@ class FileImage(AbstractImage):
         self.__index = index
         self.__volume = volume
         self.__spacing = spacing
-        if volume and z is not None:
-            LOGGER.warning(f"Z-plane index was specified while in 3D mode, this will be ignored."
-                           f"If extracting planes you should disable separation of z-series to "
-                           f"work in 3D.")
-        self.__z = z if z is not None else 0
-        self.__t = t if t is not None else 0
+        if volume:
+            if z is not None and t is not None:
+                raise ValueError(f"T- and Z-plane indexes were specified while in 3D mode."
+                                 f"If extracting planes you should disable separation of an axis to "
+                                 f"work in 3D.")
+            self.__z = z
+            self.__t = t
+        else:
+            self.__z = z if z is not None else 0
+            self.__t = t if t is not None else 0
         self.scale = None
 
     @property
@@ -204,8 +208,15 @@ class FileImage(AbstractImage):
                 os.close(tempfd)
         else:
             # Todo: Download system
-            rdr = self.get_reader()
-            self.__cached_file = rdr.path
+            from ....pipeline import ImageFile
+            image_file = self.get_image_file()
+            rdr_class = get_image_reader_class(image_file, volume=self.__volume)
+            if not rdr_class.supports_url():
+                self.__cache_fd = download_to_temp_file(image_file.url)
+                if self.__cache_fd is None:
+                    return False
+                self.__cached_file = self.__cache_fd.name
+                self.__image_file = ImageFile(self.__cached_file)
         self.__is_cached = True
         return True
 
@@ -282,6 +293,7 @@ class FileImage(AbstractImage):
 
     def get_image_file(self):
         if self.__image_file is None:
+            from ....pipeline import ImageFile
             self.__image_file = ImageFile(self.get_url())
             self.__image_file.preferred_reader = self.__preferred_reader
         return self.__image_file
@@ -367,7 +379,7 @@ class FileImage(AbstractImage):
         else:
             reader = self.get_reader(volume=True)
             data = reader.read_volume(c=self.channel,
-                                      z=None,
+                                      z=self.z,
                                       t=self.t,
                                       series=self.series,
                                       rescale=self.rescale,

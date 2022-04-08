@@ -12,7 +12,7 @@ from cellprofiler_core.analysis.reply import ImageSetSuccess
 
 logger = logging.getLogger(__name__)
 # logger.addHandler(logging.StreamHandler())
-# logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 import six.moves
 import inspect
 import numpy
@@ -203,8 +203,6 @@ class TestAnalysis(unittest.TestCase):
     def setUpClass(cls):
         cls.zmq_context = zmq.Context()
         from cellprofiler_core.utilities.core.modules import fill_modules
-
-        print("Imma filling modules")
         fill_modules()
 
     @classmethod
@@ -319,12 +317,16 @@ class TestAnalysis(unittest.TestCase):
         logger.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
+        print("Starting pipeline")
         self.make_pipeline_and_measurements_and_start()
         self.wants_analysis_finished = True
+        print("Cancelling analysis")
         self.cancel_analysis()
+        print("Sent signal")
         # The last should be event.Finished. There may be AnalysisProgress
         # prior to that.
         analysis_finished = self.event_queue.get()
+        print("Got result")
         self.assertIsInstance(
             analysis_finished, cellprofiler_core.analysis.event.Finished
         )

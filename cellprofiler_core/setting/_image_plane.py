@@ -1,8 +1,8 @@
 import logging
+import pickle
 
 from ._setting import Setting
 from ._validation_error import ValidationError
-from ..pipeline import ImagePlane, ImageFile
 
 
 class ImagePlane(Setting):
@@ -36,7 +36,7 @@ class ImagePlane(Setting):
         super(ImagePlane, self).__init__(text, ImagePlane.build(""), *args, **kwargs)
 
     @staticmethod
-    def build(plane: ImagePlane):
+    def build(plane):
         """Build the string representation of the setting
 
         plane - the ImagePlane object
@@ -51,7 +51,7 @@ class ImagePlane(Setting):
         """
         if not plane:
             return ""
-        url = plane.file.url
+        url = plane.url
         if " " in url:
             # Spaces are not legal characters in URLs, nevertheless, I try
             # to accommodate
@@ -67,8 +67,10 @@ class ImagePlane(Setting):
         url = self.url
         if url is None:
             url = ""
+        from ..pipeline import ImageFile
+        from ..pipeline import ImagePlane as IPlane
         im_file = ImageFile(url)
-        return ImagePlane(im_file, series=self.series, index=self.index, channel=self.channel, z=self.z, t=self.t)
+        return IPlane(im_file, series=self.series, index=self.index, channel=self.channel, z=self.z, t=self.t)
 
     def __get_field(self, index):
         split = self.value_text.split(" ")

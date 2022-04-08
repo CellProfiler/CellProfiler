@@ -418,6 +418,8 @@ class Runner:
                         and self.received_measurements_queue.empty()
                     ):
                         self.interface_work_cv.wait()  # wait for a change of status or work to arrive
+        except Exception as e:
+            print(e)
         finally:
             if JAVA_STARTED:
                 import javabridge

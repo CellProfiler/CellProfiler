@@ -54,6 +54,9 @@ E_IMAGE = "Image"
 CT_COLOR = "Color"
 CT_TEXT = "Text"
 
+F_CHOICE = sorted(set([font.name for font in matplotlib.font_manager.fontManager.ttflist]))
+F_WEIGHT = ["normal", "bold"]
+
 CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
 CMS_MANUAL = "Manual"
 
@@ -180,6 +183,25 @@ superimposed. You can use this name to refer to the image in subsequent
 modules (such as **SaveImages**).
 """,
         )
+        self.sci_notation = Binary(
+            "Use scientific notation?",
+            False,
+            doc="""Choose whether to display data in scientific notation.
+""",
+        )
+
+        self.font_choice = Choice(
+            "Font",
+            F_CHOICE,
+            value="DejaVu Sans",
+            doc="""Set the font of the text to be displayed""",
+        )
+        self.font_weight = Choice(
+            "Font weight",
+            F_WEIGHT,
+            value="normal",
+            doc="""Set the font weight of the text to be displayed""",
+        )
 
         self.font_size = Integer(
             "Font size (points)",
@@ -276,6 +298,9 @@ color map.
             self.wants_image,
             self.color_map_scale_choice,
             self.color_map_scale,
+            self.font_choice,
+            self.sci_notation,
+            self.font_weight
         ]
 
     def visible_settings(self):
@@ -292,7 +317,7 @@ color map.
             if self.color_map_scale_choice == CMS_MANUAL:
                 result += [self.color_map_scale]
         else:
-            result += [self.text_color, self.font_size, self.decimals, self.offset]
+            result += [self.font_choice, self.font_weight, self.sci_notation, self.text_color, self.font_size, self.decimals, self.offset]
         result += [self.display_image, self.saved_image_contents]
         return result
 
@@ -501,12 +526,13 @@ color map.
                 workspace.display_data.y,
                 workspace.display_data.values,
             ):
-                try:
-                    fvalue = float(value)
-                    svalue = "%.*f" % (self.decimals.value, value)
-                except:
-                    svalue = str(value)
-
+                if self.sci_notation:
+                    svalue = f"{value:.{self.decimals.value}e}"
+                else:
+                    try:
+                        svalue = "%.*f" % (self.decimals.value, value)
+                    except:
+                        svalue = str(value)
                 text = matplotlib.text.Text(
                     x=x,
                     y=y,
@@ -515,6 +541,8 @@ color map.
                     color=self.text_color.value,
                     verticalalignment="center",
                     horizontalalignment="center",
+                    fontname=self.font_choice.value,
+                    weight=self.font_weight.value,
                 )
                 axes.add_artist(text)
 

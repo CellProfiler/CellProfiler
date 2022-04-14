@@ -66,7 +66,7 @@ The choices are:
             "Objects", doc="Select the objects you want to export as per-object crops."
         )
 
-        self.image_name = ImageSubscriber("Image", doc="Select the image to crop")
+        self.image_name = ImageSubscriber("Image to crop", doc="Select the image to crop")
 
         self.directory = Directory(
             "Directory",
@@ -178,13 +178,16 @@ The choices are:
     def visible_settings(self):
         result = [
             self.export_option,
+        ]
+        if self.export_option.value == SAVE_PER_OBJECT:
+            result += [self.image_name]
+        result += [
             self.objects_name,
             self.directory,
             self.file_format,
         ]
 
-        if self.export_option.value == SAVE_PER_OBJECT:
-            result += [self.image_name]
+
 
         return result
 

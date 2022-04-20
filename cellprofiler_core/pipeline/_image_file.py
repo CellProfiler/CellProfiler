@@ -87,7 +87,6 @@ class ImageFile:
             logger.error(f"May not be an image: {self.url}", exc_info=True)
             self.metadata[MD_SIZE_S] = 0
             return
-        # self._xml_metadata = reader.get_omexml_metadata()
         meta_dict = reader.get_series_dimensions()
         assert set(meta_dict.keys()) == MD_SIZE_KEYS, "Returned metadata keys were incorrect"
         self.metadata.update(meta_dict)

@@ -139,5 +139,5 @@ def start_java():
 
 
 def stop_java():
-    print("Stopping java now")
+    LOGGER.info("Shutting down Java Virtual Machine")
     javabridge.kill_vm()

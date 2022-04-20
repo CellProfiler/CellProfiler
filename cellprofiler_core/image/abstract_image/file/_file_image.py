@@ -215,7 +215,7 @@ class FileImage(AbstractImage):
                 self.__cache_fd = download_to_temp_file(image_file.url)
                 if self.__cache_fd is None:
                     return False
-                self.__cached_file = self.__cache_fd.name
+                self.__cached_file = pathname2url(self.__cache_fd.name)
                 self.__image_file = ImageFile(self.__cached_file)
         self.__is_cached = True
         return True

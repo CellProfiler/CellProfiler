@@ -288,6 +288,10 @@ pass the current filter.
 
     def filter_file_list(self, workspace):
         file_list = workspace.pipeline.file_list
+        if file_list and not workspace.file_list.has_files():
+            logging.warning("Workspace file list is empty, will populate from pipeline."
+                            "This may happen if you're running in headless mode.")
+            workspace.file_list.add_files_to_filelist([f.url for f in file_list])
         if self.filter_choice != FILTER_CHOICE_NONE:
             if self.filter_choice == FILTER_CHOICE_IMAGES:
                 file_list = [image_file for image_file in file_list if is_image(image_file.url)]

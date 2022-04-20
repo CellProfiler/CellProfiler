@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import shutil
@@ -262,7 +263,7 @@ def url_to_modpath(url):
 
     if not url.lower().startswith("file:"):
         schema, rest = HDF5FileList.split_url(url)
-        return [schema] + rest[0:1] + [urllib.parse.unquote(part) for part in rest[1:]]
+        return [schema] + rest[0:1] + [unquote(part) for part in rest[1:]]
     path = urllib.request.url2pathname(url[5:])
     parts = []
     while True:
@@ -280,8 +281,6 @@ def download_to_temp_file(url):
     scheme = parsed.scheme
     path = parsed.path
     ext = os.path.splitext(path)[-1]
-    # urlpath = urlparse(url)[2]
-    # filename = os.path.split(path)[-1]
 
     if scheme == 's3':
         client = boto3.client('s3')
@@ -292,14 +291,13 @@ def download_to_temp_file(url):
         )
 
     from urllib.request import urlopen
-    print("Opening URL")
+    logging.info(f"Downloading image from {url}")
     src = urlopen(url)
     dest_file = tempfile.NamedTemporaryFile(suffix=ext)
-    print("Made temp file")
     try:
         shutil.copyfileobj(src, dest_file)
-        print("Copy successful")
-    except:
+    except Exception as e:
+        logging.error(f"Unable to download image to temp file. {e}")
         dest_file.close()
         return None
     return dest_file

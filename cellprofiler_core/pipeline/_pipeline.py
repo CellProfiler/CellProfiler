@@ -490,6 +490,8 @@ class Pipeline:
         return pipeline_version
 
     def setup_modules(self, fd, module_count, raise_on_error):
+        from cellprofiler_core.modules.metadata import Metadata
+        from cellprofiler_core.modules.images import Images
         #
         # The module section
         #
@@ -556,6 +558,9 @@ class Pipeline:
             if module is not None:
                 new_modules.append(module)
                 module_number += 1
+            if isinstance(module, Metadata) and module.removed_automatic_extraction:
+                if isinstance(new_modules[0], Images):
+                    new_modules[0].want_split.value = True
         return new_modules
 
     def setup_module(

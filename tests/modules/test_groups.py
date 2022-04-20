@@ -69,10 +69,15 @@ def make_image_sets(key_metadata, channel_metadata):
 
     returns a Groups module and a workspace with the image sets in its measurements
     """
-    iscds = [
-        cellprofiler_core.pipeline.ImageSetChannelDescriptor(channel_name, image_type)
-        for channel_name, metadata_key, metadata_value, image_type in channel_metadata
-    ]
+
+    channel_descriptors = {channel_name: image_type
+                           for channel_name, metadata_key, metadata_value, image_type in channel_metadata}
+
+
+    # iscds = [
+    #     cellprofiler_core.pipeline.ImageSetChannelDescriptor(channel_name, image_type)
+    #     for channel_name, metadata_key, metadata_value, image_type in channel_metadata
+    # ]
     image_set_key_names = [key for key, values in key_metadata]
 
     slices = tuple([slice(0, len(values)) for key, values in key_metadata])
@@ -126,10 +131,10 @@ def make_image_sets(key_metadata, channel_metadata):
             for k in image_set_key_names
         ]
     )
-    m.set_channel_descriptors(iscds)
+    m.set_channel_descriptors(channel_descriptors)
     for i, ipds in enumerate(image_sets):
         image_number = i + 1
-        for (file_name, metadata), iscd in zip(ipds, iscds):
+        for (file_name, metadata), channel_name in zip(ipds, channel_descriptors.keys()):
             for feature, value in (
                 (cellprofiler_core.constants.measurement.C_FILE_NAME, file_name),
                 (
@@ -143,7 +148,7 @@ def make_image_sets(key_metadata, channel_metadata):
             ):
                 m[
                     cellprofiler_core.constants.measurement.IMAGE,
-                    feature + "_" + iscd.name,
+                    feature + "_" + channel_name,
                     image_number,
                 ] = value
             for key, value in list(metadata.items()):

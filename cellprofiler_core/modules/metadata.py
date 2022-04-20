@@ -1,11 +1,14 @@
 import csv
+import logging
+import numbers
 import os
 import re
+import string
 import time
 import urllib.request
 
 from cellprofiler_core.constants.image import MD_SIZE_C, MD_SIZE_T, MD_SIZE_Z, MD_SIZE_X, MD_SIZE_Y
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, C_Z, C_T, C_CHANNEL
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, C_Z, C_T, C_CHANNEL, FTR_WELL, ROW_KEYS, COL_KEYS
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.constants.measurement import COLTYPE_VARCHAR
 from cellprofiler_core.constants.measurement import COLTYPE_VARCHAR_FILE_NAME
@@ -203,6 +206,9 @@ class Metadata(Module):
     def create_settings(self):
         self.pipeline = None
         self.filtered_file_list = None
+        # Records whether upgrade process removed an automatic extraction group
+        self.removed_automatic_extraction = False
+
         module_explanation = [
             "The %s module optionally allows you to extract information"
             % self.module_name,
@@ -853,19 +859,24 @@ not being applied, your choice on this setting may be the culprit.
                         target = file_object.dirname
                     matches = group.regex_pattern.search(target)
                     if matches:
-                        file_object.add_metadata(matches.groupdict())
+                        file_metadata = self.apply_data_types(matches.groupdict())
+                        file_object.add_metadata(file_metadata)
                 elif group.extraction_method == X_IMPORTED_EXTRACTION:
                     # Imported from CSV. Test the image against available dicts.
                     joins = group.csv_joiner.parse()
                     image_meta = file_object.metadata
                     valid = True
                     for candidate_dict in group.imported_metadata_dicts:
+                        if None in candidate_dict:
+                            # Extra columns without header labels were present. Delete them.
+                            del candidate_dict[None]
+                        candidate_dict = self.apply_data_types(candidate_dict)
                         valid = True
                         for join_dict in joins:
                             csv_key = join_dict[CSV_JOIN_NAME]
                             image_key = join_dict[IPD_JOIN_NAME]
                             csv_val = candidate_dict[csv_key]
-                            image_val = image_meta.get(image_key, "")
+                            image_val = self.apply_data_type(image_meta.get(image_key, ""), self.get_data_type(image_key))
                             if group.wants_case_insensitive:
                                 if isinstance(csv_val, str):
                                     csv_val = csv_val.lower()
@@ -882,16 +893,30 @@ not being applied, your choice on this setting may be the culprit.
                     pass
                 else:
                     raise NotImplementedError(f"Invalid extraction method '{group.extraction_method}'")
-
+            if FTR_WELL not in file_object.metadata:
+                row_key = next((x for x in ROW_KEYS if x in file_object.metadata), None)
+                col_key = next((x for x in COL_KEYS if x in file_object.metadata), None)
+                if row_key is not None and col_key is not None:
+                    col = file_object.metadata[col_key]
+                    row = file_object.metadata[row_key]
+                    if row.isdigit():
+                        row = int(row)
+                    if isinstance(row, int):
+                        if 0 < row <= 24:
+                            row = string.ascii_uppercase[row - 1]
+                    well = row + col
+                    file_object.set_metadata(FTR_WELL, well)
         for group in self.extraction_methods:
             if group.extraction_method == X_IMPORTED_EXTRACTION:
                 # Extraction is done, clear the dict list to save memory.
                 del group.imported_metadata_dicts
                 group.imported_metadata_dicts = None
+                group.imported_metadata_dicts_timestamp = 0
+                group.imported_metadata_dicts_path = None
 
     def import_csv_dict(self, group):
         csv_path = self.csv_path(group)
-        if csv_path == group.imported_metadata_dicts_path:
+        if csv_path == group.imported_metadata_dicts_path and group.imported_metadata_dicts is not None:
             if group.csv_location.is_url():
                 return group.imported_metadata_dicts
             if os.path.isfile(csv_path):
@@ -1047,6 +1072,8 @@ not being applied, your choice on this setting may be the culprit.
                 keys.update(extract_group.regex_pattern.groupindex.keys())
             elif extract_group.extraction_method == X_IMPORTED_EXTRACTION:
                 keys.update(self.get_csv_header(extract_group))
+        if FTR_WELL not in keys and any(k in keys for k in ROW_KEYS) and any(k in keys for k in COL_KEYS):
+            keys.add(FTR_WELL)
         return keys
 
     def get_dt_metadata_keys(self):
@@ -1094,6 +1121,28 @@ not being applied, your choice on this setting may be the culprit.
                 result[k] = COLTYPE_VARCHAR
 
         return result
+
+    def apply_data_types(self, input_dict):
+        return {k: self.apply_data_type(v, self.get_data_type(k)) for k, v, in input_dict.items()}
+
+    @staticmethod
+    def apply_data_type(value, data_type):
+        if data_type == DataTypes.DT_TEXT:
+            return str(value)
+        elif data_type == DataTypes.DT_INTEGER:
+            try:
+                return int(value)
+            except ValueError:
+                logging.warning(f"Metadata value {value} cannot be interpreted as an integer number.")
+                return value
+        elif data_type == DataTypes.DT_FLOAT:
+            try:
+                return float(value)
+            except ValueError:
+                logging.warning(f"Metadata value {value} cannot be interpreted as a floating point number.")
+                return value
+
+        return value
 
     def wants_case_insensitive_matching(self, key):
         """Return True if the key should be matched using case-insensitive matching
@@ -1258,7 +1307,8 @@ not being applied, your choice on this setting may be the culprit.
                 group = setting_values[
                         4 + (group_idx * 11): 4 + ((group_idx + 1) * 11)
                         ]
-                if group[0] == X_IMPORTED_EXTRACTION:
+                if group[0] == X_AUTOMATIC_EXTRACTION:
+                    self.removed_automatic_extraction = True
                     continue
                 new_setting_values += group[:-1]
                 new_n_groups += 1

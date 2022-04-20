@@ -3,11 +3,14 @@
 import six.moves.queue
 import six.moves
 import os
+import pickle
 import tempfile
 import threading
 import traceback
 import unittest
 import uuid
+import zlib
+
 import cellprofiler_core.analysis
 import cellprofiler_core.analysis.reply as anareply
 import cellprofiler_core.constants.measurement
@@ -22,11 +25,13 @@ import cellprofiler_core.utilities.measurement
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.utilities.zmq
 import cellprofiler_core.worker
-import javabridge
 import numpy
 import tests.modules
 import zmq
 import cellprofiler_core.analysis.request as anarequest
+from cellprofiler_core.constants.modules.namesandtypes import M_IMAGE_SET_ZIP_DICTIONARY
+from cellprofiler_core.pipeline import ImageFile
+from cellprofiler_core.pipeline import ImagePlane
 
 
 class TestAnalysisWorker(unittest.TestCase):
@@ -600,7 +605,11 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker sends a display request for FlipAndRotate
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, anarequest.Display)
+        if not isinstance(req, anarequest.Display):
+            if isinstance(req, anarequest.ExceptionReport):
+                print(req.exc_message)
+                print(req.exc_traceback)
+            raise AssertionError("Worker did not produce desired response")
         self.assertEqual(req.image_set_number, 1)
         d = req.display_data_dict
         # Possibly, this will break if someone edits FlipAndRotate. Sorry.
@@ -1149,6 +1158,7 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
         else:
             group_index = 1
         group_indexes.append(group_index)
+    m.add_experiment_measurement(M_IMAGE_SET_ZIP_DICTIONARY, b"")
     for i in range(1, nimages + 1):
         filename = "Channel2-%02d-%s-%02d.tif" % (
             i,
@@ -1183,30 +1193,12 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
             cellprofiler_core.constants.measurement.GROUP_INDEX,
             i,
         ] = group_indexes[i - 1]
-        jblob = javabridge.run_script(
-            """
-        importPackage(Packages.org.cellprofiler.imageset);
-        importPackage(Packages.org.cellprofiler.imageset.filter);
-        var imageFile=new ImageFile(new java.net.URI(url));
-        var imageFileDetails = new ImageFileDetails(imageFile);
-        var imageSeries=new ImageSeries(imageFile, 0);
-        var imageSeriesDetails = new ImageSeriesDetails(imageSeries, imageFileDetails);
-        var imagePlane=new ImagePlane(imageSeries, 0, ImagePlane.ALWAYS_MONOCHROME);
-        var ipd = new ImagePlaneDetails(imagePlane, imageSeriesDetails);
-        var stack = ImagePlaneDetailsStack.makeMonochromeStack(ipd);
-        var stacks = java.util.Collections.singletonList(stack);
-        var keys = java.util.Collections.singletonList(imageNumber);
-        var imageSet = new ImageSet(stacks, keys);
-        imageSet.compress(java.util.Collections.singletonList("DNA"), null);
-        """,
-            dict(url=url, imageNumber=str(i)),
-        )
-        blob = javabridge.get_env().get_byte_array_elements(jblob)
+        image_set = {"DNA": ImagePlane(ImageFile(url))}
+        blob = [zlib.compress(pickle.dumps(image_set))]
         m[
             cellprofiler_core.constants.measurement.IMAGE,
             cellprofiler_core.modules.namesandtypes.M_IMAGE_SET,
             i,
-            blob.dtype,
         ] = blob
     pipeline = cellprofiler_core.pipeline.Pipeline()
     pipeline.loadtxt(six.moves.StringIO(GOOD_PIPELINE))

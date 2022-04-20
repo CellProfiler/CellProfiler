@@ -33,6 +33,7 @@ DATA = "data"
 
 FILES = ":filelist:"
 METADATA = ":metadata:"
+ROOT = ":root:"
 
 # h5py is nice, but not being able to make zero-length selections is a pain.
 orig_hdf5_getitem = h5py.Dataset.__getitem__
@@ -967,7 +968,7 @@ class HDF5FileList(object):
     """
 
     @classmethod
-    def has_file_list(cls, hdf5_file):
+    def has_file_list(cls, hdf5_file, empty_ok=True):
         """Return True if the hdf5 file has a file list
 
         hdf5_file - an h5py.File
@@ -975,6 +976,9 @@ class HDF5FileList(object):
         assert isinstance(hdf5_file, h5py.File)
         if FILE_LIST_GROUP not in hdf5_file.keys():
             return False
+        elif empty_ok:
+            # No need to validate that there are actually files in the list.
+            return True
         flg = hdf5_file[FILE_LIST_GROUP]
         if flg.visititems(cls.scan_for_datasets):
             return True
@@ -999,7 +1003,8 @@ class HDF5FileList(object):
         dest_flg = dest.require_group(FILE_LIST_GROUP)
         for key in list(dest_flg.keys()):
             del dest_flg[key]
-        dest.copy(flg, dest_flg)
+        for key in flg.keys():
+            dest.copy(flg[key], dest_flg)
 
     def __init__(self, hdf5_file, lock=None, filelist_name=DEFAULT_GROUP):
         """Initialize self with an HDF5 file
@@ -1121,6 +1126,8 @@ class HDF5FileList(object):
         storage_map = collections.defaultdict(list)
         for url in urls:
             stem, filename = os.path.split(url)
+            if not stem:
+                stem = ROOT
             storage_map[stem].append(filename)
         with self.lock:
             for stem, filenames in storage_map.items():
@@ -1186,8 +1193,11 @@ class HDF5FileList(object):
         parent = self.get_filelist_group()
         stem, filename = os.path.split(url)
         path_group = parent.require_group(stem)
-        path_group_files = path_group[FILES].asstr()
+        path_group_files = path_group[FILES].asstr()[:]
         data_index = numpy.searchsorted(path_group_files, filename)
+        if path_group_files[data_index] != filename:
+            LOGGER.warning(f"Requested metadata for non-existent file {filename}")
+            return None
         return path_group[METADATA][data_index]
 
     def clear_filelist(self):
@@ -1212,6 +1222,8 @@ class HDF5FileList(object):
         storage_map = collections.defaultdict(list)
         for url in urls:
             stem, filename = os.path.split(url)
+            if not stem:
+                stem = ROOT
             storage_map[stem].append(filename)
         with self.lock:
             for stem, filenames in storage_map.items():
@@ -1256,39 +1268,49 @@ class HDF5FileList(object):
     def recurse_for_files(self, name, node):
         head, _ = os.path.split(name)
         if isinstance(node, h5py.Dataset) and check_string_dtype(node.dtype):
-            self._temp += [f"{head}/{filename}" for filename in node.asstr()[:]]
+            if head == ROOT:
+                self._temp += node.asstr()[:].tolist()
+            else:
+                self._temp += [f"{head}/{filename}" for filename in node.asstr()[:]]
 
     def recurse_for_files_and_metadata(self, name, node):
         head, _ = os.path.split(name)
         if isinstance(node, h5py.Dataset) and check_string_dtype(node.dtype):
             meta_node = node.parent[METADATA]
-            self._temp += [f"{head}/{filename}" for filename in node.asstr()[:]]
+            if head == ROOT:
+                self._temp += node.asstr()[:].tolist()
+            else:
+                self._temp += [f"{head}/{filename}" for filename in node.asstr()[:]]
             self._meta += meta_node[:].tolist()
 
     def get_filelist(self, root_url=None, want_metadata=False):
         group = self.get_filelist_group()
+        self._temp = result = []
+        self._meta = meta = []
         if group.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
             LOGGER.error("Project file is from an older version of "
                          "CellProfiler, cannot load file list")
             # Remove old-format data from cloned HDF5.
             parent = group.parent
             del parent[group.name]
-            if want_metadata:
-                return [], []
-            return []
-        self._temp = []
-        with self.lock:
+        elif root_url is not None and root_url not in group:
+            LOGGER.warning(f"Requested file list from non-existent directory {root_url}")
+        else:
+            with self.lock:
+                if root_url is None:
+                    source = group
+                else:
+                    source = group[root_url]
+                if want_metadata:
+                    source.visititems(self.recurse_for_files_and_metadata)
+                else:
+                    source.visititems(self.recurse_for_files)
             if root_url is None:
-                source = group
+                result = self._temp
             else:
-                stem, filename = os.path.split(root_url)
-                source = group[stem]
-            if want_metadata:
-                source.visititems(self.recurse_for_files_and_metadata)
-            else:
-                source.visititems(self.recurse_for_files)
-        result = self._temp
-        meta = self._meta
+                # Rebuild the full path if we started at a lower group.
+                result = [root_url + path for path in self._temp]
+            meta = self._meta
         self._temp = []
         self._meta = []
         if want_metadata:

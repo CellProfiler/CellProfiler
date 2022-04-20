@@ -129,7 +129,7 @@ def start_java():
     #
     # Enable Bio-Formats directory cacheing
     #
-
+    javabridge.attach()
     c_location = javabridge.JClassWrapper("loci.common.Location")
     c_location.cacheDirectoryListings(True)
     LOGGER.debug("Enabled Bio-formats directory cacheing")
@@ -139,4 +139,5 @@ def start_java():
 
 
 def stop_java():
+    print("Stopping java now")
     javabridge.kill_vm()

@@ -14,10 +14,6 @@ import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 
-OME_XML = open(
-    os.path.join(os.path.split(__file__)[0], "../data/omexml.xml"), "r"
-).read()
-
 
 def get_data_directory():
     folder = os.path.dirname(cellprofiler_core.workspace.__file__)
@@ -298,7 +294,7 @@ def test_load_v5():
     assert em1.csv_filename.value == "metadata.csv"
 
 
-def check(module, url, dd, keys=None, xml=None):
+def check(module, url, dd, keys=None):
     """Check that running the metadata module on a url generates the expected dictionary"""
     pipeline = cellprofiler_core.pipeline.Pipeline()
     imgs = cellprofiler_core.modules.images.Images()
@@ -316,12 +312,11 @@ def check(module, url, dd, keys=None, xml=None):
     )
     file_list = workspace.file_list
     file_list.add_files_to_filelist([url])
-    if xml is not None:
-        file_list.add_metadata(url, xml)
-    ipds = pipeline.get_image_plane_details(workspace)
-    assert len(ipds) == len(dd)
-    for d, ipd in zip(dd, ipds):
-        assert dict(ipd.metadata, **d) == ipd.metadata
+    assert module.prepare_run(workspace)
+    image_planes = pipeline.get_image_plane_list(workspace)
+    assert len(image_planes) == len(dd)
+    for d, plane in zip(dd, image_planes):
+        assert d.items() <= plane.get_all_metadata().items()
     all_keys = list(pipeline.get_available_metadata_keys().keys())
     if keys is not None:
         for key in keys:
@@ -473,7 +468,7 @@ C10,BRD041618,1.5,2
                     "Site": "5",
                     "Wavelength": "2",
                     "Treatment": "DMSO",
-                    "Dose": "0",
+                    "Dose": 0.0,
                     "Counter": "1",
                 }
             ],
@@ -489,7 +484,7 @@ C10,BRD041618,1.5,2
                     "Site": "2",
                     "Wavelength": "3",
                     "Treatment": "BRD041618",
-                    "Dose": "1.5",
+                    "Dose": 1.5,
                     "Counter": "2",
                 }
             ],
@@ -752,7 +747,7 @@ def test_numeric_joining():
                 {
                     "Plate": "P-12345",
                     "Well": "B08",
-                    "Site": "5",
+                    "Site": 5,
                     "Wavelength": "2",
                     "Treatment": "DMSO",
                 }
@@ -766,7 +761,7 @@ def test_numeric_joining():
                 {
                     "Plate": "P-12345",
                     "Well": "C10",
-                    "Site": "2",
+                    "Site": 2,
                     "Wavelength": "3",
                     "Treatment": "BRD041618",
                 }
@@ -776,7 +771,7 @@ def test_numeric_joining():
         check(
             module,
             url,
-            [{"Plate": "P-12345", "Well": "A01", "Site": "3", "Wavelength": "3"}],
+            [{"Plate": "P-12345", "Well": "A01", "Site": 3, "Wavelength": "3"}],
         )
     finally:
         try:
@@ -991,37 +986,3 @@ C05,DMSO
     except:
         os.remove(path)
 
-
-def test_ome_metadata():
-    # Test loading one URL with the humongous stack XML
-    # (pat self on back if passes)
-    module = cellprofiler_core.modules.metadata.Metadata()
-    module.wants_metadata.value = True
-    em = module.extraction_methods[0]
-    em.filter_choice.value = cellprofiler_core.constants.modules.metadata.F_ALL_IMAGES
-    em.extraction_method.value = (
-        cellprofiler_core.constants.modules.metadata.X_AUTOMATIC_EXTRACTION
-    )
-    url = "file:/imaging/analysis/Channel1-C-05.tif"
-    metadata = []
-    for series in range(4):
-        for z in range(36):
-            metadata.append(
-                dict(
-                    Series=str(series),
-                    Frame=str(z),
-                    Plate="136570140804 96_Greiner",
-                    Well="E11",
-                    Site=str(series),
-                    ChannelName="Exp1Cam1",
-                    SizeX=str(688),
-                    SizeY=str(512),
-                    SizeZ=str(36),
-                    SizeC=str(1),
-                    SizeT=str(1),
-                    Z=str(z),
-                    C=str(0),
-                    T=str(0),
-                )
-            )
-    check(module, url, metadata, xml=OME_XML)

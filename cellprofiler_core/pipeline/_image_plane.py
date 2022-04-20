@@ -147,6 +147,9 @@ class ImagePlane:
         else:
             return None
 
+    def get_all_metadata(self):
+        return {**self.file.metadata, **self._metadata_dict}
+
     def set_metadata(self, key, value, force=False):
         if key in RESERVED_METADATA_KEYS and not force:
             raise PermissionError(f"Cannot override protected metadata key '{key}'")

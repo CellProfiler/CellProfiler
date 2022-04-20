@@ -1641,9 +1641,8 @@ def run_workspace(
         si.load_as_choice.value = load_as_type
         si.rescale.value = rescaled
         si.manual_rescale.value = manual_rescale
-        si.image_plane.value = si.image_plane.build(ImagePlane(ImageFile(url)))
-
         url = cellprofiler_core.utilities.pathname.pathname2url(path)
+        si.image_plane.value = si.image_plane.build(ImagePlane(ImageFile(url)))
         pathname, filename = os.path.split(path)
         if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
             url_feature = (
@@ -1690,29 +1689,6 @@ def run_workspace(
         )
         planes.append(make_ipd(url, {}))
     pipeline.set_image_plane_list(planes)
-    #
-    # script = (
-    #     """
-    #                 importPackage(Packages.org.cellprofiler.imageset);
-    #                 var ls = new java.util.ArrayList();
-    #                 for (var ipd in Iterator(ipds)) {
-    #                     ls.add(ImagePlaneDetailsStack.make%sStack(ipd));
-    #                 }
-    #                 var kwlist = new java.util.ArrayList();
-    #                 kwlist.add("ImageNumber");
-    #                 var imageSet = new ImageSet(ls, kwlist);
-    #                 imageSet.compress(names, null);
-    #                 """
-    #     % stack
-    # )
-    # blob = javabridge.run_script(script, dict(ipds=ipds.o, names=names.o))
-    # blob = javabridge.get_env().get_byte_array_elements(blob)
-    # m.add_measurement(
-    #     cellprofiler_core.constants.measurement.IMAGE,
-    #     cellprofiler_core.modules.namesandtypes.M_IMAGE_SET,
-    #     blob,
-    #     data_type=numpy.uint8,
-    # )
 
     workspace = cellprofiler_core.workspace.Workspace(
         pipeline, n, m, cellprofiler_core.object.ObjectSet(), m, None

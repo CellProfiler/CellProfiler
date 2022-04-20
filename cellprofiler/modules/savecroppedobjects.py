@@ -29,8 +29,10 @@ import skimage.measure
 from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.setting.choice import Choice
+from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
 from cellprofiler_core.setting.text import Directory
+from cellprofiler_core.constants.measurement import C_FILE_NAME
 
 O_PNG = "png"
 O_TIFF_8 = "8-bit tiff"
@@ -63,10 +65,14 @@ The choices are:
         )
 
         self.objects_name = LabelSubscriber(
-            "Objects", doc="Select the objects you want to export as per-object crops."
+            "Objects", 
+            doc="Select the objects you want to export as per-object crops.",
         )
 
-        self.image_name = ImageSubscriber("Image to crop", doc="Select the image to crop")
+        self.image_name = ImageSubscriber(
+            "Image to crop", 
+            doc="Select the image to crop",
+        )
 
         self.directory = Directory(
             "Directory",
@@ -83,6 +89,52 @@ The choices are:
                 O_PNG=O_PNG, O_TIFF_8=O_TIFF_8, O_TIFF_16=O_TIFF_16
             ),
         )
+        self.nested_save = Binary(
+            "Save output crops in nested folders?",
+            value=False,
+            doc="""\
+            If *Yes*, the output crops will be saved into a folder named
+            after the input image. 
+            """,
+        )
+        self.include_filename = Binary(
+            "Include input filename in the output filename?",
+            value=False,
+            doc="""\
+            Include the input filename in the output cropped object image filename. 
+            The output filename format will be: 
+
+            **{input filename}_{object name}_{label index}.{image_format}**
+            """,
+        )
+
+    def settings(self):
+        settings = [
+            self.objects_name,
+            self.directory,
+            self.file_format,
+            self.export_option,
+            self.image_name,
+            self.nested_save,
+            self.include_filename,
+        ]
+
+        return settings
+
+    def visible_settings(self):
+        result = [
+            self.export_option,
+        ]
+        if self.export_option.value == SAVE_PER_OBJECT:
+            result += [self.image_name]
+        result += [
+            self.objects_name,
+            self.directory,
+            self.nested_save,
+            self.include_filename,
+            self.file_format,
+        ]
+        return result
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
@@ -96,6 +148,14 @@ The choices are:
 
         if not os.path.exists(directory):
             os.makedirs(directory)
+
+        input_filename = workspace.measurements.get_current_measurement("Image", self.file_name_feature)
+        input_filename = os.path.splitext(input_filename)[0]
+
+        if self.nested_save:
+            nested_folder = os.path.join(directory, input_filename)
+            if not os.path.exists(nested_folder):
+                os.makedirs(nested_folder)
 
         labels = objects.segmented
 
@@ -126,70 +186,64 @@ The choices are:
                 )
                 mask = properties[0].intensity_image
 
+            if self.nested_save.value:
+                if self.include_filename.value:
+                    filename = os.path.join(
+                        nested_folder, "{}_{}_{}".format(input_filename, self.objects_name.value, label)
+                    )
+                elif not self.include_filename.value:
+                    filename = os.path.join(
+                        nested_folder, "{}_{}".format(self.objects_name.value, label)
+                    )
+
+            elif not self.nested_save.value:
+                if self.include_filename.value:
+                    filename = os.path.join(
+                        directory, "{}_{}_{}".format(input_filename, self.objects_name.value, label)
+                    )
+
+                elif not self.include_filename.value:
+                    filename = os.path.join(
+                        directory, "{}_{}".format(self.objects_name.value, label)
+                    )
+
             if self.file_format.value == O_PNG:
-                filename = os.path.join(
-                    directory, "{}_{}.{}".format(self.objects_name.value, label, O_PNG)
-                )
+                save_filename = filename + ".{}".format(O_PNG)
 
                 skimage.io.imsave(
-                    filename, skimage.img_as_ubyte(mask), check_contrast=False
+                    save_filename, 
+                    skimage.img_as_ubyte(mask), 
+                    check_contrast=False
                 )
 
             elif self.file_format.value == O_TIFF_8:
-                filename = os.path.join(
-                    directory, "{}_{}.{}".format(self.objects_name.value, label, "tiff")
-                )
-
+                save_filename = filename +".{}".format("tiff")
+                
                 skimage.io.imsave(
-                    filename,
+                    save_filename,
                     skimage.img_as_ubyte(mask),
                     compress=6,
                     check_contrast=False,
                 )
 
             elif self.file_format.value == O_TIFF_16:
-                filename = os.path.join(
-                    directory, "{}_{}.{}".format(self.objects_name.value, label, "tiff")
-                )
-
+                save_filename = filename + ".{}".format("tiff")
+                
                 skimage.io.imsave(
-                    filename,
+                    save_filename,
                     skimage.img_as_uint(mask),
                     compress=6,
                     check_contrast=False,
                 )
 
-            filenames.append(filename)
+            filenames.append(save_filename)
 
         if self.show_window:
             workspace.display_data.filenames = filenames
 
-    def settings(self):
-        settings = [
-            self.objects_name,
-            self.directory,
-            self.file_format,
-            self.export_option,
-            self.image_name,
-        ]
-
-        return settings
-
-    def visible_settings(self):
-        result = [
-            self.export_option,
-        ]
-        if self.export_option.value == SAVE_PER_OBJECT:
-            result += [self.image_name]
-        result += [
-            self.objects_name,
-            self.directory,
-            self.file_format,
-        ]
-
-
-
-        return result
+    @property
+    def file_name_feature(self):
+        return "_".join((C_FILE_NAME, self.image_name.value))
 
     def volumetric(self):
         return True

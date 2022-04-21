@@ -9,6 +9,7 @@ from cellprofiler_core.preferences import DEFAULT_COLORMAP_HELP
 from cellprofiler_core.preferences import DEFAULT_IMAGE_FOLDER_HELP
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_HELP
 from cellprofiler_core.preferences import ERROR_COLOR_HELP
+from cellprofiler_core.preferences import FORCE_BIOFORMATS_HELP
 from cellprofiler_core.preferences import IM_BICUBIC
 from cellprofiler_core.preferences import IM_BILINEAR
 from cellprofiler_core.preferences import IM_NEAREST
@@ -43,6 +44,7 @@ from cellprofiler_core.preferences import get_default_colormap
 from cellprofiler_core.preferences import get_default_image_directory
 from cellprofiler_core.preferences import get_default_output_directory
 from cellprofiler_core.preferences import get_error_color
+from cellprofiler_core.preferences import get_force_bioformats
 from cellprofiler_core.preferences import get_intensity_mode
 from cellprofiler_core.preferences import get_interpolation_mode
 from cellprofiler_core.preferences import get_max_workers
@@ -71,6 +73,7 @@ from cellprofiler_core.preferences import set_default_colormap
 from cellprofiler_core.preferences import set_default_image_directory
 from cellprofiler_core.preferences import set_default_output_directory
 from cellprofiler_core.preferences import set_error_color
+from cellprofiler_core.preferences import set_force_bioformats
 from cellprofiler_core.preferences import set_intensity_mode
 from cellprofiler_core.preferences import set_interpolation_mode
 from cellprofiler_core.preferences import set_max_workers
@@ -475,6 +478,13 @@ class PreferencesDialog(wx.Dialog):
                 set_conserve_memory,
                 CHOICE,
                 CONSERVE_MEMORY_HELP,
+            ],
+            [
+                'Always use BioFormats to read images',
+                get_force_bioformats,
+                set_force_bioformats,
+                CHOICE,
+                FORCE_BIOFORMATS_HELP,
             ],
 
             ["Pony", get_wants_pony, set_wants_pony, CHOICE, "The end is neigh.",],

@@ -26,6 +26,7 @@ from cellprofiler_core.pipeline import Pipeline
 from cellprofiler_core.preferences import get_image_set_file
 from cellprofiler_core.preferences import get_temporary_directory
 from cellprofiler_core.preferences import set_conserve_memory
+from cellprofiler_core.preferences import set_force_bioformats
 from cellprofiler_core.preferences import get_omero_port
 from cellprofiler_core.preferences import get_omero_server
 from cellprofiler_core.preferences import get_omero_session_id
@@ -217,6 +218,9 @@ def main(args=None):
 
     if options.conserve_memory is not None:
         set_conserve_memory(options.conserve_memory, globally=False)
+
+    if options.force_bioformats is not None:
+        set_force_bioformats(options.force_bioformats, globally=False)
 
 
     if not options.allow_schema_write:
@@ -412,6 +416,13 @@ def parse_args(args):
         dest="conserve_memory",
         default=None,
         help="CellProfiler will attempt to release unused memory after each image set.",
+    )
+
+    parser.add_option(
+        "--force-bioformats",
+        dest="force_bioformats",
+        default=None,
+        help="CellProfiler will always use BioFormats for reading images.",
     )
 
     parser.add_option(

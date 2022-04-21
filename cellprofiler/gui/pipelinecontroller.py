@@ -2263,7 +2263,6 @@ class PipelineController(object):
 
         returns the URL or None if the user cancelled.
         """
-        # Todo: Replace
         if title is None:
             title = "Select an image file"
         with wx.Dialog(

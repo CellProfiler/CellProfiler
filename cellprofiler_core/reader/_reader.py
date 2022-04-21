@@ -47,6 +47,8 @@ class Reader(ABC):
         :param wants_max_intensity: if `False`, only return the image; if `True`,
                   return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
+
+        Should return a data array with channel order X, Y, (C)
         """
         return None
 
@@ -97,7 +99,7 @@ class Reader(ABC):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
-        # Todo: Allow_open is a setting
+        # Todo: Implement allow_open as a setting
         return -1
 
     @classmethod

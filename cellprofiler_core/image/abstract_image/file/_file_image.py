@@ -207,7 +207,6 @@ class FileImage(AbstractImage):
             finally:
                 os.close(tempfd)
         else:
-            # Todo: Download system
             from ....pipeline import ImageFile
             image_file = self.get_image_file()
             rdr_class = get_image_reader_class(image_file, volume=self.__volume)
@@ -326,7 +325,6 @@ class FileImage(AbstractImage):
                 )
             else:
                 # It's a stack
-                # Todo: Rework this
                 stack = []
                 if numpy.isscalar(self.series):
                     series_list = [self.series] * len(self.index)

@@ -6,6 +6,7 @@ from ..constants.reader import all_readers, builtin_readers, bad_readers
 
 import logging
 
+from ..preferences import get_force_bioformats
 
 LOGGER = logging.getLogger(__name__)
 
@@ -86,6 +87,8 @@ def find_cp_reader(rdr):
 
 
 def get_image_reader_class(image_file, use_cached_name=True, volume=False):
+    if get_force_bioformats():
+        return all_readers["Bio-Formats"]
     if use_cached_name and image_file.preferred_reader in all_readers:
         reader_class = get_image_reader_by_name(image_file.preferred_reader)
         return reader_class

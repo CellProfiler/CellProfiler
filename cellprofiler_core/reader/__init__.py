@@ -50,18 +50,6 @@ def fill_readers():
     for reader_name, classname in builtin_readers.items():
         add_reader("cellprofiler_core.readers." + reader_name, True, class_name=classname)
 
-    # Find and import plugins
-    # Todo: Plugin system
-    # plugin_directory = get_plugin_directory()
-    # if plugin_directory is not None:
-    #     old_path = sys.path
-    #     sys.path.insert(0, plugin_directory)
-    #     try:
-    #         for rdr in plugin_list(plugin_directory):
-    #             add_module(mod, False)
-    #     finally:
-    #         sys.path = old_path
-
     if len(bad_readers) > 0:
         LOGGER.warning(
             "could not load these modules: %s", ",".join([x[0] for x in bad_readers])
@@ -100,7 +88,7 @@ def get_image_reader_class(image_file, use_cached_name=True, volume=False):
         if result == 1:
             LOGGER.debug(f"Selected {reader_name}")
             image_file.preferred_reader = reader_name
-            return reader_class(image_file)
+            return reader_class
         elif 1 < result < best_value:
             best_value = result
             best_reader = reader_class

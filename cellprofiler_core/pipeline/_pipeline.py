@@ -202,7 +202,6 @@ class Pipeline:
         # clear previously seen errors on reload
         import cellprofiler_core.modules
 
-        importlib.reload(cellprofiler_core.modules)
         reload_modules()
         # attempt to reinstantiate pipeline with new modules
         try:

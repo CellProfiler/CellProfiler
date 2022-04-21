@@ -54,13 +54,14 @@ E_IMAGE = "Image"
 CT_COLOR = "Color"
 CT_TEXT = "Text"
 
-F_CHOICE = sorted(set([font.name for font in matplotlib.font_manager.fontManager.ttflist]))
-F_WEIGHT = ["normal", "bold"]
+F_WEIGHT_NORMAL = "normal"
+F_WEIGHT_BOLD = "bold"
 
 CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
 CMS_MANUAL = "Manual"
 
-
+# Load fonts available to matplotlob in alphabetical order
+font_list = sorted(set([font.name for font in matplotlib.font_manager.fontManager.ttflist]))
 class DisplayDataOnImage(Module):
     module_name = "DisplayDataOnImage"
     category = "Data Tools"
@@ -192,13 +193,19 @@ modules (such as **SaveImages**).
 
         self.font_choice = Choice(
             "Font",
-            F_CHOICE,
-            value="DejaVu Sans",
-            doc="""Set the font of the text to be displayed""",
+            font_list,
+            doc="""\
+Set the font of the text to be displayed. 
+
+Note: The fonts will be loaded from the system running CellProfiler. 
+Not all fonts that are loaded will have the required glyphs, leading to 
+blank or incomplete data displays. Moreover, not all fonts will support 
+font weight changes. 
+""",
         )
         self.font_weight = Choice(
             "Font weight",
-            F_WEIGHT,
+            [F_WEIGHT_NORMAL, F_WEIGHT_BOLD],
             value="normal",
             doc="""Set the font weight of the text to be displayed""",
         )

@@ -565,7 +565,6 @@ class TestAnalysis(unittest.TestCase):
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
-    @pytest.mark.skip(reason="Exception handling should be an interactive function?")
     def test_04_05_exception(self):
         logger.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
@@ -573,6 +572,7 @@ class TestAnalysis(unittest.TestCase):
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
+            fake_traceback = ''.join(traceback.format_list(traceback.extract_stack()))
             fn_interaction_reply = worker.send(
                 anarequest.ExceptionReport(
                     worker.analysis_id,
@@ -580,7 +580,7 @@ class TestAnalysis(unittest.TestCase):
                     module_name="Images",
                     exc_type="Exception",
                     exc_message="Not really an exception",
-                    exc_traceback=traceback.extract_stack(),
+                    exc_traceback=fake_traceback,
                     filename="test_analysis.py",
                     line_number=374,
                 )
@@ -590,9 +590,8 @@ class TestAnalysis(unittest.TestCase):
             #
             request = self.event_queue.get()
             self.assertIsInstance(request, anarequest.ExceptionReport)
-            function = request.exc_traceback[-1][2]
             self.assertEqual(
-                function, inspect.getframeinfo(inspect.currentframe()).function
+                fake_traceback, request.exc_traceback
             )
             self.assertEqual(request.filename, "test_analysis.py")
             request.reply(

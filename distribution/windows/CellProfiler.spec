@@ -79,7 +79,7 @@ exe = EXE(pyz,
           strip=False,
           upx=True,
           icon=os.path.abspath(
-              '../CellProfiler/data/icons/CellProfiler.ico'),
+              './CellProfiler/data/icons/CellProfiler.ico'),
           console=True)
 coll = COLLECT(exe,
                a.binaries,

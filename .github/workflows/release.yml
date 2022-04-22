@@ -110,7 +110,7 @@ jobs:
           tag_name: ${{ github.ref }}
       - uses: actions/download-artifact@v1
         with:
-          name: CellProfiler-macOS-4.2.10002.zip
+          name: CellProfiler-macOS-4.2.10002.dmg
           path: ./
       - uses: actions/download-artifact@v1
         with:
@@ -121,8 +121,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/zip
-          asset_name: CellProfiler-macOS-4.2.10002.zip
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.10002.zip
+          asset_name: CellProfiler-macOS-4.2.10002.dmg
+          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.10002.dmg
           upload_url: ${{ steps.create_release.outputs.upload_url }}
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

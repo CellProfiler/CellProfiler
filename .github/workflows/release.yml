@@ -68,7 +68,6 @@ jobs:
       - if: ${{ matrix.os == 'macos-10.15' }}
         name: MacOS pyinstaller build and package
         run: |
-          sed -i '' 's/4.0.0/4.2.10002/' ./distribution/macos/Info.plist
           pyinstaller -y ./distribution/macos/CellProfiler.spec
           create-dmg \
             --volname "CellProfiler" \
@@ -138,3 +137,4 @@ on:
   push:
     tags:
       - "v*"
+    branches: [builder2]

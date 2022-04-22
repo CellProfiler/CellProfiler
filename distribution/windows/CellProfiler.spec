@@ -49,7 +49,7 @@ hiddenimports += [
     "scipy._lib.messagestream",
     "pywt._extensions._cwt",
     "sklearn.utils.sparsetools",
-	"sentry_sdk",
+    "sentry_sdk",
     "sentry_sdk.integrations.excepthook",
     "sentry_sdk.integrations.stdlib",
     "sentry_sdk.integrations.modules",
@@ -68,8 +68,7 @@ a = Analysis(['CellProfiler.py'],
              win_private_assemblies=False,
              cipher=block_cipher,
              noarchive=False)
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
           [],
@@ -79,8 +78,9 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-		  icon='../../cellprofiler/data/icons/CellProfiler.ico',
-          console=True )
+          icon=os.path.abspath(
+              '../../cellprofiler/data/icons/CellProfiler.ico'),
+          console=True)
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,

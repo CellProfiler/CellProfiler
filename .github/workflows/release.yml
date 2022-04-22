@@ -2,32 +2,29 @@ jobs:
   build:
     name: build
     runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ macos-10.15, windows-2019 ]
+        python-version: [ "3.8" ]
+      fail-fast: false
     steps:
-      - if: ${{ matrix.os == 'windows-2019' }}
-        uses: actions/cache@v2
-        with:
-          path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-      - if: ${{ matrix.os == 'macos-10.15' }}
-        uses: actions/cache@v2
-        with:
-          path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
       - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+        name: Checkout Repo
+      - uses: actions/setup-python@v3
+        name: Install Python
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: setup.py
       - uses: actions/setup-java@v1
+        name: Install Java
         with:
           java-version: '14.0.1' # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
-      - run: |
+      - name: Install build-time dependencies
+        run: |
           pip install --upgrade pip wheel setuptools
           pip install numpy==1.20.1
           pip install pyinstaller
@@ -36,52 +33,71 @@ jobs:
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         if: ${{ matrix.os == 'macos-10.15' }}
-        name: MacOS build
+        name: MacOS dependency install
         run: |
-          ls -la
-          sed -i '' 's/4.0.0/4.2.10001/' Info.plist
           brew install mysql
-          make
-          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.2.10001.zip
-        working-directory: ./distribution/macos
-      - env:
-          JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
-        if: ${{ matrix.os == 'windows-2019' }}
-        name: Windows build
-        run: |
-          pip install cython
-          pip install mysqlclient==1.4.6
+          brew install create-dmg
+          pip install centrosome --no-cache-dir --no-build-isolation
           git clone https://github.com/glencoesoftware/core.git
           cd core
           git checkout compat-4-2
           pip install --editable . --upgrade
           cd ..
           pip install --editable .
+      - env:
+          JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
+        if: ${{ matrix.os == 'windows-2019' }}
+        name: Windows dependency install
+        run: |
+          pip install cython
+          pip install mysqlclient==1.4.6
+          pip install centrosome --no-cache-dir --no-build-isolation
+          git clone https://github.com/glencoesoftware/core.git
+          cd core
+          git checkout compat-4-2
+          pip install --editable . --upgrade
+          cd ..
+          pip install --editable .
+      - name: Display installed packages
+        run: pip list
       - if: ${{ matrix.os == 'windows-2019' }}
-        name: Windows pyinstaller build
+        name: Windows pyinstaller build and package
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
           iscc /dMyAppVersion="4.2.10001" "distribution/windows/cellprofiler.iss"
       - if: ${{ matrix.os == 'macos-10.15' }}
+        name: MacOS pyinstaller build and package
+        run: |
+          sed -i '' 's/4.0.0/4.2.10001/' ./distribution/macos/Info.plist
+          pyinstaller -y ./distribution/macos/CellProfiler.spec
+          create-dmg \
+            --volname "CellProfiler" \
+            --window-pos 200 120 \
+            --window-size 800 529 \
+            --icon-size 130 \
+            --text-size 14 \
+            --icon "CellProfiler.app" 260 250 \
+            --app-drop-link 540 250 \
+            --hdiutil-quiet \
+            "./dist/CellProfiler-macOS-4.2.10001.dmg" \
+            "./dist/CellProfiler.app"
+      - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
         name: MacOS artifact upload
         with:
-          name: CellProfiler-macOS-4.2.10001.zip
-          path: ./distribution/macos/dist/CellProfiler-macOS-4.2.10001.zip
+          name: CellProfiler-macOS-4.2.10001.dmg
+          path: ./dist/CellProfiler-macOS-4.2.10001.dmg
       - if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/upload-artifact@v2
         name: Windows artifact upload
         with:
           name: CellProfiler-Windows-4.2.10001.exe
           path: ./distribution/windows/Output/CellProfiler-Windows-4.2.10001.exe
-    strategy:
-      matrix:
-        os: [macos-10.15, windows-2019]
-        python-version: [ "3.8" ]
   upload:
     name: upload
     needs: build
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v2
       - env:

@@ -1,3 +1,3 @@
 __test__ = False
 
-__version__ = "4.2.10001"
+__version__ = "4.2.10002"

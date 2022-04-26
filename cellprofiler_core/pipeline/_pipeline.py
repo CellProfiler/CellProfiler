@@ -558,7 +558,7 @@ class Pipeline:
                 new_modules.append(module)
                 module_number += 1
             if isinstance(module, Metadata) and module.removed_automatic_extraction:
-                if isinstance(new_modules[0], Images):
+                if isinstance(new_modules[0], Images) and module.wants_metadata.value:
                     new_modules[0].want_split.value = True
         return new_modules
 

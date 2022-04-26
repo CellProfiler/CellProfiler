@@ -20,6 +20,13 @@ from ..constants.image import PASSTHROUGH_SCHEMES
 from ..constants.image import FILE_SCHEME
 from ..constants.measurement import FTR_WELL
 
+"""
+This temporary directory will store cached files downloaded from the web.
+It'll automatically delete on exit, and we create it early here so that it's
+one of the last objects to get deleted - any opened files must close first.
+"""
+CP_TEMP_DIR = tempfile.TemporaryDirectory(prefix='cellprofiler_',)
+
 
 def convert_image_to_objects(image):
     """Interpret an image as object indices
@@ -277,6 +284,7 @@ def url_to_modpath(url):
 
 
 def download_to_temp_file(url):
+    global CP_TEMP_DIR
     parsed = urlparse(url)
     scheme = parsed.scheme
     path = parsed.path
@@ -293,11 +301,13 @@ def download_to_temp_file(url):
     from urllib.request import urlopen
     logging.info(f"Downloading image from {url}")
     src = urlopen(url)
-    dest_file = tempfile.NamedTemporaryFile(suffix=ext)
+    dest_file = tempfile.NamedTemporaryFile(suffix=ext, delete=False, dir=CP_TEMP_DIR.name)
     try:
         shutil.copyfileobj(src, dest_file)
     except Exception as e:
         logging.error(f"Unable to download image to temp file. {e}")
-        dest_file.close()
         return None
-    return dest_file
+    finally:
+        dest_file.close()
+    return dest_file.name
+

@@ -1,9 +1,11 @@
+import atexit
 import hashlib
 import logging
 import os
 import tempfile
 import urllib.parse
 import urllib.request
+import weakref
 
 import numpy
 
@@ -20,6 +22,9 @@ from ....constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES
 from ....utilities.pathname import pathname2url, url2pathname
 
 LOGGER = logging.getLogger(__name__)
+
+# A set of readers with open file locks.
+ACTIVE_READERS = weakref.WeakSet()
 
 
 class FileImage(AbstractImage):
@@ -65,7 +70,6 @@ class FileImage(AbstractImage):
         self.__pathname = pathname
         self.__filename = filename
         self.__cached_file = None
-        self.__cache_fd = None
         self.__is_cached = False
         self.__cacheing_tried = False
         self.__image = None
@@ -144,6 +148,7 @@ class FileImage(AbstractImage):
         if self.__reader is None and create:
             image_file = self.get_image_file()
             self.__reader = get_image_reader(image_file, volume=volume)
+            ACTIVE_READERS.add(self)
         return self.__reader
 
     def get_name(self):
@@ -211,10 +216,10 @@ class FileImage(AbstractImage):
             image_file = self.get_image_file()
             rdr_class = get_image_reader_class(image_file, volume=self.__volume)
             if not rdr_class.supports_url():
-                self.__cache_fd = download_to_temp_file(image_file.url)
-                if self.__cache_fd is None:
+                cached_file = download_to_temp_file(image_file.url)
+                if cached_file is None:
                     return False
-                self.__cached_file = pathname2url(self.__cache_fd.name)
+                self.__cached_file = pathname2url(cached_file)
                 self.__image_file = ImageFile(self.__cached_file)
         self.__is_cached = True
         return True
@@ -283,6 +288,8 @@ class FileImage(AbstractImage):
         if rdr is not None:
             rdr.close()
             self.__reader = None
+            if self in ACTIVE_READERS:
+                ACTIVE_READERS.remove(self)
         self.__image = None
 
     def __del__(self):
@@ -403,3 +410,14 @@ class FileImage(AbstractImage):
             scale=self.scale,
             spacing=self.__spacing,
         )
+
+
+@atexit.register
+def shut_down_readers():
+    """
+    Ensures that reader file locks are released before we shut down CP.
+    This isn't a problem on UNIX, but on Windows any cached files can't be
+    deleted if they're still linked to a reader instance.
+    """
+    for reader in list(ACTIVE_READERS):
+        reader.release_memory()

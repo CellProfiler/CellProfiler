@@ -25,15 +25,16 @@ class ImageIOReader(Reader):
         self._volume = False
         super().__init__(image_file)
 
+    def __del__(self):
+        self.close()
+
     def get_reader(self, volume=False):
         if self._reader is None or volume != self._volume:
-            url = self.file.url
-            if url.startswith("file:/") and url[6] != '/':
-                url = url.replace("file:/", 'file:///')
+            path = self.file.path
             if volume:
-                self._reader = imageio.get_reader(url, mode='v')
+                self._reader = imageio.get_reader(path, mode='v')
             else:
-                self._reader = imageio.get_reader(url, mode='i')
+                self._reader = imageio.get_reader(path, mode='i')
             self._volume = volume
         return self._reader
 

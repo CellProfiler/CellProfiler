@@ -9,6 +9,7 @@ import collections
 import functools
 import logging
 import os
+import re
 import sys
 import threading
 import time
@@ -34,6 +35,13 @@ DATA = "data"
 FILES = ":filelist:"
 METADATA = ":metadata:"
 ROOT = ":root:"
+
+# HDF5 can't store subsequent slashes in URIs, so S3:// becomes S3:/.
+# These expressions fix those when we pull URIs out of the file list.
+URL_SUB = re.compile(r"^((?:https?|s3|ftp):/)", flags=re.IGNORECASE)
+URL_REPLACE = r"\1/"
+FILE_SUB = re.compile(r"^(file:)", flags=re.IGNORECASE)
+FILE_REPLACE = r"\1//"
 
 # h5py is nice, but not being able to make zero-length selections is a pain.
 orig_hdf5_getitem = h5py.Dataset.__getitem__
@@ -380,15 +388,7 @@ class HDF5Dict(object):
         del self.top_group
 
     def flush(self):
-        LOGGER.debug(
-            "HDF5Dict.flush(): %s, temporary=%s", self.filename, self.is_temporary
-        )
-        # 2012-06-29: Ray is seeing a bug where file_contents() returns an
-        # invalid HDF if the file is flushed once then read, but with two calls
-        # to flush() it works.  h5py version 2.1.0, hdf version 1.8.9
         self.hdf5_file.flush()
-        # FIXME: Allen says "wtf"
-        # self.hdf5_file.flush()
 
     def file_contents(self):
         with self.lock:
@@ -1127,6 +1127,8 @@ class HDF5FileList(object):
         for url in urls:
             stem, filename = os.path.split(url)
             if not stem:
+                # This is probably an OMERO or relative file path URI.
+                # They aren't actually valid URIs, so we treat them differently
                 stem = ROOT
             storage_map[stem].append(filename)
         with self.lock:
@@ -1137,7 +1139,7 @@ class HDF5FileList(object):
                 if FILES in path_group:
                     dataset = path_group[FILES]
                     metadataset = path_group[METADATA]
-                    existing_files = set(dataset[:])
+                    existing_files = set(dataset.asstr()[:])
                     filenames = sorted(list(set(filenames) - existing_files))
                     existing = dataset.asstr()[:]
                     existing_meta = metadataset[:]
@@ -1271,6 +1273,10 @@ class HDF5FileList(object):
             if head == ROOT:
                 self._temp += node.asstr()[:].tolist()
             else:
+                if head.startswith('file:'):
+                    head = FILE_SUB.sub(FILE_REPLACE, head)
+                else:
+                    head = URL_SUB.sub(URL_REPLACE, head)
                 self._temp += [f"{head}/{filename}" for filename in node.asstr()[:]]
 
     def recurse_for_files_and_metadata(self, name, node):
@@ -1280,6 +1286,10 @@ class HDF5FileList(object):
             if head == ROOT:
                 self._temp += node.asstr()[:].tolist()
             else:
+                if head.startswith('file:'):
+                    head = FILE_SUB.sub(FILE_REPLACE, head)
+                else:
+                    head = URL_SUB.sub(URL_REPLACE, head)
                 self._temp += [f"{head}/{filename}" for filename in node.asstr()[:]]
             self._meta += meta_node[:].tolist()
 

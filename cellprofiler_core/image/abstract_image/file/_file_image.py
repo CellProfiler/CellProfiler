@@ -246,8 +246,7 @@ class FileImage(AbstractImage):
         if is_matlab_file(self.__filename) or is_numpy_file(self.__filename):
             rdr = None
         else:
-            image_file = self.get_image_file()
-            rdr = get_image_reader(image_file)
+            rdr = self.get_reader()
 
         if rdr is None or not hasattr(rdr, "md5_hash"):
             hasher = hashlib.md5()

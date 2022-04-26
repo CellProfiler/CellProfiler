@@ -88,7 +88,7 @@ if hasattr(sys, "frozen"):
                 "Visit http://broad.io/cpjava for instructions."
             )
             os.system("pause")  # Keep console window open until keypress.
-            os._exit(1)
+            sys.exit(1)
         except Exception as e:
             print(f"Encountered unknown error during startup: {e}")
     else:

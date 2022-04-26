@@ -385,7 +385,7 @@ class TestHDF5FileList(unittest.TestCase):
         self.assertFalse(H5DICT.HDF5FileList.has_file_list(self.hdf_file_empty))
 
     def test_02_05_copy(self):
-        url = "file:/foo/bar.jpg"
+        url = "file:///foo/bar.jpg"
         metadata = numpy.array([1, 2, 3, 4, 5], dtype=int)
         self.filelist.add_files_to_filelist([url])
         self.filelist.add_metadata(url, metadata)
@@ -397,7 +397,7 @@ class TestHDF5FileList(unittest.TestCase):
 
     def test_02_06_copy_corruption(self):
         # Check that we don't corrupt file strings containing the schema
-        url = "file:/foo/cellprofiler/bar.jpg"
+        url = "file:///foo/cellprofiler/bar.jpg"
         self.filelist.add_files_to_filelist([url])
         H5DICT.HDF5FileList.copy(self.hdf_file, self.hdf_file_empty)
         dest_filelist = H5DICT.HDF5FileList(self.hdf_file_empty)
@@ -464,7 +464,7 @@ class TestHDF5FileList(unittest.TestCase):
     def test_03_06_add_a_file_to_the_base(self):
         filelist = self.filelist
         g = filelist.get_filelist_group()
-        filelist.add_files_to_filelist(["file:/foo.jpg"])
+        filelist.add_files_to_filelist(["file:///foo.jpg"])
         self.assertIn("file:", g)
         self.assertIn(H5DICT.FILES, g["file:"])
         filenames = g["file:"][H5DICT.FILES][:]
@@ -472,7 +472,7 @@ class TestHDF5FileList(unittest.TestCase):
         self.assertEqual(filenames[0].decode(), "foo.jpg")
         returned_list = filelist.get_filelist()
         assert len(returned_list) == 1
-        assert returned_list[0] == "file:/foo.jpg"
+        assert returned_list[0] == "file:///foo.jpg"
 
 
     def test_03_07_add_a_file_to_the_schema(self):
@@ -493,15 +493,15 @@ class TestHDF5FileList(unittest.TestCase):
         #
         # Another in the endless progression of disgusting corner cases
         #
-        filelist.add_files_to_filelist(["file://foo/bar.jpg"])
+        filelist.add_files_to_filelist(["file:///foo/bar.jpg"])
         filelist.add_files_to_filelist(
-            ["file://foo/index/baz.jpg", "file://foo/data/xyz.jpg"]
+            ["file:///foo/index/baz.jpg", "file:///foo/data/xyz.jpg"]
         )
         result = filelist.get_filelist()
         self.assertEqual(len(result), 3)
-        self.assertEqual(result[0], "file:/foo/bar.jpg")
-        self.assertEqual(result[1], "file:/foo/data/xyz.jpg")
-        self.assertEqual(result[2], "file:/foo/index/baz.jpg")
+        self.assertEqual(result[0], "file:///foo/bar.jpg")
+        self.assertEqual(result[1], "file:///foo/data/xyz.jpg")
+        self.assertEqual(result[2], "file:///foo/index/baz.jpg")
 
 
     def test_04_00_remove_none(self):
@@ -555,23 +555,23 @@ class TestHDF5FileList(unittest.TestCase):
     def test_05_01_get_filelist(self):
         filelist = self.filelist
         self.filelist.add_files_to_filelist(
-            ["file:/foo/bar.jpg", "file:/foo/baz.jpg"]
+            ["file:///foo/bar.jpg", "file:///foo/baz.jpg"]
         )
         urls = self.filelist.get_filelist()
         self.assertEqual(len(urls), 2)
-        self.assertEqual(urls[0], "file:/foo/bar.jpg")
-        self.assertEqual(urls[1], "file:/foo/baz.jpg")
+        self.assertEqual(urls[0], "file:///foo/bar.jpg")
+        self.assertEqual(urls[1], "file:///foo/baz.jpg")
 
     def test_05_02_get_multidir_filelist(self):
         filelist = self.filelist
         filelist.add_files_to_filelist(
-            ["file:/foo/bar.jpg", "file:/bar/baz.jpg", "file:/foo.jpg"]
+            ["file:///foo/bar.jpg", "file:///bar/baz.jpg", "file:///foo.jpg"]
         )
         urls = filelist.get_filelist()
         self.assertEqual(len(urls), 3)
-        self.assertEqual(urls[2], "file:/foo/bar.jpg")
-        self.assertEqual(urls[1], "file:/bar/baz.jpg")
-        self.assertEqual(urls[0], "file:/foo.jpg")
+        self.assertEqual(urls[2], "file:///foo/bar.jpg")
+        self.assertEqual(urls[1], "file:///bar/baz.jpg")
+        self.assertEqual(urls[0], "file:///foo.jpg")
 
     def test_05_03_get_sub_filelist(self):
         filelist = self.filelist

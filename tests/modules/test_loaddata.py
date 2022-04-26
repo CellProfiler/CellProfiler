@@ -743,6 +743,8 @@ def test_load_objects():
     r.seed(1101)
     labels = r.randint(0, 10, size=(30, 20)).astype(numpy.uint8)
     handle, name = tempfile.mkstemp(".png")
+    from cellprofiler_core.utilities.java import start_java
+    start_java()
     bioformats.write_image(name, labels, bioformats.PT_UINT8)
     os.close(handle)
     png_path, png_file = os.path.split(name)

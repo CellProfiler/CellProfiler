@@ -173,7 +173,6 @@ class TestImages:
             # When not in the GUI pipeline and workspace are disconnected.
             # Since we're manually extracting metadata we'll keep them aligned.
             hdf5_list = workspace.file_list
-            hdf5_list.add_files_to_filelist([url])
             true_file_list = hdf5_list.get_filelist()
             assert len(true_file_list) == len(file_list) == 1
             assert true_file_list[0] == file_list[0].url

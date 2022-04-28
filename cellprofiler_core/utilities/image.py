@@ -5,7 +5,7 @@ import shutil
 import sys
 import tempfile
 import urllib.request
-from urllib.parse import urlparse, unquote
+from urllib.parse import urlparse, unquote, parse_qs
 
 import boto3
 import numpy
@@ -288,6 +288,9 @@ def download_to_temp_file(url):
     parsed = urlparse(url)
     scheme = parsed.scheme
     path = parsed.path
+    queries = parse_qs(parsed.query)
+    if 'name' in queries:
+        path = queries['name'][0]
     ext = os.path.splitext(path)[-1]
 
     if scheme == 's3':

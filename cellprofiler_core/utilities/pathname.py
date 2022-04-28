@@ -1,3 +1,4 @@
+import pathlib
 import urllib.request
 
 from cellprofiler_core.utilities.image import is_file_url
@@ -9,6 +10,11 @@ def pathname2url(path):
     lower_path = path.lower()
     if any((lower_path.startswith(x) for x in PASSTHROUGH_SCHEMES)):
         return path
+    path_object = pathlib.Path(path)
+    if path_object.is_absolute():
+        # Produces a valid URI regardless of platform.
+        return path_object.as_uri()
+    # Produces CellProfiler's interpretation of a relative path URI.
     return FILE_SCHEME + urllib.request.pathname2url(path)
 
 

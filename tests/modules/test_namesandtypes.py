@@ -1161,8 +1161,8 @@ def test_prepare_to_create_batch_single():
     expected_pathnames = ["bar", "fuu"]
     filenames = ["boo", "foobar"]
     expected_filenames = ["boo", "barbar"]
-    urlnames = ["file:/foo/bar", "http://foo/bar"]
-    expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
+    urlnames = ["file:///foo/bar", "http://foo/bar"]
+    expected_urlnames = ["file:///bar/bar", "http://foo/bar"]
 
     m.add_all_measurements(
         cellprofiler_core.constants.measurement.IMAGE,
@@ -1216,8 +1216,8 @@ def test_prepare_to_create_batch_multiple():
     expected_pathnames = ["bar", "fuu"]
     filenames = ["boo", "foobar"]
     expected_filenames = ["boo", "barbar"]
-    urlnames = ["file:/foo/bar", "http://foo/bar"]
-    expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
+    urlnames = ["file:///foo/bar", "http://foo/bar"]
+    expected_urlnames = ["file:///bar/bar", "http://foo/bar"]
 
     for feature, name, values in (
         (cellprofiler_core.constants.measurement.C_FILE_NAME, IMAGE_NAME, filenames),
@@ -1288,8 +1288,8 @@ def test_prepare_to_create_batch_single_image():
     expected_pathnames = ["bar", "fuu"]
     filenames = ["boo", "foobar"]
     expected_filenames = ["boo", "barbar"]
-    urlnames = ["file:/foo/bar", "http://foo/bar"]
-    expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
+    urlnames = ["file:///foo/bar", "http://foo/bar"]
+    expected_urlnames = ["file:///bar/bar", "http://foo/bar"]
 
     n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
     n.module_num = 1

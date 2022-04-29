@@ -109,7 +109,7 @@ that touching objects may not be perfectly convex if there was a region of overl
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
-            setting_values += MODE_HOLES
+            setting_values.append(MODE_HOLES)
             variable_revision_number = 2
         return setting_values, variable_revision_number
 

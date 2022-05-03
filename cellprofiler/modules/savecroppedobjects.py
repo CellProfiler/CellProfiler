@@ -66,7 +66,7 @@ The choices are:
 
         self.objects_name = LabelSubscriber(
             "Objects", 
-            doc="Select the objects you want to export as per-object crops.",
+            doc="Select the objects to export as per-object crops.",
         )
 
         self.image_name = ImageSubscriber(
@@ -94,7 +94,7 @@ The choices are:
             value=False,
             doc="""\
             If *Yes*, the output crops will be saved into a folder named
-            after the input image. 
+            after the image from which the crops were derived. 
             """,
         )
         self.include_filename = Binary(

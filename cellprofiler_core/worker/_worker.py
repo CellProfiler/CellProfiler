@@ -42,40 +42,41 @@ class Worker:
 
     """
 
-    def __init__(self, work_announce_address, with_stop_run_loop=True):
+    def __init__(self, analysis_id, work_request_address, keepalive_address, with_stop_run_loop=True):
         from bioformats.formatreader import set_omero_login_hook
 
-        self.work_announce_address = work_announce_address
+        self.work_request_address = work_request_address
+        self.keepalive_address = keepalive_address
         self.cancelled = False
         self.with_stop_run_loop = with_stop_run_loop
-        self.current_analysis_id = False
+        self.current_analysis_id = analysis_id
+        self.pipeline = None
+        self.preferences = None
+        self.initial_measurements = None
+
         set_omero_login_hook(self.omero_login_handler)
 
     def __enter__(self):
-        if self.work_announce_address is None:
-            # Give them a dummy object
-            class Dummy(object):
-                def run(self):
-                    pass
-
-            return Dummy()
-
-        # (analysis_id -> (pipeline, preferences dictionary))
-        self.pipelines_and_preferences = {}
-
-        # initial measurements (analysis_id -> measurements)
-        self.initial_measurements = {}
-        self.cancelled = False
-        self.current_analysis_id = None
-
         # pipeline listener object
         self.pipeline_listener = PipelineEventListener(self.handle_exception)
+
+        # Setup the work server socket
+        self.work_socket = the_zmq_context.socket(zmq.REQ)
+        self.work_socket.connect(self.work_request_address)
+
+        # Establish a connection to the keepalive socket
+        self.keepalive_socket = the_zmq_context.socket(zmq.SUB)
+        # Only listen for STOP events
+        self.keepalive_socket.setsockopt(zmq.SUBSCRIBE, b"STOP")
+        self.keepalive_socket.connect(self.keepalive_address)
+
         return self
 
     def __exit__(self, type, value, traceback):
-        for m in list(self.initial_measurements.values()):
-            m.close()
-        self.initial_measurements = {}
+        if self.initial_measurements is not None:
+            self.initial_measurements.close()
+        self.initial_measurements = None
+        self.keepalive_socket.close()
 
     class AnalysisWorkerThreadObject(object):
         """Provide the scope needed by the analysis worker thread
@@ -96,12 +97,8 @@ class Worker:
     def enter_thread(self):
         if not get_awt_headless():
             javabridge.activate_awt()
-        self.notify_socket = the_zmq_context.socket(zmq.SUB)
-        self.notify_socket.setsockopt(zmq.SUBSCRIBE, b"")
-        self.notify_socket.connect(NOTIFY_ADDR)
 
     def exit_thread(self):
-        self.notify_socket.close()
         from cellprofiler_core.constants.reader import all_readers
         for reader in all_readers.values():
             reader.clear_cached_readers()
@@ -111,21 +108,10 @@ class Worker:
     def run(self):
         from cellprofiler_core.pipeline.event import CancelledException
 
-        t0 = 0
         with self.AnalysisWorkerThreadObject(self):
             while not self.cancelled:
                 try:
-                    (
-                        self.current_analysis_id,
-                        self.work_request_address,
-                    ) = self.get_announcement()
-                    if t0 is None or time.time() - t0 > 30:
-                        logging.debug(
-                            "Connecting at address %s" % self.work_request_address
-                        )
-                        t0 = time.time()
-                    self.work_socket = the_zmq_context.socket(zmq.REQ)
-                    self.work_socket.connect(self.work_request_address)
+                    logging.debug("Requesting a job")
                     # fetch a job
                     the_request = Work(self.current_analysis_id)
                     job = self.send(the_request)
@@ -137,8 +123,7 @@ class Worker:
                     self.do_job(job)
                 except CancelledException:
                     break
-                finally:
-                    self.work_socket.close()
+            self.work_socket.close()
 
     def do_job(self, job):
         """Handle a work request to its completion
@@ -153,9 +138,8 @@ class Worker:
 
             logging.info("Starting job")
             # Fetch the pipeline and preferences for this analysis if we don't have it
-            current_pipeline, current_preferences = self.pipelines_and_preferences.get(
-                self.current_analysis_id, (None, None)
-            )
+            current_pipeline = self.pipeline
+            current_preferences = self.preferences
             if not current_pipeline:
                 logging.debug("Fetching pipeline and preferences")
                 rep = self.send(PipelinePreferences(self.current_analysis_id))
@@ -174,10 +158,8 @@ class Worker:
                 logging.debug("Pipeline loaded")
                 current_pipeline.add_listener(self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
-                self.pipelines_and_preferences[self.current_analysis_id] = (
-                    current_pipeline,
-                    current_preferences,
-                )
+                self.pipeline = current_pipeline
+                self.preferences = current_preferences
             else:
                 # update preferences to match remote values
                 set_preferences_from_dict(current_preferences)
@@ -186,20 +168,16 @@ class Worker:
             self.pipeline_listener.reset()
             logging.debug("Getting initial measurements")
             # Fetch the path to the intial measurements if needed.
-            current_measurements = self.initial_measurements.get(
-                self.current_analysis_id
-            )
-            if current_measurements is None:
+
+            if self.initial_measurements is None:
                 logging.debug("Sending initial measurements request")
                 rep = self.send(InitialMeasurements(self.current_analysis_id))
                 logging.debug("Got initial measurements")
-                current_measurements = self.initial_measurements[
-                    self.current_analysis_id
-                ] = load_measurements_from_buffer(rep.buf)
+                self.initial_measurements = load_measurements_from_buffer(rep.buf)
             else:
                 logging.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
-            current_measurements = Measurements(copy=current_measurements)
+            current_measurements = Measurements(copy=self.initial_measurements)
             all_measurements.add(current_measurements)
             job_measurements.append(current_measurements)
 
@@ -406,21 +384,26 @@ class Worker:
         if work_socket is None:
             work_socket = self.work_socket
         poller = zmq.Poller()
-        poller.register(self.notify_socket, zmq.POLLIN)
+        poller.register(self.keepalive_socket, zmq.POLLIN)
         poller.register(work_socket, zmq.POLLIN)
         req.send_only(work_socket)
         response = None
         while response is None:
             for socket, state in poller.poll():
-                if socket == self.notify_socket and state == zmq.POLLIN:
-                    notify_msg = self.notify_socket.recv()
+                if state != zmq.POLLIN:
+                    continue
+                elif socket == self.keepalive_socket:
+                    notify_msg = self.keepalive_socket.recv()
                     if notify_msg == NOTIFY_STOP:
+                        logging.debug("Worker received cancel notification")
                         self.cancelled = True
                         self.raise_cancel(
                             "Received stop notification while waiting for "
                             "response from %s" % str(req)
                         )
-                if socket == work_socket and state == zmq.POLLIN:
+                    else:
+                        logging.error("Unexpected message on keepalive: " + notify_msg.decode())
+                elif socket == work_socket:
                     response = req.recv(work_socket)
         if isinstance(response, (UpstreamExit, ServerExited)):
             self.raise_cancel(
@@ -442,51 +425,13 @@ class Worker:
 
         logging.debug(msg)
         self.cancelled = True
-        if self.current_analysis_id in self.initial_measurements:
-            self.initial_measurements[self.current_analysis_id].close()
-            del self.initial_measurements[self.current_analysis_id]
-        if self.current_analysis_id in self.pipelines_and_preferences:
-            del self.pipelines_and_preferences[self.current_analysis_id]
+        if self.initial_measurements is not None:
+            self.initial_measurements.close()
+        self.initial_measurements = None
+        self.pipeline = None
+        self.preferences = None
         self.current_analysis_id = None
         raise CancelledException(msg)
-
-    def get_announcement(self):
-        """Connect to the announcing socket and get an analysis announcement
-
-        returns an analysis_id / worker_request address pair
-
-        raises a CancelledException if we detect cancellation.
-        """
-        poller = zmq.Poller()
-        poller.register(self.notify_socket, zmq.POLLIN)
-        announce_socket = the_zmq_context.socket(zmq.SUB)
-        announce_socket.setsockopt(zmq.SUBSCRIBE, b"")
-        announce_socket.connect(self.work_announce_address)
-        try:
-            poller.register(announce_socket, zmq.POLLIN)
-            while True:
-                for socket, state in poller.poll():
-                    if socket == self.notify_socket and state == zmq.POLLIN:
-                        msg = self.notify_socket.recv()
-                        if msg == NOTIFY_STOP:
-                            from cellprofiler_core.pipeline.event import (
-                                CancelledException,
-                            )
-
-                            self.cancelled = True
-                            raise CancelledException()
-                    elif socket == announce_socket and state == zmq.POLLIN:
-                        announcement = dict(announce_socket.recv_json())
-                        if len(announcement) == 0:
-                            time.sleep(0.25)
-                            continue
-                        if self.current_analysis_id in announcement:
-                            analysis_id = self.current_analysis_id
-                        else:
-                            analysis_id = random.choice(list(announcement.keys()))
-                        return analysis_id, announcement[analysis_id]
-        finally:
-            announce_socket.close()
 
     def handle_exception(self, image_set_number=None, module_name=None, exc_info=None):
         """report and handle an exception, possibly by remote debugging, returning

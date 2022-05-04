@@ -12,7 +12,6 @@ from typing import List, Any
 import numpy
 import psutil
 
-from ._worker_runner import WorkerRunner
 from .event import Finished
 from .event import Paused
 from .event import Progress
@@ -33,8 +32,7 @@ from ..utilities.analysis import close_all_on_exec, start_daemon_thread
 from ..utilities.analysis import find_analysis_worker_source
 from ..utilities.analysis import find_python
 from ..utilities.analysis import find_worker_env
-from ..utilities.zmq import get_announcer_address
-from ..utilities.zmq import register_analysis
+from ..utilities.zmq import start_boundary, Boundary
 from ..utilities.zmq.communicable.reply import Reply
 from ..workspace import Workspace
 
@@ -60,10 +58,6 @@ class Runner:
     variables to get each other's attention.  zmqrequest is used to communicate
     between jobserver() and workers[].
     """
-
-    # worker pool - shared by all instances
-    workers: List[WorkerRunner] = []
-    deadman_switches: List[Any] = []
 
     # measurement status
     STATUS = "ProcessingStatus"
@@ -96,6 +90,8 @@ class Runner:
         self.in_process_queue = queue.Queue()
         self.finished_queue = queue.Queue()
 
+        self.workers = []
+
         # We use a queue size of 10 because we keep measurements in memory (as
         # their HDF5 file contents) until they get merged into the full
         # measurements set.  If at some point, this size is too limiting, we
@@ -107,6 +103,7 @@ class Runner:
 
         self.shared_dicts = None
 
+        self.boundary = None
         self.interface_thread = None
         self.jobserver_thread = None
 
@@ -128,6 +125,8 @@ class Runner:
         # that their stdin has closed.
         self.stop_workers()
 
+        self.boundary = Boundary("tcp://127.0.0.1")
+
         start_signal = threading.Semaphore(0)
         self.interface_thread = start_daemon_thread(
             target=self.interface,
@@ -141,7 +140,7 @@ class Runner:
         start_signal.acquire()
         self.jobserver_thread = start_daemon_thread(
             target=self.jobserver,
-            args=(self.analysis_id, start_signal),
+            args=(start_signal, ),
             name="AnalysisRunner.jobserver",
         )
         #
@@ -432,7 +431,6 @@ class Runner:
             if posted_analysis_started:
                 was_cancelled = self.cancelled
                 self.post_event(Finished(measurements, was_cancelled))
-            self.stop_workers()
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
     def copy_recieved_measurements(
@@ -484,13 +482,13 @@ class Runner:
         for image_set_number in image_numbers:
             measurements["Image", self.STATUS, image_set_number] = self.STATUS_DONE
 
-    def jobserver(self, analysis_id, start_signal):
+    def jobserver(self, start_signal):
         # this server subthread should be very lightweight, as it has to handle
         # all the requests from workers, of which there might be several.
 
         # start the zmqrequest Boundary
         request_queue = queue.Queue()
-        boundary = register_analysis(analysis_id, request_queue)
+        self.boundary.register_analysis(self.analysis_id, request_queue)
         #
         # The boundary is announcing our analysis at this point. Workers
         # will get announcements if they connect.
@@ -605,7 +603,8 @@ class Runner:
                 raise ValueError(msg)
 
         # stop the ZMQ-boundary thread - will also deal with any requests waiting on replies
-        boundary.cancel(analysis_id)
+        if self.boundary is not None:
+            self.boundary.cancel(self.analysis_id)
 
     def queue_job(self, image_set_number):
         self.work_queue.put(image_set_number)
@@ -633,43 +632,37 @@ class Runner:
         dump(self.pipeline, s, version=5, save_image_plane_details=False)
         return s.getvalue()
 
-    # Class methods for managing the worker pool
-    @classmethod
-    def start_workers(cls, num=None):
-        if cls.workers:
+    def start_workers(self, num=None):
+        if self.workers:
             return
 
         if num is None:
             num = psutil.cpu_count(logical=False)
 
-        cls.work_announce_address = get_announcer_address()
-        logging.info("Starting workers on address %s" % cls.work_announce_address)
-        if "CP_DEBUG_WORKER" in os.environ:
-            if os.environ["CP_DEBUG_WORKER"] == "NOT_INPROC":
-                return
+        boundary = self.boundary
 
-            thread = WorkerRunner(cls.work_announce_address)
-            thread.setDaemon(True)
-            thread.start()
-            cls.workers.append(thread)
-            return
+        logging.info("Starting workers on address %s" % boundary.request_address)
 
         close_fds = False
+
+        aw_args = [
+            "--analysis-id",
+            self.analysis_id,
+            "--work-server",
+            boundary.request_address,
+            "--notify-server",
+            boundary.keepalive_address,
+            "--plugins-directory",
+            get_plugin_directory(),
+            "--conserve-memory",
+            str(get_conserve_memory()),
+        ]
+
         # start workers
         for idx in range(num):
             if sys.platform == "darwin":
                 close_all_on_exec()
 
-            aw_args = [
-                "--work-announce",
-                cls.work_announce_address,
-                "--plugins-directory",
-                get_plugin_directory(),
-                "--conserve-memory",
-                str(get_conserve_memory()),
-            ]
-            # stdin for the subprocesses serves as a deadman's switch.  When
-            # closed, the subprocess exits.
             if hasattr(sys, "frozen"):
                 if sys.platform == "darwin":
                     executable = os.path.join(os.path.dirname(sys.executable), "cp")
@@ -714,16 +707,14 @@ class Runner:
                 target=run_logger, args=(worker, idx), name="worker stdout logger"
             )
 
-            cls.workers += [worker]
-            cls.deadman_switches += [worker.stdin]  # closing stdin will kill subprocess
+            self.workers += [worker]
 
-    @classmethod
-    def stop_workers(cls):
-        for deadman_switch in cls.deadman_switches:
-            deadman_switch.close()
-
-        for worker in cls.workers:
+    def stop_workers(self):
+        if self.boundary is not None:
+            self.boundary.send_stop()
+            self.boundary.join()
+            print("Shut down boundary thread")
+            self.boundary = None
+        for worker in self.workers:
             worker.wait()
-
-        cls.workers = []
-        cls.deadman_switches = []
+        self.workers = []

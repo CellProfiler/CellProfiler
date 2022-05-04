@@ -220,20 +220,6 @@ def register_analysis(analysis_id, upward_queue):
     return the_boundary
 
 
-def cancel_analysis(analysis_id):
-    """Cancel an analysis.
-
-    analysis_id - analysis ID of the analysis to be cancelled
-
-    Calling cancel_analysis guarantees that all AnalysisRequests with the
-    given analysis_id without matching replies will receive replies of
-    BoundaryExited and that no request will be added to the upward_queue
-    after the call returns.
-    """
-    global the_boundary
-    the_boundary.cancel_analysis(analysis_id)
-
-
 def join_to_the_boundary():
     """Send a stop signal to the boundary thread and join to it"""
     global the_boundary

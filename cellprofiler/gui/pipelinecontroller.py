@@ -2934,12 +2934,13 @@ class PipelineController(object):
             # drop any interaction/display requests or exceptions
             while True:
                 try:
+                    print("Getting request messages")
                     self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
                 except Empty:
                     break
             if evt.cancelled:
                 self.pipeline_list = []
-
+            print("Calling stop analysis in a sec")
             wx.CallAfter(self.on_stop_analysis, evt)
         elif isinstance(evt, Display):
             wx.CallAfter(self.module_display_request, evt)
@@ -3282,6 +3283,7 @@ class PipelineController(object):
 
         event - a cpanalysis.AnalysisFinished event
         """
+        print("On stop analysis event")
         m = event.measurements
         status = m[
             IMAGE, Runner.STATUS, m.get_image_numbers(),

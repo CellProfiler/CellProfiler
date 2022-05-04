@@ -307,7 +307,6 @@ def __version__(exit_code):
 
 
 def stop_cellprofiler():
-    join_to_the_boundary()
 
     # Bioformats readers have to be properly closed.
     # This is especially important when using OmeroReaders as leaving the

@@ -9,6 +9,7 @@ import threading
 
 import javabridge
 import prokaryote
+from javabridge._javabridge import get_vm
 
 import cellprofiler_core.preferences
 
@@ -89,7 +90,7 @@ def start_java():
         awt from being invoked
     """
     thread_id = threading.get_ident()
-    if javabridge.get_env() is not None:
+    if get_vm().is_active():
         if thread_id not in ATTACHED_THREADS:
             javabridge.attach()
             ATTACHED_THREADS.add(thread_id)

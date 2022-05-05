@@ -215,12 +215,14 @@ class FileImage(AbstractImage):
             from ....pipeline import ImageFile
             image_file = self.get_image_file()
             rdr_class = get_image_reader_class(image_file, volume=self.__volume)
-            if not rdr_class.supports_url():
+            if not rdr_class.supports_url() and parsed_path.scheme.lower() != 'omero':
                 cached_file = download_to_temp_file(image_file.url)
                 if cached_file is None:
                     return False
                 self.__cached_file = pathname2url(cached_file)
                 self.__image_file = ImageFile(self.__cached_file)
+            else:
+                return False
         self.__is_cached = True
         return True
 

@@ -56,6 +56,7 @@ class TestAnalysis(unittest.TestCase):
             self.response_queue = six.moves.queue.Queue()
             self.start_signal = threading.Semaphore(0)
             self.keep_going = True
+            self.analysis_id = None
             self.notify_addr = "inproc://%s" % uuid.uuid4().hex
             self.notify_socket = self.zmq_context.socket(zmq.PUB)
             self.notify_socket.bind(self.notify_addr)
@@ -77,7 +78,7 @@ class TestAnalysis(unittest.TestCase):
                 self.recv_notify_socket = self.zmq_context.socket(zmq.SUB)
                 self.recv_notify_socket.setsockopt(zmq.SUBSCRIBE, b"")
                 self.recv_notify_socket.connect(self.notify_addr)
-                self.announce_socket = None
+                self.keepalive_socket = None
                 self.poller = zmq.Poller()
                 self.poller.register(self.recv_notify_socket, zmq.POLLIN)
                 self.start_signal.release()
@@ -160,39 +161,36 @@ class TestAnalysis(unittest.TestCase):
                 logger.debug("    Client thread communicated result")
                 return result
 
-        def listen_for_announcements(self, work_announce_address):
-            self.queue.put((self.do_listen_for_announcements, work_announce_address))
+        def listen_for_heartbeat(self, address):
+            self.queue.put((self.do_listen_for_heartbeat, address))
             self.notify_socket.send(b"Listen for announcements")
             return self.recv
 
-        def do_listen_for_announcements(self, work_announce_address):
-            self.announce_socket = self.zmq_context.socket(zmq.SUB)
-            self.announce_socket.setsockopt(zmq.SUBSCRIBE, b"")
-            self.announce_socket.connect(work_announce_address)
-            self.poller.register(self.announce_socket, zmq.POLLIN)
+        def do_listen_for_heartbeat(self, address):
+            self.keepalive_socket = self.zmq_context.socket(zmq.SUB)
+            self.keepalive_socket.setsockopt(zmq.SUBSCRIBE, b"")
+            self.keepalive_socket.connect(address)
+            self.poller.register(self.keepalive_socket, zmq.POLLIN)
             try:
                 while True:
-                    socks = dict(self.poller.poll())
+                    socks = dict(self.poller.poll(5000))
                     if socks.get(self.recv_notify_socket, None) == zmq.POLLIN:
                         msg = self.recv_notify_socket.recv()
                         if not self.keep_going:
                             raise Exception("Cancelled")
-                    if socks.get(self.announce_socket, None) == zmq.POLLIN:
-                        announcements = self.announce_socket.recv_json()
-                        return announcements
+                    if socks.get(self.keepalive_socket, None) == zmq.POLLIN:
+                        beat = self.keepalive_socket.recv()
+                        return beat
             except:
                 logger.info("Failed to listen")
             finally:
-                self.poller.unregister(self.announce_socket)
-                self.announce_socket.close()
-                self.announce_socket = None
+                self.poller.unregister(self.keepalive_socket)
+                self.keepalive_socket.close()
+                self.keepalive_socket = None
 
-        def connect(self, work_announce_address):
-            self.analysis_id, work_queue_address = self.listen_for_announcements(
-                work_announce_address
-            )()[0]
-
-            self.queue.put((self.do_connect, work_queue_address))
+        def connect(self, request_address, analysis_id):
+            self.analysis_id = analysis_id
+            self.queue.put((self.do_connect, request_address))
             self.notify_socket.send(b"Do connect")
             return self.recv()
 
@@ -338,21 +336,43 @@ class TestAnalysis(unittest.TestCase):
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
-    def test_02_01_announcement(self):
+    def test_02_01_heartbeat(self):
+        """The heartbeat should send b'KeepAlive' each second. When the
+        analysis is cancelled or finishes we should see b'Stop' as the final
+        transmission on the socket"""
         logger.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
-            work_announce_address = self.analysis.runner.work_announce_address
-            response = worker.listen_for_announcements(work_announce_address)()
-            self.assertEqual(len(response), 1)
-            analysis_id, request_address = response[0]
-            self.assertEqual(analysis_id, self.analysis.analysis_in_progress)
+            heartbeat_address = self.analysis.runner.boundary.keepalive_address
+            response = worker.listen_for_heartbeat(heartbeat_address)()
+            from cellprofiler_core.constants.worker import NOTIFY_RUN, NOTIFY_STOP
+            assert response == NOTIFY_RUN
+
+            def collect_messages(container):
+                sock = self.zmq_context.socket(zmq.SUB)
+                sock.setsockopt(zmq.SUBSCRIBE, b"")
+                sock.connect(heartbeat_address)
+                poller = zmq.Poller()
+                poller.register(sock, zmq.POLLIN)
+                while len(container) < 10:
+                    msg = poller.poll(2000)
+                    if msg:
+                        container.append(sock.recv())
+                    else:
+                        break
+
+            messages = []
+
+            spy_thread = threading.Thread(target=collect_messages, args=(messages, ))
+            spy_thread.start()
             self.cancel_analysis()
-            response = worker.listen_for_announcements(work_announce_address)()
-            self.assertEqual(len(response), 0)
+            spy_thread.join(2000)
+            assert not spy_thread.is_alive()
+            assert len(messages)
+            assert messages[-1] == NOTIFY_STOP
         logger.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
@@ -360,7 +380,7 @@ class TestAnalysis(unittest.TestCase):
     def test_03_01_get_work(self):
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.send(anarequest.Work(worker.analysis_id))()
             self.assertIsInstance(response, anareply.Work)
             self.assertSequenceEqual(response.image_set_numbers, (1,))
@@ -377,7 +397,7 @@ class TestAnalysis(unittest.TestCase):
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.send(anarequest.Work(worker.analysis_id))()
             self.assertIsInstance(response, anareply.Work)
             response = worker.send(anarequest.Work(worker.analysis_id))()
@@ -393,13 +413,18 @@ class TestAnalysis(unittest.TestCase):
         pipeline, m = self.make_pipeline_and_measurements_and_start()
 
         with self.FakeWorker() as worker:
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             self.cancel_analysis()
-            response = worker.send(anarequest.Work(worker.analysis_id))()
-            self.assertIsInstance(
-                response,
-                cellprofiler_core.utilities.zmq.communicable.reply.upstream_exit.BoundaryExited,
-            )
+            assert self.analysis is None
+            # The boundary thread used to spin eternally and reply with
+            # BoundaryExited if analysis was cancelled. From CP5 it'll shut
+            # down with the workers and so any open sockets will be closed.
+
+            # response = worker.send(anarequest.Work(worker.analysis_id))()
+            # self.assertIsInstance(
+            #     response,
+            #     cellprofiler_core.utilities.zmq.communicable.reply.upstream_exit.BoundaryExited,
+            # )
         logger.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
@@ -454,7 +479,7 @@ class TestAnalysis(unittest.TestCase):
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
                 response.buf
@@ -501,7 +526,7 @@ class TestAnalysis(unittest.TestCase):
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             fn_interaction_reply = worker.send(
                 anarequest.Interaction(worker.analysis_id, foo="bar")
             )
@@ -522,7 +547,7 @@ class TestAnalysis(unittest.TestCase):
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             fn_interaction_reply = worker.send(
                 anarequest.Display(worker.analysis_id, foo="bar")
             )
@@ -546,7 +571,7 @@ class TestAnalysis(unittest.TestCase):
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             fn_interaction_reply = worker.send(
                 anarequest.DisplayPostGroup(worker.analysis_id, 1, dict(foo="bar"), 3)
             )
@@ -571,7 +596,7 @@ class TestAnalysis(unittest.TestCase):
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             fake_traceback = ''.join(traceback.format_list(traceback.extract_stack()))
             fn_interaction_reply = worker.send(
                 anarequest.ExceptionReport(
@@ -637,7 +662,7 @@ class TestAnalysis(unittest.TestCase):
         r = numpy.random.RandomState()
         r.seed(51)
         with self.FakeWorker() as worker:
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.request_work()
             dictionaries = [
                 dict([(uuid.uuid4().hex, r.uniform(size=(10, 15))) for _ in range(10)])
@@ -673,7 +698,7 @@ class TestAnalysis(unittest.TestCase):
         r = numpy.random.RandomState()
         r.seed(52)
         with self.FakeWorker() as worker:
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.request_work()
             self.assertTrue(response.worker_runs_post_group)
             self.assertFalse(response.wants_dictionary)
@@ -708,7 +733,7 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.request_work()
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
@@ -783,7 +808,7 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.request_work()
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
@@ -891,7 +916,7 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.request_work()
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
@@ -987,7 +1012,7 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.request_work()
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
@@ -1113,7 +1138,7 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [1, 2])
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
@@ -1184,7 +1209,8 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address,
+                           self.analysis.runner.analysis_id)
             response = worker.request_work()
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
             client_measurements = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
@@ -1297,7 +1323,7 @@ class TestAnalysis(unittest.TestCase):
             # the initial measurements.
             #
             #####################################################
-            worker.connect(self.analysis.runner.work_announce_address)
+            worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.request_work()
             response = worker.send(anarequest.InitialMeasurements(worker.analysis_id))()
             #####################################################

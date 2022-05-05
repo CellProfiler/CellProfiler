@@ -50,18 +50,8 @@ class Boundary:
             threading.local()
         )  # for connecting to notification socket, and receiving replies
 
-        # announce socket
         # zmq.PUB - publish half of publish / subscribe
         # LINGER = 0 to not wait for transmission during shutdown
-
-        self.announce_socket = self.zmq_context.socket(zmq.PUB)
-        self.announce_socket.setsockopt(zmq.LINGER, 0)
-        if port is None:
-            self.announce_port = self.announce_socket.bind_to_random_port(zmq_address)
-            self.announce_address = "%s:%d" % (zmq_address, self.announce_port)
-        else:
-            self.announce_address = "%s:%d" % (zmq_address, port)
-            self.announce_port = self.announce_socket.bind(self.announce_address)
 
         # socket where we receive Requests
         self.request_socket = self.zmq_context.socket(zmq.ROUTER)

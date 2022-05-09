@@ -2,6 +2,8 @@
 """
 
 import logging
+import queue
+
 import pytest
 
 import cellprofiler_core.constants.measurement
@@ -77,7 +79,7 @@ class TestAnalysis(unittest.TestCase):
             for socket in self.sockets:
                 if socket is not None:
                     socket.close(linger=0)
-
+            self.zmq_context.destroy(linger=0)
 
             self.join()
 
@@ -213,16 +215,10 @@ class TestAnalysis(unittest.TestCase):
         from cellprofiler_core.utilities.core.modules import fill_modules
         fill_modules()
 
-    @classmethod
-    def tearDownClass(cls):
-        cellprofiler_core.utilities.zmq.join_to_the_boundary()
-
-        cls.zmq_context.term()
-
     def setUp(self):
         fd, self.filename = tempfile.mkstemp(".h5")
         os.close(fd)
-        self.event_queue = six.moves.queue.Queue()
+        self.event_queue = queue.Queue()
         self.analysis = None
         self.wants_analysis_finished = False
         self.wants_pipeline_events = False
@@ -362,7 +358,7 @@ class TestAnalysis(unittest.TestCase):
             assert response == NOTIFY_RUN
 
             def collect_messages(container):
-                sock = self.zmq_context.socket(zmq.SUB)
+                sock = worker.zmq_context.socket(zmq.SUB)
                 sock.setsockopt(zmq.SUBSCRIBE, b"")
                 sock.connect(heartbeat_address)
                 poller = zmq.Poller()
@@ -801,7 +797,7 @@ class TestAnalysis(unittest.TestCase):
                 measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1], objects_measurements
             )
 
-    @pytest.mark.timeout(10)
+    @pytest.mark.timeout(20)
     def test_06_02_test_three_imagesets(self):
         # Test an analysis of three imagesets
         #

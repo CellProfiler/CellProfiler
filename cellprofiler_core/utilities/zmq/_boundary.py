@@ -90,6 +90,10 @@ class Boundary:
     """Stop the socket thread"""
     NOTIFY_STOP = "stop"
 
+    def __del__(self):
+        logging.debug("Boundary destroyed")
+        self.zmq_context.destroy(linger=0)
+
     def register_analysis(self, analysis_id, upward_queue):
         """Register a queue to receive analysis requests
 

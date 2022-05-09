@@ -52,6 +52,7 @@ class TestAnalysis(unittest.TestCase):
             threading.Thread.__init__(self, name=name)
             self.setDaemon(True)
             self.zmq_context = zmq.Context()
+            self.zmq_context.setsockopt(zmq.LINGER, 0)
             self.queue = six.moves.queue.Queue()
             self.response_queue = six.moves.queue.Queue()
             self.start_signal = threading.Semaphore(0)
@@ -60,6 +61,10 @@ class TestAnalysis(unittest.TestCase):
             self.notify_addr = "inproc://%s" % uuid.uuid4().hex
             self.notify_socket = self.zmq_context.socket(zmq.PUB)
             self.notify_socket.bind(self.notify_addr)
+            self.work_socket = None
+            self.recv_notify_socket = None
+            self.keepalive_socket = None
+            self.sockets = (self.notify_socket, self.work_socket, self.recv_notify_socket, self.keepalive_socket)
             self.start()
             self.start_signal.acquire()
 
@@ -68,8 +73,13 @@ class TestAnalysis(unittest.TestCase):
 
         def __exit__(self, type, value, traceback):
             self.stop()
+            print("Closing all sockets")
+            for socket in self.sockets:
+                if socket is not None:
+                    socket.close(linger=0)
+
+
             self.join()
-            self.notify_socket.close()
 
         def run(self):
             logger.info("Client thread starting")
@@ -791,6 +801,7 @@ class TestAnalysis(unittest.TestCase):
                 measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1], objects_measurements
             )
 
+    @pytest.mark.timeout(10)
     def test_06_02_test_three_imagesets(self):
         # Test an analysis of three imagesets
         #

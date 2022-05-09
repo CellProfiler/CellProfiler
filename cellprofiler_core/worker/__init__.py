@@ -27,9 +27,7 @@ import pkg_resources
 from cellprofiler_core.constants.worker import (
     DEADMAN_START_ADDR,
     DEADMAN_START_MSG,
-    NOTIFY_ADDR,
     NOTIFY_STOP,
-    the_zmq_context,
     all_measurements,
 )
 from cellprofiler_core.preferences import set_conserve_memory
@@ -191,36 +189,47 @@ def main():
 
     # Start the JVM
     from cellprofiler_core.utilities.java import start_java, stop_java
+    with zmq.Context() as the_zmq_context:
+        the_zmq_context.setsockopt(zmq.LINGER, 0)
+        deadman_start_socket = the_zmq_context.socket(zmq.PAIR)
+        deadman_start_socket.bind(DEADMAN_START_ADDR)
 
-    deadman_start_socket = the_zmq_context.socket(zmq.PAIR)
-    deadman_start_socket.bind(DEADMAN_START_ADDR)
+        # Start the deadman switch thread.
+        monitor_thread = threading.Thread(
+            target=monitor_keepalive,
+            args=(the_zmq_context, notify_address, ),
+            name="heartbeat_monitor",
+            daemon=True
+        )
+        monitor_thread.start()
 
-    # Start the deadman switch thread.
-    start_daemon_thread(target=monitor_keepalive, args=(notify_address, ), name="heartbeat_monitor")
-    deadman_start_socket.recv()
-    deadman_start_socket.close()
+        deadman_start_socket.recv()
+        deadman_start_socket.close()
 
-    from cellprofiler.knime_bridge import KnimeBridgeServer
+        from cellprofiler.knime_bridge import KnimeBridgeServer
 
-    with Worker(analysis_id, work_server_address, notify_address) as worker:
-        worker_thread = threading.Thread(target=worker.run, name="WorkerThread")
-        worker_thread.setDaemon(True)
-        worker_thread.start()
-        with KnimeBridgeServer(
-            the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
-        ):
+        with Worker(the_zmq_context, analysis_id, work_server_address, notify_address) as worker:
+            worker_thread = threading.Thread(
+                target=worker.run,
+                name="WorkerThread",
+                daemon=True,
+            )
+            worker_thread.start()
+            # with KnimeBridgeServer(
+            #     the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
+            # ):
             worker_thread.join()
+        logging.debug("Worker thread joined")
+        #
+        # Shutdown - need to handle some global cleanup here
+        #
+        try:
+            stop_java()
+        except:
+            logging.warning("Failed to stop the JVM", exc_info=True)
 
-    #
-    # Shutdown - need to handle some global cleanup here
-    #
-    try:
-        stop_java()
-    except:
-        logging.warning("Failed to stop the JVM", exc_info=True)
 
-
-def monitor_keepalive(keepalive_address):
+def monitor_keepalive(context, keepalive_address):
     """The keepalive socket should send a regular heartbeat telling workers
     to stay alive. This will stop if the parent process crashes.
     If we see no keepalive message in 15 seconds we take that as a bad
@@ -235,21 +244,20 @@ def monitor_keepalive(keepalive_address):
     Note that if CellProfiler is paused in debug mode during an analysis, this
     can cause the workers to exit. Use test mode for testing or only debug on
     the worker threads."""
-    keepalive_socket = the_zmq_context.socket(zmq.SUB)
+    keepalive_socket = context.socket(zmq.SUB)
     keepalive_socket.connect(keepalive_address)
     keepalive_socket.setsockopt(zmq.SUBSCRIBE, b"")
     poller = zmq.Poller()
     poller.register(keepalive_socket, zmq.POLLIN)
 
     # Send a message back when we've set this thread up
-    deadman_socket = the_zmq_context.socket(zmq.PAIR)
+    deadman_socket = context.socket(zmq.PAIR)
     deadman_socket.connect(DEADMAN_START_ADDR)
     deadman_socket.send(DEADMAN_START_MSG)
     deadman_socket.close()
 
     missed = 0
     while missed < 3:
-        poller.poll(5000)
         events = dict(poller.poll(5000))
         if not events:
             missed += 1
@@ -260,6 +268,9 @@ def monitor_keepalive(keepalive_address):
             msg = keepalive_socket.recv()
             if msg == NOTIFY_STOP:
                 break
+    # Stop has been called, we must manually close our sockets before the
+    # main thread can exit.
+    keepalive_socket.close()
     if missed >= 3:
         # Parent is dead, hard kill
         logging.critical("Worker stopped receiving communication from "
@@ -279,11 +290,6 @@ def monitor_keepalive(keepalive_address):
     os._exit(0)
 
 
-def start_daemon_thread(target=None, args=(), name=None):
-    thread = threading.Thread(target=target, args=args, name=name)
-    thread.daemon = True
-    thread.start()
-
-
 if __name__ == "__main__":
     main()
+    sys.exit(0)

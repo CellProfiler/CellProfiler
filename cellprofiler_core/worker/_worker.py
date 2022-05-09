@@ -1,6 +1,5 @@
 import io
 import logging
-import random
 import sys
 import time
 import traceback
@@ -23,10 +22,8 @@ from ..analysis.request import PipelinePreferences
 from ..analysis.request import SharedDictionary
 from ..analysis.request import Work
 from ..constants.worker import ED_STOP
-from ..constants.worker import NOTIFY_ADDR
 from ..constants.worker import NOTIFY_STOP
 from ..constants.worker import all_measurements
-from ..constants.worker import the_zmq_context
 from ..measurement import Measurements
 from ..utilities.java import JAVA_STARTED
 from ..utilities.measurement import load_measurements_from_buffer
@@ -42,9 +39,10 @@ class Worker:
 
     """
 
-    def __init__(self, analysis_id, work_request_address, keepalive_address, with_stop_run_loop=True):
+    def __init__(self, context, analysis_id, work_request_address, keepalive_address, with_stop_run_loop=True):
         from bioformats.formatreader import set_omero_login_hook
 
+        self.context = context
         self.work_request_address = work_request_address
         self.keepalive_address = keepalive_address
         self.cancelled = False
@@ -61,11 +59,11 @@ class Worker:
         self.pipeline_listener = PipelineEventListener(self.handle_exception)
 
         # Setup the work server socket
-        self.work_socket = the_zmq_context.socket(zmq.REQ)
+        self.work_socket = self.context.socket(zmq.REQ)
         self.work_socket.connect(self.work_request_address)
 
         # Establish a connection to the keepalive socket
-        self.keepalive_socket = the_zmq_context.socket(zmq.SUB)
+        self.keepalive_socket = self.context.socket(zmq.SUB)
         # Only listen for STOP events
         self.keepalive_socket.setsockopt(zmq.SUBSCRIBE, b"STOP")
         self.keepalive_socket.connect(self.keepalive_address)
@@ -77,6 +75,7 @@ class Worker:
             self.initial_measurements.close()
         self.initial_measurements = None
         self.keepalive_socket.close()
+        self.work_socket.close()
 
     class AnalysisWorkerThreadObject(object):
         """Provide the scope needed by the analysis worker thread
@@ -448,7 +447,7 @@ class Worker:
         else:
             t, exc, tb = exc_info
         filename, line_number, _, _ = traceback.extract_tb(tb, 1)[0]
-        report_socket = the_zmq_context.socket(zmq.REQ)
+        report_socket = self.context.socket(zmq.REQ)
         try:
             report_socket.connect(self.work_request_address)
         except:

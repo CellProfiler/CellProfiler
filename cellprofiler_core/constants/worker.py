@@ -10,5 +10,4 @@ NOTIFY_RUN = b"KeepAlive"
 ED_STOP = b"Stop"
 ED_CONTINUE = b"Continue"
 ED_SKIP = b"Skip"
-the_zmq_context = zmq.Context.instance()
 all_measurements: WeakSet = WeakSet()

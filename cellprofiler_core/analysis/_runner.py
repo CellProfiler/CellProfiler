@@ -176,6 +176,11 @@ class Runner:
         self.interface_thread.join()
         logging.debug("Waiting on jobserver thread")
         self.jobserver_thread.join()
+        self.interface_thread = None
+        self.jobserver_thread = None
+        self.work_queue = queue.Queue()
+        self.in_process_queue = queue.Queue()
+        self.finished_queue = queue.Queue()
         logging.debug("Cancel complete")
 
     def pause(self):

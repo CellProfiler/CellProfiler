@@ -105,7 +105,7 @@ class Boundary:
             self.analysis_context = AnalysisContext(
                 analysis_id, upward_queue, self.analysis_context_lock
             )
-        logging.info(f"Registered analysis as id {analysis_id}")
+        logging.debug(f"Registered analysis as id {analysis_id}")
 
     def register_request_class(self, cls_request, upward_queue):
         """Register a queue to receive requests of the given class

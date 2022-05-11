@@ -58,22 +58,11 @@ class Boundary:
         # workers on creation.
         #
         self.keepalive_socket = self.zmq_context.socket(zmq.PUB)
-        try:
-            fqdn = socket.getfqdn()
-            # make sure that this isn't just an entry in /etc/somethingorother
-            socket.gethostbyname(fqdn)
-        except:
-            try:
-                fqdn = socket.gethostbyname(socket.gethostname())
-            except:
-                fqdn = "127.0.0.1"
+
         self.keepalive_socket_port = self.keepalive_socket.bind_to_random_port(
-            "tcp://*"
+            "tcp://127.0.0.1"
         )
-        self.keepalive_address = "tcp://%s:%d" % (
-            fqdn,
-            self.keepalive_socket_port,
-        )
+        self.keepalive_address = f"tcp://127.0.0.1:{self.keepalive_socket_port}"
 
         self.thread = threading.Thread(
             target=self.spin,
@@ -301,6 +290,7 @@ class Boundary:
         self.threadlocal.notify_socket.send(b"WAKE UP!")
 
     def send_stop(self):
+        print("Sending stop notification", self.keepalive_address)
         temp_socket = self.zmq_context.socket(zmq.PUB)
         temp_socket.connect(self.keepalive_address)
         temp_socket.send(NOTIFY_STOP)

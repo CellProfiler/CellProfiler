@@ -331,9 +331,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Get the work request
         #
-        print("Asking for work request")
         req = self.get_work_request()
-        print("Got work request")
         self.assertEqual(self.awthread.analysis_id, req.analysis_id)
 
     def test_03_02_pipeline_preferences(self):
@@ -648,7 +646,6 @@ class TestAnalysisWorker(unittest.TestCase):
         # The worker sends ImageSetSuccessWithDictionary.
         #
         req = self.awthread.recv(self.work_socket)
-        print(req)
         self.assertIsInstance(req, anareply.ImageSetSuccessWithDictionary)
         self.assertEqual(req.image_set_number, 1)
         for expected, actual in zip(shared_dictionaries, req.shared_dicts):

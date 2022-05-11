@@ -75,7 +75,6 @@ class TestAnalysis(unittest.TestCase):
 
         def __exit__(self, type, value, traceback):
             self.stop()
-            print("Closing all sockets")
             for socket in self.sockets:
                 if socket is not None:
                     socket.close(linger=0)
@@ -321,16 +320,12 @@ class TestAnalysis(unittest.TestCase):
         logger.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
-        print("Starting pipeline")
         self.make_pipeline_and_measurements_and_start()
         self.wants_analysis_finished = True
-        print("Cancelling analysis")
         self.cancel_analysis()
-        print("Sent signal")
         # The last should be event.Finished. There may be AnalysisProgress
         # prior to that.
         analysis_finished = self.event_queue.get()
-        print("Got result")
         self.assertIsInstance(
             analysis_finished, cellprofiler_core.analysis.event.Finished
         )

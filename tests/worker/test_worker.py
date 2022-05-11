@@ -1,7 +1,9 @@
 """test_worker.py - test the analysis client framework"""
+import io
+import queue
+import time
 
-import six.moves.queue
-import six.moves
+import pytest
 import os
 import pickle
 import tempfile
@@ -37,8 +39,6 @@ from cellprofiler_core.pipeline import ImagePlane
 class TestAnalysisWorker(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.zmq_context = cellprofiler_core.constants.worker.the_zmq_context
-        cls.notify_pub_socket = cellprofiler_core.worker.get_the_notify_pub_socket()
         #
         # Install a bogus display_post_group method in FlipAndRotate
         # to elicit a post-group interaction request
@@ -50,20 +50,19 @@ class TestAnalysisWorker(unittest.TestCase):
 
         FlipAndRotate.display_post_group = bogus_display_post_group
 
-    @classmethod
-    def tearDownClass(cls):
-        cls.notify_pub_socket.close()
-
     def cancel(self):
+        if self.awthread is not None:
+            self.awthread.stop_heartbeat = True
         self.notify_pub_socket.send(cellprofiler_core.constants.worker.NOTIFY_STOP)
 
     def setUp(self):
+        self.zmq_context = zmq.Context()
+        self.zmq_context.setsockopt(zmq.LINGER, 0)
+        self.notify_pub_socket = self.zmq_context.socket(zmq.PUB)
+        self.notify_pub_socket.connect(cellprofiler_core.utilities.zmq.NOTIFY_SOCKET_ADDR)
         self.out_dir = tempfile.mkdtemp()
         cellprofiler_core.preferences.set_default_output_directory(self.out_dir)
-        self.announce_addr = "inproc://" + uuid.uuid4().hex
         self.work_addr = "inproc://" + uuid.uuid4().hex
-        self.announce_socket = self.zmq_context.socket(zmq.PUB)
-        self.announce_socket.bind(self.announce_addr)
         self.work_socket = self.zmq_context.socket(zmq.REP)
         self.work_socket.bind(self.work_addr)
         self.awthread = None
@@ -72,10 +71,12 @@ class TestAnalysisWorker(unittest.TestCase):
         if self.awthread:
             self.cancel()
             self.awthread.down_queue.put(None)
+            self.awthread.stop_heartbeat = True
             self.awthread.join(10000)
             self.assertFalse(self.awthread.isAlive())
+        self.notify_pub_socket.close()
         self.work_socket.close()
-        self.announce_socket.close()
+        self.zmq_context.destroy(linger=0)
         #
         # No .h5 mouseturds
         #
@@ -85,32 +86,52 @@ class TestAnalysisWorker(unittest.TestCase):
         )
 
     class AWThread(threading.Thread):
-        def __init__(self, announce_addr, *args, **kwargs):
+        def __init__(self, work_addr, context, *args, **kwargs):
             threading.Thread.__init__(self, *args, **kwargs)
-            self.announce_addr = announce_addr
+            self.analysis_id = uuid.uuid4().hex
+            self.context = context
+            self.work_addr = work_addr
             self.cancelled = False
+            self.stop_heartbeat = False
 
         def start(self):
             self.setDaemon(True)
             self.setName("Analysis worker thread")
-            self.up_queue = six.moves.queue.Queue()
+            self.up_queue = queue.Queue()
             self.notify_addr = "inproc://" + uuid.uuid4().hex
-            self.up_queue_recv_socket = cellprofiler_core.constants.worker.the_zmq_context.socket(
+            self.keepalive_addr = "inproc://heartbeat"
+            self.up_queue_recv_socket = self.context.socket(
                 zmq.SUB
             )
             self.up_queue_recv_socket.setsockopt(zmq.SUBSCRIBE, b"")
             self.up_queue_recv_socket.bind(self.notify_addr)
-            self.down_queue = six.moves.queue.Queue()
+            self.down_queue = queue.Queue()
             threading.Thread.start(self)
             self.up_queue.get()
 
+        def heartbeat_thread(self):
+            heartbeat_socket = self.context.socket(zmq.PUB)
+            heartbeat_socket.bind(self.keepalive_addr)
+            while not self.cancelled and not self.stop_heartbeat:
+                heartbeat_socket.send(b"LIVE")
+                time.sleep(1)
+            heartbeat_socket.send(cellprofiler_core.constants.worker.NOTIFY_STOP)
+            heartbeat_socket.close()
+
         def run(self):
-            up_queue_send_socket = cellprofiler_core.constants.worker.the_zmq_context.socket(
+            up_queue_send_socket = self.context.socket(
                 zmq.PUB
             )
             up_queue_send_socket.connect(self.notify_addr)
+
+            heartbeat_thread = threading.Thread(target=self.heartbeat_thread,
+                                                name="KeepAlive", daemon=True)
+            heartbeat_thread.start()
+
+
             with cellprofiler_core.worker.Worker(
-                self.announce_addr, with_stop_run_loop=False
+                    self.context, self.analysis_id, self.work_addr,
+                    self.keepalive_addr, with_stop_run_loop=False
             ) as aw:
                 aw.enter_thread()
                 self.aw = aw
@@ -157,7 +178,7 @@ class TestAnalysisWorker(unittest.TestCase):
                     return cellprofiler_core.utilities.zmq.communicable.Communicable.recv(
                         work_socket
                     )
-            raise six.moves.queue.Empty
+            raise queue.Empty
 
         def join(self, timeout=None):
             if self.isAlive():
@@ -207,7 +228,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.analysis_id = uuid.uuid4().hex
 
         def do_set_work_socket(aw):
-            aw.work_socket = cellprofiler_core.constants.worker.the_zmq_context.socket(
+            aw.work_socket = self.zmq_context.socket(
                 zmq.REQ
             )
             aw.work_socket.connect(self.work_addr)
@@ -216,46 +237,39 @@ class TestAnalysisWorker(unittest.TestCase):
 
         self.awthread.execute(do_set_work_socket, self.awthread.aw)
 
-    def send_announcement_get_work_request(self):
-        """Announce the work address until we get some sort of a request"""
-        self.analysis_id = uuid.uuid4().hex
+    def get_work_request(self):
         while True:
-            self.announce_socket.send_json(((self.analysis_id, self.work_addr),))
             try:
                 return self.awthread.recv(self.work_socket, 250)
-            except six.moves.queue.Empty:
+            except queue.Empty:
                 continue
 
-    def test_01_01_get_announcement(self):
-        self.awthread = self.AWThread(self.announce_addr)
+    @pytest.mark.timeout(10)
+    def test_01_01_get_heartbeat(self):
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
-        self.awthread.ex(self.awthread.aw.get_announcement)
-        while True:
-            self.announce_socket.send_json((("foo", "bar"),))
-            try:
-                result, exception = self.awthread.up_queue.get_nowait()
-                break
-            except six.moves.queue.Empty:
-                continue
+        temp_socket = self.zmq_context.socket(zmq.SUB)
+        temp_socket.connect(self.awthread.keepalive_addr)
+        temp_socket.setsockopt(zmq.SUBSCRIBE, b"")
+        msg = temp_socket.recv()
+        assert msg == b"LIVE"
 
-        self.assertIsNone(exception)
-        self.assertSequenceEqual(result, ("foo", "bar"))
-
-    def test_01_02_announcement_cancellation(self):
-        #
-        # Call AnalysisWorker.get_announcement, then notify the worker
-        # that it should exit.
-        #
-        self.awthread = self.AWThread(self.announce_addr)
+    @pytest.mark.timeout(10)
+    def test_01_02_stop_heartbeat(self):
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
-        self.awthread.ex(self.awthread.aw.get_announcement)
+        temp_socket = self.zmq_context.socket(zmq.SUB)
+        temp_socket.connect(self.awthread.keepalive_addr)
+        temp_socket.setsockopt(zmq.SUBSCRIBE, b"")
+        msg = temp_socket.recv()
+        assert msg == b"LIVE"
         self.cancel()
-        self.assertRaises(
-            cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute
-        )
+        msg = temp_socket.recv()
+        assert msg == cellprofiler_core.constants.worker.NOTIFY_STOP
 
+    @pytest.mark.timeout(10)
     def test_02_01_send(self):
-        self.awthread = self.AWThread(self.announce_addr)
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
         self.set_work_socket()
 
@@ -272,8 +286,9 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertIsInstance(reply, anareply.Work)
         self.assertEqual(reply.foo, "bar")
 
+    @pytest.mark.timeout(10)
     def test_02_02_send_cancellation(self):
-        self.awthread = self.AWThread(self.announce_addr)
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
         self.set_work_socket()
 
@@ -286,9 +301,10 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertRaises(
             cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute
         )
+        assert self.awthread.aw.cancelled
 
     def test_02_03_send_upstream_exit(self):
-        self.awthread = self.AWThread(self.announce_addr)
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
         self.set_work_socket()
 
@@ -303,25 +319,28 @@ class TestAnalysisWorker(unittest.TestCase):
             cellprofiler_core.pipeline.event.CancelledException, self.awthread.ecute
         )
 
+    @pytest.mark.timeout(10)
     def test_03_01_work_request(self):
         #
         # Walk the worker through the connect sequence through
         # request.Work, then kill it.
         #
-        self.awthread = self.AWThread(self.announce_addr)
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
         self.awthread.ex(self.awthread.aw.run)
         #
         # Get the work request
         #
-        req = self.send_announcement_get_work_request()
-        self.assertEqual(self.analysis_id, req.analysis_id)
+        print("Asking for work request")
+        req = self.get_work_request()
+        print("Got work request")
+        self.assertEqual(self.awthread.analysis_id, req.analysis_id)
 
     def test_03_02_pipeline_preferences(self):
         #
         # Walk the worker up through pipelines and preferences.
         #
-        self.awthread = self.AWThread(self.announce_addr)
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(
@@ -384,8 +403,10 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(
             cellprofiler_core.preferences.get_default_output_directory(), output_dir
         )
-        self.assertIn(self.analysis_id, self.awthread.aw.pipelines_and_preferences)
-        pipe, prefs = self.awthread.aw.pipelines_and_preferences[self.analysis_id]
+        pipe = self.awthread.aw.pipeline
+        prefs = self.awthread.aw.preferences
+        assert pipe is not None
+        assert prefs is not None
         self.assertEqual(len(pipe.modules()), 7)
         #
         # Cancel and check for exit
@@ -399,7 +420,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Walk to the initial measurements
         #
-        self.awthread = self.AWThread(self.announce_addr)
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
         self.set_work_socket()
         work_reply = anareply.Work(
@@ -447,8 +468,8 @@ class TestAnalysisWorker(unittest.TestCase):
             #
             # Check that they were installed
             #
-            self.assertIn(self.analysis_id, self.awthread.aw.initial_measurements)
-            cm = self.awthread.aw.initial_measurements[self.analysis_id]
+            assert self.awthread.aw.initial_measurements is not None
+            cm = self.awthread.aw.initial_measurements
             for object_name in m.get_object_names():
                 for feature_name in m.get_feature_names(object_name):
                     self.assertTrue(cm.has_feature(object_name, feature_name))
@@ -475,11 +496,12 @@ class TestAnalysisWorker(unittest.TestCase):
         finally:
             m.close()
 
+    @pytest.mark.timeout(10)
     def test_03_04_shared_dictionary_request(self):
         #
         # The request.SharedDictionary
         #
-        self.awthread = self.AWThread(self.announce_addr)
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(
@@ -535,7 +557,10 @@ class TestAnalysisWorker(unittest.TestCase):
         # Sneaky way to get pipeline. First, synchronize with the next message
         #
         req = self.awthread.recv(self.work_socket)
-        pipe, prefs = self.awthread.aw.pipelines_and_preferences[self.analysis_id]
+        pipe = self.awthread.aw.pipeline
+        prefs = self.awthread.aw.preferences
+        assert pipe is not None
+        assert prefs is not None
         for d, module in zip(rep.dictionaries, pipe.modules()):
             self.assertDictEqual(module.get_dictionary(), d)
         #
@@ -550,7 +575,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Run the worker clear through to the end
         # for the first imageset
         #
-        self.awthread = self.AWThread(self.announce_addr)
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(
@@ -660,7 +685,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Give the worker image sets # 2 and 3 and tell it to run post_group
         #
-        self.awthread = self.AWThread(self.announce_addr)
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(
@@ -760,7 +785,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Run using the good pipeline, but change one of the URLs so
         # an exception is thrown.
         #
-        self.awthread = self.AWThread(self.announce_addr)
+        self.awthread = self.AWThread(self.work_addr, self.zmq_context)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(
@@ -1201,6 +1226,6 @@ def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
             i,
         ] = blob
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    pipeline.loadtxt(six.moves.StringIO(GOOD_PIPELINE))
+    pipeline.loadtxt(io.StringIO(GOOD_PIPELINE))
     pipeline.write_pipeline_measurement(m)
     return m

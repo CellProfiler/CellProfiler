@@ -122,7 +122,6 @@ class Worker:
                     self.do_job(job)
                 except CancelledException:
                     break
-            self.work_socket.close()
 
     def do_job(self, job):
         """Handle a work request to its completion

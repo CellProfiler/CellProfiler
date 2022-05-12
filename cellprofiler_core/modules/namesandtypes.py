@@ -1067,7 +1067,6 @@ requests an object selection.
 
         # Now we store the metadata for each image set.
         for channel_name, channel_type in channel_descriptors.items():
-            # Todo: See if idx holds when pairing by metadata
             if channel_type == CT_OBJECTS:
                 url_category = C_OBJECTS_URL
                 path_name_category = C_OBJECTS_PATH_NAME
@@ -1121,7 +1120,7 @@ requests an object selection.
 
         # Now we aggregate the metadata to create a summary stat per image.
         self.aggregate_metadata(workspace, image_sets)
-        # Todo: Make metadata indexing measurements per channel, not per image?
+        # Todo: Consider metadata measurements per channel, not per image?
 
         return True
 
@@ -1596,7 +1595,6 @@ requests an object selection.
         channel = image_plane.channel
         z = image_plane.z
         t = image_plane.t
-        # Todo: Make provider handle czt
         url = workspace.measurements.alter_url_post_create_batch(url)
         volume = self.process_as_3d.value
         spacing = (self.z.value, self.x.value, self.y.value) if volume else None

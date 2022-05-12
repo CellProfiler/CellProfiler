@@ -716,9 +716,8 @@ class Runner:
 
     def stop_workers(self):
         if self.boundary is not None:
-            self.boundary.send_stop()
             self.boundary.join()
-            print("Shut down boundary thread")
+            self.boundary.zmq_context.destroy(0)
             self.boundary = None
         for worker in self.workers:
             worker.wait()

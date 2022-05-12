@@ -118,7 +118,7 @@ class BioformatsReader(Reader):
         return numpy.stack(image_stack)
 
     @classmethod
-    def supports_format(cls, image_file, allow_open=True, volume=False):
+    def supports_format(cls, image_file, allow_open=False, volume=False):
         """This function needs to evaluate whether a given ImageFile object
         can be read by this reader class.
 

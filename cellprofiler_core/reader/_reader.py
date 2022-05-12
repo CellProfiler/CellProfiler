@@ -82,7 +82,7 @@ class Reader(ABC):
 
     @classmethod
     @abstractmethod
-    def supports_format(cls, image_file, allow_open=True, volume=False):
+    def supports_format(cls, image_file, allow_open=False, volume=False):
         """This function needs to evaluate whether a given ImageFile object
         can be read by this reader class.
 
@@ -95,11 +95,11 @@ class Reader(ABC):
 
         The allow_open parameter dictates whether the reader is permitted to read the file when
         making this decision. If False the decision should be made using file extension only.
-        Any opened files should be closed before returning.
+        Any opened files should be closed before returning. For now readers are selected with
+        allow_open disabled, but this may change in the future.
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
-        # Todo: Implement allow_open as a setting
         return -1
 
     @classmethod

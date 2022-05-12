@@ -371,7 +371,6 @@ extraction method” button to add more.
                 ),
             ),
         )
-        # Todo: Add metadata descriptors to Images module
 
         group.append(
             "source",
@@ -1058,8 +1057,6 @@ not being applied, your choice on this setting may be the culprit.
                             " Please use some other tag name." % token,
                             re_setting,
                         )
-
-    # TODO: Update reserved tags list and merge with protected tags
 
     def get_metadata_keys(self):
         """Return a collection of metadata keys to be associated with files"""

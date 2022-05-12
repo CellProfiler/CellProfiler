@@ -28,7 +28,7 @@ from cellprofiler_core.constants.worker import (
     DEADMAN_START_ADDR,
     DEADMAN_START_MSG,
     NOTIFY_STOP,
-    all_measurements,
+    all_measurements, NOTIFY_ADDR,
 )
 from cellprofiler_core.preferences import set_conserve_memory
 from cellprofiler_core.worker._worker import Worker
@@ -215,10 +215,11 @@ def main():
                 daemon=True,
             )
             worker_thread.start()
-            # with KnimeBridgeServer(
-            #     the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
-            # ):
-            worker_thread.join()
+            with KnimeBridgeServer(
+                the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
+            ):
+                worker_thread.join()
+            the_zmq_context.destroy(linger=0)
         logging.debug("Worker thread joined")
         #
         # Shutdown - need to handle some global cleanup here
@@ -247,8 +248,6 @@ def monitor_keepalive(context, keepalive_address):
     keepalive_socket = context.socket(zmq.SUB)
     keepalive_socket.connect(keepalive_address)
     keepalive_socket.setsockopt(zmq.SUBSCRIBE, b"")
-    poller = zmq.Poller()
-    poller.register(keepalive_socket, zmq.POLLIN)
 
     # Send a message back when we've set this thread up
     deadman_socket = context.socket(zmq.PAIR)
@@ -258,8 +257,8 @@ def monitor_keepalive(context, keepalive_address):
 
     missed = 0
     while missed < 3:
-        events = dict(poller.poll(5000))
-        if not events:
+        event = keepalive_socket.poll(5000)
+        if not event:
             missed += 1
             logging.warning(f"Worker failed to receive communication for"
                             f" {5 * missed} seconds")

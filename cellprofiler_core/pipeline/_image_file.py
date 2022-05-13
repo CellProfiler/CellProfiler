@@ -1,5 +1,6 @@
 import os
 import urllib.parse
+import urllib.request
 import logging
 from functools import cached_property
 
@@ -152,7 +153,7 @@ class ImageFile:
         """The file path if a file: URL, otherwise the URL"""
         if is_file_url(self.url):
             parsed = urllib.parse.urlparse(self.url)
-            return parsed.path
+            return urllib.request.url2pathname(parsed.path)
         return self.url
 
     @cached_property

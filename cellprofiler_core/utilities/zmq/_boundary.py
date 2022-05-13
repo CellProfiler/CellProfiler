@@ -1,6 +1,5 @@
 import logging
 import queue
-import socket
 import threading
 
 import zmq

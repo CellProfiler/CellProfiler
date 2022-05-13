@@ -1,5 +1,5 @@
 import os
-import urllib.request
+import urllib.parse
 import logging
 from functools import cached_property
 
@@ -10,7 +10,7 @@ from cellprofiler_core.constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, M
 from cellprofiler_core.constants.modules.metadata import COL_PATH, COL_SERIES, COL_INDEX, COL_URL
 from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS
 from cellprofiler_core.reader import get_image_reader, Reader
-from cellprofiler_core.utilities.image import url_to_modpath
+from cellprofiler_core.utilities.image import url_to_modpath, is_file_url
 
 logger = logging.getLogger(__name__)
 
@@ -150,8 +150,9 @@ class ImageFile:
     @cached_property
     def path(self):
         """The file path if a file: URL, otherwise the URL"""
-        if self.url.startswith("file:"):
-            return urllib.request.url2pathname(self.url[5:])
+        if is_file_url(self.url):
+            parsed = urllib.parse.urlparse(self.url)
+            return parsed.path
         return self.url
 
     @cached_property

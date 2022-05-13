@@ -79,10 +79,6 @@ class Boundary:
     """Stop the socket thread"""
     NOTIFY_STOP = "stop"
 
-    def __del__(self):
-        logging.debug("Boundary destroyed")
-        self.zmq_context.destroy(linger=0)
-
     def register_analysis(self, analysis_id, upward_queue):
         """Register a queue to receive analysis requests
 
@@ -288,13 +284,6 @@ class Boundary:
             )
         self.downward_queue.put((msg, arg))
         self.threadlocal.notify_socket.send(b"WAKE UP!")
-
-    def send_stop(self):
-        print("Sending stop notification", self.keepalive_address)
-        temp_socket = self.zmq_context.socket(zmq.PUB)
-        temp_socket.connect(self.keepalive_address)
-        temp_socket.send(NOTIFY_STOP)
-        temp_socket.close()
 
     def handle_reply(self, req, rep):
         if not isinstance(req, AnalysisRequest):

@@ -70,6 +70,7 @@ class TestAnalysisWorker(unittest.TestCase):
     def tearDown(self):
         if self.awthread:
             self.cancel()
+            self.awthread.cancelled = True
             self.awthread.down_queue.put(None)
             self.awthread.stop_heartbeat = True
             self.awthread.join(10000)
@@ -149,6 +150,8 @@ class TestAnalysisWorker(unittest.TestCase):
                         self.up_queue.put((None, e))
                         up_queue_send_socket.send(b"EXCEPTION")
                 aw.exit_thread()
+            self.stop_heartbeat = True
+            heartbeat_thread.join()
 
         def recv(self, work_socket, timeout=None):
             """Receive a request from the worker

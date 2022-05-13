@@ -1491,24 +1491,6 @@ requests an object selection.
         self.add_simple_image(
             workspace, name, load_choice, rescale, url, series, index, channel, z, t, reader_name
         )
-        # elif all([ipd.url == ipds[0].url for ipd in ipds[1:]]):
-        #     # Can load a simple image with a vector of series/index/channel
-        #     url = ipds[0].url
-        #     series = [ipd.series for ipd in ipds]
-        #     index = [ipd.index for ipd in ipds]
-        #     channel = [None if ipd.channel < 0 else ipd.channel for ipd in ipds]
-        #     self.add_simple_image(
-        #         workspace, name, load_choice, rescale, url, series, index, channel
-        #     )
-        # else:
-        #     # Different URLs - someone is a clever sadist
-        #     # At this point, I believe there's no way to do this using
-        #     # NamesAndTypes. When implemented, pay attention to
-        #     # cacheing multiple readers for the same channel.
-        #     #
-        #     raise NotImplementedError(
-        #         "To do: support assembling image files into a stack"
-        #     )
 
     def add_simple_image(
         self, workspace, name, load_choice, rescale, url, series, index, channel, z=None, t=None, reader_name=None,

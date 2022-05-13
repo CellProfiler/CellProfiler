@@ -15,7 +15,6 @@ import cellprofiler_core.preferences
 
 
 JAVA_STARTED = False
-ATTACHED_THREADS = set()
 
 LOGGER = logging.getLogger(__name__)
 
@@ -91,9 +90,7 @@ def start_java():
     """
     thread_id = threading.get_ident()
     if get_vm().is_active():
-        if thread_id not in ATTACHED_THREADS:
-            javabridge.attach()
-            ATTACHED_THREADS.add(thread_id)
+        javabridge.attach()
         return
     LOGGER.info("Initializing Java Virtual Machine")
     args = [
@@ -134,7 +131,6 @@ def start_java():
     c_location = javabridge.JClassWrapper("loci.common.Location")
     c_location.cacheDirectoryListings(True)
     LOGGER.debug("Enabled Bio-formats directory cacheing")
-    ATTACHED_THREADS.add(thread_id)
     global JAVA_STARTED
     JAVA_STARTED = True
 

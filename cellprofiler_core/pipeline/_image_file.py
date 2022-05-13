@@ -33,7 +33,6 @@ class ImageFile:
         self._extracted = False
         self._index_mode = False
         self._reader = None
-        self._xml_metadata = None
         self._metadata_dict = {
             COL_PATH: self.path,
             COL_SERIES: 0,
@@ -181,11 +180,6 @@ class ImageFile:
             if isinstance(self._reader, Reader):
                 self._reader.close()
             self._reader = None
-
-    def get_xml_metadata(self):
-        if self._xml_metadata is None:
-            self.extract_planes()
-        return self._xml_metadata
 
     def get_plane_iterator(self):
         # Returns an iterator which provides an entry for each series

@@ -19,7 +19,7 @@ YES          YES          NO
 
 import numpy
 import skimage.color
-import skimage.morphology
+from cellprofiler.library.modules import medialaxis
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 
@@ -42,17 +42,8 @@ class MedialAxis(ImageProcessing):
 
         x_data = x.pixel_data
 
-        if x.multichannel:
-            x_data = skimage.color.rgb2gray(x_data)
-
-        if x.dimensions == 3:
-            y_data = numpy.zeros_like(x_data)
-
-            for z, image in enumerate(x_data):
-                y_data[z] = skimage.morphology.medial_axis(image)
-        else:
-            y_data = skimage.morphology.medial_axis(x_data)
-
+        y_data = medialaxis(x_data, x.multichannel, x.volumetric)
+        
         y = Image(dimensions=x.dimensions, image=y_data, parent_image=x)
 
         images.add(y_name, y)

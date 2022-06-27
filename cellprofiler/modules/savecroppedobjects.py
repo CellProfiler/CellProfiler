@@ -30,7 +30,7 @@ from cellprofiler_core.module import Module
 from cellprofiler_core.preferences import DEFAULT_OUTPUT_FOLDER_NAME
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber
+from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber, FileImageSubscriber
 from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.constants.measurement import C_FILE_NAME
 
@@ -80,6 +80,14 @@ The choices are:
             value=DEFAULT_OUTPUT_FOLDER_NAME,
         )
 
+        self.file_image_name = FileImageSubscriber(
+            "Select image name for file prefix",
+            "None",
+            doc="""\
+Select an image loaded using **NamesAndTypes**. The original filename
+will be used as the prefix for the output filename."""
+        )
+
         self.file_format = Choice(
             "Saved file format",
             [O_PNG, O_TIFF_8, O_TIFF_16],
@@ -97,26 +105,16 @@ The choices are:
             after the image from which the crops were derived. 
             """,
         )
-        self.include_filename = Binary(
-            "Include input filename in the output filename?",
-            value=False,
-            doc="""\
-            Include the input filename in the output cropped object image filename. 
-            The output filename format will be: 
-
-            **{input filename}_{object name}_{label index}.{image_format}**
-            """,
-        )
 
     def settings(self):
         settings = [
             self.objects_name,
             self.directory,
+            self.file_image_name,
             self.file_format,
             self.export_option,
             self.image_name,
             self.nested_save,
-            self.include_filename,
         ]
 
         return settings
@@ -130,8 +128,8 @@ The choices are:
         result += [
             self.objects_name,
             self.directory,
+            self.file_image_name,
             self.nested_save,
-            self.include_filename,
             self.file_format,
         ]
         return result
@@ -149,7 +147,7 @@ The choices are:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        input_filename = workspace.measurements.get_current_measurement("Image", self.file_name_feature)
+        input_filename = workspace.measurements.get_current_measurement("Image", self.source_file_name_feature)
         input_filename = os.path.splitext(input_filename)[0]
 
         if self.nested_save:
@@ -187,25 +185,14 @@ The choices are:
                 mask = properties[0].intensity_image
 
             if self.nested_save.value:
-                if self.include_filename.value:
-                    filename = os.path.join(
-                        nested_folder, "{}_{}_{}".format(input_filename, self.objects_name.value, label)
-                    )
-                elif not self.include_filename.value:
-                    filename = os.path.join(
-                        nested_folder, "{}_{}".format(self.objects_name.value, label)
-                    )
+                filename = os.path.join(
+                    nested_folder, "{}_{}_{}".format(input_filename, self.objects_name.value, label)
+                )
 
             elif not self.nested_save.value:
-                if self.include_filename.value:
-                    filename = os.path.join(
-                        directory, "{}_{}_{}".format(input_filename, self.objects_name.value, label)
-                    )
-
-                elif not self.include_filename.value:
-                    filename = os.path.join(
-                        directory, "{}_{}".format(self.objects_name.value, label)
-                    )
+                filename = os.path.join(
+                    directory, "{}_{}_{}".format(input_filename, self.objects_name.value, label)
+                )
 
             if self.file_format.value == O_PNG:
                 save_filename = filename + ".{}".format(O_PNG)
@@ -242,8 +229,9 @@ The choices are:
             workspace.display_data.filenames = filenames
 
     @property
-    def file_name_feature(self):
-        return "_".join((C_FILE_NAME, self.image_name.value))
+    def source_file_name_feature(self):
+        """The file name measurement for the exemplar disk image"""
+        return "_".join((C_FILE_NAME, self.file_image_name.value))
 
     def volumetric(self):
         return True

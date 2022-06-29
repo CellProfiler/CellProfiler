@@ -101,8 +101,8 @@ will be used as the prefix for the output filename."""
             "Save output crops in nested folders?",
             value=False,
             doc="""\
-            If *Yes*, the output crops will be saved into a folder named
-            after the image from which the crops were derived. 
+If *Yes*, the output crops will be saved into a folder named
+after the selected image name prefix. 
             """,
         )
 

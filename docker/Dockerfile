@@ -1,36 +1,37 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
-ARG version=4.2.0
+ARG version=4.2.2
 
-# Install CellProfiler dependencies
-RUN apt-get update && apt-get install -y software-properties-common
-RUN add-apt-repository ppa:deadsnakes/ppa
-RUN apt -y update
+RUN apt update
 RUN apt -y upgrade
-RUN apt install -y python3.8-dev python3.8-distutils python3-pip openjdk-8-jdk-headless libmysqlclient-dev libnotify-dev libsdl2-dev wget
-# Uncomment the below if you want to make a version with the GUI
-# RUN apt install -y libwebkitgtk-3.0
+RUN apt install -y make gcc build-essential libgtk-3-dev wget git
+RUN apt install -y python3.8-dev python3.8-venv python3-pip openjdk-11-jdk-headless default-libmysqlclient-dev libnotify-dev libsdl2-dev libwebkit2gtk-4.0-dev
+RUN apt-get install -y \
+                freeglut3 \
+                freeglut3-dev \
+                libgl1-mesa-dev \
+                libglu1-mesa-dev \
+                libgstreamer-plugins-base1.0-dev \
+                libgtk-3-dev \
+                libgtk2.0-dev \
+                libjpeg-dev \
+                libnotify-dev \
+                libsdl2-dev \
+                libsm-dev \
+                libtiff-dev \
+                libwebkit2gtk-4.0-dev \
+                libwebkitgtk-dev \
+                libxtst-dev
 
-# Set up environment
-RUN export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-RUN export PATH=$PATH:/home/ubuntu/.local/bin
+ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3.8 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN pip install --upgrade pip
+RUN pip install wheel cython numpy
 
-# This is needed for a Python 3.8 quirk
-RUN apt remove -y python3-pip
-RUN wget https://bootstrap.pypa.io/get-pip.py
-RUN python3.8 get-pip.py
-RUN rm get-pip.py
+RUN pip install  -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-18.04 wxPython==4.1.0
 
-#Install wx from a wheel
-RUN wget https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-16.04/wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
-RUN python3.8 -m pip install wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
-RUN rm wxPython-4.1.0-cp38-cp38-linux_x86_64.whl
-
-# Install CellProfiler
-RUN python3.8 -m pip install numpy cython
-RUN python3.8 -m pip install cellprofiler==$version
-
-WORKDIR /usr/local/src
-ENTRYPOINT ["cellprofiler"]
+RUN pip install cellprofiler==$version
 
 CMD ["--run", "--run-headless", "--help"]

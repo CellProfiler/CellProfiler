@@ -180,7 +180,7 @@ executed.
     def get_y_object(self):
         if self.y_source.value == IMAGE:
             return IMAGE
-        return self.x_object.value
+        return self.y_object.value
 
     def settings(self):
         result = [self.x_source, self.x_object, self.x_axis]

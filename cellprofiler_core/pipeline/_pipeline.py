@@ -1377,6 +1377,12 @@ class Pipeline:
                     break
                 try:
                     workspace.set_module(module)
+                    from cellprofiler_core.modules.metadata import Metadata
+                    if isinstance(module, Metadata):
+                        workspace.file_list.add_files_to_filelist(self.file_list)
+                        module.on_activated(workspace)
+                        if len(module.extraction_methods) > 0:
+                            module.do_update_metadata(module.extraction_methods[0])
                     workspace.show_frame(module.show_window)
                     if (
                         not module.prepare_run(workspace)

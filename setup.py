@@ -74,7 +74,7 @@ setuptools.setup(
         "mahotas>=1.4",
         "matplotlib==3.1.3",
         "mysqlclient==1.4.6",
-        "numpy>=1.20.1",
+        "numpy>=1.20.1,1.23",
         "Pillow>=7.1.0",
         "prokaryote==2.4.4",
         "python-bioformats==4.0.5",

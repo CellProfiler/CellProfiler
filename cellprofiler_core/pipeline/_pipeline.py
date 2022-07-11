@@ -140,6 +140,8 @@ class Pipeline:
         self.__image_plane_details = []
         self.__image_plane_details_metadata_settings = tuple()
 
+        self.__needs_headless_extraction = False
+        
         self.__undo_stack = []
         self.__volumetric = False
 
@@ -148,6 +150,12 @@ class Pipeline:
 
     def volumetric(self):
         return self.__volumetric
+    
+    def set_needs_headless_extraction(self, value):
+        self.__needs_headless_extraction = value
+
+    def needs_headless_extraction(self):
+        return self.__needs_headless_extraction
 
     def copy(self, save_image_plane_details=True):
         """Create a copy of the pipeline modules and settings"""
@@ -837,6 +845,14 @@ class Pipeline:
         workspace = Workspace(
             self, None, None, None, measurements, image_set_list, frame
         )
+        
+        if len(self._Pipeline__modules)>1:
+            from cellprofiler_core.modules.metadata import Metadata
+            if type(self._Pipeline__modules[1])==Metadata:
+                if self._Pipeline__modules[1].wants_metadata.value:
+                    for method in self._Pipeline__modules[1].extraction_methods:
+                        if method.extraction_method.value=='Extract from image file headers':
+                            self.set_needs_headless_extraction(True)
 
         try:
             if not self.prepare_run(workspace):
@@ -1377,12 +1393,14 @@ class Pipeline:
                     break
                 try:
                     workspace.set_module(module)
-                    from cellprofiler_core.modules.metadata import Metadata
-                    if isinstance(module, Metadata):
-                        workspace.file_list.add_files_to_filelist(self.file_list)
-                        module.on_activated(workspace)
-                        if len(module.extraction_methods) > 0:
-                            module.do_update_metadata(module.extraction_methods[0])
+                    if self.needs_headless_extraction():
+                        from cellprofiler_core.modules.metadata import Metadata
+                        if isinstance(module,Metadata):
+                            workspace.file_list.add_files_to_filelist(self.file_list)
+                            module.on_activated(workspace)
+                            for eachmethod in range(len(module.extraction_methods)):
+                                if module.extraction_methods[eachmethod].extraction_method.value =='Extract from image file headers':
+                                    module.do_update_metadata(module.extraction_methods[eachmethod])
                     workspace.show_frame(module.show_window)
                     if (
                         not module.prepare_run(workspace)

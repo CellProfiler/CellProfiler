@@ -18,4 +18,7 @@ RUN pip install  -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubun
 
 RUN pip install cellprofiler==$version
 
+WORKDIR /usr/local/src
+ENTRYPOINT ["cellprofiler"]
+
 CMD ["--run", "--run-headless", "--help"]

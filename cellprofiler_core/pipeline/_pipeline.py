@@ -846,11 +846,11 @@ class Pipeline:
             self, None, None, None, measurements, image_set_list, frame
         )
         
-        if len(self._Pipeline__modules)>1:
+        if len(self.__modules)>1:
             from cellprofiler_core.modules.metadata import Metadata
-            if type(self._Pipeline__modules[1])==Metadata:
-                if self._Pipeline__modules[1].wants_metadata.value:
-                    for extraction_group in self._Pipeline__modules[1].extraction_methods:
+            if type(self.__modules[1])==Metadata:
+                if self.__modules[1].wants_metadata.value:
+                    for extraction_group in self.__modules[1].extraction_methods:
                         if extraction_group.extraction_method.value=='Extract from image file headers':
                             self.set_needs_headless_extraction(True)
                             break

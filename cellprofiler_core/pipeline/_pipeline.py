@@ -850,9 +850,10 @@ class Pipeline:
             from cellprofiler_core.modules.metadata import Metadata
             if type(self._Pipeline__modules[1])==Metadata:
                 if self._Pipeline__modules[1].wants_metadata.value:
-                    for method in self._Pipeline__modules[1].extraction_methods:
-                        if method.extraction_method.value=='Extract from image file headers':
+                    for extraction_group in self._Pipeline__modules[1].extraction_methods:
+                        if extraction_group.extraction_method.value=='Extract from image file headers':
                             self.set_needs_headless_extraction(True)
+                            break
 
         try:
             if not self.prepare_run(workspace):
@@ -1395,12 +1396,12 @@ class Pipeline:
                     workspace.set_module(module)
                     if self.needs_headless_extraction():
                         from cellprofiler_core.modules.metadata import Metadata
-                        if isinstance(module,Metadata):
+                        if isinstance(module, Metadata):
                             workspace.file_list.add_files_to_filelist(self.file_list)
                             module.on_activated(workspace)
-                            for eachmethod in range(len(module.extraction_methods)):
-                                if module.extraction_methods[eachmethod].extraction_method.value =='Extract from image file headers':
-                                    module.do_update_metadata(module.extraction_methods[eachmethod])
+                            for extraction_group in module.extraction_methods:
+                                if extraction_group.extraction_method.value =='Extract from image file headers':
+                                    module.do_update_metadata(extraction_group)
                     workspace.show_frame(module.show_window)
                     if (
                         not module.prepare_run(workspace)

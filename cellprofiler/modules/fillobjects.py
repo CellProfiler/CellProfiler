@@ -98,18 +98,18 @@ that touching objects may not be perfectly convex if there was a region of overl
         return __settings__
 
     def run(self, workspace):
-        if self.mode.value == MODE_HOLES:
+        if self.mode.value == MODE_CHULL:
+            self.function = lambda labels, d, p, m: fill_convex_hulls(labels)
+        else:
             self.function = lambda labels, diameter, planewise, mode: fill_object_holes(
                 labels, diameter, planewise
             )
-        else:
-            self.function = lambda labels, d, p, m: fill_convex_hulls(labels)
 
         super(FillObjects, self).run(workspace)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
-            setting_values += MODE_HOLES
+            setting_values.append(MODE_HOLES)
             variable_revision_number = 2
         return setting_values, variable_revision_number
 

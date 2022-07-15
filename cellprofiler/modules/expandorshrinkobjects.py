@@ -9,6 +9,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     get_object_measurement_columns,
 )
 
+from cellprofiler.library.modules import expand_or_shrink_objects
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -268,61 +269,22 @@ order to keep from breaking up the object or breaking the hole.
 
     def do_labels(self, labels):
         """Run whatever transformation on the given labels matrix"""
-        if self.operation in (O_SHRINK, O_SHRINK_INF) and self.wants_fill_holes.value:
-            labels = centrosome.cpmorphology.fill_labeled_holes(labels)
-
-        if self.operation == O_SHRINK_INF:
-            return centrosome.cpmorphology.binary_shrink(labels)
-
-        if self.operation == O_SHRINK:
-            return centrosome.cpmorphology.binary_shrink(
-                labels, iterations=self.iterations.value
-            )
-
-        if self.operation in (O_EXPAND, O_EXPAND_INF):
-            if self.operation == O_EXPAND_INF:
-                distance = numpy.max(labels.shape)
-            else:
-                distance = self.iterations.value
-
-            background = labels == 0
-
-            distances, (i, j) = scipy.ndimage.distance_transform_edt(
-                background, return_indices=True
-            )
-
-            out_labels = labels.copy()
-
-            mask = background & (distances <= distance)
-
-            out_labels[mask] = labels[i[mask], j[mask]]
-
-            return out_labels
-
-        if self.operation == O_DIVIDE:
-            #
-            # A pixel must be adjacent to some other label and the object
-            # must not disappear.
-            #
-            adjacent_mask = centrosome.cpmorphology.adjacent(labels)
-
-            thinnable_mask = centrosome.cpmorphology.binary_shrink(labels, 1) != 0
-
-            out_labels = labels.copy()
-
-            out_labels[adjacent_mask & ~thinnable_mask] = 0
-
-            return out_labels
-
-        if self.operation == O_SKELETONIZE:
-            return centrosome.cpmorphology.skeletonize_labels(labels)
-
-        if self.operation == O_SPUR:
-            return centrosome.cpmorphology.spur(
-                labels, iterations=self.iterations.value
-            )
-
-        raise NotImplementedError("Unsupported operation: %s" % self.operation.value)
+        if self.operation == O_EXPAND:
+            return expand_or_shrink_objects('expand_defined_pixels',labels,iterations=self.iterations.value)
+        elif self.operation == O_EXPAND_INF:
+            return expand_or_shrink_objects('expand_infinite', labels)
+        elif self.operation == O_SHRINK:
+            return expand_or_shrink_objects('shrink_defined_pixels', labels, fill=self.wants_fill_holes.value, iterations=self.iterations.value)
+        elif self.operation == O_SHRINK_INF:
+            return expand_or_shrink_objects('shrink_to_point', labels,fill=self.wants_fill_holes.value)
+        elif self.operation == O_DIVIDE:
+            return expand_or_shrink_objects('add_dividing_lines', labels)
+        elif self.operation == O_SPUR:
+            return expand_or_shrink_objects('despur', labels,iterations=self.iterations.value)
+        elif self.operation == O_SKELETONIZE:
+            return expand_or_shrink_objects('skeletonize', labels)
+        else:
+            raise NotImplementedError("Unsupported operation: %s" % self.operation.value)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:

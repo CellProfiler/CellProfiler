@@ -77,6 +77,7 @@ from ..constants.pipeline import SAD_PROOFPOINT_COOKIE
 from ..constants.workspace import DISPOSITION_CANCEL
 from ..constants.workspace import DISPOSITION_PAUSE
 from ..constants.workspace import DISPOSITION_SKIP
+from ..constants.modules.metadata import X_AUTOMATIC_EXTRACTION
 from ..image import ImageSetList
 from ..measurement import Measurements
 from ..object import ObjectSet
@@ -848,10 +849,10 @@ class Pipeline:
         
         if len(self.__modules)>1:
             from cellprofiler_core.modules.metadata import Metadata
-            if type(self.__modules[1])==Metadata:
+            if type(self.__modules[1]) == Metadata:
                 if self.__modules[1].wants_metadata.value:
                     for extraction_group in self.__modules[1].extraction_methods:
-                        if extraction_group.extraction_method.value=='Extract from image file headers':
+                        if extraction_group.extraction_method.value == X_AUTOMATIC_EXTRACTION:
                             self.set_needs_headless_extraction(True)
                             break
 
@@ -1400,7 +1401,7 @@ class Pipeline:
                             workspace.file_list.add_files_to_filelist(self.file_list)
                             module.on_activated(workspace)
                             for extraction_group in module.extraction_methods:
-                                if extraction_group.extraction_method.value =='Extract from image file headers':
+                                if extraction_group.extraction_method.value == X_AUTOMATIC_EXTRACTION:
                                     module.do_update_metadata(extraction_group)
                     workspace.show_frame(module.show_window)
                     if (

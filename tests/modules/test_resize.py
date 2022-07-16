@@ -40,7 +40,7 @@ def test_load_v3():
     assert module.size_method == cellprofiler.modules.resize.R_TO_SIZE
     assert round(abs(module.resizing_factor_x.value - 0.25), 7) == 0
     assert round(abs(module.resizing_factor_y.value - 0.25), 7) == 0
-    assert round(abs(module.resizing_factor_z.value - 0.25), 7) == 0
+    assert round(abs(module.resizing_factor_z.value - 1), 7) == 0
     assert module.specific_width == 141
     assert module.specific_height == 169
     assert module.interpolation == cellprofiler.modules.resize.I_BILINEAR

@@ -1779,32 +1779,48 @@ class Figure(wx.Frame):
 
     @allow_sharexy
     def subplot_imshow_color(
-        self, x, y, image, title=None, normalize=False, rgb_mask=None, **kwargs
+        self, x, y, image, title=None, normalize=False, rgb_mask=None, volumetric=False, **kwargs,
     ):
         if rgb_mask is None:
             rgb_mask = [1, 1, 1]
 
-        volumetric = False
-        if hasattr(image,'volumetric'):
-            volumetric = image.volumetric
+        if volumetric:
+            chan_index = 3
+        else:
+            chan_index = 2
+
         # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
-        if not volumetric and image.shape[2] > 3:
+        if image.shape[chan_index] > 3:
             logging.warning(
                 "Multichannel display is only supported for RGB (3-channel) data."
                 " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
-                    image.shape[2]
+                    image.shape[chan_index]
                 )
             )
 
-            return self.subplot_imshow(
-                x,
-                y,
-                image[:, :, :3],
-                title,
-                normalize=normalize,
-                rgb_mask=rgb_mask,
-                **kwargs,
-            )
+            if not volumetric:
+
+                return self.subplot_imshow(
+                    x,
+                    y,
+                    image[:, :, :3],
+                    title,
+                    normalize=normalize,
+                    rgb_mask=rgb_mask,
+                    **kwargs,
+                )
+            
+            else:
+
+                return self.subplot_imshow(
+                    x,
+                    y,
+                    image[:, :, :, :3],
+                    title,
+                    normalize=normalize,
+                    rgb_mask=rgb_mask,
+                    **kwargs,
+                )
 
         return self.subplot_imshow(
             x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs

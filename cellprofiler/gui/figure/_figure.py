@@ -1784,8 +1784,11 @@ class Figure(wx.Frame):
         if rgb_mask is None:
             rgb_mask = [1, 1, 1]
 
+        volumetric = False
+        if hasattr(image,'volumetric'):
+            volumetric = image.volumetric
         # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
-        if image.shape[2] > 3:
+        if not volumetric and image.shape[2] > 3:
             logging.warning(
                 "Multichannel display is only supported for RGB (3-channel) data."
                 " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(

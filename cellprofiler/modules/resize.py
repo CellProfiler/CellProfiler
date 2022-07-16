@@ -515,7 +515,7 @@ resized with the same settings as the first image.""",
         if variable_revision_number == 4:
             #Add X, Y and Z resizing factor 
             setting_values = (
-                setting_values[:3] + ["0.25", "0.25", "0.25"] + setting_values[4:6] + ["10"] + setting_values[6:]
+                setting_values[:3] + [setting_values[3], setting_values[3], 1] + setting_values[4:6] + ["10"] + setting_values[6:]
             )
             variable_revision_number = 5
 

@@ -1,6 +1,7 @@
 """rules - code for parsing and applying rules from CPA
 """
 
+from difflib import get_close_matches
 import re
 
 import numpy
@@ -12,7 +13,7 @@ class Rules(object):
     class Rule(object):
         """Represents a single rule"""
 
-        def __init__(self, object_name, feature, comparitor, threshold, weights):
+        def __init__(self, object_name, feature, comparitor, threshold, weights, allow_fuzzy, fuzzy_value):
             """Create a rule
 
             object_name - the name of the object in the measurements
@@ -30,6 +31,8 @@ class Rules(object):
             self.threshold = threshold
             self.feature = feature
             self.weights = weights
+            self.allow_fuzzy = allow_fuzzy
+            self.fuzzy_value = fuzzy_value
 
         def score(self, measurements):
             """Score a rule
@@ -42,9 +45,16 @@ class Rules(object):
             for the given feature in the current image set and N is the
             number of categories as indicated by the weights.
             """
-            values = measurements.get_current_measurement(
-                self.object_name, self.feature
-            )
+            if not self.allow_fuzzy:
+                values = measurements.get_current_measurement(
+                    self.object_name, self.feature
+                )
+            else:
+                measurement_list = list(set([f"{col[0]}_{col[1]}" for col in measurements.get_measurement_columns()]))
+                feature = get_close_matches('_'.join((self.object_name,self.feature)),measurement_list,n=1,cutoff=self.fuzzy_value)[0][len(self.object_name)+1:]
+                values = measurements.get_current_measurement(
+                    self.object_name, feature
+                )
             if values is None:
                 values = numpy.array([numpy.NaN])
             elif numpy.isscalar(values):
@@ -67,13 +77,15 @@ class Rules(object):
             score[~mask, :] = self.weights[numpy.newaxis, 1]
             return score
 
-    def __init__(self):
+    def __init__(self,allow_fuzzy=False,fuzzy_value=0.7):
         """Create an empty set of rules.
 
         Use "parse" to read in the rules file or add rules programatically
         to self.rules.
         """
         self.rules = []
+        self.allow_fuzzy = allow_fuzzy
+        self.fuzzy_value = fuzzy_value
 
     def parse(self, fd_or_file):
         """Parse a rules file
@@ -114,6 +126,8 @@ class Rules(object):
                         d["comparitor"],
                         float(d["threshold"]),
                         weights,
+                        self.allow_fuzzy,
+                        self.fuzzy_value
                     )
                     self.rules.append(rule)
             if len(self.rules) == 0:
@@ -152,5 +166,5 @@ class Rules(object):
         for name, th, pos, neg, _ in rules:
             object_name, feature = name.split('_', 1)
             weights = numpy.vstack((pos, neg))
-            rule = self.Rule(object_name, feature, ">", th, weights)
+            rule = self.Rule(object_name, feature, ">", th, weights, self.allow_fuzzy,self.fuzzy_value)
             self.rules.append(rule)

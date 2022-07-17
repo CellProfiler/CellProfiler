@@ -976,7 +976,9 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             #
             # Get the label of the pixel at each location
             #
-            indexes = src_labels[best_pos.transpose().tolist()]
+            # Multidimensional indexing with non-tuple values is not allowed as of numpy 2.23
+            best_pos = tuple(map(tuple, best_pos.transpose()))
+            indexes = src_labels[best_pos]
             indexes = set(indexes)
             indexes = list(indexes)
             indexes.sort()

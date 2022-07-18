@@ -68,18 +68,18 @@ def construct_zernike_polynomials(x, y, zernike_indexes, mask=None, weight=None)
     # z = y + 1j*x
     # each Zernike polynomial is poly(r)*(r**m * np.exp(1j*m*phi)) ==
     #                            poly(r)*(y + 1j*x)**m
-    z = np.empty(x.shape, np.complex)
+    z = np.empty(x.shape, complex)
     np.copyto(z.real, y)
     np.copyto(z.imag, x)
     # preallocate buffers
     s = np.empty_like(x)
-    zf = np.zeros((nzernikes,) + x.shape, np.complex)
+    zf = np.zeros((nzernikes,) + x.shape, complex)
     z_pows = {}
     for idx, (n, m) in enumerate(zernike_indexes):
         s[:] = 0
         if not m in z_pows:
             if m == 0:
-                z_pows[m] = np.complex(1.0)
+                z_pows[m] = complex(1.0)
             else:
                 z_pows[m] = z if m == 1 else (z ** m)
         z_pow = z_pows[m]
@@ -98,7 +98,7 @@ def construct_zernike_polynomials(x, y, zernike_indexes, mask=None, weight=None)
     if mask is None:
         result = zf.transpose(tuple(range(1, 1 + x.ndim)) + (0,))
     else:
-        result = np.zeros(mask.shape + (nzernikes,), np.complex)
+        result = np.zeros(mask.shape + (nzernikes,), complex)
         result[mask] = zf.transpose(tuple(range(1, 1 + x.ndim)) + (0,))
     return result
 

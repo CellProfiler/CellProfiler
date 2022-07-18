@@ -97,7 +97,7 @@ def median_filter(data, mask, radius, percent=50):
     #
     # Normalize the ranked data to 0-255
     #
-    if not np.issubdtype(data.dtype, np.int) or np.min(data) < 0 or np.max(data) > 255:
+    if not np.issubdtype(data.dtype, int) or np.min(data) < 0 or np.max(data) > 255:
         ranked_data, translation = rank_order(data[mask], nbins=255)
         was_ranked = True
     else:

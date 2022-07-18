@@ -46,11 +46,6 @@ MANUAL_URL = "http://cellprofiler-manual.s3.amazonaws.com/CellProfiler-{}/index.
     cellprofiler.__version__
 )
 
-X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
-X_MANUAL_EXTRACTION = "Extract from file/folder names"
-X_IMPORTED_EXTRACTION = "Import from file"
-VIEW_OUTPUT_SETTINGS_BUTTON_NAME = "View output settings"
-
 
 ####################
 #

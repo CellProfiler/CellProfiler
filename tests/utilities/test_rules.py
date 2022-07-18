@@ -189,5 +189,3 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         self.assertAlmostEqual(score[0, 1], -0.5)
         self.assertAlmostEqual(score[1, 0], -2.0)
         self.assertAlmostEqual(score[1, 1], 0.6)
-
-    

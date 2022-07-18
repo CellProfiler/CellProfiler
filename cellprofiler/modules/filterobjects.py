@@ -135,6 +135,7 @@ PO_BOTH = "Both parents"
 PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
 PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 
+
 class FilterObjects(ObjectProcessing):
     module_name = "FilterObjects"
 
@@ -1425,7 +1426,6 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                                       feature_name.startswith(s)), feature_name.split("_", 1))
             features_list.append((obj, feature_name))
         return features_list
-
         
 #
 # backwards compatibility

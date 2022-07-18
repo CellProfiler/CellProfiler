@@ -27,8 +27,8 @@ INPUT_IMAGE = "input_image"
 INPUT_OBJECTS = "input_objects"
 ENCLOSING_OBJECTS = "my_enclosing_objects"
 OUTPUT_OBJECTS = "output_objects"
-TEST_FTR = "my_measurement_elongated"
-MISSPELLED_FTR = "m_measurement_elongated"
+TEST_FTR = "my_measurement"
+MISSPELLED_FTR = "m_measurement"
 
 
 def make_workspace(object_dict={}, image_dict={}):

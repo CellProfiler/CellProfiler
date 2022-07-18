@@ -1240,8 +1240,12 @@ to the foreground pixels or the background pixels.
                 value = centrosome.haralick.Haralick(
                     pixel_data, image_labels, 0, scale
                 ).H3()
-                if not numpy.isfinite(value):
+
+                if len(value) != 1 or not numpy.isfinite(value[0]):
                     value = 0.0
+                else:
+                    value = float(value)
+                    
                 workspace.add_measurement(
                     "Image",
                     "{}_{}_{}_{:d}".format(

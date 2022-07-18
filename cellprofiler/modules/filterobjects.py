@@ -79,7 +79,6 @@ Measurements made by this module
     **{"HELP_ON_SAVING_OBJECTS": _help.HELP_ON_SAVING_OBJECTS}
 )
 
-from difflib import get_close_matches
 import logging
 import os
 
@@ -90,7 +89,7 @@ import scipy.sparse
 
 import cellprofiler.gui.help
 import cellprofiler_core.object
-import cellprofiler.utilities.rules
+from cellprofiler.utilities.rules import Rules, RulesModule, return_fuzzy_measurement_name
 
 
 """Minimal filter - pick a single object per image by minimum measured value"""
@@ -136,12 +135,15 @@ PO_BOTH = "Both parents"
 PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
 PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 
-FUZZY_FLOAT = 0.7 #We may eventually want to parametrize this with a setting, but let's not for now
-
 class FilterObjects(ObjectProcessing):
     module_name = "FilterObjects"
 
     variable_revision_number = 10
+
+    def __init__(self):
+        self.rules = RulesModule()
+
+        super(FilterObjects, self).__init__()
 
     def create_settings(self):
         super(FilterObjects, self).create_settings()
@@ -374,7 +376,7 @@ with data processed as 3D.
 
 
         self.keep_removed_objects = Binary(
-            "Keep removed objects as a seperate set?",
+            "Keep removed objects as a separate set?",
             False,
             doc="""
 Select *Yes* to create an object set from objects that did not pass your filter.
@@ -387,18 +389,6 @@ This may be useful if you want to make use of the negative (filtered out) popula
             "RemovedObjects",
             doc="Enter the name you want to call the objects removed by the filter.",
 
-        )
-
-        self.allow_fuzzy = Binary(
-            "Allow fuzzy feature matching?",
-            False,
-            doc="""
-Allow CellProfiler to use the closest feature name, instead of only an exact match, when loading in 
-Rules or a Classifier.
-
-This may be necessary when long column names from the run where you generated the classification 
-were truncated by ExportToDatabase.You can control this in ExportToDatabase in the "Maximum # of 
-characters in a column name" setting. """
         )
 
         self.additional_objects = []
@@ -420,6 +410,10 @@ Click this button to add an object to receive the same post-filtering labels as
 the filtered object. This is useful in making sure that labeling is maintained
 between related objects (e.g., primary and secondary objects) after filtering.""",
         )
+
+        self.rules.create_settings()
+
+        self.allow_fuzzy = self.rules.settings()[0]
 
     def get_class_choices(self, pipeline):
         if self.mode == MODE_CLASSIFIERS:
@@ -660,7 +654,13 @@ value will be retained.""".format(
                 )
                 raise ValidationError(str(instance), self.rules_file_name)
             for r in rules.rules:
-                if self.return_fuzzy_measurement_name(pipeline.get_measurement_columns(self),r.object_name,r.feature,True) == '':
+                if return_fuzzy_measurement_name(
+                    pipeline.get_measurement_columns(self),
+                    r.object_name,
+                    r.feature,
+                    True,
+                    self.allow_fuzzy
+                    ) == '':
                     raise ValidationError(
                         (
                             "The rules file, %s, uses the measurement, %s "
@@ -691,7 +691,13 @@ value will be retained.""".format(
             features = self.get_classifier_features()
 
             for feature in features:
-                fuzzy_feature = self.return_fuzzy_measurement_name(pipeline.get_measurement_columns(),feature[:feature.index('_')],feature[feature.index('_'):],True)
+                fuzzy_feature = return_fuzzy_measurement_name(
+                    pipeline.get_measurement_columns(),
+                    feature[:feature.index('_')],
+                    feature[feature.index('_'):],
+                    True,
+                    self.allow_fuzzy
+                    )
                 if fuzzy_feature == '':
                     raise ValidationError(
                         f"""The classifier {self.rules_file_name}, requires the measurement "{feature}", but that 
@@ -1075,7 +1081,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         if not os.path.isfile(path):
             raise ValidationError("No such rules file: %s" % path, self.rules_file_name)
         else:
-            rules = cellprofiler.utilities.rules.Rules(allow_fuzzy=self.allow_fuzzy.value,fuzzy_value=FUZZY_FLOAT)
+            rules = Rules(allow_fuzzy=self.allow_fuzzy.value)
             rules.parse(path)
             return rules
 
@@ -1103,7 +1109,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                                       "See the help dialog for more info on model formats.")
                     if d[path_][2] == "FastGentleBoosting":
                         # FGB model files are not sklearn-based, we'll load it as rules instead.
-                        rules = cellprofiler.utilities.rules.Rules(allow_fuzzy=self.allow_fuzzy.value,fuzzy_value=FUZZY_FLOAT)
+                        rules = Rules(allow_fuzzy=self.allow_fuzzy.value)
                         rules.load(d[path_][0])
                         d[path_] = (rules,
                                     d[path_][1],
@@ -1111,7 +1117,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                                     [f"{rule.object_name}_{rule.feature}" for rule in rules.rules])
                 else:
                     # Probably a rules list
-                    rules = cellprofiler.utilities.rules.Rules(allow_fuzzy=self.allow_fuzzy.value,fuzzy_value=FUZZY_FLOAT)
+                    rules = Rules(allow_fuzzy=self.allow_fuzzy.value)
                     rules.parse(path_)
                     # Construct a classifier-like object
                     d[path_] = (rules,
@@ -1172,7 +1178,16 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         features = self.split_feature_names(self.get_classifier_features(), workspace.object_set.get_object_names())
         feature_vector = numpy.column_stack(
             [
-                workspace.measurements[object_name, self.return_fuzzy_measurement_name(workspace.measurements.get_measurement_columns(),object_name,feature_name,False)]
+                workspace.measurements[
+                    object_name, 
+                    return_fuzzy_measurement_name(
+                        workspace.measurements.get_measurement_columns(),
+                        object_name,
+                        feature_name,
+                        False,
+                        self.allow_fuzzy
+                        )
+                        ]
                 for object_name, feature_name in features
             ]
         )
@@ -1411,20 +1426,6 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             features_list.append((obj, feature_name))
         return features_list
 
-    def return_fuzzy_measurement_name(self,measurements,object_name,feature_name,full):
-        measurement_list = [f"{col[0]}_{col[1]}" for col in measurements]
-        if self.allow_fuzzy.value:
-            cutoff = FUZZY_FLOAT
-        else:
-            cutoff = 1
-        closest_match = get_close_matches('_'.join((object_name,feature_name)),measurement_list,1,cutoff)
-        if len(closest_match) == 0:
-            return ''
-        else:
-            if full:
-                return closest_match[0]
-            else:
-                return closest_match[0][len(object_name)+1:]
         
 #
 # backwards compatibility

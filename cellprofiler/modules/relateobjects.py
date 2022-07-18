@@ -614,7 +614,7 @@ parents or children of the parent object.""",
             perim_loc = numpy.argwhere(pperim != 0)
 
             # Get the label # for each point
-            # multidimensional indexing with non-tuple values not allowed as of numpy 2.23
+            # multidimensional indexing with non-tuple values not allowed as of numpy 1.23
             perim_loc_t = tuple(map(tuple, perim_loc.transpose()))
             perim_idx = pperim[perim_loc_t]
 

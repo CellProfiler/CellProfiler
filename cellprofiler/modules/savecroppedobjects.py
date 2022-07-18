@@ -153,7 +153,7 @@ after the selected image name prefix.
         if self.nested_save:
             nested_folder = os.path.join(directory, input_filename)
             if not os.path.exists(nested_folder):
-                os.makedirs(nested_folder)
+                os.makedirs(nested_folder, exist_ok=True)
 
         labels = objects.segmented
 

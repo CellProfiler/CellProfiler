@@ -14,22 +14,8 @@ FUZZY_FLOAT = 0.7 #We may eventually want to parametrize this with a setting, bu
 import numpy
 
 
-def return_fuzzy_measurement_name(measurements,object_name,feature_name,full,allow_fuzzy,fuzzy_value=FUZZY_FLOAT):
-    measurement_list = [f"{col[0]}_{col[1]}" for col in measurements]
-    if allow_fuzzy:
-        cutoff = fuzzy_value
-    else:
-        cutoff = 1
-    closest_match = get_close_matches('_'.join((object_name,feature_name)),measurement_list,1,cutoff)
-    if len(closest_match) == 0:
-        return ''
-    else:
-        if full:
-            return closest_match[0]
-        else:
-            return closest_match[0][len(object_name)+1:] 
 
-class Rules(object):
+class Rules(Module):
     """Represents a set of CPA rules"""
 
     class Rule(object):
@@ -69,7 +55,7 @@ class Rules(object):
             """
             values = measurements.get_current_measurement(
                 self.object_name, 
-                return_fuzzy_measurement_name(
+                self.return_fuzzy_measurement_name(
                     measurements.get_measurement_columns(),
                     self.object_name,
                     self.feature,
@@ -99,6 +85,22 @@ class Rules(object):
             score[~mask, :] = self.weights[numpy.newaxis, 1]
             return score
 
+        @staticmethod
+        def return_fuzzy_measurement_name(measurements,object_name,feature_name,full,allow_fuzzy,fuzzy_value=FUZZY_FLOAT):
+            measurement_list = [f"{col[0]}_{col[1]}" for col in measurements]
+            if allow_fuzzy:
+                cutoff = fuzzy_value
+            else:
+                cutoff = 1
+            closest_match = get_close_matches('_'.join((object_name,feature_name)),measurement_list,1,cutoff)
+            if len(closest_match) == 0:
+                return ''
+            else:
+                if full:
+                    return closest_match[0]
+                else:
+                    return closest_match[0][len(object_name)+1:] 
+
 
 
     def __init__(self,allow_fuzzy=False,fuzzy_value=FUZZY_FLOAT):
@@ -110,6 +112,25 @@ class Rules(object):
         self.rules = []
         self.allow_fuzzy = allow_fuzzy
         self.fuzzy_value = fuzzy_value
+
+    def create_settings(self):
+
+        self.allow_fuzzy = Binary(
+            "Allow fuzzy feature matching?",
+            False,
+            doc="""
+Allow CellProfiler to use the closest feature name, instead of only an exact match, when loading in 
+Rules or a Classifier.
+
+This may be necessary when long column names from the run where you generated the classification 
+were truncated by ExportToDatabase.You can control this in ExportToDatabase in the "Maximum # of 
+characters in a column name" setting. """
+        )
+
+        #possible future fuzzy_value setting goes here
+    
+    def settings(self):
+        return [self.allow_fuzzy]
 
     def parse(self, fd_or_file):
         """Parse a rules file
@@ -192,23 +213,5 @@ class Rules(object):
             weights = numpy.vstack((pos, neg))
             rule = self.Rule(object_name, feature, ">", th, weights, self.allow_fuzzy,self.fuzzy_value)
             self.rules.append(rule)
+
             
-class RulesModule(Module):
-    def create_settings(self):
-
-        self.allow_fuzzy = Binary(
-            "Allow fuzzy feature matching?",
-            False,
-            doc="""
-Allow CellProfiler to use the closest feature name, instead of only an exact match, when loading in 
-Rules or a Classifier.
-
-This may be necessary when long column names from the run where you generated the classification 
-were truncated by ExportToDatabase.You can control this in ExportToDatabase in the "Maximum # of 
-characters in a column name" setting. """
-        )
-
-        #possible future fuzzy_value setting goes here
-    
-    def settings(self):
-        return [self.allow_fuzzy]

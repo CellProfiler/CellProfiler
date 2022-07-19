@@ -89,7 +89,7 @@ import scipy.sparse
 
 import cellprofiler.gui.help
 import cellprofiler_core.object
-from cellprofiler.utilities.rules import Rules, RulesModule, return_fuzzy_measurement_name
+from cellprofiler.utilities.rules import Rules
 
 
 """Minimal filter - pick a single object per image by minimum measured value"""
@@ -142,7 +142,7 @@ class FilterObjects(ObjectProcessing):
     variable_revision_number = 10
 
     def __init__(self):
-        self.rules = RulesModule()
+        self.rules = Rules()
 
         super(FilterObjects, self).__init__()
 
@@ -655,7 +655,7 @@ value will be retained.""".format(
                 )
                 raise ValidationError(str(instance), self.rules_file_name)
             for r in rules.rules:
-                if return_fuzzy_measurement_name(
+                if self.rules.Rule.return_fuzzy_measurement_name(
                     pipeline.get_measurement_columns(self),
                     r.object_name,
                     r.feature,
@@ -692,7 +692,7 @@ value will be retained.""".format(
             features = self.get_classifier_features()
 
             for feature in features:
-                fuzzy_feature = return_fuzzy_measurement_name(
+                fuzzy_feature = self.rules.Rule.return_fuzzy_measurement_name(
                     pipeline.get_measurement_columns(),
                     feature[:feature.index('_')],
                     feature[feature.index('_'):],
@@ -1082,7 +1082,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         if not os.path.isfile(path):
             raise ValidationError("No such rules file: %s" % path, self.rules_file_name)
         else:
-            rules = Rules(allow_fuzzy=self.allow_fuzzy.value)
+            rules = Rules(allow_fuzzy=self.allow_fuzzy)
             rules.parse(path)
             return rules
 
@@ -1110,7 +1110,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                                       "See the help dialog for more info on model formats.")
                     if d[path_][2] == "FastGentleBoosting":
                         # FGB model files are not sklearn-based, we'll load it as rules instead.
-                        rules = Rules(allow_fuzzy=self.allow_fuzzy.value)
+                        rules = Rules(allow_fuzzy=self.allow_fuzzy)
                         rules.load(d[path_][0])
                         d[path_] = (rules,
                                     d[path_][1],
@@ -1118,7 +1118,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                                     [f"{rule.object_name}_{rule.feature}" for rule in rules.rules])
                 else:
                     # Probably a rules list
-                    rules = Rules(allow_fuzzy=self.allow_fuzzy.value)
+                    rules = Rules(allow_fuzzy=self.allow_fuzzy)
                     rules.parse(path_)
                     # Construct a classifier-like object
                     d[path_] = (rules,
@@ -1181,7 +1181,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             [
                 workspace.measurements[
                     object_name, 
-                    return_fuzzy_measurement_name(
+                    self.rules.Rule.return_fuzzy_measurement_name(
                         workspace.measurements.get_measurement_columns(),
                         object_name,
                         feature_name,

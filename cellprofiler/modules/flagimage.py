@@ -58,7 +58,7 @@ from cellprofiler_core.setting.multichoice import MultiChoice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Text, Filename, Directory, Float
 
-from cellprofiler.utilities.rules import Rules, RulesModule, return_fuzzy_measurement_name, FUZZY_FLOAT
+from cellprofiler.utilities.rules import Rules
 
 C_ANY = "Flag if any fail"
 C_ALL = "Flag if all fail"
@@ -89,7 +89,7 @@ class FlagImage(Module):
     module_name = "FlagImage"
 
     def __init__(self):
-        self.rules = RulesModule()
+        self.rules = Rules()
 
         super(FlagImage, self).__init__()
 
@@ -536,7 +536,7 @@ image is not flagged.
                             measurement_setting.rules_file_name,
                         )
                     for r in rules.rules:
-                        if return_fuzzy_measurement_name(
+                        if self.rules.Rule.return_fuzzy_measurement_name(
                             pipeline.get_measurement_columns(self),
                             "Image",
                             r.feature,
@@ -692,7 +692,7 @@ image is not flagged.
         if not os.path.isfile(path):
             raise ValidationError("No such rules file: %s" % path, rules_file)
         else:
-            rules = Rules(allow_fuzzy=measurement_group.allow_fuzzy.value)
+            rules = Rules(allow_fuzzy=measurement_group.allow_fuzzy)
             rules.parse(path)
             return rules
 
@@ -825,7 +825,7 @@ image is not flagged.
             image_features = workspace.measurements.get_feature_names(IMAGE)
             measurement_columns = workspace.measurements.get_measurement_columns()
             for feature_name in self.get_classifier_features(ms):
-                feature_name = return_fuzzy_measurement_name(measurement_columns,IMAGE,feature_name,False,ms.allow_fuzzy,fuzzy_value=FUZZY_FLOAT)
+                feature_name = self.rules.Rule.return_fuzzy_measurement_name(measurement_columns,IMAGE,feature_name,False,ms.allow_fuzzy)
                 features.append(feature_name)
 
             feature_vector = numpy.array(

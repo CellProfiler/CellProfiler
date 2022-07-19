@@ -1383,7 +1383,7 @@ desired.
                         for name in object_names
                     ]
                 )
-                object_count = int(object_count) if object_count else 0
+                object_count = int(object_count) if object_count and not numpy.isnan(object_count) else 0
                 columns = [
                     numpy.repeat(img_number, object_count)
                     if feature_name == IMAGE_NUMBER

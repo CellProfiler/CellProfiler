@@ -28,9 +28,9 @@ jobs:
           java-package: jdk
           architecture: x64
       - run: |
+          pip install pyinstaller==4.2
           pip install --upgrade pip setuptools wheel
           pip install numpy>=1.20.1
-          pip install pyinstaller==4.2
           git clone https://github.com/CellProfiler/python-javabridge.git ~/python-javabridge
           git clone https://github.com/CellProfiler/python-bioformats.git ~/python-bioformats
           git clone https://github.com/CellProfiler/centrosome.git ~/centrosome

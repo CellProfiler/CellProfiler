@@ -383,6 +383,18 @@ above):
                     ijv = centrosome.cpmorphology.fill_convex_hulls(ch_pts, n_pts)
                     output_labels[ijv[:, 0], ijv[:, 1]] = ijv[:, 2]
 
+                #Renumber to be consecutive
+                ## Create an array that maps label indexes to their new values
+                ## All labels to be deleted have a value in this array of zero
+                indexes = numpy.unique(output_labels)[1:]
+                new_object_count = len(indexes)
+                max_label = numpy.max(output_labels)
+                label_indexes = numpy.zeros((max_label + 1,), int)
+                label_indexes[indexes] = numpy.arange(1, new_object_count + 1)
+
+                # Reindex the labels of the old source image
+                output_labels = label_indexes[output_labels]
+
         output_objects = Objects()
         output_objects.segmented = output_labels
         if objects.has_small_removed_segmented:
@@ -721,7 +733,7 @@ def copy_labels(labels, segmented):
     labels - labels matrix similarly segmented to "segmented"
     segmented - the newly numbered labels matrix (a subset of pixels are labeled)
     """
-    max_labels = numpy.max(segmented)
+    max_labels = len(numpy.unique(segmented))
     seglabel = scipy.ndimage.minimum(labels, segmented, numpy.arange(1, max_labels + 1))
     labels_new = labels.copy()
     labels_new[segmented != 0] = seglabel[segmented[segmented != 0] - 1]

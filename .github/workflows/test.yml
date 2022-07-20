@@ -53,11 +53,11 @@ jobs:
           mysql.server start
           mysql -h 127.0.0.1 -u root -p "" -e "CREATE DATABASE cellprofiler_test;"
       - run: |
-        pip install -e ~/python-javabridge
-        pip install -e ~/python-bioformats
-        pip install -e ~/centrosome
-        pip install -e ~/core
-        pip install -e .[test]
+          pip install -e ~/python-javabridge
+          pip install -e ~/python-bioformats
+          pip install -e ~/centrosome
+          pip install -e ~/core
+          pip install -e .[test]
       - name: Test
         run: pytest
 name: run-cp-tests

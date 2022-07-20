@@ -28,7 +28,7 @@ jobs:
           java-package: jdk
           architecture: x64
       - run: |
-          pip install pyinstaller==4.2
+          pip install pyinstaller
           pip install --upgrade pip setuptools wheel
           pip install numpy>=1.20.1
           git clone https://github.com/CellProfiler/python-javabridge.git ~/python-javabridge

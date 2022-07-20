@@ -55,7 +55,6 @@ jobs:
           brew install mysql
           mysql.server start
           mysql -h 127.0.0.1 -u root --execute="CREATE DATABASE cellprofiler_test;" --skip-password
-          mysql -h 127.0.0.1 -u root -e "show databases;" --password=""
       - name: Install CP
         run: |
           pip install -e ~/python-javabridge
@@ -64,6 +63,9 @@ jobs:
           pip install -e ~/core
           pip install -e .[test]
       - name: Test
-        run: pytest
+        run: |
+          mysql.server status
+          mysql -h 127.0.0.1 -u root -e "show databases;" --password=""
+          pytest
 name: run-cp-tests
 on: [workflow_dispatch]

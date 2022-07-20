@@ -61,5 +61,4 @@ jobs:
       - name: Test
         run: pytest
 name: run-cp-tests
-on:
-  push: [workflow_dispatch]
+on: [workflow_dispatch]

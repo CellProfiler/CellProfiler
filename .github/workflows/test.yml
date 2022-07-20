@@ -6,6 +6,11 @@ jobs:
         os: [macos-10.15]
         python-version: [ 3.8 ]
     runs-on: ${{ matrix.os }}
+    env:
+      CP_MYSQL_TEST_HOST: "127.0.0.1"
+      CP_MYSQL_TEST_DB: "cellprofiler_test"
+      CP_MYSQL_TEST_USER: "root"
+      CP_MYSQL_TEST_PASSWORD: "password"
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -47,14 +52,11 @@ jobs:
       - name: Mac - setup mysql
         env:
           LC_ALL: "en_US.UTF-8"
-          CP_MYSQL_TEST_HOST: "127.0.0.1"
-          CP_MYSQL_TEST_USER: "root"
-          CP_MYSQL_TEST_PASSWORD: ""
         if: ${{ matrix.os == 'macos-10.15' }}
         run: |
           brew install mysql
           mysql.server start
-          mysql -h 127.0.0.1 -u root --execute="CREATE DATABASE cellprofiler_test;" --skip-password
+          mysql -h $CP_MYSQL_TEST_HOST -u $CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
       - name: Install CP
         run: |
           pip install -e ~/python-javabridge
@@ -65,7 +67,7 @@ jobs:
       - name: Test
         run: |
           mysql.server status
-          mysql -h 127.0.0.1 -u root -e "show databases;" --password=""
+          mysql -h $CP_MYSQL_TEST_HOST -u $CP_MYSQL_TEST_USER -e "show databases;" --password=""
           pytest
 name: run-cp-tests
 on: [workflow_dispatch]

@@ -45,14 +45,14 @@ jobs:
       - name: Linux - install mysql and build tools
         env:
           PATH: $PATH:/home/ubuntu/.local/bin
-        if: startsWith(runner.os, 'Linux')
+        if: startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt install -y make gcc build-essential libgtk-3-dev
           sudo apt-get install -y default-libmysqlclient-dev libnotify-dev libsdl2-dev
       - name: Mac - setup mysql
         env:
           LC_ALL: "en_US.UTF-8"
-        if: ${{ matrix.os == 'macos-11' }}
+        if: startsWith(matrix.os, 'macos')
         run: |
           brew install mysql
           mysql.server start
@@ -67,10 +67,10 @@ jobs:
           pip install -e .[test]
       - name: Test
         run: |
-          mysql.server status
-          mysql --version
-          mysql -h $CP_MYSQL_TEST_HOST -u $CP_MYSQL_TEST_USER -e "show databases;"
-          mysql -h localhost -u root -e "use mysql; select user from user;"
+          # mysql.server status
+          # mysql --version
+          # mysql -h $CP_MYSQL_TEST_HOST -u $CP_MYSQL_TEST_USER -e "show databases;"
+          # mysql -h localhost -u root -e "use mysql; select user from user;"
           pytest
 name: run-cp-tests
 on: [workflow_dispatch]

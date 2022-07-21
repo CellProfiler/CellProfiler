@@ -187,7 +187,7 @@ HasImagePlaneDetails:False"""
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        assert len(columns) == 9
+        assert len(columns) == 10
         assert any(
             [
                 column[0] == "Image"
@@ -200,6 +200,14 @@ HasImagePlaneDetails:False"""
             [
                 column[0] == "Image"
                 and column[1] == "Group_Index"
+                and column[2] == COLTYPE_INTEGER
+                for column in columns
+            ]
+        )
+        assert any(
+            [
+                column[0] == "Image"
+                and column[1] == "Group_Length"
                 and column[2] == COLTYPE_INTEGER
                 for column in columns
             ]
@@ -239,18 +247,18 @@ HasImagePlaneDetails:False"""
         assert any([column[1] == "foo" for column in columns])
         module.my_variable.value = "bar"
         columns = x.get_measurement_columns()
-        assert len(columns) == 9
+        assert len(columns) == 10
         assert any([column[1] == "bar" for column in columns])
         module = MeasurementFixture()
         module.set_module_num(2)
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        assert len(columns) == 12
+        assert len(columns) == 13
         assert any([column[1] == "foo" for column in columns])
         assert any([column[1] == "bar" for column in columns])
         columns = x.get_measurement_columns(module)
-        assert len(columns) == 9
+        assert len(columns) == 10
         assert any([column[1] == "bar" for column in columns])
 
     def test_all_groups(self):

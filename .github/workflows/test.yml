@@ -1,3 +1,4 @@
+name: run-cp-tests
 jobs:
   test:
     name: Install and test Cellprofiler
@@ -53,5 +54,10 @@ jobs:
       - name: Run tests
         run: |
           pytest
-name: run-cp-tests
-on: [workflow_dispatch]
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, review_requested]
+  push:
+    branches:
+      - 'master'
+  workflow_dispatch:

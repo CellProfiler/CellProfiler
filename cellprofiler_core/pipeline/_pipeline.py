@@ -2369,7 +2369,7 @@ class Pipeline:
             ),
             ("Image", GROUP_NUMBER, COLTYPE_INTEGER,),
             ("Image", GROUP_INDEX, COLTYPE_INTEGER,),
-            # ("Image", GROUP_LENGTH, COLTYPE_INTEGER,),
+            ("Image", GROUP_LENGTH, COLTYPE_INTEGER,),
         ]
         should_write_columns = True
         for module in self.modules():

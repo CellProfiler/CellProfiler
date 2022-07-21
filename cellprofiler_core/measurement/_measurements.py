@@ -1305,6 +1305,7 @@ class Measurements:
         to_save = [
             GROUP_NUMBER,
             GROUP_INDEX,
+            GROUP_LENGTH
         ]
         to_save_prefixes = [
             C_URL,

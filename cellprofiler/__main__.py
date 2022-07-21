@@ -139,7 +139,7 @@ def main(args=None):
 
         options.run_pipeline = True
 
-    if options.batch_commands_file:
+    if options.batch_commands_file or options.new_batch_commands_file:
         set_headless()
         options.run_pipeline = False
         options.show_gui = False
@@ -209,6 +209,16 @@ def main(args=None):
             )
             nr_per_batch = 1
         get_batch_commands(options.batch_commands_file, nr_per_batch)
+    
+    if options.new_batch_commands_file is not None:
+        try:
+            nr_per_batch = int(options.images_per_batch)
+        except ValueError:
+            logging.warning(
+                "non-integer argument to --images-per-batch. Defaulting to 1."
+            )
+            nr_per_batch = 1
+        get_batch_commands_new(options.new_batch_commands_file, nr_per_batch)
 
     if options.omero_credentials is not None:
         set_omero_credentials_from_string(options.omero_credentials)
@@ -465,7 +475,15 @@ def parse_args(args):
         dest="batch_commands_file",
         default=None,
         help='Open the measurements file following the --get-batch-commands switch and print one line to the console per group. The measurements file should be generated using CreateBatchFiles and the image sets should be grouped into the units to be run. Each line is a command to invoke CellProfiler. You can use this option to generate a shell script that will invoke CellProfiler on a cluster by substituting "CellProfiler" '
-        "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh. Note that CellProfiler will always run in headless mode when --get-batch-commands is present and will exit after generating the batch commands without processing any pipeline.",
+        "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh. Note that CellProfiler will always run in headless mode when --get-batch-commands is present and will exit after generating the batch commands without processing any pipeline. Note that this exact version is deprecated and will be removed in CellProfiler 5; you may use the new version now with --get-batch-commands-new",
+    )
+
+    parser.add_option(
+        "--get-batch-commands-new",
+        dest="new_batch_commands_file",
+        default=None,
+        help='Open the batch file following the --get-batch-commands-new switch and print one line to the console per group. Each line is a command to invoke CellProfiler. You can use this option to generate a shell script that will invoke CellProfiler on a cluster by substituting "CellProfiler". This new version (which will be the only version in CellProfiler 5) will return groups if CellProfiler has more than one group and --images-per-batch is NOT passed (or is passed as 1), otherwise it will always return -f and -l commands. '
+        "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands-new Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh. Note that CellProfiler will always run in headless mode when --get-batch-commands is present and will exit after generating the batch commands without processing any pipeline.",
     )
 
     parser.add_option(
@@ -751,6 +769,7 @@ def get_batch_commands(filename, n_per_job=1):
                 prev = off
     else:
         metadata_tags = m.get_grouping_tags()
+        #this is super misleading, because if it doesn't have grouping, tags, it just tells you all the metadata, grouped or not! Ick
 
         if len(metadata_tags) == 1 and metadata_tags[0] == "ImageNumber":
             for i in range(0, len(image_numbers), n_per_job):
@@ -767,6 +786,48 @@ def get_batch_commands(filename, n_per_job=1):
                 )
 
                 print("CellProfiler -c -r -p %s -g %s" % (filename, group_string))
+    return
+
+def get_batch_commands_new(filename, n_per_job=1):
+    """Print the commands needed to run the given batch data file headless
+
+    filename - the name of a Batch_data.h5 file. The file may (but need not) group image sets.
+
+    You can explicitly set the batch size with --images-per-batch, but note that
+    it will override existing groupings, so use with caution
+
+    The output assumes that the executable, "CellProfiler", can be used
+    to run the command from the shell. Alternatively, the output could be
+    run through a utility such as "sed":
+
+    CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_job.sh/
+    """
+    path = os.path.expanduser(filename)
+
+    m = Measurements(filename=path, mode="r")
+
+    image_numbers = m.get_image_numbers()
+
+    grouping_tags = m.get_grouping_tags_only()
+
+    if n_per_job != 1 or grouping_tags == []:
+        # One of two things is happening:
+        # 1) We've manually set a batch size, and we should always obey it, even if there was grouping
+        # 2) There was no grouping so our only choice is to use -f -l
+        for i in range(0, len(image_numbers), n_per_job):
+            first = image_numbers[i]
+            last = image_numbers[min(i + n_per_job - 1, len(image_numbers) - 1)]
+            print("CellProfiler -c -r -p %s -f %d -l %d" % (filename, first, last))
+    
+    else: #We have grouping enabled and haven't overriden it
+        groupings = m.get_groupings(grouping_tags)
+        for grouping in groupings:
+            group_string = ",".join(
+                ["%s=%s" % (k, v) for k, v in list(grouping[0].items())]
+            )
+
+            print("CellProfiler -c -r -p %s -g %s" % (filename, group_string))
+
     return
 
 

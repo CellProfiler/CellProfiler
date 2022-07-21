@@ -68,7 +68,7 @@ class TestAnalysisWorker(unittest.TestCase):
             self.cancel()
             self.awthread.down_queue.put(None)
             self.awthread.join(10000)
-            self.assertFalse(self.awthread.isAlive())
+            self.assertFalse(self.awthread.is_alive())
         self.work_socket.close()
         self.announce_socket.close()
         #
@@ -155,7 +155,7 @@ class TestAnalysisWorker(unittest.TestCase):
             raise six.moves.queue.Empty
 
         def join(self, timeout=None):
-            if self.isAlive():
+            if self.is_alive():
 
                 def cancel_me():
                     self.aw.cancelled = True

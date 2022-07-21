@@ -675,6 +675,36 @@ desired.
                         % undefined_tags[0],
                         group.file_name,
                     )
+      
+        """Check if image features are exported if GCTs are being made"""
+        if self.wants_genepattern_file.value and self.pick_columns.value:
+            measurement_columns = pipeline.get_measurement_columns()
+            image_features = self.filter_columns([x[1] for x in measurement_columns if x[0]==IMAGE],IMAGE)
+            description_feature = [
+                x for x in image_features if x.startswith(C_PATH_NAME + "_")
+            ]
+            if self.how_to_specify_gene_name == GP_NAME_METADATA:
+                name_feature = [self.gene_name_column.value]
+                if name_feature not in image_features:
+                    name_feature = []
+            elif self.how_to_specify_gene_name == GP_NAME_FILENAME:
+                name_feature = [
+                    x
+                    for x in image_features
+                    if x.startswith(
+                        "_".join(
+                            (
+                                C_FILE_NAME,
+                                self.use_which_image_for_gene_name.value,
+                            )
+                        )
+                    )
+                ]
+            if len(name_feature) == 0 or len(description_feature) == 0: 
+                raise ValidationError(
+                    "At least one path measurement plus the feature selected in 'Select source of sample row name' must be enabled for GCT file creation. Use 'Press button to select measurements' to enable these measurements, or set 'Select measurements to export' to No.",
+                    self.wants_genepattern_file
+                )
 
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
@@ -1251,6 +1281,8 @@ desired.
                     ]
                     if self.how_to_specify_gene_name == GP_NAME_METADATA:
                         name_feature = [self.gene_name_column.value]
+                        if name_feature not in image_features:
+                            name_feature = []
                     elif self.how_to_specify_gene_name == GP_NAME_FILENAME:
                         name_feature = [
                             x
@@ -1264,6 +1296,8 @@ desired.
                                 )
                             )
                         ]
+                    if len(name_feature) == 0 or len(description_feature) == 0:
+                        return
                     image_features = [
                         name_feature[0],
                         description_feature[0],

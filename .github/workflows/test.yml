@@ -52,7 +52,7 @@ jobs:
       - name: Mac - setup mysql
         env:
           LC_ALL: "en_US.UTF-8"
-        if: ${{ matrix.os == 'macos-10.15' }}
+        if: ${{ matrix.os == 'macos-11' }}
         run: |
           brew install mysql
           mysql.server start

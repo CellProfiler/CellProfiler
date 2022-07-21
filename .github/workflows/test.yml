@@ -1,6 +1,6 @@
 jobs:
-  build:
-    name: build
+  test:
+    name: Install and test Cellprofiler
     strategy:
       matrix:
         os: [macos-11]
@@ -37,40 +37,21 @@ jobs:
           pip install pyinstaller
           pip install --upgrade pip setuptools wheel
           pip install numpy>=1.20.1
-          git clone https://github.com/CellProfiler/python-javabridge.git ~/python-javabridge
-          git clone https://github.com/CellProfiler/python-bioformats.git ~/python-bioformats
-          git clone https://github.com/CellProfiler/centrosome.git ~/centrosome
           git clone https://github.com/CellProfiler/core.git ~/core
-          # git clone https://github.com/CellProfiler/CellProfiler.git ~/cellprofiler
-      - name: Linux - install mysql and build tools
-        env:
-          PATH: $PATH:/home/ubuntu/.local/bin
-        if: startsWith(matrix.os, 'ubuntu')
-        run: |
-          sudo apt install -y make gcc build-essential libgtk-3-dev
-          sudo apt-get install -y default-libmysqlclient-dev libnotify-dev libsdl2-dev
       - name: Mac - setup mysql
+        if: startsWith(matrix.os, 'macos')
         env:
           LC_ALL: "en_US.UTF-8"
-        if: startsWith(matrix.os, 'macos')
         run: |
           brew install mysql
           mysql.server start
           mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
-          # mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --password=$CP_MYSQL_TEST_PASSWORD
       - name: Install CP
         run: |
-          pip install -e ~/python-javabridge
-          pip install -e ~/python-bioformats
-          pip install -e ~/centrosome
           pip install -e ~/core
           pip install -e .[test]
-      - name: Test
+      - name: Run tests
         run: |
-          # mysql.server status
-          # mysql --version
-          # mysql -h $CP_MYSQL_TEST_HOST -u $CP_MYSQL_TEST_USER -e "show databases;"
-          # mysql -h localhost -u root -e "use mysql; select user from user;"
           pytest
 name: run-cp-tests
 on: [workflow_dispatch]

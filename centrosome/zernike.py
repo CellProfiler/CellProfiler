@@ -37,7 +37,7 @@ def construct_zernike_lookuptable(zernike_indexes):
 
 
 def construct_zernike_polynomials(x, y, zernike_indexes, mask=None, weight=None):
-    """Return the zerike polynomials for all objects in an image
+    """Return the zernike polynomials for all objects in an image
     
     x - the X distance of a point from the center of its object
     y - the Y distance of a point from the center of its object

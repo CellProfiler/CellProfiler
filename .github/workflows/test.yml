@@ -6,6 +6,7 @@ jobs:
       matrix:
         os: [macos-11]
         python-version: [ 3.8, 3.9 ]
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
       CP_MYSQL_TEST_HOST: "127.0.0.1"

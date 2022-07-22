@@ -8,6 +8,7 @@ jobs:
         python-version: [ 3.8, 3.9 ]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    if: ! github.event.pull_request.draft
     env:
       CP_MYSQL_TEST_HOST: "127.0.0.1"
       CP_MYSQL_TEST_DB: "cellprofiler_test"
@@ -57,7 +58,7 @@ jobs:
           pytest
 on:
   pull_request:
-    types: [opened, reopened, ready_for_review, review_requested]
+    types: [opened, reopened, synchronize, ready_for_review, review_requested]
   push:
     branches:
       - 'master'

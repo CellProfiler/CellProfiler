@@ -9,6 +9,7 @@ import tempfile
 import traceback
 import unittest
 from pathlib import Path
+from importlib.util import find_spec
 
 import numpy
 import numpy.lib.index_tricks
@@ -127,6 +128,7 @@ class TestPipeline(unittest.TestCase):
         set_headless()
         self.new_output_directory = os.path.normcase(tempfile.mkdtemp())
         set_default_output_directory(self.new_output_directory)
+        self.cpinstalled = find_spec("cellprofiler") != None
 
     def tearDown(self):
         subdir = self.new_output_directory
@@ -559,12 +561,20 @@ HasImagePlaneDetails:False"""
         pipeline_v5 = get_empty_pipeline()
         pipeline_v6 = get_empty_pipeline()
 
-        v5_pathname = os.path.realpath(
-            os.path.join(os.path.dirname(__file__), "../data/pipeline/v5_ExampleFly.cppipe")
-        )
-        v6_pathname = os.path.realpath(
-            os.path.join(os.path.dirname(__file__), "../data/pipeline/v6.json")
-        )
+        if self.cpinstalled:
+            v5_pathname = os.path.realpath(
+                os.path.join(os.path.dirname(__file__), "../data/pipeline/v5_ExampleFly.cppipe")
+            )
+            v6_pathname = os.path.realpath(
+                os.path.join(os.path.dirname(__file__), "../data/pipeline/v6_ExampleFly.json")
+            )
+        else:
+            v5_pathname = os.path.realpath(
+                os.path.join(os.path.dirname(__file__), "../data/pipeline/v5_coreOnly.cppipe")
+            )
+            v6_pathname = os.path.realpath(
+                os.path.join(os.path.dirname(__file__), "../data/pipeline/v6_coreOnly.json")
+            )
 
         pipeline_v5.load(v5_pathname)
         with open(v6_pathname, "r") as fd:

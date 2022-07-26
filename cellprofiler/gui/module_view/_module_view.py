@@ -1847,7 +1847,7 @@ class ModuleView:
             )
             sub_sizer.Add(category_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             category_ctrl = wx.ComboBox(
-                panel, style=wx.CB_READONLY, name=category_control_name(v), choices = categories
+                panel, style=wx.CB_READONLY, name=category_control_name(v), choices=categories
             )
             sub_sizer.Add(category_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             #
@@ -1860,7 +1860,7 @@ class ModuleView:
             )
             sub_sizer.Add(feature_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             feature_ctrl = wx.ComboBox(
-                panel, style=wx.CB_READONLY, name=feature_control_name(v), choices = feature_names
+                panel, style=wx.CB_READONLY, name=feature_control_name(v), choices=feature_names
             )
             sub_sizer.Add(feature_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             #
@@ -1873,7 +1873,7 @@ class ModuleView:
             )
             sub_sizer.Add(object_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             object_ctrl = wx.ComboBox(
-                panel, style=wx.CB_READONLY, name=object_control_name(v), choices = image_names+object_names
+                panel, style=wx.CB_READONLY, name=object_control_name(v), choices=image_names+object_names
             )
             sub_sizer.Add(object_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             #
@@ -1885,7 +1885,7 @@ class ModuleView:
             )
             sub_sizer.Add(scale_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             scale_ctrl = wx.ComboBox(
-                panel, style=wx.CB_READONLY, name=scale_control_name(v), choices = scales
+                panel, style=wx.CB_READONLY, name=scale_control_name(v), choices=scales
             )
             sub_sizer.Add(scale_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             max_width = 0

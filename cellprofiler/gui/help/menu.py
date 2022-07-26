@@ -295,4 +295,11 @@ class Menu(cellprofiler.gui.menu.Menu):
             ),
         )
 
+        project_menu.append(
+            "Image Ordering",
+            contents=cellprofiler.gui.help.content.read_content(
+                "projects_image_ordering.rst"
+            ),
+        )
+
         return project_menu

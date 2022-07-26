@@ -142,6 +142,7 @@ Learn how to configure a project and load images.
    help/projects_selecting_images
    help/projects_configure_images
    help/projects_image_sequences
+   help/projects_image_ordering
 
 `(Jump to top)`_
 

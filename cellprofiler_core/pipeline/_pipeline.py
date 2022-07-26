@@ -689,6 +689,36 @@ class Pipeline:
             lines.append("")
         fd.write("\n".join(lines))
 
+    def save_pipeline_citations(self, fd, indent=2):
+        """Save pipeline citations to a text file
+
+        fd - file descriptor of the file.
+
+        indent - indent of the notes relative to module header.
+        """
+        lines = []
+        for module in self.modules(exclude_disabled=True):
+            if module.enabled:
+                fmt = "[%4.d] [%s]"
+            else:
+                fmt = "[%4.d] [%s] (disabled)"
+            mod_doc, settings_doc =module.get_help_text()
+            set1, set2 = settings_doc[-3] #what's up with this structure?
+            startswith="\nReferences\n^^^^^^^^^^\n\n-  "
+            if startswith in set2:
+                refstartindex=set2.find(startswith)+len(startswith)
+                myCite=set2[refstartindex:]
+                refend=myCite.find("\n')")
+                myCite=myCite[:refend]
+                myCite = myCite.replace("`(link)`_.\n\n.. _(link): ", "")
+                print(myCite)
+
+                lines.append(fmt % (module.module_num, module.module_name))
+                lines.append(myCite)
+            
+                lines.append("")
+        fd.write("\n".join(lines))
+
     def write_pipeline_measurement(self, m, user_pipeline=False):
         """Write the pipeline experiment measurement to the measurements
 

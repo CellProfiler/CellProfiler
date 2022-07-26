@@ -1,7 +1,7 @@
 Image Ordering
 ==============
 
-Files are processed on a Mac or PC by the `ASCII code order`_, which include the following rules
+Files are processed on a Mac or PC by the `ASCII code order`_, in ascending numerical order of the `ASCII codes`_ that represent leading characters, including the following rules:
 
 Leading-number files are processed first (eg 0019.jpg before Image0019.jpg or image0019.jpg). Leading-number files are processed in numerical order.
 Leading-capital letter files are processed before leading-lowercase named files (Image0019.jpg before image0019.jpg). Leading-capital letter files are processed in alphabetical order first (A002.jpg before B001.jpg) and then by numerical order (A001.jpg before A002.jpg).
@@ -18,3 +18,4 @@ Stick with all uppercase, or all lowercase, so you don’t get confused.
 Use leading zeroes on numbers (eg 000001)
 
 .. _ASCII code order: http://en.wikipedia.org/wiki/ASCII#Order
+.. _ASCII character codes: https://en.wikipedia.org/wiki/ASCII#Printable_characters

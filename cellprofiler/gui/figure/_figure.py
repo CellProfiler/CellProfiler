@@ -1634,8 +1634,9 @@ class Figure(wx.Frame):
             colormap.autoscale()
 
         if self.dimensions == 3:
+            self.navtoolbar.set_volumetric()
             z = image.shape[0]
-            self.current_plane = z // 2
+            self.current_plane = min(z // 2,self.navtoolbar.slider.GetValue())
 
         image = self.normalize_image(self.images[(x, y)], **kwargs)
 
@@ -2049,7 +2050,10 @@ class Figure(wx.Frame):
         image = image.astype(numpy.float32)
         if self.dimensions == 3:
             orig_image_max = image.max()
-            image = image[self.current_plane, :, :]
+            if self.current_plane >= image.shape[0]:
+                image = image[image.shape[0]-1, :, :]
+            else:
+                image = image[self.current_plane, :, :]
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
 

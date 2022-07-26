@@ -82,6 +82,7 @@ ID_FILE_REVERT_TO_SAVED = wx.NewId()
 ID_FILE_CLEAR_PIPELINE = wx.NewId()
 ID_FILE_EXPORT_IMAGE_SETS = wx.NewId()
 ID_FILE_EXPORT_PIPELINE_NOTES = wx.NewId()
+ID_FILE_EXPORT_PIPELINE_CITATIONS = wx.NewId()
 ID_FILE_IMPORT_FILE_LIST = wx.NewId()
 ID_FILE_ANALYZE_IMAGES = wx.NewId()
 ID_FILE_STOP_ANALYSIS = wx.NewId()
@@ -633,6 +634,11 @@ class CPFrame(wx.Frame):
             "Pipeline notes...",
             "Save a text file outlining the pipeline's modules and module notes",
         )
+        submenu.Append(
+            ID_FILE_EXPORT_PIPELINE_CITATIONS,
+            "Citation list for your pipeline...",
+            "Save a text file bibliography listing citations for your current pipeline modules",
+        )
         self.__menu_file.AppendSubMenu(submenu, "Export")
         self.__menu_file.Append(
             ID_FILE_CLEAR_PIPELINE,
@@ -875,8 +881,8 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON, self.__on_help_module, id=ID_HELP_MODULE)
 
         # ID_CITE_MODULE is used in button contexts only I think so will only have button event bindings
-        #self.Bind(wx.EVT_MENU, self.__on_help_module, id=ID_HELP_MODULE)
-        self.Bind(wx.EVT_BUTTON, self.__on_cite_module, id=ID_CITE_MODULE)
+        self.Bind(wx.EVT_MENU, self.__on_help_module, id=ID_CITE_MODULE)
+        #self.Bind(wx.EVT_BUTTON, self.__on_cite_module, id=ID_CITE_MODULE)
 
         self.Bind(wx.EVT_MENU, self.__on_preferences, id=ID_OPTIONS_PREFERENCES)
         self.Bind(wx.EVT_MENU, self.__on_close_all, id=ID_WINDOW_CLOSE_ALL)
@@ -1074,27 +1080,7 @@ class CPFrame(wx.Frame):
                 "No module selected",
                 style=wx.OK | wx.ICON_INFORMATION,
             )
-    def __on_cite_module(self, event):
-        modules = self.__pipeline_list_view.get_selected_modules()
-        active_module = self.__pipeline_list_view.get_active_module()
-        myCite=active_module.get_help()
-        refstart=myCite.find("<div class=\"section\" id=\"references\">")
-        myCite=myCite[refstart:]
-        refend=myCite.find("</div>")
-        myCite=myCite[:(refend+6)]
-        myCite=myCite.replace("ul", "ol")
-        print(myCite)
-        self.do_help_module(active_module.module_name, myCite)
-        if len(modules) > 0:
-            self.do_help_modules(modules)
-        elif active_module is not None:
-            self.do_help_module(active_module.module_name, myCite)
-        else:
-            wx.MessageBox(
-                HELP_ON_MODULE_BUT_NONE_SELECTED,
-                "No module selected",
-                style=wx.OK | wx.ICON_INFORMATION,
-            )
+    
     @staticmethod
     def __debug_pdb(event):
         pdb.set_trace()

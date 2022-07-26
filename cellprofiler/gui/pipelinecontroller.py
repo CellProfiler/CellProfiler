@@ -272,6 +272,11 @@ class PipelineController(object):
         )
         frame.Bind(
             wx.EVT_MENU,
+            self.__on_export_pipeline_citations,
+            id=cellprofiler.gui.cpframe.ID_FILE_EXPORT_PIPELINE_CITATIONS,
+        )
+        frame.Bind(
+            wx.EVT_MENU,
             self.__on_revert_workspace,
             id=cellprofiler.gui.cpframe.ID_FILE_REVERT_TO_SAVED,
         )
@@ -573,14 +578,6 @@ class PipelineController(object):
             (30, -1),
         )
         self.__help_button.SetToolTip("Get Help for selected module")
-        self.__cite_button = wx.Button(
-            self.__module_controls_panel,
-            cellprofiler.gui.cpframe.ID_CITE_MODULE,
-            "Generate Citation",
-            (0, 0),
-            (120, -1),
-        )
-        self.__cite_button.SetToolTip("Generate citation for current pipeline")
         self.__mcp_text = wx.StaticText(
             self.__module_controls_panel, -1, "Adjust modules:"
         )
@@ -623,7 +620,6 @@ class PipelineController(object):
                 (self.__mcp_module_down_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
             ]
         )
-        mcp_sizer.Add(self.__cite_button, 0, wx.ALIGN_CENTER | wx.ALL, 3)
         self.__module_controls_panel.SetSizer(mcp_sizer)
         #self.__module_controls_panel2.SetSizer(mcp_sizer2)
         self.__module_controls_panel.Bind(
@@ -1450,6 +1446,27 @@ class PipelineController(object):
             if dlg.ShowModal() == wx.ID_OK:
                 with open(dlg.Path, "w") as fd:
                     self.__workspace.pipeline.save_pipeline_notes(fd)
+
+    def __on_export_pipeline_citations(self, event):
+        default_filename = get_current_workspace_path()
+        if default_filename is None:
+            default_filename = "citations.txt"
+            default_path = None
+        else:
+            default_path, default_filename = os.path.split(default_filename)
+            default_filename = os.path.splitext(default_filename)[0] + ".txt"
+        with wx.FileDialog(
+            self.__frame,
+            "Export pipeline citations",
+            defaultFile=default_filename,
+            wildcard="Text file (*.txt)|*.txt",
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+        ) as dlg:
+            if default_path is not None:
+                dlg.Directory = default_path
+            if dlg.ShowModal() == wx.ID_OK:
+                with open(dlg.Path, "w") as fd:
+                    self.__workspace.pipeline.save_pipeline_citations(fd)
 
     def __on_plateviewer(self, event):
         import cellprofiler.gui.plateviewer as pv

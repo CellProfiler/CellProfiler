@@ -13,6 +13,8 @@ import tempfile
 import timeit
 import urllib.parse
 import urllib.request
+import requests
+
 import uuid
 import weakref
 from ast import literal_eval
@@ -697,25 +699,22 @@ class Pipeline:
         indent - indent of the notes relative to module header.
         """
         lines = []
+        headers = {
+                      'Accept': 'text/x-bibliography; style=apa',
+                    }
         for module in self.modules(exclude_disabled=True):
             if module.enabled:
                 fmt = "[%4.d] [%s]"
             else:
                 fmt = "[%4.d] [%s] (disabled)"
-            mod_doc, settings_doc =module.get_help_text()
-            set1, set2 = settings_doc[-3] #what's up with this structure?
-            startswith="\nReferences\n^^^^^^^^^^\n\n-  "
-            if startswith in set2:
-                refstartindex=set2.find(startswith)+len(startswith)
-                myCite=set2[refstartindex:]
-                refend=myCite.find("\n')")
-                myCite=myCite[:refend]
-                myCite = myCite.replace("`(link)`_.\n\n.. _(link): ", "")
-                print(myCite)
+            doi_link_list=module.doi
 
+            if len(doi_link_list)>0:
+                citation_list = [requests.get(doi_link, headers=headers).text for doi_link in doi_link_list]
+                
                 lines.append(fmt % (module.module_num, module.module_name))
-                lines.append(myCite)
-            
+                lines.append("\n".join(citation_list))
+                
                 lines.append("")
         fd.write("\n".join(lines))
 

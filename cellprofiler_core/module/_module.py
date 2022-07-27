@@ -64,7 +64,7 @@ class Module:
     get_dictionary()).
     """
 
-    def __init__(self):
+    def __init__(self, doi=[]):
         if self.__doc__ is None:
             self.__doc__ = sys.modules[self.__module__].__doc__
 
@@ -82,6 +82,8 @@ class Module:
         )  # used for maintaining state between modules, see get_dictionary()
         self.id = uuid.uuid4()
         self.batch_state = numpy.zeros((0,), numpy.uint8)
+        # used for citation generation
+        self.__doi = doi
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
         # attribute in the class definition or by assigning to it in
@@ -89,6 +91,14 @@ class Module:
         if not hasattr(self, "module_name"):
             self.module_name = self.__class__.__name__
         self.create_settings()
+        
+    @property
+    def doi(self):
+        if self.__doi is not []:
+            return self.__doi
+    @doi.setter
+    def doi(self, doi):
+        self.__doi = doi
 
     def to_dict(self) -> dict:
         return {"module_num": self.module_num,

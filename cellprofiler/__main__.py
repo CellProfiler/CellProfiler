@@ -706,7 +706,7 @@ def print_groups(filename):
 
     m = Measurements(filename=path, mode="r")
 
-    metadata_tags = m.get_grouping_tags()
+    metadata_tags = m.get_grouping_tags_or_metadata()
 
     groupings = m.get_groupings(metadata_tags)
 
@@ -768,8 +768,7 @@ def get_batch_commands(filename, n_per_job=1):
 
                 prev = off
     else:
-        metadata_tags = m.get_grouping_tags()
-        #this is super misleading, because if it doesn't have grouping, tags, it just tells you all the metadata, grouped or not! Ick
+        metadata_tags = m.get_grouping_tags_or_metadata()
 
         if len(metadata_tags) == 1 and metadata_tags[0] == "ImageNumber":
             for i in range(0, len(image_numbers), n_per_job):

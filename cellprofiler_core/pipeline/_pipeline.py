@@ -81,7 +81,7 @@ from ..constants.modules.metadata import X_AUTOMATIC_EXTRACTION
 from ..image import ImageSetList
 from ..measurement import Measurements
 from ..object import ObjectSet
-from ..preferences import get_headless
+from ..preferences import get_always_continue, get_headless
 from ..preferences import get_conserve_memory
 from ..preferences import report_progress
 from ..setting import Measurement
@@ -1006,6 +1006,7 @@ class Pipeline:
                     try:
                         self.run_module(module, workspace)
                     except Exception as instance:
+                        print("pipeline_exception")
                         logging.error(
                             "Error detected during run of module %s",
                             module.module_name,
@@ -1060,19 +1061,25 @@ class Pipeline:
                     failure = 0
 
                     if exception is not None:
-                        event = RunException(exception, module, tb)
-
-                        self.notify_listeners(event)
-
-                        if event.cancel_run:
-                            return
-                        elif event.skip_thisset:
-                            # Skip this image, continue to others
+                        if get_always_continue():
                             workspace.set_disposition(DISPOSITION_SKIP)
 
                             should_write_measurements = False
 
-                            measurements = None
+                        else:
+                            event = RunException(exception, module, tb)
+
+                            self.notify_listeners(event)
+
+                            if event.cancel_run:
+                                return
+                            elif event.skip_thisset:
+                                # Skip this image, continue to others
+                                workspace.set_disposition(DISPOSITION_SKIP)
+
+                                should_write_measurements = False
+
+                                measurements = None
 
                     # Paradox: ExportToDatabase must write these columns in order
                     #  to complete, but in order to do so, the module needs to
@@ -1197,6 +1204,7 @@ class Pipeline:
                 # the UI has cancelled the run. Forward exception upward.
                 raise
             except Exception as exception:
+                print("run_image_set_exception, get_always_continue",get_always_continue())
                 logging.error(
                     "Error detected during run of module %s#%d",
                     module.module_name,
@@ -1208,6 +1216,8 @@ class Pipeline:
                         "Image",
                         "ModuleError_%02d%s" % (module.module_num, module.module_name),
                     ] = 1
+                if get_always_continue():
+                    return
                 evt = RunException(exception, module, sys.exc_info()[2])
                 self.notify_listeners(evt)
                 if evt.cancel_run or evt.skip_thisset:

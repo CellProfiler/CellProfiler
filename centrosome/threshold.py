@@ -350,7 +350,7 @@ def get_otsu_threshold(
     return threshold
 
 
-get_otsu_threshold.args = inspect.getargspec(get_otsu_threshold).args
+get_otsu_threshold.args = inspect.getfullargspec(get_otsu_threshold).args
 
 
 def get_mog_threshold(image, mask=None, object_fraction=0.2):
@@ -491,7 +491,7 @@ def get_mog_threshold(image, mask=None, object_fraction=0.2):
     return level[index]
 
 
-get_mog_threshold.args = inspect.getargspec(get_mog_threshold).args
+get_mog_threshold.args = inspect.getfullargspec(get_mog_threshold).args
 
 
 def get_background_threshold(image, mask=None):
@@ -530,7 +530,7 @@ def get_background_threshold(image, mask=None):
     return img_min + cutoff * 2 * (img_max - img_min)
 
 
-get_background_threshold.args = inspect.getargspec(get_background_threshold).args
+get_background_threshold.args = inspect.getfullargspec(get_background_threshold).args
 
 
 def get_robust_background_threshold(
@@ -581,7 +581,7 @@ def get_robust_background_threshold(
     return mean + sd * deviations_above_average
 
 
-get_robust_background_threshold.args = inspect.getargspec(
+get_robust_background_threshold.args = inspect.getfullargspec(
     get_robust_background_threshold
 ).args
 
@@ -653,7 +653,7 @@ def get_ridler_calvard_threshold(image, mask=None):
     return math.exp(min_val + (max_val - min_val) * new_thresh)
 
 
-get_ridler_calvard_threshold.args = inspect.getargspec(
+get_ridler_calvard_threshold.args = inspect.getfullargspec(
     get_ridler_calvard_threshold
 ).args
 
@@ -698,7 +698,7 @@ def get_kapur_threshold(image, mask=None):
     return 2 ** ((histogram_values[entry] + histogram_values[entry + 1]) / 2)
 
 
-get_kapur_threshold.args = inspect.getargspec(get_kapur_threshold).args
+get_kapur_threshold.args = inspect.getfullargspec(get_kapur_threshold).args
 
 
 def get_maximum_correlation_threshold(image, mask=None, bins=256):
@@ -760,7 +760,7 @@ def get_maximum_correlation_threshold(image, mask=None, bins=256):
     return min_value + my_bin * (max_value - min_value) / (bins - 1)
 
 
-get_maximum_correlation_threshold.args = inspect.getargspec(
+get_maximum_correlation_threshold.args = inspect.getfullargspec(
     get_maximum_correlation_threshold
 ).args
 
@@ -836,8 +836,8 @@ def sum_of_entropies(image, mask, binary_image):
     log_bg = np.log2(bg)
     #
     # Make these into histograms
-    hfg = np.histogram(log_fg, 256, range=(lower, upper), normed=False, weights=None)[0]
-    hbg = np.histogram(log_bg, 256, range=(lower, upper), normed=False, weights=None)[0]
+    hfg = np.histogram(log_fg, 256, range=(lower, upper), weights=None)[0]
+    hbg = np.histogram(log_bg, 256, range=(lower, upper), weights=None)[0]
     # hfg = scipy.ndimage.histogram(log_fg,lower,upper,256)
     # hbg = scipy.ndimage.histogram(log_bg,lower,upper,256)
     #

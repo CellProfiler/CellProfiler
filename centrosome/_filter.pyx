@@ -42,7 +42,7 @@ import_array()
 ##############################################################################
 
 DTYPE_UINT32 = np.uint32
-DTYPE_BOOL = np.bool
+DTYPE_BOOL = bool
 ctypedef np.uint16_t pixel_count_t
 
 ###########

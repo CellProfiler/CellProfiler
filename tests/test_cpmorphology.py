@@ -18292,7 +18292,7 @@ class TestAngularDistribution(unittest.TestCase):
     def test_00_00_angular_dist(self):
         np.random.seed(0)
         # random labels from 0 to 9
-        labels = (np.random.uniform(0, 0.95, (1000, 1000)) * 10).astype(np.int)
+        labels = (np.random.uniform(0, 0.95, (1000, 1000)) * 10).astype(np.int32)
         # filled square of 11 (NB: skipped 10)
         labels[200:300, 600:900] = 11
         angdist = morph.angular_distribution(labels)

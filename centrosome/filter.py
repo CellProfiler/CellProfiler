@@ -702,7 +702,7 @@ def gabor(image, labels, frequency, theta):
     g_sin_mean = fix(scind.mean(g_sin, lm, np.arange(nobjects)))
     g_cos -= g_cos_mean[lm]
     g_sin -= g_sin_mean[lm]
-    g = np.zeros(mask.shape, dtype=np.complex)
+    g = np.zeros(mask.shape, dtype=complex)
     g[mask] = i_norm * g_cos + i_norm * g_sin * 1j
     return g
 

@@ -3,7 +3,7 @@ from __future__ import print_function
 import warnings
 
 import numpy as np
-from scipy import linspace
+from numpy import linspace
 from scipy.ndimage import affine_transform
 from six.moves import range
 
@@ -228,7 +228,7 @@ If mask is given, only masked points are used for the regression."""
         # indices is empty when mask changes to all zeros
         else:
             a = np.array((z.T.flatten()[indices[0]]))
-            pz = np.linalg.lstsq(V.T, a.T)[0].T
+            pz = np.linalg.lstsq(V.T, a.T,rcond=-1)[0].T
 
     pz = pz.reshape((len(py), len(px)))
     return pz.transpose()
@@ -452,9 +452,9 @@ def bg_compensate(img, sigma, splinepoints, scale):
 
     import time
 
-    t0 = time.clock()
+    t0 = time.process_time()
     bg = backgr(img, mask, MODE_AUTO, sigma, splinepoints=splinepoints, scale=scale)
-    print("Executed in %f sec" % (time.clock() - t0))
+    print("Executed in %f sec" % (time.process_time() - t0))
     bg[~mask] = img[~mask]
 
     pylab.subplot(1, 3, 2).imshow(img - bg, cmap=matplotlib.cm.Greys_r)

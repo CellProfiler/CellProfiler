@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 import numpy as np
 from scipy.fftpack import fft2
-from scipy.ndimage.measurements import sum as nd_sum
+from scipy.ndimage import sum as nd_sum
 
 
 def rps(img):

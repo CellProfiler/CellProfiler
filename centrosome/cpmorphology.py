@@ -167,7 +167,7 @@ def adjacent(labels):
     """
     high = labels.max() + 1
     if high > np.iinfo(labels.dtype).max:
-        labels = labels.astype(np.int)
+        labels = labels.astype(np.int32)
     image_with_high_background = labels.copy()
     image_with_high_background[labels == 0] = high
     min_label = scind.minimum_filter(
@@ -464,9 +464,9 @@ def strel_line(length, angle):
     Note: uses draw_line's Bresenham algorithm to select points.
     """
     angle = float(angle) * np.pi / 180.0
-    x_off = int(np.finfo(float).eps + np.cos(angle) * length / 2)
+    x_off = int(np.round(np.finfo(float).eps + np.cos(angle) * length / 2))
     # Y is flipped here because "up" is negative
-    y_off = -int(np.finfo(float).eps + np.sin(angle) * length / 2)
+    y_off = -int(np.round(np.finfo(float).eps + np.sin(angle) * length / 2))
     x_center = abs(x_off)
     y_center = abs(y_off)
     strel = np.zeros((y_center * 2 + 1, x_center * 2 + 1), bool)
@@ -3083,8 +3083,8 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     dims[0] = 2
     inside_slices = [slice(p, -p) for p in padding]
     values = np.ones(dims) * np.min(image)
-    values[[0] + inside_slices] = image
-    values[[1] + inside_slices] = mask
+    values[tuple([0]+inside_slices)] = image
+    values[tuple([1]+inside_slices)] = mask
     #
     # Create a list of strides across the array to get the neighbors
     # within a flattened array
@@ -3166,7 +3166,7 @@ def grey_reconstruction(image, mask, footprint=None, offset=None):
     #
     values = value_map[values[:image_stride]]
     values.shape = np.array(image.shape) + 2 * padding
-    return values[inside_slices]
+    return values[tuple(inside_slices)]
 
 
 def opening(image, radius=None, mask=None, footprint=None):

@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import math
 import copy
 import numpy
-import scipy.ndimage.measurements
+import scipy.ndimage
 from . import lapjv
 import six
 from six.moves import range
@@ -113,7 +113,7 @@ class CellFeatures(object):
         """
         labels = labels.astype(int)
 
-        areas = scipy.ndimage.measurements.sum(
+        areas = scipy.ndimage.sum(
             labels != 0, labels, list(range(1, numpy.max(labels) + 1))
         )
 
@@ -121,7 +121,7 @@ class CellFeatures(object):
 
         existing_areas = [a for a in areas if a > 0]
 
-        existing_centers = scipy.ndimage.measurements.center_of_mass(
+        existing_centers = scipy.ndimage.center_of_mass(
             labels != 0, labels, existing_labels
         )
 

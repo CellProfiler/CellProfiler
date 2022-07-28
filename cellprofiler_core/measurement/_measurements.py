@@ -1734,7 +1734,7 @@ class Measurements:
         data = json.dumps(grouping_tags)
         self.add_experiment_measurement(M_GROUPING_TAGS, data)
 
-    def get_grouping_tags(self):
+    def get_grouping_tags_or_metadata(self):
         """Get the metadata tags that were used to group the image set
 
         """

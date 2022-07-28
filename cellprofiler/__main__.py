@@ -32,6 +32,7 @@ from cellprofiler_core.preferences import get_omero_server
 from cellprofiler_core.preferences import get_omero_session_id
 from cellprofiler_core.preferences import get_omero_user
 from cellprofiler_core.preferences import set_allow_schema_write
+from cellprofiler_core.preferences import set_always_continue
 from cellprofiler_core.preferences import set_awt_headless
 from cellprofiler_core.preferences import set_data_file
 from cellprofiler_core.preferences import set_default_image_directory
@@ -219,6 +220,8 @@ def main(args=None):
     if options.conserve_memory is not None:
         set_conserve_memory(options.conserve_memory, globally=False)
 
+    if options.always_continue is not None:
+        set_always_continue(options.always_continue, globally=False)
 
     if not options.allow_schema_write:
         set_allow_schema_write(False)
@@ -539,6 +542,14 @@ def parse_args(args):
             + ("%d or %s for fatal." % (logging.FATAL, "FATAL"))
             + " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"
         ),
+    )
+
+    parser.add_option(
+        "--always-continue",
+        dest="always_continue",
+        default=None,
+        action="store_true",
+        help="Keep running after an image set throws an error"
     )
 
     options, result_args = parser.parse_args(args[1:])

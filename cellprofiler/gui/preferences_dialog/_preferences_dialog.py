@@ -4,6 +4,7 @@ import sys
 import matplotlib.cm
 import wx
 import wx.lib.scrolledpanel
+from cellprofiler_core.preferences import ALWAYS_CONTINUE_HELP
 from cellprofiler_core.preferences import CONSERVE_MEMORY_HELP
 from cellprofiler_core.preferences import DEFAULT_COLORMAP_HELP
 from cellprofiler_core.preferences import DEFAULT_IMAGE_FOLDER_HELP
@@ -37,6 +38,7 @@ from cellprofiler_core.preferences import TEMP_DIR_HELP
 from cellprofiler_core.preferences import TERTIARY_OUTLINE_COLOR_HELP
 from cellprofiler_core.preferences import UPDATER_HELP
 from cellprofiler_core.preferences import default_max_workers
+from cellprofiler_core.preferences import get_always_continue
 from cellprofiler_core.preferences import get_check_update_bool
 from cellprofiler_core.preferences import get_conserve_memory
 from cellprofiler_core.preferences import get_default_colormap
@@ -65,6 +67,7 @@ from cellprofiler_core.preferences import get_tertiary_outline_color
 from cellprofiler_core.preferences import get_title_font_name
 from cellprofiler_core.preferences import get_title_font_size
 from cellprofiler_core.preferences import get_wants_pony
+from cellprofiler_core.preferences import set_always_continue
 from cellprofiler_core.preferences import set_check_update
 from cellprofiler_core.preferences import set_conserve_memory
 from cellprofiler_core.preferences import set_default_colormap
@@ -475,6 +478,13 @@ class PreferencesDialog(wx.Dialog):
                 set_conserve_memory,
                 CHOICE,
                 CONSERVE_MEMORY_HELP,
+            ],
+            [
+                'Always skip failing images',
+                get_always_continue,
+                set_always_continue,
+                CHOICE,
+                ALWAYS_CONTINUE_HELP,
             ],
 
             ["Pony", get_wants_pony, set_wants_pony, CHOICE, "The end is neigh.",],

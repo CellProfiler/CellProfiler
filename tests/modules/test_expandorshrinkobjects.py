@@ -12,16 +12,18 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
+import cellprofiler_core.measurement
 
 cellprofiler_core.preferences.set_headless()
 
 INPUT_NAME = "input"
 OUTPUT_NAME = "output"
 OUTLINES_NAME = "outlines"
+MEASUREMENT_NAME = "a_measurement"
 
 
 def make_workspace(
-    labels, operation, iterations=1, wants_outlines=False, wants_fill_holes=False
+    labels, operation, iterations=1, wants_outlines=False, wants_fill_holes=False, measurement=None
 ):
     object_set = cellprofiler_core.object.ObjectSet()
     objects = cellprofiler_core.object.Objects()
@@ -199,6 +201,46 @@ def test_shrink_inf_fill_holes():
         cellprofiler.modules.expandorshrinkobjects.O_SHRINK_INF,
         wants_fill_holes=True,
     )
+    module.run(workspace)
+    objects = workspace.object_set.get_objects(OUTPUT_NAME)
+    assert numpy.all(objects.segmented == expected)
+
+def test_shrink_from_measurement():
+    """Shrink objects based on a measurement"""
+    labels = numpy.zeros((10, 10), int)
+    labels[1:9, 1:9] = 1
+    measurement = [4]
+    expected = centrosome.cpmorphology.binary_shrink(
+                    labels, 
+                    iterations=measurement[0]
+                )
+    workspace, module = make_workspace(
+        labels, 
+        cellprofiler.modules.expandorshrinkobjects.O_SHRINK_BY_MEASUREMENT
+    )
+    m = workspace.measurements
+    m.add_image_measurement(MEASUREMENT_NAME, measurement)
+    module.exp_shr_measurement.value = MEASUREMENT_NAME
+    module.run(workspace)
+    objects = workspace.object_set.get_objects(OUTPUT_NAME)
+    assert numpy.all(objects.segmented == expected)
+
+
+def test_expand_from_measurement():
+    """Shrink objects based on a measurement"""
+    labels = numpy.zeros((10, 10), int)
+    labels[4, 4] = 1
+    expected = numpy.zeros((10, 10), int)
+    expected[numpy.array([4, 3, 4, 5, 4], int), numpy.array([3, 4, 4, 4, 5], int)] = 1
+    measurement = 1
+    workspace, module = make_workspace(
+        labels, 
+        cellprofiler.modules.expandorshrinkobjects.O_EXPAND_BY_MEASUREMENT, 
+        measurement=measurement
+    )
+    m = workspace.measurements
+    m.add_image_measurement(MEASUREMENT_NAME, measurement)
+    module.exp_shr_measurement.value = MEASUREMENT_NAME
     module.run(workspace)
     objects = workspace.object_set.get_objects(OUTPUT_NAME)
     assert numpy.all(objects.segmented == expected)

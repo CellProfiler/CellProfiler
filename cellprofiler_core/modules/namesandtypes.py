@@ -2151,8 +2151,19 @@ requests an object selection.
         image = provider.provide_image(workspace.image_set)
         o = Objects()
         shape = image.pixel_data.shape
-        image.set_image(skimage.morphology.label(image.pixel_data), convert=False)
-        if shape[2] == 1:
+        #image.set_image(skimage.morphology.label(image.pixel_data), convert=False)
+        #renumber if non-continuous label matrix: 
+        labels=image.pixel_data
+        nobjects = numpy.max(labels)
+        unique_labels = numpy.unique(labels[labels != 0])
+        contig_labels=numpy.arange(1, len(unique_labels) + 1)
+        if all(unique_labels==contig_labels):
+            image.set_image(labels, convert=False)
+        else:
+            indexer = numpy.zeros(nobjects + 1, int)
+            indexer[unique_labels] =contig_labels
+            image.set_image(skimage.morphology.label(indexer[labels]), convert=False)
+        if shape[2] == 1 or volume:
             o.segmented = image.pixel_data[:, :, 0]
             add_object_location_measurements(
                 workspace.measurements, name, o.segmented, o.count

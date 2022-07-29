@@ -34,16 +34,13 @@ class TestAnalysisWorker(unittest.TestCase):
     def setUpClass(cls):
         cls.zmq_context = cellprofiler_core.constants.worker.the_zmq_context
         cls.notify_pub_socket = cellprofiler_core.worker.get_the_notify_pub_socket()
-        #
-        # Install a bogus display_post_group method in FlipAndRotate
-        # to elicit a post-group interaction request
-        #
-        from cellprofiler.modules.flipandrotate import FlipAndRotate
+
+        from cellprofiler_core.modules.align import Align
 
         def bogus_display_post_group(self, workspace, figure):
             pass
-
-        FlipAndRotate.display_post_group = bogus_display_post_group
+        
+        Align.display_post_group = bogus_display_post_group
 
     @classmethod
     def tearDownClass(cls):
@@ -68,7 +65,7 @@ class TestAnalysisWorker(unittest.TestCase):
             self.cancel()
             self.awthread.down_queue.put(None)
             self.awthread.join(10000)
-            self.assertFalse(self.awthread.isAlive())
+            self.assertFalse(self.awthread.is_alive())
         self.work_socket.close()
         self.announce_socket.close()
         #
@@ -155,7 +152,7 @@ class TestAnalysisWorker(unittest.TestCase):
             raise six.moves.queue.Empty
 
         def join(self, timeout=None):
-            if self.isAlive():
+            if self.is_alive():
 
                 def cancel_me():
                     self.aw.cancelled = True
@@ -381,7 +378,7 @@ class TestAnalysisWorker(unittest.TestCase):
         )
         self.assertIn(self.analysis_id, self.awthread.aw.pipelines_and_preferences)
         pipe, prefs = self.awthread.aw.pipelines_and_preferences[self.analysis_id]
-        self.assertEqual(len(pipe.modules()), 7)
+        self.assertEqual(len(pipe.modules()), NUM_MODULES)
         #
         # Cancel and check for exit
         #
@@ -523,7 +520,7 @@ class TestAnalysisWorker(unittest.TestCase):
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, anarequest.SharedDictionary)
         rep = anareply.SharedDictionary(
-            dictionaries=[{("foo%d" % i): "bar%d" % i} for i in range(1, 8)]
+            dictionaries=[{("foo%d" % i): "bar%d" % i} for i in range(1, NUM_MODULES+1)]
         )
         req.reply(rep)
         #
@@ -535,7 +532,7 @@ class TestAnalysisWorker(unittest.TestCase):
             self.assertDictEqual(module.get_dictionary(), d)
         #
         # Might as well torpedo the app. It should be stalled waiting
-        # for the FlipAndRotate display.
+        # for the Align display.
         #
         self.cancel()
         self.awthread.ecute()
@@ -593,22 +590,41 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, anarequest.SharedDictionary)
-        shared_dictionaries = [{("foo%d" % i): "bar%d" % i} for i in range(1, 8)]
+        shared_dictionaries = [{("foo%d" % i): "bar%d" % i} for i in range(1, NUM_MODULES+1)]
         rep = anareply.SharedDictionary(dictionaries=shared_dictionaries)
         req.reply(rep)
         #
-        # The worker sends a display request for FlipAndRotate
+        # The worker sends a display request for Align
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, anarequest.Display)
         self.assertEqual(req.image_set_number, 1)
         d = req.display_data_dict
-        # Possibly, this will break if someone edits FlipAndRotate. Sorry.
-        testkeys = ["vmax", "output_image_pixel_data", "image_pixel_data", "vmin"]
+        testkeys = ["image_info"]
         self.assertCountEqual(testkeys, list(d.keys()))
         for item in testkeys:
             self.assertIn(item, list(d.keys()))
-        self.assertIsInstance(d["output_image_pixel_data"], numpy.ndarray)
+
+        self.assertEqual(len(d["image_info"]), 2)
+        
+        self.assertEqual(len(d["image_info"][0]), 7)
+        self.assertEqual(d["image_info"][0][0], "DNA")
+        self.assertIsInstance(d["image_info"][0][1], numpy.ndarray)
+        self.assertEqual(d["image_info"][0][2], "AlignedRed")
+        self.assertIsInstance(d["image_info"][0][3], numpy.ndarray)
+        self.assertEqual(d["image_info"][0][4], 0)
+        self.assertEqual(d["image_info"][0][5], 0)
+        self.assertEqual(d["image_info"][0][6], [640,640])
+
+        self.assertEqual(len(d["image_info"][1]), 7)
+        self.assertEqual(d["image_info"][1][0], "DNA")
+        self.assertIsInstance(d["image_info"][1][1], numpy.ndarray)
+        self.assertEqual(d["image_info"][1][2], "AlignedGreen")
+        self.assertIsInstance(d["image_info"][1][3], numpy.ndarray)
+        self.assertEqual(d["image_info"][1][4], 0)
+        self.assertEqual(d["image_info"][1][5], 0)
+        self.assertEqual(d["image_info"][1][6], [640,640])
+
         req.reply(anareply.Ack())
         #
         # The worker sends ImageSetSuccessWithDictionary.
@@ -629,21 +645,7 @@ class TestAnalysisWorker(unittest.TestCase):
         m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
             req.buf
         )
-        #
-        # Spot check for some expected stuff
-        #
-        self.assertTrue(
-            m.has_feature(
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
-            )
-        )
-        self.assertTrue(
-            m.has_feature(
-                "Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
-            )
-        )
-        self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
+
         req.reply(anareply.Ack())
         self.awthread.ecute()
 
@@ -700,7 +702,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         for image_number in (2, 3):
             #
-            # The worker sends a display request for FlipAndRotate
+            # The worker sends a display request for Align
             #
             req = self.awthread.recv(self.work_socket)
             self.assertIsInstance(req, anarequest.Display)
@@ -713,7 +715,7 @@ class TestAnalysisWorker(unittest.TestCase):
             self.assertEqual(req.image_set_number, image_number)
             req.reply(anareply.Ack())
         #
-        # The worker sends a DisplayPostGroup request for FlipAndRotate
+        # The worker sends a DisplayPostGroup request for Align
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, anarequest.DisplayPostGroup)
@@ -728,21 +730,7 @@ class TestAnalysisWorker(unittest.TestCase):
         m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
             req.buf
         )
-        #
-        # Spot check for some expected stuff
-        #
-        self.assertTrue(
-            m.has_feature(
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
-            )
-        )
-        self.assertTrue(
-            m.has_feature(
-                "Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
-            )
-        )
-        self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
+
         req.reply(anareply.Ack())
         self.awthread.ecute()
 
@@ -804,7 +792,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         req = self.awthread.recv(self.work_socket)
         self.assertIsInstance(req, anarequest.SharedDictionary)
-        shared_dictionaries = [{("foo%d" % i): "bar%d" % i} for i in range(1, 8)]
+        shared_dictionaries = [{("foo%d" % i): "bar%d" % i} for i in range(1, NUM_MODULES+1)]
         rep = anareply.SharedDictionary(dictionaries=shared_dictionaries)
         req.reply(rep)
         #
@@ -837,39 +825,7 @@ class TestAnalysisWorker(unittest.TestCase):
         m = cellprofiler_core.utilities.measurement.load_measurements_from_buffer(
             req.buf
         )
-        #
-        # Spot check for some expected stuff
-        #
-        self.assertTrue(
-            m.has_feature(
-                cellprofiler_core.constants.measurement.IMAGE,
-                cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
-            )
-        )
-        self.assertTrue(
-            m.has_feature(
-                "Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X
-            )
-        )
-        self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
-        #
-        # The count for the skipped image should be None
-        #
-        count = m[
-            cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
-            2,
-        ]
-        self.assertIsNone(count)
-        count = m[
-            cellprofiler_core.constants.measurement.IMAGE,
-            cellprofiler_core.constants.measurement.C_COUNT + "_Nuclei",
-            3,
-        ]
-        center_x = m[
-            "Nuclei", cellprofiler_core.constants.measurement.M_LOCATION_CENTER_X, 3
-        ]
-        self.assertEqual(count, len(center_x))
+
         req.reply(anareply.Ack())
         self.awthread.ecute()
 
@@ -1008,35 +964,36 @@ class TestAnalysisWorker(unittest.TestCase):
     #             self.assertFalse(isinstance(req, cellprofiler_core.analysis.ExceptionReport))
     #
 
-
 GOOD_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org
-Version:3
-DateRevision:300
+Version:5
+DateRevision:421
 GitHash:
-ModuleCount:7
+ModuleCount:5
 HasImagePlaneDetails:False
 
-Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Images:[module_num:1|svn_version:'Unknown'|variable_revision_number:2|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     :
     Filter images?:No filtering
     Select the rule criteria:or (file does contain "")
 
-Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Metadata:[module_num:2|svn_version:'Unknown'|variable_revision_number:6|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Extract metadata?:No
     Metadata data type:Text
     Metadata types:{}
     Extraction method count:1
     Metadata extraction method:Extract from image file headers
     Metadata source:File name
-    Regular expression:^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])
-    Regular expression:(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$
+    Regular expression to extract from file name:^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])
+    Regular expression to extract from folder name:(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$
     Extract metadata from:All images
     Select the filtering criteria:or (file does contain "")
-    Metadata file location:
-    Match file and image metadata:\x5B\x5D
+    Metadata file location:Elsewhere...|
+    Match file and image metadata:[]
     Use case insensitive matching?:No
+    Metadata file name:
+    Does cached metadata exist?:No
 
-NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:7|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+NamesAndTypes:[module_num:3|svn_version:'Unknown'|variable_revision_number:8|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Assign a name to:All images
     Select the image type:Grayscale image
     Name to assign these images:DNA
@@ -1046,82 +1003,41 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:7|s
     Assignments count:1
     Single images count:0
     Maximum intensity:255.0
-    Volumetric:No
-    x:1.0
-    y:1.0
-    z:1.0
+    Process as 3D?:No
+    Relative pixel spacing in X:1.0
+    Relative pixel spacing in Y:1.0
+    Relative pixel spacing in Z:1.0
     Select the rule criteria:or (file does contain "")
     Name to assign these images:DNA
     Name to assign these objects:Cell
     Select the image type:Grayscale image
     Set intensity range from:Image metadata
-    Retain outlines of loaded objects?:No
-    Name the outline image:LoadedObjects
     Maximum intensity:255.0
 
-Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+Groups:[module_num:4|svn_version:'Unknown'|variable_revision_number:2|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
     Do you want to group your images?:No
     grouping metadata count:1
     Metadata category:None
 
-FlipAndRotate:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Select the input image:DNA
-    Name the output image:DNACopy
-    Select method to flip image:Do not flip
-    Select method to rotate image:Do not rotate
-    Crop away the rotated edges?:Yes
-    Calculate rotation:Individually
-    Enter coordinates of the top or left pixel:0,0
-    Enter the coordinates of the bottom or right pixel:0,100
-    Select how the specified points should be aligned:horizontally
-    Enter angle of rotation:0
+Align:[module_num:5|svn_version:'Unknown'|variable_revision_number:3|show_window:False|notes:[]|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    Select the alignment method:Mutual Information
+    Crop mode:Crop to aligned region
+    Select the first input image:DNA
+    Name the first output image:AlignedRed
+    Select the second input image:DNA
+    Name the second output image:AlignedGreen
 
-IdentifyPrimaryObjects:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:13|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Select the input image:DNA
-    Name the primary objects to be identified:Nuclei
-    Typical diameter of objects, in pixel units (Min,Max):10,40
-    Discard objects outside the diameter range?:Yes
-    Discard objects touching the border of the image?:Yes
-    Method to distinguish clumped objects:Intensity
-    Method to draw dividing lines between clumped objects:Intensity
-    Size of smoothing filter:10
-    Suppress local maxima that are closer than this minimum allowed distance:7.0
-    Speed up by using lower-resolution image to find local maxima?:Yes
-    Fill holes in identified objects?:After both thresholding and declumping
-    Automatically calculate size of smoothing filter for declumping?:Yes
-    Automatically calculate minimum allowed distance between local maxima?:Yes
-    Handling of objects if excessive number of objects identified:Continue
-    Maximum number of objects:500
-    Use advanced settings?:No
-    Threshold setting version:3
-    Threshold strategy:Global
-    Thresholding method:MCT
-    Threshold smoothing scale:1.3488
-    Threshold correction factor:1.0
-    Lower and upper bounds on threshold:0.0,1.0
-    Manual threshold:0.0
-    Select the measurement to threshold with:None
-    Two-class or three-class thresholding?:Two classes
-    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
-    Size of adaptive window:50
-    Lower outlier fraction:0.05
-    Upper outlier fraction:0.05
-    Averaging method:Mean
-    Variance method:Standard deviation
-    # of deviations:2.0
-
-MeasureObjectSizeShape:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
-    Select objects to measure:Nuclei
-    Calculate the Zernike features?:Yes
 """
+
+NUM_MODULES = 5
 
 """This pipeline should raise an exception when NamesAndTypes is run"""
 BAD_PIPELINE = GOOD_PIPELINE.replace("Image name:DNA", "Image name:RNA")
 
-"""This pipeline should issue a request.Display when FlipAndRotate is run"""
+"""This pipeline should issue a request.Display when FlipAndRotate/Align is run"""
 DISPLAY_PIPELINE = GOOD_PIPELINE.replace(
-    r"[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False",
-    r"[module_num:5|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True",
+    "[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_window:False",
+    "[module_num:5|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True",
 )
 
 

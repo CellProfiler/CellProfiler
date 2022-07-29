@@ -3,6 +3,7 @@
 
 import logging
 import pytest
+from importlib.util import find_spec
 
 import cellprofiler_core.constants.measurement
 import cellprofiler_core.utilities.measurement
@@ -221,6 +222,7 @@ class TestAnalysis(unittest.TestCase):
         self.wants_analysis_finished = False
         self.wants_pipeline_events = False
         self.measurements_to_close = None
+        self.cpinstalled = find_spec("cellprofiler") != None
 
     def tearDown(self):
         self.cancel_analysis()
@@ -275,7 +277,10 @@ class TestAnalysis(unittest.TestCase):
                 i,
             ] = group_index
         pipeline = cellprofiler_core.pipeline.Pipeline()
-        pipeline.loadtxt(six.moves.StringIO(SBS_PIPELINE), raise_on_error=True)
+        if self.cpinstalled:
+            pipeline.loadtxt(six.moves.StringIO(SBS_PIPELINE), raise_on_error=True)
+        else:
+            pipeline.loadtxt(six.moves.StringIO(SBS_PIPELINE_CORE_ONLY), raise_on_error=True)
         return pipeline, m
 
     def make_pipeline_and_measurements_and_start(self, **kwargs):
@@ -1311,7 +1316,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertIsInstance(result, cellprofiler_core.analysis.event.Finished)
             self.assertTrue(result.cancelled)
 
-
+# Sample pipeline - should only be used if cellprofiler is installed
 SBS_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:300
@@ -1468,4 +1473,85 @@ IdentifySecondaryObjects:[module_num:8|svn_version:\'Unknown\'|variable_revision
     Averaging method:Mean
     Variance method:Standard deviation
     # of deviations:2
+"""
+
+# simpler sample pipeline - when cellprofiler not installed
+SBS_PIPELINE_CORE_ONLY = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:300
+GitHash:
+ModuleCount:4
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    :
+    Filter images?:No filtering
+    Select the rule criteria:or (file does contain "")
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\'\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Extract metadata?:No
+    Metadata data type:Text
+    Metadata types:{}
+    Extraction method count:1
+    Metadata extraction method:Extract from file/folder names
+    Metadata source:File name
+    Regular expression:
+    Regular expression:(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$
+    Extract metadata from:All images
+    Select the filtering criteria:or (file does contain "")
+    Metadata file location:
+    Match file and image metadata:[]
+    Use case insensitive matching?:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Assign a name to:Images matching rules
+    Select the image type:Grayscale image
+    Name to assign these images:DNA
+    Match metadata:[{u'Cytoplasm': u'WellRow', u'DNACorr': None, 'DNA': u'WellRow', u'CytoplasmCorr': None}, {u'Cytoplasm': u'WellColumn', u'DNACorr': None, 'DNA': u'WellColumn', u'CytoplasmCorr': None}]
+    Image set matching method:Metadata
+    Set intensity range from:Yes
+    Assignments count:4
+    Single images count:0
+    Maximum intensity:255.0
+    Volumetric:No
+    x:1.0
+    y:1.0
+    z:1.0
+    Select the rule criteria:and (extension does istif) (metadata does C "2")
+    Name to assign these images:DNA
+    Name to assign these objects:Cells
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedObjects
+    Maximum intensity:255.0
+    Select the rule criteria:and (extension does istif) (metadata does C "1")
+    Name to assign these images:Cytoplasm
+    Name to assign these objects:Cells
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedObjects
+    Maximum intensity:255.0
+    Select the rule criteria:or (file does startwith "Channel1ILLUM")
+    Name to assign these images:DNACorr
+    Name to assign these objects:Cells
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedObjects
+    Maximum intensity:255.0
+    Select the rule criteria:or (file does contain "Channel2ILLUM")
+    Name to assign these images:CytoplasmCorr
+    Name to assign these objects:Cells
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedObjects
+    Maximum intensity:255.0
+
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True|wants_pause:False]
+    Do you want to group your images?:No
+    grouping metadata count:1
+    Metadata category:None
 """

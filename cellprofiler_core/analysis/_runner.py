@@ -27,6 +27,7 @@ from ..pipeline import dump
 from ..preferences import get_plugin_directory
 from ..preferences import get_conserve_memory
 from ..preferences import get_temporary_directory
+from ..preferences import get_always_continue
 from ..preferences import preferences_as_dict
 from ..utilities.analysis import close_all_on_exec, start_daemon_thread
 from ..utilities.analysis import find_analysis_worker_source
@@ -664,6 +665,8 @@ class Runner:
                 get_plugin_directory(),
                 "--conserve-memory",
                 str(get_conserve_memory()),
+                "--always-continue",
+                str(get_always_continue())
             ]
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.

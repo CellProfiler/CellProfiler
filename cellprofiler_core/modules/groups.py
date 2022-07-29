@@ -560,7 +560,7 @@ desired behavior.
         """
         if not self.wants_groups:
             return
-        key_list = self.get_grouping_tags()
+        key_list = self.get_grouping_tags_or_metadata()
         m = workspace.measurements
         for key in key_list:
             if key not in m.get_feature_names("Image"):
@@ -578,7 +578,7 @@ desired behavior.
                 return None
         return key_list, m.get_groupings(key_list)
 
-    def get_grouping_tags(self):
+    def get_grouping_tags_or_metadata(self):
         """Return the metadata keys used for grouping"""
         if not self.wants_groups:
             return None
@@ -675,7 +675,7 @@ desired behavior.
         m.add_all_measurements(
             "Image", GROUP_LENGTH, group_lens,
         )
-        m.set_grouping_tags(self.get_grouping_tags())
+        m.set_grouping_tags(self.get_grouping_tags_or_metadata())
         return True
 
     def run(self, workspace):
@@ -695,7 +695,7 @@ desired behavior.
             # computationally expensive to find that out. If they are
             # duplicated by another module, no big deal.
             #
-            for ftr in self.get_grouping_tags():
+            for ftr in self.get_grouping_tags_or_metadata():
                 result.append(("Image", ftr, COLTYPE_VARCHAR,))
         return result
 

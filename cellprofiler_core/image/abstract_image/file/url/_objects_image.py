@@ -86,9 +86,9 @@ class ObjectsImage(URLImage):
 
     def get_image_volume(self):
         imdata = self.__data
-        planes = []  # newplanes = numpy.zeros_like(test2)
+        planes = []
         for planeid in range(imdata.shape[0]):
-            planes.append(convert_image_to_objects(imdata[planeid]).astype(numpy.int32))
+            planes.append(imdata[planeid].astype(numpy.int32))
         imdata = numpy.stack(planes)
 
         image = Image(

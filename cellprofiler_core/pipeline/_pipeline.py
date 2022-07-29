@@ -78,10 +78,11 @@ from ..constants.pipeline import SAD_PROOFPOINT_COOKIE
 from ..constants.workspace import DISPOSITION_CANCEL
 from ..constants.workspace import DISPOSITION_PAUSE
 from ..constants.workspace import DISPOSITION_SKIP
+from ..constants.modules.metadata import X_AUTOMATIC_EXTRACTION
 from ..image import ImageSetList
 from ..measurement import Measurements
 from ..object import ObjectSet
-from ..preferences import get_headless
+from ..preferences import get_always_continue, get_headless
 from ..preferences import get_conserve_memory
 from ..preferences import report_progress
 from ..setting import Measurement
@@ -141,6 +142,8 @@ class Pipeline:
         self.__image_plane_details = []
         self.__image_plane_details_metadata_settings = tuple()
 
+        self.__needs_headless_extraction = False
+        
         self.__undo_stack = []
         self.__volumetric = False
 
@@ -149,6 +152,12 @@ class Pipeline:
 
     def volumetric(self):
         return self.__volumetric
+    
+    def set_needs_headless_extraction(self, value):
+        self.__needs_headless_extraction = value
+
+    def needs_headless_extraction(self):
+        return self.__needs_headless_extraction
 
     def copy(self, save_image_plane_details=True):
         """Create a copy of the pipeline modules and settings"""
@@ -838,6 +847,15 @@ class Pipeline:
         workspace = Workspace(
             self, None, None, None, measurements, image_set_list, frame
         )
+        
+        if len(self.__modules)>1:
+            from cellprofiler_core.modules.metadata import Metadata
+            if type(self.__modules[1]) == Metadata:
+                if self.__modules[1].wants_metadata.value:
+                    for extraction_group in self.__modules[1].extraction_methods:
+                        if extraction_group.extraction_method.value == X_AUTOMATIC_EXTRACTION:
+                            self.set_needs_headless_extraction(True)
+                            break
 
         try:
             if not self.prepare_run(workspace):
@@ -989,6 +1007,7 @@ class Pipeline:
                     try:
                         self.run_module(module, workspace)
                     except Exception as instance:
+                        print("pipeline_exception")
                         logging.error(
                             "Error detected during run of module %s",
                             module.module_name,
@@ -1043,19 +1062,25 @@ class Pipeline:
                     failure = 0
 
                     if exception is not None:
-                        event = RunException(exception, module, tb)
-
-                        self.notify_listeners(event)
-
-                        if event.cancel_run:
-                            return
-                        elif event.skip_thisset:
-                            # Skip this image, continue to others
+                        if get_always_continue():
                             workspace.set_disposition(DISPOSITION_SKIP)
 
                             should_write_measurements = False
 
-                            measurements = None
+                        else:
+                            event = RunException(exception, module, tb)
+
+                            self.notify_listeners(event)
+
+                            if event.cancel_run:
+                                return
+                            elif event.skip_thisset:
+                                # Skip this image, continue to others
+                                workspace.set_disposition(DISPOSITION_SKIP)
+
+                                should_write_measurements = False
+
+                                measurements = None
 
                     # Paradox: ExportToDatabase must write these columns in order
                     #  to complete, but in order to do so, the module needs to
@@ -1180,6 +1205,7 @@ class Pipeline:
                 # the UI has cancelled the run. Forward exception upward.
                 raise
             except Exception as exception:
+                print("run_image_set_exception, get_always_continue",get_always_continue())
                 logging.error(
                     "Error detected during run of module %s#%d",
                     module.module_name,
@@ -1191,6 +1217,8 @@ class Pipeline:
                         "Image",
                         "ModuleError_%02d%s" % (module.module_num, module.module_name),
                     ] = 1
+                if get_always_continue():
+                    return
                 evt = RunException(exception, module, sys.exc_info()[2])
                 self.notify_listeners(evt)
                 if evt.cancel_run or evt.skip_thisset:
@@ -1378,6 +1406,14 @@ class Pipeline:
                     break
                 try:
                     workspace.set_module(module)
+                    if self.needs_headless_extraction():
+                        from cellprofiler_core.modules.metadata import Metadata
+                        if isinstance(module, Metadata):
+                            workspace.file_list.add_files_to_filelist(self.file_list)
+                            module.on_activated(workspace)
+                            for extraction_group in module.extraction_methods:
+                                if extraction_group.extraction_method.value == X_AUTOMATIC_EXTRACTION:
+                                    module.do_update_metadata(extraction_group)
                     workspace.show_frame(module.show_window)
                     if (
                         not module.prepare_run(workspace)

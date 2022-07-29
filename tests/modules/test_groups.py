@@ -359,13 +359,17 @@ def test_get_measurement_columns_groups():
         groups.grouping_metadata[i].metadata_choice.choices.extend(choices)
         groups.grouping_metadata[i].metadata_choice.value = choice
     columns = groups.get_measurement_columns(None)
-    assert len(columns) == 4
+    assert len(columns) == 5
     column = columns[0]
     assert column[0] == cellprofiler_core.constants.measurement.EXPERIMENT
     assert column[1] == cellprofiler_core.constants.measurement.M_GROUPING_TAGS
     assert column[2].startswith(cellprofiler_core.constants.measurement.COLTYPE_VARCHAR)
+    column = columns[1]
+    assert column[0] == cellprofiler_core.constants.measurement.IMAGE
+    assert column[1] == "Group_Length"
+    assert column[2].startswith(cellprofiler_core.constants.measurement.COLTYPE_INTEGER)
     column_metadata = []
-    for column in columns[1:]:
+    for column in columns[2:]:
         assert column[0] == cellprofiler_core.constants.measurement.IMAGE
         assert column[2] == cellprofiler_core.constants.measurement.COLTYPE_VARCHAR
         column_metadata.append(column[1])

@@ -3,6 +3,7 @@ import numpy
 IMAGE_NUMBER = "ImageNumber"
 GROUP_NUMBER = "Group_Number"
 GROUP_INDEX = "Group_Index"
+GROUP_LENGTH = "Group_Length"
 CURRENT = "Current"
 NUMBER_OF_IMAGE_SETS = "NumberOfImageSets"
 NUMBER_OF_MODULES = "NumberOfModules"

@@ -61,6 +61,7 @@ from ..constants.pipeline import DIRECTION_UP
 from ..constants.pipeline import EXIT_STATUS
 from ..constants.pipeline import GROUP_INDEX
 from ..constants.pipeline import GROUP_NUMBER
+from ..constants.pipeline import GROUP_LENGTH
 from ..constants.pipeline import H_DATE_REVISION
 from ..constants.pipeline import H_GIT_HASH
 from ..constants.pipeline import H_HAS_IMAGE_PLANE_DETAILS
@@ -1450,15 +1451,20 @@ class Pipeline:
             indexes[image_numbers] = numpy.arange(len(image_numbers))
             group_numbers = numpy.zeros(len(image_numbers), int)
             group_indexes = numpy.zeros(len(image_numbers), int)
+            group_lengths = numpy.ones(len(image_numbers), int)
             for i, (key, group_image_numbers) in enumerate(groupings):
                 iii = indexes[group_image_numbers]
                 group_numbers[iii] = i + 1
                 group_indexes[iii] = numpy.arange(len(iii)) + 1
+                group_lengths[iii] = numpy.ones(len(iii), int) * len(iii)
             m.add_all_measurements(
                 "Image", GROUP_NUMBER, group_numbers,
             )
             m.add_all_measurements(
                 "Image", GROUP_INDEX, group_indexes,
+            )
+            m.add_all_measurements(
+                "Image", GROUP_LENGTH, group_lengths,
             )
             #
             # The grouping for legacy pipelines may not be monotonically
@@ -2399,6 +2405,7 @@ class Pipeline:
             ),
             ("Image", GROUP_NUMBER, COLTYPE_INTEGER,),
             ("Image", GROUP_INDEX, COLTYPE_INTEGER,),
+            ("Image", GROUP_LENGTH, COLTYPE_INTEGER,),
         ]
         should_write_columns = True
         for module in self.modules():

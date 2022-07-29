@@ -89,8 +89,8 @@ if __suffix == "pyx":
     __extensions = Cython.Build.cythonize(__extensions)
 
 setuptools.setup(
-    author="Allen Goodman",
-    author_email="agoodman@broadinstitute.org",
+    author="Nodar Gogoberidze",
+    author_email="ngogober@broadinstitute.org",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",
@@ -106,6 +106,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Topic :: Scientific/Engineering",
     ],

@@ -22,7 +22,7 @@ setuptools.setup(
     },
     install_requires=[
         "boto3>=1.12.28",
-        "centrosome==1.2.0",
+        "centrosome==1.2.1",
         "docutils==0.15.2",
         "h5py~=3.6.0",
         "matplotlib>=3.1.3",

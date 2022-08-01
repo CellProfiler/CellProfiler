@@ -1980,3 +1980,13 @@ def set_always_continue(val, globally=True):
     __always_continue = val
     if globally:
         config_write(ALWAYS_CONTINUE, val)
+
+__widget_inspector = False
+def get_widget_inspector():
+    global __widget_inspector
+    return __widget_inspector == True
+
+
+def set_widget_inspector(val):
+    global __widget_inspector
+    __widget_inspector = val

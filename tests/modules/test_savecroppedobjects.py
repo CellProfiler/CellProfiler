@@ -13,8 +13,6 @@ import cellprofiler_core.object
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 
-import tempfile
-
 instance = cellprofiler.modules.savecroppedobjects.SaveCroppedObjects()
 
 def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
@@ -249,3 +247,4 @@ def test_create_subfolders_from_metadata(
         )[0]
 
         numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)
+        

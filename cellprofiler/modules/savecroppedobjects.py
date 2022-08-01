@@ -46,7 +46,7 @@ class SaveCroppedObjects(Module):
 
     module_name = "SaveCroppedObjects"
 
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         self.export_option = Choice(
@@ -82,7 +82,7 @@ The choices are:
 
         self.use_filename = Binary(
             "Prefix saved crop image name with input image name?",
-            value=False,
+            value=True,
             doc="""\
 If *Yes*, the filename of the saved cropped object will be prefixed with
 the filename of the input image.
@@ -127,14 +127,14 @@ after the selected image name prefix.
 
     def settings(self):
         settings = [
+            self.export_option,
             self.objects_name,
             self.directory,
             self.use_filename,
             self.file_image_name,
-            self.file_format,
-            self.export_option,
-            self.image_name,
             self.nested_save,
+            self.file_format,
+            self.image_name,
         ]
 
         return settings
@@ -142,13 +142,9 @@ after the selected image name prefix.
     def visible_settings(self):
         result = [
             self.export_option,
-        ]
-        if self.export_option.value == SAVE_PER_OBJECT:
-            result += [self.image_name]
-        result += [
             self.objects_name,
             self.directory,
-            self.use_filename
+            self.use_filename,
         ]
         if self.use_filename.value:
             result += [self.file_image_name]
@@ -156,6 +152,8 @@ after the selected image name prefix.
             self.nested_save,
             self.file_format,
         ]
+        if self.export_option.value == SAVE_PER_OBJECT:
+            result += [self.image_name]
         return result
 
     def display(self, workspace, figure):
@@ -251,6 +249,16 @@ after the selected image name prefix.
 
         if self.show_window:
             workspace.display_data.filenames = filenames
+
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number < 3:
+            # Older module version, revert to not using file names in output crops
+            # Also, reorder setting_values
+            setting_values = (
+                [setting_values[3]] + setting_values[:2] + [False, "No", None] + [setting_values[2]] + [setting_values[4]]
+            )
+            variable_revision_number = 3
+        return setting_values, variable_revision_number
 
     @property
     def source_file_name_feature(self):

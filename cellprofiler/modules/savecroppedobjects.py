@@ -122,6 +122,9 @@ will be used as the prefix for the output filename."""
             doc="""\
 If *Yes*, the output crops will be saved into a folder named
 after the selected image name prefix. 
+
+If no image name prefix is selected, crops will be saved into 
+a folder named after the input objects.
             """,
         )
 
@@ -169,11 +172,12 @@ after the selected image name prefix.
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        input_filename = workspace.measurements.get_current_measurement("Image", self.source_file_name_feature)
-        input_filename = os.path.splitext(input_filename)[0]
+        if self.use_filename:
+            input_filename = workspace.measurements.get_current_measurement("Image", self.source_file_name_feature)
+            input_filename = os.path.splitext(input_filename)[0]
 
         if self.nested_save:
-            nested_folder = os.path.join(directory, input_filename)
+            nested_folder = os.path.join(directory, input_filename if self.use_filename else self.objects_name.value)
             if not os.path.exists(nested_folder):
                 os.makedirs(nested_folder, exist_ok=True)
 
@@ -208,12 +212,12 @@ after the selected image name prefix.
 
             if self.nested_save.value:
                 filename = os.path.join(
-                    nested_folder, "{}_{}_{}".format(input_filename, self.objects_name.value, label)
+                    nested_folder, "{}{}_{}".format(input_filename + "_" if self.use_filename else "", self.objects_name.value, label)
                 )
 
             elif not self.nested_save.value:
                 filename = os.path.join(
-                    directory, "{}_{}_{}".format(input_filename, self.objects_name.value, label)
+                    directory, "{}{}_{}".format(input_filename + "_" if self.use_filename else "", self.objects_name.value, label)
                 )
 
             if self.file_format.value == O_PNG:

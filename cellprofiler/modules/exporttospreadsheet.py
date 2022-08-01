@@ -677,17 +677,18 @@ desired.
                     )
       
         """Check if image features are exported if GCTs are being made"""
-        measurement_columns = pipeline.get_measurement_columns()
-        image_features = self.filter_columns([x[1] for x in measurement_columns if x[0]==IMAGE],IMAGE)
-        name_feature, _ = self.validate_image_features_exist(
-                        image_features,
-                        )
+        if self.wants_genepattern_file:
+            measurement_columns = pipeline.get_measurement_columns()
+            image_features = self.filter_columns([x[1] for x in measurement_columns if x[0]==IMAGE],IMAGE)
+            name_feature, _ = self.validate_image_features_exist(
+                            image_features,
+                            )
 
-        if name_feature == []:
-            raise ValidationError(
-                "At least one path measurement plus the feature selected in 'Select source of sample row name' must be enabled for GCT file creation. Use 'Press button to select measurements' to enable these measurements, or set 'Select measurements to export' to No.",
-                self.wants_genepattern_file
-            )
+            if name_feature == []:
+                raise ValidationError(
+                    "At least one path measurement plus the feature selected in 'Select source of sample row name' must be enabled for GCT file creation. Use 'Press button to select measurements' to enable these measurements, or set 'Select measurements to export' to No.",
+                    self.wants_genepattern_file
+                )
 
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
@@ -1181,7 +1182,6 @@ desired.
         ]
         if self.how_to_specify_gene_name == GP_NAME_METADATA:
             name_feature = [self.gene_name_column.value]
-            print(name_feature,image_features,name_feature in image_features)
             if name_feature[0] not in image_features:
                 name_feature = []
         elif self.how_to_specify_gene_name == GP_NAME_FILENAME:

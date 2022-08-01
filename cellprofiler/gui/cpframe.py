@@ -17,6 +17,7 @@ from cellprofiler_core.preferences import EXT_PIPELINE
 from cellprofiler_core.preferences import EXT_PROJECT
 from cellprofiler_core.preferences import get_show_sampling
 from cellprofiler_core.preferences import get_startup_blurb
+from cellprofiler_core.preferences import get_widget_inspector
 from cellprofiler_core.utilities.core.modules import instantiate_module
 
 import cellprofiler
@@ -787,10 +788,8 @@ class CPFrame(wx.Frame):
         if not hasattr(sys, "frozen") or os.getenv("CELLPROFILER_DEBUG"):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_PDB, "Break Into Debugger")
-            #
-            # Lee wants the wx debugger
-            #
-            if os.environ.get("USERNAME", "").lower() == "leek":
+
+            if get_widget_inspector():
                 self.__menu_debug.Append(ID_FILE_WIDGET_INSPECTOR, "Widget inspector")
 
         self.__menu_debug.Append(ID_DEBUG_HELP, "Pipeline Testing Help")

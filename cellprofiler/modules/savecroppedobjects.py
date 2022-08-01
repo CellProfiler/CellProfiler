@@ -80,8 +80,27 @@ The choices are:
             value=DEFAULT_OUTPUT_FOLDER_NAME,
         )
 
+        self.use_filename = Binary(
+            "Prefix saved crop image name with input image name?",
+            value=False,
+            doc="""\
+If *Yes*, the filename of the saved cropped object will be prefixed with
+the filename of the input image.
+
+For example:
+
+**Input file name**: positive_treatment.tiff
+
+
+**Output crop file name**: positive_treatment_Nuclei_1.tiff
+
+
+where "Nuclei" is the object name and "1" is the object number. 
+            """,
+        )
+
         self.file_image_name = FileImageSubscriber(
-            "Select image name for file prefix",
+            "Select image name to use as a prefix",
             "None",
             doc="""\
 Select an image loaded using **NamesAndTypes**. The original filename
@@ -110,6 +129,7 @@ after the selected image name prefix.
         settings = [
             self.objects_name,
             self.directory,
+            self.use_filename,
             self.file_image_name,
             self.file_format,
             self.export_option,
@@ -128,7 +148,11 @@ after the selected image name prefix.
         result += [
             self.objects_name,
             self.directory,
-            self.file_image_name,
+            self.use_filename
+        ]
+        if self.use_filename.value:
+            result += [self.file_image_name]
+        result += [
             self.nested_save,
             self.file_format,
         ]

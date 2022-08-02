@@ -343,6 +343,7 @@ FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
 PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
 CHOOSE_IMAGE_SET_FRAME_SIZE = "ChooseImageSetFrameSize"
 ALWAYS_CONTINUE = "AlwaysContinue"
+WIDGET_INSPECTOR = "WidgetInspector"
 
 """Default URL root for BatchProfiler"""
 
@@ -391,7 +392,7 @@ SPP_ALL = [
 ]
 
 # Registry Key Types
-BOOL_KEYS = {SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB, CONSERVE_MEMORY,ALWAYS_CONTINUE}
+BOOL_KEYS = {SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB, CONSERVE_MEMORY,ALWAYS_CONTINUE,WIDGET_INSPECTOR}
 INT_KEYS = {SKIPVERSION, OMERO_PORT, MAX_WORKERS, JVM_HEAP_MB}
 FLOAT_KEYS = {TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE}
 
@@ -673,6 +674,12 @@ images, but note that the skip of the original image set in question
 may cause issues with modules that look atmultiple image sets across 
 groups (CorrectIlluminationCalculate, TrackObjects) or in Export modules,
 leading to simply a later failure. Use at your own risk.
+"""
+
+WIDGET_INSPECTOR_HELP = """\
+Enables wxPython Widget Inspection Tool under the "Test" menu. 
+The tool displays a tree of wxWidgets and sizers in CellProfiler. 
+Mostly only useful for debugging and development purposes.
 """
 
 
@@ -1981,12 +1988,18 @@ def set_always_continue(val, globally=True):
     if globally:
         config_write(ALWAYS_CONTINUE, val)
 
-__widget_inspector = False
+__widget_inspector = None
 def get_widget_inspector():
     global __widget_inspector
-    return __widget_inspector == True
+    if __widget_inspector is not None:
+        return __widget_inspector == True
+    if not config_exists(WIDGET_INSPECTOR):
+        return False
+    return get_config().ReadBool(WIDGET_INSPECTOR)
 
 
-def set_widget_inspector(val):
+def set_widget_inspector(val, globally=True):
     global __widget_inspector
     __widget_inspector = val
+    if globally:
+        config_write(WIDGET_INSPECTOR, val)

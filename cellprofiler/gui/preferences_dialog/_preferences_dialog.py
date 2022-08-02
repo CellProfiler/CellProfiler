@@ -503,17 +503,17 @@ class PreferencesDialog(wx.Dialog):
     def _set_widget_inspector(self, val):
         from cellprofiler.gui.cpframe import ID_FILE_WIDGET_INSPECTOR, ID_DEBUG_HELP
 
-        set_widget_inspector(val, globally=True)
-        debug_menu = wx.GetApp().frame._CPFrame__menu_debug
-        widget_inspector_item = debug_menu.FindItemById(ID_FILE_WIDGET_INSPECTOR)
+        frame = wx.GetApp().frame
+        menu_item_exists = frame.menu_item_exists(ID_FILE_WIDGET_INSPECTOR)
+
         # when setting true, inject menu item if not already present
-        if val and not widget_inspector_item:
-            debug_help_item = debug_menu.FindItemById(ID_DEBUG_HELP)
-            debug_help_pos = debug_menu.MenuItems.index(debug_help_item)
-            debug_menu.Insert(debug_help_pos, ID_FILE_WIDGET_INSPECTOR, "Widget inspector")
+        if val and not menu_item_exists:
+            frame.inject_menu_item_by_title("&Test", ID_FILE_WIDGET_INSPECTOR, "Widget Inspector", sibling_id=ID_DEBUG_HELP)
         # when setting false, remove menu item if present
-        elif not val and widget_inspector_item:
-                debug_menu.Remove(ID_FILE_WIDGET_INSPECTOR)
+        elif not val and menu_item_exists:
+            frame.remove_menu_item(ID_FILE_WIDGET_INSPECTOR)
+
+        set_widget_inspector(val, globally=True)
 
     @staticmethod
     def get_title_font():

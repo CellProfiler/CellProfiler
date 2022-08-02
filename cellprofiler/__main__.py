@@ -253,7 +253,7 @@ def main(args=None):
         set_data_file(os.path.abspath(options.data_file))
 
     if options.widget_inspector:
-        set_widget_inspector(True)
+        set_widget_inspector(True, globally=False)
 
     try:
         if not options.show_gui:

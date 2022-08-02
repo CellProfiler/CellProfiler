@@ -37,6 +37,7 @@ from cellprofiler_core.preferences import TABLE_FONT_HELP
 from cellprofiler_core.preferences import TEMP_DIR_HELP
 from cellprofiler_core.preferences import TERTIARY_OUTLINE_COLOR_HELP
 from cellprofiler_core.preferences import UPDATER_HELP
+from cellprofiler_core.preferences import WIDGET_INSPECTOR_HELP
 from cellprofiler_core.preferences import default_max_workers
 from cellprofiler_core.preferences import get_always_continue
 from cellprofiler_core.preferences import get_check_update_bool
@@ -66,6 +67,7 @@ from cellprofiler_core.preferences import get_temporary_directory
 from cellprofiler_core.preferences import get_tertiary_outline_color
 from cellprofiler_core.preferences import get_title_font_name
 from cellprofiler_core.preferences import get_title_font_size
+from cellprofiler_core.preferences import get_widget_inspector
 from cellprofiler_core.preferences import get_wants_pony
 from cellprofiler_core.preferences import set_always_continue
 from cellprofiler_core.preferences import set_check_update
@@ -95,6 +97,7 @@ from cellprofiler_core.preferences import set_temporary_directory
 from cellprofiler_core.preferences import set_tertiary_outline_color
 from cellprofiler_core.preferences import set_title_font_name
 from cellprofiler_core.preferences import set_title_font_size
+from cellprofiler_core.preferences import set_widget_inspector
 from cellprofiler_core.preferences import set_wants_pony
 
 from cellprofiler.gui.app import init_telemetry, stop_telemetry
@@ -485,6 +488,13 @@ class PreferencesDialog(wx.Dialog):
                 set_always_continue,
                 CHOICE,
                 ALWAYS_CONTINUE_HELP,
+            ],
+            [
+                "Enable widget inspector",
+                get_widget_inspector,
+                set_widget_inspector,
+                CHOICE,
+                WIDGET_INSPECTOR_HELP,
             ],
 
             ["Pony", get_wants_pony, set_wants_pony, CHOICE, "The end is neigh.",],

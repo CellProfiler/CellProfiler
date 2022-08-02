@@ -1989,9 +1989,11 @@ def set_always_continue(val, globally=True):
         config_write(ALWAYS_CONTINUE, val)
 
 __widget_inspector = None
-def get_widget_inspector():
+# global_only - only return True if local is set
+# ie ignore config settings
+def get_widget_inspector(global_only=False):
     global __widget_inspector
-    if __widget_inspector is not None:
+    if not global_only and __widget_inspector is not None:
         return __widget_inspector == True
     if not config_exists(WIDGET_INSPECTOR):
         return False

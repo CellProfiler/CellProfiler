@@ -24,36 +24,20 @@ def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
 
     obj.segmented = segmented
 
-    object_set.add_objects(obj, "exampleObjects")
-
-    module.objects_name.value = "exampleObjects"
+    object_set.add_objects(obj, "example")
 
     module.image_name.value = "example"
 
     module.export_option.value = "Images"
 
-    module.file_image_name.value = "example"
+    module.objects_name.value = "example"
+
+    module.use_filename.value = False
+
+    module.nested_save.value = False
 
     module.directory.value = "{}|{}".format(
         cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME, directory
-    )
-
-    m = workspace.measurements
-
-    m.image_set_number = 1
-
-    path_feature = (
-            cellprofiler_core.constants.measurement.C_PATH_NAME + "_" + "example"
-        )
-    file_feature = (
-            cellprofiler_core.constants.measurement.C_FILE_NAME + "_" + "example"
-        )
-    
-    m.add_measurement(
-        cellprofiler_core.constants.measurement.IMAGE, path_feature, directory
-    )
-    m.add_measurement(
-        cellprofiler_core.constants.measurement.IMAGE, file_feature, "example.tiff"
     )
 
     module.run(workspace)
@@ -74,7 +58,7 @@ def test_run_images(image, module, image_set, workspace, object_set, tmpdir):
 
         mask = properties[0].intensity_image
 
-        filename = glob.glob(os.path.join(directory, "example_exampleObjects_{}.tiff".format(label)))[
+        filename = glob.glob(os.path.join(directory, "example_{}.tiff".format(label)))[
             0
         ]
 
@@ -251,6 +235,75 @@ def test_create_subfolders_from_metadata(
         )[0]
 
         numpy.testing.assert_array_equal(skimage.io.imread(filename), mask)
+
+def test_run_images_add_image_name(image, module, image_set, workspace, object_set, tmpdir):
+    directory = str(tmpdir.mkdir("example"))
+
+    segmented = skimage.measure.label(image.pixel_data > 0.5)
+
+    obj = cellprofiler_core.object.Objects()
+
+    obj.segmented = segmented
+
+    object_set.add_objects(obj, "exampleObjects")
+
+    module.objects_name.value = "exampleObjects"
+
+    module.use_filename.value = True
+
+    module.image_name.value = "example"
+
+    module.export_option.value = "Images"
+
+    module.file_image_name.value = "example"
+
+    module.directory.value = "{}|{}".format(
+        cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME, directory
+    )
+
+    m = workspace.measurements
+
+    m.image_set_number = 1
+
+    path_feature = (
+            cellprofiler_core.constants.measurement.C_PATH_NAME + "_" + "example"
+        )
+    file_feature = (
+            cellprofiler_core.constants.measurement.C_FILE_NAME + "_" + "example"
+        )
+    
+    m.add_measurement(
+        cellprofiler_core.constants.measurement.IMAGE, path_feature, directory
+    )
+    m.add_measurement(
+        cellprofiler_core.constants.measurement.IMAGE, file_feature, "example.tiff"
+    )
+
+    module.run(workspace)
+
+    unique_labels = numpy.unique(obj.segmented)
+
+    if unique_labels[0] == 0:
+        unique_labels = unique_labels[1:]
+
+    filenames = glob.glob(os.path.join(directory, "example_*.tiff"))
+
+    for label in unique_labels:
+        mask_in = obj.segmented == label
+
+        properties = skimage.measure.regionprops(
+            mask_in.astype(int), intensity_image=image.pixel_data
+        )
+
+        mask = properties[0].intensity_image
+
+        filename = glob.glob(os.path.join(directory, "example_exampleObjects_{}.tiff".format(label)))[
+            0
+        ]
+
+        numpy.testing.assert_array_equal(
+            skimage.io.imread(filename), skimage.img_as_ubyte(mask)
+        )
 
 def test_nested_folders(image, module, image_set, workspace, object_set, tmpdir):
     directory = str(tmpdir.mkdir("example"))

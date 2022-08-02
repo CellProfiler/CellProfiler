@@ -261,7 +261,7 @@ a folder named after the input objects.
             # New order:
             # [objects_name, directory, file_format, export_option, image_name]
             setting_values = (
-                [setting_values[:3] + [SAVE_PER_OBJECT, "Image"]]
+                setting_values[:3] + [SAVE_PER_OBJECT, "Image"]
             )
             variable_revision_number = 2
         

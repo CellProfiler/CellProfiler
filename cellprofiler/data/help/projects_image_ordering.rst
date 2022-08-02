@@ -17,5 +17,5 @@ To be safe when manually naming files or folders:
 Stick with all uppercase, or all lowercase, so you don’t get confused.
 Use leading zeroes on numbers (eg 000001)
 
-.. _ASCII code order: http://en.wikipedia.org/wiki/ASCII#Order
-.. _ASCII character codes: https://en.wikipedia.org/wiki/ASCII#Printable_characters
+.. _ASCII code order: https://en.wikipedia.org/wiki/ASCII#Order
+.. _ASCII codes: https://en.wikipedia.org/wiki/ASCII#Printable_characters

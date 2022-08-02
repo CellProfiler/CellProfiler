@@ -255,21 +255,25 @@ a folder named after the input objects.
             workspace.display_data.filenames = filenames
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
+            # Old order: 
+            # [objects_name, directory, file_format]
+            # New order:
+            # [objects_name, directory, file_format, export_option, image_name]
+            setting_values = (
+                [setting_values[:3] + [SAVE_PER_OBJECT, "Image"]]
+            )
+            variable_revision_number = 2
+        
         if variable_revision_number == 2:
             # Older module version, revert to not using file names in output crops
-            # Also, reorder setting_values to reflect order of settings in the GUI. Original order:
+            # Also, reorder setting_values to reflect order of settings in the GUI. 
+            # Original order:
             # [objects_name, directory, file_format, export_option, image_name]
             # New order:
             # [export_option, objects_name, directory, use_filename, file_image_name, nested_save, file_format, image_name]
             setting_values = (
                 [setting_values[3]] + setting_values[:2] + [False, "None", False] + [setting_values[2]] + [setting_values[4]]
-            )
-            variable_revision_number = 3
-
-        if variable_revision_number == 1:
-            # Old order: [objects_name, directory, file_format]
-            setting_values = (
-                [[SAVE_PER_OBJECT] + setting_values[:2] + [False, "None", False] + setting_values[2] + ["Image"]]
             )
             variable_revision_number = 3
         return setting_values, variable_revision_number

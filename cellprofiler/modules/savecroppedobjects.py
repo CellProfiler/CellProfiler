@@ -7,9 +7,12 @@ assigned the value from the input image. All other pixels (i.e., background pixe
 objects) are assigned the value 0. The dimensions of each image are the same as the original image. Multi-channel color
 images will be represented as 3-channel RGB images when saved with this module (not available in 3D mode).
 
-The filename for an exported image is formatted as "{object name}_{label index}.{image_format}", where *object name*
-is the name of the exported objects, *label index* is the integer label of the object exported in the image (starting
-from 1).
+The filename for an exported image is formatted in one of two ways. 
+By default, when the *Prefix saved crop image name with input image name* option is enabled, the format is
+"{input image name}_{object name}_{label index}.{image_format}",
+and when disabled the format is, "{object name}_{label index}.{image_format}", 
+where *object name* is the name of the exported objects, 
+and *label index* is the integer label of the object exported in the image (starting from 1).
 
 |
 

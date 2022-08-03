@@ -44,6 +44,7 @@ from cellprofiler_core.preferences import set_omero_server
 from cellprofiler_core.preferences import set_omero_user
 from cellprofiler_core.preferences import set_plugin_directory
 from cellprofiler_core.preferences import set_temporary_directory
+from cellprofiler_core.preferences import set_widget_inspector
 from cellprofiler_core.utilities.core.workspace import is_workspace_file
 from cellprofiler_core.utilities.hdf5_dict import HDF5FileList
 from cellprofiler_core.utilities.java import start_java, stop_java
@@ -250,6 +251,9 @@ def main(args=None):
 
     if options.data_file is not None:
         set_data_file(os.path.abspath(options.data_file))
+
+    if options.widget_inspector:
+        set_widget_inspector(True, globally=False)
 
     try:
         if not options.show_gui:
@@ -568,6 +572,14 @@ def parse_args(args):
         default=None,
         action="store_true",
         help="Keep running after an image set throws an error"
+    )
+
+    parser.add_option(
+        "--widget-inspector",
+        dest="widget_inspector",
+        default=False,
+        action="store_true",
+        help="Enable the widget inspector menu item under \"Test\""
     )
 
     options, result_args = parser.parse_args(args[1:])

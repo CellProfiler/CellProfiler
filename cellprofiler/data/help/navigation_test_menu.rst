@@ -78,6 +78,9 @@ individual movie frame from that file.
 Please see the **Groups** module for more details on the proper use of
 metadata for grouping.
 
+The *Test* menu also provides a widget inspector. 
+See *Help > Other Features > Widget Inspector* for details.
+
 .. |HelpContent_TestMode_image_step| image:: ../images/IMG_ANALYZE_16.png
 .. |HelpContent_TestMode_image_stepped| image:: ../images/IMG_ANALYZED.png
 .. |HelpContent_TestMode_image_paused| image:: ../images/IMG_PAUSE.png

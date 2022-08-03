@@ -190,6 +190,7 @@ Learn about the other features of CellProfiler.
    help/other_omero
    help/other_plugins
    help/other_shell
+   help/other_widget_inspector
 
 `(Jump to top)`_
 

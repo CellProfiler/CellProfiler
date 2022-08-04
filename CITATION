@@ -1,6 +1,35 @@
 When using CellProfiler, please cite one of the following papers.
 See also: http://cellprofiler.org/citations/
 
+CellProfiler 4: 
+
+@article{Stirling_2021,
+	doi = {10.1186/s12859-021-04344-9},
+	url = {https://doi.org/10.1186%2Fs12859-021-04344-9},
+	year = 2021,
+	month = {sep},
+	publisher = {Springer Science and Business Media {LLC}},
+	volume = {22},
+	number = {1},
+	author = {David R. Stirling and Madison J. Swain-Bowden and Alice M. Lucas and Anne E. Carpenter and Beth A. Cimini and Allen Goodman},
+	title = {{CellProfiler} 4: improvements in speed, utility and usability},
+	journal = {{BMC} Bioinformatics}
+
+CellProfiler 3: 
+
+@misc{McQuin_Goodman_Chernyshev_Kamentsky_Cimini_Karhohs_Doan_Ding_Rafelski_Thirstrup_et al._2018, 
+    doi={10.1371/journal.pbio.2005970}, 
+    url={http://dx.doi.org/10.1371/journal.pbio.2005970}, 
+    year={2018}, 
+    month={Jul}, 
+    publisher={Public Library of Science (PLoS)},
+    volume={16}, 
+    number={7}, 
+    author={McQuin, Claire and Goodman, Allen and Chernyshev, Vasiliy and Kamentsky, Lee and Cimini, Beth A. and Karhohs, Kyle W. and Doan, Minh and Ding, Liya and Rafelski, Susanne M. and Thirstrup, Derek and Wiegraebe, Winfried and Singh, Shantanu and Becker, Tim and Caicedo, Juan C. and Carpenter, Anne E.},
+    title={CellProfiler 3.0: Next-generation image processing for biology}, 
+    journal={PLOS Biology},  
+    editor={Misteli, Tom}, pages={e2005970}, language={en} }
+
 
 CellProfiler for cells:
 
@@ -76,25 +105,5 @@ CellProfiler for other biological images:
     volume = {42},
     year = {2007}
 }
-
-
-CellProfiler Analyst software in general:
-
-@article{Jones2008,
-    abstract = {Image-based screens can produce hundreds of measured features for each of hundreds of millions of individual cells in a single experiment.},
-    author = {Jones, Thouis R. and Kang, In Han and Wheeler, Douglas B. and Lindquist, Robert A. and Papallo, Adam and Sabatini, David M. and Golland, Polina and Carpenter, Anne E.},
-    day = {15},
-    doi = {10.1186/1471-2105-9-482},
-    issn = {1471-2105},
-    journal = {BMC Bioinformatics},
-    month = nov,
-    number = {1},
-    pages = {482},
-    title = {{{CellProfiler Analyst}}: Data Exploration and Analysis Software for Complex Image-Based Screens},
-    url = {https://doi.org/10.1186/1471-2105-9-482},
-    volume = {9},
-    year = {2008}
-}
-
 
 Please find the CellProfiler Analyst's BibTeX snippets in  https://github.com/CellProfiler/CellProfiler-Analyst/blob/master/CITATION

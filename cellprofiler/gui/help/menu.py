@@ -236,6 +236,11 @@ class Menu(cellprofiler.gui.menu.Menu):
             contents=cellprofiler.gui.help.content.read_content("other_shell.rst"),
         )
 
+        other_menu.append(
+            "Widget Inspector",
+            contents=cellprofiler.gui.help.content.read_content("other_widget_inspector.rst"),
+        )
+
         return other_menu
 
     def __output_menu(self):
@@ -292,6 +297,13 @@ class Menu(cellprofiler.gui.menu.Menu):
             "Loading Image Stacks and Movies",
             contents=cellprofiler.gui.help.content.read_content(
                 "projects_image_sequences.rst"
+            ),
+        )
+
+        project_menu.append(
+            "Image Ordering",
+            contents=cellprofiler.gui.help.content.read_content(
+                "projects_image_ordering.rst"
             ),
         )
 

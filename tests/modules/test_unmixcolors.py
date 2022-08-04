@@ -46,7 +46,7 @@ def test_load_v1():
             cellprofiler.modules.unmixcolors.CHOICE_AEC,
             cellprofiler.modules.unmixcolors.CHOICE_ANILINE_BLUE,
             cellprofiler.modules.unmixcolors.CHOICE_AZOCARMINE,
-            cellprofiler.modules.unmixcolors.CHOICE_ALICAN_BLUE,
+            cellprofiler.modules.unmixcolors.CHOICE_ALCIAN_BLUE,
             cellprofiler.modules.unmixcolors.CHOICE_PAS,
         )
     ):

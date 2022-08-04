@@ -63,8 +63,8 @@ setuptools.setup(
     },
     install_requires=[
         "boto3>=1.12.28",
-        "cellprofiler-core==4.2.1",
-        "centrosome==1.2.0",
+        "cellprofiler-core==4.2.2",
+        "centrosome==1.2.1",
         "docutils==0.15.2",
         "h5py~=3.6.0",
         "imageio>=2.5",
@@ -86,6 +86,7 @@ setuptools.setup(
         "scikit-learn>=0.20",
         "scipy>=1.4.1",
         "six",
+        "tifffile<2022.4.22",
         "wxPython==4.1.0",
     ],
     license="BSD",

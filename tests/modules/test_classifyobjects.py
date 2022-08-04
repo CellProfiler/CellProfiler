@@ -1,4 +1,10 @@
+import contextlib
+import os
+import pickle
+import tempfile
+
 import numpy
+import pytest
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -8,12 +14,15 @@ from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, COLTYPE_INTEG
 import cellprofiler.modules.classifyobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
+import cellprofiler_core.setting
 import cellprofiler_core.workspace
 
 OBJECTS_NAME = "myobjects"
 MEASUREMENT_NAME_1 = "Measurement1"
 MEASUREMENT_NAME_2 = "Measurement2"
 IMAGE_NAME = "image"
+TEST_FTR = "my_measurement"
+MISSPELLED_FTR = "m_measurement"
 
 
 def make_workspace(labels, contrast_choice, measurement1=None, measurement2=None):
@@ -63,6 +72,75 @@ def make_workspace(labels, contrast_choice, measurement1=None, measurement2=None
     )
     return workspace, module
 
+def make_workspace_classifier(object_dict={}, image_dict={},grouplist = []):
+    """Make a workspace for testing FilterByObjectMeasurement"""
+    module = cellprofiler.modules.classifyobjects.ClassifyObjects()
+    module.contrast_choice.value = cellprofiler.modules.classifyobjects.BY_MODEL
+    module.object_name.value = OBJECTS_NAME
+    module.create_class_sets.value = True
+    for group in range(len(grouplist)):
+        if group >= len(module.desired_classes):
+            settings_group = cellprofiler_core.setting.SettingsGroup()
+            settings_group.can_delete = False
+            settings_group.append("class_name",cellprofiler_core.setting.choice.Choice('text',grouplist))
+            settings_group.append("class_objects_name", cellprofiler_core.setting.text.LabelName('text','dummy'))
+            module.desired_classes.append(settings_group)
+        module.desired_classes[group].class_name.value = str(grouplist[group])
+        module.desired_classes[group].class_objects_name.value = str(grouplist[group])
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+    object_set = cellprofiler_core.object.ObjectSet()
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    image_set = image_set_list.get_image_set(0)
+    workspace = cellprofiler_core.workspace.Workspace(
+        pipeline,
+        module,
+        image_set,
+        object_set,
+        cellprofiler_core.measurement.Measurements(),
+        image_set_list,
+    )
+    for key in list(image_dict.keys()):
+        image_set.add(key, cellprofiler_core.image.Image(image_dict[key]))
+    for key in list(object_dict.keys()):
+        o = cellprofiler_core.object.Objects()
+        o.segmented = object_dict[key]
+        object_set.add_objects(o, key)
+    return workspace, module
+
+@contextlib.contextmanager
+def make_classifier(
+    module,
+    answers,
+    classes=None,
+    class_names=None,
+    rules_class=None,
+    name="Classifier",
+    feature_names=[f"{OBJECTS_NAME}_{TEST_FTR}"],
+):
+    """Returns the filename of the classifier pickle"""
+    assert isinstance(module, cellprofiler.modules.classifyobjects.ClassifyObjects)
+    if classes is None:
+        if class_names != None:
+            classes = numpy.arange(1, len(class_names) + 1)
+        else:
+            classes = numpy.arange(1, numpy.max(answers) + 1)
+    if class_names is None:
+        class_names = [str(_) for _ in classes]
+    if rules_class is None:
+        rules_class = class_names[0]
+    s = make_classifier_pickle(answers, classes, class_names, name, feature_names)
+    fd, filename = tempfile.mkstemp(".model")
+    os.write(fd, s)
+    os.close(fd)
+
+    module.contrast_choice.value = cellprofiler.modules.classifyobjects.BY_MODEL
+    module.model_directory.set_custom_path(os.path.dirname(filename))
+    module.model_file_name.value = os.path.split(filename)[1]
+    yield
+    try:
+        os.remove(filename)
+    except:
+        pass
 
 def test_classify_single_none():
     """Make sure the single measurement mode can handle no objects"""
@@ -618,3 +696,116 @@ def test_nan_offset_by_1():
     for idx, color in enumerate(colors):
         reverse[numpy.all(image == color[numpy.newaxis, numpy.newaxis, :3], 2)] = idx
     assert numpy.all(reverse[labels == 1] == 4)
+
+def test_classify_none():
+    classes=['a']
+    workspace, module = make_workspace_classifier(
+        {OBJECTS_NAME: numpy.zeros((10, 10), int)},
+        grouplist = classes)
+    with make_classifier(module, numpy.zeros(0, int), class_names=classes):
+        workspace.measurements[OBJECTS_NAME, TEST_FTR] = numpy.zeros(0)
+        module.run(workspace)
+        for eachclass in classes:
+            output_objects = workspace.object_set.get_objects(eachclass)
+            assert output_objects.count == 0
+
+
+def test_classify_one():
+    classes=['a','b']
+    labels = numpy.zeros((10, 10), int)
+    labels[4:7, 4:7] = 1
+    workspace, module = make_workspace_classifier(
+        {OBJECTS_NAME: labels},
+        grouplist = classes)
+    with make_classifier(module, [1], class_names=classes):
+        workspace.measurements[OBJECTS_NAME, TEST_FTR] = numpy.zeros(1)
+        module.run(workspace)
+        for eachclass in classes:
+            output_objects = workspace.object_set.get_objects(eachclass)
+            output_object_count = output_objects.count
+            if eachclass == 'a':
+                assert output_object_count == 1
+            else:
+                assert output_object_count == 0
+
+def test_classify_many():
+    classes = ['a','b']
+    labels = numpy.zeros((10, 10), int)
+    labels[1:4, 1:4] = 1
+    labels[5:7, 5:7] = 2
+    workspace, module = make_workspace_classifier(
+        {OBJECTS_NAME: labels},
+        grouplist = classes)
+    with make_classifier(module, numpy.array([1, 2]), class_names=classes):
+        workspace.measurements[OBJECTS_NAME, TEST_FTR] = numpy.zeros(2)
+        module.run(workspace)
+        for eachclass in classes:
+            output_objects = workspace.object_set.get_objects(eachclass)
+            output_objects = workspace.object_set.get_objects(eachclass)
+            assert output_objects.count == 1
+            labels_out = output_objects.get_labels()[0][0]
+            if eachclass == 'a':
+                numpy.testing.assert_array_equal(labels_out[1:4, 1:4], 1)
+                numpy.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
+            else:
+                numpy.testing.assert_array_equal(labels_out[1:4, 1:4], 0)
+                numpy.testing.assert_array_equal(labels_out[5:7, 5:7], 1)     
+
+def test_classify_many_fuzzy():
+    classes = ['a','b']
+    labels = numpy.zeros((10, 10), int)
+    labels[1:4, 1:4] = 1
+    labels[5:7, 5:7] = 2
+    workspace, module = make_workspace_classifier(
+        {OBJECTS_NAME: labels},
+        grouplist = classes)
+    with make_classifier(module, numpy.array([1, 2]), class_names=classes):
+        workspace.measurements[OBJECTS_NAME, MISSPELLED_FTR] = numpy.zeros(2)
+        module.allow_fuzzy.value = True
+        module.run(workspace)
+        for eachclass in classes:
+            output_objects = workspace.object_set.get_objects(eachclass)
+            output_objects = workspace.object_set.get_objects(eachclass)
+            assert output_objects.count == 1
+            labels_out = output_objects.get_labels()[0][0]
+            if eachclass == 'a':
+                numpy.testing.assert_array_equal(labels_out[1:4, 1:4], 1)
+                numpy.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
+            else:
+                numpy.testing.assert_array_equal(labels_out[1:4, 1:4], 0)
+                numpy.testing.assert_array_equal(labels_out[5:7, 5:7], 1)
+        module.allow_fuzzy.value = False 
+        with pytest.raises(AssertionError):
+            module.run(workspace)    
+                
+
+class FakeClassifier(object):
+    def __init__(self, answers, classes, proba):
+        """initializer
+
+        answers - a vector of answers to be returned by "predict"
+
+        classes - a vector of class numbers to be used to populate classes_
+        """
+        self.answers_ = answers
+        self.classes_ = classes
+        self.proba_ = proba
+
+    def predict(self, *args, **kwargs):
+        return self.answers_
+    def predict_proba(self, *args):
+        return(self.proba_)
+
+
+def make_classifier_pickle(answers, classes, class_names, name, feature_names):
+    """Make a pickle of a fake classifier
+
+    answers - the answers you want to get back after calling classifier.predict
+    classes - the class #s for the answers.
+    class_names - one name per class in the order they appear in classes
+    name - the name of the classifier
+    feature_names - the names of the features fed into the classifier
+    """
+    proba = numpy.zeros([len(answers),len(classes)])
+    classifier = FakeClassifier(answers, classes, proba)
+    return pickle.dumps([classifier, class_names, name, feature_names])

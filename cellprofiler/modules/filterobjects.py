@@ -89,7 +89,7 @@ import scipy.sparse
 
 import cellprofiler.gui.help
 import cellprofiler_core.object
-import cellprofiler.utilities.rules
+from cellprofiler.utilities.rules import Rules
 
 
 """Minimal filter - pick a single object per image by minimum measured value"""
@@ -139,7 +139,12 @@ PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
 class FilterObjects(ObjectProcessing):
     module_name = "FilterObjects"
 
-    variable_revision_number = 9
+    variable_revision_number = 10
+
+    def __init__(self):
+        self.rules = Rules()
+
+        super(FilterObjects, self).__init__()
 
     def create_settings(self):
         super(FilterObjects, self).create_settings()
@@ -372,7 +377,7 @@ with data processed as 3D.
 
 
         self.keep_removed_objects = Binary(
-            "Keep removed objects as a seperate set?",
+            "Keep removed objects as a separate set?",
             False,
             doc="""
 Select *Yes* to create an object set from objects that did not pass your filter.
@@ -406,6 +411,10 @@ Click this button to add an object to receive the same post-filtering labels as
 the filtered object. This is useful in making sure that labeling is maintained
 between related objects (e.g., primary and secondary objects) after filtering.""",
         )
+
+        self.rules.create_settings()
+
+        self.allow_fuzzy = self.rules.settings()[0]
 
     def get_class_choices(self, pipeline):
         if self.mode == MODE_CLASSIFIERS:
@@ -552,6 +561,8 @@ value will be retained.""".format(
         for x in self.additional_objects:
             settings += [x.object_name, x.target_name]
 
+        settings += [self.allow_fuzzy]
+
         return settings
 
     def help_settings(self):
@@ -568,6 +579,7 @@ value will be retained.""".format(
             self.removed_objects_name,
             self.enclosing_object_name,
             self.additional_object_button,
+            self.allow_fuzzy,
         ]
 
     def visible_settings(self):
@@ -577,6 +589,7 @@ value will be retained.""".format(
 
         if self.mode == MODE_RULES or self.mode == MODE_CLASSIFIERS:
             visible_settings += [
+                self.allow_fuzzy,
                 self.rules_file_name,
                 self.rules_directory,
                 self.rules_class,
@@ -641,14 +654,14 @@ value will be retained.""".format(
                     "Failed to load rules: %s", str(instance), exc_info=True
                 )
                 raise ValidationError(str(instance), self.rules_file_name)
-            measurement_columns = pipeline.get_measurement_columns(self)
             for r in rules.rules:
-                if not any(
-                    [
-                        mc[0] == r.object_name and mc[1] == r.feature
-                        for mc in measurement_columns
-                    ]
-                ):
+                if self.rules.Rule.return_fuzzy_measurement_name(
+                    pipeline.get_measurement_columns(self),
+                    r.object_name,
+                    r.feature,
+                    True,
+                    self.allow_fuzzy
+                    ) == '':
                     raise ValidationError(
                         (
                             "The rules file, %s, uses the measurement, %s "
@@ -677,15 +690,21 @@ value will be retained.""".format(
                     self.rules_file_name,
                 )
             features = self.get_classifier_features()
-            available_features = set([f"{col[0]}_{col[1]}" for col in pipeline.get_measurement_columns(self)])
 
             for feature in features:
-                if feature not in available_features:
+                fuzzy_feature = self.rules.Rule.return_fuzzy_measurement_name(
+                    pipeline.get_measurement_columns(),
+                    feature[:feature.index('_')],
+                    feature[feature.index('_'):],
+                    True,
+                    self.allow_fuzzy
+                    )
+                if fuzzy_feature == '':
                     raise ValidationError(
                         f"""The classifier {self.rules_file_name}, requires the measurement "{feature}", but that 
 measurement is not available at this stage of the pipeline. Consider adding modules to produce the measurement.""",
                         self.rules_file_name
-                    )
+                    )              
 
     def run(self, workspace):
         """Filter objects for this image set, display results"""
@@ -976,7 +995,9 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             #
             # Get the label of the pixel at each location
             #
-            indexes = src_labels[best_pos.transpose().tolist()]
+            # Multidimensional indexing with non-tuple values is not allowed as of numpy 1.23
+            best_pos = tuple(map(tuple, best_pos.transpose()))
+            indexes = src_labels[best_pos]
             indexes = set(indexes)
             indexes = list(indexes)
             indexes.sort()
@@ -1063,7 +1084,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         if not os.path.isfile(path):
             raise ValidationError("No such rules file: %s" % path, self.rules_file_name)
         else:
-            rules = cellprofiler.utilities.rules.Rules()
+            rules = Rules(allow_fuzzy=self.allow_fuzzy)
             rules.parse(path)
             return rules
 
@@ -1091,7 +1112,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                                       "See the help dialog for more info on model formats.")
                     if d[path_][2] == "FastGentleBoosting":
                         # FGB model files are not sklearn-based, we'll load it as rules instead.
-                        rules = cellprofiler.utilities.rules.Rules()
+                        rules = Rules(allow_fuzzy=self.allow_fuzzy)
                         rules.load(d[path_][0])
                         d[path_] = (rules,
                                     d[path_][1],
@@ -1099,7 +1120,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                                     [f"{rule.object_name}_{rule.feature}" for rule in rules.rules])
                 else:
                     # Probably a rules list
-                    rules = cellprofiler.utilities.rules.Rules()
+                    rules = Rules(allow_fuzzy=self.allow_fuzzy)
                     rules.parse(path_)
                     # Construct a classifier-like object
                     d[path_] = (rules,
@@ -1158,10 +1179,18 @@ measurement is not available at this stage of the pipeline. Consider adding modu
         target_idx = self.get_bin_labels().index(self.rules_class.value)
         target_class = classifier.classes_[target_idx]
         features = self.split_feature_names(self.get_classifier_features(), workspace.object_set.get_object_names())
-
         feature_vector = numpy.column_stack(
             [
-                workspace.measurements[object_name, feature_name]
+                workspace.measurements[
+                    object_name, 
+                    self.rules.Rule.return_fuzzy_measurement_name(
+                        workspace.measurements.get_measurement_columns(),
+                        object_name,
+                        feature_name,
+                        False,
+                        self.allow_fuzzy
+                        )
+                        ]
                 for object_name, feature_name in features
             ]
         )
@@ -1379,6 +1408,10 @@ measurement is not available at this stage of the pipeline. Consider adding modu
             setting_values[slot_directory]
         )
 
+        if variable_revision_number == 9:
+            setting_values.append(False)
+            variable_revision_number = 10
+
         return setting_values, variable_revision_number
 
     def get_dictionary_for_worker(self):
@@ -1395,7 +1428,7 @@ measurement is not available at this stage of the pipeline. Consider adding modu
                                       feature_name.startswith(s)), feature_name.split("_", 1))
             features_list.append((obj, feature_name))
         return features_list
-
+        
 #
 # backwards compatibility
 #

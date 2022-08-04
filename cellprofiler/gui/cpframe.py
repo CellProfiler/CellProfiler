@@ -17,6 +17,7 @@ from cellprofiler_core.preferences import EXT_PIPELINE
 from cellprofiler_core.preferences import EXT_PROJECT
 from cellprofiler_core.preferences import get_show_sampling
 from cellprofiler_core.preferences import get_startup_blurb
+from cellprofiler_core.preferences import get_widget_inspector
 from cellprofiler_core.utilities.core.modules import instantiate_module
 
 import cellprofiler
@@ -788,10 +789,8 @@ class CPFrame(wx.Frame):
         if not hasattr(sys, "frozen") or os.getenv("CELLPROFILER_DEBUG"):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_PDB, "Break Into Debugger")
-            #
-            # Lee wants the wx debugger
-            #
-            if os.environ.get("USER", "").lower() == "david":
+
+            if get_widget_inspector():
                 self.__menu_debug.Append(ID_FILE_WIDGET_INSPECTOR, "Widget inspector")
 
         self.__menu_debug.Append(ID_DEBUG_HELP, "Pipeline Testing Help")
@@ -1340,3 +1339,42 @@ class CPFrame(wx.Frame):
         return self.__pipeline_list_view
 
     pipeline_list_view = property(get_pipeline_list_view)
+
+    def menu_item_exists(self, candidate_id):
+        menu_item = self.__menu_bar.FindItemById(candidate_id)
+        return menu_item is not None
+
+    def remove_menu_item(self, item_id):
+        menu_item = self.__menu_bar.FindItemById(item_id)
+        if not menu_item:
+            logging.error(f"Item with id {item_id} does not exist")
+            return
+        parent = menu_item.GetMenu()
+        removed = parent.Remove(menu_item)
+
+    # caller responsible for making sure child does not already exist
+    def _inject_menu_item(self, parent_menu, child_id, title, sibling_id=None):
+        if sibling_id:
+            sibling_menu_item, sibling_menu_pos = parent_menu.FindChildItem(sibling_id)
+            if not sibling_menu_item:
+                logging.error(f"Sibling with id {sibling_id} does not exist")
+                return
+            parent_menu.Insert(sibling_menu_pos, child_id, title)
+        else:
+            parent_menu.Append(child_id, title)
+
+    def inject_menu_item_by_id(self, parent_id, child_id, title, sibling_id=None):
+        parent_menu_idx = self.__menu_bar.FindItemById(parent_id)
+        if parent_menu_idx == wx.NOT_FOUND:
+            logging.error(f"Parent with id {parent_id} does not exist")
+            return
+        parent_menu = self.__menu_bar.GetMenu(parent_menu_idx)
+        self._inject_menu_item(parent_menu, child_id, title, sibling_id)
+
+    def inject_menu_item_by_title(self, parent_title, child_id, title, sibling_id=None):
+        parent_menu_idx = self.__menu_bar.FindMenu(parent_title)
+        if parent_menu_idx == wx.NOT_FOUND:
+            logging.error(f"Parent with title \"{parent_title}\" does not exist")
+            return
+        parent_menu = self.__menu_bar.GetMenu(parent_menu_idx)
+        self._inject_menu_item(parent_menu, child_id, title, sibling_id)

@@ -1634,8 +1634,9 @@ class Figure(wx.Frame):
             colormap.autoscale()
 
         if self.dimensions == 3:
+            self.navtoolbar.set_volumetric()
             z = image.shape[0]
-            self.current_plane = z // 2
+            self.current_plane = min(z // 2,self.navtoolbar.slider.GetValue())
 
         image = self.normalize_image(self.images[(x, y)], **kwargs)
 
@@ -1779,29 +1780,48 @@ class Figure(wx.Frame):
 
     @allow_sharexy
     def subplot_imshow_color(
-        self, x, y, image, title=None, normalize=False, rgb_mask=None, **kwargs
+        self, x, y, image, title=None, normalize=False, rgb_mask=None, volumetric=False, **kwargs,
     ):
         if rgb_mask is None:
             rgb_mask = [1, 1, 1]
 
+        if volumetric:
+            chan_index = 3
+        else:
+            chan_index = 2
+
         # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
-        if image.shape[2] > 3:
+        if image.shape[chan_index] > 3:
             logging.warning(
                 "Multichannel display is only supported for RGB (3-channel) data."
                 " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
-                    image.shape[2]
+                    image.shape[chan_index]
                 )
             )
 
-            return self.subplot_imshow(
-                x,
-                y,
-                image[:, :, :3],
-                title,
-                normalize=normalize,
-                rgb_mask=rgb_mask,
-                **kwargs,
-            )
+            if not volumetric:
+
+                return self.subplot_imshow(
+                    x,
+                    y,
+                    image[:, :, :3],
+                    title,
+                    normalize=normalize,
+                    rgb_mask=rgb_mask,
+                    **kwargs,
+                )
+            
+            else:
+
+                return self.subplot_imshow(
+                    x,
+                    y,
+                    image[:, :, :, :3],
+                    title,
+                    normalize=normalize,
+                    rgb_mask=rgb_mask,
+                    **kwargs,
+                )
 
         return self.subplot_imshow(
             x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs
@@ -2030,7 +2050,10 @@ class Figure(wx.Frame):
         image = image.astype(numpy.float32)
         if self.dimensions == 3:
             orig_image_max = image.max()
-            image = image[self.current_plane, :, :]
+            if self.current_plane >= image.shape[0]:
+                image = image[image.shape[0]-1, :, :]
+            else:
+                image = image[self.current_plane, :, :]
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
 

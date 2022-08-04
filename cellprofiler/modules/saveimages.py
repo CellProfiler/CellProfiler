@@ -455,7 +455,11 @@ Instances in which this information may be useful include:
         self.create_subdirectories = Binary(
             "Create subfolders in the output folder?",
             False,
-            doc="""Select "*{YES}*" to create subfolders to match the input image folder structure.""".format(
+            doc="""
+Select "*{YES}*" to create subfolders to match the input image folder structure. 
+            
+For example, if your input images are organized into subfolders (e.g., for each plate, well, animal, etc.), 
+this option allows you to mirror some or all of that nested folder structure in the output folder.""".format(
                 **{"YES": "Yes"}
             ),
         )
@@ -465,15 +469,23 @@ Instances in which this information may be useful include:
             doc="""\
 *Used only if creating subfolders in the output folder*
 
-In subfolder mode, **SaveImages** determines the folder for an image file by
-examining the path of the matching input file. The path that SaveImages
-uses is relative to the image folder chosen using this setting. As an
-example, input images might be stored in a folder structure of
-"images\/*experiment-name*\/*date*\/*plate-name*". If
-the image folder is "images", **SaveImages** will store images in the
-subfolder, "*experiment-name*\/*date*\/*plate-name*". If the
-image folder is "images\/*experiment-name*", **SaveImages** will
-store images in the subfolder, "*date*\/*plate-name*".""",
+In subfolder mode, **SaveImages** determines the folder for an output image file by
+examining the path of the matching input file. 
+
+You should choose as **Base image folder** the input folder that has the structure you'd like 
+to mirror in the output folder. 
+
+Consider an example where your input images are stored in a nested folder structure of 
+"images\/experiment-name\/plate-name" (i.e., your files are in folders for each plate, nested
+inside of folders for each experiment, nested in a parent folder called "images"). 
+If you select the base image folder to be **images**, **SaveImages** will go to your "Output file
+location" and save images in subfolders "experiment-name\/plate-name" that corresponds to each 
+input image. If the base image folder chosen is one level deeper at "images\/experiment-name", 
+**SaveImages** will store images in subfolders for each "plate-name" they belong to.
+
+**Warning**: Do not select the same folder you selected for "Output file location" as this can lead
+to unexpected behavior like saving in the original input file directory. For safety, ensure 
+"Overwrite existing files without warning?" is set to "No" while testing this option. """,
         )
 
     def settings(self):

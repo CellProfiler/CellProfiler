@@ -468,3 +468,18 @@ def test_unify_nothing():
             parents_of=numpy.zeros(0, int),
         )
         assert numpy.all(labels_out == 0)
+
+def test_unify_per_parent_non_consecutive():
+    labels = numpy.zeros((10, 20), int)
+    labels[2:5, 3:8] = 1
+    labels[2:5, 13:18] = 2
+    labels[7:9, 13:18] = 3
+
+    labels_out, workspace = rruunn(
+        labels,
+        cellprofiler.modules.splitormergeobjects.OPTION_MERGE,
+        merge_option=cellprofiler.modules.splitormergeobjects.UNIFY_PARENT,
+        parent_object="Parent_object",
+        parents_of=numpy.array([1, 1, 3]),
+    )
+    assert numpy.max(labels_out == 2)

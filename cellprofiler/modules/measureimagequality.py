@@ -1146,6 +1146,7 @@ to the foreground pixels or the background pixels.
                     i = (i * float(m) / float(shape[0])).astype(int)
                     j = (j * float(n) / float(shape[1])).astype(int)
                     grid = i * n + j + 1
+                    grid_range = numpy.arange(0, m * n + 1, dtype=numpy.int32)
                 else:
                     k, i, j = numpy.mgrid[
                         0 : shape[0], 0 : shape[1], 0 : shape[2]
@@ -1155,10 +1156,11 @@ to the foreground pixels or the background pixels.
                     i = (i * float(m) / float(shape[1])).astype(int)
                     j = (j * float(n) / float(shape[2])).astype(int)
                     grid = k * o + i * n + j + 1  # hmm
+                    grid_range = numpy.arange(0, m * n * o + 1, dtype=numpy.int32)
 
                 if image.has_mask:
                     grid[numpy.logical_not(image.mask)] = 0
-                grid_range = numpy.arange(0, m * n + 1, dtype=numpy.int32)
+                
                 #
                 # Do the math per label
                 #
@@ -1240,8 +1242,12 @@ to the foreground pixels or the background pixels.
                 value = centrosome.haralick.Haralick(
                     pixel_data, image_labels, 0, scale
                 ).H3()
-                if not numpy.isfinite(value):
+
+                if len(value) != 1 or not numpy.isfinite(value[0]):
                     value = 0.0
+                else:
+                    value = float(value)
+                    
                 workspace.add_measurement(
                     "Image",
                     "{}_{}_{}_{:d}".format(

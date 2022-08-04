@@ -3,12 +3,14 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import LabelName, Integer
+from cellprofiler_core.setting import Measurement
 from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     add_object_count_measurements,
     get_object_measurement_columns,
 )
 
+from cellprofiler.library.modules import expand_or_shrink_objects
 from cellprofiler.modules import _help
 
 __doc__ = """\
@@ -66,7 +68,9 @@ O_SHRINK_INF = "Shrink objects to a point"
 O_EXPAND_INF = "Expand objects until touching"
 O_DIVIDE = "Add partial dividing lines between objects"
 O_SHRINK = "Shrink objects by a specified number of pixels"
+O_SHRINK_BY_MEASUREMENT = "Shrink objects by a previous measurement"
 O_EXPAND = "Expand objects by a specified number of pixels"
+O_EXPAND_BY_MEASUREMENT = "Expand objects by a previous measurement"
 O_SKELETONIZE = "Skeletonize each object"
 O_SPUR = "Remove spurs"
 O_ALL = [
@@ -74,7 +78,9 @@ O_ALL = [
     O_EXPAND_INF,
     O_DIVIDE,
     O_SHRINK,
+    O_SHRINK_BY_MEASUREMENT,
     O_EXPAND,
+    O_EXPAND_BY_MEASUREMENT,
     O_SKELETONIZE,
     O_SPUR,
 ]
@@ -122,10 +128,17 @@ Choose the operation that you want to perform:
    Processing stops automatically when there are no more pixels to
    remove. Objects are never lost using this module (shrinking
    stops when an object becomes a single pixel).
+-  *{O_SHRINK_BY_MEASUREMENT}:* Shrink an object by some previously calculated
+   measurement. This measurement can be the output of some other module
+   or can be a value loaded by the **Metadata** module. An object will 
+   never be shrunk to less than one pixel.
 -  *{O_EXPAND}:* Expand each object by adding background pixels
    adjacent to the image. You can choose the number of times to expand.
    Processing stops automatically if there are no more background
    pixels.
+-  *{O_EXPAND_BY_MEASUREMENT}:* Expand an object by some previously calculated
+   measurement. This measurement can be the output of some other module
+   or can be a value loaded by the **Metadata** module.
 -  *{O_SKELETONIZE}:* Erode each object to its skeleton.
 -  *{O_SPUR}:* Remove or reduce the length of spurs in a skeletonized
    image. The algorithm reduces spur size by the number of pixels
@@ -135,8 +148,10 @@ Choose the operation that you want to perform:
                 **{
                     "O_DIVIDE": O_DIVIDE,
                     "O_EXPAND": O_EXPAND,
+                    "O_EXPAND_BY_MEASUREMENT": O_EXPAND_BY_MEASUREMENT,
                     "O_EXPAND_INF": O_EXPAND_INF,
                     "O_SHRINK": O_SHRINK,
+                    "O_SHRINK_BY_MEASUREMENT": O_SHRINK_BY_MEASUREMENT,
                     "O_SHRINK_INF": O_SHRINK_INF,
                     "O_SKELETONIZE": O_SKELETONIZE,
                     "O_SPUR": O_SPUR,
@@ -175,6 +190,17 @@ order to keep from breaking up the object or breaking the hole.
                 **{"NO": "No", "YES": "Yes"}
             ),
         )
+        self.exp_shr_measurement = Measurement(
+            "Expand or shrink measurement",
+            lambda: "Image",
+            doc="""\
+*(Used only if “{O_SHRINK_BY_MEASUREMENT}” or "{O_EXPAND_BY_MEASUREMENT}" is selected)*
+Select the measurement value to use as the divisor for the final image.
+""".format(
+                **{"O_SHRINK_BY_MEASUREMENT": O_SHRINK_BY_MEASUREMENT, 
+                "O_EXPAND_BY_MEASUREMENT": O_EXPAND_BY_MEASUREMENT}
+            ),
+        )
 
     def settings(self):
         return [
@@ -183,6 +209,7 @@ order to keep from breaking up the object or breaking the hole.
             self.operation,
             self.iterations,
             self.wants_fill_holes,
+            self.exp_shr_measurement,
         ]
 
     def visible_settings(self):
@@ -194,6 +221,9 @@ order to keep from breaking up the object or breaking the hole.
         if self.operation in [O_SHRINK, O_SHRINK_INF]:
             result += [self.wants_fill_holes]
 
+        if self.operation in [O_SHRINK_BY_MEASUREMENT, O_EXPAND_BY_MEASUREMENT]:
+            result += [self.exp_shr_measurement]
+
         return result
 
     def run(self, workspace):
@@ -201,7 +231,7 @@ order to keep from breaking up the object or breaking the hole.
 
         output_objects = cellprofiler_core.object.Objects()
 
-        output_objects.segmented = self.do_labels(input_objects.segmented)
+        output_objects.segmented = self.do_labels(input_objects.segmented, workspace)
 
         # If we're shrinking objects we treat objects from the final segmentation as truth when generating
         # the unedited segmentations. This prevents edited/hole-filled objects from ending up with slightly
@@ -210,8 +240,9 @@ order to keep from breaking up the object or breaking the hole.
             O_EXPAND,
             O_EXPAND_INF,
             O_DIVIDE,
+            O_EXPAND_BY_MEASUREMENT,
         ):
-            shrunk_objects = self.do_labels(input_objects.small_removed_segmented)
+            shrunk_objects = self.do_labels(input_objects.small_removed_segmented, workspace)
             output_objects.small_removed_segmented = numpy.where(
                 input_objects.segmented > 0, output_objects.segmented, shrunk_objects
             )
@@ -220,8 +251,9 @@ order to keep from breaking up the object or breaking the hole.
             O_EXPAND,
             O_EXPAND_INF,
             O_DIVIDE,
+            O_EXPAND_BY_MEASUREMENT,
         ):
-            shrunk_objects = self.do_labels(input_objects.unedited_segmented)
+            shrunk_objects = self.do_labels(input_objects.unedited_segmented, workspace)
             output_objects.unedited_segmented = numpy.where(
                 input_objects.segmented > 0, output_objects.segmented, shrunk_objects
             )
@@ -266,63 +298,32 @@ order to keep from breaking up the object or breaking the hole.
             colormap=cmap,
         )
 
-    def do_labels(self, labels):
+    def do_labels(self, labels, workspace):
         """Run whatever transformation on the given labels matrix"""
-        if self.operation in (O_SHRINK, O_SHRINK_INF) and self.wants_fill_holes.value:
-            labels = centrosome.cpmorphology.fill_labeled_holes(labels)
-
-        if self.operation == O_SHRINK_INF:
-            return centrosome.cpmorphology.binary_shrink(labels)
-
-        if self.operation == O_SHRINK:
-            return centrosome.cpmorphology.binary_shrink(
-                labels, iterations=self.iterations.value
-            )
-
-        if self.operation in (O_EXPAND, O_EXPAND_INF):
-            if self.operation == O_EXPAND_INF:
-                distance = numpy.max(labels.shape)
-            else:
-                distance = self.iterations.value
-
-            background = labels == 0
-
-            distances, (i, j) = scipy.ndimage.distance_transform_edt(
-                background, return_indices=True
-            )
-
-            out_labels = labels.copy()
-
-            mask = background & (distances <= distance)
-
-            out_labels[mask] = labels[i[mask], j[mask]]
-
-            return out_labels
-
-        if self.operation == O_DIVIDE:
-            #
-            # A pixel must be adjacent to some other label and the object
-            # must not disappear.
-            #
-            adjacent_mask = centrosome.cpmorphology.adjacent(labels)
-
-            thinnable_mask = centrosome.cpmorphology.binary_shrink(labels, 1) != 0
-
-            out_labels = labels.copy()
-
-            out_labels[adjacent_mask & ~thinnable_mask] = 0
-
-            return out_labels
-
-        if self.operation == O_SKELETONIZE:
-            return centrosome.cpmorphology.skeletonize_labels(labels)
-
-        if self.operation == O_SPUR:
-            return centrosome.cpmorphology.spur(
-                labels, iterations=self.iterations.value
-            )
-
-        raise NotImplementedError("Unsupported operation: %s" % self.operation.value)
+        if self.operation == O_EXPAND:
+            return expand_or_shrink_objects('expand_defined_pixels',labels,iterations=self.iterations.value)
+        if self.operation == O_EXPAND_BY_MEASUREMENT:
+            m = workspace.measurements
+            distance = m.get_current_image_measurement(self.exp_shr_measurement.value)
+            return expand_or_shrink_objects('expand_defined_pixels',labels,iterations=distance)
+        elif self.operation == O_EXPAND_INF:
+            return expand_or_shrink_objects('expand_infinite', labels)
+        elif self.operation == O_SHRINK:
+            return expand_or_shrink_objects('shrink_defined_pixels', labels, fill=self.wants_fill_holes.value, iterations=self.iterations.value)
+        elif self.operation == O_SHRINK_BY_MEASUREMENT:
+            m = workspace.measurements
+            shrink_measurement = m.get_current_image_measurement(self.exp_shr_measurement.value)
+            return expand_or_shrink_objects('shrink_defined_pixels', labels, fill=self.wants_fill_holes.value, iterations=int(shrink_measurement))
+        elif self.operation == O_SHRINK_INF:
+            return expand_or_shrink_objects('shrink_to_point', labels,fill=self.wants_fill_holes.value)
+        elif self.operation == O_DIVIDE:
+            return expand_or_shrink_objects('add_dividing_lines', labels)
+        elif self.operation == O_SPUR:
+            return expand_or_shrink_objects('despur', labels,iterations=self.iterations.value)
+        elif self.operation == O_SKELETONIZE:
+            return expand_or_shrink_objects('skeletonize', labels)
+        else:
+            raise NotImplementedError("Unsupported operation: %s" % self.operation.value)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:

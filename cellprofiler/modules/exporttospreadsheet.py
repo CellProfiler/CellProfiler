@@ -675,6 +675,20 @@ desired.
                         % undefined_tags[0],
                         group.file_name,
                     )
+      
+        """Check if image features are exported if GCTs are being made"""
+        if self.wants_genepattern_file:
+            measurement_columns = pipeline.get_measurement_columns()
+            image_features = self.filter_columns([x[1] for x in measurement_columns if x[0]==IMAGE],IMAGE)
+            name_feature, _ = self.validate_image_features_exist(
+                            image_features,
+                            )
+
+            if name_feature == []:
+                raise ValidationError(
+                    "At least one path measurement plus the feature selected in 'Select source of sample row name' must be enabled for GCT file creation. Use 'Press button to select measurements' to enable these measurements, or set 'Select measurements to export' to No.",
+                    self.wants_genepattern_file
+                )
 
     def validate_module_warnings(self, pipeline):
         """Warn user re: Test mode """
@@ -1161,6 +1175,33 @@ desired.
         finally:
             fd.close()
 
+    def validate_image_features_exist(self,image_features):
+        # Place the one of the paths and desired info column up front in image feature list
+        description_feature = [
+            x for x in image_features if x.startswith(C_PATH_NAME + "_")
+        ]
+        if self.how_to_specify_gene_name == GP_NAME_METADATA:
+            name_feature = [self.gene_name_column.value]
+            if name_feature[0] not in image_features:
+                name_feature = []
+        elif self.how_to_specify_gene_name == GP_NAME_FILENAME:
+            name_feature = [
+                x
+                for x in image_features
+                if x.startswith(
+                    "_".join(
+                        (
+                            C_FILE_NAME,
+                            self.use_which_image_for_gene_name.value,
+                        )
+                    )
+                )
+            ]
+        if len(name_feature) == 0 or len(description_feature) == 0:
+            return [],[]
+        else: 
+            return name_feature, description_feature
+
     def make_gct_file(self, image_set_numbers, workspace, settings_group):
         """Make a GenePattern file containing image measurements
         Format specifications located at http://www.broadinstitute.org/cancer/software/genepattern/tutorial/gp_fileformats.html?gct
@@ -1245,25 +1286,13 @@ desired.
                     ] + measurement_feature_names
                     writer.writerow(written_image_names)
 
-                    # Place the one of the paths and desired info column up front in image feature list
-                    description_feature = [
-                        x for x in image_features if x.startswith(C_PATH_NAME + "_")
-                    ]
-                    if self.how_to_specify_gene_name == GP_NAME_METADATA:
-                        name_feature = [self.gene_name_column.value]
-                    elif self.how_to_specify_gene_name == GP_NAME_FILENAME:
-                        name_feature = [
-                            x
-                            for x in image_features
-                            if x.startswith(
-                                "_".join(
-                                    (
-                                        C_FILE_NAME,
-                                        self.use_which_image_for_gene_name.value,
-                                    )
-                                )
-                            )
-                        ]
+                    name_feature, description_feature = self.validate_image_features_exist(
+                        image_features
+                        )
+
+                    if name_feature == []:
+                        return
+
                     image_features = [
                         name_feature[0],
                         description_feature[0],
@@ -1383,7 +1412,7 @@ desired.
                         for name in object_names
                     ]
                 )
-                object_count = int(object_count) if object_count else 0
+                object_count = int(object_count) if object_count and not numpy.isnan(object_count) else 0
                 columns = [
                     numpy.repeat(img_number, object_count)
                     if feature_name == IMAGE_NUMBER

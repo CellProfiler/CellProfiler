@@ -30,7 +30,7 @@ from cellprofiler_core.constants.worker import (
     NOTIFY_STOP,
     all_measurements, NOTIFY_ADDR,
 )
-from cellprofiler_core.preferences import set_conserve_memory
+from cellprofiler_core.preferences import set_always_continue, set_conserve_memory
 from cellprofiler_core.worker._worker import Worker
 
 """Set the log level through the environment by specifying AW_LOG_LEVEL"""
@@ -110,6 +110,12 @@ def aw_parse_args():
         help="Open up a port to handle the Knime bridge protocol",
         default=None,
     )
+    parser.add_option(
+        "--always-continue",
+        dest="always_continue",
+        help="Don't stop the analysis when an image set raises an error",
+        default=None
+    )
 
     options, args = parser.parse_args()
 
@@ -134,6 +140,8 @@ def aw_parse_args():
         set_plugin_directory(options.plugins_directory, globally=False)
     if options.conserve_memory is not None:
         set_conserve_memory(options.conserve_memory, globally=False)
+    if options.always_continue is not None:
+        set_always_continue(options.always_continue, globally=False)
     else:
         logging.warning("Plugins directory not set")
 

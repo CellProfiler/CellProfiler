@@ -9,6 +9,7 @@ import tempfile
 import traceback
 import unittest
 from pathlib import Path
+from importlib.util import find_spec
 
 import numpy
 import numpy.lib.index_tricks
@@ -127,6 +128,7 @@ class TestPipeline(unittest.TestCase):
         set_headless()
         self.new_output_directory = os.path.normcase(tempfile.mkdtemp())
         set_default_output_directory(self.new_output_directory)
+        self.cpinstalled = find_spec("cellprofiler") != None
 
     def tearDown(self):
         subdir = self.new_output_directory
@@ -187,7 +189,7 @@ HasImagePlaneDetails:False"""
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        assert len(columns) == 9
+        assert len(columns) == 10
         assert any(
             [
                 column[0] == "Image"
@@ -200,6 +202,14 @@ HasImagePlaneDetails:False"""
             [
                 column[0] == "Image"
                 and column[1] == "Group_Index"
+                and column[2] == COLTYPE_INTEGER
+                for column in columns
+            ]
+        )
+        assert any(
+            [
+                column[0] == "Image"
+                and column[1] == "Group_Length"
                 and column[2] == COLTYPE_INTEGER
                 for column in columns
             ]
@@ -239,18 +249,18 @@ HasImagePlaneDetails:False"""
         assert any([column[1] == "foo" for column in columns])
         module.my_variable.value = "bar"
         columns = x.get_measurement_columns()
-        assert len(columns) == 9
+        assert len(columns) == 10
         assert any([column[1] == "bar" for column in columns])
         module = MeasurementFixture()
         module.set_module_num(2)
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        assert len(columns) == 12
+        assert len(columns) == 13
         assert any([column[1] == "foo" for column in columns])
         assert any([column[1] == "bar" for column in columns])
         columns = x.get_measurement_columns(module)
-        assert len(columns) == 9
+        assert len(columns) == 10
         assert any([column[1] == "bar" for column in columns])
 
     def test_all_groups(self):
@@ -559,12 +569,20 @@ HasImagePlaneDetails:False"""
         pipeline_v5 = get_empty_pipeline()
         pipeline_v6 = get_empty_pipeline()
 
-        v5_pathname = os.path.realpath(
-            os.path.join(os.path.dirname(__file__), "../data/pipeline/v5_ExampleFly.cppipe")
-        )
-        v6_pathname = os.path.realpath(
-            os.path.join(os.path.dirname(__file__), "../data/pipeline/v6.json")
-        )
+        if self.cpinstalled:
+            v5_pathname = os.path.realpath(
+                os.path.join(os.path.dirname(__file__), "../data/pipeline/v5_ExampleFly.cppipe")
+            )
+            v6_pathname = os.path.realpath(
+                os.path.join(os.path.dirname(__file__), "../data/pipeline/v6_ExampleFly.json")
+            )
+        else:
+            v5_pathname = os.path.realpath(
+                os.path.join(os.path.dirname(__file__), "../data/pipeline/v5_coreOnly.cppipe")
+            )
+            v6_pathname = os.path.realpath(
+                os.path.join(os.path.dirname(__file__), "../data/pipeline/v6_coreOnly.json")
+            )
 
         pipeline_v5.load(v5_pathname)
         with open(v6_pathname, "r") as fd:

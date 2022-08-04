@@ -29,6 +29,7 @@ from ..constants.measurement import C_URL
 from ..constants.measurement import FTR_WELL
 from ..constants.measurement import M_WELL
 from ..constants.measurement import PATH_NAME_LENGTH
+from ..constants.measurement import GROUP_LENGTH
 from ..constants.module import IO_FOLDER_CHOICE_HELP_TEXT
 from ..constants.modules.load_data import DIR_ALL
 from ..constants.modules.load_data import IMAGE_CATEGORIES
@@ -953,12 +954,12 @@ safe to press it.""",
             for eachval in groupvals:
                 group_lengths += [len(eachval[1])] * len(eachval[1])
             m.add_all_measurements(
-                "Image", "Group_Length", group_lengths,
+                "Image", GROUP_LENGTH, group_lengths,
             )
         else:
             group_lengths = [len(rows)] * len(rows)
             m.add_all_measurements(
-                "Image", "Group_Length", group_lengths,
+                "Image", GROUP_LENGTH, group_lengths,
             )
 
         return True

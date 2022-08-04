@@ -7,61 +7,61 @@ import string
 import time
 import urllib.request
 
-from cellprofiler_core.constants.image import MD_SIZE_C, MD_SIZE_T, MD_SIZE_Z, MD_SIZE_X, MD_SIZE_Y
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, C_Z, C_T, C_CHANNEL, FTR_WELL, ROW_KEYS, COL_KEYS
-from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
-from cellprofiler_core.constants.measurement import COLTYPE_VARCHAR
-from cellprofiler_core.constants.measurement import COLTYPE_VARCHAR_FILE_NAME
-from cellprofiler_core.constants.measurement import C_FRAME
-from cellprofiler_core.constants.measurement import C_METADATA
-from cellprofiler_core.constants.measurement import C_SERIES
-from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS
-from cellprofiler_core.constants.module import FILTER_RULES_BUTTONS_HELP
-from cellprofiler_core.constants.module import PROTIP_RECOMMEND_ICON
-from cellprofiler_core.constants.modules.metadata import COL_INDEX
-from cellprofiler_core.constants.modules.metadata import DEFAULT_METADATA_TAGS
-from cellprofiler_core.constants.modules.metadata import CSV_JOIN_NAME
-from cellprofiler_core.constants.modules.metadata import IPD_JOIN_NAME
-from cellprofiler_core.constants.modules.metadata import COL_PATH
-from cellprofiler_core.constants.modules.metadata import COL_SERIES
-from cellprofiler_core.constants.modules.metadata import DTC_ALL
-from cellprofiler_core.constants.modules.metadata import DTC_CHOOSE
-from cellprofiler_core.constants.modules.metadata import DTC_TEXT
-from cellprofiler_core.constants.modules.metadata import F_ALL_IMAGES
-from cellprofiler_core.constants.modules.metadata import F_FILTERED_IMAGES
-from cellprofiler_core.constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT
-from cellprofiler_core.constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT_V1
-from cellprofiler_core.constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT_V2
-from cellprofiler_core.constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT_V3
-from cellprofiler_core.constants.modules.metadata import IDX_EXTRACTION_METHOD_V1
-from cellprofiler_core.constants.modules.metadata import IDX_EXTRACTION_METHOD_V2
-from cellprofiler_core.constants.modules.metadata import LEN_EXTRACTION_METHOD
-from cellprofiler_core.constants.modules.metadata import LEN_EXTRACTION_METHOD_V1
-from cellprofiler_core.constants.modules.metadata import XM_FILE_NAME
-from cellprofiler_core.constants.modules.metadata import XM_FOLDER_NAME
-from cellprofiler_core.constants.modules.metadata import X_ALL_EXTRACTION_METHODS
-from cellprofiler_core.constants.modules.metadata import X_AUTOMATIC_EXTRACTION
-from cellprofiler_core.constants.modules.metadata import X_IMPORTED_EXTRACTION
-from cellprofiler_core.constants.modules.metadata import X_MANUAL_EXTRACTION
-from cellprofiler_core.module import Module
-from cellprofiler_core.pipeline import Pipeline
-from cellprofiler_core.preferences import ABSOLUTE_FOLDER_NAME
-from cellprofiler_core.preferences import URL_FOLDER_NAME
-from cellprofiler_core.preferences import report_progress
-from cellprofiler_core.setting import Binary
-from cellprofiler_core.setting import DataTypes
-from cellprofiler_core.setting import Divider
-from cellprofiler_core.setting import FileCollectionDisplay
-from cellprofiler_core.setting import HiddenCount
-from cellprofiler_core.setting import Joiner
-from cellprofiler_core.setting import RegexpText
-from cellprofiler_core.setting import SettingsGroup
-from cellprofiler_core.setting import Table
-from cellprofiler_core.setting import ValidationError
-from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import DoSomething
-from cellprofiler_core.setting.do_something import RemoveSettingButton
-from cellprofiler_core.setting.filter import (
+from ..constants.image import MD_SIZE_C, MD_SIZE_T, MD_SIZE_Z, MD_SIZE_X, MD_SIZE_Y
+from ..constants.measurement import COLTYPE_FLOAT, C_Z, C_T, C_CHANNEL, FTR_WELL, ROW_KEYS, COL_KEYS
+from ..constants.measurement import COLTYPE_INTEGER
+from ..constants.measurement import COLTYPE_VARCHAR
+from ..constants.measurement import COLTYPE_VARCHAR_FILE_NAME
+from ..constants.measurement import C_FRAME
+from ..constants.measurement import C_METADATA
+from ..constants.measurement import C_SERIES
+from ..constants.measurement import RESERVED_METADATA_KEYS
+from ..constants.module import FILTER_RULES_BUTTONS_HELP
+from ..constants.module import PROTIP_RECOMMEND_ICON
+from ..constants.modules.metadata import COL_INDEX
+from ..constants.modules.metadata import DEFAULT_METADATA_TAGS
+from ..constants.modules.metadata import CSV_JOIN_NAME
+from ..constants.modules.metadata import IPD_JOIN_NAME
+from ..constants.modules.metadata import COL_PATH
+from ..constants.modules.metadata import COL_SERIES
+from ..constants.modules.metadata import DTC_ALL
+from ..constants.modules.metadata import DTC_CHOOSE
+from ..constants.modules.metadata import DTC_TEXT
+from ..constants.modules.metadata import F_ALL_IMAGES
+from ..constants.modules.metadata import F_FILTERED_IMAGES
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT_V1
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT_V2
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_COUNT_V3
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_V1
+from ..constants.modules.metadata import IDX_EXTRACTION_METHOD_V2
+from ..constants.modules.metadata import LEN_EXTRACTION_METHOD
+from ..constants.modules.metadata import LEN_EXTRACTION_METHOD_V1
+from ..constants.modules.metadata import XM_FILE_NAME
+from ..constants.modules.metadata import XM_FOLDER_NAME
+from ..constants.modules.metadata import X_ALL_EXTRACTION_METHODS
+from ..constants.modules.metadata import X_AUTOMATIC_EXTRACTION
+from ..constants.modules.metadata import X_IMPORTED_EXTRACTION
+from ..constants.modules.metadata import X_MANUAL_EXTRACTION
+from ..module import Module
+from ..pipeline import Pipeline
+from ..preferences import ABSOLUTE_FOLDER_NAME
+from ..preferences import URL_FOLDER_NAME
+from ..preferences import report_progress
+from ..setting import Binary
+from ..setting import DataTypes
+from ..setting import Divider
+from ..setting import FileCollectionDisplay
+from ..setting import HiddenCount
+from ..setting import Joiner
+from ..setting import RegexpText
+from ..setting import SettingsGroup
+from ..setting import Table
+from ..setting import ValidationError
+from ..setting.choice import Choice
+from ..setting.do_something import DoSomething
+from ..setting.do_something import RemoveSettingButton
+from ..setting.filter import (
     Filter,
     FilePredicate,
     DirectoryPredicate,
@@ -939,7 +939,7 @@ not being applied, your choice on this setting may be the culprit.
 
     def run(self, workspace):
         pass
-
+        
     def on_activated(self, workspace):
         self.workspace = workspace
         self.pipeline = workspace.pipeline

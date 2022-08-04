@@ -34,9 +34,11 @@ from ..constants.measurement import C_OBJECTS_URL
 from ..constants.measurement import C_PATH_NAME
 from ..constants.measurement import C_SERIES
 from ..constants.measurement import C_URL
+from ..constants.measurement import DB_TEMP
 from ..constants.measurement import EXPERIMENT
 from ..constants.measurement import GROUP_INDEX
 from ..constants.measurement import GROUP_NUMBER
+from ..constants.measurement import GROUP_LENGTH
 from ..constants.measurement import IMAGE
 from ..constants.measurement import IMAGE_NUMBER
 from ..constants.measurement import K_CASE_SENSITIVE
@@ -364,6 +366,15 @@ class Measurements:
         self.add_image_measurement(GROUP_INDEX, group_index)
 
     group_index = property(get_group_index, set_group_index)
+
+    def get_group_length(self):
+        """The group length of the current image group"""
+        return self.get_current_image_measurement(GROUP_LENGTH)
+
+    def set_group_length(self, group_length):
+        self.add_image_measurement(GROUP_LENGTH, group_length)
+
+    group_length = property(get_group_length, set_group_length)
 
     def get_groupings(self, features):
         """Return groupings of image sets based on feature values
@@ -742,7 +753,7 @@ class Measurements:
     def get_object_names(self):
         """The list of object names (including Image) that have measurements
         """
-        return [x for x in self.hdf5_dict.top_level_names() if x != RELATIONSHIP]
+        return [x for x in self.hdf5_dict.top_level_names() if x not in (DB_TEMP, RELATIONSHIP)]
 
     object_names = property(get_object_names)
 
@@ -1296,6 +1307,7 @@ class Measurements:
         to_save = [
             GROUP_NUMBER,
             GROUP_INDEX,
+            GROUP_LENGTH
         ]
         to_save_prefixes = [
             C_URL,
@@ -1734,11 +1746,20 @@ class Measurements:
         data = json.dumps(grouping_tags)
         self.add_experiment_measurement(M_GROUPING_TAGS, data)
 
-    def get_grouping_tags(self):
+    def get_grouping_tags_or_metadata(self):
         """Get the metadata tags that were used to group the image set
 
         """
         if not self.has_feature(EXPERIMENT, M_GROUPING_TAGS,):
             return self.get_metadata_tags()
+
+        return json.loads(self.get_experiment_measurement(M_GROUPING_TAGS))
+
+    def get_grouping_tags_only(self):
+        """Get the metadata tags that were used to group the image set,
+        and only those, not metadata instead
+        """
+        if not self.has_feature(EXPERIMENT, M_GROUPING_TAGS,):
+            return []
 
         return json.loads(self.get_experiment_measurement(M_GROUPING_TAGS))

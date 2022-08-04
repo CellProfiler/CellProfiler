@@ -1,0 +1,328 @@
+{
+    "has_image_plane_details": false,
+    "date_revision": 407,
+    "module_count": 4,
+    "modules": [
+        {
+            "attributes": {
+                "module_num": 1,
+                "notes": 1,
+                "show_window": false,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 2,
+                "module_name": "Images",
+                "module_path": "cellprofiler_core.modules.images.Images"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting._path_list_display.PathListDisplay",
+                    "text": "",
+                    "value": ""
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Filter images?",
+                    "value": "Images only"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the rule criteria",
+                    "value": "and (extension does isimage) (directory doesnot containregexp \"[\\\\\\\\\\\\\\\\/]\\\\\\\\.\")"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 2,
+                "notes": 2,
+                "show_window": false,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 6,
+                "module_name": "Metadata",
+                "module_path": "cellprofiler_core.modules.metadata.Metadata"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Extract metadata?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Metadata data type",
+                    "value": "Text"
+                },
+                {
+                    "name": "cellprofiler_core.setting._data_types.DataTypes",
+                    "text": "Metadata types",
+                    "value": "{}"
+                },
+                {
+                    "name": "cellprofiler_core.setting._hidden_count.HiddenCount",
+                    "text": "Extraction method count",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Metadata extraction method",
+                    "value": "Extract from image file headers"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Metadata source",
+                    "value": "File name"
+                },
+                {
+                    "name": "cellprofiler_core.setting._regexp_text.RegexpText",
+                    "text": "Regular expression to extract from file name",
+                    "value": "^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])"
+                },
+                {
+                    "name": "cellprofiler_core.setting._regexp_text.RegexpText",
+                    "text": "Regular expression to extract from folder name",
+                    "value": "(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Extract metadata from",
+                    "value": "All images"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the filtering criteria",
+                    "value": "and (file does contain \"\")"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._directory.Directory",
+                    "text": "Metadata file location",
+                    "value": "Elsewhere...|"
+                },
+                {
+                    "name": "cellprofiler_core.setting._joiner.Joiner",
+                    "text": "Match file and image metadata",
+                    "value": "[]"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Use case insensitive matching?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._filename.Filename",
+                    "text": "Metadata file name",
+                    "value": ""
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Does cached metadata exist?",
+                    "value": "No"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 3,
+                "notes": 3,
+                "show_window": false,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 8,
+                "module_name": "NamesAndTypes",
+                "module_path": "cellprofiler_core.modules.namesandtypes.NamesAndTypes"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Assign a name to",
+                    "value": "Images matching rules"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the image type",
+                    "value": "Grayscale image"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name.FileImageName",
+                    "text": "Name to assign these images",
+                    "value": "DNA"
+                },
+                {
+                    "name": "cellprofiler_core.setting._joiner.Joiner",
+                    "text": "Match metadata",
+                    "value": "[]"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Image set matching method",
+                    "value": "Order"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Set intensity range from",
+                    "value": "Image metadata"
+                },
+                {
+                    "name": "cellprofiler_core.setting._hidden_count.HiddenCount",
+                    "text": "Assignments count",
+                    "value": "3"
+                },
+                {
+                    "name": "cellprofiler_core.setting._hidden_count.HiddenCount",
+                    "text": "Single images count",
+                    "value": "0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Maximum intensity",
+                    "value": "255.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Process as 3D?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative pixel spacing in X",
+                    "value": "1.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative pixel spacing in Y",
+                    "value": "1.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative pixel spacing in Z",
+                    "value": "1.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the rule criteria",
+                    "value": "and (file does contain \"D.TIF\")"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name.FileImageName",
+                    "text": "Name to assign these images",
+                    "value": "OrigBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+                    "text": "Name to assign these objects",
+                    "value": "Cell"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the image type",
+                    "value": "Grayscale image"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Set intensity range from",
+                    "value": "Image metadata"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Maximum intensity",
+                    "value": "255.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the rule criteria",
+                    "value": "and (file does contain \"F.TIF\")"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name.FileImageName",
+                    "text": "Name to assign these images",
+                    "value": "OrigGreen"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+                    "text": "Name to assign these objects",
+                    "value": "Nucleus"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the image type",
+                    "value": "Grayscale image"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Set intensity range from",
+                    "value": "Image metadata"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Maximum intensity",
+                    "value": "255.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the rule criteria",
+                    "value": "and (file does contain \"R.TIF\")"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name.FileImageName",
+                    "text": "Name to assign these images",
+                    "value": "OrigRed"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+                    "text": "Name to assign these objects",
+                    "value": "Cytoplasm"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the image type",
+                    "value": "Grayscale image"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Set intensity range from",
+                    "value": "Image metadata"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Maximum intensity",
+                    "value": "255.0"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 4,
+                "notes": 4,
+                "show_window": false,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 2,
+                "module_name": "Groups",
+                "module_path": "cellprofiler_core.modules.groups.Groups"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Do you want to group your images?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting._hidden_count.HiddenCount",
+                    "text": "grouping metadata count",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Metadata category",
+                    "value": "None"
+                }
+            ]
+        }
+    ],
+    "version": "v6"
+}

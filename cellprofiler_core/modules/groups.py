@@ -1,7 +1,7 @@
 import numpy
 
 from ..constants.image import CT_OBJECTS
-from ..constants.measurement import COLTYPE_VARCHAR
+from ..constants.measurement import COLTYPE_INTEGER, COLTYPE_VARCHAR, IMAGE
 from ..constants.measurement import C_FILE_NAME
 from ..constants.measurement import C_METADATA
 from ..constants.measurement import C_OBJECTS_FILE_NAME
@@ -10,6 +10,7 @@ from ..constants.measurement import C_PATH_NAME
 from ..constants.measurement import EXPERIMENT
 from ..constants.measurement import GROUP_INDEX
 from ..constants.measurement import GROUP_NUMBER
+from ..constants.measurement import GROUP_LENGTH
 from ..constants.measurement import M_GROUPING_TAGS
 from ..measurement import Measurements
 from ..module import Module
@@ -557,7 +558,7 @@ desired behavior.
         """
         if not self.wants_groups:
             return
-        key_list = self.get_grouping_tags()
+        key_list = self.get_grouping_tags_or_metadata()
         m = workspace.measurements
         for key in key_list:
             if key not in m.get_feature_names("Image"):
@@ -575,7 +576,7 @@ desired behavior.
                 return None
         return key_list, m.get_groupings(key_list)
 
-    def get_grouping_tags(self):
+    def get_grouping_tags_or_metadata(self):
         """Return the metadata keys used for grouping"""
         if not self.wants_groups:
             return None
@@ -640,12 +641,19 @@ desired behavior.
         group_indexes = numpy.hstack(
             [numpy.arange(len(image_numbers)) + 1 for keys, image_numbers in groupings]
         )
+        group_lens = numpy.hstack(
+            [
+                numpy.ones(len(image_numbers), int) * (len(image_numbers))
+                for i, (keys, image_numbers) in enumerate(groupings)
+            ]
+        )
         image_numbers = numpy.hstack(
             [image_numbers for keys, image_numbers in groupings]
         )
         order = numpy.lexsort((group_indexes, group_numbers))
         group_numbers = group_numbers[order]
         group_indexes = group_indexes[order]
+        group_lens = group_lens[order]
 
         m = workspace.measurements
         assert isinstance(m, Measurements)
@@ -662,7 +670,10 @@ desired behavior.
         m.add_all_measurements(
             "Image", GROUP_INDEX, group_indexes,
         )
-        m.set_grouping_tags(self.get_grouping_tags())
+        m.add_all_measurements(
+            "Image", GROUP_LENGTH, group_lens,
+        )
+        m.set_grouping_tags(self.get_grouping_tags_or_metadata())
         return True
 
     def run(self, workspace):
@@ -676,12 +687,13 @@ desired behavior.
         result = []
         if self.wants_groups:
             result.append((EXPERIMENT, M_GROUPING_TAGS, COLTYPE_VARCHAR,))
+            result.append((IMAGE, GROUP_LENGTH, COLTYPE_INTEGER))
             #
             # These are bound to be produced elsewhere, but it is quite
             # computationally expensive to find that out. If they are
             # duplicated by another module, no big deal.
             #
-            for ftr in self.get_grouping_tags():
+            for ftr in self.get_grouping_tags_or_metadata():
                 result.append(("Image", ftr, COLTYPE_VARCHAR,))
         return result
 

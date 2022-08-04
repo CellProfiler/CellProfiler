@@ -441,7 +441,7 @@ class HDF5Dict(object):
                 # if fetching more than 1/2 of indices
                 #
                 dataset = dataset[:]
-            if dataset.dtype == numpy.object:
+            if dataset.dtype == object:
                 # Strings come back out as bytes, we need to decode them.
                 try:
                     return [

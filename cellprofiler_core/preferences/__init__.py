@@ -343,6 +343,8 @@ SAVE_PIPELINE_WITH_PROJECT = "SavePipelineWithProject"
 FILENAME_RE_GUESSES_FILE = "FilenameRegularExpressionGuessesFile"
 PATHNAME_RE_GUESSES_FILE = "PathnameRegularExpressionGuessesFile"
 CHOOSE_IMAGE_SET_FRAME_SIZE = "ChooseImageSetFrameSize"
+ALWAYS_CONTINUE = "AlwaysContinue"
+WIDGET_INSPECTOR = "WidgetInspector"
 
 """Default URL root for BatchProfiler"""
 
@@ -391,7 +393,8 @@ SPP_ALL = [
 ]
 
 # Registry Key Types
-BOOL_KEYS = {SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB, CONSERVE_MEMORY, FORCE_BIOFORMATS}
+BOOL_KEYS = {SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB, 
+             CONSERVE_MEMORY, ALWAYS_CONTINUE, WIDGET_INSPECTOR, FORCE_BIOFORMATS}
 INT_KEYS = {SKIPVERSION, OMERO_PORT, MAX_WORKERS, JVM_HEAP_MB}
 FLOAT_KEYS = {TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE}
 
@@ -672,6 +675,23 @@ The normalization factor is ignored when the normalization method is *{INTENSITY
         "INTENSITY_MODE_RAW": INTENSITY_MODE_RAW,
     }
 )
+
+ALWAYS_CONTINUE_HELP = """\
+Determines whether CellProfiler should always skip images that 
+cause errors to be raised vs stopping analysis (in headless mode)
+or asking the user what to do (in GUI mode). This may help in 
+processing large image sets with a small number of unusual or corrupted
+images, but note that the skip of the original image set in question 
+may cause issues with modules that look atmultiple image sets across 
+groups (CorrectIlluminationCalculate, TrackObjects) or in Export modules,
+leading to simply a later failure. Use at your own risk.
+"""
+
+WIDGET_INSPECTOR_HELP = """\
+Enables wxPython Widget Inspection Tool under the "Test" menu. 
+The tool displays a tree of wxWidgets and sizers in CellProfiler. 
+Mostly only useful for debugging and development purposes.
+"""
 
 
 def recent_file(index, category=""):
@@ -1979,3 +1999,37 @@ def cancel_progress():
     for instance, after an exception is thrown that bubbles to the top.
     """
     report_progress(None, None, None)
+
+__always_continue = None
+def get_always_continue():
+    global __always_continue
+    if __always_continue is not None:
+        return __always_continue in (True, "True")
+    if not config_exists(ALWAYS_CONTINUE):
+        return False
+    return get_config().ReadBool(ALWAYS_CONTINUE)
+
+
+def set_always_continue(val, globally=True):
+    global __always_continue
+    __always_continue = val
+    if globally:
+        config_write(ALWAYS_CONTINUE, val)
+
+__widget_inspector = None
+# global_only - only return True if local is set
+# ie ignore config settings
+def get_widget_inspector(global_only=False):
+    global __widget_inspector
+    if not global_only and __widget_inspector is not None:
+        return __widget_inspector == True
+    if not config_exists(WIDGET_INSPECTOR):
+        return False
+    return get_config().ReadBool(WIDGET_INSPECTOR)
+
+
+def set_widget_inspector(val, globally=True):
+    global __widget_inspector
+    __widget_inspector = val
+    if globally:
+        config_write(WIDGET_INSPECTOR, val)

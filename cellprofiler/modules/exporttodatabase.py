@@ -4147,9 +4147,8 @@ CREATE TABLE %s (
         """Write the CellProfiler Analyst properties file"""
         all_properties = self.get_property_file_text(workspace)
         for properties in all_properties:
-            fid = open(properties.file_name, "wt")
-            fid.write(properties.text)
-            fid.close()
+            with open(properties.file_name, "wt") as fid:
+                fid.write(properties.text)
             if self.show_window:
                 workspace.display_data.columns.append(("Properties_File", properties.file_name))
 

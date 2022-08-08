@@ -150,6 +150,7 @@ class HDF5Dict(object):
                          run group name. If you open the file as
         """
         assert mode in ("r", "r+", "w", "w+", "w-", "a")
+        self.__mode = mode
         open_mode = mode
         file_exists = (hdf5_filename is not None) and os.path.exists(hdf5_filename)
         default_run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S")
@@ -351,6 +352,15 @@ class HDF5Dict(object):
         )
         self.close()
 
+    @property
+    def mode(self):
+        if self.__mode is not None:
+            return self.__mode
+
+    @mode.setter
+    def set_mode(self, mode):
+        self.__mode = mode
+
     def close(self):
         if not hasattr(self, "hdf5_file"):
             # This happens if the constructor could not open the hdf5 file, or
@@ -386,8 +396,15 @@ class HDF5Dict(object):
     def file_contents(self):
         with self.lock:
             self.flush()
-            with open(self.filename, "rb") as f:
-                return memoryview(f.read())
+            try:
+                with open(self.filename, "rb") as f:
+                    return memoryview(f.read())
+            except PermissionError:
+                self.hdf5_file.close()
+                with open(self.filename, "rb") as f:
+                    mem = memoryview(f.read())
+                self.hdf5_file = h5py.File(self.filename, mode = self.mode)
+                return mem
 
     @classmethod
     def has_hdf5_dict(cls, h5file):

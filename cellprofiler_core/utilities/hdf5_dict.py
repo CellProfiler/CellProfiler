@@ -154,6 +154,7 @@ class HDF5Dict(object):
         open_mode = mode
         file_exists = (hdf5_filename is not None) and os.path.exists(hdf5_filename)
         default_run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S")
+        self.default_run_group_name = default_run_group_name
         if mode in ("r", "r+"):
             load_measurements = True
         elif mode == "a" and file_exists:
@@ -407,6 +408,24 @@ class HDF5Dict(object):
                     self.hdf5_file = h5py.File(self.filename, mode = self.mode)
                 else:
                     self.hdf5_file = h5py.File(self.filename, mode = "a")
+
+                #We need to reopen the old group, not just the old file
+                run_group_name = None
+                if (
+                    VERSION not in list(self.hdf5_file.keys())
+                    or self.top_level_group_name not in self.hdf5_file
+                ):
+                    load_measurements = False
+                    run_group_name = self.default_run_group_name
+                else:
+                    mgroup = self.hdf5_file[self.top_level_group_name]
+                    if run_group_name is None:
+                        if len(list(mgroup.keys())) > 0:
+                            run_group_name = sorted(mgroup.keys())[-1]
+                        else:
+                            run_group_name = self.default_run_group_name
+                            mgroup.create_group(run_group_name)
+                    self.top_group = mgroup[run_group_name]
                 return mem
 
     @classmethod

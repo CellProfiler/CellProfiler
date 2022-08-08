@@ -154,7 +154,6 @@ class HDF5Dict(object):
         open_mode = mode
         file_exists = (hdf5_filename is not None) and os.path.exists(hdf5_filename)
         default_run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S")
-        self.default_run_group_name = default_run_group_name
         if mode in ("r", "r+"):
             load_measurements = True
         elif mode == "a" and file_exists:

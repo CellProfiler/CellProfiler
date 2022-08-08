@@ -150,7 +150,7 @@ class HDF5Dict(object):
                          run group name. If you open the file as
         """
         assert mode in ("r", "r+", "w", "w+", "w-", "a")
-        self.__mode = mode
+        self.mode = mode
         open_mode = mode
         file_exists = (hdf5_filename is not None) and os.path.exists(hdf5_filename)
         default_run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S")
@@ -228,6 +228,8 @@ class HDF5Dict(object):
             else:
                 self.version = self.hdf5_file[VERSION][0]
                 self.indices = {}
+
+            self.run_group_name = run_group_name
 
             self.lock = HDF5Lock()
 
@@ -353,15 +355,6 @@ class HDF5Dict(object):
         )
         self.close()
 
-    @property
-    def mode(self):
-        if self.__mode is not None:
-            return self.__mode
-
-    @mode.setter
-    def set_mode(self, mode):
-        self.__mode = mode
-
     def close(self):
         if not hasattr(self, "hdf5_file"):
             # This happens if the constructor could not open the hdf5 file, or
@@ -410,22 +403,8 @@ class HDF5Dict(object):
                     self.hdf5_file = h5py.File(self.filename, mode = "a")
 
                 #We need to reopen the old group, not just the old file
-                run_group_name = None
-                if (
-                    VERSION not in list(self.hdf5_file.keys())
-                    or self.top_level_group_name not in self.hdf5_file
-                ):
-                    load_measurements = False
-                    run_group_name = self.default_run_group_name
-                else:
-                    mgroup = self.hdf5_file[self.top_level_group_name]
-                    if run_group_name is None:
-                        if len(list(mgroup.keys())) > 0:
-                            run_group_name = sorted(mgroup.keys())[-1]
-                        else:
-                            run_group_name = self.default_run_group_name
-                            mgroup.create_group(run_group_name)
-                    self.top_group = mgroup[run_group_name]
+                mgroup = self.hdf5_file[self.top_level_group_name]
+                self.top_group = mgroup[self.run_group_name]
                 return mem
 
     @classmethod

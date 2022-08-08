@@ -228,8 +228,6 @@ class HDF5Dict(object):
                 self.version = self.hdf5_file[VERSION][0]
                 self.indices = {}
 
-            self.run_group_name = run_group_name
-
             self.lock = HDF5Lock()
 
             self.chunksize = 1024
@@ -403,7 +401,8 @@ class HDF5Dict(object):
 
                 #We need to reopen the old group, not just the old file
                 mgroup = self.hdf5_file[self.top_level_group_name]
-                self.top_group = mgroup[self.run_group_name]
+                run_group_name = sorted(mgroup.keys())[-1]
+                self.top_group = mgroup[run_group_name]
                 return mem
 
     @classmethod

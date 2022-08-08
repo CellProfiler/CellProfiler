@@ -403,7 +403,10 @@ class HDF5Dict(object):
                 self.hdf5_file.close()
                 with open(self.filename, "rb") as f:
                     mem = memoryview(f.read())
-                self.hdf5_file = h5py.File(self.filename, mode = self.mode)
+                if 'w' not in self.mode:
+                    self.hdf5_file = h5py.File(self.filename, mode = self.mode)
+                else:
+                    self.hdf5_file = h5py.File(self.filename, mode = "a")
                 return mem
 
     @classmethod

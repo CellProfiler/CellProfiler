@@ -149,7 +149,7 @@ class HDF5Dict(object):
                          from different CellProfiler runs by using a different
                          run group name. If you open the file as
         """
-        assert mode in ("r", "r+", "w", "x", "w-", "a") # https://github.com/CellProfiler/CellProfiler/commit/52f8208f0f39e0f34176e92db4e90d7f15419a83#diff-e84f81e2ad1b8cda19f1761e1fd5a6704310848c80f0e3b860e48a1f736e7cefR142
+        assert mode in ("r", "r+", "w", "x", "w-", "a")
         self.mode = mode
         file_exists = (hdf5_filename is not None) and os.path.exists(hdf5_filename)
         default_run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S")

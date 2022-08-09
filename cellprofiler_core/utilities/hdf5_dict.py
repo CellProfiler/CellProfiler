@@ -150,8 +150,6 @@ class HDF5Dict(object):
                          run group name. If you open the file as
         """
         assert mode in ("r", "r+", "w", "w+", "w-", "a")
-        self.mode = mode
-        open_mode = mode
         file_exists = (hdf5_filename is not None) and os.path.exists(hdf5_filename)
         default_run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S")
         if mode in ("r", "r+"):
@@ -162,7 +160,10 @@ class HDF5Dict(object):
             load_measurements = False
             run_group_name = default_run_group_name
             if mode == "w+" and file_exists:
-                open_mode = "r+"
+                mode = "r+"
+            elif mode == "w+":
+                mode = "a"
+        self.mode = mode
 
         self.is_temporary = is_temporary and (hdf5_filename is not None)
         self.filename = hdf5_filename
@@ -172,7 +173,7 @@ class HDF5Dict(object):
             self.filename,
             self.is_temporary,
             copy,
-            open_mode,
+            mode,
         )
         if self.filename is None:
             # core driver requires a unique filename even if the file
@@ -395,9 +396,9 @@ class HDF5Dict(object):
                 with open(self.filename, "rb") as f:
                     mem = memoryview(f.read())
                 if 'w' not in self.mode:
-                    self.hdf5_file = h5py.File(self.filename, mode = self.mode)
+                    self.hdf5_file = h5py.File(self.filename, mode=self.mode)
                 else:
-                    self.hdf5_file = h5py.File(self.filename, mode = "a")
+                    self.hdf5_file = h5py.File(self.filename, mode="a")
 
                 #We need to reopen the old group, not just the old file
                 mgroup = self.hdf5_file[self.top_level_group_name]

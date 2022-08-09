@@ -364,10 +364,9 @@ The file has the following columns:
                 ):
                     return False
                 os.remove(file_path)
-            fd = open(file_path, "wt")
-            header = ",".join(header)
-            fd.write(header + "\n")
-            fd.close()
+            with open(file_path, "wt") as fd:
+                header = ",".join(header)
+                fd.write(header + "\n")
         return True
 
     def run(self, workspace):

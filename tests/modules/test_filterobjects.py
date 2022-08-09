@@ -721,9 +721,8 @@ def test_filter_by_3_class_rule():
     )
     expected_class = [None, "3", "1", "2"]
     rules_path = tempfile.mktemp()
-    fd = open(rules_path, "wt")
-    fd.write(rules_file_contents)
-    fd.close()
+    with open(rules_path, "wt") as fd:
+        fd.write(rules_file_contents)
     try:
         for rules_class in ("1", "2", "3"):
             labels = numpy.zeros((10, 20), int)

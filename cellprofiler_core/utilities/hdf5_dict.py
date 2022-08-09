@@ -149,8 +149,8 @@ class HDF5Dict(object):
                          from different CellProfiler runs by using a different
                          run group name. If you open the file as
         """
-        assert mode in ("r", "r+", "w", "w+", "w-", "a")
-        open_mode = mode
+        assert mode in ("r", "r+", "w", "x", "w-", "a")
+        self.mode = mode
         file_exists = (hdf5_filename is not None) and os.path.exists(hdf5_filename)
         default_run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S")
         if mode in ("r", "r+"):
@@ -160,8 +160,6 @@ class HDF5Dict(object):
         else:
             load_measurements = False
             run_group_name = default_run_group_name
-            if mode == "w+" and file_exists:
-                open_mode = "r+"
 
         self.is_temporary = is_temporary and (hdf5_filename is not None)
         self.filename = hdf5_filename
@@ -171,7 +169,7 @@ class HDF5Dict(object):
             self.filename,
             self.is_temporary,
             copy,
-            open_mode,
+            mode,
         )
         if self.filename is None:
             # core driver requires a unique filename even if the file
@@ -386,8 +384,23 @@ class HDF5Dict(object):
     def file_contents(self):
         with self.lock:
             self.flush()
-            with open(self.filename, "rb") as f:
-                return memoryview(f.read())
+            try:
+                with open(self.filename, "rb") as f:
+                    return memoryview(f.read())
+            except PermissionError:
+                self.hdf5_file.close()
+                with open(self.filename, "rb") as f:
+                    mem = memoryview(f.read())
+                if 'w' not in self.mode:
+                    self.hdf5_file = h5py.File(self.filename, mode=self.mode)
+                else:
+                    self.hdf5_file = h5py.File(self.filename, mode="a")
+
+                #We need to reopen the old group, not just the old file
+                mgroup = self.hdf5_file[self.top_level_group_name]
+                run_group_name = sorted(mgroup.keys())[-1]
+                self.top_group = mgroup[run_group_name]
+                return mem
 
     @classmethod
     def has_hdf5_dict(cls, h5file):

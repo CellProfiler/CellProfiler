@@ -129,7 +129,7 @@ cluster.
    If you need help in producing the batch commands for submitting your
    jobs, use the ``--get-batch-commands`` followed by the path to the 
    Batch\_data.h5 file output by the CreateBatchFiles module.
-   (In CellProfiler 4.2.2 we recommend using ``--get-batch-commands-new``).
+   (In CellProfiler 4.2.2 or greater we recommend using ``--get-batch-commands-new``).
    You can set the number of images per batch with the ``--images-per-batch``
    flag. 
    When specified, CellProfiler will output one line to the terminal per

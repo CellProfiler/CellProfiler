@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-ARG version=4.2.2
+ARG version=4.2.3
 
 RUN apt update
 RUN apt -y upgrade

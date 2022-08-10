@@ -69,7 +69,7 @@ setuptools.setup(
         "h5py~=3.6.0",
         "imageio>=2.5",
         "inflect>=2.1",
-        "Jinja2>=2.11.2",
+        "Jinja2>=2.11.2,<3.1",
         "joblib>=0.13",
         "mahotas>=1.4",
         "matplotlib==3.1.3",

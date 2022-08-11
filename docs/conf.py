@@ -12,6 +12,6 @@ html_theme = "sphinx_rtd_theme"
 
 project = "CellProfiler-core"
 
-release = "4.2.3"
+release = "4.2.4rc1"
 
 templates_path = ["_templates"]

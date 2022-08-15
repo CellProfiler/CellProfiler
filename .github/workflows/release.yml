@@ -53,7 +53,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install cython
           pip install mysqlclient==1.4.6
-          pip install --editable .
+          pip install --editable . --no-use-pep517
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
           pyinstaller distribution/windows/cellprofiler.spec

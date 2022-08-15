@@ -347,7 +347,9 @@ class Objects:
         """
         parent_count = histogram.shape[0] - 1
 
-        parents_of_children = numpy.argmax(histogram, axis=0)
+        parents_of_children = numpy.asarray(histogram.argmax(axis=0))
+        if len(parents_of_children.shape) == 2:
+            parents_of_children = numpy.squeeze(parents_of_children)
         #
         # Create a histogram of # of children per parent
         children_per_parent = numpy.histogram(
@@ -366,7 +368,7 @@ class Objects:
         parent_labels - the parents which contain the children
         child_labels - the children to be mapped to a parent
 
-        Returns a 2d array of overlap between each parent and child.
+        Returns a sparse matrix of overlap between each parent and child.
         Note that the first row and column are empty, as these
         correspond to parent and child labels of 0.
 
@@ -405,7 +407,7 @@ class Objects:
                 (parent_labels[not_zero], child_labels[not_zero]),
             ),
             shape=(parent_count + 1, child_count + 1),
-        ).toarray()
+        )
 
     @staticmethod
     def histogram_from_ijv(parent_ijv, child_ijv):
@@ -415,7 +417,7 @@ class Objects:
         parent_ijv - the parents which contain the children
         child_ijv - the children to be mapped to a parent
 
-        Returns a 2d array of overlap between each parent and child.
+        Returns a sparse matrix of overlap between each parent and child.
         Note that the first row and column are empty, as these
         correspond to parent and child labels of 0.
 
@@ -444,7 +446,7 @@ class Objects:
         # I surely do not understand the sparse code.  Converting both
         # arrays to csc gives the best peformance... Why not p.csr and
         # c.csc?
-        return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
+        return parent_matrix.tocsc() * child_matrix.tocsc()
 
     def fn_of_label_and_index(self, func):
         """Call a function taking a label matrix with the segmented labels

@@ -50,6 +50,7 @@ jobs:
           JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.16-8\x64
         if: ${{ matrix.os == 'windows-2019' }}
         run: |
+          python -m pip install --upgrade pip setuptools wheel
           pip install cython
           pip install mysqlclient==1.4.6
           pip install --editable .

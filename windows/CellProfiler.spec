@@ -25,6 +25,7 @@ datas += [
 
 hiddenimports = []
 
+hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.library')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler_core.modules')
 hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.utilities')

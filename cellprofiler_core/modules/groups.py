@@ -1,5 +1,6 @@
 import numpy
 
+from ..constants.image import CT_OBJECTS
 from ..constants.measurement import COLTYPE_INTEGER, COLTYPE_VARCHAR, IMAGE
 from ..constants.measurement import C_FILE_NAME
 from ..constants.measurement import C_METADATA
@@ -13,7 +14,6 @@ from ..constants.measurement import GROUP_LENGTH
 from ..constants.measurement import M_GROUPING_TAGS
 from ..measurement import Measurements
 from ..module import Module
-from ..pipeline import ImageSetChannelDescriptor
 from ..pipeline import Pipeline
 from ..setting import Binary
 from ..setting import Divider
@@ -517,22 +517,20 @@ desired behavior.
                 row = group_key_values + [c]
                 self.grouping_list.data.append(row)
 
-            for i, iscd in enumerate(channel_descriptors):
-                assert isinstance(iscd, ImageSetChannelDescriptor)
-                image_name = iscd.name
+            for image_name, channel_type in channel_descriptors.items():
                 idx = len(image_set_feature_names)
                 self.image_set_list.insert_column(idx, "Path: %s" % image_name)
                 self.image_set_list.insert_column(idx + 1, "File: %s" % image_name)
-                if iscd.channel_type == iscd.CT_OBJECTS:
+                if channel_type == CT_OBJECTS:
                     image_set_feature_names.append(
-                        C_OBJECTS_PATH_NAME + "_" + iscd.name
+                        C_OBJECTS_PATH_NAME + "_" + image_name
                     )
                     image_set_feature_names.append(
-                        C_OBJECTS_FILE_NAME + "_" + iscd.name
+                        C_OBJECTS_FILE_NAME + "_" + image_name
                     )
                 else:
-                    image_set_feature_names.append(C_PATH_NAME + "_" + iscd.name)
-                    image_set_feature_names.append(C_FILE_NAME + "_" + iscd.name)
+                    image_set_feature_names.append(C_PATH_NAME + "_" + image_name)
+                    image_set_feature_names.append(C_FILE_NAME + "_" + image_name)
 
             all_features = [
                 m["Image", ftr, image_numbers] for ftr in image_set_feature_names

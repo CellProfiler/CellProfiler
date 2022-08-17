@@ -3,7 +3,8 @@ from ._does_predicate import DoesPredicate
 from ._filter import LITERAL_PREDICATE
 from ._filter_predicate import FilterPredicate
 from .._file_collection_display import FileCollectionDisplay
-from ...pipeline import ImagePlane
+from ...pipeline import ImageFile
+from ...pipeline import ImagePlane as ImagePlane
 
 
 class MetadataPredicate(FilterPredicate):
@@ -35,8 +36,7 @@ class MetadataPredicate(FilterPredicate):
             FilterPredicate(
                 key,
                 self.display_fmt % key,
-                lambda ipd, match, key=key: key in ipd.metadata
-                and ipd.metadata[key] == match,
+                lambda plane, match, key=key: str(plane.get_metadata(key)) == match,
                 [LITERAL_PREDICATE],
             )
             for key in keys
@@ -55,11 +55,12 @@ class MetadataPredicate(FilterPredicate):
         The metadata predicate has subpredicates that look up their
         metadata key in the ipd and compare it against a literal.
         """
-        node_type, modpath, resolver = arg
-        ipd = resolver.get_image_plane_details(modpath)
-        return vargs[0](ipd, *vargs[1:])
+        node_type, modpath, plane = arg
+        return vargs[0](plane, *vargs[1:])
 
     def test_valid(self, pipeline, *args):
+        print("Testing validity of a metadata predicate using a fake image plane")
+
         class FakeModpathResolver(object):
             """Resolve one modpath to one ipd"""
 
@@ -73,12 +74,12 @@ class MetadataPredicate(FilterPredicate):
                 return self.ipd
 
         modpath = ["imaging", "image.png"]
-        ipd = ImagePlane("/imaging/image.png", None, None, None)
+        plane = ImagePlane(ImageFile("/imaging/image.png"), None, None, None)
         self(
             (
                 FileCollectionDisplay.NODE_IMAGE_PLANE,
                 modpath,
-                FakeModpathResolver(modpath, ipd),
+                FakeModpathResolver(modpath, plane),
             ),
             *args,
         )

@@ -27,10 +27,8 @@ import pkg_resources
 from cellprofiler_core.constants.worker import (
     DEADMAN_START_ADDR,
     DEADMAN_START_MSG,
-    NOTIFY_ADDR,
     NOTIFY_STOP,
-    the_zmq_context,
-    all_measurements,
+    all_measurements, NOTIFY_ADDR,
 )
 from cellprofiler_core.preferences import set_always_continue, set_conserve_memory
 from cellprofiler_core.worker._worker import Worker
@@ -38,8 +36,10 @@ from cellprofiler_core.worker._worker import Worker
 """Set the log level through the environment by specifying AW_LOG_LEVEL"""
 AW_LOG_LEVEL = "AW_LOG_LEVEL"
 
-work_announce_address = None
 knime_bridge_address = None
+notify_address = None
+analysis_id = None
+work_server_address = None
 
 
 def aw_parse_args():
@@ -51,15 +51,29 @@ def aw_parse_args():
     )
     import optparse
 
-    global work_announce_address
+    global analysis_id
+    global work_server_address
+    global notify_address
     global knime_bridge_address
     set_headless()
     set_awt_headless(True)
     parser = optparse.OptionParser()
     parser.add_option(
-        "--work-announce",
-        dest="work_announce_address",
-        help="ZMQ port where work announcements are published",
+        "--analysis-id",
+        dest="analysis_id",
+        help="Unique ID for the analysis to be performed",
+        default=None,
+    )
+    parser.add_option(
+        "--work-server",
+        dest="work_server_address",
+        help="ZMQ port where work requests should be sent",
+        default=None,
+    )
+    parser.add_option(
+        "--notify-server",
+        dest="notify_address",
+        help="ZMQ port where continue/shutdown notifications are published",
         default=None,
     )
     parser.add_option(
@@ -109,11 +123,15 @@ def aw_parse_args():
     if len(logging.root.handlers) == 0:
         logging.root.addHandler(logging.StreamHandler())
 
-    if not (options.work_announce_address or options.knime_bridge_address):
+    if not options.work_server_address and options.work_server_address and \
+            options.analysis_id:
         parser.print_help()
         sys.exit(1)
-    work_announce_address = options.work_announce_address
+    analysis_id = options.analysis_id
+    notify_address = options.notify_address
+    work_server_address = options.work_server_address
     knime_bridge_address = options.knime_bridge_address
+
     #
     # Set up the headless plugins directories before doing
     # anything so loading will get them
@@ -129,17 +147,16 @@ def aw_parse_args():
 
 
 if __name__ == "__main__":
-    if "CP_DEBUG_WORKER" not in os.environ:
-        #
-        # Sorry to put ugliness so early:
-        #     The process inherits file descriptors from the parent. Windows doesn't
-        #     let you selectively inherit file descriptors, so we close them here.
-        #
-        try:
-            maxfd = os.sysconf("SC_OPEN_MAX")
-        except:
-            maxfd = 256
-        os.closerange(3, maxfd)
+    #
+    # Sorry to put ugliness so early: The process inherits file descriptors
+    # from the parent. Windows doesn't let you selectively inherit file
+    # descriptors, so we close them here.
+    #
+    try:
+        maxfd = os.sysconf("SC_OPEN_MAX")
+    except:
+        maxfd = 256
+    os.closerange(3, maxfd)
     if not hasattr(sys, "frozen"):
         # In the development version, maybe the bioformats package is installed?
         # Add the root to the pythonpath
@@ -180,86 +197,106 @@ def main():
 
     # Start the JVM
     from cellprofiler_core.utilities.java import start_java, stop_java
+    with zmq.Context() as the_zmq_context:
+        the_zmq_context.setsockopt(zmq.LINGER, 0)
+        deadman_start_socket = the_zmq_context.socket(zmq.PAIR)
+        deadman_start_socket.bind(DEADMAN_START_ADDR)
 
-    start_java()
+        # Start the deadman switch thread.
+        monitor_thread = threading.Thread(
+            target=monitor_keepalive,
+            args=(the_zmq_context, notify_address, ),
+            name="heartbeat_monitor",
+            daemon=True
+        )
+        monitor_thread.start()
 
-    deadman_start_socket = the_zmq_context.socket(zmq.PAIR)
-    deadman_start_socket.bind(DEADMAN_START_ADDR)
+        deadman_start_socket.recv()
+        deadman_start_socket.close()
 
-    # Start the deadman switch thread.
-    start_daemon_thread(target=exit_on_stdin_close, name="exit_on_stdin_close")
-    deadman_start_socket.recv()
-    deadman_start_socket.close()
+        from cellprofiler.knime_bridge import KnimeBridgeServer
 
-    from cellprofiler.knime_bridge import KnimeBridgeServer
-
-    with Worker(work_announce_address) as worker:
-        worker_thread = threading.Thread(target=worker.run, name="WorkerThread")
-        worker_thread.setDaemon(True)
-        worker_thread.start()
-        with KnimeBridgeServer(
-            the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
-        ):
-            worker_thread.join()
-
-    #
-    # Shutdown - need to handle some global cleanup here
-    #
-    try:
-        stop_java()
-    except:
-        logging.warning("Failed to stop the JVM", exc_info=True)
-
-
-__the_notify_pub_socket = None
-
-
-def get_the_notify_pub_socket():
-    """Get the socket used to publish the worker stop message"""
-    global __the_notify_pub_socket
-    if __the_notify_pub_socket is None or __the_notify_pub_socket.closed:
-        __the_notify_pub_socket = the_zmq_context.socket(zmq.PUB)
-        __the_notify_pub_socket.bind(NOTIFY_ADDR)
-    return __the_notify_pub_socket
+        with Worker(the_zmq_context, analysis_id, work_server_address, notify_address) as worker:
+            worker_thread = threading.Thread(
+                target=worker.run,
+                name="WorkerThread",
+                daemon=True,
+            )
+            worker_thread.start()
+            with KnimeBridgeServer(
+                the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
+            ):
+                worker_thread.join()
+            the_zmq_context.destroy(linger=0)
+        logging.debug("Worker thread joined")
+        #
+        # Shutdown - need to handle some global cleanup here
+        #
+        try:
+            stop_java()
+        except:
+            logging.warning("Failed to stop the JVM", exc_info=True)
 
 
-def exit_on_stdin_close():
-    """Read until EOF, then exit, possibly without cleanup."""
-    notify_pub_socket = get_the_notify_pub_socket()
-    deadman_socket = the_zmq_context.socket(zmq.PAIR)
+def monitor_keepalive(context, keepalive_address):
+    """The keepalive socket should send a regular heartbeat telling workers
+    to stay alive. This will stop if the parent process crashes.
+    If we see no keepalive message in 15 seconds we take that as a bad
+    omen and attempt to gracefully shut down the worker processes.
+
+    The same socket also broadcasts the shutdown notification, so we watch
+    for that too. The main worker thread should pick that up and shut down
+    the next time it makes a request, but this can take a while. Therefore we
+    also apply a timeout and cease work manually if the processes don't
+    respond to the kill signal quickly enough.
+
+    Note that if CellProfiler is paused in debug mode during an analysis, this
+    can cause the workers to exit. Use test mode for testing or only debug on
+    the worker threads."""
+    keepalive_socket = context.socket(zmq.SUB)
+    keepalive_socket.connect(keepalive_address)
+    keepalive_socket.setsockopt(zmq.SUBSCRIBE, b"")
+
+    # Send a message back when we've set this thread up
+    deadman_socket = context.socket(zmq.PAIR)
     deadman_socket.connect(DEADMAN_START_ADDR)
     deadman_socket.send(DEADMAN_START_MSG)
     deadman_socket.close()
 
-    # If sys.stdin closes, either our parent has closed it (indicating we
-    # should exit), or our parent has died.  Attempt to exit cleanly via main
-    # thread, but if that takes too long (hung filesystem or socket, perhaps),
-    # use a hard os._exit() instead.
-    stdin = sys.stdin
-    try:
-        while stdin.read():
-            pass
-    except:
-        pass
-    finally:
-        print("Cancelling worker")
-        notify_pub_socket.send(NOTIFY_STOP)
-        notify_pub_socket.close()
-        # hard exit after 10 seconds unless app exits
+    missed = 0
+    while missed < 3:
+        event = keepalive_socket.poll(5000)
+        if not event:
+            missed += 1
+            logging.warning(f"Worker failed to receive communication for"
+                            f" {5 * missed} seconds")
+        else:
+            missed = 0
+            msg = keepalive_socket.recv()
+            if msg == NOTIFY_STOP:
+                break
+    # Stop has been called, we must manually close our sockets before the
+    # main thread can exit.
+    keepalive_socket.close()
+    if missed >= 3:
+        # Parent is dead, hard kill
+        logging.critical("Worker stopped receiving communication from "
+                         "CellProfiler, shutting down now")
+    else:
+        # Stop signal captured, give some time to shut down gracefully.
         time.sleep(10)
-        for m in all_measurements:
-            try:
-                m.close()
-            except:
-                pass
-        os._exit(0)
+    logging.info("Cancelling worker")
+    # hard exit after 10 seconds unless app exits
 
-
-def start_daemon_thread(target=None, args=(), name=None):
-    thread = threading.Thread(target=target, args=args, name=name)
-    thread.daemon = True
-    thread.start()
+    for m in all_measurements:
+        try:
+            m.close()
+        except:
+            pass
+    logging.error("Worker failed to stop gracefully, forcing exit now")
+    os._exit(0)
 
 
 if __name__ == "__main__":
     main()
+    sys.exit(0)

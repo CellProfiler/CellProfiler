@@ -1,15 +1,14 @@
 import hashlib
 import io
 import os
+import sys
 import tempfile
 import urllib.request
 
 import base64
-import bioformats
-import javabridge
+import imageio
 import numpy
 import pytest
-import six
 import skimage.morphology
 import zlib
 
@@ -23,6 +22,7 @@ import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
 import tests.modules
+from cellprofiler_core.pipeline import ImageFile, ImagePlane
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]
@@ -703,8 +703,7 @@ def do_teest(module, channels, expected_tags, expected_metadata, additional=None
                     to create errors. Format is same as a single channel of
                     channels.
     """
-    ipds = []
-    urls = set()
+    image_files = []
     channels = dict(channels)
     if additional is not None:
         channels["Additional"] = additional
@@ -715,47 +714,41 @@ def do_teest(module, channels, expected_tags, expected_metadata, additional=None
         ]
         channels[channel_name] = channel_data
         for url, metadata in channel_data:
-            if url in urls:
-                continue
-            urls.add(url)
-            ipd = make_ipd(url, metadata)
-            ipds.append(ipd)
+            image_file = ImageFile(url)
+            image_file.add_metadata(metadata)
+            if image_file not in image_files:
+                image_files.append(image_file)
     if additional is not None:
         del channels["Additional"]
-    ipds.sort(key=lambda x: x.url)
     pipeline = cellprofiler_core.pipeline.Pipeline()
-    pipeline.set_filtered_file_list(urls, module)
-    pipeline.set_image_plane_details(ipds, list(metadata.keys()), module)
+    pipeline.set_image_plane_list([ImagePlane(image_file) for image_file in image_files])
+    pipeline.set_image_plane_details(None, list(metadata.keys()), module)
     module.set_module_num(1)
     pipeline.add_module(module)
     m = cellprofiler_core.measurement.Measurements()
     workspace = cellprofiler_core.workspace.Workspace(
         pipeline, module, m, None, m, None
     )
-    assert module.prepare_run(workspace)
+    assert module.prepare_run(workspace), "Prepare run failed"
     tags = m.get_metadata_tags()
     assert len(tags) == len(expected_tags)
-    for tag, expected_tag in zip(tags, expected_tags):
-        for et in expected_tag:
-            ftr = (
-                et
-                if et == cellprofiler_core.constants.measurement.IMAGE_NUMBER
-                else "_".join((cellprofiler_core.constants.measurement.C_METADATA, et))
-            )
-            if ftr == tag:
-                break
-        else:
-            pytest.fail("%s not in %s" % (tag, ",".join(expected_tag)))
-    iscds = m.get_channel_descriptors()
-    assert len(iscds) == len(channels)
+    for et in expected_tags:
+        ftr = (
+            et
+            if et == cellprofiler_core.constants.measurement.IMAGE_NUMBER
+            else "_".join((cellprofiler_core.constants.measurement.C_METADATA, et))
+        )
+        if ftr not in tags:
+            pytest.fail(f"{ftr} not in {','.join(tags)}")
+    channel_descriptors = m.get_channel_descriptors()
+    assert len(channel_descriptors) == len(channels)
     for channel_name in list(channels.keys()):
-        iscd_match = [x for x in iscds if x.name == channel_name]
-        assert len(iscd_match) == 1
-        iscd = iscd_match[0]
-        assert isinstance(iscd, cellprofiler_core.pipeline.ImageSetChannelDescriptor)
+        assert channel_name in channel_descriptors
+        channel_type = channel_descriptors[channel_name]
+        from cellprofiler_core.constants.image import CT_OBJECTS
         for i, (expected_url, metadata) in enumerate(channels[channel_name]):
             image_number = i + 1
-            if iscd.channel_type == iscd.CT_OBJECTS:
+            if channel_type == CT_OBJECTS:
                 url_ftr = "_".join(
                     (
                         cellprofiler_core.constants.measurement.C_OBJECTS_URL,
@@ -790,34 +783,10 @@ def do_teest(module, channels, expected_tags, expected_metadata, additional=None
 
 
 def make_ipd(url, metadata, series=0, index=0, channel=None):
-    if channel is None:
-        channel = "ALWAYS_MONOCHROME"
-    if isinstance(channel, six.string_types):
-        channel = javabridge.run_script(
-            """
-        importPackage(Packages.org.cellprofiler.imageset);
-        ImagePlane.%s;"""
-            % channel
-        )
-    jmetadata = javabridge.make_map(**metadata)
-    jipd = javabridge.run_script(
-        """
-            importPackage(Packages.org.cellprofiler.imageset);
-            importPackage(Packages.org.cellprofiler.imageset.filter);
-            var imageFile=new ImageFile(new java.net.URI(url));
-            var imageFileDetails = new ImageFileDetails(imageFile);
-            var imageSeries=new ImageSeries(imageFile, series);
-            var imageSeriesDetails = new ImageSeriesDetails(imageSeries, imageFileDetails);
-            var imagePlane=new ImagePlane(imageSeries, index, channel);
-            var ipd = new ImagePlaneDetails(imagePlane, imageSeriesDetails);
-            for (var entry in Iterator(metadata.entrySet())) {
-                ipd.put(entry.getKey(), entry.getValue());
-            }
-            ipd;
-            """,
-        dict(url=url, metadata=jmetadata, series=series, index=index, channel=channel),
-    )
-    return cellprofiler_core.pipeline.ImagePlane(jipd)
+    plane = ImagePlane(ImageFile(url), series=series, index=index, channel=channel)
+    for key, value in metadata.items():
+        plane.set_metadata(key, value)
+    return plane
 
 
 def test_01_all():
@@ -826,11 +795,13 @@ def test_01_all():
     n.single_image_provider.value = C0
     data = {C0: [("images/1.jpg", {M0: "1"})]}
     do_teest(
-        n, data, [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)], [(M0, C0)]
+        n, data, [cellprofiler_core.constants.measurement.IMAGE_NUMBER], []
     )
 
 
 def test_one():
+    # With only one column, metadata assignment should be ignored in favour or order-based image list generation.
+    # As a result matching metadata keys will also be absent.
     n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
     n.assignment_method.value = cellprofiler_core.modules.namesandtypes.ASSIGN_RULES
     n.matching_choice.value = cellprofiler_core.modules.namesandtypes.MATCH_BY_METADATA
@@ -846,7 +817,7 @@ def test_one():
         ]
     }
     do_teest(
-        n, data, [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)], [(M0, C0)]
+        n, data, [cellprofiler_core.constants.measurement.IMAGE_NUMBER], []
     )
 
 
@@ -861,7 +832,7 @@ def test_match_one_same_key():
     n.assignments[1].rule_filter.value = 'file doesnot contain "1"'
     n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M0))
     data = {C0: [("images/1.jpg", {M0: "k1"})], C1: [("images/2.jpg", {M0: "k1"})]}
-    do_teest(n, data, [(M0,)], [(M0, C0)])
+    do_teest(n, data, [M0], [(M0, C0)])
 
 
 def test_match_one_different_key():
@@ -875,7 +846,7 @@ def test_match_one_different_key():
     n.assignments[1].rule_filter.value = 'file doesnot contain "1"'
     n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M1))
     data = {C0: [("images/1.jpg", {M0: "k1"})], C1: [("images/2.jpg", {M1: "k1"})]}
-    do_teest(n, data, [(M0, M1)], [(M0, C0), (M1, C1)])
+    do_teest(n, data, [M0, M1], [(M0, C0), (M1, C1)])
 
 
 def test_match_two_one_key():
@@ -892,7 +863,7 @@ def test_match_two_one_key():
         C0: [("%s%d" % (C0, i), m) for i, m in enumerate(md([(M0, 2)]))],
         C1: [("%s%d" % (C1, i), m) for i, m in enumerate(md([(M1, 2)]))],
     }
-    do_teest(n, data, [(M0, M1)], [(M0, C0), (M1, C1)])
+    do_teest(n, data, [M0, M1], [(M0, C0), (M1, C1)])
 
 
 def test_match_two_and_two():
@@ -918,7 +889,7 @@ def test_match_two_and_two():
             for i, m in enumerate(md([(M3, 3), (M2, 2)]))
         ],
     }
-    do_teest(n, data, [(M0, M2), (M1, M3)], [(M0, C0), (M1, C0), (M2, C1), (M3, C1)])
+    do_teest(n, data, [M0, M2, M1, M3], [(M0, C0), (M1, C0), (M2, C1), (M3, C1)])
 
 
 def test_01_two_with_same_metadata():
@@ -956,7 +927,7 @@ def test_01_two_with_same_metadata():
     do_teest(
         n,
         data,
-        [(M0, M2), (M1, M3)],
+        [M0, M2, M1, M3],
         [(M0, C0), (M1, C0), (M2, C1), (M3, C1)],
         additional,
     )
@@ -993,7 +964,7 @@ def test_02_missing():
     do_teest(
         n,
         data,
-        [(M0, M2), (M1, M3)],
+        [M0, M2, M1, M3],
         [(M0, C0), (M1, C0), (M2, C1), (M3, C1)],
         additional,
     )
@@ -1013,7 +984,7 @@ def test_one_against_all():
         C0: [(C0, {})] * 3,
         C1: [("%s%d" % (C1, i), m) for i, m in enumerate(md([(M0, 3)]))],
     }
-    do_teest(n, data, [(M0,)], [(M0, C1)])
+    do_teest(n, data, [M0], [(M0, C1)])
 
 
 def test_some_against_all():
@@ -1051,7 +1022,8 @@ def test_some_against_all():
                     for i, m in enumerate(md([(mB1, 2), (mA1, 3)]))
                 ],
             }
-            expected_keys = [[(M0, M1), (M2,)][i] for i in (j0, j1)]
+            # expected_keys = [[(M0, M1), (M2,)][i] for i in (j0, j1)]
+            expected_keys = [M0, M1, M2]
             do_teest(n, data, expected_keys, [(C0, M0), (C0, M3), (C1, M1), (C1, M2)])
 
 
@@ -1071,7 +1043,7 @@ def test_by_order():
     do_teest(
         n,
         data,
-        [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)],
+        [cellprofiler_core.constants.measurement.IMAGE_NUMBER],
         [(C0, M0), (C1, M1)],
     )
 
@@ -1098,7 +1070,7 @@ def test_by_order_bad():
     do_teest(
         n,
         data,
-        [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)],
+        [cellprofiler_core.constants.measurement.IMAGE_NUMBER],
         [(C0, M0), (C1, M1)],
     )
 
@@ -1114,7 +1086,7 @@ def test_single_image_by_order():
     n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
     n.add_single_image()
     si = n.single_images[0]
-    si.image_plane.value = si.image_plane.build(url_root + "/illum.tif")
+    si.image_plane.value = si.image_plane.build(ImagePlane(ImageFile(url_root + "/illum.tif")))
     si.image_name.value = C2
     si.load_as_choice.value = (
         cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
@@ -1127,7 +1099,7 @@ def test_single_image_by_order():
     workspace = do_teest(
         n,
         data,
-        [(cellprofiler_core.constants.measurement.IMAGE_NUMBER,)],
+        [cellprofiler_core.constants.measurement.IMAGE_NUMBER],
         [(C0, M0), (C1, M1)],
     )
     m = workspace.measurements
@@ -1161,7 +1133,7 @@ def test_single_image_by_metadata():
     )
     n.add_single_image()
     si = n.single_images[0]
-    si.image_plane.value = si.image_plane.build(url_root + "/illum.tif")
+    si.image_plane.value = si.image_plane.build(ImagePlane(ImageFile(url_root + "/illum.tif")))
     si.image_name.value = C2
     si.load_as_choice.value = (
         cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
@@ -1177,7 +1149,7 @@ def test_single_image_by_metadata():
         ],
         C2: [("illum.tif", {}) for i, m in enumerate(md([(M3, 3), (M2, 2)]))],
     }
-    do_teest(n, data, [(M0, M2), (M1, M3)], [(M0, C0), (M1, C0), (M2, C1), (M3, C1)])
+    do_teest(n, data, [M0, M2, M1, M3], [(M0, C0), (M1, C0), (M2, C1), (M3, C1)])
 
 
 def test_prepare_to_create_batch_single():
@@ -1190,8 +1162,13 @@ def test_prepare_to_create_batch_single():
     expected_pathnames = ["bar", "fuu"]
     filenames = ["boo", "foobar"]
     expected_filenames = ["boo", "barbar"]
-    urlnames = ["file:/foo/bar", "http://foo/bar"]
-    expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
+    # Path manipulation is platform specific
+    if sys.platform == "win32":
+        urlnames = ["file:///C:/foo/bar", "http://foo/bar"]
+        expected_urlnames = ["file:///C:/bar/bar", "http://foo/bar"]
+    else:
+        urlnames = ["file:///foo/bar", "http://foo/bar"]
+        expected_urlnames = ["file:///bar/bar", "http://foo/bar"]
 
     m.add_all_measurements(
         cellprofiler_core.constants.measurement.IMAGE,
@@ -1245,8 +1222,13 @@ def test_prepare_to_create_batch_multiple():
     expected_pathnames = ["bar", "fuu"]
     filenames = ["boo", "foobar"]
     expected_filenames = ["boo", "barbar"]
-    urlnames = ["file:/foo/bar", "http://foo/bar"]
-    expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
+    # Path manipulation is platform specific
+    if sys.platform == "win32":
+        urlnames = ["file:///C:/foo/bar", "http://foo/bar"]
+        expected_urlnames = ["file:///C:/bar/bar", "http://foo/bar"]
+    else:
+        urlnames = ["file:///foo/bar", "http://foo/bar"]
+        expected_urlnames = ["file:///bar/bar", "http://foo/bar"]
 
     for feature, name, values in (
         (cellprofiler_core.constants.measurement.C_FILE_NAME, IMAGE_NAME, filenames),
@@ -1317,8 +1299,13 @@ def test_prepare_to_create_batch_single_image():
     expected_pathnames = ["bar", "fuu"]
     filenames = ["boo", "foobar"]
     expected_filenames = ["boo", "barbar"]
-    urlnames = ["file:/foo/bar", "http://foo/bar"]
-    expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
+    # Path manipulation is platform specific
+    if sys.platform == "win32":
+        urlnames = ["file:///C:/foo/bar", "http://foo/bar"]
+        expected_urlnames = ["file:///C:/bar/bar", "http://foo/bar"]
+    else:
+        urlnames = ["file:///foo/bar", "http://foo/bar"]
+        expected_urlnames = ["file:///bar/bar", "http://foo/bar"]
 
     n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
     n.module_num = 1
@@ -1332,7 +1319,7 @@ def test_prepare_to_create_batch_single_image():
     for name, url in zip(si_names, urlnames):
         n.add_single_image()
         si = n.single_images[-1]
-        si.image_plane.value = si.image_plane.build(url)
+        si.image_plane.value = si.image_plane.build(ImagePlane(ImageFile(url)))
         si.load_as_choice.value = (
             cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
         )
@@ -1593,7 +1580,7 @@ def run_workspace(
             + "_"
             + OBJECTS_NAME
         )
-        names = javabridge.make_list([OBJECTS_NAME])
+        names = [OBJECTS_NAME]
     else:
         url_feature = cellprofiler_core.constants.measurement.C_URL + "_" + IMAGE_NAME
         path_feature = (
@@ -1611,7 +1598,7 @@ def run_workspace(
         channel_feature = (
             cellprofiler_core.constants.measurement.C_CHANNEL + "_" + IMAGE_NAME
         )
-        names = javabridge.make_list([IMAGE_NAME])
+        names = [IMAGE_NAME]
 
     m.image_set_number = 1
     m.add_measurement(cellprofiler_core.constants.measurement.IMAGE, url_feature, url)
@@ -1655,15 +1642,13 @@ def run_workspace(
         stack = "Monochrome"
         if channel is None:
             channel = "ALWAYS_MONOCHROME"
-    ipds = javabridge.make_list(
-        [make_ipd(url, {}, series or 0, index or 0, channel).jipd]
-    )
+    planes = [make_ipd(url, {}, series or 0, index, None)]
 
     for d in lsi:
         path = d["path"]
         load_as_type = d["load_as_type"]
         name = d["name"]
-        names.add(name)
+        names.append(name)
         rescaled = d.get("rescaled", True)
         n.add_single_image()
         si = n.single_images[-1]
@@ -1672,8 +1657,8 @@ def run_workspace(
         si.load_as_choice.value = load_as_type
         si.rescale.value = rescaled
         si.manual_rescale.value = manual_rescale
-
         url = cellprofiler_core.utilities.pathname.pathname2url(path)
+        si.image_plane.value = si.image_plane.build(ImagePlane(ImageFile(url)))
         pathname, filename = os.path.split(path)
         if load_as_type == cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS:
             url_feature = (
@@ -1718,34 +1703,13 @@ def run_workspace(
         m.add_measurement(
             cellprofiler_core.constants.measurement.IMAGE, file_feature, filename
         )
-        ipds.add(make_ipd(url, {}).jipd)
-
-    script = (
-        """
-                    importPackage(Packages.org.cellprofiler.imageset);
-                    var ls = new java.util.ArrayList();
-                    for (var ipd in Iterator(ipds)) {
-                        ls.add(ImagePlaneDetailsStack.make%sStack(ipd));
-                    }
-                    var kwlist = new java.util.ArrayList();
-                    kwlist.add("ImageNumber");
-                    var imageSet = new ImageSet(ls, kwlist);
-                    imageSet.compress(names, null);
-                    """
-        % stack
-    )
-    blob = javabridge.run_script(script, dict(ipds=ipds.o, names=names.o))
-    blob = javabridge.get_env().get_byte_array_elements(blob)
-    m.add_measurement(
-        cellprofiler_core.constants.measurement.IMAGE,
-        cellprofiler_core.modules.namesandtypes.M_IMAGE_SET,
-        blob,
-        data_type=numpy.uint8,
-    )
+        planes.append(make_ipd(url, {}))
+    pipeline.set_image_plane_list(planes)
 
     workspace = cellprofiler_core.workspace.Workspace(
         pipeline, n, m, cellprofiler_core.object.ObjectSet(), m, None
     )
+    assert n.prepare_run(workspace)
     n.run(workspace)
     return workspace
 
@@ -1791,7 +1755,7 @@ def test_load_color():
 
 def test_load_monochrome_as_color():
     path = get_monochrome_image_path()
-    target = bioformats.load_image(path)
+    target = imageio.imread(path)
     target_shape = (target.shape[0], target.shape[1], 3)
     workspace = run_workspace(
         path, cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE
@@ -1832,7 +1796,7 @@ def get_monochrome_image_path():
 
 def test_load_monochrome():
     path = get_monochrome_image_path()
-    target = bioformats.load_image(path)
+    target = imageio.imread(path)
     workspace = run_workspace(
         path, cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
     )
@@ -1897,7 +1861,7 @@ def test_load_mask():
     path = tests.modules.maybe_download_example_image(
         ["ExampleSBSImages"], "Channel2-01-A-01.tif"
     )
-    target = bioformats.load_image(path)
+    target = imageio.imread(path)
     workspace = run_workspace(
         path, cellprofiler_core.modules.namesandtypes.LOAD_AS_MASK
     )
@@ -1911,7 +1875,7 @@ def test_load_objects():
     path = tests.modules.maybe_download_example_image(
         ["ExampleSBSImages"], "Channel2-01-A-01.tif"
     )
-    target = bioformats.load_image(path, rescale=False)
+    target = imageio.imread(path)
     target = skimage.morphology.label(target)
 
     with open(path, "rb") as fd:
@@ -2016,7 +1980,7 @@ def test_load_single_image():
     lsi_path = tests.modules.maybe_download_example_image(
         ["ExampleGrayToColor"], "AS_09125_050116030001_D03f00d0.tif"
     )
-    target = bioformats.load_image(lsi_path)
+    target = imageio.imread(lsi_path)
     workspace = run_workspace(
         path,
         cellprofiler_core.modules.namesandtypes.LOAD_AS_COLOR_IMAGE,
@@ -2040,7 +2004,7 @@ def test_load_single_object():
     lsi_path = tests.modules.maybe_download_example_image(
         ["ExampleSBSImages"], "Channel2-01-A-01.tif"
     )
-    target = bioformats.load_image(lsi_path, rescale=False)
+    target = imageio.imread(lsi_path)
     target = skimage.morphology.label(target)
     with open(lsi_path, "rb") as fd:
         md5 = hashlib.md5(fd.read()).hexdigest()

@@ -1,3 +1,5 @@
+# ImageFile must be initialized before ImagePlane
+from ._image_file import ImageFile
 from ._image_plane import ImagePlane
 from ._image_set_channel_descriptor import ImageSetChannelDescriptor
 from ._listener import Listener
@@ -25,6 +27,7 @@ from .event import PipelineLoadCancelledException
 from .event import PipelineLoaded
 from .event import PrepareRunError
 from .event import URLsAdded
+from .event import URLsCleared
 from .event import URLsRemoved
 from .event.run_exception import PostRunException
 from .event.run_exception import PrepareRunException

@@ -1,8 +1,8 @@
-import bioformats
 import imageio
 import numpy
 
 from .... import Image
+from .....constants.image import MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T
 from .....utilities.image import convert_image_to_objects
 from .....utilities.pathname import url2pathname
 from ._url_image import URLImage
@@ -11,7 +11,7 @@ from ._url_image import URLImage
 class ObjectsImage(URLImage):
     """Provide a multi-plane integer image, interpreting an image file as objects"""
 
-    def __init__(self, name, url, series, index, volume=False, spacing=None):
+    def __init__(self, name, url, series, index, volume=False, spacing=None, z=None, t=None):
         self.__data = None
         self.volume = volume
         if volume:
@@ -20,7 +20,7 @@ class ObjectsImage(URLImage):
         self.__image = None
         self.__spacing = spacing
         URLImage.__init__(
-            self, name, url, rescale=False, series=series, index=index, volume=volume
+            self, name, url, rescale=False, series=series, index=index, volume=volume, z=z, t=t
         )
 
     def provide_image(self, image_set):
@@ -39,13 +39,12 @@ class ObjectsImage(URLImage):
         url = self.get_url()
         properties = {}
         if self.index is None:
-            metadata = bioformats.get_omexml_metadata(self.get_full_name())
-
-            ometadata = bioformats.omexml.OMEXML(metadata)
-            pixel_metadata = ometadata.image(
-                0 if self.series is None else self.series
-            ).Pixels
-            nplanes = pixel_metadata.SizeC * pixel_metadata.SizeZ * pixel_metadata.SizeT
+            reader = self.get_reader()
+            meta = reader.get_series_dimensions()
+            series = self.series
+            if self.series is None:
+                series = 0
+            nplanes = meta[MD_SIZE_C][series] * meta[MD_SIZE_Z][series] * meta[MD_SIZE_T][series]
             indexes = list(range(nplanes))
         elif numpy.isscalar(self.index):
             indexes = [self.index]
@@ -60,9 +59,8 @@ class ObjectsImage(URLImage):
                     properties["series"] = self.series
                 else:
                     properties["series"] = self.series[i]
-            img = bioformats.load_image(
-                self.get_full_name(), rescale=False, **properties
-            ).astype(int)
+            rdr = self.get_reader()
+            img = rdr.read(rescale=False, **properties).astype(int)
             img = convert_image_to_objects(img).astype(numpy.int32)
             img[img != 0] += offset
             offset += numpy.max(img)

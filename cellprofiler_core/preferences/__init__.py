@@ -307,6 +307,7 @@ BACKGROUND_COLOR = "BackgroundColor"
 PIXEL_SIZE = "PixelSize"
 COLORMAP = "Colormap"
 CONSERVE_MEMORY = "ConserveMemory"
+FORCE_BIOFORMATS = "ForceBioformats"
 MODULEDIRECTORY = "ModuleDirectory"
 SKIPVERSION = "SkipVersion2.1"
 FF_RECENTFILES = "RecentFile%d"
@@ -392,7 +393,8 @@ SPP_ALL = [
 ]
 
 # Registry Key Types
-BOOL_KEYS = {SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB, CONSERVE_MEMORY,ALWAYS_CONTINUE,WIDGET_INSPECTOR}
+BOOL_KEYS = {SHOW_SAMPLING, TELEMETRY, TELEMETRY_PROMPT, STARTUPBLURB, 
+             CONSERVE_MEMORY, ALWAYS_CONTINUE, WIDGET_INSPECTOR, FORCE_BIOFORMATS}
 INT_KEYS = {SKIPVERSION, OMERO_PORT, MAX_WORKERS, JVM_HEAP_MB}
 FLOAT_KEYS = {TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE}
 
@@ -472,6 +474,15 @@ to the pathname you have typed.\
 """
 
 ERROR_COLOR_HELP = "Sets the color used for the error alerts associated with misconfigured settings and other errors."
+
+FORCE_BIOFORMATS_HELP = """\
+If enabled, CellProfiler will always use the BioFormats reader to 
+read image data. Any other installed readers will be ignored. 
+This can be useful if your have an unusual image which can
+only be read by bioformats. Before CellProfiler 5 BioFormats was
+the only reader option, so enabling this setting will also replicate 
+functionality from older versions.\
+"""
 
 INTENSITY_MODE_HELP = """\
 Sets the way CellProfiler normalizes pixel intensities when displaying.
@@ -1128,6 +1139,7 @@ def add_recent_file(filename, category=""):
 
 __plugin_directory = None
 __conserve_memory = None
+__force_bioformats = None
 
 
 def get_plugin_directory():
@@ -1867,6 +1879,22 @@ def set_conserve_memory(val, globally=True):
     __conserve_memory = val
     if globally:
         config_write(CONSERVE_MEMORY, val)
+
+
+def get_force_bioformats():
+    global __force_bioformats
+    if __force_bioformats is not None:
+        return __force_bioformats in (True, "True")
+    if not config_exists(FORCE_BIOFORMATS):
+        return False
+    return get_config().ReadBool(FORCE_BIOFORMATS)
+
+
+def set_force_bioformats(val, globally=True):
+    global __force_bioformats
+    __force_bioformats = val
+    if globally:
+        config_write(FORCE_BIOFORMATS, val)
 
 
 def add_progress_callback(callback):

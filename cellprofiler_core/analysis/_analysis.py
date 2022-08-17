@@ -1,3 +1,4 @@
+import gc
 import threading
 import uuid
 
@@ -89,6 +90,12 @@ class Analysis:
             self.analysis_in_progress = False
             self.runner.cancel()
             self.runner = None
+            """
+            Explicitly call GC here so that the old runner's threads and 
+            queues get deleted before any new analysis can be started.
+            On rare occasions CP can hang when threads get GC'd during a run
+            """
+            gc.collect()
 
     def check_running(self):
         """Verify that an analysis is running, allowing the GUI to recover even

@@ -5,9 +5,11 @@ interface for measurements, backed by an HDF5 file.
 """
 
 import bisect
+import collections
 import functools
 import logging
 import os
+import re
 import sys
 import threading
 import time
@@ -16,17 +18,30 @@ import uuid
 import h5py
 import numpy
 from future.standard_library import install_aliases
+from h5py.h5t import string_dtype, check_string_dtype, vlen_dtype
 
 import cellprofiler_core.utilities.legacy
 
 install_aliases()
 
+LOGGER = logging.getLogger(__name__)
 
 version_number = 1
 VERSION = "Version"
 
 INDEX = "index"
 DATA = "data"
+
+FILES = ":filelist:"
+METADATA = ":metadata:"
+ROOT = ":root:"
+
+# HDF5 can't store subsequent slashes in URIs, so S3:// becomes S3:/.
+# These expressions fix those when we pull URIs out of the file list.
+URL_SUB = re.compile(r"^((?:https?|s3|ftp):/)", flags=re.IGNORECASE)
+URL_REPLACE = r"\1/"
+FILE_SUB = re.compile(r"^(file:)", flags=re.IGNORECASE)
+FILE_REPLACE = r"\1//"
 
 # h5py is nice, but not being able to make zero-length selections is a pain.
 orig_hdf5_getitem = h5py.Dataset.__getitem__
@@ -164,7 +179,7 @@ class HDF5Dict(object):
         self.is_temporary = is_temporary and (hdf5_filename is not None)
         self.filename = hdf5_filename
         self.top_level_group_name = top_level_group_name
-        logging.debug(
+        LOGGER.debug(
             "HDF5Dict.__init__(): %s, temporary=%s, copy=%s, mode=%s",
             self.filename,
             self.is_temporary,
@@ -339,12 +354,12 @@ class HDF5Dict(object):
                                     )
             self.hdf5_file.flush()
         except Exception as e:
-            logging.exception("Failed during initial processing of %s" % self.filename)
+            LOGGER.exception("Failed during initial processing of %s" % self.filename)
             self.hdf5_file.close()
             raise
 
     def __del__(self):
-        logging.debug(
+        LOGGER.debug(
             "HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary
         )
         self.close()
@@ -360,7 +375,7 @@ class HDF5Dict(object):
                 self.hdf5_file.close()
                 os.unlink(self.filename)
             except Exception as e:
-                logging.warning(
+                LOGGER.warning(
                     "So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now."
                     % self.filename
                 )
@@ -371,15 +386,7 @@ class HDF5Dict(object):
         del self.top_group
 
     def flush(self):
-        logging.debug(
-            "HDF5Dict.flush(): %s, temporary=%s", self.filename, self.is_temporary
-        )
-        # 2012-06-29: Ray is seeing a bug where file_contents() returns an
-        # invalid HDF if the file is flushed once then read, but with two calls
-        # to flush() it works.  h5py version 2.1.0, hdf version 1.8.9
         self.hdf5_file.flush()
-        # FIXME: Allen says "wtf"
-        # self.hdf5_file.flush()
 
     def file_contents(self):
         with self.lock:
@@ -464,7 +471,7 @@ class HDF5Dict(object):
                         ]
                     ]
                 except Exception as e:
-                    logging.error(
+                    LOGGER.error(
                         "Unable to decode object measurement. You may find bytes in your output sheet."
                     )
             return [
@@ -941,6 +948,8 @@ class HDF5Dict(object):
 class HDF5FileList(object):
     """An HDF5FileList is a hierarchical directory structure backed by HDF5
 
+    N.B. This was redesigned for CP5, older versions use a different setup.
+
     The HDFFileList holds a list of URLS in a hierarchical directory structure
     that lets the caller list, add and remove the URLs in a directory. It
     is meant to be used for a list of files curated by the user. The structure
@@ -951,49 +960,42 @@ class HDF5FileList(object):
           directory name
               ....
               sub directory name
-                   index
-                   data
-                   metadata
-                       index
-                       data
+                   :filelist:
+                   :metadata:
 
-    index and data are parts of a VStringArray (see below) and URLs are
-    stored in alpabetical order in the array. The metadata group contains a
-    second string array whose indices correspond to those for the file name.
-    The metadata is the OME-XML as fetched by Bioformats.
+    File names are stored as an array of strings per directory, sorted in
+    alphabetical order. H5Py automatically creates subgroups representing
+    each folder level in a URL, so all files in the same directory are
+    stored together.
 
-    Schema names and directory names are escape-encoded to allow characters that
-    can appear in URLs but could cause problems as group names, most notably,
-    forward-slash. Characters other than alphanumerics, and percent ("%"),
-    equals ("="), period ("."), underbar ("_") plus ("+") and dash ("-") are
-    translated into backslash + 2 hex characters (for instance, "(hello)"
-    is encoded as "\50hello\51").
+    The metadata array stores details of individual series stored within
+    a file at a given URL. It consists of a list of integer arrays, one
+    array per URL, sorted in the same order as the files list. Each series
+    is represented with 5 integers describing the dimensions in
+    C,Z,T,Y and X. Multiple series are stored subsequently. Therefore a
+    metadata array of 10 integers represents 2 series (CZTYX, CZTYX).
 
-    Pragmatically, aside from perhaps a filename with a true
-    backslash in it, the group names will be the same as the parts of the
-    url path with the one disturbing exception of the first one, because
-    there can be from zero to three consecutive forward slashes at the
-    start of the path and DOS file paths often start with c:. So there...
-    "c:\foo\bar" becomes "file:///C:/foo/bar" as a URL and becomes
-    "file", "\2F\2FC\58". SORRY!
+    In previous releases, directory names needed to be escape-encoded to
+    allow special characters. In H5Py 3 that no longer seems to be
+    necessary, but consider doing this in the future if errors arise.
     """
 
     @classmethod
-    def has_file_list(cls, hdf5_file):
+    def has_file_list(cls, hdf5_file, empty_ok=True):
         """Return True if the hdf5 file has a file list
 
         hdf5_file - an h5py.File
         """
         assert isinstance(hdf5_file, h5py.File)
-        if not FILE_LIST_GROUP in list(hdf5_file.keys()):
+        if FILE_LIST_GROUP not in hdf5_file.keys():
             return False
+        elif empty_ok:
+            # No need to validate that there are actually files in the list.
+            return True
         flg = hdf5_file[FILE_LIST_GROUP]
-        for key in list(flg.keys()):
-            g = flg[key]
-            if g.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
-                return True
-        else:
-            return False
+        if flg.visititems(cls.scan_for_datasets):
+            return True
+        return False
 
     @classmethod
     def copy(cls, src, dest):
@@ -1011,16 +1013,11 @@ class HDF5FileList(object):
             return
 
         flg = src[FILE_LIST_GROUP]
-        for key in list(flg.keys()):
-            src_g = flg[key]
-            if src_g.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
-                break
         dest_flg = dest.require_group(FILE_LIST_GROUP)
         for key in list(dest_flg.keys()):
-            g = dest_flg[key]
-            if g.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
-                del dest_flg[key]
-        dest.copy(src_g, dest_flg)
+            del dest_flg[key]
+        for key in flg.keys():
+            dest.copy(flg[key], dest_flg)
 
     def __init__(self, hdf5_file, lock=None, filelist_name=DEFAULT_GROUP):
         """Initialize self with an HDF5 file
@@ -1041,30 +1038,14 @@ class HDF5FileList(object):
         g = self.hdf5_file.require_group(FILE_LIST_GROUP)
         if filelist_name in g:
             g = g[filelist_name]
-            # When loading CP 3.1.8 cpprojs, A_CLASS val is in bytes, thus the legacy.equals()
-            assert cellprofiler_core.utilities.legacy.equals(
-                g.attrs.get(A_CLASS, None), CLASS_FILELIST_GROUP
-            )
         else:
             g = g.require_group(filelist_name)
-            g.attrs[A_CLASS] = CLASS_FILELIST_GROUP
         self.__top_level_group = g
-        self.__cache = {}
         self.__notification_list = []
         self.__generation = uuid.uuid4()
-
-    class __CacheEntry(object):
-        """A cache entry in the file list cache
-
-        The cache entry for a directory has the URLS for the directory,
-        the HDF5 group for the entry and an array of booleans that indicate
-        whether metadata was collected per URL.
-        """
-
-        def __init__(self, group, urls, has_metadata):
-            self.group = group
-            self.urls = tuple(urls)
-            self.has_metadata = has_metadata
+        # Buffers for fetching file lists out of the container
+        self._temp = []
+        self._meta = []
 
     def get_generation(self):
         """The generation # of this file list
@@ -1099,50 +1080,6 @@ class HDF5FileList(object):
         """Get the top-level group of this filelist"""
         return self.__top_level_group
 
-    LEGAL_GROUP_CHARACTERS = (
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-+.%="
-    )
-
-    @staticmethod
-    def encode(name):
-        """Encode a name so it can be used as the name of a group
-
-        Sadness: HDF5 interprets names such as "/foo" as a path from root and
-                 doesn't handle things like period, question mark, etc
-                 (see http://www.hdfgroup.org/HDF5/doc/UG/UG_frame13Attributes.html)
-
-                 So we need to do yet another lame, arbitrary encode/decode.
-                 Apparently, backslash is legal as are letters, numbers,
-                 underbar and dash. So the encoding is backslash + 2 hex
-                 digits for everything else, including backslash.
-
-                 And if that's not enough, the keywords, "index" and "data"
-                 are needed for vstringarrays, so we encode "index" as
-                 "\69ndex" and "\64ata"
-        """
-        #
-        # I sure hope this isn't slow...
-        #
-        if name in ("index", "data", "metadata"):
-            return r"\%02x%s" % (ord(name[0]), name[1:])
-        return "".join(
-            [
-                c if c in HDF5FileList.LEGAL_GROUP_CHARACTERS else r"\%02x" % ord(c)
-                for c in name
-            ]
-        )
-
-    @staticmethod
-    def decode(name):
-        """Decode a name back to plaintext
-
-        see encode for details and editorial commentary
-        """
-        # Split string at every backslash. Every string after the first
-        # begins with two hex digits which contain the character to convert
-        parts = name.split("\\")
-        return parts[0] + "".join([chr(int(s[:2], 16)) + s[2:] for s in parts[1:]])
-
     @staticmethod
     def split_url(url, is_directory=False):
         """Split a URL into the pieces that are used to traverse groups
@@ -1163,7 +1100,7 @@ class HDF5FileList(object):
             url = url
         else:
             url = str(url)
-        import urllib.parse, urllib.error
+        import urllib.parse
 
         split = urllib.parse.urlsplit(str(url))
         schema = split[0]
@@ -1195,452 +1132,213 @@ class HDF5FileList(object):
 
     def add_files_to_filelist(self, urls):
         self.__generation = uuid.uuid4()
-        d = {}
-        timestamp = time.time()
+        dt = string_dtype(encoding='utf-8')
+        dtm = vlen_dtype(int)
+        blank_metadata = numpy.full(5, -1, dtype=int)
+        parent = self.get_filelist_group()
+        storage_map = collections.defaultdict(list)
         for url in urls:
-            schema, parts = self.split_url(url)
-            if schema not in d:
-                d[schema] = {}
-            d1 = d[schema]
-            for part in parts[:-1]:
-                if part not in d1:
-                    d1[part] = {}
-                d1 = d1[part]
-            if None not in d1:
-                d1[None] = []
-            d1[None].append(parts[-1])
-
-        def fn(g, d, parts=None):
-            if parts is None:
-                parts = []
-            for k in d:
-                if k is None:
-                    g.attrs[A_TIMESTAMP] = timestamp
-                    metadata_group = g.require_group("metadata")
-                    metadata = VStringArray(metadata_group, self.lock)
-                    dest = VStringArray(g, self.lock)
-                    leaves = list(dest)
-                    old_len = len(leaves)
-                    to_add = set(d[k]).difference(leaves)
-                    if len(to_add) > 0:
-                        leaves += to_add
-                        dest.extend(to_add)
-                        sort_order = sorted(
-                            list(range(len(leaves))),
-                            key=functools.cmp_to_key(
-                                lambda x, y: cellprofiler_core.utilities.legacy.cmp(
-                                    leaves[x], leaves[y]
-                                )
-                            ),
-                        )
-                        dest.reorder(sort_order)
-                        metadata.extend([None] * len(to_add))
-                        metadata.reorder(sort_order)
-                        self.__cache[tuple(parts)] = self.__CacheEntry(
-                            g, [leaves[i] for i in sort_order], metadata.is_not_none()
-                        )
-                else:
-                    g1 = g.require_group(self.encode(k))
-                    g1.attrs[A_CLASS] = CLASS_DIRECTORY
-                    fn(g1, d[k], parts + [k])
-
+            stem, filename = os.path.split(url)
+            if not stem:
+                # This is probably an OMERO or relative file path URI.
+                # They aren't actually valid URIs, so we treat them differently
+                stem = ROOT
+            storage_map[stem].append(filename)
         with self.lock:
-            fn(self.get_filelist_group(), d)
+            for stem, filenames in storage_map.items():
+                path_group = parent.require_group(stem)
+                filenames.sort()
+                numpy.array(filenames)
+                if FILES in path_group:
+                    dataset = path_group[FILES]
+                    metadataset = path_group[METADATA]
+                    existing_files = set(dataset.asstr()[:])
+                    filenames = sorted(list(set(filenames) - existing_files))
+                    existing = dataset.asstr()[:]
+                    existing_meta = metadataset[:]
+                    new_size = (len(existing) + len(filenames),)
+                    dataset.resize(new_size)
+                    metadataset.resize(new_size)
+                    insertion_indexes = numpy.searchsorted(existing, filenames)
+                    dataset[:] = numpy.insert(existing, insertion_indexes, filenames)
+                    # H5Py creates an array of numpy arrays for metadata, but numpy doesn't like this.
+                    # To insert another array into that array we need to inject a placeholder then replace it.
+                    # Because calling insert with an array tries to insert the elements rather than the entire array.
+                    # Massive kudos to anyone who finds a better way to handle this.
+                    marker = 'REPLACE'
+                    inserted = numpy.insert(existing_meta, insertion_indexes, marker).tolist()
+                    inserted = [x if isinstance(x, numpy.ndarray) else blank_metadata for x in inserted]
+                    metadataset[:] = numpy.array(inserted, dtype=numpy.object)
+                else:
+                    path_group.create_dataset(FILES,
+                                              data=filenames,
+                                              compression="gzip",
+                                              shuffle=True,
+                                              shape=(len(filenames)),
+                                              dtype=dt,
+                                              chunks=True,
+                                              maxshape=(None,)
+                                              )
+                    md = path_group.create_dataset(METADATA,
+                                                   compression="gzip",
+                                                   shuffle=True,
+                                                   shape=(len(filenames)),
+                                                   dtype=dtm,
+                                                   chunks=True,
+                                                   maxshape=(None,)
+                                                   )
+                    md[:] = numpy.array([blank_metadata] * len(filenames),
+                                        dtype=numpy.object)
             self.hdf5_file.flush()
         self.notify()
 
-    def clear_cache(self):
-        self.__cache = {}
+    def add_metadata(self, url, data_array):
+        # Add a metadata array for a file.
+        # Should be a 1D numpy array with 5
+        # values per series stored sequentially.
+        # Each set represents C, Z, T, Y, X sizes.
+        parent = self.get_filelist_group()
+        stem, filename = os.path.split(url)
+        path_group = parent.require_group(stem)
+        path_group_files = path_group[FILES].asstr()[:]
+        insertion_index = numpy.searchsorted(path_group_files, filename)
+        path_group[METADATA][insertion_index] = data_array
+
+    def get_metadata(self, url):
+        parent = self.get_filelist_group()
+        stem, filename = os.path.split(url)
+        path_group = parent.require_group(stem)
+        path_group_files = path_group[FILES].asstr()[:]
+        data_index = numpy.searchsorted(path_group_files, filename)
+        if path_group_files[data_index] != filename:
+            LOGGER.warning(f"Requested metadata for non-existent file {filename}")
+            return None
+        return path_group[METADATA][data_index]
 
     def clear_filelist(self):
-        """Remove all files from the filelist"""
         self.__generation = uuid.uuid4()
         group = self.get_filelist_group()
         with self.lock:
-            schemas = [
-                k
-                for k in list(group.keys())
-                if group[k].attrs[A_CLASS] == CLASS_DIRECTORY
-            ]
-            for key in schemas:
+            for key in group.keys():
                 del group[key]
             self.hdf5_file.flush()
-        self.clear_cache()
         self.notify()
+
+    @classmethod
+    def scan_for_datasets(cls, _, node):
+        # Returns True if datasets exist in a group
+        if isinstance(node, h5py.Dataset):
+            return True
 
     def remove_files_from_filelist(self, urls):
         self.__generation = uuid.uuid4()
-        group = self.get_filelist_group()
-        d = {}
+        dt = string_dtype(encoding='utf-8')
+        parent = self.get_filelist_group()
+        storage_map = collections.defaultdict(list)
         for url in urls:
-            schema, parts = self.split_url(url)
-            if schema not in d:
-                d[schema] = {}
-            d1 = d[schema]
-            for part in parts[:-1]:
-                if part not in d1:
-                    d1[part] = {}
-                d1 = d1[part]
-            if None not in d1:
-                d1[None] = []
-            d1[None].append(parts[-1])
-
-        def fn(g, d, parts=None):
-            if parts is None:
-                parts = []
-            for k in d:
-                next_parts = parts + [k]
-                parts_tuple = tuple(parts)
-                if k is None:
-                    to_remove = set(d[k])
-                    dest = VStringArray(g, self.lock)
-                    metadata = VStringArray(g.require_group("metadata"), self.lock)
-                    leaves = list(dest)
-                    order = [
-                        i for i, leaf in enumerate(leaves) if leaf not in to_remove
-                    ]
-                    if len(order) > 0:
-                        dest.reorder(order)
-                        metadata.reorder(order)
-                        self.__cache[parts_tuple] = self.__CacheEntry(
-                            g, [leaves[o] for o in order], metadata.is_not_none()
-                        )
-                    else:
-                        dest.delete()
-                        del g["metadata"]
-                        self.__cache[parts_tuple] = self.__CacheEntry(g, [], [])
-                else:
-                    encoded_key = self.encode(k)
-                    g1 = g.require_group(encoded_key)
-                    has_grandchildren = fn(g1, d[k], next_parts)
-                    if not has_grandchildren:
-                        del g[encoded_key]
-            if VStringArray.has_vstring_array(g):
-                return True
-            for k in g:
-                if g[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY:
-                    return True
-            return False
-
+            stem, filename = os.path.split(url)
+            if not stem:
+                stem = ROOT
+            storage_map[stem].append(filename)
         with self.lock:
-            fn(self.get_filelist_group(), d)
+            for stem, filenames in storage_map.items():
+                path_group = parent.require_group(stem)
+                if FILES in path_group:
+                    dataset = path_group[FILES]
+                    metadataset = path_group[METADATA]
+                    data_array = dataset.asstr()[:]
+                    indices_to_delete = numpy.argwhere(numpy.isin(data_array, filenames))
+                    data_array = numpy.delete(data_array, indices_to_delete)
+                    metadata_array = numpy.delete(metadataset[:], indices_to_delete)
+                    new_len = len(data_array)
+                    if new_len > 0:
+                        dataset.resize((new_len,))
+                        dataset[:] = data_array
+                        metadataset.resize((new_len,))
+                        metadataset[:] = metadata_array.tolist()
+                    else:
+                        # Delete empty dataset
+                        upper_level = dataset.parent
+                        del parent[dataset.name]
+                        del upper_level[METADATA]
+                        # Recursively move upwards and delete empty groups
+                        while upper_level != parent:
+                            data_exists = upper_level.visititems(self.scan_for_datasets)
+                            if data_exists:
+                                break
+                            else:
+                                to_del = upper_level.name
+                                upper_level = upper_level.parent
+                                del parent[to_del]
             self.hdf5_file.flush()
         self.notify()
 
     def has_files(self):
         """Return True if there are files in the file list"""
-        if any([len(ce.urls) > 0 for ce in list(self.__cache.values())]):
+        parent = self.get_filelist_group()
+        if parent.visititems(self.scan_for_datasets):
             return True
-        group_list = [self.get_filelist_group()]
-        path_list = [[]]
-        while len(group_list) > 0:
-            g = group_list.pop()
-            path = path_list.pop()
-            if VStringArray.has_vstring_array(g):
-                self.cache_urls(g, tuple(path))
-                return True
-            for k in list(g.keys()):
-                g0 = g[k]
-                path0 = path + [self.decode(k)]
-                if self.is_dir(g0):
-                    group_list.append(g0)
-                    path_list.append(path0)
         return False
 
-    @staticmethod
-    def is_dir(g):
-        """Return True if a group is a directory
+    def recurse_for_files(self, name, node):
+        head, _ = os.path.split(name)
+        if isinstance(node, h5py.Dataset) and check_string_dtype(node.dtype):
+            if head == ROOT:
+                self._temp += node.asstr()[:].tolist()
+            else:
+                if head.startswith('file:'):
+                    head = FILE_SUB.sub(FILE_REPLACE, head)
+                else:
+                    head = URL_SUB.sub(URL_REPLACE, head)
+                self._temp += [f"{head}/{filename}" for filename in node.asstr()[:]]
 
-        g - an hdf5 object which may be a group marked as a file list group
-        """
-        return (
-            isinstance(g, h5py.Group)
-            and A_CLASS in g.attrs
-            and cellprofiler_core.utilities.legacy.equals(
-                g.attrs[A_CLASS], CLASS_DIRECTORY
-            )
-        )
+    def recurse_for_files_and_metadata(self, name, node):
+        head, _ = os.path.split(name)
+        if isinstance(node, h5py.Dataset) and check_string_dtype(node.dtype):
+            meta_node = node.parent[METADATA]
+            if head == ROOT:
+                self._temp += node.asstr()[:].tolist()
+            else:
+                if head.startswith('file:'):
+                    head = FILE_SUB.sub(FILE_REPLACE, head)
+                else:
+                    head = URL_SUB.sub(URL_REPLACE, head)
+                self._temp += [f"{head}/{filename}" for filename in node.asstr()[:]]
+            self._meta += meta_node[:].tolist()
 
-    def get_filelist(self, root_url=None):
-        """Retrieve all URLs from a filelist
-
-        root_url - if present, get the file list below this directory.
-
-        returns a sequence of urls
-        """
+    def get_filelist(self, root_url=None, want_metadata=False):
         group = self.get_filelist_group()
-        with self.lock:
+        self._temp = result = []
+        self._meta = meta = []
+        if group.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
+            LOGGER.error("Project file is from an older version of "
+                         "CellProfiler, cannot load file list")
+            # Remove old-format data from cloned HDF5.
+            parent = group.parent
+            del parent[group.name]
+        elif root_url is not None and root_url not in group:
+            LOGGER.warning(f"Requested file list from non-existent directory {root_url}")
+        else:
+            with self.lock:
+                if root_url is None:
+                    source = group
+                else:
+                    source = group[root_url]
+                if want_metadata:
+                    source.visititems(self.recurse_for_files_and_metadata)
+                else:
+                    source.visititems(self.recurse_for_files)
             if root_url is None:
-                schemas = [
-                    k for k in list(group.keys()) if HDF5FileList.is_dir(group[k])
-                ]
-                roots = [(s + ":", group[s], [s]) for s in schemas]
+                result = self._temp
             else:
-                schema, path = self.split_url(root_url, is_directory=True)
-                g = group[self.encode(schema)]
-                for part in path:
-                    g = g[self.encode(part)]
-                if not root_url.endswith("/"):
-                    root_url += "/"
-                roots = [(root_url, g, path)]
-
-            def fn(root, g, path):
-                urls = []
-                path_tuple = tuple(path)
-                if path_tuple in self.__cache:
-                    a = cellprofiler_core.utilities.legacy.convert_bytes_to_str(
-                        self.__cache[path_tuple].urls
-                    )
-                    urls += [root + x for x in a]
-                elif VStringArray.has_vstring_array(g):
-                    a = cellprofiler_core.utilities.legacy.convert_bytes_to_str(
-                        self.cache_urls(g, path_tuple)
-                    )
-                    urls += [root + x for x in a]
-                for k in sorted(g.keys()):
-                    g0 = g[k]
-                    if self.is_dir(g0):
-                        decoded_key = self.decode(k)
-                        if decoded_key.endswith("/"):
-                            # Special case - root of "file://foo.jpg" is
-                            # "file://"
-                            subroot = root + decoded_key
-                        else:
-                            subroot = root + decoded_key + "/"
-                        next_path = path + [self.decode(k)]
-                        urls += fn(subroot, g0, next_path)
-                return urls
-
-            urls = []
-            for root, g, path in roots:
-                urls += fn(root, g, path)
-            return urls
-
-    def cache_urls(self, g, path_tuple):
-        """Look up the array of URLs in a group and cache that list
-
-        g - the HDF5 group
-        path_tuple - the tuple of path parts to get to g
-
-        returns the URL list
-        """
-        if path_tuple in self.__cache:
-            return self.__cache[path_tuple].urls
-        a = tuple([x for x in VStringArray(g)])
-        is_not_none = VStringArray(g.require_group("metadata")).is_not_none()
-        self.__cache[path_tuple] = self.__CacheEntry(g, a, is_not_none)
-        return a
-
-    def list_files(self, url):
-        """List the files in the directory specified by the URL
-
-        returns just the filename parts of the files in the
-        directory.
-        """
-        schema, parts = self.split_url(url, is_directory=True)
-        with self.lock:
-            path_tuple = tuple([schema] + parts)
-            if path_tuple in self.__cache:
-                return self.__cache[path_tuple].urls
-            group = self.get_filelist_group()
-            for part in [schema] + parts:
-                encoded_part = self.encode(part)
-                if encoded_part not in group:
-                    return []
-                group = group[encoded_part]
-
-            if VStringArray.has_vstring_array(group):
-                result = self.cache_urls(group, path_tuple)
-                return result
-            return []
-
-    def list_directories(self, url):
-        """List the subdirectories of the specified URL
-
-        url - root directory to be searched.
-
-        returns the directory names of the immediate subdirectories
-        at the URL. For instance, if the URLs in the file list are
-        "file://foo/bar/image.jpg" and "file://foo/baz/image.jpg",
-        then self.list_directories("file://foo") would return
-        [ "bar", "baz" ]
-        """
-        schema, parts = self.split_url(url, is_directory=True)
-        with self.lock:
-            group = self.get_filelist_group()
-            for part in [schema] + parts:
-                encoded_part = self.encode(part)
-                if encoded_part not in group:
-                    return []
-                group = group[encoded_part]
-        return [self.decode(x) for x in list(group.keys()) if self.is_dir(group[x])]
-
-    """URL is a file"""
-    TYPE_FILE = "File"
-    """URL is a directory"""
-    TYPE_DIRECTORY = "Directory"
-    """URL is not present in the file list"""
-    TYPE_NONE = "None"
-
-    def get_type(self, url):
-        schema, parts = self.split_url(url, is_directory=True)
-        with self.lock:
-            parts_tuple = tuple([schema] + parts[:-1])
-            #
-            # Look in cache first
-            #
-            if parts_tuple in self.__cache:
-                a = self.__cache[parts_tuple].urls
-                idx = bisect.bisect_left(a, parts[-1])
-                if idx < len(a) and a[idx] == parts[-1]:
-                    return self.TYPE_FILE
-            group = self.get_filelist_group()
-            for part in [schema] + parts[:-1]:
-                encoded_part = self.encode(part)
-                if encoded_part not in group:
-                    return self.TYPE_NONE
-                group = group[encoded_part]
-            last_encoded_part = self.encode(parts[-1])
-            if last_encoded_part in group and self.is_dir(group[last_encoded_part]):
-                return self.TYPE_DIRECTORY
-            else:
-                if VStringArray.has_vstring_array(group):
-                    a = self.cache_urls(group, parts_tuple)
-                else:
-                    return self.TYPE_NONE
-                idx = bisect.bisect_left(a, parts[-1])
-                if idx < len(a) and a[idx] == parts[-1]:
-                    return self.TYPE_FILE
-            return self.TYPE_NONE
-
-    def add_metadata(self, url, metadata):
-        """Add metadata associated with the URL
-
-        url - url of the file. The URL must be present in the file list
-
-        metadata - the OME-XML for the file
-        """
-        self.__generation = uuid.uuid4()
-        group, index, has_metadata = self.find_url(url)
-        metadata_array = VStringArray(group.require_group("metadata"))
-        metadata_array[index] = metadata
-        has_metadata[index] = True
-        self.notify()
-
-    def get_metadata(self, url):
-        """Get the metadata associated with a URL
-
-        url - url of the file.
-
-        metadata - the OME-XML for the file
-        """
-        result = self.find_url(url)
-        if result is None:
-            return None
-        group, index, has_metadata = result
-        if not has_metadata[index]:
-            return None
-        metadata = VStringArray(group.require_group("metadata"))
-        if len(metadata) <= index:
-            # Metadata wasn't initialized...
-            return None
-        return metadata[index]
-
-    def find_url(self, url):
-        """Find the group and index of a URL
-
-        url - the URL to find in the file list
-
-        returns the HDF5 group that represents the URL's
-        directory, the index of the URL in the file list
-        and the metadata indicators for the directory
-        or None if the url is not present.
-        """
-        schema, parts = self.split_url(url)
-        with self.lock:
-            path_tuple = tuple([schema] + parts[:-1])
-            if path_tuple in self.__cache:
-                entry = self.__cache[path_tuple]
-                group = entry.group
-                a = entry.urls
-                has_metadata = entry.has_metadata
-            else:
-                group = self.get_filelist_group()
-                for part in [schema] + parts[:-1]:
-                    encoded_part = self.encode(part)
-                    if encoded_part not in group:
-                        return None
-                    group = group[encoded_part]
-                a = self.cache_urls(group, path_tuple)
-                has_metadata = self.__cache[path_tuple].has_metadata
-            idx = bisect.bisect_left(a, parts[-1])
-            if idx < len(a) and a[idx] == parts[-1]:
-                return group, idx, has_metadata
-            return None
-
-    def get_refresh_timestamp(self, url):
-        """Get the timestamp of the last refresh of the given directory
-
-        url - url of the directory to reference
-
-        returns None if never, else seconds after the epoch
-        """
-        group = self.get_filelist_group()
-        schema, path = self.split_url(url)
-        for part in path:
-            encoded_part = self.encode(part)
-            if encoded_part not in group:
-                return None
-            group = group[encoded_part]
-        return group.attrs.get(A_TIMESTAMP, None)
-
-    def walk(self, callback):
-        """Walk the file list in a manner like os.walk
-
-        callback - function to be called when visiting each directory. The
-                   signature is: callback(root, directories, files)
-                   where root is the root of the URL being visited,
-                   directories is a sequence of subdirectories at the root
-                   and files is a sequence of "filenames" (root + file
-                   gives a URL rooted in the directory).
-
-        Directories are traversed deepest first and the directory
-        list can be trimmed during the callback to prevent traversal of children.
-        """
-        with self.lock:
-            group = self.get_filelist_group()
-            stack = [[k for k in group if self.is_dir(group[k])]]
-            groups = [group]
-            roots = [None]
-            path = [None]
-            while len(stack):
-                current = stack.pop()
-                g0 = groups.pop()
-                root = roots[-1]
-                if len(current):
-                    k = current[0]
-                    groups.append(g0)
-                    stack.append(current[1:])
-                    g1 = g0[k]
-                    kd = self.decode(k)
-                    if len(roots) == 1:
-                        root = kd + ":"
-                    elif len(roots) == 2:
-                        root += kd
-                    else:
-                        root += "/" + kd
-                    directories = [self.decode(k) for k in g1 if self.is_dir(g1[k])]
-                    path_tuple = tuple(path[1:] + [kd])
-                    filenames = self.cache_urls(g1, path_tuple)
-                    callback(root, directories, filenames)
-                    if len(directories):
-                        stack.append([self.encode(d) for d in directories])
-                        groups.append(g1)
-                        roots.append(root)
-                        path.append(kd)
-                else:
-                    roots.pop()
-                    path.pop()
+                # Rebuild the full path if we started at a lower group.
+                result = [root_url + path for path in self._temp]
+            meta = self._meta
+        self._temp = []
+        self._meta = []
+        if want_metadata:
+            return result, meta
+        return result
 
 
 class HDF5ImageSet(object):

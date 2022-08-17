@@ -1,3 +1,4 @@
+import pathlib
 import urllib.request
 
 from cellprofiler_core.utilities.image import is_file_url
@@ -6,19 +7,21 @@ from cellprofiler_core.constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES
 
 def pathname2url(path):
     """Convert the unicode path to a file: url"""
-    utf8_path = str(path)
-    if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
-        return utf8_path
-    return FILE_SCHEME + urllib.request.pathname2url(utf8_path)
+    lower_path = path.lower()
+    if any((lower_path.startswith(x) for x in PASSTHROUGH_SCHEMES)):
+        return path
+    path_object = pathlib.Path(path)
+    if path_object.is_absolute():
+        # Produces a valid URI regardless of platform.
+        return path_object.as_uri()
+    # Produces CellProfiler's interpretation of a relative path URI.
+    return FILE_SCHEME + urllib.request.pathname2url(path)
 
 
 def url2pathname(url):
-    if isinstance(url, str):
-        url = url
-    if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
+    lower_url = url.lower()
+    if any((lower_url.startswith(x) for x in PASSTHROUGH_SCHEMES)):
         return url
     if is_file_url(url):
-        utf8_url = urllib.request.url2pathname(url[len(FILE_SCHEME) :])
-        return utf8_url
-    else:
-        return url
+        return urllib.request.url2pathname(url[len(FILE_SCHEME):])
+    return url

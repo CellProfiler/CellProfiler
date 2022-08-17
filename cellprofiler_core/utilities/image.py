@@ -1,23 +1,31 @@
+import logging
 import os
 import re
 import shutil
 import sys
 import tempfile
 import urllib.request
+from urllib.parse import urlparse, unquote, parse_qs
 
 import boto3
-import javabridge
 import numpy
 import pkg_resources
 import scipy.io
 
 from .measurement import is_well_row_token
 from .measurement import is_well_column_token
-from ..constants.image import SUPPORTED_IMAGE_EXTENSIONS
+from ..constants.image import ALL_IMAGE_EXTENSIONS
 from ..constants.image import SUPPORTED_MOVIE_EXTENSIONS
 from ..constants.image import PASSTHROUGH_SCHEMES
 from ..constants.image import FILE_SCHEME
 from ..constants.measurement import FTR_WELL
+
+"""
+This temporary directory will store cached files downloaded from the web.
+It'll automatically delete on exit, and we create it early here so that it's
+one of the last objects to get deleted - any opened files must close first.
+"""
+CP_TEMP_DIR = tempfile.TemporaryDirectory(prefix='cellprofiler_',)
 
 
 def convert_image_to_objects(image):
@@ -100,7 +108,7 @@ def needs_well_metadata(tokens):
 def is_image(filename):
     """Determine if a filename is a potential image file based on extension"""
     ext = os.path.splitext(filename)[1].lower()
-    return ext in SUPPORTED_IMAGE_EXTENSIONS
+    return ext in ALL_IMAGE_EXTENSIONS
 
 
 def is_movie(filename):
@@ -153,14 +161,7 @@ def is_file_url(url):
 
 def is_image_extension(suffix):
     """Return True if the extension is one of those recongized by bioformats"""
-    extensions = javabridge.get_collection_wrapper(
-        javabridge.static_call(
-            "org/cellprofiler/imageset/filter/IsImagePredicate",
-            "getImageSuffixes",
-            "()Ljava/util/Set;",
-        )
-    )
-    return extensions.contains(suffix.lower())
+    return suffix.lower() in ALL_IMAGE_EXTENSIONS
 
 
 def crop_image(image, crop_mask, crop_internal=False):
@@ -269,7 +270,7 @@ def url_to_modpath(url):
 
     if not url.lower().startswith("file:"):
         schema, rest = HDF5FileList.split_url(url)
-        return [schema] + rest[0:1] + [urllib.parse.unquote(part) for part in rest[1:]]
+        return [schema] + rest[0:1] + [unquote(part) for part in rest[1:]]
     path = urllib.request.url2pathname(url[5:])
     parts = []
     while True:
@@ -280,3 +281,36 @@ def url_to_modpath(url):
         parts.insert(0, part)
         path = new_path
     return parts
+
+
+def download_to_temp_file(url):
+    global CP_TEMP_DIR
+    parsed = urlparse(url)
+    scheme = parsed.scheme
+    path = parsed.path
+    queries = parse_qs(parsed.query)
+    if 'name' in queries:
+        path = queries['name'][0]
+    ext = os.path.splitext(path)[-1]
+
+    if scheme == 's3':
+        client = boto3.client('s3')
+        bucket_name, key = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
+        url = client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': key.replace("+", " ")}
+        )
+
+    from urllib.request import urlopen
+    logging.info(f"Downloading image from {url}")
+    src = urlopen(url)
+    dest_file = tempfile.NamedTemporaryFile(suffix=ext, delete=False, dir=CP_TEMP_DIR.name)
+    try:
+        shutil.copyfileobj(src, dest_file)
+    except Exception as e:
+        logging.error(f"Unable to download image to temp file. {e}")
+        return None
+    finally:
+        dest_file.close()
+    return dest_file.name
+

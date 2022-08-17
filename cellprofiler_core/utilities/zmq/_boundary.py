@@ -1,6 +1,5 @@
 import logging
 import queue
-import socket
 import threading
 
 import zmq
@@ -10,6 +9,7 @@ from cellprofiler_core.utilities.zmq._analysis_context import AnalysisContext
 from .communicable import Communicable
 from .communicable.reply.upstream_exit import BoundaryExited
 from .communicable.request import AnalysisRequest, Request
+from ...constants.worker import NOTIFY_STOP, NOTIFY_RUN
 
 
 class Boundary:
@@ -30,78 +30,45 @@ class Boundary:
         zmq_address - the address for announcements and requests
         port - the port for announcements, defaults to random
         """
-        self.analysis_dictionary = {}
-        self.analysis_dictionary_lock = threading.RLock()
+        self.analysis_context = None
+        self.analysis_context_lock = threading.RLock()
         #
         # Dictionary of request dictionary to queue for handler
         # (not including AnalysisRequest)
         #
         self.request_dictionary = {}
         self.zmq_context = zmq.Context()
+        # Set linger to 0 so that all sockets close without
+        # waiting for transmission during shutdown.
+        self.zmq_context.setsockopt(zmq.LINGER, 0)
+        self.zmq_address = zmq_address
         # The downward queue is used to feed replies to the socket thread
         self.downward_queue = queue.Queue()
 
-        # socket for handling downward notifications
-        self.selfnotify_socket = self.zmq_context.socket(zmq.SUB)
-        self.selfnotify_socket.bind(cellprofiler_core.utilities.zmq.NOTIFY_SOCKET_ADDR)
-        self.selfnotify_socket.setsockopt(zmq.SUBSCRIBE, b"")
+        # Not entirely convinced that threadlocal is still needed, but meh.
         self.threadlocal = (
             threading.local()
         )  # for connecting to notification socket, and receiving replies
 
-        # announce socket
-        # zmq.PUB - publish half of publish / subscribe
-        # LINGER = 0 to not wait for transmission during shutdown
-
-        self.announce_socket = self.zmq_context.socket(zmq.PUB)
-        self.announce_socket.setsockopt(zmq.LINGER, 0)
-        if port is None:
-            self.announce_port = self.announce_socket.bind_to_random_port(zmq_address)
-            self.announce_address = "%s:%d" % (zmq_address, self.announce_port)
-        else:
-            self.announce_address = "%s:%d" % (zmq_address, port)
-            self.announce_port = self.announce_socket.bind(self.announce_address)
-
-        # socket where we receive Requests
-        self.request_socket = self.zmq_context.socket(zmq.ROUTER)
-        self.request_socket.setsockopt(zmq.LINGER, 0)
-        self.request_port = self.request_socket.bind_to_random_port(zmq_address)
-        self.request_address = zmq_address + (":%d" % self.request_port)
         #
-        # socket for requests outside of the loopback port
+        # Socket for telling workers whether to keep running
+        # We should ONLY send over this socket from the spin thread
+        # We need to create it here so that we can transmit the address to
+        # workers on creation.
         #
-        self.external_request_socket = self.zmq_context.socket(zmq.ROUTER)
-        self.external_request_socket.setsockopt(zmq.LINGER, 0)
-        try:
-            fqdn = socket.getfqdn()
-            # make sure that this isn't just an entry in /etc/somethingorother
-            socket.gethostbyname(fqdn)
-        except:
-            try:
-                fqdn = socket.gethostbyname(socket.gethostname())
-            except:
-                fqdn = "127.0.0.1"
-        self.external_request_port = self.external_request_socket.bind_to_random_port(
-            "tcp://*"
+        self.keepalive_socket = self.zmq_context.socket(zmq.PUB)
+
+        self.keepalive_socket_port = self.keepalive_socket.bind_to_random_port(
+            "tcp://127.0.0.1"
         )
-        self.external_request_address = "tcp://%s:%d" % (
-            fqdn,
-            self.external_request_port,
-        )
+        self.keepalive_address = f"tcp://127.0.0.1:{self.keepalive_socket_port}"
 
         self.thread = threading.Thread(
             target=self.spin,
-            args=(
-                self.selfnotify_socket,
-                self.request_socket,
-                self.external_request_socket,
-            ),
             name="Boundary spin()",
         )
         self.thread.start()
 
-    """Notify the socket thread that an analysis was added"""
-    NOTIFY_REGISTER_ANALYSIS = "register analysis"
     """Notify a request class handler of a request"""
     NOTIFY_REQUEST = "request"
     """Notify the socket thread that a reply is ready to be sent"""
@@ -118,15 +85,11 @@ class Boundary:
 
         upward_queue - place the requests on this queue
         """
-        with self.analysis_dictionary_lock:
-            self.analysis_dictionary[analysis_id] = AnalysisContext(
-                analysis_id, upward_queue, self.analysis_dictionary_lock
+        with self.analysis_context_lock:
+            self.analysis_context = AnalysisContext(
+                analysis_id, upward_queue, self.analysis_context_lock
             )
-        response_queue = queue.Queue()
-        self.send_to_boundary_thread(
-            self.NOTIFY_REGISTER_ANALYSIS, (analysis_id, response_queue)
-        )
-        response_queue.get()
+        logging.debug(f"Registered analysis as id {analysis_id}")
 
     def register_request_class(self, cls_request, upward_queue):
         """Register a queue to receive requests of the given class
@@ -152,10 +115,10 @@ class Boundary:
         All requests with the given analysis ID will get a BoundaryExited
         reply after this call returns.
         """
-        with self.analysis_dictionary_lock:
-            if self.analysis_dictionary[analysis_id].cancelled:
+        with self.analysis_context_lock:
+            if self.analysis_context.cancelled:
                 return
-            self.analysis_dictionary[analysis_id].cancel()
+            self.analysis_context.cancel()
         response_queue = queue.Queue()
         self.send_to_boundary_thread(
             self.NOTIFY_CANCEL_ANALYSIS, (analysis_id, response_queue)
@@ -164,9 +127,8 @@ class Boundary:
 
     def handle_cancel(self, analysis_id, response_queue):
         """Handle cancellation in the boundary thread"""
-        with self.analysis_dictionary_lock:
-            self.analysis_dictionary[analysis_id].handle_cancel()
-        self.announce_analyses()
+        with self.analysis_context_lock:
+            self.analysis_context.handle_cancel()
         response_queue.put("OK")
 
     def join(self):
@@ -178,17 +140,29 @@ class Boundary:
         self.send_to_boundary_thread(self.NOTIFY_STOP, None)
         self.thread.join()
 
-    def spin(self, selfnotify_socket, request_socket, external_request_socket):
+    def spin(self):
         try:
+            # socket for handling downward notifications
+            selfnotify_socket = self.zmq_context.socket(zmq.SUB)
+            selfnotify_socket.connect(
+                cellprofiler_core.utilities.zmq.NOTIFY_SOCKET_ADDR)
+            selfnotify_socket.setsockopt(zmq.SUBSCRIBE, b"")
+
+            # socket where we receive Requests
+            request_socket = self.zmq_context.socket(zmq.ROUTER)
+            request_socket.setsockopt(zmq.LINGER, 0)
+            request_port = request_socket.bind_to_random_port(
+                self.zmq_address)
+            self.request_address = self.zmq_address + (":%d" % request_port)
+
             poller = zmq.Poller()
             poller.register(selfnotify_socket, zmq.POLLIN)
             poller.register(request_socket, zmq.POLLIN)
-            poller.register(external_request_socket, zmq.POLLIN)
 
             received_stop = False
-
             while not received_stop:
-                self.announce_analyses()
+                # Tell the workers to stay alive
+                self.keepalive_socket.send(NOTIFY_RUN)
                 poll_result = poller.poll(1000)
                 #
                 # Under all circumstances, read everything from the queue
@@ -202,9 +176,6 @@ class Boundary:
                         elif notification == self.NOTIFY_CANCEL_ANALYSIS:
                             analysis_id, response_queue = arg
                             self.handle_cancel(analysis_id, response_queue)
-                        elif notification == self.NOTIFY_REGISTER_ANALYSIS:
-                            analysis_id, response_queue = arg
-                            self.handle_register_analysis(analysis_id, response_queue)
                         elif notification == self.NOTIFY_STOP:
                             received_stop = True
                 except queue.Empty:
@@ -213,13 +184,15 @@ class Boundary:
                 # Then process the poll result
                 #
                 for s, state in poll_result:
-                    if s == selfnotify_socket and state == zmq.POLLIN:
-                        # Discard the actual contents
-                        _ = selfnotify_socket.recv()
-                    if (
-                        s not in (request_socket, external_request_socket)
-                        or state != zmq.POLLIN
-                    ):
+                    if s == selfnotify_socket:
+                        # This isn't really used for message transmission.
+                        # Instead, it pokes this spin thread to get it to check
+                        # the non-ZMQ message queue.
+                        msg = selfnotify_socket.recv()
+                        # Let's watch out for stop signals anyway
+                        if msg == NOTIFY_STOP:
+                            logging.warning("Captured a stop message over zmq")
+                            received_stop = True
                         continue
                     req = Communicable.recv(s, routed=True)
                     req.set_boundary(self)
@@ -244,47 +217,49 @@ class Boundary:
                     #
                     # Filter out requests for cancelled analyses.
                     #
-                    with self.analysis_dictionary_lock:
-                        analysis_context = self.analysis_dictionary[req.analysis_id]
-                        if not analysis_context.enqueue(req):
+                    with self.analysis_context_lock:
+                        if not self.analysis_context.enqueue(req):
                             continue
-
+            # Give the workers an explicit stop command
+            self.keepalive_socket.send(NOTIFY_STOP)
+            self.keepalive_socket.close()
             #
             # We assume here that workers trying to communicate with us will
-            # be shut down abruptly without needing replies to pending requests.
+            # be shut down without needing replies to pending requests.
             # There's not much we can do in terms of handling that in a more
             # orderly fashion since workers might be formulating requests as or
             # after we have shut down. But calling cancel on all the analysis
-            # contexts will raise exceptions in any thread waiting for a rep/rep.
+            # contexts will raise exceptions in threads waiting for a rep/rep.
             #
             # You could call analysis_context.handle_cancel() here, what if it
             # blocks?
-            self.announce_socket.close()
-            with self.analysis_dictionary_lock:
-                for analysis_context in list(self.analysis_dictionary.values()):
-                    analysis_context.cancel()
-                for request_class_queue in list(self.request_dictionary.values()):
+            with self.analysis_context_lock:
+                self.analysis_context.cancel()
+                for request_class_queue in self.request_dictionary.values():
                     #
                     # Tell each response class to stop. Wait for a reply
                     # which may be a thread instance. If so, join to the
                     # thread so there will be an orderly shutdown.
                     #
                     response_queue = queue.Queue()
-                    request_class_queue.put([self, self.NOTIFY_STOP, response_queue])
+                    request_class_queue.put(
+                        [self, self.NOTIFY_STOP, response_queue]
+                    )
                     thread = response_queue.get()
                     if isinstance(thread, threading.Thread):
                         thread.join()
 
-            self.request_socket.close()
-            logging.info("Exiting the boundary thread")
+            request_socket.close()
+            selfnotify_socket.close()
+            logging.debug("Shutting down the boundary thread")
         except:
             #
             # Pretty bad - a logic error or something extremely unexpected
-            #              We're close to hosed here, best to die an ugly death.
+            #              We're close to hosed here, better die an ugly death.
             #
-            logging.critical("Unhandled exception in boundary thread.", exc_info=10)
+            logging.critical("Unhandled exception in boundary thread.",
+                             exc_info=True)
             import os
-
             os._exit(-1)
 
     def send_to_boundary_thread(self, msg, arg):
@@ -309,34 +284,11 @@ class Boundary:
         self.downward_queue.put((msg, arg))
         self.threadlocal.notify_socket.send(b"WAKE UP!")
 
-    def announce_analyses(self):
-        with self.analysis_dictionary_lock:
-            valid_analysis_ids = [
-                analysis_id
-                for analysis_id in list(self.analysis_dictionary.keys())
-                if not self.analysis_dictionary[analysis_id].cancelled
-            ]
-        self.announce_socket.send_json(
-            [(analysis_id, self.request_address) for analysis_id in valid_analysis_ids]
-        )
-
     def handle_reply(self, req, rep):
         if not isinstance(req, AnalysisRequest):
             assert isinstance(req, Request)
             Communicable.reply(req, rep)
             return
 
-        with self.analysis_dictionary_lock:
-            analysis_context = self.analysis_dictionary.get(req.analysis_id)
-            analysis_context.reply(req, rep)
-
-    def handle_register_analysis(self, analysis_id, response_queue):
-        """Handle a request to register an analysis
-
-        analysis_id - analysis_id of new analysis
-        response_queue - response queue. Any announce subscriber that registers
-                         after the response is placed in this queue
-                         will receive an announcement of the analysis.
-        """
-        self.announce_analyses()
-        response_queue.put("OK")
+        with self.analysis_context_lock:
+            self.analysis_context.reply(req, rep)

@@ -1,11 +1,9 @@
-import glob
 import logging
 import os
 import re
 import sys
 
 from ....module import Module
-from ....preferences import get_plugin_directory
 from ....constants.modules import (
     do_not_override,
     should_override,
@@ -19,13 +17,7 @@ from ....constants.modules import (
     depricated_modules,
     replaced_modules,
 )
-
-
-def plugin_list(plugin_dir):
-    if plugin_dir is not None and os.path.isdir(plugin_dir):
-        file_list = glob.glob(os.path.join(plugin_dir, "[!_]*.py"))
-        return [os.path.basename(f)[:-3] for f in file_list]
-    return []
+from ..plugins import load_plugins
 
 
 def check_module(module, name):
@@ -121,17 +113,6 @@ def fill_modules():
         for modname, classname in cellprofiler.modules.builtin_modules.items():
             add_module("cellprofiler.modules." + modname, True, class_name=classname)
 
-    # Find and import plugins
-    plugin_directory = get_plugin_directory()
-    if plugin_directory is not None:
-        old_path = sys.path
-        sys.path.insert(0, plugin_directory)
-        try:
-            for mod in plugin_list(plugin_directory):
-                add_module(mod, False)
-        finally:
-            sys.path = old_path
-
     if len(badmodules) > 0:
         logging.warning(
             "could not load these modules: %s", ",".join([x[0] for x in badmodules])
@@ -196,3 +177,4 @@ def reload_modules():
         except:
             pass
     fill_modules()
+    load_plugins(modules_only=True)

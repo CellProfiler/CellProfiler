@@ -2,7 +2,8 @@ from ._filter_predicate import FilterPredicate
 from ._does_predicate import DoesPredicate
 from ._does_not_predicate import DoesNotPredicate
 from .._file_collection_display import FileCollectionDisplay
-from ...pipeline import ImagePlane
+from ...constants.image import MD_SIZE_T, MD_SIZE_Z
+from ...constants.measurement import C_RGB, C_MONOCHROME
 
 
 class ImagePredicate(FilterPredicate):
@@ -11,9 +12,8 @@ class ImagePredicate(FilterPredicate):
     IS_COLOR_PREDICATE = FilterPredicate(
         "iscolor",
         "Color",
-        lambda x: (
-            ImagePlane.MD_COLOR_FORMAT in x.metadata
-            and x.metadata[ImagePlane.MD_COLOR_FORMAT] == ImagePlane.MD_RGB
+        lambda plane: (
+                plane.color_format == C_RGB
         ),
         [],
         doc="The image is an interleaved color image (for example, a PNG image)",
@@ -22,9 +22,8 @@ class ImagePredicate(FilterPredicate):
     IS_MONOCHROME_PREDICATE = FilterPredicate(
         "ismonochrome",
         "Monochrome",
-        lambda x: (
-            ImagePlane.MD_COLOR_FORMAT in x.metadata
-            and x.metadata[ImagePlane.MD_COLOR_FORMAT] == ImagePlane.MD_MONOCHROME
+        lambda plane: (
+            plane.color_format == C_MONOCHROME
         ),
         [],
         doc="The image is monochrome",
@@ -32,9 +31,9 @@ class ImagePredicate(FilterPredicate):
 
     @staticmethod
     def is_stack(x):
-        if ImagePlane.MD_SIZE_T in x.metadata and x.metadata[ImagePlane.MD_SIZE_T] > 1:
+        if MD_SIZE_T in x.metadata and x.metadata[MD_SIZE_T] > 1:
             return True
-        if ImagePlane.MD_SIZE_Z in x.metadata and x.metadata[ImagePlane.MD_SIZE_Z] > 1:
+        if MD_SIZE_Z in x.metadata and x.metadata[MD_SIZE_Z] > 1:
             return True
         return False
 
@@ -79,14 +78,13 @@ class ImagePredicate(FilterPredicate):
         )
 
     @staticmethod
-    def fn_filter(node_type__modpath__module, *args):
-        (node_type, modpath, module) = node_type__modpath__module
+    def fn_filter(node_type__modpath__plane, *args):
+        (node_type, modpath, plane) = node_type__modpath__plane
         if node_type == FileCollectionDisplay.NODE_DIRECTORY:
             return None
-        ipd = module.get_image_plane_details(modpath)
-        if ipd is None:
+        if plane is None:
             return None
-        return args[0](ipd, *args[1:])
+        return args[0](plane, *args[1:])
 
     def test_valid(self, pipeline, *args):
         from ...modules.setting_validation import SettingValidation

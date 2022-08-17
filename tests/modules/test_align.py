@@ -5,7 +5,6 @@ from io import StringIO
 import numpy as np
 
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
-from cellprofiler_core.image import ImageSetList, Image
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.modules.align import (
     Align,
@@ -24,6 +23,8 @@ from cellprofiler_core.pipeline import Pipeline, LoadException
 from cellprofiler_core.preferences import set_headless
 from cellprofiler_core.workspace import Workspace
 from tests.modules import read_example_image
+from cellprofiler_core.image import ImageSetList, Image
+
 
 set_headless()
 

@@ -9,7 +9,7 @@ from ..constants.image import C_HEIGHT
 from ..constants.image import C_MD5_DIGEST
 from ..constants.image import C_SCALING
 from ..constants.image import C_WIDTH
-from ..constants.measurement import COLTYPE_FLOAT
+from ..constants.measurement import COLTYPE_FLOAT, C_CHANNEL, C_Z, C_T, C_OBJECTS_CHANNEL, C_OBJECTS_Z, C_OBJECTS_T
 from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_VARCHAR
 from ..constants.measurement import COLTYPE_VARCHAR_FILE_NAME
@@ -1039,34 +1039,43 @@ safe to press it.""",
         return True
 
     def fetch_provider(self, name, measurements, is_image_name=True):
-        path_base = self.image_path
         if is_image_name:
-            url_feature = C_URL + "_" + name
-            series_feature = C_SERIES + "_" + name
-            frame_feature = C_FRAME + "_" + name
+            url_feature = f"{C_URL}_{name}"
+            series_feature = f"{C_SERIES}_{name}"
+            frame_feature = f"{C_FRAME}_{name}"
+            channel_feature = f"{C_CHANNEL}_{name}"
+            plane_feature = f"{C_Z}_{name}"
+            timepoint_feature = f"{C_T}_{name}"
         else:
-            url_feature = C_OBJECTS_URL + "_" + name
-            series_feature = C_OBJECTS_SERIES + "_" + name
-            frame_feature = C_OBJECTS_FRAME + "_" + name
+            url_feature = f"{C_OBJECTS_URL}_{name}"
+            series_feature = f"{C_OBJECTS_SERIES}_{name}"
+            frame_feature = f"{C_OBJECTS_FRAME}_{name}"
+            channel_feature = f"{C_OBJECTS_CHANNEL}_{name}"
+            plane_feature = f"{C_OBJECTS_Z}_{name}"
+            timepoint_feature = f"{C_OBJECTS_T}_{name}"
         url = measurements.get_measurement("Image", url_feature)
-        url = url
         full_filename = url2pathname(url)
         path, filename = os.path.split(full_filename)
-        if measurements.has_feature("Image", series_feature):
-            series = measurements["Image", series_feature]
-        else:
-            series = None
-        if measurements.has_feature("Image", frame_feature):
-            frame = measurements["Image", frame_feature]
-        else:
-            frame = None
+        keyword_args = {}
+        for feature in (series_feature, frame_feature, channel_feature,
+                        plane_feature, timepoint_feature):
+            if measurements.has_feature("Image", feature):
+                val = measurements["Image", feature]
+                if numpy.isnan(val):
+                    val = None
+                keyword_args[feature] = val
+            else:
+                keyword_args[feature] = None
         return FileImage(
             name,
             path,
             filename,
             rescale=self.rescale.value and is_image_name,
-            series=series,
-            index=frame,
+            series=keyword_args[series_feature],
+            index=keyword_args[frame_feature],
+            channel=keyword_args[channel_feature],
+            z=keyword_args[plane_feature],
+            t=keyword_args[timepoint_feature],
         )
 
     def run(self, workspace):

@@ -545,7 +545,9 @@ class Module:
         """Give the module new user-entered notes
 
         """
-        sanitization_dict = {"“":"\"","”":"\""}
+        if isinstance(notes, str):
+            notes = [notes]
+        sanitization_dict = {"“": "\"", "”": "\""}
         self.__notes = [''.join(sanitization_dict.get(x,x) for x in note) for note in notes]
 
     notes = property(get_notes, set_notes)

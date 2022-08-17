@@ -1,24 +1,30 @@
+import atexit
 import hashlib
 import logging
 import os
 import tempfile
 import urllib.parse
 import urllib.request
+import weakref
 
-import imageio
 import numpy
-import skimage.io
 
 import cellprofiler_core.preferences
 from .._abstract_image import AbstractImage
 from ..._image import Image
-from ....utilities.image import is_numpy_file
+from ....reader import get_image_reader, get_image_reader_class
+from ....utilities.image import is_numpy_file, download_to_temp_file
 from ....utilities.image import is_matlab_file
 from ....utilities.image import loadmat
 from ....utilities.image import load_data_file
 from ....utilities.image import generate_presigned_url
 from ....constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES
 from ....utilities.pathname import pathname2url, url2pathname
+
+LOGGER = logging.getLogger(__name__)
+
+# A set of readers with open file locks.
+ACTIVE_READERS = weakref.WeakSet()
 
 
 class FileImage(AbstractImage):
@@ -35,6 +41,8 @@ class FileImage(AbstractImage):
         channel=None,
         volume=False,
         spacing=None,
+        z=None,
+        t=None
     ):
         """
         :param name: Name of image to be provided
@@ -65,6 +73,9 @@ class FileImage(AbstractImage):
         self.__is_cached = False
         self.__cacheing_tried = False
         self.__image = None
+        self.__preferred_reader = None
+        self.__image_file = None
+        self.__reader = None
 
         if pathname is None:
             self.__url = filename
@@ -77,13 +88,22 @@ class FileImage(AbstractImage):
             self.__url = pathname2url(pathname)
         else:
             self.__url = pathname2url(os.path.join(pathname, filename))
-
         self.rescale = rescale
         self.__series = series
         self.__channel = channel
         self.__index = index
         self.__volume = volume
         self.__spacing = spacing
+        if volume:
+            if z is not None and t is not None:
+                raise ValueError(f"T- and Z-plane indexes were specified while in 3D mode."
+                                 f"If extracting planes you should disable separation of an axis to "
+                                 f"work in 3D.")
+            self.__z = z
+            self.__t = t
+        else:
+            self.__z = z if z is not None else 0
+            self.__t = t if t is not None else 0
         self.scale = None
 
     @property
@@ -115,6 +135,21 @@ class FileImage(AbstractImage):
         # Invalidate the cached image
         self.__image = None
         self.__index = index
+
+    @property
+    def z(self):
+        return self.__z
+
+    @property
+    def t(self):
+        return self.__t
+
+    def get_reader(self, create=True, volume=False):
+        if self.__reader is None and create:
+            image_file = self.get_image_file()
+            self.__reader = get_image_reader(image_file, volume=volume)
+            ACTIVE_READERS.add(self)
+        return self.__reader
 
     def get_name(self):
         return self.__name
@@ -177,10 +212,17 @@ class FileImage(AbstractImage):
             finally:
                 os.close(tempfd)
         else:
-            from bioformats.formatreader import get_image_reader
-
-            rdr = get_image_reader(id(self), url=url)
-            self.__cached_file = rdr.path
+            from ....pipeline import ImageFile
+            image_file = self.get_image_file()
+            rdr_class = get_image_reader_class(image_file, volume=self.__volume)
+            if not rdr_class.supports_url() and parsed_path.scheme.lower() != 'omero':
+                cached_file = download_to_temp_file(image_file.url)
+                if cached_file is None:
+                    return False
+                self.__cached_file = pathname2url(cached_file)
+                self.__image_file = ImageFile(self.__cached_file)
+            else:
+                return False
         self.__is_cached = True
         return True
 
@@ -206,9 +248,8 @@ class FileImage(AbstractImage):
         if is_matlab_file(self.__filename) or is_numpy_file(self.__filename):
             rdr = None
         else:
-            from bioformats.formatreader import get_image_reader
+            rdr = self.get_reader()
 
-            rdr = get_image_reader(None, url=self.get_url())
         if rdr is None or not hasattr(rdr, "md5_hash"):
             hasher = hashlib.md5()
             path = self.get_full_name()
@@ -240,13 +281,16 @@ class FileImage(AbstractImage):
                     logging.warning(
                         "Could not delete file %s", self.__cached_file, exc_info=True
                     )
-            else:
-                from bioformats.formatreader import release_image_reader
-
-                release_image_reader(id(self))
             self.__is_cached = False
             self.__cacheing_tried = False
             self.__cached_file = None
+
+        rdr = self.get_reader(create=False)
+        if rdr is not None:
+            rdr.close()
+            self.__reader = None
+            if self in ACTIVE_READERS:
+                ACTIVE_READERS.remove(self)
         self.__image = None
 
     def __del__(self):
@@ -254,12 +298,17 @@ class FileImage(AbstractImage):
         # files to keep the system from filling up.
         self.release_memory()
 
+    def get_image_file(self):
+        if self.__image_file is None:
+            from ....pipeline import ImageFile
+            self.__image_file = ImageFile(self.get_url())
+            self.__image_file.preferred_reader = self.__preferred_reader
+        return self.__image_file
+
     def __set_image(self):
         if self.__volume:
             self.__set_image_volume()
             return
-
-        from bioformats.formatreader import get_image_reader
 
         self.cache_file()
         channel_names = []
@@ -270,14 +319,12 @@ class FileImage(AbstractImage):
             img = load_data_file(self.get_full_name(), numpy.load)
             self.scale = 1.0
         else:
-            url = self.get_url()
-            if url.lower().startswith("omero:"):
-                rdr = get_image_reader(self.get_name(), url=url)
-            else:
-                rdr = get_image_reader(self.get_name(), url=self.get_url())
+            rdr = self.get_reader()
             if numpy.isscalar(self.index) or self.index is None:
                 img, self.scale = rdr.read(
                     c=self.channel,
+                    z=self.z,
+                    t=self.t,
                     series=self.series,
                     index=self.index,
                     rescale=self.rescale if isinstance(self.rescale, bool) else False,
@@ -300,6 +347,8 @@ class FileImage(AbstractImage):
                 ):
                     img, self.scale = rdr.read(
                         c=channel,
+                        z=self.z,
+                        t=self.t,
                         series=series,
                         index=index,
                         rescale=self.rescale if isinstance(self.rescale, bool) else False,
@@ -324,7 +373,7 @@ class FileImage(AbstractImage):
     def provide_image(self, image_set):
         """Load an image from a pathname
         """
-        if self.__image is None or image_set is not None:
+        if self.__image is None:
             self.__set_image()
         return self.__image
 
@@ -335,7 +384,13 @@ class FileImage(AbstractImage):
         if is_numpy_file(self.__filename):
             data = numpy.load(pathname)
         else:
-            data = imageio.volread(pathname)
+            reader = self.get_reader(volume=True)
+            data = reader.read_volume(c=self.channel,
+                                      z=self.z,
+                                      t=self.t,
+                                      series=self.series,
+                                      rescale=self.rescale,
+                                      wants_max_intensity=False)
 
         # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
         if data.dtype in [numpy.int8, numpy.uint8]:
@@ -357,3 +412,14 @@ class FileImage(AbstractImage):
             scale=self.scale,
             spacing=self.__spacing,
         )
+
+
+@atexit.register
+def shut_down_readers():
+    """
+    Ensures that reader file locks are released before we shut down CP.
+    This isn't a problem on UNIX, but on Windows any cached files can't be
+    deleted if they're still linked to a reader instance.
+    """
+    for reader in list(ACTIVE_READERS):
+        reader.release_memory()

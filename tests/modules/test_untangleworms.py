@@ -4,6 +4,8 @@ import os
 import tempfile
 import zlib
 
+import imageio
+
 import bioformats
 import centrosome.outline
 import numpy
@@ -266,7 +268,7 @@ fd = os.fdopen(handle, "wb")
 fd.write(zlib.decompress(base64.b64decode(A02_binary)))
 fd.close()
 
-A02_image = bioformats.load_image(path, rescale=False)[:, :, 0] > 0
+A02_image = imageio.imread(path)[:, :, 0] > 0
 
 
 def test_load_v1():

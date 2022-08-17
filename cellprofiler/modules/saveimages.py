@@ -716,6 +716,8 @@ to unexpected behavior like saving in the original input file directory. For saf
 
         channel_names - names of the channels (make up names if not present
         """
+        from cellprofiler_core.utilities.java import start_java
+        start_java()
         bioformats.formatwriter.write_image(
             filename,
             pixels,

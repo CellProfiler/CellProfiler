@@ -10,7 +10,6 @@ import sys
 import tempfile
 import urllib.parse
 
-import bioformats.formatreader
 import h5py
 import matplotlib
 import numpy
@@ -27,6 +26,7 @@ from cellprofiler_core.pipeline import Pipeline
 from cellprofiler_core.preferences import get_image_set_file
 from cellprofiler_core.preferences import get_temporary_directory
 from cellprofiler_core.preferences import set_conserve_memory
+from cellprofiler_core.preferences import set_force_bioformats
 from cellprofiler_core.preferences import get_omero_port
 from cellprofiler_core.preferences import get_omero_server
 from cellprofiler_core.preferences import get_omero_session_id
@@ -90,7 +90,7 @@ if hasattr(sys, "frozen"):
                 "Visit http://broad.io/cpjava for instructions."
             )
             os.system("pause")  # Keep console window open until keypress.
-            os._exit(1)
+            sys.exit(1)
         except Exception as e:
             print(f"Encountered unknown error during startup: {e}")
     else:
@@ -231,6 +231,9 @@ def main(args=None):
     if options.conserve_memory is not None:
         set_conserve_memory(options.conserve_memory, globally=False)
 
+    if options.force_bioformats is not None:
+        set_force_bioformats(options.force_bioformats, globally=False)
+
     if options.always_continue is not None:
         set_always_continue(options.always_continue, globally=False)
 
@@ -256,8 +259,6 @@ def main(args=None):
         set_widget_inspector(True, globally=False)
 
     try:
-        if not options.show_gui:
-            start_java()
 
         if options.image_set_file is not None:
             set_image_set_file(options.image_set_file)
@@ -323,14 +324,14 @@ def __version__(exit_code):
 
 
 def stop_cellprofiler():
-    join_to_the_boundary()
 
     # Bioformats readers have to be properly closed.
     # This is especially important when using OmeroReaders as leaving the
     # readers open leaves the OMERO.server services open which in turn leads to
     # high memory consumption.
-    bioformats.formatreader.clear_image_reader_cache()
-
+    from cellprofiler_core.constants.reader import all_readers
+    for reader in all_readers.values():
+        reader.clear_cached_readers()
     stop_java()
 
 
@@ -431,6 +432,13 @@ def parse_args(args):
         dest="conserve_memory",
         default=None,
         help="CellProfiler will attempt to release unused memory after each image set.",
+    )
+
+    parser.add_option(
+        "--force-bioformats",
+        dest="force_bioformats",
+        default=None,
+        help="CellProfiler will always use BioFormats for reading images.",
     )
 
     parser.add_option(
@@ -615,6 +623,8 @@ def set_omero_credentials_from_string(credentials_string):
                         user - the user name
                         session-id - the session ID used for authentication
     """
+    import bioformats.formatreader
+
     if re.match("([^=^,]+=[^=^,]+,)*([^=^,]+=[^=^,]+)", credentials_string) is None:
         logging.root.error(
             'The OMERO credentials string, "%s", is badly-formatted.'

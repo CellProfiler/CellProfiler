@@ -70,6 +70,7 @@ from cellprofiler_core.constants.pipeline import (
     DIRECTION_DOWN,
     DIRECTION_UP,
 )
+from cellprofiler_core.constants.reader import all_readers
 from cellprofiler_core.constants.workspace import DISPOSITION_SKIP
 from cellprofiler_core.image import ImageSetList
 from cellprofiler_core.measurement import Measurements
@@ -80,6 +81,7 @@ from cellprofiler_core.pipeline import (
     PostRunException,
     PrepareRunException,
     URLsAdded,
+    URLsCleared,
     URLsRemoved,
     LoadException,
     ModuleAdded,
@@ -90,6 +92,7 @@ from cellprofiler_core.pipeline import (
     RunException,
     Listener,
     PrepareRunError,
+    ImageFile,
 )
 from cellprofiler_core.pipeline.io._v6 import load
 from cellprofiler_core.preferences import (
@@ -1733,6 +1736,8 @@ class PipelineController(object):
             self.on_urls_added(event)
         elif isinstance(event, URLsRemoved):
             self.on_urls_removed(event)
+        elif isinstance(event, URLsCleared):
+            self.on_urls_cleared(event)
         elif event.is_pipeline_modification:
             self.__dirty_workspace = True
             self.set_title()
@@ -1803,8 +1808,10 @@ class PipelineController(object):
     def on_urls_added(self, event):
         """Callback from pipeline when paths are added to the pipeline"""
         urls = event.urls
-        self.__path_list_ctrl.add_paths(urls)
         self.__workspace.file_list.add_files_to_filelist(urls)
+        urlset = set(urls)
+        file_objects = [image_file for image_file in self.__pipeline.file_list if image_file.url in urlset]
+        self.__path_list_ctrl.add_files(file_objects)
         self.__pipeline_list_view.notify_has_file_list(
             len(self.__pipeline.file_list) > 0
         )
@@ -1813,19 +1820,51 @@ class PipelineController(object):
     def on_urls_removed(self, event):
         """Callback from pipeline when paths are removed from the pipeline"""
         urls = event.urls
-        self.__path_list_ctrl.remove_paths(urls)
+        if isinstance(urls[0], ImageFile):
+            urls = [imfile.url for imfile in urls]
+        self.__path_list_ctrl.remove_files(urls)
         self.__workspace.file_list.remove_files_from_filelist(urls)
         self.__pipeline_list_view.notify_has_file_list(
             len(self.__pipeline.file_list) > 0
         )
         self.exit_test_mode()
 
+    def on_urls_cleared(self, event):
+        """Callback from pipeline when all paths are cleared from the pipeline"""
+        self.__path_list_ctrl.clear_files()
+        self.__workspace.file_list.clear_filelist()
+        self.__pipeline_list_view.notify_has_file_list(False)
+        self.exit_test_mode()
+
     def on_update_pathlist(self, event=None):
-        enabled_urls = set(self.__pipeline.get_filtered_file_list(self.__workspace))
+        enabled_urls = set([f.url for f in self.__pipeline.get_filtered_file_list(self.__workspace)])
         disabled_urls = set(self.__path_list_ctrl.get_paths())
         disabled_urls.difference_update(enabled_urls)
         self.__path_list_ctrl.enable_paths(enabled_urls, True)
         self.__path_list_ctrl.enable_paths(disabled_urls, False)
+
+    def on_extract_metadata(self, event=None):
+        if self.__path_list_ctrl.metadata_already_extracted:
+            return
+        file_objects = self.__pipeline.get_filtered_file_list(self.__workspace)
+        cap = len(file_objects)
+        with wx.ProgressDialog(
+            parent=self.__frame,
+            title="Extracting metadata",
+            message="Extracting metadata fr:om file headers...",
+            maximum=cap,
+            style=wx.PD_CAN_ABORT | wx.PD_APP_MODAL,
+        ) as dlg:
+            urls = []
+            for idx, file_object in enumerate(file_objects):
+                if dlg.WasCancelled():
+                    break
+                if not file_object.extracted:
+                    dlg.Update(idx, f"Working on {file_object.filename}")
+                    file_object.extract_planes(self.__workspace)
+                    urls.append(file_object.url)
+            self.__path_list_ctrl.update_metadata(urls)
+            self.__path_list_ctrl.set_metadata_extracted(not dlg.WasCancelled())
 
     def on_update_pathlist_ui(self, event):
         """Called with an UpdateUIEvent for a pathlist command ID"""
@@ -2025,6 +2064,7 @@ class PipelineController(object):
     def on_pathlist_file_delete(self, paths):
         self.__pipeline.remove_urls(paths)
         self.__workspace.file_list.remove_files_from_filelist(paths)
+        self.__path_list_ctrl.remove_files(paths)
         self.__workspace.invalidate_image_set()
 
     def on_pathlist_refresh(self, urls):
@@ -2070,6 +2110,8 @@ class PipelineController(object):
         if result == wx.YES:
             self.__pipeline.clear_urls()
             self.__workspace.file_list.clear_filelist()
+            self.__path_list_ctrl.hidden_files = []
+            self.__path_list_ctrl.disabled_urls = set()
             self.__workspace.invalidate_image_set()
 
     def on_pathlist_drop_files(self, x, y, filenames):
@@ -2210,7 +2252,7 @@ class PipelineController(object):
         pathnames = [p.strip() for p in re.split("[\r\n]+", text.strip())]
         self.__pipeline.add_pathnames_to_file_list(pathnames)
 
-    def pick_from_pathlist(self, selected_url, title=None, instructions=None):
+    def pick_from_pathlist(self, selected_plane, title=None, instructions=None):
         """Pick a file from the pathlist control
 
         This function displays the pathlist control within a dialog box. The
@@ -2236,47 +2278,54 @@ class PipelineController(object):
             if instructions is not None:
                 sizer.Add(wx.StaticText(dlg, label=instructions), 0, wx.EXPAND)
                 sizer.AddSpacer(2)
-            old_parent = self.__path_list_ctrl.Parent
-            old_sizer = self.__path_list_ctrl.GetContainingSizer()
-            old_sizer.Detach(self.__path_list_ctrl)
-            self.__path_list_ctrl.Reparent(dlg)
-            try:
-                sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND)
-                button_sizer = wx.StdDialogButtonSizer()
-                ok_button = wx.Button(dlg, wx.ID_OK)
-                button_sizer.AddButton(ok_button)
-                button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
-                button_sizer.Realize()
-                dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
-                self.__path_list_ctrl.clear_selections()
-                if selected_url is None:
-                    any_selected = False
+            planes = self.__pipeline.get_image_plane_list(self.__workspace)
+            treectrl = wx.TreeCtrl(dlg, style=wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS |
+                                              wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_LINES_AT_ROOT)
+            root_id = treectrl.AddRoot("File List")
+            folder_id_map = {}
+            FOLDER_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_MENUHILIGHT)
+            for i, plane_object in enumerate(planes):
+                folder = plane_object.file.dirname
+                filename = plane_object.file.filename
+                if folder in folder_id_map:
+                    folder_id = folder_id_map[folder]
                 else:
-                    any_selected = self.__path_list_ctrl.select_path(selected_url)
-                ok_button.Enable(any_selected)
+                    folder_id = treectrl.AppendItem(root_id, folder)
+                    treectrl.SetItemTextColour(folder_id, FOLDER_COLOR)
+                    folder_id_map[folder] = folder_id
+                plane_id = treectrl.AppendItem(folder_id, str(plane_object), data=plane_object)
+                treectrl.Expand(folder_id)
+                if plane_object == selected_plane:
+                    print("Selected plane found")
+                    treectrl.SelectItem(plane_id)
+            sizer.Add(treectrl, 1, wx.EXPAND)
+            button_sizer = wx.StdDialogButtonSizer()
+            ok_button = wx.Button(dlg, wx.ID_OK)
+            button_sizer.AddButton(ok_button)
+            button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+            button_sizer.Realize()
+            dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
+            any_selected = treectrl.GetSelection().IsOk()
+            ok_button.Enable(any_selected)
 
-                def on_plc_change(event):
-                    ok_button.Enable(self.__path_list_ctrl.has_selections())
+            def on_selection_change(event=None):
+                item_id = treectrl.GetSelection()
+                if item_id.IsOk() and treectrl.GetItemParent(item_id) != root_id:
+                    ok_button.Enable(True)
+                else:
+                    ok_button.Enable(False)
 
-                self.__path_list_ctrl.Bind(
-                    cellprofiler.gui.pathlist.EVT_PLC_SELECTION_CHANGED, on_plc_change
-                )
-                result = dlg.ShowModal()
-                sizer.Detach(self.__path_list_ctrl)
-                self.__path_list_ctrl.Unbind(
-                    cellprofiler.gui.pathlist.EVT_PLC_SELECTION_CHANGED
-                )
-                if result == wx.ID_OK:
-                    paths = self.__path_list_ctrl.get_paths(
-                        self.__path_list_ctrl.FLAG_SELECTED_ONLY
-                    )
-                    return None if len(paths) == 0 else paths[0]
-                return None
-            except Exception as e:
-                print("Unable to build file selection panel", e)
-            finally:
-                self.__path_list_ctrl.Reparent(old_parent)
-                old_sizer.Insert(0, self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
+            treectrl.Bind(
+                wx.EVT_TREE_SEL_CHANGED, on_selection_change
+            )
+            result = dlg.ShowModal()
+            if result == wx.ID_OK:
+                plane_id = treectrl.GetSelection()
+                if not plane_id.IsOk():
+                    return None
+                return treectrl.GetItemData(plane_id)
+
+            return None
 
     def add_urls(self, urls):
         """Add URLS to the pipeline"""
@@ -2890,7 +2939,6 @@ class PipelineController(object):
                     break
             if evt.cancelled:
                 self.pipeline_list = []
-
             wx.CallAfter(self.on_stop_analysis, evt)
         elif isinstance(evt, Display):
             wx.CallAfter(self.module_display_request, evt)
@@ -3333,9 +3381,8 @@ class PipelineController(object):
         self.stop_debugging()
 
     def stop_debugging(self):
-        from bioformats.formatreader import clear_image_reader_cache
-
-        clear_image_reader_cache()
+        for reader in all_readers.values():
+            reader.clear_cached_readers()
         self.__pipeline.test_mode = False
         self.__pipeline_list_view.set_debug_mode(False)
         self.__test_controls_panel.GetParent().GetSizer().Layout()

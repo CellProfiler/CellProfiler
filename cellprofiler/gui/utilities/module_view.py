@@ -202,13 +202,12 @@ def validate_module(pipeline, module_num, callback):
         setting_idx = [m.key() for m in module.visible_settings()].index(
             instance.get_setting().key()
         )
+    except Exception as e:
+        print("Error in validation thread", e)
     wx.CallAfter(callback, setting_idx, message, level)
 
 
 def validation_queue_handler():
-    from javabridge import attach, detach
-
-    attach()
     try:
         while mv_constants.validation_queue_keep_running:
             request = mv_constants.validation_queue.get()
@@ -227,8 +226,8 @@ def validation_queue_handler():
             # Make sure this thread utilizes less than 1/2 of GIL clock
             wait_for = max(0.25, time.perf_counter() - start)
             time.sleep(wait_for)
-    finally:
-        detach()
+    except:
+        logging.warning("Error in validation thread.", exc_info=True)
     logging.info("Exiting the pipeline validation thread")
 
 
@@ -240,7 +239,7 @@ def request_module_validation(validation_request):
         mv_constants.pipeline_queue_thread = threading.Thread(
             target=validation_queue_handler
         )
-        mv_constants.pipeline_queue_thread.setName("Pipeline vaidation thread")
+        mv_constants.pipeline_queue_thread.setName("Pipeline validation thread")
         mv_constants.pipeline_queue_thread.setDaemon(True)
         mv_constants.pipeline_queue_thread.start()
     mv_constants.validation_queue.put(validation_request)

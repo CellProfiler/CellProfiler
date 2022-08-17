@@ -250,7 +250,8 @@ class CPFrame(wx.Frame):
         #
         # Path list control
         #
-        self.__path_list_ctrl = PathListCtrl(self.__path_list_sash)
+        self.__path_list_ctrl = PathListCtrl(self.__path_list_sash, style=wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS |
+                                             wx.TR_MULTIPLE | wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_LINES_AT_ROOT)
         self.__path_list_ctrl.SetBackgroundColour(wx.WHITE)
         sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
         #
@@ -518,12 +519,12 @@ class CPFrame(wx.Frame):
                 exc_info=True,
             )
         try:
-            from bioformats.formatreader import clear_image_reader_cache
-
-            clear_image_reader_cache()
+            from cellprofiler_core.constants.reader import all_readers
+            for reader in all_readers.values():
+                reader.clear_cached_readers()
         except:
             logging.warning(
-                "Failed to clear bioformats reader cache during close", exc_info=True,
+                "Failed to clear reader cache during close", exc_info=True,
             )
         try:
             self.__preferences_view.close()

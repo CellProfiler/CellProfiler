@@ -45,6 +45,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.choice import Colormap
 from cellprofiler_core.setting.choice import CustomChoice
 from cellprofiler_core.setting.do_something import DoSomething, ImageSetDisplay
+from cellprofiler_core.setting.do_something import PathListExtractButton
 from cellprofiler_core.setting.do_something import PathListRefreshButton
 from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.setting.multichoice import MeasurementMultiChoice
@@ -385,6 +386,8 @@ class ModuleView:
                 elif isinstance(v, DoSomething):
                     if isinstance(v, PathListRefreshButton) and v.callback is None:
                         v.callback = self.__frame.pipeline_controller.on_update_pathlist
+                    if isinstance(v, PathListExtractButton) and v.callback is None:
+                        v.callback = self.__frame.pipeline_controller.on_extract_metadata
                     control = self.make_callback_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, DoThings):
@@ -1563,11 +1566,11 @@ class ModuleView:
             control.GetSizer().Add(browse_button, 0, wx.EXPAND)
 
             def on_button(event):
-                url = self.__frame.pipeline_controller.pick_from_pathlist(
-                    v.url, instructions="Select an image file from the list below"
+                selected_plane = self.__frame.pipeline_controller.pick_from_pathlist(
+                    v.get_plane(), instructions="Select an image plane from the list below"
                 )
-                if url is not None:
-                    value = v.build(url)
+                if selected_plane is not None:
+                    value = v.build(selected_plane)
                     self.on_value_change(v, control, value, event)
                     url_control.Value = url2pathname(v.value)
 
@@ -2052,7 +2055,8 @@ class ModuleView:
                 self.sort_reverse = not self.sort_reverse
             tab = self.GetTable()
             tab.v.data.sort(
-                key=lambda thedata: thedata[tgtcolumn], reverse=self.sort_reverse
+                key=lambda thedata: thedata[tgtcolumn] if thedata[tgtcolumn] is not None else "",
+                reverse=self.sort_reverse
             )
             self.SetSortingColumn(tgtcolumn)
             self.ClearSelection()

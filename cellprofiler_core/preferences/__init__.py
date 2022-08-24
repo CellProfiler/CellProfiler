@@ -405,10 +405,11 @@ FLOAT_KEYS = {TITLE_FONT_SIZE, TABLE_FONT_SIZE, PIXEL_SIZE}
 #######################
 CONSERVE_MEMORY_HELP = """\
 If enabled, CellProfiler will attempt to release unused system memory
-after processing each image in an analysis run. This can help to
-conserve system resources if the user is running other tasks in the
-background. Enabling this setting may slightly impact analysis speed,
-particularly during large runs.\
+after processing each image in an analysis run. Image pixel data will 
+also be 'forgotten' if an image is no longer required by later modules 
+in the pipeline. This can help to conserve system resources if the 
+user is running other tasks in the background. Enabling this setting 
+may slightly impact analysis speed, particularly during large runs.\
 """
 
 DEFAULT_COLORMAP_HELP = """\

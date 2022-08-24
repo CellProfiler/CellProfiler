@@ -157,6 +157,7 @@ class Worker:
                 current_pipeline.add_listener(self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
                 self.pipeline = current_pipeline
+                self.pipeline.calculate_last_image_uses()
                 self.preferences = current_preferences
             else:
                 # update preferences to match remote values

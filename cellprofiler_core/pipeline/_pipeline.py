@@ -14,12 +14,15 @@ import timeit
 import urllib.parse
 import urllib.request
 import uuid
+import weakref
 
 import numpy
 
 from . import ImageFile
 from .io import dump as dumpit
 from ..constants.reader import all_readers
+from ..setting.subscriber import ImageSubscriber
+from ..setting.subscriber import ImageListSubscriber
 from ..utilities.core.modules import instantiate_module, reload_modules
 from ..utilities.core.pipeline import read_file_list
 from ._listener import Listener
@@ -154,6 +157,14 @@ class Pipeline:
         
         self.__undo_stack = []
         self.__volumetric = False
+
+        #
+        # Dictionary mapping module objects to a list of image names
+        # which are no longer required going forward in the pipeline.
+        # Allows CellProfiler to 'forget' intermediates which are no
+        # longer needed when the 'conserve memory' setting is enabled.
+        #
+        self.redundancy_map = None
 
     def set_volumetric(self, value):
         self.__volumetric = value
@@ -1213,6 +1224,16 @@ class Pipeline:
                 self.run_module(module, workspace)
                 if module.show_window:
                     display_handler(module, workspace.display_data, image_set_number)
+                try:
+                    if self.redundancy_map is not None:
+                        if module in self.redundancy_map and len(self.modules()) > module.module_num:
+                            to_forget = self.redundancy_map[module]
+                            for image_name in to_forget:
+                                logging.info(f"Releasing memory for redundant image {image_name}")
+                                workspace.image_set.clear_image(image_name)
+                        gc.collect()
+                except Exception as e:
+                    logging.warning(f"Encountered error during memory cleanup: {e}")
             except CancelledException:
                 # Analysis worker interaction handler is telling us that
                 # the UI has cancelled the run. Forward exception upward.
@@ -1339,6 +1360,36 @@ class Pipeline:
             if progress_dialog is not None:
                 progress_dialog.Destroy()
             m.image_set_number = orig_image_number
+
+    def calculate_last_image_uses(self):
+        """
+        Scans through the pipeline and produces a dict mapping each module to
+        a list of images that can be safely forgotten after that module executes.
+        Can be used to conserve system memory during a run - once an image is no
+        longer required it no longer needs to be kept in memory
+        """
+        if not get_conserve_memory():
+            self.redundancy_map = None
+            return
+        modules_to_names = weakref.WeakKeyDictionary()
+        names_to_modules = {}
+        for module in self.modules():
+            for setting in module.settings():
+                if isinstance(setting, ImageSubscriber):
+                    if setting.value in ("None", None):
+                        continue
+                    names_to_modules[setting.value] = module
+                elif isinstance(setting, ImageListSubscriber):
+                    for item in setting.value:
+                        if item in ("None", None):
+                            continue
+                        names_to_modules[item] = module
+        for image_name, module_object in names_to_modules.items():
+            if module_object in modules_to_names:
+                modules_to_names[module_object].append(image_name)
+            else:
+                modules_to_names[module_object] = [image_name]
+        self.redundancy_map = modules_to_names
 
     @staticmethod
     def create_progress_dialog(message, pipeline, title):

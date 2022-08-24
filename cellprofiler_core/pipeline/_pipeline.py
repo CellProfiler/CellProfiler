@@ -21,6 +21,7 @@ import numpy
 from . import ImageFile
 from .io import dump as dumpit
 from ..constants.reader import all_readers
+from ..setting.multichoice import ImageNameSubscriberMultiChoice
 from ..setting.subscriber import ImageSubscriber
 from ..setting.subscriber import ImageListSubscriber
 from ..utilities.core.modules import instantiate_module, reload_modules
@@ -1381,6 +1382,11 @@ class Pipeline:
                     names_to_modules[setting.value] = module
                 elif isinstance(setting, ImageListSubscriber):
                     for item in setting.value:
+                        if item in ("None", None):
+                            continue
+                        names_to_modules[item] = module
+                elif isinstance(setting, ImageNameSubscriberMultiChoice):
+                    for item in setting.get_selections():
                         if item in ("None", None):
                             continue
                         names_to_modules[item] = module

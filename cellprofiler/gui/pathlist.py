@@ -135,18 +135,22 @@ class PathListCtrl(wx.TreeCtrl):
         # Check keyboard data is sensible.
         if not wx.TheClipboard.IsSupported(wx.DataFormat(wx.DF_UNICODETEXT)):
             return False
-        # Get text off the clipboard.
+        # Pull text off the clipboard into a buffer, should be one file per line.
+        # wx does have clipboard file object handlers, but they don't seem to work properly on MacOS.
         text_buffer = wx.TextDataObject()
         if wx.TheClipboard.Open():
             success = wx.TheClipboard.GetData(text_buffer)
             wx.TheClipboard.Close()
         else:
+            # Clipboard isn't readable for some reason.
             return False
         if not success:
+            # Couldn't read whatever was on the clipboard
             return False
         contents = [s for s in text_buffer.GetText().splitlines() if self.validate_pasted_string(s)]
         if contents and self.fn_add_files is not None:
             # Send the proposed files to the file list
+            # Original function expects x and y drop coords, but we don't need those.
             self.fn_add_files(None, None, contents)
         return True
 

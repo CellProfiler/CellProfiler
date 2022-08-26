@@ -6,6 +6,7 @@ import os
 import sys
 import uuid
 from urllib.request import url2pathname
+from urllib.parse import urlparse
 
 import wx
 import wx.lib.scrolledpanel
@@ -61,6 +62,10 @@ class PathListCtrl(wx.TreeCtrl):
         self.fn_do_folder_menu_command = None
         self.fn_empty_context_menu = None
         self.fn_do_empty_context_menu_command = None
+
+        # Function to add files from pasted text (from imagesetctrl).
+        # Will be set by pipelinecontroller during setup.
+        self.fn_add_files = None
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_mouse_down)
@@ -122,6 +127,39 @@ class PathListCtrl(wx.TreeCtrl):
     def AcceptsFocus(self):
         """Tell the scrollpanel that we can accept the focus"""
         return True
+
+    def CanPaste(self):
+        return True
+
+    def Paste(self):
+        # Check keyboard data is sensible.
+        if not wx.TheClipboard.IsSupported(wx.DataFormat(wx.DF_UNICODETEXT)):
+            return False
+        # Get text off the clipboard.
+        text_buffer = wx.TextDataObject()
+        if wx.TheClipboard.Open():
+            success = wx.TheClipboard.GetData(text_buffer)
+            wx.TheClipboard.Close()
+        else:
+            return False
+        if not success:
+            return False
+        contents = [s for s in text_buffer.GetText().splitlines() if self.validate_pasted_string(s)]
+        if contents and self.fn_add_files is not None:
+            # Send the proposed files to the file list
+            self.fn_add_files(None, None, contents)
+        return True
+
+    @staticmethod
+    def validate_pasted_string(s):
+        # Require a URL or an absolute valid path to accept a text object
+        parsed = urlparse(s)
+        if parsed.scheme in ('file', ''):  # Possibly a local file
+            return os.path.exists(parsed.path)
+        elif parsed.scheme:
+            # Probably http or s3
+            return True
+        return False
 
     def set_context_menu_fn(
         self,

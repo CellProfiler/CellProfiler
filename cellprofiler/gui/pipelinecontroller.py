@@ -18,6 +18,7 @@ import threading
 from functools import reduce, cmp_to_key
 from queue import PriorityQueue, Queue, Empty
 from urllib.request import urlretrieve, url2pathname
+from urllib.parse import urlparse
 
 import cellprofiler_core
 import h5py
@@ -521,6 +522,8 @@ class PipelineController(object):
         )
 
         path_list_ctrl.SetDropTarget(self.path_list_drop_target)
+
+        path_list_ctrl.fn_add_files = self.on_pathlist_drop_files
 
         def show_disabled(event):
             self.__path_list_ctrl.set_show_disabled(
@@ -2142,7 +2145,7 @@ class PipelineController(object):
                 filenames=filenames, interrupt=[True], message=["Default"], queue=queue
             ):
                 urls = []
-                if len(filenames) > 100:
+                if len(filenames) > 100 and os.path.exists(filenames[0]):
                     # If we have many files to process, it's faster to just scan the whole parent folder.
                     desired = set(filenames)
                     # All files added in 1 operation should come from the same parent directory.
@@ -2206,6 +2209,14 @@ class PipelineController(object):
                             else:
                                 continue
                             break
+                    else:
+                        # Allow URL objects through without change
+                        parsed = urlparse(pathname)
+                        if parsed.scheme and parsed.scheme != 'file':
+                            urls.append(pathname)
+                            if len(urls) > 100:
+                                queue.put(urls)
+                                urls = []
                 queue.put(urls)
 
             thread = threading.Thread(

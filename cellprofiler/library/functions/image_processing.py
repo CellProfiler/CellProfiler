@@ -130,8 +130,8 @@ def get_threshold(
         volumetric
     )
     # No mask provided, create a dummy mask
-    if mask is not None:
-        mask = numpy.ones(image.shape, dtype=bool)
+    if mask is None:
+        mask = numpy.full(image.shape, True)
 
     need_transform = (
             not automatic and

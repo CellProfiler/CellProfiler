@@ -195,7 +195,7 @@ class Threshold:
 
 
     def get_local_threshold(self, image_data, mask):
-        image = numpy.where(mask, image_data, np.nan)
+        image = numpy.where(mask, image_data, numpy.nan)
 
         if len(image) == 0 or numpy.all(image == numpy.nan):
             local_threshold = numpy.zeros_like(image)

@@ -2057,8 +2057,9 @@ class PipelineController(object):
             if result == wx.YES:
                 self.do_load_pipeline(path)
             return
+        series = self.__path_list_ctrl.get_selected_series()
         show_image(
-            path, self.__frame, dimensions=3 if self.__pipeline.volumetric() else 2
+            path, self.__frame, dimensions=3 if self.__pipeline.volumetric() else 2, series=series
         )
 
     def on_pathlist_file_delete(self, paths):

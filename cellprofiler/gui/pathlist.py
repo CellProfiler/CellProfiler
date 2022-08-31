@@ -417,6 +417,22 @@ class PathListCtrl(wx.TreeCtrl):
             paths.append(item.url)
         return paths
 
+    def get_selected_series(self):
+        if self.GetFocusedItem().ID is not None:
+            idx = self.GetFocusedItem()
+            parent = self.GetItemParent(idx)
+            if not self.is_folder(parent):
+                # This is a series within a file. Find the index.
+                tgt = 0
+                child_idx, cookie = self.GetFirstChild(parent)
+                while child_idx.IsOk():
+                    if child_idx == idx:
+                        # This is the series we are looking at
+                        return tgt
+                    child_idx, cookie = self.GetNextChild(parent, cookie)
+                    tgt += 1
+        return None
+
     def has_selections(self):
         """Return True if there are any selected items"""
         return len(self.GetSelections()) > 0

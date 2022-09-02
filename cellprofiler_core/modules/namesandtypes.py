@@ -1254,6 +1254,9 @@ requests an object selection.
                     groups[name].append(plane)
                     break
         errors = []
+        if not groups:
+            logging.warning("No images passed group filters")
+            return []
         desired_length = max([len(grp) for grp in groups.values()])
         for name in self.get_column_names(want_singles=False):
             if name not in groups:

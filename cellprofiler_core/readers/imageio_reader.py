@@ -151,7 +151,7 @@ class ImageIOReader(Reader):
             self._reader.close()
         self._reader = None
 
-    def get_series_dimensions(self):
+    def get_series_metadata(self):
         """Should return a dictionary with the following keys:
         Key names are in cellprofiler_core.constants.image
         MD_SIZE_S - int reflecting the number of series

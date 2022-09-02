@@ -11,7 +11,7 @@ import numpy
 import wx
 import wx.adv
 import wx.grid
-import wx.lib.mixins.gridlabelrenderer
+import wx.lib.mixins.gridlabelrenderer as wxglr
 from cellprofiler_core.constants.image import C_FRAME, CT_GRAYSCALE, CT_COLOR, CT_MASK, CT_OBJECTS, CT_FUNCTION
 from cellprofiler_core.constants.image import C_SERIES
 from cellprofiler_core.constants.measurement import C_FILE_NAME
@@ -35,6 +35,7 @@ from cellprofiler_core.utilities.legacy import cmp
 import cellprofiler.gui
 import cellprofiler.gui.cornerbuttonmixin
 from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION
+from cellprofiler.icons import get_builtin_image
 
 """Table column displays metadata"""
 COL_METADATA = "Metadata"
@@ -411,8 +412,41 @@ class ImageSetCache:
         # Take 1/2 of the max size
         self.cache = dict(cache_kv[-int(self.max_size / 2) :])
 
+class CornerLabelRenderer(wxglr.GridLabelRenderer):
+    def __init__(self, grid, on_click, tooltip, label):
+        self._label = label
+        self._corner = grid.GetGridCornerLabelWindow()
 
-class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin):
+        bmp = wx.Bitmap(get_builtin_image("IMG_UPDATE"))
+        # mask = wx.Mask(bmp, wx.BLUE)
+        # bmp.SetMask(mask)
+
+        self._bmp_btn = wx.lib.buttons.GenBitmapTextButton(
+            self._corner, bitmap=bmp, label=label
+        )
+        self._bmp_btn.SetToolTip(tooltip)
+        self._corner.Bind(wx.EVT_BUTTON, on_click)
+
+    def Draw(self, grid, dc, rect, rc):
+        top = rect.top
+        bottom = rect.bottom
+        left = rect.left
+        right = rect.right
+        dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW)))
+        # dc.SetPen(wx.RED_PEN)
+        # dc.DrawLine(right, top, right, bottom)
+        # dc.DrawLine(left, top, left, bottom)
+        # dc.DrawLine(left, bottom, right, bottom)
+        # dc.DrawLine(left, top, right, top)
+        # dc.SetPen(wx.RED_PEN)
+        # if top == 0:
+        #     dc.DrawLine(left + 1, top, left + 1, bottom)
+        #     dc.DrawLine(left + 1, top, right+10, top)
+        # else:
+        #     dc.DrawLine(left + 1, top + 1, left + 1, bottom)
+        #     dc.DrawLine(left + 1, top + 1, right - 1, top + 1)
+
+class ImageSetCtrl(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
     def __init__(self, workspace, *args, **kwargs):
         """Initialize the ImageSetCtrl
 
@@ -435,9 +469,12 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             display_mode = DISPLAY_MODE_ALTERNATE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(
-            self, self.on_update, tooltip="Update and display the image set"
-        )
+        # cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(
+        #     self, self.on_update, tooltip="Update and display the image set"
+        # )
+        wxglr.GridWithLabelRenderersMixin.__init__(self)
+        self.SetCornerLabelRenderer(CornerLabelRenderer(self, self.on_update, tooltip="Update and display the image set", label="Update"))
+
         gclw = self.GetGridColLabelWindow()
         self.table = ImageSetGridTable(workspace, display_mode)
         self.SetTable(self.table)
@@ -466,8 +503,6 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.recompute()
         self.pressed_button = (-1, None, False)
 
-        from cellprofiler.icons import get_builtin_image
-
         def get_builtin_bitmap(name):
             return wx.Bitmap(get_builtin_image(name))
 
@@ -491,7 +526,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
         self.EnableDragCell(True)
         self.Bind(wx.grid.EVT_GRID_CELL_BEGIN_DRAG, self.on_grid_begin_drag)
 
-    def on_update(self):
+    def on_update(self, event):
         self.table.workspace.refresh_image_set()
         n_imagesets = self.table.workspace.measurements.image_set_count
         if n_imagesets == 0:
@@ -1216,7 +1251,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
         return wx.Size(width + 2 * self.padding, height)
 
 
-class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
+class ColLabelRenderer(wxglr.GridLabelRenderer):
     """Renders the appearance of a column label
 
     A column label has the label text, an icon button for setting the

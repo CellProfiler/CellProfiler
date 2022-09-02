@@ -5,6 +5,7 @@
 import wx
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
+from cellprofiler.icons import get_builtin_image
 
 
 class CornerButtonMixin(object):
@@ -74,7 +75,7 @@ class CornerButtonMixin(object):
         dc.SetBackground(new_brush)
         try:
             dc.Clear()
-            dc.SetBackgroundMode(wx.PENSTYLE_TRANSPARENT)
+            dc.SetBackgroundMode(wx.BRUSHSTYLE_TRANSPARENT)
             rn = wx.RendererNative.Get()
             assert isinstance(rn, wx.RendererNative)
             cr = wx.lib.mixins.gridlabelrenderer.GridDefaultCornerLabelRenderer()

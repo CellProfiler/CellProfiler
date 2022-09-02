@@ -954,7 +954,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             if col == wx.NOT_FOUND:
                 col = None
         bottom = self.GetGridWindow().GetVirtualSize()[1]
-        if y <= self.GetRowSize(0) / 2:
+        if not self.GetNumberRows() or y <= self.GetRowSize(0) / 2:
             row = 0
         elif y >= bottom - self.GetRowSize(self.GetNumberRows() - 1):
             row = self.GetNumberRows()

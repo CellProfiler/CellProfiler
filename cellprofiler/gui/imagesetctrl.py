@@ -12,10 +12,9 @@ import wx
 import wx.adv
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
-from cellprofiler_core.constants.image import C_FRAME, CT_GRAYSCALE, CT_COLOR, CT_MASK, CT_OBJECTS, CT_FUNCTION, \
-    C_SERIES_NAME
+from cellprofiler_core.constants.image import C_FRAME, CT_GRAYSCALE, CT_COLOR, CT_MASK, CT_OBJECTS, CT_FUNCTION
 from cellprofiler_core.constants.image import C_SERIES
-from cellprofiler_core.constants.measurement import C_FILE_NAME, C_CHANNEL, C_Z, C_T
+from cellprofiler_core.constants.measurement import C_FILE_NAME, C_CHANNEL, C_Z, C_T, C_SERIES_NAME
 from cellprofiler_core.constants.measurement import C_METADATA
 from cellprofiler_core.constants.measurement import C_OBJECTS_FILE_NAME
 from cellprofiler_core.constants.measurement import C_OBJECTS_PATH_NAME

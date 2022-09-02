@@ -1072,6 +1072,7 @@ requests an object selection.
                 path_name_category = C_OBJECTS_PATH_NAME
                 file_name_category = C_OBJECTS_FILE_NAME
                 series_category = C_OBJECTS_SERIES
+                series_name_category = C_OBJECTS_SERIES_NAME
                 frame_category = C_OBJECTS_FRAME
                 channel_category = C_OBJECTS_CHANNEL
                 z_category = C_OBJECTS_Z
@@ -1081,6 +1082,7 @@ requests an object selection.
                 path_name_category = C_PATH_NAME
                 file_name_category = C_FILE_NAME
                 series_category = C_SERIES
+                series_name_category = C_SERIES_NAME
                 frame_category = C_FRAME
                 channel_category = C_CHANNEL
                 z_category = C_Z

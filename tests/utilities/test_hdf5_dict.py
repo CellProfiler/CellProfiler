@@ -2,6 +2,8 @@
 """
 
 import os
+import random
+import string
 import sys
 import tempfile
 import unittest
@@ -393,7 +395,7 @@ class TestHDF5FileList(unittest.TestCase):
 
         dest_filelist = H5DICT.HDF5FileList(self.hdf_file_empty)
         self.assertSequenceEqual([url], dest_filelist.get_filelist())
-        numpy.testing.assert_array_equal(metadata, dest_filelist.get_metadata(url))
+        numpy.testing.assert_array_equal(metadata, dest_filelist.get_metadata(url)[0])
 
     def test_02_06_copy_corruption(self):
         # Check that we don't corrupt file strings containing the schema
@@ -598,9 +600,10 @@ class TestHDF5FileList(unittest.TestCase):
         self.assertEqual(1, len(level.keys()))
         assert 'foo' in level
         level2 = level['foo']
-        self.assertEqual(2, len(level2.keys()))
+        self.assertEqual(3, len(level2.keys()))
         assert H5DICT.FILES in level2
         assert H5DICT.METADATA in level2
+        assert H5DICT.SERIESNAMES in level2
         data = level2[H5DICT.FILES][:]
         self.assertEqual(2, len(data))
         # H5Py returns strings as bytes, manually decode.
@@ -630,16 +633,17 @@ class TestHDF5FileList(unittest.TestCase):
         assert 'bar' in level
 
         level2_bar = level["bar"]
-        self.assertEqual(2, len(level2_bar.keys()))
+        self.assertEqual(3, len(level2_bar.keys()))
         assert H5DICT.FILES in level2_bar
         assert H5DICT.METADATA in level2_bar
+        assert H5DICT.SERIESNAMES in level2_bar
         data = level2_bar[H5DICT.FILES][:]
         self.assertEqual(1, len(data))
         assert data[0].decode() == "foo.jpg"
 
         level2_foo = level["foo"]
-        self.assertEqual(4, len(level2_foo.keys()))
-        expected_keys = {H5DICT.FILES, H5DICT.METADATA, "bar", "baz"}
+        self.assertEqual(5, len(level2_foo.keys()))
+        expected_keys = {H5DICT.FILES, H5DICT.METADATA, H5DICT.SERIESNAMES, "bar", "baz"}
         assert set(level2_foo.keys()) == expected_keys
         data = level2_foo[H5DICT.FILES][:]
         self.assertEqual(2, len(data))
@@ -648,17 +652,19 @@ class TestHDF5FileList(unittest.TestCase):
         assert data == {"bar.jpg", "baz.jpg"}
 
         level3_bar = level2_foo["bar"]
-        self.assertEqual(2, len(level3_bar.keys()))
+        self.assertEqual(3, len(level3_bar.keys()))
         assert H5DICT.FILES in level3_bar
         assert H5DICT.METADATA in level3_bar
+        assert H5DICT.SERIESNAMES in level3_bar
         data = level3_bar[H5DICT.FILES][:]
         self.assertEqual(1, len(data))
         assert data[0].decode() == "baz.jpg"
 
         level3_baz = level2_foo["baz"]
-        self.assertEqual(2, len(level3_baz.keys()))
+        self.assertEqual(3, len(level3_baz.keys()))
         assert H5DICT.FILES in level3_baz
         assert H5DICT.METADATA in level3_baz
+        assert H5DICT.SERIESNAMES in level3_baz
         data = level3_baz[H5DICT.FILES][:]
         self.assertEqual(1, len(data))
         assert data[0].decode() == "bar.jpg"
@@ -682,7 +688,7 @@ class TestHDF5FileList(unittest.TestCase):
         filelist = self.filelist
         filelist.add_files_to_filelist(urls)
         for url in urls:
-            numpy.testing.assert_array_equal([-1, -1, -1, -1, -1], filelist.get_metadata(url))
+            numpy.testing.assert_array_equal([-1, -1, -1, -1, -1], filelist.get_metadata(url)[0])
 
     def test_10_02_get_metadata(self):
         urls = ["file://foo.jpg", "file://foo/bar.jpg", "file://foo/bar/baz.jpg"]
@@ -693,13 +699,20 @@ class TestHDF5FileList(unittest.TestCase):
             r.randint(0, 200, 5)
             return r.randint(0, 200, 5)
 
+        def fn_name(url):
+            random.seed(url)
+            return [''.join(random.choice(string.ascii_letters) for i in range(10))]
+
         filelist = self.filelist
         filelist.add_files_to_filelist(urls)
         for url in urls:
-            filelist.add_metadata(url, fn_metadata(url))
+            filelist.add_metadata(url, fn_metadata(url), fn_name(url))
         for url in urls:
-            expected = fn_metadata(url)
-            numpy.testing.assert_array_equal(expected, filelist.get_metadata(url))
+            expected_meta = fn_metadata(url)
+            expected_names = fn_name(url)
+            actual_meta, actual_names = filelist.get_metadata(url)
+            numpy.testing.assert_array_equal(expected_meta, actual_meta)
+            numpy.testing.assert_array_equal(expected_names, actual_names)
 
     def test_10_03_get_metadata_after_insert(self):
         urls = ["file://foo/foo.jpg", "file://foo/bar.jpg", "file://foo/baz.jpg"]
@@ -711,16 +724,23 @@ class TestHDF5FileList(unittest.TestCase):
             r.randint(0, 200, 5)
             return r.randint(0, 200, 5)
 
+        def fn_name(url):
+            random.seed(url)
+            return [''.join(random.choice(string.ascii_letters) for i in range(10))]
+
         filelist = self.filelist
         filelist.add_files_to_filelist(urls)
         for url in urls:
-            filelist.add_metadata(url, fn_metadata(url))
+            filelist.add_metadata(url, fn_metadata(url), fn_name(url))
         filelist.add_files_to_filelist(extend)
         for url in extend:
-            filelist.add_metadata(url, fn_metadata(url))
+            filelist.add_metadata(url, fn_metadata(url), fn_name(url))
         for url in urls + extend:
-            expected = fn_metadata(url)
-            numpy.testing.assert_array_equal(expected, filelist.get_metadata(url))
+            expected_meta = fn_metadata(url)
+            expected_name = fn_name(url)
+            actual_meta, actual_name = filelist.get_metadata(url)
+            numpy.testing.assert_array_equal(expected_meta, actual_meta)
+            numpy.testing.assert_array_equal(expected_name, actual_name)
 
     def test_10_04_get_metadata_after_remove(self):
         to_remove = "file://foo/bar.jpg"
@@ -732,17 +752,24 @@ class TestHDF5FileList(unittest.TestCase):
             r.randint(0, 200, 5)
             return r.randint(0, 200, 5)
 
+        def fn_name(url):
+            random.seed(url)
+            return [''.join(random.choice(string.ascii_letters) for i in range(10))]
+
         filelist = self.filelist
         filelist.add_files_to_filelist(urls)
         for url in urls:
-            filelist.add_metadata(url, fn_metadata(url))
+            filelist.add_metadata(url, fn_metadata(url), fn_name(url))
         filelist.remove_files_from_filelist([to_remove])
         for url in urls:
             if url == to_remove:
                 self.assertIsNone(filelist.get_metadata(url))
             else:
-                expected = fn_metadata(url)
-                numpy.testing.assert_array_equal(expected, filelist.get_metadata(url))
+                expected_meta = fn_metadata(url)
+                expected_name = fn_name(url)
+                actual_meta, actual_name = filelist.get_metadata(url)
+                numpy.testing.assert_array_equal(expected_meta, actual_meta)
+                numpy.testing.assert_array_equal(expected_name, actual_name)
 
     def test_11_01_hasnt_files(self):
         self.assertFalse(self.filelist.has_files())

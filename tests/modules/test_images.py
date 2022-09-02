@@ -178,16 +178,18 @@ class TestImages:
             assert true_file_list[0] == file_list[0].url
             file_object = file_list[0]
             assert not file_object.extracted
-            old_meta = hdf5_list.get_metadata(url)
+            old_meta, series_names = hdf5_list.get_metadata(url)
             assert all([x == -1 for x in old_meta])
+            assert series_names == [""]
             module.prepare_run(workspace)
             assert file_object.extracted
             plane_meta = file_object.metadata
             assert plane_meta['SizeS'] == 1
             expected_meta = [3, 1, 1, 21, 31]
             plane_metadata = [plane_meta[k][0] for k in ('SizeC', 'SizeZ', 'SizeT', 'SizeY', 'SizeX')]
-            stored_metadata = hdf5_list.get_metadata(url)
+            stored_metadata, stored_names = hdf5_list.get_metadata(url)
             assert len(stored_metadata) == len(expected_meta)
+            assert len(stored_names) == len(expected_meta) // 5
             for expected, obj, hdf5 in zip(expected_meta, plane_metadata, stored_metadata):
                 assert expected == obj == hdf5
 

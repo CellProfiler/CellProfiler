@@ -1314,8 +1314,8 @@ class HDF5FileList(object):
         return False
 
     def recurse_for_files(self, name, node):
-        head, _ = os.path.split(name)
-        if isinstance(node, h5py.Dataset) and check_string_dtype(node.dtype):
+        head, tail = os.path.split(name)
+        if isinstance(node, h5py.Dataset) and tail == FILES:
             if head == ROOT:
                 self._temp += node.asstr()[:].tolist()
             else:
@@ -1326,8 +1326,8 @@ class HDF5FileList(object):
                 self._temp += [f"{head}/{filename}" for filename in node.asstr()[:]]
 
     def recurse_for_files_and_metadata(self, name, node):
-        head, _ = os.path.split(name)
-        if isinstance(node, h5py.Dataset) and check_string_dtype(node.dtype):
+        head, tail = os.path.split(name)
+        if isinstance(node, h5py.Dataset) and tail == FILES:
             meta_node = node.parent[METADATA]
             names_node = node.parent[SERIESNAMES]
             if head == ROOT:

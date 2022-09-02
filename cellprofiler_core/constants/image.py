@@ -114,6 +114,7 @@ M_BOTH = "Both"
 M_Z = "Z"
 M_T = "T"
 C_SERIES = "Series"
+C_SERIES_NAME = "SeriesName"
 C_FRAME = "Frame"
 P_IMAGES = "LoadImagesImageProvider"
 V_IMAGES = 1
@@ -142,6 +143,7 @@ MD_SIZE_Z = "SizeZ"
 MD_SIZE_T = "SizeT"
 MD_SIZE_X = "SizeX"
 MD_SIZE_Y = "SizeY"
+MD_SERIES_NAME = "SeriesNames"
 MD_SIZE_KEYS = {MD_SIZE_S, MD_SIZE_X, MD_SIZE_Y, MD_SIZE_Z, MD_SIZE_C, MD_SIZE_T}
 
 

@@ -29,11 +29,13 @@ class ImagePlane:
     as a dictionary of keys and values.
     """
 
-    def __init__(self, file: ImageFile, series=None, index=None, channel=None, z=None, t=None, xywh=None, color=None):
+    def __init__(self, file: ImageFile, series=None, index=None, channel=None, z=None, t=None, xywh=None, color=None,
+                 name=None):
         self._file = file
         self._metadata_dict = collections.defaultdict(get_missing)
         self._metadata_dict['URL'] = file.url
         self._metadata_dict['Series'] = series
+        self._metadata_dict['SeriesName'] = name
         self._metadata_dict['Index'] = index
         self._metadata_dict['Channel'] = channel
         self._metadata_dict['Timepoint'] = t
@@ -52,6 +54,8 @@ class ImagePlane:
         plane_string = self.file.filename
         if self.series is not None:
             plane_string += f", Series {self.series}"
+        if self.series_name is not None:
+            plane_string += f" ({self.series_name})"
         if self.index is not None:
             plane_string += f", Index {self.index}"
         if self.channel is not None:
@@ -97,6 +101,10 @@ class ImagePlane:
     @property
     def series(self):
         return self._metadata_dict['Series']
+
+    @property
+    def series_name(self):
+        return self._metadata_dict['SeriesName']
 
     @property
     def index(self):

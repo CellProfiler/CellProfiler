@@ -7,7 +7,7 @@ from functools import cached_property
 import numpy
 
 from cellprofiler_core.constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, \
-    MD_SIZE_KEYS
+    MD_SIZE_KEYS, MD_SERIES_NAME
 from cellprofiler_core.constants.modules.metadata import COL_PATH, COL_SERIES, COL_INDEX, COL_URL
 from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS
 from cellprofiler_core.reader import get_image_reader, Reader
@@ -44,6 +44,7 @@ class ImageFile:
             MD_SIZE_T: [],
             MD_SIZE_Y: [],
             MD_SIZE_X: [],
+            MD_SERIES_NAME: [],
         }
         self._plane_details = []
         self._modpath = None
@@ -87,11 +88,19 @@ class ImageFile:
             logger.error(f"May not be an image: {self.url}", exc_info=True)
             self.metadata[MD_SIZE_S] = 0
             return
-        meta_dict = reader.get_series_dimensions()
-        assert set(meta_dict.keys()) == MD_SIZE_KEYS, "Returned metadata keys were incorrect"
+        meta_dict = reader.get_series_metadata()
+        if meta_dict[MD_SIZE_S] == 0:
+            logger.error(f"File {self.filename} appears to contain no images.")
+            self.metadata[MD_SIZE_S] = 0
+            self.release_reader()
+            return
+        elif MD_SERIES_NAME not in meta_dict:
+            meta_dict[MD_SERIES_NAME] = [''] * meta_dict[MD_SIZE_S]
+        assert MD_SIZE_KEYS.issubset(meta_dict.keys()), "Returned metadata keys are incomplete"
         self.metadata.update(meta_dict)
-        for S, C, Z, T, Y, X in self.get_plane_iterator():
-            self._plane_details.append(f"Series {S:>2}: {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
+        for S, C, Z, T, Y, X, name in self.get_plane_iterator():
+            self._plane_details.append(f"Series {S:>2}{f' ({name})' if name else ''}"
+                                       f": {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
         if workspace is not None:
             metadata_array = numpy.transpose([
                 self.metadata[MD_SIZE_C],
@@ -99,11 +108,12 @@ class ImageFile:
                 self.metadata[MD_SIZE_T],
                 self.metadata[MD_SIZE_Y],
                 self.metadata[MD_SIZE_X]])
-            workspace.file_list.add_metadata(self.url, metadata_array.flatten())
+            names_array = self.metadata[MD_SERIES_NAME]
+            workspace.file_list.add_metadata(self.url, metadata_array.flatten(), names_array)
         self._extracted = True
         self.release_reader()
 
-    def load_plane_metadata(self, data):
+    def load_plane_metadata(self, data, names=''):
         # Metadata is stored in the HDF5 file as an array of int values, 5 per series for axis sizes (CZTYX)
         if len(data) < 5 or len(data) % 5 != 0:
             # No metadata or bad format
@@ -115,6 +125,7 @@ class ImageFile:
             return
         num_series = len(data) // 5
         self.metadata[MD_SIZE_S] = num_series
+        self.metadata[MD_SERIES_NAME] = names
         for i in range(num_series):
             C, Z, T, Y, X = data[:5]
             self.metadata[MD_SIZE_C].append(int(C))
@@ -122,9 +133,10 @@ class ImageFile:
             self.metadata[MD_SIZE_T].append(int(T))
             self.metadata[MD_SIZE_Y].append(int(Y))
             self.metadata[MD_SIZE_X].append(int(X))
-        for S, C, Z, T, Y, X in self.get_plane_iterator():
+        for S, C, Z, T, Y, X, name in self.get_plane_iterator():
             self._plane_details.append(
-                f"Series {S:>2}: {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
+                f"Series {S:>2}{f' ({name})' if name else ''}"
+                f": {X:>5} x {Y:<5}, {C} Channels, {Z:>2} Planes, {T:>2} Timepoints")
         self._extracted = True
 
     @property
@@ -185,7 +197,8 @@ class ImageFile:
         # Returns an iterator which provides an entry for each series
         # in the file consisting of a tuple of the Series number, C, Z, T, Y and X dimension sizes.
         return zip(range(self.metadata[MD_SIZE_S]), self.metadata[MD_SIZE_C], self.metadata[MD_SIZE_Z],
-                   self.metadata[MD_SIZE_T], self.metadata[MD_SIZE_Y], self.metadata[MD_SIZE_X])
+                   self.metadata[MD_SIZE_T], self.metadata[MD_SIZE_Y], self.metadata[MD_SIZE_X],
+                   self.metadata[MD_SERIES_NAME])
 
     @property
     def plane_details_text(self):
@@ -210,5 +223,5 @@ class ImageFile:
 
     def clear_metadata(self):
         keep = (COL_PATH, COL_URL, COL_SERIES, COL_INDEX, MD_SIZE_S,
-                MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X)
+                MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, MD_SERIES_NAME)
         self._metadata_dict = {k: self._metadata_dict[k] for k in keep}

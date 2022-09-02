@@ -313,7 +313,7 @@ pass the current filter.
             return True
         file_list = self.filter_file_list(workspace)
         if self.want_split.value:
-            logging.info("Metadata extraction will be performed now")
+            logging.debug("Metadata extraction will be performed now if needed")
             if self.extract_metadata.callback is not None:
                 # If GUI is present perform extraction and refresh the file list GUI
                 self.extract_metadata.callback()
@@ -326,14 +326,15 @@ pass the current filter.
         planes = []
         for image_file in file_list:
             if self.want_split:
-                for seriesIdx, sizeC, sizeZ, sizeT, sizeY, sizeX in image_file.get_plane_iterator():
+                for seriesIdx, sizeC, sizeZ, sizeT, sizeY, sizeX, seriesName in image_file.get_plane_iterator():
                     to_split = [range(sizeC) if self.split_C.value else [None],
                                 range(sizeZ) if self.split_Z.value else [None],
                                 range(sizeT) if self.split_T.value else [None]]
                     is_color = sizeC > 1 and not self.split_C.value
 
                     for C, Z, T in itertools.product(*to_split):
-                        planes.append(ImagePlane(image_file, series=seriesIdx, channel=C, z=Z, t=T, color=is_color))
+                        planes.append(ImagePlane(image_file, series=seriesIdx, channel=C, z=Z, t=T, color=is_color,
+                                                 name=seriesName))
             else:
                 planes.append(ImagePlane(image_file))
         workspace.pipeline.set_image_plane_list(planes)

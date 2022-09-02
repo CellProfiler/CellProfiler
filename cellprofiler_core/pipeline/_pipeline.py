@@ -1884,7 +1884,7 @@ class Pipeline:
             )
             self.__undo_stack.append((undo, message))
 
-    def add_urls(self, urls, add_undo=True, metadata=None):
+    def add_urls(self, urls, add_undo=True, metadata=None, series_names=None):
         """Add URLs to the file list
 
         urls - a collection of URLs
@@ -1892,7 +1892,11 @@ class Pipeline:
         """
         real_list = []
         if metadata is not None:
-            urls, metadata = list(zip(*sorted(zip(urls, metadata), key=lambda x: x[0])))
+            if series_names is None:
+                # series_names should always be supplied with metadata, but just in case...
+                series_names = [''] * len(urls)
+            assert len(metadata) == len(series_names), "Metadata and series name arrays differ in length"
+            urls, metadata, series_names = list(zip(*sorted(zip(urls, metadata, series_names), key=lambda x: x[0])))
         else:
             urls = sorted(urls)
         start = 0
@@ -1901,8 +1905,7 @@ class Pipeline:
         for i, url in enumerate(urls):
             file_object = ImageFile(url)
             if metadata is not None:
-                meta = metadata[i]
-                file_object.load_plane_metadata(meta)
+                file_object.load_plane_metadata(metadata[i], names=series_names[i])
             if i % 100 == 0:
                 path = urllib.parse.urlparse(url).path
                 if "/" in path:
@@ -1974,7 +1977,7 @@ class Pipeline:
         if self.__file_list_generation == file_list.generation:
             return
         try:
-            urls, metadata = file_list.get_filelist(want_metadata=True)
+            urls, metadata, series_names = file_list.get_filelist(want_metadata=True)
         except Exception as instance:
             logging.error("Failed to get file list from workspace", exc_info=True)
             x = IPDLoadException("Failed to get file list from workspace")
@@ -1984,7 +1987,7 @@ class Pipeline:
         if urls:
             self.start_undoable_action()
             self.clear_urls()
-            self.add_urls(urls, metadata=metadata)
+            self.add_urls(urls, metadata=metadata, series_names=series_names)
             self.stop_undoable_action(name="Load file list")
             self.__image_plane_details_generation = file_list.generation
         self.__filtered_image_plane_details_images_settings = tuple()

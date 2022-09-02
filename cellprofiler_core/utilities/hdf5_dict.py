@@ -34,7 +34,10 @@ DATA = "data"
 
 FILES = ":filelist:"
 METADATA = ":metadata:"
+SERIESNAMES = ":seriesnames:"
 ROOT = ":root:"
+
+NAME_SEPARATOR = "|"
 
 # HDF5 can't store subsequent slashes in URIs, so S3:// becomes S3:/.
 # These expressions fix those when we pull URIs out of the file list.
@@ -962,6 +965,7 @@ class HDF5FileList(object):
               sub directory name
                    :filelist:
                    :metadata:
+                   :seriesnames:
 
     File names are stored as an array of strings per directory, sorted in
     alphabetical order. H5Py automatically creates subgroups representing
@@ -974,6 +978,11 @@ class HDF5FileList(object):
     is represented with 5 integers describing the dimensions in
     C,Z,T,Y and X. Multiple series are stored subsequently. Therefore a
     metadata array of 10 integers represents 2 series (CZTYX, CZTYX).
+
+    The seriesnames array stores human-readable names assigned to each
+    series, separated by '|'. This must be a string. Readers supplying
+    the SeriesName parameter is optional but provides a means for users
+    to understand the contents of files with large numbers of series.
 
     In previous releases, directory names needed to be escape-encoded to
     allow special characters. In H5Py 3 that no longer seems to be
@@ -1046,6 +1055,7 @@ class HDF5FileList(object):
         # Buffers for fetching file lists out of the container
         self._temp = []
         self._meta = []
+        self._names = []
 
     def get_generation(self):
         """The generation # of this file list
@@ -1135,6 +1145,7 @@ class HDF5FileList(object):
         dt = string_dtype(encoding='utf-8')
         dtm = vlen_dtype(int)
         blank_metadata = numpy.full(5, -1, dtype=int)
+        blank_names = ""
         parent = self.get_filelist_group()
         storage_map = collections.defaultdict(list)
         for url in urls:
@@ -1152,13 +1163,16 @@ class HDF5FileList(object):
                 if FILES in path_group:
                     dataset = path_group[FILES]
                     metadataset = path_group[METADATA]
+                    seriesnameset = path_group[SERIESNAMES]
                     existing_files = set(dataset.asstr()[:])
                     filenames = sorted(list(set(filenames) - existing_files))
                     existing = dataset.asstr()[:]
                     existing_meta = metadataset[:]
+                    existing_names = seriesnameset.asstr()[:]
                     new_size = (len(existing) + len(filenames),)
                     dataset.resize(new_size)
                     metadataset.resize(new_size)
+                    seriesnameset.resize(new_size)
                     insertion_indexes = numpy.searchsorted(existing, filenames)
                     dataset[:] = numpy.insert(existing, insertion_indexes, filenames)
                     # H5Py creates an array of numpy arrays for metadata, but numpy doesn't like this.
@@ -1169,6 +1183,8 @@ class HDF5FileList(object):
                     inserted = numpy.insert(existing_meta, insertion_indexes, marker).tolist()
                     inserted = [x if isinstance(x, numpy.ndarray) else blank_metadata for x in inserted]
                     metadataset[:] = numpy.array(inserted, dtype=numpy.object)
+                    # Now we insert the series name fields.
+                    seriesnameset[:] = numpy.insert(existing_names, insertion_indexes, blank_names)
                 else:
                     path_group.create_dataset(FILES,
                                               data=filenames,
@@ -1187,12 +1203,20 @@ class HDF5FileList(object):
                                                    chunks=True,
                                                    maxshape=(None,)
                                                    )
+                    names = path_group.create_dataset(SERIESNAMES,
+                                                   compression="gzip",
+                                                   shuffle=True,
+                                                   shape=(len(filenames)),
+                                                   dtype=dt,
+                                                   chunks=True,
+                                                   maxshape=(None, )
+                                                   )
                     md[:] = numpy.array([blank_metadata] * len(filenames),
                                         dtype=numpy.object)
             self.hdf5_file.flush()
         self.notify()
 
-    def add_metadata(self, url, data_array):
+    def add_metadata(self, url, data_array, name_array=None):
         # Add a metadata array for a file.
         # Should be a 1D numpy array with 5
         # values per series stored sequentially.
@@ -1203,6 +1227,10 @@ class HDF5FileList(object):
         path_group_files = path_group[FILES].asstr()[:]
         insertion_index = numpy.searchsorted(path_group_files, filename)
         path_group[METADATA][insertion_index] = data_array
+        if name_array is None:
+            name_array = [""] * (len(data_array) // 5)
+        name_data = NAME_SEPARATOR.join(name_array)
+        path_group[SERIESNAMES][insertion_index] = name_data
 
     def get_metadata(self, url):
         parent = self.get_filelist_group()
@@ -1213,7 +1241,7 @@ class HDF5FileList(object):
         if path_group_files[data_index] != filename:
             LOGGER.warning(f"Requested metadata for non-existent file {filename}")
             return None
-        return path_group[METADATA][data_index]
+        return path_group[METADATA][data_index], path_group[SERIESNAMES].asstr()[data_index].split(NAME_SEPARATOR)
 
     def clear_filelist(self):
         self.__generation = uuid.uuid4()
@@ -1246,21 +1274,26 @@ class HDF5FileList(object):
                 if FILES in path_group:
                     dataset = path_group[FILES]
                     metadataset = path_group[METADATA]
+                    seriesnameset = path_group[SERIESNAMES]
                     data_array = dataset.asstr()[:]
                     indices_to_delete = numpy.argwhere(numpy.isin(data_array, filenames))
                     data_array = numpy.delete(data_array, indices_to_delete)
                     metadata_array = numpy.delete(metadataset[:], indices_to_delete)
+                    names_array = numpy.delete(seriesnameset[:], indices_to_delete)
                     new_len = len(data_array)
                     if new_len > 0:
                         dataset.resize((new_len,))
                         dataset[:] = data_array
                         metadataset.resize((new_len,))
                         metadataset[:] = metadata_array.tolist()
+                        seriesnameset.resize((new_len,))
+                        seriesnameset[:] = names_array
                     else:
                         # Delete empty dataset
                         upper_level = dataset.parent
                         del parent[dataset.name]
                         del upper_level[METADATA]
+                        del upper_level[SERIESNAMES]
                         # Recursively move upwards and delete empty groups
                         while upper_level != parent:
                             data_exists = upper_level.visititems(self.scan_for_datasets)
@@ -1296,6 +1329,7 @@ class HDF5FileList(object):
         head, _ = os.path.split(name)
         if isinstance(node, h5py.Dataset) and check_string_dtype(node.dtype):
             meta_node = node.parent[METADATA]
+            names_node = node.parent[SERIESNAMES]
             if head == ROOT:
                 self._temp += node.asstr()[:].tolist()
             else:
@@ -1305,11 +1339,13 @@ class HDF5FileList(object):
                     head = URL_SUB.sub(URL_REPLACE, head)
                 self._temp += [f"{head}/{filename}" for filename in node.asstr()[:]]
             self._meta += meta_node[:].tolist()
+            self._names += names_node.asstr()[:].tolist()
 
     def get_filelist(self, root_url=None, want_metadata=False):
         group = self.get_filelist_group()
         self._temp = result = []
         self._meta = meta = []
+        self._names = names = []
         if group.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
             LOGGER.error("Project file is from an older version of "
                          "CellProfiler, cannot load file list")
@@ -1334,10 +1370,12 @@ class HDF5FileList(object):
                 # Rebuild the full path if we started at a lower group.
                 result = [root_url + path for path in self._temp]
             meta = self._meta
+            names = [n.split(NAME_SEPARATOR) for n in self._names]
         self._temp = []
         self._meta = []
+        self._names = []
         if want_metadata:
-            return result, meta
+            return result, meta, names
         return result
 
 

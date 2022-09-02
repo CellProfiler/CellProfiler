@@ -40,7 +40,7 @@ class ObjectsImage(URLImage):
         properties = {}
         if self.index is None:
             reader = self.get_reader()
-            meta = reader.get_series_dimensions()
+            meta = reader.get_series_metadata()
             series = self.series
             if self.series is None:
                 series = 0

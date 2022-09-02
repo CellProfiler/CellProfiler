@@ -120,7 +120,7 @@ class Reader(ABC):
         pass
 
     @abstractmethod
-    def get_series_dimensions(self):
+    def get_series_metadata(self):
         """Should return a dictionary with the following keys:
         Key names are in cellprofiler_core.constants.image
         MD_SIZE_S - int reflecting the number of series
@@ -129,5 +129,7 @@ class Reader(ABC):
         MD_SIZE_Z - list of Z dimension sizes, one element per series.
         MD_SIZE_C - list of C dimension sizes, one element per series.
         MD_SIZE_T - list of T dimension sizes, one element per series.
+        MD_SERIES_NAME - [Optional] list of human-readable series names, one string per series.
+                                    Must not contain '|' as this is used as a separator for storage.
         """
         pass

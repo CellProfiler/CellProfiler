@@ -12,9 +12,8 @@ SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif'}
 
 
 class ImageIOReader(Reader):
-    """ Derive from this abstract Reader class to create your own image reader in Python
-
-    You need to implement the methods below in the derived class.
+    """
+    Reads nasic image formats using ImageIO.
     """
 
     reader_name = "ImageIO"
@@ -161,6 +160,7 @@ class ImageIOReader(Reader):
         MD_SIZE_Z - list of Z dimension sizes, one element per series.
         MD_SIZE_C - list of C dimension sizes, one element per series.
         MD_SIZE_T - list of T dimension sizes, one element per series.
+        MD_SERIES_NAME - list of series names, one element per series.
         """
         meta_dict = collections.defaultdict(list)
         reader = self.get_reader()

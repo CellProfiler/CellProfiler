@@ -10,13 +10,13 @@ from collections import Counter
 import numpy
 import skimage.morphology
 
-from ..constants.image import C_FRAME, CT_COLOR, CT_GRAYSCALE, CT_FUNCTION, CT_MASK, CT_OBJECTS
+from ..constants.image import C_FRAME, CT_COLOR, CT_GRAYSCALE, CT_FUNCTION, CT_MASK, CT_OBJECTS, C_SERIES_NAME
 from ..constants.image import C_HEIGHT
 from ..constants.image import C_MD5_DIGEST
 from ..constants.image import C_SCALING
 from ..constants.image import C_SERIES
 from ..constants.image import C_WIDTH
-from ..constants.measurement import COLTYPE_FLOAT, C_OBJECTS_Z, C_OBJECTS_T, C_Z, C_T
+from ..constants.measurement import COLTYPE_FLOAT, C_OBJECTS_Z, C_OBJECTS_T, C_Z, C_T, C_OBJECTS_SERIES_NAME
 from ..constants.measurement import FTR_CENTER_Z
 from ..constants.measurement import M_LOCATION_CENTER_Z
 from ..constants.measurement import COLTYPE_INTEGER
@@ -1090,6 +1090,7 @@ requests an object selection.
             path_names = []
             file_names = []
             series = []
+            series_names = []
             frames = []
             channels = []
             z_planes = []
@@ -1102,6 +1103,7 @@ requests an object selection.
                 path_names.append(plane.file.dirname)
                 file_names.append(plane.file.filename)
                 series.append(plane.series)
+                series_names.append(plane.series_name)
                 frames.append(plane.index)
                 channels.append(plane.channel)
                 z_planes.append(plane.z)
@@ -1111,6 +1113,7 @@ requests an object selection.
                     (f"{path_name_category}_{channel_name}", path_names),
                     (f"{file_name_category}_{channel_name}", file_names),
                     (f"{series_category}_{channel_name}", series),
+                    (f"{series_name_category}_{channel_name}", series_names),
                     (f"{frame_category}_{channel_name}", frames),
                     (f"{channel_category}_{channel_name}", channels),
                     (f"{z_category}_{channel_name}", z_planes),
@@ -1708,6 +1711,7 @@ requests an object selection.
                     (C_PATH_NAME, COLTYPE_VARCHAR_PATH_NAME,),
                     (C_URL, COLTYPE_VARCHAR_PATH_NAME,),
                     (C_MD5_DIGEST, COLTYPE_VARCHAR_FORMAT % 32,),
+                    (C_SERIES_NAME, COLTYPE_VARCHAR,),
                     (C_SCALING, COLTYPE_FLOAT,),
                     (C_WIDTH, COLTYPE_INTEGER,),
                     (C_HEIGHT, COLTYPE_INTEGER,),
@@ -1724,6 +1728,7 @@ requests an object selection.
                     (C_OBJECTS_URL, COLTYPE_VARCHAR_PATH_NAME,),
                     (C_COUNT, COLTYPE_INTEGER,),
                     (C_MD5_DIGEST, COLTYPE_VARCHAR_FORMAT % 32,),
+                    (C_OBJECTS_SERIES_NAME, COLTYPE_VARCHAR,),
                     (C_WIDTH, COLTYPE_INTEGER,),
                     (C_HEIGHT, COLTYPE_INTEGER,),
                     (C_OBJECTS_SERIES, COLTYPE_INTEGER,),
@@ -1753,6 +1758,7 @@ requests an object selection.
                 result += [
                     C_OBJECTS_FILE_NAME,
                     C_OBJECTS_PATH_NAME,
+                    C_OBJECTS_SERIES_NAME,
                     C_OBJECTS_URL,
                     C_COUNT,
                 ]
@@ -1762,6 +1768,7 @@ requests an object selection.
                 C_HEIGHT,
                 C_WIDTH,
                 C_SERIES,
+                C_SERIES_NAME,
                 C_FRAME,
             ]
         elif object_name in self.get_object_names():
@@ -1777,9 +1784,7 @@ requests an object selection.
         if object_name == "Image":
             if category in (C_FILE_NAME, C_PATH_NAME, C_URL,):
                 return image_names
-            elif category in (C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL,):
-                return object_names
-            elif category == C_COUNT:
+            elif category in (C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL, C_OBJECTS_SERIES_NAME, C_COUNT):
                 return object_names
             elif category in (
                 C_MD5_DIGEST,
@@ -1787,6 +1792,7 @@ requests an object selection.
                 C_HEIGHT,
                 C_WIDTH,
                 C_SERIES,
+                C_SERIES_NAME,
                 C_FRAME,
             ):
                 return list(image_names) + list(object_names)

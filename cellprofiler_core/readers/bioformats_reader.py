@@ -169,6 +169,7 @@ class BioformatsReader(Reader):
         MD_SIZE_Z - list of Z dimension sizes, one element per series.
         MD_SIZE_C - list of C dimension sizes, one element per series.
         MD_SIZE_T - list of T dimension sizes, one element per series.
+        MD_SERIES_NAME - list of series names, one element per series.
         """
         meta_dict = collections.defaultdict(list)
         reader = self.get_reader().rdr

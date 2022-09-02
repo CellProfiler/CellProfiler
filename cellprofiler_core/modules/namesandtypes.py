@@ -10,13 +10,14 @@ from collections import Counter
 import numpy
 import skimage.morphology
 
-from ..constants.image import C_FRAME, CT_COLOR, CT_GRAYSCALE, CT_FUNCTION, CT_MASK, CT_OBJECTS, C_SERIES_NAME
+from ..constants.image import C_FRAME, CT_COLOR, CT_GRAYSCALE, CT_FUNCTION, CT_MASK, CT_OBJECTS
 from ..constants.image import C_HEIGHT
 from ..constants.image import C_MD5_DIGEST
 from ..constants.image import C_SCALING
 from ..constants.image import C_SERIES
 from ..constants.image import C_WIDTH
-from ..constants.measurement import COLTYPE_FLOAT, C_OBJECTS_Z, C_OBJECTS_T, C_Z, C_T, C_OBJECTS_SERIES_NAME
+from ..constants.measurement import COLTYPE_FLOAT, C_OBJECTS_Z, C_OBJECTS_T, C_Z, C_T, C_OBJECTS_SERIES_NAME, \
+    C_SERIES_NAME
 from ..constants.measurement import FTR_CENTER_Z
 from ..constants.measurement import M_LOCATION_CENTER_Z
 from ..constants.measurement import COLTYPE_INTEGER

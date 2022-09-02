@@ -2,6 +2,7 @@
 import itertools
 import logging
 
+from cellprofiler_core.constants.measurement import C_SERIES_NAME, C_CHANNEL, C_SERIES, C_Z, C_T
 from cellprofiler_core.pipeline import ImagePlane
 from cellprofiler_core.constants.module import FILTER_RULES_BUTTONS_HELP
 from cellprofiler_core.constants.modules.images import FILTER_CHOICE_ALL
@@ -342,6 +343,19 @@ pass the current filter.
 
     def run(self, workspace):
         pass
+
+    def get_metadata_keys(self):
+        """Return a collection of metadata keys to be associated with files"""
+        if not self.want_split.value:
+            return []
+        result = [C_SERIES, C_SERIES_NAME]
+        if self.split_C.value:
+            result.append(C_CHANNEL)
+        if self.split_T.value:
+            result.append(C_T)
+        if self.split_Z.value:
+            result.append(C_Z)
+        return result
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Upgrade pipeline settings from a previous revision

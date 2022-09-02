@@ -2126,13 +2126,16 @@ class Pipeline:
 
         Returns a dictionary of metadata key to measurements COLTYPE
         """
-        modules = [
-            module for module in self.modules() if module.module_name == "Metadata"
-        ]
-        if len(modules) == 0:
-            return {}
-        module = modules[0]
-        return module.get_data_type(module.get_metadata_keys())
+        available_keys = []
+        modules = self.modules()
+        if modules[0].module_name == "Images":
+            available_keys += modules[0].get_metadata_keys()
+        if modules[1].module_name == "Metadata":
+            available_keys += modules[1].get_metadata_keys()
+            available_keys = list(set(available_keys))
+            return modules[1].get_data_type(available_keys)
+        # Probably using LoadData or someone did a bad thing.
+        return {}
 
     def use_case_insensitive_metadata_matching(self, key):
         """Return TRUE if metadata should be matched without regard to case"""

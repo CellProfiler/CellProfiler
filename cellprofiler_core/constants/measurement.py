@@ -44,7 +44,9 @@ R_SECOND_OBJECT_NUMBER = OBJECT_NUMBER + "_" + "Second"
 C_FILE_NAME = "FileName"
 C_PATH_NAME = "PathName"
 C_URL = "URL"
+C_INDEX = "Index"
 C_SERIES = "Series"
+C_SERIES_NAME = "SeriesName"
 C_FRAME = "Frame"
 C_FRAMES = "Frames"
 C_CHANNEL = "Channel"
@@ -70,8 +72,8 @@ C_CHANNEL_TYPE = "ChannelType"
 C_FILE_LOCATION = "File_Location"
 M_METADATA_TAGS = "_".join((C_METADATA, "Tags"))
 M_GROUPING_TAGS = "_".join((C_METADATA, "GroupingTags"))
-RESERVED_METADATA_KEYS = (C_URL, C_SERIES, C_FRAME, C_FILE_LOCATION, C_COLOR_FORMAT,
-                          C_CHANNEL_NAME, C_CHANNEL, C_C, C_Z, C_T, C_TILE)
+RESERVED_METADATA_KEYS = (C_URL, C_SERIES, C_SERIES_NAME, C_FRAME, C_FILE_LOCATION,
+                          C_COLOR_FORMAT, C_CHANNEL_NAME, C_CHANNEL, C_C, C_Z, C_T, C_TILE)
 M_PATH_MAPPINGS = "Path_Mappings"
 K_CASE_SENSITIVE = "CaseSensitive"
 K_PATH_MAPPINGS = "PathMappings"

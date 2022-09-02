@@ -114,7 +114,6 @@ M_BOTH = "Both"
 M_Z = "Z"
 M_T = "T"
 C_SERIES = "Series"
-C_SERIES_NAME = "SeriesName"
 C_FRAME = "Frame"
 P_IMAGES = "LoadImagesImageProvider"
 V_IMAGES = 1

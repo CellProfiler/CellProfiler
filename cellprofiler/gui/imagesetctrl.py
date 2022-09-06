@@ -33,8 +33,8 @@ from cellprofiler_core.utilities.image import url_to_modpath
 from cellprofiler_core.utilities.legacy import cmp
 
 import cellprofiler.gui
-import cellprofiler.gui.cornerbuttonmixin
 from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION
+from cellprofiler.gui.cornerlabelrenderer import CornerLabelRenderer
 from cellprofiler.icons import get_builtin_image
 
 """Table column displays metadata"""
@@ -412,39 +412,6 @@ class ImageSetCache:
         # Take 1/2 of the max size
         self.cache = dict(cache_kv[-int(self.max_size / 2) :])
 
-class CornerLabelRenderer(wxglr.GridLabelRenderer):
-    def __init__(self, grid, on_click, tooltip, label):
-        self._label = label
-        self._corner = grid.GetGridCornerLabelWindow()
-
-        bmp = wx.Bitmap(get_builtin_image("IMG_UPDATE"))
-        # mask = wx.Mask(bmp, wx.BLUE)
-        # bmp.SetMask(mask)
-
-        self._bmp_btn = wx.lib.buttons.GenBitmapTextButton(
-            self._corner, bitmap=bmp, label=label
-        )
-        self._bmp_btn.SetToolTip(tooltip)
-        self._corner.Bind(wx.EVT_BUTTON, on_click)
-
-    def Draw(self, grid, dc, rect, rc):
-        top = rect.top
-        bottom = rect.bottom
-        left = rect.left
-        right = rect.right
-        dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW)))
-        # dc.SetPen(wx.RED_PEN)
-        # dc.DrawLine(right, top, right, bottom)
-        # dc.DrawLine(left, top, left, bottom)
-        # dc.DrawLine(left, bottom, right, bottom)
-        # dc.DrawLine(left, top, right, top)
-        # dc.SetPen(wx.RED_PEN)
-        # if top == 0:
-        #     dc.DrawLine(left + 1, top, left + 1, bottom)
-        #     dc.DrawLine(left + 1, top, right+10, top)
-        # else:
-        #     dc.DrawLine(left + 1, top + 1, left + 1, bottom)
-        #     dc.DrawLine(left + 1, top + 1, right - 1, top + 1)
 
 class ImageSetCtrl(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
     def __init__(self, workspace, *args, **kwargs):
@@ -469,9 +436,6 @@ class ImageSetCtrl(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
             display_mode = DISPLAY_MODE_ALTERNATE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
-        # cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(
-        #     self, self.on_update, tooltip="Update and display the image set"
-        # )
         wxglr.GridWithLabelRenderersMixin.__init__(self)
         self.SetCornerLabelRenderer(CornerLabelRenderer(self, self.on_update, tooltip="Update and display the image set", label="Update"))
 

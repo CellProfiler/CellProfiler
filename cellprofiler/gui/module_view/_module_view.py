@@ -10,6 +10,7 @@ import wx.grid
 import wx.lib.colourselect
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
+import wx.lib.mixins.gridlabelrenderer as wxglr
 from cellprofiler_core.pipeline import ModuleEdited
 from cellprofiler_core.pipeline import ModuleRemoved
 from cellprofiler_core.pipeline import PipelineCleared
@@ -72,7 +73,7 @@ from ._setting_edited_event import SettingEditedEvent
 from ._table_controller import TableController
 from ._validation_request_controller import ValidationRequestController
 from .. import _tree_checkbox_dialog
-from .. import cornerbuttonmixin
+from ..cornerlabelrenderer import CornerLabelRenderer
 from .. import metadatactrl
 from .. import namesubscriber
 from .. import regexp_editor
@@ -2029,7 +2030,7 @@ class ModuleView:
         control.Bind(wx.EVT_BUTTON, callback, control)
         return control
 
-    class CornerButtonGrid(wx.grid.Grid, cornerbuttonmixin.CornerButtonMixin):
+    class CornerButtonGrid(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
         def __init__(self, *args, **kwargs):
             kwargs = kwargs.copy()
             if "fn_clicked" in kwargs:
@@ -2039,11 +2040,10 @@ class ModuleView:
             label = kwargs.pop("label", "Update")
             tooltip = kwargs.pop("tooltip", "Update this table")
             wx.grid.Grid.__init__(self, *args, **kwargs)
+            wxglr.GridWithLabelRenderersMixin.__init__(self)
+            self.SetCornerLabelRenderer(CornerLabelRenderer(self, fn_clicked, tooltip=tooltip, label=label))
             self.sort_reverse = False
             self.Bind(wx.grid.EVT_GRID_COL_SORT, self.sort_cols)
-            cornerbuttonmixin.CornerButtonMixin.__init__(
-                self, fn_clicked, label, tooltip
-            )
 
         def sort_cols(self, event):
             if len(self.GetSelectedCols()) != 1:

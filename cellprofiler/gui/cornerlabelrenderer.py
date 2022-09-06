@@ -3,8 +3,7 @@ import wx.lib.mixins.gridlabelrenderer as wxglr
 from cellprofiler.icons import get_builtin_image
 
 class CornerLabelRenderer(wxglr.GridDefaultCornerLabelRenderer):
-    def __init__(self, grid, on_click, tooltip, label):
-        self._label = label
+    def __init__(self, grid, fn_clicked, tooltip, label):
         self._corner = grid.GetGridCornerLabelWindow()
 
         bmp = wx.Bitmap(get_builtin_image("IMG_UPDATE"))
@@ -12,10 +11,36 @@ class CornerLabelRenderer(wxglr.GridDefaultCornerLabelRenderer):
         # bmp.SetMask(mask)
 
         self._bmp_btn = wx.lib.buttons.GenBitmapTextButton(
-            self._corner, bitmap=bmp, label=label, size=self._corner.GetSize()
+            self._corner, bitmap=bmp, size=self._corner.GetSize()
         )
-        self._bmp_btn.SetToolTip(tooltip)
-        self._corner.Bind(wx.EVT_BUTTON, on_click)
+        self.fn_clicked = fn_clicked
+        self.tooltip = tooltip
+        self.label = label
+
+    @property
+    def fn_clicked(self):
+        return self._fn_clicked
+
+    @fn_clicked.setter
+    def fn_clicked(self, func):
+        self._fn_clicked = func
+        self._corner.Bind(wx.EVT_BUTTON, self._fn_clicked)
+
+    @property
+    def tooltip(self):
+        return self._bmp_btn.GetToolTip()
+
+    @tooltip.setter
+    def tooltip(self, val):
+        self._bmp_btn.SetToolTip(val)
+
+    @property
+    def label(self):
+        self._bmp_btn.GetLabel()
+
+    @label.setter
+    def label(self, val):
+        self._bmp_btn.SetLabel(val)
 
     def Draw(self, grid, dc, rect, rc):
         top = rect.top

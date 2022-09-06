@@ -30,7 +30,7 @@ class TableController(wx.grid.GridTableBase):
         else:
             fn_clicked = self.v.corner_button["fn_clicked"]
 
-            def on_corner_button_clicked():
+            def on_corner_button_clicked(*args):
                 fn_clicked()
                 self.update_grid()
                 grid.ForceRefresh()

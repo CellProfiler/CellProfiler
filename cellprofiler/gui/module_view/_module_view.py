@@ -2041,9 +2041,34 @@ class ModuleView:
             tooltip = kwargs.pop("tooltip", "Update this table")
             wx.grid.Grid.__init__(self, *args, **kwargs)
             wxglr.GridWithLabelRenderersMixin.__init__(self)
-            self.SetCornerLabelRenderer(CornerLabelRenderer(self, fn_clicked, tooltip=tooltip, label=label))
+            self._corner_label_renderer = CornerLabelRenderer(self, fn_clicked, tooltip=tooltip, label=label)
+            self.SetCornerLabelRenderer(self._corner_label_renderer)
             self.sort_reverse = False
             self.Bind(wx.grid.EVT_GRID_COL_SORT, self.sort_cols)
+
+        @property
+        def fn_clicked(self):
+            return self._corner_label_renderer.fn_clicked
+
+        @fn_clicked.setter
+        def fn_clicked(self, value):
+            self._corner_label_renderer.fn_clicked = value
+
+        @property
+        def tooltip(self):
+            return self._corner_label_renderer.tooltip
+
+        @tooltip.setter
+        def tooltip(self, value):
+            self._corner_label_renderer.tooltip = value
+
+        @property
+        def label(self):
+            return self._corner_label_renderer.label
+
+        @label.setter
+        def label(self, value):
+            self._corner_label_renderer.label = value
 
         def sort_cols(self, event):
             if len(self.GetSelectedCols()) != 1:

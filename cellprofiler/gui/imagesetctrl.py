@@ -34,7 +34,7 @@ from cellprofiler_core.utilities.legacy import cmp
 
 import cellprofiler.gui
 from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION
-from cellprofiler.gui.cornerlabelrenderer import CornerLabelRenderer
+from cellprofiler.gui.gridrenderers import CornerLabelRenderer
 from cellprofiler.icons import get_builtin_image
 
 """Table column displays metadata"""

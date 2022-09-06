@@ -2,6 +2,36 @@ import wx
 import wx.lib.mixins.gridlabelrenderer as wxglr
 from cellprofiler.icons import get_builtin_image
 
+class GridLabelRenderer(wxglr.GridLabelRenderer):
+    def DrawBorder(self, grid, dc, rect):
+        """
+        Draw a standard border around the label, to give a simple 3D
+        effect like the stock wx.grid.Grid labels do.
+        """
+        top = rect.top
+        bottom = rect.bottom
+        left = rect.left
+        right = rect.right
+        dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW)))
+        dc.DrawLine(right, top, right, bottom)
+        dc.DrawLine(left, top, left, bottom)
+        dc.DrawLine(left, bottom, right, bottom)
+        dc.SetPen(wx.WHITE_PEN)
+        dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DHIGHLIGHT)))
+        if top == 0:
+            dc.DrawLine(left + 1, top, left + 1, bottom)
+            dc.DrawLine(left + 1, top, right, top)
+        else:
+            dc.DrawLine(left + 1, top + 1, left + 1, bottom)
+            dc.DrawLine(left + 1, top + 1, right - 1, top + 1)
+
+class RowLabelRenderer(wxglr.GridDefaultRowLabelRenderer, GridLabelRenderer):
+    def Draw(self, grid, dc, rect, row):
+        super().Draw(grid, dc, rect, row)
+class ColLabelRenderer(wxglr.GridDefaultColLabelRenderer, GridLabelRenderer):
+    def Draw(self, grid, dc, rect, row):
+        super().Draw(grid, dc, rect, row)
+
 class CornerLabelRenderer(wxglr.GridDefaultCornerLabelRenderer):
     def __init__(self, grid, fn_clicked, tooltip, label):
         self._corner = grid.GetGridCornerLabelWindow()
@@ -43,12 +73,12 @@ class CornerLabelRenderer(wxglr.GridDefaultCornerLabelRenderer):
         self._bmp_btn.SetLabel(val)
 
     def Draw(self, grid, dc, rect, rc):
-        top = rect.top
-        bottom = rect.bottom
-        left = rect.left
-        right = rect.right
-        dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW)))
-        dc.SetPen(wx.RED_PEN)
+        # top = rect.top
+        # bottom = rect.bottom
+        # left = rect.left
+        # right = rect.right
+        # dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW)))
+        # dc.SetPen(wx.RED_PEN)
         # dc.DrawLine(right, top, right, bottom)
         # dc.DrawLine(left, top, left, bottom)
         # dc.DrawLine(left, bottom, right, bottom)
@@ -60,3 +90,4 @@ class CornerLabelRenderer(wxglr.GridDefaultCornerLabelRenderer):
         # else:
         #     dc.DrawLine(left + 1, top + 1, left + 1, bottom)
         #     dc.DrawLine(left + 1, top + 1, right - 1, top + 1)
+        pass

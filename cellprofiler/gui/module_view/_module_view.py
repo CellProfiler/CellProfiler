@@ -73,7 +73,7 @@ from ._setting_edited_event import SettingEditedEvent
 from ._table_controller import TableController
 from ._validation_request_controller import ValidationRequestController
 from .. import _tree_checkbox_dialog
-from ..cornerlabelrenderer import CornerLabelRenderer
+from ..gridrenderers import RowLabelRenderer, ColLabelRenderer, CornerLabelRenderer
 from .. import metadatactrl
 from .. import namesubscriber
 from .. import regexp_editor
@@ -2029,7 +2029,6 @@ class ModuleView:
 
         control.Bind(wx.EVT_BUTTON, callback, control)
         return control
-
     class CornerButtonGrid(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
         def __init__(self, *args, **kwargs):
             kwargs = kwargs.copy()
@@ -2043,6 +2042,8 @@ class ModuleView:
             wxglr.GridWithLabelRenderersMixin.__init__(self)
             self._corner_label_renderer = CornerLabelRenderer(self, fn_clicked, tooltip=tooltip, label=label)
             self.SetCornerLabelRenderer(self._corner_label_renderer)
+            self.SetDefaultRowLabelRenderer(RowLabelRenderer())
+            self.SetDefaultColLabelRenderer(ColLabelRenderer())
             self.sort_reverse = False
             self.Bind(wx.grid.EVT_GRID_COL_SORT, self.sort_cols)
 

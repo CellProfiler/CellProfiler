@@ -990,7 +990,7 @@ not being applied, your choice on this setting may be the culprit.
                     continue
                 self.refresh_group_joiner(group)
 
-    def update_table(self):
+    def update_table(self, *args):
         self.run_extraction(self.filtered_file_list)
         columns = set(self.get_metadata_keys())
         columns.discard(COL_SERIES)

@@ -97,21 +97,15 @@ label numbers.""",
         dimensions = x.dimensions
         x_data = x.segmented
 
-        props = skimage.measure.regionprops(
-            x_data
-        )  # , properties=('label', 'centroid'))
-        y_data = numpy.zeros_like(x_data)
-        for region in props:
-            label = region.label
-            binary = x_data == label
-            eroded = cellprofiler.utilities.morphology.binary_erosion(
-                binary, self.structuring_element.value
-            )
-            y_data[eroded] = label
-            if self.preserve_midpoints.value:
-                if label not in y_data:
-                    midpoint = scipy.ndimage.morphology.distance_transform_edt(binary)
-                    y_data[midpoint == numpy.max(midpoint)] = label
+        contours = cellprofiler.utilities.morphology.morphological_gradient(x_data, self.structuring_element.value)
+        y_data = x_data * (contours == 0)
+
+        if self.preserve_midpoints.value:
+            missing_labels = numpy.setxor1d(x_data, y_data)
+            for label in missing_labels:
+                binary = x_data == label
+                midpoint = scipy.ndimage.morphology.distance_transform_edt(binary)
+                y_data[midpoint == numpy.max(midpoint)] = label
 
         if self.relabel_objects.value:
             y_data = skimage.morphology.label(y_data)

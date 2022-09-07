@@ -102,10 +102,13 @@ label numbers.""",
 
         if self.preserve_midpoints.value:
             missing_labels = numpy.setxor1d(x_data, y_data)
-            for label in missing_labels:
-                binary = x_data == label
-                midpoint = scipy.ndimage.morphology.distance_transform_edt(binary)
-                y_data[midpoint == numpy.max(midpoint)] = label
+            if self.structuring_element.value_text == "Disk,1":
+                y_data += x_data * numpy.isin(x_data, missing_labels)
+            else:
+                for label in missing_labels:
+                    binary = x_data == label
+                    midpoint = scipy.ndimage.morphology.distance_transform_edt(binary)
+                    y_data[midpoint == numpy.max(midpoint)] = label
 
         if self.relabel_objects.value:
             y_data = skimage.morphology.label(y_data)

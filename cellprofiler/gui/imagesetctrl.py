@@ -14,7 +14,7 @@ import wx.grid
 import wx.lib.mixins.gridlabelrenderer as wxglr
 from cellprofiler_core.constants.image import C_FRAME, CT_GRAYSCALE, CT_COLOR, CT_MASK, CT_OBJECTS, CT_FUNCTION
 from cellprofiler_core.constants.image import C_SERIES
-from cellprofiler_core.constants.measurement import C_FILE_NAME
+from cellprofiler_core.constants.measurement import C_FILE_NAME, C_CHANNEL, C_Z, C_T, C_SERIES_NAME
 from cellprofiler_core.constants.measurement import C_METADATA
 from cellprofiler_core.constants.measurement import C_OBJECTS_FILE_NAME
 from cellprofiler_core.constants.measurement import C_OBJECTS_PATH_NAME
@@ -262,9 +262,18 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                 and self.display_mode == DISPLAY_MODE_ALTERNATE
                 and value is not None
         ):
-            keys = ["Series", "Channel", "ZPlane", "Timepoint"]
+            # Check for and add a series name to the plane label
+            meas = f"{C_SERIES_NAME}_{column.channel}"
+            if self.measurements.has_measurements(
+                    IMAGE, meas, image_set_number=image_set):
+                res = self.measurements.get_measurement(
+                    IMAGE, meas, image_set_number=image_set)
+                if res:
+                    value += f" ({res})"
+            # Now check for and add CZT indexes
+            keys = [C_SERIES, C_CHANNEL, C_Z, C_T]
             for key in keys:
-                meas = f"{key}{column.channel}"
+                meas = f"{key}_{column.channel}"
                 if self.measurements.has_measurements(
                         IMAGE, meas, image_set_number=image_set):
                     res = self.measurements.get_measurement(
@@ -955,7 +964,7 @@ class ImageSetCtrl(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
             if col == wx.NOT_FOUND:
                 col = None
         bottom = self.GetGridWindow().GetVirtualSize()[1]
-        if y <= self.GetRowSize(0) / 2:
+        if not self.GetNumberRows() or y <= self.GetRowSize(0) / 2:
             row = 0
         elif y >= bottom - self.GetRowSize(self.GetNumberRows() - 1):
             row = self.GetNumberRows()

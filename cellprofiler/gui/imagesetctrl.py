@@ -34,7 +34,7 @@ from cellprofiler_core.utilities.legacy import cmp
 
 import cellprofiler.gui
 from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION
-from cellprofiler.gui.gridrenderers import CornerLabelRenderer
+import cellprofiler.gui.gridrenderers as cpglr
 from cellprofiler.icons import get_builtin_image
 
 """Table column displays metadata"""
@@ -437,7 +437,9 @@ class ImageSetCtrl(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
         wxglr.GridWithLabelRenderersMixin.__init__(self)
-        self.SetCornerLabelRenderer(CornerLabelRenderer(self, self.on_update, tooltip="Update and display the image set", label="Update"))
+        self.SetCornerLabelRenderer(cpglr.CornerLabelRenderer(
+            self, self.on_update, tooltip="Update and display the image set", label="Update"))
+        self.SetDefaultRowLabelRenderer(cpglr.RowLabelRenderer())
 
         gclw = self.GetGridColLabelWindow()
         self.table = ImageSetGridTable(workspace, display_mode)
@@ -1124,7 +1126,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
             if attr.HasBackgroundColour():
                 brush = wx.Brush(attr.GetBackgroundColour())
                 dc.SetBrush(brush)
-            if not dc.GetBrush().IsOk():
+            else:
                 brush = wx.Brush(grid.GetGridWindow().BackgroundColour)
                 dc.SetBrush(brush)
             dc.SetPen(wx.TRANSPARENT_PEN)
@@ -1145,7 +1147,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
             cellprofiler.gui.draw_item_selection_rect(
                 grid.GetGridWindow(), dc, rect, flags
             )
-            dc.SetBackgroundMode(wx.PENSTYLE_TRANSPARENT)
+            dc.SetBackgroundMode(wx.BRUSHSTYLE_TRANSPARENT)
             if attr.HasTextColour():
                 dc.SetTextForeground(attr.GetTextColour())
             else:
@@ -1215,7 +1217,7 @@ class EllipsisGridCellRenderer(wx.grid.GridCellRenderer):
         return wx.Size(width + 2 * self.padding, height)
 
 
-class ColLabelRenderer(wxglr.GridLabelRenderer):
+class ColLabelRenderer(cpglr.ColLabelRenderer):
     """Renders the appearance of a column label
 
     A column label has the label text, an icon button for setting the
@@ -1243,7 +1245,8 @@ class ColLabelRenderer(wxglr.GridLabelRenderer):
         try:
             mdc = wx.MemoryDC(bitmap)
             mdc.SetFont(window.Font)
-            mdc.SetBrush(wx.Brush(window.BackgroundColour))
+            mdc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
+            mdc.SetBackground(wx.Brush(window.BackgroundColour))
             mdc.Clear()
             b_rect = wx.Rect(0, 0, rect.width, rect.height)
             self.DrawBorder(grid, mdc, b_rect)

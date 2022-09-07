@@ -12,11 +12,12 @@ class GridLabelRenderer(wxglr.GridLabelRenderer):
         bottom = rect.bottom
         left = rect.left
         right = rect.right
+        old_pen = dc.GetPen()
         dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW)))
         dc.DrawLine(right, top, right, bottom)
         dc.DrawLine(left, top, left, bottom)
         dc.DrawLine(left, bottom, right, bottom)
-        dc.SetPen(wx.WHITE_PEN)
+        # dc.SetPen(wx.WHITE_PEN)
         dc.SetPen(wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DHIGHLIGHT)))
         if top == 0:
             dc.DrawLine(left + 1, top, left + 1, bottom)
@@ -24,6 +25,7 @@ class GridLabelRenderer(wxglr.GridLabelRenderer):
         else:
             dc.DrawLine(left + 1, top + 1, left + 1, bottom)
             dc.DrawLine(left + 1, top + 1, right - 1, top + 1)
+        dc.SetPen(old_pen)
 
 class RowLabelRenderer(wxglr.GridDefaultRowLabelRenderer, GridLabelRenderer):
     def Draw(self, grid, dc, rect, row):

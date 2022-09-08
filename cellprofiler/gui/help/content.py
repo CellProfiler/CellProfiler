@@ -3,6 +3,7 @@
 import os
 import os.path
 import re
+import base64
 
 import pkg_resources
 
@@ -40,6 +41,27 @@ def image_resource(filename):
     # Note: the HTML renderer requires to paths to use '/' so we replace
     # the windows default '\\' here
     return relpath.replace("\\", "/")
+
+# returns a base64 encoded dataURL of the image pointed to by filename
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
+def image_resource_dataUrl(filename):
+    ext = os.path.splitext(filename)[1][1:]
+    if ext in ["svg", "xml"]:
+        ext = "svg+xml"
+
+    # acceptable image MIME types:
+    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#image_types
+    if ext not in ["apng", "avif", "gif", "jpeg", "png", "svg+xml", "webp"]:
+        return None
+
+    media_type = f"image/{ext}"
+
+    with open(image_resource(filename), "rb") as img:
+        b64_string = base64.b64encode(img.read())
+
+    data_url = f"data:{media_type};base64,{b64_string.decode('utf-8')}"
+
+    return data_url
 
 
 MANUAL_URL = "http://cellprofiler-manual.s3.amazonaws.com/CellProfiler-{}/index.html".format(

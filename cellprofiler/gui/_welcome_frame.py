@@ -108,11 +108,13 @@ class WelcomeFrame(wx.Frame):
             return
         elif href.startswith("loadexample:"):
             self.__load_example_pipeline(href[12:])
+            return
         elif href.startswith("pref:"):
             self.__set_startup_blurb()
         elif href.startswith("http"):
             wx.LaunchDefaultBrowser(href)
-        event.Veto()
+            # prevent loading in screen
+            event.Veto()
 
     def __display_help(self, href):
         if href == "welcome":
@@ -128,32 +130,28 @@ class WelcomeFrame(wx.Frame):
                 html=template.render(
                     GO_BACK="""<p>Go <a href=help:gettingstarted>back</a> to the previous screen.</p>""",
                     GO_HOME="""<p>Go <a href=help:welcome>back</a> to the welcome screen.</p>""",
-                    MODULE_HELP_BUTTON=os.path.abspath(
+                    MODULE_HELP_BUTTON=image_resource_dataUrl(
                         cellprofiler.gui.help.content.MODULE_HELP_BUTTON
                     ),
-                    MODULE_ADD_BUTTON=os.path.abspath(
+                    MODULE_ADD_BUTTON=image_resource_dataUrl(
                         cellprofiler.gui.help.content.MODULE_ADD_BUTTON
                     ),
-                    ANALYZE_BUTTON=os.path.abspath(
+                    ANALYZE_BUTTON=image_resource_dataUrl(
                         cellprofiler.gui.help.content.ANALYZE_IMAGE_BUTTON
                     ),
-                    PAUSE_BUTTON=os.path.abspath(
+                    PAUSE_BUTTON=image_resource_dataUrl(
                         cellprofiler.gui.help.content.PAUSE_ANALYSIS_BUTTON
                     ),
-                    PAUSE_BUTTON_DIM=os.path.abspath(
+                    PAUSE_BUTTON_DIM=image_resource_dataUrl(
                         cellprofiler.gui.help.content.INACTIVE_PAUSE_BUTTON
                     ),
-                    STEP_BUTTON_DIM=os.path.abspath(
+                    STEP_BUTTON_DIM=image_resource_dataUrl(
                         cellprofiler.gui.help.content.INACTIVE_STEP_BUTTON
                     ),
-                    STOP_BUTTON=os.path.abspath(
+                    STOP_BUTTON=image_resource_dataUrl(
                         cellprofiler.gui.help.content.STOP_ANALYSIS_BUTTON
                     ),
-                    IMAGE_OBJECT_DATAFLOW=os.path.abspath(
-                        cellprofiler.gui.help.content.image_resource(
-                            "image_to_object_dataflow.png"
-                        )
-                    ),
+                    IMAGE_OBJECT_DATAFLOW=image_resource_dataUrl("image_to_object_dataflow.png"),
                 ),
                 baseUrl=html_path,
             )

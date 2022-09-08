@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<body style = "font-family: sans-serif; font-size: small;">
+<head>
+    <style>
+        body {
+            font-family: "sans-serif";
+            font-size: "small";
+        }
+        @media (prefers-color-scheme: dark) {
+            body {
+                color: #eee;
+                background: #121212;
+            }
+
+            body a {
+                color: #809fff;
+            }
+        }
+    </style>
+</head>
+<body>
 <h2 class="title">Selecting Images for Input</h2>
 <p>Any image analysis project using CellProfiler begins with providing the
 program with a set of image files to be analyzed. You can do this by

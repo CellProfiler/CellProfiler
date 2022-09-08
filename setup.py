@@ -88,7 +88,7 @@ setuptools.setup(
         "six",
         "tifffile<2022.4.22",
         "wxPython==4.2.0",
-        "attrdict~=2.0.0"
+
     ],
     license="BSD",
     name="CellProfiler",

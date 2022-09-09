@@ -102,18 +102,40 @@ def get_adaptive_threshold(
     threshold_correction_factor=1,
     assign_middle_to_foreground="foreground",
     global_limits=[0.7, 1.5],
+    log_transform=False,
+    volumetric=False,
     **kwargs,
 ):
+    if volumetric:
+        # Array to store threshold values
+        thresh_out = numpy.zeros(image.shape)
+        for z in range(image.shape[2]):
+            thresh_out[:, :, z] = get_adaptive_threshold(
+                image[:, :, z],
+                threshold_method,
+                window_size,
+                threshold_min,
+                threshold_max,
+                threshold_correction_factor,
+                assign_middle_to_foreground,
+                global_limits,
+                log_transform,
+                volumetric=False,  # Processing a single plane, so volumetric=False
+                **kwargs,
+            )
+        return thresh_out
 
+    if log_transform:
+        image, conversion_dict = centrosome.threshold.log_transform(image)
     bin_wanted = 0 if assign_middle_to_foreground == "foreground" else 1
     # Define the threshold method to be run in each adaptive window
     if threshold_method == "otsu":
         threshold_fn = skimage.filters.threshold_otsu
-    if threshold_method == "multiotsu":
+    elif threshold_method == "multiotsu":
         threshold_fn = skimage.filters.threshold_multiotsu
         # If nbins not set in kwargs, use default 128
         kwargs["nbins"] = kwargs["nbins"] if "nbins" in kwargs else 128
-    if threshold_method == "robust_background":
+    elif threshold_method == "robust_background":
         threshold_fn = get_threshold_robust_background
         kwargs["lower_outlier_fraction"] = (
             kwargs["lower_outlier_fraction"]
@@ -137,6 +159,13 @@ def get_adaptive_threshold(
         kwargs["number_of_deviations"] = (
             kwargs["number_of_deviations"] if "number_of_deviations" in kwargs else 2
         )
+    else:
+        try:
+            # This try:except needs to be improved. Currently does not pick up on
+            # functions that fail, such as skimage.filters.threshold_local
+            threshold_fn = threshold_method
+        except:
+            raise "Incompatible thresholding method"
 
     image_size = numpy.array(image.shape[:2], dtype=int)
     nblocks = image_size // window_size
@@ -227,15 +256,22 @@ def get_adaptive_threshold(
         assign_middle_to_foreground,
     )
 
+    if log_transform:
+        # Revert the log transformation
+        thresh_out = centrosome.threshold.inverse_log_transform(
+            thresh_out, conversion_dict
+        )
+        global_threshold = centrosome.threshold.inverse_log_transform(
+            global_threshold, conversion_dict
+        )
+
     # Apply threshold_correction
     thresh_out *= threshold_correction_factor
 
     t_min = max(threshold_min, global_threshold * global_limits[0])
     t_max = min(threshold_max, global_threshold * global_limits[1])
-    print("!!!", t_min, t_max)
     thresh_out[thresh_out < t_min] = t_min
     thresh_out[thresh_out > t_max] = t_max
-    print(thresh_out.min(), thresh_out.max())
     return thresh_out
 
 
@@ -246,8 +282,29 @@ def get_global_threshold(
     threshold_max=0,
     threshold_correction_factor=1,
     assign_middle_to_foreground="foreground",
+    log_transform=False,
+    volumetric=False,
     **kwargs,
 ):
+    if volumetric:
+        # Array to store threshold values
+        thresh_out = numpy.zeros(image.shape)
+        for z in range(image.shape[2]):
+            thresh_out[:, :, z] = get_global_threshold(
+                image[:, :, z],
+                threshold_method,
+                threshold_min,
+                threshold_max,
+                threshold_correction_factor,
+                assign_middle_to_foreground,
+                log_transform,
+                volumetric=False,  # Processing a single plane, so volumetric=False
+                **kwargs,
+            )
+        return thresh_out
+
+    if log_transform:
+        image, conversion_dict = centrosome.threshold.log_transform(image)
     # Shortcuts - Check if image array is empty or all pixels are the same value.
     if len(image) == 0:
         threshold = 0.0
@@ -261,21 +318,34 @@ def get_global_threshold(
         tol = max(numpy.min(numpy.diff(numpy.unique(image))) / 2, 0.5 / 65536)
         threshold = skimage.filters.threshold_li(image, tolerance=tol)
     elif threshold_method == "robust_background":
-        threshold = get_threshold_robust_background(image ** kwargs)
+        threshold = get_threshold_robust_background(image, **kwargs)
     elif threshold_method == "otsu":
         threshold = skimage.filters.threshold_otsu(image)
     elif threshold_method == "multiotsu":
         threshold = skimage.filters.threshold_multiotsu(image, nbins=128)
         threshold = threshold[bin_wanted]
     else:
-        raise ValueError("Invalid threshold settings")
+        try:
+            threshold = threshold_method(image)
+        except:
+            raise NotImplementedError(
+                f"Threshold method {threshold_method} not supported."
+            )
+
+    if log_transform:
+        threshold = centrosome.threshold.inverse_log_transform(
+            threshold, conversion_dict
+        )
+
     threshold *= threshold_correction_factor
     threshold = min(max(threshold, threshold_min), threshold_max)
     return threshold
 
 
-def apply_threshold(image, threshold, smoothing=1.3):
-    mask = numpy.full(image.shape, True)
+def apply_threshold(image, threshold, mask=None, smoothing=0):
+    if mask is None:
+        # Create a fake mask if one isn't provided
+        mask = numpy.full(image.shape, True)
     if smoothing == 0:
         return (image >= threshold) & mask, 0
     else:
@@ -291,101 +361,3 @@ def apply_threshold(image, threshold, smoothing=1.3):
         mask,
     )
     return (blurred_image >= threshold) & mask, sigma
-
-
-def get_threshold(
-    image,
-    mask=None,
-    threshold_operation="Minimum Cross-Entropy",
-    two_class_otsu="Two classes",
-    assign_middle_to_foreground="Foreground",
-    log_transform=False,
-    manual_threshold=0,
-    thresholding_measurement=None,
-    threshold_scope="Global",
-    threshold_correction_factor=1,
-    threshold_range_min=0,
-    threshold_range_max=1,
-    adaptive_window_size=50,
-    lower_outlier_fraction=0.05,
-    upper_outlier_fraction=0.05,
-    averaging_method="Mean",
-    variance_method="Standard deviation",
-    number_of_deviations=2,
-    volumetric=False,
-    automatic=False,
-):
-    """
-    Get the threshold for an image with the provided settings
-    """
-    threshold = Threshold(
-        threshold_operation,
-        two_class_otsu,
-        assign_middle_to_foreground,
-        log_transform,
-        manual_threshold,
-        thresholding_measurement,
-        threshold_scope,
-        threshold_correction_factor,
-        threshold_range_min,
-        threshold_range_max,
-        adaptive_window_size,
-        lower_outlier_fraction,
-        upper_outlier_fraction,
-        averaging_method,
-        variance_method,
-        number_of_deviations,
-        volumetric,
-    )
-    # No mask provided, create a dummy mask
-    if mask is None:
-        mask = numpy.full(image.shape, True)
-
-    need_transform = (
-        not automatic
-        and threshold_operation.casefold() in ("minimum cross-entropy", "otsu")
-        and log_transform
-    )
-
-    if need_transform:
-        image, conversion_dict = centrosome.threshold.log_transform(image)
-
-    if threshold_operation.casefold() == "manual":
-        return manual_threshold, manual_threshold, None
-
-    elif threshold_operation.casefold() == "measurement":
-        # Thresholds are stored as single element arrays.  Cast to float to extract the value.
-        orig_threshold = float(thresholding_measurement)
-
-        return threshold._correct_global_threshold(orig_threshold), orig_threshold, None
-
-    elif threshold_scope.casefold() == "global" or automatic:
-        th_guide = None
-        th_original = threshold.get_global_threshold(image, mask, automatic=automatic)
-
-    elif threshold_scope.casefold() == "adaptive":
-        th_guide = threshold.get_global_threshold(image, mask)
-        th_original = threshold.get_local_threshold(image, mask)
-    else:
-        raise ValueError("Invalid thresholding settings")
-
-    if need_transform:
-        if image.min() < 0 or image.max() > 1:
-            raise ValueError(
-                "For log transform, image pixel values must be between [0, 1]"
-            )
-        th_original = centrosome.threshold.inverse_log_transform(
-            th_original, conversion_dict
-        )
-        if th_guide is not None:
-            th_guide = centrosome.threshold.inverse_log_transform(
-                th_guide, conversion_dict
-            )
-
-    if threshold_scope.casefold() == "global" or automatic:
-        th_corrected = threshold._correct_global_threshold(th_original)
-    else:
-        th_guide = threshold._correct_global_threshold(th_guide)
-        th_corrected = threshold._correct_local_threshold(th_original, th_guide)
-
-    return th_corrected, th_original, th_guide

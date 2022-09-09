@@ -38,7 +38,7 @@ class WelcomeFrame(wx.Frame):
             (wx.html2.WebViewBackendWebKit, 'WebViewBackendWebKit'),
             (wx.html2.WebViewBackendDefault, 'WebViewBackendDefault'),
         ]
-        major, minor, _ = list(map(int, wx.__version__.split('.')))
+        major, minor = list(map(int, wx.__version__.split('.')[0:2]))
         if major >= 4 and minor >= 2:
             backends = [(wx.html2.WebViewBackendEdge, 'WebViewBackendEdge')] + backends
 

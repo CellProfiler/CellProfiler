@@ -127,15 +127,20 @@ def get_adaptive_threshold(
 
     if log_transform:
         image, conversion_dict = centrosome.threshold.log_transform(image)
-    bin_wanted = 0 if assign_middle_to_foreground == "foreground" else 1
+    bin_wanted = 0 if assign_middle_to_foreground.casefold() == "foreground" else 1
+
     # Define the threshold method to be run in each adaptive window
-    if threshold_method == "otsu":
+    if threshold_method.casefold() == "otsu":
         threshold_fn = skimage.filters.threshold_otsu
-    elif threshold_method == "multiotsu":
+    elif threshold_method.casefold() == "multiotsu":
         threshold_fn = skimage.filters.threshold_multiotsu
         # If nbins not set in kwargs, use default 128
         kwargs["nbins"] = kwargs["nbins"] if "nbins" in kwargs else 128
-    elif threshold_method == "robust_background":
+    elif threshold_method.casefold() == "minimum_cross_entropy":
+        tol = max(numpy.min(numpy.diff(numpy.unique(image))) / 2, 0.5 / 65536)
+        kwargs["tolerance"] = tol
+        threshold_fn = skimage.filters.threshold_li
+    elif threshold_method.casefold() == "robust_background":
         threshold_fn = get_threshold_robust_background
         kwargs["lower_outlier_fraction"] = (
             kwargs["lower_outlier_fraction"]
@@ -277,9 +282,9 @@ def get_adaptive_threshold(
 
 def get_global_threshold(
     image,
-    threshold_method,
+    threshold_method="otsu",
     threshold_min=0,
-    threshold_max=0,
+    threshold_max=1,
     threshold_correction_factor=1,
     assign_middle_to_foreground="foreground",
     log_transform=False,
@@ -312,16 +317,16 @@ def get_global_threshold(
     elif numpy.all(image == image[0]):
         threshold = image[0]
 
-    bin_wanted = 0 if assign_middle_to_foreground == "foreground" else 1
+    bin_wanted = 0 if assign_middle_to_foreground.casefold() == "foreground" else 1
 
-    if threshold_method in ("minimum_cross_entropy", "sauvola"):
+    if threshold_method.casefold() in ("minimum_cross_entropy", "sauvola"):
         tol = max(numpy.min(numpy.diff(numpy.unique(image))) / 2, 0.5 / 65536)
         threshold = skimage.filters.threshold_li(image, tolerance=tol)
-    elif threshold_method == "robust_background":
+    elif threshold_method.casefold() == "robust_background":
         threshold = get_threshold_robust_background(image, **kwargs)
-    elif threshold_method == "otsu":
+    elif threshold_method.casefold() == "otsu":
         threshold = skimage.filters.threshold_otsu(image)
-    elif threshold_method == "multiotsu":
+    elif threshold_method.casefold() == "multiotsu":
         threshold = skimage.filters.threshold_multiotsu(image, nbins=128)
         threshold = threshold[bin_wanted]
     else:
@@ -347,7 +352,7 @@ def apply_threshold(image, threshold, mask=None, smoothing=0):
         # Create a fake mask if one isn't provided
         mask = numpy.full(image.shape, True)
     if smoothing == 0:
-        return (image >= threshold) & mask, 0
+        return (image >= threshold) & mask
     else:
         # Convert from a scale into a sigma. What I've done here
         # is to structure the Gaussian so that 1/2 of the smoothed
@@ -360,4 +365,4 @@ def apply_threshold(image, threshold, mask=None, smoothing=0):
         lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0),
         mask,
     )
-    return (blurred_image >= threshold) & mask, sigma
+    return (blurred_image >= threshold) & mask

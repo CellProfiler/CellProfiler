@@ -3,7 +3,6 @@ import skimage.color
 import skimage.morphology
 import numpy
 import centrosome.threshold
-from cellprofiler.library.functions.library_utils import Threshold
 import scipy
 
 

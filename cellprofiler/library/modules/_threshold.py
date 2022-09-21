@@ -61,12 +61,6 @@ def threshold(
 # For example, if a user selects Otsu thresholding but there exists defaults for
 # variance_method, will this be passed as kwargs? Probably not
 
-    # Mask image
-    # This is an addition, as previously masks were only applied when smoothing
-    # That is, thresholds were calculated on image.pixel_data without a mask
-    if mask is not None:
-        image = numpy.where(mask, image, True)
-
     # Only pass robust_background kwargs when selected as the threshold_method
     if threshold_method.casefold() == "robust_background":
         kwargs = {

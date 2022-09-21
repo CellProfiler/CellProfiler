@@ -47,6 +47,7 @@ from cellprofiler_core.setting.text import Float, Integer
 
 from cellprofiler.modules import _help
 from cellprofiler.library.modules import threshold
+from cellprofiler.library.functions.image_processing import apply_threshold
 
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
@@ -784,9 +785,6 @@ staining.
             self.x_name.value, must_be_grayscale=True
         )
         dimensions = input_image.dimensions
-        # final_threshold, orig_threshold, guide_threshold = self.get_threshold(
-        #     input_image, workspace, automatic=False,
-        # )
 
         # Translate CellProfiler GUI variables to cellprofiler.library ones
         if self.threshold_scope == "Global":
@@ -799,38 +797,62 @@ staining.
                 threshold_method = "multiotsu"
             else:
                 threshold_method = self.local_operation.value
-        print("we are checking:", threshold_method)
+        # Make threshold method cellprofiler.library friendly   
+        threshold_method = self.convert_setting(threshold_method)
 
-        # Make threshold method cellprofiler.library friendly
-        rep_list = ((" ", "_"), ("-", "_"))
-        for replacement in rep_list:
-            threshold_method = threshold_method.replace(*replacement)
-        print(threshold_method)
-        # Apply mask to image data
-        image_data = input_image.pixel_data 
-        # Get threshold
-        final_threshold, orig_threshold, guide_threshold, binary_image = threshold(
-                image_data,
+        # Handle manual and measurement thresholds, which are not supported
+        # by cellprofiler.library
+        if self.threshold_operation == TM_MANUAL:
+            # Thresholds as class attribute for test access
+            self.final_threshold = self.manual_threshold.value 
+            self.orig_threshold = self.manual_threshold.value
+            self.guide_threshold = None 
+            binary_image = apply_threshold(
+                input_image.pixel_data,
+                threshold=self.final_threshold,
                 mask=input_image.mask,
-                threshold_scope=self.threshold_scope.value,
-                threshold_method=threshold_method,
-                assign_middle_to_foreground=self.assign_middle_to_foreground.value,
-                log_transform=self.log_transform.value,
-                threshold_correction_factor=self.threshold_correction_factor.value,
-                threshold_min=self.threshold_range.min,
-                threshold_max=self.threshold_range.max,
-                window_size=self.adaptive_window_size.value,
-                smoothing=self.threshold_smoothing_scale.value,
-                lower_outlier_fraction=self.lower_outlier_fraction.value,
-                upper_outlier_fraction=self.upper_outlier_fraction.value,
-                averaging_method=self.averaging_method.value,
-                variance_method=self.variance_method.value,
-                number_of_deviations=self.number_of_deviations.value,
-                volumetric=input_image.volumetric,  
-        )
+                smoothing=self.threshold_smoothing_scale
+            )
+        elif self.threshold_operation == TM_MEASUREMENT:
+            self.orig_threshold = float(
+                workspace.measurements.get_current_image_measurement(
+                    self.thresholding_measurement.value
+                )
+            )
+            self.final_threshold = self.orig_threshold
+            self.final_threshold *= self.threshold_correction_factor.value
+            self.final_threshold = min(max(self.final_threshold, self.threshold_range.min), self.threshold_range.max)
+            self.guide_threshold = None 
+            binary_image = apply_threshold(
+                input_image.pixel_data,
+                threshold=self.final_threshold,
+                mask=input_image.mask,
+                smoothing=self.threshold_smoothing_scale
+            )
+        else:
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image = threshold(
+                    input_image.pixel_data,
+                    mask=input_image.mask,
+                    threshold_scope=self.threshold_scope.value,
+                    threshold_method=threshold_method,
+                    assign_middle_to_foreground=self.assign_middle_to_foreground.value,
+                    log_transform=self.log_transform.value,
+                    threshold_correction_factor=self.threshold_correction_factor.value,
+                    threshold_min=self.threshold_range.min,
+                    threshold_max=self.threshold_range.max,
+                    window_size=self.adaptive_window_size.value,
+                    smoothing=self.threshold_smoothing_scale.value,
+                    lower_outlier_fraction=self.lower_outlier_fraction.value,
+                    upper_outlier_fraction=self.upper_outlier_fraction.value,
+                    averaging_method=self.averaging_method.value,
+                    variance_method=self.convert_setting(self.variance_method.value),
+                    number_of_deviations=self.number_of_deviations.value,
+                    volumetric=input_image.volumetric,  
+            )
 
         ##
         # Process manual and measurement thresholds here:
+        
 
         ##
 
@@ -849,9 +871,9 @@ staining.
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            final_threshold,
-            orig_threshold,
-            guide_threshold,
+            self.final_threshold,
+            self.orig_threshold,
+            self.guide_threshold,
         )
 
         # binary_image, _ = self.apply_threshold(input_image, final_threshold)
@@ -874,11 +896,22 @@ staining.
             statistics = workspace.display_data.statistics = []
             workspace.display_data.col_labels = ("Feature", "Value")
             if self.threshold_scope == TS_ADAPTIVE:
-                workspace.display_data.threshold_image = final_threshold
+                workspace.display_data.threshold_image = self.final_threshold
 
             for column in self.get_measurement_columns(workspace.pipeline):
                 value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split("_")[1], str(value))]
+
+    def convert_setting(self, gui_setting_str):
+        """
+        Convert GUI setting strings to something cellprofiler
+        library compatible. That is, remove spaces and hyphens.
+        """
+        rep_list = ((" ", "_"), ("-", "_"))
+        converted_str = gui_setting_str
+        for replacement in rep_list:
+            converted_str = converted_str.replace(*replacement)
+        return converted_str
 
     # def apply_threshold(self, image, threshold, automatic=False):
     #     data = image.pixel_data

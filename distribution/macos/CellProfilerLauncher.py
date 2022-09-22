@@ -5,6 +5,8 @@ if hasattr(sys, "frozen"):
     # allows multiprocessing on Windows after freeze
     multiprocessing.freeze_support()
 
+print(help('modules'))
+
 import cellprofiler.__main__
 
 if __name__ == "__main__":

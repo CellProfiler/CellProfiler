@@ -1575,7 +1575,8 @@ class PipelineController(object):
         """Set the title of the parent frame"""
         pathname = get_current_workspace_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler %s" % cellprofiler.__version__
+            self.__frame.Title = \
+                f"CellProfiler {cellprofiler.__version__} + CellPose"
             return
         path, filename = os.path.split(pathname)
         if self.__dirty_workspace:

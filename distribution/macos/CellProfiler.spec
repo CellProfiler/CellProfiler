@@ -160,7 +160,7 @@ coll = COLLECT(
 
 app = BUNDLE(
     coll,
-    name="CellProfiler.app",
+    name="CellProfiler+Cellpose.app",
     icon="../../cellprofiler/data/icons/CellProfiler.icns",
     bundle_identifier=None,
     version=cp_version,

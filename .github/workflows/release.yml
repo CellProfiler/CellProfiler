@@ -75,11 +75,11 @@ jobs:
             --window-size 800 529 \
             --icon-size 130 \
             --text-size 14 \
-            --icon "CellProfiler.app" 260 250 \
+            --icon "CellProfiler+Cellpose.app" 260 250 \
             --app-drop-link 540 250 \
             --hdiutil-quiet \
             "./dist/CellProfiler-macOS-4.2.10002-cellpose.dmg" \
-            "./dist/CellProfiler.app"
+            "./dist/CellProfiler+Cellpose.app"
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
         name: MacOS artifact upload
@@ -135,5 +135,5 @@ jobs:
 name: create-release
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - compat-4-2-cellpose

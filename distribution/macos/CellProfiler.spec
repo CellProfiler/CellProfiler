@@ -55,6 +55,7 @@ hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrat
 hiddenimports += PyInstaller.utils.hooks.collect_submodules("numcodecs")
 
 hiddenimports += [
+    "cellprofiler.__main__",
     "pkg_resources.py2_warn",
     "pywt._extensions._cwt",
     "sentry_sdk.integrations.excepthook",

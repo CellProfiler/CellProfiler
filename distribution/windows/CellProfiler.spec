@@ -46,6 +46,7 @@ hiddenimports += PyInstaller.utils.hooks.collect_submodules("numcodecs")
 
 
 hiddenimports += [
+    "cellprofiler.__main__",
     "scipy._lib.messagestream",
     "pywt._extensions._cwt",
     "sklearn.utils.sparsetools",

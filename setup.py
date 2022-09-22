@@ -63,6 +63,7 @@ setuptools.setup(
     },
     install_requires=[
         "boto3==1.14.23",
+        "cellpose==2.1.0",
         "cellprofiler-core==4.2.1",
         "centrosome==1.2.0",
         "docutils==0.15.2",

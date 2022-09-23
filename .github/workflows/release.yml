@@ -41,9 +41,9 @@ jobs:
           git clone https://github.com/glencoesoftware/core.git
           cd core
           git checkout compat-4-2
-          pip install --editable . --upgrade
+          pip install . --upgrade
           cd ..
-          pip install --editable .
+          pip install .
           pip install scikit-image==0.19.3
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64

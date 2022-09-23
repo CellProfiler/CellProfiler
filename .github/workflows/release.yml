@@ -25,7 +25,8 @@ jobs:
           architecture: x64
       - name: Install build-time dependencies
         run: |
-          pip install --upgrade pip wheel setuptools
+          pip install --upgrade pip wheel
+          pip install setuptools==59.8.0
           pip install numpy==1.20.1
           pip install pyinstaller==5.4.1
       - env:
@@ -44,7 +45,6 @@ jobs:
           pip install . --upgrade
           cd ..
           pip install .
-          pip install scikit-image==0.19.3
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
         if: ${{ matrix.os == 'windows-2019' }}

@@ -44,6 +44,7 @@ jobs:
           pip install --editable . --upgrade
           cd ..
           pip install --editable .
+          pip install scikit-image==0.19.3
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
         if: ${{ matrix.os == 'windows-2019' }}

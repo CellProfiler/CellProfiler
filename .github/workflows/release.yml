@@ -38,6 +38,8 @@ jobs:
         run: |
           brew install mysql
           brew install create-dmg
+          brew install freetype
+          brew install libpng
           pip install centrosome --no-cache-dir --no-build-isolation
           git clone https://github.com/glencoesoftware/core.git
           cd core

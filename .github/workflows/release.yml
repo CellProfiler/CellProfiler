@@ -25,7 +25,7 @@ jobs:
           architecture: x64
       - name: Install build-time dependencies
         run: |
-          pip install --upgrade pip wheel
+          pip install --upgrade wheel pip
           pip install setuptools==49.0.0
           pip install numpy==1.20.1
           pip install pyinstaller==5.4.1
@@ -38,13 +38,13 @@ jobs:
         run: |
           brew install mysql
           brew install create-dmg
-          pip install centrosome --no-cache-dir --no-build-isolation
+          pip install centrosome==1.2.0 --no-cache-dir --no-build-isolation
           git clone https://github.com/glencoesoftware/core.git
           cd core
           git checkout compat-4-2
-          pip install -e . --upgrade
+          pip install --editable . --upgrade --no-use-pep517
           cd ..
-          pip install -e .
+          pip install --editable . --no-use-pep517
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
         if: ${{ matrix.os == 'windows-2019' }}
@@ -52,13 +52,13 @@ jobs:
         run: |
           pip install cython
           pip install mysqlclient==1.4.6
-          pip install centrosome --no-cache-dir --no-build-isolation
+          pip install centrosome==1.2.0 --no-cache-dir --no-build-isolation
           git clone https://github.com/glencoesoftware/core.git
           cd core
           git checkout compat-4-2
-          pip install -e . --upgrade
+          pip install --editable . --upgrade --no-use-pep517
           cd ..
-          pip install -e .
+          pip install --editable . --no-use-pep517
       - name: Display installed packages
         run: pip list
       - if: ${{ matrix.os == 'windows-2019' }}

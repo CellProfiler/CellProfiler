@@ -56,8 +56,8 @@ hiddenimports += [
     "sentry_sdk.integrations.threading",
 ]
 
-a = Analysis(['CellProfiler.py'],
-             pathex=['CellProfiler'],
+a = Analysis(['CellProfilerLauncher.py'],
+             pathex=['.', '../core'],
              binaries=binaries,
              datas=datas,
              hiddenimports=hiddenimports,

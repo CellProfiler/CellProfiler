@@ -28,7 +28,7 @@ jobs:
           pip install --upgrade pip wheel
           pip install setuptools==49.0.0
           pip install numpy==1.20.1
-          pip install pyinstaller==4.10
+          pip install pyinstaller==5.4.1
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
@@ -56,9 +56,9 @@ jobs:
           git clone https://github.com/glencoesoftware/core.git
           cd core
           git checkout compat-4-2
-          pip install --editable . --upgrade
+          pip install . --upgrade
           cd ..
-          pip install --editable .
+          pip install .
       - name: Display installed packages
         run: pip list
       - if: ${{ matrix.os == 'windows-2019' }}

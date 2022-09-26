@@ -64,6 +64,10 @@ hiddenimports += [
     "sentry_sdk.integrations.threading",
 ]
 
+print(f"De-duplicating {len(hiddenimports)} hidden imports...")
+hiddenimports = list(set(hiddenimports))
+print(f"...Complete! {len(hiddenimports)} found")
+
 excludes = []
 
 excludes += [
@@ -116,15 +120,25 @@ libpng_pathname = os.path.join(libpng_pathname, "lib", "libpng16.16.dylib")
 
 java_pathname = os.path.join(os.environ["JAVA_HOME"], "lib/libjava.dylib")
 
-a.binaries += [
+manual_binaries = [
     ("libpng16.16.dylib", libpng_pathname, "BINARY"),
     ("libjava.dylib", java_pathname, "BINARY")
 ]
-exclude_binaries = [
-    ('libpng16.16.dylib', '/usr/local/lib/python3.8/site-packages/matplotlib/.dylibs/libpng16.16.dylib', 'BINARY'),
-]
 
-a.binaries = [binary for binary in a.binaries if binary not in exclude_binaries]
+binaries_to_exclude = set([binary[0] for binary in manual_binaries])
+
+
+def check_binary(x):
+    name, path, bintype = x
+    if name in binaries_to_exclude:
+        print(f"Removing {name} at {path} ({bintype})")
+        return False
+    return True
+
+
+a.binaries = [b for b in a.binaries if check_binary(b)]
+
+a.binaries += manual_binaries
 
 pyz = PYZ(
     a.pure,

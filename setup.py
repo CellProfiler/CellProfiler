@@ -77,7 +77,7 @@ setuptools.setup(
         "matplotlib==3.1.3",
         "mysqlclient==1.4.6",
         "numpy==1.20.1",
-        "opencv-python-headless==4.5.2.52",
+        "opencv-python-headless==4.5.3.56",
         "Pillow==8.1.0",
         "prokaryote==2.4.4",
         "python-bioformats==4.0.5",

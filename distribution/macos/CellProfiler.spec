@@ -108,7 +108,7 @@ a = Analysis(
     hiddenimports=hiddenimports,
     hookspath=[],
     pathex=[
-        '.', '../core'
+        'CellProfiler', '.', '../core'
     ],
     runtime_hooks=[],
     win_no_prefer_redirects=False,

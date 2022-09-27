@@ -57,7 +57,7 @@ hiddenimports += [
 ]
 
 a = Analysis(['CellProfilerLauncher.py'],
-             pathex=['CellProfiler', '.', '../core'],
+             pathex=['CellProfiler', '.', '../core', 'core'],
              binaries=binaries,
              datas=datas,
              hiddenimports=hiddenimports,

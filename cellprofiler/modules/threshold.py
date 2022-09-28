@@ -761,22 +761,22 @@ staining.
         return [
             self.x_name,
             self.y_name,
-            self.threshold_scope,#
+            self.threshold_scope,
             self.global_operation,
             self.local_operation,
             self.manual_threshold,
-            self.thresholding_measurement, #
-            self.two_class_otsu, #
-            self.log_transform, #
-            self.assign_middle_to_foreground,#
-            self.lower_outlier_fraction,#
-            self.upper_outlier_fraction,#
-            self.averaging_method,#
-            self.variance_method,#
-            self.number_of_deviations,#
-            self.adaptive_window_size,#
-            self.threshold_correction_factor,#
-            self.threshold_range,#
+            self.thresholding_measurement,
+            self.two_class_otsu,
+            self.log_transform,
+            self.assign_middle_to_foreground,
+            self.lower_outlier_fraction,
+            self.upper_outlier_fraction,
+            self.averaging_method,
+            self.variance_method,
+            self.number_of_deviations,
+            self.adaptive_window_size,
+            self.threshold_correction_factor,
+            self.threshold_range,
             self.threshold_smoothing_scale,
         ]
 
@@ -786,7 +786,7 @@ staining.
         )
         dimensions = input_image.dimensions
 
-        # Translate CellProfiler GUI variables to cellprofiler.library ones
+        # Translate CellProfiler GUI variables to cellprofiler.library versions
         if self.threshold_scope == "Global":
             if self.global_operation == "Otsu" and self.two_class_otsu == "Three classes":
                 threshold_method = "multiotsu"
@@ -797,8 +797,12 @@ staining.
                 threshold_method = "multiotsu"
             else:
                 threshold_method = self.local_operation.value
+
         # Make threshold method cellprofiler.library friendly   
         threshold_method = self.convert_setting(threshold_method)
+
+        # Enable setting of automatic thresholding
+        self.automatic = False
 
         # Handle manual and measurement thresholds, which are not supported
         # by cellprofiler.library
@@ -848,13 +852,8 @@ staining.
                     variance_method=self.convert_setting(self.variance_method.value),
                     number_of_deviations=self.number_of_deviations.value,
                     volumetric=input_image.volumetric,  
+                    automatic=self.automatic
             )
-
-        ##
-        # Process manual and measurement thresholds here:
-        
-
-        ##
 
         # Final threshold: Threshold following application of the 
         # threshold_correction_factor and clipping to min/max threshold

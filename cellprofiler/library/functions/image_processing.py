@@ -18,7 +18,7 @@ def medial_axis(image):
     if image.ndim > 2 and image.shape[-1] in (3, 4):
         raise ValueError("Convert image to grayscale or use medialaxis module")
     if image.ndim > 2 and image.shape[-1] not in (3, 4):
-        raise ValueError("Process 3D images plane-wise or the medialaxis module")
+        raise ValueError("Process 3D images plane-wise or use the medialaxis module")
     return skimage.morphology.medial_axis(image)
 
 
@@ -26,7 +26,7 @@ def get_threshold_robust_background(
     image,
     lower_outlier_fraction=0.05,
     upper_outlier_fraction=0.05,
-    averaging_method="Mean",
+    averaging_method="mean",
     variance_method="standard_deviation",
     number_of_deviations=2,
 ):
@@ -164,12 +164,9 @@ def get_adaptive_threshold(
             kwargs["number_of_deviations"] if "number_of_deviations" in kwargs else 2
         )
     else:
-        try:
-            # This try:except needs to be improved. Currently does not pick up on
-            # functions that fail, such as skimage.filters.threshold_local
-            threshold_fn = threshold_method
-        except:
-            raise "Incompatible thresholding method"
+        raise NotImplementedError(
+            f"Threshold method {threshold_method} not supported."
+        )
 
     image_size = numpy.array(image.shape[:2], dtype=int)
     nblocks = image_size // window_size
@@ -287,38 +284,20 @@ def get_global_threshold(
     threshold_correction_factor=1,
     assign_middle_to_foreground="foreground",
     log_transform=False,
-    volumetric=False,
     **kwargs,
 ):
-    if volumetric:
-        # Array to store threshold values
-        thresh_out = numpy.zeros(image.shape)
-        for z in range(image.shape[2]):
-            thresh_out[:, :, z] = get_global_threshold(
-                image[:, :, z],
-                threshold_method,
-                threshold_min,
-                threshold_max,
-                threshold_correction_factor,
-                assign_middle_to_foreground,
-                log_transform,
-                volumetric=False,  # Processing a single plane, so volumetric=False
-                **kwargs,
-            )
-        return thresh_out
 
     if log_transform:
         image, conversion_dict = centrosome.threshold.log_transform(image)
+
     # Shortcuts - Check if image array is empty or all pixels are the same value.
     if len(image) == 0:
         threshold = 0.0
+    elif numpy.all(image == image.ravel()[0]):
+        # All pixels are the same value
+        threshold = image.ravel()[0]
 
-    elif numpy.all(image == image[0]):
-        threshold = image[0]
-
-    bin_wanted = 0 if assign_middle_to_foreground.casefold() == "foreground" else 1
-
-    if threshold_method.casefold() in ("minimum_cross_entropy", "sauvola"):
+    elif threshold_method.casefold() in ("minimum_cross_entropy", "sauvola"):
         tol = max(numpy.min(numpy.diff(numpy.unique(image))) / 2, 0.5 / 65536)
         threshold = skimage.filters.threshold_li(image, tolerance=tol)
     elif threshold_method.casefold() == "robust_background":
@@ -326,15 +305,13 @@ def get_global_threshold(
     elif threshold_method.casefold() == "otsu":
         threshold = skimage.filters.threshold_otsu(image)
     elif threshold_method.casefold() == "multiotsu":
+        bin_wanted = 0 if assign_middle_to_foreground.casefold() == "foreground" else 1
         threshold = skimage.filters.threshold_multiotsu(image, nbins=128)
         threshold = threshold[bin_wanted]
     else:
-        try:
-            threshold = threshold_method(image)
-        except:
-            raise NotImplementedError(
-                f"Threshold method {threshold_method} not supported."
-            )
+        raise NotImplementedError(
+            f"Threshold method {threshold_method} not supported."
+        )
 
     if log_transform:
         threshold = centrosome.threshold.inverse_log_transform(

@@ -82,6 +82,7 @@ def threshold(
     if threshold_scope.casefold() == "adaptive":
         final_threshold = get_adaptive_threshold(
             image,
+            mask=mask,
             threshold_method=threshold_method,
             window_size=window_size,
             threshold_min=threshold_min,
@@ -94,6 +95,7 @@ def threshold(
         )
         orig_threshold = get_adaptive_threshold(
             image,
+            mask=mask,
             threshold_method=threshold_method,
             window_size=window_size,
             # If automatic=True, do not correct the threshold
@@ -108,12 +110,13 @@ def threshold(
 
         guide_threshold = get_global_threshold(
             image,
-            threshold_method,
-            threshold_min,
-            threshold_max,
-            threshold_correction_factor,
-            assign_middle_to_foreground,
-            log_transform,
+            mask=mask,
+            threshold_method=threshold_method,
+            threshold_min=threshold_min,
+            threshold_max=threshold_max,
+            threshold_correction_factor=threshold_correction_factor,
+            assign_middle_to_foreground=assign_middle_to_foreground,
+            log_transform=log_transform,
             **kwargs,
             )
 
@@ -129,6 +132,7 @@ def threshold(
     elif threshold_scope.casefold() == "global":
         final_threshold = get_global_threshold(
             image,
+            mask=mask,
             threshold_method=threshold_method,
             threshold_min=threshold_min,
             threshold_max=threshold_max,
@@ -136,9 +140,9 @@ def threshold(
             assign_middle_to_foreground=assign_middle_to_foreground,
             log_transform=log_transform,
             )
-
         orig_threshold = get_global_threshold(
             image,
+            mask=mask,
             threshold_method=threshold_method,
             # If automatic=True, do not correct the threshold
             threshold_min=threshold_min if automatic else 0,
@@ -148,14 +152,12 @@ def threshold(
             log_transform=log_transform,
             )
         guide_threshold = None
-
         binary_image = apply_threshold(
             image,
             threshold=final_threshold,
             mask=mask,
             smoothing=smoothing,
         )
-
         return final_threshold, orig_threshold, guide_threshold, binary_image
 
 # apply_threshold(image, threshold, smoothing=0)

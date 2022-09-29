@@ -94,6 +94,7 @@ def get_threshold_robust_background(
 
 def get_adaptive_threshold(
     image,
+    mask=None,
     threshold_method="otsu",
     window_size=50,
     threshold_min=0,
@@ -105,28 +106,42 @@ def get_adaptive_threshold(
     volumetric=False,
     **kwargs,
 ):
+
+    if mask is not None:
+        # Apply mask and preserve image shape
+        image = numpy.where(mask, image, False)
+
     if volumetric:
         # Array to store threshold values
         thresh_out = numpy.zeros(image.shape)
         for z in range(image.shape[2]):
             thresh_out[:, :, z] = get_adaptive_threshold(
                 image[:, :, z],
-                threshold_method,
-                window_size,
-                threshold_min,
-                threshold_max,
-                threshold_correction_factor,
-                assign_middle_to_foreground,
-                global_limits,
-                log_transform,
+                mask=None, # Mask has already been applied
+                threshold_method=threshold_method,
+                window_size=window_size,
+                threshold_min=threshold_min,
+                threshold_max=threshold_max,
+                threshold_correction_factor=threshold_correction_factor,
+                assign_middle_to_foreground=assign_middle_to_foreground,
+                global_limits=global_limits,
+                log_transform=log_transform,
                 volumetric=False,  # Processing a single plane, so volumetric=False
                 **kwargs,
             )
         return thresh_out
+    
 
     if log_transform:
         image, conversion_dict = centrosome.threshold.log_transform(image)
     bin_wanted = 0 if assign_middle_to_foreground.casefold() == "foreground" else 1
+
+    ## Need to implement
+    # if len(image) == 0 or numpy.all(image == numpy.nan):
+    #     local_threshold = numpy.zeros_like(image)
+    # elif numpy.all(image == image.ravel[0]):
+    #     local_threshold = numpy.full_like(image, image.ravel[0])
+    ##
 
     # Define the threshold method to be run in each adaptive window
     if threshold_method.casefold() == "otsu":
@@ -163,6 +178,11 @@ def get_adaptive_threshold(
         kwargs["number_of_deviations"] = (
             kwargs["number_of_deviations"] if "number_of_deviations" in kwargs else 2
         )
+    ### Need to implement. 
+    ### sauvola is it's own adaptive threshold method
+    elif threshold_method.casefold() == "sauvola":
+        thresh_out = skimage.filters.threshold_sauvola
+        kwargs["window_size"] = window_size
     else:
         raise NotImplementedError(
             f"Threshold method {threshold_method} not supported."
@@ -197,7 +217,7 @@ def get_adaptive_threshold(
             j0 = int(j * increment[1])
             j1 = int((j + 1) * increment[1])
             block = image[i0:i1, j0:j1]
-            block = block[~numpy.isnan(block)]
+            block = block[~numpy.logical_not(block)]
             if len(block) == 0:
                 threshold_out = 0.0
             elif numpy.all(block == block[0]):
@@ -247,9 +267,11 @@ def get_adaptive_threshold(
     )
     # Smooth out the "blocky" adaptive threshold
     thresh_out = adaptive_interpolation(thresh_out_x_coords, thresh_out_y_coords)
+    
     # Get global threshold
     global_threshold = get_global_threshold(
         image,
+        mask,
         threshold_method,
         threshold_min,
         threshold_max,
@@ -278,6 +300,7 @@ def get_adaptive_threshold(
 
 def get_global_threshold(
     image,
+    mask=None,
     threshold_method="otsu",
     threshold_min=0,
     threshold_max=1,
@@ -286,6 +309,10 @@ def get_global_threshold(
     log_transform=False,
     **kwargs,
 ):
+
+    if mask is not None:
+        # Apply mask and discard masked pixels
+        image = image[mask]
 
     if log_transform:
         image, conversion_dict = centrosome.threshold.log_transform(image)

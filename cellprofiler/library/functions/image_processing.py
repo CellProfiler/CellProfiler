@@ -137,7 +137,6 @@ def get_adaptive_threshold(
 
     thresh_out = None
 
-    # Need to implement
     if len(image) == 0 or numpy.all(image == numpy.nan):
         thresh_out = numpy.zeros_like(image)
     elif numpy.all(image == image.ravel()[0]):
@@ -168,7 +167,6 @@ def get_adaptive_threshold(
         kwargs["averaging_method"] = (
             kwargs["averaging_method"] if "averaging_method" in kwargs else "mean"
         )
-        ###
         kwargs["variance_method"] = (
             kwargs["variance_method"]
             if "variance_method" in kwargs
@@ -177,12 +175,9 @@ def get_adaptive_threshold(
         kwargs["number_of_deviations"] = (
             kwargs["number_of_deviations"] if "number_of_deviations" in kwargs else 2
         )
-    ### Need to implement.
-    ### sauvola is it's own adaptive threshold method
     elif threshold_method.casefold() == "sauvola":
         if window_size % 2 == 0:
             window_size += 1
-        # Sauvola itself is a local thresholding technique
         thresh_out = skimage.filters.threshold_sauvola(image, window_size)
     else:
         raise NotImplementedError(f"Threshold method {threshold_method} not supported.")

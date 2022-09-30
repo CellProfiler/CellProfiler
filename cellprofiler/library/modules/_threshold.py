@@ -1,9 +1,12 @@
 import centrosome
 import numpy
 import skimage
-from cellprofiler.library.functions.image_processing import get_adaptive_threshold, get_global_threshold, apply_threshold
+from cellprofiler.library.functions.image_processing import (
+    get_adaptive_threshold,
+    get_global_threshold,
+    apply_threshold,
+)
 
-### Add to functions ###
 
 def threshold(
     image,
@@ -30,37 +33,16 @@ def threshold(
     Returns three threshold values and a binary image.
     Thresholds returned are:
 
-    Final threshold: Threshold following application of the 
+    Final threshold: Threshold following application of the
     threshold_correction_factor and clipping to min/max threshold
-    
-    orig_threshold: The threshold following either adaptive or global 
+
+    orig_threshold: The threshold following either adaptive or global
     thresholding strategies, prior to correction
-    
-    guide_threshold: Only produced by adaptive threshold, otherwise None. 
-    This is the global threshold that constrains the adaptive threshold 
+
+    guide_threshold: Only produced by adaptive threshold, otherwise None.
+    This is the global threshold that constrains the adaptive threshold
     within a certain range, as defined by global_limits (default [0.7, 1.5])
     """
-
-
-    print(
-        threshold_scope,
-        threshold_method,
-        assign_middle_to_foreground,
-        log_transform,
-        threshold_correction_factor,
-        threshold_min,
-        threshold_max,
-        window_size,
-        smoothing,
-        lower_outlier_fraction,
-        upper_outlier_fraction,
-        averaging_method,
-        variance_method,
-        number_of_deviations,
-        volumetric,
-        automatic,
-        **kwargs,
-    )
 
     if automatic:
         # Use automatic settings
@@ -76,7 +58,7 @@ def threshold(
             "upper_outlier_fraction": upper_outlier_fraction,
             "averaging_method": averaging_method,
             "variance_method": variance_method,
-            "number_of_deviations": number_of_deviations,            
+            "number_of_deviations": number_of_deviations,
         }
 
     if threshold_scope.casefold() == "adaptive":
@@ -118,7 +100,7 @@ def threshold(
             assign_middle_to_foreground=assign_middle_to_foreground,
             log_transform=log_transform,
             **kwargs,
-            )
+        )
 
         binary_image = apply_threshold(
             image,
@@ -139,7 +121,8 @@ def threshold(
             threshold_correction_factor=threshold_correction_factor,
             assign_middle_to_foreground=assign_middle_to_foreground,
             log_transform=log_transform,
-            )
+            **kwargs,
+        )
         orig_threshold = get_global_threshold(
             image,
             mask=mask,
@@ -150,7 +133,8 @@ def threshold(
             threshold_correction_factor=threshold_correction_factor if automatic else 1,
             assign_middle_to_foreground=assign_middle_to_foreground,
             log_transform=log_transform,
-            )
+            **kwargs,
+        )
         guide_threshold = None
         binary_image = apply_threshold(
             image,
@@ -159,5 +143,3 @@ def threshold(
             smoothing=smoothing,
         )
         return final_threshold, orig_threshold, guide_threshold, binary_image
-
-# apply_threshold(image, threshold, smoothing=0)

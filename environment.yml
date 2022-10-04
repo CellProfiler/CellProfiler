@@ -1,0 +1,17 @@
+# run: conda env create
+name: cpcore-dev
+channels:
+  - conda-forge
+dependencies:
+  - boto3
+  - docutils
+  - future
+  - h5py
+  - matplotlib
+  - numpy
+  - psutil
+  - pyzmq
+  - scikit-image
+  - scipy
+  - pip:
+    - centrosome

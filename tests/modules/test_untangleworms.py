@@ -6,7 +6,6 @@ import zlib
 
 import imageio
 
-import bioformats
 import centrosome.outline
 import numpy
 import scipy.ndimage

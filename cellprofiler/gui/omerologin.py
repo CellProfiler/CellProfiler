@@ -2,7 +2,7 @@
 """omerologin - dialog box to capture login credentials for Omero
 """
 
-import bioformats.formatreader
+from cellprofiler_core.bioformats import formatreader
 import wx
 from cellprofiler_core.preferences import (
     get_omero_server,
@@ -132,7 +132,7 @@ class OmeroLoginDlg(wx.Dialog):
             self.message_ctrl.Refresh()
             return False
         try:
-            self.session_id = bioformats.formatreader.set_omero_credentials(
+            self.session_id = formatreader.set_omero_credentials(
                 server, port, user, self.omero_password_ctrl.GetValue()
             )
             self.message_ctrl.Label = "Connected"

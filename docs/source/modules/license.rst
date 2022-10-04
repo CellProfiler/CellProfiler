@@ -55,9 +55,6 @@ License: `BSD 3-Clause “New” or “Revised” license`_
 Name: inflect 
 License: `GNU General Public License (GPL)`_
 
-Name: javabridge 
-License: `BSD 3-Clause “New” or “Revised” license`_
-
 Name: joblib 
 License: `BSD 3-Clause “New” or “Revised” license`_
 
@@ -72,12 +69,6 @@ License: `GNU General Public License (GPL)`_
 
 Name: numpy 
 License: `BSD 3-Clause “New” or “Revised” license`_
-
-Name: prokaryote 
-License: `BSD 3-Clause “New” or “Revised” license`_
-
-Name: python-bioformats 
-License: GNU General Public License (GPL)
 
 Name: pyzmq 
 License: `BSD 3-Clause “New” or “Revised” license`_

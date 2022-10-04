@@ -1,0 +1,3 @@
+PT_UINT8 = None
+PT_UINT16 = None
+PT_FLOAT = None

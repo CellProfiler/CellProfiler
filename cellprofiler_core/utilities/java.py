@@ -26,13 +26,8 @@ def get_jars():
         )
         LOGGER.debug("    CLASSPATH=" + os.environ["CLASSPATH"])
 
-    pathname = os.path.dirname(prokaryote.__file__)
-
-    return [
-        os.path.join(pathname, f)
-        for f in os.listdir(pathname)
-        if f.lower().endswith(".jar")
-    ]
+    #CTR: FIXME: Return list of all JARs to be added to the classpath.
+    return class_path
 
 
 def find_logback_xml():

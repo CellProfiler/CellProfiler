@@ -461,7 +461,7 @@ class PipelineController(object):
             EVT_PLV_VALID_STEP_COLUMN_CLICKED, self.on_step_from_specific_module,
         )
 
-        from bioformats.formatreader import set_omero_login_hook
+        from cellprofiler_core.bioformats.formatreader import set_omero_login_hook
 
         set_omero_login_hook(self.omero_login)
 
@@ -3146,7 +3146,7 @@ class PipelineController(object):
     @staticmethod
     def omero_login_request(evt):
         """Handle retrieval of the Omero credentials"""
-        from bioformats.formatreader import get_omero_credentials
+        from cellprofiler_core.bioformats.formatreader import get_omero_credentials
 
         evt.reply(OmeroLogin(get_omero_credentials()))
 

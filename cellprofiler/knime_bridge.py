@@ -10,7 +10,6 @@ import threading
 import uuid
 from io import StringIO
 
-import javabridge
 import numpy
 import zmq
 from cellprofiler_core.constants.measurement import (
@@ -105,7 +104,6 @@ class KnimeBridgeServer(threading.Thread):
         self.start_socket.close()
 
     def run(self):
-        javabridge.attach()
         try:
             self.socket = self.context.socket(zmq.REP)
             self.socket.bind(self.address)
@@ -158,7 +156,8 @@ class KnimeBridgeServer(threading.Thread):
                     self.notify_socket.close()
                 self.socket.close()
         finally:
-            javabridge.detach()
+            # CTR: FIXME dedent
+            pass
 
     def connect(self, session_id, message_type, message):
         """Handle the connect message"""

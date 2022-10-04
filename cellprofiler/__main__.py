@@ -628,7 +628,7 @@ def set_omero_credentials_from_string(credentials_string):
                         user - the user name
                         session-id - the session ID used for authentication
     """
-    import bioformats.formatreader
+    from cellprofiler_core.bioformats import formatreader
 
     if re.match("([^=^,]+=[^=^,]+,)*([^=^,]+=[^=^,]+)", credentials_string) is None:
         logging.root.error(
@@ -648,30 +648,30 @@ def set_omero_credentials_from_string(credentials_string):
         k = k.lower()
 
         credentials = {
-            bioformats.formatreader.K_OMERO_SERVER: get_omero_server(),
-            bioformats.formatreader.K_OMERO_PORT: get_omero_port(),
-            bioformats.formatreader.K_OMERO_USER: get_omero_user(),
-            bioformats.formatreader.K_OMERO_SESSION_ID: get_omero_session_id(),
+            formatreader.K_OMERO_SERVER: get_omero_server(),
+            formatreader.K_OMERO_PORT: get_omero_port(),
+            formatreader.K_OMERO_USER: get_omero_user(),
+            formatreader.K_OMERO_SESSION_ID: get_omero_session_id(),
         }
 
         if k == OMERO_CK_HOST:
             set_omero_server(v, globally=False)
 
-            credentials[bioformats.formatreader.K_OMERO_SERVER] = v
+            credentials[formatreader.K_OMERO_SERVER] = v
         elif k == OMERO_CK_PORT:
             set_omero_port(v, globally=False)
 
-            credentials[bioformats.formatreader.K_OMERO_PORT] = v
+            credentials[formatreader.K_OMERO_PORT] = v
         elif k == OMERO_CK_SESSION_ID:
-            credentials[bioformats.formatreader.K_OMERO_SESSION_ID] = v
+            credentials[formatreader.K_OMERO_SESSION_ID] = v
         elif k == OMERO_CK_USER:
             set_omero_user(v, globally=False)
 
-            credentials[bioformats.formatreader.K_OMERO_USER] = v
+            credentials[formatreader.K_OMERO_USER] = v
         elif k == OMERO_CK_PASSWORD:
-            credentials[bioformats.formatreader.K_OMERO_PASSWORD] = v
+            credentials[formatreader.K_OMERO_PASSWORD] = v
         elif k == OMERO_CK_CONFIG_FILE:
-            credentials[bioformats.formatreader.K_OMERO_CONFIG_FILE] = v
+            credentials[formatreader.K_OMERO_CONFIG_FILE] = v
 
             if not os.path.isfile(v):
                 msg = "Cannot find OMERO config file, %s" % v
@@ -689,7 +689,7 @@ def set_omero_credentials_from_string(credentials_string):
 
             raise ValueError("Invalid format for --omero-credentials")
 
-    bioformats.formatreader.use_omero_credentials(credentials)
+    formatreader.use_omero_credentials(credentials)
 
 
 def print_measurements(options):

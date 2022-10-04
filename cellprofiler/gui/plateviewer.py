@@ -517,11 +517,9 @@ class PlateViewer(object):
             self.image_dict_generation += 1
 
         def fn():
-            import javabridge
             from scipy.io.matlab.mio import loadmat
             from cellprofiler_core.utilities.pathname import url2pathname
 
-            javabridge.attach()
             with self.image_dict_lock:
                 generation = self.image_dict_generation
 
@@ -555,8 +553,9 @@ class PlateViewer(object):
                         traceback.print_exc()
                         pass
             wx.CallAfter(self.update_figure)
-            javabridge.static_call("java/lang/System", "gc", "()V")
-            javabridge.detach()
+            #CTR FIXME
+            #System = scyjava.jimport("java.lang.System")
+            #System.gc()
 
         t = threading.Thread(target=fn)
         t.setDaemon(True)

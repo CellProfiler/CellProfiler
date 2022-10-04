@@ -1,0 +1,27 @@
+# run: conda env create
+name: cellprofiler-dev
+channels:
+  - conda-forge
+dependencies:
+
+  # cellprofiler-core dependencies
+  - boto3
+  - docutils
+  - h5py
+  - matplotlib
+  - numpy
+  - psutil
+  - pyzmq
+  - scikit-image
+  - scipy
+
+  # CellProfiler dependencies
+  - imageio
+  - inflect
+  - joblib
+  - mahotas
+  - mysqlclient
+
+#  - pip:
+#    - --no-deps centrosome
+#    - --no-deps cellprofiler-core

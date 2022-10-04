@@ -4,8 +4,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 import base64
-from bioformats.formatwriter import write_image
-from bioformats import PT_UINT8, PT_UINT16
+from cellprofiler_core.bioformats.formatwriter import write_image
+from cellprofiler_core.bioformats.omexml import PT_UINT8, PT_UINT16
 import hashlib
 import numpy as np
 import os
@@ -331,7 +331,7 @@ def read_example_image(folder, file_name, **kwargs):
 
     **kwargs - any keyword arguments are passed onto load_image
     """
-    from bioformats import load_image
+    from cellprofiler_core.bioformats import load_image
 
     path = os.path.join(example_images_directory(), folder, file_name)
     maybe_download_example_image([folder], file_name)

@@ -2137,7 +2137,7 @@ def two_cell_image():
 
 
 def fly_image():
-    from bioformats import load_image
+    from cellprofiler_core.bioformats import load_image
 
     path = os.path.join(os.path.dirname(__file__), "../resources/01_POS002_D.TIF")
     return load_image(path)

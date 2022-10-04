@@ -3,7 +3,7 @@ import tempfile
 
 import cellprofiler_core.utilities.legacy
 
-from cellprofiler_core.bioformats import PT_UINT16
+from cellprofiler_core.bioformats.omexml import PT_UINT16
 from cellprofiler_core.bioformats.formatwriter import write_image
 import logging
 import functools

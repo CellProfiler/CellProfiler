@@ -1,17 +1,25 @@
 import collections
 import itertools
+import logging
 
 import numpy
+import scyjava
+
+from ..utilities.image import is_file_url
+from ..utilities.pathname import url2pathname
 
 from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, \
     BIOFORMATS_IMAGE_EXTENSIONS
 
 from ..reader import Reader
 
-from ..bioformats.formatreader import get_image_reader, release_image_reader, clear_image_reader_cache
 
-from ..utilities.java import start_java
+logger = logging.getLogger(__name__)
 
+# Add Bio-Formats Java dependency.
+scyjava.config.endpoints.append("ome:formats-gpl")
+
+logging.info("HELLO! It's a-ME, bioformats_reader. I just added Bio-Formats endpoint.")
 
 class BioformatsReader(Reader):
     """ Derive from this abstract Reader class to create your own image reader in Python
@@ -24,15 +32,21 @@ class BioformatsReader(Reader):
     def __init__(self, image_file):
         self.variable_revision_number = 1
         self._reader = None
-        start_java()
+        self._is_file_open = False
         super().__init__(image_file)
 
     def get_reader(self):
         if self._reader is None:
-
-            self._reader = get_image_reader(id(self), url=self.file.url)
+            ImageReader = scyjava.jimport("loci.formats.ImageReader")
+            self._reader = ImageReader()
+            self._is_file_open = False
 
         return self._reader
+
+    def _ensure_file_open(self):
+        if not self._is_file_open:
+            self._reader.setId(self.file.path)
+            self._is_file_open = True
 
     def read(self,
              series=None,
@@ -44,6 +58,7 @@ class BioformatsReader(Reader):
              xywh=None,
              wants_max_intensity=False,
              channel_names=None,
+             XYWH=None,
              ):
         """Read a single plane from the image file.
         :param c: read from this channel. `None` = read color image if multichannel
@@ -58,18 +73,156 @@ class BioformatsReader(Reader):
         :param wants_max_intensity: if `False`, only return the image; if `True`,
                   return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
+        :param XYWH: a (x, y, w, h) tuple
         """
+        logging.info("--> bioformats_reader.read BEGINS")
         reader = self.get_reader()
-        return reader.read(
-            c=c,
-            z=z,
-            t=t,
-            series=series,
-            index=index,
-            rescale=rescale,
-            wants_max_intensity=wants_max_intensity,
-            channel_names=channel_names,
-        )
+        self._ensure_file_open()
+        reader.setSeries(series)
+
+        FormatTools = scyjava.jimport("loci.formats.FormatTools")
+        ChannelSeparator = scyjava.jimport("loci.formats.ChannelSeparator")
+        if series is not None:
+            self._reader.setSeries(series)
+
+        if XYWH is not None:
+            assert isinstance(XYWH, tuple) and len(XYWH) == 4, "Invalid XYWH tuple"
+            openBytes_func = lambda x: self._reader.openBytes(x, XYWH[0], XYWH[1], XYWH[2], XYWH[3])
+            width, height = XYWH[2], XYWH[3]
+        else:
+            openBytes_func = self._reader.openBytes
+            width, height = self._reader.getSizeX(), self._reader.getSizeY()
+
+        logging.info("--> bioformats_reader.read: Decided openBytes func")
+        pixel_type = self._reader.getPixelType()
+        little_endian = self._reader.isLittleEndian()
+        if pixel_type == FormatTools.INT8:
+            dtype = np.int8
+            scale = 255
+        elif pixel_type == FormatTools.UINT8:
+            dtype = np.uint8
+            scale = 255
+        elif pixel_type == FormatTools.UINT16:
+            dtype = '<u2' if little_endian else '>u2'
+            scale = 65535
+        elif pixel_type == FormatTools.INT16:
+            dtype = '<i2' if little_endian else '>i2'
+            scale = 65535
+        elif pixel_type == FormatTools.UINT32:
+            dtype = '<u4' if little_endian else '>u4'
+            scale = 2**32
+        elif pixel_type == FormatTools.INT32:
+            dtype = '<i4' if little_endian else '>i4'
+            scale = 2**32-1
+        elif pixel_type == FormatTools.FLOAT:
+            dtype = '<f4' if little_endian else '>f4'
+            scale = 1
+        elif pixel_type == FormatTools.DOUBLE:
+            dtype = '<f8' if little_endian else '>f8'
+            scale = 1
+        max_sample_value = self._reader.getMetadataValue('MaxSampleValue')
+        if max_sample_value is not None:
+            try:
+                scale = jutil.call(max_sample_value, 'intValue', '()I')
+            except:
+                logger.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
+        if index is not None:
+            logging.info(f"--> bioformats_reader.read: Calling openBytes({index}) index!=None CASE")
+            image = np.frombuffer(openBytes_func(index), dtype)
+            if len(image) / height / width in (3,4):
+                n_channels = int(len(image) / height / width)
+                if self._reader.isInterleaved():
+                    image.shape = (height, width, n_channels)
+                else:
+                    image.shape = (n_channels, height, width)
+                    image = image.transpose(1, 2, 0)
+            else:
+                image.shape = (height, width)
+        elif self._reader.isRGB() and self._reader.isInterleaved():
+            index = self._reader.getIndex(z,0,t)
+            logging.info(f"--> bioformats_reader.read: Calling openBytes({index}) RGB INTERLEAVED CASE")
+            image = np.frombuffer(openBytes_func(index), dtype)
+            image.shape = (height, width, self._reader.getSizeC())
+            if image.shape[2] > 3:
+                image = image[:, :, :3]
+        elif c is not None and self._reader.getRGBChannelCount() == 1:
+            index = self._reader.getIndex(z,c,t)
+            logging.info(f"--> bioformats_reader.read: Calling openBytes({index}) RGBChannelCount==1 CASE")
+            image = np.frombuffer(openBytes_func(index), dtype)
+            image.shape = (height, width)
+        elif self._reader.getRGBChannelCount() > 1:
+            logging.info(f"--> bioformats_reader.read: Calling openBytes RGBChannelCount>1 CASE")
+            n_planes = self._reader.getRGBChannelCount()
+            rdr = ChannelSeparator(self._reader)
+            planes = [
+                np.frombuffer(
+                    (rdr.openBytes(rdr.getIndex(z,i,t)) if XYWH is None else
+                      rdr.openBytes(rdr.getIndex(z,i,t), XYWH[0], XYWH[1], XYWH[2], XYWH[3])),
+                      dtype
+                ) for i in range(n_planes)]
+
+            if len(planes) > 3:
+                planes = planes[:3]
+            elif len(planes) < 3:
+                # > 1 and < 3 means must be 2
+                # see issue #775
+                planes.append(np.zeros(planes[0].shape, planes[0].dtype))
+            image = np.dstack(planes)
+            image.shape=(height, width, 3)
+        elif self._reader.getSizeC() > 1:
+            logging.info(f"--> bioformats_reader.read: Calling openBytes SizeC>1 CASE")
+            images = [
+                np.frombuffer(openBytes_func(self._reader.getIndex(z,i,t)), dtype)
+                      for i in range(self._reader.getSizeC())]
+            image = np.dstack(images)
+            image.shape = (height, width, self._reader.getSizeC())
+            if not channel_names is None:
+                metadata = metadatatools.MetadataRetrieve(self.metadata)
+                for i in range(self._reader.getSizeC()):
+                    index = self._reader.getIndex(z, 0, t)
+                    channel_name = metadata.getChannelName(index, i)
+                    if channel_name is None:
+                        channel_name = metadata.getChannelID(index, i)
+                    channel_names.append(channel_name)
+        elif self._reader.isIndexed():
+            #
+            # The image data is indexes into a color lookup-table
+            # But sometimes the table is the identity table and just generates
+            # a monochrome RGB image
+            #
+            index = self._reader.getIndex(z,0,t)
+            logging.info(f"--> bioformats_reader.read: Calling openBytes({index}) INDEXED CASE")
+            image = np.frombuffer(openBytes_func(index),dtype)
+            if pixel_type in (FormatTools.INT16, FormatTools.UINT16):
+                lut = self._reader.get16BitLookupTable()
+                if lut is not None:
+                    lut = np.array(
+                        [env.get_short_array_elements(d)
+                         for d in env.get_object_array_elements(lut)])\
+                        .transpose()
+            else:
+                lut = self._reader.get8BitLookupTable()
+                if lut is not None:
+                    lut = np.array(
+                        [env.get_byte_array_elements(d)
+                         for d in env.get_object_array_elements(lut)])\
+                        .transpose()
+            image.shape = (height, width)
+            if (lut is not None) \
+               and not np.all(lut == np.arange(lut.shape[0])[:, np.newaxis]):
+                image = lut[image, :]
+        else:
+            index = self._reader.getIndex(z,0,t)
+            logging.info(f"--> bioformats_reader.read: Calling openBytes({index}) ")
+            image = np.frombuffer(openBytes_func(index),dtype)
+            image.shape = (height,width)
+
+        if rescale:
+            image = image.astype(np.float32) / float(scale)
+        if wants_max_intensity:
+            return image, scale
+        return image
+
 
     def read_volume(self,
                     series=None,
@@ -84,8 +237,8 @@ class BioformatsReader(Reader):
         # Whether a volume has planes stored in the z or t axis is often ambiguous.
         # If z-size > 1 we'll use z, else we'll use t. Otherwise user should choose
         # an axis to split in Images.
-        reader = self.get_reader()
-        bf_reader = reader.rdr
+        bf_reader = self.get_reader()
+        self._ensure_file_open()
         if series is None:
             series = 0
         bf_reader.setSeries(series)
@@ -104,7 +257,7 @@ class BioformatsReader(Reader):
             t_range = [t]
         image_stack = []
         for z_index, t_index in itertools.product(z_range, t_range):
-            data = reader.read(
+            data = self.read(
                 series=series,
                 c=c,
                 z=z_index,
@@ -135,30 +288,29 @@ class BioformatsReader(Reader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
-        file_url = image_file.url.lower()
-        if file_url.startswith("omero:"):
-            return 1
-        if file_url.endswith(".ome.tif"):
-            return 2
-        if not allow_open:
-            if image_file.file_extension in BIOFORMATS_IMAGE_EXTENSIONS:
-                return 3
+        if not is_file_url(image_file.url):
+            return False
+        try:
+            logging.info(f"--> bioformats_reader.supports_format: isThisType({image_file.path}, {allow_open}")
+            ImageReader = scyjava.jimport("loci.formats.ImageReader")
+            is_this_type = ImageReader().isThisType(image_file.path, allow_open)
+            logging.info(f"--> bioformats_reader.supports_format: DRUMROLL... is it compatible? ... {is_this_type}")
+            return 3 if is_this_type else -1
+        except Exception as ex:
+            logger.error(ex)
             return -1
-        else:
-            try:
-                get_image_reader(id(image_file), url=image_file.url)
-                return 3
-            except:
-                return -1
 
     @classmethod
     def clear_cached_readers(cls):
-        clear_image_reader_cache()
+        #CTR FIXME: Do we need this?
+        #clear_image_reader_cache()
+        pass
 
     def close(self):
         # If your reader opens a file, this needs to release any active lock,
-        release_image_reader(id(self))
-        self._reader = None
+        if self._reader is not None:
+            self._reader.close()
+            self._reader = None
 
     def get_series_metadata(self):
         """Should return a dictionary with the following keys:

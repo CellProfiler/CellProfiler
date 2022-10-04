@@ -1,1 +1,1 @@
-# NB: No implementation.
+# NB: No implementation needed.

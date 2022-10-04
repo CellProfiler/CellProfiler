@@ -21,7 +21,6 @@ from . import reply as anareply
 from . import request as anarequest
 from ..image import ImageSetList
 from ..measurement import Measurements
-from ..utilities.java import JAVA_STARTED
 from ..utilities.measurement import load_measurements_from_buffer
 from ..pipeline import dump
 from ..preferences import get_plugin_directory
@@ -214,8 +213,6 @@ class Runner:
         image_set_end - last image set number to process
         overwrite - whether to recompute imagesets that already have data in initial_measurements.
         """
-        from javabridge import attach, detach
-
         posted_analysis_started = False
         acknowledged_thread_start = False
         measurements = None
@@ -426,9 +423,6 @@ class Runner:
         except Exception as e:
             print(e)
         finally:
-            if JAVA_STARTED:
-                import javabridge
-                javabridge.detach()
             # Note - the measurements file is owned by the queue consumer
             #        after this post_event.
             #

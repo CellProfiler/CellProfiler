@@ -8,7 +8,7 @@ from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZ
 
 from ..reader import Reader
 
-from bioformats.formatreader import get_image_reader, release_image_reader, clear_image_reader_cache
+from ..bioformats.formatreader import get_image_reader, release_image_reader, clear_image_reader_cache
 
 from ..utilities.java import start_java
 

@@ -4,7 +4,6 @@ import sys
 import time
 import traceback
 
-import javabridge
 import zmq
 
 from ._pipeline_event_listener import PipelineEventListener
@@ -25,7 +24,6 @@ from ..constants.worker import ED_STOP
 from ..constants.worker import NOTIFY_STOP
 from ..constants.worker import all_measurements
 from ..measurement import Measurements
-from ..utilities.java import JAVA_STARTED
 from ..utilities.measurement import load_measurements_from_buffer
 from ..pipeline import CancelledException
 from ..preferences import get_awt_headless
@@ -40,7 +38,7 @@ class Worker:
     """
 
     def __init__(self, context, analysis_id, work_request_address, keepalive_address, with_stop_run_loop=True):
-        from bioformats.formatreader import set_omero_login_hook
+        from ..bioformats.formatreader import set_omero_login_hook
 
         self.context = context
         self.work_request_address = work_request_address
@@ -94,15 +92,13 @@ class Worker:
             self.worker.exit_thread()
 
     def enter_thread(self):
-        if not get_awt_headless():
-            javabridge.activate_awt()
+        # CTR FIXME: Do we still need this function?
+        pass
 
     def exit_thread(self):
         from cellprofiler_core.constants.reader import all_readers
         for reader in all_readers.values():
             reader.clear_cached_readers()
-        if JAVA_STARTED:
-            javabridge.detach()
 
     def run(self):
         from cellprofiler_core.pipeline.event import CancelledException

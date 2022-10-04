@@ -7,21 +7,15 @@ import os
 import sys
 import threading
 
-import javabridge
-import prokaryote
-from javabridge._javabridge import get_vm
-
 import cellprofiler_core.preferences
 
-
-JAVA_STARTED = False
 
 LOGGER = logging.getLogger(__name__)
 
 
 def get_jars():
     """
-    Get the final list of JAR files passed to javabridge
+    Get the final list of JAR files passed to Java
     """
 
     class_path = []
@@ -34,25 +28,11 @@ def get_jars():
 
     pathname = os.path.dirname(prokaryote.__file__)
 
-    jar_files = [
+    return [
         os.path.join(pathname, f)
         for f in os.listdir(pathname)
         if f.lower().endswith(".jar")
     ]
-
-    class_path += javabridge.JARS + jar_files
-
-    if sys.platform.startswith("win") and not hasattr(sys, "frozen"):
-        # Have to find tools.jar
-        from javabridge.locate import find_jdk
-
-        jdk_path = find_jdk()
-        if jdk_path is not None:
-            tools_jar = os.path.join(jdk_path, "lib", "tools.jar")
-            class_path.append(tools_jar)
-        else:
-            LOGGER.warning("Failed to find tools.jar")
-    return class_path
 
 
 def find_logback_xml():
@@ -89,9 +69,6 @@ def start_java():
         awt from being invoked
     """
     thread_id = threading.get_ident()
-    if get_vm().is_active():
-        javabridge.attach()
-        return
     LOGGER.info("Initializing Java Virtual Machine")
     args = [
         "-Dloci.bioformats.loaded=true",
@@ -123,18 +100,16 @@ def start_java():
             )
             % os.environ["CP_JDWP_PORT"]
         )
-    javabridge.start_vm(args=args, class_path=class_path)
+    #CTR FIXME
+    #scyjava.start_jvm(args=args, class_path=class_path)
     #
     # Enable Bio-Formats directory cacheing
     #
-    javabridge.attach()
-    c_location = javabridge.JClassWrapper("loci.common.Location")
-    c_location.cacheDirectoryListings(True)
+    #Location = scyjava.jimport("loci.common.Location")
+    #Location.cacheDirectoryListings(True)
     LOGGER.debug("Enabled Bio-formats directory cacheing")
-    global JAVA_STARTED
-    JAVA_STARTED = True
 
 
 def stop_java():
     LOGGER.info("Shutting down Java Virtual Machine")
-    javabridge.kill_vm()
+    #CTR FIXME: scyjava.shutdown_jvm()

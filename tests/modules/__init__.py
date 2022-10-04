@@ -3,8 +3,8 @@ import tempfile
 
 import cellprofiler_core.utilities.legacy
 
-from bioformats import PT_UINT16
-from bioformats.formatwriter import write_image
+from cellprofiler_core.bioformats import PT_UINT16
+from cellprofiler_core.bioformats.formatwriter import write_image
 import logging
 import functools
 import hashlib

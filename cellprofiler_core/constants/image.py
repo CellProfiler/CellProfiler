@@ -1,4 +1,4 @@
-from bioformats import READABLE_FORMATS
+from ..bioformats import READABLE_FORMATS
 
 UIC1_TAG = 33628
 UIC2_TAG = 33629

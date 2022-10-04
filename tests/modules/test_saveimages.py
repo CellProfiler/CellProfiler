@@ -404,7 +404,7 @@ def test_save_image_tiff_int32(tmpdir, module, workspace):
 
     data = skimage.io.imread(os.path.join(directory, "example_large_int_values.tiff"))
 
-    assert data.dtype == numpy.int64
+    assert data.dtype == numpy.int_
 
     numpy.testing.assert_array_equal(data, image.pixel_data)
 

@@ -31,6 +31,7 @@ setuptools.setup(
         "pyzmq~=22.3",
         "scikit-image>=0.16.2",
         "scipy>=1.4.1",
+        "scyjava>=1.6.0",
     ],
     license="BSD",
     name="cellprofiler-core",

@@ -6,7 +6,6 @@ import numpy as np
 import scyjava
 
 from ..utilities.image import is_file_url
-from ..utilities.pathname import url2pathname
 
 from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, \
     BIOFORMATS_IMAGE_EXTENSIONS

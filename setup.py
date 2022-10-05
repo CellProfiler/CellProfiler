@@ -24,6 +24,7 @@ setuptools.setup(
         "boto3>=1.12.28",
         "centrosome==1.2.1",
         "docutils==0.15.2",
+        "future>=0.18.2",
         "h5py~=3.6.0",
         "matplotlib>=3.1.3",
         "numpy>=1.18.2",

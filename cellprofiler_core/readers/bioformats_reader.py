@@ -195,17 +195,11 @@ class BioformatsReader(Reader):
             if pixel_type in (FormatTools.INT16, FormatTools.UINT16):
                 lut = self._reader.get16BitLookupTable()
                 if lut is not None:
-                    lut = np.array(
-                        [env.get_short_array_elements(d)
-                         for d in env.get_object_array_elements(lut)])\
-                        .transpose()
+                    lut = np.array([d for d in lut]).transpose()
             else:
                 lut = self._reader.get8BitLookupTable()
                 if lut is not None:
-                    lut = np.array(
-                        [env.get_byte_array_elements(d)
-                         for d in env.get_object_array_elements(lut)])\
-                        .transpose()
+                    lut = np.array([d for d in lut]).transpose()
             image.shape = (height, width)
             if (lut is not None) \
                and not np.all(lut == np.arange(lut.shape[0])[:, np.newaxis]):

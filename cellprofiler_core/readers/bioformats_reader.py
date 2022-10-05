@@ -2,7 +2,7 @@ import collections
 import itertools
 import logging
 
-import numpy
+import numpy as np
 import scyjava
 
 from ..utilities.image import is_file_url
@@ -267,7 +267,7 @@ class BioformatsReader(Reader):
                 channel_names=channel_names,
             )
             image_stack.append(data)
-        return numpy.stack(image_stack)
+        return np.stack(image_stack)
 
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False):

@@ -46,7 +46,7 @@ class BioformatsReader(Reader):
 
     def _ensure_file_open(self):
         if not self._is_file_open:
-            self._reader.setId(self.file.path)
+            self.get_reader().setId(self.file.path)
             self._is_file_open = True
 
     def read(self,
@@ -77,7 +77,6 @@ class BioformatsReader(Reader):
         :param XYWH: a (x, y, w, h) tuple
         """
         logging.info("--> bioformats_reader.read BEGINS")
-        reader = self.get_reader()
         self._ensure_file_open()
 
         FormatTools = scyjava.jimport("loci.formats.FormatTools")
@@ -177,7 +176,7 @@ class BioformatsReader(Reader):
             image = np.dstack(images)
             image.shape = (height, width, self._reader.getSizeC())
             if not channel_names is None:
-                metadata = scyjava.jimport("loci.formats.MetadataTools")
+                metadata = self._reader.getMetadataStore()
                 for i in range(self._reader.getSizeC()):
                     index = self._reader.getIndex(z, 0, t)
                     channel_name = metadata.getChannelName(index, i)
@@ -319,7 +318,8 @@ class BioformatsReader(Reader):
         MD_SERIES_NAME - list of series names, one element per series.
         """
         meta_dict = collections.defaultdict(list)
-        reader = self.get_reader().rdr
+        self._ensure_file_open()
+        reader = self.get_reader()
         series_count = reader.getSeriesCount()
         meta_dict[MD_SIZE_S] = series_count
         for i in range(series_count):

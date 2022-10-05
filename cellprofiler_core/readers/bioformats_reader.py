@@ -40,6 +40,7 @@ class BioformatsReader(Reader):
             ImageReader = scyjava.jimport("loci.formats.ImageReader")
             self._reader = ImageReader()
             self._is_file_open = False
+            scyjava.when_jvm_stops(lambda: self._reader.close() if self._reader is not None else None)
 
         return self._reader
 
@@ -302,7 +303,7 @@ class BioformatsReader(Reader):
 
     def close(self):
         # If your reader opens a file, this needs to release any active lock,
-        if self._reader is not None:
+        if self._reader is not None and scyjava.jvm_started():
             self._reader.close()
             self._reader = None
 

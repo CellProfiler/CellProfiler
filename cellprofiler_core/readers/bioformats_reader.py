@@ -184,6 +184,8 @@ class BioformatsReader(Reader):
                         channel_name = metadata.getChannelID(index, i)
                     channel_names.append(channel_name)
         elif self._reader.isIndexed():
+            # TODO can we use ChannelFiller, which automatically expands channels if they
+            # are "true" color and does nothing if they are "false" (e.g. applied color table)?
             #
             # The image data is indexes into a color lookup-table
             # But sometimes the table is the identity table and just generates

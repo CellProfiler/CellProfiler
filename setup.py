@@ -82,6 +82,7 @@ setuptools.setup(
         "scikit-image>=0.17.2",
         "scikit-learn>=0.20",
         "scipy>=1.4.1",
+        "scyjava>=1.6.0",
         "six",
         "tifffile<2022.4.22",
         "wxPython==4.2.0",

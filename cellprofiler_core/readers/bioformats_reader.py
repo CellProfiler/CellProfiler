@@ -122,7 +122,7 @@ class BioformatsReader(Reader):
         max_sample_value = self._reader.getMetadataValue('MaxSampleValue')
         if max_sample_value is not None:
             try:
-                scale = jutil.call(max_sample_value, 'intValue', '()I')
+                scale = scyjava.to_python(max_sample_value)
             except:
                 logger.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
         if index is not None:

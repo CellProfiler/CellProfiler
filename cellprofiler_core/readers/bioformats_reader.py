@@ -176,7 +176,7 @@ class BioformatsReader(Reader):
             image = np.dstack(images)
             image.shape = (height, width, self._reader.getSizeC())
             if not channel_names is None:
-                metadata = metadatatools.MetadataRetrieve(self.metadata)
+                metadata = scyjava.jimport("loci.formats.MetadataTools")
                 for i in range(self._reader.getSizeC()):
                     index = self._reader.getIndex(z, 0, t)
                     channel_name = metadata.getChannelName(index, i)

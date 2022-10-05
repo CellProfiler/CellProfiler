@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 # Add Bio-Formats Java dependency.
 scyjava.config.endpoints.append("ome:formats-gpl")
+scyjava.config.endpoints.append("org.scijava:scijava-config")
 
 logging.info("HELLO! It's a-ME, bioformats_reader. I just added Bio-Formats endpoint.")
 

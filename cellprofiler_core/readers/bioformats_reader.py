@@ -78,7 +78,6 @@ class BioformatsReader(Reader):
         logging.info("--> bioformats_reader.read BEGINS")
         reader = self.get_reader()
         self._ensure_file_open()
-        reader.setSeries(series)
 
         FormatTools = scyjava.jimport("loci.formats.FormatTools")
         ChannelSeparator = scyjava.jimport("loci.formats.ChannelSeparator")

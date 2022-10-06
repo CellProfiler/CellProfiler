@@ -1851,7 +1851,7 @@ class PipelineController(object):
         with wx.ProgressDialog(
             parent=self.__frame,
             title="Extracting metadata",
-            message="Extracting metadata fr:om file headers...",
+            message="Extracting metadata from file headers...",
             maximum=cap,
             style=wx.PD_CAN_ABORT | wx.PD_APP_MODAL,
         ) as dlg:

@@ -29,6 +29,7 @@ jobs:
           pip install setuptools==49
           pip install numpy==1.20.1
           pip install pyinstaller==4.10
+          pip install torch==1.11.0
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}

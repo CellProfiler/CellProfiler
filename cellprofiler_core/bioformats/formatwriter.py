@@ -23,12 +23,13 @@ def write_image(
     channel_names
 ):
     ImageWriter = jimport("loci.formats.ImageWriter")
-    OMEXMLService = jimport("loci.formats.services.OMEXMLServiceImpl")
+    OMEXMLServiceFactory = jimport("loci.common.services.ServiceFactory")
     DimensionsOrder = jimport("ome.xml.model.enums.DimensionOrder")
     PositiveInteger = jimport("ome.xml.model.primitives.PositiveInteger")
     PixelType = jimport("ome.xml.model.enums.PixelType")
+    OMEXMLService = jimport("loci.formats.services.OMEXMLService")
 
-    omexml_service = OMEXMLService()
+    omexml_service = OMEXMLServiceFactory().getInstance(OMEXMLService)
     metadata = omexml_service.createOMEXMLMetadata()
     metadata.createRoot()
 

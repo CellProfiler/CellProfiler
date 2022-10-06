@@ -28,6 +28,7 @@ def write_image(
     PositiveInteger = jimport("ome.xml.model.primitives.PositiveInteger")
     PixelType = jimport("ome.xml.model.enums.PixelType")
     OMEXMLService = jimport("loci.formats.services.OMEXMLService")
+    IMetadata = jimport("loci.formats.meta.IMetadata")
 
     omexml_service = OMEXMLServiceFactory().getInstance(OMEXMLService)
     metadata = omexml_service.createOMEXMLMetadata()
@@ -39,6 +40,7 @@ def write_image(
     metadata.setPixelsSizeC(PositiveInteger(p2j(size_c)), 0)
     metadata.setPixelsSizeZ(PositiveInteger(p2j(size_z)), 0)
     metadata.setPixelsSizeT(PositiveInteger(p2j(size_t)), 0)
+    metadata.setPixelsBinDataBigEndian(True, 0, 0)
     metadata.setPixelsDimensionOrder(DimensionsOrder.XYCTZ, 0)
     metadata.setPixelsType(PixelType.fromString(pixel_type), 0)
 
@@ -61,7 +63,7 @@ def write_image(
 
     for i in range(size_c):
         metadata.setChannelID(f"Channel:0:{i}", 0, i)
-        metadata.setChannelSamplesPerPixel(PositiveInteger(p2j(pixels.shape[2])), 0, i)
+        metadata.setChannelSamplesPerPixel(PositiveInteger(p2j(1)), 0, i)
     
     index = c + size_c * z + size_c * size_z * t
     pixel_buffer = convert_pixels_to_buffer(pixels, pixel_type)

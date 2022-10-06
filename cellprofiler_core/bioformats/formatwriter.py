@@ -52,6 +52,7 @@ def write_image(
     elif size_c > 1:
         # meta.channel_count = size_c <- cant find
         metadata.setPixelsSizeC(PositiveInteger(p2j(pixels.shape[2])), 0)
+        # FIXME do this per channel
         metadata.setChannelSamplesPerPixel(PositiveInteger(p2j(pixels.shape[2])), 0, 0)
         omexml_service.populateOriginalMetadata(metadata, "SamplesPerPixel", str(pixels.shape[2]))
     
@@ -60,6 +61,7 @@ def write_image(
 
     for i in range(size_c):
         metadata.setChannelID(f"Channel:0:{i}", 0, i)
+        metadata.setChannelSamplesPerPixel(PositiveInteger(p2j(pixels.shape[2])), 0, i)
     
     index = c + size_c * z + size_c * size_z * t
     pixel_buffer = convert_pixels_to_buffer(pixels, pixel_type)

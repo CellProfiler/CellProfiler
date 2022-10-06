@@ -4,54 +4,12 @@ java.py - CellProfiler-specific JVM utilities
 
 import logging
 import os
-import sys
-import threading
+import scyjava
 
 import cellprofiler_core.preferences
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-def get_jars():
-    """
-    Get the final list of JAR files passed to Java
-    """
-
-    class_path = []
-    if "CLASSPATH" in os.environ:
-        class_path += os.environ["CLASSPATH"].split(os.pathsep)
-        LOGGER.debug(
-            "Adding Java class path from environment variable, " "CLASSPATH" ""
-        )
-        LOGGER.debug("    CLASSPATH=" + os.environ["CLASSPATH"])
-
-    #CTR: FIXME: Return list of all JARs to be added to the classpath.
-    return class_path
-
-
-def find_logback_xml():
-    """Find the location of the logback.xml file for Java logging config
-
-    Paths to search are the current directory, the utilities directory
-    and ../../java/src/main/resources
-    """
-    paths = [
-        os.curdir,
-        os.path.dirname(__file__),
-        os.path.join(
-            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-            "java",
-            "src",
-            "main",
-            "resources",
-        ),
-    ]
-    for path in paths:
-        target = os.path.join(path, "logback.xml")
-        if os.path.isfile(target):
-            return target
-
 
 def start_java():
     """Start CellProfiler's JVM via Javabridge
@@ -63,25 +21,18 @@ def start_java():
     cpprefs.get_awt_headless() - controls java.awt.headless to prevent
         awt from being invoked
     """
-    thread_id = threading.get_ident()
+    if scyjava.jvm_started():
+        return
+
+    # Add Bio-Formats Java dependency.
+    scyjava.config.endpoints.append("ome:formats-gpl")
+    scyjava.config.endpoints.append("org.scijava:scijava-config")
+
     LOGGER.info("Initializing Java Virtual Machine")
     args = [
         "-Dloci.bioformats.loaded=true",
-        "-Djava.util.prefs.PreferencesFactory="
-        + "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory",
     ]
 
-    logback_path = find_logback_xml()
-
-    if logback_path is not None:
-        if sys.platform.startswith("win"):
-            logback_path = logback_path.replace("\\", "/")
-            if logback_path[1] == ":":
-                # \\localhost\x$ is same as x:
-                logback_path = "//localhost/" + logback_path[0] + "$" + logback_path[2:]
-        args.append("-Dlogback.configurationFile=%s" % logback_path)
-
-    class_path = get_jars()
     awt_headless = cellprofiler_core.preferences.get_awt_headless()
     if awt_headless:
         LOGGER.debug("JVM will be started with AWT in headless mode")
@@ -95,16 +46,19 @@ def start_java():
             )
             % os.environ["CP_JDWP_PORT"]
         )
-    #CTR FIXME
-    #scyjava.start_jvm(args=args, class_path=class_path)
+    scyjava.start_jvm(options=args)
     #
     # Enable Bio-Formats directory cacheing
     #
-    #Location = scyjava.jimport("loci.common.Location")
-    #Location.cacheDirectoryListings(True)
+    Location = scyjava.jimport("loci.common.Location")
+    Location.cacheDirectoryListings(True)
     LOGGER.debug("Enabled Bio-formats directory cacheing")
 
 
 def stop_java():
     LOGGER.info("Shutting down Java Virtual Machine")
-    #CTR FIXME: scyjava.shutdown_jvm()
+    scyjava.shutdown_jvm()
+
+def jimport(package):
+    start_java()
+    return scyjava.jimport(package)

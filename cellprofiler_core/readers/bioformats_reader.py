@@ -6,6 +6,7 @@ import numpy as np
 import scyjava
 
 from ..utilities.image import is_file_url
+from ..utilities.java import jimport
 
 from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, \
     BIOFORMATS_IMAGE_EXTENSIONS
@@ -14,10 +15,6 @@ from ..reader import Reader
 
 
 logger = logging.getLogger(__name__)
-
-# Add Bio-Formats Java dependency.
-scyjava.config.endpoints.append("ome:formats-gpl")
-scyjava.config.endpoints.append("org.scijava:scijava-config")
 
 logging.info("HELLO! It's a-ME, bioformats_reader. I just added Bio-Formats endpoint.")
 
@@ -37,7 +34,7 @@ class BioformatsReader(Reader):
 
     def get_reader(self):
         if self._reader is None:
-            ImageReader = scyjava.jimport("loci.formats.ImageReader")
+            ImageReader = jimport("loci.formats.ImageReader")
             self._reader = ImageReader()
             self._is_file_open = False
             scyjava.when_jvm_stops(lambda: self._reader.close() if self._reader is not None else None)
@@ -79,8 +76,8 @@ class BioformatsReader(Reader):
         logging.info("--> bioformats_reader.read BEGINS")
         self._ensure_file_open()
 
-        FormatTools = scyjava.jimport("loci.formats.FormatTools")
-        ChannelSeparator = scyjava.jimport("loci.formats.ChannelSeparator")
+        FormatTools = jimport("loci.formats.FormatTools")
+        ChannelSeparator = jimport("loci.formats.ChannelSeparator")
         if series is not None:
             self._reader.setSeries(series)
 
@@ -217,7 +214,6 @@ class BioformatsReader(Reader):
             return image, scale
         return image
 
-
     def read_volume(self,
                     series=None,
                     c=None,
@@ -286,7 +282,7 @@ class BioformatsReader(Reader):
             return False
         try:
             logging.info(f"--> bioformats_reader.supports_format: isThisType({image_file.path}, {allow_open}")
-            ImageReader = scyjava.jimport("loci.formats.ImageReader")
+            ImageReader = jimport("loci.formats.ImageReader")
             is_this_type = ImageReader().isThisType(image_file.path, allow_open)
             logging.info(f"--> bioformats_reader.supports_format: DRUMROLL... is it compatible? ... {is_this_type}")
             return 3 if is_this_type else -1

@@ -31,8 +31,8 @@ jobs:
           pip install pyinstaller==4.10
           pip install torch==1.11.0
           pip install csbdeep
-          pip install tensorflow
           pip install h5py==3.2.1
+          pip install imageio==2.9.0
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
@@ -49,6 +49,8 @@ jobs:
           pip install --editable . --upgrade --no-use-pep517
           cd ..
           pip install --editable . --no-use-pep517
+          pip install tensorflow
+          pip install markupsafe==2.0.1
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
         if: ${{ matrix.os == 'windows-2019' }}
@@ -63,6 +65,8 @@ jobs:
           pip install --editable . --upgrade --no-use-pep517
           cd ..
           pip install --editable . --no-use-pep517
+          pip install tensorflow
+          pip install markupsafe==2.0.1
       - name: Display installed packages
         run: pip list
       - if: ${{ matrix.os == 'windows-2019' }}

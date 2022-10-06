@@ -1,7 +1,17 @@
+import os
 import scyjava
+import numpy as np
+import logging
+
+from . import omexml
+from ..utilities.java import jimport
+
+logger = logging.getLogger(__name__)
+
+p2j = lambda v: scyjava.to_java(v)
 
 def write_image(
-    filename,
+    pathname,
     pixels,
     pixel_type,
     c,
@@ -12,38 +22,72 @@ def write_image(
     size_t,
     channel_names
 ):
-    omexml = scyjava.jimport()
-    omexml.image(0).Name = os.path.split(pathname)[1]
-    p = omexml.image(0).Pixels
-    assert isinstance(p, ome.OMEXML.Pixels)
-    p.SizeX = pixels.shape[1]
-    p.SizeY = pixels.shape[0]
-    p.SizeC = size_c
-    p.SizeT = size_t
-    p.SizeZ = size_z
-    p.DimensionOrder = ome.DO_XYCZT
-    p.PixelType = pixel_type
-    index = c + size_c * z + size_c * size_z * t
-    if pixels.ndim == 3:
-        p.SizeC = pixels.shape[2]
-        p.Channel(0).SamplesPerPixel = pixels.shape[2]
-        omexml.structured_annotations.add_original_metadata(
-            ome.OM_SAMPLES_PER_PIXEL, str(pixels.shape[2]))
-    elif size_c > 1:
-        p.channel_count = size_c
+    ImageWriter = jimport("loci.formats.ImageWriter")
+    OMEXMLService = jimport("loci.formats.services.OMEXMLServiceImpl")
+    DimensionsOrder = jimport("ome.xml.model.enums.DimensionOrder")
+    PositiveInteger = jimport("ome.xml.model.primitives.PositiveInteger")
+    PixelType = jimport("ome.xml.model.enums.PixelType")
 
+    omexml_service = OMEXMLService()
+    metadata = omexml_service.createOMEXMLMetadata()
+    metadata.createRoot()
+
+    metadata.setImageName(os.path.split(pathname)[1], 0)
+    metadata.setPixelsSizeX(PositiveInteger(p2j(pixels.shape[1])), 0)
+    metadata.setPixelsSizeY(PositiveInteger(p2j(pixels.shape[0])), 0)
+    metadata.setPixelsSizeC(PositiveInteger(p2j(size_c)), 0)
+    metadata.setPixelsSizeZ(PositiveInteger(p2j(size_z)), 0)
+    metadata.setPixelsSizeT(PositiveInteger(p2j(size_t)), 0)
+    metadata.setPixelsDimensionOrder(DimensionsOrder.XYCTZ, 0)
+    metadata.setPixelsType(PixelType.fromString(pixel_type), 0)
+
+
+    if pixels.ndim == 3:
+        metadata.setPixelsSizeC(PositiveInteger(p2j(pixels.shape[2])), 0)
+        metadata.setChannelSamplesPerPixel(PositiveInteger(p2j(pixels.shape[2])), 0, 0)
+        omexml_service.populateOriginalMetadata(metadata, "SamplesPerPixel", str(pixels.shape[2]))
+        # omexml.structured_annotations.add_original_metadata(
+        #     ome.OM_SAMPLES_PER_PIXEL, str(pixels.shape[2]))
+    elif size_c > 1:
+        # meta.channel_count = size_c <- cant find
+        metadata.setPixelsSizeC(PositiveInteger(p2j(pixels.shape[2])), 0)
+        metadata.setChannelSamplesPerPixel(PositiveInteger(p2j(pixels.shape[2])), 0, 0)
+        omexml_service.populateOriginalMetadata(metadata, "SamplesPerPixel", str(pixels.shape[2]))
+    
+    metadata.setImageID("Image:0", 0)
+    metadata.setPixelsID("Pixels:0", 0)
+
+    for i in range(size_c):
+        metadata.setChannelID(f"Channel:0:{i}", 0, i)
+    
+    index = c + size_c * z + size_c * size_z * t
     pixel_buffer = convert_pixels_to_buffer(pixels, pixel_type)
-    xml = omexml.to_xml()
-    script = """
-    importClass(Packages.loci.formats.services.OMEXMLService,
-                Packages.loci.common.services.ServiceFactory,
-                Packages.loci.formats.ImageWriter);
-    var service = new ServiceFactory().getInstance(OMEXMLService);
-    var metadata = service.createOMEXMLMetadata(xml);
-    var writer = new ImageWriter();
-    writer.setMetadataRetrieve(metadata);
-    writer.setId(path);
-    writer.setInterleaved(true);
-    writer.saveBytes(index, buffer);
-    writer.close();
-    """
+
+
+    writer = ImageWriter()
+    writer.setMetadataRetrieve(metadata)
+    writer.setId(pathname)
+    writer.setInterleaved(True)
+    writer.saveBytes(index, pixel_buffer)
+    writer.close()
+
+def convert_pixels_to_buffer(pixels, pixel_type):
+    '''Convert the pixels in the image into a buffer of the right pixel type
+
+    pixels - a 2d monochrome or color image
+
+    pixel_type - one of the OME pixel types
+
+    returns a 1-d byte array
+    '''
+    if pixel_type == omexml.PT_UINT8:
+        as_dtype = np.uint8
+    elif pixel_type == omexml.PT_UINT16:
+        as_dtype = "<u2"
+    elif pixel_type == omexml.PT_FLOAT:
+        as_dtype = "<f4"
+    else:
+        raise NotImplementedError("Unsupported pixel type: %d" % pixel_type)
+
+    return np.frombuffer(np.ascontiguousarray(pixels, as_dtype).data, np.uint8)
+

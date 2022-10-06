@@ -90,6 +90,7 @@ class BioformatsReader(Reader):
             width, height = self._reader.getSizeX(), self._reader.getSizeY()
 
         logging.info("--> bioformats_reader.read: Decided openBytes func")
+        # FIXME instead of np.frombuffer use scyjava.to_python, ideally that wraps memory
         pixel_type = self._reader.getPixelType()
         little_endian = self._reader.isLittleEndian()
         if pixel_type == FormatTools.INT8:

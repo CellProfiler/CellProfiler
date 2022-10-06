@@ -89,6 +89,8 @@ setuptools.setup(
         "scikit-learn==0.24.1",
         "scipy==1.4.1",
         "six",
+        "stardist==0.8.1",
+        "tensorflow",
         "wxPython==4.1.0",
     ],
     license="BSD",

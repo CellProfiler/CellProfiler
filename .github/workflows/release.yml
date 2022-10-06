@@ -30,6 +30,9 @@ jobs:
           pip install numpy==1.20.1
           pip install pyinstaller==4.10
           pip install torch==1.11.0
+          pip install csbdeep
+          pip install tensorflow
+          pip install h5py==3.2.1
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
@@ -66,7 +69,7 @@ jobs:
         name: Windows pyinstaller build and package
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
-          iscc /dMyAppVersion="4.2.10002-cellpose" "distribution/windows/cellprofiler.iss"
+          iscc /dMyAppVersion="4.2.10002-ai" "distribution/windows/cellprofiler.iss"
       - if: ${{ matrix.os == 'macos-10.15' }}
         name: MacOS pyinstaller build and package
         run: |
@@ -77,23 +80,23 @@ jobs:
             --window-size 800 529 \
             --icon-size 130 \
             --text-size 14 \
-            --icon "CellProfiler+Cellpose.app" 260 250 \
+            --icon "CellProfiler+AI.app" 260 250 \
             --app-drop-link 540 250 \
             --hdiutil-quiet \
-            "./dist/CellProfiler-macOS-4.2.10002-cellpose.dmg" \
-            "./dist/CellProfiler+Cellpose.app"
+            "./dist/CellProfiler-macOS-4.2.10002-ai.dmg" \
+            "./dist/CellProfiler+AI.app"
       - if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
         name: MacOS artifact upload
         with:
-          name: CellProfiler-macOS-4.2.10002-cellpose.dmg
-          path: ./dist/CellProfiler-macOS-4.2.10002-cellpose.dmg
+          name: CellProfiler-macOS-4.2.10002-ai.dmg
+          path: ./dist/CellProfiler-macOS-4.2.10002-ai.dmg
       - if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/upload-artifact@v2
         name: Windows artifact upload
         with:
-          name: CellProfiler-Windows-4.2.10002-cellpose.exe
-          path: ./distribution/windows/Output/CellProfiler-Windows-4.2.10002-cellpose.exe
+          name: CellProfiler-Windows-4.2.10002-ai.exe
+          path: ./distribution/windows/Output/CellProfiler-Windows-4.2.10002-ai.exe
   upload:
     name: upload
     needs: build
@@ -112,30 +115,30 @@ jobs:
           tag_name: ${{ github.ref }}
       - uses: actions/download-artifact@v1
         with:
-          name: CellProfiler-macOS-4.2.10002-cellpose.dmg
+          name: CellProfiler-macOS-4.2.10002-ai.dmg
           path: ./
       - uses: actions/download-artifact@v1
         with:
-          name: CellProfiler-Windows-4.2.10002-cellpose.exe
+          name: CellProfiler-Windows-4.2.10002-ai.exe
           path: ./
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/zip
-          asset_name: CellProfiler-macOS-4.2.10002-cellpose.dmg
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.10002-cellpose.dmg
+          asset_name: CellProfiler-macOS-4.2.10002-ai.dmg
+          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.10002-ai.dmg
           upload_url: ${{ steps.create_release.outputs.upload_url }}
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/exe
-          asset_name: CellProfiler-Windows-4.2.10002-cellpose.exe
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.2.10002-cellpose.exe
+          asset_name: CellProfiler-Windows-4.2.10002-ai.exe
+          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.2.10002-ai.exe
           upload_url: ${{ steps.create_release.outputs.upload_url }}
 name: create-release
 on:
   push:
     branches:
-      - compat-4-2-cellpose
+      - compat-4-2-ai

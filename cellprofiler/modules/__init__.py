@@ -74,6 +74,7 @@ builtin_modules = {
     "resizeobjects": "ResizeObjects",
     "resize": "Resize",
     "runcellpose": "RunCellpose",
+    "runstardist": "RunStarDist",
     "runimagejmacro": "RunImageJMacro",
     "savecroppedobjects": "SaveCroppedObjects",
     "saveimages": "SaveImages",

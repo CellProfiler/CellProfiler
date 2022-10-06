@@ -1576,7 +1576,7 @@ class PipelineController(object):
         pathname = get_current_workspace_path()
         if pathname is None:
             self.__frame.Title = \
-                f"CellProfiler {cellprofiler.__version__} + CellPose"
+                f"CellProfiler {cellprofiler.__version__} + AI"
             return
         path, filename = os.path.split(pathname)
         if self.__dirty_workspace:

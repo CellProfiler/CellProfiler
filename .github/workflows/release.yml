@@ -64,7 +64,6 @@ jobs:
         run: |
           pip install torch==1.11.0
           pip install cellpose==2.1.0
-          pip install 
           pip install csbdeep
           pip install h5py==3.2.1
           pip install stardist==0.8.1

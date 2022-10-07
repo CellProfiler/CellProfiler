@@ -29,9 +29,6 @@ jobs:
           pip install setuptools==49
           pip install numpy==1.20.1
           pip install pyinstaller==4.10
-          pip install torch==1.11.0
-          pip install csbdeep
-          pip install h5py==3.2.1
           pip install imageio==2.9.0
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
@@ -49,8 +46,6 @@ jobs:
           pip install --editable . --upgrade --no-use-pep517
           cd ..
           pip install --editable . --no-use-pep517
-          pip install tensorflow
-          pip install markupsafe==2.0.1
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\jdk\14.0.1\x64
         if: ${{ matrix.os == 'windows-2019' }}
@@ -65,6 +60,14 @@ jobs:
           pip install --editable . --upgrade --no-use-pep517
           cd ..
           pip install --editable . --no-use-pep517
+      - name: Install plugins
+        run: |
+          pip install torch==1.11.0
+          pip install cellpose==2.1.0
+          pip install 
+          pip install csbdeep
+          pip install h5py==3.2.1
+          pip install stardist==0.8.1
           pip install tensorflow
           pip install markupsafe==2.0.1
       - name: Display installed packages

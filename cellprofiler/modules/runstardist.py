@@ -2,8 +2,6 @@ import os
 
 from skimage.transform import resize
 
-from stardist.models import StarDist2D, StarDist3D
-
 from csbdeep.utils import normalize
 
 from cellprofiler_core.image import Image
@@ -13,7 +11,6 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.text import Integer, ImageName, Directory, Float
-from csbdeep.models.pretrained import get_registered_models
 
 __doc__ = f"""\
 RunStardist
@@ -50,23 +47,17 @@ YES          YES          NO
 ============ ============ ===============
 
 """
-# get available models
-_models2d, _aliases2d = get_registered_models(StarDist2D)
-_models3d, _aliases3d = get_registered_models(StarDist3D)
 
-# use first alias for model selection (if alias exists)
-models2d = [((_aliases2d[m][0] if len(_aliases2d[m]) > 0 else m), m) for m in
-            _models2d]
-models3d = [((_aliases3d[m][0] if len(_aliases3d[m]) > 0 else m), m) for m in
-            _models3d]
+
+GREY_MODELS = ['Versatile (fluorescent nuclei)',
+               'DSB 2018 (from StarDist 2D paper)']
+COLOR_MODELS = ['Versatile (H&E nuclei)']
+
+MODELS_2D = GREY_MODELS + COLOR_MODELS + ['2D_demo']
+MODELS_3D = ['3D_demo']
 
 CUSTOM_MODEL = 'Custom 2D/3D'
-MODEL_OPTIONS = [('2D', StarDist2D), ('3D', StarDist3D),
-                 ('Custom 2D/3D', CUSTOM_MODEL)]
-
-GREY_1 = 'Versatile (fluorescent nuclei)'
-GREY_2 = 'DSB 2018 (from StarDist 2D paper)'
-COLOR_1 = 'Versatile (H&E nuclei)'
+MODEL_OPTIONS = ['2D', '3D', CUSTOM_MODEL]
 
 
 class RunStarDist(ImageSegmentation):
@@ -85,8 +76,8 @@ class RunStarDist(ImageSegmentation):
 
         self.model = Choice(
             text="Model Type",
-            choices=list(zip(*MODEL_OPTIONS))[0],
-            value='2D',
+            choices=MODEL_OPTIONS,
+            value=MODEL_OPTIONS[0],
             doc="""\
 StarDist comes with models for detecting nuclei. Alternatively, you can supply a custom-trained model 
 generated outside of CellProfiler within Python. Custom models can be useful if working with unusual cell types.
@@ -95,8 +86,8 @@ generated outside of CellProfiler within Python. Custom models can be useful if 
 
         self.model_choice2D = Choice(
             text="Model",
-            choices=list(zip(*models2d))[0],
-            value='Versatile (fluorescent nuclei)',
+            choices=MODELS_2D,
+            value=MODELS_2D[0],
             doc="""\
 The inbuilt fluorescent and DSB models expect greyscale images. The H&E model expects a color image as input (from 
 brightfield). Custom models will require images of the type they were trained with.
@@ -105,8 +96,8 @@ brightfield). Custom models will require images of the type they were trained wi
 
         self.model_choice3D = Choice(
             text="Model",
-            choices=list(zip(*models3d))[0],
-            value="3D_demo",
+            choices=MODELS_3D,
+            value=MODELS_3D[0],
             doc="""\
 It should be noted that the models supplied with StarDist.
 """,
@@ -252,14 +243,20 @@ Prevent overlapping
         nms_thresh = self.nms_thresh.value
 
         # Validate some settings
-        if self.model_choice2D.value in (GREY_1, GREY_2) and x.multichannel:
+        if self.model_choice2D.value in GREY_MODELS and x.multichannel:
             raise ValueError(
                 "Color images are not supported by this model. Please provide greyscale images.")
-        elif self.model_choice2D.value == COLOR_1 and not x.multichannel:
+        elif self.model_choice2D.value in COLOR_MODELS and not x.multichannel:
             raise ValueError(
                 "Greyscale images are not supported by this model. Please provide a color overlay.")
 
-        if self.model.value == CUSTOM_MODEL:
+        if self.model.value == '2D':
+            from stardist.models import StarDist2D
+            model = StarDist2D.from_pretrained(self.model_choice2D.value)
+        elif self.model.value == '3D':
+            from stardist.models import StarDist3D
+            model = StarDist3D.from_pretrained(self.model_choice3D.value)
+        elif self.model.value == CUSTOM_MODEL:
             model_directory, model_name = os.path.split(
                 self.model_directory.get_absolute_path())
             if x.volumetric:
@@ -267,14 +264,11 @@ Prevent overlapping
                 model = StarDist3D(config=None, basedir=model_directory,
                                    name=model_name)
             else:
+                from stardist.models import StarDist2D
                 model = StarDist2D(config=None, basedir=model_directory,
                                    name=model_name)
-        if self.model.value == '2D':
-            model = StarDist2D.from_pretrained(self.model_choice2D.value)
-
-        if self.model.value == '3D':
-            from stardist.models import StarDist3D
-            model = StarDist3D.from_pretrained(self.model_choice3D.value)
+        else:
+            raise ValueError(f"Model type {self.model.value} does not exist")
 
         tiles = None
         if self.tile_image.value:

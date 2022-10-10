@@ -1,6 +1,5 @@
 import numpy
 import os
-from cellpose import models, io, core
 from skimage.transform import resize
 import importlib.metadata
 
@@ -61,9 +60,9 @@ YES          YES          NO
 """
 
 
-
-model_dic = models.MODEL_NAMES
-model_dic.append('custom')
+MODEL_NAMES = ['cyto', 'nuclei', 'tissuenet', 'livecell', 'cyto2', 'general',
+               'CP', 'CPx', 'TN1', 'TN2', 'TN3', 'LC1', 'LC2', 'LC3', 'LC4',
+               'custom']
 
 
 class RunCellpose(ImageSegmentation):
@@ -96,7 +95,7 @@ detect much smaller objects it may be more efficient to resize the image first u
 
         self.mode = Choice(
             text="Detection mode",
-            choices= model_dic,
+            choices=MODEL_NAMES,
             value='cyto2',
             doc="""\
 CellPose comes with models for detecting nuclei or cells. Alternatively, you can supply a custom-trained model
@@ -336,6 +335,7 @@ Minimum number of pixels per mask, can turn off by setting value to -1
                     % model_path, self.model_file_name,
                 )
             try:
+                from cellpose import models
                 model = models.CellposeModel(pretrained_model=model_path, gpu=self.use_gpu.value)
             except:
                 raise ValidationError(
@@ -344,6 +344,7 @@ Minimum number of pixels per mask, can turn off by setting value to -1
                 )
 
     def run(self, workspace):
+        from cellpose import models
         if self.mode.value != 'custom':
             model = models.Cellpose(model_type= self.mode.value,
                                     gpu=self.use_gpu.value)
@@ -497,6 +498,7 @@ Minimum number of pixels per mask, can turn off by setting value to -1
             )
 
     def do_check_gpu(self):
+        from cellpose import core
         import importlib.util
         torch_installed = importlib.util.find_spec('torch') is not None
         #if the old version of cellpose <2.0, then use istorch kwarg

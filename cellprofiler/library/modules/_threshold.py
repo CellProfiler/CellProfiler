@@ -102,14 +102,14 @@ def threshold(
             **kwargs,
         )
 
-        binary_image = apply_threshold(
+        binary_image, sigma = apply_threshold(
             image,
             threshold=final_threshold,
             mask=mask,
             smoothing=smoothing,
         )
 
-        return final_threshold, orig_threshold, guide_threshold, binary_image
+        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
 
     elif threshold_scope.casefold() == "global":
         final_threshold = get_global_threshold(
@@ -136,10 +136,10 @@ def threshold(
             **kwargs,
         )
         guide_threshold = None
-        binary_image = apply_threshold(
+        binary_image, sigma = apply_threshold(
             image,
             threshold=final_threshold,
             mask=mask,
             smoothing=smoothing,
         )
-        return final_threshold, orig_threshold, guide_threshold, binary_image
+        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma

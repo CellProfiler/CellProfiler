@@ -352,7 +352,7 @@ def apply_threshold(image, threshold, mask=None, smoothing=0):
         # Create a fake mask if one isn't provided
         mask = numpy.full(image.shape, True)
     if smoothing == 0:
-        return (image >= threshold) & mask
+        return (image >= threshold) & mask, 0
     else:
         # Convert from a scale into a sigma. What I've done here
         # is to structure the Gaussian so that 1/2 of the smoothed
@@ -365,4 +365,4 @@ def apply_threshold(image, threshold, mask=None, smoothing=0):
         lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0),
         mask,
     )
-    return (blurred_image >= threshold) & mask
+    return (blurred_image >= threshold) & mask, sigma

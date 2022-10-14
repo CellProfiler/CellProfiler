@@ -745,7 +745,7 @@ def test_threshold_robust_background_mean_sd_volume():
 
     t_local = module.final_threshold
 
-    t_local_expected, _, _, _ = cellprofiler.library.modules.threshold(
+    t_local_expected, _, _, _, _ = cellprofiler.library.modules.threshold(
         data,
         threshold_method = "robust_background",
         threshold_scope = "global",
@@ -775,7 +775,7 @@ def test_threshold_robust_background_median_sd_volume():
 
     t_local = module.final_threshold
 
-    t_local_expected, _, _, _ = cellprofiler.library.modules.threshold(
+    t_local_expected, _, _, _, _ = cellprofiler.library.modules.threshold(
         data,
         threshold_method = "robust_background",
         threshold_scope = "global",
@@ -807,7 +807,7 @@ def test_threshold_robust_background_mode_sd_volume():
 
     t_global = module.orig_threshold
 
-    t_local_expected, t_global_expected, _, _ = cellprofiler.library.modules.threshold(
+    t_local_expected, t_global_expected, _, _, _ = cellprofiler.library.modules.threshold(
         data,
         threshold_method = "robust_background",
         threshold_scope = "global",
@@ -841,7 +841,7 @@ def test_threshold_robust_background_mean_mad_volume():
 
     t_global = module.orig_threshold
 
-    t_local_expected, t_global_expected, _, _ = cellprofiler.library.modules.threshold(
+    t_local_expected, t_global_expected, _, _, _ = cellprofiler.library.modules.threshold(
         data,
         threshold_method = "robust_background",
         threshold_scope = "global",

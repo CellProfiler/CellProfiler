@@ -786,7 +786,7 @@ staining.
         )
         dimensions = input_image.dimensions
 
-        self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image = self.get_threshold(
+        self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, _ = self.get_threshold(
             input_image,
             workspace
         )
@@ -844,7 +844,7 @@ staining.
             final_threshold = self.manual_threshold.value 
             orig_threshold = self.manual_threshold.value
             guide_threshold = None 
-            binary_image = apply_threshold(
+            binary_image, sigma = apply_threshold(
                 input_image.pixel_data,
                 threshold=final_threshold,
                 mask=input_image.mask,
@@ -860,7 +860,7 @@ staining.
             final_threshold *= self.threshold_correction_factor.value
             final_threshold = min(max(final_threshold, self.threshold_range.min), self.threshold_range.max)
             guide_threshold = None 
-            binary_image = apply_threshold(
+            binary_image, sigma = apply_threshold(
                 input_image.pixel_data,
                 threshold=final_threshold,
                 mask=input_image.mask,
@@ -878,7 +878,7 @@ staining.
                     threshold_method = "multiotsu"
                 else:
                     threshold_method = self.convert_setting(self.local_operation.value)
-            final_threshold, orig_threshold, guide_threshold, binary_image = threshold(
+            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
                     threshold_scope=self.threshold_scope.value,
@@ -899,7 +899,7 @@ staining.
                     automatic=automatic
             )
         
-        return final_threshold, orig_threshold, guide_threshold, binary_image
+        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
 
     def display(self, workspace, figure):
         dimensions = workspace.display_data.dimensions

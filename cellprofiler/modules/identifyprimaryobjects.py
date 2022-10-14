@@ -1076,7 +1076,7 @@ If "*{NO}*" is selected, the following settings are used:
             self.x_name.value, must_be_grayscale=True
         )
 
-        final_threshold, orig_threshold, guide_threshold, binary_image = self.threshold.get_threshold(
+        final_threshold, orig_threshold, guide_threshold, binary_image, sigma = self.threshold.get_threshold(
             input_image, workspace, automatic=self.basic
         )
 
@@ -1188,7 +1188,7 @@ If "*{NO}*" is selected, the following settings are used:
                         "%.1f %%" % (100.0 * float(object_area) / float(total_area)),
                     ]
                 )
-                # statistics.append(["Thresholding filter size", "%.1f" % sigma])
+                statistics.append(["Thresholding filter size", "%.1f" % sigma])
                 statistics.append(["Threshold", "%0.3g" % global_threshold])
                 if self.basic or self.unclump_method != UN_NONE:
                     statistics.append(

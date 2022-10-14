@@ -544,11 +544,11 @@ segmentation.""",
         if self.method == M_DISTANCE_N:
             has_threshold = False
         else:
-            thresholded_image, global_threshold, sigma = self._threshold_image(
+            thresholded_image, global_threshold = self._threshold_image(
                 image_name, workspace
             )
             workspace.display_data.global_threshold = global_threshold
-            workspace.display_data.threshold_sigma = sigma
+            # workspace.display_data.threshold_sigma = sigma
             has_threshold = True
 
         #
@@ -795,7 +795,7 @@ segmentation.""",
     def _threshold_image(self, image_name, workspace, automatic=False):
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        final_threshold, orig_threshold, guide_threshold = self.threshold.get_threshold(
+        final_threshold, orig_threshold, guide_threshold, binary_image = self.threshold.get_threshold(
             image, workspace, automatic
         )
 
@@ -807,15 +807,15 @@ segmentation.""",
             guide_threshold,
         )
 
-        binary_image, sigma = self.threshold.apply_threshold(
-            image, final_threshold, automatic
-        )
+        # binary_image, sigma = self.threshold.apply_threshold(
+        #     image, final_threshold, automatic
+        # )
 
         self.threshold.add_fg_bg_measurements(
             self.y_name.value, workspace.measurements, image, binary_image
         )
 
-        return binary_image, numpy.mean(numpy.atleast_1d(final_threshold)), sigma
+        return binary_image, numpy.mean(numpy.atleast_1d(final_threshold))
 
     def display(self, workspace, figure):
         object_pct = workspace.display_data.object_pct
@@ -844,13 +844,13 @@ segmentation.""",
             statistics.append(["10th pctile diameter", "%.1f pixels" % low_diameter])
             statistics.append(["Median diameter", "%.1f pixels" % median_diameter])
             statistics.append(["90th pctile diameter", "%.1f pixels" % high_diameter])
-            if self.method != M_DISTANCE_N:
-                statistics.append(
-                    [
-                        "Thresholding filter size",
-                        "%.1f" % workspace.display_data.threshold_sigma,
-                    ]
-                )
+            # if self.method != M_DISTANCE_N:
+            #     statistics.append(
+            #         [
+            #             "Thresholding filter size",
+            #             "%.1f" % workspace.display_data.threshold_sigma,
+            #         ]
+            #     )
             statistics.append(["Area covered by objects", "%.1f %%" % object_pct])
         workspace.display_data.statistics = statistics
 

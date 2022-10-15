@@ -349,7 +349,7 @@ class Objects:
 
         parents_of_children = numpy.asarray(histogram.argmax(axis=0))
         if len(parents_of_children.shape) == 2:
-            parents_of_children = numpy.squeeze(parents_of_children)
+            parents_of_children = numpy.squeeze(parents_of_children, axis=0)
         #
         # Create a histogram of # of children per parent
         children_per_parent = numpy.histogram(

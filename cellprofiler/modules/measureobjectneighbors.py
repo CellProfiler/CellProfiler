@@ -5,7 +5,8 @@ MeasureObjectNeighbors
 **MeasureObjectNeighbors** calculates how many neighbors each object
 has and records various properties about the neighbors’ relationships,
 including the percentage of an object’s edge pixels that touch a
-neighbor.
+neighbor. Please note that the distances reported for object 
+measurements are center-to-center distances, not edge-to-edge distances.
 
 Given an image with objects identified (e.g., nuclei or cells), this
 module determines how many neighbors each object has. You can specify
@@ -37,10 +38,10 @@ Measurements made by this module
    distance.
 -  *FirstClosestObjectNumber:* The index of the closest object.
 -  *FirstClosestDistance:* The distance to the closest object (in units
-   of pixels).
+   of pixels), measured between object centers.
 -  *SecondClosestObjectNumber:* The index of the second closest object.
 -  *SecondClosestDistance:* The distance to the second closest object (in units
-   of pixels).
+   of pixels), measured between object centers.
 -  *AngleBetweenNeighbors:* The angle formed with the object center as
    the vertex and the first and second closest object centers along the
    vectors.
@@ -153,7 +154,9 @@ neighbors:
    any of their boundary pixels are adjacent after expansion.
 -  *%(D_WITHIN)s:* Each object is expanded by the number of pixels you
    specify. Two objects are neighbors if they have adjacent pixels after
-   expansion.
+   expansion. Note that *all* objects are expanded by this amount (e.g., 
+   if this distance is set to 10, a pair of objects will count as 
+   neighbors if their edges are 20 pixels apart or closer).
 
 For *%(D_ADJACENT)s* and *%(D_EXPAND)s*, the
 *%(M_PERCENT_TOUCHING)s* measurement is the percentage of pixels on

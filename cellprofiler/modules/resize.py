@@ -4,8 +4,7 @@ Resize
 
 **Resize** resizes images (changes their resolution).
 
-This module is compatible with 2D and 3D/volumetric images; for 3D images the
-module resizes only in X and Y, not in Z. 
+This module is compatible with 2D and 3D/volumetric images. 
 
 Images are resized (made smaller or larger) based on your input. You can
 resize an image by applying a resizing factor or by specifying the
@@ -32,7 +31,7 @@ import numpy
 import skimage.transform
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
-from cellprofiler_core.setting import Divider, HiddenCount, SettingsGroup
+from cellprofiler_core.setting import Divider, HiddenCount, SettingsGroup, Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
@@ -52,11 +51,11 @@ I_BICUBIC = "Bicubic"
 
 I_ALL = [I_NEAREST_NEIGHBOR, I_BILINEAR, I_BICUBIC]
 
-S_ADDITIONAL_IMAGE_COUNT = 9
+S_ADDITIONAL_IMAGE_COUNT = 12
 
 
-class Resize(ImageProcessing):
-    variable_revision_number = 4
+class Resize (ImageProcessing):
+    variable_revision_number = 5
 
     module_name = "Resize"
 
@@ -73,8 +72,30 @@ The following options are available:
 -  *Resize by specifying desired final dimensions:* Enter the new height and width of the resized image, in units of pixels.""",
         )
 
-        self.resizing_factor = Float(
-            "Resizing factor",
+        self.resizing_factor_x = Float(
+            "X Resizing factor",
+            0.25,
+            minval=0,
+            doc="""\
+*(Used only if resizing by a fraction or multiple of the original size)*
+
+Numbers less than one (that is, fractions) will shrink the image;
+numbers greater than one (that is, multiples) will enlarge the image.""",
+        )
+
+        self.resizing_factor_y= Float(
+            "Y Resizing factor",
+            0.25,
+            minval=0,
+            doc="""\
+*(Used only if resizing by a fraction or multiple of the original size)*
+
+Numbers less than one (that is, fractions) will shrink the image;
+numbers greater than one (that is, multiples) will enlarge the image.""",
+        )
+
+        self.resizing_factor_z= Float(
+            "Z Resizing factor",
             0.25,
             minval=0,
             doc="""\
@@ -100,7 +121,7 @@ You have two options on how to resize your image:
         )
 
         self.specific_width = Integer(
-            "Width of the final image",
+            "Width (x) of the final image",
             100,
             minval=1,
             doc="""\
@@ -110,13 +131,23 @@ Enter the desired width of the final image, in pixels.""",
         )
 
         self.specific_height = Integer(
-            "Height of the final image",
+            "Height (y) of the final image",
             100,
             minval=1,
             doc="""\
 *(Used only if resizing by specifying desired final dimensions)*
 
 Enter the desired height of the final image, in pixels.""",
+        )
+
+        self.specific_planes = Integer(
+            "# of planes (z) in the final image",
+            10,
+            minval=1,
+            doc="""\
+*(Used only if resizing by specifying desired final dimensions)*
+
+Enter the desired number of planes in the final image.""",
         )
 
         self.specific_image = ImageSubscriber(
@@ -193,9 +224,12 @@ resized with the same settings as the first image.""",
 
         settings += [
             self.size_method,
-            self.resizing_factor,
+            self.resizing_factor_x,
+            self.resizing_factor_y,
+            self.resizing_factor_z,
             self.specific_width,
             self.specific_height,
+            self.specific_planes,
             self.interpolation,
             self.use_manual_or_image,
             self.specific_image,
@@ -210,11 +244,14 @@ resized with the same settings as the first image.""",
     def help_settings(self):
         return super(Resize, self).help_settings() + [
             self.size_method,
-            self.resizing_factor,
+            self.resizing_factor_x,
+            self.resizing_factor_y,
+            self.resizing_factor_z,
             self.use_manual_or_image,
             self.specific_image,
             self.specific_width,
             self.specific_height,
+            self.specific_planes,
             self.interpolation,
         ]
 
@@ -224,14 +261,14 @@ resized with the same settings as the first image.""",
         visible_settings += [self.size_method]
 
         if self.size_method == R_BY_FACTOR:
-            visible_settings += [self.resizing_factor]
+            visible_settings += [self.resizing_factor_x, self.resizing_factor_y, self.resizing_factor_z,]
         elif self.size_method == R_TO_SIZE:
             visible_settings += [self.use_manual_or_image]
 
             if self.use_manual_or_image == C_IMAGE:
                 visible_settings += [self.specific_image]
             elif self.use_manual_or_image == C_MANUAL:
-                visible_settings += [self.specific_width, self.specific_height]
+                visible_settings += [self.specific_width, self.specific_height, self.specific_planes]
         else:
             raise ValueError(
                 "Unsupported size method: {}".format(self.size_method.value)
@@ -283,33 +320,42 @@ resized with the same settings as the first image.""",
 
         shape = numpy.array(image_pixels.shape).astype(float)
 
+
         if self.size_method.value == R_BY_FACTOR:
-            factor = self.resizing_factor.value
+            factor_x = self.resizing_factor_x.value
+
+            factor_y = self.resizing_factor_y.value
 
             if image.volumetric:
+                factor_z = self.resizing_factor_z.value
                 height, width = shape[1:3]
+                planes = shape [0]
+                planes = numpy.round(planes * factor_z)
             else:
                 height, width = shape[:2]
 
-            height = numpy.round(height * factor)
+            height = numpy.round(height * factor_y)
 
-            width = numpy.round(width * factor)
+            width = numpy.round(width * factor_x)
+
         else:
             if self.use_manual_or_image.value == C_MANUAL:
                 height = self.specific_height.value
                 width = self.specific_width.value
+                if image.volumetric:
+                    planes = self.specific_planes.value
             else:
                 other_image = workspace.image_set.get_image(self.specific_image.value)
 
                 if image.volumetric:
-                    height, width = other_image.pixel_data.shape[1:3]
+                    planes, height, width = other_image.pixel_data.shape[:3]
                 else:
                     height, width = other_image.pixel_data.shape[:2]
 
         new_shape = []
 
         if image.volumetric:
-            new_shape += [shape[0]]
+            new_shape += [planes]
 
         new_shape += [height, width]
 
@@ -429,12 +475,12 @@ resized with the same settings as the first image.""",
             )
         ):
             if multichannel:
-                figure.subplot_imshow(
-                    0, i, input_image_pixels, title=input_image_name,
+                figure.subplot_imshow_color(
+                    0, i, input_image_pixels, title=input_image_name, volumetric=dimensions==3, normalize=None,
                 )
 
-                figure.subplot_imshow(
-                    1, i, output_image_pixels, title=output_image_name,
+                figure.subplot_imshow_color(
+                    1, i, output_image_pixels, title=output_image_name, volumetric=dimensions==3, normalize=None,
                 )
             else:
                 figure.subplot_imshow_bw(
@@ -465,5 +511,12 @@ resized with the same settings as the first image.""",
                 setting_values[:7] + [C_MANUAL, "None"] + setting_values[7:]
             )
             variable_revision_number = 4
+        
+        if variable_revision_number == 4:
+            #Add X, Y and Z resizing factor 
+            setting_values = (
+                setting_values[:3] + [setting_values[3], setting_values[3], 1] + setting_values[4:6] + ["10"] + setting_values[6:]
+            )
+            variable_revision_number = 5
 
         return setting_values, variable_revision_number

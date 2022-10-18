@@ -38,7 +38,9 @@ def test_load_v3():
     assert module.x_name == "DNA"
     assert module.y_name == "ResizedDNA"
     assert module.size_method == cellprofiler.modules.resize.R_TO_SIZE
-    assert round(abs(module.resizing_factor.value - 0.25), 7) == 0
+    assert round(abs(module.resizing_factor_x.value - 0.25), 7) == 0
+    assert round(abs(module.resizing_factor_y.value - 0.25), 7) == 0
+    assert round(abs(module.resizing_factor_z.value - 1), 7) == 0
     assert module.specific_width == 141
     assert module.specific_height == 169
     assert module.interpolation == cellprofiler.modules.resize.I_BILINEAR
@@ -94,7 +96,7 @@ def test_rescale_triple_color():
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
     )
-    module.resizing_factor.value = 3.0
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 3.0
     module.run(workspace)
     result_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     result = result_image.pixel_data
@@ -112,7 +114,7 @@ def test_rescale_triple_bw():
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
     )
-    module.resizing_factor.value = 3.0
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 3.0
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
     numpy.testing.assert_array_almost_equal(result, expected)
@@ -127,7 +129,7 @@ def test_third():
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
     )
-    module.resizing_factor.value = 1.0 / 3.0
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 1.0 / 3.0
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
     numpy.testing.assert_array_almost_equal(result, expected)
@@ -142,7 +144,7 @@ def test_bilinear():
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_BILINEAR,
     )
-    module.resizing_factor.value = 3.0
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 3.0
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
     numpy.testing.assert_array_almost_equal(result, expected)
@@ -157,7 +159,7 @@ def test_bicubic():
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_BICUBIC,
     )
-    module.resizing_factor.value = 3.0
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 3.0
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
     numpy.testing.assert_array_almost_equal(result, expected)
@@ -251,7 +253,7 @@ def test_resize_with_cropping():
         mask,
         cropping,
     )
-    module.resizing_factor.value = 0.5
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 0.5
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert tuple(result.mask.shape) == (5, 10)
@@ -277,7 +279,7 @@ def test_resize_with_cropping_bigger():
         mask,
         cropping,
     )
-    module.resizing_factor.value = 2
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 2
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert tuple(result.mask.shape) == (20, 40)
@@ -294,7 +296,7 @@ def test_resize_color():
         cellprofiler.modules.resize.R_BY_FACTOR,
         cellprofiler.modules.resize.I_BILINEAR,
     )
-    module.resizing_factor.value = 0.5
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 0.5
     module.run(workspace)
     result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
     assert tuple(result.pixel_data.shape) == (10, 11, 3)
@@ -358,7 +360,9 @@ def test_resize_volume_factor_grayscale():
         dimensions=3,
     )
 
-    module.resizing_factor.value = 0.5
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 0.5
+
+    module.resizing_factor_z.value = 1
 
     module.run(workspace)
 
@@ -405,7 +409,9 @@ def test_resize_volume_factor_color():
         dimensions=3,
     )
 
-    module.resizing_factor.value = 2.5
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 2.5
+
+    module.resizing_factor_z.value = 1
 
     module.run(workspace)
 
@@ -424,6 +430,155 @@ def test_resize_volume_factor_color():
 
     expected_crop_mask = skimage.img_as_bool(
         skimage.transform.resize(crop_mask, (10, 25, 25), order=0, mode="constant")
+    )
+
+    assert actual.volumetric
+
+    numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+    numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+    numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
+
+
+def test_resize_volume_factor_grayscale_resize_z_even():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10, 10)
+
+    mask = data > 0.5
+
+    crop_mask = numpy.zeros_like(data, dtype=bool)
+
+    crop_mask[1:-1, 1:-1, 1:-1] = True
+
+    workspace, module = make_workspace(
+        data,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+        mask=mask,
+        cropping=crop_mask,
+        dimensions=3,
+    )
+
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 0.5
+
+    module.resizing_factor_z.value = 0.5
+
+    module.run(workspace)
+
+    actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+    expected_data = skimage.transform.resize(
+        data, (5, 5, 5), order=0, mode="symmetric"
+    )
+
+    expected_mask = skimage.img_as_bool(
+        skimage.transform.resize(mask, (5, 5, 5), order=0, mode="constant")
+    )
+
+    expected_crop_mask = skimage.img_as_bool(
+        skimage.transform.resize(crop_mask, (5, 5, 5), order=0, mode="constant")
+    )
+
+    assert actual.volumetric
+
+    numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+    numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+    numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
+
+
+def test_resize_volume_factor_grayscale_resize_z_odd():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(9, 10, 10)
+
+    mask = data > 0.5
+
+    crop_mask = numpy.zeros_like(data, dtype=bool)
+
+    crop_mask[1:-1, 1:-1, 1:-1] = True
+
+    workspace, module = make_workspace(
+        data,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+        mask=mask,
+        cropping=crop_mask,
+        dimensions=3,
+    )
+
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 0.5
+
+    module.resizing_factor_z.value = 0.5
+
+    module.run(workspace)
+
+    actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+    expected_data = skimage.transform.resize(
+        data, (4, 5, 5), order=0, mode="symmetric"
+    )
+
+    expected_mask = skimage.img_as_bool(
+        skimage.transform.resize(mask, (4, 5, 5), order=0, mode="constant")
+    )
+
+    expected_crop_mask = skimage.img_as_bool(
+        skimage.transform.resize(crop_mask, (4, 5, 5), order=0, mode="constant")
+    )
+
+    assert actual.volumetric
+
+    numpy.testing.assert_array_almost_equal(actual.pixel_data, expected_data)
+
+    numpy.testing.assert_array_almost_equal(actual.mask, expected_mask)
+
+    numpy.testing.assert_array_almost_equal(actual.crop_mask, expected_crop_mask)
+
+def test_resize_volume_factor_color_resize_z():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(10, 10, 10, 3)
+
+    mask = data[:, :, :, 0] > 0.5
+
+    crop_mask = numpy.zeros_like(mask, dtype=bool)
+
+    crop_mask[1:-1, 1:-1, 1:-1] = True
+
+    workspace, module = make_workspace(
+        data,
+        cellprofiler.modules.resize.R_BY_FACTOR,
+        cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
+        mask=mask,
+        cropping=crop_mask,
+        dimensions=3,
+    )
+
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 2.5
+
+    module.resizing_factor_z.value = 2.5
+
+    module.run(workspace)
+
+    actual = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+    expected_data = numpy.zeros((25, 25, 25, 3), dtype=data.dtype)
+
+    for idx in range(3):
+        expected_data[:, :, :, idx] = skimage.transform.resize(
+            data[:, :, :, idx], (25, 25, 25), order=0, mode="symmetric"
+        )
+
+    expected_mask = skimage.img_as_bool(
+        skimage.transform.resize(mask, (25, 25, 25), order=0, mode="constant")
+    )
+
+    expected_crop_mask = skimage.img_as_bool(
+        skimage.transform.resize(crop_mask, (25, 25, 25), order=0, mode="constant")
     )
 
     assert actual.volumetric
@@ -782,7 +937,7 @@ def test_resize_factor_rounding():
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
     )
 
-    module.resizing_factor.value = 0.25
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 0.25
 
     module.run(workspace)
 
@@ -799,7 +954,7 @@ def test_resize_float():
         cellprofiler.modules.resize.I_NEAREST_NEIGHBOR,
     )
 
-    module.resizing_factor.value = 0.5
+    module.resizing_factor_x.value = module.resizing_factor_y.value = 0.5
 
     module.run(workspace)
 

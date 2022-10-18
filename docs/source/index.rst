@@ -142,6 +142,7 @@ Learn how to configure a project and load images.
    help/projects_selecting_images
    help/projects_configure_images
    help/projects_image_sequences
+   help/projects_image_ordering
 
 `(Jump to top)`_
 
@@ -188,6 +189,8 @@ Learn about the other features of CellProfiler.
    help/other_logging
    help/other_omero
    help/other_plugins
+   help/other_shell
+   help/other_widget_inspector
 
 `(Jump to top)`_
 

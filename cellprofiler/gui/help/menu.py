@@ -103,10 +103,24 @@ class Menu(cellprofiler.gui.menu.Menu):
 
         self.append("About CellProfiler", event_fn=lambda _: self.about())
 
-    @staticmethod
-    def about():
+    def about(self):
         info = AboutDialogInfo()
         wx.adv.AboutBox(info)
+        if wx.GetKeyState(wx.WXK_SHIFT):
+            from wx.py.shell import ShellFrame
+            from cellprofiler.__init__ import __version__
+            cpapp = wx.GetApp()
+            if cpapp:
+                cpapp = cpapp.frame
+                locs = {'app': cpapp, 'pipeline': cpapp.pipeline, 'workspace': cpapp.workspace}
+            else:
+                locs = None
+            s = ShellFrame(self.frame,
+                           title="CellProfiler Shell",
+                           locals=locs,
+                           )
+            s.SetStatusText("CellProfiler Debug Interpeter - Use 'app', 'pipeline' and 'workspace' to inspect objects")
+            s.Show()
 
     def find_update(self, event):
         from cellprofiler.gui.checkupdate import check_update
@@ -217,6 +231,16 @@ class Menu(cellprofiler.gui.menu.Menu):
             contents=cellprofiler.gui.help.content.read_content("other_plugins.rst"),
         )
 
+        other_menu.append(
+            "Debug Shell",
+            contents=cellprofiler.gui.help.content.read_content("other_shell.rst"),
+        )
+
+        other_menu.append(
+            "Widget Inspector",
+            contents=cellprofiler.gui.help.content.read_content("other_widget_inspector.rst"),
+        )
+
         return other_menu
 
     def __output_menu(self):
@@ -273,6 +297,13 @@ class Menu(cellprofiler.gui.menu.Menu):
             "Loading Image Stacks and Movies",
             contents=cellprofiler.gui.help.content.read_content(
                 "projects_image_sequences.rst"
+            ),
+        )
+
+        project_menu.append(
+            "Image Ordering",
+            contents=cellprofiler.gui.help.content.read_content(
+                "projects_image_ordering.rst"
             ),
         )
 

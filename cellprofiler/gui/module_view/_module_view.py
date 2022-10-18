@@ -45,6 +45,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.choice import Colormap
 from cellprofiler_core.setting.choice import CustomChoice
 from cellprofiler_core.setting.do_something import DoSomething, ImageSetDisplay
+from cellprofiler_core.setting.do_something import PathListExtractButton
 from cellprofiler_core.setting.do_something import PathListRefreshButton
 from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.setting.multichoice import MeasurementMultiChoice
@@ -385,6 +386,8 @@ class ModuleView:
                 elif isinstance(v, DoSomething):
                     if isinstance(v, PathListRefreshButton) and v.callback is None:
                         v.callback = self.__frame.pipeline_controller.on_update_pathlist
+                    if isinstance(v, PathListExtractButton) and v.callback is None:
+                        v.callback = self.__frame.pipeline_controller.on_extract_metadata
                     control = self.make_callback_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, DoThings):
@@ -1563,11 +1566,11 @@ class ModuleView:
             control.GetSizer().Add(browse_button, 0, wx.EXPAND)
 
             def on_button(event):
-                url = self.__frame.pipeline_controller.pick_from_pathlist(
-                    v.url, instructions="Select an image file from the list below"
+                selected_plane = self.__frame.pipeline_controller.pick_from_pathlist(
+                    v.get_plane(), instructions="Select an image plane from the list below"
                 )
-                if url is not None:
-                    value = v.build(url)
+                if selected_plane is not None:
+                    value = v.build(selected_plane)
                     self.on_value_change(v, control, value, event)
                     url_control.Value = url2pathname(v.value)
 
@@ -1822,6 +1825,17 @@ class ModuleView:
         # * panel = None - create the controls
         # * panel != None - find the controls
         #
+        category = v.get_category(self.__pipeline)
+        categories = v.get_category_choices(self.__pipeline)
+        feature_name = v.get_feature_name(self.__pipeline)
+        feature_names = v.get_feature_name_choices(self.__pipeline)
+        image_name = v.get_image_name(self.__pipeline)
+        image_names = v.get_image_name_choices(self.__pipeline)
+        object_name = v.get_object_name(self.__pipeline)
+        object_names = v.get_object_name_choices(self.__pipeline)
+        scale = v.get_scale(self.__pipeline)
+        scales = v.get_scale_choices(self.__pipeline)
+
         if not panel:
             panel = wx.Panel(self.__module_panel, -1, name=edit_control_name(v))
             sizer = wx.BoxSizer(wx.VERTICAL)
@@ -1836,7 +1850,7 @@ class ModuleView:
             )
             sub_sizer.Add(category_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             category_ctrl = wx.ComboBox(
-                panel, style=wx.CB_READONLY, name=category_control_name(v)
+                panel, style=wx.CB_READONLY, name=category_control_name(v), choices=categories
             )
             sub_sizer.Add(category_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             #
@@ -1849,7 +1863,7 @@ class ModuleView:
             )
             sub_sizer.Add(feature_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             feature_ctrl = wx.ComboBox(
-                panel, style=wx.CB_READONLY, name=feature_control_name(v)
+                panel, style=wx.CB_READONLY, name=feature_control_name(v), choices=feature_names
             )
             sub_sizer.Add(feature_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             #
@@ -1862,7 +1876,7 @@ class ModuleView:
             )
             sub_sizer.Add(object_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             object_ctrl = wx.ComboBox(
-                panel, style=wx.CB_READONLY, name=object_control_name(v)
+                panel, style=wx.CB_READONLY, name=object_control_name(v), choices=image_names+object_names
             )
             sub_sizer.Add(object_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             #
@@ -1874,15 +1888,15 @@ class ModuleView:
             )
             sub_sizer.Add(scale_text_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             scale_ctrl = wx.ComboBox(
-                panel, style=wx.CB_READONLY, name=scale_control_name(v)
+                panel, style=wx.CB_READONLY, name=scale_control_name(v), choices=scales
             )
             sub_sizer.Add(scale_ctrl, 0, wx.EXPAND | wx.ALL, 2)
             max_width = 0
             for sub_sizer_item in sizer.GetChildren():
-                static = sub_sizer_item.Sizer.GetChildren()[0].Window
+                static = sub_sizer_item.Sizer.GetChildren()[1].Window
                 max_width = max(max_width, static.Size.GetWidth())
             for sub_sizer_item in sizer.GetChildren():
-                static = sub_sizer_item.Sizer.GetChildren()[0].Window
+                static = sub_sizer_item.Sizer.GetChildren()[1].Window
                 static.Size = wx.Size(max_width, static.Size.GetHeight())
                 static.SetSizeHints(max_width, -1, max_width)
 
@@ -1935,16 +1949,6 @@ class ModuleView:
             object_text_ctrl = panel.FindWindowByName(object_text_control_name(v))
             scale_ctrl = panel.FindWindowByName(scale_control_name(v))
             scale_text_ctrl = panel.FindWindowByName(scale_text_ctrl_name(v))
-        category = v.get_category(self.__pipeline)
-        categories = v.get_category_choices(self.__pipeline)
-        feature_name = v.get_feature_name(self.__pipeline)
-        feature_names = v.get_feature_name_choices(self.__pipeline)
-        image_name = v.get_image_name(self.__pipeline)
-        image_names = v.get_image_name_choices(self.__pipeline)
-        object_name = v.get_object_name(self.__pipeline)
-        object_names = v.get_object_name_choices(self.__pipeline)
-        scale = v.get_scale(self.__pipeline)
-        scales = v.get_scale_choices(self.__pipeline)
 
         def set_up_combobox(ctrl, text_ctrl, choices, value, always_show=False):
             if len(choices):
@@ -2051,7 +2055,8 @@ class ModuleView:
                 self.sort_reverse = not self.sort_reverse
             tab = self.GetTable()
             tab.v.data.sort(
-                key=lambda thedata: thedata[tgtcolumn], reverse=self.sort_reverse
+                key=lambda thedata: thedata[tgtcolumn] if thedata[tgtcolumn] is not None else "",
+                reverse=self.sort_reverse
             )
             self.SetSortingColumn(tgtcolumn)
             self.ClearSelection()

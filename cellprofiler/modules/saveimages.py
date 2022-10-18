@@ -69,6 +69,7 @@ IF_ALL = [IF_IMAGE, IF_MASK, IF_CROPPING, IF_MOVIE]
 BIT_DEPTH_8 = "8-bit integer"
 BIT_DEPTH_16 = "16-bit integer"
 BIT_DEPTH_FLOAT = "32-bit floating point"
+BIT_DEPTH_RAW = "No conversion"
 
 FN_FROM_IMAGE = "From image filename"
 FN_SEQUENTIAL = "Sequential numbers"
@@ -338,8 +339,8 @@ between the various operating systems.
 
         self.bit_depth = Choice(
             "Image bit depth",
-            [BIT_DEPTH_8, BIT_DEPTH_16, BIT_DEPTH_FLOAT],
-            doc="""\
+            [BIT_DEPTH_8, BIT_DEPTH_16, BIT_DEPTH_FLOAT, BIT_DEPTH_RAW],
+            doc=f"""\
 Select the bit-depth at which you want to save the images.
 
 *{BIT_DEPTH_FLOAT}* saves the image as floating-point decimals with
@@ -347,14 +348,21 @@ Select the bit-depth at which you want to save the images.
 values are scaled within the range (0, 1). Floating point data is not
 rescaled.
 
-{BIT_DEPTH_16} and {BIT_DEPTH_FLOAT} images are supported only for
+*{BIT_DEPTH_16}* and *{BIT_DEPTH_FLOAT}* images are supported only for
 TIFF formats.
+
+Data is normally checked and transformed to ensure that it matches the 
+selected format's requirements. Selecting *{BIT_DEPTH_RAW}* will attempt 
+to automatically save to a compatible format without applying any 
+transformations to the data. This could be used to save integer labels 
+in 32-bit float format if you had more labels than the 16-bit format can 
+handle (without rescaling to the 0-1 range of *{BIT_DEPTH_FLOAT}*). 
+Note that because the data validation step is skipped some images may 
+fail to save if they contain unusable data.
 
 Note: Opening exported multichannel 16-bit TIFF stacks in ImageJ may require  
 the BioFormats Importer plugin due to the compression method used by
-CellProfiler.""".format(
-                **{"BIT_DEPTH_FLOAT": BIT_DEPTH_FLOAT, "BIT_DEPTH_16": BIT_DEPTH_16}
-            ),
+CellProfiler.""",
         )
 
         self.tiff_compress = Binary(
@@ -447,7 +455,11 @@ Instances in which this information may be useful include:
         self.create_subdirectories = Binary(
             "Create subfolders in the output folder?",
             False,
-            doc="""Select "*{YES}*" to create subfolders to match the input image folder structure.""".format(
+            doc="""
+Select "*{YES}*" to create subfolders to match the input image folder structure. 
+            
+For example, if your input images are organized into subfolders (e.g., for each plate, well, animal, etc.), 
+this option allows you to mirror some or all of that nested folder structure in the output folder.""".format(
                 **{"YES": "Yes"}
             ),
         )
@@ -457,15 +469,23 @@ Instances in which this information may be useful include:
             doc="""\
 *Used only if creating subfolders in the output folder*
 
-In subfolder mode, **SaveImages** determines the folder for an image file by
-examining the path of the matching input file. The path that SaveImages
-uses is relative to the image folder chosen using this setting. As an
-example, input images might be stored in a folder structure of
-"images\/*experiment-name*\/*date*\/*plate-name*". If
-the image folder is "images", **SaveImages** will store images in the
-subfolder, "*experiment-name*\/*date*\/*plate-name*". If the
-image folder is "images\/*experiment-name*", **SaveImages** will
-store images in the subfolder, "*date*\/*plate-name*".""",
+In subfolder mode, **SaveImages** determines the folder for an output image file by
+examining the path of the matching input file. 
+
+You should choose as **Base image folder** the input folder that has the structure you'd like 
+to mirror in the output folder. 
+
+Consider an example where your input images are stored in a nested folder structure of 
+"images\/experiment-name\/plate-name" (i.e., your files are in folders for each plate, nested
+inside of folders for each experiment, nested in a parent folder called "images"). 
+If you select the base image folder to be **images**, **SaveImages** will go to your "Output file
+location" and save images in subfolders "experiment-name\/plate-name" that corresponds to each 
+input image. If the base image folder chosen is one level deeper at "images\/experiment-name", 
+**SaveImages** will store images in subfolders for each "plate-name" they belong to.
+
+**Warning**: Do not select the same folder you selected for "Output file location" as this can lead
+to unexpected behavior like saving in the original input file directory. For safety, ensure 
+"Overwrite existing files without warning?" is set to "No" while testing this option. """,
         )
 
     def settings(self):
@@ -632,7 +652,7 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             pixels = skimage.util.img_as_uint(pixels)
             pixel_type = bioformats.omexml.PT_UINT16
         elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
-            pixels = skimage.util.img_as_float(pixels).astype(numpy.float32)
+            pixels = skimage.util.img_as_float32(pixels)
             pixel_type = bioformats.omexml.PT_FLOAT
         else:
             raise ValueError("Bit depth unsupported in movie mode")
@@ -696,6 +716,8 @@ store images in the subfolder, "*date*\/*plate-name*".""",
 
         channel_names - names of the channels (make up names if not present
         """
+        from cellprofiler_core.utilities.java import start_java
+        start_java()
         bioformats.formatwriter.write_image(
             filename,
             pixels,
@@ -744,7 +766,10 @@ store images in the subfolder, "*date*\/*plate-name*".""",
             elif self.get_bit_depth() == BIT_DEPTH_16:
                 pixels = skimage.util.img_as_uint(pixels)
             elif self.get_bit_depth() == BIT_DEPTH_FLOAT:
-                pixels = skimage.util.img_as_float(pixels).astype(numpy.float32)
+                pixels = skimage.util.img_as_float32(pixels)
+            elif self.get_bit_depth() == BIT_DEPTH_RAW:
+                # No bit depth transformation
+                pass
 
             # skimage will save out color images (M,N,3) or (M,N,4) appropriately
             # but any more than that will need to be transposed so they conform to the

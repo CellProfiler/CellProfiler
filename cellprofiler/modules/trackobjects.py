@@ -1917,7 +1917,7 @@ Enter a name to give the color-coded image of tracked labels.""",
         ]
         group_indices, new_object_count, lost_object_count, merge_count, split_count = [
             np.array(
-                [m.get_measurement("Image", feature, i) for i in image_numbers], int,
+                [m.get_measurement("Image", feature, i) or 0 for i in image_numbers], int,
             )
             for feature in (
                 GROUP_INDEX,

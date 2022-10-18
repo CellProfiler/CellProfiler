@@ -588,6 +588,10 @@ pixel values are multiplied by this weight before assigning the color.
                         image = image / numpy.max(image)
                     rgb_pixel_data = rgb_pixel_data + image[:, :, numpy.newaxis] * color
 
+        if self.scheme_choice != SCHEME_STACK and self.wants_rescale.value:
+            # If we rescaled, clip values that went out of range after multiplication
+            rgb_pixel_data[rgb_pixel_data > 1] = 1
+
         ##############
         # Save image #
         ##############

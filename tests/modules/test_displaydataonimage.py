@@ -246,6 +246,22 @@ def test_display_objects_wrong_size():
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
 
 
+def test_display_text():
+    labels = numpy.zeros((50, 120), int)
+    labels[10:20, 20:27] = 1
+    labels[30:35, 35:50] = 2
+    labels[5:18, 44:100] = 3
+    for display in (
+        cellprofiler.modules.displaydataonimage.E_AXES,
+        cellprofiler.modules.displaydataonimage.E_FIGURE,
+        cellprofiler.modules.displaydataonimage.E_IMAGE,
+    ):
+        workspace, module = make_workspace(["First", "Second", "Third"], labels)
+        module.saved_image_contents.value = display
+        module.run(workspace)
+        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+
+
 def test_display_colors():
     labels = numpy.zeros((50, 120), int)
     labels[10:20, 20:27] = 1

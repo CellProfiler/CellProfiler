@@ -112,17 +112,26 @@ cluster.
       set specified, <first\_image\_set\_number>
    -  ``-l <last_image_set_number>``: Finish processing with the image
       set specified, <last\_image\_set\_number>
+   -  ``-g <Metadata\_A=B>``: Instead of ``-f`` and ``-l``, if your pipeline
+      had grouping enabled in the **Groups** or **LoadData** modules, you 
+      can pass in a metadata-defined group, such as ``-g Metadata_Well=A01``
+      or ``-g Metadata_Timepoint=0``
 
    Typically, a user will break a long image set list into pieces and
    execute each of these pieces using the command line switches, ``-f``
    and ``-l`` to specify the first and last image sets in each job. A
    full image set would then need a script that calls CellProfiler with
    these options with sequential image set numbers, e.g, 1-50, 51-100,
-   etc to submit each as an individual job.
+   etc to submit each as an individual job. This will work whether 
+   grouping is enabled in the pipeline or not; you can only use the ``g``
+   option if grouping is enabled in the pipeline.
 
    If you need help in producing the batch commands for submitting your
-   jobs, use the ``--get-batch-commands`` along with the ``-p`` switch to
-   specify the Batch\_data.h5 file output by the CreateBatchFiles module.
+   jobs, use the ``--get-batch-commands`` followed by the path to the 
+   Batch\_data.h5 file output by the CreateBatchFiles module.
+   (In CellProfiler 4.2.2 or greater we recommend using ``--get-batch-commands-new``).
+   You can set the number of images per batch with the ``--images-per-batch``
+   flag. 
    When specified, CellProfiler will output one line to the terminal per
    job to be run. This output should be further processed to generate a
    script that can invoke the jobs in a cluster-computing context.

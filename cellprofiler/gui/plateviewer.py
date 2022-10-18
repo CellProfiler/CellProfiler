@@ -517,7 +517,6 @@ class PlateViewer(object):
             self.image_dict_generation += 1
 
         def fn():
-            from bioformats import load_image_url
             import javabridge
             from scipy.io.matlab.mio import loadmat
             from cellprofiler_core.utilities.pathname import url2pathname
@@ -544,7 +543,10 @@ class PlateViewer(object):
                                 "Image"
                             ]
                         else:
-                            img = load_image_url(url)
+                            from cellprofiler_core.reader import get_image_reader
+                            from cellprofiler_core.pipeline import ImageFile
+                            reader = get_image_reader(ImageFile(url))
+                            img = reader.read()
                         with self.image_dict_lock:
                             if self.image_dict_generation > generation:
                                 return

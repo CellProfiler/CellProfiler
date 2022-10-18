@@ -12,9 +12,9 @@ import wx
 import wx.adv
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer
-from cellprofiler_core.constants.image import C_FRAME
+from cellprofiler_core.constants.image import C_FRAME, CT_GRAYSCALE, CT_COLOR, CT_MASK, CT_OBJECTS, CT_FUNCTION
 from cellprofiler_core.constants.image import C_SERIES
-from cellprofiler_core.constants.measurement import C_FILE_NAME
+from cellprofiler_core.constants.measurement import C_FILE_NAME, C_CHANNEL, C_Z, C_T, C_SERIES_NAME
 from cellprofiler_core.constants.measurement import C_METADATA
 from cellprofiler_core.constants.measurement import C_OBJECTS_FILE_NAME
 from cellprofiler_core.constants.measurement import C_OBJECTS_PATH_NAME
@@ -23,7 +23,6 @@ from cellprofiler_core.constants.measurement import C_PATH_NAME
 from cellprofiler_core.constants.measurement import C_URL
 from cellprofiler_core.constants.measurement import IMAGE
 from cellprofiler_core.measurement import Measurements
-from cellprofiler_core.pipeline import ImageSetChannelDescriptor
 from cellprofiler_core.preferences import report_progress
 from cellprofiler_core.setting import FileCollectionDisplay
 from cellprofiler_core.setting.filter import DirectoryPredicate
@@ -57,6 +56,9 @@ DISPLAY_MODE_SIMPLE = "Simple"
 
 """Display mode that shows more stuff"""
 DISPLAY_MODE_COMPLEX = "Complex"
+
+"""Revised display mode for CP5"""
+DISPLAY_MODE_ALTERNATE = "Alternate"
 
 ERROR_COLOR = wx.Colour(255, 0, 0)
 
@@ -161,13 +163,17 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                     name = "%s Frame" % channel
                 else:
                     continue
-            elif feature.startswith(C_URL) or feature.startswith(C_OBJECTS_URL):
+            elif self.display_mode == DISPLAY_MODE_COMPLEX and feature.startswith(C_URL) or feature.startswith(C_OBJECTS_URL):
                 column_type = COL_URL
+                channel = feature.split("_", 1)[1]
+                name = channel
+            elif self.display_mode == DISPLAY_MODE_ALTERNATE and feature.startswith(C_FILE_NAME) or feature.startswith(C_OBJECTS_FILE_NAME):
+                column_type = COL_FILENAME
                 channel = feature.split("_", 1)[1]
                 name = channel
             else:
                 continue
-            iscd = m.get_channel_descriptor(channel)
+            channel_type = m.get_channel_descriptor(channel)
 
             columns.append(
                 self.ImageSetColumn(
@@ -175,7 +181,7 @@ class ImageSetGridTable(wx.grid.GridTableBase):
                     channel,
                     feature,
                     column_type,
-                    None if iscd is None else iscd.channel_type,
+                    channel_type,
                     is_key,
                 )
             )
@@ -250,13 +256,36 @@ class ImageSetGridTable(wx.grid.GridTableBase):
         ):
             last_slash = value.rfind("/")
             return urllib.parse.unquote(value[(last_slash + 1) :])
+        elif (
+                column.column_type == COL_FILENAME
+                and self.display_mode == DISPLAY_MODE_ALTERNATE
+                and value is not None
+        ):
+            # Check for and add a series name to the plane label
+            meas = f"{C_SERIES_NAME}_{column.channel}"
+            if self.measurements.has_measurements(
+                    IMAGE, meas, image_set_number=image_set):
+                res = self.measurements.get_measurement(
+                    IMAGE, meas, image_set_number=image_set)
+                if res:
+                    value += f" ({res})"
+            # Now check for and add CZT indexes
+            keys = [C_SERIES, C_CHANNEL, C_Z, C_T]
+            for key in keys:
+                meas = f"{key}_{column.channel}"
+                if self.measurements.has_measurements(
+                        IMAGE, meas, image_set_number=image_set):
+                    res = self.measurements.get_measurement(
+                        IMAGE, meas, image_set_number=image_set)
+                    if res is not None:
+                        value += f", {key[0]} {res}"
         return value
 
     def get_url(self, row, col):
         """Get the URL for a cell"""
         image_set = self.image_numbers[row]
         column = self.columns[col]
-        if column.channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
+        if column.channel_type == CT_OBJECTS:
             feature = C_OBJECTS_URL + "_" + column.channel
         else:
             feature = C_URL + "_" + column.channel
@@ -412,7 +441,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             kwargs = dict(kwargs)
             del kwargs["display_mode"]
         else:
-            display_mode = DISPLAY_MODE_SIMPLE
+            display_mode = DISPLAY_MODE_ALTERNATE
 
         wx.grid.Grid.__init__(self, *args, **kwargs)
         cellprofiler.gui.cornerbuttonmixin.CornerButtonMixin.__init__(
@@ -695,27 +724,27 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             choices = [
                 (
-                    ImageSetChannelDescriptor.CT_GRAYSCALE,
+                    CT_GRAYSCALE,
                     self.monochrome_channel_image,
                     "Treat the image as monochrome, averaging colors if needed",
                 ),
                 (
-                    ImageSetChannelDescriptor.CT_COLOR,
+                    CT_COLOR,
                     self.color_channel_image,
                     "Treat the image as color. Use ColorToGray to get individual colors",
                 ),
                 (
-                    ImageSetChannelDescriptor.CT_MASK,
+                    CT_MASK,
                     self.mask_image,
                     "Treat the image as a binary mask",
                 ),
                 (
-                    ImageSetChannelDescriptor.CT_OBJECTS,
+                    CT_OBJECTS,
                     self.objects_image,
                     "Treat the image as objects",
                 ),
                 (
-                    ImageSetChannelDescriptor.CT_FUNCTION,
+                    CT_FUNCTION,
                     self.illumination_function_image,
                     "Use the image for illumination correction",
                 ),
@@ -934,7 +963,7 @@ class ImageSetCtrl(wx.grid.Grid, cellprofiler.gui.cornerbuttonmixin.CornerButton
             if col == wx.NOT_FOUND:
                 col = None
         bottom = self.GetGridWindow().GetVirtualSize()[1]
-        if y <= self.GetRowSize(0) / 2:
+        if not self.GetNumberRows() or y <= self.GetRowSize(0) / 2:
             row = 0
         elif y >= bottom - self.GetRowSize(self.GetNumberRows() - 1):
             row = self.GetNumberRows()
@@ -1238,10 +1267,9 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
                 column = grid.GetTable().columns[col]
                 m = grid.GetTable().measurements
                 channel_descriptors = m.get_channel_descriptors()
-                for channel_descriptor in channel_descriptors:
-                    if channel_descriptor.name == column.channel:
-                        draw_simple = True
-                        break
+                if column.channel in channel_descriptors:
+                    draw_simple = True
+                    channel_type = channel_descriptors[column.channel]
             if draw_simple:
                 x, y, width, height = self.label_rect(b_rect, label_size, last, only)
                 if grid.editor_column is None:
@@ -1249,13 +1277,13 @@ class ColLabelRenderer(wx.lib.mixins.gridlabelrenderer.GridLabelRenderer):
                         mdc.DrawText(line, x, y + label_size[1] * line_number)
 
                 pb_col, pb_hit_code, pb_pressed = grid.pressed_button
-                if channel_descriptor.channel_type == channel_descriptor.CT_GRAYSCALE:
+                if channel_type == CT_GRAYSCALE:
                     image = grid.monochrome_channel_image
-                elif channel_descriptor.channel_type == channel_descriptor.CT_COLOR:
+                elif channel_type == CT_COLOR:
                     image = grid.color_channel_image
-                elif channel_descriptor.channel_type == channel_descriptor.CT_MASK:
+                elif channel_type == CT_MASK:
                     image = grid.mask_image
-                elif channel_descriptor.channel_type == channel_descriptor.CT_OBJECTS:
+                elif channel_type == CT_OBJECTS:
                     image = grid.objects_image
                 else:
                     image = grid.illumination_function_image

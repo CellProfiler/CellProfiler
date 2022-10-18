@@ -5,6 +5,7 @@ import pickle
 import tempfile
 
 import numpy
+import pytest
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
@@ -27,6 +28,7 @@ INPUT_OBJECTS = "input_objects"
 ENCLOSING_OBJECTS = "my_enclosing_objects"
 OUTPUT_OBJECTS = "output_objects"
 TEST_FTR = "my_measurement"
+MISSPELLED_FTR = "m_measurement"
 
 
 def make_workspace(object_dict={}, image_dict={}):
@@ -719,9 +721,8 @@ def test_filter_by_3_class_rule():
     )
     expected_class = [None, "3", "1", "2"]
     rules_path = tempfile.mktemp()
-    fd = open(rules_path, "wt")
-    fd.write(rules_file_contents)
-    fd.close()
+    with open(rules_path, "wt") as fd:
+        fd.write(rules_file_contents)
     try:
         for rules_class in ("1", "2", "3"):
             labels = numpy.zeros((10, 20), int)
@@ -755,6 +756,43 @@ def test_filter_by_3_class_rule():
     finally:
         os.remove(rules_path)
 
+def test_filter_by_fuzzy_rule():
+    labels = numpy.zeros((10, 20), int)
+    labels[3:5, 4:9] = 1
+    labels[7:9, 6:12] = 2
+    labels[4:9, 14:18] = 3
+    workspace, module = make_workspace({"MyObjects": labels})
+    assert isinstance(
+        module, cellprofiler.modules.filterobjects.FilterByObjectMeasurement
+    )
+    m = workspace.measurements
+    m.add_measurement("MyObjects", "MyMeasurement", numpy.array([1.5, 2.3, 1.8]))
+    rules_file_contents = "IF (MyObjects_MMeasurement > 2.0, [1.0,-1.0], [-1.0,1.0])\n"
+    rules_path = tempfile.mktemp()
+    fd = open(rules_path, "wt")
+    try:
+        fd.write(rules_file_contents)
+        fd.close()
+        rules_dir, rules_file = os.path.split(rules_path)
+        module.x_name.value = "MyObjects"
+        module.mode.value = cellprofiler.modules.filterobjects.MODE_RULES
+        module.rules_file_name.value = rules_file
+        module.rules_directory.dir_choice = (
+            cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+        )
+        module.rules_directory.custom_path = rules_dir
+        module.y_name.value = "MyTargetObjects"
+        module.allow_fuzzy.value=True
+        module.run(workspace)
+        target_objects = workspace.object_set.get_objects("MyTargetObjects")
+        target_labels = target_objects.segmented
+        assert numpy.all(target_labels[labels == 2] > 0)
+        assert numpy.all(target_labels[labels != 2] == 0)
+        module.allow_fuzzy.value=False
+        with pytest.raises(AssertionError):
+            module.run(workspace)
+    finally:
+        os.remove(rules_path)
 
 def test_discard_border_objects():
     """Test the mode to discard border objects"""
@@ -942,6 +980,26 @@ def test_classify_keep_removed():
         removed_labels_out = removed_objects.get_labels()[0][0]
         numpy.testing.assert_array_equal(removed_labels_out[1:4, 1:4], 0)
         numpy.testing.assert_array_equal(removed_labels_out[5:7, 5:7], 1)
+
+def test_classify_many_fuzzy():
+    labels = numpy.zeros((10, 10), int)
+    labels[1:4, 1:4] = 1
+    labels[5:7, 5:7] = 2
+    workspace, module = make_workspace({INPUT_OBJECTS: labels})
+    module.x_name.value = INPUT_OBJECTS
+    module.y_name.value = OUTPUT_OBJECTS
+    with make_classifier(module, numpy.array([1, 2]), classes=[1, 2]):
+        workspace.measurements[INPUT_OBJECTS, MISSPELLED_FTR] = numpy.zeros(2)
+        module.allow_fuzzy.value = True
+        module.run(workspace)
+        output_objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+        assert output_objects.count == 1
+        labels_out = output_objects.get_labels()[0][0]
+        numpy.testing.assert_array_equal(labels_out[1:4, 1:4], 1)
+        numpy.testing.assert_array_equal(labels_out[5:7, 5:7], 0)
+        module.allow_fuzzy.value = False
+        with pytest.raises(AssertionError):
+            module.run(workspace)
 
 
 def test_measurements():

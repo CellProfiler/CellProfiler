@@ -1208,6 +1208,9 @@ class Figure(wx.Frame):
             elif evt.Id == MENU_INTERPOLATION_BICUBIC:
                 params["interpolation"] = "bicubic"
             axes = self.subplot(x, y)
+            if hasattr(axes, 'displayed') and hasattr(axes.displayed, "_interpolation"):
+                # Directly update interpolation if the subplot is an image object
+                axes.displayed._interpolation = params["interpolation"]
             for artist in axes.artists:
                 if isinstance(artist, CPImageArtist):
                     artist.interpolation = params["interpolation"]
@@ -1631,12 +1634,13 @@ class Figure(wx.Frame):
             colormap.autoscale()
 
         if self.dimensions == 3:
+            self.navtoolbar.set_volumetric()
             z = image.shape[0]
-            self.current_plane = z // 2
+            self.current_plane = min(z // 2,self.navtoolbar.slider.GetValue())
 
         image = self.normalize_image(self.images[(x, y)], **kwargs)
 
-        self.subplot(x, y).displayed = subplot.imshow(image)
+        self.subplot(x, y).displayed = subplot.imshow(image, interpolation=interpolation)
 
         self.update_line_labels(subplot, kwargs)
 
@@ -1776,29 +1780,48 @@ class Figure(wx.Frame):
 
     @allow_sharexy
     def subplot_imshow_color(
-        self, x, y, image, title=None, normalize=False, rgb_mask=None, **kwargs
+        self, x, y, image, title=None, normalize=False, rgb_mask=None, volumetric=False, **kwargs,
     ):
         if rgb_mask is None:
             rgb_mask = [1, 1, 1]
 
+        if volumetric:
+            chan_index = 3
+        else:
+            chan_index = 2
+
         # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
-        if image.shape[2] > 3:
+        if image.shape[chan_index] > 3:
             logging.warning(
                 "Multichannel display is only supported for RGB (3-channel) data."
                 " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
-                    image.shape[2]
+                    image.shape[chan_index]
                 )
             )
 
-            return self.subplot_imshow(
-                x,
-                y,
-                image[:, :, :3],
-                title,
-                normalize=normalize,
-                rgb_mask=rgb_mask,
-                **kwargs,
-            )
+            if not volumetric:
+
+                return self.subplot_imshow(
+                    x,
+                    y,
+                    image[:, :, :3],
+                    title,
+                    normalize=normalize,
+                    rgb_mask=rgb_mask,
+                    **kwargs,
+                )
+            
+            else:
+
+                return self.subplot_imshow(
+                    x,
+                    y,
+                    image[:, :, :, :3],
+                    title,
+                    normalize=normalize,
+                    rgb_mask=rgb_mask,
+                    **kwargs,
+                )
 
         return self.subplot_imshow(
             x, y, image, title, normalize=normalize, rgb_mask=rgb_mask, **kwargs
@@ -2026,7 +2049,11 @@ class Figure(wx.Frame):
         in_range = (image.min(), image.max())
         image = image.astype(numpy.float32)
         if self.dimensions == 3:
-            image = image[self.current_plane, :, :]
+            orig_image_max = image.max()
+            if self.current_plane >= image.shape[0]:
+                image = image[image.shape[0]-1, :, :]
+            else:
+                image = image[self.current_plane, :, :]
         if isinstance(colormap, matplotlib.cm.ScalarMappable):
             colormap = colormap.cmap
 
@@ -2084,12 +2111,16 @@ class Figure(wx.Frame):
             # Apply display bounds
             if vmin is not None and vmax is not None:
                 image = skimage.exposure.rescale_intensity(image, in_range=(vmin, vmax))
+        
         if not self.is_color_image(image):
             if not normalize:
-                if image.max() < 255:
-                    norm = matplotlib.colors.Normalize(vmin=0, vmax=255)
+                if self.dimensions == 3:
+                    norm = matplotlib.colors.Normalize(vmin=0, vmax=orig_image_max)
                 else:
-                    norm = matplotlib.colors.Normalize(vmin=0, vmax=image.max())
+                    if image.max() < 255:
+                        norm = matplotlib.colors.Normalize(vmin=0, vmax=255)
+                    else:
+                        norm = matplotlib.colors.Normalize(vmin=0, vmax=image.max())
             else:
                 norm = None
             mappable = matplotlib.cm.ScalarMappable(cmap=colormap, norm=norm)

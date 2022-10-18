@@ -3,6 +3,7 @@ import os
 import tempfile
 
 import numpy
+import pytest
 import six.moves
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
 from cellprofiler_core.constants.workspace import DISPOSITION_CONTINUE, DISPOSITION_SKIP
@@ -706,6 +707,51 @@ def test_filter_by_3class_rule():
                 value = m.get_current_image_measurement(MEASUREMENT_NAME)
                 expected_value = 1 if expected_class in rules_classes else 0
                 assert value == expected_value
+    finally:
+        os.remove(rules_path)
+
+def test_filter_by_fuzzy_rule():
+    rules_file_contents = "IF (%s > 2.0, [1.0,-1.0], [-1.0,1.0])\n" % (
+        "_".join(("Image", "Metadata_ImageMeasuremenx_0"))
+    )
+    rules_path = tempfile.mktemp()
+    rules_dir, rules_file = os.path.split(rules_path)
+    fd = open(rules_path, "wt")
+    try:
+        fd.write(rules_file_contents)
+        fd.close()
+        for value, choice, expected in (
+            (1.0, 1, 0),
+            (3.0, 1, 1),
+            (1.0, 2, 1),
+            (3.0, 2, 0),
+        ):
+            module, workspace = make_workspace([value], [])
+            flag = module.flags[0]
+            assert isinstance(flag, cellprofiler_core.setting.SettingsGroup)
+            flag.wants_skip.value = False
+            measurement = flag.measurement_settings[0]
+            assert isinstance(measurement, cellprofiler_core.setting.SettingsGroup)
+            measurement.source_choice.value = cellprofiler.modules.flagimage.S_RULES
+            measurement.rules_file_name.value = rules_file
+            measurement.rules_directory.dir_choice = (
+                cellprofiler_core.preferences.ABSOLUTE_FOLDER_NAME
+            )
+            measurement.rules_directory.custom_path = rules_dir
+            measurement.rules_class.set_value([str(choice)])
+            measurement.allow_fuzzy.value = True
+            module.run(workspace)
+            m = workspace.measurements
+            assert isinstance(m,cellprofiler_core.measurement.Measurements)
+            assert MEASUREMENT_NAME in m.get_feature_names(
+                "Image"
+            )
+            print(m.get_measurement_columns())
+            assert m.get_current_image_measurement(MEASUREMENT_NAME) == expected
+            measurement.allow_fuzzy.value = False
+            with pytest.raises(AssertionError):
+                module.run(workspace)
+
     finally:
         os.remove(rules_path)
 

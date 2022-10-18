@@ -78,14 +78,20 @@ N_FIXED_SETTINGS_PER_FLAG = 5
 
 N_SETTINGS_PER_MEASUREMENT_V2 = 7
 N_SETTINGS_PER_MEASUREMENT_V3 = 9
+N_SETTINGS_PER_MEASUREMENT_V4 = 10
 """Number of settings per measurement"""
-N_SETTINGS_PER_MEASUREMENT = 10
+N_SETTINGS_PER_MEASUREMENT = 11
 
 
 class FlagImage(Module):
     category = "Data Tools"
-    variable_revision_number = 4
+    variable_revision_number = 5
     module_name = "FlagImage"
+
+    def __init__(self):
+        self.rules = Rules()
+
+        super(FlagImage, self).__init__()
 
     def create_settings(self):
         self.flags = []
@@ -404,6 +410,8 @@ image is not flagged.
             )
 
         group.append("divider2", Divider(line=True))
+        self.rules.create_settings()
+        group.append("allow_fuzzy",self.rules.settings()[0])
         measurement_settings.append(group)
 
     def settings(self):
@@ -428,8 +436,9 @@ image is not flagged.
                     mg.rules_directory,
                     mg.rules_file_name,
                     mg.rules_class,
+                    mg.allow_fuzzy,
                 ]
-        result += [self.ignore_flag_on_last]
+        result += [self.ignore_flag_on_last,]
         return result
 
     def prepare_settings(self, setting_values):
@@ -471,6 +480,7 @@ image is not flagged.
                     (m_g.rules_file_name, "%s file name"),
                 ):
                     setting.text = s % whatami
+                result += [m_g.allow_fuzzy]
             else:
                 result += [m_g.measurement, m_g.wants_minimum]
                 if m_g.wants_minimum.value:
@@ -525,19 +535,19 @@ image is not flagged.
                             % measurement_setting.rules_file_name.value,
                             measurement_setting.rules_file_name,
                         )
-                    rule_features = [r.feature for r in rules.rules]
-                    measurement_cols = [
-                        c[1] for c in pipeline.get_measurement_columns(self)
-                    ]
-                    undef_features = list(
-                        set(rule_features).difference(measurement_cols)
-                    )
-                    if len(undef_features) > 0:
-                        raise ValidationError(
-                            "The rule described by %s has not been measured earlier in the pipeline."
-                            % undef_features[0],
-                            measurement_setting.rules_file_name,
-                        )
+                    for r in rules.rules:
+                        if self.rules.Rule.return_fuzzy_measurement_name(
+                            pipeline.get_measurement_columns(self),
+                            "Image",
+                            r.feature,
+                            True,
+                            measurement_setting.allow_fuzzy
+                            ) == '':
+                                raise ValidationError(
+                                    "The rule described by %s has not been measured earlier in the pipeline."
+                                    %r.feature,
+                                    measurement_setting.rules_file_name,
+                                )
                 elif measurement_setting.source_choice == S_CLASSIFIER:
                     try:
                         self.get_classifier(measurement_setting)
@@ -682,7 +692,7 @@ image is not flagged.
         if not os.path.isfile(path):
             raise ValidationError("No such rules file: %s" % path, rules_file)
         else:
-            rules = Rules()
+            rules = Rules(allow_fuzzy=measurement_group.allow_fuzzy)
             rules.parse(path)
             return rules
 
@@ -813,8 +823,9 @@ image is not flagged.
             ]
             features = []
             image_features = workspace.measurements.get_feature_names(IMAGE)
+            measurement_columns = workspace.measurements.get_measurement_columns()
             for feature_name in self.get_classifier_features(ms):
-                feature_name = feature_name.split("_", 1)[1]
+                feature_name = self.rules.Rule.return_fuzzy_measurement_name(measurement_columns,IMAGE,feature_name,False,ms.allow_fuzzy)
                 features.append(feature_name)
 
             feature_vector = numpy.array(
@@ -942,5 +953,25 @@ image is not flagged.
                     idx += N_SETTINGS_PER_MEASUREMENT_V3
             setting_values = new_setting_values
             variable_revision_number = 4
+
+        if variable_revision_number == 4:
+            #Add ability to do fuzzy matching, skip flag on last prev added
+            new_setting_values = setting_values[:1]
+            idx = 1
+            for flag_idx in range(int(setting_values[0])):
+                new_setting_values += setting_values[
+                    idx : (idx + N_FIXED_SETTINGS_PER_FLAG)
+                ]
+                meas_count = int(setting_values[idx])
+                idx += N_FIXED_SETTINGS_PER_FLAG
+                for meas_idx in range(meas_count):
+                    new_setting_values += setting_values[
+                        idx : (idx + N_SETTINGS_PER_MEASUREMENT_V4)
+                    ]
+                    new_setting_values += [False]
+                    idx += N_SETTINGS_PER_MEASUREMENT_V4
+            new_setting_values += setting_values[-1:]
+            setting_values = new_setting_values
+            variable_revision_number = 5
 
         return setting_values, variable_revision_number

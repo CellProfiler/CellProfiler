@@ -456,6 +456,7 @@ the image is not downsampled.
                 )
 
                 y_data = numpy.rint(y_data).astype(numpy.uint16)
+                x_data = x.pixel_data > threshold
 
         # watershed algorithm for marker-based method:
         else:

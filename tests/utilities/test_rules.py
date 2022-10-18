@@ -5,12 +5,14 @@ import unittest
 from io import StringIO
 
 import numpy as np
+import pytest
 
 import cellprofiler_core.measurement
 import cellprofiler.utilities.rules as R
 
 OBJECT_NAME = "MyObject"
 M_FEATURES = ["Measurement%d" % i for i in range(1, 11)]
+MISSPELLED_FEATURE = "Measuremen11"
 
 
 class TestRules(unittest.TestCase):
@@ -58,7 +60,7 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         rules = R.Rules()
         rules.rules += [
             R.Rules.Rule(
-                OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -1.0], [-1.0, 1.0]])
+                OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -1.0], [-1.0, 1.0]]), False, 1
             )
         ]
         score = rules.score(m)
@@ -71,7 +73,7 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         rules = R.Rules()
         rules.rules += [
             R.Rules.Rule(
-                OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]])
+                OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), False, 1
             )
         ]
         score = rules.score(m)
@@ -91,6 +93,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 ">",
                 2.0,
                 np.array([[1.0, -0.5], [-2.0, 0.6]]),
+                False, 
+                1
             )
         ]
         score = rules.score(m)
@@ -109,7 +113,9 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 M_FEATURES[0],
                 ">",
                 2.0,
-                np.array([[1.0, -0.5], [-2.0, 0.6]]),
+                np.array([[1.0, -0.5], [-2.0, 0.6]]), 
+                False, 
+                1
             )
         ]
         score = rules.score(m)
@@ -118,6 +124,30 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         self.assertTrue(score[0, 0], -2)
         self.assertTrue(score[0, 1], 0.6)
 
+    def test_02_04_score_one_positive_fuzzy(self):
+        m = cellprofiler_core.measurement.Measurements()
+        m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
+        rules = R.Rules()
+        rules.rules += [
+            R.Rules.Rule(
+                OBJECT_NAME, MISSPELLED_FEATURE, ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), True, 0.7
+            )
+        ]
+        score = rules.score(m)
+        self.assertEqual(score.shape[0], 1)
+        self.assertEqual(score.shape[1], 2)
+        self.assertAlmostEqual(score[0, 0], 1.0)
+        self.assertAlmostEqual(score[0, 1], -0.5)
+        rules = R.Rules()
+        rules.rules += [
+            R.Rules.Rule(
+                OBJECT_NAME, MISSPELLED_FEATURE, ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), False, 1
+            )
+        ]
+        with pytest.raises(AssertionError):
+            score = rules.score(m)
+
+
     def test_03_01_score_two_rules(self):
         m = cellprofiler_core.measurement.Measurements()
         m.add_measurement(OBJECT_NAME, M_FEATURES[0], np.array([1.5], float))
@@ -125,10 +155,10 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         rules = R.Rules()
         rules.rules += [
             R.Rules.Rule(
-                OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]])
+                OBJECT_NAME, M_FEATURES[0], ">", 0, np.array([[1.0, -0.5], [-2.0, 0.6]]), False, 1
             ),
             R.Rules.Rule(
-                OBJECT_NAME, M_FEATURES[1], ">", 0, np.array([[1.5, -0.7], [-2.3, 0.9]])
+                OBJECT_NAME, M_FEATURES[1], ">", 0, np.array([[1.5, -0.7], [-2.3, 0.9]]), False, 1
             ),
         ]
         score = rules.score(m)
@@ -147,7 +177,9 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
                 M_FEATURES[0],
                 "<",
                 2.0,
-                np.array([[1.0, -0.5], [-2.0, 0.6]]),
+                np.array([[1.0, -0.5], [-2.0, 0.6]]), 
+                False, 
+                1
             )
         ]
         score = rules.score(m)

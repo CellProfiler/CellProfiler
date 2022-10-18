@@ -19,8 +19,6 @@ import cellprofiler_core.workspace
 def pytest_sessionstart(session):
     cellprofiler_core.preferences.set_headless()
 
-    cellprofiler_core.utilities.java.start_java()
-
 
 def pytest_sessionfinish(session, exitstatus):
     cellprofiler.__main__.stop_cellprofiler()

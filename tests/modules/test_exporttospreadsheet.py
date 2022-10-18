@@ -2237,6 +2237,73 @@ def test_missing_column_measurements(output_dir):
     finally:
         fd.close()
 
+def test_missing_row_measurements(output_dir):
+    """Make sure ExportToSpreadsheet can continue when a whole image's measurements 
+    are missing (because of an FlagImage). See #4467
+
+    Take measurements for 3 image sets, all measurements missing
+    from the middle one.
+    """
+    path = os.path.join(output_dir, "my_file.csv")
+    module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
+    module.set_module_num(1)
+    module.wants_everything.value = False
+    module.wants_prefix.value = False
+    module.object_groups[0].name.value = "my_objects"
+    module.object_groups[0].file_name.value = path
+    module.object_groups[0].wants_automatic_file_name.value = False
+    module.add_metadata.value = True
+    m = cellprofiler_core.measurement.Measurements()
+    numpy.random.seed(0)
+    # Three images with four objects each
+    mvalues = numpy.random.uniform(size=(3, 4))
+    for image_idx in range(mvalues.shape[0]):
+        if image_idx:
+            m.next_image_set()
+        if image_idx != 1:
+            m.add_image_measurement("Count_my_objects", mvalues.shape[1])
+            m.add_image_measurement("my_measurement", 100)
+            m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
+        else:
+            m.add_image_measurement("Count_my_objects", numpy.NAN)
+            m.add_image_measurement("my_measurement", 100)
+            m.add_measurement("my_objects", "my_measurement", mvalues[image_idx, :])
+    image_set_list = cellprofiler_core.image.ImageSetList()
+    image_set = image_set_list.get_image_set(0)
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(cellprofiler_core.object.Objects(), "my_objects")
+    workspace = cellprofiler_core.workspace.Workspace(
+        make_measurements_pipeline(m), module, image_set, object_set, m, image_set_list
+    )
+    module.post_run(workspace)
+    try:
+        fd = open(path, "r")
+        reader = csv.reader(fd, delimiter=module.delimiter_char)
+        header = next(reader)
+        assert len(header) == 3
+        d = {}
+        for index, column in enumerate(header):
+            d[column] = index
+        assert "my_measurement" in d
+        for image_idx in [0,2]:
+            for object_idx in range(mvalues.shape[1]):
+                row = next(reader)
+                assert len(row) == 3
+                assert row[d["ImageNumber"]] != 2
+                assert (
+                    round(
+                        abs(
+                            float(row[d["my_measurement"]])
+                            - mvalues[image_idx, object_idx]
+                        ),
+                        4,
+                    )
+                    == 0
+                )
+        with pytest.raises(StopIteration):
+            reader.__next__()
+    finally:
+        fd.close()
 
 def make_pipeline(csv_text):
     import cellprofiler_core.modules.loaddata as L

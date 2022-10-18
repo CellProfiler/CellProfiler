@@ -11,6 +11,9 @@ entirely within the boundary of labeled objects are filled with the surrounding 
 **FillObjects** can also be optionally run on a "per-plane" basis working with volumetric data.
 Holes will be filled for each XY plane, rather than on the whole volume.
 
+Alternatively, objects can be filled on the basis of a convex hull.  
+This is the smallest convex polygon that surrounds all pixels in the object.
+
 |
 
 ============ ============ ===============
@@ -23,17 +26,21 @@ YES          YES          NO
 
 import numpy
 import skimage.morphology
+import skimage.measure
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.text import Float
 
+MODE_HOLES = "Holes"
+MODE_CHULL = "Convex hull"
 
 class FillObjects(ObjectProcessing):
     category = "Advanced"
 
     module_name = "FillObjects"
 
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         super(FillObjects, self).create_settings()
@@ -59,22 +66,66 @@ are the result of segmentation.
             ),
         )
 
+        self.mode = Choice(
+            "Filling method",
+            [MODE_HOLES, MODE_CHULL],
+            value=MODE_HOLES,
+            doc=f"""\
+Choose the mode for hole filling.
+
+In {MODE_HOLES} mode, the module will search for and fill holes entirely enclosed by
+each object. Size of the holes to be removed can be controlled. 
+
+In {MODE_CHULL} mode, the module will apply the convex hull of each object to fill 
+missing pixels. This can be useful when round objects have partial holes that are 
+not entirely enclosed.
+
+Note: Convex hulls for each object are applied sequentially and may overlap. This means 
+that touching objects may not be perfectly convex if there was a region of overlap. 
+"""           
+        )
+
     def settings(self):
         __settings__ = super(FillObjects, self).settings()
 
-        return __settings__ + [self.size, self.planewise]
+        return __settings__ + [self.size, self.planewise, self.mode]
 
     def visible_settings(self):
         __settings__ = super(FillObjects, self).visible_settings()
-
-        return __settings__ + [self.size, self.planewise]
+        __settings__ += [self.mode]
+        if self.mode.value == MODE_HOLES:
+            __settings__ += [self.size, self.planewise]
+        return __settings__
 
     def run(self, workspace):
-        self.function = lambda labels, diameter, planewise: fill_object_holes(
-            labels, diameter, planewise
-        )
+        if self.mode.value == MODE_CHULL:
+            self.function = lambda labels, d, p, m: fill_convex_hulls(labels)
+        else:
+            self.function = lambda labels, diameter, planewise, mode: fill_object_holes(
+                labels, diameter, planewise
+            )
 
         super(FillObjects, self).run(workspace)
+
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
+            setting_values.append(MODE_HOLES)
+            variable_revision_number = 2
+        return setting_values, variable_revision_number
+
+
+def fill_convex_hulls(labels):
+    data = skimage.measure.regionprops(labels)
+    output = numpy.zeros_like(labels)
+    for prop in data:
+        label = prop['label']
+        bbox = prop['bbox']
+        cmask = prop['convex_image']
+        if len(bbox) <= 4:
+            output[bbox[0]:bbox[2], bbox[1]:bbox[3]][cmask] = label
+        else:
+            output[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]: bbox[5]][cmask] = label
+    return output
 
 
 def _fill_holes(labels, min_obj_size):

@@ -19,10 +19,6 @@ the final dimensions in pixels. **ResizeObjects** is similar to **ResizeImage**,
 **IdentifyPrimaryObjects** or **Watershed**. **ResizeObjects** uses nearest neighbor
 interpolation to preserve object labels after the resizing operation.
 
-When resizing 3D data, the height and width will be changed, but
-the original depth (or z-dimension) will be kept. This 3D behavior was chosen, because in most
-cases the number of slices in a z-stack is much fewer than the number of pixels that define the
-x-y dimensions. Otherwise, a significant fraction of z information would be lost during downsizing.
 **ResizeObjects** is useful for processing very large or 3D data to reduce computation time. You
 might downsize a 3D image with **ResizeImage** to generate a segmentation, then use
 **ResizeObjects** to stretch the segmented objects to their original size
@@ -44,7 +40,7 @@ See also
 class ResizeObjects(ObjectProcessing):
     module_name = "ResizeObjects"
 
-    variable_revision_number = 2
+    variable_revision_number = 3
 
     def create_settings(self):
         super(ResizeObjects, self).create_settings()
@@ -60,8 +56,30 @@ The following options are available:
             value="Factor",
         )
 
-        self.factor = Float(
-            "Factor",
+        self.factor_x = Float(
+            "X Factor",
+            0.25,
+            minval=0,
+            doc="""\
+*(Used only if resizing by "Factor")*
+
+Numbers less than 1 will shrink the objects; numbers greater than 1 will
+enlarge the objects.""",
+        )
+
+        self.factor_y = Float(
+            "Y Factor",
+            0.25,
+            minval=0,
+            doc="""\
+*(Used only if resizing by "Factor")*
+
+Numbers less than 1 will shrink the objects; numbers greater than 1 will
+enlarge the objects.""",
+        )
+
+        self.factor_z = Float(
+            "Z Factor",
             0.25,
             minval=0,
             doc="""\
@@ -72,7 +90,7 @@ enlarge the objects.""",
         )
 
         self.width = Integer(
-            "Width",
+            "Width (X)",
             100,
             minval=1,
             doc="""\
@@ -82,13 +100,23 @@ Enter the desired width of the final objects, in pixels.""",
         )
 
         self.height = Integer(
-            "Height",
+            "Height (Y)",
             100,
             minval=1,
             doc="""\
 *(Used only if resizing by "Dimensions")*
 
 Enter the desired height of the final objects, in pixels.""",
+        )
+
+        self.planes = Integer(
+            "Planes (Z)",
+            10,
+            minval=1,
+            doc="""\
+*(Used only if resizing by "Dimensions")*
+
+Enter the desired planes in the final objects.""",
         )
 
         self.specific_image = ImageSubscriber(
@@ -105,9 +133,12 @@ Enter the desired height of the final objects, in pixels.""",
 
         settings += [
             self.method,
-            self.factor,
+            self.factor_x,
+            self.factor_y,
+            self.factor_z,
             self.width,
             self.height,
+            self.planes,
             self.specific_image,
         ]
 
@@ -119,9 +150,9 @@ Enter the desired height of the final objects, in pixels.""",
         visible_settings += [self.method]
 
         if self.method.value == "Dimensions":
-            visible_settings += [self.width, self.height]
+            visible_settings += [self.width, self.height, self.planes,]
         elif self.method.value == "Factor":
-            visible_settings += [self.factor]
+            visible_settings += [self.factor_x, self.factor_y, self.factor_z,] 
         else:
             visible_settings += [self.specific_image]
         return visible_settings
@@ -135,18 +166,24 @@ Enter the desired height of the final objects, in pixels.""",
         x_data = x.segmented
 
         if self.method.value == "Dimensions":
-            y_data = resize(x_data, (self.height.value, self.width.value))
+            if x_data.ndim == 3:
+                size = (self.planes.value, self.height.value, self.width.value)
+            else:
+                size = (self.height.value, self.width.value)
+            y_data = resize(x_data, size)
         elif self.method.value == "Match Image":
             target_image = workspace.image_set.get_image(self.specific_image.value)
             if target_image.volumetric:
-                tgt_height, tgt_width = target_image.pixel_data.shape[1:3]
+                size = target_image.pixel_data.shape[:3]
             else:
-                tgt_height, tgt_width = target_image.pixel_data.shape[:2]
-            size = (tgt_height, tgt_width)
+                size = target_image.pixel_data.shape[:2]
             y_data = resize(x_data, size)
         else:
-            y_data = rescale(x_data, self.factor.value)
-
+            if x_data.ndim == 3:
+                size = (self.factor_z.value, self.factor_y.value, self.factor_x.value)
+            else:
+                size = (self.factor_y.value, self.factor_x.value)
+            y_data = rescale(x_data, size)
         y = Objects()
         y.segmented = y_data
         objects.add_objects(y, y_name)
@@ -185,12 +222,17 @@ Enter the desired height of the final objects, in pixels.""",
         if variable_revision_number == 1:
             setting_values += ["None"]
             variable_revision_number = 2
+
+        if variable_revision_number == 2:
+            setting_values = (
+                setting_values[:3] + [setting_values[3], setting_values[3], 1] + setting_values[4:6] + ["10"] + setting_values[6:]
+            )
+            variable_revision_number = 3
+
         return setting_values, variable_revision_number
 
 
 def resize(data, size):
-    if data.ndim == 3:
-        size = (data.shape[0],) + size
 
     return scipy.ndimage.zoom(
         data,
@@ -201,10 +243,6 @@ def resize(data, size):
 
 
 # [SKIMAGE-14] ND-support for skimage.transform.rescale (https://github.com/scikit-image/scikit-image/pull/2587)
-def rescale(data, factor):
-    factor = (factor, factor)
+def rescale(data, size):
 
-    if data.ndim == 3:
-        factor = (1,) + factor
-
-    return scipy.ndimage.zoom(data, factor, order=0, mode="nearest")
+    return scipy.ndimage.zoom(data, size, order=0, mode="nearest")

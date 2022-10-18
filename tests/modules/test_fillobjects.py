@@ -80,6 +80,7 @@ def test_2d_fill_holes(
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
     module.size.value = 2.0
+    module.mode.value = "Holes"
 
     module.run(workspace_empty)
 
@@ -103,6 +104,55 @@ def test_3d_fill_holes(
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
     module.size.value = 2.0
+    module.mode.value = "Holes"
+
+    module.run(workspace_empty)
+
+    actual = object_set_empty.get_objects("OutputObjects").segmented
+    expected = volume_labels
+
+    numpy.testing.assert_array_equal(actual, expected)
+
+
+def test_2d_fill_chull(
+    image_labels, module, object_set_empty, objects_empty, workspace_empty
+):
+    labels = image_labels.copy()
+    labels[5, 5] = 0
+    labels[2, 15] = 0
+    labels[15, 0] = 0
+    labels[15, 12] = 0
+
+    objects_empty.segmented = labels
+
+    module.x_name.value = "InputObjects"
+    module.y_name.value = "OutputObjects"
+    module.mode.value = "Convex hull"
+
+    module.run(workspace_empty)
+
+    actual = object_set_empty.get_objects("OutputObjects").segmented
+    expected = image_labels
+
+    numpy.testing.assert_array_equal(actual, expected)
+
+
+def test_3d_fill_chull(
+    volume_labels, module, object_set_empty, objects_empty, workspace_empty
+):
+    labels = volume_labels.copy()
+    labels[0, 1, 13] = 0
+    labels[5, 5, 5] = 0
+    labels[5, 5, 7] = 0
+    labels[2, 2, 15] = 0
+    labels[5, 15, 2] = 0
+    labels[5, 15, 15] = 0
+
+    objects_empty.segmented = labels
+
+    module.x_name.value = "InputObjects"
+    module.y_name.value = "OutputObjects"
+    module.mode.value = "Convex hull"
 
     module.run(workspace_empty)
 
@@ -124,6 +174,7 @@ def test_fail_3d_fill_bowl(
     module.x_name.value = "InputObjects"
     module.y_name.value = "OutputObjects"
     module.size.value = 2.0
+    module.mode.value = "Holes"
 
     module.run(workspace_empty)
 
@@ -149,6 +200,7 @@ def test_pass_3d_fill_bowl(
     module.size.value = 3.0
     # Set to planewise so the bowl is "filled" on each plane
     module.planewise.value = True
+    module.mode.value = "Holes"
 
     module.run(workspace_empty)
 

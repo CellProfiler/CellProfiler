@@ -51,8 +51,6 @@ class App(wx.App):
 
         self.workspace_path = kwargs.pop("workspace_path", None)
 
-        start_java()
-
         super(App, self).__init__(*args, **kwargs)
 
     def OnInit(self):

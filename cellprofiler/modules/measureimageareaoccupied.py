@@ -449,8 +449,8 @@ def surface_area(label_image, spacing=None, index=None):
         spacing = (1.0,) * label_image.ndim
 
     if index is None:
-        verts, faces = skimage.measure.marching_cubes_classic(
-            label_image, spacing=spacing, level=0
+        verts, faces, _normals, _values = skimage.measure.marching_cubes(
+            label_image, spacing=spacing, level=0, method="lorensen"
         )
 
         return skimage.measure.mesh_surface_area(verts, faces)
@@ -464,8 +464,8 @@ def surface_area(label_image, spacing=None, index=None):
 
 
 def _label_surface_area(label_image, label, spacing):
-    verts, faces = skimage.measure.marching_cubes_classic(
-        label_image == label, spacing=spacing, level=0
+    verts, faces, _normals, _values = skimage.measure.marching_cubes(
+        label_image == label, spacing=spacing, level=0, method="lorensen"
     )
 
     return skimage.measure.mesh_surface_area(verts, faces)

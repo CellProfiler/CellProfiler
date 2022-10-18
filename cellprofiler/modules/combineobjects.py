@@ -43,6 +43,7 @@ from cellprofiler_core.setting.text import LabelName
 from cellprofiler_core.utilities.core.module.identify import add_object_count_measurements
 from cellprofiler_core.utilities.core.module.identify import get_object_measurement_columns
 from cellprofiler_core.utilities.core.module.identify import add_object_location_measurements
+from cellprofiler.library.modules import combineobjects
 
 
 class CombineObjects(Identify):
@@ -125,7 +126,7 @@ subsequent modules.""",
         labels_x = objects_x.segmented.copy().astype("uint16")
         labels_y = objects_y.segmented.copy().astype("uint16")
 
-        output = self.combine_arrays(labels_x, labels_y)
+        output = combineobjects(self.merge_method.value, labels_x, labels_y, dimensions)
         output_labels = skimage.morphology.label(output)
         output_objects = Objects()
         output_objects.segmented = output_labels

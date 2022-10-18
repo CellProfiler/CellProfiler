@@ -54,10 +54,14 @@ E_IMAGE = "Image"
 CT_COLOR = "Color"
 CT_TEXT = "Text"
 
+F_WEIGHT_NORMAL = "normal"
+F_WEIGHT_BOLD = "bold"
+
 CMS_USE_MEASUREMENT_RANGE = "Use this image's measurement range"
 CMS_MANUAL = "Manual"
 
-
+# Load fonts available to matplotlob in alphabetical order
+font_list = sorted(set([font.name for font in matplotlib.font_manager.fontManager.ttflist]))
 class DisplayDataOnImage(Module):
     module_name = "DisplayDataOnImage"
     category = "Data Tools"
@@ -180,6 +184,31 @@ superimposed. You can use this name to refer to the image in subsequent
 modules (such as **SaveImages**).
 """,
         )
+        self.sci_notation = Binary(
+            "Use scientific notation?",
+            False,
+            doc="""Choose whether to display data in scientific notation.
+""",
+        )
+
+        self.font_choice = Choice(
+            "Font",
+            font_list,
+            doc="""\
+Set the font of the text to be displayed. 
+
+Note: The fonts will be loaded from the system running CellProfiler. 
+Not all fonts that are loaded will have the required glyphs, leading to 
+blank or incomplete data displays. Moreover, not all fonts will support 
+font weight changes. 
+""",
+        )
+        self.font_weight = Choice(
+            "Font weight",
+            [F_WEIGHT_NORMAL, F_WEIGHT_BOLD],
+            value="normal",
+            doc="""Set the font weight of the text to be displayed""",
+        )
 
         self.font_size = Integer(
             "Font size (points)",
@@ -276,6 +305,9 @@ color map.
             self.wants_image,
             self.color_map_scale_choice,
             self.color_map_scale,
+            self.font_choice,
+            self.sci_notation,
+            self.font_weight
         ]
 
     def visible_settings(self):
@@ -292,7 +324,7 @@ color map.
             if self.color_map_scale_choice == CMS_MANUAL:
                 result += [self.color_map_scale]
         else:
-            result += [self.text_color, self.font_size, self.decimals, self.offset]
+            result += [self.font_choice, self.font_weight, self.sci_notation, self.text_color, self.font_size, self.decimals, self.offset]
         result += [self.display_image, self.saved_image_contents]
         return result
 
@@ -365,7 +397,12 @@ color map.
                 self.objects_name.value, M_LOCATION_CENTER_Y
             )
             y += self.offset.value * y_offset
-            mask = ~(numpy.isnan(values) | numpy.isnan(x) | numpy.isnan(y))
+            if numpy.issubdtype(values.dtype, str):
+                if self.use_color_map():
+                    raise NotImplementedError("Cannot interpret a text measurement for display with a color scale")
+                mask = ~(numpy.isnan(x) | numpy.isnan(y))
+            else:
+                mask = ~(numpy.isnan(values) | numpy.isnan(x) | numpy.isnan(y))
             values = values[mask]
             x = x[mask]
             y = y[mask]
@@ -496,12 +533,13 @@ color map.
                 workspace.display_data.y,
                 workspace.display_data.values,
             ):
-                try:
-                    fvalue = float(value)
-                    svalue = "%.*f" % (self.decimals.value, value)
-                except:
-                    svalue = str(value)
-
+                if self.sci_notation:
+                    svalue = f"{value:.{self.decimals.value}e}"
+                else:
+                    try:
+                        svalue = "%.*f" % (self.decimals.value, value)
+                    except:
+                        svalue = str(value)
                 text = matplotlib.text.Text(
                     x=x,
                     y=y,
@@ -510,6 +548,8 @@ color map.
                     color=self.text_color.value,
                     verticalalignment="center",
                     horizontalalignment="center",
+                    fontname=self.font_choice.value,
+                    weight=self.font_weight.value,
                 )
                 axes.add_artist(text)
 

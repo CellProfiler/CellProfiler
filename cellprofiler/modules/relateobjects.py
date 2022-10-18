@@ -614,7 +614,9 @@ parents or children of the parent object.""",
             perim_loc = numpy.argwhere(pperim != 0)
 
             # Get the label # for each point
-            perim_idx = pperim[perim_loc.transpose().tolist()]
+            # multidimensional indexing with non-tuple values not allowed as of numpy 1.23
+            perim_loc_t = tuple(map(tuple, perim_loc.transpose()))
+            perim_idx = pperim[perim_loc_t]
 
             # Sort the points by label #
             reverse_column_order = list(range(children.dimensions))[::-1]

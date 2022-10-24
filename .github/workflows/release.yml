@@ -148,3 +148,5 @@ on:
   push:
     branches:
       - compat-4-2-ai
+    tags:
+      - "v*"

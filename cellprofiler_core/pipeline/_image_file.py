@@ -178,6 +178,11 @@ class ImageFile:
     def file_extension(self):
         return os.path.splitext(self.path)[-1].lower()
 
+    @cached_property
+    def full_extension(self):
+        file_name = os.path.basename(self.path)
+        return file_name[file_name.find('.'):]
+
     @property
     def metadata(self):
         return self._metadata_dict

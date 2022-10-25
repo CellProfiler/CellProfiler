@@ -12,6 +12,9 @@ from bioformats.formatreader import get_image_reader, release_image_reader, clea
 
 from ..utilities.java import start_java
 
+# bioformats returns 2 for these, imageio reader returns 3
+SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
+SEMI_SUPPORTED_EXTENSIONS = BIOFORMATS_IMAGE_EXTENSIONS
 
 class BioformatsReader(Reader):
     """ Derive from this abstract Reader class to create your own image reader in Python
@@ -135,13 +138,12 @@ class BioformatsReader(Reader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
-        file_url = image_file.url.lower()
-        if file_url.startswith("omero:"):
+        if image_file.url.lower().startswith("omero:"):
             return 1
-        if file_url.endswith(".ome.tif"):
+        if image_file.full_extension in SUPPORTED_EXTENSIONS:
             return 2
         if not allow_open:
-            if image_file.file_extension in BIOFORMATS_IMAGE_EXTENSIONS:
+            if image_file.file_extension in SEMI_SUPPORTED_EXTENSIONS:
                 return 3
             return -1
         else:

@@ -37,6 +37,7 @@ import cellprofiler_core.setting
 import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
+from cellprofiler_core.utilities.java import start_java
 import tests.modules
 
 cellprofiler_core.preferences.set_headless()
@@ -711,6 +712,8 @@ def test_scaling():
     """Test loading an image scaled and unscaled"""
     folder = "loaddata"
     file_name = "1-162hrh2ax2.tif"
+    if not cellprofiler_core.utilities.java.JAVA_STARTED:
+        start_java()
     path = tests.modules.make_12_bit_image(folder, file_name, (22, 18))
     csv_text = (
         "Image_PathName_MyFile,Image_FileName_MyFile\n" "%s,%s\n" % os.path.split(path)
@@ -732,8 +735,11 @@ def test_scaling():
             c0.set_module_num(2)
             pipeline.add_module(c0)
             pipeline.run()
+        except Exception as e:
+            print(e)
         finally:
             os.remove(filename)
+
     unscaled, scaled = c0_image
     numpy.testing.assert_almost_equal(unscaled * 65535.0 / 4095.0, scaled)
 
@@ -743,7 +749,6 @@ def test_load_objects():
     r.seed(1101)
     labels = r.randint(0, 10, size=(30, 20)).astype(numpy.uint8)
     handle, name = tempfile.mkstemp(".png")
-    from cellprofiler_core.utilities.java import start_java
     start_java()
     bioformats.write_image(name, labels, bioformats.PT_UINT8)
     os.close(handle)

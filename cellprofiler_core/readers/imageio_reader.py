@@ -1,14 +1,15 @@
 import collections
-
 import numpy
-
-from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
-
-from ..reader import Reader
-
 import imageio
 
+from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
+from ..reader import Reader
+
+
 SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif'}
+# bioformats returns 2 for these, imageio reader returns 3
+SEMI_SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
+
 
 
 class ImageIOReader(Reader):
@@ -141,6 +142,8 @@ class ImageIOReader(Reader):
         ."""
         if image_file.url.lower().startswith("omero:"):
             return -1
+        if image_file.full_extension in SEMI_SUPPORTED_EXTENSIONS:
+            return 3
         if image_file.file_extension in SUPPORTED_EXTENSIONS:
             return 2
         return -1
@@ -169,9 +172,10 @@ class ImageIOReader(Reader):
         for i in range(series_count):
             data = reader.get_data(index=i)
             dims = data.shape
+            # expects dim ordering of: [H, W, C?, T?, Z?]
             meta_dict[MD_SIZE_Z].append(dims[4] if len(dims) > 4 else 1)
             meta_dict[MD_SIZE_T].append(dims[3] if len(dims) > 3 else 1)
             meta_dict[MD_SIZE_C].append(dims[2] if len(dims) > 2 else 1)
-            meta_dict[MD_SIZE_Y].append(dims[1])
-            meta_dict[MD_SIZE_X].append(dims[0])
+            meta_dict[MD_SIZE_X].append(dims[1])
+            meta_dict[MD_SIZE_Y].append(dims[0])
         return meta_dict

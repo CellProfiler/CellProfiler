@@ -5,6 +5,7 @@ import matplotlib.cm
 import wx
 import wx.lib.scrolledpanel
 from cellprofiler_core.preferences import ALWAYS_CONTINUE_HELP
+from cellprofiler_core.preferences import export_to_json
 from cellprofiler_core.preferences import CONSERVE_MEMORY_HELP
 from cellprofiler_core.preferences import DEFAULT_COLORMAP_HELP
 from cellprofiler_core.preferences import DEFAULT_IMAGE_FOLDER_HELP
@@ -267,6 +268,10 @@ class PreferencesDialog(wx.Dialog):
         btnsizer = wx.StdDialogButtonSizer()
         btnSave = wx.Button(self, wx.ID_SAVE)
         btnCancel = wx.Button(self, wx.ID_CANCEL)
+        # We use ID_HELP here because we just need any preset button ID
+        btnExport = wx.Button(self, wx.ID_HELP, "Export")
+        self.Bind(wx.EVT_BUTTON, self.export_preferences, btnExport)
+        btnsizer.AddButton(btnExport)
         btnsizer.SetAffirmativeButton(btnSave)
         btnsizer.SetCancelButton(btnCancel)
         self.Bind(wx.EVT_BUTTON, self.save_preferences, id=wx.ID_SAVE)
@@ -302,6 +307,18 @@ class PreferencesDialog(wx.Dialog):
                         stop_telemetry()
                 setter(value)
         self.Close()
+
+    def export_preferences(self, event):
+        with wx.FileDialog(
+            self,
+            message="Save CellProfiler config to file",
+            defaultFile="cp_settings.json",
+            wildcard="*.json",
+            style=wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT,
+        ) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                export_to_json(path)
 
     def get_preferences(self):
         """Get the list of preferences.

@@ -2,6 +2,7 @@ import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
 import skimage.morphology
+import mahotas
 
 def shrink_to_point(labels, fill):
     """
@@ -221,6 +222,7 @@ def segment_objects(labels_x, labels_y, dimensions):
 
     return output
 
+<<<<<<< HEAD
 def fill_object_holes(labels, diameter, planewise=False):
     array = labels.copy()
     # Calculate radius from diameter
@@ -264,3 +266,117 @@ def fill_convex_hulls(labels):
         else:
             output[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]: bbox[5]][cmask] = label
     return output
+=======
+
+def watershed_distance(input_image, footprint, downsample):
+    x_data = input_image 
+
+    if downsample > 1: 
+        # Check if volumetric
+        if input_image.ndim > 2:
+            factors = (1, downsample, downsample)
+        else:
+            factors = (downsample, downsample)
+        
+        x_data = skimage.transform.downscale_local_mean(x_data, factors)
+
+    threshold = skimage.filters.threshold_otsu(x_data)
+
+    x_data = x_data > threshold
+
+    distance = scipy.ndimage.distance_transform_edt(x_data)
+
+    distance = mahotas.stretch(distance)
+
+    surface = distance.max() - distance
+
+    if input_image.ndim > 2:
+        footprint = numpy.ones(
+            (footprint, footprint, footprint)
+        )
+    else:
+        footprint = numpy.ones(
+            (footprint, footprint)
+        )
+    
+    peaks = mahotas.regmax(distance, footprint)
+
+    if input_image.ndim > 2:
+        markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
+    else:
+        markers, _ = mahotas.label(peaks, numpy.ones((16, 16)))
+
+    y_data = mahotas.cwatershed(surface, markers)
+
+    y_data = y_data * x_data
+
+    if downsample > 1:
+        y_data = skimage.transform.resize(
+            y_data, input_image.shape, mode="edge", order=0, preserve_range=True
+        )
+
+        y_data = numpy.rint(y_data).astype(numpy.uint16)
+        x_data = input_image > threshold
+    
+    return y_data
+
+def watershed_markers(
+    input_image, 
+    markers, 
+    structuting_element=None,
+    mask=None, 
+    connectivity=1,
+    compactness=0.0,
+    watershed_line=False,
+    declump_method="shape",
+    declump_intensity_image=None,
+    gaussian_sigma=1,
+    minimum_dist=1,
+    minimum_intensity=0,
+    border_exclusion_zone=0,
+    max_seeds=-1,
+    image_multichannel=False, 
+    markers_multichannel=False
+    ):
+    """
+    Markers: objects marking the approximate center of objects
+    """
+    y_data = skimage.segmentation.watershed(
+        image=input_image,
+        markers=markers,
+        mask=mask,
+        connectivity=connectivity,
+        compactness=compactness,
+        watershed_line=watershed_line
+    )
+
+    # Structuring element requested, advanced processing enabled
+    # ["Ball", "Cube", "Diamond", "Disk", "Octahedron", "Square", "Star"]
+    if structuting_element:
+        strel = getattr(skimage.morphology, structuting_element.casefold())
+        if strel.ndim != input_image.shape:
+            raise ValueError("Structuring element does not match object dimensions: "
+                                "{} != {}".format(strel.ndim, input_image.shape))
+
+        peak_image = scipy.ndimage.distance_transform_edt()
+
+        if declump_method.casefold() == "shape":
+            watershed_image = -peak_image
+            watershed_image = -watershed_image.min()
+        if declump_method.casefold() == "intensity":
+            watershed_image = skimage.img_as_float(declump_intensity_image, force_copy=True)
+            watershed_image -= watershed_image.min()
+            watershed_image = 1 - watershed_image
+        else:
+            raise ValueError(f"{declump_method} not in 'shape', 'intensity'")
+        
+        watershed_image = skimage.filters.gaussian(watershed_image, sigma=gaussian_sigma)
+
+        seed_coords = skimage.feature.peak_local_max(
+            peak_image,
+            min_distance=minimum_dist,
+            threshold_rel=minimum_intensity,
+            exclude_border=border_exclusion_zone,
+            num_peaks=max_seeds if max_seeds != -1 else numpy.inf
+        )
+>>>>>>> 80aff7479 (beginning to add watershed to library)

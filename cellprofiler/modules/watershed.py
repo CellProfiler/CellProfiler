@@ -1,5 +1,6 @@
 import cellprofiler_core.object
 import mahotas
+from matplotlib import image
 import numpy
 import scipy.ndimage
 import skimage.color
@@ -13,6 +14,9 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float
+import cellprofiler.library.functions.object_processing
+
+from cellprofiler.library.modules import watershed
 
 O_DISTANCE = "Distance"
 O_MARKERS = "Markers"
@@ -407,179 +411,103 @@ the image is not downsampled.
 
         x_data = x.pixel_data
 
-        # watershed algorithm for distance-based method:
-        if self.operation.value == O_DISTANCE:
-            original_shape = x_data.shape
+        # Load the required images
+        markers_data = None
+        mask_data = None
+        reference_data = None
 
-            factor = self.downsample.value
+        if x.multichannel:
+            x_data = skimage.color.rgb2gray(x_data)
 
-            if factor > 1:
-                if x.volumetric:
-                    factors = (1, factor, factor)
-                else:
-                    factors = (factor, factor)
-
-                x_data = skimage.transform.downscale_local_mean(x_data, factors)
-
-            threshold = skimage.filters.threshold_otsu(x_data)
-
-            x_data = x_data > threshold
-
-            distance = scipy.ndimage.distance_transform_edt(x_data)
-
-            distance = mahotas.stretch(distance)
-
-            surface = distance.max() - distance
-
-            if x.volumetric:
-                footprint = numpy.ones(
-                    (self.footprint.value, self.footprint.value, self.footprint.value)
-                )
-            else:
-                footprint = numpy.ones((self.footprint.value, self.footprint.value))
-
-            peaks = mahotas.regmax(distance, footprint)
-
-            if x.volumetric:
-                markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
-            else:
-                markers, _ = mahotas.label(peaks, numpy.ones((16, 16)))
-
-            y_data = mahotas.cwatershed(surface, markers)
-
-            y_data = y_data * x_data
-
-            # resize back to the original size if downsampled
-            if factor > 1:
-                y_data = skimage.transform.resize(
-                    y_data, original_shape, mode="edge", order=0, preserve_range=True
-                )
-
-                y_data = numpy.rint(y_data).astype(numpy.uint16)
-                x_data = x.pixel_data > threshold
-
-        # watershed algorithm for marker-based method:
-        else:
+        if self.operation.value == O_MARKERS:
+            # Get markers
             markers_name = self.markers_name.value
-
             markers = images.get_image(markers_name)
-
             markers_data = markers.pixel_data
-
-            if x.multichannel:
-                x_data = skimage.color.rgb2gray(x_data)
 
             if markers.multichannel:
                 markers_data = skimage.color.rgb2gray(markers_data)
 
-            mask_data = None
-
+            # Get mask for the markers method
             if not self.mask_name.is_blank:
                 mask_name = self.mask_name.value
-
                 mask = images.get_image(mask_name)
-
                 mask_data = mask.pixel_data
 
-            y_data = skimage.segmentation.watershed(
-                image=x_data,
+        # Get the intensity image
+        if self.declump_method.value == O_INTENSITY:
+            # Get intensity image
+            reference_name = self.reference_name.value
+            reference = images.get_image(reference_name)
+            reference_data = reference.pixel_data
+            if reference.multichannel:
+                    reference_data = skimage.color.rgb2gray(reference_data)
+
+        y_data = watershed(
+                input_image=x_data,
+                use_advanced=self.use_advanced.value,
                 markers=markers_data,
                 mask=mask_data,
+                intensity_image=reference_data,
+                method=self.operation.value,
+                declump_method=self.declump_method.value,
+                footprint=self.footprint.value,
+                downsample=self.downsample.value,
                 connectivity=self.connectivity.value,
                 compactness=self.compactness.value,
-                watershed_line=self.watershed_line.value,
-            )
+                structuring_element=self.structuring_element.shape,
+                structuring_element_size=self.structuring_element.size,
+                gaussian_sigma=self.gaussian_sigma.value,
+                min_distance=self.min_dist.value,
+                min_intensity=self.min_intensity.value,
+                exclude_border=self.exclude_border.value,
+                max_seeds=self.max_seeds.value
+        )
 
-        # watershed segmentation is stored in y_data variable
-        if self.use_advanced.value:
-            # check the dimensions of the structuring element
-            strel_dim = self.structuring_element.value.ndim
+        # if not self.use_advanced.value:
+        #     # Perform simple watershed operations
+        #     # watershed algorithm for distance-based method:
+        #     if self.operation.value == O_DISTANCE:
+        #         y_data = cellprofiler.library.functions.object_processing.watershed_distance(
+        #             x_data, 
+        #             self.footprint.value, 
+        #             self.downsample.value
+        #         )
+        
+        #     # Marker-baseed watershed method:
+        #     else:
+        #         y_data = cellprofiler.library.functions.object_processing.watershed_markers(
+        #             input_image=x_data,
+        #             markers=markers_data,
+        #             mask=mask_data,
+        #             connectivity=self.connectivity.value,
+        #             compactness=self.compactness.value,
+        #             watershed_line=self.watershed_line.value,
+        #         )
 
-            # test if the structuring element dimensions match the image dimensions
-            if strel_dim != dimensions:
-                raise ValueError("Structuring element does not match object dimensions: "
-                                 "{} != {}".format(strel_dim, dimensions))
+        # elif self.use_advanced.value:
+        #     y_data = cellprofiler.library.functions.object_processing.watershed_advanced(
+        #         input_image=x_data,
+        #         markers=markers_data,
+        #         mask=mask_data,
+        #         intensity_image=reference_data,
+        #         method=self.operation.value,
+        #         declump_method=self.declump_method.value,
+        #         footprint=self.footprint.value,
+        #         downsample=self.downsample.value,
+        #         connectivity=self.connectivity.value,
+        #         compactness=self.compactness.value,
+        #         structuring_element=self.structuring_element.shape,
+        #         structuring_element_size=self.structuring_element.size,
+        #         gaussian_sigma=self.gaussian_sigma.value,
+        #         min_distance=self.min_dist.value,
+        #         min_intensity=self.min_intensity.value,
+        #         exclude_border=self.exclude_border.value,
+        #         max_seeds=self.max_seeds.value
+        #     )
 
-            # Get the segmentation distance transform for the watershed segmentation
-            peak_image = scipy.ndimage.distance_transform_edt(y_data > 0)
-
-            # shape-based method; generate a watershed ready image
-            if self.declump_method.value == O_SHAPE:
-                # Use the reverse of the image to get basins at peaks
-                watershed_image = -peak_image
-                watershed_image -= watershed_image.min()
-
-            # intensity-based method
-            else:
-                # get the intensity image data
-                reference_name = self.reference_name.value
-                reference = images.get_image(reference_name)
-                reference_data = reference.pixel_data
-
-                # Set the image as a float and rescale to full bit depth
-                watershed_image = skimage.img_as_float(reference_data, force_copy=True)
-                watershed_image -= watershed_image.min()
-                watershed_image = 1 - watershed_image
-
-                if reference.multichannel:
-                    watershed_image = skimage.color.rgb2gray(watershed_image)
-
-            # Smooth the image
-            watershed_image = skimage.filters.gaussian(watershed_image, sigma=self.gaussian_sigma.value)
-
-            # Generate local peaks; returns a list of coords for each peak
-            seed_coords = skimage.feature.peak_local_max(peak_image,
-                                                   min_distance=self.min_dist.value,
-                                                   threshold_rel=self.min_intensity.value,
-                                                   exclude_border=self.exclude_border.value,
-                                                   num_peaks=self.max_seeds.value if self.max_seeds.value != -1 else numpy.inf)
-
-            # generate an array w/ same dimensions as the original image with all elements having value False
-            seeds = numpy.zeros_like(peak_image, dtype=bool)
-
-            # set value to True at every local peak
-            seeds[tuple(seed_coords.T)] = True
-
-            # Dilate seeds based on settings
-            seeds = skimage.morphology.binary_dilation(seeds, self.structuring_element.value)
-
-            # get the number of objects from the distance-based or marker-based watershed run above
-            number_objects = skimage.measure.label(y_data, return_num=True)[1]
-
-            seeds_dtype = (numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32)
-
-            # NOTE: Not my work, the comments below are courtesy of Ray
-            #
-            # Create a marker array where the unlabeled image has a label of
-            # -(nobjects+1)
-            # and every local maximum has a unique label which will become
-            # the object's label. The labels are negative because that
-            # makes the watershed algorithm use FIFO for the pixels which
-            # yields fair boundaries when markers compete for pixels.
-            #
-            seeds = scipy.ndimage.label(seeds)[0]
-
-            markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
-            markers[seeds > 0] = -seeds[seeds > 0]
-
-            # Perform the watershed
-            watershed_boundaries = skimage.segmentation.watershed(
-                connectivity=self.connectivity.value,
-                image=watershed_image,
-                markers=markers,
-                mask=x_data != 0
-            )
-
-            y_data = watershed_boundaries.copy()
-            # Copy the location of the "background"
-            zeros = numpy.where(y_data == 0)
-            # Re-shift all of the labels into the positive realm
-            y_data += numpy.abs(numpy.min(y_data)) + 1
-            # Re-apply the background
-            y_data[zeros] = 0
-
-        # finalize and convert watershed to objects to export
-        y_data = skimage.measure.label(y_data)
+        # # finalize and convert watershed to objects to export
+        # y_data = skimage.measure.label(y_data)
 
         objects = cellprofiler_core.object.Objects()
 

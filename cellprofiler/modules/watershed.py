@@ -464,51 +464,6 @@ the image is not downsampled.
                 max_seeds=self.max_seeds.value
         )
 
-        # if not self.use_advanced.value:
-        #     # Perform simple watershed operations
-        #     # watershed algorithm for distance-based method:
-        #     if self.operation.value == O_DISTANCE:
-        #         y_data = cellprofiler.library.functions.object_processing.watershed_distance(
-        #             x_data, 
-        #             self.footprint.value, 
-        #             self.downsample.value
-        #         )
-        
-        #     # Marker-baseed watershed method:
-        #     else:
-        #         y_data = cellprofiler.library.functions.object_processing.watershed_markers(
-        #             input_image=x_data,
-        #             markers=markers_data,
-        #             mask=mask_data,
-        #             connectivity=self.connectivity.value,
-        #             compactness=self.compactness.value,
-        #             watershed_line=self.watershed_line.value,
-        #         )
-
-        # elif self.use_advanced.value:
-        #     y_data = cellprofiler.library.functions.object_processing.watershed_advanced(
-        #         input_image=x_data,
-        #         markers=markers_data,
-        #         mask=mask_data,
-        #         intensity_image=reference_data,
-        #         method=self.operation.value,
-        #         declump_method=self.declump_method.value,
-        #         footprint=self.footprint.value,
-        #         downsample=self.downsample.value,
-        #         connectivity=self.connectivity.value,
-        #         compactness=self.compactness.value,
-        #         structuring_element=self.structuring_element.shape,
-        #         structuring_element_size=self.structuring_element.size,
-        #         gaussian_sigma=self.gaussian_sigma.value,
-        #         min_distance=self.min_dist.value,
-        #         min_intensity=self.min_intensity.value,
-        #         exclude_border=self.exclude_border.value,
-        #         max_seeds=self.max_seeds.value
-        #     )
-
-        # # finalize and convert watershed to objects to export
-        # y_data = skimage.measure.label(y_data)
-
         objects = cellprofiler_core.object.Objects()
 
         objects.segmented = y_data

@@ -1,4 +1,3 @@
-# from multiprocessing.sharedctypes import Value
 import skimage.color
 import skimage.morphology
 
@@ -15,5 +14,4 @@ def medial_axis(image):
     if image.ndim > 2 and image.shape[-1] not in (3, 4):
         raise ValueError("Process 3D images plane-wise or the medialaxis module")
     return skimage.morphology.medial_axis(image)
-
 

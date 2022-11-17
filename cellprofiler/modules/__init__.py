@@ -67,6 +67,7 @@ builtin_modules = {
     "opening": "Opening",
     "overlayobjects": "OverlayObjects",
     "overlayoutlines": "OverlayOutlines",
+    "padimage":"PadImage",
     "reducenoise": "ReduceNoise",
     "relateobjects": "RelateObjects",
     "removeholes": "RemoveHoles",

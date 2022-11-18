@@ -48,9 +48,9 @@ This module has two operating modes:
    watershed. Your “Input” image should be a binary image. Markers and other 
    inputs for the watershed algorithm will be automatically generated.
 
-   -   **Footprint** defines dimentions of the window used to scan
+   -   **Footprint** defines dimensions of the window used to scan
        the input image for local maximum. The footprint can be interpreted as a region,
-       window, structring element or volume that subsamples the input image. 
+       window, structuring element or volume that subsamples the input image. 
        The distance transform will create local maximum from a binary image that 
        will be at the centers of objects. A large footprint will suppress local maximum 
        that are close together into a single maximum, but this will require more memory 

@@ -315,7 +315,7 @@ def watershed_advanced(
     gaussian_sigma=1,
     min_distance=1,
     min_intensity=0,
-    exclude_border=0,
+    exclude_border=False,
     max_seeds=-1,
 ):
 

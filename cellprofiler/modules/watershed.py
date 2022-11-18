@@ -455,6 +455,7 @@ the image is not downsampled.
                 downsample=self.downsample.value,
                 connectivity=self.connectivity.value,
                 compactness=self.compactness.value,
+                watershed_line=self.watershed_line.value,
                 structuring_element=self.structuring_element.shape,
                 structuring_element_size=self.structuring_element.size,
                 gaussian_sigma=self.gaussian_sigma.value,
@@ -462,7 +463,7 @@ the image is not downsampled.
                 min_intensity=self.min_intensity.value,
                 exclude_border=self.exclude_border.value,
                 max_seeds=self.max_seeds.value
-        )
+                )
 
         objects = cellprofiler_core.object.Objects()
 

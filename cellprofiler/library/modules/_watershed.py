@@ -62,6 +62,7 @@ def watershed(
             downsample=downsample,
             connectivity=connectivity,
             compactness=compactness,
+            watershed_line=watershed_line,
             structuring_element=structuring_element,
             structuring_element_size=structuring_element_size,
             gaussian_sigma=gaussian_sigma,

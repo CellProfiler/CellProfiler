@@ -223,45 +223,40 @@ def segment_objects(labels_x, labels_y, dimensions):
     return output
 
 def watershed_distance(
-    input_image, 
-    footprint=8, 
+    input_image,
+    footprint=8,
     downsample=1,
-    ):
+):
     """
     Returns a simple watershed based on distance.
-    Equivalent to CellProfiler GUI with advanced 
+    Equivalent to CellProfiler GUI with advanced
     settings off.
-    """
-    x_data = input_image 
+    """    
 
-    if downsample > 1: 
+    if downsample > 1:
         # Check if volumetric
         if input_image.ndim > 2:
             factors = (1, downsample, downsample)
         else:
             factors = (downsample, downsample)
-        
-        x_data = skimage.transform.downscale_local_mean(x_data, factors)
 
-    threshold = skimage.filters.threshold_otsu(x_data)
+        input_image = skimage.transform.downscale_local_mean(input_image, factors)
 
-    x_data = x_data > threshold
+    threshold = skimage.filters.threshold_otsu(input_image)
 
-    distance = scipy.ndimage.distance_transform_edt(x_data)
+    input_image = input_image > threshold
+
+    distance = scipy.ndimage.distance_transform_edt(input_image)
 
     distance = mahotas.stretch(distance)
 
     surface = distance.max() - distance
 
     if input_image.ndim > 2:
-        footprint = numpy.ones(
-            (footprint, footprint, footprint)
-        )
+        footprint = numpy.ones((footprint, footprint, footprint))
     else:
-        footprint = numpy.ones(
-            (footprint, footprint)
-        )
-    
+        footprint = numpy.ones((footprint, footprint))
+
     peaks = mahotas.regmax(distance, footprint)
 
     if input_image.ndim > 2:
@@ -271,7 +266,7 @@ def watershed_distance(
 
     y_data = mahotas.cwatershed(surface, markers)
 
-    y_data = y_data * x_data
+    y_data = y_data * input_image
 
     if downsample > 1:
         y_data = skimage.transform.resize(
@@ -279,21 +274,16 @@ def watershed_distance(
         )
 
         y_data = numpy.rint(y_data).astype(numpy.uint16)
-        x_data = input_image > threshold
 
     return y_data
 
+
 def watershed_markers(
-    input_image,
-    markers,
-    mask=None,
-    connectivity=1,
-    compactness=0,
-    watershed_line=False
-    ):
+    input_image, markers, mask=None, connectivity=1, compactness=0, watershed_line=False
+):
     """
     Returns a simple watershed based on markers.
-    Equivalent to CellProfiler GUI with advanced 
+    Equivalent to CellProfiler GUI with advanced
     settings off.
     """
     y_data = skimage.segmentation.watershed(
@@ -303,9 +293,10 @@ def watershed_markers(
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,
-        )
+    )
 
     return y_data
+
 
 def watershed_advanced(
     input_image,
@@ -318,15 +309,15 @@ def watershed_advanced(
     downsample=1,
     connectivity=1,
     compactness=0,
+    watershed_line=False,
     structuring_element="disk",
     structuring_element_size=1,
     gaussian_sigma=1,
     min_distance=1,
     min_intensity=0,
     exclude_border=0,
-    max_seeds=-1
-    ):
-    x_data = input_image 
+    max_seeds=-1,
+):
 
     if method.casefold() == "distance":
         y_data = watershed_distance(
@@ -341,48 +332,48 @@ def watershed_advanced(
             mask=mask,
             connectivity=connectivity,
             compactness=compactness,
-            # Watershed with advanced settings does not have this option 
-            # offered in the GUI
-            watershed_line=False
+            watershed_line=watershed_line,
         )
     else:
         raise ValueError(f"Watershed method {method} does not exist")
 
     # Advanced watershed
-    strel = getattr(skimage.morphology, structuring_element.casefold())(structuring_element_size)
-    if strel.ndim != input_image.ndim:
-        raise ValueError("Structuring element does not match object dimensions: "
-                        "{} != {}".format(strel.ndim, input_image.ndim))
-
-    # Get the segmentation distance transform for the watershed segmentation                 
-    peak_image = scipy.ndimage.distance_transform_edt(
-        y_data > 0
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
     )
+    if strel.ndim != input_image.ndim:
+        raise ValueError(
+            "Structuring element does not match object dimensions: "
+            "{} != {}".format(strel.ndim, input_image.ndim)
+        )
+
+    # Get the segmentation distance transform for the watershed segmentation
+    peak_image = scipy.ndimage.distance_transform_edt(y_data > 0)
 
     if declump_method.casefold() == "shape":
         watershed_image = -peak_image
         watershed_image -= watershed_image.min()
     if declump_method.casefold() == "intensity":
         if intensity_image is None:
-            raise ValueError("""An intensity reference image is required 
-                                to perform intensity-based declumping""")
+            raise ValueError(
+                """An intensity reference image is required 
+                                to perform intensity-based declumping"""
+            )
         # Set the image as a float and rescale to full bit depth
         watershed_image = skimage.img_as_float(intensity_image, force_copy=True)
         watershed_image -= watershed_image.min()
         watershed_image = 1 - watershed_image
 
     # Smooth the image
-    watershed_image = skimage.filters.gaussian(
-        watershed_image, sigma=gaussian_sigma
-    )
+    watershed_image = skimage.filters.gaussian(watershed_image, sigma=gaussian_sigma)
     # Generate local peaks; returns a list of coords for each peak
     seed_coords = skimage.feature.peak_local_max(
         peak_image,
         min_distance=min_distance,
         threshold_rel=min_intensity,
         exclude_border=exclude_border,
-        num_peaks=max_seeds if max_seeds != -1 else numpy.inf
-        )
+        num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
+    )
 
     # generate an array w/ same dimensions as the original image with all elements having value False
     seeds = numpy.zeros_like(peak_image, dtype=bool)
@@ -396,7 +387,9 @@ def watershed_advanced(
     # get the number of objects from the distance-based or marker-based watershed run above
     number_objects = skimage.measure.label(y_data, return_num=True)[1]
 
-    seeds_dtype = (numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32)
+    seeds_dtype = (
+        numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32
+    )
 
     # NOTE: Not my work, the comments below are courtesy of Ray
     #
@@ -417,8 +410,7 @@ def watershed_advanced(
         connectivity=connectivity,
         image=watershed_image,
         markers=markers,
-        mask=x_data != 0,
-
+        mask=input_image != 0,
     )
 
     y_data = watershed_boundaries.copy()

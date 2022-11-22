@@ -435,7 +435,7 @@ the image is not downsampled.
                 mask_data = mask.pixel_data
 
         # Get the intensity image
-        if self.declump_method.value == O_INTENSITY:
+        if self.declump_method.value == O_INTENSITY and self.use_advanced.value:
             # Get intensity image
             reference_name = self.reference_name.value
             reference = images.get_image(reference_name)

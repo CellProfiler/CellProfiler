@@ -107,21 +107,6 @@ class ImageIOReader(Reader):
             return data
         return data
 
-    @staticmethod
-    def find_scale_to_match_bioformats(data):
-        # We'd love to use skimage.exposure.rescale_intensity.
-        # But instead we follow the funky custom rescaling that bf uses.
-        if data.dtype in (numpy.int8, numpy.uint8):
-            return 255
-        elif data.dtype in (numpy.int16, numpy.uint16):
-            return 65535
-        elif data.dtype == numpy.int32:
-            return 2 ** 32 - 1
-        elif data.dtype == numpy.uint32:
-            return 2 ** 32
-        else:
-            return 1
-
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False):
         """This function needs to evaluate whether a given ImageFile object

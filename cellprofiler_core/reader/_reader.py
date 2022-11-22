@@ -2,6 +2,8 @@ import uuid
 
 from abc import ABC, abstractmethod
 
+import numpy
+
 
 class Reader(ABC):
     """ Derive from this abstract Reader class to create your own image reader in Python
@@ -133,3 +135,25 @@ class Reader(ABC):
                                     Must not contain '|' as this is used as a separator for storage.
         """
         pass
+
+    @staticmethod
+    def find_scale_to_match_bioformats(data):
+        """
+        When we're rescaling we'll usually want to match the output from BioFormats.
+        skimage.exposure.rescale_intensity would normally work beautifully, but
+        python-bioformats did things differently. To rescale with that system we
+        divide by the max possible value determined by the image format.
+
+        This utility function will look at an array and return the correct max value to
+        divide the array by.
+        """
+        if data.dtype in (numpy.int8, numpy.uint8):
+            return 255
+        elif data.dtype in (numpy.int16, numpy.uint16):
+            return 65535
+        elif data.dtype == numpy.int32:
+            return 2 ** 32 - 1
+        elif data.dtype == numpy.uint32:
+            return 2 ** 32
+        else:
+            return 1

@@ -73,6 +73,7 @@ SUPPORTED_IMAGE_EXTENSIONS = {
     ".wmf",
     ".xbm",
     ".xpm",
+    ".zarr",
 }
 SUPPORTED_MOVIE_EXTENSIONS = {
     ".avi",

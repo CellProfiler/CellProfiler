@@ -220,3 +220,38 @@ def segment_objects(labels_x, labels_y, dimensions):
         output[to_segment] = seeds[i[to_segment], j[to_segment], v[to_segment]]
 
     return output
+
+def fill_object_holes(labels, diameter, planewise):
+    array = labels.copy()
+    # Calculate radius from diameter
+    radius = diameter / 2.0
+
+    # Check if grayscale, RGB or operation is being performed planewise
+    if labels.ndim == 2 or labels.shape[-1] in (3, 4) or planewise:
+        # 2D circle area will be calculated
+        factor = radius ** 2  
+    else:
+        # Calculate the volume of a sphere
+        factor = (4.0/3.0) * (radius ** 3)
+    
+    min_obj_size = numpy.pi * factor
+
+    for obj in numpy.unique(array):
+        if obj == 0:
+            continue
+        filled_mask = skimage.morphology.remove_small_holes(array == obj, min_obj_size)
+        array[filled_mask] = obj
+    return array
+
+def fill_convex_hulls(labels):
+    data = skimage.measure.regionprops(labels)
+    output = numpy.zeros_like(labels)
+    for prop in data:
+        label = prop['label']
+        bbox = prop['bbox']
+        cmask = prop['convex_image']
+        if len(bbox) <= 4:
+            output[bbox[0]:bbox[2], bbox[1]:bbox[3]][cmask] = label
+        else:
+            output[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]: bbox[5]][cmask] = label
+    return output

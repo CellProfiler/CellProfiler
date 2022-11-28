@@ -2,10 +2,21 @@
 SaveCroppedObjects
 ==================
 
-**SaveCroppedObjects** exports each object as an individual image. Pixels corresponding to an exported object are
-assigned the value from the input image. All other pixels (i.e., background pixels and pixels corresponding to other
-objects) are assigned the value 0. The dimensions of each image are the same as the original image. Multi-channel color
-images will be represented as 3-channel RGB images when saved with this module (not available in 3D mode).
+**SaveCroppedObjects** exports each object as an individual image. There are two modes to this module
+depending on whether the user wants to save cropped **Images** or **Masks**:
+
+* In **Images** mode, the input image is cropped to the bounding box of each object. Pixels 
+  corresponding to an exported object are assigned the value from the input image. All other pixels 
+  (i.e., background pixels and pixels corresponding to other objects) are assigned the value 0. The 
+  dimensions of each output image match the dimensions of the bounding box of each object.
+
+* In **Masks** mode, a binary mask is produced for each object that is the same size as the original 
+  image used to generate the objects. The pixels corresponding to an exported object are assigned the 
+  value 1 and all other pixels in the image are assigned the value 0. The dimensions of each output 
+  image are the same for all objects and match the original image used when generating the objects. 
+
+**Note**: Multi-channel color images will be represented as 3-channel RGB images when saved with this module 
+(not available in 3D mode).
 
 The filename for an exported image is formatted in one of two ways. 
 By default, when the *Prefix saved crop image name with input image name* option is enabled, the format is

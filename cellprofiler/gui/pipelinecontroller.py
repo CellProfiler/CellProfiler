@@ -71,7 +71,7 @@ from cellprofiler_core.constants.pipeline import (
     DIRECTION_DOWN,
     DIRECTION_UP,
 )
-from cellprofiler_core.constants.reader import ALL_READERS
+from cellprofiler_core.constants.reader import ALL_READERS, ZARR_FILETYPE
 from cellprofiler_core.constants.workspace import DISPOSITION_SKIP
 from cellprofiler_core.image import ImageSetList
 from cellprofiler_core.measurement import Measurements
@@ -2191,13 +2191,23 @@ class PipelineController(object):
                         break
 
                     message[0] = "\nProcessing " + pathname
-                    if os.path.isfile(pathname):
+                    if ZARR_FILETYPE.search(pathname):
+                        pathname, _ = ZARR_FILETYPE.split(pathname)
+                        urls.append(pathname2url(pathname))
+                        if len(urls) > 100:
+                            queue.put(urls)
+                            urls = []
+                    elif os.path.isfile(pathname):
                         urls.append(pathname2url(pathname))
                         if len(urls) > 100:
                             queue.put(urls)
                             urls = []
                     elif os.path.isdir(pathname):
                         for dirpath, dirnames, files in os.walk(pathname):
+                            if ZARR_FILETYPE.search(dirpath):
+                                zarr_dir, _ = ZARR_FILETYPE.split(dirpath)
+                                urls.append(pathname2url(zarr_dir))
+                                continue
                             for filename in files:
                                 if not interrupt or interrupt[0]:
                                     break

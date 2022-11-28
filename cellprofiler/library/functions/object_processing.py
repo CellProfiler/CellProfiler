@@ -221,7 +221,7 @@ def segment_objects(labels_x, labels_y, dimensions):
 
     return output
 
-def fill_object_holes(labels, diameter, planewise):
+def fill_object_holes(labels, diameter, planewise=False):
     array = labels.copy()
     # Calculate radius from diameter
     radius = diameter / 2.0
@@ -236,11 +236,20 @@ def fill_object_holes(labels, diameter, planewise):
     
     min_obj_size = numpy.pi * factor
 
-    for obj in numpy.unique(array):
-        if obj == 0:
-            continue
-        filled_mask = skimage.morphology.remove_small_holes(array == obj, min_obj_size)
-        array[filled_mask] = obj
+    if planewise and labels.ndim != 2 and labels.shape[-1] not in (3, 4):
+        for plane in array:
+            for obj in numpy.unique(plane):
+                if obj == 0:
+                    continue
+                filled_mask = skimage.morphology.remove_small_holes(plane == obj, min_obj_size)
+                plane[filled_mask] = obj    
+        return array
+    else:
+        for obj in numpy.unique(array):
+            if obj == 0:
+                continue
+            filled_mask = skimage.morphology.remove_small_holes(array == obj, min_obj_size)
+            array[filled_mask] = obj
     return array
 
 def fill_convex_hulls(labels):

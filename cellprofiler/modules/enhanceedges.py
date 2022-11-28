@@ -34,6 +34,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
+from cellprofiler.library.modules import enhanceedges
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"
@@ -262,58 +263,14 @@ values below this threshold as not being edges.
             mask = image.mask
         else:
             mask = numpy.ones(orig_pixels.shape, bool)
-        if self.method == M_SOBEL:
-            if self.direction == E_ALL:
-                output_pixels = centrosome.filter.sobel(orig_pixels, mask)
-            elif self.direction == E_HORIZONTAL:
-                output_pixels = centrosome.filter.hsobel(orig_pixels, mask)
-            elif self.direction == E_VERTICAL:
-                output_pixels = centrosome.filter.vsobel(orig_pixels, mask)
-            else:
-                raise NotImplementedError(
-                    "Unimplemented direction for Sobel: %s", self.direction.value
-                )
-        elif self.method == M_LOG:
-            sigma = self.get_sigma()
-            size = int(sigma * 4) + 1
-            output_pixels = centrosome.filter.laplacian_of_gaussian(
-                orig_pixels, mask, size, sigma
-            )
-        elif self.method == M_PREWITT:
-            if self.direction == E_ALL:
-                output_pixels = centrosome.filter.prewitt(orig_pixels)
-            elif self.direction == E_HORIZONTAL:
-                output_pixels = centrosome.filter.hprewitt(orig_pixels, mask)
-            elif self.direction == E_VERTICAL:
-                output_pixels = centrosome.filter.vprewitt(orig_pixels, mask)
-            else:
-                raise NotImplementedError(
-                    "Unimplemented direction for Prewitt: %s", self.direction.value
-                )
-        elif self.method == M_CANNY:
-            high_threshold = self.manual_threshold.value
-            low_threshold = self.low_threshold.value
-            if (
-                self.wants_automatic_low_threshold.value
-                or self.wants_automatic_threshold.value
-            ):
-                sobel_image = centrosome.filter.sobel(orig_pixels, mask)
-                low, high = centrosome.otsu.otsu3(sobel_image[mask])
-                if self.wants_automatic_low_threshold.value:
-                    low_threshold = low * self.threshold_adjustment_factor.value
-                if self.wants_automatic_threshold.value:
-                    high_threshold = high * self.threshold_adjustment_factor.value
-            output_pixels = centrosome.filter.canny(
-                orig_pixels, mask, self.get_sigma(), low_threshold, high_threshold
-            )
-        elif self.method == M_ROBERTS:
-            output_pixels = centrosome.filter.roberts(orig_pixels, mask)
-        elif self.method == M_KIRSCH:
-            output_pixels = centrosome.kirsch.kirsch(orig_pixels)
-        else:
-            raise NotImplementedError(
-                "Unimplemented edge detection method: %s" % self.method.value
-            )
+
+        output_pixels = enhanceedges(
+            orig_pixels,
+            mask,
+            method=self.method.value,
+            direction=self.direction.value,
+            sigma=self.get_sigma(),
+        )
 
         output_image = Image(output_pixels, parent_image=image)
         workspace.image_set.add(self.output_image_name.value, output_image)
@@ -355,18 +312,11 @@ values below this threshold as not being edges.
         )
 
     def get_sigma(self):
-        if self.wants_automatic_sigma.value:
-            #
-            # Constants here taken from FindEdges.m
-            #
-            if self.method == M_CANNY:
-                return 1.0
-            elif self.method == M_LOG:
-                return 2.0
-            else:
-                raise NotImplementedError(
-                    "Automatic sigma not supported for method %s." % self.method.value
-                )
+        """'Automatic' sigma is only available for Cany and Log methods"""
+        if self.wants_automatic_sigma.value and self.method == M_CANNY:
+            return 1.0
+        elif self.wants_automatic_sigma.value and self.method == M_LOG:
+            return 2.0
         else:
             return self.sigma.value
 

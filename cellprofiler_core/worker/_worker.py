@@ -98,8 +98,8 @@ class Worker:
             javabridge.activate_awt()
 
     def exit_thread(self):
-        from cellprofiler_core.constants.reader import all_readers
-        for reader in all_readers.values():
+        from cellprofiler_core.constants.reader import ALL_READERS
+        for reader in ALL_READERS.values():
             reader.clear_cached_readers()
         if JAVA_STARTED:
             javabridge.detach()

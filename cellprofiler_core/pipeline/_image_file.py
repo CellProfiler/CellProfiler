@@ -180,7 +180,7 @@ class ImageFile:
 
     @cached_property
     def full_extension(self):
-        file_name = os.path.basename(self.path)
+        file_name = os.path.basename(self.path).lower()
         return file_name[file_name.find('.'):]
 
     @property

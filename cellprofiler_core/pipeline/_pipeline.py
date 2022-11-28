@@ -20,7 +20,7 @@ import numpy
 
 from . import ImageFile
 from .io import dump as dumpit
-from ..constants.reader import all_readers
+from ..constants.reader import ALL_READERS
 from ..setting.multichoice import ImageNameSubscriberMultiChoice
 from ..setting.subscriber import ImageSubscriber
 from ..setting.subscriber import ImageListSubscriber
@@ -1139,7 +1139,7 @@ class Pipeline:
             # Close cached readers.
             # This may play a big role with cluster deployments or long standing jobs
             # by freeing up memory and resources.
-            for reader in all_readers.values():
+            for reader in ALL_READERS.values():
                 reader.clear_cached_readers()
             if measurements is not None:
                 workspace = Workspace(

@@ -3,6 +3,7 @@ import numpy
 import imageio
 
 from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
+from ..preferences import config_read_typed
 from ..reader import Reader
 
 
@@ -11,13 +12,14 @@ SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif'}
 SEMI_SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
 
 
-
 class ImageIOReader(Reader):
     """
-    Reads nasic image formats using ImageIO.
+    Reads basic image formats using ImageIO.
     """
 
     reader_name = "ImageIO"
+    variable_revision_number = 1
+    supported_filetypes = SUPPORTED_EXTENSIONS.union(SEMI_SUPPORTED_EXTENSIONS)
 
     def __init__(self, image_file):
         self.variable_revision_number = 1
@@ -127,10 +129,11 @@ class ImageIOReader(Reader):
         ."""
         if image_file.url.lower().startswith("omero:"):
             return -1
-        if image_file.full_extension in SEMI_SUPPORTED_EXTENSIONS:
-            return 3
         if image_file.file_extension in SUPPORTED_EXTENSIONS:
             return 2
+        if image_file.full_extension in SEMI_SUPPORTED_EXTENSIONS:
+            if config_read_typed(f"Reader.{ImageIOReader.reader_name}.read_tif", bool):
+                return 2
         return -1
 
     def close(self):
@@ -164,3 +167,18 @@ class ImageIOReader(Reader):
             meta_dict[MD_SIZE_X].append(dims[1])
             meta_dict[MD_SIZE_Y].append(dims[0])
         return meta_dict
+
+    @staticmethod
+    def get_settings():
+        return [
+            ('read_tif',
+             "Read TIFF files",
+             """
+             If enabled, this reader will attempt to read TIFF files.
+             Note that this reader cannot properly handle complex, multi-series
+             TIFF formats or special compression methods. 
+             Only enable this option if you're loading simple TIFF images.
+             """,
+             bool,
+             False)
+        ]

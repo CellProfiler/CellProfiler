@@ -6,7 +6,7 @@
            Create a function to save the preferences.
            Create a function to populate a handles structure with preferences.
 """
-
+import json
 import logging
 import os
 import os.path
@@ -22,6 +22,7 @@ import weakref
 import psutil
 
 from ._headless_configuration import HeadlessConfiguration
+from ..constants.reader import ALL_READERS
 from ..utilities.image import image_resource
 
 """get_absolute_path - mode = output. Assume "." is the default output dir"""
@@ -132,6 +133,18 @@ def preferences_as_dict():
     for key in ALL_KEYS:
         if isinstance(pref_dict[key], bytes):
             pref_dict[key] = pref_dict[key].decode("utf-8")
+    # Now get the reader settings
+    for reader_name, reader_class in ALL_READERS.items():
+        config_stem = f"Reader.{reader_name}."
+        enabled_key = config_stem + 'enabled'
+        enabled_val = config_read_typed(enabled_key, bool)
+        if enabled_val is not None:
+            pref_dict[enabled_key] = enabled_val
+        for key, _, _, key_type, default in reader_class.get_settings():
+            config_key = config_stem + key
+            config_val = config_read_typed(config_key, key_type)
+            if config_val is not None:
+                pref_dict[config_key] = config_val
     return pref_dict
 
 
@@ -252,6 +265,61 @@ def config_exists(key):
         else:
             return get_config().Read(key) is not None
     return True
+
+
+def config_read_typed(key, key_type):
+    global __cached_values
+    config = get_config()
+    if key in __cached_values:
+        return __cached_values[key]
+    if config.Exists(key):
+        if key_type == bool:
+            value = config.ReadBool(key)
+        elif key_type == int:
+            value = config.ReadInt(key)
+        elif key_type == float:
+            value = config.ReadFloat(key)
+        else:
+            value = config.Read(key)
+    else:
+        value = None
+    __cached_values[key] = value
+    return value
+
+
+def config_write_typed(key, value, key_type=None, flush=True):
+    global __cached_values
+    if key_type is None:
+        # This is less safe, please do specify type.
+        key_type = type(value)
+    config = get_config()
+    if key_type == bool:
+        success = config.WriteBool(key, value)
+    elif key_type == int:
+        success = config.WriteInt(key, value)
+    elif key_type == float:
+        success = config.WriteFloat(key, value)
+    else:
+        success = config.Write(key, value)
+    if not success:
+        logging.error(f"Unable to write preference key {key}")
+        return
+    if flush:
+        config.Flush()
+        __cached_values[key] = value
+
+
+def export_to_json(path):
+    global __is_headless
+    assert not __is_headless, "wx Config can't be read in headless mode"
+    config_dict = preferences_as_dict()
+    # Remove recent file keys, these aren't useful.
+    bad_keys = [key for key in config_dict.keys() if key.startswith('RecentFile')]
+    for key in bad_keys:
+        del config_dict[key]
+    with open(path, mode='wt') as fd:
+        json.dump(config_dict, fd)
+        logging.info(f"Wrote config to {path}")
 
 
 def cell_profiler_root_directory():

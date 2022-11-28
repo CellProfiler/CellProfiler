@@ -17,15 +17,17 @@ SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
 SEMI_SUPPORTED_EXTENSIONS = BIOFORMATS_IMAGE_EXTENSIONS
 
 class BioformatsReader(Reader):
-    """ Derive from this abstract Reader class to create your own image reader in Python
+    """
+    Reads a variety of image formats using the bio-formats library.
 
-    You need to implement the methods below in the derived class.
+    This reader is Java-based.
     """
 
     reader_name = "Bio-Formats"
+    variable_revision_number = 1
+    supported_filetypes = BIOFORMATS_IMAGE_EXTENSIONS
 
     def __init__(self, image_file):
-        self.variable_revision_number = 1
         self._reader = None
         start_java()
         super().__init__(image_file)

@@ -6,8 +6,12 @@ builtin_readers = {
     "bioformats_reader": "BioformatsReader",
     "gcs_reader": "GcsReader",
 }
-all_readers = dict()
-bad_readers = []
+# All successfully loaded reader classes. Maps name:class
+ALL_READERS = dict()
+# Reader classes that failed to load. Maps name:exception str
+BAD_READERS = dict()
+# Active reader classes (ALL_READERS that aren't disabled by user). Maps name:class
+AVAILABLE_READERS = dict()
 
 ZARR_FILETYPE = re.compile(r"(?<=\.zarr)", flags=re.IGNORECASE)
 

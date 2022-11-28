@@ -1,13 +1,16 @@
 import glob
+import importlib
+import importlib.util
 import inspect
 import logging
 import os
+import re
 import sys
-
+import traceback
 
 from cellprofiler_core.constants.modules import all_modules
 from cellprofiler_core.constants.modules import pymodules
-from cellprofiler_core.constants.reader import all_readers
+from cellprofiler_core.constants.reader import ALL_READERS, BAD_READERS
 from cellprofiler_core.preferences import get_plugin_directory
 from cellprofiler_core.module import Module
 from cellprofiler_core.reader import Reader
@@ -37,7 +40,7 @@ def load_plugins(modules_only=False):
 
 def load_plugin(source, modules_only=False):
     try:
-        m = __import__(source, globals(), locals(), ["__all__"], 0)
+        m = importlib.import_module(source)
         pymodules.append(m)
         available_classes = inspect.getmembers(
             m, lambda member: inspect.isclass(member) and member.__module__ == m.__name__)
@@ -53,6 +56,19 @@ def load_plugin(source, modules_only=False):
         else:
             LOGGER.warning(f"Could not find Module{' or Reader' if not modules_only else ''} class in {m.__file__}")
     except Exception as e:
+        if not modules_only:
+            # Figure out and store Reader class name, if present
+            spec = importlib.util.find_spec(source)
+            with open(spec.origin) as fd:
+                for line in fd:
+                    if line.endswith("Reader):\n"):
+                        result = re.search(r'.*class (?P<classname>.*)\(.*Reader\)', line)
+                        if result:
+                            reader_name = result.group('classname')
+                            BAD_READERS[reader_name] = traceback.format_exc()
+                        break
+                    elif line.endswith("Module):\n"):
+                        break
         LOGGER.warning("Could not load %s", source, exc_info=True)
         return
 
@@ -88,16 +104,16 @@ def add_reader(cp_reader):
     try:
         name = cp_reader.reader_name
 
-        if name in all_readers:
+        if name in ALL_READERS:
             LOGGER.warning(
                 "Multiple definitions of reader %s\n\told in %s\n\tnew in %s",
                 name,
-                sys.modules[all_readers[name].__module__].__file__,
+                sys.modules[ALL_READERS[name].__module__].__file__,
                 inspect.getfile(cp_reader),
             )
-        all_readers[name] = cp_reader
+        ALL_READERS[name] = cp_reader
     except Exception as e:
         LOGGER.warning("Failed to load %s", name, exc_info=True)
-        if name in all_readers:
-            del all_readers[name]
+        if name in ALL_READERS:
+            del ALL_READERS[name]
             del pymodules[-1]

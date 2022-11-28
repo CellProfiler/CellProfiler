@@ -1,18 +1,19 @@
 import os
 import sys
+import traceback
 
 from ._reader import Reader
-from ..constants.reader import all_readers, builtin_readers, bad_readers
+from ..constants.reader import ALL_READERS, builtin_readers, BAD_READERS, AVAILABLE_READERS
 
 import logging
 
-from ..preferences import get_force_bioformats
+from ..preferences import get_force_bioformats, config_read_typed
 
 LOGGER = logging.getLogger(__name__)
 
 
 def add_reader(reader_name, check_svn, class_name=None):
-    LOGGER.debug("Registering ", reader_name)
+    LOGGER.debug(f"Registering {reader_name}")
     try:
         rdr = __import__(reader_name, globals(), locals(), ["__all__"], 0)
         if class_name:
@@ -21,45 +22,50 @@ def add_reader(reader_name, check_svn, class_name=None):
         else:
             cp_reader = find_cp_reader(rdr)
         name = cp_reader.reader_name
-    except ModuleNotFoundError as e:
-        LOGGER.warning(f"Could not load {reader_name}: {e.msg}")
-        bad_readers.append((reader_name, e))
-        return
     except Exception as e:
-        LOGGER.debug("Could not load %s", reader_name, exc_info=True)
-        bad_readers.append((reader_name, e))
+        reader_name = reader_name.replace("cellprofiler_core.readers.", "")
+        LOGGER.warning(f"Could not load {reader_name}", exc_info=True)
+        BAD_READERS[reader_name] = traceback.format_exc()
         return
-
     try:
-        if name in all_readers:
+        if name in ALL_READERS:
             LOGGER.warning(
                 "Multiple definitions of reader %s\n\told in %s\n\tnew in %s",
                 name,
-                sys.modules[all_readers[name].__module__].__file__,
+                sys.modules[ALL_READERS[name].__module__].__file__,
                 rdr.__file__,
             )
-        all_readers[name] = cp_reader
+        ALL_READERS[name] = cp_reader
     except Exception as e:
         LOGGER.warning("Failed to load %s", name, exc_info=True)
-        bad_readers.append((reader_name, e))
-        if name in all_readers:
-            del all_readers[name]
+        BAD_READERS[reader_name] = traceback.format_exc()
+        if name in ALL_READERS:
+            del ALL_READERS[name]
 
 
 def fill_readers():
-    all_readers.clear()
-    bad_readers.clear()
+    ALL_READERS.clear()
+    BAD_READERS.clear()
 
     # Import core modules
     for reader_name, classname in builtin_readers.items():
         add_reader("cellprofiler_core.readers." + reader_name, True, class_name=classname)
 
-    if len(bad_readers) > 0:
+    if len(BAD_READERS) > 0:
         LOGGER.warning(
-            "could not load these modules: %s", ",".join([x[0] for x in bad_readers])
+            f"could not load these readers: {', '.join(BAD_READERS)}"
         )
-    if len(all_readers) == 0:
+    activate_readers()
+    if len(AVAILABLE_READERS) == 0:
         LOGGER.critical("No image readers are available, CellProfiler won't be able to load data!")
+
+
+def activate_readers():
+    AVAILABLE_READERS.clear()
+    for reader_name, classname in ALL_READERS.items():
+        enabled = config_read_typed(f'Reader.{reader_name}.enabled', bool)
+        if enabled or enabled is None:
+            AVAILABLE_READERS[reader_name] = classname
 
 
 def find_cp_reader(rdr):
@@ -80,14 +86,17 @@ def find_cp_reader(rdr):
 
 def get_image_reader_class(image_file, use_cached_name=True, volume=False):
     if get_force_bioformats():
-        return all_readers["Bio-Formats"]
-    if use_cached_name and image_file.preferred_reader in all_readers:
+        return ALL_READERS["Bio-Formats"]
+    if not AVAILABLE_READERS:
+        raise Exception("No image readers are enabled.\n"
+                        "Please check reader configuration in the File menu.")
+    if use_cached_name and image_file.preferred_reader in AVAILABLE_READERS:
         reader_class = get_image_reader_by_name(image_file.preferred_reader)
         return reader_class
     LOGGER.debug(f"Choosing reader for {image_file.filename}")
     best_reader = None
     best_value = 5
-    for reader_name, reader_class in all_readers.items():
+    for reader_name, reader_class in AVAILABLE_READERS.items():
         result = reader_class.supports_format(image_file, volume=volume, allow_open=False)
         if result == 1:
             LOGGER.debug(f"Selected {reader_name}")
@@ -108,8 +117,11 @@ def get_image_reader(image_file, use_cached_name=True, volume=False):
 
 
 def get_image_reader_by_name(reader_name):
-    assert reader_name in all_readers, f"Reader {reader_name} not found"
-    return all_readers[reader_name]
+    assert reader_name in ALL_READERS, f"Reader {reader_name} not found"
+    if reader_name not in AVAILABLE_READERS:
+        LOGGER.warning(f"Requested reader {reader_name} which is disabled by config."
+                       f"CellProfiler will use this reader anyway.")
+    return ALL_READERS[reader_name]
 
 
 fill_readers()

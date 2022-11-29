@@ -31,6 +31,8 @@ class NGFFReader(Reader):
     """
 
     reader_name = "OME-NGFF"
+    variable_revision_number = 1
+    supported_filetypes = {'.zarr', '.ome.zarr'}
 
     # Reader cache maps a path to a tuple of (zarr_root_group, series_map).
     ZARR_READER_CACHE = {}

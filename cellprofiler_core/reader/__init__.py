@@ -43,7 +43,7 @@ def add_reader(reader_name, check_svn, class_name=None):
             del ALL_READERS[name]
 
 
-def fill_readers():
+def fill_readers(check_config=True):
     ALL_READERS.clear()
     BAD_READERS.clear()
 
@@ -55,17 +55,22 @@ def fill_readers():
         LOGGER.warning(
             f"could not load these readers: {', '.join(BAD_READERS)}"
         )
-    activate_readers()
-    if len(AVAILABLE_READERS) == 0:
-        LOGGER.critical("No image readers are available, CellProfiler won't be able to load data!")
+
+    activate_readers(check_config)
 
 
-def activate_readers():
+def activate_readers(check_config=True):
     AVAILABLE_READERS.clear()
     for reader_name, classname in ALL_READERS.items():
-        enabled = config_read_typed(f'Reader.{reader_name}.enabled', bool)
-        if enabled or enabled is None:
+        if check_config:
+            enabled = config_read_typed(f'Reader.{reader_name}.enabled', bool)
+            if enabled or enabled is None:
+                AVAILABLE_READERS[reader_name] = classname
+        else:
             AVAILABLE_READERS[reader_name] = classname
+
+    if len(AVAILABLE_READERS) == 0:
+        LOGGER.critical("No image readers are available, CellProfiler won't be able to load data!")
 
 
 def find_cp_reader(rdr):
@@ -123,5 +128,4 @@ def get_image_reader_by_name(reader_name):
                        f"CellProfiler will use this reader anyway.")
     return ALL_READERS[reader_name]
 
-
-fill_readers()
+fill_readers(check_config=False)

@@ -53,6 +53,7 @@ from cellprofiler_core.utilities.zmq import join_to_the_boundary
 from cellprofiler_core.worker import aw_parse_args
 from cellprofiler_core.worker import main as worker_main
 from cellprofiler_core.workspace import Workspace
+from cellprofiler_core.reader import activate_readers
 
 if hasattr(sys, "frozen"):
     if sys.platform == "darwin":
@@ -127,6 +128,7 @@ def main(args=None):
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         set_headless()
         aw_parse_args()
+        activate_readers()
         worker_main()
         return exit_code
 
@@ -145,6 +147,9 @@ def main(args=None):
         set_headless()
         options.run_pipeline = False
         options.show_gui = False
+
+    # must be run after last possible invocation of set_headless()
+    activate_readers()
 
     if options.temp_dir is not None:
         if not os.path.exists(options.temp_dir):

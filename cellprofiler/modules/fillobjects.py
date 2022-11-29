@@ -31,7 +31,7 @@ from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.text import Float
-from cellprofiler.library.functions.object_processing import fill_object_holes, fill_convex_hulls
+from cellprofiler.library.modules import fillobjects
 
 MODE_HOLES = "Holes"
 MODE_CHULL = "Convex hull"
@@ -99,12 +99,12 @@ that touching objects may not be perfectly convex if there was a region of overl
         return __settings__
 
     def run(self, workspace):
-        if self.mode.value == MODE_CHULL:
-            self.function = lambda labels, d, p, m: fill_convex_hulls(labels)
-        else:
-            self.function = lambda labels, diameter, planewise, mode: fill_object_holes(
-                labels, diameter, planewise
-            )
+        self.function = lambda labels, diameter, planewise, mode: fillobjects(
+            labels, 
+            mode=self.mode.value,
+            diameter=self.size.value, 
+            planewise=self.planewise.value
+        )
 
         super(FillObjects, self).run(workspace)
 

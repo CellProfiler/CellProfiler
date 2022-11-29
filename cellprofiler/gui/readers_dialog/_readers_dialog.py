@@ -156,12 +156,20 @@ class ReadersDialog(wx.Dialog):
         ver = wx.StaticText(self.control_panel)
         ver.SetLabelMarkup(f"<b>Version:</b> {reader_class.variable_revision_number}")
         self.control_sizer.Add(ver)
+
         self.control_sizer.AddSpacer(5)
         ext_desc = f"<b>Supported extensions:</b> {', '.join(reader_class.supported_filetypes)}"
         ext_desc = (textwrap.fill(ext_desc, self.control_sizer.GetSize().GetWidth() // 6))
-        st = wx.StaticText(self.control_panel, label='')
-        st.SetLabelMarkup(ext_desc)
-        self.control_sizer.Add(st, 0, wx.EXPAND | wx.TE_RICH)
+        ext_st = wx.StaticText(self.control_panel, label='')
+        ext_st.SetLabelMarkup(ext_desc)
+        self.control_sizer.Add(ext_st, 0, wx.EXPAND | wx.TE_RICH)
+
+        self.control_sizer.AddSpacer(5)
+        scheme_desc = f"<b>Supported schemes:</b> {', '.join(reader_class.supported_schemes)}"
+        scheme_desc = (textwrap.fill(scheme_desc, self.control_sizer.GetSize().GetWidth() // 6))
+        scheme_st = wx.StaticText(self.control_panel, label='')
+        scheme_st.SetLabelMarkup(scheme_desc)
+        self.control_sizer.Add(scheme_st, 0, wx.EXPAND | wx.TE_RICH)
 
         settings = reader_class.get_settings()
         if settings:

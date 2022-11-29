@@ -15,6 +15,7 @@ from ..utilities.java import start_java
 # bioformats returns 2 for these, imageio reader returns 3
 SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
 SEMI_SUPPORTED_EXTENSIONS = BIOFORMATS_IMAGE_EXTENSIONS
+SUPPORTED_SCHEMES = {'file', 'http', 'https', 'ftp', 'ftps', 'omero', 's3'}
 
 class BioformatsReader(Reader):
     """
@@ -26,6 +27,7 @@ class BioformatsReader(Reader):
     reader_name = "Bio-Formats"
     variable_revision_number = 1
     supported_filetypes = BIOFORMATS_IMAGE_EXTENSIONS
+    supported_schemes = SUPPORTED_SCHEMES
 
     def __init__(self, image_file):
         self._reader = None
@@ -140,7 +142,10 @@ class BioformatsReader(Reader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
-        if image_file.url.lower().startswith("omero:"):
+        url_lower = image_file.url.lower()
+        if image_file.scheme not in SUPPORTED_SCHEMES:
+            return -1
+        if image_file.scheme == 'omero':
             return 1
         if image_file.full_extension in SUPPORTED_EXTENSIONS:
             return 2

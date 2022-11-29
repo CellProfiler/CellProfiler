@@ -12,11 +12,10 @@ import re
 import logging
 from lxml import etree
 
-
-FORMAT_TESTER = re.compile(r"\.zarr([\\/]|$)", flags=re.IGNORECASE)
-
 LOGGER = logging.getLogger(__name__)
 
+FORMAT_TESTER = re.compile(r"\.zarr([\\/]|$)", flags=re.IGNORECASE)
+SUPPORTED_SCHEMES = {'file', 's3'}
 
 class NGFFReader(Reader):
     """
@@ -33,12 +32,12 @@ class NGFFReader(Reader):
     reader_name = "OME-NGFF"
     variable_revision_number = 1
     supported_filetypes = {'.zarr', '.ome.zarr'}
+    supported_schemes = SUPPORTED_SCHEMES
 
     # Reader cache maps a path to a tuple of (zarr_root_group, series_map).
     ZARR_READER_CACHE = {}
 
     def __init__(self, image_file):
-        self.variable_revision_number = 1
         super().__init__(image_file)
 
         self._reader = None

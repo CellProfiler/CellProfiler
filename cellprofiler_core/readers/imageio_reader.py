@@ -10,7 +10,7 @@ from ..reader import Reader
 SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif'}
 # bioformats returns 2 for these, imageio reader returns 3
 SEMI_SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
-
+SUPPORTED_SCHEMES = {'file', 'http', 'https', 'ftp', 'ftps'}
 
 class ImageIOReader(Reader):
     """
@@ -20,6 +20,7 @@ class ImageIOReader(Reader):
     reader_name = "ImageIO"
     variable_revision_number = 1
     supported_filetypes = SUPPORTED_EXTENSIONS.union(SEMI_SUPPORTED_EXTENSIONS)
+    supported_schemes = SUPPORTED_SCHEMES
 
     def __init__(self, image_file):
         self.variable_revision_number = 1
@@ -127,13 +128,15 @@ class ImageIOReader(Reader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
-        if image_file.url.lower().startswith("omero:"):
+        if image_file.scheme not in SUPPORTED_SCHEMES:
             return -1
         if image_file.file_extension in SUPPORTED_EXTENSIONS:
             return 2
         if image_file.full_extension in SEMI_SUPPORTED_EXTENSIONS:
             if config_read_typed(f"Reader.{ImageIOReader.reader_name}.read_tif", bool):
                 return 2
+            return 3
+
         return -1
 
     def close(self):

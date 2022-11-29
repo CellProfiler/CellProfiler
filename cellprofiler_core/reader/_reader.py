@@ -25,6 +25,18 @@ class Reader(ABC):
 
     @property
     @abstractmethod
+    def supported_filetypes(self):
+        # This should be a class property. Give the reader a set of supported filetypes (extensions).
+        pass
+
+    @property
+    @abstractmethod
+    def supported_schemes(self):
+        # This should be a class property. Give the reader a set of supported schemes (e.g. file, https, s3, ...).
+        pass
+
+    @property
+    @abstractmethod
     def variable_revision_number(self):
         # This should be a class property. Give the reader a version number (int).
         pass

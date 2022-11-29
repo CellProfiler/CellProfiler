@@ -7,12 +7,13 @@ import tempfile
 import urllib.request
 from urllib.parse import parse_qs, unquote, urlparse
 from urllib.request import urlopen
-from importlib import import_module
-from importlib.util import find_spec
 import boto3
 import numpy
 import pkg_resources
 import scipy.io
+from google.cloud import storage
+from google.cloud.exceptions import NotFound
+from google.auth.exceptions import DefaultCredentialsError
 
 from ..constants.image import (ALL_IMAGE_EXTENSIONS, FILE_SCHEME,
                                PASSTHROUGH_SCHEMES, SUPPORTED_MOVIE_EXTENSIONS)
@@ -283,29 +284,32 @@ def url_to_modpath(url):
         path = new_path
     return parts
 
-def _handle_gcs_url(netloc, ext):
-    if find_spec("google.cloud") == None:
-        LOGGER.error("Unable to load google.cloud package (is it installed?)")
-        return None
-
-    storage = import_module("google.cloud.storage")
-    # Create client to access Google Cloud Storage.
-    client = storage.Client()
-    # Get bucket from bucket name parsed from URL.
-    bucket = client.get_bucket(netloc)
-    # Create a blob object from the given filepath.
-    urlpath = urlpath.replace("/", "", 1)
-    blob = bucket.blob("{}".format(urlpath))
-    # Provision a temporary file to which to download the blob.
-    dest_file = tempfile.NamedTemporaryFile(suffix=ext, delete=False, dir=CP_TEMP_DIR.name)
+def _handle_gcs_url(netloc, ext, urlpath):
     try:
-        blob.download_to_filename(dest_file)
+        # Create client to access Google Cloud Storage.
+        client = storage.Client()
+        # Get bucket from bucket name parsed from URL.
+        bucket = client.get_bucket(netloc)
+        # Create a blob object from the given filepath.
+        urlpath = urlpath[1:] if urlpath.startswith("/") else urlpath
+        blob = bucket.blob(urlpath)
+        # Provision a temporary file to which to download the blob.
+        dest_file = tempfile.NamedTemporaryFile(suffix=ext, delete=False, dir=CP_TEMP_DIR.name)
+        blob.download_to_filename(dest_file.name)
+        return dest_file.name
+    except DefaultCredentialsError as e:
+        LOGGER.error(f"Unable to download Google Cloud Storage image to temp file: {e.args[0]}")
+        return None
+    except NotFound as e:
+        # 404 error
+        LOGGER.error(f"Unable to download Google Cloud Storage image to temp file. {e}")
+        dest_file.close()
+        return None
     except Exception as e:
         LOGGER.error(f"Unable to download Google Cloud Storage image to temp file. {e}")
+        if dest_file:
+            dest_file.close()
         return None
-    finally:
-        dest_file.close()
-        return dest_file.name
 
 def download_to_temp_file(url):
     global CP_TEMP_DIR
@@ -320,7 +324,7 @@ def download_to_temp_file(url):
 
     # Handle Google Cloud Storage URLs.
     if scheme == 'gs':
-        return _handle_gcs_url(netloc, ext)
+        return _handle_gcs_url(netloc, ext, path)
     else:
         # Handle Amazon Web Services URLs.
         if scheme == 's3':

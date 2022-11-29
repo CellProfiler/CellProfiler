@@ -21,6 +21,7 @@ the analysis worker runs three threads:
 import logging
 import os
 import sys
+import psutil
 
 import pkg_resources
 
@@ -156,7 +157,27 @@ if __name__ == "__main__":
         maxfd = os.sysconf("SC_OPEN_MAX")
     except:
         maxfd = 256
-    os.closerange(3, maxfd)
+
+    proc = psutil.Process()
+
+    # This is a hacky solution to an annoying problem with vscode debugging:
+    # we want to set breakpoints in the debugger,
+    # but one of the file descriptors inhertited by the child
+    # corresponds to a TCP/IPv4 connection attached to the debugger,
+    # so closing it would cause the debugger to detach from the subprocess.
+    # AFAICT the debugger fd is always 4, and is not associated with
+    # any device + inode combo (both 0, ie null), so
+    # if we find that, skip closing fd 4, else close all
+    try:
+        stat = os.fstat(4)
+        if stat.st_ino == 0 and stat.st_dev == 0:
+            os.close(3)
+            os.closerange(5, maxfd)
+        else:
+            os.closerange(3, maxfd)
+    except OSError:
+        os.closerange(3, maxfd)
+
     if not hasattr(sys, "frozen"):
         # In the development version, maybe the bioformats package is installed?
         # Add the root to the pythonpath

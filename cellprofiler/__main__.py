@@ -329,8 +329,8 @@ def stop_cellprofiler():
     # This is especially important when using OmeroReaders as leaving the
     # readers open leaves the OMERO.server services open which in turn leads to
     # high memory consumption.
-    from cellprofiler_core.constants.reader import all_readers
-    for reader in all_readers.values():
+    from cellprofiler_core.constants.reader import ALL_READERS
+    for reader in ALL_READERS.values():
         reader.clear_cached_readers()
     stop_java()
 

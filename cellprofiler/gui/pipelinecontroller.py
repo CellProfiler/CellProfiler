@@ -71,7 +71,7 @@ from cellprofiler_core.constants.pipeline import (
     DIRECTION_DOWN,
     DIRECTION_UP,
 )
-from cellprofiler_core.constants.reader import all_readers, ZARR_FILETYPE
+from cellprofiler_core.constants.reader import ALL_READERS, ZARR_FILETYPE
 from cellprofiler_core.constants.workspace import DISPOSITION_SKIP
 from cellprofiler_core.image import ImageSetList
 from cellprofiler_core.measurement import Measurements
@@ -3403,7 +3403,7 @@ class PipelineController(object):
         self.stop_debugging()
 
     def stop_debugging(self):
-        for reader in all_readers.values():
+        for reader in ALL_READERS.values():
             reader.clear_cached_readers()
         self.__pipeline.test_mode = False
         self.__pipeline_list_view.set_debug_mode(False)

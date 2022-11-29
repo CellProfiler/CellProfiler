@@ -6,6 +6,7 @@ import os
 import sys
 import uuid
 from urllib.request import url2pathname
+from urllib.parse import urlparse
 
 import wx
 import wx.lib.scrolledpanel
@@ -61,6 +62,10 @@ class PathListCtrl(wx.TreeCtrl):
         self.fn_do_folder_menu_command = None
         self.fn_empty_context_menu = None
         self.fn_do_empty_context_menu_command = None
+
+        # Function to add files from pasted text (from imagesetctrl).
+        # Will be set by pipelinecontroller during setup.
+        self.fn_add_files = None
 
         self.Bind(wx.EVT_PAINT, self.on_paint)
         self.Bind(wx.EVT_LEFT_DOWN, self.on_mouse_down)
@@ -122,6 +127,43 @@ class PathListCtrl(wx.TreeCtrl):
     def AcceptsFocus(self):
         """Tell the scrollpanel that we can accept the focus"""
         return True
+
+    def CanPaste(self):
+        return True
+
+    def Paste(self):
+        # Check keyboard data is sensible.
+        if not wx.TheClipboard.IsSupported(wx.DataFormat(wx.DF_UNICODETEXT)):
+            return False
+        # Pull text off the clipboard into a buffer, should be one file per line.
+        # wx does have clipboard file object handlers, but they don't seem to work properly on MacOS.
+        text_buffer = wx.TextDataObject()
+        if wx.TheClipboard.Open():
+            success = wx.TheClipboard.GetData(text_buffer)
+            wx.TheClipboard.Close()
+        else:
+            # Clipboard isn't readable for some reason.
+            return False
+        if not success:
+            # Couldn't read whatever was on the clipboard
+            return False
+        contents = [s for s in text_buffer.GetText().splitlines() if self.validate_pasted_string(s)]
+        if contents and self.fn_add_files is not None:
+            # Send the proposed files to the file list
+            # Original function expects x and y drop coords, but we don't need those.
+            self.fn_add_files(None, None, contents)
+        return True
+
+    @staticmethod
+    def validate_pasted_string(s):
+        # Require a URL or an absolute valid path to accept a text object
+        parsed = urlparse(s)
+        if parsed.scheme in ('file', ''):  # Possibly a local file
+            return os.path.exists(parsed.path)
+        elif parsed.scheme:
+            # Probably http or s3
+            return True
+        return False
 
     def set_context_menu_fn(
         self,
@@ -416,6 +458,22 @@ class PathListCtrl(wx.TreeCtrl):
                     continue
             paths.append(item.url)
         return paths
+
+    def get_selected_series(self):
+        if self.GetFocusedItem().ID is not None:
+            idx = self.GetFocusedItem()
+            parent = self.GetItemParent(idx)
+            if not self.is_folder(parent):
+                # This is a series within a file. Find the index.
+                tgt = 0
+                child_idx, cookie = self.GetFirstChild(parent)
+                while child_idx.IsOk():
+                    if child_idx == idx:
+                        # This is the series we are looking at
+                        return tgt
+                    child_idx, cookie = self.GetNextChild(parent, cookie)
+                    tgt += 1
+        return None
 
     def has_selections(self):
         """Return True if there are any selected items"""

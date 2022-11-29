@@ -53,6 +53,7 @@ from cellprofiler_core.utilities.zmq import join_to_the_boundary
 from cellprofiler_core.worker import aw_parse_args
 from cellprofiler_core.worker import main as worker_main
 from cellprofiler_core.workspace import Workspace
+from cellprofiler_core.reader import activate_readers
 
 if hasattr(sys, "frozen"):
     if sys.platform == "darwin":
@@ -127,6 +128,7 @@ def main(args=None):
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         set_headless()
         aw_parse_args()
+        activate_readers()
         worker_main()
         return exit_code
 
@@ -145,6 +147,9 @@ def main(args=None):
         set_headless()
         options.run_pipeline = False
         options.show_gui = False
+
+    # must be run after last possible invocation of set_headless()
+    activate_readers()
 
     if options.temp_dir is not None:
         if not os.path.exists(options.temp_dir):
@@ -329,8 +334,8 @@ def stop_cellprofiler():
     # This is especially important when using OmeroReaders as leaving the
     # readers open leaves the OMERO.server services open which in turn leads to
     # high memory consumption.
-    from cellprofiler_core.constants.reader import all_readers
-    for reader in all_readers.values():
+    from cellprofiler_core.constants.reader import ALL_READERS
+    for reader in ALL_READERS.values():
         reader.clear_cached_readers()
     stop_java()
 

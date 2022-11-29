@@ -18,6 +18,7 @@ import threading
 from functools import reduce, cmp_to_key
 from queue import PriorityQueue, Queue, Empty
 from urllib.request import urlretrieve, url2pathname
+from urllib.parse import urlparse
 
 import cellprofiler_core
 import h5py
@@ -70,7 +71,7 @@ from cellprofiler_core.constants.pipeline import (
     DIRECTION_DOWN,
     DIRECTION_UP,
 )
-from cellprofiler_core.constants.reader import all_readers
+from cellprofiler_core.constants.reader import ALL_READERS, ZARR_FILETYPE
 from cellprofiler_core.constants.workspace import DISPOSITION_SKIP
 from cellprofiler_core.image import ImageSetList
 from cellprofiler_core.measurement import Measurements
@@ -521,6 +522,8 @@ class PipelineController(object):
         )
 
         path_list_ctrl.SetDropTarget(self.path_list_drop_target)
+
+        path_list_ctrl.fn_add_files = self.on_pathlist_drop_files
 
         def show_disabled(event):
             self.__path_list_ctrl.set_show_disabled(
@@ -2057,8 +2060,9 @@ class PipelineController(object):
             if result == wx.YES:
                 self.do_load_pipeline(path)
             return
+        series = self.__path_list_ctrl.get_selected_series()
         show_image(
-            path, self.__frame, dimensions=3 if self.__pipeline.volumetric() else 2
+            path, self.__frame, dimensions=3 if self.__pipeline.volumetric() else 2, series=series
         )
 
     def on_pathlist_file_delete(self, paths):
@@ -2142,7 +2146,7 @@ class PipelineController(object):
                 filenames=filenames, interrupt=[True], message=["Default"], queue=queue
             ):
                 urls = []
-                if len(filenames) > 100:
+                if len(filenames) > 100 and os.path.exists(filenames[0]):
                     # If we have many files to process, it's faster to just scan the whole parent folder.
                     desired = set(filenames)
                     # All files added in 1 operation should come from the same parent directory.
@@ -2187,13 +2191,23 @@ class PipelineController(object):
                         break
 
                     message[0] = "\nProcessing " + pathname
-                    if os.path.isfile(pathname):
+                    if ZARR_FILETYPE.search(pathname):
+                        pathname, _ = ZARR_FILETYPE.split(pathname)
+                        urls.append(pathname2url(pathname))
+                        if len(urls) > 100:
+                            queue.put(urls)
+                            urls = []
+                    elif os.path.isfile(pathname):
                         urls.append(pathname2url(pathname))
                         if len(urls) > 100:
                             queue.put(urls)
                             urls = []
                     elif os.path.isdir(pathname):
                         for dirpath, dirnames, files in os.walk(pathname):
+                            if ZARR_FILETYPE.search(dirpath):
+                                zarr_dir, _ = ZARR_FILETYPE.split(dirpath)
+                                urls.append(pathname2url(zarr_dir))
+                                continue
                             for filename in files:
                                 if not interrupt or interrupt[0]:
                                     break
@@ -2206,6 +2220,14 @@ class PipelineController(object):
                             else:
                                 continue
                             break
+                    else:
+                        # Allow URL objects through without change
+                        parsed = urlparse(pathname)
+                        if parsed.scheme and parsed.scheme != 'file':
+                            urls.append(pathname)
+                            if len(urls) > 100:
+                                queue.put(urls)
+                                urls = []
                 queue.put(urls)
 
             thread = threading.Thread(
@@ -3381,7 +3403,7 @@ class PipelineController(object):
         self.stop_debugging()
 
     def stop_debugging(self):
-        for reader in all_readers.values():
+        for reader in ALL_READERS.values():
             reader.clear_cached_readers()
         self.__pipeline.test_mode = False
         self.__pipeline_list_view.set_debug_mode(False)

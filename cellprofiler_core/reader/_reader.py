@@ -2,11 +2,16 @@ import uuid
 
 from abc import ABC, abstractmethod
 
+import numpy
+
 
 class Reader(ABC):
-    """ Derive from this abstract Reader class to create your own image reader in Python
+    """
+    Derive from this abstract Reader class to create your own image reader in Python
 
     You need to implement the methods below in the derived class.
+
+    Use this block of text to describe your reader to the user.
     """
 
     def __init__(self, image_file):
@@ -17,10 +22,30 @@ class Reader(ABC):
         """
         self.file = image_file
         self.id = uuid.uuid4()
-        if not hasattr(self, "variable_revision_number"):
-            self.variable_revision_number = 0
-        if not hasattr(self, "reader_name"):
-            self.reader_name = self.__class__.__name__
+
+    @property
+    @abstractmethod
+    def supported_filetypes(self):
+        # This should be a class property. Give the reader a set of supported filetypes (extensions).
+        pass
+
+    @property
+    @abstractmethod
+    def supported_schemes(self):
+        # This should be a class property. Give the reader a set of supported schemes (e.g. file, https, s3, ...).
+        pass
+
+    @property
+    @abstractmethod
+    def variable_revision_number(self):
+        # This should be a class property. Give the reader a version number (int).
+        pass
+
+    @property
+    @abstractmethod
+    def reader_name(self):
+        # This should be a class property. Give the reader a human-readable name (string).
+        pass
 
     @abstractmethod
     def read(self,
@@ -133,3 +158,51 @@ class Reader(ABC):
                                     Must not contain '|' as this is used as a separator for storage.
         """
         pass
+
+    @staticmethod
+    def get_settings():
+        """
+        This function should return a list of settings objects configurable
+        by the reader class. Each entry is a tuple. This list should not
+        include the default '.enabled' key, used to disable readers.
+
+        Tuple Format: (config key, name, description, type, default)
+
+        config key - A name for the key in internal storage.
+        Slashes should not be used in key names. The reader's name will
+        be prefixed automatically.
+
+        name - a human-readable name to be shown to the user
+
+        description - extra text to describe the setting
+
+        type - one of str, bool, float or int. These types are supported by
+        wx config files.
+
+        default - value to use if no existing config exists
+
+        :return: list of setting tuples
+        """
+        return []
+
+    @staticmethod
+    def find_scale_to_match_bioformats(data):
+        """
+        When we're rescaling we'll usually want to match the output from BioFormats.
+        skimage.exposure.rescale_intensity would normally work beautifully, but
+        python-bioformats did things differently. To rescale with that system we
+        divide by the max possible value determined by the image format.
+
+        This utility function will look at an array and return the correct max value to
+        divide the array by.
+        """
+        if data.dtype in (numpy.int8, numpy.uint8):
+            return 255
+        elif data.dtype in (numpy.int16, numpy.uint16):
+            return 65535
+        elif data.dtype == numpy.int32:
+            return 2 ** 32 - 1
+        elif data.dtype == numpy.uint32:
+            return 2 ** 32
+        else:
+            return 1

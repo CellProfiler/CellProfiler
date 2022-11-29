@@ -11,7 +11,7 @@ class SettingValidation(Module):
 
     @staticmethod
     def get_image_plane_details(modpath):
-        if modpath[0] in ("http", "https", "ftp", "s3"):
+        if modpath[0] in ("http", "https", "ftp", "s3", "gs"):
             if len(modpath) == 1:
                 return modpath[0] + ":"
             elif len(modpath) == 2:

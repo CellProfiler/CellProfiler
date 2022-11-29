@@ -71,6 +71,7 @@ SUPPORTED_IMAGE_EXTENSIONS = {
     ".wmf",
     ".xbm",
     ".xpm",
+    ".zarr",
 }
 SUPPORTED_MOVIE_EXTENSIONS = {
     ".avi",
@@ -151,7 +152,7 @@ SUB_NONE = "None"
 SUB_ALL = "All"
 SUB_SOME = "Some"
 FILE_SCHEME = "file:"
-PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3")
+PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3","gs")
 
 CT_GRAYSCALE = "Grayscale"
 CT_COLOR = "Color"

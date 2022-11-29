@@ -1,3 +1,6 @@
+import json
+
+
 class HeadlessConfiguration:
     """
     This class functions as a configuration set for headless runs.
@@ -35,3 +38,8 @@ class HeadlessConfiguration:
         Returns wx.Config.Type_String = 1
         """
         return 1
+
+    def load_json(self, path):
+        with open(path) as fd:
+            config_dict = json.load(fd)
+        self.__preferences.update(config_dict)

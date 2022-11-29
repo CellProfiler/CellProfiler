@@ -16,18 +16,26 @@ from ..reader import Reader
 
 logger = logging.getLogger(__name__)
 
-logging.info("HELLO! It's a-ME, bioformats_reader. I just added Bio-Formats endpoint.")
+logger.info("HELLO! It's a-ME, bioformats_reader. I just added Bio-Formats endpoint.")
+
+# bioformats returns 2 for these, imageio reader returns 3
+SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
+SEMI_SUPPORTED_EXTENSIONS = BIOFORMATS_IMAGE_EXTENSIONS
+SUPPORTED_SCHEMES = {'file', 'http', 'https', 'ftp', 'ftps', 'omero', 's3'}
 
 class BioformatsReader(Reader):
-    """ Derive from this abstract Reader class to create your own image reader in Python
+    """
+    Reads a variety of image formats using the bio-formats library.
 
-    You need to implement the methods below in the derived class.
+    This reader is Java-based.
     """
 
     reader_name = "Bio-Formats"
+    variable_revision_number = 1
+    supported_filetypes = BIOFORMATS_IMAGE_EXTENSIONS
+    supported_schemes = SUPPORTED_SCHEMES
 
     def __init__(self, image_file):
-        self.variable_revision_number = 1
         self._reader = None
         self._is_file_open = False
         super().__init__(image_file)
@@ -279,16 +287,23 @@ class BioformatsReader(Reader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
-        if not is_file_url(image_file.url):
-            return False
         try:
             logging.info(f"--> bioformats_reader.supports_format: isThisType({image_file.path}, {allow_open}")
             ImageReader = jimport("loci.formats.ImageReader")
             is_this_type = ImageReader().isThisType(image_file.path, allow_open)
             logging.info(f"--> bioformats_reader.supports_format: DRUMROLL... is it compatible? ... {is_this_type}")
-            return 3 if is_this_type else -1
         except Exception as ex:
             logger.error(ex)
+
+        if image_file.scheme not in SUPPORTED_SCHEMES:
+            return -1
+        if image_file.scheme == 'omero':
+            return 1
+        if image_file.full_extension in SUPPORTED_EXTENSIONS:
+            return 2
+        if not allow_open:
+            if image_file.file_extension in SEMI_SUPPORTED_EXTENSIONS:
+                return 3
             return -1
 
     @classmethod

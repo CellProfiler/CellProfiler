@@ -151,6 +151,14 @@ class ImageFile:
     def url(self):
         return self._url
 
+    @property
+    def scheme(self):
+        protocol_idx = self._url.find(":")
+        if protocol_idx >= 0:
+            return self._url.lower()[0: protocol_idx]
+        else:
+            return None
+
     @cached_property
     def filename(self):
         return os.path.basename(self.path)
@@ -177,6 +185,11 @@ class ImageFile:
     @cached_property
     def file_extension(self):
         return os.path.splitext(self.path)[-1].lower()
+
+    @cached_property
+    def full_extension(self):
+        file_name = os.path.basename(self.path).lower()
+        return file_name[file_name.find('.'):]
 
     @property
     def metadata(self):

@@ -85,6 +85,17 @@ O_ALL = [
     O_SPUR,
 ]
 
+library_mapping = {
+    O_EXPAND:'expand_defined_pixels',
+    O_EXPAND_BY_MEASUREMENT:'expand_defined_pixels',
+    O_EXPAND_INF:'expand_infinite',
+    O_SHRINK:'shrink_defined_pixels',
+    O_SHRINK_BY_MEASUREMENT:'shrink_defined_pixels',
+    O_SHRINK_INF:'shrink_to_point',
+    O_DIVIDE:'add_dividing_lines',
+    O_SPUR:'despur',
+    O_SKELETONIZE:'skeletonize',
+}
 
 class ExpandOrShrinkObjects(Module):
     module_name = "ExpandOrShrinkObjects"
@@ -300,30 +311,15 @@ Select the measurement value to use as the divisor for the final image.
 
     def do_labels(self, labels, workspace):
         """Run whatever transformation on the given labels matrix"""
-        if self.operation == O_EXPAND:
-            return expand_or_shrink_objects('expand_defined_pixels',labels,iterations=self.iterations.value)
-        if self.operation == O_EXPAND_BY_MEASUREMENT:
-            m = workspace.measurements
-            distance = m.get_current_image_measurement(self.exp_shr_measurement.value)
-            return expand_or_shrink_objects('expand_defined_pixels',labels,iterations=distance)
-        elif self.operation == O_EXPAND_INF:
-            return expand_or_shrink_objects('expand_infinite', labels)
-        elif self.operation == O_SHRINK:
-            return expand_or_shrink_objects('shrink_defined_pixels', labels, fill=self.wants_fill_holes.value, iterations=self.iterations.value)
-        elif self.operation == O_SHRINK_BY_MEASUREMENT:
-            m = workspace.measurements
-            shrink_measurement = m.get_current_image_measurement(self.exp_shr_measurement.value)
-            return expand_or_shrink_objects('shrink_defined_pixels', labels, fill=self.wants_fill_holes.value, iterations=int(shrink_measurement))
-        elif self.operation == O_SHRINK_INF:
-            return expand_or_shrink_objects('shrink_to_point', labels,fill=self.wants_fill_holes.value)
-        elif self.operation == O_DIVIDE:
-            return expand_or_shrink_objects('add_dividing_lines', labels)
-        elif self.operation == O_SPUR:
-            return expand_or_shrink_objects('despur', labels,iterations=self.iterations.value)
-        elif self.operation == O_SKELETONIZE:
-            return expand_or_shrink_objects('skeletonize', labels)
-        else:
+        if self.operation.value not in library_mapping.keys():
             raise NotImplementedError("Unsupported operation: %s" % self.operation.value)
+        if self.operation.value in [O_EXPAND_BY_MEASUREMENT,O_SHRINK_BY_MEASUREMENT]:
+            m = workspace.measurements
+            iterations = m.get_current_image_measurement(self.exp_shr_measurement.value)
+        else:
+            iterations = self.iterations.value
+        return expand_or_shrink_objects(library_mapping[self.operation.value],labels,iterations=iterations,fill=self.wants_fill_holes.value)
+            
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:

@@ -613,8 +613,11 @@ def set_log_level(options):
             logging.root.setLevel(options.log_level)
 
         if len(logging.root.handlers) == 0:
-            logging.root.addHandler(logging.StreamHandler())
-    except ValueError:
+            stream_handler = logging.StreamHandler()
+            fmt = logging.Formatter("[CP - %(levelname)s] %(name)s::%(funcName)s : %(message)s")
+            stream_handler.setFormatter(fmt)
+            logging.root.addHandler(stream_handler)
+    except ValueError as e:
         logging.config.fileConfig(options.log_level)
 
 

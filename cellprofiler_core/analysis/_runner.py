@@ -37,6 +37,8 @@ from ..utilities.zmq.communicable.reply import Reply
 from ..workspace import Workspace
 
 
+LOGGER = logging.getLogger(__name__)
+
 class Runner:
     """The Runner manages two threads (per instance) and all of the
     workers (per class, i.e., singletons).
@@ -166,22 +168,22 @@ class Runner:
 
     def cancel(self):
         """cancel the analysis run"""
-        logging.debug("Stopping workers")
+        LOGGER.debug("Stopping workers")
         self.stop_workers()
-        logging.debug("Canceling run")
+        LOGGER.debug("Canceling run")
         self.cancelled = True
         self.paused = False
         self.notify_threads()
-        logging.debug("Waiting on interface thread")
+        LOGGER.debug("Waiting on interface thread")
         self.interface_thread.join()
-        logging.debug("Waiting on jobserver thread")
+        LOGGER.debug("Waiting on jobserver thread")
         self.jobserver_thread.join()
         self.interface_thread = None
         self.jobserver_thread = None
         self.work_queue = queue.Queue()
         self.in_process_queue = queue.Queue()
         self.finished_queue = queue.Queue()
-        logging.debug("Cancel complete")
+        LOGGER.debug("Cancel complete")
 
     def pause(self):
         """pause the analysis run"""
@@ -523,21 +525,21 @@ class Runner:
                 continue
 
             if isinstance(req, anarequest.PipelinePreferences):
-                logging.debug("Received pipeline preferences request")
+                LOGGER.debug("Received pipeline preferences request")
                 req.reply(
                     Reply(
                         pipeline_blob=numpy.array(self.pipeline_as_string()),
                         preferences=preferences_as_dict(),
                     )
                 )
-                logging.debug("Replied to pipeline preferences request")
+                LOGGER.debug("Replied to pipeline preferences request")
             elif isinstance(req, anarequest.InitialMeasurements):
-                logging.debug("Received initial measurements request")
+                LOGGER.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
-                logging.debug("Replied to initial measurements request")
+                LOGGER.debug("Replied to initial measurements request")
             elif isinstance(req, anarequest.Work):
                 if not self.work_queue.empty():
-                    logging.debug("Received work request")
+                    LOGGER.debug("Received work request")
                     (
                         job,
                         worker_runs_post_group,
@@ -551,7 +553,7 @@ class Runner:
                         )
                     )
                     self.queue_dispatched_job(job)
-                    logging.debug(
+                    LOGGER.debug(
                         "Dispatched job: image sets=%s"
                         % ",".join([str(i) for i in job])
                     )
@@ -562,21 +564,21 @@ class Runner:
             elif isinstance(req, anareply.ImageSetSuccess):
                 # interface() is responsible for replying, to allow it to
                 # request the shared_state dictionary if needed.
-                logging.debug("Received ImageSetSuccess")
+                LOGGER.debug("Received ImageSetSuccess")
                 self.queue_imageset_finished(req)
-                logging.debug("Enqueued ImageSetSuccess")
+                LOGGER.debug("Enqueued ImageSetSuccess")
             elif isinstance(req, anarequest.SharedDictionary):
-                logging.debug("Received shared dictionary request")
+                LOGGER.debug("Received shared dictionary request")
                 req.reply(anareply.SharedDictionary(dictionaries=self.shared_dicts))
-                logging.debug("Sent shared dictionary reply")
+                LOGGER.debug("Sent shared dictionary reply")
             elif isinstance(req, anarequest.MeasurementsReport):
-                logging.debug("Received measurements report")
+                LOGGER.debug("Received measurements report")
                 self.queue_received_measurements(req.image_set_numbers, req.buf)
                 req.reply(anareply.Ack())
-                logging.debug("Acknowledged measurements report")
+                LOGGER.debug("Acknowledged measurements report")
             elif isinstance(req, anarequest.AnalysisCancel):
                 # Signal the interface that we are cancelling
-                logging.debug("Received analysis worker cancel request")
+                LOGGER.debug("Received analysis worker cancel request")
                 with self.interface_work_cv:
                     self.cancelled = True
                     self.interface_work_cv.notify()
@@ -593,13 +595,13 @@ class Runner:
                     anarequest.OmeroLogin,
                 ),
             ):
-                logging.debug("Enqueueing interactive request")
+                LOGGER.debug("Enqueueing interactive request")
                 # bump upward
                 self.post_event(req)
-                logging.debug("Interactive request enqueued")
+                LOGGER.debug("Interactive request enqueued")
             else:
                 msg = "Unknown request from worker: %s of type %s" % (req, type(req))
-                logging.error(msg)
+                LOGGER.error(msg)
                 raise ValueError(msg)
 
         # stop the ZMQ-boundary thread - will also deal with any requests waiting on replies
@@ -641,7 +643,7 @@ class Runner:
 
         boundary = self.boundary
 
-        logging.info("Starting workers on address %s" % boundary.request_address)
+        LOGGER.info("Starting workers on address %s" % boundary.request_address)
 
         close_fds = False
 
@@ -701,7 +703,7 @@ class Runner:
                         line = line.decode("utf-8")
                         if not line:
                             break
-                        logging.info("Worker %d: %s", widx, line.rstrip())
+                        LOGGER.info("Worker %d: %s", widx, line.rstrip())
                     except:
                         break
 

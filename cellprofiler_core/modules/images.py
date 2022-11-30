@@ -24,6 +24,9 @@ from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.utilities.image import image_resource
 from cellprofiler_core.utilities.image import is_image
 
+
+LOGGER = logging.getLogger(__name__)
+
 __doc__ = """\
 Images
 ======
@@ -290,7 +293,7 @@ pass the current filter.
     def filter_file_list(self, workspace):
         file_list = workspace.pipeline.file_list
         if file_list and not workspace.file_list.has_files():
-            logging.warning("Workspace file list is empty, will populate from pipeline."
+            LOGGER.warning("Workspace file list is empty, will populate from pipeline."
                             "This may happen if you're running in headless mode.")
             workspace.file_list.add_files_to_filelist([f.url for f in file_list])
         if self.filter_choice != FILTER_CHOICE_NONE:
@@ -314,7 +317,7 @@ pass the current filter.
             return True
         file_list = self.filter_file_list(workspace)
         if self.want_split.value:
-            logging.debug("Metadata extraction will be performed now if needed")
+            LOGGER.debug("Metadata extraction will be performed now if needed")
             if self.extract_metadata.callback is not None:
                 # If GUI is present perform extraction and refresh the file list GUI
                 self.extract_metadata.callback()

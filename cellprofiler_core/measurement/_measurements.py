@@ -62,6 +62,8 @@ from ..utilities.measurement import get_agg_measurement_name
 from ..utilities.measurement import make_temporary_file
 
 
+LOGGER = logging.getLogger(__name__)
+
 class Measurements:
     """Represents measurements made on images and objects
     """
@@ -108,9 +110,9 @@ class Measurements:
             is_temporary = True
             import traceback
 
-            logging.debug("Created temporary file %s" % filename)
+            LOGGER.debug("Created temporary file %s" % filename)
             for frame in traceback.extract_stack():
-                logging.debug("{}: ({} {}): {}".format(*frame))
+                LOGGER.debug("{}: ({} {}): {}".format(*frame))
 
         else:
             is_temporary = False
@@ -1273,7 +1275,7 @@ class Measurements:
                 column.append(field)
             last_image_number = image_number
         if last_image_number == 0:
-            logging.warn("No image sets were loaded")
+            LOGGER.warn("No image sets were loaded")
             return
         if start is None:
             image_numbers = list(range(1, last_image_number + 1))
@@ -1606,7 +1608,7 @@ class Measurements:
                     )
 
                 if image.pixel_data.shape[-1] == 4:
-                    logging.warning("Discarding alpha channel.")
+                    LOGGER.warning("Discarding alpha channel.")
 
                     return RGBImage(image)
 

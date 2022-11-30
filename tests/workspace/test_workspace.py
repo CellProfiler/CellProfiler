@@ -10,8 +10,8 @@ import cellprofiler_core.utilities.core.workspace
 import cellprofiler_core.workspace
 from cellprofiler_core.utilities.hdf5_dict import FILE_LIST_GROUP, TOP_LEVEL_GROUP_NAME
 
-logger = logging.getLogger(__name__)
 
+LOGGER = logging.getLogger(__name__)
 
 class TestWorkspace:
     def setup_method(self):
@@ -22,7 +22,7 @@ class TestWorkspace:
             try:
                 os.remove(path)
             except OSError:
-                logger.warning("Failed to close file %s" % path, exc_info=1)
+                LOGGER.warning("Failed to close file %s" % path, exc_info=1)
 
     def make_workspace_file(self):
         """Make a very basic workspace file"""

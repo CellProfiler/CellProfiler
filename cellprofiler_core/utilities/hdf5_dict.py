@@ -22,9 +22,11 @@ from h5py.h5t import string_dtype, check_string_dtype, vlen_dtype
 
 import cellprofiler_core.utilities.legacy
 
-install_aliases()
 
 LOGGER = logging.getLogger(__name__)
+
+install_aliases()
+
 
 version_number = 1
 VERSION = "Version"

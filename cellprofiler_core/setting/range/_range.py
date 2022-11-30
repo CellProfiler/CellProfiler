@@ -4,6 +4,8 @@ from .._setting import Setting
 from .._validation_error import ValidationError
 
 
+LOGGER = logging.getLogger(__name__)
+
 class Range(Setting):
     """A setting representing a range between two values"""
 
@@ -112,7 +114,7 @@ class Range(Setting):
             self.__default_min = self.min
             self.__default_max = self.max
         except:
-            logging.debug("Illegal value in range setting: %s" % value)
+            LOGGER.debug("Illegal value in range setting: %s" % value)
 
     def test_valid(self, pipeline):
         values = self.value_text.split(",")

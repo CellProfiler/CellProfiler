@@ -99,6 +99,9 @@ from ..workspace import Workspace
 from cellprofiler_core import __version__
 
 
+LOGGER = logging.getLogger(__name__)
+
+
 def _is_fp(x):
     return hasattr(x, "seek") and hasattr(x, "read")
 
@@ -234,7 +237,7 @@ class Pipeline:
             self.loadtxt(fd, raise_on_error=True)
             return True
         except Exception as e:
-            logging.warning(
+            LOGGER.warning(
                 "Modules reloaded, but could not reinstantiate pipeline with new versions.",
                 exc_info=True,
             )
@@ -258,7 +261,7 @@ class Pipeline:
         if header.startswith("CellProfiler Pipeline: http://www.cellprofiler.org"):
             return True
         if re.search(SAD_PROOFPOINT_COOKIE, header):
-            logging.info('print_emoji(":cat_crying_because_of_proofpoint:")')
+            LOGGER.info('print_emoji(":cat_crying_because_of_proofpoint:")')
             return True
         return False
 
@@ -347,7 +350,7 @@ class Pipeline:
 
     @staticmethod
     def respond_to_version_mismatch_error(message):
-        logging.warning(message)
+        LOGGER.warning(message)
 
     def loadtxt(self, fp_or_filename, raise_on_error=False):
         """Load a pipeline from a text file
@@ -485,7 +488,7 @@ class Pipeline:
                         "this pipeline or if you will only use it with this or\n"
                         "later versions of CellProfiler."
                     ).format(git_hash, pipeline_date)
-                    logging.warning(message)
+                    LOGGER.warning(message)
                 else:
                     # pipeline versions pre-3.0.0 have unpredictable formatting
                     if pipeline_version == 300:
@@ -506,7 +509,7 @@ class Pipeline:
                         "this pipeline or if you will only use it with this or\n"
                         "later versions of CellProfiler."
                     ).format(pipeline_version)
-                    logging.warning(message)
+                    LOGGER.warning(message)
 
         return pipeline_version
 
@@ -571,7 +574,7 @@ class Pipeline:
             except Exception as instance:
                 if raise_on_error:
                     raise
-                logging.error("Failed to load pipeline", exc_info=True)
+                LOGGER.error("Failed to load pipeline", exc_info=True)
                 event = LoadException(instance, module, module_name, settings)
                 self.notify_listeners(event)
                 if event.cancel_run:
@@ -924,7 +927,7 @@ class Pipeline:
 
             last_image_number = None
 
-            logging.info("Times reported are CPU and Wall-clock times for each module")
+            LOGGER.info("Times reported are CPU and Wall-clock times for each module")
 
             __group = self.group(
                 grouping,
@@ -1032,7 +1035,7 @@ class Pipeline:
                         self.run_module(module, workspace)
                     except Exception as instance:
                         print("pipeline_exception")
-                        logging.error(
+                        LOGGER.error(
                             "Error detected during run of module %s",
                             module.module_name,
                             exc_info=True,
@@ -1051,7 +1054,7 @@ class Pipeline:
                     cpu_delta_sec = max(0, cpu_t1 - cpu_t0)
                     wall_delta_sec = max(0, wall_t1 - wall_t0)
 
-                    logging.info(
+                    LOGGER.info(
                         "%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs"
                         % (
                             start_time.ctime(),
@@ -1071,7 +1074,7 @@ class Pipeline:
 
                             fig.Refresh()
                         except Exception as instance:
-                            logging.error(
+                            LOGGER.error(
                                 "Failed to display results for module %s",
                                 module.module_name,
                                 exc_info=True,
@@ -1230,18 +1233,18 @@ class Pipeline:
                         if module in self.redundancy_map and len(self.modules()) > module.module_num:
                             to_forget = self.redundancy_map[module]
                             for image_name in to_forget:
-                                logging.info(f"Releasing memory for redundant image {image_name}")
+                                LOGGER.info(f"Releasing memory for redundant image {image_name}")
                                 workspace.image_set.clear_image(image_name)
                         gc.collect()
                 except Exception as e:
-                    logging.warning(f"Encountered error during memory cleanup: {e}")
+                    LOGGER.warning(f"Encountered error during memory cleanup: {e}")
             except CancelledException:
                 # Analysis worker interaction handler is telling us that
                 # the UI has cancelled the run. Forward exception upward.
                 raise
             except Exception as exception:
                 print("run_image_set_exception, get_always_continue",get_always_continue())
-                logging.error(
+                LOGGER.error(
                     "Error detected during run of module %s#%d",
                     module.module_name,
                     module.module_num,
@@ -1265,7 +1268,7 @@ class Pipeline:
             cpu_t1 = sum(os_times[:-1])
             cpu_delta_secs = max(0, cpu_t1 - cpu_t0)
             wall_delta_secs = max(0, wall_t1 - wall_t0)
-            logging.info(
+            LOGGER.info(
                 "%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs"
                 % (
                     start_time.ctime(),
@@ -1493,7 +1496,7 @@ class Pipeline:
                         self.clear_measurements(workspace.measurements)
                         break
                 except Exception as instance:
-                    logging.error(
+                    LOGGER.error(
                         "Failed to prepare run for module %s",
                         module.module_name,
                         exc_info=True,
@@ -1596,7 +1599,7 @@ class Pipeline:
             try:
                 module.post_run(workspace)
             except Exception as instance:
-                logging.error(
+                LOGGER.error(
                     "Failed to complete post_run processing for module %s."
                     % module.module_name,
                     exc_info=True,
@@ -1613,7 +1616,7 @@ class Pipeline:
                     workspace.post_run_display(module)
                 except Exception as instance:
                     # Warn about display failure but keep going.
-                    logging.warning(
+                    LOGGER.warning(
                         "Caught exception during post_run_display for module %s."
                         % module.module_name,
                         exc_info=True,
@@ -1645,7 +1648,7 @@ class Pipeline:
                 workspace.set_module(module)
                 module.prepare_to_create_batch(workspace, fn_alter_path)
             except Exception as instance:
-                logging.error(
+                LOGGER.error(
                     "Failed to collect batch information for module %s",
                     module.module_name,
                     exc_info=True,
@@ -1741,7 +1744,7 @@ class Pipeline:
             try:
                 module.prepare_group(workspace, grouping, image_numbers)
             except Exception as instance:
-                logging.error(
+                LOGGER.error(
                     "Failed to prepare group in module %s",
                     module.module_name,
                     exc_info=True,
@@ -1763,7 +1766,7 @@ class Pipeline:
             try:
                 module.post_group(workspace, grouping)
             except Exception as instance:
-                logging.error(
+                LOGGER.error(
                     "Failed during post-group processing for module %s"
                     % module.module_name,
                     exc_info=True,
@@ -1779,7 +1782,7 @@ class Pipeline:
                 try:
                     workspace.post_group_display(module)
                 except:
-                    logging.warning(
+                    LOGGER.warning(
                         "Failed during post group display for module %s"
                         % module.module_name,
                         exc_info=True,
@@ -1891,7 +1894,7 @@ class Pipeline:
     def enable_module(self, module):
         """Enable a module = make it executable"""
         if module.enabled:
-            logging.warning(
+            LOGGER.warning(
                 "Asked to enable module %s, but it was already enabled"
                 % module.module_name
             )
@@ -1908,7 +1911,7 @@ class Pipeline:
     def disable_module(self, module):
         """Disable a module = prevent it from being executed"""
         if not module.enabled:
-            logging.warning(
+            LOGGER.warning(
                 "Asked to disable module %s, but it was already disabled"
                 % module.module_name
             )
@@ -2036,7 +2039,7 @@ class Pipeline:
         try:
             urls, metadata, series_names = file_list.get_filelist(want_metadata=True)
         except Exception as instance:
-            logging.error("Failed to get file list from workspace", exc_info=True)
+            LOGGER.error("Failed to get file list from workspace", exc_info=True)
             x = IPDLoadException("Failed to get file list from workspace")
             self.notify_listeners(x)
             if x.cancel_run:

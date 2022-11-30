@@ -278,7 +278,7 @@ class FileImage(AbstractImage):
                 try:
                     os.remove(self.__cached_file)
                 except:
-                    logging.warning(
+                    LOGGER.warning(
                         "Could not delete file %s", self.__cached_file, exc_info=True
                     )
             self.__is_cached = False

@@ -89,6 +89,9 @@ from ..utilities.core.module.identify import (
 )
 from ..utilities.image import image_resource
 
+
+LOGGER = logging.getLogger(__name__)
+
 __doc__ = """\
 NamesAndTypes
 =============
@@ -1255,7 +1258,7 @@ requests an object selection.
                     break
         errors = []
         if not groups:
-            logging.warning("No images passed group filters")
+            LOGGER.warning("No images passed group filters")
             return []
         desired_length = max([len(grp) for grp in groups.values()])
         for name in self.get_column_names(want_singles=False):
@@ -1375,7 +1378,7 @@ requests an object selection.
                     text = f"Metadata {error_info} for channel {error_chan} had {error_type}"
             else:
                 text = f"Channel {error_chan} had {error_type}"
-            logging.warning(text)
+            LOGGER.warning(text)
             error_types[(error_type, error_chan)] += 1
         if not get_headless():
             msg = f"Warning: found {len(errors)} image set errors (see log for details)\n \n"

@@ -12,6 +12,8 @@ from .communicable.request import AnalysisRequest, Request
 from ...constants.worker import NOTIFY_STOP, NOTIFY_RUN
 
 
+LOGGER = logging.getLogger(__name__)
+
 class Boundary:
     """This object serves as the interface between a ZMQ socket passing
     Requests and Replies, and a thread or threads serving those requests.
@@ -89,7 +91,7 @@ class Boundary:
             self.analysis_context = AnalysisContext(
                 analysis_id, upward_queue, self.analysis_context_lock
             )
-        logging.debug(f"Registered analysis as id {analysis_id}")
+        LOGGER.debug(f"Registered analysis as id {analysis_id}")
 
     def register_request_class(self, cls_request, upward_queue):
         """Register a queue to receive requests of the given class
@@ -191,7 +193,7 @@ class Boundary:
                         msg = selfnotify_socket.recv()
                         # Let's watch out for stop signals anyway
                         if msg == NOTIFY_STOP:
-                            logging.warning("Captured a stop message over zmq")
+                            LOGGER.warning("Captured a stop message over zmq")
                             received_stop = True
                         continue
                     req = Communicable.recv(s, routed=True)
@@ -203,7 +205,7 @@ class Boundary:
                                 q.put([self, self.NOTIFY_REQUEST, req])
                                 break
                         else:
-                            logging.warning(
+                            LOGGER.warning(
                                 "Received a request that wasn't an AnalysisRequest: %s"
                                 % str(type(req))
                             )
@@ -211,7 +213,7 @@ class Boundary:
                         continue
                     if s != request_socket:
                         # Request is on the external socket
-                        logging.warning("Received a request on the external socket")
+                        LOGGER.warning("Received a request on the external socket")
                         req.reply(BoundaryExited())
                         continue
                     #
@@ -251,13 +253,13 @@ class Boundary:
 
             request_socket.close()
             selfnotify_socket.close()
-            logging.debug("Shutting down the boundary thread")
+            LOGGER.debug("Shutting down the boundary thread")
         except:
             #
             # Pretty bad - a logic error or something extremely unexpected
             #              We're close to hosed here, better die an ugly death.
             #
-            logging.critical("Unhandled exception in boundary thread.",
+            LOGGER.critical("Unhandled exception in boundary thread.",
                              exc_info=True)
             import os
             os._exit(-1)

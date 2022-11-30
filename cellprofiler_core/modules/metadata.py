@@ -73,6 +73,9 @@ from cellprofiler_core.utilities.image import generate_presigned_url
 from cellprofiler_core.utilities.image import image_resource
 from cellprofiler_core.utilities.measurement import find_metadata_tokens
 
+
+LOGGER = logging.getLogger(__name__)
+
 __doc__ = """\
 Metadata
 ========
@@ -1130,13 +1133,13 @@ not being applied, your choice on this setting may be the culprit.
             try:
                 return int(value)
             except ValueError:
-                logging.warning(f"Metadata value {value} cannot be interpreted as an integer number.")
+                LOGGER.warning(f"Metadata value {value} cannot be interpreted as an integer number.")
                 return value
         elif data_type == DataTypes.DT_FLOAT:
             try:
                 return float(value)
             except ValueError:
-                logging.warning(f"Metadata value {value} cannot be interpreted as a floating point number.")
+                LOGGER.warning(f"Metadata value {value} cannot be interpreted as a floating point number.")
                 return value
 
         return value

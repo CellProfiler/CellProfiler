@@ -1,18 +1,17 @@
 import os
 import tempfile
-
-import cellprofiler_core.utilities.legacy
-
-from cellprofiler_core.bioformats.omexml import PT_UINT16
-from cellprofiler_core.bioformats.formatwriter import write_image
 import logging
 import functools
 import hashlib
-
-logger = logging.getLogger(__name__)
 import numpy
 import unittest
 from urllib.request import URLopener
+
+import cellprofiler_core.utilities.legacy
+from cellprofiler_core.bioformats.omexml import PT_UINT16
+from cellprofiler_core.bioformats.formatwriter import write_image
+
+LOGGER = logging.getLogger(__name__)
 
 __temp_example_images_folder = None
 __temp_test_images_folder = None
@@ -38,7 +37,7 @@ def example_images_directory():
             return path
     if __temp_example_images_folder is None:
         __temp_example_images_folder = tempfile.mkdtemp(prefix="cp_exampleimages")
-        logger.warning(
+        LOGGER.warning(
             "Creating temporary folder %s for example images"
             % __temp_example_images_folder
         )
@@ -60,7 +59,7 @@ def testimages_directory():
         return path
     if __temp_test_images_folder is None:
         __temp_test_images_folder = tempfile.mkdtemp(prefix="cp_testimages")
-        logger.warning(
+        LOGGER.warning(
             "Creating temporary folder %s for test images" % __temp_test_images_folder
         )
     return __temp_test_images_folder

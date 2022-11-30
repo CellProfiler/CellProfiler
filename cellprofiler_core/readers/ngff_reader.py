@@ -62,7 +62,7 @@ class NGFFReader(Reader):
                     # Zarr has consolidated metadata.
                     self._reader = zarr.convenience.open_consolidated(store, mode='r')
                 else:
-                    logging.warning(f"Image is on S3 but lacks consolidated metadata. "
+                    LOGGER.warning(f"Image is on S3 but lacks consolidated metadata. "
                                     f"This may degrade reading performance. URL: {self.root}")
                     self._reader = zarr.open(store, mode='r')
             elif not os.path.isdir(store.path):
@@ -71,7 +71,7 @@ class NGFFReader(Reader):
                 self._reader = zarr.open(store, mode='r')
             NGFFReader.ZARR_READER_CACHE[self.root] = self._reader, None
         if self.group:
-            logging.warning(f"Reader had a group? {self.group}")
+            LOGGER.warning(f"Reader had a group? {self.group}")
             return self._reader[self.group]
         return self._reader
 
@@ -104,7 +104,7 @@ class NGFFReader(Reader):
                   return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
         """
-        logging.debug(f"Reading {c=}, {z=}, {t=}, {series=}, {index=}, {xywh=}")
+        LOGGER.debug(f"Reading {c=}, {z=}, {t=}, {series=}, {index=}, {xywh=}")
         c2 = None if c is None else c + 1
         z2 = None if z is None else z + 1
         t2 = None if t is None else t + 1

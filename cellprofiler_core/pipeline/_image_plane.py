@@ -6,7 +6,7 @@ from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS, \
     C_SERIES, C_CHANNEL, C_Z, C_T, C_INDEX, C_SERIES_NAME
 from cellprofiler_core.pipeline import ImageFile
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class ImagePlane:
@@ -166,7 +166,7 @@ class ImagePlane:
             raise PermissionError(f"Cannot override protected metadata key '{key}'")
         else:
             if force:
-                logger.warning(f"Overwriting protected key {key}. This may break functionality.")
+                LOGGER.warning(f"Overwriting protected key {key}. This may break functionality.")
             self._metadata_dict[key] = value
 
 

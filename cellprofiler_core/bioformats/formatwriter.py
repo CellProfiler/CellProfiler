@@ -6,7 +6,8 @@ import logging
 from . import omexml
 from ..utilities.java import jimport
 
-logger = logging.getLogger(__name__)
+
+LOGGER = logging.getLogger(__name__)
 
 p2j = lambda v: scyjava.to_java(v)
 

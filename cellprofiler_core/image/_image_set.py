@@ -7,6 +7,8 @@ from ._rgb_image import RGBImage
 from .abstract_image import VanillaImage
 
 
+LOGGER = logging.getLogger(__name__)
+
 class ImageSet:
     """Represents the images for a particular iteration of a pipeline
 
@@ -77,7 +79,7 @@ class ImageSet:
                     )
 
                 if image.pixel_data.shape[-1] == 4:
-                    logging.warning("Discarding alpha channel.")
+                    LOGGER.warning("Discarding alpha channel.")
 
                     return RGBImage(image)
 

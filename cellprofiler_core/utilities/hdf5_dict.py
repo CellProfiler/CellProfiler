@@ -183,7 +183,7 @@ class HDF5Dict(object):
         self.filename = hdf5_filename
         self.top_level_group_name = top_level_group_name
         LOGGER.debug(
-            "HDF5Dict.__init__(): %s, temporary=%s, copy=%s, mode=%s",
+            "%s, temporary=%s, copy=%s, mode=%s",
             self.filename,
             self.is_temporary,
             copy,

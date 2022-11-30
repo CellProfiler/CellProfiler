@@ -24,6 +24,8 @@ from cellprofiler_core.constants.module._identify import (
 )
 from cellprofiler_core.module import Module
 
+LOGGER = logging.getLogger(__name__)
+
 __doc__ = """\
 MeasureImageQuality
 ===================
@@ -755,7 +757,7 @@ to the foreground pixels or the background pixels.
 
     def prepare_run(self, workspace):
         if get_headless():
-            logging.warning(
+            LOGGER.warning(
                 "Experiment-wide values for mean threshold, etc calculated by MeasureImageQuality may be incorrect if the run is split into subsets of images."
             )
         return True

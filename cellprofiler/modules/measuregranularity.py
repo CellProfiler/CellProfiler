@@ -16,6 +16,8 @@ from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 
 from cellprofiler.gui.help.content import image_resource
 
+LOGGER = logging.getLogger(__name__)
+
 __doc__ = """\
 MeasureGranularity
 ==================
@@ -582,7 +584,7 @@ class MeasureGranularity(Module):
             if "None" in images_set:
                 images_set.remove("None")
             if len(settings_set) > 1:
-                logging.warning(
+                LOGGER.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureGranularity module no longer supports different settings for each image.\n"
                     "Instead, all selected images and objects will be analysed together with the same settings.\n"
@@ -590,7 +592,7 @@ class MeasureGranularity(Module):
                     "copy of the module."
                 )
             if len(objects_set) > len(objects_list):
-                logging.warning(
+                LOGGER.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureGranularity module now analyses all images and object sets together.\n"
                     "Specific pairs of images and objects are no longer supported.\n"

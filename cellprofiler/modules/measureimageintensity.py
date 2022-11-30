@@ -12,6 +12,8 @@ from cellprofiler_core.setting.subscriber import (
 
 from cellprofiler.modules import _help
 
+LOGGER = logging.getLogger(__name__)
+
 __doc__ = """
 MeasureImageIntensity
 =====================
@@ -451,7 +453,7 @@ class MeasureImageIntensity(Module):
             objects_string = ", ".join(map(str, objects_set))
             setting_values = [images_string, wants_objects, objects_string]
             if len(use_objects) > 1 or len(objects_set) > 1:
-                logging.warning(
+                LOGGER.warning(
                     "The pipeline you loaded was converted from an older version of CellProfiler.\n"
                     "The MeasureImageIntensity module no longer uses pairs of images and objects.\n"
                     "Instead, all selected images and objects will be analysed together.\n"

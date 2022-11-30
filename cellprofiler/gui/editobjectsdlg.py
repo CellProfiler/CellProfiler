@@ -37,6 +37,8 @@ import cellprofiler.gui.figure
 from cellprofiler.gui.figure import NavigationToolbar
 import cellprofiler.gui.tools
 
+LOGGER = logging.getLogger(__name__)
+
 
 class EditObjectsDialog(wx.Dialog):
     """This dialog can be invoked as an objects editor
@@ -1889,7 +1891,7 @@ class EditObjectsDialog(wx.Dialog):
                     marker=" ",
                 )
                 self.orig_axes.add_line(self.delete_mode_rect_artist)
-                logging.info("Starting delete at %f, %f" % self.delete_mode_start)
+                LOGGER.info("Starting delete at %f, %f" % self.delete_mode_start)
             else:
                 self.exit_delete_mode(event)
 
@@ -1974,7 +1976,7 @@ class EditObjectsDialog(wx.Dialog):
         self.record_undo()
 
     def exit_delete_mode(self, event):
-        logging.info("Exiting delete mode")
+        LOGGER.info("Exiting delete mode")
         if self.delete_mode_artist is not None:
             self.delete_mode_artist.remove()
             self.delete_mode_artist = None

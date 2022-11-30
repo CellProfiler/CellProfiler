@@ -50,6 +50,8 @@ import random
 import skimage.io
 
 
+LOGGER = logging.getLogger(__name__)
+
 class RunImageJMacro(Module):
     module_name = "RunImageJMacro"
     variable_revision_number = 1
@@ -357,10 +359,10 @@ temporary directory and assign its path as a value to this variable."""
                             os.remove(os.path.join(tempdir, file))
                     os.removedirs(tempdir)
                 except:
-                    logging.error("Unable to delete temporary directory, files may be in use by another program.")
-                    logging.error("Temp folder is subfolder {tempdir} in your Default Output Folder.\nYou may need to remove it manually.")
+                    LOGGER.error("Unable to delete temporary directory, files may be in use by another program.")
+                    LOGGER.error("Temp folder is subfolder {tempdir} in your Default Output Folder.\nYou may need to remove it manually.")
             else:
-                logging.error(f"Debugging was enabled.\nDid not remove temporary folder at {tempdir}")
+                LOGGER.error(f"Debugging was enabled.\nDid not remove temporary folder at {tempdir}")
 
         pixel_data = []
         image_names = []

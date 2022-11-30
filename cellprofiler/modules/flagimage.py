@@ -60,6 +60,8 @@ from cellprofiler_core.setting.text import Text, Filename, Directory, Float
 
 from cellprofiler.utilities.rules import Rules
 
+LOGGER = logging.getLogger(__name__)
+
 C_ANY = "Flag if any fail"
 C_ALL = "Flag if all fail"
 
@@ -523,7 +525,7 @@ image is not flagged.
                     try:
                         rules = self.get_rules(measurement_setting)
                     except Exception as instance:
-                        logging.warning(
+                        LOGGER.warning(
                             "Failed to load rules: %s", str(instance), exc_info=True
                         )
                         raise ValidationError(

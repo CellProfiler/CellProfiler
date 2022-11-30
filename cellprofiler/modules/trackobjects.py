@@ -23,6 +23,7 @@ from cellprofiler_core.setting.text import Integer, Float, ImageName
 from cellprofiler.modules import _help
 from cellprofiler.modules._help import PROTIP_RECOMMEND_ICON
 
+
 __doc__ = """\
 TrackObjects
 ============
@@ -254,6 +255,9 @@ try:
     )
 except:
     TM_ALL.remove("Follow Neighbors")
+
+
+LOGGER = logging.getLogger(__name__)
 
 DT_COLOR_AND_NUMBER = "Color and Number"
 DT_COLOR_ONLY = "Color Only"
@@ -2531,7 +2535,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 # the image set after the parent)
                 #
                 lost_object_count[parent_image_index + 1] -= 1
-                logging.debug(
+                LOGGER.debug(
                     "Gap closing: %d:%d to %d:%d, score=%f"
                     % (
                         parent_image_number,
@@ -2579,7 +2583,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 # one more split object
                 #
                 split_count[my_image_index] += 1
-                logging.debug(
+                LOGGER.debug(
                     "split: %d:%d to %d:%d, score=%f"
                     % (
                         parent_image_number,
@@ -2628,7 +2632,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 )
                 lost_object_count[parent_image_index + 1] -= 1
                 merge_count[child_image_index] += 1
-                logging.debug(
+                LOGGER.debug(
                     "Merge: %d:%d to %d:%d, score=%f"
                     % (
                         image_numbers[parent_image_index],
@@ -2677,7 +2681,7 @@ Enter a name to give the color-coded image of tracked labels.""",
                 add_fixup(F_LINK_TYPE, my_image_number, my_object_number, LT_MITOSIS)
                 add_fixup(F_MITOSIS_SCORE, my_image_number, my_object_number, score)
                 new_object_count[my_image_index] -= 1
-            logging.debug(
+            LOGGER.debug(
                 "Mitosis: %d:%d to %d:%d and %d, score=%f"
                 % (
                     parent_image_number,

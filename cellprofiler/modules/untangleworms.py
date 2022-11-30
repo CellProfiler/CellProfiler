@@ -139,6 +139,9 @@ from scipy.sparse import coo
 
 import cellprofiler
 
+
+LOGGER = logging.getLogger(__name__)
+
 RETAINING_OUTLINES_HELP = """\
 Select *{YES}* to retain the outlines of the new objects for later use
 in the pipeline. For example, a common use is for quality control
@@ -1123,7 +1126,7 @@ should be processed.
                         workspace, labels, i, skeleton, params
                     )
                     if len(graph.segments) > self.max_complexity:
-                        logging.warning(
+                        LOGGER.warning(
                             "Warning: rejecting cluster of %d segments.\n"
                             % len(graph.segments)
                         )
@@ -2879,7 +2882,7 @@ should be processed.
                 for n in range(1, self.ncontrol_points() - 1)
             ]
         except:
-            logging.error(
+            LOGGER.error(
                 "Failed to get # of control points from training file. Unknown number of angle measurements",
                 exc_info=True,
             )
@@ -2896,7 +2899,7 @@ should be processed.
                 for n in range(1, self.ncontrol_points() + 1)
             ]
         except:
-            logging.error(
+            LOGGER.error(
                 "Failed to get # of control points from training file. Unknown number of control point features",
                 exc_info=True,
             )

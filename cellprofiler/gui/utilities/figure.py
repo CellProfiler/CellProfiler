@@ -14,6 +14,8 @@ from cellprofiler_core.preferences import IM_BICUBIC
 
 from .. import errordialog
 
+LOGGER = logging.getLogger(__name__)
+
 CROSSHAIR_CURSOR = None
 
 
@@ -121,7 +123,7 @@ def format_plate_data_as_array(plate_dict, plate_type):
         c = int(well[1:]) - 1
         if r >= data.shape[0] or c >= data.shape[1]:
             if display_error:
-                logging.getLogger("cellprofiler.gui.cpfigure").warning(
+                LOGGER.warning(
                     "A well value (%s) does not fit in the given plate type.\n" % well
                 )
                 display_error = False

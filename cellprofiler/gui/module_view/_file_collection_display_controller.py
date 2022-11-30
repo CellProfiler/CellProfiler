@@ -11,6 +11,8 @@ from ..pipeline import Pipeline
 from ..utilities.module_view import edit_control_name
 from ...icons import get_builtin_image
 
+LOGGER = logging.getLogger(__name__)
+
 
 class FileCollectionDisplayController:
     """This class provides the UI for the file collection display
@@ -136,7 +138,7 @@ class FileCollectionDisplayController:
         self.user_collapsed_a_node = False
 
         def on_item_collapsed(event):
-            logging.debug("On item collapsed")
+            LOGGER.debug("On item collapsed")
             self.user_collapsed_a_node = True
 
         self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_COLLAPSED, on_item_collapsed)
@@ -202,7 +204,7 @@ class FileCollectionDisplayController:
             dc.DrawText(text, (width - text_width) / 2, (height - text_height) / 2)
 
     def on_browse(self, event):
-        logging.debug("Browsing for file collection directory")
+        LOGGER.debug("Browsing for file collection directory")
         dlg = wx.DirDialog(self.panel, "Select a directory to add")
         try:
             if dlg.ShowModal() == wx.ID_OK:
@@ -342,10 +344,10 @@ class FileCollectionDisplayController:
         return path
 
     def on_tree_item_menu(self, event):
-        logging.debug("On tree item menu")
+        LOGGER.debug("On tree item menu")
         path = self.get_path_from_event(event)
         if len(path) == 0:
-            logging.warning("Could not find item associated with tree event")
+            LOGGER.warning("Could not find item associated with tree event")
             return
         context_menu = self.v.get_context_menu(path)
         if len(context_menu) > 0:
@@ -359,13 +361,13 @@ class FileCollectionDisplayController:
                         menu.Append(-1, context_item)
 
                 def on_menu(event):
-                    logging.debug("On menu")
+                    LOGGER.debug("On menu")
 
                     self.pipeline.start_undoable_action()
                     try:
                         for menu_item in menu.GetMenuItems():
                             if menu_item.Id == event.Id:
-                                logging.debug("    Command = %s" % menu_item.Text)
+                                LOGGER.debug("    Command = %s" % menu_item.Text)
                                 if menu_item.Id in delete_menu_items:
                                     self.on_delete_selected(event)
                                 else:
@@ -386,7 +388,7 @@ class FileCollectionDisplayController:
             return True
 
     def on_tree_key_down(self, event):
-        logging.debug("On tree key down")
+        LOGGER.debug("On tree key down")
         key = event.GetKeyCode()
         if key == wx.WXK_DELETE:
             self.on_delete_selected(event)

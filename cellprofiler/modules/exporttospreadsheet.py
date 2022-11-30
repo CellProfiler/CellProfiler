@@ -141,6 +141,8 @@ from cellprofiler_core.utilities.measurement import (
 
 from cellprofiler.gui.help.content import MEASUREMENT_NAMING_HELP
 
+LOGGER = logging.getLogger(__name__)
+
 MAX_EXCEL_COLUMNS = 256
 MAX_EXCEL_ROWS = 65536
 
@@ -748,7 +750,7 @@ desired.
             max_image_set_len = workspace.measurements.image_set_count
         if max_image_set_len > maximum_image_sets:
             if get_headless():
-                logging.warning("Given the large number of image sets, you may want to consider using "
+                LOGGER.warning("Given the large number of image sets, you may want to consider using "
                                 "ExportToDatabase as opposed to ExportToSpreadsheet.")
             else:
                 msg = (
@@ -1053,7 +1055,7 @@ desired.
         files_to_overwrite = list(filter(os.path.isfile, files_to_check))
         if len(files_to_overwrite) > 0:
             if get_headless():
-                logging.error(
+                LOGGER.error(
                     "ExportToSpreadsheet is configured to refrain from overwriting files and the following file(s) already exist: %s"
                     % ", ".join(files_to_overwrite)
                 )

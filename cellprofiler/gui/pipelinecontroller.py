@@ -2319,7 +2319,7 @@ class PipelineController(object):
                 plane_id = treectrl.AppendItem(folder_id, str(plane_object), data=plane_object)
                 treectrl.Expand(folder_id)
                 if plane_object == selected_plane:
-                    print("Selected plane found")
+                    LOGGER.info("Selected plane found")
                     treectrl.SelectItem(plane_id)
             sizer.Add(treectrl, 1, wx.EXPAND)
             button_sizer = wx.StdDialogButtonSizer()
@@ -2892,7 +2892,7 @@ class PipelineController(object):
 
             self.populate_goto_menu()
         except Exception as error:
-            print(error)
+            LOGGER.error(error)
             extended_message = "Failure in analysis startup"
 
             error = cellprofiler.gui.dialog.Error("Error", extended_message)
@@ -2939,7 +2939,7 @@ class PipelineController(object):
         if isinstance(evt, Started):
             wx.CallAfter(self.show_analysis_controls)
         elif isinstance(evt, Progress):
-            print("Progress", evt.counts)
+            LOGGER.info("Progress", evt.counts)
             total_jobs = sum(evt.counts.values())
             completed = sum(
                 map(
@@ -2953,7 +2953,7 @@ class PipelineController(object):
                 completed,
             )
         elif isinstance(evt, Finished):
-            print(("Cancelled!" if evt.cancelled else "Finished!"))
+            LOGGER.info(("Cancelled!" if evt.cancelled else "Finished!"))
             # drop any interaction/display requests or exceptions
             while True:
                 try:
@@ -3986,7 +3986,7 @@ class PipelineController(object):
                     self.__module_view.get_current_module().get_module_num(), event
                 )
             else:
-                print("No current module")
+                LOGGER.info("No current module")
 
     def show_parameter_sample_options(self, module_num, event):
         if self.__parameter_sample_frame is None:

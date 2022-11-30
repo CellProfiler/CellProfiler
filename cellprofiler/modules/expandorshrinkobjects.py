@@ -75,15 +75,15 @@ O_SKELETONIZE = "Skeletonize each object"
 O_SPUR = "Remove spurs"
 
 library_mapping = {
-    O_EXPAND:'expand_defined_pixels',
-    O_EXPAND_BY_MEASUREMENT:'expand_defined_pixels',
+    O_SHRINK_INF:'shrink_to_point',
     O_EXPAND_INF:'expand_infinite',
+    O_DIVIDE:'add_dividing_lines',
     O_SHRINK:'shrink_defined_pixels',
     O_SHRINK_BY_MEASUREMENT:'shrink_defined_pixels',
-    O_SHRINK_INF:'shrink_to_point',
-    O_DIVIDE:'add_dividing_lines',
-    O_SPUR:'despur',
+    O_EXPAND:'expand_defined_pixels',
+    O_EXPAND_BY_MEASUREMENT:'expand_defined_pixels',
     O_SKELETONIZE:'skeletonize',
+    O_SPUR:'despur',    
 }
 
 O_ALL = list(library_mapping.keys())

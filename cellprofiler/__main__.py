@@ -55,6 +55,8 @@ from cellprofiler_core.worker import main as worker_main
 from cellprofiler_core.workspace import Workspace
 from cellprofiler_core.reader import activate_readers
 
+LOGGER = logging.getLogger(__name__)
+
 if hasattr(sys, "frozen"):
     if sys.platform == "darwin":
         # Some versions of Macos like to put CP in a sandbox. If we're frozen Java should be packed in,
@@ -211,7 +213,7 @@ def main(args=None):
         try:
             nr_per_batch = int(options.images_per_batch)
         except ValueError:
-            logging.warning(
+            LOGGER.warning(
                 "non-integer argument to --images-per-batch. Defaulting to 1."
             )
             nr_per_batch = 1
@@ -221,7 +223,7 @@ def main(args=None):
         try:
             nr_per_batch = int(options.images_per_batch)
         except ValueError:
-            logging.warning(
+            LOGGER.warning(
                 "non-integer argument to --images-per-batch. Defaulting to 1."
             )
             nr_per_batch = 1

@@ -164,7 +164,8 @@ import cellprofiler.icons
 from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
 from .workspace_view import WorkspaceView
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
+
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
 RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewId() for i in range(RECENT_FILE_COUNT)]
 ED_STOP = "Stop"
@@ -2458,7 +2459,7 @@ class PipelineController(object):
                         d[category] = []
                     d[category].append(module_name)
             except:
-                logging.error(
+                LOGGER.error(
                     "Unable to instantiate module %s.\n\n" % module_name, exc_info=True
                 )
 
@@ -2517,7 +2518,7 @@ class PipelineController(object):
 
             self.on_add_to_pipeline(self, AddToPipelineEvent(module_name, loader))
         else:
-            logging.warning(
+            LOGGER.warning(
                 "Could not find module associated with ID = %d, module = %s"
                 % (event.GetId(), event.GetString())
             )
@@ -2679,12 +2680,12 @@ class PipelineController(object):
             return
 
         if active_module is None:
-            logging.warning(
+            LOGGER.warning(
                 "User managed to fire the enable/disable module event and no module was active"
             )
             return
         if active_module.is_input_module():
-            logging.warning(
+            LOGGER.warning(
                 "User managed to fire the enable/disable module event when an input module was active"
             )
             return
@@ -3044,7 +3045,7 @@ class PipelineController(object):
             self.__pipeline.modules(exclude_disabled=False)
         ):
             # Defensive coding: module was deleted?
-            logging.warning(
+            LOGGER.warning(
                 "Failed to display module # %d. The pipeline may have been edited during analysis"
                 % module_num
             )
@@ -3064,7 +3065,7 @@ class PipelineController(object):
                     fig.figure.canvas._isDrawn = False
                 fig.figure.canvas.Refresh()
         except Exception as exc:
-            logger.exception(exc.__traceback__)
+            LOGGER.exception(exc.__traceback__)
             error = cellprofiler.gui.dialog.Error("Error", str(exc))
             if error.status == wx.ID_CANCEL:
                 cancel_progress()
@@ -3089,7 +3090,7 @@ class PipelineController(object):
                 module.display_post_run(self.__workspace, fig)
                 fig.Refresh()
         except Exception as exc:
-            logger.exception(exc.__traceback__)
+            LOGGER.exception(exc.__traceback__)
             error = cellprofiler.gui.dialog.Error("Error", str(exc))
             if error.status == wx.ID_CANCEL:
                 cancel_progress()
@@ -3111,7 +3112,7 @@ class PipelineController(object):
                 module.display_post_group(self.__workspace, fig)
                 fig.Refresh()
         except Exception as exc:
-            logger.exception(exc.__traceback__)
+            LOGGER.exception(exc.__traceback__)
             error = cellprofiler.gui.dialog.Error("Error", str(exc))
             if error.status == wx.ID_CANCEL:
                 cancel_progress()
@@ -3134,7 +3135,7 @@ class PipelineController(object):
             module = self.__pipeline.modules(exclude_disabled=False)[module_num - 1]
             result = module.handle_interaction(*args, **kwargs)
         except Exception as exc:
-            logger.exception(exc.__traceback__)
+            LOGGER.exception(exc.__traceback__)
             error = cellprofiler.gui.dialog.Error("Error", str(exc))
             if error.status == wx.ID_CANCEL:
                 cancel_progress()
@@ -3262,7 +3263,7 @@ class PipelineController(object):
                         buffer_dict = {}
                         index += 1
             # Log step needs to be here since this triggers sentry
-            logging.error("Failed to run module %s", err_module_name, exc_info=True)
+            LOGGER.error("Failed to run module %s", err_module_name, exc_info=True)
 
     def on_pause(self, event):
         self.__frame.preferences_view.pause(True)
@@ -3480,7 +3481,7 @@ class PipelineController(object):
             if get_telemetry():
                 self.sentry_pack_pipeline(module.module_name, module.module_num)
             else:
-                logging.error("Failed to run module %s", module.module_name, exc_info=True)
+                LOGGER.error("Failed to run module %s", module.module_name, exc_info=True)
             event = RunException(instance, module)
             self.__pipeline.notify_listeners(event)
             self.__pipeline_list_view.select_one_module(module.module_num)

@@ -72,6 +72,8 @@ from cellprofiler_core.setting.text import Alphanumeric
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import Integer
 
+LOGGER = logging.getLogger(__name__)
+
 O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"
 O_ADD = "Add"
@@ -515,7 +517,7 @@ one decimal place (e.g. 0.1, 0.2), -1 to one value before the decimal place (e.g
                     v0 = bincount(i1, values[0][i0], minlength=len(values[1])) / c1
                     break
             else:
-                logging.warning(
+                LOGGER.warning(
                     "Incompatible objects: %s has %d objects and %s has %d objects"
                     % (operand_object1, len(values[0]), operand_object2, len(values[1]))
                 )

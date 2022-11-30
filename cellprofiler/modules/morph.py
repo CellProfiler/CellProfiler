@@ -269,6 +269,8 @@ from cellprofiler_core.setting.do_something import RemoveSettingButton
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import ImageName, Integer
 
+LOGGER = logging.getLogger(__name__)
+
 F_BRANCHPOINTS = "branchpoints"
 F_BRIDGE = "bridge"
 F_CLEAN = "clean"
@@ -485,7 +487,7 @@ input for a measurement module."""
                     for plane in range(1, pixel_data.shape[2])
                 ]
             ):
-                logging.warning("Image is color, converting to grayscale")
+                LOGGER.warning("Image is color, converting to grayscale")
             pixel_data = numpy.sum(pixel_data, 2) / pixel_data.shape[2]
         for function in self.functions:
             pixel_data = self.run_function(function, pixel_data, mask)
@@ -554,7 +556,7 @@ input for a measurement module."""
             and not is_binary
         ):
             # Apply a very crude threshold to the image for binary algorithms
-            logging.warning(
+            LOGGER.warning(
                 "Warning: converting image to binary for %s\n" % function_name
             )
             pixel_data = pixel_data != 0
@@ -681,7 +683,7 @@ input for a measurement module."""
 
         if variable_revision_number == 5:
             # Removed "life" operation
-            logging.warning(
+            LOGGER.warning(
                 "Morph's 'Life' option has been removed, this pipeline might "
                 "not be compatible with the current version of CellProfiler."
             )

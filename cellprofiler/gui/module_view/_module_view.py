@@ -109,6 +109,8 @@ from ..utilities.module_view import text_control_name
 from ..utilities.module_view import x_control_name
 from ..utilities.module_view import y_control_name
 
+LOGGER = logging.getLogger(__name__)
+
 
 class ModuleView:
     """The module view implements a view on CellProfiler.Module
@@ -1035,7 +1037,7 @@ class ModuleView:
             image = (sm.to_rgba(j) * 255).astype(numpy.uint8)
             bitmap = wx.Bitmap.FromBufferRGBA(128, 12, image.tostring())
         except:
-            logging.warning("Failed to create the %s colorbar" % cmap_name)
+            LOGGER.warning("Failed to create the %s colorbar" % cmap_name)
             bitmap = None
         if not control:
             control = wx.Panel(self.__module_panel, -1, name=control_name)
@@ -1088,7 +1090,7 @@ class ModuleView:
                 not hasattr(control, "bad_color_name")
                 or control.bad_color_name != v.value
             ):
-                logging.warning("Failed to set color to %s" % v.value)
+                LOGGER.warning("Failed to set color to %s" % v.value)
                 control.bad_color_name = v.value
         if control is None:
             control = wx.lib.colourselect.ColourSelect(
@@ -2294,7 +2296,7 @@ class ModuleView:
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
         except Exception:
-            logging.debug(
+            LOGGER.debug(
                 "Caught bare exception in ModuleView.on_validate()", exc_info=True
             )
             pass

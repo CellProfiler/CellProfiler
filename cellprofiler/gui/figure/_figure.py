@@ -96,6 +96,8 @@ from ..utilities.figure import match_rgbmask_to_image
 from ..utilities.figure import wraparound
 from ..utilities.icon import get_cp_icon
 
+LOGGER = logging.getLogger(__name__)
+
 for filetype in matplotlib.backends.backend_wxagg.FigureCanvasWxAgg.filetypes:
     if filetype not in MATPLOTLIB_FILETYPES:
         MATPLOTLIB_UNSUPPORTED_FILETYPES.append(filetype)
@@ -1792,7 +1794,7 @@ class Figure(wx.Frame):
 
         # Truncate multichannel data that is not RGB (4+ channel data) and display it as RGB.
         if image.shape[chan_index] > 3:
-            logging.warning(
+            LOGGER.warning(
                 "Multichannel display is only supported for RGB (3-channel) data."
                 " Input image has {:d} channels. The first 3 channels are displayed as RGB.".format(
                     image.shape[chan_index]

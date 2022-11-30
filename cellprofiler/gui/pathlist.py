@@ -14,6 +14,8 @@ import wx.lib.scrolledpanel
 from cellprofiler_core.pipeline import ImageFile
 from cellprofiler_core.preferences import report_progress
 
+LOGGER = logging.getLogger(__name__)
+
 OMERO_SCHEME = "omero:"
 
 EVT_PLC_SELECTION_CHANGED = wx.PyEventBinder(wx.NewEventType())
@@ -102,7 +104,7 @@ class PathListCtrl(wx.TreeCtrl):
                 DROP_FILES_AND_FOLDERS_HERE
             )[:2]
         except:
-            logging.warning(
+            LOGGER.warning(
                 'Failed to get text extend for "%s" message'
                 % DROP_FILES_AND_FOLDERS_HERE,
                 exc_info=True,
@@ -116,7 +118,7 @@ class PathListCtrl(wx.TreeCtrl):
                 DROP_FILES_AND_FOLDERS_HERE
             )[:2]
         except:
-            logging.warning(
+            LOGGER.warning(
                 'Failed to get text extend for plane details font',
                 exc_info=True,
             )

@@ -37,6 +37,8 @@ from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingBut
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float, Integer, ImageName
 
+LOGGER = logging.getLogger(__name__)
+
 R_BY_FACTOR = "Resize by a fraction or multiple of the original size"
 R_TO_SIZE = "Resize by specifying desired final dimensions"
 R_ALL = [R_BY_FACTOR, R_TO_SIZE]
@@ -297,7 +299,7 @@ resized with the same settings as the first image.""",
                 ):
                     self.add_image()
         except ValueError:
-            logging.warning(
+            LOGGER.warning(
                 'Additional image setting count was "%s" which is not an integer.',
                 setting_values[S_ADDITIONAL_IMAGE_COUNT],
                 exc_info=True,

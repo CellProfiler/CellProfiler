@@ -66,6 +66,8 @@ from cellprofiler_core.setting.text import Integer
 
 from cellprofiler_core.utilities.grid import Grid
 
+LOGGER = logging.getLogger(__name__)
+
 NUM_TOP_LEFT = "Top left"
 NUM_BOTTOM_LEFT = "Bottom left"
 NUM_TOP_RIGHT = "Top right"
@@ -877,7 +879,7 @@ first image.
                     image_shape,
                 )
             except Exception as e:
-                logging.error(e, exc_info=True)
+                LOGGER.error(e, exc_info=True)
                 status_bar.SetStatusText(str(e))
                 return False
             return True

@@ -13,6 +13,8 @@ from cellprofiler_core.constants.reader import ALL_READERS, BAD_READERS, AVAILAB
 from ..html.utils import rst_to_html_fragment
 from ..htmldialog import HTMLDialog
 
+LOGGER = logging.getLogger(__name__)
+
 
 class ReadersDialog(wx.Dialog):
     """
@@ -104,7 +106,7 @@ class ReadersDialog(wx.Dialog):
             else:
                 self.display_nonfunctional_reader(selected)
         else:
-            logging.warning(f"Unknown selection {event}")
+            LOGGER.warning(f"Unknown selection {event}")
             return
         self.Layout()
         self.Refresh()
@@ -265,7 +267,7 @@ class ReadersDialog(wx.Dialog):
                 wx.TheClipboard.SetData(wx.TextDataObject(error))
                 wx.TheClipboard.Close()
             else:
-                logging.error("Failed to copy to clipboard")
+                LOGGER.error("Failed to copy to clipboard")
 
         copy_button = wx.Button(self.control_panel, -1, "Copy to clipboard")
         self.Bind(wx.EVT_BUTTON, copy_handler, copy_button)

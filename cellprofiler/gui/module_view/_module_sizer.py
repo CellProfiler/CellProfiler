@@ -2,6 +2,8 @@ import logging
 
 import wx
 
+LOGGER = logging.getLogger(__name__)
+
 
 class ModuleSizer(wx.Sizer):
     """The module sizer uses the maximum best width of the setting
@@ -87,7 +89,7 @@ class ModuleSizer(wx.Sizer):
         except:
             # This happens, hopefully transiently, on the Mac
             if not self.__printed_exception:
-                logging.error("WX internal error detected", exc_info=True)
+                LOGGER.error("WX internal error detected", exc_info=True)
                 self.__printed_exception = True
             return wx.Size(0, 0)
 
@@ -225,5 +227,5 @@ class ModuleSizer(wx.Sizer):
         except:
             # This happens, hopefully transiently, on the Mac
             if not self.__printed_exception:
-                logging.warning("Detected WX error", exc_info=True)
+                LOGGER.warning("Detected WX error", exc_info=True)
                 self.__printed_exception = True

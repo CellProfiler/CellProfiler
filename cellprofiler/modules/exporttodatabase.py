@@ -148,6 +148,8 @@ import cellprofiler.icons
 from cellprofiler.modules import _help
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
+LOGGER = logging.getLogger(__name__)
+
 buffer = memoryview
 
 try:
@@ -157,7 +159,7 @@ try:
 
     HAS_MYSQL_DB = True
 except Exception:
-    logging.warning("MySQL could not be loaded.", exc_info=True)
+    LOGGER.warning("MySQL could not be loaded.", exc_info=True)
     HAS_MYSQL_DB = False
 
 ##############################################
@@ -390,7 +392,7 @@ def connect_mysql(host, user, password, db):
     cursor = SSCursor(connection)
 
     rv = cursor.execute("SET TRANSACTION ISOLATION LEVEL READ COMMITTED")
-    logging.info('Set MySQL transaction isolation to "READ COMMITTED": %r' % rv)
+    LOGGER.info('Set MySQL transaction isolation to "READ COMMITTED": %r' % rv)
     cursor.execute("BEGIN")
 
     #
@@ -2406,13 +2408,13 @@ available:
                         )
                     if get_headless():
                         if self.allow_overwrite == OVERWRITE_NEVER:
-                            logging.error(
+                            LOGGER.error(
                                 "%s already in database and overwrite not allowed. Exiting"
                                 % table_msg
                             )
                             return False
                         elif self.allow_overwrite == OVERWRITE_DATA:
-                            logging.warning(
+                            LOGGER.warning(
                                 "%s already in database, not creating" % table_msg
                             )
                             return True
@@ -2718,11 +2720,11 @@ available:
 
         returns the relationship type ID
         """
-        logging.info("Adding missing relationship type:")
-        logging.info("        module #: %d" % module_num)
-        logging.info("    relationship: %s" % relationship)
-        logging.info("        object 1: %s" % object_name1)
-        logging.info("        object 2: %s" % object_name2)
+        LOGGER.info("Adding missing relationship type:")
+        LOGGER.info("        module #: %d" % module_num)
+        LOGGER.info("    relationship: %s" % relationship)
+        LOGGER.info("        object 1: %s" % object_name1)
+        LOGGER.info("        object 2: %s" % object_name2)
         #
         # If the code reaches here, it's because:
         # * some module has an absent or mis-coded get_relationship_columns
@@ -4079,7 +4081,7 @@ CREATE TABLE %s (
 
             self.connection.commit()
         except:
-            logging.error("Failed to write measurements to database", exc_info=True)
+            LOGGER.error("Failed to write measurements to database", exc_info=True)
             self.connection.rollback()
             raise
 

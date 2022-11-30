@@ -51,6 +51,8 @@ from cellprofiler_core.workspace import Workspace
 
 import cellprofiler
 
+LOGGER = logging.getLogger(__name__)
+
 """# of settings aside from the mappings"""
 S_FIXED_COUNT = 8
 """# of settings per mapping"""
@@ -408,14 +410,14 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
         if os.path.isdir(default_output_directory):
             set_default_output_directory(default_output_directory)
         else:
-            logging.info(
+            LOGGER.info(
                 'Batch file default output directory, "%s", does not exist'
                 % default_output_directory
             )
         if os.path.isdir(default_image_directory):
             set_default_image_directory(default_image_directory)
         else:
-            logging.info(
+            LOGGER.info(
                 'Batch file default input directory "%s", does not exist'
                 % default_image_directory
             )

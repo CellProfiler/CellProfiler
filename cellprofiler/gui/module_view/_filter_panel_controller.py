@@ -11,6 +11,8 @@ from cellprofiler_core.setting.filter._filter import (
 from ._module_view import ModuleView
 from ..utilities.module_view import edit_control_name
 
+LOGGER = logging.getLogger(__name__)
+
 
 class FilterPanelController(object):
     """Handle representation of the filter panel
@@ -100,7 +102,7 @@ class FilterPanelController(object):
         try:
             tokens = self.v.parse()
         except Exception as e:
-            logging.debug(
+            LOGGER.debug(
                 "Failed to parse filter (value=%s): %s", self.v.value_text, str(e)
             )
             tokens = self.v.default()
@@ -122,7 +124,7 @@ class FilterPanelController(object):
                 self.panel.FindWindowByName(key).Show(value)
             self.panel.Layout()
         except:
-            logging.exception("Threw exception while updating filter")
+            LOGGER.exception("Threw exception while updating filter")
         finally:
             self.inside_update = False
 
@@ -184,7 +186,7 @@ class FilterPanelController(object):
         return button
 
     def on_delete_rule(self, event, address):
-        logging.debug("Delete row at " + str(address))
+        LOGGER.debug("Delete row at " + str(address))
         structure = self.v.parse()
         sequence = self.find_address(structure, address[:-1])
         del sequence[address[-1] + 1]
@@ -202,7 +204,7 @@ class FilterPanelController(object):
         return button
 
     def on_add_rule(self, event, address):
-        logging.debug("Add rule after " + str(address))
+        LOGGER.debug("Add rule after " + str(address))
         structure = self.v.parse()
         sequence = self.find_address(structure, address[:-1])
         new_rule = self.v.default()
@@ -220,7 +222,7 @@ class FilterPanelController(object):
         return button
 
     def on_add_rules(self, event, address):
-        logging.debug("Add rules after " + str(address))
+        LOGGER.debug("Add rules after " + str(address))
         structure = self.v.parse()
         sequence = self.find_address(structure, address[:-1])
         new_rule = [OR_PREDICATE, self.v.default()]
@@ -249,7 +251,7 @@ class FilterPanelController(object):
         return choice_ctrl
 
     def on_predicate_changed(self, event, index, address):
-        logging.debug(
+        LOGGER.debug(
             "Predicate choice at %d / %s changed" % (index, self.saddress(address))
         )
         structure = self.v.parse()
@@ -330,7 +332,7 @@ class FilterPanelController(object):
         return literal_ctrl
 
     def on_literal_changed(self, event, index, address):
-        logging.debug("Literal at %d / %s changed" % (index, self.saddress(address)))
+        LOGGER.debug("Literal at %d / %s changed" % (index, self.saddress(address)))
         try:
             structure = self.v.parse()
             sequence = self.find_address(structure, address)
@@ -364,7 +366,7 @@ class FilterPanelController(object):
         return anyall
 
     def on_anyall_changed(self, event, address):
-        logging.debug("Any / all choice at %s changed" % self.saddress(address))
+        LOGGER.debug("Any / all choice at %s changed" % self.saddress(address))
         structure = self.v.parse()
         sequence = self.find_address(structure, address)
         predicate = self.ANY_ALL_PREDICATES[event.GetSelection()]

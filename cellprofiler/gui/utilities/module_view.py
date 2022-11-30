@@ -9,6 +9,8 @@ from cellprofiler.gui.module_view._validation_request_controller import (
     ValidationRequestController,
 )
 
+LOGGER = logging.getLogger(__name__)
+
 
 def text_control_name(v):
     """Return the name of a setting's text control
@@ -227,8 +229,8 @@ def validation_queue_handler():
             wait_for = max(0.25, time.perf_counter() - start)
             time.sleep(wait_for)
     except:
-        logging.warning("Error in validation thread.", exc_info=True)
-    logging.info("Exiting the pipeline validation thread")
+        LOGGER.warning("Error in validation thread.", exc_info=True)
+    LOGGER.info("Exiting the pipeline validation thread")
 
 
 def request_module_validation(validation_request):

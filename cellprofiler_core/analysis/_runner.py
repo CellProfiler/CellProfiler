@@ -8,6 +8,7 @@ import sys
 import tempfile
 import threading
 from typing import List, Any
+import re
 
 import numpy
 import psutil
@@ -659,7 +660,9 @@ class Runner:
             "--conserve-memory",
             str(get_conserve_memory()),
             "--always-continue",
-            str(get_always_continue())
+            str(get_always_continue()),
+            "--log-level",
+            str(logging.root.level)
         ]
 
         # start workers
@@ -703,8 +706,18 @@ class Runner:
                         line = line.decode("utf-8")
                         if not line:
                             break
-                        LOGGER.info("Worker %d: %s", widx, line.rstrip())
-                    except:
+                        log_msg_match = re.match(fr"{workR.pid}\|(10|20|30|40|50)\|(.*)", line)
+                        if log_msg_match:
+                            levelno = int(log_msg_match.group(1))
+                            msg = log_msg_match.group(2)
+                        else:
+                            levelno = 20
+                            msg = line
+
+                        LOGGER.log(levelno, "\n\r\t[Worker %d] %s", widx, msg.rstrip())
+
+                    except Exception as e:
+                        LOGGER.exception(e)
                         break
 
             start_daemon_thread(

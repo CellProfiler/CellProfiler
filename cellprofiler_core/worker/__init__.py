@@ -83,6 +83,7 @@ def aw_parse_args():
     parser.add_option(
         "--log-level",
         dest="log_level",
+        type="int",
         help="Logging level for logger: DEBUG, INFO, WARNING, ERROR",
         default=os.environ.get(AW_LOG_LEVEL, logging.INFO),
     )
@@ -125,7 +126,10 @@ def aw_parse_args():
 
     logging.root.setLevel(options.log_level)
     if len(logging.root.handlers) == 0:
-        logging.root.addHandler(logging.StreamHandler())
+        stream_handler = logging.StreamHandler()
+        fmt = logging.Formatter("%(process)d|%(levelno)s|%(name)s::%(funcName)s : %(message)s")
+        stream_handler.setFormatter(fmt)
+        logging.root.addHandler(stream_handler)
 
     if not options.work_server_address and options.work_server_address and \
             options.analysis_id:

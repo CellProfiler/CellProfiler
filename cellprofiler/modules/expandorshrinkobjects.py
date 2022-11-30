@@ -73,17 +73,6 @@ O_EXPAND = "Expand objects by a specified number of pixels"
 O_EXPAND_BY_MEASUREMENT = "Expand objects by a previous measurement"
 O_SKELETONIZE = "Skeletonize each object"
 O_SPUR = "Remove spurs"
-O_ALL = [
-    O_SHRINK_INF,
-    O_EXPAND_INF,
-    O_DIVIDE,
-    O_SHRINK,
-    O_SHRINK_BY_MEASUREMENT,
-    O_EXPAND,
-    O_EXPAND_BY_MEASUREMENT,
-    O_SKELETONIZE,
-    O_SPUR,
-]
 
 library_mapping = {
     O_EXPAND:'expand_defined_pixels',
@@ -96,6 +85,8 @@ library_mapping = {
     O_SPUR:'despur',
     O_SKELETONIZE:'skeletonize',
 }
+
+O_ALL = list(library_mapping.keys())
 
 class ExpandOrShrinkObjects(Module):
     module_name = "ExpandOrShrinkObjects"

@@ -619,6 +619,9 @@ def set_log_level(options):
             fmt = logging.Formatter("[CP - %(levelname)s] %(name)s::%(funcName)s : %(message)s")
             stream_handler.setFormatter(fmt)
             logging.root.addHandler(stream_handler)
+
+        # silence matplotlib debug messages, they're super annoying
+        logging.getLogger('matplotlib').setLevel(logging.WARNING)
     except ValueError as e:
         logging.config.fileConfig(options.log_level)
 

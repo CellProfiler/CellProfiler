@@ -616,7 +616,7 @@ def set_log_level(options):
 
         if len(logging.root.handlers) == 0:
             stream_handler = logging.StreamHandler()
-            fmt = logging.Formatter("[CP - %(levelname)s] %(name)s::%(funcName)s : %(message)s")
+            fmt = logging.Formatter("[CP - %(levelname)s] %(name)s::%(funcName)s: %(message)s")
             stream_handler.setFormatter(fmt)
             logging.root.addHandler(stream_handler)
 

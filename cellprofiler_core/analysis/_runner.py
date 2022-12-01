@@ -714,7 +714,7 @@ class Runner:
                             levelno = 20
                             msg = line
 
-                        LOGGER.log(levelno, "\n\r\t[Worker %d] %s", widx, msg.rstrip())
+                        LOGGER.log(levelno, "\n\r  [Worker %d (%d)] %s", widx, workR.pid, msg.rstrip())
 
                     except Exception as e:
                         LOGGER.exception(e)

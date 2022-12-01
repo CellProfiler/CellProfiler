@@ -127,7 +127,7 @@ def aw_parse_args():
     logging.root.setLevel(options.log_level)
     if len(logging.root.handlers) == 0:
         stream_handler = logging.StreamHandler()
-        fmt = logging.Formatter("%(process)d|%(levelno)s|%(name)s::%(funcName)s : %(message)s")
+        fmt = logging.Formatter("%(process)d|%(levelno)s|%(name)s::%(funcName)s: %(message)s")
         stream_handler.setFormatter(fmt)
         logging.root.addHandler(stream_handler)
 

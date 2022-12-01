@@ -365,7 +365,7 @@ class HDF5Dict(object):
 
     def __del__(self):
         LOGGER.debug(
-            "HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary
+            "%s, temporary=%s", self.filename, self.is_temporary
         )
         self.close()
 

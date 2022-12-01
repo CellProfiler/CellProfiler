@@ -249,7 +249,7 @@ class BioformatsReader(Reader):
             z_range = [z]
         if t is None:
             if z_len > 1:
-                t_range = 1
+                t_range = range(1)
             else:
                 t_range = range(bf_reader.getSizeT())
         else:

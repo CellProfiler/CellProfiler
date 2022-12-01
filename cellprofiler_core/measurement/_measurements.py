@@ -108,11 +108,11 @@ class Measurements:
         elif filename is None:
             fd, filename = make_temporary_file()
             is_temporary = True
-            import traceback
-
             LOGGER.debug("Created temporary file %s" % filename)
-            for frame in traceback.extract_stack():
-                LOGGER.debug("{}: ({} {}): {}".format(*frame))
+
+            # import traceback
+            # for frame in traceback.extract_stack():
+            #     LOGGER.debug("{}: ({} {}): {}".format(*frame))
 
         else:
             is_temporary = False

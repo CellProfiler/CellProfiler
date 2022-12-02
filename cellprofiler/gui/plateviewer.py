@@ -210,7 +210,7 @@ class PlateViewer(object):
         self.channel_grid.SetDefaultEditor(wx.grid.GridCellNumberEditor())
         self.channel_grid.SetDefaultRenderer(wx.grid.GridCellNumberRenderer())
         control_sizer.Add(
-            self.channel_grid, 0, wx.ALIGN_RIGHT | wx.ALIGN_TOP | wx.ALL | wx.EXPAND, 5
+            self.channel_grid, 0, wx.ALIGN_TOP | wx.ALL | wx.EXPAND, 5
         )
         self.figure = matplotlib.figure.Figure()
         self.axes = self.figure.add_axes((0.05, 0.05, 0.9, 0.9))

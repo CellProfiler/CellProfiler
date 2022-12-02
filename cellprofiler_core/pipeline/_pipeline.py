@@ -478,16 +478,16 @@ class Pipeline:
             if (not get_headless()) and pipeline_version < current_version:
                 if git_hash is not None:
                     message = (
-                        "Your pipeline was saved using an old version\n"
-                        "of CellProfiler (rev {}{}).\n"
-                        "The current version of CellProfiler can load\n"
-                        "and run this pipeline, but if you make changes\n"
-                        "to it and save, the older version of CellProfiler\n"
-                        "(perhaps the version your collaborator has?) may\n"
-                        "not be able to load it.\n\n"
-                        "You can ignore this warning if you do not plan to save\n"
-                        "this pipeline or if you will only use it with this or\n"
-                        "later versions of CellProfiler."
+                        "\n\tYour pipeline was saved using an old version\n"
+                        "\tof CellProfiler (rev {}{}).\n"
+                        "\tThe current version of CellProfiler can load\n"
+                        "\tand run this pipeline, but if you make changes\n"
+                        "\tto it and save, the older version of CellProfiler\n"
+                        "\t(perhaps the version your collaborator has?) may\n"
+                        "\tnot be able to load it.\n\n"
+                        "\tYou can ignore this warning if you do not plan to save\n"
+                        "\tthis pipeline or if you will only use it with this or\n"
+                        "\tlater versions of CellProfiler."
                     ).format(git_hash, pipeline_date)
                     LOGGER.warning(message)
                 else:
@@ -637,8 +637,8 @@ class Pipeline:
                             for line in value
                         ]
                     except Exception as e:
-                        print(
-                            f"Error during notes decoding - {e} \nSome characters may have been lost"
+                        LOGGER.error(
+                            f"Error during notes decoding\n\t{e}\n\tSome characters may have been lost"
                         )
             else:
                 value = eval(value)

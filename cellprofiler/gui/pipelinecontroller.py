@@ -462,9 +462,9 @@ class PipelineController(object):
             EVT_PLV_VALID_STEP_COLUMN_CLICKED, self.on_step_from_specific_module,
         )
 
-        from cellprofiler_core.bioformats.formatreader import set_omero_login_hook
-
-        set_omero_login_hook(self.omero_login)
+        #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+        # from cellprofiler_core.bioformats.formatreader import set_omero_login_hook
+        # set_omero_login_hook(self.omero_login)
 
         self.workspace_view = None
 

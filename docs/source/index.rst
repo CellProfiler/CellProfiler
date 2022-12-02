@@ -187,7 +187,9 @@ Learn about the other features of CellProfiler.
    help/other_troubleshooting
    help/other_batch
    help/other_logging
-   help/other_omero
+   ..
+      TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+      help/other_omero
    help/other_plugins
    help/other_shell
    help/other_widget_inspector

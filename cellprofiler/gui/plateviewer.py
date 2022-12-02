@@ -14,6 +14,7 @@ import matplotlib.figure
 import numpy
 import wx
 import wx.grid
+import scyjava
 
 
 def well_row_name(x):
@@ -553,9 +554,9 @@ class PlateViewer(object):
                         traceback.print_exc()
                         pass
             wx.CallAfter(self.update_figure)
-            #CTR FIXME
-            #System = scyjava.jimport("java.lang.System")
-            #System.gc()
+            # not sure if necessary - NG
+            System = scyjava.jimport("java.lang.System")
+            System.gc()
 
         t = threading.Thread(target=fn)
         t.setDaemon(True)
@@ -581,7 +582,8 @@ class PlateViewer(object):
             for i in range(self.site_grid.GetNumberRows()):
                 site_name = self.site_grid.GetRowLabelValue(i)
                 site_dict[site_name] = numpy.array(
-                    [float(self.site_grid.GetCellValue(i, j)) - 1 for j in range(2)]
+                    # "or 1" because it might return an empty string for no value
+                    [float(self.site_grid.GetCellValue(i, j) or 1) - 1 for j in range(2)]
                 )[::-1]
                 tile_dims = [
                     max(i0, i1) for i0, i1 in zip(site_dict[site_name], tile_dims)

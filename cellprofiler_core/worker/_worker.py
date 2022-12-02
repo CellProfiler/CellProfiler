@@ -40,7 +40,6 @@ class Worker:
     """
 
     def __init__(self, context, analysis_id, work_request_address, keepalive_address, with_stop_run_loop=True):
-        from ..bioformats.formatreader import set_omero_login_hook
 
         self.context = context
         self.work_request_address = work_request_address
@@ -52,7 +51,9 @@ class Worker:
         self.preferences = None
         self.initial_measurements = None
 
-        set_omero_login_hook(self.omero_login_handler)
+        #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+        # from ..bioformats.formatreader import set_omero_login_hook
+        # set_omero_login_hook(self.omero_login_handler)
 
     def __enter__(self):
         # pipeline listener object

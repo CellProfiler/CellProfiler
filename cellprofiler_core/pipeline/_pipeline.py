@@ -84,6 +84,7 @@ from ..constants.pipeline import SAD_PROOFPOINT_COOKIE
 from ..constants.workspace import DISPOSITION_CANCEL
 from ..constants.workspace import DISPOSITION_PAUSE
 from ..constants.workspace import DISPOSITION_SKIP
+from ..constants.image import PASSTHROUGH_SCHEMES
 from ..constants.modules.metadata import X_AUTOMATIC_EXTRACTION
 from ..image import ImageSetList
 from ..measurement import Measurements
@@ -2071,7 +2072,7 @@ class Pipeline:
                     self.read_file_list(fd, add_undo=add_undo)
             elif any(
                 pathname.startswith(protocol)
-                for protocol in ("http", "https", "ftp", "omero", "s3", "gs")
+                for protocol in PASSTHROUGH_SCHEMES
             ):
                 with urllib.request.urlopen(pathname) as response:
                     data = response.read().decode("utf-8").splitlines()

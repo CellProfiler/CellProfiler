@@ -21,7 +21,9 @@ LOGGER.info("HELLO! It's a-ME, bioformats_reader. I just added Bio-Formats endpo
 # bioformats returns 2 for these, imageio reader returns 3
 SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
 SEMI_SUPPORTED_EXTENSIONS = BIOFORMATS_IMAGE_EXTENSIONS
-SUPPORTED_SCHEMES = {'file', 'http', 'https', 'ftp', 'ftps', 'omero', 's3'}
+#TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+# SUPPORTED_SCHEMES = {'file', 'http', 'https', 'ftp', 'ftps', 'omero', 's3'}
+SUPPORTED_SCHEMES = {'file', 'http', 'https', 'ftp', 'ftps', 's3'}
 
 class BioformatsReader(Reader):
     """

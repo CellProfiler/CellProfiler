@@ -221,10 +221,11 @@ class Menu(cellprofiler.gui.menu.Menu):
             contents=cellprofiler.gui.help.content.read_content("other_logging.rst"),
         )
 
-        other_menu.append(
-            "Accessing Images From OMERO",
-            contents=cellprofiler.gui.help.content.read_content("other_omero.rst"),
-        )
+        #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+        # other_menu.append(
+        #     "Accessing Images From OMERO",
+        #     contents=cellprofiler.gui.help.content.read_content("other_omero.rst"),
+        # )
 
         other_menu.append(
             "Using Plugins",

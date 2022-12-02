@@ -2,6 +2,8 @@
 """omerologin - dialog box to capture login credentials for Omero
 """
 
+#TODO: this file uselss until CellProfiler/CellProfiler#4684 is resolved
+
 from cellprofiler_core.bioformats import formatreader
 import wx
 from cellprofiler_core.preferences import (

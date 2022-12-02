@@ -16,9 +16,10 @@ import cellprofiler.gui.utilities.icon
 import cellprofiler.modules
 
 MENU_HELP = {
-    "Accessing Images From OMERO": cellprofiler.gui.help.content.read_content(
-        "other_omero.rst"
-    ),
+    #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+    # "Accessing Images From OMERO": cellprofiler.gui.help.content.read_content(
+    #     "other_omero.rst"
+    # ),
     "Batch Processing": cellprofiler.gui.help.content.read_content("other_batch.rst"),
     "How To Build A Pipeline": cellprofiler.gui.help.content.read_content(
         "pipelines_building.rst"

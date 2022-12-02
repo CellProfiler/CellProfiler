@@ -27,10 +27,11 @@ from cellprofiler_core.preferences import get_image_set_file
 from cellprofiler_core.preferences import get_temporary_directory
 from cellprofiler_core.preferences import set_conserve_memory
 from cellprofiler_core.preferences import set_force_bioformats
-from cellprofiler_core.preferences import get_omero_port
-from cellprofiler_core.preferences import get_omero_server
-from cellprofiler_core.preferences import get_omero_session_id
-from cellprofiler_core.preferences import get_omero_user
+#TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+# from cellprofiler_core.preferences import get_omero_port
+# from cellprofiler_core.preferences import get_omero_server
+# from cellprofiler_core.preferences import get_omero_session_id
+# from cellprofiler_core.preferences import get_omero_user
 from cellprofiler_core.preferences import set_allow_schema_write
 from cellprofiler_core.preferences import set_always_continue
 from cellprofiler_core.preferences import set_awt_headless
@@ -39,9 +40,10 @@ from cellprofiler_core.preferences import set_default_image_directory
 from cellprofiler_core.preferences import set_default_output_directory
 from cellprofiler_core.preferences import set_headless
 from cellprofiler_core.preferences import set_image_set_file
-from cellprofiler_core.preferences import set_omero_port
-from cellprofiler_core.preferences import set_omero_server
-from cellprofiler_core.preferences import set_omero_user
+#TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+# from cellprofiler_core.preferences import set_omero_port
+# from cellprofiler_core.preferences import set_omero_server
+# from cellprofiler_core.preferences import set_omero_user
 from cellprofiler_core.preferences import set_plugin_directory
 from cellprofiler_core.preferences import set_temporary_directory
 from cellprofiler_core.preferences import set_widget_inspector
@@ -103,12 +105,13 @@ if hasattr(sys, "frozen"):
     print(f"Starting CellProfiler {ver}")
 
 
-OMERO_CK_HOST = "host"
-OMERO_CK_PORT = "port"
-OMERO_CK_USER = "user"
-OMERO_CK_PASSWORD = "password"
-OMERO_CK_SESSION_ID = "session-id"
-OMERO_CK_CONFIG_FILE = "config-file"
+#TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+# OMERO_CK_HOST = "host"
+# OMERO_CK_PORT = "port"
+# OMERO_CK_USER = "user"
+# OMERO_CK_PASSWORD = "password"
+# OMERO_CK_SESSION_ID = "session-id"
+# OMERO_CK_CONFIG_FILE = "config-file"
 
 numpy.seterr(all="ignore")
 
@@ -229,8 +232,9 @@ def main(args=None):
             nr_per_batch = 1
         get_batch_commands_new(options.new_batch_commands_file, nr_per_batch)
 
-    if options.omero_credentials is not None:
-        set_omero_credentials_from_string(options.omero_credentials)
+    #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+    # if options.omero_credentials is not None:
+    #     set_omero_credentials_from_string(options.omero_credentials)
 
     if options.plugins_directory is not None:
         set_plugin_directory(options.plugins_directory, globally=False)
@@ -545,24 +549,25 @@ def parse_args(args):
         help="Create the experiment database schema and exit",
     )
 
-    parser.add_option(
-        "--omero-credentials",
-        dest="omero_credentials",
-        default=None,
-        help=(
-            "Enter login credentials for OMERO. The credentials"
-            " are entered as comma-separated key/value pairs with"
-            ' keys, "%(OMERO_CK_HOST)s" - the DNS host name for the OMERO server'
-            ', "%(OMERO_CK_PORT)s" - the server\'s port # (typically 4064)'
-            ', "%(OMERO_CK_USER)s" - the name of the connecting user'
-            ', "%(OMERO_CK_PASSWORD)s" - the connecting user\'s password'
-            ', "%(OMERO_CK_SESSION_ID)s" - the session ID for an OMERO client session.'
-            ', "%(OMERO_CK_CONFIG_FILE)s" - the path to the OMERO credentials config file.'
-            " A typical set of credentials might be:"
-            " --omero-credentials host=demo.openmicroscopy.org,port=4064,session-id=atrvomvjcjfe7t01e8eu59amixmqqkfp"
-        )
-        % globals(),
-    )
+    #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+    # parser.add_option(
+    #     "--omero-credentials",
+    #     dest="omero_credentials",
+    #     default=None,
+    #     help=(
+    #         "Enter login credentials for OMERO. The credentials"
+    #         " are entered as comma-separated key/value pairs with"
+    #         ' keys, "%(OMERO_CK_HOST)s" - the DNS host name for the OMERO server'
+    #         ', "%(OMERO_CK_PORT)s" - the server\'s port # (typically 4064)'
+    #         ', "%(OMERO_CK_USER)s" - the name of the connecting user'
+    #         ', "%(OMERO_CK_PASSWORD)s" - the connecting user\'s password'
+    #         ', "%(OMERO_CK_SESSION_ID)s" - the session ID for an OMERO client session.'
+    #         ', "%(OMERO_CK_CONFIG_FILE)s" - the path to the OMERO credentials config file.'
+    #         " A typical set of credentials might be:"
+    #         " --omero-credentials host=demo.openmicroscopy.org,port=4064,session-id=atrvomvjcjfe7t01e8eu59amixmqqkfp"
+    #     )
+    #     % globals(),
+    # )
 
     parser.add_option(
         "-L",
@@ -626,78 +631,79 @@ def set_log_level(options):
         logging.config.fileConfig(options.log_level)
 
 
-def set_omero_credentials_from_string(credentials_string):
-    """Set the OMERO server / port / session ID
+#TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+# def set_omero_credentials_from_string(credentials_string):
+#     """Set the OMERO server / port / session ID
 
-    credentials_string: a comma-separated key/value pair string (key=value)
-                        that gives the credentials. Keys are
-                        host - the DNS name or IP address of the OMERO server
-                        port - the TCP port to use to connect
-                        user - the user name
-                        session-id - the session ID used for authentication
-    """
-    from cellprofiler_core.bioformats import formatreader
+#     credentials_string: a comma-separated key/value pair string (key=value)
+#                         that gives the credentials. Keys are
+#                         host - the DNS name or IP address of the OMERO server
+#                         port - the TCP port to use to connect
+#                         user - the user name
+#                         session-id - the session ID used for authentication
+#     """
+#     from cellprofiler_core.bioformats import formatreader
 
-    if re.match("([^=^,]+=[^=^,]+,)*([^=^,]+=[^=^,]+)", credentials_string) is None:
-        logging.root.error(
-            'The OMERO credentials string, "%s", is badly-formatted.'
-            % credentials_string
-        )
+#     if re.match("([^=^,]+=[^=^,]+,)*([^=^,]+=[^=^,]+)", credentials_string) is None:
+#         logging.root.error(
+#             'The OMERO credentials string, "%s", is badly-formatted.'
+#             % credentials_string
+#         )
 
-        logging.root.error(
-            'It should have the form: "host=hostname.org,port=####,user=<user>,session-id=<session-id>\n'
-        )
+#         logging.root.error(
+#             'It should have the form: "host=hostname.org,port=####,user=<user>,session-id=<session-id>\n'
+#         )
 
-        raise ValueError("Invalid format for --omero-credentials")
+#         raise ValueError("Invalid format for --omero-credentials")
 
-    credentials = {}
+#     credentials = {}
 
-    for k, v in [kv.split("=", 1) for kv in credentials_string.split(",")]:
-        k = k.lower()
+#     for k, v in [kv.split("=", 1) for kv in credentials_string.split(",")]:
+#         k = k.lower()
 
-        credentials = {
-            formatreader.K_OMERO_SERVER: get_omero_server(),
-            formatreader.K_OMERO_PORT: get_omero_port(),
-            formatreader.K_OMERO_USER: get_omero_user(),
-            formatreader.K_OMERO_SESSION_ID: get_omero_session_id(),
-        }
+#         credentials = {
+#             formatreader.K_OMERO_SERVER: get_omero_server(),
+#             formatreader.K_OMERO_PORT: get_omero_port(),
+#             formatreader.K_OMERO_USER: get_omero_user(),
+#             formatreader.K_OMERO_SESSION_ID: get_omero_session_id(),
+#         }
 
-        if k == OMERO_CK_HOST:
-            set_omero_server(v, globally=False)
+#         if k == OMERO_CK_HOST:
+#             set_omero_server(v, globally=False)
 
-            credentials[formatreader.K_OMERO_SERVER] = v
-        elif k == OMERO_CK_PORT:
-            set_omero_port(v, globally=False)
+#             credentials[formatreader.K_OMERO_SERVER] = v
+#         elif k == OMERO_CK_PORT:
+#             set_omero_port(v, globally=False)
 
-            credentials[formatreader.K_OMERO_PORT] = v
-        elif k == OMERO_CK_SESSION_ID:
-            credentials[formatreader.K_OMERO_SESSION_ID] = v
-        elif k == OMERO_CK_USER:
-            set_omero_user(v, globally=False)
+#             credentials[formatreader.K_OMERO_PORT] = v
+#         elif k == OMERO_CK_SESSION_ID:
+#             credentials[formatreader.K_OMERO_SESSION_ID] = v
+#         elif k == OMERO_CK_USER:
+#             set_omero_user(v, globally=False)
 
-            credentials[formatreader.K_OMERO_USER] = v
-        elif k == OMERO_CK_PASSWORD:
-            credentials[formatreader.K_OMERO_PASSWORD] = v
-        elif k == OMERO_CK_CONFIG_FILE:
-            credentials[formatreader.K_OMERO_CONFIG_FILE] = v
+#             credentials[formatreader.K_OMERO_USER] = v
+#         elif k == OMERO_CK_PASSWORD:
+#             credentials[formatreader.K_OMERO_PASSWORD] = v
+#         elif k == OMERO_CK_CONFIG_FILE:
+#             credentials[formatreader.K_OMERO_CONFIG_FILE] = v
 
-            if not os.path.isfile(v):
-                msg = "Cannot find OMERO config file, %s" % v
+#             if not os.path.isfile(v):
+#                 msg = "Cannot find OMERO config file, %s" % v
 
-                logging.root.error(msg)
+#                 logging.root.error(msg)
 
-                raise ValueError(msg)
-        else:
-            logging.root.error('Unknown --omero-credentials keyword: "%s"' % k)
+#                 raise ValueError(msg)
+#         else:
+#             logging.root.error('Unknown --omero-credentials keyword: "%s"' % k)
 
-            logging.root.error(
-                'Acceptable keywords are: "%s"'
-                % '","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID])
-            )
+#             logging.root.error(
+#                 'Acceptable keywords are: "%s"'
+#                 % '","'.join([OMERO_CK_HOST, OMERO_CK_PORT, OMERO_CK_SESSION_ID])
+#             )
 
-            raise ValueError("Invalid format for --omero-credentials")
+#             raise ValueError("Invalid format for --omero-credentials")
 
-    formatreader.use_omero_credentials(credentials)
+#     formatreader.use_omero_credentials(credentials)
 
 
 def print_measurements(options):

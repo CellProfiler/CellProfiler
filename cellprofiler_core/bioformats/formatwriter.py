@@ -23,15 +23,22 @@ def write_image(
     size_t,
     channel_names
 ):
-    ImageWriter = jimport("loci.formats.ImageWriter")
+    # https://www.javadoc.io/doc/org.openmicroscopy/ome-common/5.3.2/loci/common/services/ServiceFactory.html
     OMEXMLServiceFactory = jimport("loci.common.services.ServiceFactory")
-    DimensionsOrder = jimport("ome.xml.model.enums.DimensionOrder")
-    PositiveInteger = jimport("ome.xml.model.primitives.PositiveInteger")
-    PixelType = jimport("ome.xml.model.enums.PixelType")
+    # https://javadoc.scijava.org/Bio-Formats/loci/formats/services/OMEXMLService.html
     OMEXMLService = jimport("loci.formats.services.OMEXMLService")
+    # https://javadoc.scijava.org/Bio-Formats/loci/formats/ImageWriter.html
+    ImageWriter = jimport("loci.formats.ImageWriter")
+    # https://www.javadoc.io/static/org.openmicroscopy/ome-xml/6.3.1/ome/xml/meta/IMetadata.html
     IMetadata = jimport("loci.formats.meta.IMetadata")
 
+    DimensionsOrder = jimport("ome.xml.model.enums.DimensionOrder")
+    PixelType = jimport("ome.xml.model.enums.PixelType")
+    PositiveInteger = jimport("ome.xml.model.primitives.PositiveInteger")
+
     omexml_service = OMEXMLServiceFactory().getInstance(OMEXMLService)
+    # https://www.javadoc.io/static/org.openmicroscopy/ome-xml/6.3.1/ome/xml/meta/OMEXMLMetadata.html
+    # https://www.javadoc.io/static/org.openmicroscopy/ome-xml/6.3.1/ome/xml/meta/MetadataStore.html
     metadata = omexml_service.createOMEXMLMetadata()
     metadata.createRoot()
 
@@ -55,8 +62,6 @@ def write_image(
     elif size_c > 1:
         # meta.channel_count = size_c <- cant find
         metadata.setPixelsSizeC(PositiveInteger(p2j(pixels.shape[2])), 0)
-        # FIXME do this per channel
-        metadata.setChannelSamplesPerPixel(PositiveInteger(p2j(pixels.shape[2])), 0, 0)
         omexml_service.populateOriginalMetadata(metadata, "SamplesPerPixel", str(pixels.shape[2]))
     
     metadata.setImageID("Image:0", 0)

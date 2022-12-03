@@ -1021,7 +1021,7 @@ class Measurements:
                             value = self[
                                 IMAGE, mname, image_set_number,
                             ]
-                            if value > max_value:
+                            if value and value > max_value:
                                 max_value = value
                     result += str(max_value)
                 else:

@@ -891,7 +891,8 @@ not being applied, your choice on this setting may be the culprit.
                             file_object.add_metadata(candidate_dict)
                             break
                     if not valid:
-                        print(f"No matching metadata found for {file_object.filename}")
+                        LOGGER.info(f"No matching metadata found for {file_object.filename}")
+                        break
                     pass
                 else:
                     raise NotImplementedError(f"Invalid extraction method '{group.extraction_method}'")

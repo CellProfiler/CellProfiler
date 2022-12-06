@@ -405,12 +405,22 @@ def watershed_advanced(
     markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
     markers[seeds > 0] = -seeds[seeds > 0]
 
+    # The array passed to the mask argument in watershed changes
+    # depending on the initial watershed method that has been used
+    # In the case of distance, the mask is the otsu thresholded input
+    if method.casefold() == "distance":
+        image_data = input_image > skimage.filters.threshold_otsu(input_image)
+    # In the case of marker watershed initially, the input_image can be passed
+    # as long as it's grayscale (which is handled inside the GUI module)
+    elif method.casefold() == "markers":
+        image_data = input_image
+
     # Perform the watershed
     watershed_boundaries = skimage.segmentation.watershed(
         connectivity=connectivity,
         image=watershed_image,
         markers=markers,
-        mask=input_image != 0,
+        mask=image_data != 0,
     )
 
     y_data = watershed_boundaries.copy()

@@ -411,7 +411,7 @@ the image is not downsampled.
 
         x_data = x.pixel_data
 
-        # Load the required images
+        # Set the required images
         markers_data = None
         mask_data = None
         reference_data = None

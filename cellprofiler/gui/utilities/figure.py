@@ -151,13 +151,6 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2, series=No
             'Failed to open file, "{}"'.format(filename), caption="File open error"
         )
         return
-    #CTR FIXME
-    #except jpype.JException as je:
-    #    wx.MessageBox(
-    #        'Could not open "{}" as an image.'.format(filename),
-    #        caption="File format error",
-    #    )
-    #    return
     except Exception as e:
         errordialog.display_error_dialog(
             None, e, None, "Failed to load {}".format(url), continue_only=True

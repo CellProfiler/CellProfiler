@@ -107,9 +107,9 @@ class KnimeBridgeServer(threading.Thread):
 
     def run(self):
         try:
+            LOGGER.info("Binding Knime bridge server to %s" % self.address)
             self.socket = self.context.socket(zmq.REP)
             self.socket.bind(self.address)
-            LOGGER.info("Binding Knime bridge server to %s" % self.address)
             poller = zmq.Poller()
             poller.register(self.socket, flags=zmq.POLLIN)
             if self.notify_addr is not None:
@@ -157,9 +157,8 @@ class KnimeBridgeServer(threading.Thread):
                 if self.notify_socket:
                     self.notify_socket.close()
                 self.socket.close()
-        finally:
-            # CTR: FIXME dedent
-            pass
+        except Exception as e:
+            LOGGER.error("Could not bind Knime bridge server")
 
     def connect(self, session_id, message_type, message):
         """Handle the connect message"""

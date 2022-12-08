@@ -9,13 +9,13 @@ import unittest
 import tempfile
 import functools
 import scipy.io.matlab.mio
+import numpy
+import skimage.io
 from urllib.request import URLopener
 
 import cellprofiler.utilities
 import cellprofiler_core.utilities.legacy
 from cellprofiler_core.pipeline import ImageFile
-from cellprofiler_core.bioformats.formatwriter import write_image
-from cellprofiler_core.bioformats.omexml import PT_UINT8, PT_UINT16
 
 
 LOGGER = logging.getLogger(__name__)
@@ -171,7 +171,12 @@ def maybe_download_example_image(folders, file_name, shape=None):
         random_state = np.random.RandomState()
         random_state.seed()
         image = (random_state.uniform(size=shape) * 255).astype(np.uint8)
-        write_image(local_path, image, PT_UINT8)
+
+    if len(shape) > 2:
+        skimage.io.imsave(local_path, numpy.transpose(image, (2,0,1)), imagej=True)
+    else:
+        skimage.io.imsave(local_path, image)
+
     return local_path
 
 
@@ -194,7 +199,10 @@ def make_12_bit_image(folder, filename, shape):
     if not os.path.isdir(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
 
-    write_image(path, img, PT_UINT16)
+    if len(shape) > 2:
+        skimage.io.imsave(path, numpy.transpose(img, (2,0,1)), imagej=True)
+    else:
+        skimage.io.imsave(path, img)
     #
     # Now go through the file and find the TIF bits per sample IFD (#258) and
     # change it from 16 to 12.

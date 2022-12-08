@@ -2137,10 +2137,12 @@ def two_cell_image():
 
 
 def fly_image():
-    from cellprofiler_core.bioformats import load_image
+    from cellprofiler_core.reader import get_image_reader
+    from cellprofiler_core.pipeline import ImageFile
 
     path = os.path.join(os.path.dirname(__file__), "../resources/01_POS002_D.TIF")
-    return load_image(path)
+    rdr = get_image_reader(ImageFile("file://"+path))
+    return rdr.read()
 
 
 def draw_circle(img, center, radius, value):

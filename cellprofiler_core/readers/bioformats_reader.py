@@ -16,8 +16,6 @@ from ..reader import Reader
 
 LOGGER = logging.getLogger(__name__)
 
-LOGGER.info("HELLO! It's a-ME, bioformats_reader. I just added Bio-Formats endpoint.")
-
 # bioformats returns 2 for these, imageio reader returns 3
 SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
 SEMI_SUPPORTED_EXTENSIONS = BIOFORMATS_IMAGE_EXTENSIONS
@@ -83,7 +81,6 @@ class BioformatsReader(Reader):
         :param channel_names: provide the channel names for the OME metadata
         :param XYWH: a (x, y, w, h) tuple
         """
-        LOGGER.info("--> bioformats_reader.read BEGINS")
         self._ensure_file_open()
 
         FormatTools = jimport("loci.formats.FormatTools")
@@ -99,7 +96,6 @@ class BioformatsReader(Reader):
             openBytes_func = self._reader.openBytes
             width, height = self._reader.getSizeX(), self._reader.getSizeY()
 
-        LOGGER.info("--> bioformats_reader.read: Decided openBytes func")
         # FIXME instead of np.frombuffer use scyjava.to_python, ideally that wraps memory
         pixel_type = self._reader.getPixelType()
         little_endian = self._reader.isLittleEndian()
@@ -134,7 +130,6 @@ class BioformatsReader(Reader):
             except:
                 LOGGER.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
         if index is not None:
-            LOGGER.info(f"--> bioformats_reader.read: Calling openBytes({index}) index!=None CASE")
             image = np.frombuffer(openBytes_func(index), dtype)
             if len(image) / height / width in (3,4):
                 n_channels = int(len(image) / height / width)
@@ -147,18 +142,15 @@ class BioformatsReader(Reader):
                 image.shape = (height, width)
         elif self._reader.isRGB() and self._reader.isInterleaved():
             index = self._reader.getIndex(z,0,t)
-            LOGGER.info(f"--> bioformats_reader.read: Calling openBytes({index}) RGB INTERLEAVED CASE")
             image = np.frombuffer(openBytes_func(index), dtype)
             image.shape = (height, width, self._reader.getSizeC())
             if image.shape[2] > 3:
                 image = image[:, :, :3]
         elif c is not None and self._reader.getRGBChannelCount() == 1:
             index = self._reader.getIndex(z,c,t)
-            LOGGER.info(f"--> bioformats_reader.read: Calling openBytes({index}) RGBChannelCount==1 CASE")
             image = np.frombuffer(openBytes_func(index), dtype)
             image.shape = (height, width)
         elif self._reader.getRGBChannelCount() > 1:
-            LOGGER.info(f"--> bioformats_reader.read: Calling openBytes RGBChannelCount>1 CASE")
             n_planes = self._reader.getRGBChannelCount()
             rdr = ChannelSeparator(self._reader)
             planes = [
@@ -177,7 +169,6 @@ class BioformatsReader(Reader):
             image = np.dstack(planes)
             image.shape=(height, width, 3)
         elif self._reader.getSizeC() > 1:
-            LOGGER.info(f"--> bioformats_reader.read: Calling openBytes SizeC>1 CASE")
             images = [
                 np.frombuffer(openBytes_func(self._reader.getIndex(z,i,t)), dtype)
                       for i in range(self._reader.getSizeC())]
@@ -200,7 +191,6 @@ class BioformatsReader(Reader):
             # a monochrome RGB image
             #
             index = self._reader.getIndex(z,0,t)
-            LOGGER.info(f"--> bioformats_reader.read: Calling openBytes({index}) INDEXED CASE")
             image = np.frombuffer(openBytes_func(index),dtype)
             lut = None
             if pixel_type in (FormatTools.INT16, FormatTools.UINT16):
@@ -215,7 +205,6 @@ class BioformatsReader(Reader):
                 image = lut[image, :]
         else:
             index = self._reader.getIndex(z,0,t)
-            LOGGER.info(f"--> bioformats_reader.read: Calling openBytes({index}) ")
             image = np.frombuffer(openBytes_func(index),dtype)
             image.shape = (height,width)
 
@@ -290,12 +279,11 @@ class BioformatsReader(Reader):
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
         try:
-            LOGGER.info(f"--> bioformats_reader.supports_format: isThisType({image_file.path}, allow_open={allow_open})")
             ImageReader = jimport("loci.formats.ImageReader")
             is_this_type = ImageReader().isThisType(image_file.path, allow_open)
-            LOGGER.info(f"--> bioformats_reader.supports_format: DRUMROLL... is it compatible? ... {is_this_type}")
         except Exception as ex:
             LOGGER.error(ex)
+            return -1
 
         if image_file.scheme not in SUPPORTED_SCHEMES:
             return -1
@@ -307,12 +295,6 @@ class BioformatsReader(Reader):
             if image_file.file_extension in SEMI_SUPPORTED_EXTENSIONS:
                 return 3
             return -1
-
-    @classmethod
-    def clear_cached_readers(cls):
-        #CTR FIXME: Do we need this?
-        #clear_image_reader_cache()
-        pass
 
     def close(self):
         # If your reader opens a file, this needs to release any active lock,

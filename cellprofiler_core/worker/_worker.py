@@ -95,8 +95,7 @@ class Worker:
             self.worker.exit_thread()
 
     def enter_thread(self):
-        # CTR FIXME: Do we still need this function?
-        pass
+        LOGGER.debug("Entering worker thread")
 
     def exit_thread(self):
         from cellprofiler_core.constants.reader import ALL_READERS

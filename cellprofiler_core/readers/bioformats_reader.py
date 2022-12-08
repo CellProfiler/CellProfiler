@@ -278,13 +278,6 @@ class BioformatsReader(Reader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
-        try:
-            ImageReader = jimport("loci.formats.ImageReader")
-            is_this_type = ImageReader().isThisType(image_file.path, allow_open)
-        except Exception as ex:
-            LOGGER.error(ex)
-            return -1
-
         if image_file.scheme not in SUPPORTED_SCHEMES:
             return -1
         if image_file.scheme == 'omero':

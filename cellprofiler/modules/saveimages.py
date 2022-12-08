@@ -39,6 +39,7 @@ import h5py
 import numpy
 import skimage.io
 import skimage.util
+import logging
 from cellprofiler_core.constants.measurement import (
     C_FILE_NAME,
     C_PATH_NAME,
@@ -59,6 +60,9 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber, FileImageSubsc
 from cellprofiler_core.setting.text import Text, Integer, Directory
 
 from cellprofiler.modules import _help
+
+
+LOGGER = logging.getLogger(__name__)
 
 IF_IMAGE = "Image"
 IF_MASK = "Mask"
@@ -940,10 +944,7 @@ to unexpected behavior like saving in the original input file directory. For saf
             try:
                 os.remove(result)
             except:
-                import bioformats
-
-                bioformats.clear_image_reader_cache()
-                os.remove(result)
+                LOGGER.error(f"Could not remove {result}")
         return result
 
     def get_file_format(self):

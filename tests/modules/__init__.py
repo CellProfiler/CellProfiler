@@ -6,10 +6,9 @@ import hashlib
 import numpy
 import unittest
 from urllib.request import URLopener
+import skimage.io
 
 import cellprofiler_core.utilities.legacy
-from cellprofiler_core.bioformats.omexml import PT_UINT16
-from cellprofiler_core.bioformats.formatwriter import write_image
 
 LOGGER = logging.getLogger(__name__)
 
@@ -124,7 +123,11 @@ def make_12_bit_image(folder, filename, shape):
     if not os.path.isdir(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
 
-    write_image(path, img, PT_UINT16)
+    if len(shape) > 2:
+        skimage.io.imsave(path, numpy.transpose(img, (2,0,1)), imagej=True)
+    else:
+        skimage.io.imsave(path, img)
+
     #
     # Now go through the file and find the TIF bits per sample IFD (#258) and
     # change it from 16 to 12.

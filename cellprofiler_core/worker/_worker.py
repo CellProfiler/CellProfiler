@@ -359,7 +359,7 @@ class Worker:
 
     def omero_login_handler(self):
         """Handle requests for an Omero login"""
-        from bioformats.formatreader import use_omero_credentials
+        from cellprofiler_core.bioformats.formatreader import use_omero_credentials
 
         req = OmeroLogin(self.current_analysis_id)
         rep = self.send(req)

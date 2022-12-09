@@ -107,7 +107,7 @@ ALL_BIOFORMATS_EXTENSIONS = (
     ".stk", ".stp", ".svs", ".sxm", ".tc.", ".tf2", ".tf8", ".tfr", ".tga",
     ".tif", ".tiff", ".tnb", ".top", ".txt", ".v", ".vff", ".vms", ".vsi",
     ".vws", ".wat", ".wlz", ".wpi", ".xdce", ".xml", ".xqd", ".xqf", ".xv",
-    ".xys", ".zfp", ".zfr", ".zvi"
+    ".xys", ".zfp", ".zfr", ".zvi", ".ets"
 )
 
 DISALLOWED_BIOFORMATS_EXTENSIONS = {

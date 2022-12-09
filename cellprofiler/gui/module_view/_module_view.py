@@ -270,8 +270,8 @@ class ModuleView:
                 try:
                     # Need to initialize some controls.
                     new_module.test_valid(self.__pipeline)
-                except:
-                    pass
+                except Exception as e:
+                    LOGGER.debug(e.message)
             self.__module = new_module
             self.__controls = []
             self.__static_texts = []

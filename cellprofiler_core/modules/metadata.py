@@ -698,7 +698,7 @@ not being applied, your choice on this setting may be the culprit.
             group.imported_metadata_col_names = rdr.fieldnames
             fd.close()
         except Exception as e:
-            print("Error while decoding CSV:", e)
+            LOGGER.error(f"Error while decoding CSV - {csv_path}: {e.strerror}")
             return None
         return group.imported_metadata_col_names
 
@@ -786,7 +786,7 @@ not being applied, your choice on this setting may be the culprit.
             result += [self.add_extraction_method_button]
             try:
                 has_keys = len(self.get_dt_metadata_keys()) > 0
-            except Exception:
+            except Exception as e:
                 has_keys = False
             if has_keys:
                 result += [self.dtc_divider, self.data_type_choice]
@@ -1072,7 +1072,7 @@ not being applied, your choice on this setting may be the culprit.
                 self.compile_regex(extract_group)
                 keys.update(extract_group.regex_pattern.groupindex.keys())
             elif extract_group.extraction_method == X_IMPORTED_EXTRACTION:
-                keys.update(self.get_csv_header(extract_group))
+                keys.update(self.get_csv_header(extract_group) or '')
         if FTR_WELL not in keys and any(k in keys for k in ROW_KEYS) and any(k in keys for k in COL_KEYS):
             keys.add(FTR_WELL)
         return keys
@@ -1083,7 +1083,7 @@ not being applied, your choice on this setting may be the culprit.
         """
         return list(
             filter(
-                (lambda k: k not in self.NUMERIC_DATA_TYPES), self.get_metadata_keys()
+                (lambda k: k not in self.NUMERIC_DATA_TYPES), self.get_metadata_keys() or []
             )
         )
 

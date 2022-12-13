@@ -31,6 +31,7 @@ from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.text import Float
+from cellprofiler.library.modules import fillobjects
 
 MODE_HOLES = "Holes"
 MODE_CHULL = "Convex hull"
@@ -98,12 +99,12 @@ that touching objects may not be perfectly convex if there was a region of overl
         return __settings__
 
     def run(self, workspace):
-        if self.mode.value == MODE_CHULL:
-            self.function = lambda labels, d, p, m: fill_convex_hulls(labels)
-        else:
-            self.function = lambda labels, diameter, planewise, mode: fill_object_holes(
-                labels, diameter, planewise
-            )
+        self.function = lambda labels, diameter, planewise, mode: fillobjects(
+            labels, 
+            mode=self.mode.value,
+            diameter=self.size.value, 
+            planewise=self.planewise.value
+        )
 
         super(FillObjects, self).run(workspace)
 
@@ -112,45 +113,3 @@ that touching objects may not be perfectly convex if there was a region of overl
             setting_values.append(MODE_HOLES)
             variable_revision_number = 2
         return setting_values, variable_revision_number
-
-
-def fill_convex_hulls(labels):
-    data = skimage.measure.regionprops(labels)
-    output = numpy.zeros_like(labels)
-    for prop in data:
-        label = prop['label']
-        bbox = prop['bbox']
-        cmask = prop['convex_image']
-        if len(bbox) <= 4:
-            output[bbox[0]:bbox[2], bbox[1]:bbox[3]][cmask] = label
-        else:
-            output[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]: bbox[5]][cmask] = label
-    return output
-
-
-def _fill_holes(labels, min_obj_size):
-    array = labels.copy()
-    # Iterate through each label as a mask, fill holes on the mask, and reapply to original image
-    for n in numpy.unique(array):
-        if n == 0:
-            continue
-
-        filled_mask = skimage.morphology.remove_small_holes(array == n, min_obj_size)
-        array[filled_mask] = n
-    return array
-
-
-def fill_object_holes(labels, diameter, planewise):
-    radius = diameter / 2.0
-
-    if labels.ndim == 2 or labels.shape[-1] in (3, 4) or planewise:
-        factor = radius ** 2
-    else:
-        factor = (4.0 / 3.0) * (radius ** 3)
-
-    min_obj_size = numpy.pi * factor
-
-    # Only operate planewise if image is 3D and planewise requested
-    if planewise and labels.ndim != 2 and labels.shape[-1] not in (3, 4):
-        return numpy.array([_fill_holes(x, min_obj_size) for x in labels])
-    return _fill_holes(labels, min_obj_size)

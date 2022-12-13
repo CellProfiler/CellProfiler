@@ -301,8 +301,8 @@ class MeasureGranularity(Module):
                     > 0.9
                 )
         else:
-            pixels = im.pixel_data
-            mask = im.mask
+            pixels = im.pixel_data.copy()
+            mask = im.mask.copy()
         #
         # Remove background pixels using a greyscale tophat filter
         #

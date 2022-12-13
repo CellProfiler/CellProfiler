@@ -1,22 +1,26 @@
 import collections
-
 import numpy
-
-from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
-
-from ..reader import Reader
-
 import imageio
 
-SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif'}
+from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X
+from ..preferences import config_read_typed
+from ..reader import Reader
 
+
+SUPPORTED_EXTENSIONS = {'.png', '.bmp', '.jpeg', '.jpg', '.gif'}
+# bioformats returns 2 for these, imageio reader returns 3
+SEMI_SUPPORTED_EXTENSIONS = {'.tiff', '.tif', '.ome.tif', '.ome.tiff'}
+SUPPORTED_SCHEMES = {'file', 'http', 'https', 'ftp', 'ftps'}
 
 class ImageIOReader(Reader):
     """
-    Reads nasic image formats using ImageIO.
+    Reads basic image formats using ImageIO.
     """
 
     reader_name = "ImageIO"
+    variable_revision_number = 1
+    supported_filetypes = SUPPORTED_EXTENSIONS.union(SEMI_SUPPORTED_EXTENSIONS)
+    supported_schemes = SUPPORTED_SCHEMES
 
     def __init__(self, image_file):
         self.variable_revision_number = 1
@@ -106,21 +110,6 @@ class ImageIOReader(Reader):
             return data
         return data
 
-    @staticmethod
-    def find_scale_to_match_bioformats(data):
-        # We'd love to use skimage.exposure.rescale_intensity.
-        # But instead we follow the funky custom rescaling that bf uses.
-        if data.dtype in (numpy.int8, numpy.uint8):
-            return 255
-        elif data.dtype in (numpy.int16, numpy.uint16):
-            return 65535
-        elif data.dtype == numpy.int32:
-            return 2 ** 32 - 1
-        elif data.dtype == numpy.uint32:
-            return 2 ** 32
-        else:
-            return 1
-
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False):
         """This function needs to evaluate whether a given ImageFile object
@@ -139,10 +128,15 @@ class ImageIOReader(Reader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
-        if image_file.url.lower().startswith("omero:"):
+        if image_file.scheme not in SUPPORTED_SCHEMES:
             return -1
         if image_file.file_extension in SUPPORTED_EXTENSIONS:
             return 2
+        if image_file.full_extension in SEMI_SUPPORTED_EXTENSIONS:
+            if config_read_typed(f"Reader.{ImageIOReader.reader_name}.read_tif", bool):
+                return 2
+            return 3
+
         return -1
 
     def close(self):
@@ -169,9 +163,25 @@ class ImageIOReader(Reader):
         for i in range(series_count):
             data = reader.get_data(index=i)
             dims = data.shape
+            # expects dim ordering of: [H, W, C?, T?, Z?]
             meta_dict[MD_SIZE_Z].append(dims[4] if len(dims) > 4 else 1)
             meta_dict[MD_SIZE_T].append(dims[3] if len(dims) > 3 else 1)
             meta_dict[MD_SIZE_C].append(dims[2] if len(dims) > 2 else 1)
-            meta_dict[MD_SIZE_Y].append(dims[1])
-            meta_dict[MD_SIZE_X].append(dims[0])
+            meta_dict[MD_SIZE_X].append(dims[1])
+            meta_dict[MD_SIZE_Y].append(dims[0])
         return meta_dict
+
+    @staticmethod
+    def get_settings():
+        return [
+            ('read_tif',
+             "Read TIFF files",
+             """
+             If enabled, this reader will attempt to read TIFF files.
+             Note that this reader cannot properly handle complex, multi-series
+             TIFF formats or special compression methods. 
+             Only enable this option if you're loading simple TIFF images.
+             """,
+             bool,
+             False)
+        ]

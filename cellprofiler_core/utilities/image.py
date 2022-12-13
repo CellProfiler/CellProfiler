@@ -5,20 +5,22 @@ import shutil
 import sys
 import tempfile
 import urllib.request
-from urllib.parse import urlparse, unquote, parse_qs
-
+from urllib.parse import parse_qs, unquote, urlparse
+from urllib.request import urlopen
 import boto3
 import numpy
 import pkg_resources
 import scipy.io
+from google.cloud import storage
+from google.cloud.exceptions import NotFound
+from google.auth.exceptions import DefaultCredentialsError
 
-from .measurement import is_well_row_token
-from .measurement import is_well_column_token
-from ..constants.image import ALL_IMAGE_EXTENSIONS
-from ..constants.image import SUPPORTED_MOVIE_EXTENSIONS
-from ..constants.image import PASSTHROUGH_SCHEMES
-from ..constants.image import FILE_SCHEME
+from ..constants.image import (ALL_IMAGE_EXTENSIONS, FILE_SCHEME,
+                               PASSTHROUGH_SCHEMES, SUPPORTED_MOVIE_EXTENSIONS)
 from ..constants.measurement import FTR_WELL
+from .measurement import is_well_column_token, is_well_row_token
+
+LOGGER = logging.getLogger(__name__)
 
 """
 This temporary directory will store cached files downloaded from the web.
@@ -282,35 +284,66 @@ def url_to_modpath(url):
         path = new_path
     return parts
 
+def _handle_gcs_url(netloc, ext, urlpath):
+    try:
+        # Create client to access Google Cloud Storage.
+        client = storage.Client()
+        # Get bucket from bucket name parsed from URL.
+        bucket = client.get_bucket(netloc)
+        # Create a blob object from the given filepath.
+        urlpath = urlpath[1:] if urlpath.startswith("/") else urlpath
+        blob = bucket.blob(urlpath)
+        # Provision a temporary file to which to download the blob.
+        dest_file = tempfile.NamedTemporaryFile(suffix=ext, delete=False, dir=CP_TEMP_DIR.name)
+        blob.download_to_filename(dest_file.name)
+        return dest_file.name
+    except DefaultCredentialsError as e:
+        LOGGER.error(f"Unable to download Google Cloud Storage image to temp file: {e.args[0]}")
+        return None
+    except NotFound as e:
+        # 404 error
+        LOGGER.error(f"Unable to download Google Cloud Storage image to temp file. {e}")
+        dest_file.close()
+        return None
+    except Exception as e:
+        LOGGER.error(f"Unable to download Google Cloud Storage image to temp file. {e}")
+        if dest_file:
+            dest_file.close()
+        return None
 
 def download_to_temp_file(url):
     global CP_TEMP_DIR
     parsed = urlparse(url)
     scheme = parsed.scheme
+    netloc = parsed.netloc
     path = parsed.path
     queries = parse_qs(parsed.query)
     if 'name' in queries:
         path = queries['name'][0]
     ext = os.path.splitext(path)[-1]
 
-    if scheme == 's3':
-        client = boto3.client('s3')
-        bucket_name, key = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
-        url = client.generate_presigned_url(
-            'get_object',
-            Params={'Bucket': bucket_name, 'Key': key.replace("+", " ")}
-        )
-
-    from urllib.request import urlopen
-    logging.info(f"Downloading image from {url}")
-    src = urlopen(url)
-    dest_file = tempfile.NamedTemporaryFile(suffix=ext, delete=False, dir=CP_TEMP_DIR.name)
-    try:
-        shutil.copyfileobj(src, dest_file)
-    except Exception as e:
-        logging.error(f"Unable to download image to temp file. {e}")
-        return None
-    finally:
-        dest_file.close()
-    return dest_file.name
+    # Handle Google Cloud Storage URLs.
+    if scheme == 'gs':
+        return _handle_gcs_url(netloc, ext, path)
+    else:
+        # Handle Amazon Web Services URLs.
+        if scheme == 's3':
+            client = boto3.client('s3')
+            bucket_name, key = re.compile('s3://([\w\d\-\.]+)/(.*)').search(url).groups()
+            # Get pre-signed URL.
+            url = client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': bucket_name, 'Key': key.replace("+", " ")}
+            )
+        # Download object from URL.
+        src = urlopen(url)
+        dest_file = tempfile.NamedTemporaryFile(suffix=ext, delete=False, dir=CP_TEMP_DIR.name)
+        try:
+            shutil.copyfileobj(src, dest_file)
+        except Exception as e:
+            LOGGER.error(f"Unable to download image to temp file. {e}")
+            return None
+        finally:
+            dest_file.close()
+        return dest_file.name
 

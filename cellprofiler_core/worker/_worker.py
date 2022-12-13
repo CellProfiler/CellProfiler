@@ -98,8 +98,8 @@ class Worker:
             javabridge.activate_awt()
 
     def exit_thread(self):
-        from cellprofiler_core.constants.reader import all_readers
-        for reader in all_readers.values():
+        from cellprofiler_core.constants.reader import ALL_READERS
+        for reader in ALL_READERS.values():
             reader.clear_cached_readers()
         if JAVA_STARTED:
             javabridge.detach()
@@ -157,6 +157,7 @@ class Worker:
                 current_pipeline.add_listener(self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
                 self.pipeline = current_pipeline
+                self.pipeline.calculate_last_image_uses()
                 self.preferences = current_preferences
             else:
                 # update preferences to match remote values

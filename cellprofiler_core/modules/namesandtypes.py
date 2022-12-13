@@ -1610,7 +1610,7 @@ requests an object selection.
             indexer = numpy.zeros(nobjects + 1, int)
             indexer[unique_labels] =contig_labels
             image.set_image(skimage.morphology.label(indexer[labels]), convert=False)
-        if shape[2] == 1 or volume:
+        if shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
             add_object_location_measurements(
                 workspace.measurements, name, o.segmented, o.count

@@ -1906,6 +1906,22 @@ def test_load_objects():
         == target.shape[1]
     )
 
+def test_load_objects_3D():
+    path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data/3d_monolayer_xy1_ch2_labels.tiff"))
+    #target = bioformats.load_image(path, rescale=False)
+    target = skimage.io.imread(path)
+
+    with open(path, "rb") as fd:
+        md5 = hashlib.md5(fd.read()).hexdigest()
+    workspace = run_workspace(
+        path, cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS, volume=True, rescaled=False,
+    )
+    o = workspace.object_set.get_objects(OBJECTS_NAME)
+    assert isinstance(o, cellprofiler_core.object.Objects)
+    areas = o.areas
+    assert o.dimensions == target.ndim, "Object dimension mismatch"                          
+    assert len(areas)==len(numpy.unique(target[target!=0])), "Number of objects changed after loading label matrix" 
+
 
 def test_load_overlapped_objects():
     fd, path = tempfile.mkstemp(".tif")

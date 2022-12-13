@@ -18,7 +18,7 @@ setuptools.setup(
             "twine==3.1.1",
         ],
         "test": ["pytest==5.4.1", "pytest-timeout==2.1.0"],
-        "wx": ["wxPython==4.1.0"],
+        "wx": ["wxPython==4.2.0"],
     },
     install_requires=[
         "boto3>=1.12.28",

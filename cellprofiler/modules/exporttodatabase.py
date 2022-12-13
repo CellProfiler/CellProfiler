@@ -4208,17 +4208,7 @@ CREATE TABLE %s (
         else:
             object_names = [None]
 
-        default_image_names = []
-        # Find all images that have FileName and PathName
-        image_features = [
-            c[1]
-            for c in workspace.pipeline.get_measurement_columns()
-            if c[0] == "Image"
-        ]
-        for feature in image_features:
-            match = re.match("^%s_(.+)$" % C_FILE_NAME, feature)
-            if match:
-                default_image_names.append(match.groups()[0])
+        default_image_names = self.get_image_list(workspace)
 
         if not self.properties_export_all_image_defaults:
             # Extract the user-specified images
@@ -4791,6 +4781,9 @@ process_3D = {process_3D}
     def record_image_channels(self, workspace):
         # We only have access to the image details during the run itself.
         # Fetch out the images we want in the properties file and log their channel counts.
+        if not workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
+            image_list = self.get_image_list(workspace)
+            workspace.measurements.add_experiment_measurement("ExportToDb_Images", image_list)
         image_list = workspace.measurements.get_experiment_measurement("ExportToDb_Images")
         channel_list = []
         if isinstance(image_list, str):
@@ -4951,6 +4944,20 @@ CP version : %d\n""" % int(
         object_name - name of object or "Image", "Object" or "Well"
         """
         return self.get_table_prefix() + "Per_" + object_name
+
+    def get_image_list(self,workspace):
+        default_image_names = []
+        # Find all images that have FileName and PathName
+        image_features = [
+            c[1]
+            for c in workspace.pipeline.get_measurement_columns()
+            if c[0] == "Image"
+        ]
+        for feature in image_features:
+            match = re.match("^%s_(.+)$" % C_FILE_NAME, feature)
+            if match:
+                default_image_names.append(match.groups()[0])
+        return default_image_names
 
     def get_pipeline_measurement_columns(
         self, pipeline, image_set_list, remove_postgroup_key=False

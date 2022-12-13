@@ -10,6 +10,7 @@ import wx.grid
 import wx.lib.colourselect
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
+import wx.lib.mixins.gridlabelrenderer as wxglr
 from cellprofiler_core.pipeline import ModuleEdited
 from cellprofiler_core.pipeline import ModuleRemoved
 from cellprofiler_core.pipeline import PipelineCleared
@@ -72,7 +73,7 @@ from ._setting_edited_event import SettingEditedEvent
 from ._table_controller import TableController
 from ._validation_request_controller import ValidationRequestController
 from .. import _tree_checkbox_dialog
-from .. import cornerbuttonmixin
+from ..gridrenderers import RowLabelRenderer, ColLabelRenderer, CornerLabelRenderer
 from .. import metadatactrl
 from .. import namesubscriber
 from .. import regexp_editor
@@ -2028,8 +2029,7 @@ class ModuleView:
 
         control.Bind(wx.EVT_BUTTON, callback, control)
         return control
-
-    class CornerButtonGrid(wx.grid.Grid, cornerbuttonmixin.CornerButtonMixin):
+    class CornerButtonGrid(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
         def __init__(self, *args, **kwargs):
             kwargs = kwargs.copy()
             if "fn_clicked" in kwargs:
@@ -2039,11 +2039,37 @@ class ModuleView:
             label = kwargs.pop("label", "Update")
             tooltip = kwargs.pop("tooltip", "Update this table")
             wx.grid.Grid.__init__(self, *args, **kwargs)
+            wxglr.GridWithLabelRenderersMixin.__init__(self)
+            self._corner_label_renderer = CornerLabelRenderer(self, fn_clicked, tooltip=tooltip, label=label)
+            self.SetCornerLabelRenderer(self._corner_label_renderer)
+            self.SetDefaultRowLabelRenderer(RowLabelRenderer())
+            self.SetDefaultColLabelRenderer(ColLabelRenderer())
             self.sort_reverse = False
             self.Bind(wx.grid.EVT_GRID_COL_SORT, self.sort_cols)
-            cornerbuttonmixin.CornerButtonMixin.__init__(
-                self, fn_clicked, label, tooltip
-            )
+
+        @property
+        def fn_clicked(self):
+            return self._corner_label_renderer.fn_clicked
+
+        @fn_clicked.setter
+        def fn_clicked(self, value):
+            self._corner_label_renderer.fn_clicked = value
+
+        @property
+        def tooltip(self):
+            return self._corner_label_renderer.tooltip
+
+        @tooltip.setter
+        def tooltip(self, value):
+            self._corner_label_renderer.tooltip = value
+
+        @property
+        def label(self):
+            return self._corner_label_renderer.label
+
+        @label.setter
+        def label(self, value):
+            self._corner_label_renderer.label = value
 
         def sort_cols(self, event):
             if len(self.GetSelectedCols()) != 1:

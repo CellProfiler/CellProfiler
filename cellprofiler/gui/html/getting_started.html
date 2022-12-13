@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<body style = "font-family: sans-serif; font-size: small;">
+<head>
+    <style>
+        body {
+            font-family: "sans-serif";
+            font-size: "small";
+        }
+        @media (prefers-color-scheme: dark) {
+            body {
+                color: #eee;
+                background: #121212;
+            }
+
+            body a {
+                color: #809fff;
+            }
+        }
+    </style>
+</head>
+<body>
     <table border="0" cellpadding="4" width="100%">
         <tr>
             <td align="center" colspan="3"><b><span style="font-size: 144%; ">Getting Started With
@@ -32,7 +50,7 @@
             <td width="100"><span style="font-size: larger; "><i>1: Start</i></span></td>
             <td>
                 <a href=
-                "http://www.cellprofiler.org/examples.html">Download</a> a
+                "http://www.cellprofiler.org/examples">Download</a> a
                 pipeline template from our website of examples. Load it with
                 <i>File &gt; Import &gt; Pipeline from File...</i>. Run it,
                 then modify it to suit your assay.

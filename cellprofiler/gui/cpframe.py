@@ -174,10 +174,10 @@ class CPFrame(wx.Frame):
         # them and beat them.
         self.__splitter.SetBackgroundStyle(0)
 
-        self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
+        self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE, name="right_win")
         self.__right_win.SetAutoLayout(True)
 
-        self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
+        self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE, name="left_win")
         # bottom left will be the file browser
 
         self.__module_list_panel = wx.Panel(self.__left_win)
@@ -214,7 +214,7 @@ class CPFrame(wx.Frame):
         self.__notes_panel = wx.Panel(self.__right_win)
         self.__right_win.GetSizer().Add(self.__notes_panel, 0, wx.EXPAND | wx.ALL)
         self.__right_win.GetSizer().AddSpacer(4)
-        self.__path_module_imageset_panel = wx.Panel(self.__right_win)
+        self.__path_module_imageset_panel = wx.Panel(self.__right_win, name="path_module_imageset_panel")
         self.__right_win.GetSizer().Add(
             self.__path_module_imageset_panel, 1, wx.EXPAND | wx.ALL
         )
@@ -234,7 +234,7 @@ class CPFrame(wx.Frame):
         # Path list sash controls path list sizing
         #
         self.__path_list_sash = wx.adv.SashLayoutWindow(
-            self.__path_module_imageset_panel, style=wx.NO_BORDER
+            self.__path_module_imageset_panel, style=wx.NO_BORDER, name="path_list_sash"
         )
         self.__path_list_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
@@ -302,7 +302,7 @@ class CPFrame(wx.Frame):
         ######################################################################
 
         self.__imageset_sash = wx.adv.SashLayoutWindow(
-            self.__path_module_imageset_panel, style=wx.NO_BORDER
+            self.__path_module_imageset_panel, style=wx.NO_BORDER, name="imageset_sash"
         )
         self.__imageset_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
         self.__imageset_sash.SetAlignment(wx.adv.LAYOUT_BOTTOM)
@@ -312,7 +312,7 @@ class CPFrame(wx.Frame):
         self.__imageset_sash.SetSashVisible(wx.adv.SASH_TOP, True)
         self.__imageset_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.__on_sash_drag)
         self.__imageset_sash.Hide()
-        self.__imageset_panel = wx.Panel(self.__imageset_sash)
+        self.__imageset_panel = wx.Panel(self.__imageset_sash, name="imageset_panel")
         self.__imageset_panel.SetSizer(wx.BoxSizer())
         self.__imageset_panel.SetAutoLayout(True)
 

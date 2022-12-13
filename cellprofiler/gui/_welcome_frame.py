@@ -1,8 +1,10 @@
 import glob
 import os.path
+import logging
 
 import jinja2
 import pkg_resources
+
 import wx
 import wx.html2
 from cellprofiler_core.preferences import set_startup_blurb
@@ -11,7 +13,9 @@ import cellprofiler.gui.help.content
 import cellprofiler.gui.html
 import cellprofiler.gui.html.utils
 import cellprofiler.gui.utilities.icon
+from cellprofiler.gui.help.content import image_resource_dataUrl
 
+logger = logging.getLogger(__name__)
 
 class WelcomeFrame(wx.Frame):
     def __init__(self, parent):
@@ -27,11 +31,32 @@ class WelcomeFrame(wx.Frame):
         self.SetIcon(cellprofiler.gui.utilities.icon.get_cp_icon())
 
         self.Bind(wx.EVT_CLOSE, self.__on_close)
-        self.content = wx.html2.WebView.New(self)
+
+        # Set to first supportable backend
+        backends = [
+            (wx.html2.WebViewBackendIE, 'WebViewBackendIE'),
+            (wx.html2.WebViewBackendWebKit, 'WebViewBackendWebKit'),
+            (wx.html2.WebViewBackendDefault, 'WebViewBackendDefault'),
+        ]
+        major, minor = list(map(int, wx.__version__.split('.')[0:2]))
+        if major >= 4 and minor >= 2:
+            backends = [(wx.html2.WebViewBackendEdge, 'WebViewBackendEdge')] + backends
+
+        # Find an available backend
+        backend = None
+        for id, name in backends:
+            available = wx.html2.WebView.IsBackendAvailable(id)
+            logger.debug("WebView backend 'wx.html2.{}' availability: {}\n".format(name, available))
+            if available and backend is None:
+                backend = id
+        logger.debug("Using WebView backend: '{}'\n".format(str(backend, 'ascii')))
+
+        self.content = wx.html2.WebView.New(self, backend=backend)
         self.content.EnableContextMenu(False)
         self.__display_welcome()
 
         self.content.Bind(wx.html2.EVT_WEBVIEW_NAVIGATING, self._on_navigate)
+        # self.content.Bind(wx.html2.EVT_WEBVIEW_LOADED, self._on_loaded)
 
         self.GetSizer().Add(self.content, 1, wx.EXPAND)
 
@@ -56,44 +81,16 @@ class WelcomeFrame(wx.Frame):
             self.content.SetPage(
                 html=template.render(
                     MANUAL_URL=cellprofiler.gui.help.content.MANUAL_URL,
-                    WELCOME_MANUAL=os.path.abspath(
-                        cellprofiler.gui.help.content.image_resource(
-                            "welcome_manual.png"
-                        )
-                    ),
-                    WELCOME_FORUM=os.path.abspath(
-                        cellprofiler.gui.help.content.image_resource(
-                            "welcome_forum.png"
-                        )
-                    ),
-                    WELCOME_PIPELINE=os.path.abspath(
-                        cellprofiler.gui.help.content.image_resource(
-                            "welcome_pipeline.png"
-                        )
-                    ),
-                    WELCOME_TUTORIALS=os.path.abspath(
-                        cellprofiler.gui.help.content.image_resource(
-                            "welcome_tutorial.png"
-                        )
-                    ),
-                    WELCOME_EXAMPLES=os.path.abspath(
-                        cellprofiler.gui.help.content.image_resource(
-                            "welcome_examples.png"
-                        )
-                    ),
-                    WELCOME_START=os.path.abspath(
-                        cellprofiler.gui.help.content.image_resource(
-                            "welcome_start.png"
-                        )
-                    ),
-                    WELCOME_HELP=os.path.abspath(
-                        cellprofiler.gui.help.content.image_resource("welcome_help.png")
-                    ),
-                    WELCOME_NEW=os.path.abspath(
-                        cellprofiler.gui.help.content.image_resource("welcome_new.png")
-                    ),
+                    WELCOME_MANUAL=image_resource_dataUrl("welcome_manual.png"),
+                    WELCOME_FORUM=image_resource_dataUrl("welcome_forum.png"),
+                    WELCOME_PIPELINE=image_resource_dataUrl("welcome_pipeline.png"),
+                    WELCOME_TUTORIALS=image_resource_dataUrl("welcome_tutorial.png"),
+                    WELCOME_EXAMPLES=image_resource_dataUrl("welcome_examples.png"),
+                    WELCOME_START=image_resource_dataUrl("welcome_start.png"),
+                    WELCOME_HELP=image_resource_dataUrl("welcome_help.png"),
+                    WELCOME_NEW=image_resource_dataUrl("welcome_new.png"),
                 ),
-                baseUrl="welcome",
+                baseUrl="file:welcome",
             )
 
     @staticmethod
@@ -111,11 +108,13 @@ class WelcomeFrame(wx.Frame):
             return
         elif href.startswith("loadexample:"):
             self.__load_example_pipeline(href[12:])
+            return
         elif href.startswith("pref:"):
             self.__set_startup_blurb()
         elif href.startswith("http"):
             wx.LaunchDefaultBrowser(href)
-        event.Veto()
+            # prevent loading in screen
+            event.Veto()
 
     def __display_help(self, href):
         if href == "welcome":
@@ -131,32 +130,28 @@ class WelcomeFrame(wx.Frame):
                 html=template.render(
                     GO_BACK="""<p>Go <a href=help:gettingstarted>back</a> to the previous screen.</p>""",
                     GO_HOME="""<p>Go <a href=help:welcome>back</a> to the welcome screen.</p>""",
-                    MODULE_HELP_BUTTON=os.path.abspath(
+                    MODULE_HELP_BUTTON=image_resource_dataUrl(
                         cellprofiler.gui.help.content.MODULE_HELP_BUTTON
                     ),
-                    MODULE_ADD_BUTTON=os.path.abspath(
+                    MODULE_ADD_BUTTON=image_resource_dataUrl(
                         cellprofiler.gui.help.content.MODULE_ADD_BUTTON
                     ),
-                    ANALYZE_BUTTON=os.path.abspath(
+                    ANALYZE_BUTTON=image_resource_dataUrl(
                         cellprofiler.gui.help.content.ANALYZE_IMAGE_BUTTON
                     ),
-                    PAUSE_BUTTON=os.path.abspath(
+                    PAUSE_BUTTON=image_resource_dataUrl(
                         cellprofiler.gui.help.content.PAUSE_ANALYSIS_BUTTON
                     ),
-                    PAUSE_BUTTON_DIM=os.path.abspath(
+                    PAUSE_BUTTON_DIM=image_resource_dataUrl(
                         cellprofiler.gui.help.content.INACTIVE_PAUSE_BUTTON
                     ),
-                    STEP_BUTTON_DIM=os.path.abspath(
+                    STEP_BUTTON_DIM=image_resource_dataUrl(
                         cellprofiler.gui.help.content.INACTIVE_STEP_BUTTON
                     ),
-                    STOP_BUTTON=os.path.abspath(
+                    STOP_BUTTON=image_resource_dataUrl(
                         cellprofiler.gui.help.content.STOP_ANALYSIS_BUTTON
                     ),
-                    IMAGE_OBJECT_DATAFLOW=os.path.abspath(
-                        cellprofiler.gui.help.content.image_resource(
-                            "image_to_object_dataflow.png"
-                        )
-                    ),
+                    IMAGE_OBJECT_DATAFLOW=image_resource_dataUrl("image_to_object_dataflow.png"),
                 ),
                 baseUrl=html_path,
             )

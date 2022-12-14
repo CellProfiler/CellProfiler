@@ -15,7 +15,6 @@ from cellprofiler_core.setting import Binary, Color
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import IntegerRange
 from cellprofiler_core.setting.text import Integer, Float
-from cellprofiler.library.modules import threshold as _threshold
 
 import cellprofiler.gui.help
 import cellprofiler.gui.help.content

@@ -399,6 +399,16 @@ resized with the same settings as the first image.""",
 
         if image.multichannel and len(new_shape) > image.dimensions:
             new_shape = new_shape[:-1]
+        
+        new_spacing = []
+
+        if image.volumetric:
+            new_spacing.append((int(new_shape[0])/int(image_pixels.shape[0]))*image.spacing[0])
+            new_spacing.append((int(new_shape[1])/int(image_pixels.shape[1]))*image.spacing[1])
+            new_spacing.append((int(new_shape[2])/int(image_pixels.shape[2]))*image.spacing[2])
+        else:
+            new_spacing.append((int(new_shape[0])/int(image_pixels.shape[0]))*image.spacing[0])
+            new_spacing.append((int(new_shape[1])/int(image_pixels.shape[1]))*image.spacing[1])
 
         mask = skimage.transform.resize(image.mask, new_shape, order=0, mode="constant")
 
@@ -419,6 +429,7 @@ resized with the same settings as the first image.""",
             mask=mask,
             crop_mask=cropping,
             dimensions=image.dimensions,
+            spacing=new_spacing,
         )
 
         workspace.image_set.add(output_image_name, output_image)

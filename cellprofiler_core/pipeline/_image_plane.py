@@ -103,31 +103,31 @@ class ImagePlane:
 
     @property
     def series(self):
-        return self._metadata_dict[C_SERIES]
+        return self.get_metadata(C_SERIES)
 
     @property
     def series_name(self):
-        return self._metadata_dict[C_SERIES_NAME]
+        return self.get_metadata(C_SERIES_NAME)
 
     @property
     def index(self):
-        return self._metadata_dict[C_INDEX]
+        return self.get_metadata(C_INDEX)
 
     @property
     def channel(self):
-        return self._metadata_dict[C_CHANNEL]
+        return self.get_metadata(C_CHANNEL)
 
     @property
     def z(self):
-        return self._metadata_dict[C_Z]
+        return self.get_metadata(C_Z)
 
     @property
     def t(self):
-        return self._metadata_dict[C_T]
+        return self.get_metadata(C_T)
 
     @property
     def tile(self):
-        return self._metadata_dict[C_TILE]
+        return self.get_metadata(C_TILE)
 
     @property
     def multichannel(self):
@@ -149,10 +149,10 @@ class ImagePlane:
         return self._metadata_dict.items()
 
     def get_metadata(self, key):
-        if key in self._metadata_dict:
+        if key in self._metadata_dict and self._metadata_dict[key] != None:
             # Use Plane metadata
             return self._metadata_dict[key]
-        elif key in self.file.metadata:
+        elif key in self.file.metadata and self.file.metadata[key] != None:
             # Use File metadata
             return self.file.metadata[key]
         else:

@@ -10,7 +10,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - if: ${{ matrix.os == 'macos-10.15' }}
+      - if: ${{ matrix.os == 'macos-11' }}
         uses: actions/cache@v2
         with:
           path: ~/Library/Caches/pip
@@ -37,7 +37,7 @@ jobs:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
           CERTIFICATE_PASSWORD: ${{ secrets.P12_PASSWORD_CIMINI }}
-        if: ${{ matrix.os == 'macos-10.15' }}
+        if: ${{ matrix.os == 'macos-11' }}
         run: |
           sed -i '' 's/4.0.0/4.2.5/' Info.plist
           brew install mysql
@@ -58,7 +58,7 @@ jobs:
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
           iscc /dMyAppVersion="4.2.5" "distribution/windows/cellprofiler.iss"
-      - if: ${{ matrix.os == 'macos-10.15' }}
+      - if: ${{ matrix.os == 'macos-11' }}
         uses: actions/upload-artifact@v1
         with:
           name: CellProfiler-macOS-4.2.5.zip
@@ -70,7 +70,7 @@ jobs:
           path: ./distribution/windows/Output/CellProfiler-Windows-4.2.5.exe
     strategy:
       matrix:
-        os: [macos-10.15, windows-2019]
+        os: [macos-11, windows-2019]
         python-version: ["3.8"]
   upload:
     name: upload

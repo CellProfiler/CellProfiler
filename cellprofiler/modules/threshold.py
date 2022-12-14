@@ -786,7 +786,7 @@ staining.
         )
         dimensions = input_image.dimensions
 
-        final_threshold, orig_threshold, guide_threshold, binary_image, _ = self.get_threshold(
+        self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, _ = self.get_threshold(
             input_image,
             workspace
         )

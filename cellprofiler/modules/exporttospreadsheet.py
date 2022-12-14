@@ -1406,12 +1406,16 @@ desired.
                 writer.writerow([x[i] for x in features])
 
             for img_number in image_set_numbers:
-                object_count = numpy.max(
-                    [
-                        m.get_measurement(IMAGE, "Count_%s" % name, img_number)
-                        for name in object_names
-                    ]
-                )
+                try:
+                    object_count = numpy.max(
+                        [
+                            m.get_measurement(IMAGE, "Count_%s" % name, img_number)
+                            for name in object_names
+                        ]
+                    )
+                except TypeError:
+                    #If no objects are found in the image, we can't find the max of nan's - 4653
+                    object_count = 0
                 object_count = int(object_count) if object_count and not numpy.isnan(object_count) else 0
                 columns = [
                     numpy.repeat(img_number, object_count)

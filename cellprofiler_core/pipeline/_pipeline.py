@@ -402,8 +402,6 @@ class Pipeline:
 
     def validate_pipeline_file(self, fd, module_count):
         version = NATIVE_VERSION
-        do_deprecated_utf16_decode = False
-        do_utf16_decode = False
         has_image_plane_details = False
         git_hash = None
         pipeline_version = __version__

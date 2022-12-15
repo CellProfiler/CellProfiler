@@ -430,12 +430,6 @@ class Pipeline:
                             version, NATIVE_VERSION
                         )
                     )
-                elif 1 < version < 4:
-                    do_deprecated_utf16_decode = True
-                elif version == 4:
-                    do_utf16_decode = True
-                elif version == 5:
-                    pass
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION,):
                 pipeline_version = int(value)
             elif kwd == H_MODULE_COUNT:
@@ -644,9 +638,7 @@ class Pipeline:
                 value = eval(value)
             if attribute in skip_attributes:
                 continue
-            # En/decode needed to read example cppipe format
-            # TODO: remove en/decode when example cppipe no longer has \x__ characters
-            # value = eval(value.encode().decode("unicode_escape"))
+
             if attribute == "variable_revision_number":
                 variable_revision_number = value
             else:

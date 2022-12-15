@@ -20,7 +20,6 @@ import cellprofiler_core.workspace
 import tests.modules
 from cellprofiler_core.constants.measurement import FF_ORIG_THRESHOLD
 from cellprofiler_core.constants.module._identify import TS_GLOBAL
-import cellprofiler.library
 
 cellprofiler_core.preferences.set_headless()
 
@@ -412,12 +411,13 @@ def test_adaptive_otsu_small():
             r = numpy.random.uniform(0, numpy.pi * 2, (60, 55))
             rsin = (numpy.sin(r) + 1) / 2
             image[i0:i1, j0:j1] = dmin + rsin * dmult
-    workspace, module = make_workspace(image)
-    module.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
-    module.global_operation.value = centrosome.threshold.TM_OTSU
-    module.run(workspace)
-    threshold = module.final_threshold
-
+    workspace, x = make_workspace(image)
+    x.threshold_scope.value = centrosome.threshold.TM_ADAPTIVE
+    x.global_operation.value = centrosome.threshold.TM_OTSU
+    threshold, global_threshold, _, _, _ = x.get_threshold(
+        cellprofiler_core.image.Image(image, mask=numpy.ones_like(image, bool)),
+        workspace,
+    )
     assert threshold[0, 0] != threshold[0, 109]
     assert threshold[0, 0] != threshold[119, 0]
     assert threshold[0, 0] != threshold[119, 109]
@@ -443,31 +443,34 @@ def test_small_images():
             if i:
                 p = r.permutation(numpy.prod(image.shape))[:i]
                 mask[ii[p], jj[p]] = True
-            workspace, module = make_workspace(image, mask)
-            module.global_operation.value = threshold_method
-            module.threshold_scope.value = TS_GLOBAL
-            module.run(workspace)
-            l = module.final_threshold
+            workspace, x = make_workspace(image, mask)
+            x.global_operation.value = threshold_method
+            x.threshold_scope.value = TS_GLOBAL
+            l, g, _, _, _ = x.get_threshold(
+                cellprofiler_core.image.Image(image, mask=mask), workspace
+            )
             v = image[mask]
             image = r.uniform(size=(9, 11))
             image[mask] = v
-
-            workspace, module = make_workspace(image, mask)
-            module.global_operation.value = threshold_method
-            module.threshold_scope.value = TS_GLOBAL
-            module.run(workspace)
-            l1 = module.final_threshold
+            l1, g1, _, _, _ = x.get_threshold(
+                cellprofiler_core.image.Image(image, mask=mask), workspace
+            )
             assert round(abs(l1 - l), 7) == 0
 
 
 def test_test_manual_background():
     """Test manual background"""
-    workspace, module = make_workspace(numpy.zeros((10, 10)))
-    module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
-    module.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
-    module.manual_threshold.value = 0.5
-    module.run(workspace)
-    threshold = module.orig_threshold
+    workspace, x = make_workspace(numpy.zeros((10, 10)))
+    x = cellprofiler.modules.threshold.Threshold()
+    x.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
+    x.global_operation.value = cellprofiler.modules.threshold.TM_MANUAL
+    x.manual_threshold.value = 0.5
+    local_threshold, threshold, _, _, _ = x.get_threshold(
+        cellprofiler_core.image.Image(
+            numpy.zeros((10, 10)), mask=numpy.ones((10, 10), bool)
+        ),
+        workspace,
+    )
     assert threshold == 0.5
     assert threshold == 0.5
 
@@ -481,11 +484,7 @@ def test_threshold_li_uniform_image():
 
     module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_global = module.orig_threshold
+    t_local, t_global, _, _, _ = module.get_threshold(image, workspace)
 
     numpy.testing.assert_almost_equal(t_local, 0.1)
 
@@ -505,15 +504,13 @@ def test_threshold_li_uniform_partial_mask():
 
     workspace, module = make_workspace(data, mask)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
     module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_global = module.orig_threshold
+    t_local, t_global, _, _, _ = module.get_threshold(image, workspace)
 
     numpy.testing.assert_almost_equal(t_local, 0.0)
 
@@ -529,15 +526,13 @@ def test_threshold_li_full_mask():
 
     workspace, module = make_workspace(data, mask)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
     module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_global = module.orig_threshold
+    t_local, t_global, _, _, _ = module.get_threshold(image, workspace)
 
     numpy.testing.assert_almost_equal(t_local, 0.0)
 
@@ -557,11 +552,7 @@ def test_threshold_li_image():
 
     module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_global = module.orig_threshold
+    t_local, t_global, _, _, _ = module.get_threshold(image, workspace)
 
     expected = skimage.filters.threshold_li(data)
 
@@ -577,17 +568,17 @@ def test_threshold_li_adaptive_image():
 
     workspace, module = make_workspace(data)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
     module.local_operation.value = cellprofiler.modules.threshold.TM_LI
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_guide_expected = skimage.filters.threshold_li(data)
 
     t_guide_expected = skimage.filters.threshold_li(data)
 
@@ -611,7 +602,9 @@ def test_threshold_li_adaptive_image_masked():
 
     mask[1:3, 1:3] = True
 
-    workspace, module = make_workspace(data, mask = mask)
+    workspace, module = make_workspace(data, mask)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
@@ -619,11 +612,7 @@ def test_threshold_li_adaptive_image_masked():
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold    
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_guide_expected = skimage.filters.threshold_li(data[mask])
 
@@ -646,19 +635,15 @@ def test_threshold_li_image_automatic():
 
     workspace, module = make_workspace(data)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
     module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
     module.threshold_range.maximum = 0.0  # expected to be ignored
 
-    module.automatic = True
-
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_global = module.orig_threshold   
+    t_local, t_global, _, _, _ = module.get_threshold(image, workspace, automatic=True)
 
     expected = skimage.filters.threshold_li(data)
 
@@ -690,9 +675,7 @@ def test_threshold_li_image_log():
 
     module.log_transform.value = True
 
-    module.run(workspace)
-
-    t_global = module.orig_threshold
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     transformed_data, d = centrosome.threshold.log_transform(data)
 
@@ -709,15 +692,13 @@ def test_threshold_li_volume():
 
     workspace, module = make_workspace(data, dimensions=3)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
     module.global_operation.value = cellprofiler.modules.threshold.TM_LI
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_global = module.orig_threshold 
+    t_local, t_global, _, _, _ = module.get_threshold(image, workspace)
 
     expected = skimage.filters.threshold_li(data)
 
@@ -733,6 +714,8 @@ def test_threshold_robust_background_mean_sd_volume():
 
     workspace, module = make_workspace(data, dimensions=3)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
     module.global_operation.value = cellprofiler.modules.threshold.TM_ROBUST_BACKGROUND
@@ -741,16 +724,14 @@ def test_threshold_robust_background_mean_sd_volume():
 
     module.variance_method.value = cellprofiler.modules.threshold.RB_SD
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
+    t_local, t_uncorrected, _, _, _ = module.get_threshold(image, workspace)
 
     t_local_expected, _, _, _, _ = cellprofiler.library.modules.threshold(
         data,
         threshold_method = "robust_background",
         threshold_scope = "global",
         averaging_method = "mean",
-        variance_method = "standard_deviation",
+        variance_method = "standard_deviation", 
     )
 
     numpy.testing.assert_almost_equal(t_local, t_local_expected)
@@ -759,9 +740,11 @@ def test_threshold_robust_background_mean_sd_volume():
 def test_threshold_robust_background_median_sd_volume():
     numpy.random.seed(73)
 
-    data = numpy.random.uniform(low=0, high=1, size=(10,10,10))
+    data = numpy.random.rand(10, 10, 10)
 
-    workspace, module = make_workspace(data, dimensions = 3)
+    workspace, module = make_workspace(data, dimensions=3)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
@@ -771,9 +754,7 @@ def test_threshold_robust_background_median_sd_volume():
 
     module.variance_method.value = cellprofiler.modules.threshold.RB_SD
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
+    t_local, t_global, _, _, _ = module.get_threshold(image, workspace)
 
     t_local_expected, _, _, _, _ = cellprofiler.library.modules.threshold(
         data,
@@ -791,7 +772,9 @@ def test_threshold_robust_background_mode_sd_volume():
 
     data = numpy.random.rand(10, 10, 10)
 
-    workspace, module = make_workspace(data, dimensions = 3)
+    workspace, module = make_workspace(data, dimensions=3)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
@@ -801,11 +784,7 @@ def test_threshold_robust_background_mode_sd_volume():
 
     module.variance_method.value = cellprofiler.modules.threshold.RB_SD
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_global = module.orig_threshold
+    t_local, t_global, _, _, _ = module.get_threshold(image, workspace)
 
     t_local_expected, t_global_expected, _, _, _ = cellprofiler.library.modules.threshold(
         data,
@@ -825,7 +804,9 @@ def test_threshold_robust_background_mean_mad_volume():
 
     data = numpy.random.rand(10, 10, 10)
 
-    workspace, module = make_workspace(data, dimensions = 3)
+    workspace, module = make_workspace(data, dimensions=3)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
@@ -835,11 +816,7 @@ def test_threshold_robust_background_mean_mad_volume():
 
     module.variance_method.value = cellprofiler.modules.threshold.RB_MAD
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_global = module.orig_threshold
+    t_local, t_global, _, _, _ = module.get_threshold(image, workspace)
 
     t_local_expected, t_global_expected, _, _, _ = cellprofiler.library.modules.threshold(
         data,
@@ -859,7 +836,9 @@ def test_threshold_robust_background_adaptive():
 
     data = numpy.random.rand(10, 10)
 
-    workspace, module = make_workspace(data, dimensions = 2)
+    workspace, module = make_workspace(data, dimensions=2)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
@@ -871,11 +850,7 @@ def test_threshold_robust_background_adaptive():
 
     module.variance_method.value = cellprofiler.modules.threshold.RB_SD
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_local, t_uncorrected, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_guide_expected = cellprofiler.library.functions.image_processing.get_global_threshold(
         data,
@@ -902,23 +877,21 @@ def test_threshold_otsu_full_mask():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype = bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
-    workspace, module = make_workspace(data, mask = mask)
+    workspace, module = make_workspace(data, mask=mask)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
-    module.global_operation.value = cellprofiler.modules.threshold.TM_OTSU
+    module.global_operation.value = centrosome.threshold.TM_OTSU
 
     module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_global = module.orig_threshold
+    t_local, t_global, _, _, _ = module.get_threshold(image, workspace)
 
     t_local_expected = numpy.zeros_like(data)
 
@@ -936,27 +909,25 @@ def test_threshold_otsu_partial_mask_uniform_data():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype = bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[2:5, 2:5] = True
 
     data[mask] = 0.2
 
-    workspace, module = make_workspace(data, mask = mask)
+    workspace, module = make_workspace(data, mask=mask)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
-    module.local_operation.value = centrosome.threshold.TM_OTSU
+    module.global_operation.value = centrosome.threshold.TM_OTSU
 
     module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold 
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_guide_expected = 0.2
 
@@ -974,25 +945,23 @@ def test_threshold_otsu_partial_mask_uniform_data():
 
 
 def test_threshold_otsu_uniform_data():
-    data = numpy.ones((10, 10), dtype = numpy.float32)
+    data = numpy.ones((10, 10), dtype=numpy.float32)
 
     data *= 0.2
 
     workspace, module = make_workspace(data)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
-    module.local_operation.value = centrosome.threshold.TM_OTSU
+    module.global_operation.value = centrosome.threshold.TM_OTSU
 
     module.two_class_otsu.value = cellprofiler.modules.threshold.O_TWO_CLASS
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_guide_expected = 0.2
 
@@ -1012,11 +981,13 @@ def test_threshold_otsu_image():
 
     data = numpy.random.rand(10, 10)
 
-    mask = numpy.zeros_like(data, dtype = bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:-1, 1:-1] = True
 
-    workspace, module = make_workspace(data, mask = mask)
+    workspace, module = make_workspace(data, mask=mask)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
@@ -1026,11 +997,7 @@ def test_threshold_otsu_image():
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_guide_expected = skimage.filters.threshold_otsu(data[mask])
 
@@ -1051,11 +1018,13 @@ def test_threshold_otsu_volume():
 
     data = numpy.random.rand(10, 10, 10)
 
-    mask = numpy.zeros_like(data, dtype = bool)
+    mask = numpy.zeros_like(data, dtype=bool)
 
     mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = make_workspace(data, mask = mask, dimensions = 3)
+    workspace, module = make_workspace(data, mask=mask, dimensions=3)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
@@ -1065,11 +1034,7 @@ def test_threshold_otsu_volume():
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_guide_expected = skimage.filters.threshold_otsu(data[mask])
 
@@ -1094,11 +1059,13 @@ def test_threshold_otsu3_full_mask():
 
     mask = numpy.zeros_like(data, dtype=bool)
 
-    workspace, module = make_workspace(data, mask = mask)
+    workspace, module = make_workspace(data, mask=mask)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
-    module.local_operation.value = centrosome.threshold.TM_OTSU
+    module.global_operation.value = centrosome.threshold.TM_OTSU
 
     module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
 
@@ -1108,11 +1075,7 @@ def test_threshold_otsu3_full_mask():
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_local_expected = numpy.zeros_like(data)
 
@@ -1134,6 +1097,8 @@ def test_threshold_otsu3_image():
 
     workspace, module = make_workspace(data, mask=mask)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
     module.local_operation.value = centrosome.threshold.TM_OTSU
@@ -1146,11 +1111,7 @@ def test_threshold_otsu3_image():
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_guide_expected = skimage.filters.threshold_multiotsu(data[mask], nbins=128)[0]
 
@@ -1176,7 +1137,9 @@ def test_threshold_otsu3_volume():
 
     mask[1:-1, 1:-1, 1:-1] = True
 
-    workspace, module = make_workspace(data, mask = mask, dimensions = 3)
+    workspace, module = make_workspace(data, mask=mask, dimensions=3)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
 
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
@@ -1190,11 +1153,7 @@ def test_threshold_otsu3_volume():
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_guide_expected = skimage.filters.threshold_multiotsu(data[mask], nbins=128)[0]
 
@@ -1225,6 +1184,8 @@ def test_threshold_otsu3_image_log():
 
     workspace, module = make_workspace(data, mask=mask)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_GLOBAL
 
     module.global_operation.value = centrosome.threshold.TM_OTSU
@@ -1237,16 +1198,13 @@ def test_threshold_otsu3_image_log():
 
     module.log_transform.value = True
 
-    module.run(workspace)
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
-    t_global = module.orig_threshold
+    transformed_data, d = centrosome.threshold.log_transform(data)
 
-    t_expected = cellprofiler.library.functions.image_processing.get_global_threshold(
-        data,
-        mask = mask,
-        threshold_method = "multiotsu",
-        log_transform = True,
-    )
+    t_expected = skimage.filters.threshold_multiotsu(transformed_data[mask], nbins=128)[0]
+
+    t_expected = centrosome.threshold.inverse_log_transform(t_expected, d)
 
     numpy.testing.assert_almost_equal(t_global, t_expected, decimal=5)
 
@@ -1262,6 +1220,8 @@ def test_threshold_otsu3_volume_log():
 
     workspace, module = make_workspace(data, mask=mask, dimensions=3)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
     module.local_operation.value = centrosome.threshold.TM_OTSU
@@ -1276,11 +1236,9 @@ def test_threshold_otsu3_volume_log():
 
     module.log_transform.value = True
 
-    module.run(workspace)
+    module.log_transform.value = True
 
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     transformed_data, d = centrosome.threshold.log_transform(data)
 
@@ -1301,6 +1259,8 @@ def test_threshold_otsu3_volume_log():
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected, decimal=5)
 
+    assert t_local.ndim == 3
+
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
 def test_threshold_sauvola_image():
@@ -1310,25 +1270,23 @@ def test_threshold_sauvola_image():
 
     workspace, module = make_workspace(data)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
     module.local_operation.value = cellprofiler.modules.threshold.TM_SAUVOLA
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_guide_expected = skimage.filters.threshold_li(data)
 
     t_local_expected = cellprofiler.library.functions.image_processing.get_adaptive_threshold(
         data,
         threshold_method = "sauvola",
         window_size = 3,
     )
-
-    t_guide_expected = skimage.filters.threshold_li(data)    
 
     numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
 
@@ -1346,17 +1304,15 @@ def test_threshold_sauvola_image_masked():
 
     workspace, module = make_workspace(data, mask)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
     module.local_operation.value = cellprofiler.modules.threshold.TM_SAUVOLA
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_guide_expected = skimage.filters.threshold_li(data[mask])
 
@@ -1379,17 +1335,15 @@ def test_threshold_sauvola_volume():
 
     workspace, module = make_workspace(data, dimensions = 3)
 
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
     module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
 
     module.local_operation.value = cellprofiler.modules.threshold.TM_SAUVOLA
 
     module.adaptive_window_size.value = 3
 
-    module.run(workspace)
-
-    t_local = module.final_threshold
-
-    t_guide = module.guide_threshold
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
 
     t_guide_expected = skimage.filters.threshold_li(data)
 

@@ -786,7 +786,7 @@ staining.
         )
         dimensions = input_image.dimensions
 
-        self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, _ = self.get_threshold(
+        final_threshold, orig_threshold, guide_threshold, binary_image, _ = self.get_threshold(
             input_image,
             workspace
         )
@@ -794,9 +794,9 @@ staining.
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            self.final_threshold,
-            self.orig_threshold,
-            self.guide_threshold,
+            final_threshold,
+            orig_threshold,
+            guide_threshold,
         )
 
         self.add_fg_bg_measurements(
@@ -817,7 +817,7 @@ staining.
             statistics = workspace.display_data.statistics = []
             workspace.display_data.col_labels = ("Feature", "Value")
             if self.threshold_scope == TS_ADAPTIVE:
-                workspace.display_data.threshold_image = self.final_threshold
+                workspace.display_data.threshold_image = final_threshold
 
             for column in self.get_measurement_columns(workspace.pipeline):
                 value = workspace.measurements.get_current_image_measurement(column[1])

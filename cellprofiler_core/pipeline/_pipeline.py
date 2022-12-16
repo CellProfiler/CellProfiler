@@ -449,6 +449,8 @@ class Pipeline:
         return git_hash, has_image_plane_details, module_count, pipeline_version
 
     def validate_pipeline_version(self, current_version, git_hash, pipeline_version):
+        # if "pipeline_version" is an actual dave revision, ie unicode time
+        # at some point this changed to CellProfiler version (e.g. CP 4.2.4 would be 400)
         if 20080101000000 < pipeline_version < 30080101000000:
             # being optomistic... a millenium should be OK, no?
             second, minute, hour, day, month = [
@@ -605,6 +607,8 @@ class Pipeline:
         # make batch_state decodable from text pipelines
         # NOTE, MAGIC HERE: These variables are **necessary**, even though they
         # aren't used anywhere obvious. Removing them **will** break these unit tests.
+        # TODO: NG - MAGIC here is caused by the use of eval, which is evil, and should
+        # be totally expunged here and everywhere else it is used
         array = numpy.array
         uint8 = numpy.uint8
         for a in attribute_strings:
@@ -619,7 +623,7 @@ class Pipeline:
             if attribute == "notes":
                 try:
                     value = eval(value)
-                except SyntaxError:
+                except SyntaxError as e:
                     value = value[1:-1].replace('"', "").replace("'", "").split(",")
                 if any([chr(226) in line for line in value]):
                     # There were some unusual UTF-8 characters present, let's try to fix them.

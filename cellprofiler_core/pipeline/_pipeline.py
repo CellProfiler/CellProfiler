@@ -15,6 +15,7 @@ import urllib.parse
 import urllib.request
 import uuid
 import weakref
+from ast import literal_eval
 
 import numpy
 
@@ -604,13 +605,7 @@ class Pipeline:
         attribute_string = attribute_string.replace("dtype='|S", "dtype='S")
         attribute_strings = attribute_string[1:-1].split("|")
         variable_revision_number = None
-        # make batch_state decodable from text pipelines
-        # NOTE, MAGIC HERE: These variables are **necessary**, even though they
-        # aren't used anywhere obvious. Removing them **will** break these unit tests.
-        # TODO: NG - MAGIC here is caused by the use of eval, which is evil, and should
-        # be totally expunged here and everywhere else it is used
-        array = numpy.array
-        uint8 = numpy.uint8
+
         for a in attribute_strings:
             if a.isascii():
                 a = a.encode("utf-8").decode("unicode_escape")
@@ -622,7 +617,7 @@ class Pipeline:
             attribute, value = a.split(":", 1)
             if attribute == "notes":
                 try:
-                    value = eval(value)
+                    value = literal_eval(value)
                 except SyntaxError as e:
                     value = value[1:-1].replace('"', "").replace("'", "").split(",")
                 if any([chr(226) in line for line in value]):
@@ -636,8 +631,10 @@ class Pipeline:
                         LOGGER.error(
                             f"Error during notes decoding\n\t{e}\n\tSome characters may have been lost"
                         )
+            elif attribute == "batch_state":
+                value = numpy.zeros((0,), numpy.uint8)
             else:
-                value = eval(value)
+                value = literal_eval(value)
             if attribute in skip_attributes:
                 continue
 

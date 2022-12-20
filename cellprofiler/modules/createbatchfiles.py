@@ -368,7 +368,7 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
             pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
             bizarro_self = pipeline.module(self.module_num)
             bizarro_self.revision.value = int(
-                re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__)
+                re.sub(r"\.|rc\d{1}|b\d{1}", "", cellprofiler.__version__)
             )
             if self.wants_default_output_directory:
                 bizarro_self.custom_output_directory.value = self.alter_path(

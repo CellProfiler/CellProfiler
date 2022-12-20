@@ -1852,6 +1852,11 @@ class PipelineController(object):
             return
         file_objects = self.__pipeline.get_filtered_file_list(self.__workspace)
         cap = len(file_objects)
+
+        if cap == 0:
+            LOGGER.info("Metadata extraction not completed, no file objects available")
+            return
+
         with wx.ProgressDialog(
             parent=self.__frame,
             title="Extracting metadata",

@@ -326,7 +326,7 @@ class PathListCtrl(wx.TreeCtrl):
 
     def update_metadata(self, urls):
         if len(urls) == 0:
-            LOGGER.debug("No urls to update metada with")
+            LOGGER.debug("No urls to update metadata with")
 
         for url in urls:
             file_id = self.file_id_map[url]

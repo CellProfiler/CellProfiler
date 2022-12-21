@@ -579,8 +579,15 @@ class Pipeline:
                 new_modules.append(module)
                 module_number += 1
             if isinstance(module, Metadata) and module.removed_automatic_extraction:
+                # turn on extraction in Images, if metadata module was enabled
                 if isinstance(new_modules[0], Images) and module.wants_metadata.value:
                     new_modules[0].want_split.value = True
+                # now disable metdata module if the only extraction group was
+                # extracting from image file headers; and reset the default
+                # extraction method
+                if module.extraction_method_count.value == 0:
+                    module.wants_metadata.value = 'No'
+                    module.add_extraction_method(False)
         return new_modules
 
     def setup_module(

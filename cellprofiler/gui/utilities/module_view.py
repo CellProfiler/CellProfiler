@@ -205,7 +205,7 @@ def validate_module(pipeline, module_num, callback):
             instance.get_setting().key()
         )
     except Exception as e:
-        print("Error in validation thread", e)
+        LOGGER.error("Error in validation thread", e)
     wx.CallAfter(callback, setting_idx, message, level)
 
 

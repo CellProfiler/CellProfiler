@@ -23,6 +23,7 @@ from ..constants.modules.metadata import DEFAULT_METADATA_TAGS
 from ..constants.modules.metadata import CSV_JOIN_NAME
 from ..constants.modules.metadata import IPD_JOIN_NAME
 from ..constants.modules.metadata import COL_PATH
+from ..constants.modules.metadata import COL_URL
 from ..constants.modules.metadata import COL_SERIES
 from ..constants.modules.metadata import DTC_ALL
 from ..constants.modules.metadata import DTC_CHOOSE
@@ -1064,8 +1065,9 @@ not being applied, your choice on this setting may be the culprit.
 
     def get_metadata_keys(self):
         """Return a collection of metadata keys to be associated with files"""
+        keys = set([COL_URL])
         if not self.wants_metadata:
-            return []
+            return keys
         keys = set(DEFAULT_METADATA_TAGS)
         for extract_group in self.extraction_methods:
             if extract_group.extraction_method == X_MANUAL_EXTRACTION:

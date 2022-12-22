@@ -2280,6 +2280,7 @@ class ModuleView:
             except ValidationError as instance:
                 message = instance.message
                 bad_setting = instance.get_setting()
+                LOGGER.debug(f'Bad setting in Module "{self.__module.module_name}", setting "{bad_setting.text}": {message}')
         # update settings' foreground/background
         try:
             for setting in visible_settings:

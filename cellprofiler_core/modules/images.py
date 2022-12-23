@@ -2,7 +2,7 @@
 import itertools
 import logging
 
-from cellprofiler_core.constants.measurement import C_SERIES_NAME, C_CHANNEL, C_SERIES, C_Z, C_T
+from cellprofiler_core.constants.measurement import C_SERIES_NAME, C_C, C_SERIES, C_Z, C_T
 from cellprofiler_core.pipeline import ImagePlane
 from cellprofiler_core.constants.module import FILTER_RULES_BUTTONS_HELP
 from cellprofiler_core.constants.modules.images import FILTER_CHOICE_ALL
@@ -353,7 +353,7 @@ pass the current filter.
             return []
         result = [C_SERIES, C_SERIES_NAME]
         if self.split_C.value:
-            result.append(C_CHANNEL)
+            result.append(C_C)
         if self.split_T.value:
             result.append(C_T)
         if self.split_Z.value:

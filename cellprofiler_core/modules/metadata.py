@@ -8,7 +8,7 @@ import time
 import urllib.request
 
 from ..constants.image import MD_SIZE_C, MD_SIZE_T, MD_SIZE_Z, MD_SIZE_X, MD_SIZE_Y
-from ..constants.measurement import COLTYPE_FLOAT, C_Z, C_T, C_CHANNEL, FTR_WELL, ROW_KEYS, COL_KEYS
+from ..constants.measurement import COLTYPE_FLOAT, C_Z, C_T, C_C, FTR_WELL, ROW_KEYS, COL_KEYS
 from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_VARCHAR
 from ..constants.measurement import COLTYPE_VARCHAR_FILE_NAME
@@ -1097,7 +1097,7 @@ not being applied, your choice on this setting may be the culprit.
         MD_SIZE_Y,
         C_SERIES,
         C_FRAME,
-        C_CHANNEL,
+        C_C,
         C_T,
         C_Z,
     )

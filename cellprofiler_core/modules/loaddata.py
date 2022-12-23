@@ -9,7 +9,8 @@ from ..constants.image import C_HEIGHT
 from ..constants.image import C_MD5_DIGEST
 from ..constants.image import C_SCALING
 from ..constants.image import C_WIDTH
-from ..constants.measurement import COLTYPE_FLOAT, C_CHANNEL, C_Z, C_T, C_OBJECTS_CHANNEL, C_OBJECTS_Z, C_OBJECTS_T
+from ..constants.measurement import C_CHANNEL, C_C, C_Z, C_T, C_OBJECTS_CHANNEL, C_OBJECTS_Z, C_OBJECTS_T
+from ..constants.measurement import COLTYPE_FLOAT
 from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_VARCHAR
 from ..constants.measurement import COLTYPE_VARCHAR_FILE_NAME
@@ -1043,7 +1044,7 @@ safe to press it.""",
             url_feature = f"{C_URL}_{name}"
             series_feature = f"{C_SERIES}_{name}"
             frame_feature = f"{C_FRAME}_{name}"
-            channel_feature = f"{C_CHANNEL}_{name}"
+            channel_feature = f"{C_C}_{name}"
             plane_feature = f"{C_Z}_{name}"
             timepoint_feature = f"{C_T}_{name}"
         else:
@@ -1059,7 +1060,11 @@ safe to press it.""",
         keyword_args = {}
         for feature in (series_feature, frame_feature, channel_feature,
                         plane_feature, timepoint_feature):
-            if measurements.has_feature("Image", feature):
+            if measurements.has_feature("Image", feature) or (
+                is_image_name
+                and feature == C_CHANNEL
+                and measurements.has_feature("Image", feature)
+            ):
                 val = measurements["Image", feature]
                 if numpy.isnan(val):
                     val = None

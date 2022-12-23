@@ -25,7 +25,7 @@ from ..constants.measurement import COLTYPE_VARCHAR
 from ..constants.measurement import COLTYPE_VARCHAR_FILE_NAME
 from ..constants.measurement import COLTYPE_VARCHAR_FORMAT
 from ..constants.measurement import COLTYPE_VARCHAR_PATH_NAME
-from ..constants.measurement import C_CHANNEL
+from ..constants.measurement import C_C
 from ..constants.measurement import C_COUNT
 from ..constants.measurement import C_FILE_NAME
 from ..constants.measurement import C_LOCATION
@@ -1088,7 +1088,7 @@ requests an object selection.
                 series_category = C_SERIES
                 series_name_category = C_SERIES_NAME
                 frame_category = C_FRAME
-                channel_category = C_CHANNEL
+                channel_category = C_C
                 z_category = C_Z
                 t_category = C_T
 

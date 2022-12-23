@@ -20,7 +20,7 @@ from ..constants.measurement import AGG_STD_DEV
 from ..constants.measurement import COLTYPE_FLOAT
 from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_VARCHAR
-from ..constants.measurement import C_CHANNEL
+from ..constants.measurement import C_C
 from ..constants.measurement import C_CHANNEL_TYPE
 from ..constants.measurement import C_FILE_NAME
 from ..constants.measurement import C_FRAME
@@ -1313,7 +1313,7 @@ class Measurements:
             C_FILE_NAME,
             C_SERIES,
             C_FRAME,
-            C_CHANNEL,
+            C_C,
             C_Z,
             C_T,
             C_OBJECTS_URL,

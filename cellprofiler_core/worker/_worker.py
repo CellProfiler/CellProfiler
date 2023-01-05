@@ -357,13 +357,14 @@ class Worker:
         )
         rep = self.send(req)
 
-    def omero_login_handler(self):
-        """Handle requests for an Omero login"""
-        from cellprofiler_core.bioformats.formatreader import use_omero_credentials
+    #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+    # def omero_login_handler(self):
+    #     """Handle requests for an Omero login"""
+    #     from cellprofiler_core.bioformats.formatreader import use_omero_credentials
 
-        req = OmeroLogin(self.current_analysis_id)
-        rep = self.send(req)
-        use_omero_credentials(rep.credentials)
+    #     req = OmeroLogin(self.current_analysis_id)
+    #     rep = self.send(req)
+    #     use_omero_credentials(rep.credentials)
 
     def send(self, req, work_socket=None):
         """Send a request and receive a reply

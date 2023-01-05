@@ -1184,7 +1184,7 @@ class HDF5FileList(object):
                     marker = 'REPLACE'
                     inserted = numpy.insert(existing_meta, insertion_indexes, marker).tolist()
                     inserted = [x if isinstance(x, numpy.ndarray) else blank_metadata for x in inserted]
-                    metadataset[:] = numpy.array(inserted, dtype=numpy.object)
+                    metadataset[:] = numpy.array(inserted, dtype=object)
                     # Now we insert the series name fields.
                     seriesnameset[:] = numpy.insert(existing_names, insertion_indexes, blank_names)
                 else:
@@ -1214,7 +1214,7 @@ class HDF5FileList(object):
                                                    maxshape=(None, )
                                                    )
                     md[:] = numpy.array([blank_metadata] * len(filenames),
-                                        dtype=numpy.object)
+                                        dtype=object)
             self.hdf5_file.flush()
         self.notify()
 

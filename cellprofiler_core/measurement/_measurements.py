@@ -224,7 +224,7 @@ class Measurements:
 
         def fix_type(t):
             if t == "integer":
-                return numpy.int
+                return int
             if t.startswith("varchar"):
                 len = t.split("(")[1][:-1]
                 return numpy.dtype("a" + len)

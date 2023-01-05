@@ -245,7 +245,7 @@ def test_int_image_measurement():
     pipeline, module, filename = make_pipeline(csv_text)
     m = pipeline.run()
     data = m.get_current_image_measurement("Test_Measurement")
-    assert isinstance(data, numpy.integer), "data is type %s, not np.int" % (type(data))
+    assert isinstance(data, numpy.integer), "data is type %s, not int" % (type(data))
     assert data == 1
     os.remove(filename)
 

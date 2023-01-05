@@ -172,10 +172,10 @@ def maybe_download_example_image(folders, file_name, shape=None):
         random_state.seed()
         image = (random_state.uniform(size=shape) * 255).astype(np.uint8)
 
-    if len(shape) > 2:
-        skimage.io.imsave(local_path, numpy.transpose(image, (2,0,1)), imagej=True)
-    else:
-        skimage.io.imsave(local_path, image)
+        if len(shape) > 2:
+            skimage.io.imsave(local_path, numpy.transpose(image, (2,0,1)), imagej=True)
+        else:
+            skimage.io.imsave(local_path, image)
 
     return local_path
 

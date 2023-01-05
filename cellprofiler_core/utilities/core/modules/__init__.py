@@ -20,6 +20,8 @@ from ....constants.modules import (
 from ..plugins import load_plugins
 
 
+LOGGER = logging.getLogger(__name__)
+
 def check_module(module, name):
     if hasattr(module, "do_not_check"):
         return
@@ -68,14 +70,14 @@ def fill_modules():
                 cp_module = find_cpmodule(m)
             name = cp_module.module_name
         except Exception as e:
-            logging.warning("Could not load %s", mod, exc_info=True)
+            LOGGER.warning("Could not load %s", mod, exc_info=True)
             badmodules.append((mod, e))
             return
 
         try:
             pymodules.append(m)
             if name in all_modules:
-                logging.warning(
+                LOGGER.warning(
                     "Multiple definitions of module %s\n\told in %s\n\tnew in %s",
                     name,
                     sys.modules[all_modules[name].__module__].__file__,
@@ -91,7 +93,7 @@ def fill_modules():
                 if match is not None:
                     svn_revisions[name] = match.groups()[0]
         except Exception as e:
-            logging.warning("Failed to load %s", name, exc_info=True)
+            LOGGER.warning("Failed to load %s", name, exc_info=True)
             badmodules.append((mod, e))
             if name in all_modules:
                 del all_modules[name]
@@ -114,7 +116,7 @@ def fill_modules():
             add_module("cellprofiler.modules." + modname, True, class_name=classname)
 
     if len(badmodules) > 0:
-        logging.warning(
+        LOGGER.warning(
             "could not load these modules: %s", ",".join([x[0] for x in badmodules])
         )
 

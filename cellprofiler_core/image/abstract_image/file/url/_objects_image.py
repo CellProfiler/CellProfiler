@@ -53,7 +53,7 @@ class ObjectsImage(URLImage):
         planes = []
         offset = 0
         for i, index in enumerate(indexes):
-            properties["index"] = str(index)
+            properties["index"] = index
             if self.series is not None:
                 if numpy.isscalar(self.series):
                     properties["series"] = self.series

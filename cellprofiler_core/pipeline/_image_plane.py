@@ -3,10 +3,10 @@ import logging
 
 from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS, \
     C_MONOCHROME, C_RGB, C_TILE, C_URL, \
-    C_SERIES, C_CHANNEL, C_Z, C_T, C_INDEX, C_SERIES_NAME
+    C_SERIES, C_C, C_Z, C_T, C_INDEX, C_SERIES_NAME
 from cellprofiler_core.pipeline import ImageFile
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class ImagePlane:
@@ -40,7 +40,7 @@ class ImagePlane:
         self._metadata_dict[C_SERIES] = series
         self._metadata_dict[C_SERIES_NAME] = name
         self._metadata_dict[C_INDEX] = index
-        self._metadata_dict[C_CHANNEL] = channel
+        self._metadata_dict[C_C] = channel
         self._metadata_dict[C_T] = t
         self._metadata_dict[C_Z] = z
         self._metadata_dict[C_TILE] = xywh
@@ -115,7 +115,7 @@ class ImagePlane:
 
     @property
     def channel(self):
-        return self.get_metadata(C_CHANNEL)
+        return self.get_metadata(C_C)
 
     @property
     def z(self):
@@ -166,7 +166,7 @@ class ImagePlane:
             raise PermissionError(f"Cannot override protected metadata key '{key}'")
         else:
             if force:
-                logger.warning(f"Overwriting protected key {key}. This may break functionality.")
+                LOGGER.warning(f"Overwriting protected key {key}. This may break functionality.")
             self._metadata_dict[key] = value
 
 

@@ -13,7 +13,7 @@ from cellprofiler_core.constants.measurement import RESERVED_METADATA_KEYS
 from cellprofiler_core.reader import get_image_reader, Reader
 from cellprofiler_core.utilities.image import url_to_modpath, is_file_url
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 class ImageFile:
@@ -85,12 +85,12 @@ class ImageFile:
         try:
             reader = self.get_reader()
         except:
-            logger.error(f"May not be an image: {self.url}", exc_info=True)
+            LOGGER.error(f"May not be an image: {self.url}", exc_info=True)
             self.metadata[MD_SIZE_S] = 0
             return
         meta_dict = reader.get_series_metadata()
         if meta_dict[MD_SIZE_S] == 0:
-            logger.error(f"File {self.filename} appears to contain no images.")
+            LOGGER.error(f"File {self.filename} appears to contain no images.")
             self.metadata[MD_SIZE_S] = 0
             self.release_reader()
             return
@@ -118,7 +118,7 @@ class ImageFile:
         if len(data) < 5 or len(data) % 5 != 0:
             # No metadata or bad format
             if len(data) > 0:
-                logger.warning(f"Unable to load saved metadata for {self.filename}")
+                LOGGER.warning(f"Unable to load saved metadata for {self.filename}")
             return
         if len(data) == 5 and numpy.all(data == -1):
             # Unfilled metadata
@@ -221,7 +221,7 @@ class ImageFile:
         # Used to bulk-add metadata keys from the Metadata module. Other modules should use set_metadata method.
         for key, value in meta_dict.items():
             if key in RESERVED_METADATA_KEYS:
-                logger.error(f"Unable to set protected metadata key '{key}' to '{value}' for file {self.filename}. "
+                LOGGER.error(f"Unable to set protected metadata key '{key}' to '{value}' for file {self.filename}. "
                              f"Please choose another key name.")
                 continue
             self._metadata_dict[key] = value
@@ -231,7 +231,7 @@ class ImageFile:
             raise PermissionError(f"Cannot override protected metadata key '{key}'")
         else:
             if force:
-                logger.warning(f"Overwriting protected key {key}. This may break functionality.")
+                LOGGER.warning(f"Overwriting protected key {key}. This may break functionality.")
             self._metadata_dict[key] = value
 
     def clear_metadata(self):

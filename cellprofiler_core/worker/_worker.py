@@ -4,7 +4,6 @@ import sys
 import time
 import traceback
 
-import javabridge
 import zmq
 
 from ._pipeline_event_listener import PipelineEventListener
@@ -25,7 +24,6 @@ from ..constants.worker import ED_STOP
 from ..constants.worker import NOTIFY_STOP
 from ..constants.worker import all_measurements
 from ..measurement import Measurements
-from ..utilities.java import JAVA_STARTED
 from ..utilities.measurement import load_measurements_from_buffer
 from ..pipeline import CancelledException
 from ..preferences import get_awt_headless
@@ -34,13 +32,14 @@ from ..utilities.zmq.communicable.reply.upstream_exit import UpstreamExit
 from ..workspace import Workspace
 
 
+LOGGER = logging.getLogger(__name__)
+
 class Worker:
     """An analysis worker processing work at a given address
 
     """
 
     def __init__(self, context, analysis_id, work_request_address, keepalive_address, with_stop_run_loop=True):
-        from bioformats.formatreader import set_omero_login_hook
 
         self.context = context
         self.work_request_address = work_request_address
@@ -52,7 +51,9 @@ class Worker:
         self.preferences = None
         self.initial_measurements = None
 
-        set_omero_login_hook(self.omero_login_handler)
+        #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+        # from ..bioformats.formatreader import set_omero_login_hook
+        # set_omero_login_hook(self.omero_login_handler)
 
     def __enter__(self):
         # pipeline listener object
@@ -94,15 +95,12 @@ class Worker:
             self.worker.exit_thread()
 
     def enter_thread(self):
-        if not get_awt_headless():
-            javabridge.activate_awt()
+        LOGGER.debug("Entering worker thread")
 
     def exit_thread(self):
         from cellprofiler_core.constants.reader import ALL_READERS
         for reader in ALL_READERS.values():
             reader.clear_cached_readers()
-        if JAVA_STARTED:
-            javabridge.detach()
 
     def run(self):
         from cellprofiler_core.pipeline.event import CancelledException
@@ -110,7 +108,7 @@ class Worker:
         with self.AnalysisWorkerThreadObject(self):
             while not self.cancelled:
                 try:
-                    logging.debug("Requesting a job")
+                    LOGGER.debug("Requesting a job")
                     # fetch a job
                     the_request = Work(self.current_analysis_id)
                     job = self.send(the_request)
@@ -134,26 +132,26 @@ class Worker:
         try:
             send_dictionary = job.wants_dictionary
 
-            logging.info("Starting job")
+            LOGGER.info("Starting job")
             # Fetch the pipeline and preferences for this analysis if we don't have it
             current_pipeline = self.pipeline
             current_preferences = self.preferences
             if not current_pipeline:
-                logging.debug("Fetching pipeline and preferences")
+                LOGGER.debug("Fetching pipeline and preferences")
                 rep = self.send(PipelinePreferences(self.current_analysis_id))
-                logging.debug("Received pipeline and preferences response")
+                LOGGER.debug("Received pipeline and preferences response")
                 preferences_dict = rep.preferences
                 # update preferences to match remote values
                 set_preferences_from_dict(preferences_dict)
 
-                logging.debug("Loading pipeline")
+                LOGGER.debug("Loading pipeline")
 
                 current_pipeline = cpp.Pipeline()
                 pipeline_chunks = rep.pipeline_blob.tolist()
                 pipeline_io = io.StringIO("".join(pipeline_chunks))
                 current_pipeline.loadtxt(pipeline_io, raise_on_error=True)
 
-                logging.debug("Pipeline loaded")
+                LOGGER.debug("Pipeline loaded")
                 current_pipeline.add_listener(self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
                 self.pipeline = current_pipeline
@@ -165,16 +163,16 @@ class Worker:
 
             # Reset the listener's state
             self.pipeline_listener.reset()
-            logging.debug("Getting initial measurements")
+            LOGGER.debug("Getting initial measurements")
             # Fetch the path to the intial measurements if needed.
 
             if self.initial_measurements is None:
-                logging.debug("Sending initial measurements request")
+                LOGGER.debug("Sending initial measurements request")
                 rep = self.send(InitialMeasurements(self.current_analysis_id))
-                logging.debug("Got initial measurements")
+                LOGGER.debug("Got initial measurements")
                 self.initial_measurements = load_measurements_from_buffer(rep.buf)
             else:
-                logging.debug("Has initial measurements")
+                LOGGER.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
             current_measurements = Measurements(copy=self.initial_measurements)
             all_measurements.add(current_measurements)
@@ -183,7 +181,7 @@ class Worker:
             successful_image_set_numbers = []
             image_set_numbers = job.image_set_numbers
             worker_runs_post_group = job.worker_runs_post_group
-            logging.info("Doing job: " + ",".join(map(str, image_set_numbers)))
+            LOGGER.info("Doing job: " + ",".join(map(str, image_set_numbers)))
 
             self.pipeline_listener.image_set_number = image_set_numbers[0]
 
@@ -257,11 +255,11 @@ class Worker:
                             )
                         rep = self.send(req)
                     except CancelledException:
-                        logging.info("Aborting job after cancellation")
+                        LOGGER.info("Aborting job after cancellation")
                         abort = True
                     except Exception as e:
                         try:
-                            logging.error("Error in pipeline", exc_info=True)
+                            LOGGER.error("Error in pipeline", exc_info=True)
                             if (
                                 self.handle_exception(image_set_number=image_set_number)
                                 == ED_STOP
@@ -269,7 +267,7 @@ class Worker:
                                 abort = True
                                 break
                         except:
-                            logging.error(
+                            LOGGER.error(
                                 "Error in handling of pipeline exception", exc_info=True
                             )
                             # this is bad.  We can't handle nested exceptions
@@ -308,7 +306,7 @@ class Worker:
             raise
 
         except Exception:
-            logging.error("Error in worker", exc_info=True)
+            LOGGER.error("Error in worker", exc_info=True)
             if self.handle_exception() == ED_STOP:
                 raise CancelledException("Cancelling after user-requested stop")
         finally:
@@ -359,13 +357,14 @@ class Worker:
         )
         rep = self.send(req)
 
-    def omero_login_handler(self):
-        """Handle requests for an Omero login"""
-        from bioformats.formatreader import use_omero_credentials
+    #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+    # def omero_login_handler(self):
+    #     """Handle requests for an Omero login"""
+    #     from cellprofiler_core.bioformats.formatreader import use_omero_credentials
 
-        req = OmeroLogin(self.current_analysis_id)
-        rep = self.send(req)
-        use_omero_credentials(rep.credentials)
+    #     req = OmeroLogin(self.current_analysis_id)
+    #     rep = self.send(req)
+    #     use_omero_credentials(rep.credentials)
 
     def send(self, req, work_socket=None):
         """Send a request and receive a reply
@@ -394,14 +393,14 @@ class Worker:
                 elif socket == self.keepalive_socket:
                     notify_msg = self.keepalive_socket.recv()
                     if notify_msg == NOTIFY_STOP:
-                        logging.debug("Worker received cancel notification")
+                        LOGGER.debug("Worker received cancel notification")
                         self.cancelled = True
                         self.raise_cancel(
                             "Received stop notification while waiting for "
                             "response from %s" % str(req)
                         )
                     else:
-                        logging.error("Unexpected message on keepalive: " + notify_msg.decode())
+                        LOGGER.error("Unexpected message on keepalive: " + notify_msg.decode())
                 elif socket == work_socket:
                     response = req.recv(work_socket)
         if isinstance(response, (UpstreamExit, ServerExited)):
@@ -422,7 +421,7 @@ class Worker:
         """
         from cellprofiler_core.pipeline.event import CancelledException
 
-        logging.debug(msg)
+        LOGGER.debug(msg)
         self.cancelled = True
         if self.initial_measurements is not None:
             self.initial_measurements.close()

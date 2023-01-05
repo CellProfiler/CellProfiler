@@ -3,8 +3,18 @@
 
 import logging
 import queue
-
 import pytest
+import inspect
+import numpy
+import os
+import tempfile
+import threading
+import traceback
+import unittest
+import uuid
+import zmq
+import six.moves
+import six.moves.queue
 from importlib.util import find_spec
 
 import cellprofiler_core.constants.measurement
@@ -12,22 +22,6 @@ import cellprofiler_core.utilities.measurement
 from cellprofiler_core.analysis._analysis import Analysis
 from cellprofiler_core.analysis._runner import Runner
 from cellprofiler_core.analysis.reply import ImageSetSuccess
-
-logger = logging.getLogger(__name__)
-# logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.DEBUG)
-import six.moves
-import inspect
-import numpy
-import os
-import six.moves.queue
-import tempfile
-import threading
-import traceback
-import unittest
-import uuid
-import zmq
-
 import cellprofiler_core.analysis
 import cellprofiler_core.analysis.request as anarequest
 import cellprofiler_core.analysis.reply as anareply
@@ -38,6 +32,9 @@ import cellprofiler_core.preferences
 import cellprofiler_core.measurement
 import cellprofiler_core.utilities.zmq
 import cellprofiler_core.utilities.zmq.communicable.reply.upstream_exit
+
+
+LOGGER = logging.getLogger(__name__)
 
 IMAGE_NAME = "imagename"
 OBJECTS_NAME = "objectsname"
@@ -84,7 +81,7 @@ class TestAnalysis(unittest.TestCase):
             self.join()
 
         def run(self):
-            logger.info("Client thread starting")
+            LOGGER.info("Client thread starting")
             try:
                 self.work_socket = self.zmq_context.socket(zmq.REQ)
                 self.recv_notify_socket = self.zmq_context.socket(zmq.SUB)
@@ -116,17 +113,17 @@ class TestAnalysis(unittest.TestCase):
                             traceback.print_exc()
                             self.response_queue.put((e, None))
             except:
-                logger.warning("Client thread caught exception", exc_info=True)
+                LOGGER.warning("Client thread caught exception", exc_info=True)
                 self.start_signal.release()
             finally:
-                logger.debug("Client thread exiting")
+                LOGGER.debug("Client thread exiting")
 
         def stop(self):
             self.keep_going = False
             self.notify_socket.send(b"Stop")
 
         def send(self, req):
-            logger.debug("    Enqueueing send of %s" % str(type(req)))
+            LOGGER.debug("    Enqueueing send of %s" % str(type(req)))
             self.queue.put((self.do_send, req))
             self.notify_socket.send(b"Send")
             return self.recv
@@ -143,7 +140,7 @@ class TestAnalysis(unittest.TestCase):
                     )
 
         def do_send(self, req):
-            logger.info("    Sending %s" % str(type(req)))
+            LOGGER.info("    Sending %s" % str(type(req)))
             cellprofiler_core.utilities.zmq.communicable.Communicable.send(
                 req, self.work_socket
             )
@@ -156,7 +153,7 @@ class TestAnalysis(unittest.TestCase):
                         if not self.keep_going:
                             raise Exception("Cancelled")
                     if socks.get(self.work_socket, None) == zmq.POLLIN:
-                        logger.debug("    Received response for %s" % str(type(req)))
+                        LOGGER.debug("    Received response for %s" % str(type(req)))
                         return cellprofiler_core.utilities.zmq.communicable.Communicable.recv(
                             self.work_socket
                         )
@@ -164,13 +161,13 @@ class TestAnalysis(unittest.TestCase):
                 self.poller.unregister(self.work_socket)
 
         def recv(self):
-            logger.debug("     Waiting for client thread")
+            LOGGER.debug("     Waiting for client thread")
             exception, result = self.response_queue.get()
             if exception is not None:
-                logger.debug("    Client thread communicated exception")
+                LOGGER.debug("    Client thread communicated exception")
                 raise exception
             else:
-                logger.debug("    Client thread communicated result")
+                LOGGER.debug("    Client thread communicated result")
                 return result
 
         def listen_for_heartbeat(self, address):
@@ -194,7 +191,7 @@ class TestAnalysis(unittest.TestCase):
                         beat = self.keepalive_socket.recv()
                         return beat
             except:
-                logger.info("Failed to listen")
+                LOGGER.info("Failed to listen")
             finally:
                 self.poller.unregister(self.keepalive_socket)
                 self.keepalive_socket.close()
@@ -322,7 +319,7 @@ class TestAnalysis(unittest.TestCase):
                 self.assertEqual(result.module_num, module.module_num)
 
     def test_01_01_start_and_stop(self):
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         self.make_pipeline_and_measurements_and_start()
@@ -338,7 +335,7 @@ class TestAnalysis(unittest.TestCase):
         self.assertIsInstance(
             analysis_finished.measurements, cellprofiler_core.measurement.Measurements
         )
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
@@ -346,7 +343,7 @@ class TestAnalysis(unittest.TestCase):
         """The heartbeat should send b'KeepAlive' each second. When the
         analysis is cancelled or finishes we should see b'Stop' as the final
         transmission on the socket"""
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
@@ -379,7 +376,7 @@ class TestAnalysis(unittest.TestCase):
             assert not spy_thread.is_alive()
             assert len(messages)
             assert messages[-1] == NOTIFY_STOP
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
@@ -392,12 +389,12 @@ class TestAnalysis(unittest.TestCase):
             self.assertSequenceEqual(response.image_set_numbers, (1,))
             self.assertFalse(response.worker_runs_post_group)
             self.assertTrue(response.wants_dictionary)
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
     def test_03_02_get_work_twice(self):
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
@@ -408,12 +405,12 @@ class TestAnalysis(unittest.TestCase):
             self.assertIsInstance(response, anareply.Work)
             response = worker.send(anarequest.Work(worker.analysis_id))()
             self.assertIsInstance(response, anareply.NoWork)
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
     def test_03_03_cancel_before_work(self):
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
@@ -431,13 +428,13 @@ class TestAnalysis(unittest.TestCase):
             #     response,
             #     cellprofiler_core.utilities.zmq.communicable.reply.upstream_exit.BoundaryExited,
             # )
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
     # FIXME: wxPython 4 PR
     # def test_04_01_pipeline_preferences(self):
-    #     logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
+    #     LOGGER.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
     #     pipeline, m = self.make_pipeline_and_measurements_and_start()
     #     cellprofiler_core.preferences.set_headless()
     #     title_font_name = "Rosewood Std Regular"
@@ -477,10 +474,10 @@ class TestAnalysis(unittest.TestCase):
     #         self.assertEqual(preferences[cellprofiler_core.preferences.DEFAULT_OUTPUT_DIRECTORY],
     #                          cellprofiler_core.preferences.get_default_output_directory())
     #
-    #     logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
+    #     LOGGER.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
 
     def test_04_02_initial_measurements_request(self):
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
@@ -522,12 +519,12 @@ class TestAnalysis(unittest.TestCase):
                                 numpy.testing.assert_almost_equal(sv, cv)
             finally:
                 client_measurements.close()
-                logger.debug(
+                LOGGER.debug(
                     "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
                 )
 
     def test_04_03_interaction(self):
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
@@ -543,12 +540,12 @@ class TestAnalysis(unittest.TestCase):
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, anareply.Interaction)
             self.assertEqual(reply.hello, "world")
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
     def test_04_04_01_display(self):
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
@@ -567,12 +564,12 @@ class TestAnalysis(unittest.TestCase):
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, anareply.Ack)
             self.assertEqual(reply.message, "Gimme Pony")
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
     def test_04_04_02_display_post_group(self):
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
@@ -592,12 +589,12 @@ class TestAnalysis(unittest.TestCase):
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, anareply.Ack)
             self.assertEqual(reply.message, "Gimme Pony")
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
     def test_04_05_exception(self):
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
@@ -647,7 +644,7 @@ class TestAnalysis(unittest.TestCase):
                 request.reply(anareply.Ack())
                 reply = fn_interaction_reply()
                 self.assertIsInstance(reply, anareply.Ack)
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
@@ -661,7 +658,7 @@ class TestAnalysis(unittest.TestCase):
         # request.Work (with spin until WorkReply received)
         # request.SharedDictionary
         #
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start(nimage_sets=2)
@@ -690,12 +687,12 @@ class TestAnalysis(unittest.TestCase):
                 self.assertCountEqual(list(ed.keys()), list(d.keys()))
                 for k in list(ed.keys()):
                     numpy.testing.assert_almost_equal(ed[k], d[k])
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
     def test_05_02_groups(self):
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start(
@@ -716,7 +713,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertSequenceEqual(response.image_set_numbers, [3, 4])
             self.assertTrue(response.worker_runs_post_group)
             self.assertFalse(response.wants_dictionary)
-        logger.debug(
+        LOGGER.debug(
             "Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
 
@@ -725,7 +722,7 @@ class TestAnalysis(unittest.TestCase):
         # Test a full cycle of analysis with an image set list
         # with a single image set
         #
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         self.wants_analysis_finished = True
@@ -801,7 +798,7 @@ class TestAnalysis(unittest.TestCase):
     def test_06_02_test_three_imagesets(self):
         # Test an analysis of three imagesets
         #
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         self.wants_analysis_finished = True
@@ -907,7 +904,7 @@ class TestAnalysis(unittest.TestCase):
     def test_06_03_test_grouped_imagesets(self):
         # Test an analysis of four imagesets in two groups
         #
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         self.wants_analysis_finished = True
@@ -998,7 +995,7 @@ class TestAnalysis(unittest.TestCase):
     def test_06_04_test_restart(self):
         # Test a restart of an analysis
         #
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         self.wants_analysis_finished = True
@@ -1121,7 +1118,7 @@ class TestAnalysis(unittest.TestCase):
         # Test an analysis of four imagesets in two groups with all but one
         # complete.
         #
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         self.wants_analysis_finished = True
@@ -1202,7 +1199,7 @@ class TestAnalysis(unittest.TestCase):
         #
         # Test a transfer of the relationships table.
         #
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         self.wants_analysis_finished = True
@@ -1316,7 +1313,7 @@ class TestAnalysis(unittest.TestCase):
         #
         # Test worker sending AnalysisCancelRequest
         #
-        logger.debug(
+        LOGGER.debug(
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         self.wants_analysis_finished = True

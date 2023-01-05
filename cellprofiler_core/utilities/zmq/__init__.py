@@ -18,6 +18,9 @@ from cellprofiler_core.utilities.zmq.communicable.request import (
     Request,
 )
 
+
+LOGGER = logging.getLogger(__name__)
+
 NOTIFY_SOCKET_ADDR = "inproc://BoundaryNotifications"
 SD_KEY_DICT = "__keydict__"
 
@@ -256,10 +259,10 @@ def start_lock_thread():
                 request = msg[2]
                 assert isinstance(request, LockStatusRequest)
                 assert isinstance(boundary, Boundary)
-                logging.info("Received lock status request for %s" % request.uid)
+                LOGGER.info("Received lock status request for %s" % request.uid)
                 reply = LockStatusReply(request.uid, request.uid in locked_uids)
                 if reply.locked:
-                    logging.info(
+                    LOGGER.info(
                         "Denied lock request for %s" % locked_uids[request.uid]
                     )
                 boundary.enqueue_reply(request, reply)
@@ -277,7 +280,7 @@ def start_lock_thread():
                 except Exception as e:
                     msg[3].put(e)
         __lock_thread = None
-        logging.info("Exiting the lock thread")
+        LOGGER.info("Exiting the lock thread")
 
     __lock_thread = threading.Thread(target=lock_thread_fn)
     __lock_thread.setName("FileLockThread")
@@ -309,12 +312,12 @@ def lock_file(path, timeout=3):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-        logging.info("Lockfile for %s already exists - contacting owner" % path)
+        LOGGER.info("Lockfile for %s already exists - contacting owner" % path)
         with open(lock_path, "r") as f:
             remote_address = f.readline().strip()
             remote_uid = f.readline().strip()
         if len(remote_address) > 0 and len(remote_uid) > 0:
-            logging.info("Owner is %s" % remote_address)
+            LOGGER.info("Owner is %s" % remote_address)
             request_socket = the_boundary.zmq_context.socket(zmq.REQ)
             request_socket.setsockopt(zmq.LINGER, 0)
             assert isinstance(request_socket, zmq.Socket)
@@ -333,7 +336,7 @@ def lock_file(path, timeout=3):
                         lock_response = lock_request.recv(socket)
                         if isinstance(lock_response, LockStatusReply):
                             if lock_response.locked:
-                                logging.info("%s is locked" % path)
+                                LOGGER.info("%s is locked" % path)
                                 return False
                             keep_polling = False
         #

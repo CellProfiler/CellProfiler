@@ -4,10 +4,9 @@ import os
 import re
 import tempfile
 
-import bioformats
-import bioformats.formatreader
 import numpy
 import pytest
+import skimage.io
 
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.constants.measurement import COLTYPE_INTEGER
@@ -712,8 +711,6 @@ def test_scaling():
     """Test loading an image scaled and unscaled"""
     folder = "loaddata"
     file_name = "1-162hrh2ax2.tif"
-    if not cellprofiler_core.utilities.java.JAVA_STARTED:
-        start_java()
     path = tests.modules.make_12_bit_image(folder, file_name, (22, 18))
     csv_text = (
         "Image_PathName_MyFile,Image_FileName_MyFile\n" "%s,%s\n" % os.path.split(path)
@@ -749,8 +746,7 @@ def test_load_objects():
     r.seed(1101)
     labels = r.randint(0, 10, size=(30, 20)).astype(numpy.uint8)
     handle, name = tempfile.mkstemp(".png")
-    start_java()
-    bioformats.write_image(name, labels, bioformats.PT_UINT8)
+    skimage.io.imsave(name, labels)
     os.close(handle)
     png_path, png_file = os.path.split(name)
     sbs_dir = os.path.join(get_data_directory(), "ExampleSBSImages")
@@ -798,7 +794,6 @@ def test_load_objects():
             value = measurements.get_current_measurement(OBJECTS_NAME, feature)
             assert len(value) == 9
     finally:
-        bioformats.formatreader.clear_image_reader_cache()
         os.remove(name)
         os.remove(csv_name)
 

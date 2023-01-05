@@ -21,6 +21,8 @@ from ..setting import Setting
 from ..setting import ValidationError
 
 
+LOGGER = logging.getLogger(__name__)
+
 class Module:
     """ Derive from the abstract module class to create your own module in Python
 
@@ -111,7 +113,7 @@ class Module:
         self.module_name = attributes["module_name"]
         setting_values = [setting["value"] for setting in settings]
         if attributes["variable_revision_number"] > self.variable_revision_number:
-            logging.warning(f"Loaded module '{self.module_name}' is from a newer version of CellProfiler - "
+            LOGGER.warning(f"Loaded module '{self.module_name}' is from a newer version of CellProfiler - "
                             f"v{attributes['variable_revision_number']}, current version is "
                             f"v{self.variable_revision_number}. Settings may load incorrectly.")
         self.set_settings_from_values(
@@ -398,8 +400,8 @@ class Module:
             for setting in self.visible_settings():
                 setting.test_valid(pipeline)
             self.validate_module(pipeline)
-        except ValidationError as instance:
-            raise instance
+        except ValidationError as ve:
+            raise ve
         except Exception as e:
             raise ValidationError(
                 "Exception in cpmodule.test_valid %s" % e, self.visible_settings()[0]

@@ -22,9 +22,11 @@ from h5py.h5t import string_dtype, check_string_dtype, vlen_dtype
 
 import cellprofiler_core.utilities.legacy
 
-install_aliases()
 
 LOGGER = logging.getLogger(__name__)
+
+install_aliases()
+
 
 version_number = 1
 VERSION = "Version"
@@ -183,7 +185,7 @@ class HDF5Dict(object):
         self.filename = hdf5_filename
         self.top_level_group_name = top_level_group_name
         LOGGER.debug(
-            "HDF5Dict.__init__(): %s, temporary=%s, copy=%s, mode=%s",
+            "%s, temporary=%s, copy=%s, mode=%s",
             self.filename,
             self.is_temporary,
             copy,
@@ -363,7 +365,7 @@ class HDF5Dict(object):
 
     def __del__(self):
         LOGGER.debug(
-            "HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary
+            "%s, temporary=%s", self.filename, self.is_temporary
         )
         self.close()
 

@@ -34,6 +34,9 @@ from cellprofiler_core.constants.worker import (
 from cellprofiler_core.preferences import set_always_continue, set_conserve_memory
 from cellprofiler_core.worker._worker import Worker
 
+
+LOGGER = logging.getLogger(__name__)
+
 """Set the log level through the environment by specifying AW_LOG_LEVEL"""
 AW_LOG_LEVEL = "AW_LOG_LEVEL"
 
@@ -80,6 +83,7 @@ def aw_parse_args():
     parser.add_option(
         "--log-level",
         dest="log_level",
+        type="int",
         help="Logging level for logger: DEBUG, INFO, WARNING, ERROR",
         default=os.environ.get(AW_LOG_LEVEL, logging.INFO),
     )
@@ -122,7 +126,10 @@ def aw_parse_args():
 
     logging.root.setLevel(options.log_level)
     if len(logging.root.handlers) == 0:
-        logging.root.addHandler(logging.StreamHandler())
+        stream_handler = logging.StreamHandler()
+        fmt = logging.Formatter("%(process)d|%(levelno)s|%(name)s::%(funcName)s: %(message)s")
+        stream_handler.setFormatter(fmt)
+        logging.root.addHandler(stream_handler)
 
     if not options.work_server_address and options.work_server_address and \
             options.analysis_id:
@@ -144,7 +151,7 @@ def aw_parse_args():
     if options.always_continue is not None:
         set_always_continue(options.always_continue, globally=False)
     else:
-        logging.warning("Plugins directory not set")
+        LOGGER.warning("Plugins directory not set")
 
 
 if __name__ == "__main__":
@@ -249,14 +256,14 @@ def main():
             ):
                 worker_thread.join()
             the_zmq_context.destroy(linger=0)
-        logging.debug("Worker thread joined")
+        LOGGER.debug("Worker thread joined")
         #
         # Shutdown - need to handle some global cleanup here
         #
         try:
             stop_java()
         except:
-            logging.warning("Failed to stop the JVM", exc_info=True)
+            LOGGER.warning("Failed to stop the JVM", exc_info=True)
 
 
 def monitor_keepalive(context, keepalive_address):
@@ -289,7 +296,7 @@ def monitor_keepalive(context, keepalive_address):
         event = keepalive_socket.poll(5000)
         if not event:
             missed += 1
-            logging.warning(f"Worker failed to receive communication for"
+            LOGGER.warning(f"Worker failed to receive communication for"
                             f" {5 * missed} seconds")
         else:
             missed = 0
@@ -301,12 +308,12 @@ def monitor_keepalive(context, keepalive_address):
     keepalive_socket.close()
     if missed >= 3:
         # Parent is dead, hard kill
-        logging.critical("Worker stopped receiving communication from "
+        LOGGER.critical("Worker stopped receiving communication from "
                          "CellProfiler, shutting down now")
     else:
         # Stop signal captured, give some time to shut down gracefully.
         time.sleep(10)
-    logging.info("Cancelling worker")
+    LOGGER.info("Cancelling worker")
     # hard exit after 10 seconds unless app exits
 
     for m in all_measurements:
@@ -314,7 +321,7 @@ def monitor_keepalive(context, keepalive_address):
             m.close()
         except:
             pass
-    logging.error("Worker failed to stop gracefully, forcing exit now")
+    LOGGER.error("Worker failed to stop gracefully, forcing exit now")
     os._exit(0)
 
 

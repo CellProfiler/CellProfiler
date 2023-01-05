@@ -25,6 +25,9 @@ from ._headless_configuration import HeadlessConfiguration
 from ..constants.reader import ALL_READERS
 from ..utilities.image import image_resource
 
+
+LOGGER = logging.getLogger(__name__)
+
 """get_absolute_path - mode = output. Assume "." is the default output dir"""
 ABSPATH_OUTPUT = "abspath_output"
 
@@ -113,12 +116,12 @@ def get_config():
             try:
                 preferences_version_number = int(config_read(PREFERENCES_VERSION))
                 if preferences_version_number != PREFERENCES_VERSION_NUMBER:
-                    logging.warning(
+                    LOGGER.warning(
                         "Preferences version mismatch: expected %d, at %d"
                         % (PREFERENCES_VERSION_NUMBER, preferences_version_number)
                     )
             except:
-                logging.warning(
+                LOGGER.warning(
                     "Preferences version was %s, not a number. Resetting to current version"
                     % preferences_version_number
                 )
@@ -302,7 +305,7 @@ def config_write_typed(key, value, key_type=None, flush=True):
     else:
         success = config.Write(key, value)
     if not success:
-        logging.error(f"Unable to write preference key {key}")
+        LOGGER.error(f"Unable to write preference key {key}")
         return
     if flush:
         config.Flush()
@@ -319,7 +322,7 @@ def export_to_json(path):
         del config_dict[key]
     with open(path, mode='wt') as fd:
         json.dump(config_dict, fd)
-        logging.info(f"Wrote config to {path}")
+        LOGGER.info(f"Wrote config to {path}")
 
 
 def cell_profiler_root_directory():
@@ -842,10 +845,10 @@ def get_default_image_directory():
             __default_image_directory = os.path.normcase(default_image_directory)
             return __default_image_directory
     except:
-        logging.error(
+        LOGGER.error(
             "Unknown failure when retrieving the default image directory", exc_info=True
         )
-    logging.warning(
+    LOGGER.warning(
         "Warning: current path of %s is not a valid directory. Switching to home directory."
         % (default_image_directory.encode("ascii", "replace"))
     )
@@ -912,11 +915,11 @@ def get_default_output_directory():
             __default_output_directory = os.path.normcase(default_output_directory)
             return __default_output_directory
     except:
-        logging.error(
+        LOGGER.error(
             "Unknown failure when retrieving the default output directory",
             exc_info=True,
         )
-    logging.warning(
+    LOGGER.warning(
         "Warning: current path of %s is not a valid directory. Switching to home directory."
         % (default_output_directory.encode("ascii", "replace"))
     )

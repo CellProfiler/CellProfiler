@@ -15,6 +15,7 @@ import urllib.parse
 import urllib.request
 import uuid
 import weakref
+from ast import literal_eval
 
 import numpy
 
@@ -84,6 +85,7 @@ from ..constants.pipeline import SAD_PROOFPOINT_COOKIE
 from ..constants.workspace import DISPOSITION_CANCEL
 from ..constants.workspace import DISPOSITION_PAUSE
 from ..constants.workspace import DISPOSITION_SKIP
+from ..constants.image import PASSTHROUGH_SCHEMES
 from ..constants.modules.metadata import X_AUTOMATIC_EXTRACTION
 from ..image import ImageSetList
 from ..measurement import Measurements
@@ -97,6 +99,9 @@ from ..utilities.measurement import load_measurements
 from ..workspace import Workspace
 
 from cellprofiler_core import __version__
+
+
+LOGGER = logging.getLogger(__name__)
 
 
 def _is_fp(x):
@@ -234,7 +239,7 @@ class Pipeline:
             self.loadtxt(fd, raise_on_error=True)
             return True
         except Exception as e:
-            logging.warning(
+            LOGGER.warning(
                 "Modules reloaded, but could not reinstantiate pipeline with new versions.",
                 exc_info=True,
             )
@@ -258,7 +263,7 @@ class Pipeline:
         if header.startswith("CellProfiler Pipeline: http://www.cellprofiler.org"):
             return True
         if re.search(SAD_PROOFPOINT_COOKIE, header):
-            logging.info('print_emoji(":cat_crying_because_of_proofpoint:")')
+            LOGGER.info('print_emoji(":cat_crying_because_of_proofpoint:")')
             return True
         return False
 
@@ -347,7 +352,7 @@ class Pipeline:
 
     @staticmethod
     def respond_to_version_mismatch_error(message):
-        logging.warning(message)
+        LOGGER.warning(message)
 
     def loadtxt(self, fp_or_filename, raise_on_error=False):
         """Load a pipeline from a text file
@@ -398,8 +403,6 @@ class Pipeline:
 
     def validate_pipeline_file(self, fd, module_count):
         version = NATIVE_VERSION
-        do_deprecated_utf16_decode = False
-        do_utf16_decode = False
         has_image_plane_details = False
         git_hash = None
         pipeline_version = __version__
@@ -426,12 +429,6 @@ class Pipeline:
                             version, NATIVE_VERSION
                         )
                     )
-                elif 1 < version < 4:
-                    do_deprecated_utf16_decode = True
-                elif version == 4:
-                    do_utf16_decode = True
-                elif version == 5:
-                    pass
             elif kwd in (H_SVN_REVISION, H_DATE_REVISION,):
                 pipeline_version = int(value)
             elif kwd == H_MODULE_COUNT:
@@ -453,6 +450,8 @@ class Pipeline:
         return git_hash, has_image_plane_details, module_count, pipeline_version
 
     def validate_pipeline_version(self, current_version, git_hash, pipeline_version):
+        # if "pipeline_version" is an actual dave revision, ie unicode time
+        # at some point this changed to CellProfiler version (e.g. CP 4.2.4 would be 400)
         if 20080101000000 < pipeline_version < 30080101000000:
             # being optomistic... a millenium should be OK, no?
             second, minute, hour, day, month = [
@@ -474,18 +473,18 @@ class Pipeline:
             if (not get_headless()) and pipeline_version < current_version:
                 if git_hash is not None:
                     message = (
-                        "Your pipeline was saved using an old version\n"
-                        "of CellProfiler (rev {}{}).\n"
-                        "The current version of CellProfiler can load\n"
-                        "and run this pipeline, but if you make changes\n"
-                        "to it and save, the older version of CellProfiler\n"
-                        "(perhaps the version your collaborator has?) may\n"
-                        "not be able to load it.\n\n"
-                        "You can ignore this warning if you do not plan to save\n"
-                        "this pipeline or if you will only use it with this or\n"
-                        "later versions of CellProfiler."
+                        "\n\tYour pipeline was saved using an old version\n"
+                        "\tof CellProfiler (rev {}{}).\n"
+                        "\tThe current version of CellProfiler can load\n"
+                        "\tand run this pipeline, but if you make changes\n"
+                        "\tto it and save, the older version of CellProfiler\n"
+                        "\t(perhaps the version your collaborator has?) may\n"
+                        "\tnot be able to load it.\n\n"
+                        "\tYou can ignore this warning if you do not plan to save\n"
+                        "\tthis pipeline or if you will only use it with this or\n"
+                        "\tlater versions of CellProfiler."
                     ).format(git_hash, pipeline_date)
-                    logging.warning(message)
+                    LOGGER.warning(message)
                 else:
                     # pipeline versions pre-3.0.0 have unpredictable formatting
                     if pipeline_version == 300:
@@ -506,7 +505,7 @@ class Pipeline:
                         "this pipeline or if you will only use it with this or\n"
                         "later versions of CellProfiler."
                     ).format(pipeline_version)
-                    logging.warning(message)
+                    LOGGER.warning(message)
 
         return pipeline_version
 
@@ -571,7 +570,7 @@ class Pipeline:
             except Exception as instance:
                 if raise_on_error:
                     raise
-                logging.error("Failed to load pipeline", exc_info=True)
+                LOGGER.error("Failed to load pipeline", exc_info=True)
                 event = LoadException(instance, module, module_name, settings)
                 self.notify_listeners(event)
                 if event.cancel_run:
@@ -580,8 +579,15 @@ class Pipeline:
                 new_modules.append(module)
                 module_number += 1
             if isinstance(module, Metadata) and module.removed_automatic_extraction:
+                # turn on extraction in Images, if metadata module was enabled
                 if isinstance(new_modules[0], Images) and module.wants_metadata.value:
                     new_modules[0].want_split.value = True
+                # now disable metdata module if the only extraction group was
+                # extracting from image file headers; and reset the default
+                # extraction method
+                if module.extraction_method_count.value == 0:
+                    module.wants_metadata.value = 'No'
+                    module.add_extraction_method(False)
         return new_modules
 
     def setup_module(
@@ -604,13 +610,17 @@ class Pipeline:
             raise ValueError("Invalid format for attributes: %s" % attribute_string)
         # Fix for array dtypes which contain split separator
         attribute_string = attribute_string.replace("dtype='|S", "dtype='S")
-        attribute_strings = attribute_string[1:-1].split("|")
+        if len(re.split("(?P<note>\|notes:\[.*?\]\|)",attribute_string)) ==3:
+            # 4674- sometimes notes have pipes
+            prenote,note,postnote = re.split("(?P<note>\|notes:\[.*?\]\|)",attribute_string)
+            attribute_strings = prenote[1:].split("|")
+            attribute_strings += [note[1:-1]]
+            attribute_strings += postnote[:-1].split("|") 
+        else:
+            #old or weird pipeline without notes
+            attribute_strings = attribute_string[1:-1].split("|")
         variable_revision_number = None
-        # make batch_state decodable from text pipelines
-        # NOTE, MAGIC HERE: These variables are **necessary**, even though they
-        # aren't used anywhere obvious. Removing them **will** break these unit tests.
-        array = numpy.array
-        uint8 = numpy.uint8
+
         for a in attribute_strings:
             if a.isascii():
                 a = a.encode("utf-8").decode("unicode_escape")
@@ -622,8 +632,8 @@ class Pipeline:
             attribute, value = a.split(":", 1)
             if attribute == "notes":
                 try:
-                    value = eval(value)
-                except SyntaxError:
+                    value = literal_eval(value)
+                except SyntaxError as e:
                     value = value[1:-1].replace('"', "").replace("'", "").split(",")
                 if any([chr(226) in line for line in value]):
                     # There were some unusual UTF-8 characters present, let's try to fix them.
@@ -633,16 +643,16 @@ class Pipeline:
                             for line in value
                         ]
                     except Exception as e:
-                        print(
-                            f"Error during notes decoding - {e} \nSome characters may have been lost"
+                        LOGGER.error(
+                            f"Error during notes decoding\n\t{e}\n\tSome characters may have been lost"
                         )
+            elif attribute == "batch_state":
+                value = numpy.zeros((0,), numpy.uint8)
             else:
-                value = eval(value)
+                value = literal_eval(value)
             if attribute in skip_attributes:
                 continue
-            # En/decode needed to read example cppipe format
-            # TODO: remove en/decode when example cppipe no longer has \x__ characters
-            # value = eval(value.encode().decode("unicode_escape"))
+
             if attribute == "variable_revision_number":
                 variable_revision_number = value
             else:
@@ -924,7 +934,7 @@ class Pipeline:
 
             last_image_number = None
 
-            logging.info("Times reported are CPU and Wall-clock times for each module")
+            LOGGER.info("Times reported are CPU and Wall-clock times for each module")
 
             __group = self.group(
                 grouping,
@@ -1032,7 +1042,7 @@ class Pipeline:
                         self.run_module(module, workspace)
                     except Exception as instance:
                         print("pipeline_exception")
-                        logging.error(
+                        LOGGER.error(
                             "Error detected during run of module %s",
                             module.module_name,
                             exc_info=True,
@@ -1051,7 +1061,7 @@ class Pipeline:
                     cpu_delta_sec = max(0, cpu_t1 - cpu_t0)
                     wall_delta_sec = max(0, wall_t1 - wall_t0)
 
-                    logging.info(
+                    LOGGER.info(
                         "%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs"
                         % (
                             start_time.ctime(),
@@ -1071,7 +1081,7 @@ class Pipeline:
 
                             fig.Refresh()
                         except Exception as instance:
-                            logging.error(
+                            LOGGER.error(
                                 "Failed to display results for module %s",
                                 module.module_name,
                                 exc_info=True,
@@ -1230,18 +1240,18 @@ class Pipeline:
                         if module in self.redundancy_map and len(self.modules()) > module.module_num:
                             to_forget = self.redundancy_map[module]
                             for image_name in to_forget:
-                                logging.info(f"Releasing memory for redundant image {image_name}")
+                                LOGGER.info(f"Releasing memory for redundant image {image_name}")
                                 workspace.image_set.clear_image(image_name)
                         gc.collect()
                 except Exception as e:
-                    logging.warning(f"Encountered error during memory cleanup: {e}")
+                    LOGGER.warning(f"Encountered error during memory cleanup: {e}")
             except CancelledException:
                 # Analysis worker interaction handler is telling us that
                 # the UI has cancelled the run. Forward exception upward.
                 raise
             except Exception as exception:
                 print("run_image_set_exception, get_always_continue",get_always_continue())
-                logging.error(
+                LOGGER.error(
                     "Error detected during run of module %s#%d",
                     module.module_name,
                     module.module_num,
@@ -1265,7 +1275,7 @@ class Pipeline:
             cpu_t1 = sum(os_times[:-1])
             cpu_delta_secs = max(0, cpu_t1 - cpu_t0)
             wall_delta_secs = max(0, wall_t1 - wall_t0)
-            logging.info(
+            LOGGER.info(
                 "%s: Image # %d, module %s # %d: CPU_time = %.2f secs, Wall_time = %.2f secs"
                 % (
                     start_time.ctime(),
@@ -1493,7 +1503,7 @@ class Pipeline:
                         self.clear_measurements(workspace.measurements)
                         break
                 except Exception as instance:
-                    logging.error(
+                    LOGGER.error(
                         "Failed to prepare run for module %s",
                         module.module_name,
                         exc_info=True,
@@ -1596,7 +1606,7 @@ class Pipeline:
             try:
                 module.post_run(workspace)
             except Exception as instance:
-                logging.error(
+                LOGGER.error(
                     "Failed to complete post_run processing for module %s."
                     % module.module_name,
                     exc_info=True,
@@ -1613,7 +1623,7 @@ class Pipeline:
                     workspace.post_run_display(module)
                 except Exception as instance:
                     # Warn about display failure but keep going.
-                    logging.warning(
+                    LOGGER.warning(
                         "Caught exception during post_run_display for module %s."
                         % module.module_name,
                         exc_info=True,
@@ -1645,7 +1655,7 @@ class Pipeline:
                 workspace.set_module(module)
                 module.prepare_to_create_batch(workspace, fn_alter_path)
             except Exception as instance:
-                logging.error(
+                LOGGER.error(
                     "Failed to collect batch information for module %s",
                     module.module_name,
                     exc_info=True,
@@ -1741,7 +1751,7 @@ class Pipeline:
             try:
                 module.prepare_group(workspace, grouping, image_numbers)
             except Exception as instance:
-                logging.error(
+                LOGGER.error(
                     "Failed to prepare group in module %s",
                     module.module_name,
                     exc_info=True,
@@ -1763,7 +1773,7 @@ class Pipeline:
             try:
                 module.post_group(workspace, grouping)
             except Exception as instance:
-                logging.error(
+                LOGGER.error(
                     "Failed during post-group processing for module %s"
                     % module.module_name,
                     exc_info=True,
@@ -1779,7 +1789,7 @@ class Pipeline:
                 try:
                     workspace.post_group_display(module)
                 except:
-                    logging.warning(
+                    LOGGER.warning(
                         "Failed during post group display for module %s"
                         % module.module_name,
                         exc_info=True,
@@ -1891,7 +1901,7 @@ class Pipeline:
     def enable_module(self, module):
         """Enable a module = make it executable"""
         if module.enabled:
-            logging.warning(
+            LOGGER.warning(
                 "Asked to enable module %s, but it was already enabled"
                 % module.module_name
             )
@@ -1908,7 +1918,7 @@ class Pipeline:
     def disable_module(self, module):
         """Disable a module = prevent it from being executed"""
         if not module.enabled:
-            logging.warning(
+            LOGGER.warning(
                 "Asked to disable module %s, but it was already disabled"
                 % module.module_name
             )
@@ -2036,7 +2046,7 @@ class Pipeline:
         try:
             urls, metadata, series_names = file_list.get_filelist(want_metadata=True)
         except Exception as instance:
-            logging.error("Failed to get file list from workspace", exc_info=True)
+            LOGGER.error("Failed to get file list from workspace", exc_info=True)
             x = IPDLoadException("Failed to get file list from workspace")
             self.notify_listeners(x)
             if x.cancel_run:
@@ -2068,7 +2078,7 @@ class Pipeline:
                     self.read_file_list(fd, add_undo=add_undo)
             elif any(
                 pathname.startswith(protocol)
-                for protocol in ("http", "https", "ftp", "omero", "s3", "gs")
+                for protocol in PASSTHROUGH_SCHEMES
             ):
                 with urllib.request.urlopen(pathname) as response:
                     data = response.read().decode("utf-8").splitlines()

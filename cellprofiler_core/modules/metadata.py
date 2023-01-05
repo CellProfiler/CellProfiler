@@ -8,7 +8,7 @@ import time
 import urllib.request
 
 from ..constants.image import MD_SIZE_C, MD_SIZE_T, MD_SIZE_Z, MD_SIZE_X, MD_SIZE_Y
-from ..constants.measurement import COLTYPE_FLOAT, C_Z, C_T, C_CHANNEL, FTR_WELL, ROW_KEYS, COL_KEYS
+from ..constants.measurement import COLTYPE_FLOAT, C_Z, C_T, C_C, FTR_WELL, ROW_KEYS, COL_KEYS
 from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_VARCHAR
 from ..constants.measurement import COLTYPE_VARCHAR_FILE_NAME
@@ -23,6 +23,7 @@ from ..constants.modules.metadata import DEFAULT_METADATA_TAGS
 from ..constants.modules.metadata import CSV_JOIN_NAME
 from ..constants.modules.metadata import IPD_JOIN_NAME
 from ..constants.modules.metadata import COL_PATH
+from ..constants.modules.metadata import COL_URL
 from ..constants.modules.metadata import COL_SERIES
 from ..constants.modules.metadata import DTC_ALL
 from ..constants.modules.metadata import DTC_CHOOSE
@@ -72,6 +73,9 @@ from cellprofiler_core.setting.text import Filename
 from cellprofiler_core.utilities.image import generate_presigned_url
 from cellprofiler_core.utilities.image import image_resource
 from cellprofiler_core.utilities.measurement import find_metadata_tokens
+
+
+LOGGER = logging.getLogger(__name__)
 
 __doc__ = """\
 Metadata
@@ -695,7 +699,7 @@ not being applied, your choice on this setting may be the culprit.
             group.imported_metadata_col_names = rdr.fieldnames
             fd.close()
         except Exception as e:
-            print("Error while decoding CSV:", e)
+            LOGGER.error(f"Error while decoding CSV - {csv_path}: {e.strerror}")
             return None
         return group.imported_metadata_col_names
 
@@ -783,7 +787,7 @@ not being applied, your choice on this setting may be the culprit.
             result += [self.add_extraction_method_button]
             try:
                 has_keys = len(self.get_dt_metadata_keys()) > 0
-            except Exception:
+            except Exception as e:
                 has_keys = False
             if has_keys:
                 result += [self.dtc_divider, self.data_type_choice]
@@ -888,7 +892,8 @@ not being applied, your choice on this setting may be the culprit.
                             file_object.add_metadata(candidate_dict)
                             break
                     if not valid:
-                        print(f"No matching metadata found for {file_object.filename}")
+                        LOGGER.info(f"No matching metadata found for {file_object.filename}")
+                        break
                     pass
                 else:
                     raise NotImplementedError(f"Invalid extraction method '{group.extraction_method}'")
@@ -1060,15 +1065,16 @@ not being applied, your choice on this setting may be the culprit.
 
     def get_metadata_keys(self):
         """Return a collection of metadata keys to be associated with files"""
+        keys = set([COL_URL])
         if not self.wants_metadata:
-            return []
+            return keys
         keys = set(DEFAULT_METADATA_TAGS)
         for extract_group in self.extraction_methods:
             if extract_group.extraction_method == X_MANUAL_EXTRACTION:
                 self.compile_regex(extract_group)
                 keys.update(extract_group.regex_pattern.groupindex.keys())
             elif extract_group.extraction_method == X_IMPORTED_EXTRACTION:
-                keys.update(self.get_csv_header(extract_group))
+                keys.update(self.get_csv_header(extract_group) or '')
         if FTR_WELL not in keys and any(k in keys for k in ROW_KEYS) and any(k in keys for k in COL_KEYS):
             keys.add(FTR_WELL)
         return keys
@@ -1079,7 +1085,7 @@ not being applied, your choice on this setting may be the culprit.
         """
         return list(
             filter(
-                (lambda k: k not in self.NUMERIC_DATA_TYPES), self.get_metadata_keys()
+                (lambda k: k not in self.NUMERIC_DATA_TYPES), self.get_metadata_keys() or []
             )
         )
 
@@ -1091,7 +1097,7 @@ not being applied, your choice on this setting may be the culprit.
         MD_SIZE_Y,
         C_SERIES,
         C_FRAME,
-        C_CHANNEL,
+        C_C,
         C_T,
         C_Z,
     )
@@ -1130,13 +1136,13 @@ not being applied, your choice on this setting may be the culprit.
             try:
                 return int(value)
             except ValueError:
-                logging.warning(f"Metadata value {value} cannot be interpreted as an integer number.")
+                LOGGER.warning(f"Metadata value {value} cannot be interpreted as an integer number.")
                 return value
         elif data_type == DataTypes.DT_FLOAT:
             try:
                 return float(value)
             except ValueError:
-                logging.warning(f"Metadata value {value} cannot be interpreted as a floating point number.")
+                LOGGER.warning(f"Metadata value {value} cannot be interpreted as a floating point number.")
                 return value
 
         return value

@@ -2,7 +2,7 @@
 import itertools
 import logging
 
-from cellprofiler_core.constants.measurement import C_SERIES_NAME, C_CHANNEL, C_SERIES, C_Z, C_T
+from cellprofiler_core.constants.measurement import C_SERIES_NAME, C_C, C_SERIES, C_Z, C_T
 from cellprofiler_core.pipeline import ImagePlane
 from cellprofiler_core.constants.module import FILTER_RULES_BUTTONS_HELP
 from cellprofiler_core.constants.modules.images import FILTER_CHOICE_ALL
@@ -23,6 +23,9 @@ from cellprofiler_core.setting.filter import FilePredicate
 from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.utilities.image import image_resource
 from cellprofiler_core.utilities.image import is_image
+
+
+LOGGER = logging.getLogger(__name__)
 
 __doc__ = """\
 Images
@@ -290,7 +293,7 @@ pass the current filter.
     def filter_file_list(self, workspace):
         file_list = workspace.pipeline.file_list
         if file_list and not workspace.file_list.has_files():
-            logging.warning("Workspace file list is empty, will populate from pipeline."
+            LOGGER.warning("Workspace file list is empty, will populate from pipeline."
                             "This may happen if you're running in headless mode.")
             workspace.file_list.add_files_to_filelist([f.url for f in file_list])
         if self.filter_choice != FILTER_CHOICE_NONE:
@@ -314,7 +317,7 @@ pass the current filter.
             return True
         file_list = self.filter_file_list(workspace)
         if self.want_split.value:
-            logging.debug("Metadata extraction will be performed now if needed")
+            LOGGER.debug("Metadata extraction will be performed now if needed")
             if self.extract_metadata.callback is not None:
                 # If GUI is present perform extraction and refresh the file list GUI
                 self.extract_metadata.callback()
@@ -350,7 +353,7 @@ pass the current filter.
             return []
         result = [C_SERIES, C_SERIES_NAME]
         if self.split_C.value:
-            result.append(C_CHANNEL)
+            result.append(C_C)
         if self.split_T.value:
             result.append(C_T)
         if self.split_Z.value:

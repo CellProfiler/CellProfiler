@@ -20,7 +20,7 @@ from ..constants.measurement import AGG_STD_DEV
 from ..constants.measurement import COLTYPE_FLOAT
 from ..constants.measurement import COLTYPE_INTEGER
 from ..constants.measurement import COLTYPE_VARCHAR
-from ..constants.measurement import C_CHANNEL
+from ..constants.measurement import C_C
 from ..constants.measurement import C_CHANNEL_TYPE
 from ..constants.measurement import C_FILE_NAME
 from ..constants.measurement import C_FRAME
@@ -61,6 +61,8 @@ from ..utilities.measurement import agg_ignore_feature
 from ..utilities.measurement import get_agg_measurement_name
 from ..utilities.measurement import make_temporary_file
 
+
+LOGGER = logging.getLogger(__name__)
 
 class Measurements:
     """Represents measurements made on images and objects
@@ -106,11 +108,7 @@ class Measurements:
         elif filename is None:
             fd, filename = make_temporary_file()
             is_temporary = True
-            import traceback
-
-            logging.debug("Created temporary file %s" % filename)
-            for frame in traceback.extract_stack():
-                logging.debug("{}: ({} {}): {}".format(*frame))
+            LOGGER.debug("Created temporary file %s" % filename)
 
         else:
             is_temporary = False
@@ -1019,7 +1017,7 @@ class Measurements:
                             value = self[
                                 IMAGE, mname, image_set_number,
                             ]
-                            if value > max_value:
+                            if value and value > max_value:
                                 max_value = value
                     result += str(max_value)
                 else:
@@ -1273,7 +1271,7 @@ class Measurements:
                 column.append(field)
             last_image_number = image_number
         if last_image_number == 0:
-            logging.warn("No image sets were loaded")
+            LOGGER.warn("No image sets were loaded")
             return
         if start is None:
             image_numbers = list(range(1, last_image_number + 1))
@@ -1315,7 +1313,7 @@ class Measurements:
             C_FILE_NAME,
             C_SERIES,
             C_FRAME,
-            C_CHANNEL,
+            C_C,
             C_Z,
             C_T,
             C_OBJECTS_URL,
@@ -1606,7 +1604,7 @@ class Measurements:
                     )
 
                 if image.pixel_data.shape[-1] == 4:
-                    logging.warning("Discarding alpha channel.")
+                    LOGGER.warning("Discarding alpha channel.")
 
                     return RGBImage(image)
 

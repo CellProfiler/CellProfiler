@@ -1,18 +1,16 @@
 import os
 import tempfile
-
-import cellprofiler_core.utilities.legacy
-
-from bioformats import PT_UINT16
-from bioformats.formatwriter import write_image
 import logging
 import functools
 import hashlib
-
-logger = logging.getLogger(__name__)
 import numpy
 import unittest
 from urllib.request import URLopener
+import skimage.io
+
+import cellprofiler_core.utilities.legacy
+
+LOGGER = logging.getLogger(__name__)
 
 __temp_example_images_folder = None
 __temp_test_images_folder = None
@@ -38,7 +36,7 @@ def example_images_directory():
             return path
     if __temp_example_images_folder is None:
         __temp_example_images_folder = tempfile.mkdtemp(prefix="cp_exampleimages")
-        logger.warning(
+        LOGGER.warning(
             "Creating temporary folder %s for example images"
             % __temp_example_images_folder
         )
@@ -60,7 +58,7 @@ def testimages_directory():
         return path
     if __temp_test_images_folder is None:
         __temp_test_images_folder = tempfile.mkdtemp(prefix="cp_testimages")
-        logger.warning(
+        LOGGER.warning(
             "Creating temporary folder %s for test images" % __temp_test_images_folder
         )
     return __temp_test_images_folder
@@ -125,7 +123,11 @@ def make_12_bit_image(folder, filename, shape):
     if not os.path.isdir(os.path.dirname(path)):
         os.makedirs(os.path.dirname(path))
 
-    write_image(path, img, PT_UINT16)
+    if len(shape) > 2:
+        skimage.io.imsave(path, numpy.transpose(img, (2,0,1)), imagej=True)
+    else:
+        skimage.io.imsave(path, img)
+
     #
     # Now go through the file and find the TIF bits per sample IFD (#258) and
     # change it from 16 to 12.

@@ -5,6 +5,8 @@ from ._setting import Setting
 from ._validation_error import ValidationError
 
 
+LOGGER = logging.getLogger(__name__)
+
 class ImagePlane(Setting):
     """A setting that specifies an image plane
 
@@ -55,7 +57,7 @@ class ImagePlane(Setting):
         if " " in url:
             # Spaces are not legal characters in URLs, nevertheless, I try
             # to accommodate
-            logging.warning(
+            LOGGER.warning(
                 "URLs should not contain spaces. %s is the offending URL" % url
             )
             url = url.replace(" ", "%20")

@@ -1,5 +1,3 @@
-from bioformats import READABLE_FORMATS
-
 UIC1_TAG = 33628
 UIC2_TAG = 33629
 UIC3_TAG = 33630
@@ -86,6 +84,32 @@ SUPPORTED_MOVIE_EXTENSIONS = {
     ".zvi",
 }
 
+# See https://docs.openmicroscopy.org/bio-formats/latest/supported-formats.html
+ALL_BIOFORMATS_EXTENSIONS = (
+    ".1sc", ".2fl", ".acff", ".afi", ".afm", ".aim", ".al3d", ".ali",
+    ".am", ".amiramesh", ".apl", ".arf", ".avi", ".bif", ".bin", ".bip",
+    ".bmp", ".btf", ".c01", ".cfg", ".ch5", ".cif", ".cr2", ".crw",
+    ".cxd", ".czi", ".dat", ".dcm", ".dib", ".dicom", ".dm2", ".dm3",
+    ".dm4", ".dti", ".dv", ".eps", ".epsi", ".exp", ".fdf", ".fff",
+    ".ffr", ".fits", ".flex", ".fli", ".frm", ".gel", ".gif", ".grey",
+    ".h5", ".hdf", ".hdr", ".hed", ".his", ".htd", ".html", ".hx", ".i2i",
+    ".ics", ".ids", ".im3", ".img", ".ims", ".inr", ".ipl", ".ipm", ".ipw",
+    ".j2k", ".jp2", ".jpeg", ".jpf", ".jpg", ".jpk", ".jpx", ".klb",
+    ".l2d", ".labels", ".lei", ".lif", ".liff", ".lim", ".lms", ".lsm",
+    ".map", ".mdb", ".mea", ".mnc", ".mng", ".mod", ".mov", ".mrc", ".mrcs",
+    ".mrw", ".msr", ".mtb", ".mvd2", ".naf", ".nd", ".nd2", ".ndpi", ".ndpis",
+    ".nef", ".nhdr", ".nii", ".nii.gz", ".nrrd", ".obf", ".obsep", ".oib",
+    ".oif", ".oir", ".ome", ".ome.btf", ".ome.tf2", ".ome.tf8", ".ome.tif",
+    ".ome.tiff", ".ome.xml", ".par", ".pbm", ".pcoraw", ".pcx", ".pds",
+    ".pgm", ".pic", ".pict", ".png", ".pnl", ".ppm", ".pr3", ".ps", ".psd",
+    ".qptiff", ".r3d", ".raw", ".rcpnl", ".rec", ".res", ".scn", ".sdt",
+    ".seq", ".sif", ".sld", ".sm2", ".sm3", ".spc", ".spe", ".spi", ".st",
+    ".stk", ".stp", ".svs", ".sxm", ".tc.", ".tf2", ".tf8", ".tfr", ".tga",
+    ".tif", ".tiff", ".tnb", ".top", ".txt", ".v", ".vff", ".vms", ".vsi",
+    ".vws", ".wat", ".wlz", ".wpi", ".xdce", ".xml", ".xqd", ".xqf", ".xv",
+    ".xys", ".zfp", ".zfr", ".zvi", ".ets"
+)
+
 DISALLOWED_BIOFORMATS_EXTENSIONS = {
     ".cfg",
     ".csv",
@@ -102,7 +126,7 @@ DISALLOWED_BIOFORMATS_EXTENSIONS = {
     ".zip"
 }
 
-BIOFORMATS_IMAGE_EXTENSIONS = set([f".{ext}" for ext in READABLE_FORMATS]) - DISALLOWED_BIOFORMATS_EXTENSIONS
+BIOFORMATS_IMAGE_EXTENSIONS = set(ALL_BIOFORMATS_EXTENSIONS) - DISALLOWED_BIOFORMATS_EXTENSIONS
 
 ALL_IMAGE_EXTENSIONS = SUPPORTED_IMAGE_EXTENSIONS.union(BIOFORMATS_IMAGE_EXTENSIONS)
 
@@ -128,7 +152,9 @@ SUB_NONE = "None"
 SUB_ALL = "All"
 SUB_SOME = "Some"
 FILE_SCHEME = "file:"
-PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3","gs")
+#TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
+# PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3","gs")
+PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "s3","gs")
 
 CT_GRAYSCALE = "Grayscale"
 CT_COLOR = "Color"

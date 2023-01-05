@@ -4,6 +4,8 @@ from .._text import Text
 from ..._validation_error import ValidationError
 
 
+LOGGER = logging.getLogger(__name__)
+
 class Number(Text):
     """A setting that allows only numeric input
     """
@@ -55,7 +57,7 @@ class Number(Text):
             self.test_valid(None)
             self.__default = self.str_to_value(value_text)
         except:
-            logging.debug("Number set to illegal value: %s" % value_text)
+            LOGGER.debug("Number set to illegal value: %s" % value_text)
 
     def set_min_value(self, minval):
         """Programatically set the minimum value allowed"""

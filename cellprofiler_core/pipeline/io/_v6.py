@@ -3,7 +3,7 @@ import logging
 import os
 import re
 
-logger = logging.getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 import cellprofiler_core
 from cellprofiler_core.constants.pipeline import (
@@ -55,7 +55,7 @@ def load(pipeline, fd):
     pipeline_dict = json.load(fd)
     cp_version = int(re.sub(r"\.|rc\d", "", cellprofiler_core.__version__))
     if cp_version != pipeline_dict['date_revision']:
-        logging.warning(f"Pipeline file is from a different version of CellProfiler. "
+        LOGGER.warning(f"Pipeline file is from a different version of CellProfiler. "
                         f"Current:v{cp_version} File:v{pipeline_dict['date_revision']}."
                         f" Will attempt to upgrade settings.")
     pipeline_modules = pipeline.modules(False)

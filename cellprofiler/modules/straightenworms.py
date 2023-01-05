@@ -1468,7 +1468,7 @@ of the straightened worms.""",
                 if object_number is not None:
                     color = (
                         numpy.array(
-                            get_primary_outline_color().asTuple(), dtype=numpy.float,
+                            get_primary_outline_color().asTuple(), dtype=float,
                         )
                         / 255
                     )

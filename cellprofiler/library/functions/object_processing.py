@@ -1,8 +1,11 @@
+from typing import Literal
+import warnings
 import centrosome.cpmorphology 
 import numpy
 import scipy.ndimage
 import skimage.morphology
 import mahotas
+
 
 def shrink_to_point(labels, fill):
     """
@@ -222,213 +225,217 @@ def segment_objects(labels_x, labels_y, dimensions):
 
     return output
 
-def watershed_distance(
+
+def watershed(
     input_image,
-    footprint=8,
-    downsample=1,
-):
-    """
-    Returns a simple watershed based on distance.
-    Equivalent to CellProfiler GUI with advanced
-    settings off.
-    """    
-
-    if downsample > 1:
-        # Check if volumetric
-        if input_image.ndim > 2:
-            factors = (1, downsample, downsample)
-        else:
-            factors = (downsample, downsample)
-
-        input_image = skimage.transform.downscale_local_mean(input_image, factors)
-
-    threshold = skimage.filters.threshold_otsu(input_image)
-
-    input_image = input_image > threshold
-
-    distance = scipy.ndimage.distance_transform_edt(input_image)
-
-    distance = mahotas.stretch(distance)
-
-    surface = distance.max() - distance
-
-    if input_image.ndim > 2:
-        footprint = numpy.ones((footprint, footprint, footprint))
-    else:
-        footprint = numpy.ones((footprint, footprint))
-
-    peaks = mahotas.regmax(distance, footprint)
-
-    if input_image.ndim > 2:
-        markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
-    else:
-        markers, _ = mahotas.label(peaks, numpy.ones((16, 16)))
-
-    y_data = mahotas.cwatershed(surface, markers)
-
-    y_data = y_data * input_image
-
-    if downsample > 1:
-        y_data = skimage.transform.resize(
-            y_data, input_image.shape, mode="edge", order=0, preserve_range=True
-        )
-
-        y_data = numpy.rint(y_data).astype(numpy.uint16)
-
-    return y_data
-
-
-def watershed_markers(
-    input_image, markers, mask=None, connectivity=1, compactness=0, watershed_line=False
-):
-    """
-    Returns a simple watershed based on markers.
-    Equivalent to CellProfiler GUI with advanced
-    settings off.
-    """
-    y_data = skimage.segmentation.watershed(
-        image=input_image,
-        markers=markers,
-        mask=mask,
-        connectivity=connectivity,
-        compactness=compactness,
-        watershed_line=watershed_line,
-    )
-
-    return y_data
-
-
-def watershed_advanced(
-    input_image,
-    markers=None,
-    mask=None,
+    watershed_method: Literal["intensity", "distance", "markers"] = "distance",
+    declump_method: Literal["shape", "intensity", None] = "shape",
+    local_maxima_method: Literal["local", "regional"] = "local",
     intensity_image=None,
-    method="distance",
-    declump_method="shape",
-    footprint=8,
-    downsample=1,
-    connectivity=1,
-    compactness=0,
-    watershed_line=False,
-    structuring_element="disk",
-    structuring_element_size=1,
-    gaussian_sigma=1,
-    min_distance=1,
-    min_intensity=0,
-    exclude_border=False,
-    max_seeds=-1,
+    markers_image=None,
+    max_seeds: int = -1,
+    downsample: int = 1,
+    min_distance: int = 1,
+    footprint: int = 8,
+    connectivity: int = 1,
+    compactness: int = 0,
+    exclude_border: int = True,
+    watershed_line: int = False,
+    gaussian_sigma: int = 1,
+    structuring_element: Literal[
+        "ball", "cube", "diamond", "disk", "octahedron", "square", "star"
+    ] = "disk",
+    structuring_element_size: int = 1,
 ):
 
-    if method.casefold() == "distance":
-        y_data = watershed_distance(
-            input_image,
-            footprint=footprint,
-            downsample=downsample,
+    # Check inputs
+    if input_image.dtype != bool:
+        warnings.warn(
+            "Watershed expects a thresholded image as input. Did you mean to use a boolean array?"
         )
-    elif method.casefold() == "markers":
-        y_data = watershed_markers(
-            input_image,
-            markers=markers,
-            mask=mask,
-            connectivity=connectivity,
-            compactness=compactness,
-            watershed_line=watershed_line,
-        )
-    else:
-        raise ValueError(f"Watershed method {method} does not exist")
 
-    # Advanced watershed
+    if (
+        watershed_method.casefold() == "intensity"
+        or declump_method.casefold() == "intensity"
+    ) and intensity_image is None:
+        raise ValueError(
+            f"Intensity-based methods require an intensity image to be provided"
+        )
+
+    if watershed_method.casefold() == "markers" and markers_image is None:
+        raise ValueError(
+            "Markers watershed method require a markers image to be provided"
+        )
+
+    # Create and check structuring element for seed dilation
     strel = getattr(skimage.morphology, structuring_element.casefold())(
         structuring_element_size
     )
+
     if strel.ndim != input_image.ndim:
         raise ValueError(
             "Structuring element does not match object dimensions: "
             "{} != {}".format(strel.ndim, input_image.ndim)
         )
 
-    # Get the segmentation distance transform for the watershed segmentation
-    peak_image = scipy.ndimage.distance_transform_edt(y_data > 0)
+    if input_image.ndim > 2:
+        footprint = numpy.ones((footprint, footprint, footprint))
+    else:
+        footprint = numpy.ones((footprint, footprint))
 
+    # Downsample input image
+    if downsample > 1:
+        input_shape = input_image.shape
+        if input_image.ndim > 2:
+            # Only scale x and y
+            factors = (1, downsample, downsample)
+        else:
+            factors = (downsample, downsample)
+
+        input_image = skimage.transform.downscale_local_mean(input_image, factors)
+
+    smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
+
+    # Calculate distance transform
     if declump_method.casefold() == "shape":
-        watershed_image = -peak_image
-        watershed_image -= watershed_image.min()
-    if declump_method.casefold() == "intensity":
-        if intensity_image is None:
-            raise ValueError(
-                """An intensity reference image is required 
-                                to perform intensity-based declumping"""
+        # Holes in thresholded objects can negatively impact shape declumping, so fill them
+        # Keep the original input_image to use as a mask later (and thus reverse hole-filling)
+        input_image_filled = skimage.morphology.remove_small_holes(input_image)
+        distance = scipy.ndimage.distance_transform_edt(input_image_filled)
+    else:
+        distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+
+    # Generate alternative input to the watershed based on declumping
+    if declump_method.casefold() == "shape":
+        # Invert the distance transform of the input image.
+        # The peaks of the distance tranform become the troughs and
+        # this image is given as input to watershed
+        watershed_input_image = -distance
+        # Move to positive realm
+        watershed_input_image = watershed_input_image - watershed_input_image.min()
+    elif declump_method.casefold() == "intensity":
+        # Convert pixel intensity peaks to troughs and
+        # use this as the image input in watershed
+        watershed_input_image = 1 - watershed_input_image
+    else:
+        # No declumping
+        watershed_input_image = input_image
+
+    # Generate markers
+    if watershed_method.casefold() == "distance":
+        # Find maxima in the distance transform
+        if local_maxima_method.casefold() == "local":
+            seed_coords = skimage.feature.peak_local_max(
+                distance,
+                min_distance=min_distance,
+                footprint=footprint,
+                num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
             )
-        # Set the image as a float and rescale to full bit depth
-        watershed_image = skimage.img_as_float(intensity_image, force_copy=True)
-        watershed_image -= watershed_image.min()
-        watershed_image = 1 - watershed_image
+            seeds = numpy.zeros(distance.shape, dtype=bool)
+            seeds[tuple(seed_coords.T)] = True
+        elif local_maxima_method.casefold() == "regional":
+            seeds = mahotas.regmax(distance, footprint)
+        else:
+            raise NotImplementedError(
+                f"local_maxima_method {local_maxima_method} is not supported."
+            )
 
-    # Smooth the image
-    watershed_image = skimage.filters.gaussian(watershed_image, sigma=gaussian_sigma)
-    # Generate local peaks; returns a list of coords for each peak
-    seed_coords = skimage.feature.peak_local_max(
-        peak_image,
-        min_distance=min_distance,
-        threshold_rel=min_intensity,
-        exclude_border=exclude_border,
-        num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
-    )
+    elif watershed_method.casefold() == "intensity":
+        # Find markers based on intensity of the intensity image
+        if local_maxima_method.casefold() == "local":
+            seed_coords = skimage.feature.peak_local_max(
+                intensity_image,
+                min_distance=min_distance,
+                footprint=footprint,
+                num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
+            )
+            seeds = numpy.zeros(distance.shape, dtype=bool)
+            seeds[tuple(seed_coords.T)] = True
+        elif local_maxima_method.casefold() == "regional":
+            seeds = mahotas.regmax(distance, footprint)
+        else:
+            raise NotImplementedError(
+                f"local_maxima_method {local_maxima_method} is not supported."
+            )
+    elif watershed_method.casefold() == "markers":
+        # The user has provided their own markers
+        seeds = markers_image
+    else:
+        raise NotImplementedError
 
-    # generate an array w/ same dimensions as the original image with all elements having value False
-    seeds = numpy.zeros_like(peak_image, dtype=bool)
-
-    # set value to True at every local peak
-    seeds[tuple(seed_coords.T)] = True
-
-    # Dilate seeds based on settings
+    # Seed dilation
     seeds = skimage.morphology.binary_dilation(seeds, strel)
 
-    # get the number of objects from the distance-based or marker-based watershed run above
-    number_objects = skimage.measure.label(y_data, return_num=True)[1]
+    number_objects = skimage.measure.label(seeds, return_num=True)[1]
 
-    seeds_dtype = (
-        numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32
-    )
+    seeds_dtype = numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32
 
-    # NOTE: Not my work, the comments below are courtesy of Ray
-    #
-    # Create a marker array where the unlabeled image has a label of
-    # -(nobjects+1)
-    # and every local maximum has a unique label which will become
-    # the object's label. The labels are negative because that
-    # makes the watershed algorithm use FIFO for the pixels which
-    # yields fair boundaries when markers compete for pixels.
-    #
-    seeds = scipy.ndimage.label(seeds)[0]
+    # Label seeds
+    markers = scipy.ndimage.label(seeds)[0]
 
-    markers = numpy.zeros_like(seeds, dtype=seeds_dtype)
-    markers[seeds > 0] = -seeds[seeds > 0]
-
-    # The array passed to the mask argument in watershed changes
-    # depending on the initial watershed method that has been used
-    # In the case of distance, the mask is the otsu thresholded input
-    if method.casefold() == "distance":
-        image_data = input_image > skimage.filters.threshold_otsu(input_image)
-    # In the case of marker watershed initially, the input_image can be passed
-    # as long as it's grayscale (which is handled inside the GUI module)
-    elif method.casefold() == "markers":
-        image_data = input_image
-
-    # Perform the watershed
-    watershed_boundaries = skimage.segmentation.watershed(
-        connectivity=connectivity,
-        image=watershed_image,
+    # Run watershed
+    watershed_image = skimage.segmentation.watershed(
+        watershed_input_image,
         markers=markers,
-        mask=image_data != 0,
+        mask=input_image != 0,
+        connectivity=connectivity,
+        compactness=compactness,
+        watershed_line=watershed_line,
     )
 
-    y_data = watershed_boundaries.copy()
-    # Copy the location of the "background"
-    zeros = numpy.where(y_data == 0)
-    # Re-shift all of the labels into the positive realm
-    y_data += numpy.abs(numpy.min(y_data)) + 1
-    # Re-apply the background
-    y_data[zeros] = 0
+    # Reverse downsampling
+    if downsample > 1:
+        watershed_image = skimage.transform.resize(
+            watershed_image, input_shape, mode="edge", order=0, preserve_range=True
+        )
+        watershed_image = numpy.rint(watershed_image).astype(numpy.uint16)
 
-    return y_data
+    if exclude_border:
+        watershed_image = skimage.segmentation.clear_border(watershed_image)
+
+    return watershed_image
+
+
+def fill_object_holes(labels, diameter, planewise=False):
+    array = labels.copy()
+    # Calculate radius from diameter
+    radius = diameter / 2.0
+
+    # Check if grayscale, RGB or operation is being performed planewise
+    if labels.ndim == 2 or labels.shape[-1] in (3, 4) or planewise:
+        # 2D circle area will be calculated
+        factor = radius ** 2  
+    else:
+        # Calculate the volume of a sphere
+        factor = (4.0/3.0) * (radius ** 3)
+    
+    min_obj_size = numpy.pi * factor
+
+    if planewise and labels.ndim != 2 and labels.shape[-1] not in (3, 4):
+        for plane in array:
+            for obj in numpy.unique(plane):
+                if obj == 0:
+                    continue
+                filled_mask = skimage.morphology.remove_small_holes(plane == obj, min_obj_size)
+                plane[filled_mask] = obj    
+        return array
+    else:
+        for obj in numpy.unique(array):
+            if obj == 0:
+                continue
+            filled_mask = skimage.morphology.remove_small_holes(array == obj, min_obj_size)
+            array[filled_mask] = obj
+    return array
+
+def fill_convex_hulls(labels):
+    data = skimage.measure.regionprops(labels)
+    output = numpy.zeros_like(labels)
+    for prop in data:
+        label = prop['label']
+        bbox = prop['bbox']
+        cmask = prop['convex_image']
+        if len(bbox) <= 4:
+            output[bbox[0]:bbox[2], bbox[1]:bbox[3]][cmask] = label
+        else:
+            output[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]: bbox[5]][cmask] = label
+    return output

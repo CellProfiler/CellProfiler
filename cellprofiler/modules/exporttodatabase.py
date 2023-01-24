@@ -4418,8 +4418,12 @@ CREATE TABLE %s (
                     images_list = workspace.measurements.get_experiment_measurement("ExportToDb_Images")
                     if isinstance(images_list, str):
                         images_list = [images_list]
-                    channels_list = workspace.measurements.get_measurement("ExportToDb", "ExportToDb_Channels")
-                    channels_dict = dict(zip(images_list, channels_list))
+                    if workspace.measurements.hdf5_dict.has_feature("ExportToDb", "ExportToDb_Channels"):
+                        channels_list = workspace.measurements.get_measurement("ExportToDb", "ExportToDb_Channels")
+                        channels_dict = dict(zip(images_list, channels_list))
+                    else:
+                        channels_list = []
+                        channels_dict = {}
                 else:
                     channels_dict = {}
 

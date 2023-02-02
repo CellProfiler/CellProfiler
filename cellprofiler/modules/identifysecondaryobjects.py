@@ -795,7 +795,7 @@ segmentation.""",
     def _threshold_image(self, image_name, workspace, automatic=False):
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
 
-        final_threshold, orig_threshold, guide_threshold = self.threshold.get_threshold(
+        final_threshold, orig_threshold, guide_threshold, binary_image, sigma = self.threshold.get_threshold(
             image, workspace, automatic
         )
 
@@ -805,10 +805,6 @@ segmentation.""",
             final_threshold,
             orig_threshold,
             guide_threshold,
-        )
-
-        binary_image, sigma = self.threshold.apply_threshold(
-            image, final_threshold, automatic
         )
 
         self.threshold.add_fg_bg_measurements(

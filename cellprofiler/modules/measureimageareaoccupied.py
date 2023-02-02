@@ -215,23 +215,26 @@ Select the previously identified objects you would like to measure.""".format(
         region_properties = skimage.measure.regionprops(label_image)
 
         area_occupied = numpy.sum([region["area"] for region in region_properties])
+        
+        if area_occupied > 0:
+            if objects.volumetric:
+                spacing = None
 
-        if objects.volumetric:
-            spacing = None
+                if objects.has_parent_image:
+                    spacing = objects.parent_image.spacing
 
-            if objects.has_parent_image:
-                spacing = objects.parent_image.spacing
+                labels = numpy.unique(label_image)
 
-            labels = numpy.unique(label_image)
+                if labels[0] == 0:
+                    labels = labels[1:]
 
-            if labels[0] == 0:
-                labels = labels[1:]
-
-            perimeter = surface_area(label_image, spacing=spacing, index=labels)
+                perimeter = surface_area(label_image, spacing=spacing, index=labels)
+            else:
+                perimeter = numpy.sum(
+                    [numpy.round(region["perimeter"]) for region in region_properties]
+                )
         else:
-            perimeter = numpy.sum(
-                [numpy.round(region["perimeter"]) for region in region_properties]
-            )
+            perimeter = 0
 
         measurements = workspace.measurements
         pipeline = workspace.pipeline
@@ -264,11 +267,14 @@ Select the previously identified objects you would like to measure.""".format(
 
         area_occupied = numpy.sum(image.pixel_data > 0)
 
-        if image.volumetric:
-            perimeter = surface_area(image.pixel_data > 0, spacing=image.spacing)
+        if area_occupied > 0:
+            if image.volumetric:
+                perimeter = surface_area(image.pixel_data > 0, spacing=image.spacing)
+            else:
+                perimeter = skimage.measure.perimeter(image.pixel_data > 0)
         else:
-            perimeter = skimage.measure.perimeter(image.pixel_data > 0)
-
+            perimeter = 0
+            
         total_area = numpy.prod(numpy.shape(image.pixel_data))
 
         measurements = workspace.measurements

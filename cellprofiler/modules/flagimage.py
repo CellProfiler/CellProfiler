@@ -31,7 +31,7 @@ modules upon which the flags are based.
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           NO
+YES          YES          YES
 ============ ============ ===============
 
 """
@@ -885,6 +885,9 @@ image is not flagged.
             for flag in self.flags
             if flag.category.value == category
         ]
+
+    def volumetric(self):
+        return True
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:

@@ -239,8 +239,8 @@ def watershed(
     footprint: int = 8,
     connectivity: int = 1,
     compactness: int = 0,
-    exclude_border: int = True,
-    watershed_line: int = False,
+    exclude_border: bool = True,
+    watershed_line: bool = False,
     gaussian_sigma: int = 1,
     structuring_element: Literal[
         "ball", "cube", "diamond", "disk", "octahedron", "square", "star"
@@ -316,7 +316,7 @@ def watershed(
     elif declump_method.casefold() == "intensity":
         # Convert pixel intensity peaks to troughs and
         # use this as the image input in watershed
-        watershed_input_image = 1 - watershed_input_image
+        watershed_input_image = 1 - intensity_image
     else:
         # No declumping
         watershed_input_image = input_image

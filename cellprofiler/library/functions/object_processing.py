@@ -247,10 +247,9 @@ def watershed(
     ] = "disk",
     structuring_element_size: int = 1,
 ):
-
     # Check inputs
     if input_image.dtype != bool:
-        warnings.warn(
+        raise ValueError(
             "Watershed expects a thresholded image as input. Did you mean to use a boolean array?"
         )
 
@@ -292,6 +291,8 @@ def watershed(
         else:
             factors = (downsample, downsample)
 
+        # TODO: Check better methods for ensuring non-bool types or handling the int64
+        # output if not
         input_image = skimage.transform.downscale_local_mean(input_image, factors)
 
     smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
@@ -300,7 +301,7 @@ def watershed(
     if declump_method.casefold() == "shape":
         # Holes in thresholded objects can negatively impact shape declumping, so fill them
         # Keep the original input_image to use as a mask later (and thus reverse hole-filling)
-        input_image_filled = skimage.morphology.remove_small_holes(input_image)
+        input_image_filled = skimage.morphology.remove_small_holes(input_image.astype(bool))
         distance = scipy.ndimage.distance_transform_edt(input_image_filled)
     else:
         distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)

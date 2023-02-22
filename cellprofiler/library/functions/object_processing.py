@@ -228,7 +228,7 @@ def segment_objects(labels_x, labels_y, dimensions):
 
 def watershed(
     input_image,
-    watershed_method: Literal["intensity", "distance", "markers"] = "distance",
+    watershed_method: Literal["distance", "markers"] = "distance",
     declump_method: Literal["shape", "intensity", None] = "shape",
     local_maxima_method: Literal["local", "regional"] = "local",
     intensity_image=None,
@@ -236,12 +236,13 @@ def watershed(
     max_seeds: int = -1,
     downsample: int = 1,
     min_distance: int = 1,
+    min_intensity: float = 0,
     footprint: int = 8,
     connectivity: int = 1,
-    compactness: int = 0,
+    compactness: float = 0.0,
     exclude_border: bool = True,
     watershed_line: bool = False,
-    gaussian_sigma: int = 1,
+    gaussian_sigma: float = 0.0,
     structuring_element: Literal[
         "ball", "cube", "diamond", "disk", "octahedron", "square", "star"
     ] = "disk",
@@ -277,7 +278,7 @@ def watershed(
             "{} != {}".format(strel.ndim, input_image.ndim)
         )
 
-    if input_image.ndim > 2:
+    if input_image.ndim == 3:
         footprint = numpy.ones((footprint, footprint, footprint))
     else:
         footprint = numpy.ones((footprint, footprint))
@@ -298,13 +299,7 @@ def watershed(
     smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
 
     # Calculate distance transform
-    if declump_method.casefold() == "shape":
-        # Holes in thresholded objects can negatively impact shape declumping, so fill them
-        # Keep the original input_image to use as a mask later (and thus reverse hole-filling)
-        input_image_filled = skimage.morphology.remove_small_holes(input_image.astype(bool))
-        distance = scipy.ndimage.distance_transform_edt(input_image_filled)
-    else:
-        distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+    distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
 
     # Generate alternative input to the watershed based on declumping
     if declump_method.casefold() == "shape":
@@ -329,31 +324,17 @@ def watershed(
             seed_coords = skimage.feature.peak_local_max(
                 distance,
                 min_distance=min_distance,
+                threshold_rel=min_intensity,
                 footprint=footprint,
                 num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
             )
             seeds = numpy.zeros(distance.shape, dtype=bool)
             seeds[tuple(seed_coords.T)] = True
-        elif local_maxima_method.casefold() == "regional":
-            seeds = mahotas.regmax(distance, footprint)
-        else:
-            raise NotImplementedError(
-                f"local_maxima_method {local_maxima_method} is not supported."
-            )
 
-    elif watershed_method.casefold() == "intensity":
-        # Find markers based on intensity of the intensity image
-        if local_maxima_method.casefold() == "local":
-            seed_coords = skimage.feature.peak_local_max(
-                intensity_image,
-                min_distance=min_distance,
-                footprint=footprint,
-                num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
-            )
-            seeds = numpy.zeros(distance.shape, dtype=bool)
-            seeds[tuple(seed_coords.T)] = True
+            seeds = scipy.ndimage.label(seeds)[0]
         elif local_maxima_method.casefold() == "regional":
-            seeds = mahotas.regmax(distance, footprint)
+            seeds = mahotas.regmax(distance)
+            seeds, _ = mahotas.label(seeds, footprint)
         else:
             raise NotImplementedError(
                 f"local_maxima_method {local_maxima_method} is not supported."
@@ -364,15 +345,13 @@ def watershed(
     else:
         raise NotImplementedError
 
+    # 
     # Seed dilation
-    seeds = skimage.morphology.binary_dilation(seeds, strel)
-
-    number_objects = skimage.measure.label(seeds, return_num=True)[1]
-
-    seeds_dtype = numpy.uint16 if number_objects < numpy.iinfo(numpy.uint16).max else numpy.uint32
+    # seeds = skimage.morphology.binary_dilation(seeds, strel)
 
     # Label seeds
-    markers = scipy.ndimage.label(seeds)[0]
+    # markers = scipy.ndimage.label(seeds)[0]
+    markers = seeds
 
     # Run watershed
     watershed_image = skimage.segmentation.watershed(

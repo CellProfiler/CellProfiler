@@ -139,13 +139,11 @@ class Watershed(ImageSegmentation):
 
         self.watershed_method = Choice(
             "Select watershed method",
-            choices=[O_DISTANCE, O_MARKERS, O_INTENSITY],
+            choices=[O_DISTANCE, O_MARKERS],
             value=O_DISTANCE,
             doc="""\
 """
         )
-
-
 
         self.seed_method = Choice(
             "Select seed generation method",
@@ -182,14 +180,9 @@ class Watershed(ImageSegmentation):
         )
 
         self.intensity_name = ImageSubscriber(
-            "Intensity image for watershed seed generation",
+            "Intensity image for declumping",
             doc="",
         )
-
-        # self.intensity_name_declump = ImageSubscriber(
-        #     "Intensity image for declumping",
-        #     doc="",
-        # )
 
         self.mask_name = ImageSubscriber(
             "Mask",
@@ -302,14 +295,9 @@ the image is not downsampled.
             })
         )
 
-        # self.reference_name = ImageSubscriber(
-        #     text="Reference Image",
-        #     doc="Image to reference for the *{O_INTENSITY}* method".format(**{"O_INTENSITY": O_INTENSITY})
-        # )
-
         self.gaussian_sigma = cellprofiler_core.setting.text.Float(
             text="Segmentation distance transform smoothing factor",
-            value=1.,
+            value=0.0,
             doc="Sigma defines how 'smooth' the Gaussian kernel makes the image. Higher sigma means a smoother image."
         )
 
@@ -340,7 +328,7 @@ the image is not downsampled.
 
         self.exclude_border = Binary(
             "Discard objects touching the border of the image?",
-            value=True,
+            value=False,
             doc="""\ 
 """,
         )
@@ -370,11 +358,8 @@ the image is not downsampled.
             self.use_advanced,
             self.watershed_method,
             self.seed_method,
-            # self.operation,
             self.markers_name,
             self.intensity_name,
-            # self.intensity_name_seeds,
-            # self.intensity_name_declump,
             self.mask_name,
             self.connectivity,
             self.compactness,
@@ -382,7 +367,6 @@ the image is not downsampled.
             self.downsample,
             self.watershed_line,
             self.declump_method,
-            # self.reference_name,
             self.gaussian_sigma,
             self.min_dist,
             self.min_intensity,
@@ -406,14 +390,11 @@ the image is not downsampled.
                     self.markers_name,
                     self.mask_name,
                 ]
-        # if self.watershed_method == O_INTENSITY:
-        #     __settings__ += [
-        #         self.intensity_name
-        #     ]
 
         __settings__ += [
             self.exclude_border,
             self.downsample,
+            self.footprint,
             self.declump_method,
             ]
 
@@ -427,63 +408,21 @@ the image is not downsampled.
             # Provide advanced settings
             __settings__ += [
                 self.seed_method,
-                self.footprint,
-                # self.declump_method,
-                # self.intensity_name,
-                self.gaussian_sigma,
-                self.min_dist,
-                self.min_intensity,
-                self.max_seeds,
-                self.structuring_element,
+                
+            ]
+            if self.seed_method == O_LOCAL:
+                __settings__ += [
+                    self.min_dist,
+                    self.min_intensity,
+                    self.max_seeds,
                 ]
-            
-        # __settings__ += super(Watershed, self).settings()
-
-        
-
-        # # __settings__ = __settings__ + [self.operation]
-        # __settings__ = __settings__ + [self.seed_method]
-
-        # if self.watershed_method.value == O_DISTANCE:
-        #     __settings__ = __settings__ + [self.footprint, self.downsample]
-        # elif self.watershed_method.value == O_MARKERS:
-        #     __settings__ = __settings__ + [
-        #         self.markers_name,
-        #         self.mask_name,
-        #         self.connectivity,
-        #         self.compactness,
-        #         self.watershed_line,
-        #     ]
-        # else:
-        #     __settings__ = __settings__ + [
-        #         self.intensity_name,
-        #         self.mask_name,
-        #         self.connectivity,
-        #         self.compactness,
-        #         self.watershed_line,
-        #     ]
-
-        # if self.declump_method == O_SHAPE:
-        #     __settings__ = __settings__ + [
-        #         self.declump_method,
-        #         self.gaussian_sigma,
-        #         self.min_dist,
-        #         self.min_intensity,
-        #         self.exclude_border,
-        #         self.max_seeds,
-        #         self.structuring_element,
-        #     ]
-        # else:
-        #     __settings__ = __settings__ + [
-        #         self.declump_method,
-        #         self.intensity_name,
-        #         self.gaussian_sigma,
-        #         self.min_dist,
-        #         self.min_intensity,
-        #         self.exclude_border,
-        #         self.max_seeds,
-        #         self.structuring_element,
-        #     ]
+            __settings__ += [
+                self.gaussian_sigma,
+                self.structuring_element,
+                self.connectivity,
+                self.compactness,
+                self.watershed_line,
+                ]
 
         return __settings__
 
@@ -504,7 +443,7 @@ the image is not downsampled.
         ### TODO: Remove. Used for testing only
         x_data = x_data > 0.01
         ###
-        ###
+        ### 
 
         # Set the required images
         markers_data = None
@@ -514,28 +453,50 @@ the image is not downsampled.
         if x.multichannel:
             x_data = skimage.color.rgb2gray(x_data)
 
-        if self.watershed_method.value == O_MARKERS:
-            # Get markers
-            markers_name = self.markers_name.value
-            markers = images.get_image(markers_name)
-            markers_data = markers.pixel_data
+        if not self.use_advanced:
+            # Set the defaults for passing to cellprofiler library
+            # Used in case a user enables advanced mode, changes and advanced setting,
+            # and then disables advanced mode
+            self.seed_method.value = O_REGIONAL
+            self.min_dist.value = 1
+            self.min_intensity.value = 0.0
+            self.max_seeds.value = -1
+            self.gaussian_sigma.value = 0.0
+            self.connectivity.value = 1
+            self.compactness.value = 0.0
+            self.watershed_line.value = False
+            if x_data.ndim == 3:
+                self.structuring_element.shape = "ball"
+                self.structuring_element.size = 1
+            else:
+                self.structuring_element.shape = "disk"
+                self.structuring_element.size = 1
 
-            if markers.multichannel:
-                markers_data = skimage.color.rgb2gray(markers_data)
+        else:
+            if self.watershed_method.value == O_MARKERS:
+                # Get markers
+                markers_name = self.markers_name.value
+                markers = images.get_image(markers_name)
+                markers_data = markers.pixel_data
 
-            # Get mask for the markers method
-            if not self.mask_name.is_blank:
-                mask_name = self.mask_name.value
-                mask = images.get_image(mask_name)
-                mask_data = mask.pixel_data
+                if markers.multichannel:
+                    markers_data = skimage.color.rgb2gray(markers_data)
 
-        # Get the intensity image
-        if self.declump_method.value == O_INTENSITY or self.watershed_method == O_INTENSITY:
-            # Get intensity image
-            intensity_image = images.get_image(self.intensity_name_declump.value)
-            intensity_data = intensity_declump.pixel_data
-            if intensity_image.multichannel:
-                    intensity_declump_data = skimage.color.rgb2gray(intensity_data)
+                # Get mask for the markers method
+                if not self.mask_name.is_blank:
+                    mask_name = self.mask_name.value
+                    mask = images.get_image(mask_name)
+                    mask_data = mask.pixel_data
+
+            # Get the intensity image
+            if self.declump_method.value == O_INTENSITY or self.watershed_method == O_INTENSITY:
+                # Get intensity image
+                intensity_image = images.get_image(self.intensity_name_declump.value)
+                intensity_data = intensity_declump.pixel_data
+                if intensity_image.multichannel:
+                        intensity_declump_data = skimage.color.rgb2gray(intensity_data)
+
+        print(self.seed_method.value)
 
         y_data = watershed(
                 input_image=x_data,
@@ -547,6 +508,7 @@ the image is not downsampled.
                 max_seeds=self.max_seeds.value,
                 downsample=self.downsample.value,
                 min_distance=self.min_dist.value,
+                min_intensity=self.min_intensity.value,
                 footprint=self.footprint.value,
                 connectivity=self.connectivity.value,
                 compactness=self.compactness.value,

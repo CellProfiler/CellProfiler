@@ -247,6 +247,7 @@ def watershed(
         "ball", "cube", "diamond", "disk", "octahedron", "square", "star"
     ] = "disk",
     structuring_element_size: int = 1,
+    return_seeds: bool = False
 ):
     # Check inputs
     if input_image.dtype != bool or set(numpy.unique(input_image)) != set([0, 1]):
@@ -330,33 +331,27 @@ def watershed(
             )
             seeds = numpy.zeros(distance.shape, dtype=bool)
             seeds[tuple(seed_coords.T)] = True
-
+            seeds = skimage.morphology.binary_dilation(seeds, strel)
             seeds = scipy.ndimage.label(seeds)[0]
+            
         elif local_maxima_method.casefold() == "regional":
-            seeds = mahotas.regmax(distance)
+            seeds = mahotas.regmax(distance, footprint)
+            seeds = skimage.morphology.binary_dilation(seeds, strel)
             seeds, _ = mahotas.label(seeds, footprint)
         else:
             raise NotImplementedError(
                 f"local_maxima_method {local_maxima_method} is not supported."
             )
     elif watershed_method.casefold() == "markers":
-        # The user has provided their own markers
+        # The user has provided their own seeds/markers
         seeds = markers_image
     else:
         raise NotImplementedError
 
-    # 
-    # Seed dilation
-    # seeds = skimage.morphology.binary_dilation(seeds, strel)
-
-    # Label seeds
-    # markers = scipy.ndimage.label(seeds)[0]
-    markers = seeds
-
     # Run watershed
     watershed_image = skimage.segmentation.watershed(
         watershed_input_image,
-        markers=markers,
+        markers=seeds,
         mask=input_image != 0,
         connectivity=connectivity,
         compactness=compactness,
@@ -373,7 +368,16 @@ def watershed(
     if exclude_border:
         watershed_image = skimage.segmentation.clear_border(watershed_image)
 
-    return watershed_image
+    if return_seeds:
+        # Reverse seed downsampling
+        if downsample > 1:
+            seeds = skimage.transform.resize(
+                seeds, input_shape, mode="edge", order=0, preserve_range=True
+            )
+            markers = numpy.rint(seeds).astype(numpy.uint16)
+        return watershed_image, seeds
+    else:
+        return watershed_image
 
 
 def fill_object_holes(labels, diameter, planewise=False):

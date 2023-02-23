@@ -24,6 +24,7 @@ def watershed(
         "ball", "cube", "diamond", "disk", "octahedron", "square", "star"
     ] = "disk",
     structuring_element_size: int = 1,
+    return_seeds: bool = True
 ):
     y_data = library_watershed(
         input_image=input_image,
@@ -44,5 +45,6 @@ def watershed(
         gaussian_sigma=gaussian_sigma,
         structuring_element=structuring_element,
         structuring_element_size=structuring_element_size,
+        return_seeds=return_seeds
     )
     return y_data

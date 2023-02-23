@@ -249,9 +249,9 @@ def watershed(
     structuring_element_size: int = 1,
 ):
     # Check inputs
-    if input_image.dtype != bool:
+    if input_image.dtype != bool or set(numpy.unique(input_image)) != set([0, 1]):
         raise ValueError(
-            "Watershed expects a thresholded image as input. Did you mean to use a boolean array?"
+            "Watershed expects a thresholded image as input"
         )
 
     if (

@@ -166,6 +166,16 @@ Select a method of inputs for the watershed algorithm:
 """
         )
 
+        self.display_maxima = Binary(
+            "Display watershed seeds?",
+            value=False,
+            doc="""\
+Select "*{YES}*" to display the seeds used for watershed.
+            """.format(
+                **{"YES": "Yes"}
+            )
+        )
+
         self.markers_name = ImageSubscriber(
             "Markers",
             doc="An image marking the approximate centers of the objects for segmentation.",
@@ -350,6 +360,7 @@ the image is not downsampled.
             self.use_advanced,
             self.watershed_method,
             self.seed_method,
+            self.display_maxima,
             self.markers_name,
             self.intensity_name,
             self.mask_name,
@@ -384,9 +395,11 @@ the image is not downsampled.
 
         __settings__ += [
             self.exclude_border,
+            self.display_maxima,
             self.downsample,
             self.footprint,
             self.declump_method,
+            self.structuring_element,
             ]
 
         if self.declump_method == O_INTENSITY:
@@ -409,7 +422,6 @@ the image is not downsampled.
                 ]
             __settings__ += [
                 self.gaussian_sigma,
-                self.structuring_element,
                 self.connectivity,
                 self.compactness,
                 self.watershed_line,
@@ -452,13 +464,6 @@ the image is not downsampled.
         if x.multichannel:
             x_data = skimage.color.rgb2gray(x_data)
 
-        # if x_data.ndim == 3:
-        #     self.structuring_element.shape = "ball"
-        #     self.structuring_element.size = 1
-        # else:
-        #     self.structuring_element.shape = "disk"
-        #     self.structuring_element.size = 1
-
         if self.watershed_method.value == O_MARKERS:
             # Get markers
             markers_name = self.markers_name.value
@@ -483,7 +488,7 @@ the image is not downsampled.
                     intensity_data = skimage.color.rgb2gray(intensity_data)
 
 
-        y_data = watershed(
+        y_data, seeds = watershed(
                 input_image=x_data,
                 watershed_method=self.watershed_method.value,
                 declump_method=self.declump_method.value,
@@ -502,6 +507,7 @@ the image is not downsampled.
                 gaussian_sigma=self.gaussian_sigma.value,
                 structuring_element=self.structuring_element.shape,
                 structuring_element_size=self.structuring_element.size,
+                return_seeds = True
                 )
 
         objects = cellprofiler_core.object.Objects()
@@ -516,10 +522,52 @@ the image is not downsampled.
 
         if self.show_window:
             workspace.display_data.x_data = x.pixel_data
+            workspace.display_data.x_data_name = self.x_name.value
 
             workspace.display_data.y_data = y_data
+            workspace.display_data.y_data_name = self.y_name.value
+
+            object_outlines = skimage.segmentation.find_boundaries(y_data, mode="inner")
+            # Colour the boundaries based on the object label
+            workspace.display_data.outlines_and_seeds = seeds + object_outlines * y_data
 
             workspace.display_data.dimensions = dimensions
+
+    def display(self, workspace, figure):
+        if self.show_window:
+            if self.display_maxima:
+                subplots = (2, 2)
+            else:
+                subplots = (2, 1)
+            figure.set_subplots(
+                dimensions=workspace.display_data.dimensions, subplots=subplots
+                )
+            cmap = figure.return_cmap()
+
+            ax = figure.subplot_imshow_grayscale(
+                0,
+                0,
+                workspace.display_data.x_data,
+                workspace.display_data.x_data_name,
+                )
+            figure.subplot_imshow_labels(
+                1,
+                0,
+                workspace.display_data.y_data,
+                workspace.display_data.y_data_name,
+                sharexy=ax,
+                colormap=cmap,
+            )
+            if self.display_maxima:
+                figure.subplot_imshow_labels(
+                    0,
+                    1,
+                    workspace.display_data.outlines_and_seeds,
+                    workspace.display_data.y_data_name + " object outlines and seeds",
+                    sharexy=ax,
+                    colormap=cmap,
+                )
+
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
 

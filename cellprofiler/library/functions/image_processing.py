@@ -23,6 +23,7 @@ def medial_axis(image):
     return skimage.morphology.medial_axis(image)
 
 
+<<<<<<< HEAD
 def enhance_edges_sobel(image, mask=None, direction="all"):
     if direction.casefold() == "all":
         output_pixels = centrosome.filter.sobel(image, mask)
@@ -107,11 +108,13 @@ def morphology_opening(image, structuring_element=skimage.morphology.disk(1)):
         return skimage.morphology.opening(image, structuring_element)
 
 
+=======
+>>>>>>> 5cda15aa4 (actually, make the name more consistent with the GUI)
 def morphological_skeleton_2d(image):
     return skimage.morphology.skeletonize(image)
 
 
-def morphology_skeleton_3d(image):
+def morphological_skeleton_3d(image):
     return skimage.morphology.skeletonize_3d(image)
 
 

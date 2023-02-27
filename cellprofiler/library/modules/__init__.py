@@ -8,3 +8,5 @@ from ._closing import closing
 from ._opening import opening
 from ._savecroppedobjects import savecroppedobjects
 from ._overlayobjects import overlayobjects
+from ._savecroppedobjects import savecroppedobjects
+from ._morphologicalskeleton import morphologicalskeleton

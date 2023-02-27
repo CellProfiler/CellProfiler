@@ -105,6 +105,11 @@ def morphology_opening(image, structuring_element=skimage.morphology.disk(1)):
         return output
     else:
         return skimage.morphology.opening(image, structuring_element)
+def morphological_skeleton_2d(image):
+    return skimage.morphology.skeletonize(image)
+
+def morphological_skeleton_3d(image):
+    return skimage.morphology.skeletonize_3d(image)
 
 
 def get_threshold_robust_background(

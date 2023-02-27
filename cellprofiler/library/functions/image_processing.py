@@ -111,6 +111,8 @@ def morphological_skeleton_2d(image):
 def morphological_skeleton_3d(image):
     return skimage.morphology.skeletonize_3d(image)
 
+def median_filter(image, window_size, mode):
+    return scipy.ndimage.median_filter(image, size=window_size, mode=mode)
 
 def get_threshold_robust_background(
     image,

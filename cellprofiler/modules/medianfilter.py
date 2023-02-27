@@ -14,11 +14,11 @@ YES          YES          NO
 ============ ============ ===============
 """
 
-import scipy.ndimage
 
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting.text import Integer
+from cellprofiler.library.modules import medianfilter
 
 
 class MedianFilter(ImageProcessing):
@@ -66,7 +66,7 @@ risk of blurring other features.
 
         x_data = x.pixel_data
 
-        y_data = scipy.ndimage.median_filter(x_data, self.window.value, mode='constant')
+        y_data = medianfilter(x_data, self.window.value, mode="constant")
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x, convert=False)
 

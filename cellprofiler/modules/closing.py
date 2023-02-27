@@ -16,10 +16,10 @@ YES          YES           NO
 
 """
 
-import numpy
-import skimage.morphology
 from cellprofiler_core.module import ImageProcessing
+from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting import StructuringElement
+from cellprofiler.library.modules import closing
 
 from ._help import HELP_FOR_STREL
 
@@ -38,37 +38,59 @@ class Closing(ImageProcessing):
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 
+        self.planewise = Binary(
+            text="Planewise closing",
+            value=False,
+            doc="""\
+Select "*{YES}*" to perform closing on a per-plane level. 
+This will perform closing on each plane of a 
+3D image, rather than on the image as a whole.
+**Note**: Planewise operations will be considerably slower.
+""".format(
+                **{"YES": "Yes"}
+            ),
+        )
+
     def settings(self):
         __settings__ = super(Closing, self).settings()
 
-        return __settings__ + [self.structuring_element]
+        return __settings__ + [self.structuring_element, self.planewise]
 
     def visible_settings(self):
         __settings__ = super(Closing, self).settings()
 
-        return __settings__ + [self.structuring_element]
+        return __settings__ + [self.structuring_element, self.planewise]
 
     def run(self, workspace):
 
         x = workspace.image_set.get_image(self.x_name.value)
 
-        is_strel_2d = self.structuring_element.value.ndim == 2
-
-        is_img_2d = x.pixel_data.ndim == 2
-
-        if is_strel_2d and not is_img_2d:
-
-            self.function = planewise_morphology_closing
-
-        elif not is_strel_2d and is_img_2d:
-
-            raise NotImplementedError(
-                "A 3D structuring element cannot be applied to a 2D image."
+        self.function = (
+            lambda image, structuring_element, structuring_element_size, planewise: closing(
+                image,
+                structuring_element=self.structuring_element.shape,
+                diameter=self.structuring_element.size,
+                planewise=self.planewise.value,
             )
+        )   
 
-        else:
+        # is_strel_2d = self.structuring_element.value.ndim == 2
 
-            self.function = skimage.morphology.closing
+        # is_img_2d = x.pixel_data.ndim == 2
+
+        # if is_strel_2d and not is_img_2d:
+
+            # self.function = planewise_morphology_closing
+
+        # elif not is_strel_2d and is_img_2d:
+
+        #     raise NotImplementedError(
+        #         "A 3D structuring element cannot be applied to a 2D image."
+        #     )
+
+        # else:
+
+        #     self.function = skimage.morphology.closing
 
         super(Closing, self).run(workspace)
 

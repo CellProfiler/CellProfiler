@@ -22,6 +22,21 @@ def medial_axis(image):
     return skimage.morphology.medial_axis(image)
 
 
+def morphology_closing(image, structuring_element, structuring_element_size, planewise):
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+    if planewise:
+        assert strel.ndim == 2, "For planewise closing structuring_element must be 2D"
+        assert image.ndim == 3, "Planewise closing requires a 3D input image"
+        output = numpy.zeros_like(image)
+        for index, plane in enumerate(image):
+            output[index] = skimage.morphology.closing(plane, strel)
+        return output
+    else:
+        return skimage.morphology.closing(image, strel)
+
+
 def get_threshold_robust_background(
     image,
     lower_outlier_fraction=0.05,

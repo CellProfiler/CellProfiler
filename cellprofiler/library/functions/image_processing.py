@@ -105,14 +105,19 @@ def morphology_opening(image, structuring_element=skimage.morphology.disk(1)):
         return output
     else:
         return skimage.morphology.opening(image, structuring_element)
+
+
 def morphological_skeleton_2d(image):
     return skimage.morphology.skeletonize(image)
 
-def morphological_skeleton_3d(image):
+
+def morphology_skeleton_3d(image):
     return skimage.morphology.skeletonize_3d(image)
+
 
 def median_filter(image, window_size, mode):
     return scipy.ndimage.median_filter(image, size=window_size, mode=mode)
+
 
 def reduce_noise(image, patch_size, patch_distance, cutoff_distance, multichannel):
     denoised = skimage.restoration.denoise_nl_means(
@@ -124,6 +129,7 @@ def reduce_noise(image, patch_size, patch_distance, cutoff_distance, multichanne
         fast_mode=True,
     )
     return denoised
+
 
 def get_threshold_robust_background(
     image,

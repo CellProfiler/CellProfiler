@@ -1,6 +1,6 @@
 from typing import Literal
 import warnings
-import centrosome.cpmorphology 
+import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
 import skimage.morphology
@@ -14,22 +14,22 @@ def shrink_to_point(labels, fill):
     """
 
     if fill:
-        labels=centrosome.cpmorphology.fill_labeled_holes(labels)
+        labels = centrosome.cpmorphology.fill_labeled_holes(labels)
     return centrosome.cpmorphology.binary_shrink(labels)
+
 
 def shrink_defined_pixels(labels, fill, iterations):
     """
     Remove pixels around the perimeter of an object unless
-    doing so would change the object’s Euler number `iterations` times. 
+    doing so would change the object’s Euler number `iterations` times.
     Processing stops automatically when there are no more pixels to
     remove.
     """
 
     if fill:
-        labels=centrosome.cpmorphology.fill_labeled_holes(labels)
-    return centrosome.cpmorphology.binary_shrink(
-                labels, iterations=iterations
-            )     
+        labels = centrosome.cpmorphology.fill_labeled_holes(labels)
+    return centrosome.cpmorphology.binary_shrink(labels, iterations=iterations)
+
 
 def add_dividing_lines(labels):
     """
@@ -48,20 +48,21 @@ def add_dividing_lines(labels):
 
     return out_labels
 
+
 def skeletonize(labels):
     """
     Erode each object to its skeleton.
     """
     return centrosome.cpmorphology.skeletonize_labels(labels)
 
+
 def despur(labels, iterations):
     """
     Remove or reduce the length of spurs in a skeletonized
     image. The algorithm reduces spur size by `iterations` pixels.
     """
-    return centrosome.cpmorphology.spur(
-                labels, iterations=iterations
-            )
+    return centrosome.cpmorphology.spur(labels, iterations=iterations)
+
 
 def expand(labels, distance):
     """
@@ -82,6 +83,7 @@ def expand(labels, distance):
 
     return out_labels
 
+
 def expand_until_touching(labels):
     """
     Expand objects, assigning every pixel in the
@@ -91,22 +93,24 @@ def expand_until_touching(labels):
     distance = numpy.max(labels.shape)
     return expand(labels, distance)
 
+
 def expand_defined_pixels(labels, iterations):
     """
     Expand each object by adding background pixels
-    adjacent to the image `iterations` times. Processing stops 
+    adjacent to the image `iterations` times. Processing stops
     automatically if there are no more background pixels.
     """
-    return expand(labels,iterations)
+    return expand(labels, iterations)
+
 
 def merge_objects(labels_x, labels_y, dimensions):
     """
-    Make overlapping objects combine into a single object, taking 
+    Make overlapping objects combine into a single object, taking
     on the label of the object from the initial set.
 
-    If an object overlaps multiple objects, each pixel of the added 
-    object will be assigned to the closest object from the initial 
-    set. This is primarily useful when the same objects appear in 
+    If an object overlaps multiple objects, each pixel of the added
+    object will be assigned to the closest object from the initial
+    set. This is primarily useful when the same objects appear in
     both sets.
     """
     output = numpy.zeros_like(labels_x)
@@ -126,7 +130,7 @@ def merge_objects(labels_x, labels_y, dimensions):
     output = numpy.where(mask, labels_y, output)
     labels_y[mask] = 0
     to_segment = numpy.logical_or(labels_x > 0, labels_y > 0)
-    if dimensions == 2: 
+    if dimensions == 2:
         distances, (i, j) = scipy.ndimage.distance_transform_edt(
             labels_x == 0, return_indices=True
         )
@@ -136,17 +140,19 @@ def merge_objects(labels_x, labels_y, dimensions):
             labels_x == 0, return_indices=True
         )
         output[to_segment] = labels_x[i[to_segment], j[to_segment], v[to_segment]]
-    
+
     return output
+
 
 def preserve_objects(labels_x, labels_y):
     """
-    Preserve the initial object set. Any overlapping regions from 
-    the second set will be ignored in favour of the object from 
-    the initial set. 
+    Preserve the initial object set. Any overlapping regions from
+    the second set will be ignored in favour of the object from
+    the initial set.
     """
     labels_y[labels_y > 0] += labels_x.max()
     return numpy.where(labels_x > 0, labels_x, labels_y)
+
 
 def discard_objects(labels_x, labels_y):
     """
@@ -169,6 +175,7 @@ def discard_objects(labels_x, labels_y):
     labels_y[mask] = 0
 
     return numpy.where(labels_x > 0, labels_x, output)
+
 
 def segment_objects(labels_x, labels_y, dimensions):
     """
@@ -227,12 +234,13 @@ def segment_objects(labels_x, labels_y, dimensions):
 
 
 def watershed(
-    input_image,
+    input_image: numpy.ndarray,
     watershed_method: Literal["distance", "markers"] = "distance",
     declump_method: Literal["shape", "intensity", None] = "shape",
     local_maxima_method: Literal["local", "regional"] = "local",
-    intensity_image=None,
-    markers_image=None,
+    intensity_image: numpy.ndarray = None,
+    markers_image: numpy.ndarray = None,
+    markers_mask: numpy.ndarray = None,
     max_seeds: int = -1,
     downsample: int = 1,
     min_distance: int = 1,
@@ -247,13 +255,11 @@ def watershed(
         "ball", "cube", "diamond", "disk", "octahedron", "square", "star"
     ] = "disk",
     structuring_element_size: int = 1,
-    return_seeds: bool = False
+    return_seeds: bool = False,
 ):
     # Check inputs
     if input_image.dtype != bool or set(numpy.unique(input_image)) != set([0, 1]):
-        raise ValueError(
-            "Watershed expects a thresholded image as input"
-        )
+        raise ValueError("Watershed expects a thresholded image as input")
 
     if (
         watershed_method.casefold() == "intensity"
@@ -333,7 +339,7 @@ def watershed(
             seeds[tuple(seed_coords.T)] = True
             seeds = skimage.morphology.binary_dilation(seeds, strel)
             seeds = scipy.ndimage.label(seeds)[0]
-            
+
         elif local_maxima_method.casefold() == "regional":
             seeds = mahotas.regmax(distance, footprint)
             seeds = skimage.morphology.binary_dilation(seeds, strel)
@@ -345,6 +351,8 @@ def watershed(
     elif watershed_method.casefold() == "markers":
         # The user has provided their own seeds/markers
         seeds = markers_image
+        if markers_mask is not None:
+            seeds[~markers_mask] = 0
     else:
         raise NotImplementedError
 
@@ -374,7 +382,7 @@ def watershed(
             seeds = skimage.transform.resize(
                 seeds, input_shape, mode="edge", order=0, preserve_range=True
             )
-            markers = numpy.rint(seeds).astype(numpy.uint16)
+            seeds = numpy.rint(seeds).astype(numpy.uint16)
         return watershed_image, seeds
     else:
         return watershed_image
@@ -388,11 +396,11 @@ def fill_object_holes(labels, diameter, planewise=False):
     # Check if grayscale, RGB or operation is being performed planewise
     if labels.ndim == 2 or labels.shape[-1] in (3, 4) or planewise:
         # 2D circle area will be calculated
-        factor = radius ** 2  
+        factor = radius ** 2
     else:
         # Calculate the volume of a sphere
-        factor = (4.0/3.0) * (radius ** 3)
-    
+        factor = (4.0 / 3.0) * (radius ** 3)
+
     min_obj_size = numpy.pi * factor
 
     if planewise and labels.ndim != 2 and labels.shape[-1] not in (3, 4):
@@ -400,26 +408,33 @@ def fill_object_holes(labels, diameter, planewise=False):
             for obj in numpy.unique(plane):
                 if obj == 0:
                     continue
-                filled_mask = skimage.morphology.remove_small_holes(plane == obj, min_obj_size)
-                plane[filled_mask] = obj    
+                filled_mask = skimage.morphology.remove_small_holes(
+                    plane == obj, min_obj_size
+                )
+                plane[filled_mask] = obj
         return array
     else:
         for obj in numpy.unique(array):
             if obj == 0:
                 continue
-            filled_mask = skimage.morphology.remove_small_holes(array == obj, min_obj_size)
+            filled_mask = skimage.morphology.remove_small_holes(
+                array == obj, min_obj_size
+            )
             array[filled_mask] = obj
     return array
+
 
 def fill_convex_hulls(labels):
     data = skimage.measure.regionprops(labels)
     output = numpy.zeros_like(labels)
     for prop in data:
-        label = prop['label']
-        bbox = prop['bbox']
-        cmask = prop['convex_image']
+        label = prop["label"]
+        bbox = prop["bbox"]
+        cmask = prop["convex_image"]
         if len(bbox) <= 4:
-            output[bbox[0]:bbox[2], bbox[1]:bbox[3]][cmask] = label
+            output[bbox[0] : bbox[2], bbox[1] : bbox[3]][cmask] = label
         else:
-            output[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]: bbox[5]][cmask] = label
+            output[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]][
+                cmask
+            ] = label
     return output

@@ -399,13 +399,16 @@ the image is not downsampled.
             self.downsample,
             self.footprint,
             self.declump_method,
-            self.structuring_element,
-            ]
+        ]
 
         if self.declump_method == O_INTENSITY:
             # Provide the intensity image setting
             __settings__ += [
                 self.intensity_name
+            ]
+        
+        __settings__ += [
+            self.structuring_element,
             ]
 
         if self.use_advanced:
@@ -487,7 +490,6 @@ the image is not downsampled.
             if intensity_image.multichannel:
                     intensity_data = skimage.color.rgb2gray(intensity_data)
 
-
         y_data, seeds = watershed(
                 input_image=x_data,
                 watershed_method=self.watershed_method.value,
@@ -495,6 +497,7 @@ the image is not downsampled.
                 local_maxima_method=self.seed_method.value,
                 intensity_image=intensity_data,
                 markers_image=markers_data,
+                markers_mask=mask_data,
                 max_seeds=self.max_seeds.value,
                 downsample=self.downsample.value,
                 min_distance=self.min_dist.value,

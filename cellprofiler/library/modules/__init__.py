@@ -4,3 +4,4 @@ from ._expandorshrinkobjects import expand_or_shrink_objects
 from ._fillobjects import fillobjects
 from ._threshold import threshold
 from ._closing import closing
+from ._opening import opening

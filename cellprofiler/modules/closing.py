@@ -66,31 +66,12 @@ This will perform closing on each plane of a
         x = workspace.image_set.get_image(self.x_name.value)
 
         self.function = (
-            lambda image, structuring_element, structuring_element_size, planewise: closing(
+            lambda image, structuring_element, planewise: closing(
                 image,
-                structuring_element=self.structuring_element.shape,
-                diameter=self.structuring_element.size,
-                planewise=self.planewise.value,
+                structuring_element=structuring_element,
+                planewise=planewise,
             )
-        )   
-
-        # is_strel_2d = self.structuring_element.value.ndim == 2
-
-        # is_img_2d = x.pixel_data.ndim == 2
-
-        # if is_strel_2d and not is_img_2d:
-
-            # self.function = planewise_morphology_closing
-
-        # elif not is_strel_2d and is_img_2d:
-
-        #     raise NotImplementedError(
-        #         "A 3D structuring element cannot be applied to a 2D image."
-        #     )
-
-        # else:
-
-        #     self.function = skimage.morphology.closing
+        )
 
         super(Closing, self).run(workspace)
 

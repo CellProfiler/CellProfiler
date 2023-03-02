@@ -88,15 +88,6 @@ image.
             multichannel=x.multichannel
         )
 
-        # y_data = skimage.restoration.denoise_nl_means(
-        #     fast_mode=True,
-        #     h=self.cutoff_distance.value,
-        #     image=x_data,
-        #     multichannel=x.multichannel,
-        #     patch_distance=self.distance.value,
-        #     patch_size=self.size.value,
-        # )
-
         y = Image(dimensions=dimensions, image=y_data, parent_image=x)
 
         images.add(y_name, y)

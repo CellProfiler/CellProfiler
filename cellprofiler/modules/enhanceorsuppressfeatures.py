@@ -517,17 +517,17 @@ the output easier to display.
         data = self.__mask(image.pixel_data, mask)
 
         gmask = skimage.filters.gaussian(
-            mask.astype(float), sigma, mode="constant", multichannel=False
+            mask.astype(float), sigma, mode="constant"
         )
 
         img_mean = (
-            skimage.filters.gaussian(data, sigma, mode="constant", multichannel=False)
+            skimage.filters.gaussian(data, sigma, mode="constant")
             / gmask
         )
 
         img_squared = (
             skimage.filters.gaussian(
-                data ** 2, sigma, mode="constant", multichannel=False
+                data ** 2, sigma, mode="constant"
             )
             / gmask
         )

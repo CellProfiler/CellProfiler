@@ -38,38 +38,24 @@ class Opening(ImageProcessing):
             allow_planewise=True, doc=HELP_FOR_STREL
         )
 
-        self.planewise = Binary(
-            text="Planewise opening",
-            value=False,
-            doc="""\
-Select "*{YES}*" to perform opening on a per-plane level. 
-This will perform opening on each plane of a 
-3D image, rather than on the image as a whole.
-**Note**: Planewise operations will be considerably slower.
-""".format(
-                **{"YES": "Yes"}
-            ),
-        )
-
     def settings(self):
         __settings__ = super(Opening, self).settings()
 
-        return __settings__ + [self.structuring_element, self.planewise]
+        return __settings__ + [self.structuring_element]
 
     def visible_settings(self):
         __settings__ = super(Opening, self).settings()
 
-        return __settings__ + [self.structuring_element, self.planewise]
+        return __settings__ + [self.structuring_element]
 
     def run(self, workspace):
 
         x = workspace.image_set.get_image(self.x_name.value)
 
         self.function = (
-            lambda image, structuring_element, planewise: opening(
+            lambda image, structuring_element: opening(
                 image,
                 structuring_element=structuring_element,
-                planewise=planewise,
             )
         )
 

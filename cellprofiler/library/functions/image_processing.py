@@ -22,10 +22,12 @@ def medial_axis(image):
     return skimage.morphology.medial_axis(image)
 
 
-def morphology_closing(image, structuring_element=skimage.morphology.disk(1), planewise=False):
+def morphology_closing(image, structuring_element=skimage.morphology.disk(1)):
+    if structuring_element.ndim == 3 and image.ndim == 2:
+        raise ValueError("Cannot apply a 3D structuring element to a 2D image")
+    # Check if a 2D structuring element will be applied to a 3D image planewise
+    planewise = structuring_element.ndim == 2 and image.ndim == 3
     if planewise:
-        assert structuring_element.ndim == 2, "For planewise closing the structuring_element must be 2D"
-        assert image.ndim == 3, "Planewise closing requires a 3D input image"
         output = numpy.zeros_like(image)
         for index, plane in enumerate(image):
             output[index] = skimage.morphology.closing(plane, structuring_element)
@@ -34,13 +36,15 @@ def morphology_closing(image, structuring_element=skimage.morphology.disk(1), pl
         return skimage.morphology.closing(image, structuring_element)
 
 
-def morphology_opening(image, structuring_element=skimage.morphology.disk(1), planewise=False):
+def morphology_opening(image, structuring_element=skimage.morphology.disk(1)):
+    if structuring_element.ndim == 3 and image.ndim == 2:
+        raise ValueError("Cannot apply a 3D structuring element to a 2D image")
+    # Check if a 2D structuring element will be applied to a 3D image planewise
+    planewise = structuring_element.ndim == 2 and image.ndim == 3
     if planewise:
-        assert structuring_element.ndim == 2, "For planewise opening the structuring_element must be 2D"
-        assert image.ndim == 3, "Planewise opening requires a 3D input image"
         output = numpy.zeros_like(image)
         for index, plane in enumerate(image):
-            output[index] = skimage.morphology.closing(plane, structuring_element)
+            output[index] = skimage.morphology.opening(plane, structuring_element)
         return output
     else:
         return skimage.morphology.opening(image, structuring_element)

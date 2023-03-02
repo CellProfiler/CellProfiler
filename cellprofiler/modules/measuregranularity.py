@@ -336,15 +336,15 @@ class MeasureGranularity(Module):
             back_shape = new_shape
         radius = self.element_size.value
         if im.dimensions == 2:
-            selem = skimage.morphology.disk(radius, dtype=bool)
+            footprint = skimage.morphology.disk(radius, dtype=bool)
         else:
-            selem = skimage.morphology.ball(radius, dtype=bool)
+            footprint = skimage.morphology.ball(radius, dtype=bool)
         back_pixels_mask = numpy.zeros_like(back_pixels)
         back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
-        back_pixels = skimage.morphology.erosion(back_pixels_mask, selem=selem)
+        back_pixels = skimage.morphology.erosion(back_pixels_mask, footprint=footprint)
         back_pixels_mask = numpy.zeros_like(back_pixels)
         back_pixels_mask[back_mask == True] = back_pixels[back_mask == True]
-        back_pixels = skimage.morphology.dilation(back_pixels_mask, selem=selem)
+        back_pixels = skimage.morphology.dilation(back_pixels_mask, footprint=footprint)
         if self.image_sample_size.value < 1:
             if im.dimensions == 2:
                 i, j = numpy.mgrid[0 : new_shape[0], 0 : new_shape[1]].astype(float)
@@ -423,8 +423,8 @@ class MeasureGranularity(Module):
             prevmean = currentmean
             ero_mask = numpy.zeros_like(ero)
             ero_mask[mask == True] = ero[mask == True]
-            ero = skimage.morphology.erosion(ero_mask, selem=footprint)
-            rec = skimage.morphology.reconstruction(ero, pixels, selem=footprint)
+            ero = skimage.morphology.erosion(ero_mask, footprint=footprint)
+            rec = skimage.morphology.reconstruction(ero, pixels, footprint=footprint)
             currentmean = numpy.mean(rec[mask])
             gs = (prevmean - currentmean) * 100 / startmean
             statistics += ["%.2f" % gs]

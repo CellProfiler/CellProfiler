@@ -166,11 +166,11 @@ def test_run_distance(image, module, image_set, workspace):
     surface = distance.max() - distance
 
     if image.volumetric:
-        footprint = numpy.ones((3, 3, 3))
+        mahotas_footprint = numpy.ones((3, 3, 3))
     else:
-        footprint = numpy.ones((3, 3))
+        mahotas_footprint = numpy.ones((3, 3))
 
-    peaks = mahotas.regmax(distance, footprint)
+    peaks = mahotas.regmax(distance, mahotas_footprint)
 
     if image.volumetric:
         markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
@@ -382,11 +382,11 @@ def test_run_distance_declump_shape(
     surface = distance.max() - distance
 
     if image.volumetric:
-        footprint = numpy.ones((3, 3, 3))
+        mahotas_footprint = numpy.ones((3, 3, 3))
     else:
-        footprint = numpy.ones((3, 3))
+        mahotas_footprint = numpy.ones((3, 3))
 
-    peaks = mahotas.regmax(distance, footprint)
+    peaks = mahotas.regmax(distance, mahotas_footprint)
 
     if image.volumetric:
         markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
@@ -661,11 +661,11 @@ def test_run_distance_declump_intensity(
     surface = distance.max() - distance
 
     if image.volumetric:
-        footprint = numpy.ones((3, 3, 3))
+        mahotas_footprint = numpy.ones((3, 3, 3))
     else:
-        footprint = numpy.ones((3, 3))
+        mahotas_footprint = numpy.ones((3, 3))
 
-    peaks = mahotas.regmax(distance, footprint)
+    peaks = mahotas.regmax(distance, mahotas_footprint)
 
     if image.volumetric:
         markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))

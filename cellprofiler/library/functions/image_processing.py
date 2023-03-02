@@ -1,4 +1,3 @@
-# from multiprocessing.sharedctypes import Value
 import skimage.color
 import skimage.morphology
 import numpy

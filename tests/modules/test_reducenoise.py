@@ -25,7 +25,7 @@ def test_run(image, module, image_set, workspace):
         fast_mode=True,
         h=0.1,
         image=image.pixel_data,
-        multichannel=image.multichannel,
+        channel_axis=2 if image.multichannel else None,
         patch_distance=11,
         patch_size=7,
     )

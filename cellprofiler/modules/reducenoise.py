@@ -83,7 +83,7 @@ image.
             fast_mode=True,
             h=self.cutoff_distance.value,
             image=x_data,
-            multichannel=x.multichannel,
+            channel_axis=2 if x.multichannel else None,
             patch_distance=self.distance.value,
             patch_size=self.size.value,
         )

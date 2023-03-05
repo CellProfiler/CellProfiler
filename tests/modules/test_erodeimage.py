@@ -16,18 +16,18 @@ def test_run(image, module, image_set, workspace):
         # test 3d structuring element
         module.structuring_element.shape = "ball"
 
-        selem = skimage.morphology.ball(1)
+        footprint = skimage.morphology.ball(1)
 
         module.run(workspace)
 
         actual = image_set.get_image("erosion")
 
-        desired = skimage.morphology.erosion(image.pixel_data, selem)
+        desired = skimage.morphology.erosion(image.pixel_data, footprint)
 
         numpy.testing.assert_array_equal(actual.pixel_data, desired)
 
         # test planewise
-        selem = skimage.morphology.disk(1)
+        footprint = skimage.morphology.disk(1)
 
         module.structuring_element.shape = "disk"
 
@@ -38,17 +38,17 @@ def test_run(image, module, image_set, workspace):
         desired = numpy.zeros_like(image.pixel_data)
 
         for index, plane in enumerate(image.pixel_data):
-            desired[index] = skimage.morphology.erosion(plane, selem)
+            desired[index] = skimage.morphology.erosion(plane, footprint)
 
         numpy.testing.assert_array_equal(actual.pixel_data, desired)
 
     else:
-        selem = skimage.morphology.disk(1)
+        footprint = skimage.morphology.disk(1)
 
         module.run(workspace)
 
         actual = image_set.get_image("erosion")
 
-        desired = skimage.morphology.erosion(image.pixel_data, selem)
+        desired = skimage.morphology.erosion(image.pixel_data, footprint)
 
         numpy.testing.assert_array_equal(actual.pixel_data, desired)

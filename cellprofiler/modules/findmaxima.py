@@ -197,7 +197,7 @@ maxima are within objects of interest."""
         cmap = ListedColormap(self.maxima_color.value)
         if self.maxima_size.value > 1:
             strel = disk(self.maxima_size.value - 1)
-            labels = dilation(maxima_image, selem=strel)
+            labels = dilation(maxima_image, footprint=strel)
         else:
             labels = maxima_image
         cplabels = [

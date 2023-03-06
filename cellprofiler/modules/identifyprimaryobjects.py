@@ -1577,7 +1577,7 @@ If "*{NO}*" is selected, the following settings are used:
                 cmap = ListedColormap(self.maxima_color.value)
                 if self.maxima_size.value > 1:
                     strel = skimage.morphology.disk(self.maxima_size.value - 1)
-                    labels = skimage.morphology.dilation(self.labeled_maxima, selem=strel)
+                    labels = skimage.morphology.dilation(self.labeled_maxima, footprint=strel)
                 else:
                     labels = self.labeled_maxima
                 cplabels.append(

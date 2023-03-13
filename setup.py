@@ -59,6 +59,7 @@ setuptools.setup(
     extras_require={
         "build": ["black", "pre-commit", "pyinstaller", "twine"],
         "docs": ["Sphinx>=3.1.1", "sphinx-rtd-theme>=0.5.0"],
+        "mysql": ["mysqlclient==1.4.6"],
         "test": ["pytest>=3.3.2,<4"],
     },
     install_requires=[
@@ -73,7 +74,6 @@ setuptools.setup(
         "joblib>=0.13",
         "mahotas>=1.4",
         "matplotlib==3.1.3",
-        "mysqlclient==1.4.6",
         "numpy>=1.20.1",
         "Pillow>=7.1.0",
         "pyzmq~=22.3",
@@ -86,7 +86,6 @@ setuptools.setup(
         "six",
         "tifffile<2022.4.22",
         "wxPython==4.2.0",
-
     ],
     license="BSD",
     name="CellProfiler",

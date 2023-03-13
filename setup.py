@@ -78,7 +78,7 @@ setuptools.setup(
         "inflect>=2.1",
         "joblib>=0.13",
         "mahotas>=1.4",
-        "matplotlib==3.1.3",
+        "matplotlib>=3.1.3",
         "numpy>=1.20.1",
         "Pillow>=7.1.0",
         "pyzmq~=22.3",

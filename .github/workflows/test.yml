@@ -53,7 +53,7 @@ jobs:
       - name: Install CP
         run: |
           pip install -e ~/core
-          pip install -e .[test]
+          pip install -e .[mysql,test]
       - name: Run tests
         run: |
           pytest

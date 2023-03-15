@@ -236,7 +236,7 @@ def segment_objects(labels_x, labels_y, dimensions):
 def watershed(
     input_image: numpy.ndarray,
     watershed_method: Literal["distance", "markers"] = "distance",
-    declump_method: Literal["shape", "intensity", None] = "shape",
+    declump_method: Literal["shape", "intensity", "none"] = "shape",
     local_maxima_method: Literal["local", "regional"] = "local",
     intensity_image: numpy.ndarray = None,
     markers_image: numpy.ndarray = None,

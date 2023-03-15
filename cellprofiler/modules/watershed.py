@@ -24,6 +24,7 @@ O_LOCAL = "Local"
 O_REGIONAL = "Regional"
 O_SHAPE = "Shape"
 O_INTENSITY = "Intensity"
+O_NONE = "None"
 
 __doc__ = """
 Watershed
@@ -266,7 +267,7 @@ the image is not downsampled.
 
         self.declump_method = cellprofiler_core.setting.choice.Choice(
             text="Declump method",
-            choices=[O_SHAPE, O_INTENSITY],
+            choices=[O_SHAPE, O_INTENSITY, O_NONE],
             value=O_SHAPE,
             doc="""\
         This setting allows you to choose the method that is used to draw the
@@ -395,7 +396,6 @@ the image is not downsampled.
 
         __settings__ += [
             self.exclude_border,
-            self.display_maxima,
             self.downsample,
             self.footprint,
             self.declump_method,
@@ -429,6 +429,10 @@ the image is not downsampled.
                 self.compactness,
                 self.watershed_line,
                 ]
+        
+        __settings__ += [
+            self.display_maxima,
+        ]
 
         return __settings__
 

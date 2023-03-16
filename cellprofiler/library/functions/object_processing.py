@@ -240,7 +240,7 @@ def watershed(
     local_maxima_method: Literal["local", "regional"] = "local",
     intensity_image: numpy.ndarray = None,
     markers_image: numpy.ndarray = None,
-    markers_mask: numpy.ndarray = None,
+    mask: numpy.ndarray = None,
     max_seeds: int = -1,
     downsample: int = 1,
     min_distance: int = 1,
@@ -260,18 +260,17 @@ def watershed(
     # Check inputs
     if input_image.dtype != bool or set(numpy.unique(input_image)) != set([0, 1]):
         raise ValueError("Watershed expects a thresholded image as input")
-
     if (
         watershed_method.casefold() == "intensity"
         or declump_method.casefold() == "intensity"
     ) and intensity_image is None:
         raise ValueError(
-            f"Intensity-based methods require an intensity image to be provided"
+            f"Intensity-based methods require an intensity image"
         )
 
     if watershed_method.casefold() == "markers" and markers_image is None:
         raise ValueError(
-            "Markers watershed method require a markers image to be provided"
+            "Markers watershed method require a markers image"
         )
 
     # Create and check structuring element for seed dilation
@@ -299,8 +298,6 @@ def watershed(
         else:
             factors = (downsample, downsample)
 
-        # TODO: Check better methods for ensuring non-bool types or handling the int64
-        # output if not
         input_image = skimage.transform.downscale_local_mean(input_image, factors)
 
     smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
@@ -320,9 +317,13 @@ def watershed(
         # Convert pixel intensity peaks to troughs and
         # use this as the image input in watershed
         watershed_input_image = 1 - intensity_image
-    else:
+    elif declump_method.casefold() == "none":
         # No declumping
         watershed_input_image = input_image
+    else:
+        raise ValueError(
+            f"declump_method {declump_method} is not supported."
+        )
 
     # Generate markers
     if watershed_method.casefold() == "distance":
@@ -351,8 +352,6 @@ def watershed(
     elif watershed_method.casefold() == "markers":
         # The user has provided their own seeds/markers
         seeds = markers_image
-        if markers_mask is not None:
-            seeds[~markers_mask] = 0
     else:
         raise NotImplementedError
 
@@ -360,7 +359,7 @@ def watershed(
     watershed_image = skimage.segmentation.watershed(
         watershed_input_image,
         markers=seeds,
-        mask=input_image != 0,
+        mask=mask if mask is not None else input_image != 0,
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,

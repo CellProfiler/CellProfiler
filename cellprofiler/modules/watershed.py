@@ -383,6 +383,7 @@ the image is not downsampled.
         __settings__ = [self.use_advanced]
         __settings__ += super(Watershed, self).visible_settings()
         __settings__ += [
+            self.mask_name,
             self.watershed_method,
         ]
 
@@ -391,7 +392,6 @@ the image is not downsampled.
                 # settings are not required
                 __settings__ += [
                     self.markers_name,
-                    self.mask_name,
                 ]
 
         __settings__ += [
@@ -480,11 +480,10 @@ the image is not downsampled.
             if markers.multichannel:
                 markers_data = skimage.color.rgb2gray(markers_data)
 
-            # Get mask for the markers method
-            if not self.mask_name.is_blank:
-                mask_name = self.mask_name.value
-                mask = images.get_image(mask_name)
-                mask_data = mask.pixel_data
+        if not self.mask_name.is_blank:
+            mask_name = self.mask_name.value
+            mask = images.get_image(mask_name)
+            mask_data = mask.pixel_data
 
         # Get the intensity image
         if self.declump_method.value == O_INTENSITY:
@@ -501,7 +500,7 @@ the image is not downsampled.
                 local_maxima_method=self.seed_method.value,
                 intensity_image=intensity_data,
                 markers_image=markers_data,
-                markers_mask=mask_data,
+                mask=mask_data,
                 max_seeds=self.max_seeds.value,
                 downsample=self.downsample.value,
                 min_distance=self.min_dist.value,

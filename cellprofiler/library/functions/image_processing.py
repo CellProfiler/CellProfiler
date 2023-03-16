@@ -22,6 +22,34 @@ def medial_axis(image):
     return skimage.morphology.medial_axis(image)
 
 
+def morphology_closing(image, structuring_element=skimage.morphology.disk(1)):
+    if structuring_element.ndim == 3 and image.ndim == 2:
+        raise ValueError("Cannot apply a 3D structuring element to a 2D image")
+    # Check if a 2D structuring element will be applied to a 3D image planewise
+    planewise = structuring_element.ndim == 2 and image.ndim == 3
+    if planewise:
+        output = numpy.zeros_like(image)
+        for index, plane in enumerate(image):
+            output[index] = skimage.morphology.closing(plane, structuring_element)
+        return output
+    else:
+        return skimage.morphology.closing(image, structuring_element)
+
+
+def morphology_opening(image, structuring_element=skimage.morphology.disk(1)):
+    if structuring_element.ndim == 3 and image.ndim == 2:
+        raise ValueError("Cannot apply a 3D structuring element to a 2D image")
+    # Check if a 2D structuring element will be applied to a 3D image planewise
+    planewise = structuring_element.ndim == 2 and image.ndim == 3
+    if planewise:
+        output = numpy.zeros_like(image)
+        for index, plane in enumerate(image):
+            output[index] = skimage.morphology.opening(plane, structuring_element)
+        return output
+    else:
+        return skimage.morphology.opening(image, structuring_element)
+
+
 def get_threshold_robust_background(
     image,
     lower_outlier_fraction=0.05,

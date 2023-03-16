@@ -431,18 +431,18 @@ the output easier to display.
     def enhance_speckles(self, image, radius, accuracy):
         data = self.__mask(image.pixel_data, image.mask)
 
-        selem = self.__structuring_element(radius, image.volumetric)
+        footprint = self.__structuring_element(radius, image.volumetric)
 
         if accuracy == "Slow" or radius <= 3:
-            result = skimage.morphology.white_tophat(data, selem=selem)
+            result = skimage.morphology.white_tophat(data, footprint=footprint)
         else:
             #
             # white_tophat = img - opening
             #              = img - dilate(erode)
             #              = img - maximum_filter(minimum_filter)
-            minimum = scipy.ndimage.filters.minimum_filter(data, footprint=selem)
+            minimum = scipy.ndimage.filters.minimum_filter(data, footprint=footprint)
 
-            maximum = scipy.ndimage.filters.maximum_filter(minimum, footprint=selem)
+            maximum = scipy.ndimage.filters.maximum_filter(minimum, footprint=footprint)
 
             result = data - maximum
 
@@ -453,11 +453,11 @@ the output easier to display.
 
         if method == N_GRADIENT:
             # desired effect = img + white_tophat - black_tophat
-            selem = self.__structuring_element(radius, image.volumetric)
+            footprint = self.__structuring_element(radius, image.volumetric)
 
-            white = skimage.morphology.white_tophat(data, selem=selem)
+            white = skimage.morphology.white_tophat(data, footprint=footprint)
 
-            black = skimage.morphology.black_tophat(data, selem=selem)
+            black = skimage.morphology.black_tophat(data, footprint=footprint)
 
             result = data + white - black
 
@@ -517,17 +517,17 @@ the output easier to display.
         data = self.__mask(image.pixel_data, mask)
 
         gmask = skimage.filters.gaussian(
-            mask.astype(float), sigma, mode="constant", multichannel=False
+            mask.astype(float), sigma, mode="constant"
         )
 
         img_mean = (
-            skimage.filters.gaussian(data, sigma, mode="constant", multichannel=False)
+            skimage.filters.gaussian(data, sigma, mode="constant")
             / gmask
         )
 
         img_squared = (
             skimage.filters.gaussian(
-                data ** 2, sigma, mode="constant", multichannel=False
+                data ** 2, sigma, mode="constant"
             )
             / gmask
         )
@@ -591,9 +591,9 @@ the output easier to display.
     def suppress(self, image, radius):
         data = self.__mask(image.pixel_data, image.mask)
 
-        selem = self.__structuring_element(radius, image.volumetric)
+        footprint = self.__structuring_element(radius, image.volumetric)
 
-        result = skimage.morphology.opening(data, selem)
+        result = skimage.morphology.opening(data, footprint)
 
         return self.__unmask(result, image.pixel_data, image.mask)
 

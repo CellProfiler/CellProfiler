@@ -16,18 +16,18 @@ def test_run(object_with_data, module, object_set_with_data, workspace_with_data
         # test 3d structuring element
         module.structuring_element.shape = "ball"
 
-        selem = skimage.morphology.ball(1)
+        footprint = skimage.morphology.ball(1)
 
         module.run(workspace_with_data)
 
         actual = object_set_with_data.get_objects("OutputObjects")
 
-        desired = skimage.morphology.dilation(object_with_data.segmented, selem)
+        desired = skimage.morphology.dilation(object_with_data.segmented, footprint)
 
         numpy.testing.assert_array_equal(actual.segmented, desired)
 
         # test planewise
-        selem = skimage.morphology.disk(1)
+        footprint = skimage.morphology.disk(1)
 
         module.structuring_element.shape = "disk"
 
@@ -40,17 +40,17 @@ def test_run(object_with_data, module, object_set_with_data, workspace_with_data
         desired = numpy.zeros_like(object_with_data.segmented)
 
         for index, plane in enumerate(object_with_data.segmented):
-            desired[index] = skimage.morphology.dilation(plane, selem)
+            desired[index] = skimage.morphology.dilation(plane, footprint)
 
         numpy.testing.assert_array_equal(actual.segmented, desired)
 
     else:
-        selem = skimage.morphology.disk(1)
+        footprint = skimage.morphology.disk(1)
 
         module.run(workspace_with_data)
 
         actual = object_set_with_data.get_objects("OutputObjects")
 
-        desired = skimage.morphology.dilation(object_with_data.segmented, selem)
+        desired = skimage.morphology.dilation(object_with_data.segmented, footprint)
 
         numpy.testing.assert_array_equal(actual.segmented, desired)

@@ -1,9 +1,9 @@
-# from multiprocessing.sharedctypes import Value
 import skimage.color
 import skimage.morphology
 import numpy
 import centrosome.threshold
 import scipy
+import matplotlib
 
 
 def rgb_to_greyscale(image):
@@ -394,3 +394,47 @@ def apply_threshold(image, threshold, mask=None, smoothing=0):
         mask,
     )
     return (blurred_image >= threshold) & mask, sigma
+
+
+def overlay_objects(image, labels, opacity=0.3, max_label=None, seed=None, colormap="jet"):
+    cmap = matplotlib.cm.ScalarMappable(cmap=matplotlib.cm.get_cmap(colormap))
+
+    colors = cmap.to_rgba(
+        numpy.arange(labels.max() if max_label is None else max_label)
+    )[:, :3]
+
+    if seed is not None:
+        # Resetting the random seed helps keep object label colors consistent in displays
+        # where consistency is important, like RelateObjects.
+        numpy.random.seed(seed)
+
+    numpy.random.shuffle(colors)
+
+    if labels.ndim == 3:
+        overlay = numpy.zeros(labels.shape + (3,), dtype=numpy.float32)
+
+        for index, plane in enumerate(image):
+            unique_labels = numpy.unique(labels[index])
+
+            if unique_labels[0] == 0:
+                unique_labels = unique_labels[1:]
+
+            overlay[index] = skimage.color.label2rgb(
+                labels[index],
+                alpha=opacity,
+                bg_color=[0, 0, 0],
+                bg_label=0,
+                colors=colors[unique_labels - 1],
+                image=plane,
+            )
+
+        return overlay
+
+    return skimage.color.label2rgb(
+        labels,
+        alpha=opacity,
+        bg_color=[0, 0, 0],
+        bg_label=0,
+        colors=colors,
+        image=image,
+    )

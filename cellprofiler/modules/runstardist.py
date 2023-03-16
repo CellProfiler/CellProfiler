@@ -1,7 +1,9 @@
 import os
+from pathlib import Path
 
 from skimage.transform import resize
 
+import csbdeep.models.pretrained
 from csbdeep.utils import normalize
 
 from cellprofiler_core.image import Image
@@ -11,6 +13,29 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.do_something import DoSomething
 from cellprofiler_core.setting.text import Integer, ImageName, Directory, Float
+
+
+# Monkey patch csbdeep to avoid re-extracting models on each run and allow
+# specification of a custom cache dir with KERAS_CACHE_DIR.
+def patched_get_model_folder(cls, key_or_alias):
+    key, alias, m = csbdeep.models.pretrained.get_model_details(
+        cls, key_or_alias)
+    target = str(Path('models') / cls.__name__ / key)
+    cache_dir = os.environ.get('KERAS_CACHE_DIR',
+                               os.path.join(os.path.expanduser('~'), '.keras'))
+    expected_dir = os.path.join(cache_dir, target)
+    if os.path.exists(expected_dir) and len(os.listdir(expected_dir)) > 1:
+        return Path(expected_dir)
+    else:
+        from keras.utils import get_file
+        path = Path(
+            get_file(fname=key+'.zip', origin=m['url'], file_hash=m['hash'],
+                     cache_subdir=target, extract=True, cache_dir=cache_dir))
+        assert path.exists() and path.parent.exists()
+        return path.parent
+
+
+csbdeep.models.pretrained.get_model_folder = patched_get_model_folder
 
 __doc__ = f"""\
 RunStardist

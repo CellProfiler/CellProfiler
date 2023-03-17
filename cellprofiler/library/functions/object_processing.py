@@ -235,9 +235,9 @@ def segment_objects(labels_x, labels_y, dimensions):
 
 def watershed(
     input_image: numpy.ndarray,
-    watershed_method: Literal["distance", "markers"] = "distance",
+    method: Literal["distance", "markers"] = "distance",
     declump_method: Literal["shape", "intensity", "none"] = "shape",
-    local_maxima_method: Literal["local", "regional"] = "local",
+    maxima_method: Literal["local", "regional"] = "local",
     intensity_image: numpy.ndarray = None,
     markers_image: numpy.ndarray = None,
     mask: numpy.ndarray = None,
@@ -261,14 +261,14 @@ def watershed(
     if input_image.dtype != bool or set(numpy.unique(input_image)) != set([0, 1]):
         raise ValueError("Watershed expects a thresholded image as input")
     if (
-        watershed_method.casefold() == "intensity"
+        method.casefold() == "intensity"
         or declump_method.casefold() == "intensity"
     ) and intensity_image is None:
         raise ValueError(
             f"Intensity-based methods require an intensity image"
         )
 
-    if watershed_method.casefold() == "markers" and markers_image is None:
+    if method.casefold() == "markers" and markers_image is None:
         raise ValueError(
             "Markers watershed method require a markers image"
         )
@@ -333,9 +333,9 @@ def watershed(
         )
 
     # Generate markers
-    if watershed_method.casefold() == "distance":
+    if method.casefold() == "distance":
         # Find maxima in the distance transform
-        if local_maxima_method.casefold() == "local":
+        if maxima_method.casefold() == "local":
             seed_coords = skimage.feature.peak_local_max(
                 distance,
                 min_distance=min_distance,
@@ -348,21 +348,21 @@ def watershed(
             seeds = skimage.morphology.binary_dilation(seeds, strel)
             seeds = scipy.ndimage.label(seeds)[0]
 
-        elif local_maxima_method.casefold() == "regional":
+        elif maxima_method.casefold() == "regional":
             seeds = mahotas.regmax(distance, footprint)
             seeds = skimage.morphology.binary_dilation(seeds, strel)
             seeds, _ = mahotas.label(seeds, footprint)
         else:
             raise NotImplementedError(
-                f"local_maxima_method {local_maxima_method} is not supported."
+                f"maxima_method {maxima_method} is not supported."
             )
-    elif watershed_method.casefold() == "markers":
+    elif method.casefold() == "markers":
         # The user has provided their own seeds/markers
         seeds = markers_image
         seeds = skimage.morphology.binary_dilation(seeds, strel)
     else:
         raise NotImplementedError(
-                f"watershed_method {watershed_method} is not supported."
+                f"method {method} is not supported."
             )
 
     # Run watershed

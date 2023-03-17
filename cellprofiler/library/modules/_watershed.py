@@ -8,9 +8,9 @@ import skimage
 # Simple wrapper for the object_procceing watershed function
 def watershed(
     input_image: numpy.ndarray,
-    watershed_method: Literal["intensity", "distance", "markers"] = "distance",
+    method: Literal["intensity", "distance", "markers"] = "distance",
     declump_method: Literal["shape", "intensity", "none"] = "shape",
-    local_maxima_method: Literal["local", "regional"] = "local",
+    maxima_method: Literal["local", "regional"] = "local",
     intensity_image: numpy.ndarray = None,
     markers_image: numpy.ndarray = None,
     mask: numpy.ndarray = None,
@@ -32,9 +32,9 @@ def watershed(
 ):
     y_data = library_watershed(
         input_image=input_image,
-        watershed_method=watershed_method,
+        method=method,
         declump_method=declump_method,
-        local_maxima_method=local_maxima_method,
+        maxima_method=maxima_method,
         intensity_image=intensity_image,
         markers_image=markers_image,
         mask=mask,

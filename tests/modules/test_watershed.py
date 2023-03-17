@@ -127,10 +127,10 @@ def test_run_distance_declump_intensity(
 
     expected = watershed(
         input_image, 
-        watershed_method="distance", 
+        method="distance", 
         declump_method="intensity",
         intensity_image=intensity_image,
-        local_maxima_method=maxima_method,
+        maxima_method=maxima_method,
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,
@@ -193,9 +193,9 @@ def test_run_distance_declump_shape(
 
     expected = watershed(
         input_image, 
-        watershed_method="distance", 
+        method="distance", 
         declump_method="shape",
-        local_maxima_method=maxima_method,
+        maxima_method=maxima_method,
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,
@@ -258,9 +258,9 @@ def test_run_distance_declump_none(
 
     expected = watershed(
         input_image, 
-        watershed_method="distance", 
+        method="distance", 
         declump_method="none",
-        local_maxima_method=maxima_method,
+        maxima_method=maxima_method,
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,
@@ -340,7 +340,7 @@ def test_run_markers_declump_shape(
 
     expected = watershed(
         input_image, 
-        watershed_method="markers", 
+        method="markers", 
         declump_method="shape",
         markers_image=markers_image,
         connectivity=connectivity,
@@ -434,7 +434,7 @@ def test_run_markers_declump_intensity(
 
     expected = watershed(
         input_image, 
-        watershed_method="markers", 
+        method="markers", 
         declump_method="intensity",
         markers_image=markers_image,
         intensity_image=intensity_image,
@@ -517,7 +517,7 @@ def test_run_markers_declump_none(
 
     expected = watershed(
         input_image, 
-        watershed_method="markers", 
+        method="markers", 
         declump_method="none",
         markers_image=markers_image,
         connectivity=connectivity,

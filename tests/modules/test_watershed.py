@@ -166,11 +166,11 @@ def test_run_distance(image, module, image_set, workspace):
     surface = distance.max() - distance
 
     if image.volumetric:
-        footprint = numpy.ones((3, 3, 3))
+        mahotas_footprint = numpy.ones((3, 3, 3))
     else:
-        footprint = numpy.ones((3, 3))
+        mahotas_footprint = numpy.ones((3, 3))
 
-    peaks = mahotas.regmax(distance, footprint)
+    peaks = mahotas.regmax(distance, mahotas_footprint)
 
     if image.volumetric:
         markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
@@ -213,11 +213,11 @@ def test_run_markers_declump_shape(
 
     if image.dimensions == 3:
         module.structuring_element.value = "Ball,1"
-        selem = skimage.morphology.ball(1)
+        footprint = skimage.morphology.ball(1)
 
     else:
         module.structuring_element.value = "Disk,1"
-        selem = skimage.morphology.disk(1)
+        footprint = skimage.morphology.disk(1)
 
     if image.multichannel or image.dimensions == 3:
         denoised = numpy.zeros_like(image.pixel_data)
@@ -301,7 +301,7 @@ def test_run_markers_declump_shape(
     seeds = numpy.zeros_like(peak_image, dtype=bool)
     seeds[tuple(seed_coords.T)] = True
 
-    seeds = skimage.morphology.binary_dilation(seeds, selem)
+    seeds = skimage.morphology.binary_dilation(seeds, footprint)
 
     number_objects = skimage.measure.label(watershed_markers, return_num=True)[1]
 
@@ -365,11 +365,11 @@ def test_run_distance_declump_shape(
     # set the structuring element, used for shape-based declumping
     if image.dimensions == 3:
         module.structuring_element.value = "Ball,1"
-        selem = skimage.morphology.ball(1)
+        footprint = skimage.morphology.ball(1)
 
     else:
         module.structuring_element.value = "Disk,1"
-        selem = skimage.morphology.disk(1)
+        footprint = skimage.morphology.disk(1)
 
     # run the module
     module.run(workspace)
@@ -382,11 +382,11 @@ def test_run_distance_declump_shape(
     surface = distance.max() - distance
 
     if image.volumetric:
-        footprint = numpy.ones((3, 3, 3))
+        mahotas_footprint = numpy.ones((3, 3, 3))
     else:
-        footprint = numpy.ones((3, 3))
+        mahotas_footprint = numpy.ones((3, 3))
 
-    peaks = mahotas.regmax(distance, footprint)
+    peaks = mahotas.regmax(distance, mahotas_footprint)
 
     if image.volumetric:
         markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
@@ -415,7 +415,7 @@ def test_run_distance_declump_shape(
     seeds = numpy.zeros_like(peak_image, dtype=bool)
     seeds[tuple(seed_coords.T)] = True
 
-    seeds = skimage.morphology.binary_dilation(seeds, selem)
+    seeds = skimage.morphology.binary_dilation(seeds, footprint)
 
     number_objects = skimage.measure.label(watershed_distance, return_num=True)[1]
 
@@ -470,11 +470,11 @@ def test_run_markers_declump_intensity(
 
     if image.dimensions == 3:
         module.structuring_element.value = "Ball,1"
-        selem = skimage.morphology.ball(1)
+        footprint = skimage.morphology.ball(1)
 
     else:
         module.structuring_element.value = "Disk,1"
-        selem = skimage.morphology.disk(1)
+        footprint = skimage.morphology.disk(1)
 
     if image.multichannel or image.dimensions == 3:
         denoised = numpy.zeros_like(image.pixel_data)
@@ -565,7 +565,7 @@ def test_run_markers_declump_intensity(
     seeds = numpy.zeros_like(peak_image, dtype=bool)
     seeds[tuple(seed_coords.T)] = True
 
-    seeds = skimage.morphology.binary_dilation(seeds, selem)
+    seeds = skimage.morphology.binary_dilation(seeds, footprint)
 
     number_objects = skimage.measure.label(watershed_markers, return_num=True)[1]
 
@@ -643,11 +643,11 @@ def test_run_distance_declump_intensity(
     # set the structuring element, used for declumping
     if image.dimensions == 3:
         module.structuring_element.value = "Ball,1"
-        selem = skimage.morphology.ball(1)
+        footprint = skimage.morphology.ball(1)
 
     else:
         module.structuring_element.value = "Disk,1"
-        selem = skimage.morphology.disk(1)
+        footprint = skimage.morphology.disk(1)
 
 
     # run the module
@@ -661,11 +661,11 @@ def test_run_distance_declump_intensity(
     surface = distance.max() - distance
 
     if image.volumetric:
-        footprint = numpy.ones((3, 3, 3))
+        mahotas_footprint = numpy.ones((3, 3, 3))
     else:
-        footprint = numpy.ones((3, 3))
+        mahotas_footprint = numpy.ones((3, 3))
 
-    peaks = mahotas.regmax(distance, footprint)
+    peaks = mahotas.regmax(distance, mahotas_footprint)
 
     if image.volumetric:
         markers, _ = mahotas.label(peaks, numpy.ones((16, 16, 16)))
@@ -699,7 +699,7 @@ def test_run_distance_declump_intensity(
     seeds = numpy.zeros_like(peak_image, dtype=bool)
     seeds[tuple(seed_coords.T)] = True
 
-    seeds = skimage.morphology.binary_dilation(seeds, selem)
+    seeds = skimage.morphology.binary_dilation(seeds, footprint)
 
     number_objects = skimage.measure.label(watershed_distance, return_num=True)[1]
 

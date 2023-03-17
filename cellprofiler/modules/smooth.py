@@ -244,7 +244,7 @@ the output image.
 
             output_pixels = skimage.restoration.denoise_bilateral(
                 image=pixel_data.astype(float),
-                multichannel=image.multichannel,
+                channel_axis=2 if image.multichannel else None,
                 sigma_color=sigma_range,
                 sigma_spatial=sigma,
             )

@@ -16,10 +16,9 @@ YES          YES           NO
 
 """
 
-import numpy
-import skimage.morphology
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import StructuringElement
+from cellprofiler.library.modules import closing
 
 from ._help import HELP_FOR_STREL
 
@@ -52,23 +51,12 @@ class Closing(ImageProcessing):
 
         x = workspace.image_set.get_image(self.x_name.value)
 
-        is_strel_2d = self.structuring_element.value.ndim == 2
-
-        is_img_2d = x.pixel_data.ndim == 2
-
-        if is_strel_2d and not is_img_2d:
-
-            self.function = planewise_morphology_closing
-
-        elif not is_strel_2d and is_img_2d:
-
-            raise NotImplementedError(
-                "A 3D structuring element cannot be applied to a 2D image."
+        self.function = (
+            lambda image, structuring_element: closing(
+                image,
+                structuring_element=structuring_element,
             )
-
-        else:
-
-            self.function = skimage.morphology.closing
+        )
 
         super(Closing, self).run(workspace)
 

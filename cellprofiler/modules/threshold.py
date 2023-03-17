@@ -46,6 +46,8 @@ from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.text import Float, Integer
 
 from cellprofiler.modules import _help
+from cellprofiler.library.modules import threshold
+from cellprofiler.library.functions.image_processing import apply_threshold
 
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
@@ -783,8 +785,10 @@ staining.
             self.x_name.value, must_be_grayscale=True
         )
         dimensions = input_image.dimensions
-        final_threshold, orig_threshold, guide_threshold = self.get_threshold(
-            input_image, workspace, automatic=False,
+
+        final_threshold, orig_threshold, guide_threshold, binary_image, _ = self.get_threshold(
+            input_image,
+            workspace
         )
 
         self.add_threshold_measurements(
@@ -794,8 +798,6 @@ staining.
             orig_threshold,
             guide_threshold,
         )
-
-        binary_image, _ = self.apply_threshold(input_image, final_threshold)
 
         self.add_fg_bg_measurements(
             self.get_measurement_objects_name(),
@@ -821,333 +823,83 @@ staining.
                 value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split("_")[1], str(value))]
 
-    def apply_threshold(self, image, threshold, automatic=False):
-        data = image.pixel_data
+    def convert_setting(self, gui_setting_str):
+        """
+        Convert GUI setting strings to something cellprofiler
+        library compatible. That is, remove spaces and hyphens.
+        """
+        rep_list = ((" ", "_"), ("-", "_"))
+        converted_str = gui_setting_str
+        for replacement in rep_list:
+            converted_str = converted_str.replace(*replacement)
+        return converted_str
 
-        mask = image.mask
-
-        if not automatic and self.threshold_smoothing_scale.value == 0:
-            return (data >= threshold) & mask, 0
-
-        if automatic:
-            sigma = 1
-        else:
-            # Convert from a scale into a sigma. What I've done here
-            # is to structure the Gaussian so that 1/2 of the smoothed
-            # intensity is contributed from within the smoothing diameter
-            # and 1/2 is contributed from outside.
-            sigma = self.threshold_smoothing_scale.value / 0.6744 / 2.0
-
-        blurred_image = centrosome.smooth.smooth_with_function_and_mask(
-            data,
-            lambda x: scipy.ndimage.gaussian_filter(x, sigma, mode="constant", cval=0),
-            mask,
-        )
-
-        return (blurred_image >= threshold) & mask, sigma
-
-    def get_threshold(self, image, workspace, automatic=False):
-        need_transform = (
-                not automatic and
-                self.threshold_operation in (TM_LI, TM_OTSU) and
-                self.log_transform
-        )
-
-        if need_transform:
-            image_data, conversion_dict = centrosome.threshold.log_transform(image.pixel_data)
-        else:
-            image_data = image.pixel_data
-
+    def get_threshold(self, input_image, workspace, automatic=False):
+        """
+        Get manual, measurement or other thresholds
+        """
+        # Handle manual and measurement thresholds, which are not supported
+        # by cellprofiler.library
         if self.threshold_operation == TM_MANUAL:
-            return self.manual_threshold.value, self.manual_threshold.value, None
-
+            final_threshold = self.manual_threshold.value 
+            orig_threshold = self.manual_threshold.value
+            guide_threshold = None 
+            binary_image, sigma = apply_threshold(
+                input_image.pixel_data,
+                threshold=final_threshold,
+                mask=input_image.mask,
+                smoothing=self.threshold_smoothing_scale.value
+            )
         elif self.threshold_operation == TM_MEASUREMENT:
-            # Thresholds are stored as single element arrays.  Cast to float to extract the value.
             orig_threshold = float(
                 workspace.measurements.get_current_image_measurement(
                     self.thresholding_measurement.value
                 )
             )
-            return self._correct_global_threshold(orig_threshold), orig_threshold, None
-
-        elif self.threshold_scope.value == TS_GLOBAL or automatic:
-            th_guide = None
-            th_original = self.get_global_threshold(image_data, image.mask, automatic=automatic)
-
-        elif self.threshold_scope.value == TS_ADAPTIVE:
-            th_guide = self.get_global_threshold(image_data, image.mask)
-            th_original = self.get_local_threshold(image_data, image.mask, image.volumetric)
-        else:
-            raise ValueError("Invalid thresholding settings")
-
-        if need_transform:
-            th_original = centrosome.threshold.inverse_log_transform(th_original, conversion_dict)
-            if th_guide is not None:
-                th_guide = centrosome.threshold.inverse_log_transform(th_guide, conversion_dict)
-
-        if self.threshold_scope.value == TS_GLOBAL or automatic:
-            th_corrected = self._correct_global_threshold(th_original)
-        else:
-            th_guide = self._correct_global_threshold(th_guide)
-            th_corrected = self._correct_local_threshold(th_original, th_guide)
-
-        return th_corrected, th_original, th_guide
-
-    def get_global_threshold(self, image, mask, automatic=False):
-        image_data = image[mask]
-
-        # Shortcuts - Check if image array is empty or all pixels are the same value.
-        if len(image_data) == 0:
-            threshold = 0.0
-
-        elif numpy.all(image_data == image_data[0]):
-            threshold = image_data[0]
-
-        elif automatic or self.threshold_operation in (TM_LI, TM_SAUVOLA):
-            tol = max(numpy.min(numpy.diff(numpy.unique(image_data))) / 2, 0.5 / 65536)
-            threshold = skimage.filters.threshold_li(image_data, tolerance=tol)
-
-        elif self.threshold_operation == TM_ROBUST_BACKGROUND:
-            threshold = self.get_threshold_robust_background(image_data)
-
-        elif self.threshold_operation == TM_OTSU:
-            if self.two_class_otsu.value == O_TWO_CLASS:
-                threshold = skimage.filters.threshold_otsu(image_data)
-            elif self.two_class_otsu.value == O_THREE_CLASS:
-                bin_wanted = (
-                    0 if self.assign_middle_to_foreground.value == "Foreground" else 1
-                )
-                threshold = skimage.filters.threshold_multiotsu(image_data, nbins=128)
-                threshold = threshold[bin_wanted]
-        else:
-            raise ValueError("Invalid thresholding settings")
-        return threshold
-
-    def get_local_threshold(self, image, mask, volumetric):
-        image_data = numpy.where(mask, image, numpy.nan)
-
-        if len(image_data) == 0 or numpy.all(image_data == numpy.nan):
-            local_threshold = numpy.zeros_like(image_data)
-
-        elif numpy.all(image_data == image_data[0]):
-            local_threshold = numpy.full_like(image_data, image_data[0])
-
-        elif self.threshold_operation == TM_LI:
-            local_threshold = self._run_local_threshold(
-                image_data,
-                method=skimage.filters.threshold_li,
-                volumetric=volumetric,
-                tolerance=max(numpy.min(numpy.diff(numpy.unique(image))) / 2, 0.5 / 65536)
+            final_threshold = orig_threshold
+            final_threshold *= self.threshold_correction_factor.value
+            final_threshold = min(max(final_threshold, self.threshold_range.min), self.threshold_range.max)
+            guide_threshold = None 
+            binary_image, sigma = apply_threshold(
+                input_image.pixel_data,
+                threshold=final_threshold,
+                mask=input_image.mask,
+                smoothing=self.threshold_smoothing_scale.value
             )
-        elif self.threshold_operation == TM_OTSU:
-            if self.two_class_otsu.value == O_TWO_CLASS:
-                local_threshold = self._run_local_threshold(
-                    image_data,
-                    method=skimage.filters.threshold_otsu,
-                    volumetric=volumetric,
-                )
-
-            elif self.two_class_otsu.value == O_THREE_CLASS:
-                local_threshold = self._run_local_threshold(
-                    image_data,
-                    method=skimage.filters.threshold_multiotsu,
-                    volumetric=volumetric,
-                    nbins=128,
-                )
-
-        elif self.threshold_operation == TM_ROBUST_BACKGROUND:
-            local_threshold = self._run_local_threshold(
-                image_data,
-                method=self.get_threshold_robust_background,
-                volumetric=volumetric,
-            )
-
-        elif self.threshold_operation == TM_SAUVOLA:
-            image_data = numpy.where(mask, image, 0)
-            adaptive_window = self.adaptive_window_size.value
-            if adaptive_window % 2 == 0:
-                adaptive_window += 1
-            local_threshold = skimage.filters.threshold_sauvola(
-                image_data, window_size=adaptive_window
-            )
-
         else:
-            raise ValueError("Invalid thresholding settings")
-        return local_threshold
-
-    def _run_local_threshold(self, image_data, method, volumetric=False, **kwargs):
-        if volumetric:
-            t_local = numpy.zeros_like(image_data)
-            for index, plane in enumerate(image_data):
-                t_local[index] = self._get_adaptive_threshold(plane, method, **kwargs)
-        else:
-            t_local = self._get_adaptive_threshold(image_data, method, **kwargs)
-        return skimage.img_as_float(t_local)
-
-    def _get_adaptive_threshold(self, image_data, threshold_method, **kwargs):
-        """Given a global threshold, compute a threshold per pixel
-
-        Break the image into blocks, computing the threshold per block.
-        Afterwards, constrain the block threshold to .7 T < t < 1.5 T.
-        """
-        # for the X and Y direction, find the # of blocks, given the
-        # size constraints
-        if self.threshold_operation == TM_OTSU:
-            bin_wanted = (
-                0 if self.assign_middle_to_foreground.value == "Foreground" else 1
-            )
-        image_size = numpy.array(image_data.shape[:2], dtype=int)
-        nblocks = image_size // self.adaptive_window_size.value
-        if any(n < 2 for n in nblocks):
-            raise ValueError(
-                "Adaptive window cannot exceed 50%% of an image dimension.\n"
-                "Window of %dpx is too large for a %sx%s image"
-                % (self.adaptive_window_size.value, image_size[1], image_size[0])
-            )
-        #
-        # Use a floating point block size to apportion the roundoff
-        # roughly equally to each block
-        #
-        increment = numpy.array(image_size, dtype=float) / numpy.array(
-            nblocks, dtype=float
-        )
-        #
-        # Put the answer here
-        #
-        thresh_out = numpy.zeros(image_size, image_data.dtype)
-        #
-        # Loop once per block, computing the "global" threshold within the
-        # block.
-        #
-        block_threshold = numpy.zeros([nblocks[0], nblocks[1]])
-        for i in range(nblocks[0]):
-            i0 = int(i * increment[0])
-            i1 = int((i + 1) * increment[0])
-            for j in range(nblocks[1]):
-                j0 = int(j * increment[1])
-                j1 = int((j + 1) * increment[1])
-                block = image_data[i0:i1, j0:j1]
-                block = block[~numpy.isnan(block)]
-                if len(block) == 0:
-                    threshold_out = 0.0
-                elif numpy.all(block == block[0]):
-                    # Don't compute blocks with only 1 value.
-                    threshold_out = block[0]
-                elif (self.threshold_operation == TM_OTSU and
-                      self.two_class_otsu.value == O_THREE_CLASS and
-                      len(numpy.unique(block)) < 3):
-                    # Can't run 3-class otsu on only 2 values.
-                    threshold_out = skimage.filters.threshold_otsu(block)
+            # Convert threshold method for CellProfiler Library
+            if self.threshold_scope == "Global":
+                if self.global_operation == "Otsu" and self.two_class_otsu == "Three classes":
+                    threshold_method = "multiotsu"
                 else:
-                    try: 
-                        threshold_out = threshold_method(block, **kwargs)
-                    except ValueError:
-                        # Drop nbins kwarg when multi-otsu fails. See issue #6324 scikit-image
-                        threshold_out = threshold_method(block)
-                if isinstance(threshold_out, numpy.ndarray):
-                    # Select correct bin if running multiotsu
-                    threshold_out = threshold_out[bin_wanted]
-                block_threshold[i, j] = threshold_out
-
-        #
-        # Use a cubic spline to blend the thresholds across the image to avoid image artifacts
-        #
-        spline_order = min(3, numpy.min(nblocks) - 1)
-        xStart = int(increment[0] / 2)
-        xEnd = int((nblocks[0] - 0.5) * increment[0])
-        yStart = int(increment[1] / 2)
-        yEnd = int((nblocks[1] - 0.5) * increment[1])
-        xtStart = 0.5
-        xtEnd = image_data.shape[0] - 0.5
-        ytStart = 0.5
-        ytEnd = image_data.shape[1] - 0.5
-        block_x_coords = numpy.linspace(xStart, xEnd, nblocks[0])
-        block_y_coords = numpy.linspace(yStart, yEnd, nblocks[1])
-        adaptive_interpolation = scipy.interpolate.RectBivariateSpline(
-            block_x_coords,
-            block_y_coords,
-            block_threshold,
-            bbox=(xtStart, xtEnd, ytStart, ytEnd),
-            kx=spline_order,
-            ky=spline_order,
-        )
-        thresh_out_x_coords = numpy.linspace(
-            0.5, int(nblocks[0] * increment[0]) - 0.5, thresh_out.shape[0]
-        )
-        thresh_out_y_coords = numpy.linspace(
-            0.5, int(nblocks[1] * increment[1]) - 0.5, thresh_out.shape[1]
-        )
-
-        thresh_out = adaptive_interpolation(thresh_out_x_coords, thresh_out_y_coords)
-
-        return thresh_out
-
-    def _correct_global_threshold(self, threshold):
-        threshold *= self.threshold_correction_factor.value
-        return min(max(threshold, self.threshold_range.min), self.threshold_range.max)
-
-    def _correct_local_threshold(self, t_local_orig, t_guide):
-        t_local = t_local_orig.copy()
-        t_local *= self.threshold_correction_factor.value
-
-        # Constrain the local threshold to be within [0.7, 1.5] * global_threshold. It's for the pretty common case
-        # where you have regions of the image with no cells whatsoever that are as large as whatever window you're
-        # using. Without a lower bound, you start having crazy threshold s that detect noise blobs. And same for
-        # very crowded areas where there is zero background in the window. You want the foreground to be all
-        # detected.
-        t_min = max(self.threshold_range.min, t_guide * 0.7)
-        t_max = min(self.threshold_range.max, t_guide * 1.5)
-
-        t_local[t_local < t_min] = t_min
-        t_local[t_local > t_max] = t_max
-
-        return t_local
-
-    def get_threshold_robust_background(self, image_data):
-        """Calculate threshold based on mean & standard deviation
-           The threshold is calculated by trimming the top and bottom 5% of
-           pixels off the image, then calculating the mean and standard deviation
-           of the remaining image. The threshold is then set at 2 (empirical
-           value) standard deviations above the mean.
-
-           lower_outlier_fraction - after ordering the pixels by intensity, remove
-               the pixels from 0 to len(image) * lower_outlier_fraction from
-               the threshold calculation (default = .05).
-            upper_outlier_fraction - remove the pixels from
-               len(image) * (1 - upper_outlier_fraction) to len(image) from
-               consideration (default = .05).
-            deviations_above_average - calculate the standard deviation or MAD and
-               multiply by this number and add to the average to get the final
-               threshold (default = 2)
-            average_fn - function used to calculate the average intensity (e.g.
-               np.mean, np.median or some sort of mode function). Default = np.mean
-            variance_fn - function used to calculate the amount of variance.
-                          Default = np.sd
-        """
-
-        average_fn = {
-            RB_MEAN: numpy.mean,
-            RB_MEDIAN: numpy.median,
-            RB_MODE: centrosome.threshold.binned_mode,
-        }.get(self.averaging_method.value, numpy.mean)
-
-        variance_fn = {RB_SD: numpy.std, RB_MAD: centrosome.threshold.mad}.get(
-            self.variance_method.value, numpy.std
-        )
-        flat_image = image_data.flatten()
-        n_pixels = len(flat_image)
-        if n_pixels < 3:
-            return 0
-
-        flat_image.sort()
-        if flat_image[0] == flat_image[-1]:
-            return flat_image[0]
-        low_chop = int(round(n_pixels * self.lower_outlier_fraction.value))
-        hi_chop = n_pixels - int(round(n_pixels * self.upper_outlier_fraction.value))
-        im = flat_image if low_chop == 0 else flat_image[low_chop:hi_chop]
-        mean = average_fn(im)
-        sd = variance_fn(im)
-        return mean + sd * self.number_of_deviations.value
+                    threshold_method = self.convert_setting(self.global_operation.value)
+            elif self.threshold_scope == "Adaptive":
+                if self.local_operation == "Otsu" and self.two_class_otsu == "Three classes":
+                    threshold_method = "multiotsu"
+                else:
+                    threshold_method = self.convert_setting(self.local_operation.value)
+            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
+                    input_image.pixel_data,
+                    mask=input_image.mask,
+                    threshold_scope=self.threshold_scope.value,
+                    threshold_method=threshold_method,
+                    assign_middle_to_foreground=self.assign_middle_to_foreground.value,
+                    log_transform=self.log_transform.value,
+                    threshold_correction_factor=self.threshold_correction_factor.value,
+                    threshold_min=self.threshold_range.min,
+                    threshold_max=self.threshold_range.max,
+                    window_size=self.adaptive_window_size.value,
+                    smoothing=self.threshold_smoothing_scale.value,
+                    lower_outlier_fraction=self.lower_outlier_fraction.value,
+                    upper_outlier_fraction=self.upper_outlier_fraction.value,
+                    averaging_method=self.averaging_method.value,
+                    variance_method=self.convert_setting(self.variance_method.value),
+                    number_of_deviations=self.number_of_deviations.value,
+                    volumetric=input_image.volumetric,  
+                    automatic=automatic
+            )
+        
+        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
 
     def display(self, workspace, figure):
         dimensions = workspace.display_data.dimensions

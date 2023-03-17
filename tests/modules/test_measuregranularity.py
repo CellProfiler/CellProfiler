@@ -131,7 +131,7 @@ def test_zeros():
         feature = module.granularity_feature(i, IMAGE_NAME)
         assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
-        assert round(abs(value - 0), 7) == 0
+        numpy.testing.assert_allclose(value,0)
 
 
 def test_no_scaling():
@@ -153,7 +153,7 @@ def test_no_scaling():
         feature = module.granularity_feature(i, IMAGE_NAME)
         assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
-        assert round(abs(value - expected[i - 1]), 7) == 0
+        numpy.testing.assert_allclose(value,expected[i-1])
 
 
 def test_subsampling():
@@ -179,7 +179,7 @@ def test_subsampling():
         feature = module.granularity_feature(i, IMAGE_NAME)
         assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
-        assert round(abs(value - expected[i - 1]), 7) == 0
+        numpy.testing.assert_allclose(value,expected[i-1])
 
 
 def test_background_sampling():
@@ -209,7 +209,7 @@ def test_background_sampling():
         feature = module.granularity_feature(i, IMAGE_NAME)
         assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
-        assert round(abs(value - expected[i - 1]), 7) == 0
+        numpy.testing.assert_allclose(value,expected[i-1])
 
 
 def test_filter_background():
@@ -256,7 +256,7 @@ def test_filter_background():
         feature = module.granularity_feature(i, IMAGE_NAME)
         assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
-        assert round(abs(value - expected[i - 1]), 7) == 0
+        numpy.testing.assert_allclose(value,expected[i-1])
 
 
 def test_all_masked_alt():
@@ -297,7 +297,7 @@ def test_no_objects():
         feature = module.granularity_feature(i, IMAGE_NAME)
         assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
-        assert round(abs(value - 0), 7) == 0
+        numpy.testing.assert_allclose(value,0)
         values = m.get_current_measurement(OBJECTS_NAME, feature)
         assert len(values) == 0
 
@@ -319,7 +319,7 @@ def test_zeros_alt():
         feature = module.granularity_feature(i, IMAGE_NAME)
         assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
-        assert round(abs(value - 0), 7) == 0
+        numpy.testing.assert_allclose(value,0)
         values = m.get_current_measurement(OBJECTS_NAME, feature)
         assert len(values) == 2
         numpy.testing.assert_almost_equal(values, 0)
@@ -346,7 +346,7 @@ def test_no_scaling_alt():
         feature = module.granularity_feature(i, IMAGE_NAME)
         assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
-        assert round(abs(value - expected[i - 1]), 7) == 0
+        numpy.testing.assert_allclose(value,expected[i-1])
         values = m.get_current_measurement(OBJECTS_NAME, feature)
         assert len(values) == 2
         numpy.testing.assert_almost_equal(values, expected[i - 1])
@@ -377,7 +377,7 @@ def test_subsampling_alt():
         feature = module.granularity_feature(i, IMAGE_NAME)
         assert feature in m.get_feature_names("Image")
         value = m.get_current_image_measurement(feature)
-        assert round(abs(value - expected[i - 1]), 7) == 0
+        numpy.testing.assert_allclose(value,expected[i-1])
         values = m.get_current_measurement(OBJECTS_NAME, feature)
         assert len(values) == 2
         #

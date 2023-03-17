@@ -79,7 +79,7 @@ setuptools.setup(
         "pyzmq~=22.3",
         "sentry-sdk==0.18.0",
         "requests>=2.22",
-        "scikit-image>=0.17.2",
+        "scikit-image>=0.19.2",
         "scikit-learn>=0.20",
         "scipy>=1.4.1",
         "scyjava>=1.6.0",

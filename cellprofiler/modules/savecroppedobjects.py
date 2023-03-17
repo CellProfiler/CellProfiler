@@ -47,6 +47,7 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber, FileImageSubscriber
 from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.constants.measurement import C_FILE_NAME
+from cellprofiler.library.modules import savecroppedobjects
 
 O_PNG = "png"
 O_TIFF_8 = "8-bit tiff"
@@ -179,91 +180,47 @@ a folder named after the input objects.
         figure.subplot_table(0, 0, [["\n".join(workspace.display_data.filenames)]])
 
     def run(self, workspace):
+
         objects = workspace.object_set.get_objects(self.objects_name.value)
+
+        input_objects = objects.segmented
+
+        input_volumetric = objects.volumetric
 
         directory = self.directory.get_absolute_path(workspace.measurements)
 
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        input_objects_name = self.objects_name.value
 
         if self.use_filename:
             input_filename = workspace.measurements.get_current_measurement("Image", self.source_file_name_feature)
             input_filename = os.path.splitext(input_filename)[0]
+        else:
+            input_filename = None
 
-        if self.nested_save:
-            nested_folder = os.path.join(directory, input_filename if self.use_filename else self.objects_name.value)
-            if not os.path.exists(nested_folder):
-                os.makedirs(nested_folder, exist_ok=True)
-
-        labels = objects.segmented
-
-        unique_labels = numpy.unique(labels)
-
-        if unique_labels[0] == 0:
-            unique_labels = unique_labels[1:]
-
-        filenames = []
 
         if self.export_option == SAVE_PER_OBJECT:
             images = workspace.image_set
-            x = images.get_image(self.image_name.value)
-            if len(x.pixel_data.shape) == len(labels.shape) + 1 and not x.volumetric:
-                # Color 2D image, repeat mask for all channels
-                labels = numpy.repeat(
-                    labels[:, :, numpy.newaxis], x.pixel_data.shape[-1], axis=2
-                )
+            x = images.get_image(self.image_name.value).pixel_data
+        else:
+            x = None
 
-        for label in unique_labels:
-            if self.export_option == SAVE_MASK:
-                mask = labels == label
+        # Translate GUI string settings to library
+        exp_options = {
+            "8-bit tiff": "tiff8",
+            "16-bit tiff": "tiff16",
+            "png": "png"
+        }
 
-            elif self.export_option == SAVE_PER_OBJECT:
-                mask_in = labels == label
-                properties = skimage.measure.regionprops(
-                    mask_in.astype(int), intensity_image=x.pixel_data
-                )
-                mask = properties[0].intensity_image
-
-            if self.nested_save.value:
-                filename = os.path.join(
-                    nested_folder, "{}{}_{}".format(input_filename + "_" if self.use_filename else "", self.objects_name.value, label)
-                )
-
-            elif not self.nested_save.value:
-                filename = os.path.join(
-                    directory, "{}{}_{}".format(input_filename + "_" if self.use_filename else "", self.objects_name.value, label)
-                )
-
-            if self.file_format.value == O_PNG:
-                save_filename = filename + ".{}".format(O_PNG)
-
-                skimage.io.imsave(
-                    save_filename, 
-                    skimage.img_as_ubyte(mask), 
-                    check_contrast=False
-                )
-
-            elif self.file_format.value == O_TIFF_8:
-                save_filename = filename +".{}".format("tiff")
-                
-                skimage.io.imsave(
-                    save_filename,
-                    skimage.img_as_ubyte(mask),
-                    compress=6,
-                    check_contrast=False,
-                )
-
-            elif self.file_format.value == O_TIFF_16:
-                save_filename = filename + ".{}".format("tiff")
-                
-                skimage.io.imsave(
-                    save_filename,
-                    skimage.img_as_uint(mask),
-                    compress=6,
-                    check_contrast=False,
-                )
-
-            filenames.append(save_filename)
+        filenames = savecroppedobjects(
+            input_objects=input_objects,
+            save_dir=directory,
+            export_as=self.export_option.value,
+            input_image=x,
+            file_format=exp_options[self.file_format.value],
+            nested_save=self.nested_save.value,
+            save_names = {"input_filename": input_filename, "input_objects_name": input_objects_name},
+            volumetric=input_volumetric
+        )
 
         if self.show_window:
             workspace.display_data.filenames = filenames

@@ -1070,12 +1070,28 @@ If "*{NO}*" is selected, the following settings are used:
         return not self.advanced
 
     def run(self, workspace):
-        image_name = self.x_name.value
-        image = workspace.image_set.get_image(image_name)
         workspace.display_data.statistics = []
-        binary_image, global_threshold, sigma = self._threshold_image(
-            image_name, workspace, automatic=self.basic
+        input_image = workspace.image_set.get_image(
+            self.x_name.value, must_be_grayscale=True
         )
+
+        final_threshold, orig_threshold, guide_threshold, binary_image, sigma = self.threshold.get_threshold(
+            input_image, workspace, automatic=self.basic
+        )
+
+        self.threshold.add_threshold_measurements(
+            self.y_name.value,
+            workspace.measurements,
+            final_threshold,
+            orig_threshold,
+            guide_threshold,
+        )
+
+        self.threshold.add_fg_bg_measurements(
+            self.y_name.value, workspace.measurements, input_image, binary_image
+        )
+
+        global_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
 
         #
         # Fill background holes inside foreground objects
@@ -1102,7 +1118,7 @@ If "*{NO}*" is selected, the following settings are used:
 
         # Filter out objects touching the border or mask
         border_excluded_labeled_image = labeled_image.copy()
-        labeled_image = self.filter_on_border(image, labeled_image)
+        labeled_image = self.filter_on_border(input_image, labeled_image)
         border_excluded_labeled_image[labeled_image > 0] = 0
 
         # Filter out small and large objects
@@ -1185,7 +1201,7 @@ If "*{NO}*" is selected, the following settings are used:
                     )
             else:
                 statistics.append(["Threshold", "%0.3g" % global_threshold])
-            workspace.display_data.image = image.pixel_data
+            workspace.display_data.image = input_image.pixel_data
             workspace.display_data.labeled_image = labeled_image
             workspace.display_data.size_excluded_labels = size_excluded_labeled_image
             workspace.display_data.border_excluded_labels = (
@@ -1201,36 +1217,11 @@ If "*{NO}*" is selected, the following settings are used:
         objects.segmented = labeled_image
         objects.unedited_segmented = unedited_labels
         objects.small_removed_segmented = small_removed_labels
-        objects.parent_image = image
+        objects.parent_image = input_image
 
         workspace.object_set.add_objects(objects, self.y_name.value)
 
         self.add_measurements(workspace)
-
-    def _threshold_image(self, image_name, workspace, automatic=False):
-        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-
-        final_threshold, orig_threshold, guide_threshold = self.threshold.get_threshold(
-            image, workspace, automatic
-        )
-
-        self.threshold.add_threshold_measurements(
-            self.y_name.value,
-            workspace.measurements,
-            final_threshold,
-            orig_threshold,
-            guide_threshold,
-        )
-
-        binary_image, sigma = self.threshold.apply_threshold(
-            image, final_threshold, automatic
-        )
-
-        self.threshold.add_fg_bg_measurements(
-            self.y_name.value, workspace.measurements, image, binary_image
-        )
-
-        return binary_image, numpy.mean(numpy.atleast_1d(final_threshold)), sigma
 
     def smooth_image(self, image, mask):
         """Apply the smoothing filter to the image"""
@@ -1586,7 +1577,7 @@ If "*{NO}*" is selected, the following settings are used:
                 cmap = ListedColormap(self.maxima_color.value)
                 if self.maxima_size.value > 1:
                     strel = skimage.morphology.disk(self.maxima_size.value - 1)
-                    labels = skimage.morphology.dilation(self.labeled_maxima, selem=strel)
+                    labels = skimage.morphology.dilation(self.labeled_maxima, footprint=strel)
                 else:
                     labels = self.labeled_maxima
                 cplabels.append(

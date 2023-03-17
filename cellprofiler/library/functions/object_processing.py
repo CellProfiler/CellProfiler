@@ -248,7 +248,7 @@ def watershed(
     footprint: int = 8,
     connectivity: int = 1,
     compactness: float = 0.0,
-    exclude_border: bool = True,
+    exclude_border: bool = False,
     watershed_line: bool = False,
     gaussian_sigma: float = 0.0,
     structuring_element: Literal[
@@ -299,7 +299,14 @@ def watershed(
             factors = (downsample, downsample)
 
         input_image = skimage.transform.downscale_local_mean(input_image, factors)
-
+        # Resize optional images
+        if intensity_image is not None:
+            intensity_image = skimage.transform.downscale_local_mean(intensity_image, factors)
+        if markers_image is not None:
+            markers_image = skimage.transform.downscale_local_mean(markers_image, factors)
+        if mask is not None:
+            mask = skimage.transform.downscale_local_mean(mask, factors)
+        
     smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
 
     # Calculate distance transform
@@ -352,8 +359,11 @@ def watershed(
     elif watershed_method.casefold() == "markers":
         # The user has provided their own seeds/markers
         seeds = markers_image
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
     else:
-        raise NotImplementedError
+        raise NotImplementedError(
+                f"watershed_method {watershed_method} is not supported."
+            )
 
     # Run watershed
     watershed_image = skimage.segmentation.watershed(

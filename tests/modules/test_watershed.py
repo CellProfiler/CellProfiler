@@ -65,15 +65,7 @@ def maxima_method(request):
 
 
 def test_run_distance_declump_intensity(
-    image,
-    module,
-    image_set,
-    workspace,
-    connectivity,
-    compactness,
-    watershed_line,
-    downsample,
-    maxima_method,
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, maxima_method
 ):
     module.use_advanced.value = True
 
@@ -105,7 +97,7 @@ def test_run_distance_declump_intensity(
         module.structuring_element.value = "Disk,1"
         structuring_element = "Disk"
         structuring_element_size = 1
-
+    
     if image.multichannel:
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
 
@@ -134,8 +126,8 @@ def test_run_distance_declump_intensity(
     actual = workspace.get_objects("watershed")
 
     expected = watershed(
-        input_image,
-        watershed_method="distance",
+        input_image, 
+        watershed_method="distance", 
         declump_method="intensity",
         intensity_image=intensity_image,
         local_maxima_method=maxima_method,
@@ -144,22 +136,14 @@ def test_run_distance_declump_intensity(
         watershed_line=watershed_line,
         downsample=downsample,
         structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size,
-    )
+        structuring_element_size=structuring_element_size
+        )
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
 def test_run_distance_declump_shape(
-    image,
-    module,
-    image_set,
-    workspace,
-    connectivity,
-    compactness,
-    watershed_line,
-    downsample,
-    maxima_method,
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, maxima_method
 ):
     module.use_advanced.value = True
 
@@ -189,7 +173,7 @@ def test_run_distance_declump_shape(
         module.structuring_element.value = "Disk,1"
         structuring_element = "Disk"
         structuring_element_size = 1
-
+    
     if image.multichannel:
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
 
@@ -208,8 +192,8 @@ def test_run_distance_declump_shape(
     actual = workspace.get_objects("watershed")
 
     expected = watershed(
-        input_image,
-        watershed_method="distance",
+        input_image, 
+        watershed_method="distance", 
         declump_method="shape",
         local_maxima_method=maxima_method,
         connectivity=connectivity,
@@ -217,22 +201,14 @@ def test_run_distance_declump_shape(
         watershed_line=watershed_line,
         downsample=downsample,
         structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size,
-    )
+        structuring_element_size=structuring_element_size
+        )
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
 def test_run_distance_declump_none(
-    image,
-    module,
-    image_set,
-    workspace,
-    connectivity,
-    compactness,
-    watershed_line,
-    downsample,
-    maxima_method,
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, maxima_method
 ):
     module.use_advanced.value = True
 
@@ -262,7 +238,7 @@ def test_run_distance_declump_none(
         module.structuring_element.value = "Disk,1"
         structuring_element = "Disk"
         structuring_element_size = 1
-
+    
     if image.multichannel:
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
 
@@ -281,8 +257,8 @@ def test_run_distance_declump_none(
     actual = workspace.get_objects("watershed")
 
     expected = watershed(
-        input_image,
-        watershed_method="distance",
+        input_image, 
+        watershed_method="distance", 
         declump_method="none",
         local_maxima_method=maxima_method,
         connectivity=connectivity,
@@ -290,21 +266,14 @@ def test_run_distance_declump_none(
         watershed_line=watershed_line,
         downsample=downsample,
         structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size,
-    )
+        structuring_element_size=structuring_element_size
+        )
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
 def test_run_markers_declump_shape(
-    image,
-    module,
-    image_set,
-    workspace,
-    connectivity,
-    compactness,
-    watershed_line,
-    downsample,
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample
 ):
     module.use_advanced.value = True
 
@@ -370,8 +339,8 @@ def test_run_markers_declump_shape(
     actual = workspace.get_objects("watershed")
 
     expected = watershed(
-        input_image,
-        watershed_method="markers",
+        input_image, 
+        watershed_method="markers", 
         declump_method="shape",
         markers_image=markers_image,
         connectivity=connectivity,
@@ -379,21 +348,14 @@ def test_run_markers_declump_shape(
         watershed_line=watershed_line,
         downsample=downsample,
         structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size,
-    )
+        structuring_element_size=structuring_element_size
+        )
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
 def test_run_markers_declump_intensity(
-    image,
-    module,
-    image_set,
-    workspace,
-    connectivity,
-    compactness,
-    watershed_line,
-    downsample,
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample
 ):
     module.use_advanced.value = True
 
@@ -471,8 +433,8 @@ def test_run_markers_declump_intensity(
     actual = workspace.get_objects("watershed")
 
     expected = watershed(
-        input_image,
-        watershed_method="markers",
+        input_image, 
+        watershed_method="markers", 
         declump_method="intensity",
         markers_image=markers_image,
         intensity_image=intensity_image,
@@ -481,21 +443,14 @@ def test_run_markers_declump_intensity(
         watershed_line=watershed_line,
         downsample=downsample,
         structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size,
-    )
+        structuring_element_size=structuring_element_size
+        )
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
 def test_run_markers_declump_none(
-    image,
-    module,
-    image_set,
-    workspace,
-    connectivity,
-    compactness,
-    watershed_line,
-    downsample,
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample
 ):
     module.use_advanced.value = True
 
@@ -561,8 +516,8 @@ def test_run_markers_declump_none(
     actual = workspace.get_objects("watershed")
 
     expected = watershed(
-        input_image,
-        watershed_method="markers",
+        input_image, 
+        watershed_method="markers", 
         declump_method="none",
         markers_image=markers_image,
         connectivity=connectivity,
@@ -570,7 +525,7 @@ def test_run_markers_declump_none(
         watershed_line=watershed_line,
         downsample=downsample,
         structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size,
-    )
+        structuring_element_size=structuring_element_size
+        )
 
     numpy.testing.assert_array_equal(actual.segmented, expected)

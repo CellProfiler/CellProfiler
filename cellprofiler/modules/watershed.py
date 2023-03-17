@@ -384,14 +384,30 @@ the image is not downsampled.
         __settings__ += super(Watershed, self).visible_settings()
         __settings__ += [
             self.mask_name,
-            self.watershed_method,
+            self.watershed_method,   
         ]
 
         if self.watershed_method == O_MARKERS:
-                # User has provided their own markers, so local maxima
-                # settings are not required
                 __settings__ += [
                     self.markers_name,
+                ]
+
+        if self.use_advanced: 
+            if self.watershed_method != O_MARKERS:
+                __settings__ += [
+                    self.seed_method,
+                ]
+                if self.seed_method == O_LOCAL:
+                    __settings__ += [
+                        self.min_dist,
+                        self.min_intensity,
+                        self.max_seeds,
+                    ]
+            __settings__ += [
+                self.gaussian_sigma,
+                self.connectivity,
+                self.compactness,
+                self.watershed_line,
                 ]
 
         __settings__ += [
@@ -410,25 +426,6 @@ the image is not downsampled.
         __settings__ += [
             self.structuring_element,
             ]
-
-        if self.use_advanced:
-            # Provide advanced settings
-            __settings__ += [
-                self.seed_method,
-                
-            ]
-            if self.seed_method == O_LOCAL:
-                __settings__ += [
-                    self.min_dist,
-                    self.min_intensity,
-                    self.max_seeds,
-                ]
-            __settings__ += [
-                self.gaussian_sigma,
-                self.connectivity,
-                self.compactness,
-                self.watershed_line,
-                ]
         
         __settings__ += [
             self.display_maxima,
@@ -445,12 +442,13 @@ the image is not downsampled.
             self.min_intensity.value = self.min_intensity.initial_value
             self.max_seeds.value = self.max_seeds.initial_value
             self.gaussian_sigma.value = self.gaussian_sigma.initial_value
-            self.structuring_element.value = self.structuring_element.initial_value
+            # self.structuring_element.value = self.structuring_element.initial_value
             self.connectivity.value = self.connectivity.initial_value
             self.compactness.value = self.compactness.initial_value
             self.watershed_line.value = self.watershed_line.initial_value
 
     def run(self, workspace):
+
         x_name = self.x_name.value
 
         y_name = self.y_name.value
@@ -467,9 +465,6 @@ the image is not downsampled.
         markers_data = None
         mask_data = None
         intensity_data = None
-
-        if x.multichannel:
-            x_data = skimage.color.rgb2gray(x_data)
 
         if self.watershed_method.value == O_MARKERS:
             # Get markers
@@ -495,11 +490,8 @@ the image is not downsampled.
 
         y_data, seeds = watershed(
                 input_image=x_data,
-                watershed_method=self.watershed_method.value,
-                declump_method=self.declump_method.value,
-                local_maxima_method=self.seed_method.value,
-                intensity_image=intensity_data,
                 markers_image=markers_data,
+                intensity_image=intensity_data,
                 mask=mask_data,
                 max_seeds=self.max_seeds.value,
                 downsample=self.downsample.value,

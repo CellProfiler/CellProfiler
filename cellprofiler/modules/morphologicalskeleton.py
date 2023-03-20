@@ -17,7 +17,7 @@ YES          YES          NO
 import skimage.morphology
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
-
+from cellprofiler.library.modules import morphologicalskeleton
 
 class MorphologicalSkeleton(ImageProcessing):
     category = "Advanced"
@@ -42,10 +42,7 @@ class MorphologicalSkeleton(ImageProcessing):
 
         x_data = x.pixel_data
 
-        if x.volumetric:
-            y_data = skimage.morphology.skeletonize_3d(x_data)
-        else:
-            y_data = skimage.morphology.skeletonize(x_data)
+        y_data = morphologicalskeleton(x_data, x.volumetric)
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x)
 

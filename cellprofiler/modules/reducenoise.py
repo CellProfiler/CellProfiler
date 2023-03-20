@@ -19,11 +19,10 @@ YES          YES          NO
 
 """
 
-import skimage.restoration
-import skimage.util
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting.text import Integer, Float
+from cellprofiler.library.modules import reducenoise
 
 
 class ReduceNoise(ImageProcessing):
@@ -79,13 +78,12 @@ image.
 
         x_data = x.pixel_data
 
-        y_data = skimage.restoration.denoise_nl_means(
-            fast_mode=True,
-            h=self.cutoff_distance.value,
+        y_data = reducenoise(
             image=x_data,
-            channel_axis=2 if x.multichannel else None,
             patch_distance=self.distance.value,
             patch_size=self.size.value,
+            cutoff_distance=self.cutoff_distance.value,
+            channel_axis=2 if x.multichannel else None,
         )
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x)

@@ -191,7 +191,7 @@ def test_run_distance_declump_intensity(
 
 
 def test_run_distance_declump_shape(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma, maxima_method
+    image, module, image_set, workspace, downsample, gaussian_sigma, maxima_method
 ):
     module.use_advanced.value = True
 
@@ -202,12 +202,6 @@ def test_run_distance_declump_shape(
     module.x_name.value = "input_image"
 
     module.y_name.value = "watershed"
-
-    module.connectivity.value = connectivity
-
-    module.compactness.value = compactness
-
-    module.watershed_line.value = watershed_line
 
     module.downsample.value = downsample
 
@@ -285,9 +279,6 @@ def test_run_distance_declump_shape(
         watershed_input_image,
         markers=seeds,
         mask=input_image != 0,
-        connectivity=connectivity,
-        compactness=compactness,
-        watershed_line=watershed_line,
     )
     if downsample > 1:
         expected = skimage.transform.resize(
@@ -299,7 +290,7 @@ def test_run_distance_declump_shape(
 
 
 def test_run_distance_declump_none(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma, maxima_method
+    image, module, image_set, workspace, downsample, gaussian_sigma, maxima_method
 ):
     module.use_advanced.value = True
 
@@ -310,12 +301,6 @@ def test_run_distance_declump_none(
     module.x_name.value = "input_image"
 
     module.y_name.value = "watershed"
-
-    module.connectivity.value = connectivity
-
-    module.compactness.value = compactness
-
-    module.watershed_line.value = watershed_line
 
     module.downsample.value = downsample
 
@@ -393,9 +378,6 @@ def test_run_distance_declump_none(
         watershed_input_image,
         markers=seeds,
         mask=input_image != 0,
-        connectivity=connectivity,
-        compactness=compactness,
-        watershed_line=watershed_line,
     )
     if downsample > 1:
         expected = skimage.transform.resize(
@@ -407,7 +389,7 @@ def test_run_distance_declump_none(
 
 
 def test_run_markers_declump_shape(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma
+    image, module, image_set, workspace, downsample, gaussian_sigma
 ):
     module.use_advanced.value = True
 
@@ -420,12 +402,6 @@ def test_run_markers_declump_shape(
     module.y_name.value = "watershed"
 
     module.markers_name.value = "markers"
-
-    module.connectivity.value = connectivity
-
-    module.compactness.value = compactness
-
-    module.watershed_line.value = watershed_line
 
     module.downsample.value = downsample
 
@@ -506,9 +482,6 @@ def test_run_markers_declump_shape(
         watershed_input_image,
         markers=seeds,
         mask=input_image != 0,
-        connectivity=connectivity,
-        compactness=compactness,
-        watershed_line=watershed_line,
     )
     if downsample > 1:
         expected = skimage.transform.resize(
@@ -520,7 +493,7 @@ def test_run_markers_declump_shape(
 
 
 def test_run_markers_declump_intensity(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma
+    image, module, image_set, workspace, downsample, gaussian_sigma
 ):
     module.use_advanced.value = True
 
@@ -535,12 +508,6 @@ def test_run_markers_declump_intensity(
     module.markers_name.value = "markers"
 
     module.intensity_name.value = "intensity"
-
-    module.connectivity.value = connectivity
-
-    module.compactness.value = compactness
-
-    module.watershed_line.value = watershed_line
 
     module.downsample.value = downsample
 
@@ -631,9 +598,6 @@ def test_run_markers_declump_intensity(
         watershed_input_image,
         markers=seeds,
         mask=input_image != 0,
-        connectivity=connectivity,
-        compactness=compactness,
-        watershed_line=watershed_line,
     )
     if downsample > 1:
         expected = skimage.transform.resize(

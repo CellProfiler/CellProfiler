@@ -119,13 +119,13 @@ def median_filter(image, window_size, mode):
     return scipy.ndimage.median_filter(image, size=window_size, mode=mode)
 
 
-def reduce_noise(image, patch_size, patch_distance, cutoff_distance, multichannel):
+def reduce_noise(image, patch_size, patch_distance, cutoff_distance, channel_axis=None):
     denoised = skimage.restoration.denoise_nl_means(
         image=image,
         patch_size=patch_size,
         patch_distance=patch_distance,
         h=cutoff_distance,
-        multichannel=multichannel,
+        channel_axis=channel_axis,
         fast_mode=True,
     )
     return denoised

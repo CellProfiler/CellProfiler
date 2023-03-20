@@ -80,12 +80,10 @@ image.
 
         y_data = reducenoise(
             image=x_data,
-            channel_axis=2 if x.multichannel else None,
             patch_distance=self.distance.value,
             patch_size=self.size.value,
-            patch_distance=self.distance.value,
             cutoff_distance=self.cutoff_distance.value,
-            multichannel=x.multichannel
+            channel_axis=2 if x.multichannel else None,
         )
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x)

@@ -59,13 +59,18 @@ def downsample(request):
     return request.param
 
 
+@pytest.fixture(scope="module", params=[0.0, 1.0], ids=["blur0", "blur1"])
+def gaussian_sigma(request):
+    return request.param
+
+
 @pytest.fixture(scope="module", params=["Local", "Regional"], ids=["local", "regional"])
 def maxima_method(request):
     return request.param
 
 
 def test_run_distance_declump_intensity(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, maxima_method
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma, maxima_method
 ):
     module.use_advanced.value = True
 
@@ -86,6 +91,8 @@ def test_run_distance_declump_intensity(
     module.watershed_line.value = watershed_line
 
     module.downsample.value = downsample
+
+    module.gaussian_sigma.value = gaussian_sigma
 
     module.seed_method.value = maxima_method
 
@@ -125,25 +132,66 @@ def test_run_distance_declump_intensity(
 
     actual = workspace.get_objects("watershed")
 
-    expected = watershed(
-        input_image, 
-        method="distance", 
-        declump_method="intensity",
-        intensity_image=intensity_image,
-        maxima_method=maxima_method,
+    # Generate expect output
+    input_shape = input_image.shape
+    if input_image.ndim > 2:
+        # Only scale x and y
+        factors = (1, downsample, downsample)
+    else:
+        factors = (downsample, downsample)
+
+    footprint = 8
+
+    if input_image.ndim == 3:
+        footprint = numpy.ones((footprint, footprint, footprint))
+    else:
+        footprint = numpy.ones((footprint, footprint))
+
+    input_image = skimage.transform.downscale_local_mean(input_image, factors)
+    intensity_image = skimage.transform.downscale_local_mean(intensity_image, factors)
+    smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
+    distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+    watershed_input_image = 1 - intensity_image
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+    if maxima_method.casefold() == "local":
+        seed_coords = skimage.feature.peak_local_max(
+            distance,
+            min_distance=1,
+            threshold_rel=0,
+            footprint=footprint,
+            num_peaks=numpy.inf,
+        )
+        seeds = numpy.zeros(distance.shape, dtype=bool)
+        seeds[tuple(seed_coords.T)] = True
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.label(seeds)[0]
+
+    elif maxima_method.casefold() == "regional":
+        seeds = mahotas.regmax(distance, footprint)
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds, _ = mahotas.label(seeds, footprint)
+
+    expected = skimage.segmentation.watershed(
+        watershed_input_image,
+        markers=seeds,
+        mask=input_image != 0,
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,
-        downsample=downsample,
-        structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size
+    )
+    if downsample > 1:
+        expected = skimage.transform.resize(
+            expected, input_shape, mode="edge", order=0, preserve_range=True
         )
+        expected = numpy.rint(expected).astype(numpy.uint16)
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
 def test_run_distance_declump_shape(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, maxima_method
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma, maxima_method
 ):
     module.use_advanced.value = True
 
@@ -163,6 +211,8 @@ def test_run_distance_declump_shape(
 
     module.downsample.value = downsample
 
+    module.gaussian_sigma.value = gaussian_sigma
+
     module.seed_method.value = maxima_method
 
     if image.dimensions == 3:
@@ -191,24 +241,65 @@ def test_run_distance_declump_shape(
 
     actual = workspace.get_objects("watershed")
 
-    expected = watershed(
-        input_image, 
-        method="distance", 
-        declump_method="shape",
-        maxima_method=maxima_method,
+    # Generate expect output
+    input_shape = input_image.shape
+    if input_image.ndim > 2:
+        # Only scale x and y
+        factors = (1, downsample, downsample)
+    else:
+        factors = (downsample, downsample)
+
+    footprint = 8
+
+    if input_image.ndim == 3:
+        footprint = numpy.ones((footprint, footprint, footprint))
+    else:
+        footprint = numpy.ones((footprint, footprint))
+
+    input_image = skimage.transform.downscale_local_mean(input_image, factors)
+    smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
+    distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+    watershed_input_image = -distance
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+    if maxima_method.casefold() == "local":
+        seed_coords = skimage.feature.peak_local_max(
+            distance,
+            min_distance=1,
+            threshold_rel=0,
+            footprint=footprint,
+            num_peaks=numpy.inf,
+        )
+        seeds = numpy.zeros(distance.shape, dtype=bool)
+        seeds[tuple(seed_coords.T)] = True
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.label(seeds)[0]
+
+    elif maxima_method.casefold() == "regional":
+        seeds = mahotas.regmax(distance, footprint)
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds, _ = mahotas.label(seeds, footprint)
+
+    expected = skimage.segmentation.watershed(
+        watershed_input_image,
+        markers=seeds,
+        mask=input_image != 0,
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,
-        downsample=downsample,
-        structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size
+    )
+    if downsample > 1:
+        expected = skimage.transform.resize(
+            expected, input_shape, mode="edge", order=0, preserve_range=True
         )
+        expected = numpy.rint(expected).astype(numpy.uint16)
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
 def test_run_distance_declump_none(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, maxima_method
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma, maxima_method
 ):
     module.use_advanced.value = True
 
@@ -228,6 +319,8 @@ def test_run_distance_declump_none(
 
     module.downsample.value = downsample
 
+    module.gaussian_sigma.value = gaussian_sigma
+
     module.seed_method.value = maxima_method
 
     if image.dimensions == 3:
@@ -256,24 +349,65 @@ def test_run_distance_declump_none(
 
     actual = workspace.get_objects("watershed")
 
-    expected = watershed(
-        input_image, 
-        method="distance", 
-        declump_method="none",
-        maxima_method=maxima_method,
+    # Generate expect output
+    input_shape = input_image.shape
+    if input_image.ndim > 2:
+        # Only scale x and y
+        factors = (1, downsample, downsample)
+    else:
+        factors = (downsample, downsample)
+
+    footprint = 8
+
+    if input_image.ndim == 3:
+        footprint = numpy.ones((footprint, footprint, footprint))
+    else:
+        footprint = numpy.ones((footprint, footprint))
+
+    input_image = skimage.transform.downscale_local_mean(input_image, factors)
+    smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
+    distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+    watershed_input_image = input_image
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+    if maxima_method.casefold() == "local":
+        seed_coords = skimage.feature.peak_local_max(
+            distance,
+            min_distance=1,
+            threshold_rel=0,
+            footprint=footprint,
+            num_peaks=numpy.inf,
+        )
+        seeds = numpy.zeros(distance.shape, dtype=bool)
+        seeds[tuple(seed_coords.T)] = True
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.label(seeds)[0]
+
+    elif maxima_method.casefold() == "regional":
+        seeds = mahotas.regmax(distance, footprint)
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds, _ = mahotas.label(seeds, footprint)
+
+    expected = skimage.segmentation.watershed(
+        watershed_input_image,
+        markers=seeds,
+        mask=input_image != 0,
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,
-        downsample=downsample,
-        structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size
+    )
+    if downsample > 1:
+        expected = skimage.transform.resize(
+            expected, input_shape, mode="edge", order=0, preserve_range=True
         )
+        expected = numpy.rint(expected).astype(numpy.uint16)
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
 def test_run_markers_declump_shape(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma
 ):
     module.use_advanced.value = True
 
@@ -294,6 +428,8 @@ def test_run_markers_declump_shape(
     module.watershed_line.value = watershed_line
 
     module.downsample.value = downsample
+
+    module.gaussian_sigma.value = gaussian_sigma
 
     if image.multichannel:
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
@@ -338,24 +474,53 @@ def test_run_markers_declump_shape(
 
     actual = workspace.get_objects("watershed")
 
-    expected = watershed(
-        input_image, 
-        method="markers", 
-        declump_method="shape",
-        markers_image=markers_image,
+
+    # Generate expect output
+    input_shape = input_image.shape
+    if input_image.ndim > 2:
+        # Only scale x and y
+        factors = (1, downsample, downsample)
+    else:
+        factors = (downsample, downsample)
+
+    footprint = 8
+
+    if input_image.ndim == 3:
+        footprint = numpy.ones((footprint, footprint, footprint))
+    else:
+        footprint = numpy.ones((footprint, footprint))
+
+    input_image = skimage.transform.downscale_local_mean(input_image, factors)
+    markers_image = skimage.transform.downscale_local_mean(markers_image, factors)
+    smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
+    distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+    watershed_input_image = -distance
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+
+    seeds = markers_image
+    seeds = skimage.morphology.binary_dilation(seeds, strel)
+
+    expected = skimage.segmentation.watershed(
+        watershed_input_image,
+        markers=seeds,
+        mask=input_image != 0,
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,
-        downsample=downsample,
-        structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size
+    )
+    if downsample > 1:
+        expected = skimage.transform.resize(
+            expected, input_shape, mode="edge", order=0, preserve_range=True
         )
+        expected = numpy.rint(expected).astype(numpy.uint16)
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
 def test_run_markers_declump_intensity(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma
 ):
     module.use_advanced.value = True
 
@@ -378,6 +543,8 @@ def test_run_markers_declump_intensity(
     module.watershed_line.value = watershed_line
 
     module.downsample.value = downsample
+
+    module.gaussian_sigma.value = gaussian_sigma
 
     if image.multichannel:
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
@@ -432,25 +599,53 @@ def test_run_markers_declump_intensity(
 
     actual = workspace.get_objects("watershed")
 
-    expected = watershed(
-        input_image, 
-        method="markers", 
-        declump_method="intensity",
-        markers_image=markers_image,
-        intensity_image=intensity_image,
+    # Generate expect output
+    input_shape = input_image.shape
+    if input_image.ndim > 2:
+        # Only scale x and y
+        factors = (1, downsample, downsample)
+    else:
+        factors = (downsample, downsample)
+
+    footprint = 8
+
+    if input_image.ndim == 3:
+        footprint = numpy.ones((footprint, footprint, footprint))
+    else:
+        footprint = numpy.ones((footprint, footprint))
+
+    input_image = skimage.transform.downscale_local_mean(input_image, factors)
+    markers_image = skimage.transform.downscale_local_mean(markers_image, factors)
+    intensity_image = skimage.transform.downscale_local_mean(intensity_image, factors)
+    smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
+    distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+    watershed_input_image = 1 - intensity_image
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+
+    seeds = markers_image
+    seeds = skimage.morphology.binary_dilation(seeds, strel)
+
+    expected = skimage.segmentation.watershed(
+        watershed_input_image,
+        markers=seeds,
+        mask=input_image != 0,
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,
-        downsample=downsample,
-        structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size
+    )
+    if downsample > 1:
+        expected = skimage.transform.resize(
+            expected, input_shape, mode="edge", order=0, preserve_range=True
         )
+        expected = numpy.rint(expected).astype(numpy.uint16)
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
 def test_run_markers_declump_none(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample
+    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma
 ):
     module.use_advanced.value = True
 
@@ -471,6 +666,8 @@ def test_run_markers_declump_none(
     module.watershed_line.value = watershed_line
 
     module.downsample.value = downsample
+
+    module.gaussian_sigma.value = gaussian_sigma
 
     if image.multichannel:
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
@@ -515,17 +712,45 @@ def test_run_markers_declump_none(
 
     actual = workspace.get_objects("watershed")
 
-    expected = watershed(
-        input_image, 
-        method="markers", 
-        declump_method="none",
-        markers_image=markers_image,
+    # Generate expect output
+    input_shape = input_image.shape
+    if input_image.ndim > 2:
+        # Only scale x and y
+        factors = (1, downsample, downsample)
+    else:
+        factors = (downsample, downsample)
+
+    footprint = 8
+
+    if input_image.ndim == 3:
+        footprint = numpy.ones((footprint, footprint, footprint))
+    else:
+        footprint = numpy.ones((footprint, footprint))
+
+    input_image = skimage.transform.downscale_local_mean(input_image, factors)
+    markers_image = skimage.transform.downscale_local_mean(markers_image, factors)
+    smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
+    distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+    watershed_input_image = input_image
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+    
+    seeds = markers_image
+    seeds = skimage.morphology.binary_dilation(seeds, strel)
+
+    expected = skimage.segmentation.watershed(
+        watershed_input_image,
+        markers=seeds,
+        mask=input_image != 0,
         connectivity=connectivity,
         compactness=compactness,
         watershed_line=watershed_line,
-        downsample=downsample,
-        structuring_element=structuring_element,
-        structuring_element_size=structuring_element_size
+    )
+    if downsample > 1:
+        expected = skimage.transform.resize(
+            expected, input_shape, mode="edge", order=0, preserve_range=True
         )
+        expected = numpy.rint(expected).astype(numpy.uint16)
 
     numpy.testing.assert_array_equal(actual.segmented, expected)

@@ -68,6 +68,118 @@ def gaussian_sigma(request):
 def maxima_method(request):
     return request.param
 
+def test_distance_mask(
+    image, module, image_set, workspace, downsample, gaussian_sigma, maxima_method
+):
+    module.use_advanced.value = True
+
+    module.watershed_method.value = "Distance"
+
+    module.declump_method.value = "Shape"
+
+    module.x_name.value = "input_image"
+
+    module.y_name.value = "watershed"
+
+    module.mask_name.value = "mask"
+
+    module.downsample.value = downsample
+
+    module.gaussian_sigma.value = gaussian_sigma
+
+    module.seed_method.value = maxima_method
+
+    if image.dimensions == 3:
+        module.structuring_element.value = "Ball,1"
+        structuring_element = "Ball"
+        structuring_element_size = 1
+    else:
+        module.structuring_element.value = "Disk,1"
+        structuring_element = "Disk"
+        structuring_element_size = 1
+    
+    if image.multichannel:
+        image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
+
+
+    mask = numpy.zeros_like(image.pixel_data, dtype=bool)
+
+    mask[..., 0:32] = True
+
+    input_image = image.pixel_data > skimage.filters.threshold_otsu(image.pixel_data)
+
+    image_set.add(
+        "input_image",
+        cellprofiler_core.image.Image(
+            image=input_image, convert=False, dimensions=image.dimensions
+        ),
+    )
+
+    image_set.add(
+        "mask",
+        cellprofiler_core.image.Image(
+            image=mask, convert=False, dimensions=image.dimensions
+        ),
+    )
+
+    module.run(workspace)
+
+    actual = workspace.get_objects("watershed")
+
+    # Generate expect output
+    input_shape = input_image.shape
+    if input_image.ndim > 2:
+        # Only scale x and y
+        factors = (1, downsample, downsample)
+    else:
+        factors = (downsample, downsample)
+
+    footprint = 8
+
+    if input_image.ndim == 3:
+        footprint = numpy.ones((footprint, footprint, footprint))
+    else:
+        footprint = numpy.ones((footprint, footprint))
+
+    input_image = skimage.transform.downscale_local_mean(input_image, factors)
+    mask = skimage.transform.downscale_local_mean(mask, factors)
+    smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
+    distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+    watershed_input_image = -distance
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+    if maxima_method.casefold() == "local":
+        seed_coords = skimage.feature.peak_local_max(
+            distance,
+            min_distance=1,
+            threshold_rel=0,
+            footprint=footprint,
+            num_peaks=numpy.inf,
+        )
+        seeds = numpy.zeros(distance.shape, dtype=bool)
+        seeds[tuple(seed_coords.T)] = True
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.label(seeds)[0]
+
+    elif maxima_method.casefold() == "regional":
+        seeds = mahotas.regmax(distance, footprint)
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds, _ = mahotas.label(seeds, footprint)
+
+    expected = skimage.segmentation.watershed(
+        watershed_input_image,
+        markers=seeds,
+        mask=mask,
+    )
+    if downsample > 1:
+        expected = skimage.transform.resize(
+            expected, input_shape, mode="edge", order=0, preserve_range=True
+        )
+        expected = numpy.rint(expected).astype(numpy.uint16)
+
+    numpy.testing.assert_array_equal(actual.segmented, expected)
+
 
 def test_run_distance_declump_intensity(
     image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma, maxima_method

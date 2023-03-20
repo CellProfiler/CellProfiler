@@ -306,11 +306,13 @@ def watershed(
             markers_image = skimage.transform.downscale_local_mean(markers_image, factors)
         if mask is not None:
             mask = skimage.transform.downscale_local_mean(mask, factors)
-        
-    smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
-
-    # Calculate distance transform
-    distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+    
+    # Only calculate the distance transform if required for shape-based declumping
+    # or distance-based seed generation
+    if declump_method.casefold() == "shape" or method.casefold() == "distance":    
+        smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
+        # Calculate distance transform
+        distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
 
     # Generate alternative input to the watershed based on declumping
     if declump_method.casefold() == "shape":

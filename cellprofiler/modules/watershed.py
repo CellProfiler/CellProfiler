@@ -433,45 +433,8 @@ the image is not downsampled.
 
         return __settings__
 
-    def get_kwargs(self):
-        kwargs = {
-            "method":self.watershed_method.value,
-            "declump_method":self.declump_method.value,
-            "maxima_method":self.seed_method.value if self.use_advanced else self.seed_method.initial_value,
-            "max_seeds":self.max_seeds.value if self.use_advanced else self.max_seeds.initial_value,
-            "downsample":self.downsample.value,
-            "min_distance":self.min_dist.value if self.use_advanced else self.min_dist.initial_value,
-            "min_intensity":self.min_intensity.value if self.use_advanced else self.min_intensity.initial_value,
-            "footprint":self.footprint.value,
-            "connectivity":self.connectivity.value if self.use_advanced else self.connectivity.initial_value,
-            "compactness":self.compactness.value if self.use_advanced else self.compactness.initial_value,
-            "exclude_border":self.exclude_border.value,
-            "watershed_line":self.watershed_line.value if self.use_advanced else self.watershed_line.initial_value,
-            "gaussian_sigma":self.gaussian_sigma.value if self.use_advanced else self.gaussian_sigma.initial_value,
-            "structuring_element":self.structuring_element.shape,
-            "structuring_element_size":self.structuring_element.size,
-        }
-        return kwargs
-
-
-    # def on_setting_changed(self, setting, pipeline):
-    #     # If the setting that has changed is use_advanced and it's been set to 
-    #     # False, reset the advanced settings to their default values
-    #     if setting == self.use_advanced and not self.use_advanced:
-    #         self.seed_method.value = self.seed_method.initial_value
-    #         self.min_dist.value = self.min_dist.initial_value
-    #         self.min_intensity.value = self.min_intensity.initial_value
-    #         self.max_seeds.value = self.max_seeds.initial_value
-    #         self.gaussian_sigma.value = self.gaussian_sigma.initial_value
-    #         self.structuring_element.value = self.structuring_element.initial_value
-    #         self.connectivity.value = self.connectivity.initial_value
-    #         self.compactness.value = self.compactness.initial_value
-    #         self.watershed_line.value = self.watershed_line.initial_value
-
     def run(self, workspace):
 
-        print("!!!", self.gaussian_sigma.initial_value, type(self.gaussian_sigma.initial_value))
-        print(222, self.compactness.value, type(self.compactness.value))
         x_name = self.x_name.value
 
         y_name = self.y_name.value
@@ -517,22 +480,21 @@ the image is not downsampled.
                 intensity_image=intensity_data,
                 mask=mask_data,
                 return_seeds = True,
-                **self.get_kwargs(),
-                # watershed_method=self.watershed_method.value,
-                # declump_method=self.declump_method.value,
-                # maxima_method=self.seed_method.value,
-                # max_seeds=self.max_seeds.value,
-                # downsample=self.downsample.value,
-                # min_distance=self.min_dist.value,
-                # min_intensity=self.min_intensity.value,
-                # footprint=self.footprint.value,
-                # connectivity=self.connectivity.value,
-                # compactness=self.compactness.value,
-                # exclude_border=self.exclude_border.value,
-                # watershed_line=self.watershed_line.value,
-                # gaussian_sigma=self.gaussian_sigma.value,
-                # structuring_element=self.structuring_element.shape,
-                # structuring_element_size=self.structuring_element.size,
+                method=self.watershed_method.value,
+                declump_method=self.declump_method.value,
+                exclude_border=self.exclude_border.value,
+                downsample=self.downsample.value,
+                footprint=self.footprint.value,
+                structuring_element=self.structuring_element.shape,
+                structuring_element_size=self.structuring_element.size,                
+                maxima_method=self.seed_method.value if self.use_advanced else O_REGIONAL,
+                max_seeds=self.max_seeds.value if self.use_advanced else -1,
+                min_distance=self.min_dist.value if self.use_advanced else 1,
+                min_intensity=self.min_intensity.value if self.use_advanced else 0,
+                connectivity=self.connectivity.value if self.use_advanced else 1,
+                compactness=self.compactness.value if self.use_advanced else 0.0,
+                watershed_line=self.watershed_line.value if self.use_advanced else False,
+                gaussian_sigma=self.gaussian_sigma.value if self.use_advanced else 0.0,
                 )
 
         objects = cellprofiler_core.object.Objects()

@@ -68,6 +68,7 @@ def gaussian_sigma(request):
 def maxima_method(request):
     return request.param
 
+
 def test_distance_mask(
     image, module, image_set, workspace, downsample, gaussian_sigma, maxima_method
 ):
@@ -97,10 +98,9 @@ def test_distance_mask(
         module.structuring_element.value = "Disk,1"
         structuring_element = "Disk"
         structuring_element_size = 1
-    
+
     if image.multichannel:
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
-
 
     mask = numpy.zeros_like(image.pixel_data, dtype=bool)
 
@@ -182,7 +182,16 @@ def test_distance_mask(
 
 
 def test_run_distance_declump_intensity(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma, maxima_method
+    image,
+    module,
+    image_set,
+    workspace,
+    connectivity,
+    compactness,
+    watershed_line,
+    downsample,
+    gaussian_sigma,
+    maxima_method,
 ):
     module.use_advanced.value = True
 
@@ -216,7 +225,7 @@ def test_run_distance_declump_intensity(
         module.structuring_element.value = "Disk,1"
         structuring_element = "Disk"
         structuring_element_size = 1
-    
+
     if image.multichannel:
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
 
@@ -329,7 +338,7 @@ def test_run_distance_declump_shape(
         module.structuring_element.value = "Disk,1"
         structuring_element = "Disk"
         structuring_element_size = 1
-    
+
     if image.multichannel:
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
 
@@ -428,7 +437,7 @@ def test_run_distance_declump_none(
         module.structuring_element.value = "Disk,1"
         structuring_element = "Disk"
         structuring_element_size = 1
-    
+
     if image.multichannel:
         image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
 
@@ -561,7 +570,6 @@ def test_run_markers_declump_shape(
     module.run(workspace)
 
     actual = workspace.get_objects("watershed")
-
 
     # Generate expect output
     input_shape = input_image.shape
@@ -721,7 +729,15 @@ def test_run_markers_declump_intensity(
 
 
 def test_run_markers_declump_none(
-    image, module, image_set, workspace, connectivity, compactness, watershed_line, downsample, gaussian_sigma
+    image,
+    module,
+    image_set,
+    workspace,
+    connectivity,
+    compactness,
+    watershed_line,
+    downsample,
+    gaussian_sigma,
 ):
     module.use_advanced.value = True
 
@@ -811,7 +827,7 @@ def test_run_markers_declump_none(
     strel = getattr(skimage.morphology, structuring_element.casefold())(
         structuring_element_size
     )
-    
+
     seeds = markers_image
     seeds = skimage.morphology.binary_dilation(seeds, strel)
 

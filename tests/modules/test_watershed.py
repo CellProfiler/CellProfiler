@@ -734,3 +734,84 @@ def test_run_markers_declump_none(
         expected = numpy.rint(expected).astype(numpy.uint16)
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
+
+
+
+def test_non_advanced(
+    image,
+    module,
+    image_set,
+    workspace,
+):
+    """Ensure that advanced settings are not passed to CellProfiler
+    Libarary watershed"""
+
+    module.use_advanced.value = False
+
+    module.watershed_method.value = "Distance"
+
+    module.declump_method.value = "Shape"
+
+    module.x_name.value = "input_image"
+
+    module.y_name.value = "watershed"
+
+    # Change an advanced-only setting
+    module.gaussian_sigma.value = 5
+
+    if image.dimensions == 3:
+        module.structuring_element.value = "Ball,1"
+        structuring_element = "Ball"
+        structuring_element_size = 1
+    else:
+        module.structuring_element.value = "Disk,1"
+        structuring_element = "Disk"
+        structuring_element_size = 1
+
+    if image.multichannel:
+        image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
+
+    # Watershed requires a thresholded input
+    input_image = image.pixel_data > skimage.filters.threshold_otsu(image.pixel_data)
+
+    image_set.add(
+        "input_image",
+        cellprofiler_core.image.Image(
+            image=input_image, convert=False, dimensions=image.dimensions
+        ),
+    )
+
+    module.run(workspace)
+
+    actual = workspace.get_objects("watershed")
+
+    # Generate expect output
+    input_shape = input_image.shape
+    if input_image.ndim > 2:
+        # Only scale x and y
+        factors = (1, downsample, downsample)
+    else:
+        factors = (downsample, downsample)
+
+    if input_image.ndim == 3:
+        footprint = numpy.ones((8, 8, 8))
+    else:
+        footprint = numpy.ones((8, 8))
+
+    distance = scipy.ndimage.distance_transform_edt(input_image)
+    watershed_input_image = -distance
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+
+    seeds = mahotas.regmax(distance, footprint)
+    seeds = skimage.morphology.binary_dilation(seeds, strel)
+    seeds, _ = mahotas.label(seeds, footprint)
+
+    expected = skimage.segmentation.watershed(
+        watershed_input_image,
+        markers=seeds,
+        mask=input_image != 0,
+    )
+
+    numpy.testing.assert_array_equal(actual.segmented, expected)

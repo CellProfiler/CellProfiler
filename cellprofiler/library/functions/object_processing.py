@@ -330,59 +330,42 @@ def watershed(
     else:
         raise ValueError(f"declump_method {declump_method} is not supported.")
 
-    # Generate markers
+    # Determine image from which to calculate seeds
     if method.casefold() == "distance":
-        # Find maxima in the distance transform
-        if seed_method.casefold() == "local":
-            seed_coords = skimage.feature.peak_local_max(
-                distance,
-                min_distance=min_distance,
-                threshold_rel=min_intensity,
-                footprint=footprint,
-                num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
-            )
-            seeds = numpy.zeros(distance.shape, dtype=bool)
-            seeds[tuple(seed_coords.T)] = True
-            seeds = skimage.morphology.binary_dilation(seeds, strel)
-            seeds = scipy.ndimage.label(seeds)[0]
-
-        elif seed_method.casefold() == "regional":
-            seeds = mahotas.regmax(distance, footprint)
-            seeds = skimage.morphology.binary_dilation(seeds, strel)
-            seeds, _ = mahotas.label(seeds, footprint)
-        else:
-            raise NotImplementedError(
-                f"seed_method {seed_method} is not supported."
-            )
+        seed_image = distance
     elif method.casefold() == "intensity":
-        # Calculate seeds from an intensity image
-        if seed_method.casefold() == "local":
-            seed_coords = skimage.feature.peak_local_max(
-                intensity_image,
-                min_distance=min_distance,
-                threshold_rel=min_intensity,
-                footprint=footprint,
-                num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
-            )
-            seeds = numpy.zeros(intensity_image.shape, dtype=bool)
-            seeds[tuple(seed_coords.T)] = True
-            seeds = skimage.morphology.binary_dilation(seeds, strel)
-            seeds = scipy.ndimage.label(seeds)[0]
-
-        elif seed_method.casefold() == "regional":
-            seeds = mahotas.regmax(intensity_image, footprint)
-            seeds = skimage.morphology.binary_dilation(seeds, strel)
-            seeds, _ = mahotas.label(seeds, footprint)
-        else:
-            raise NotImplementedError(
-                f"seed_method {seed_method} is not supported."
-            )
+        seed_image = intensity_image
     elif method.casefold() == "markers":
         # The user has provided their own seeds/markers
         seeds = markers_image
         seeds = skimage.morphology.binary_dilation(seeds, strel)
     else:
-        raise NotImplementedError(f"method {method} is not supported.")
+        raise NotImplementedError(
+            f"watershed method {method} is not supported"
+        )
+
+    # Generate seeds
+    if seed_method.casefold() == "local":
+        seed_coords = skimage.feature.peak_local_max(
+            seed_image,
+            min_distance=min_distance,
+            threshold_rel=min_intensity,
+            footprint=footprint,
+            num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
+        )
+        seeds = numpy.zeros(seed_image.shape, dtype=bool)
+        seeds[tuple(seed_coords.T)] = True
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.label(seeds)[0]
+
+    elif seed_method.casefold() == "regional":
+        seeds = mahotas.regmax(seed_image, footprint)
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds, _ = mahotas.label(seeds, footprint)
+    else:
+        raise NotImplementedError(
+            f"seed_method {seed_method} is not supported."
+        )
 
     # Run watershed
     watershed_image = skimage.segmentation.watershed(

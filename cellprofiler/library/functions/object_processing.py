@@ -361,7 +361,11 @@ def watershed(
     elif seed_method.casefold() == "regional":
         seeds = mahotas.regmax(seed_image, footprint)
         seeds = skimage.morphology.binary_dilation(seeds, strel)
-        seeds, _ = mahotas.label(seeds, footprint)
+        if input_image.ndim == 3:
+            lab_footprint = numpy.ones((16, 16, 16))
+        else:
+            lab_footprint = numpy.ones((16, 16))
+        seeds, _ = mahotas.label(seeds, lab_footprint)
     else:
         raise NotImplementedError(
             f"seed_method {seed_method} is not supported."

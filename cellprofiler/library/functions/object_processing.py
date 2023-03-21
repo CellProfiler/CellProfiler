@@ -14,21 +14,22 @@ def shrink_to_point(labels, fill):
     """
 
     if fill:
-        labels = centrosome.cpmorphology.fill_labeled_holes(labels)
+        labels=centrosome.cpmorphology.fill_labeled_holes(labels)
     return centrosome.cpmorphology.binary_shrink(labels)
-
 
 def shrink_defined_pixels(labels, fill, iterations):
     """
     Remove pixels around the perimeter of an object unless
-    doing so would change the object’s Euler number `iterations` times.
+    doing so would change the object’s Euler number `iterations` times. 
     Processing stops automatically when there are no more pixels to
     remove.
     """
 
     if fill:
-        labels = centrosome.cpmorphology.fill_labeled_holes(labels)
-    return centrosome.cpmorphology.binary_shrink(labels, iterations=iterations)
+        labels=centrosome.cpmorphology.fill_labeled_holes(labels)
+    return centrosome.cpmorphology.binary_shrink(
+                labels, iterations=iterations
+            )
 
 
 def add_dividing_lines(labels):
@@ -48,7 +49,6 @@ def add_dividing_lines(labels):
 
     return out_labels
 
-
 def skeletonize(labels):
     """
     Erode each object to its skeleton.
@@ -61,7 +61,9 @@ def despur(labels, iterations):
     Remove or reduce the length of spurs in a skeletonized
     image. The algorithm reduces spur size by `iterations` pixels.
     """
-    return centrosome.cpmorphology.spur(labels, iterations=iterations)
+    return centrosome.cpmorphology.spur(
+                labels, iterations=iterations
+            )
 
 
 def expand(labels, distance):
@@ -83,7 +85,6 @@ def expand(labels, distance):
 
     return out_labels
 
-
 def expand_until_touching(labels):
     """
     Expand objects, assigning every pixel in the
@@ -93,24 +94,22 @@ def expand_until_touching(labels):
     distance = numpy.max(labels.shape)
     return expand(labels, distance)
 
-
 def expand_defined_pixels(labels, iterations):
     """
     Expand each object by adding background pixels
-    adjacent to the image `iterations` times. Processing stops
+    adjacent to the image `iterations` times. Processing stops 
     automatically if there are no more background pixels.
     """
     return expand(labels, iterations)
 
-
 def merge_objects(labels_x, labels_y, dimensions):
     """
-    Make overlapping objects combine into a single object, taking
+    Make overlapping objects combine into a single object, taking 
     on the label of the object from the initial set.
 
-    If an object overlaps multiple objects, each pixel of the added
-    object will be assigned to the closest object from the initial
-    set. This is primarily useful when the same objects appear in
+    If an object overlaps multiple objects, each pixel of the added 
+    object will be assigned to the closest object from the initial 
+    set. This is primarily useful when the same objects appear in 
     both sets.
     """
     output = numpy.zeros_like(labels_x)
@@ -130,7 +129,7 @@ def merge_objects(labels_x, labels_y, dimensions):
     output = numpy.where(mask, labels_y, output)
     labels_y[mask] = 0
     to_segment = numpy.logical_or(labels_x > 0, labels_y > 0)
-    if dimensions == 2:
+    if dimensions == 2: 
         distances, (i, j) = scipy.ndimage.distance_transform_edt(
             labels_x == 0, return_indices=True
         )
@@ -140,19 +139,18 @@ def merge_objects(labels_x, labels_y, dimensions):
             labels_x == 0, return_indices=True
         )
         output[to_segment] = labels_x[i[to_segment], j[to_segment], v[to_segment]]
-
+    
     return output
 
 
 def preserve_objects(labels_x, labels_y):
     """
-    Preserve the initial object set. Any overlapping regions from
-    the second set will be ignored in favour of the object from
-    the initial set.
+    Preserve the initial object set. Any overlapping regions from 
+    the second set will be ignored in favour of the object from 
+    the initial set. 
     """
     labels_y[labels_y > 0] += labels_x.max()
     return numpy.where(labels_x > 0, labels_x, labels_y)
-
 
 def discard_objects(labels_x, labels_y):
     """
@@ -175,7 +173,6 @@ def discard_objects(labels_x, labels_y):
     labels_y[mask] = 0
 
     return numpy.where(labels_x > 0, labels_x, output)
-
 
 def segment_objects(labels_x, labels_y, dimensions):
     """
@@ -261,17 +258,12 @@ def watershed(
     if input_image.dtype != bool or set(numpy.unique(input_image)) != set([0, 1]):
         raise ValueError("Watershed expects a thresholded image as input")
     if (
-        method.casefold() == "intensity"
-        or declump_method.casefold() == "intensity"
+        method.casefold() == "intensity" or declump_method.casefold() == "intensity"
     ) and intensity_image is None:
-        raise ValueError(
-            f"Intensity-based methods require an intensity image"
-        )
+        raise ValueError(f"Intensity-based methods require an intensity image")
 
     if method.casefold() == "markers" and markers_image is None:
-        raise ValueError(
-            "Markers watershed method require a markers image"
-        )
+        raise ValueError("Markers watershed method require a markers image")
 
     # Create and check structuring element for seed dilation
     strel = getattr(skimage.morphology, structuring_element.casefold())(
@@ -301,16 +293,22 @@ def watershed(
         input_image = skimage.transform.downscale_local_mean(input_image, factors)
         # Resize optional images
         if intensity_image is not None:
-            intensity_image = skimage.transform.downscale_local_mean(intensity_image, factors)
+            intensity_image = skimage.transform.downscale_local_mean(
+                intensity_image, factors
+            )
         if markers_image is not None:
-            markers_image = skimage.transform.downscale_local_mean(markers_image, factors)
+            markers_image = skimage.transform.downscale_local_mean(
+                markers_image, factors
+            )
         if mask is not None:
             mask = skimage.transform.downscale_local_mean(mask, factors)
-    
+
     # Only calculate the distance transform if required for shape-based declumping
     # or distance-based seed generation
-    if declump_method.casefold() == "shape" or method.casefold() == "distance":    
-        smoothed_input_image = skimage.filters.gaussian(input_image, sigma=gaussian_sigma)
+    if declump_method.casefold() == "shape" or method.casefold() == "distance":
+        smoothed_input_image = skimage.filters.gaussian(
+            input_image, sigma=gaussian_sigma
+        )
         # Calculate distance transform
         distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
 
@@ -330,9 +328,7 @@ def watershed(
         # No declumping
         watershed_input_image = input_image
     else:
-        raise ValueError(
-            f"declump_method {declump_method} is not supported."
-        )
+        raise ValueError(f"declump_method {declump_method} is not supported.")
 
     # Generate markers
     if method.casefold() == "distance":
@@ -363,9 +359,7 @@ def watershed(
         seeds = markers_image
         seeds = skimage.morphology.binary_dilation(seeds, strel)
     else:
-        raise NotImplementedError(
-                f"method {method} is not supported."
-            )
+        raise NotImplementedError(f"method {method} is not supported.")
 
     # Run watershed
     watershed_image = skimage.segmentation.watershed(

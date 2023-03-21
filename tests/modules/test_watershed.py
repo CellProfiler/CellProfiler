@@ -736,7 +736,6 @@ def test_run_markers_declump_none(
     numpy.testing.assert_array_equal(actual.segmented, expected)
 
 
-
 def test_non_advanced(
     image,
     module,

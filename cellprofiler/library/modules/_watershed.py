@@ -21,7 +21,7 @@ def watershed(
     footprint: int = 8,
     connectivity: int = 1,
     compactness: float = 0.0,
-    exclude_border: bool = True,
+    exclude_border: bool = False,
     watershed_line: bool = False,
     gaussian_sigma: float = 1.0,
     structuring_element: Literal[

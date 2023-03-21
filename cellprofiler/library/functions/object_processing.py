@@ -232,7 +232,7 @@ def segment_objects(labels_x, labels_y, dimensions):
 
 def watershed(
     input_image: numpy.ndarray,
-    method: Literal["distance", "markers"] = "distance",
+    method: Literal["distance", "intensity", "markers"] = "distance",
     declump_method: Literal["shape", "intensity", "none"] = "shape",
     maxima_method: Literal["local", "regional"] = "local",
     intensity_image: numpy.ndarray = None,
@@ -348,6 +348,29 @@ def watershed(
 
         elif maxima_method.casefold() == "regional":
             seeds = mahotas.regmax(distance, footprint)
+            seeds = skimage.morphology.binary_dilation(seeds, strel)
+            seeds, _ = mahotas.label(seeds, footprint)
+        else:
+            raise NotImplementedError(
+                f"maxima_method {maxima_method} is not supported."
+            )
+    elif method.casefold() == "intensity":
+        # Calculate seeds from an intensity image
+        if maxima_method.casefold() == "local":
+            seed_coords = skimage.feature.peak_local_max(
+                intensity_image,
+                min_distance=min_distance,
+                threshold_rel=min_intensity,
+                footprint=footprint,
+                num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
+            )
+            seeds = numpy.zeros(intensity_image.shape, dtype=bool)
+            seeds[tuple(seed_coords.T)] = True
+            seeds = skimage.morphology.binary_dilation(seeds, strel)
+            seeds = scipy.ndimage.label(seeds)[0]
+
+        elif maxima_method.casefold() == "regional":
+            seeds = mahotas.regmax(intensity_image, footprint)
             seeds = skimage.morphology.binary_dilation(seeds, strel)
             seeds, _ = mahotas.label(seeds, footprint)
         else:

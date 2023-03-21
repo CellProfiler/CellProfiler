@@ -140,7 +140,7 @@ class Watershed(ImageSegmentation):
 
         self.watershed_method = Choice(
             "Select watershed method",
-            choices=[O_DISTANCE, O_MARKERS],
+            choices=[O_DISTANCE, O_INTENSITY, O_MARKERS],
             value=O_DISTANCE,
             doc="""\
 Select a method of inputs for the watershed algorithm:
@@ -183,7 +183,7 @@ Select "*{YES}*" to display the seeds used for watershed.
         )
 
         self.intensity_name = ImageSubscriber(
-            "Intensity image for declumping",
+            "Intensity image",
             doc="",
         )
 
@@ -417,7 +417,7 @@ the image is not downsampled.
             self.declump_method,
         ]
 
-        if self.declump_method == O_INTENSITY:
+        if self.watershed_method == O_INTENSITY or self.declump_method == O_INTENSITY:
             # Provide the intensity image setting
             __settings__ += [
                 self.intensity_name
@@ -467,7 +467,7 @@ the image is not downsampled.
             mask_data = mask.pixel_data
 
         # Get the intensity image
-        if self.declump_method.value == O_INTENSITY:
+        if self.watershed_method == O_INTENSITY or self.declump_method.value == O_INTENSITY:
             # Get intensity image
             intensity_image = images.get_image(self.intensity_name.value)
             intensity_data = intensity_image.pixel_data

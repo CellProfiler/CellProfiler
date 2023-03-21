@@ -514,9 +514,11 @@ the image is not downsampled.
             workspace.display_data.y_data = y_data
             workspace.display_data.y_data_name = self.y_name.value
 
+            # Find object boundaries and combine with seeds
             object_outlines = skimage.segmentation.find_boundaries(y_data, mode="inner")
-            # Colour the boundaries based on the object label
-            workspace.display_data.outlines_and_seeds = seeds + object_outlines * y_data
+            outlines_and_seeds = seeds + object_outlines
+            # Colour the boundaries based on the object label from y_data and mask out background
+            workspace.display_data.outlines_and_seeds = (outlines_and_seeds > 0) * y_data
 
             workspace.display_data.dimensions = dimensions
 

@@ -255,7 +255,7 @@ def watershed(
     return_seeds: bool = False,
 ):
     # Check inputs
-    if input_image.dtype != bool or set(numpy.unique(input_image)) != set([0, 1]):
+    if not numpy.array_equal(input_image, input_image.astype(bool)):
         raise ValueError("Watershed expects a thresholded image as input")
     if (
         method.casefold() == "intensity" or declump_method.casefold() == "intensity"

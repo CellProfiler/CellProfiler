@@ -26,6 +26,17 @@ O_SHAPE = "Shape"
 O_INTENSITY = "Intensity"
 O_NONE = "None"
 
+default_settings = {
+    "seed_method": O_REGIONAL,
+    "max_seeds": -1,
+    "min_distance": 1,
+    "min_intensity": 0.0,
+    "connectivity": 1,
+    "compactness": 0.0,
+    "watershed_line": False,
+    "gaussian_sigma": 0.0,
+}
+
 __doc__ = """
 Watershed
 =========
@@ -162,7 +173,7 @@ Select a method of inputs for the watershed algorithm:
         self.seed_method = Choice(
             "Select seed generation method",
             choices=[O_REGIONAL, O_LOCAL],
-            value=O_REGIONAL,
+            value=default_settings["seed_method"],
             doc="""\
 """
         )
@@ -208,13 +219,13 @@ See `skimage label`_ for more information.
 """,
             minval=1,
             text="Connectivity",
-            value=1,
+            value=default_settings["connectivity"],
         )
 
         self.compactness = Float(
             text="Compactness",
             minval=0.0,
-            value=0.0,
+            value=default_settings["compactness"],
             doc="""\
 Use `compact watershed`_ with given compactness parameter. 
 Higher values result in more regularly-shaped watershed basins.
@@ -226,7 +237,7 @@ Higher values result in more regularly-shaped watershed basins.
 
         self.watershed_line = Binary(
             text="Separate watershed labels",
-            value=False,
+            value=default_settings["watershed_line"],
             doc="""\
 Create a 1 pixel wide line around the watershed labels. This effectively separates
 the different objects identified by the watershed algorithm, rather than allowing them 
@@ -300,13 +311,13 @@ the image is not downsampled.
 
         self.gaussian_sigma = cellprofiler_core.setting.text.Float(
             text="Segmentation distance transform smoothing factor",
-            value=0.0,
+            value=default_settings["gaussian_sigma"],
             doc="Sigma defines how 'smooth' the Gaussian kernel makes the image. Higher sigma means a smoother image."
         )
 
         self.min_dist = cellprofiler_core.setting.text.Integer(
             text="Minimum distance between seeds",
-            value=1,
+            value=default_settings["min_distance"],
             minval=0,
             doc="""\
         Minimum number of pixels separating peaks in a region of `2 * min_distance + 1 `
@@ -317,7 +328,7 @@ the image is not downsampled.
 
         self.min_intensity = cellprofiler_core.setting.text.Float(
             text="Minimum absolute internal distance",
-            value=0.,
+            value=default_settings["min_intensity"],
             minval=0.,
             doc="""\
         Minimum absolute intensity threshold for seed generation. Since this threshold is
@@ -338,7 +349,7 @@ the image is not downsampled.
 
         self.max_seeds = cellprofiler_core.setting.text.Integer(
             text="Maximum number of seeds",
-            value=-1,
+            value=default_settings["max_seeds"],
             doc="""\
         Maximum number of seeds to generate. Default is no limit. 
         When the number of seeds exceeds this number, seeds are chosen 
@@ -487,14 +498,14 @@ the image is not downsampled.
                 footprint=self.footprint.value,
                 structuring_element=self.structuring_element.shape,
                 structuring_element_size=self.structuring_element.size,                
-                maxima_method=self.seed_method.value if self.use_advanced else O_REGIONAL,
-                max_seeds=self.max_seeds.value if self.use_advanced else -1,
-                min_distance=self.min_dist.value if self.use_advanced else 1,
-                min_intensity=self.min_intensity.value if self.use_advanced else 0,
-                connectivity=self.connectivity.value if self.use_advanced else 1,
-                compactness=self.compactness.value if self.use_advanced else 0.0,
-                watershed_line=self.watershed_line.value if self.use_advanced else False,
-                gaussian_sigma=self.gaussian_sigma.value if self.use_advanced else 0.0,
+                seed_method=self.seed_method.value if self.use_advanced else default_settings["seed_method"],
+                max_seeds=self.max_seeds.value if self.use_advanced else default_settings["max_seeds"],
+                min_distance=self.min_dist.value if self.use_advanced else default_settings["min_distance"],
+                min_intensity=self.min_intensity.value if self.use_advanced else default_settings["min_intensity"],
+                connectivity=self.connectivity.value if self.use_advanced else default_settings["connectivity"],
+                compactness=self.compactness.value if self.use_advanced else default_settings["compactness"],
+                watershed_line=self.watershed_line.value if self.use_advanced else default_settings["watershed_line"],
+                gaussian_sigma=self.gaussian_sigma.value if self.use_advanced else default_settings["gaussian_sigma"],
                 )
 
         objects = cellprofiler_core.object.Objects()

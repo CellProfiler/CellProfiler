@@ -89,15 +89,6 @@ References
    *2009 IEEE 12th International Conference on Computer Vision*.
 """
 
-import cellprofiler_core.object
-import centrosome.cpmorphology
-import centrosome.fastemd
-import centrosome.filter
-import centrosome.index
-import centrosome.propagate
-import numpy
-import scipy.ndimage
-import scipy.sparse
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
@@ -106,6 +97,9 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer
 
 from cellprofiler.modules import _help
+
+from cellprofiler_library.modules import measureimageoverlap
+from cellprofiler_library.opts.measureimageoverlap import DM
 
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"
@@ -136,9 +130,6 @@ O_IMG = "Foreground/background segmentation"
 
 L_LOAD = "Loaded from a previous run"
 L_CP = "From this CP pipeline"
-
-DM_KMEANS = "K Means"
-DM_SKEL = "Skeleton"
 
 
 class MeasureImageOverlap(Module):
@@ -197,7 +188,7 @@ image using the point selection method (see below).""",
 
         self.decimation_method = Choice(
             "Point selection method",
-            choices=[DM_KMEANS, DM_SKEL],
+            choices=DM,
             doc="""\
 *(Used only when computing the earth mover’s distance)*
 
@@ -219,8 +210,8 @@ worms or neurites.
 .. |image0| image:: {PROTIP_RECOMMEND_ICON}
 """.format(
                 **{
-                    "DM_KMEANS": DM_KMEANS,
-                    "DM_SKEL": DM_SKEL,
+                    "DM_KMEANS": DM.KMEANS.value,
+                    "DM_SKEL": DM.SKELETON.value,
                     "PROTIP_RECOMMEND_ICON": _help.PROTIP_RECOMMEND_ICON,
                 }
             ),
@@ -308,436 +299,81 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
         test_pixels = test_image.pixel_data
 
-        # In volumetric case the 3D image stack gets converted to a long 2D image and gets analyzed
-        if ground_truth_image.volumetric:
-            ground_truth_pixels = ground_truth_pixels.reshape(
-                -1, ground_truth_pixels.shape[-1]
+        data = measureimageoverlap(
+            ground_truth_pixels, 
+            test_pixels, 
+            mask=mask,
+            calculate_emd=self.wants_emd,
+            decimation_method=self.decimation_method.enum_member,
+            max_distance=self.max_distance.value,
+            max_points=self.max_points.value,
+            penalize_missing=self.penalize_missing
             )
-
-            mask = mask.reshape(-1, mask.shape[-1])
-
-            test_pixels = test_pixels.reshape(-1, test_pixels.shape[-1])
-
-        false_positives = test_pixels & ~ground_truth_pixels
-
-        false_positives[~mask] = False
-
-        false_negatives = (~test_pixels) & ground_truth_pixels
-
-        false_negatives[~mask] = False
-
-        true_positives = test_pixels & ground_truth_pixels
-
-        true_positives[~mask] = False
-
-        true_negatives = (~test_pixels) & (~ground_truth_pixels)
-
-        true_negatives[~mask] = False
-
-        false_positive_count = numpy.sum(false_positives)
-
-        true_positive_count = numpy.sum(true_positives)
-
-        false_negative_count = numpy.sum(false_negatives)
-
-        true_negative_count = numpy.sum(true_negatives)
-
-        labeled_pixel_count = true_positive_count + false_positive_count
-
-        true_count = true_positive_count + false_negative_count
-
-        ##################################
-        #
-        # Calculate the F-Factor
-        #
-        # 2 * precision * recall
-        # -----------------------
-        # precision + recall
-        #
-        # precision = true positives / labeled
-        # recall = true positives / true count
-        #
-        ###################################
-
-        if labeled_pixel_count == 0:
-            precision = 1.0
-        else:
-            precision = float(true_positive_count) / float(labeled_pixel_count)
-
-        if true_count == 0:
-            recall = 1.0
-        else:
-            recall = float(true_positive_count) / float(true_count)
-
-        if (precision + recall) == 0:
-            f_factor = 0.0  # From http://en.wikipedia.org/wiki/F1_score
-        else:
-            f_factor = 2.0 * precision * recall / (precision + recall)
-
-        negative_count = false_positive_count + true_negative_count
-
-        if negative_count == 0:
-            false_positive_rate = 0.0
-
-            true_negative_rate = 1.0
-        else:
-            false_positive_rate = float(false_positive_count) / float(negative_count)
-
-            true_negative_rate = float(true_negative_count) / float(negative_count)
-        if true_count == 0:
-            false_negative_rate = 0.0
-
-            true_positive_rate = 1.0
-        else:
-            false_negative_rate = float(false_negative_count) / float(true_count)
-
-            true_positive_rate = float(true_positive_count) / float(true_count)
-
-        ground_truth_labels, ground_truth_count = scipy.ndimage.label(
-            ground_truth_pixels & mask, numpy.ones((3, 3), bool)
-        )
-
-        test_labels, test_count = scipy.ndimage.label(
-            test_pixels & mask, numpy.ones((3, 3), bool)
-        )
-
-        rand_index, adjusted_rand_index = self.compute_rand_index(
-            test_labels, ground_truth_labels, mask
-        )
 
         m = workspace.measurements
 
-        m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), f_factor)
+        m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), data[FTR_F_FACTOR])
 
-        m.add_image_measurement(self.measurement_name(FTR_PRECISION), precision)
+        m.add_image_measurement(self.measurement_name(FTR_PRECISION), data[FTR_PRECISION])
 
-        m.add_image_measurement(self.measurement_name(FTR_RECALL), recall)
+        m.add_image_measurement(self.measurement_name(FTR_RECALL), data[FTR_RECALL])
 
         m.add_image_measurement(
-            self.measurement_name(FTR_TRUE_POS_RATE), true_positive_rate
+            self.measurement_name(FTR_TRUE_POS_RATE), data[FTR_TRUE_POS_RATE]
         )
 
         m.add_image_measurement(
-            self.measurement_name(FTR_FALSE_POS_RATE), false_positive_rate
+            self.measurement_name(FTR_FALSE_POS_RATE), data[FTR_FALSE_POS_RATE]
         )
 
         m.add_image_measurement(
-            self.measurement_name(FTR_TRUE_NEG_RATE), true_negative_rate
+            self.measurement_name(FTR_TRUE_NEG_RATE), data[FTR_TRUE_NEG_RATE]
         )
 
         m.add_image_measurement(
-            self.measurement_name(FTR_FALSE_NEG_RATE), false_negative_rate
+            self.measurement_name(FTR_FALSE_NEG_RATE), data[FTR_FALSE_NEG_RATE]
         )
 
-        m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX), rand_index)
+        m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX), data[FTR_RAND_INDEX])
 
         m.add_image_measurement(
-            self.measurement_name(FTR_ADJUSTED_RAND_INDEX), adjusted_rand_index
+            self.measurement_name(FTR_ADJUSTED_RAND_INDEX), data[FTR_ADJUSTED_RAND_INDEX]
         )
 
         if self.wants_emd:
-            test_objects = cellprofiler_core.object.Objects()
-
-            test_objects.segmented = test_labels
-
-            ground_truth_objects = cellprofiler_core.object.Objects()
-
-            ground_truth_objects.segmented = ground_truth_labels
-
-            emd = self.compute_emd(test_objects, ground_truth_objects)
 
             m.add_image_measurement(
-                self.measurement_name(FTR_EARTH_MOVERS_DISTANCE), emd
+                self.measurement_name(FTR_EARTH_MOVERS_DISTANCE), data[FTR_EARTH_MOVERS_DISTANCE]
             )
 
         if self.show_window:
-            workspace.display_data.true_positives = true_positives
+            workspace.display_data.true_positives = data["true_positives"]
 
-            workspace.display_data.true_negatives = true_negatives
+            workspace.display_data.true_negatives = data["true_negatives"]
 
-            workspace.display_data.false_positives = false_positives
+            workspace.display_data.false_positives = data["false_positives"]
 
-            workspace.display_data.false_negatives = false_negatives
+            workspace.display_data.false_negatives = data["false_negatives"]
 
-            workspace.display_data.rand_index = rand_index
+            workspace.display_data.rand_index = data[FTR_RAND_INDEX]
 
-            workspace.display_data.adjusted_rand_index = adjusted_rand_index
+            workspace.display_data.adjusted_rand_index = data[FTR_ADJUSTED_RAND_INDEX]
 
             workspace.display_data.statistics = [
-                (FTR_F_FACTOR, f_factor),
-                (FTR_PRECISION, precision),
-                (FTR_RECALL, recall),
-                (FTR_FALSE_POS_RATE, false_positive_rate),
-                (FTR_FALSE_NEG_RATE, false_negative_rate),
-                (FTR_RAND_INDEX, rand_index),
-                (FTR_ADJUSTED_RAND_INDEX, adjusted_rand_index),
+                (FTR_F_FACTOR, data[FTR_F_FACTOR]),
+                (FTR_PRECISION, data[FTR_PRECISION]),
+                (FTR_RECALL, data[FTR_RECALL]),
+                (FTR_FALSE_POS_RATE, data[FTR_FALSE_POS_RATE]),
+                (FTR_FALSE_NEG_RATE, data[FTR_FALSE_NEG_RATE]),
+                (FTR_RAND_INDEX, data[FTR_RAND_INDEX]),
+                (FTR_ADJUSTED_RAND_INDEX, data[FTR_ADJUSTED_RAND_INDEX]),
             ]
 
             if self.wants_emd:
                 workspace.display_data.statistics.append(
-                    (FTR_EARTH_MOVERS_DISTANCE, emd)
+                    (FTR_EARTH_MOVERS_DISTANCE, data[FTR_EARTH_MOVERS_DISTANCE])
                 )
 
-    def compute_rand_index(self, test_labels, ground_truth_labels, mask):
-        """Calculate the Rand Index
-
-        http://en.wikipedia.org/wiki/Rand_index
-
-        Given a set of N elements and two partitions of that set, X and Y
-
-        A = the number of pairs of elements in S that are in the same set in
-            X and in the same set in Y
-        B = the number of pairs of elements in S that are in different sets
-            in X and different sets in Y
-        C = the number of pairs of elements in S that are in the same set in
-            X and different sets in Y
-        D = the number of pairs of elements in S that are in different sets
-            in X and the same set in Y
-
-        The rand index is:   A + B
-                             -----
-                            A+B+C+D
-
-
-        The adjusted rand index is the rand index adjusted for chance
-        so as not to penalize situations with many segmentations.
-
-        Jorge M. Santos, Mark Embrechts, "On the Use of the Adjusted Rand
-        Index as a Metric for Evaluating Supervised Classification",
-        Lecture Notes in Computer Science,
-        Springer, Vol. 5769, pp. 175-184, 2009. Eqn # 6
-
-        ExpectedIndex = best possible score
-
-        ExpectedIndex = sum(N_i choose 2) * sum(N_j choose 2)
-
-        MaxIndex = worst possible score = 1/2 (sum(N_i choose 2) + sum(N_j choose 2)) * total
-
-        A * total - ExpectedIndex
-        -------------------------
-        MaxIndex - ExpectedIndex
-
-        returns a tuple of the Rand Index and the adjusted Rand Index
-        """
-        ground_truth_labels = ground_truth_labels[mask].astype(numpy.uint32)
-        test_labels = test_labels[mask].astype(numpy.uint32)
-        if len(test_labels) > 0:
-            #
-            # Create a sparse matrix of the pixel labels in each of the sets
-            #
-            # The matrix, N(i,j) gives the counts of all of the pixels that were
-            # labeled with label I in the ground truth and label J in the
-            # test set.
-            #
-            N_ij = scipy.sparse.coo_matrix(
-                (numpy.ones(len(test_labels)), (ground_truth_labels, test_labels))
-            ).toarray()
-
-            def choose2(x):
-                """Compute # of pairs of x things = x * (x-1) / 2"""
-                return x * (x - 1) / 2
-
-            #
-            # Each cell in the matrix is a count of a grouping of pixels whose
-            # pixel pairs are in the same set in both groups. The number of
-            # pixel pairs is n * (n - 1), so A = sum(matrix * (matrix - 1))
-            #
-            A = numpy.sum(choose2(N_ij))
-            #
-            # B is the sum of pixels that were classified differently by both
-            # sets. But the easier calculation is to find A, C and D and get
-            # B by subtracting A, C and D from the N * (N - 1), the total
-            # number of pairs.
-            #
-            # For C, we take the number of pixels classified as "i" and for each
-            # "j", subtract N(i,j) from N(i) to get the number of pixels in
-            # N(i,j) that are in some other set = (N(i) - N(i,j)) * N(i,j)
-            #
-            # We do the similar calculation for D
-            #
-            N_i = numpy.sum(N_ij, 1)
-            N_j = numpy.sum(N_ij, 0)
-            C = numpy.sum((N_i[:, numpy.newaxis] - N_ij) * N_ij) / 2
-            D = numpy.sum((N_j[numpy.newaxis, :] - N_ij) * N_ij) / 2
-            total = choose2(len(test_labels))
-            # an astute observer would say, why bother computing A and B
-            # when all we need is A+B and C, D and the total can be used to do
-            # that. The calculations aren't too expensive, though, so I do them.
-            B = total - A - C - D
-            rand_index = (A + B) / total
-            #
-            # Compute adjusted Rand Index
-            #
-            expected_index = numpy.sum(choose2(N_i)) * numpy.sum(choose2(N_j))
-            max_index = (numpy.sum(choose2(N_i)) + numpy.sum(choose2(N_j))) * total / 2
-
-            adjusted_rand_index = (A * total - expected_index) / (
-                max_index - expected_index
-            )
-        else:
-            rand_index = adjusted_rand_index = numpy.nan
-        return rand_index, adjusted_rand_index
-
-    def compute_emd(self, src_objects, dest_objects):
-        """Compute the earthmovers distance between two sets of objects
-
-        src_objects - move pixels from these objects
-
-        dest_objects - move pixels to these objects
-
-        returns the earth mover's distance
-        """
-        #
-        # if either foreground set is empty, the emd is the penalty.
-        #
-        for angels, demons in (
-            (src_objects, dest_objects),
-            (dest_objects, src_objects),
-        ):
-            if angels.count == 0:
-                if self.penalize_missing:
-                    return numpy.sum(demons.areas) * self.max_distance.value
-                else:
-                    return 0
-        if self.decimation_method == DM_KMEANS:
-            isrc, jsrc = self.get_kmeans_points(src_objects, dest_objects)
-            idest, jdest = isrc, jsrc
-        else:
-            isrc, jsrc = self.get_skeleton_points(src_objects)
-            idest, jdest = self.get_skeleton_points(dest_objects)
-        src_weights, dest_weights = [
-            self.get_weights(i, j, self.get_labels_mask(objects))
-            for i, j, objects in (
-                (isrc, jsrc, src_objects),
-                (idest, jdest, dest_objects),
-            )
-        ]
-        ioff, joff = [
-            src[:, numpy.newaxis] - dest[numpy.newaxis, :]
-            for src, dest in ((isrc, idest), (jsrc, jdest))
-        ]
-        c = numpy.sqrt(ioff * ioff + joff * joff).astype(numpy.int32)
-        c[c > self.max_distance.value] = self.max_distance.value
-        extra_mass_penalty = self.max_distance.value if self.penalize_missing else 0
-        return centrosome.fastemd.emd_hat_int32(
-            src_weights.astype(numpy.int32),
-            dest_weights.astype(numpy.int32),
-            c,
-            extra_mass_penalty=extra_mass_penalty,
-        )
-
-    def get_labels_mask(self, obj):
-        labels_mask = numpy.zeros(obj.shape, bool)
-        for labels, indexes in obj.get_labels():
-            labels_mask = labels_mask | labels > 0
-        return labels_mask
-
-    def get_skeleton_points(self, obj):
-        """Get points by skeletonizing the objects and decimating"""
-        ii = []
-        jj = []
-        total_skel = numpy.zeros(obj.shape, bool)
-        for labels, indexes in obj.get_labels():
-            colors = centrosome.cpmorphology.color_labels(labels)
-            for color in range(1, numpy.max(colors) + 1):
-                labels_mask = colors == color
-                skel = centrosome.cpmorphology.skeletonize(
-                    labels_mask,
-                    ordering=scipy.ndimage.distance_transform_edt(labels_mask)
-                    * centrosome.filter.poisson_equation(labels_mask),
-                )
-                total_skel = total_skel | skel
-        n_pts = numpy.sum(total_skel)
-        if n_pts == 0:
-            return numpy.zeros(0, numpy.int32), numpy.zeros(0, numpy.int32)
-        i, j = numpy.where(total_skel)
-        if n_pts > self.max_points.value:
-            #
-            # Decimate the skeleton by finding the branchpoints in the
-            # skeleton and propagating from those.
-            #
-            markers = numpy.zeros(total_skel.shape, numpy.int32)
-            branchpoints = centrosome.cpmorphology.branchpoints(
-                total_skel
-            ) | centrosome.cpmorphology.endpoints(total_skel)
-            markers[branchpoints] = numpy.arange(numpy.sum(branchpoints)) + 1
-            #
-            # We compute the propagation distance to that point, then impose
-            # a slightly arbitrary order to get an unambiguous ordering
-            # which should number the pixels in a skeleton branch monotonically
-            #
-            ts_labels, distances = centrosome.propagate.propagate(
-                numpy.zeros(markers.shape), markers, total_skel, 1
-            )
-            order = numpy.lexsort((j, i, distances[i, j], ts_labels[i, j]))
-            #
-            # Get a linear space of self.max_points elements with bounds at
-            # 0 and len(order)-1 and use that to select the points.
-            #
-            order = order[
-                numpy.linspace(0, len(order) - 1, self.max_points.value).astype(int)
-            ]
-            return i[order], j[order]
-        return i, j
-
-    def get_kmeans_points(self, src_obj, dest_obj):
-        """Get representative points in the objects using K means
-
-        src_obj - get some of the foreground points from the source objects
-        dest_obj - get the rest of the foreground points from the destination
-                   objects
-
-        returns a vector of i coordinates of representatives and a vector
-                of j coordinates
-        """
-        from sklearn.cluster import KMeans
-
-        ijv = numpy.vstack((src_obj.ijv, dest_obj.ijv))
-        if len(ijv) <= self.max_points.value:
-            return ijv[:, 0], ijv[:, 1]
-        random_state = numpy.random.RandomState()
-        random_state.seed(ijv.astype(int).flatten())
-        kmeans = KMeans(
-            n_clusters=self.max_points.value, tol=2, random_state=random_state
-        )
-        kmeans.fit(ijv[:, :2])
-        return (
-            kmeans.cluster_centers_[:, 0].astype(numpy.uint32),
-            kmeans.cluster_centers_[:, 1].astype(numpy.uint32),
-        )
-
-    def get_weights(self, i, j, labels_mask):
-        """Return the weights to assign each i,j point
-
-        Assign each pixel in the labels mask to the nearest i,j and return
-        the number of pixels assigned to each i,j
-        """
-        #
-        # Create a mapping of chosen points to their index in the i,j array
-        #
-        total_skel = numpy.zeros(labels_mask.shape, int)
-        total_skel[i, j] = numpy.arange(1, len(i) + 1)
-        #
-        # Compute the distance from each chosen point to all others in image,
-        # return the nearest point.
-        #
-        ii, jj = scipy.ndimage.distance_transform_edt(
-            total_skel == 0, return_indices=True, return_distances=False
-        )
-        #
-        # Filter out all unmasked points
-        #
-        ii, jj = [x[labels_mask] for x in (ii, jj)]
-        if len(ii) == 0:
-            return numpy.zeros(0, numpy.int32)
-        #
-        # Use total_skel to look up the indices of the chosen points and
-        # bincount the indices.
-        #
-        result = numpy.zeros(len(i), numpy.int32)
-        bc = numpy.bincount(total_skel[ii, jj])[1:]
-        result[: len(bc)] = bc
-        return result
 
     def display(self, workspace, figure):
         """Display the image confusion matrix & statistics"""
@@ -825,7 +461,7 @@ the two images. Set this setting to “No” to assess no penalty.""",
             setting_values = setting_values + [
                 "No",  # wants_emd
                 250,  # max points
-                DM_KMEANS,  # decimation method
+                DM.KMEANS.value,  # decimation method
                 250,  # max distance
                 "No",  # penalize missing
             ]

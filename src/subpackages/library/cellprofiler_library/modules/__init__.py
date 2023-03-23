@@ -13,3 +13,4 @@ from ._morphologicalskeleton import morphologicalskeleton
 from ._medianfilter import medianfilter
 from ._reducenoise import reducenoise
 from ._watershed import watershed
+from ._measureimageoverlap import measureimageoverlap

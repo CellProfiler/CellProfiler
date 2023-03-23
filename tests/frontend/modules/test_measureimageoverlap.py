@@ -12,6 +12,7 @@ from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 
 
 import cellprofiler.modules.measureimageoverlap
+import cellprofiler_library.opts.measureimageoverlap
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
@@ -941,7 +942,7 @@ def test_decimate_skel():
     workspace, module = make_workspace(dict(image=image1), dict(image=image2))
     module.max_points._Number__minval = 1
     module.max_points.value = 5
-    module.decimation_method.value = cellprofiler.modules.measureimageoverlap.DM_SKEL
+    module.decimation_method.value = cellprofiler_library.opts.measureimageoverlap.DM.SKELETON.value
     module.run(workspace)
     emd = workspace.measurements[
         "Image",

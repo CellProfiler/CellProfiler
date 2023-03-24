@@ -1173,6 +1173,51 @@ def test_threshold_otsu3_volume():
     numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
 
 
+def test_threshold_otsu3_oblong_volume():
+    numpy.random.seed(73)
+
+    data = numpy.random.rand(5, 10, 10)
+
+    mask = numpy.zeros_like(data, dtype=bool)
+
+    mask[1:-1, 1:-1, 1:-1] = True
+
+    workspace, module = make_workspace(data, mask=mask, dimensions=3)
+
+    image = workspace.image_set.get_image(INPUT_IMAGE_NAME)
+
+    module.threshold_scope.value = cellprofiler.modules.threshold.TS_ADAPTIVE
+
+    module.local_operation.value = centrosome.threshold.TM_OTSU
+
+    module.two_class_otsu.value = cellprofiler.modules.threshold.O_THREE_CLASS
+
+    module.assign_middle_to_foreground.value = (
+        cellprofiler.modules.threshold.O_FOREGROUND
+    )
+
+    module.adaptive_window_size.value = 3
+
+    t_local, t_global, t_guide, _, _ = module.get_threshold(image, workspace)
+
+    t_guide_expected = skimage.filters.threshold_multiotsu(data[mask], nbins=128)[0]
+
+    t_local_expected = cellprofiler.library.functions.image_processing.get_adaptive_threshold(
+        data,
+        mask = mask,
+        threshold_method = "multiotsu",
+        window_size = 3,
+        volumetric = True,
+        nbins = 128,
+    )
+
+    numpy.testing.assert_almost_equal(t_guide, t_guide_expected)
+
+    assert t_local.ndim == 3
+
+    numpy.testing.assert_array_almost_equal(t_local, t_local_expected)
+
+
 def test_threshold_otsu3_image_log():
     numpy.random.seed(73)
 

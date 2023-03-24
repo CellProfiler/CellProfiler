@@ -223,9 +223,9 @@ def get_adaptive_threshold(
     if volumetric:
         # Array to store threshold values
         thresh_out = numpy.zeros(image.shape)
-        for z in range(image.shape[2]):
-            thresh_out[:, :, z] = get_adaptive_threshold(
-                image[:, :, z],
+        for z in range(image.shape[0]):
+            thresh_out[z, :, :] = get_adaptive_threshold(
+                image[z, :, :],
                 mask=None,  # Mask has already been applied
                 threshold_method=threshold_method,
                 window_size=window_size,

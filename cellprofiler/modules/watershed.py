@@ -27,7 +27,7 @@ O_INTENSITY = "Intensity"
 O_NONE = "None"
 
 default_settings = {
-    "seed_method": O_REGIONAL,
+    "seed_method": O_LOCAL,
     "max_seeds": -1,
     "min_distance": 1,
     "min_intensity": 0.0,
@@ -172,7 +172,7 @@ Select a method of inputs for the watershed algorithm:
 
         self.seed_method = Choice(
             "Select seed generation method",
-            choices=[O_REGIONAL, O_LOCAL],
+            choices=[O_LOCAL, O_REGIONAL],
             value=default_settings["seed_method"],
             doc="""\
 """

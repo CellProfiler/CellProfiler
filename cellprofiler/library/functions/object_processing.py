@@ -352,6 +352,7 @@ def watershed(
             threshold_rel=min_intensity,
             footprint=footprint,
             num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
+            exclude_border=False
         )
         seeds = numpy.zeros(seed_image.shape, dtype=bool)
         seeds[tuple(seed_coords.T)] = True

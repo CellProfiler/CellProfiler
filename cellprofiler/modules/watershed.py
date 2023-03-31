@@ -314,7 +314,7 @@ the image is not downsampled.
             doc="Sigma defines how 'smooth' the Gaussian kernel makes the image. Higher sigma means a smoother image."
         )
 
-        self.min_dist = cellprofiler_core.setting.text.Integer(
+        self.min_distance = cellprofiler_core.setting.text.Integer(
             text="Minimum distance between seeds",
             value=default_settings["min_distance"],
             minval=0,
@@ -382,7 +382,7 @@ the image is not downsampled.
             self.watershed_line,
             self.declump_method,
             self.gaussian_sigma,
-            self.min_dist,
+            self.min_distance,
             self.min_intensity,
             self.exclude_border,
             self.max_seeds,
@@ -409,7 +409,7 @@ the image is not downsampled.
                 ]
                 if self.seed_method == O_LOCAL:
                     __settings__ += [
-                        self.min_dist,
+                        self.min_distance,
                         self.min_intensity,
                         self.max_seeds,
                     ]
@@ -486,25 +486,25 @@ the image is not downsampled.
 
         y_data, seeds = watershed(
                 input_image=x_data,
-                markers_image=markers_data,
-                intensity_image=intensity_data,
                 mask=mask_data,
-                return_seeds = True,
-                method=self.watershed_method.value,
+                watershed_method=self.watershed_method.value,
                 declump_method=self.declump_method.value,
-                exclude_border=self.exclude_border.value,
-                downsample=self.downsample.value,
-                footprint=self.footprint.value,
-                structuring_element=self.structuring_element.shape,
-                structuring_element_size=self.structuring_element.size,                
                 seed_method=self.seed_method.value if self.use_advanced else default_settings["seed_method"],
+                intensity_image=intensity_data,
+                markers_image=markers_data,
                 max_seeds=self.max_seeds.value if self.use_advanced else default_settings["max_seeds"],
-                min_distance=self.min_dist.value if self.use_advanced else default_settings["min_distance"],
+                downsample=self.downsample.value,
+                min_distance=self.min_distance.value if self.use_advanced else default_settings["min_distance"],
                 min_intensity=self.min_intensity.value if self.use_advanced else default_settings["min_intensity"],
+                footprint=self.footprint.value,
                 connectivity=self.connectivity.value if self.use_advanced else default_settings["connectivity"],
                 compactness=self.compactness.value if self.use_advanced else default_settings["compactness"],
+                exclude_border=self.exclude_border.value,
                 watershed_line=self.watershed_line.value if self.use_advanced else default_settings["watershed_line"],
                 gaussian_sigma=self.gaussian_sigma.value if self.use_advanced else default_settings["gaussian_sigma"],
+                structuring_element=self.structuring_element.shape,
+                structuring_element_size=self.structuring_element.size,  
+                return_seeds=True,
                 )
 
         objects = cellprofiler_core.object.Objects()

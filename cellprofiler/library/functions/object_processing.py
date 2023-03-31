@@ -232,12 +232,12 @@ def segment_objects(labels_x, labels_y, dimensions):
 
 def watershed(
     input_image: numpy.ndarray,
-    method: Literal["distance", "intensity", "markers"] = "distance",
+    mask: numpy.ndarray = None,
+    watershed_method: Literal["distance", "intensity", "markers"] = "distance",
     declump_method: Literal["shape", "intensity"] = "shape",
     seed_method: Literal["local", "regional"] = "local",
     intensity_image: numpy.ndarray = None,
     markers_image: numpy.ndarray = None,
-    mask: numpy.ndarray = None,
     max_seeds: int = -1,
     downsample: int = 1,
     min_distance: int = 1,
@@ -258,11 +258,11 @@ def watershed(
     if not numpy.array_equal(input_image, input_image.astype(bool)):
         raise ValueError("Watershed expects a thresholded image as input")
     if (
-        method.casefold() == "intensity" or declump_method.casefold() == "intensity"
+        watershed_method.casefold() == "intensity" or declump_method.casefold() == "intensity"
     ) and intensity_image is None:
         raise ValueError(f"Intensity-based methods require an intensity image")
 
-    if method.casefold() == "markers" and markers_image is None:
+    if watershed_method.casefold() == "markers" and markers_image is None:
         raise ValueError("Markers watershed method require a markers image")
 
     # Create and check structuring element for seed dilation
@@ -305,7 +305,7 @@ def watershed(
 
     # Only calculate the distance transform if required for shape-based declumping
     # or distance-based seed generation
-    if declump_method.casefold() == "shape" or method.casefold() == "distance":
+    if declump_method.casefold() == "shape" or watershed_method.casefold() == "distance":
         smoothed_input_image = skimage.filters.gaussian(
             input_image, sigma=gaussian_sigma
         )
@@ -328,20 +328,20 @@ def watershed(
         raise ValueError(f"declump_method {declump_method} is not supported.")
 
     # Determine image from which to calculate seeds
-    if method.casefold() == "distance":
+    if watershed_method.casefold() == "distance":
         seed_image = distance
-    elif method.casefold() == "intensity":
+    elif watershed_method.casefold() == "intensity":
         seed_image = intensity_image
-    elif method.casefold() == "markers":
+    elif watershed_method.casefold() == "markers":
         # The user has provided their own seeds/markers
         seeds = markers_image
         seeds = skimage.morphology.binary_dilation(seeds, strel)
     else:
         raise NotImplementedError(
-            f"watershed method {method} is not supported"
+            f"watershed method {watershed_method} is not supported"
         )
 
-    if not method.casefold() == "markers":
+    if not watershed_method.casefold() == "markers":
         # Generate seeds
         if seed_method.casefold() == "local":
             seed_coords = skimage.feature.peak_local_max(

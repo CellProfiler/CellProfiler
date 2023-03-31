@@ -8,12 +8,12 @@ import skimage
 # Simple wrapper for the object_procceing watershed function
 def watershed(
     input_image: numpy.ndarray,
-    method: Literal["intensity", "distance", "markers"] = "distance",
-    declump_method: Literal["shape", "intensity", "none"] = "shape",
+    mask: numpy.ndarray = None,
+    watershed_method: Literal["distance", "intensity", "markers"] = "distance",
+    declump_method: Literal["shape", "intensity"] = "shape",
     seed_method: Literal["local", "regional"] = "local",
     intensity_image: numpy.ndarray = None,
     markers_image: numpy.ndarray = None,
-    mask: numpy.ndarray = None,
     max_seeds: int = -1,
     downsample: int = 1,
     min_distance: int = 1,
@@ -23,21 +23,21 @@ def watershed(
     compactness: float = 0.0,
     exclude_border: bool = False,
     watershed_line: bool = False,
-    gaussian_sigma: float = 1.0,
+    gaussian_sigma: float = 0.0,
     structuring_element: Literal[
         "ball", "cube", "diamond", "disk", "octahedron", "square", "star"
     ] = "disk",
     structuring_element_size: int = 1,
-    return_seeds: bool = True,
+    return_seeds: bool = False,
 ):
     y_data = library_watershed(
         input_image=input_image,
-        method=method,
+        mask=mask,
+        watershed_method=watershed_method,
         declump_method=declump_method,
         seed_method=seed_method,
         intensity_image=intensity_image,
         markers_image=markers_image,
-        mask=mask,
         max_seeds=max_seeds,
         downsample=downsample,
         min_distance=min_distance,

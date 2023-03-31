@@ -382,8 +382,13 @@ require volumetric structuring elements.
                         self.min_intensity,
                         self.max_seeds,
                     ]
+
+            if self.watershed_method == O_DISTANCE or self.declump_method == O_SHAPE:
+                __settings__ += [
+                    self.gaussian_sigma,
+                ]
+
             __settings__ += [
-                self.gaussian_sigma,
                 self.connectivity,
                 self.compactness,
                 self.watershed_line,

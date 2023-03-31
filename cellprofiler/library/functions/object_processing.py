@@ -233,7 +233,7 @@ def segment_objects(labels_x, labels_y, dimensions):
 def watershed(
     input_image: numpy.ndarray,
     method: Literal["distance", "intensity", "markers"] = "distance",
-    declump_method: Literal["shape", "intensity", "none"] = "shape",
+    declump_method: Literal["shape", "intensity"] = "shape",
     seed_method: Literal["local", "regional"] = "local",
     intensity_image: numpy.ndarray = None,
     markers_image: numpy.ndarray = None,
@@ -264,20 +264,6 @@ def watershed(
 
     if method.casefold() == "markers" and markers_image is None:
         raise ValueError("Markers watershed method require a markers image")
-
-    # If no declumping is requested, don't perform watershed (as in IDPrimary)
-    if declump_method.casefold() == "none":
-        # No declumping
-        if input_image.ndim > 2:
-            # Only scale x and y
-            label_footprint = numpy.ones((3, 3, 3), bool)
-        else:
-            label_footprint = numpy.ones((3, 3), bool)
-        labeled_image = scipy.ndimage.label(input_image, label_footprint)[0]
-        if return_seeds:
-            return labeled_image, numpy.zeros_like(labeled_image)
-        else:
-            return labeled_image
 
     # Create and check structuring element for seed dilation
     strel = getattr(skimage.morphology, structuring_element.casefold())(

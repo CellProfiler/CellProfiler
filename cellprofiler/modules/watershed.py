@@ -24,7 +24,6 @@ O_LOCAL = "Local"
 O_REGIONAL = "Regional"
 O_SHAPE = "Shape"
 O_INTENSITY = "Intensity"
-O_NONE = "None"
 
 default_settings = {
     "seed_method": O_LOCAL,
@@ -278,7 +277,7 @@ the image is not downsampled.
 
         self.declump_method = cellprofiler_core.setting.choice.Choice(
             text="Declump method",
-            choices=[O_SHAPE, O_INTENSITY, O_NONE],
+            choices=[O_SHAPE, O_INTENSITY],
             value=O_SHAPE,
             doc="""\
         This setting allows you to choose the method that is used to draw the

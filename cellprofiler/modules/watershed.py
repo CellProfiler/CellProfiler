@@ -1,21 +1,10 @@
 import cellprofiler_core.object
-import mahotas
-from matplotlib import image
-import numpy
-import scipy.ndimage
-import skimage.color
-import skimage.feature
-import skimage.filters
-import skimage.measure
-import skimage.segmentation
-import skimage.transform
+# from matplotlib import image
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float
-import cellprofiler.library.functions.object_processing
-
 from cellprofiler.library.modules import watershed
 
 O_DISTANCE = "Distance"
@@ -40,12 +29,42 @@ __doc__ = """
 Watershed
 =========
 
-**Watershed** is a segmentation algorithm. It is used to separate
-different objects in an image. For more information please visit
-the `scikit-image documentation`_ on the **Watershed** implementation that 
-CellProfiler uses.
+**Watershed** is used to separate different objects in an image. This works by
+'flooding' pixel intensity valleys (that is, areas of low intensity) from seed
+objects. When the water from one flooded valley meets the water from a nearby
+but different flooded valley, this is the "watershed line" and defines the
+separation between two objects.
 
-.. _skimage label: http://scikit-image.org/docs/dev/api/skimage.measure.html#label
+
+The Watershed module helps users to define what their valley and seed images
+will be. The valley image is determined by the *declump* method. For shape-based
+declumping, the inverted distance transform of the binary (black and white)
+input image will be used. If intensity based declumping is used, the inverted
+intensity will be used, meaning that areas of high pixel intensity will be set
+as the bottom of valleys.
+
+
+You can either provide your own seed objects by selecting the *Markers*
+watershed method, or have the seed objects calculated from the distance
+transform of your input image. If the *advanced mode* is enabled, you will have
+access to additional settings to tweak for determining seeds. 
+
+
+Good seed objects are essential for achieving accurate watershed segmentation.
+Too many seed objects per valley (ie. multiple seeds for one valley) leads to
+over-segmentation, whereas too few seed objects (ie. one seed object for
+multiple valleys) leads to under-segmentation.
+
+
+For more information please visit the `scikit-image documentation`_ on the
+**Watershed** implementation that CellProfiler uses.
+
+
+.. _scikit-image documentation: https://scikit-image.org/docs/stable/api/skimage.segmentation.html#skimage.segmentation.watershed
+
+
+The input image to the Watershed module must be a binary image, which can be generated using the
+**Threshold** module.
 
 |
 
@@ -55,77 +74,7 @@ Supports 2D? Supports 3D? Respects masks?
 YES          YES          YES
 ============ ============ ===============
 
-This module has two operating modes:
-
--  *{O_DISTANCE}* (default): This is classical nuclei segmentation using
-   watershed. Your “Input” image should be a binary image. Markers and other 
-   inputs for the watershed algorithm will be automatically generated.
-
-   -   **Footprint** defines dimensions of the window used to scan
-       the input image for local maximum. The footprint can be interpreted as a region,
-       window, structuring element or volume that subsamples the input image. 
-       The distance transform will create local maximum from a binary image that 
-       will be at the centers of objects. A large footprint will suppress local maximum 
-       that are close together into a single maximum, but this will require more memory 
-       and time to run. Large footprint could result in a blockier segmentation. 
-       A small footprint will preserve local maximum that are close together,
-       but this can lead to oversegmentation. If speed and memory are issues, 
-       choosing a lower footprint can be offset by downsampling the input image. 
-       See `mahotas regmax`_ for more information.
-
-   .. _mahotas regmax: http://mahotas.readthedocs.io/en/latest/api.html?highlight=regmax#mahotas.regmax
-
-   -   **Downsample** an n-dimensional image by local averaging. If the downsampling factor 
-       is 1, the image is not downsampled. To downsample more, increase the number from 1.
-
-   
--  *{O_MARKERS}*: Similar to the IdentifySecondaryObjects in 2D, use manually 
-   generated markers and supply an optional mask for watershed. Watershed works best 
-   when the “Input” image has high intensity surrounding regions of interest 
-   and low intensity inside regions of interest. 
-
-   -   **Connectivity** is the maximum number of orthogonal hops to consider 
-       a pixel/voxel as a neighbor. Accepted values are ranging from 1 
-       to the number of dimensions.
-       Two pixels are connected when they are neighbors and have the same value. 
-       In 2D, they can be neighbors either in a 1- or 2-connected sense. The value 
-       refers to the maximum number of orthogonal hops to consider a pixel/voxel a neighbor.
-       See `skimage label`_ for more information.
-
-       .. _scikit-image documentation: http://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
-       
-       Note: when using marker-based **Watershed** that it is typical to use the input 
-       binary image as the mask. Otherwise, if the mask is *None*, the background will be 
-       interpreted as an object and **Watershed** may yield unexpected results.
-       
-   -   **Compactness**, use `compact watershed`_ with given compactness parameter. 
-       Higher values result in more regularly-shaped watershed basins. 
-       
-       .. _compact watershed: http://scikit-image.org/docs/0.13.x/api/skimage.morphology.html#r395
-
-Selecting *Advanced Settings* will split the detected objects into smaller objects based on a seeded watershed method 
-that will:
-
-    - Compute the `local maxima`_ (either through the `Euclidean distance transformation`_ of the 
-      segmented objects or through the intensity values of a reference image
-
-    - Dilate the seeds as specified
-
-    - Use these seeds as markers for watershed
-
-    - NOTE: This implementation is based off of the **IdentifyPrimaryObjects** declumping implementation.
-      For more information, see the aforementioned module.
-
-    .. _Euclidean distance transformation: 
-      https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.distance_transform_edt.html
-    .. _local maxima: http://scikit-image.org/docs/dev/api/skimage.feature.html#peak-local-max 
-
-    - The Advanced Settings declumping code was originally written by Madison Bowden as the DeclumpObjects plugin.
-
-       
-""".format(
-    **{"O_DISTANCE": O_DISTANCE, "O_MARKERS": O_MARKERS}
-)
+"""
 
 
 class Watershed(ImageSegmentation):
@@ -142,28 +91,25 @@ class Watershed(ImageSegmentation):
             "Use advanced settings?",
             value=False,
             doc="""\
-        The advanced settings provide additional segmentation options to improve 
-        the separation of adjacent objects. If this option is not selected,
-        then the watershed algorithm is applied according to the basic settings. 
+The advanced settings provide additional options to improve calculation of seed
+objects. If this option is not selected, then the watershed algorithm is applied
+according to the basic settings. 
 """,
         )
 
         self.watershed_method = Choice(
             "Select watershed method",
-            choices=[O_DISTANCE, O_INTENSITY, O_MARKERS],
+            choices=[O_DISTANCE, O_MARKERS],
             value=O_DISTANCE,
             doc="""\
 Select a method of inputs for the watershed algorithm:
 
--  *{O_DISTANCE}* (default): This is classical nuclei segmentation using
-   watershed. Your “Input” image should be a binary image. Markers and other 
-   inputs for the watershed algorithm will be automatically generated.
--  *{O_MARKERS}*: Similar to the IdentifySecondaryObjects in 2D, use manually 
-   generated markers and supply an optional mask for watershed. 
-   Watershed works best when the “Input” image has high intensity 
-   surrounding regions of interest and low intensity inside
-   regions of interest. 
-   
+-  *{O_DISTANCE}* (default): This is the classical object segmentation method 
+    using watershed. Seed objects will be calculated from the distance transform
+    of the input image.
+
+-  *{O_MARKERS}*: Use this method if you have already calculated seed objects,
+    for example from the **FindMaxima** module.
 """.format(
                 **{"O_DISTANCE": O_DISTANCE, "O_MARKERS": O_MARKERS}
             ),
@@ -174,7 +120,17 @@ Select a method of inputs for the watershed algorithm:
             choices=[O_LOCAL, O_REGIONAL],
             value=default_settings["seed_method"],
             doc="""\
-"""
+-  *{O_LOCAL}*: Seed objects will be found within the footprint. One 
+    seed object will be proposed within each footprint 'window'.
+
+-  *{O_REGIONAL}*: The regional method can look for maxima slightly outside
+    of the provided footprint setting. In this scenario, it can be somewhat
+    automatic in finding seed objcets. However, *{O_LOCAL}* behaves identically
+    at higher footprint values. Furthermore, *{O_REGIONAL}* is more
+    computationally intensive to use when compared to local.
+""".format(
+                **{"O_LOCAL": O_LOCAL, "O_REGIONAL": O_REGIONAL}
+            )
         )
 
         self.display_maxima = Binary(
@@ -189,32 +145,40 @@ Select "*{YES}*" to display the seeds used for watershed.
 
         self.markers_name = ImageSubscriber(
             "Markers",
-            doc="An image marking the approximate centers of the objects for segmentation.",
+            doc="""\
+An image marking the approximate centers, aka seeds, of objects to be
+segmented.
+                """,
         )
 
         self.intensity_name = ImageSubscriber(
             "Intensity image",
-            doc="",
+            doc="""\
+Intensity image to be used for intensity-based declumping.
+
+This works best if the dividing line between objects is dimmer than the objects
+themselves.
+                """,
         )
 
         self.mask_name = ImageSubscriber(
             "Mask",
             can_be_blank=True,
-            doc="Optional. Only regions not blocked by the mask will be segmented.",
+            doc="Optional. Only regions not blocked by the mask will be labeled.",
         )
 
         self.connectivity = Integer(
             doc="""\
-Maximum number of orthogonal hops to consider a pixel/voxel as a neighbor. 
+Maximum number of orthogonal hops to consider a pixel/voxel as a neighbor.
 Accepted values are ranging from 1 to the number of dimensions.
 
-Two pixels are connected when they are neighbors and have the same value. 
-In 2D, they can be neighbors either in a 1- or 2-connected sense. The value 
-refers to the maximum number of orthogonal hops to consider a pixel/voxel a neighbor.
+Two pixels are connected when they are neighbors and have the same value. In 2D,
+they can be neighbors either in a 1- or 2-connected sense. The value refers to
+the maximum number of orthogonal hops to consider a pixel/voxel a neighbor.
 
-See `skimage label`_ for more information.
+See `skimage watershed`_ for more information.
 
-.. _skimage label: http://scikit-image.org/docs/dev/api/skimage.measure.html#label
+.. _skimage watershed: https://scikit-image.org/docs/stable/api/skimage.segmentation.html#skimage.segmentation.watershed
 """,
             minval=1,
             text="Connectivity",
@@ -226,11 +190,11 @@ See `skimage label`_ for more information.
             minval=0.0,
             value=default_settings["compactness"],
             doc="""\
-Use `compact watershed`_ with given compactness parameter. 
-Higher values result in more regularly-shaped watershed basins.
+Use `compact watershed`_ with a given compactness parameter. Higher values result
+in more regularly-shaped watershed basins.
 
 
-.. _compact watershed: http://scikit-image.org/docs/0.13.x/api/skimage.morphology.html#r395
+.. _compact watershed: https://scikit-image.org/docs/stable/api/skimage.segmentation.html#skimage.segmentation.watershed
 """,
         )
 
@@ -238,27 +202,29 @@ Higher values result in more regularly-shaped watershed basins.
             text="Separate watershed labels",
             value=default_settings["watershed_line"],
             doc="""\
-Create a 1 pixel wide line around the watershed labels. This effectively separates
-the different objects identified by the watershed algorithm, rather than allowing them 
-to touch. The line has the same label as the background.
+Create a 1 pixel wide line around the watershed labels. This effectively
+separates the different objects identified by the watershed algorithm, rather
+than allowing them to touch. The line has the same label as the background.
 """,
         )
 
         self.footprint = Integer(
             doc="""\
-The **Footprint** defines the dimensions of the window used to scan
-the input image for local maxima. The footprint can be interpreted as a
-region, window, structuring element or volume that subsamples the input
-image. The distance transform will create local maxima from a binary
-image that will be at the centers of objects. A large footprint will
-suppress local maxima that are close together into a single maxima, but this will require
-more memory and time to run. A large footprint can also result in a blockier segmentation.
-A small footprint will preserve maxima that are close together, 
-but this can lead to oversegmentation. If speed and memory are issues,
-choosing a lower connectivity can be offset by downsampling the input image. 
-See `mahotas regmax`_ for more information.
+The **Footprint** defines the dimensions of the window used to scan the input
+image for local maxima. The footprint can be interpreted as a region, window,
+structuring element or volume that subsamples the input image. The distance
+transform will create local maxima from a binary image that will be at the
+centers of objects. A large footprint will suppress local maxima that are close
+together into a single maxima, but this will require more memory and time to
+run. A large footprint can also result in a blockier segmentation. A small
+footprint will preserve maxima that are close together, but this can lead to
+oversegmentation. If speed and memory are issues, choosing a lower footprint can
+be offset by downsampling the input image. 
 
-.. _mahotas regmax: http://mahotas.readthedocs.io/en/latest/api.html?highlight=regmax#mahotas.regmax
+
+See `skimage peak_local_max`_ for more information.
+
+.. _skimage peak_local_max: https://scikit-image.org/docs/stable/api/skimage.feature.html#skimage.feature.peak_local_max
 """,
             minval=1,
             text="Footprint",
@@ -267,8 +233,11 @@ See `mahotas regmax`_ for more information.
 
         self.downsample = Integer(
             doc="""\
-Downsample an n-dimensional image by local averaging. If the downsampling factor is 1,
-the image is not downsampled.
+Downsample an n-dimensional image by local averaging. If the downsampling factor
+is 1, the image is not downsampled.
+
+Images will be resized to their original input size following watershed
+segmentation.
 """,
             minval=1,
             text="Downsample",
@@ -280,28 +249,26 @@ the image is not downsampled.
             choices=[O_SHAPE, O_INTENSITY],
             value=O_SHAPE,
             doc="""\
-        This setting allows you to choose the method that is used to draw the
-        line between segmented objects. 
+This setting allows you to choose the method that is used to draw the line
+between segmented objects. 
 
-        -  *{O_SHAPE}:* Dividing lines between clumped objects are based on
-           the shape of the clump. For example, when a clump contains two
-           objects, the dividing line will be placed where indentations occur
-           between the two objects. The intensity of the original image is
-           not necessary in this case. 
+-  *{O_SHAPE}:* Dividing lines between clumped objects are based on
+    the shape of the clump. For example, when a clump contains two objects, the
+    dividing line will be placed where indentations occur between the two
+    objects. The intensity of the original image is not necessary in this case.
+    **Technical description:** The distance transform of the segmentation is
+    used to identify local maxima as seeds (i.e. the centers of the individual
+    objects), and the seeds are then used on the inverse of that distance
+    transform to determine new segmentations via watershed.
 
-           **Technical description:** The distance transform of the segmentation 
-           is used to identify local maxima as seeds (i.e. the centers of the 
-           individual objects), and the seeds are then used on the inverse of 
-           that distance transform to determine new segmentations via watershed.
 
-        -  *{O_INTENSITY}:* Dividing lines between clumped objects are determined
-           based on the intensity of the original image. This works best if the
-           dividing line between objects is dimmer than the objects themselves.
-
-           **Technical description:** The distance transform of the segmentation 
-           is used to identify local maxima as seeds (i.e. the centers of the 
-           individual objects). Those seeds are then used as markers for a 
-           watershed on the inverted original intensity image.
+-  *{O_INTENSITY}:* Dividing lines between clumped objects are determined
+    based on the intensity of the original image. This works best if the
+    dividing line between objects is dimmer than the objects themselves.
+    **Technical description:** The distance transform of the segmentation is
+    used to identify local maxima as seeds (i.e. the centers of the individual
+    objects). Those seeds are then used as markers for a watershed on the
+    inverted original intensity image.
         """.format(**{
                 "O_SHAPE": O_SHAPE,
                 "O_INTENSITY": O_INTENSITY
@@ -311,7 +278,10 @@ the image is not downsampled.
         self.gaussian_sigma = cellprofiler_core.setting.text.Float(
             text="Segmentation distance transform smoothing factor",
             value=default_settings["gaussian_sigma"],
-            doc="Sigma defines how 'smooth' the Gaussian kernel makes the image. Higher sigma means a smoother image."
+            doc="""\
+Sigma defines how 'smooth' the Gaussian kernel makes the distance transformed
+input image. A higher sigma means a smoother image.
+"""
         )
 
         self.min_distance = cellprofiler_core.setting.text.Integer(
@@ -319,10 +289,10 @@ the image is not downsampled.
             value=default_settings["min_distance"],
             minval=0,
             doc="""\
-        Minimum number of pixels separating peaks in a region of `2 * min_distance + 1 `
-        (i.e. peaks are separated by at least min_distance). 
-        To find the maximum number of peaks, set this value to `1`. 
-        """
+Minimum number of pixels separating peaks in a region of `2 * min_distance + 1 `
+(i.e. peaks are separated by at least min_distance). To find the maximum number
+of peaks, set this value to `1`. 
+"""
         )
 
         self.min_intensity = cellprofiler_core.setting.text.Float(
@@ -330,37 +300,36 @@ the image is not downsampled.
             value=default_settings["min_intensity"],
             minval=0.,
             doc="""\
-        Minimum absolute intensity threshold for seed generation. Since this threshold is
-        applied to the distance transformed image, this defines a minimum object
-        "size". Objects smaller than this size will not contain seeds. 
+Minimum absolute intensity threshold for seed generation. Since this threshold
+is applied to the distance transformed image, this defines a minimum object
+"size". Objects smaller than this size will not contain seeds. 
 
-        By default, the absolute threshold is the minimum value of the image.
-        For distance transformed images, this value is `0` (or the background).
-        """
+By default, the absolute threshold is the minimum value of the image. For
+distance transformed images, this value is `0` (or the background).
+"""
         )
 
         self.exclude_border = Binary(
             "Discard objects touching the border of the image?",
             value=False,
-            doc="""\ 
-""",
+            doc="Clear objects connected to the image border.",
         )
 
         self.max_seeds = cellprofiler_core.setting.text.Integer(
             text="Maximum number of seeds",
             value=default_settings["max_seeds"],
             doc="""\
-        Maximum number of seeds to generate. Default is no limit. 
-        When the number of seeds exceeds this number, seeds are chosen 
-        based on largest internal distance.
+Maximum number of seeds to generate. Default is no limit, defined by `-1`. When
+the number of seeds exceeds this number, seeds are chosen based on largest
+internal distance.
         """
         )
 
         self.structuring_element = cellprofiler_core.setting.StructuringElement(
             text="Structuring element for seed dilation",
             doc="""\
-        Structuring element to use for dilating the seeds. 
-        Volumetric images will require volumetric structuring elements.
+Structuring element to use for dilating the seeds. Volumetric images will
+require volumetric structuring elements.
         """
         )
 
@@ -427,7 +396,7 @@ the image is not downsampled.
             self.declump_method,
         ]
 
-        if self.watershed_method == O_INTENSITY or self.declump_method == O_INTENSITY:
+        if self.declump_method == O_INTENSITY:
             # Provide the intensity image setting
             __settings__ += [
                 self.intensity_name
@@ -477,7 +446,7 @@ the image is not downsampled.
             mask_data = mask.pixel_data
 
         # Get the intensity image
-        if self.watershed_method == O_INTENSITY or self.declump_method.value == O_INTENSITY:
+        if self.declump_method.value == O_INTENSITY:
             # Get intensity image
             intensity_image = images.get_image(self.intensity_name.value)
             intensity_data = intensity_image.pixel_data

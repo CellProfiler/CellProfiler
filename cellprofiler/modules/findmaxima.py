@@ -161,12 +161,13 @@ maxima are within objects of interest."""
         else:
             raise NotImplementedError("Invalid background method choice")
 
-        y_data = peak_local_max(
+        maxima_coords = peak_local_max(
             x_data,
             min_distance=self.min_distance.value,
             threshold_abs=th_abs,
-            indices=False
         )
+        y_data = numpy.zeros(x_data.shape, dtype=bool)
+        y_data[tuple(maxima_coords.T)] = True
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x, convert=False)
 

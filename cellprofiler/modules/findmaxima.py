@@ -23,10 +23,11 @@ YES          YES          NO
 import numpy
 from skimage.feature import peak_local_max
 from skimage.morphology import disk, ball, dilation
+import scipy.ndimage
 
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
-from cellprofiler_core.setting import Color, Divider
+from cellprofiler_core.setting import Color, Divider, Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
 from cellprofiler_core.setting.text import Integer, Float
@@ -92,6 +93,15 @@ maxima are within objects of interest."""
             "Select the objects to search within", doc="Select the objects within which to search for peaks."
         )
 
+        self.label_maxima = Binary(
+            "Individually label maxima?",
+            value=True,
+            doc="""\
+Assign unique labels to each identified maxima. This is requried if you intend to use
+the labelled maxima as markers in the *Watershed* module.
+            """
+        )
+
         self.maxima_color = Color(
             "Select maxima preview color",
             "Red",
@@ -118,7 +128,7 @@ maxima are within objects of interest."""
     def visible_settings(self):
         __settings__ = super(FindMaxima, self).visible_settings()
 
-        result = __settings__ + [self.min_distance, self.exclude_mode]
+        result = __settings__ + [self.label_maxima, self.min_distance, self.exclude_mode]
 
         if self.exclude_mode == MODE_THRESHOLD:
             result.append(self.min_intensity)
@@ -168,6 +178,9 @@ maxima are within objects of interest."""
         )
         y_data = numpy.zeros(x_data.shape, dtype=bool)
         y_data[tuple(maxima_coords.T)] = True
+
+        if self.label_maxima:
+            y_data = scipy.ndimage.label(y_data)[0]
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x, convert=False)
 

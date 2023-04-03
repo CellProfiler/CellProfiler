@@ -117,7 +117,6 @@ the labelled maxima as markers in the *Watershed* module.
                 "You may want to increase this when working with large images.",
         )
 
-        self.spacer = Divider(line=True)
 
     def settings(self):
         __settings__ = super(FindMaxima, self).settings()
@@ -137,7 +136,10 @@ the labelled maxima as markers in the *Watershed* module.
         elif self.exclude_mode == MODE_OBJECTS:
             result.append(self.mask_objects)
 
-        result += [self.spacer, self.maxima_color, self.maxima_size]
+        result.append(self.maxima_size)
+
+        if not self.label_maxima:
+            result.append(self.maxima_color)
 
         return result
 
@@ -209,10 +211,6 @@ the labelled maxima as markers in the *Watershed* module.
         ax = figure.subplot_imshow_grayscale(0, 0, image, title)
         figure.subplot_imshow_grayscale(1, 0, maxima_image, self.y_name.value, sharexy=ax)
 
-        # Generate static colormap for alpha overlay
-        from matplotlib.colors import ListedColormap
-
-        cmap = ListedColormap(self.maxima_color.value)
         if self.maxima_size.value > 1:
             if dimensions == 2:
                 strel = disk(self.maxima_size.value - 1)
@@ -222,9 +220,20 @@ the labelled maxima as markers in the *Watershed* module.
         else:
             labels = maxima_image
 
-        figure.subplot_imshow_labels(
-            0, 1, labels, "Detected maxima", sharexy=ax, colormap=cmap
-        )
+        if not self.label_maxima:
+            # Generate static colormap
+            from matplotlib.colors import ListedColormap
+
+            cmap = ListedColormap(self.maxima_color.value)
+
+            figure.subplot_imshow_labels(
+                0, 1, labels, "Detected maxima", sharexy=ax, colormap=cmap
+            )
+        else:
+            figure.subplot_imshow_labels(
+                0, 1, labels, "Detected maxima", sharexy=ax
+            )
+
 
     def update_settings(self, settings):
         return settings

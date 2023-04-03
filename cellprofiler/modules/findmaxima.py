@@ -193,8 +193,6 @@ the labelled maxima as markers in the *Watershed* module.
 
             workspace.display_data.dimensions = dimensions
 
-            workspace.display_data.overlay_base = x_data
-
     def display(self, workspace, figure, cmap=None):
         """Display the image and labeling"""
         layout = (2, 2)
@@ -207,7 +205,6 @@ the labelled maxima as markers in the *Watershed* module.
         title = "Input image, cycle #%d" % (workspace.measurements.image_number,)
         image = workspace.display_data.x_data
         maxima_image = workspace.display_data.y_data.astype(int)
-        overlay_base = workspace.display_data.overlay_base
 
         ax = figure.subplot_imshow_grayscale(0, 0, image, title)
         figure.subplot_imshow_grayscale(1, 0, maxima_image, self.y_name.value, sharexy=ax)
@@ -225,11 +222,8 @@ the labelled maxima as markers in the *Watershed* module.
         else:
             labels = maxima_image
 
-        overlay_display = overlay_labels(overlay_base, labels, opacity=numpy.max(overlay_base))
-        
-        title = "Overlay"
-        figure.subplot_imshow_grayscale(
-            0, 1, overlay_display, title, colormap=None, sharexy=ax
+        figure.subplot_imshow_labels(
+            0, 1, labels, "Detected maxima", sharexy=ax, colormap=cmap
         )
 
     def update_settings(self, settings):

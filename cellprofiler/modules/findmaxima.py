@@ -27,7 +27,7 @@ import scipy.ndimage
 
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
-from cellprofiler_core.setting import Color, Divider, Binary
+from cellprofiler_core.setting import Color, Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
 from cellprofiler_core.setting.text import Integer, Float

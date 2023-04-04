@@ -1,5 +1,5 @@
 import cellprofiler_core.object
-# from matplotlib import image
+import skimage
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
@@ -44,10 +44,14 @@ intensity will be used, meaning that areas of high pixel intensity will be set
 as the bottom of valleys.
 
 
-You can either provide your own seed objects by selecting the *Markers*
-watershed method, or have the seed objects calculated from the distance
-transform of your input image. If the *advanced mode* is enabled, you will have
-access to additional settings to tweak for determining seeds. 
+Seed objects can be calculated from the distance transform of your input binary
+image by selecting the *Distance* method. This method will calculate seed
+objects for pixels that are distant from the background (black pixels), which
+are typically the centers of nuclei. You can also provide your own seed objects
+by selecting the *Markers* watershed method. Alternatively, you can select the
+*Intensity* watershed method, which will set pixel intensity maxima as seed
+objects. If the *advanced mode* is enabled, you will have access to additional
+settings to tweak for determining seeds. 
 
 
 Good seed objects are essential for achieving accurate watershed segmentation.
@@ -99,7 +103,7 @@ according to the basic settings.
 
         self.watershed_method = Choice(
             "Select watershed method",
-            choices=[O_DISTANCE, O_MARKERS],
+            choices=[O_DISTANCE, O_MARKERS, O_INTENSITY],
             value=O_DISTANCE,
             doc="""\
 Select a method of inputs for the watershed algorithm:
@@ -110,8 +114,15 @@ Select a method of inputs for the watershed algorithm:
 
 -  *{O_MARKERS}*: Use this method if you have already calculated seed objects,
     for example from the **FindMaxima** module.
+
+- *{O_INTENSITY}*: Use this method to calculate seeds based on intensity maxima
+  of the provided intensity image.
 """.format(
-                **{"O_DISTANCE": O_DISTANCE, "O_MARKERS": O_MARKERS}
+                **{
+                    "O_DISTANCE": O_DISTANCE, 
+                    "O_MARKERS": O_MARKERS, 
+                    "O_INTENSITY": O_INTENSITY
+                }
             ),
         )
 
@@ -154,10 +165,12 @@ segmented.
         self.intensity_name = ImageSubscriber(
             "Intensity image",
             doc="""\
-Intensity image to be used for intensity-based declumping.
+Intensity image to be used for finding intensity-based seed objects and/or
+declumping.
 
-This works best if the dividing line between objects is dimmer than the objects
-themselves.
+If provided, the same intensity image can be used for both finding maxima and
+finding dividing lines between clumped objects. This works best if the dividing
+line between objects is dimmer than the objects themselves.
                 """,
         )
 
@@ -401,12 +414,12 @@ require volumetric structuring elements.
             self.declump_method,
         ]
 
-        if self.declump_method == O_INTENSITY:
+        if self.watershed_method == O_INTENSITY or self.declump_method == O_INTENSITY:
             # Provide the intensity image setting
             __settings__ += [
                 self.intensity_name
             ]
-        
+
         __settings__ += [
             self.structuring_element,
             ]
@@ -451,8 +464,7 @@ require volumetric structuring elements.
             mask_data = mask.pixel_data
 
         # Get the intensity image
-        if self.declump_method.value == O_INTENSITY:
-            # Get intensity image
+        if self.watershed_method == O_INTENSITY or self.declump_method == O_INTENSITY:
             intensity_image = images.get_image(self.intensity_name.value)
             intensity_data = intensity_image.pixel_data
             if intensity_image.multichannel:

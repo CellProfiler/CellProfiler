@@ -233,7 +233,7 @@ def segment_objects(labels_x, labels_y, dimensions):
 def watershed(
     input_image: numpy.ndarray,
     mask: numpy.ndarray = None,
-    watershed_method: Literal["distance", "markers"] = "distance",
+    watershed_method: Literal["distance", "markers", "intensity"] = "distance",
     declump_method: Literal["shape", "intensity"] = "shape",
     seed_method: Literal["local", "regional"] = "local",
     intensity_image: numpy.ndarray = None,
@@ -257,8 +257,10 @@ def watershed(
     # Check inputs
     if not numpy.array_equal(input_image, input_image.astype(bool)):
         raise ValueError("Watershed expects a thresholded image as input")
-    if declump_method.casefold() == "intensity" and intensity_image is None:
-        raise ValueError(f"Intensity-based declumping methods requires an intensity image")
+    if (
+        watershed_method.casefold() == "intensity" or declump_method.casefold() == "intensity"
+    ) and intensity_image is None:
+        raise ValueError(f"Intensity-based methods require an intensity image")
 
     if watershed_method.casefold() == "markers" and markers_image is None:
         raise ValueError("Markers watershed method require a markers image")
@@ -325,8 +327,11 @@ def watershed(
     else:
         raise ValueError(f"declump_method {declump_method} is not supported.")
 
+    # Determine image from which to calculate seeds
     if watershed_method.casefold() == "distance":
         seed_image = distance
+    elif watershed_method.casefold() == "intensity":
+        seed_image = intensity_image
     elif watershed_method.casefold() == "markers":
         # The user has provided their own seeds/markers
         seeds = markers_image

@@ -141,7 +141,7 @@ def test_run_distance_declump_intensity(
 
     actual = workspace.get_objects("watershed")
 
-    # Generate expect output
+    # Generate expected output
     input_shape = input_image.shape
     if input_image.ndim > 2:
         # Only scale x and y
@@ -245,7 +245,7 @@ def test_run_distance_declump_shape(
 
     actual = workspace.get_objects("watershed")
 
-    # Generate expect output
+    # Generate expected output
     input_shape = input_image.shape
     if input_image.ndim > 2:
         # Only scale x and y
@@ -363,7 +363,7 @@ def test_run_markers_declump_shape(
 
     actual = workspace.get_objects("watershed")
 
-    # Generate expect output
+    # Generate expected output
     input_shape = input_image.shape
     if input_image.ndim > 2:
         # Only scale x and y
@@ -479,7 +479,7 @@ def test_run_markers_declump_intensity(
 
     actual = workspace.get_objects("watershed")
 
-    # Generate expect output
+    # Generate expected output
     input_shape = input_image.shape
     if input_image.ndim > 2:
         # Only scale x and y
@@ -601,6 +601,106 @@ def test_non_advanced(
         connectivity=1,
         compactness=0.0,
         watershed_line=False,
+    )
+
+    numpy.testing.assert_array_equal(actual.segmented, expected)
+
+
+def test_run_intensity_declump_shape(
+    image,
+    module,
+    image_set,
+    workspace,
+    maxima_method,
+):
+    module.use_advanced.value = True
+
+    module.watershed_method.value = "Intensity"
+
+    module.declump_method.value = "Shape"
+
+    module.x_name.value = "input_image"
+
+    module.y_name.value = "watershed"
+
+    module.intensity_name.value = "intensity"
+
+    module.seed_method.value = maxima_method
+
+    if image.dimensions == 3:
+        module.structuring_element.value = "Ball,1"
+        structuring_element = "Ball"
+        structuring_element_size = 1
+    else:
+        module.structuring_element.value = "Disk,1"
+        structuring_element = "Disk"
+        structuring_element_size = 1
+
+    if image.multichannel:
+        image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
+
+    # Create an intensity image that is similar to the input
+    intensity_image = skimage.filters.rank.median(image.pixel_data)
+
+    image_set.add(
+        "intensity",
+        cellprofiler_core.image.Image(
+            image=intensity_image, convert=False, dimensions=image.dimensions
+        ),
+    )
+
+    # Watershed requires a thresholded input
+    input_image = image.pixel_data > skimage.filters.threshold_otsu(image.pixel_data)
+
+    image_set.add(
+        "input_image",
+        cellprofiler_core.image.Image(
+            image=input_image, convert=False, dimensions=image.dimensions
+        ),
+    )
+
+    module.run(workspace)
+
+    actual = workspace.get_objects("watershed")
+
+    # Generate expected output
+    footprint = 8
+
+    if input_image.ndim == 3:
+        maxima_footprint = numpy.ones((footprint, footprint, footprint))
+    else:
+        maxima_footprint = numpy.ones((footprint, footprint))
+
+    # Shape based declumping, so input image to watershed is the distance transform
+    distance = scipy.ndimage.distance_transform_edt(input_image)
+    watershed_input_image = 1 - distance
+
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+    if maxima_method.casefold() == "local":
+        seed_coords = skimage.feature.peak_local_max(
+            intensity_image,
+            min_distance=1,
+            threshold_rel=0,
+            footprint=maxima_footprint,
+            num_peaks=numpy.inf,
+            exclude_border=False
+        )
+        seeds = numpy.zeros(intensity_image.shape, dtype=bool)
+        seeds[tuple(seed_coords.T)] = True
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.label(seeds)[0]
+
+    elif maxima_method.casefold() == "regional":
+        seeds = mahotas.regmax(intensity_image, maxima_footprint)
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+        seeds = scipy.ndimage.label(seeds)[0]
+
+    expected = skimage.segmentation.watershed(
+        watershed_input_image,
+        markers=seeds,
+        mask=input_image != 0,
     )
 
     numpy.testing.assert_array_equal(actual.segmented, expected)

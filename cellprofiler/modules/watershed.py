@@ -310,16 +310,12 @@ of peaks, set this value to `1`.
         )
 
         self.min_intensity = cellprofiler_core.setting.text.Float(
-            text="Minimum absolute internal distance",
+            text="Specify the minimum intensity of a peak",
             value=default_settings["min_intensity"],
             minval=0.,
             doc="""\
-Minimum absolute intensity threshold for seed generation. Since this threshold
-is applied to the distance transformed image, this defines a minimum object
-"size". Objects smaller than this size will not contain seeds. 
-
-By default, the absolute threshold is the minimum value of the image. For
-distance transformed images, this value is `0` (or the background).
+Intensity peaks below this threshold value will be excluded. Use this to ensure
+that your local maxima are within objects of interest.
 """
         )
 

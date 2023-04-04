@@ -704,3 +704,39 @@ def test_run_intensity_declump_shape(
     )
 
     numpy.testing.assert_array_equal(actual.segmented, expected)
+
+
+def test_declump_none(
+    image,
+    module,
+    image_set,
+    workspace,
+):
+    module.use_advanced.value = True
+
+    module.declump_method.value = "None"
+
+    module.x_name.value = "input_image"
+
+    module.y_name.value = "watershed"
+
+    if image.multichannel:
+        image.pixel_data = skimage.color.rgb2gray(image.pixel_data)
+
+    # Watershed requires a thresholded input
+    input_image = image.pixel_data > skimage.filters.threshold_otsu(image.pixel_data)
+
+    image_set.add(
+        "input_image",
+        cellprofiler_core.image.Image(
+            image=input_image, convert=False, dimensions=image.dimensions
+        ),
+    )
+
+    module.run(workspace)
+
+    actual = workspace.get_objects("watershed")
+
+    expected = scipy.ndimage.label(input_image)[0]
+
+    numpy.testing.assert_array_equal(actual.segmented, expected)

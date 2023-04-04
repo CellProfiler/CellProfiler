@@ -234,7 +234,7 @@ def watershed(
     input_image: numpy.ndarray,
     mask: numpy.ndarray = None,
     watershed_method: Literal["distance", "markers", "intensity"] = "distance",
-    declump_method: Literal["shape", "intensity"] = "shape",
+    declump_method: Literal["shape", "intensity", "none"] = "shape",
     seed_method: Literal["local", "regional"] = "local",
     intensity_image: numpy.ndarray = None,
     markers_image: numpy.ndarray = None,
@@ -264,6 +264,16 @@ def watershed(
 
     if watershed_method.casefold() == "markers" and markers_image is None:
         raise ValueError("Markers watershed method require a markers image")
+
+    # No declumping, so just label the binary input image
+    if declump_method.casefold() == "none":
+        if mask is not None:
+            input_image[~mask] = 0
+        watershed_image = scipy.ndimage.label(input_image)[0]
+        if return_seeds:
+            return watershed_image, numpy.zeros_like(watershed_image, bool)
+        else:
+            return watershed_image
 
     # Create and check structuring element for seed dilation
     strel = getattr(skimage.morphology, structuring_element.casefold())(

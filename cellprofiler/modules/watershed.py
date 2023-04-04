@@ -13,6 +13,7 @@ O_LOCAL = "Local"
 O_REGIONAL = "Regional"
 O_SHAPE = "Shape"
 O_INTENSITY = "Intensity"
+O_NONE = "None"
 
 default_settings = {
     "seed_method": O_LOCAL,
@@ -259,7 +260,7 @@ segmentation.
 
         self.declump_method = cellprofiler_core.setting.choice.Choice(
             text="Declump method",
-            choices=[O_SHAPE, O_INTENSITY],
+            choices=[O_SHAPE, O_INTENSITY, O_NONE],
             value=O_SHAPE,
             doc="""\
 This setting allows you to choose the method that is used to draw the line
@@ -374,6 +375,15 @@ require volumetric structuring elements.
     def visible_settings(self):
         __settings__ = [self.use_advanced]
         __settings__ += super(Watershed, self).visible_settings()
+        # If no declumping, there's no reason to offer watershed options
+        if self.declump_method == O_NONE:
+            __settings__.pop(0) # Remove the advanced option
+            __settings__ += [
+                self.mask_name,
+                self.declump_method
+                ]
+            return __settings__
+
         __settings__ += [
             self.mask_name,
             self.watershed_method,   
@@ -510,17 +520,19 @@ require volumetric structuring elements.
             workspace.display_data.y_data = y_data
             workspace.display_data.y_data_name = self.y_name.value
 
-            # Find object boundaries and combine with seeds
-            object_outlines = skimage.segmentation.find_boundaries(y_data, mode="inner")
-            outlines_and_seeds = seeds + object_outlines
-            # Colour the boundaries based on the object label from y_data and mask out background
-            workspace.display_data.outlines_and_seeds = (outlines_and_seeds > 0) * y_data
+            # If declumping is None then maxima are not calculated
+            if self.display_maxima and not self.declump_method == O_NONE:
+                # Find object boundaries and combine with seeds
+                object_outlines = skimage.segmentation.find_boundaries(y_data, mode="inner")
+                outlines_and_seeds = seeds + object_outlines
+                # Colour the boundaries based on the object label from y_data and mask out background
+                workspace.display_data.outlines_and_seeds = (outlines_and_seeds > 0) * y_data
 
             workspace.display_data.dimensions = dimensions
 
     def display(self, workspace, figure):
         if self.show_window:
-            if self.display_maxima:
+            if self.display_maxima and not self.declump_method == O_NONE:
                 subplots = (2, 2)
             else:
                 subplots = (2, 1)
@@ -543,7 +555,7 @@ require volumetric structuring elements.
                 sharexy=ax,
                 colormap=cmap,
             )
-            if self.display_maxima:
+            if self.display_maxima and not self.declump_method == O_NONE:
                 figure.subplot_imshow_labels(
                     0,
                     1,

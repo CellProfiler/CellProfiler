@@ -43,7 +43,7 @@ class FindMaxima(ImageProcessing):
 
     module_name = "FindMaxima"
 
-    variable_revision_number = 1
+    variable_revision_number = 2
 
     def create_settings(self):
         super(FindMaxima, self).create_settings()
@@ -126,6 +126,7 @@ images.
         __settings__ = super(FindMaxima, self).settings()
 
         return __settings__ + [
+            self.label_maxima,
             self.min_distance,
             self.exclude_mode,
             self.min_intensity,
@@ -217,11 +218,11 @@ images.
 
         title = "Input image, cycle #%d" % (workspace.measurements.image_number,)
         image = workspace.display_data.x_data
-        maxima_image = workspace.display_data.y_data.astype(int)
+        maxima_image = workspace.display_data.y_data.astype(int) 
 
         ax = figure.subplot_imshow_grayscale(0, 0, image, title)
         figure.subplot_imshow_grayscale(
-            1, 0, maxima_image, self.y_name.value, sharexy=ax
+            1, 0, maxima_image > 0, self.y_name.value, sharexy=ax
         )
 
         if self.maxima_size.value > 1:
@@ -245,8 +246,14 @@ images.
         else:
             figure.subplot_imshow_labels(0, 1, labels, "Detected maxima", sharexy=ax)
 
-    def update_settings(self, settings):
-        return settings
+    def upgrade_settings(self, setting_values, variable_revision_number, module_name):
+        if variable_revision_number == 1:
+            # label_maxima setting added
+            settings = setting_values[:2]
+            settings += [False] # Set label_maxima as False
+            settings += setting_values[2:]
+            variable_revision_number = 2
+        return settings, variable_revision_number
 
     def volumetric(self):
         return True

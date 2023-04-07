@@ -20,7 +20,8 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 from cellprofiler.modules import _help, threshold
 
-from cellprofiler.library.functions.object_processing import get_maxima, smooth_image, filter_on_size, filter_on_border, separate_neighboring_objects
+# from cellprofiler.library.functions.object_processing import get_maxima, smooth_image, filter_on_size, filter_on_border, separate_neighboring_objects
+from cellprofiler.library.modules import identifyprimaryobjects
 
 __doc__ = """\
 IdentifyPrimaryObjects
@@ -1071,164 +1072,241 @@ If "*{NO}*" is selected, the following settings are used:
     def basic(self):
         return not self.advanced
 
+    def convert_setting(self, gui_setting_str):
+        """
+        Convert GUI setting strings to something cellprofiler
+        library compatible. That is, remove spaces and hyphens.
+        """
+        rep_list = ((" ", "_"), ("-", "_"))
+        converted_str = gui_setting_str
+        for replacement in rep_list:
+            converted_str = converted_str.replace(*replacement)
+        return converted_str
+
     def run(self, workspace):
         workspace.display_data.statistics = []
         input_image = workspace.image_set.get_image(
             self.x_name.value, must_be_grayscale=True
         )
 
-        final_threshold, orig_threshold, guide_threshold, binary_image, sigma = self.threshold.get_threshold(
-            input_image, workspace, automatic=self.basic
-        )
+        # Define the non-advanced settings:
+        non_advanced_settings = {
+            fill_holes_method: "thresholding", # After both thresholding and declumping
+            threshold_smoothing: 1,
+            log_transform: False,
+            threshold_scope: "global",
+            threshold_method: "minimum_cross_entropy",
+        }
 
-        self.threshold.add_threshold_measurements(
-            self.y_name.value,
-            workspace.measurements,
-            final_threshold,
-            orig_threshold,
-            guide_threshold,
-        )
-
-        self.threshold.add_fg_bg_measurements(
-            self.y_name.value, workspace.measurements, input_image, binary_image
-        )
-
-        global_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
-
-        #
-        # Fill background holes inside foreground objects
-        #
-        def size_fn(size, is_foreground):
-            return size < self.size_range.max * self.size_range.max
-
-        if self.basic or self.fill_holes.value == FH_THRESHOLDING:
-            binary_image = centrosome.cpmorphology.fill_labeled_holes(
-                binary_image, size_fn=size_fn
+        if self.threshold_operation == TM_MANUAL:
+            predefined_threshold=self.manual_threshold.value,
+        elif self.threshold_operation == TM_MEASUREMENT:
+            predefined_threshold = float(
+                workspace.measurements.get_current_image_measurement(
+                    self.thresholding_measurement.value
+                )
             )
+        else:
+            predefined_threshold = None
+    
+        if self.threshold.threshold_scope == "Global":
+            if self.threshold.global_operation == "Otsu" and self.threshold.two_class_otsu == "Three classes":
+                threshold_method = "multiotsu"
+            else:
+                threshold_method = self.convert_setting(self.threshold.global_operation.value)
+        elif self.threshold.threshold_scope == "Adaptive":
+            if self.threshold.local_operation == "Otsu" and self.threshold.two_class_otsu == "Three classes":
+                threshold_method = "multiotsu"
+            else:
+                threshold_method = self.convert_setting(self.threshold.local_operation.value)
 
-        labeled_image, object_count = scipy.ndimage.label(
-            binary_image, numpy.ones((3, 3), bool)
-        )
-
-        (
-            labeled_image,
-            object_count,
-            maxima_suppression_size,
-        ) = separate_neighboring_objects(
+        labeled_image = identifyprimaryobjects(
             input_image.pixel_data,
-            labeled_image,
             mask=input_image.mask,
+            threshold_method=threshold_method,
+            threshold_scope=self.threshold.threshold_scope.value,
+            assign_middle_to_foreground=self.threshold.assign_middle_to_foreground.value,
+            log_transform=self.threshold.log_transform.value,
+            threshold_correction_factor=self.threshold.threshold_correction_factor.value,
+            threshold_min=self.threshold.threshold_range.min,
+            threshold_max=self.threshold.threshold_range.max,
+            window_size=self.threshold.adaptive_window_size.value,
+            threshold_smoothing=self.threshold.threshold_smoothing_scale.value,
+            lower_outlier_fraction=self.threshold.lower_outlier_fraction.value,
+            upper_outlier_fraction=self.threshold.upper_outlier_fraction.value,
+            averaging_method=self.threshold.averaging_method.value,
+            variance_method=self.convert_setting(self.threshold.variance_method.value),
+            number_of_deviations=self.threshold.number_of_deviations.value,
+            volumetric=False, # IDPrimary does not support volumetric images
+            exclude_size=self.exclude_size.value,
+            min_size=self.size_range.min,
+            max_size=self.size_range.max,
+            exclude_border=self.exclude_border_objects.value,
             unclump_method=self.unclump_method.value,
             watershed_method=self.watershed_method.value,
-            fill_holes=self.fill_holes.value,
-            filter_size=self.calc_smoothing_filter_size(),
-            min_size=self.size_range.min, 
-            max_size=self.size_range.max,
+            fill_holes_method=self.fill_holes.value,
+            declump_smoothing=self.smoothing_filter_size.value,
             low_res_maxima=self.low_res_maxima.value,
             maxima_suppression_size=self.maxima_suppression_size.value,
             automatic_suppression=self.automatic_suppression.value,
-            return_count_and_suppression_size=True
-            )
-
-        unedited_labels = labeled_image.copy()
-
-        # Filter out objects touching the border or mask
-        border_excluded_labeled_image = labeled_image.copy()
-        labeled_image = filter_on_border(labeled_image, input_image.mask)
-        border_excluded_labeled_image[labeled_image > 0] = 0
-
-        # Filter out small and large objects
-        size_excluded_labeled_image = labeled_image.copy()
-
-        if self.exclude_size.value:
-            labeled_image, small_removed_labels = filter_on_size(
-                labeled_image, self.size_range.min, self.size_range.max, return_only_small=True
-            )
-        else:
-            labeled_image, small_removed_labels = labeled_image, labeled_image.copy()
-        
-        
-        size_excluded_labeled_image[labeled_image > 0] = 0
-
-        #
-        # Fill holes again after watershed
-        #
-        if self.basic or self.fill_holes != FH_NEVER:
-            labeled_image = centrosome.cpmorphology.fill_labeled_holes(labeled_image)
-
-        # Relabel the image
-        labeled_image, object_count = centrosome.cpmorphology.relabel(labeled_image)
-
-        if self.advanced and self.limit_choice.value == LIMIT_ERASE:
-            if object_count > self.maximum_object_count.value:
-                labeled_image = numpy.zeros(labeled_image.shape, int)
-                border_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
-                size_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
-                object_count = 0
-
-        # Make an outline image
-        outline_image = centrosome.outline.outline(labeled_image)
-        outline_size_excluded_image = centrosome.outline.outline(
-            size_excluded_labeled_image
-        )
-        outline_border_excluded_image = centrosome.outline.outline(
-            border_excluded_labeled_image
+            maximum_object_count=self.maximum_object_count.value,
+            predefined_threshold=predefined_threshold,
+            return_count_and_suppression_size=True,
+            reutrn_cp_display=True
         )
 
-        if self.show_window:
-            statistics = workspace.display_data.statistics
-            statistics.append(["# of accepted objects", "%d" % object_count])
-            if object_count > 0:
-                areas = scipy.ndimage.sum(
-                    numpy.ones(labeled_image.shape),
-                    labeled_image,
-                    numpy.arange(1, object_count + 1),
-                )
-                areas.sort()
-                low_diameter = (
-                    math.sqrt(float(areas[object_count // 10]) / numpy.pi) * 2
-                )
-                median_diameter = (
-                    math.sqrt(float(areas[object_count // 2]) / numpy.pi) * 2
-                )
-                high_diameter = (
-                    math.sqrt(float(areas[object_count * 9 // 10]) / numpy.pi) * 2
-                )
-                statistics.append(
-                    ["10th pctile diameter", "%.1f pixels" % low_diameter]
-                )
-                statistics.append(["Median diameter", "%.1f pixels" % median_diameter])
-                statistics.append(
-                    ["90th pctile diameter", "%.1f pixels" % high_diameter]
-                )
-                object_area = numpy.sum(areas)
-                total_area = numpy.product(labeled_image.shape[:2])
-                statistics.append(
-                    [
-                        "Area covered by objects",
-                        "%.1f %%" % (100.0 * float(object_area) / float(total_area)),
-                    ]
-                )
-                statistics.append(["Thresholding filter size", "%.1f" % sigma])
-                statistics.append(["Threshold", "%0.3g" % global_threshold])
-                if self.basic or self.unclump_method != UN_NONE:
-                    statistics.append(
-                        [
-                            "Declumping smoothing filter size",
-                            "%.1f" % (self.calc_smoothing_filter_size()),
-                        ]
-                    )
-                    statistics.append(
-                        ["Maxima suppression size", "%.1f" % maxima_suppression_size]
-                    )
-            else:
-                statistics.append(["Threshold", "%0.3g" % global_threshold])
-            workspace.display_data.image = input_image.pixel_data
-            workspace.display_data.labeled_image = labeled_image
-            workspace.display_data.size_excluded_labels = size_excluded_labeled_image
-            workspace.display_data.border_excluded_labels = (
-                border_excluded_labeled_image
-            )
+        # final_threshold, orig_threshold, guide_threshold, binary_image, sigma = self.threshold.get_threshold(
+        #     input_image, workspace, automatic=self.basic
+        # )
+
+        # self.threshold.add_threshold_measurements(
+        #     self.y_name.value,
+        #     workspace.measurements,
+        #     final_threshold,
+        #     orig_threshold,
+        #     guide_threshold,
+        # )
+
+        # self.threshold.add_fg_bg_measurements(
+        #     self.y_name.value, workspace.measurements, input_image, binary_image
+        # )
+
+        # global_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
+
+        # #
+        # # Fill background holes inside foreground objects
+        # #
+        # def size_fn(size, is_foreground):
+        #     return size < self.size_range.max * self.size_range.max
+
+        # if self.basic or self.fill_holes.value == FH_THRESHOLDING:
+        #     binary_image = centrosome.cpmorphology.fill_labeled_holes(
+        #         binary_image, size_fn=size_fn
+        #     )
+
+        # labeled_image, object_count = scipy.ndimage.label(
+        #     binary_image, numpy.ones((3, 3), bool)
+        # )
+
+        # (
+        #     labeled_image,
+        #     object_count,
+        #     maxima_suppression_size,
+        # ) = separate_neighboring_objects(
+        #     input_image.pixel_data,
+        #     labeled_image,
+        #     mask=input_image.mask,
+        #     unclump_method=self.unclump_method.value,
+        #     watershed_method=self.watershed_method.value,
+        #     fill_holes=self.fill_holes.value,
+        #     filter_size=self.calc_smoothing_filter_size(),
+        #     min_size=self.size_range.min, 
+        #     max_size=self.size_range.max,
+        #     low_res_maxima=self.low_res_maxima.value,
+        #     maxima_suppression_size=self.maxima_suppression_size.value,
+        #     automatic_suppression=self.automatic_suppression.value,
+        #     return_count_and_suppression_size=True
+        #     )
+
+        # unedited_labels = labeled_image.copy()
+
+        # # Filter out objects touching the border or mask
+        # border_excluded_labeled_image = labeled_image.copy()
+        # labeled_image = filter_on_border(labeled_image, input_image.mask)
+        # border_excluded_labeled_image[labeled_image > 0] = 0
+
+        # # Filter out small and large objects
+        # size_excluded_labeled_image = labeled_image.copy()
+
+        # if self.exclude_size.value:
+        #     labeled_image, small_removed_labels = filter_on_size(
+        #         labeled_image, self.size_range.min, self.size_range.max, return_only_small=True
+        #     )
+        # else:
+        #     labeled_image, small_removed_labels = labeled_image, labeled_image.copy()
+        
+        
+        # size_excluded_labeled_image[labeled_image > 0] = 0
+
+        # #
+        # # Fill holes again after watershed
+        # #
+        # if self.basic or self.fill_holes != FH_NEVER:
+        #     labeled_image = centrosome.cpmorphology.fill_labeled_holes(labeled_image)
+
+        # # Relabel the image
+        # labeled_image, object_count = centrosome.cpmorphology.relabel(labeled_image)
+
+        # if self.advanced and self.limit_choice.value == LIMIT_ERASE:
+        #     if object_count > self.maximum_object_count.value:
+        #         labeled_image = numpy.zeros(labeled_image.shape, int)
+        #         border_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
+        #         size_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
+        #         object_count = 0
+
+        # # Make an outline image
+        # outline_image = centrosome.outline.outline(labeled_image)
+        # outline_size_excluded_image = centrosome.outline.outline(
+        #     size_excluded_labeled_image
+        # )
+        # outline_border_excluded_image = centrosome.outline.outline(
+        #     border_excluded_labeled_image
+        # )
+
+        # if self.show_window:
+        #     statistics = workspace.display_data.statistics
+        #     statistics.append(["# of accepted objects", "%d" % object_count])
+        #     if object_count > 0:
+        #         areas = scipy.ndimage.sum(
+        #             numpy.ones(labeled_image.shape),
+        #             labeled_image,
+        #             numpy.arange(1, object_count + 1),
+        #         )
+        #         areas.sort()
+        #         low_diameter = (
+        #             math.sqrt(float(areas[object_count // 10]) / numpy.pi) * 2
+        #         )
+        #         median_diameter = (
+        #             math.sqrt(float(areas[object_count // 2]) / numpy.pi) * 2
+        #         )
+        #         high_diameter = (
+        #             math.sqrt(float(areas[object_count * 9 // 10]) / numpy.pi) * 2
+        #         )
+        #         statistics.append(
+        #             ["10th pctile diameter", "%.1f pixels" % low_diameter]
+        #         )
+        #         statistics.append(["Median diameter", "%.1f pixels" % median_diameter])
+        #         statistics.append(
+        #             ["90th pctile diameter", "%.1f pixels" % high_diameter]
+        #         )
+        #         object_area = numpy.sum(areas)
+        #         total_area = numpy.product(labeled_image.shape[:2])
+        #         statistics.append(
+        #             [
+        #                 "Area covered by objects",
+        #                 "%.1f %%" % (100.0 * float(object_area) / float(total_area)),
+        #             ]
+        #         )
+        #         statistics.append(["Thresholding filter size", "%.1f" % sigma])
+        #         statistics.append(["Threshold", "%0.3g" % global_threshold])
+        #         if self.basic or self.unclump_method != UN_NONE:
+        #             statistics.append(
+        #                 [
+        #                     "Declumping smoothing filter size",
+        #                     "%.1f" % (self.calc_smoothing_filter_size()),
+        #                 ]
+        #             )
+        #             statistics.append(
+        #                 ["Maxima suppression size", "%.1f" % maxima_suppression_size]
+        #             )
+        #     else:
+        #         statistics.append(["Threshold", "%0.3g" % global_threshold])
+        #     workspace.display_data.image = input_image.pixel_data
+        #     workspace.display_data.labeled_image = labeled_image
+        #     workspace.display_data.size_excluded_labels = size_excluded_labeled_image
+        #     workspace.display_data.border_excluded_labels = (
+        #         border_excluded_labeled_image
+        #     )
 
         # Add image measurements
         objname = self.y_name.value

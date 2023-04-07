@@ -1,3 +1,4 @@
+from enum import Enum
 from .._setting import Setting
 from .._validation_error import ValidationError
 
@@ -14,11 +15,16 @@ class Choice(Setting):
         module - the module containing the setting
         text - the explanatory text for the setting
         choices - a sequence of string choices to be displayed in the drop-down
+                  if an enum is provided, member values are used as choices
         value - the default choice or None to choose the first of the choices.
         tooltips - a dictionary of choice to tooltip
         choices_fn - a function that, if present, supplies the choices. The
                      function should have the signature, fn(pipeline).
         """
+        if isinstance(choices, type(Enum)):
+            self.__enum = choices
+            choices = [member.value for member in self.__enum]
+
         super(Choice, self).__init__(text, value or choices[0], *args, **kwargs)
         self.__choices = choices
         self.__tooltips = tooltips
@@ -33,6 +39,15 @@ class Choice(Setting):
         return self.__choices
 
     choices = property(__internal_get_choices)
+
+    def __internal_get_enum_member(self):
+        return self.get_enum_member()
+    
+    def get_enum_member(self):
+        """The enum value for the current setting"""
+        return self.__enum._value2member_map_[self.value]
+    
+    enum_member = property(__internal_get_enum_member)
 
     def get_tooltips(self):
         """The tooltip strings for each choice"""

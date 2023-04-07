@@ -49,11 +49,25 @@ def identifyprimaryobjects(
     low_res_maxima: bool = False,
     maxima_suppression_size: int = 7,
     automatic_suppression: bool = False,
+    maximum_object_count: int = None,
+    predefined_threshold: float = None,
     return_count_and_suppression_size: bool = False,
-    max_objects: int = None,
     reutrn_cp_display: bool = False
     # **kwargs
 ):
+    # Define automatic settings
+    if automatic:
+        fill_holes_method = "thresholding"
+        threshold_smoothing = 1
+        log_transform = False
+        if min_size > 10:
+            low_res_maxima = True
+        else:
+            low_res_maxima = False
+        automatic_suppression = True
+        unclump_method = "intensity"
+        watershed_method = "intensity"
+
     (final_threshold, orig_threshold, guide_threshold, binary_image, sigma) = threshold(
         image=image,
         mask=mask,
@@ -73,6 +87,7 @@ def identifyprimaryobjects(
         number_of_deviations=number_of_deviations,
         volumetric=False,  # IDPrimary does not support 3D
         automatic=automatic,
+        predefined_threshold=predefined_threshold
     )
 
     if fill_holes_method.casefold() == "thresholding":
@@ -129,14 +144,14 @@ def identifyprimaryobjects(
     #
     # Fill holes again after watershed
     #
-    if fill_holes_method.casefold() == "never":
+    if fill_holes_method.casefold() != "never":
         labeled_image = centrosome.cpmorphology.fill_labeled_holes(labeled_image)
 
     # Relabel the image
     labeled_image, object_count = centrosome.cpmorphology.relabel(labeled_image)
 
-    if max_objects is not None:
-        if object_count > max_objects:
+    if maximum_object_count is not None:
+        if object_count > maximum_object_count:
             labeled_image = numpy.zeros(labeled_image.shape, int)
             border_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
             size_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)

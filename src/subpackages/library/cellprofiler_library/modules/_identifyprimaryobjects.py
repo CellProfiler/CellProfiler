@@ -78,20 +78,20 @@ def identifyprimaryobjects(
     if automatic:
         if return_cp_output:
             return identifyprimaryobjects(
-                    image,
-                    mask=mask,
-                    automatic=False, # Since this call sets up automatic settings
-                    exclude_size=exclude_size,
-                    min_size=min_size,
-                    max_size=max_size,
-                    exclude_border=exclude_border,
-                    unclump_method="intensity",
-                    watershed_method="intensity",
-                    fill_holes_method="thresholding",
-                    declump_smoothing=None,
-                    low_res_maxima=True if min_size > 10 else False,
-                    automatic_suppression=True,
-                    return_cp_output=return_cp_output
+                image,
+                mask=mask,
+                automatic=False,  # Since this call sets up automatic settings
+                exclude_size=exclude_size,
+                min_size=min_size,
+                max_size=max_size,
+                exclude_border=exclude_border,
+                unclump_method="intensity",
+                watershed_method="intensity",
+                fill_holes_method="thresholding",
+                declump_smoothing=None,
+                low_res_maxima=True if min_size > 10 else False,
+                automatic_suppression=True,
+                return_cp_output=return_cp_output,
             )
         else:
             return identifyprimaryobjects(
@@ -108,9 +108,8 @@ def identifyprimaryobjects(
                 declump_smoothing=None,
                 low_res_maxima=True if min_size > 10 else False,
                 automatic_suppression=True,
-                return_cp_output=return_cp_output
-        )
-
+                return_cp_output=return_cp_output,
+            )
 
     (final_threshold, orig_threshold, guide_threshold, binary_image, sigma) = threshold(
         image=image,
@@ -131,7 +130,7 @@ def identifyprimaryobjects(
         number_of_deviations=number_of_deviations,
         volumetric=False,  # IDPrimary does not support 3D
         automatic=automatic,
-        predefined_threshold=predefined_threshold
+        predefined_threshold=predefined_threshold,
     )
 
     global_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
@@ -151,7 +150,11 @@ def identifyprimaryobjects(
 
     # If no declumping is selected, a maxima image is not returned
     if return_cp_output:
-        labeled_image, labeled_maxima, maxima_suppression_size = separate_neighboring_objects(
+        (
+            labeled_image,
+            labeled_maxima,
+            maxima_suppression_size,
+        ) = separate_neighboring_objects(
             image,
             labeled_image=labeled_image,
             mask=mask,
@@ -166,7 +169,7 @@ def identifyprimaryobjects(
             maxima_suppression_size=maxima_suppression_size,
             return_cp_output=True,
         )
-    # Maxima image will be retuened 
+    # Maxima image will be retuened
     else:
         labeled_image = separate_neighboring_objects(
             image,
@@ -221,6 +224,21 @@ def identifyprimaryobjects(
             object_count = 0
 
     if return_cp_output:
-        return labeled_image, unedited_labels, small_removed_labels, size_excluded_labeled_image, border_excluded_labeled_image, labeled_maxima, maxima_suppression_size, object_count, final_threshold, orig_threshold, guide_threshold, binary_image, global_threshold, sigma
+        return (
+            labeled_image,
+            unedited_labels,
+            small_removed_labels,
+            size_excluded_labeled_image,
+            border_excluded_labeled_image,
+            labeled_maxima,
+            maxima_suppression_size,
+            object_count,
+            final_threshold,
+            orig_threshold,
+            guide_threshold,
+            binary_image,
+            global_threshold,
+            sigma,
+        )
     else:
         return labeled_image

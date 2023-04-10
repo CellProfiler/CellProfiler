@@ -149,8 +149,9 @@ def identifyprimaryobjects(
     else:
         declump_smoothing_filter_size = declump_smoothing
 
+    # If no declumping is selected, a maxima image is not returned
     if return_cp_output:
-        labeled_image, maxima_suppression_size = separate_neighboring_objects(
+        labeled_image, labeled_maxima, maxima_suppression_size = separate_neighboring_objects(
             image,
             labeled_image=labeled_image,
             mask=mask,
@@ -163,8 +164,9 @@ def identifyprimaryobjects(
             low_res_maxima=low_res_maxima,
             maxima_suppression_size=maxima_suppression_size,
             automatic_suppression=automatic_suppression,
-            return_suppression_size=True,
+            return_cp_output=True,
         )
+    # Maxima image will be retuened 
     else:
         labeled_image = separate_neighboring_objects(
             image,
@@ -219,6 +221,6 @@ def identifyprimaryobjects(
             object_count = 0
 
     if return_cp_output:
-        return labeled_image, unedited_labels, small_removed_labels, size_excluded_labeled_image, border_excluded_labeled_image, maxima_suppression_size, object_count, global_threshold, sigma
+        return labeled_image, unedited_labels, small_removed_labels, size_excluded_labeled_image, border_excluded_labeled_image, labeled_maxima, maxima_suppression_size, object_count, global_threshold, sigma
     else:
         return labeled_image

@@ -670,12 +670,12 @@ def separate_neighboring_objects(
     low_res_maxima=False,
     maxima_suppression_size=7,
     automatic_suppression=False,
-    return_suppression_size=False,
+    return_cp_output=False,
 ):
 
     if unclump_method.casefold() == "none" or watershed_method.casefold() == "none":
-        if return_suppression_size:
-            return labeled_image, 7
+        if return_cp_output:
+            return labeled_image, numpy.zeros_like(labeled_image), 7
         else:
             return labeled_image
 
@@ -786,7 +786,7 @@ def separate_neighboring_objects(
 
         watershed_boundaries = -watershed_boundaries
 
-    if return_suppression_size:
-        return watershed_boundaries, maxima_suppression_size
+    if return_cp_output:
+        return watershed_boundaries, labeled_maxima, maxima_suppression_size
     else:
         return watershed_boundaries

@@ -840,7 +840,7 @@ staining.
                     input_image.pixel_data,
                     mask=input_image.mask,
                     predefined_threshold=self.manual_threshold.value,
-                    threshold_correction_factor=1,
+                    threshold_correction_factor=1, # No correction applied
                     threshold_min=None, # Manual has no min/max fitlering
                     threshold_max=None,
                     volumetric=input_image.volumetric, 

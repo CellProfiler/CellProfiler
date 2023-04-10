@@ -673,12 +673,14 @@ def separate_neighboring_objects(
     low_res_maxima=False,
     maxima_suppression_size=7,
     automatic_suppression=False,
-    return_count_and_suppression_size=False,
+    return_suppression_size=False,
 ):
 
     if unclump_method.casefold() == "none" or watershed_method.casefold() == "none":
-        if return_count_and_suppression_size:
-            return labeled_image, numpy.max(labeled_image), 7
+        if return_suppression_size:
+            return labeled_image, 7
+        else:
+            return labeled_image
 
     blurred_image = smooth_image(image, mask, filter_size, min_size)
 
@@ -787,8 +789,8 @@ def separate_neighboring_objects(
 
         watershed_boundaries = -watershed_boundaries
 
-    if return_count_and_suppression_size:
-        return watershed_boundaries, numpy.max(labeled_image), numpy.max(labeled_image)
+    if return_suppression_size:
+        return watershed_boundaries, maxima_suppression_size
     else:
         return watershed_boundaries
         

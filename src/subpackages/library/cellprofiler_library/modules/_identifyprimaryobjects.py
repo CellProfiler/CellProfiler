@@ -36,7 +36,6 @@ def identifyprimaryobjects(
         "standard_deviation", "median_absolute_deviation"
     ] = "standard_deviation",
     number_of_deviations: int = 2,
-    volumetric: bool = False,
     automatic: bool = False,
     exclude_size: bool = False,
     min_size: int = 10,
@@ -51,15 +50,13 @@ def identifyprimaryobjects(
     automatic_suppression: bool = False,
     maximum_object_count: int = None,
     predefined_threshold: float = None,
-    return_count_and_suppression_size: bool = False,
-    reutrn_cp_display: bool = False
+    return_cp_output: bool = False
     # **kwargs
 ):
-    # Define automatic settings
-    if automatic:
+    """
+    if automatic == True, the following settings are used:
+    {
         fill_holes_method = "thresholding"
-        threshold_smoothing = 1
-        log_transform = False
         if min_size > 10:
             low_res_maxima = True
         else:
@@ -67,6 +64,53 @@ def identifyprimaryobjects(
         automatic_suppression = True
         unclump_method = "intensity"
         watershed_method = "intensity"
+    }
+    automatic is passed to threshold, which results
+    in the following settings being used for threshold:
+    {
+    log_transform = False
+    threshold_smoothing = 1
+    threshold_scope = "global" (simply called smoothing in threshold)
+    threshold_method = "minimum_cross_entropy"
+    }
+    """
+    # Define automatic settings
+    if automatic:
+        if return_cp_output:
+            return identifyprimaryobjects(
+                    image,
+                    mask=mask,
+                    automatic=False, # Since this call sets up automatic settings
+                    exclude_size=exclude_size,
+                    min_size=min_size,
+                    max_size=max_size,
+                    exclude_border=exclude_border,
+                    unclump_method="intensity",
+                    watershed_method="intensity",
+                    fill_holes_method="thresholding",
+                    declump_smoothing=None,
+                    low_res_maxima=True if min_size > 10 else False,
+                    automatic_suppression=True,
+                    return_cp_output=return_cp_output
+            )
+        else:
+            return identifyprimaryobjects(
+                image,
+                mask=mask,
+                automatic=False,
+                exclude_size=exclude_size,
+                min_size=min_size,
+                max_size=max_size,
+                exclude_border=exclude_border,
+                unclump_method="intensity",
+                watershed_method="intensity",
+                fill_holes_method="thresholding",
+                declump_smoothing=None,
+                low_res_maxima=True if min_size > 10 else False,
+                automatic_suppression=True,
+                return_cp_output=return_cp_output
+        )
+
 
     (final_threshold, orig_threshold, guide_threshold, binary_image, sigma) = threshold(
         image=image,
@@ -90,6 +134,8 @@ def identifyprimaryobjects(
         predefined_threshold=predefined_threshold
     )
 
+    global_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
+
     if fill_holes_method.casefold() == "thresholding":
         binary_image = centrosome.cpmorphology.fill_labeled_holes(
             binary_image, size_fn=lambda size, is_foreground: size < max_size * max_size
@@ -98,27 +144,42 @@ def identifyprimaryobjects(
     # Label the thresholded image
     labeled_image = scipy.ndimage.label(binary_image, numpy.ones((3, 3), bool))[0]
 
-    # return labeled_image
-
     if declump_smoothing is None:
         declump_smoothing_filter_size = 2.35 * min_size / 3.5
     else:
         declump_smoothing_filter_size = declump_smoothing
 
-    labeled_image = separate_neighboring_objects(
-        image,
-        labeled_image,
-        mask=mask,
-        unclump_method=unclump_method,
-        watershed_method=watershed_method,
-        fill_holes_method=fill_holes_method,
-        filter_size=declump_smoothing_filter_size,
-        min_size=min_size,
-        max_size=max_size,
-        low_res_maxima=low_res_maxima,
-        maxima_suppression_size=maxima_suppression_size,
-        automatic_suppression=automatic_suppression,
-    )
+    if return_cp_output:
+        labeled_image, maxima_suppression_size = separate_neighboring_objects(
+            image,
+            labeled_image=labeled_image,
+            mask=mask,
+            unclump_method=unclump_method,
+            watershed_method=watershed_method,
+            fill_holes_method=fill_holes_method,
+            filter_size=declump_smoothing_filter_size,
+            min_size=min_size,
+            max_size=max_size,
+            low_res_maxima=low_res_maxima,
+            maxima_suppression_size=maxima_suppression_size,
+            automatic_suppression=automatic_suppression,
+            return_suppression_size=True,
+        )
+    else:
+        labeled_image = separate_neighboring_objects(
+            image,
+            labeled_image=labeled_image,
+            mask=mask,
+            unclump_method=unclump_method,
+            watershed_method=watershed_method,
+            fill_holes_method=fill_holes_method,
+            filter_size=declump_smoothing_filter_size,
+            min_size=min_size,
+            max_size=max_size,
+            low_res_maxima=low_res_maxima,
+            maxima_suppression_size=maxima_suppression_size,
+            automatic_suppression=automatic_suppression,
+        )
 
     unedited_labels = labeled_image.copy()
 
@@ -157,4 +218,7 @@ def identifyprimaryobjects(
             size_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
             object_count = 0
 
-    return labeled_image
+    if return_cp_output:
+        return labeled_image, unedited_labels, small_removed_labels, size_excluded_labeled_image, border_excluded_labeled_image, maxima_suppression_size, object_count, global_threshold, sigma
+    else:
+        return labeled_image

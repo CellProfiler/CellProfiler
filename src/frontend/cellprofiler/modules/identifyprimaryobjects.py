@@ -815,7 +815,7 @@ If obvious intensity peaks are missing they were probably removed by the filters
             value=1,
             minval=1,
             doc="Radius of the visible marker for each maxima."
-                "You may want to increase this when working with large images.",
+            "You may want to increase this when working with large images.",
         )
 
         self.use_advanced = Binary(
@@ -937,7 +937,7 @@ If "*{NO}*" is selected, the following settings are used:
         if variable_revision_number == 12:
             new_setting_values = setting_values[: OFF_N_SETTINGS - 1]
             new_setting_values += ["Yes"]
-            new_setting_values += setting_values[OFF_N_SETTINGS - 1:]
+            new_setting_values += setting_values[OFF_N_SETTINGS - 1 :]
 
             setting_values = new_setting_values
 
@@ -945,7 +945,7 @@ If "*{NO}*" is selected, the following settings are used:
 
         if variable_revision_number == 13:
             # Added maxima settings
-            new_setting_values = setting_values[: 15]
+            new_setting_values = setting_values[:15]
             new_setting_values += ["No", DEFAULT_MAXIMA_COLOR]
             new_setting_values += setting_values[15:]
 
@@ -955,13 +955,12 @@ If "*{NO}*" is selected, the following settings are used:
 
         if variable_revision_number == 14:
             # Removed maxima settings
-            new_setting_values = setting_values[: 15]
+            new_setting_values = setting_values[:15]
             new_setting_values += setting_values[17:]
 
             setting_values = new_setting_values
 
             variable_revision_number = 15
-
 
         threshold_setting_values = setting_values[N_SETTINGS:]
 
@@ -1091,7 +1090,7 @@ If "*{NO}*" is selected, the following settings are used:
         )
 
         if self.threshold.threshold_operation == TM_MANUAL:
-            predefined_threshold = self.threshold.manual_threshold.value,
+            predefined_threshold = (self.threshold.manual_threshold.value,)
             ### TODO: why is manual_threshold.value being passed as a tuple?
             predefined_threshold = predefined_threshold[0]
         elif self.threshold.threshold_operation == TM_MEASUREMENT:
@@ -1102,19 +1101,44 @@ If "*{NO}*" is selected, the following settings are used:
             )
         else:
             predefined_threshold = None
-    
-        if self.threshold.threshold_scope == "Global":
-            if self.threshold.global_operation == "Otsu" and self.threshold.two_class_otsu == "Three classes":
-                threshold_method = "multiotsu"
-            else:
-                threshold_method = self.convert_setting(self.threshold.global_operation.value)
-        elif self.threshold.threshold_scope == "Adaptive":
-            if self.threshold.local_operation == "Otsu" and self.threshold.two_class_otsu == "Three classes":
-                threshold_method = "multiotsu"
-            else:
-                threshold_method = self.convert_setting(self.threshold.local_operation.value)
 
-        labeled_image, unedited_labels, small_removed_labels, size_excluded_labeled_image, border_excluded_labeled_image, labeled_maxima, maxima_suppression_size, object_count, final_threshold, orig_threshold, guide_threshold, binary_image, global_threshold, sigma = identifyprimaryobjects(
+        if self.threshold.threshold_scope == "Global":
+            if (
+                self.threshold.global_operation == "Otsu"
+                and self.threshold.two_class_otsu == "Three classes"
+            ):
+                threshold_method = "multiotsu"
+            else:
+                threshold_method = self.convert_setting(
+                    self.threshold.global_operation.value
+                )
+        elif self.threshold.threshold_scope == "Adaptive":
+            if (
+                self.threshold.local_operation == "Otsu"
+                and self.threshold.two_class_otsu == "Three classes"
+            ):
+                threshold_method = "multiotsu"
+            else:
+                threshold_method = self.convert_setting(
+                    self.threshold.local_operation.value
+                )
+
+        (
+            labeled_image,
+            unedited_labels,
+            small_removed_labels,
+            size_excluded_labeled_image,
+            border_excluded_labeled_image,
+            labeled_maxima,
+            maxima_suppression_size,
+            object_count,
+            final_threshold,
+            orig_threshold,
+            guide_threshold,
+            binary_image,
+            global_threshold,
+            sigma,
+        ) = identifyprimaryobjects(
             input_image.pixel_data,
             mask=input_image.mask,
             threshold_method=threshold_method,
@@ -1144,7 +1168,7 @@ If "*{NO}*" is selected, the following settings are used:
             automatic_suppression=self.automatic_suppression.value,
             maximum_object_count=self.maximum_object_count.value,
             predefined_threshold=predefined_threshold,
-            return_cp_output=True
+            return_cp_output=True,
         )
 
         self.threshold.add_threshold_measurements(
@@ -1273,7 +1297,9 @@ If "*{NO}*" is selected, the following settings are used:
                 cmap = ListedColormap(self.maxima_color.value)
                 if self.maxima_size.value > 1:
                     strel = skimage.morphology.disk(self.maxima_size.value - 1)
-                    labels = skimage.morphology.dilation(self.labeled_maxima, footprint=strel)
+                    labels = skimage.morphology.dilation(
+                        self.labeled_maxima, footprint=strel
+                    )
                 else:
                     labels = self.labeled_maxima
                 cplabels.append(

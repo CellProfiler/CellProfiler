@@ -920,7 +920,7 @@ staining.
             statistics = workspace.display_data.statistics = []
             workspace.display_data.col_labels = ("Feature", "Value")
             if self.threshold_scope == TS_ADAPTIVE:
-                workspace.display_data.threshold_image = final_threshold
+                workspace.display_data.threshold_image = self.final_threshold
 
             for column in self.get_measurement_columns(workspace.pipeline):
                 value = workspace.measurements.get_current_image_measurement(column[1])

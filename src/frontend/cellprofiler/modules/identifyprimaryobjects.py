@@ -1112,7 +1112,7 @@ If "*{NO}*" is selected, the following settings are used:
             else:
                 threshold_method = self.convert_setting(self.threshold.local_operation.value)
 
-        labeled_image, unedited_labels, small_removed_labels, size_excluded_labeled_image, border_excluded_labeled_image, maxima_suppression_size, object_count, global_threshold, sigma = identifyprimaryobjects(
+        labeled_image, unedited_labels, small_removed_labels, size_excluded_labeled_image, border_excluded_labeled_image, self.labeled_maxima, maxima_suppression_size, object_count, global_threshold, sigma = identifyprimaryobjects(
             input_image.pixel_data,
             mask=input_image.mask,
             threshold_method=threshold_method,

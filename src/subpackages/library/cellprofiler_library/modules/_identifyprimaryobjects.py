@@ -162,8 +162,8 @@ def identifyprimaryobjects(
             min_size=min_size,
             max_size=max_size,
             low_res_maxima=low_res_maxima,
-            maxima_suppression_size=maxima_suppression_size,
             automatic_suppression=automatic_suppression,
+            maxima_suppression_size=maxima_suppression_size,
             return_cp_output=True,
         )
     # Maxima image will be retuened 
@@ -221,6 +221,6 @@ def identifyprimaryobjects(
             object_count = 0
 
     if return_cp_output:
-        return labeled_image, unedited_labels, small_removed_labels, size_excluded_labeled_image, border_excluded_labeled_image, labeled_maxima, maxima_suppression_size, object_count, global_threshold, sigma
+        return labeled_image, unedited_labels, small_removed_labels, size_excluded_labeled_image, border_excluded_labeled_image, labeled_maxima, maxima_suppression_size, object_count, final_threshold, orig_threshold, guide_threshold, binary_image, global_threshold, sigma
     else:
         return labeled_image

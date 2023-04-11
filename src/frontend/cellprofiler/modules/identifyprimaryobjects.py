@@ -1090,9 +1090,9 @@ If "*{NO}*" is selected, the following settings are used:
         )
 
         if self.threshold.threshold_operation == TM_MANUAL:
-            predefined_threshold = (self.threshold.manual_threshold.value,)
+            predefined_threshold = self.threshold.manual_threshold.value
             ### TODO: why is manual_threshold.value being passed as a tuple?
-            predefined_threshold = predefined_threshold[0]
+            predefined_threshold = predefined_threshold
         elif self.threshold.threshold_operation == TM_MEASUREMENT:
             predefined_threshold = float(
                 workspace.measurements.get_current_image_measurement(
@@ -1129,7 +1129,7 @@ If "*{NO}*" is selected, the following settings are used:
             small_removed_labels,
             size_excluded_labeled_image,
             border_excluded_labeled_image,
-            labeled_maxima,
+            self.labeled_maxima, # Added to class for access in display method
             maxima_suppression_size,
             object_count,
             final_threshold,
@@ -1166,7 +1166,7 @@ If "*{NO}*" is selected, the following settings are used:
             low_res_maxima=self.low_res_maxima.value,
             maxima_suppression_size=self.maxima_suppression_size.value,
             automatic_suppression=self.automatic_suppression.value,
-            maximum_object_count=self.maximum_object_count.value,
+            maximum_object_count=self.maximum_object_count.value if self.limit_choice != LIMIT_NONE else None,
             predefined_threshold=predefined_threshold,
             return_cp_output=True,
         )

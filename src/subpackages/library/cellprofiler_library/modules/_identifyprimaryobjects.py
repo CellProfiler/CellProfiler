@@ -76,40 +76,22 @@ def identifyprimaryobjects(
     """
     # Define automatic settings
     if automatic:
-        if return_cp_output:
-            return identifyprimaryobjects(
-                image,
-                mask=mask,
-                automatic=False,  # Since this call sets up automatic settings
-                exclude_size=exclude_size,
-                min_size=min_size,
-                max_size=max_size,
-                exclude_border=exclude_border,
-                unclump_method="intensity",
-                watershed_method="intensity",
-                fill_holes_method="thresholding",
-                declump_smoothing=None,
-                low_res_maxima=True if min_size > 10 else False,
-                automatic_suppression=True,
-                return_cp_output=return_cp_output,
-            )
-        else:
-            return identifyprimaryobjects(
-                image,
-                mask=mask,
-                automatic=False,
-                exclude_size=exclude_size,
-                min_size=min_size,
-                max_size=max_size,
-                exclude_border=exclude_border,
-                unclump_method="intensity",
-                watershed_method="intensity",
-                fill_holes_method="thresholding",
-                declump_smoothing=None,
-                low_res_maxima=True if min_size > 10 else False,
-                automatic_suppression=True,
-                return_cp_output=return_cp_output,
-            )
+        return identifyprimaryobjects(
+            image,
+            mask=mask,
+            automatic=False,  # Since this call sets up automatic settings
+            exclude_size=exclude_size,
+            min_size=min_size,
+            max_size=max_size,
+            exclude_border=exclude_border,
+            unclump_method="intensity",
+            watershed_method="intensity",
+            fill_holes_method="thresholding",
+            declump_smoothing=None,
+            low_res_maxima=True if min_size > 10 else False,
+            automatic_suppression=True,
+            return_cp_output=return_cp_output,
+        )
 
     (final_threshold, orig_threshold, guide_threshold, binary_image, sigma) = threshold(
         image=image,

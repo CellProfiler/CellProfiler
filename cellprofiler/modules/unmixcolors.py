@@ -25,12 +25,14 @@ enter a custom value. Please note that if you are looking to simply
 split a color image into red, green and blue components, use the
 **ColorToGray** module rather than **UnmixColors**.
 
+When used on a 3D image, the transformation is performed on each Z plane individually.
+
 |
 
 ============ ============ ===============
 Supports 2D? Supports 3D? Respects masks?
 ============ ============ ===============
-YES          NO           NO
+YES          YES          NO
 ============ ============ ===============
 
 Technical notes
@@ -384,11 +386,20 @@ blue absorbance values from the image.
             workspace.display_data.input_image = input_pixels
             workspace.display_data.outputs = {}
         for output in self.outputs:
-            self.run_on_output(workspace, input_image, output)
+            if not image.volumetric:
+                image = self.run_on_output(input_pixels, output)
+            else:
+                image = numpy.zeros_like(input_pixels)
+                for index, plane in enumerate(input_pixels):
+                    image[index] = self.run_on_output(plane, output)
+            image_name = output.image_name.value
+            output_image = Image(image, parent_image=input_image)
+            workspace.image_set.add(image_name, output_image)
+            if self.show_window:
+                workspace.display_data.outputs[image_name] = image
 
-    def run_on_output(self, workspace, input_image, output):
+    def run_on_output(self, input_pixels, output):
         """Produce one image - storing it in the image set"""
-        input_pixels = input_image.pixel_data
         inverse_absorbances = self.get_inverse_absorbances(output)
         #########################################
         #
@@ -416,11 +427,7 @@ blue absorbance values from the image.
         image[image < 0] = 0
         image[image > 1] = 1
         image = 1 - image
-        image_name = output.image_name.value
-        output_image = Image(image, parent_image=input_image)
-        workspace.image_set.add(image_name, output_image)
-        if self.show_window:
-            workspace.display_data.outputs[image_name] = image
+        return image
 
     def display(self, workspace, figure):
         """Display all of the images in a figure, use rows of 3 subplots"""
@@ -527,3 +534,6 @@ blue absorbance values from the image.
             del self.outputs[stain_count:]
         while len(self.outputs) < stain_count:
             self.add_image()
+
+    def volumetric(self):
+        return True

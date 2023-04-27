@@ -153,7 +153,7 @@ def identifyprimaryobjects(
     border_excluded_labeled_image = labeled_image.copy()
     if exclude_border_objects:
         labeled_image = filter_on_border(labeled_image, mask)
-        border_excluded_labeled_image[labeled_image > 0] = 0
+    border_excluded_labeled_image[labeled_image > 0] = 0
 
     # Filter out small and large objects
     size_excluded_labeled_image = labeled_image.copy()

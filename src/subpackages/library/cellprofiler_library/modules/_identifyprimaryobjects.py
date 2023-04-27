@@ -40,40 +40,19 @@ def identifyprimaryobjects(
     exclude_size: bool = True,
     min_size: int = 10,
     max_size: int = 40,
-    exclude_border: bool = True,
+    exclude_border_objects: bool = True,
     unclump_method: Literal["intensity", "shape", "none"] = "intensity",
     watershed_method: Literal["intensity", "shape", "propagate", "none"] = "intensity",
     fill_holes_method: Literal["never", "thresholding", "declumping"] = "thresholding",
-    declump_smoothing: float = None,
-    low_res_maxima: bool = True,
-    maxima_suppression_size: int = 7,
+    smoothing_filter_size: int = None,
     automatic_suppression: bool = True,
+    maxima_suppression_size: float = 7,
+    low_res_maxima: bool = True,
     maximum_object_count: int = None,
     predefined_threshold: float = None,
     return_cp_output: bool = False
     # **kwargs
 ):
-    """
-    if automatic == True, the following settings are used:
-    {
-        fill_holes_method = "thresholding"
-        if min_size > 10:
-            low_res_maxima = True
-        else:
-            low_res_maxima = False
-        automatic_suppression = True
-        unclump_method = "intensity"
-        watershed_method = "intensity"
-    }
-    automatic is passed to threshold, which results
-    in the following settings being used for threshold:
-    {
-    log_transform = False
-    threshold_smoothing = 1
-    threshold_scope = "global" (simply called smoothing in threshold)
-    threshold_method = "minimum_cross_entropy"
-    }
-    """
     # Define automatic settings
     if automatic:
         return identifyprimaryobjects(
@@ -83,7 +62,7 @@ def identifyprimaryobjects(
             exclude_size=exclude_size,
             min_size=min_size,
             max_size=max_size,
-            exclude_border=exclude_border,
+            exclude_border_objects=exclude_border_objects,
             unclump_method="intensity",
             watershed_method="intensity",
             fill_holes_method="thresholding",
@@ -125,10 +104,10 @@ def identifyprimaryobjects(
     # Label the thresholded image
     labeled_image = scipy.ndimage.label(binary_image, numpy.ones((3, 3), bool))[0]
 
-    if declump_smoothing is None:
+    if smoothing_filter_size is None:
         declump_smoothing_filter_size = 2.35 * min_size / 3.5
     else:
-        declump_smoothing_filter_size = declump_smoothing
+        declump_smoothing_filter_size = smoothing_filter_size
 
     # If no declumping is selected, a maxima image is not returned
     if return_cp_output:
@@ -172,7 +151,7 @@ def identifyprimaryobjects(
 
     # Filter out objects touching the border or mask
     border_excluded_labeled_image = labeled_image.copy()
-    if exclude_border:
+    if exclude_border_objects:
         labeled_image = filter_on_border(labeled_image, mask)
         border_excluded_labeled_image[labeled_image > 0] = 0
 

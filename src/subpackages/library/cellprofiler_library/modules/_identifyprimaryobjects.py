@@ -58,6 +58,10 @@ def identifyprimaryobjects(
         return identifyprimaryobjects(
             image,
             mask=mask,
+            threshold_smoothing=1,
+            log_transform=False,
+            threshold_scope="global",
+            threshold_method="minimum_cross_entropy",
             automatic=False,  # Since this call sets up automatic settings
             exclude_size=exclude_size,
             min_size=min_size,
@@ -66,7 +70,7 @@ def identifyprimaryobjects(
             unclump_method="intensity",
             watershed_method="intensity",
             fill_holes_method="thresholding",
-            declump_smoothing=None,
+            smoothing_filter_size=None,
             low_res_maxima=True if min_size > 10 else False,
             automatic_suppression=True,
             return_cp_output=return_cp_output,
@@ -90,7 +94,6 @@ def identifyprimaryobjects(
         variance_method=variance_method,
         number_of_deviations=number_of_deviations,
         volumetric=False,  # IDPrimary does not support 3D
-        automatic=automatic,
         predefined_threshold=predefined_threshold,
     )
 

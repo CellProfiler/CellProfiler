@@ -326,7 +326,6 @@ SHAPE_DECLUMPING_ICON = cellprofiler.gui.help.content.image_resource(
     "IdentifyPrimaryObjects_ShapeDeclumping.png"
 )
 
-
 class IdentifyPrimaryObjects(
     cellprofiler_core.module.image_segmentation.ImageSegmentation
 ):
@@ -1084,6 +1083,7 @@ If "*{NO}*" is selected, the following settings are used:
         return converted_str
 
     def run(self, workspace):
+        print(11111, self.advanced)
         workspace.display_data.statistics = []
         input_image = workspace.image_set.get_image(
             self.x_name.value, must_be_grayscale=True
@@ -1155,6 +1155,7 @@ If "*{NO}*" is selected, the following settings are used:
             averaging_method=self.threshold.averaging_method.value,
             variance_method=self.convert_setting(self.threshold.variance_method.value),
             number_of_deviations=self.threshold.number_of_deviations.value,
+            automatic=self.basic,
             exclude_size=self.exclude_size.value,
             min_size=self.size_range.min,
             max_size=self.size_range.max,
@@ -1162,7 +1163,7 @@ If "*{NO}*" is selected, the following settings are used:
             unclump_method=self.unclump_method.value,
             watershed_method=self.watershed_method.value,
             fill_holes_method=self.fill_holes.value,
-            smoothing_filter_size=self.smoothing_filter_size.value if self.automatic_smoothing else 0,
+            smoothing_filter_size=self.smoothing_filter_size.value if not self.automatic_smoothing else None,
             low_res_maxima=self.low_res_maxima.value,
             maxima_suppression_size=self.maxima_suppression_size.value,
             automatic_suppression=self.automatic_suppression.value,

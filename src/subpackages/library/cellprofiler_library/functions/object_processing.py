@@ -697,8 +697,6 @@ def separate_neighboring_objects(
         image_resize_factor = 1.0
         if automatic_suppression:
             maxima_suppression_size = min_size / 1.5
-        else:
-            maxima_suppression_size = maxima_suppression_size
 
     maxima_mask = centrosome.cpmorphology.strel_disk(
         max(1, maxima_suppression_size - 0.5)
@@ -793,6 +791,100 @@ def separate_neighboring_objects(
         return watershed_boundaries, labeled_maxima, maxima_suppression_size
     else:
         return watershed_boundaries
+    
+
+def filter_labels(labels_out, objects, mask=None, discard_edge=False):
+    """Filter labels out of the output
+
+    Filter labels that are not in the segmented input labels. Optionally
+    filter labels that are touching the edge.
+
+    labels_out - the unfiltered output labels
+    objects    - the objects thing, containing both segmented and
+                    small_removed labels
+    """
+    segmented_labels = objects.copy()
+    max_out = numpy.max(labels_out)
+    if max_out > 0:
+        segmented_labels, m1 = size_similarly(labels_out, segmented_labels)
+        segmented_labels[~m1] = 0
+        lookup = scipy.ndimage.maximum(
+            segmented_labels, labels_out, list(range(max_out + 1))
+        )
+        lookup = numpy.array(lookup, int)
+        lookup[0] = 0
+        segmented_labels_out = lookup[labels_out]
+    else:
+        segmented_labels_out = labels_out.copy()
+    if discard_edge:
+        if mask is not None:
+            mask_border = mask & ~scipy.ndimage.binary_erosion(mask)
+            edge_labels = segmented_labels_out[mask_border]
+        else:
+            edge_labels = numpy.hstack(
+                (
+                    segmented_labels_out[0, :],
+                    segmented_labels_out[-1, :],
+                    segmented_labels_out[:, 0],
+                    segmented_labels_out[:, -1],
+                )
+            )
+        edge_labels = numpy.unique(edge_labels)
+        #
+        # Make a lookup table that translates edge labels to zero
+        # but translates everything else to itself
+        #
+        lookup = numpy.arange(max(max_out, numpy.max(segmented_labels)) + 1)
+        lookup[edge_labels] = 0
+        #
+        # Run the segmented labels through this to filter out edge
+        # labels
+        segmented_labels_out = lookup[segmented_labels_out]
+
+    return segmented_labels_out
+
+
+def size_similarly(labels, secondary):
+    """Size the secondary matrix similarly to the labels matrix
+
+    labels - labels matrix
+    secondary - a secondary image or labels matrix which might be of
+                different size.
+    Return the resized secondary matrix and a mask indicating what portion
+    of the secondary matrix is bogus (manufactured values).
+
+    Either the mask is all ones or the result is a copy, so you can
+    modify the output within the unmasked region w/o destroying the original.
+    """
+    if labels.shape[:2] == secondary.shape[:2]:
+        return secondary, numpy.ones(secondary.shape, bool)
+    if labels.shape[0] <= secondary.shape[0] and labels.shape[1] <= secondary.shape[1]:
+        if secondary.ndim == 2:
+            return (
+                secondary[: labels.shape[0], : labels.shape[1]],
+                numpy.ones(labels.shape, bool),
+            )
+        else:
+            return (
+                secondary[: labels.shape[0], : labels.shape[1], :],
+                numpy.ones(labels.shape, bool),
+            )
+
+    #
+    # Some portion of the secondary matrix does not cover the labels
+    #
+    result = numpy.zeros(
+        list(labels.shape) + list(secondary.shape[2:]), secondary.dtype
+    )
+    i_max = min(secondary.shape[0], labels.shape[0])
+    j_max = min(secondary.shape[1], labels.shape[1])
+    if secondary.ndim == 2:
+        result[:i_max, :j_max] = secondary[:i_max, :j_max]
+    else:
+        result[:i_max, :j_max, :] = secondary[:i_max, :j_max, :]
+    mask = numpy.zeros(labels.shape, bool)
+    mask[:i_max, :j_max] = 1
+    return result, mask
         
 #############################################################
 # ConvertObjectsToImage

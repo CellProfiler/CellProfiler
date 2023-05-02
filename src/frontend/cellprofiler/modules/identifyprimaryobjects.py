@@ -1091,7 +1091,6 @@ If "*{NO}*" is selected, the following settings are used:
 
         if self.threshold.threshold_operation == TM_MANUAL:
             predefined_threshold = self.threshold.manual_threshold.value
-            ### TODO: why is manual_threshold.value being passed as a tuple?
             predefined_threshold = predefined_threshold
         elif self.threshold.threshold_operation == TM_MEASUREMENT:
             predefined_threshold = float(

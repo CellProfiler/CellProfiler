@@ -895,7 +895,6 @@ segmentation.""",
             workspace.display_data.img = img
             workspace.display_data.segmented_out = segmented_out
             workspace.display_data.primary_labels = objects.segmented
-            workspace.display_data.global_threshold = global_threshold
             workspace.display_data.object_count = object_count
 
     def _threshold_image(self, image_name, workspace, automatic=False):

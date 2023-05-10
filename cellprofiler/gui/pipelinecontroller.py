@@ -1465,7 +1465,7 @@ class PipelineController(object):
             if default_path is not None:
                 dlg.Directory = default_path
             if dlg.ShowModal() == wx.ID_OK:
-                with open(dlg.Path, "w") as fd:
+                with open(dlg.Path, "w", encoding='utf-8') as fd:
                     self.__workspace.pipeline.save_pipeline_citations(fd)
 
     def __on_plateviewer(self, event):

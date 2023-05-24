@@ -56,6 +56,7 @@ class RunImageJMacro(Module):
     module_name = "RunImageJMacro"
     variable_revision_number = 1
     category = "Advanced"
+    doi = {"Please cite the following when using RunImageJMacro:": 'https://doi.org/10.1038/nmeth.2089'}
 
     def create_settings(self):
 

@@ -386,7 +386,7 @@ blue absorbance values from the image.
             workspace.display_data.input_image = input_pixels
             workspace.display_data.outputs = {}
         for output in self.outputs:
-            if not image.volumetric:
+            if not input_image.volumetric:
                 image = self.run_on_output(input_pixels, output)
             else:
                 image = numpy.zeros_like(input_pixels)

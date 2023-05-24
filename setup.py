@@ -89,7 +89,7 @@ setuptools.setup(
         "six~=1.16.0",
         "tifffile>=2022.4.8,<2022.4.22",
         "wxPython==4.2.0",
-
+        "rapidfuzz~=3.0.0"
     ],
     license="BSD",
     name="CellProfiler",

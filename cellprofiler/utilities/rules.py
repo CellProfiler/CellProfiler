@@ -1,7 +1,8 @@
 """rules - code for parsing and applying rules from CPA
 """
 
-from difflib import get_close_matches
+from difflib import SequenceMatcher
+from rapidfuzz import process
 import re
 
 from cellprofiler_core.module import Module
@@ -87,13 +88,30 @@ class Rules(Module):
 
         @staticmethod
         def return_fuzzy_measurement_name(measurements,object_name,feature_name,full,allow_fuzzy,fuzzy_value=FUZZY_FLOAT):
+            def standard_ratio(query, candidate, **kwargs):
+                s = kwargs["SequenceMatcher"]
+                s.set_seq1(candidate)
+                return s.ratio()
+
             measurement_list = [f"{col[0]}_{col[1]}" for col in measurements]
             if allow_fuzzy:
                 cutoff = fuzzy_value
             else:
                 cutoff = 1
-            closest_match = get_close_matches('_'.join((object_name,feature_name)),measurement_list,1,cutoff)
-            if len(closest_match) == 0:
+
+            query = '_'.join((object_name,feature_name))
+            # closest_match = get_close_matches(query,measurement_list,1,cutoff)
+            s = SequenceMatcher(b=query)
+            closest_match = process.extractOne(
+                query,
+                measurement_list,
+                processor=None,
+                scorer=standard_ratio,
+                score_cutoff=cutoff,
+                scorer_kwargs={"SequenceMatcher": s}
+            )
+
+            if closest_match == None or len(closest_match) == 0:
                 return ''
             else:
                 if full:

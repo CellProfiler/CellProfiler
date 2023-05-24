@@ -1,4 +1,8 @@
 import wx
+from rapidfuzz.utils import default_process
+from rapidfuzz.process import extract
+from rapidfuzz.distance import DamerauLevenshtein
+
 from cellprofiler_core.utilities.core.modules import (
     get_module_names,
     instantiate_module,
@@ -246,13 +250,22 @@ class AddModuleFrame(wx.Frame):
         ):
             self.__module_categories_list_box.Select(-1)
             self.__on_category_selected(None)
+
         keys = list(self.__module_dict["All"].keys())
-        keys = [
-            key for key in keys if self.search_text.GetValue().lower() in key.lower()
-        ]
+
+        # results in [('Module1', score1, idx1), ('Module2', score2, idx2), ...]
+        # where idx is the index of the result in `keys`
+        top_scorers = [m[0] for m in extract(
+            self.search_text.GetValue(),
+            keys,
+            processor=default_process,
+            scorer=DamerauLevenshtein.similarity,
+            limit=10
+        )]
+
         self.__module_list_box.Clear()
-        self.__module_list_box.AppendItems(sorted(keys))
-        if len(keys) > 0:
+        self.__module_list_box.AppendItems(top_scorers)
+        if len(top_scorers) > 0:
             self.__module_list_box.Select(0)
         else:
             self.__module_list_box.AppendItems("No matching modules")

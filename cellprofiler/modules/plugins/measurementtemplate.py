@@ -15,6 +15,14 @@ import scipy.ndimage
 #
 ##################################
 
+# Reference
+# 
+# If you're using a technique or method that's used in this module 
+# and has a publication attached to it, please include the paper link below.
+# Otherwise, remove the line below and remove the "References" section from __doc__.
+#
+
+cite_paper_link = "https://doi.org/10.1016/1047-3203(90)90014-M"
 
 __doc__ = """\
 MeasurementTemplate
@@ -120,7 +128,7 @@ wherever possible, include a link to the original work. For example,
 
 -  Meyer F, Beucher S (1990) “Morphological segmentation.” *J Visual
    Communication and Image Representation* 1, 21-46.
-   (`link <http://dx.doi.org/10.1016/1047-3203(90)90014-M>`__)
+   {cite_paper_link}
 """
 
 #
@@ -158,7 +166,17 @@ class MeasurementTemplate(Module):
     module_name = "MeasurementTemplate"
     category = "Measurement"
     variable_revision_number = 1
+    #
+    # Citation
+    #
+    # If you're using a technique or method that's used in this module 
+    # and has a publication attached to it, please include the paper link below.
+    # Edit accordingly and add the link for the paper as "https://doi.org/XXXX".
+    # If no citation is necessary, remove the "doi" dictionary below. 
+    #
 
+    doi = {"Please cite the following when using ImageTemplate:": 'https://doi.org/10.1016/1047-3203(90)90014-M', 
+           "If you're also using specific technique X, cite:": 'https://doi.org/10.1016/1047-3203(90)90014-M'}
     #
     # "create_settings" is where you declare the user interface elements
     # (the "settings") which the user will use to customize your module.

@@ -39,8 +39,8 @@ References
    stained cells.”, Proceedings of the 12th Scandinavian Conference on Image Analysis
    (SCIA), pp. 264-271
 
-.. _examples: http://www.cellprofiler.org/examples.html
-.. _tutorials: http://cellprofiler.org/tutorials.html
+.. _examples: https://cellprofiler.org/examples
+.. _tutorials: https://tutorials.cellprofiler.org
 """
 
 import centrosome.bg_compensate

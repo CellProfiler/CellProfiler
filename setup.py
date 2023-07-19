@@ -86,7 +86,7 @@ for pyxfile in glob.glob(os.path.join("centrosome", "*.pyx")):
     ]
 
 if __suffix == "pyx":
-    __extensions = Cython.Build.cythonize(__extensions)
+    __extensions = Cython.Build.cythonize(__extensions, compiler_directives={'language_level' : "3"})
 
 setuptools.setup(
     author="Nodar Gogoberidze",

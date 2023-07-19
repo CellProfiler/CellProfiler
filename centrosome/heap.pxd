@@ -145,7 +145,7 @@ cdef inline void heappush(Heap *heap,
 
   # restore heap invariant, all parents <= children
   while child>0:
-      parent = (child + 1) / 2 - 1 # __parent(i)
+      parent = (child + 1) // 2 - 1 # __parent(i)
       
       if smaller(child, parent, heap):
           swap(parent, child, heap)

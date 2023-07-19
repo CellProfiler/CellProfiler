@@ -5,6 +5,7 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: [3.8, 3.9]
+      fail-fast: false
     steps:
     - uses: actions/checkout@v1
     - name: Setup Python ${{ matrix.python-version }}
@@ -22,4 +23,10 @@ jobs:
     - name: Test
       run: pytest
 name: nucleus
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, review_requested]
+

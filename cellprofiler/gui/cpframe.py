@@ -23,6 +23,7 @@ from cellprofiler_core.utilities.core.modules import instantiate_module
 import cellprofiler
 import cellprofiler.gui
 import cellprofiler.gui.utilities.icon
+from .plugins_menu import PLUGIN_MENU_ENTRIES
 from ._workspace_model import Workspace
 from .utilities.figure import close_all
 from .help.content import read_content
@@ -843,6 +844,14 @@ class CPFrame(wx.Frame):
         if sys.platform == "win32":
             self.__menu_window.AppendSeparator()
 
+        self.__menu_plugins = None
+        if PLUGIN_MENU_ENTRIES:
+            # Only show the plugins menu if a plugin is using it
+            self.__menu_plugins = wx.Menu()
+            for callback_fn, wx_id, name, tooltip in PLUGIN_MENU_ENTRIES:
+                self.__menu_plugins.Append(wx_id, name, tooltip)
+                self.Bind(wx.EVT_MENU, callback_fn, id=wx_id)
+
         self.__menu_help = Menu(self)
 
         self.__menu_bar = wx.MenuBar()
@@ -857,6 +866,8 @@ class CPFrame(wx.Frame):
                 "Initialize sampling up to current module",
             )
             self.__menu_bar.Append(self.__menu_sample, "&Sample")
+        if PLUGIN_MENU_ENTRIES:
+            self.__menu_bar.Append(self.__menu_plugins, "&Plugins")
         self.__menu_bar.Append(self.__menu_window, "&Windows")
         if wx.VERSION <= (2, 8, 10, 1, "") and wx.Platform == "__WXMAC__":
             self.__menu_bar.Append(self.__menu_help, "CellProfiler Help")

@@ -10,8 +10,8 @@ import traceback
 
 from cellprofiler_core.constants.modules import all_modules
 from cellprofiler_core.constants.modules import pymodules
-from cellprofiler_core.constants.reader import ALL_READERS, BAD_READERS
-from cellprofiler_core.preferences import get_plugin_directory
+from cellprofiler_core.constants.reader import ALL_READERS, BAD_READERS, AVAILABLE_READERS
+from cellprofiler_core.preferences import get_plugin_directory, config_read_typed
 from cellprofiler_core.module import Module
 from cellprofiler_core.reader import Reader
 
@@ -112,6 +112,9 @@ def add_reader(cp_reader):
                 inspect.getfile(cp_reader),
             )
         ALL_READERS[name] = cp_reader
+        enabled = config_read_typed(f'Reader.{name}.enabled', bool)
+        if enabled or enabled is None:
+            AVAILABLE_READERS[name] = cp_reader
     except Exception as e:
         LOGGER.warning("Failed to load %s", name, exc_info=True)
         if name in ALL_READERS:

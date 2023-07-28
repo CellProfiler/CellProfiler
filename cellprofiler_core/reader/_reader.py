@@ -1,3 +1,19 @@
+"""
+Readers are modular classes designed to read in image data. Like modules, readers can also be added as plugins
+using this template class. Place readers into the plugins directory to load them on startup.
+
+A typical reader plugin will add support for a specific file format or protocol.
+
+N.b. readers should not assume that cellprofiler (and by extension wx/the gui) is always available. In a
+headless environment cellprofiler_core may be installed alone.
+
+To add custom file URI schemas to CellProfiler, e.g. "omero:iid=123",
+append new entries to the list in cellprofiler_core/constants/image.py.
+This will allow the main file list to accept those URIs.
+
+If you need to add menu entries to the GUI, access cellprofiler.gui.plugins_menu and add
+entries to the container within. Further instructions are within that file.
+"""
 import uuid
 
 from abc import ABC, abstractmethod

@@ -152,9 +152,7 @@ SUB_NONE = "None"
 SUB_ALL = "All"
 SUB_SOME = "Some"
 FILE_SCHEME = "file:"
-#TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
-# PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero", "s3","gs")
-PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "s3","gs")
+PASSTHROUGH_SCHEMES = ["http", "https", "ftp", "s3", "gs"]
 
 CT_GRAYSCALE = "Grayscale"
 CT_COLOR = "Color"

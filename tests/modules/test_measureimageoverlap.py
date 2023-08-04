@@ -1121,7 +1121,7 @@ def test_3D_no_overlap():
         ftr_Earth_Movers_Distance
     )
     # test within 1% because sklearn keeps changing things so this kinda breaks
-    assert abs(ftr_Earth_Movers_Distance_measurement - 52812) / 52812 <= 0.1
+    assert abs(ftr_Earth_Movers_Distance_measurement - 52812) / 52812 <= 0.001
 
     ftr_rand_index = module.measurement_name(
         cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX
@@ -1220,7 +1220,7 @@ def test_3D_half_overlap():
         ftr_Earth_Movers_Distance
     )
     # test within 1% because sklearn keeps changing things so this kinda breaks
-    assert abs(ftr_Earth_Movers_Distance_measurement - 52921) / 52921 <= 0.1
+    assert abs(ftr_Earth_Movers_Distance_measurement - 52921) / 52921 <= 0.001
 
     ftr_rand_index = module.measurement_name(
         cellprofiler.modules.measureimageoverlap.FTR_RAND_INDEX

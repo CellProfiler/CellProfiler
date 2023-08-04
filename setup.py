@@ -127,7 +127,7 @@ setuptools.setup(
         "numpy>=1.18.2",
         "pillow>=7.1.0",
         "scikit-image>=0.17.2",
-        "scipy>=1.4.1",
+        "scipy>=1.4.1,<1.11",
     ],
     tests_require=[
         "pytest",

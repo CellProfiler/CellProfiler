@@ -22,7 +22,7 @@ setuptools.setup(
     },
     install_requires=[
         "boto3>=1.12.28",
-        "centrosome==1.2.1",
+        "centrosome==1.2.2",
         "docutils==0.15.2",
         "future>=0.18.2",
         "fsspec>=2021.11.0",

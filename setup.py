@@ -64,7 +64,7 @@ setuptools.setup(
     install_requires=[
         "boto3>=1.12.28",
         "cellprofiler-core==5.0.0",
-        "centrosome==1.2.1",
+        "centrosome==1.2.2",
         "docutils==0.15.2",
         "h5py~=3.6.0",
         "imageio>=2.5",
@@ -81,7 +81,7 @@ setuptools.setup(
         "requests>=2.22",
         "scikit-image>=0.19.2",
         "scikit-learn>=0.20",
-        "scipy>=1.4.1",
+        "scipy>=1.4.1,<1.11",
         "scyjava>=1.6.0",
         "six",
         "tifffile<2022.4.22",

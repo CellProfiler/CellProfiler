@@ -22,7 +22,7 @@ setuptools.setup(
     },
     install_requires=[
         "boto3>=1.12.28",
-        "centrosome==1.2.1",
+        "centrosome==1.2.2",
         "docutils==0.15.2",
         "future>=0.18.2",
         "fsspec>=2021.11.0",
@@ -33,7 +33,7 @@ setuptools.setup(
         "psutil>=5.7.0",
         "pyzmq~=22.3",
         "scikit-image>=0.16.2",
-        "scipy>=1.4.1",
+        "scipy>=1.4.1,<1.11",
         "scyjava>=1.6.0",
         "zarr>=2.10",
         "google-cloud-storage>=2.6.0",

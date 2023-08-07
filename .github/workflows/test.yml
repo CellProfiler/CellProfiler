@@ -30,10 +30,9 @@ jobs:
         with:
           path: ${{ steps.pip-cache-dir.outputs.dir }}
           key: ${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/setup.py') }}
-      - uses: actions/setup-java@v3
+      - uses: actions/setup-java@v1
         with:
-          distribution: "temurin"
-          java-version: "11" # The JDK version to make available on the path.
+          java-version: '14.0.1' # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
       - name: Initial installs
@@ -41,7 +40,7 @@ jobs:
           pip install pyinstaller
           pip install --upgrade pip setuptools wheel
           pip install numpy>=1.20.1
-          git clone https://github.com/CellProfiler/core.git ~/core
+          git clone https://github.com/CellProfiler/core.git@4.2.x ~/core
       - name: Mac - setup mysql
         if: startsWith(matrix.os, 'macos')
         env:

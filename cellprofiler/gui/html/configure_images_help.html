@@ -1,6 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-<body style = "font-family: sans-serif; font-size: small;">
+    <head>
+        <style>
+            body {
+                font-family: "sans-serif";
+                font-size: "small";
+            }
+            @media (prefers-color-scheme: dark) {
+                body {
+                    color: #eee;
+                    background: #121212;
+                }
+    
+                body a {
+                    color: #809fff;
+                }
+            }
+        </style>
+    </head>
+<body>
 <h2 class="title">Configuring Images for Analysis</h2>
 <p>Once you have used the <strong>Images</strong> module to produce a list of images to
 be analyzed, you can use the other Input modules to define how images
@@ -43,7 +61,7 @@ among other things.</p>
 <p>For more information on these modules and how to configure them for the
 best performance, please see the detailed help by selecting the module
 and clicking the <img src={{MODULE_HELP_BUTTON}}> button at the bottom of the pipeline panel, or
-check out the Input module tutorials on our <a class="reference external" href="http://cellprofiler.org/tutorials.html">Tutorials</a> page.</p>
+check out the Input module tutorials on our <a class="reference external" href="http://cellprofiler.org/tutorials">Tutorials</a> page.</p>
 
 {{GO_BACK}}
 </body>

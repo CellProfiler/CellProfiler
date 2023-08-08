@@ -12,9 +12,9 @@ import wx
 import wx.adv
 import wx.grid
 import wx.lib.mixins.gridlabelrenderer as wxglr
-from cellprofiler_core.constants.image import C_FRAME, CT_GRAYSCALE, CT_COLOR, CT_MASK, CT_OBJECTS, CT_FUNCTION
+from cellprofiler_core.constants.image import C_FRAME
 from cellprofiler_core.constants.image import C_SERIES
-from cellprofiler_core.constants.measurement import C_FILE_NAME, C_CHANNEL, C_Z, C_T, C_SERIES_NAME
+from cellprofiler_core.constants.measurement import C_FILE_NAME
 from cellprofiler_core.constants.measurement import C_METADATA
 from cellprofiler_core.constants.measurement import C_OBJECTS_FILE_NAME
 from cellprofiler_core.constants.measurement import C_OBJECTS_PATH_NAME
@@ -31,6 +31,16 @@ from cellprofiler_core.setting.filter import FilePredicate
 from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.utilities.image import url_to_modpath
 from cellprofiler_core.utilities.legacy import cmp
+
+C_CHANNEL = "Channel"
+C_Z = "Z"
+C_T = "T"
+C_SERIES_NAME = "SeriesName"
+CT_GRAYSCALE = "Grayscale"
+CT_COLOR = "Color"
+CT_MASK = "Mask"
+CT_OBJECTS = "Objects"
+CT_FUNCTION = "Function"
 
 import cellprofiler.gui
 from cellprofiler.gui.help.content import CREATING_A_PROJECT_CAPTION

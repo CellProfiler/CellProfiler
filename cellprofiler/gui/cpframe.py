@@ -36,7 +36,6 @@ from .pipeline import Pipeline
 from .pipelinecontroller import PipelineController
 from .pipelinelistview import PipelineListView
 from .preferences_dialog._preferences_dialog import PreferencesDialog
-from .readers_dialog._readers_dialog import ReadersDialog
 from .preferences_view import PreferencesView
 from .utilities.module_view import stop_validation_queue_thread
 
@@ -111,7 +110,6 @@ ID_EDIT_GO_TO_MODULE = wx.NewId()
 ID_FIND_USAGES = wx.NewId()
 
 ID_OPTIONS_PREFERENCES = wx.ID_PREFERENCES
-ID_OPTIONS_READERS = wx.NewId()
 ID_CHECK_NEW_VERSION = wx.NewId()
 
 ID_DEBUG_TOGGLE = wx.NewId()
@@ -520,14 +518,6 @@ class CPFrame(wx.Frame):
                 exc_info=True,
             )
         try:
-            from cellprofiler_core.constants.reader import ALL_READERS
-            for reader in ALL_READERS.values():
-                reader.clear_cached_readers()
-        except:
-            logging.warning(
-                "Failed to clear reader cache during close", exc_info=True,
-            )
-        try:
             self.__preferences_view.close()
         except:
             logging.warning("Failed during close", exc_info=True)
@@ -658,11 +648,6 @@ class CPFrame(wx.Frame):
         if sys.platform == "darwin":
             self.__menu_file.Append(ID_FILE_NEW_CP, "Open A New CP Window")
             self.__menu_file.AppendSeparator()
-        self.__menu_file.Append(
-            ID_OPTIONS_READERS,
-            "Configure Readers...",
-            "Configure image file reader preferences",
-        )
         self.__menu_file.Append(
             ID_OPTIONS_PREFERENCES,
             "&Preferences...",
@@ -879,7 +864,6 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.__on_help_module, id=ID_HELP_MODULE)
         self.Bind(wx.EVT_BUTTON, self.__on_help_module, id=ID_HELP_MODULE)
 
-        self.Bind(wx.EVT_MENU, self.__on_readers, id=ID_OPTIONS_READERS)
         self.Bind(wx.EVT_MENU, self.__on_preferences, id=ID_OPTIONS_PREFERENCES)
         self.Bind(wx.EVT_MENU, self.__on_close_all, id=ID_WINDOW_CLOSE_ALL)
         self.Bind(wx.EVT_MENU, self.__debug_pdb, id=ID_DEBUG_PDB)
@@ -1026,11 +1010,6 @@ class CPFrame(wx.Frame):
             wx.lib.inspection.InspectionTool().Show()
         except:
             wx.MessageBox("Inspection tool is not available on this platform")
-
-    @staticmethod
-    def __on_readers(event):
-        dlg = ReadersDialog()
-        dlg.Show()
 
     @staticmethod
     def __on_preferences(event):

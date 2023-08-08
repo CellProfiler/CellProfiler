@@ -10,7 +10,6 @@ import wx.grid
 import wx.lib.colourselect
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
-import wx.lib.mixins.gridlabelrenderer as wxglr
 from cellprofiler_core.pipeline import ModuleEdited
 from cellprofiler_core.pipeline import ModuleRemoved
 from cellprofiler_core.pipeline import PipelineCleared
@@ -46,7 +45,6 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.choice import Colormap
 from cellprofiler_core.setting.choice import CustomChoice
 from cellprofiler_core.setting.do_something import DoSomething, ImageSetDisplay
-from cellprofiler_core.setting.do_something import PathListExtractButton
 from cellprofiler_core.setting.do_something import PathListRefreshButton
 from cellprofiler_core.setting.filter import Filter
 from cellprofiler_core.setting.multichoice import MeasurementMultiChoice
@@ -73,7 +71,7 @@ from ._setting_edited_event import SettingEditedEvent
 from ._table_controller import TableController
 from ._validation_request_controller import ValidationRequestController
 from .. import _tree_checkbox_dialog
-from ..gridrenderers import RowLabelRenderer, ColLabelRenderer, CornerLabelRenderer
+from .. import cornerbuttonmixin
 from .. import metadatactrl
 from .. import namesubscriber
 from .. import regexp_editor
@@ -387,8 +385,6 @@ class ModuleView:
                 elif isinstance(v, DoSomething):
                     if isinstance(v, PathListRefreshButton) and v.callback is None:
                         v.callback = self.__frame.pipeline_controller.on_update_pathlist
-                    if isinstance(v, PathListExtractButton) and v.callback is None:
-                        v.callback = self.__frame.pipeline_controller.on_extract_metadata
                     control = self.make_callback_control(v, control_name, control)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, DoThings):
@@ -1567,11 +1563,11 @@ class ModuleView:
             control.GetSizer().Add(browse_button, 0, wx.EXPAND)
 
             def on_button(event):
-                selected_plane = self.__frame.pipeline_controller.pick_from_pathlist(
-                    v.get_plane(), instructions="Select an image plane from the list below"
+                url = self.__frame.pipeline_controller.pick_from_pathlist(
+                    v.url, instructions="Select an image file from the list below"
                 )
-                if selected_plane is not None:
-                    value = v.build(selected_plane)
+                if url is not None:
+                    value = v.build(url)
                     self.on_value_change(v, control, value, event)
                     url_control.Value = url2pathname(v.value)
 
@@ -2029,7 +2025,8 @@ class ModuleView:
 
         control.Bind(wx.EVT_BUTTON, callback, control)
         return control
-    class CornerButtonGrid(wx.grid.Grid, wxglr.GridWithLabelRenderersMixin):
+
+    class CornerButtonGrid(wx.grid.Grid, cornerbuttonmixin.CornerButtonMixin):
         def __init__(self, *args, **kwargs):
             kwargs = kwargs.copy()
             if "fn_clicked" in kwargs:
@@ -2039,37 +2036,11 @@ class ModuleView:
             label = kwargs.pop("label", "Update")
             tooltip = kwargs.pop("tooltip", "Update this table")
             wx.grid.Grid.__init__(self, *args, **kwargs)
-            wxglr.GridWithLabelRenderersMixin.__init__(self)
-            self._corner_label_renderer = CornerLabelRenderer(self, fn_clicked, tooltip=tooltip, label=label)
-            self.SetCornerLabelRenderer(self._corner_label_renderer)
-            self.SetDefaultRowLabelRenderer(RowLabelRenderer())
-            self.SetDefaultColLabelRenderer(ColLabelRenderer())
             self.sort_reverse = False
             self.Bind(wx.grid.EVT_GRID_COL_SORT, self.sort_cols)
-
-        @property
-        def fn_clicked(self):
-            return self._corner_label_renderer.fn_clicked
-
-        @fn_clicked.setter
-        def fn_clicked(self, value):
-            self._corner_label_renderer.fn_clicked = value
-
-        @property
-        def tooltip(self):
-            return self._corner_label_renderer.tooltip
-
-        @tooltip.setter
-        def tooltip(self, value):
-            self._corner_label_renderer.tooltip = value
-
-        @property
-        def label(self):
-            return self._corner_label_renderer.label
-
-        @label.setter
-        def label(self, value):
-            self._corner_label_renderer.label = value
+            cornerbuttonmixin.CornerButtonMixin.__init__(
+                self, fn_clicked, label, tooltip
+            )
 
         def sort_cols(self, event):
             if len(self.GetSelectedCols()) != 1:
@@ -2081,8 +2052,7 @@ class ModuleView:
                 self.sort_reverse = not self.sort_reverse
             tab = self.GetTable()
             tab.v.data.sort(
-                key=lambda thedata: thedata[tgtcolumn] if thedata[tgtcolumn] is not None else "",
-                reverse=self.sort_reverse
+                key=lambda thedata: thedata[tgtcolumn], reverse=self.sort_reverse
             )
             self.SetSortingColumn(tgtcolumn)
             self.ClearSelection()

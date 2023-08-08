@@ -3,6 +3,7 @@
 import os
 import os.path
 import re
+import base64
 
 import pkg_resources
 
@@ -41,6 +42,27 @@ def image_resource(filename):
     # the windows default '\\' here
     return relpath.replace("\\", "/")
 
+# returns a base64 encoded dataURL of the image pointed to by filename
+# https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URLs
+def image_resource_dataUrl(filename):
+    ext = os.path.splitext(filename)[1][1:]
+    if ext in ["svg", "xml"]:
+        ext = "svg+xml"
+
+    # acceptable image MIME types:
+    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#image_types
+    if ext not in ["apng", "avif", "gif", "jpeg", "png", "svg+xml", "webp"]:
+        return None
+
+    media_type = f"image/{ext}"
+
+    with open(image_resource(filename), "rb") as img:
+        b64_string = base64.b64encode(img.read())
+
+    data_url = f"data:{media_type};base64,{b64_string.decode('utf-8')}"
+
+    return data_url
+
 
 MANUAL_URL = "http://cellprofiler-manual.s3.amazonaws.com/CellProfiler-{}/index.html".format(
     cellprofiler.__version__
@@ -52,32 +74,32 @@ MANUAL_URL = "http://cellprofiler-manual.s3.amazonaws.com/CellProfiler-{}/index.
 # ICONS
 #
 ####################
-MODULE_HELP_BUTTON = image_resource("module_help.png")
-MODULE_MOVEUP_BUTTON = image_resource("module_moveup.png")
-MODULE_MOVEDOWN_BUTTON = image_resource("module_movedown.png")
-MODULE_ADD_BUTTON = image_resource("module_add.png")
-MODULE_REMOVE_BUTTON = image_resource("module_remove.png")
-TESTMODE_PAUSE_ICON = image_resource("IMG_PAUSE.png")
-TESTMODE_GO_ICON = image_resource("IMG_GO.png")
-DISPLAYMODE_SHOW_ICON = image_resource("eye-open.png")
-DISPLAYMODE_HIDE_ICON = image_resource("eye-close.png")
-SETTINGS_OK_ICON = image_resource("check.png")
-SETTINGS_ERROR_ICON = image_resource("remove-sign.png")
-SETTINGS_WARNING_ICON = image_resource("IMG_WARN.png")
-RUNSTATUS_PAUSE_BUTTON = image_resource("status_pause.png")
-RUNSTATUS_STOP_BUTTON = image_resource("status_stop.png")
-RUNSTATUS_SAVE_BUTTON = image_resource("status_save.png")
-WINDOW_HOME_BUTTON = image_resource("window_home.png")
-WINDOW_BACK_BUTTON = image_resource("window_back.png")
-WINDOW_FORWARD_BUTTON = image_resource("window_forward.png")
-WINDOW_PAN_BUTTON = image_resource("window_pan.png")
-WINDOW_ZOOMTORECT_BUTTON = image_resource("window_zoom_to_rect.png")
-WINDOW_SAVE_BUTTON = image_resource("window_filesave.png")
-ANALYZE_IMAGE_BUTTON = image_resource("IMG_ANALYZE_16.png")
-INACTIVE_STEP_BUTTON = image_resource("IMG_ANALYZED.png")
-STOP_ANALYSIS_BUTTON = image_resource("IMG_STOP.png")
-PAUSE_ANALYSIS_BUTTON = image_resource("IMG_PAUSE.png")
-INACTIVE_PAUSE_BUTTON = image_resource("IMG_GO_DIM.png")
+MODULE_HELP_BUTTON = "module_help.png"
+MODULE_MOVEUP_BUTTON = "module_moveup.png"
+MODULE_MOVEDOWN_BUTTON = "module_movedown.png"
+MODULE_ADD_BUTTON = "module_add.png"
+MODULE_REMOVE_BUTTON = "module_remove.png"
+TESTMODE_PAUSE_ICON = "IMG_PAUSE.png"
+TESTMODE_GO_ICON = "IMG_GO.png"
+DISPLAYMODE_SHOW_ICON = "eye-open.png"
+DISPLAYMODE_HIDE_ICON = "eye-close.png"
+SETTINGS_OK_ICON = "check.png"
+SETTINGS_ERROR_ICON = "remove-sign.png"
+SETTINGS_WARNING_ICON = "IMG_WARN.png"
+RUNSTATUS_PAUSE_BUTTON = "status_pause.png"
+RUNSTATUS_STOP_BUTTON = "status_stop.png"
+RUNSTATUS_SAVE_BUTTON = "status_save.png"
+WINDOW_HOME_BUTTON = "window_home.png"
+WINDOW_BACK_BUTTON = "window_back.png"
+WINDOW_FORWARD_BUTTON = "window_forward.png"
+WINDOW_PAN_BUTTON = "window_pan.png"
+WINDOW_ZOOMTORECT_BUTTON = "window_zoom_to_rect.png"
+WINDOW_SAVE_BUTTON = "window_filesave.png"
+ANALYZE_IMAGE_BUTTON = "IMG_ANALYZE_16.png"
+INACTIVE_STEP_BUTTON = "IMG_ANALYZED.png"
+STOP_ANALYSIS_BUTTON = "IMG_STOP.png"
+PAUSE_ANALYSIS_BUTTON = "IMG_PAUSE.png"
+INACTIVE_PAUSE_BUTTON = "IMG_GO_DIM.png"
 
 
 ####################

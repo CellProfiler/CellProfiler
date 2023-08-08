@@ -36,6 +36,7 @@ from .pipeline import Pipeline
 from .pipelinecontroller import PipelineController
 from .pipelinelistview import PipelineListView
 from .preferences_dialog._preferences_dialog import PreferencesDialog
+from .readers_dialog._readers_dialog import ReadersDialog
 from .preferences_view import PreferencesView
 from .utilities.module_view import stop_validation_queue_thread
 
@@ -110,6 +111,7 @@ ID_EDIT_GO_TO_MODULE = wx.NewId()
 ID_FIND_USAGES = wx.NewId()
 
 ID_OPTIONS_PREFERENCES = wx.ID_PREFERENCES
+ID_OPTIONS_READERS = wx.NewId()
 ID_CHECK_NEW_VERSION = wx.NewId()
 
 ID_DEBUG_TOGGLE = wx.NewId()
@@ -172,10 +174,10 @@ class CPFrame(wx.Frame):
         # them and beat them.
         self.__splitter.SetBackgroundStyle(0)
 
-        self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
+        self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE, name="right_win")
         self.__right_win.SetAutoLayout(True)
 
-        self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
+        self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE, name="left_win")
         # bottom left will be the file browser
 
         self.__module_list_panel = wx.Panel(self.__left_win)
@@ -212,7 +214,7 @@ class CPFrame(wx.Frame):
         self.__notes_panel = wx.Panel(self.__right_win)
         self.__right_win.GetSizer().Add(self.__notes_panel, 0, wx.EXPAND | wx.ALL)
         self.__right_win.GetSizer().AddSpacer(4)
-        self.__path_module_imageset_panel = wx.Panel(self.__right_win)
+        self.__path_module_imageset_panel = wx.Panel(self.__right_win, name="path_module_imageset_panel")
         self.__right_win.GetSizer().Add(
             self.__path_module_imageset_panel, 1, wx.EXPAND | wx.ALL
         )
@@ -232,7 +234,7 @@ class CPFrame(wx.Frame):
         # Path list sash controls path list sizing
         #
         self.__path_list_sash = wx.adv.SashLayoutWindow(
-            self.__path_module_imageset_panel, style=wx.NO_BORDER
+            self.__path_module_imageset_panel, style=wx.NO_BORDER, name="path_list_sash"
         )
         self.__path_list_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
@@ -250,8 +252,8 @@ class CPFrame(wx.Frame):
         #
         # Path list control
         #
-        self.__path_list_ctrl = PathListCtrl(self.__path_list_sash)
-        self.__path_list_ctrl.SetBackgroundColour(wx.WHITE)
+        self.__path_list_ctrl = PathListCtrl(self.__path_list_sash, style=wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS |
+                                             wx.TR_MULTIPLE | wx.TR_FULL_ROW_HIGHLIGHT | wx.TR_LINES_AT_ROOT)
         sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
         #
         # Path list tools horizontal sizer
@@ -300,7 +302,7 @@ class CPFrame(wx.Frame):
         ######################################################################
 
         self.__imageset_sash = wx.adv.SashLayoutWindow(
-            self.__path_module_imageset_panel, style=wx.NO_BORDER
+            self.__path_module_imageset_panel, style=wx.NO_BORDER, name="imageset_sash"
         )
         self.__imageset_sash.SetOrientation(wx.adv.LAYOUT_HORIZONTAL)
         self.__imageset_sash.SetAlignment(wx.adv.LAYOUT_BOTTOM)
@@ -310,7 +312,7 @@ class CPFrame(wx.Frame):
         self.__imageset_sash.SetSashVisible(wx.adv.SASH_TOP, True)
         self.__imageset_sash.Bind(wx.adv.EVT_SASH_DRAGGED, self.__on_sash_drag)
         self.__imageset_sash.Hide()
-        self.__imageset_panel = wx.Panel(self.__imageset_sash)
+        self.__imageset_panel = wx.Panel(self.__imageset_sash, name="imageset_panel")
         self.__imageset_panel.SetSizer(wx.BoxSizer())
         self.__imageset_panel.SetAutoLayout(True)
 
@@ -518,12 +520,12 @@ class CPFrame(wx.Frame):
                 exc_info=True,
             )
         try:
-            from bioformats.formatreader import clear_image_reader_cache
-
-            clear_image_reader_cache()
+            from cellprofiler_core.constants.reader import ALL_READERS
+            for reader in ALL_READERS.values():
+                reader.clear_cached_readers()
         except:
             logging.warning(
-                "Failed to clear bioformats reader cache during close", exc_info=True,
+                "Failed to clear reader cache during close", exc_info=True,
             )
         try:
             self.__preferences_view.close()
@@ -656,6 +658,11 @@ class CPFrame(wx.Frame):
         if sys.platform == "darwin":
             self.__menu_file.Append(ID_FILE_NEW_CP, "Open A New CP Window")
             self.__menu_file.AppendSeparator()
+        self.__menu_file.Append(
+            ID_OPTIONS_READERS,
+            "Configure Readers...",
+            "Configure image file reader preferences",
+        )
         self.__menu_file.Append(
             ID_OPTIONS_PREFERENCES,
             "&Preferences...",
@@ -872,6 +879,7 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.__on_help_module, id=ID_HELP_MODULE)
         self.Bind(wx.EVT_BUTTON, self.__on_help_module, id=ID_HELP_MODULE)
 
+        self.Bind(wx.EVT_MENU, self.__on_readers, id=ID_OPTIONS_READERS)
         self.Bind(wx.EVT_MENU, self.__on_preferences, id=ID_OPTIONS_PREFERENCES)
         self.Bind(wx.EVT_MENU, self.__on_close_all, id=ID_WINDOW_CLOSE_ALL)
         self.Bind(wx.EVT_MENU, self.__debug_pdb, id=ID_DEBUG_PDB)
@@ -1018,6 +1026,11 @@ class CPFrame(wx.Frame):
             wx.lib.inspection.InspectionTool().Show()
         except:
             wx.MessageBox("Inspection tool is not available on this platform")
+
+    @staticmethod
+    def __on_readers(event):
+        dlg = ReadersDialog()
+        dlg.Show()
 
     @staticmethod
     def __on_preferences(event):

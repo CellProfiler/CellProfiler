@@ -3,6 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Welcome Screen</title>
+
+    <style>
+        body {
+            font-family: "sans-serif";
+            font-size: "small";
+        }
+        @media (prefers-color-scheme: dark) {
+            body {
+                color: #eee;
+                background: #121212;
+            }
+
+            body a {
+                color: #809fff;
+            }
+        }
+    </style>
 </head>
 <body style = "font-family: sans-serif;">
 <p style="text-align: center;"><strong><span style="font-size: larger;">Welcome to CellProfiler!</span></strong></p>
@@ -11,7 +28,7 @@
 <tr style="height: 50%; vertical-align: middle;">
     <td style="width: 25%; border-width: 3; border-color: blue;" align="center"><strong><span style="font-size: small;">Try Example</span></strong><br /> <a href="loadexample:ExampleFly"><img src="{{WELCOME_PIPELINE}}" border="" /></a></td>
     <td style="width: 25%;" align="center"><strong><span style="font-size: small;">Getting Started<br /> <a href="help:gettingstarted"><img src="{{WELCOME_START}}" border=""/></a></span></strong></td>
-    <td style="width: 25%;" align="center"><strong><span style="font-size: small;">More Examples</span></strong><br /> <a href="http://cellprofiler.org/examples"><img src="{{WELCOME_EXAMPLES}}" border="" /></a></td>
+    <td style="width: 25%;" align="center"><strong><span style="font-size: small;">More Examples</span></strong><br /> <a href="https://cellprofiler.org/examples"><img src="{{WELCOME_EXAMPLES}}" border="" /></a></td>
 
     <td style="width: 25%;" align="center"><strong><span style="font-size: small;">Tutorials</span></strong><br /> <a href="https://tutorials.cellprofiler.org"><img src="{{WELCOME_TUTORIALS}}" border="" /></a></td>
 </tr>

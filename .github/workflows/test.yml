@@ -40,7 +40,7 @@ jobs:
           pip install pyinstaller
           pip install --upgrade pip setuptools wheel
           pip install numpy>=1.20.1
-          git clone https://github.com/CellProfiler/core.git ~/core
+          git clone --branch 4.2.x https://github.com/CellProfiler/core.git ~/core
       - name: Mac - setup mysql
         if: startsWith(matrix.os, 'macos')
         env:

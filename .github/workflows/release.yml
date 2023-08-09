@@ -32,7 +32,6 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install numpy==1.23.1
           pip install pyinstaller==4.10
-          pip install wxPython==4.1.0
           git clone --branch 4.2.x https://github.com/CellProfiler/distribution.git 
       - env:
           LDFLAGS: -L/usr/local/opt/openssl/lib

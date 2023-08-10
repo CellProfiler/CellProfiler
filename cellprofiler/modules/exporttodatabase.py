@@ -168,6 +168,8 @@ except Exception:
 #
 ##############################################
 D_MEASUREMENT_COLUMNS = "MeasurementColumns"
+D_PROPERTIES_IMAGES = "PropertiesImages"
+D_PROPERTIES_CHANNELS = "PropertiesChannels"
 
 """The column name for the image number column"""
 C_IMAGE_NUMBER = "ImageNumber"
@@ -2344,12 +2346,6 @@ available:
         if pipeline.test_mode:
             return True
 
-        # Clear out any redundant records from previous runs.
-        if workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
-            workspace.measurements.remove_measurement("Experiment", "ExportToDb_Images")
-        if workspace.measurements.hdf5_dict.has_feature("ExportToDb", "ExportToDb_Channels"):
-            workspace.measurements.remove_measurement("ExportToDb", "ExportToDb_Channels")
-
         needs_close = False
         try:
             # This is necessary to prevent python from thinking cellprofiler doesn't exist in this scope
@@ -2584,6 +2580,7 @@ available:
         if workspace.pipeline.test_mode:
             return
         if self.save_cpa_properties.value:
+            # May want to eventually only run this on the first image set, but this is safer
             self.record_image_channels(workspace)
         if self.db_type == DB_MYSQL and not workspace.pipeline.test_mode:
             try:
@@ -4147,14 +4144,14 @@ CREATE TABLE %s (
 
     def write_properties_file(self, workspace):
         """Write the CellProfiler Analyst properties file"""
-        all_properties = self.get_property_file_text(workspace)
+        all_properties = self.get_property_file_text(workspace, post_run=True)
         for properties in all_properties:
             with open(properties.file_name, "wt") as fid:
                 fid.write(properties.text)
             if self.show_window:
                 workspace.display_data.columns.append(("Properties_File", properties.file_name))
 
-    def get_property_file_text(self, workspace):
+    def get_property_file_text(self, workspace, post_run=False):
         """Get the text for all property files
 
         workspace - the workspace from prepare_run
@@ -4186,6 +4183,7 @@ CREATE TABLE %s (
                     k, v = [x.strip() for x in line.split("=", 1)]
                     self.properties[k] = v
 
+        shared_state = self.get_dictionary()
         result = []
         #Is image processed as 3D?
         process_3D = workspace.pipeline.volumetric()
@@ -4274,10 +4272,9 @@ CREATE TABLE %s (
             "image" if self.properties_classification_type.value == CT_IMAGE else ""
         )
 
-        if not object_names:
-            # If we're in pre-run phase, store the image names we'll need
-            if not workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
-                workspace.measurements.add_experiment_measurement("ExportToDb_Images", default_image_names)
+        if not post_run:
+            # Initialise the image list we need
+            shared_state[D_PROPERTIES_IMAGES] = default_image_names
 
         for object_name in object_names:
             if object_name:
@@ -4352,16 +4349,19 @@ CREATE TABLE %s (
                 )
                 channels_per_image = []
 
-                if workspace.measurements.hdf5_dict.has_feature("ExportToDb", "ExportToDb_Channels"):
+                if post_run:
                     # We're in the post-run phase, fetch out the image channel counts
-                    images_list = workspace.measurements.get_experiment_measurement("ExportToDb_Images")
-                    if isinstance(images_list, str):
-                        images_list = [images_list]
-                    channels_list = workspace.measurements.get_measurement("ExportToDb", "ExportToDb_Channels")
-                    channels_dict = dict(zip(images_list, channels_list))
+                    if D_PROPERTIES_CHANNELS not in shared_state:
+                        # This shouldn't happen, but just in case...
+                        LOGGER.error("Channel details weren't found in the module cache. "
+                                     "Properties file will assume 1 channel per image")
+                        channels_dict = {}
+                    else:
+                        images_list = shared_state[D_PROPERTIES_IMAGES]
+                        channels_list = shared_state[D_PROPERTIES_CHANNELS]
+                        channels_dict = dict(zip(images_list, channels_list))
                 else:
                     channels_dict = {}
-
                 for image in default_image_names:
                     channels_per_image.append(channels_dict.get(image, 1))
                 num_images = sum(channels_per_image)
@@ -4388,10 +4388,6 @@ CREATE TABLE %s (
                     image_channel_colors = image_channel_colors[:num_images]
                 elif len(image_channel_colors) < num_images:
                     image_channel_colors += ["none"] * (num_images - len(image_channel_colors))
-
-                # If we're in pre-run phase, store the image names we'll need
-                if not workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
-                    workspace.measurements.add_experiment_measurement("ExportToDb_Images", default_image_names)
 
                 # Convert to comma-separated lists
                 image_names_csl = ",".join(default_image_names)
@@ -4425,13 +4421,17 @@ CREATE TABLE %s (
                 selected_image_names = []
                 channels_per_image = []
 
-                if workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
+                if post_run:
                     # We're in the post-run phase, fetch out the image channel counts
-                    images_list = workspace.measurements.get_experiment_measurement("ExportToDb_Images")
-                    if isinstance(images_list, str):
-                        images_list = [images_list]
-                    channels_list = workspace.measurements.get_measurement("ExportToDb", "ExportToDb_Channels")
-                    channels_dict = dict(zip(images_list, channels_list))
+                    if D_PROPERTIES_CHANNELS not in shared_state:
+                        # This shouldn't happen, but just in case...
+                        LOGGER.error("Channel details weren't found in the module cache. "
+                                     "Properties file will assume 1 channel per image")
+                        channels_dict = {}
+                    else:
+                        images_list = shared_state[D_PROPERTIES_IMAGES]
+                        channels_list = shared_state[D_PROPERTIES_CHANNELS]
+                        channels_dict = dict(zip(images_list, channels_list))
                 else:
                     channels_dict = {}
 
@@ -4446,9 +4446,9 @@ CREATE TABLE %s (
                     image_channel_colors += [group.image_channel_colors.value] * num_channels
                 channels_per_image = ",".join(map(str, channels_per_image))
 
-                # If we're in pre-run phase, store the image names we'll need
-                if not workspace.measurements.hdf5_dict.has_feature("Experiment", "ExportToDb_Images"):
-                    workspace.measurements.add_experiment_measurement("ExportToDb_Images", selected_image_names)
+                # If we're in pre-run phase, update the channel list with just those we specifically need
+                if not post_run:
+                    shared_state[D_PROPERTIES_IMAGES] = selected_image_names
 
                 image_file_cols = ",".join(
                     [
@@ -4793,17 +4793,16 @@ process_3D = {process_3D}
     def record_image_channels(self, workspace):
         # We only have access to the image details during the run itself.
         # Fetch out the images we want in the properties file and log their channel counts.
-        image_list = workspace.measurements.get_experiment_measurement("ExportToDb_Images")
+        shared_state = self.get_dictionary()
+        image_list = shared_state[D_PROPERTIES_IMAGES]
         channel_list = []
-        if isinstance(image_list, str):
-            image_list = [image_list]
         for image_name in image_list:
             img = workspace.image_set.get_image(image_name)
             if img.multichannel:
                 channel_list.append(img.image.shape[-1])
             else:
                 channel_list.append(1)
-        workspace.measurements.add_measurement("ExportToDb", "ExportToDb_Channels", channel_list)
+        shared_state[D_PROPERTIES_CHANNELS] = channel_list
 
     def write_workspace_file(self, workspace):
         """If requested, write a workspace file with selected measurements"""

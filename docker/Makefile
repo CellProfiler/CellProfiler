@@ -60,4 +60,4 @@ test: input output output/gold data input/filelist.txt AS_09125_050116030001_D03
 		--file-list=/input/filelist.txt
 	
 	# Compare gold files against output that was run.
-	diff -b output/AS_09125_050116030001_D03f00d0_Overlay.png output/gold/AS_09125_050116030001_D03f00d0_Overlay.png
+	python -c "import imageio.v3 as iio; import numpy as np; im1 = iio.imread('output/AS_09125_050116030001_D03f00d0_Overlay.png'); im2 = iio.imread('output/gold/AS_09125_050116030001_D03f00d0_Overlay.png'); res = np.array_equal(im1, im2) and exit() ; exit(1)"

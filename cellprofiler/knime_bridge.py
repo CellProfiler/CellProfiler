@@ -693,7 +693,7 @@ class KnimeBridgeServer(threading.Thread):
         return pixel_data
 
 
-__all__ = [KnimeBridgeServer]
+__all__ = ['KnimeBridgeServer']
 #
 # For testing only
 #

@@ -567,9 +567,7 @@ class PipelineController(object):
         panel.
         """
         self.__module_controls_panel = module_controls_panel
-        #self.__module_controls_panel2 = module_controls_panel
         mcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        mcp_sizer2 = wx.BoxSizer(wx.VERTICAL)
         self.__help_button = wx.Button(
             self.__module_controls_panel,
             cellprofiler.gui.cpframe.ID_HELP_MODULE,
@@ -621,7 +619,6 @@ class PipelineController(object):
             ]
         )
         self.__module_controls_panel.SetSizer(mcp_sizer)
-        #self.__module_controls_panel2.SetSizer(mcp_sizer2)
         self.__module_controls_panel.Bind(
             wx.EVT_BUTTON, self.__on_add_module, self.__mcp_add_module_button
         )

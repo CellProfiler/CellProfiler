@@ -89,6 +89,7 @@ class MakeProjection(Module):
     module_name = "MakeProjection"
     category = "Image Processing"
     variable_revision_number = 2
+
     def create_settings(self):
         self.image_name = ImageSubscriber(
             "Select the input image",

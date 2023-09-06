@@ -3,7 +3,6 @@ import numpy
 from cellprofiler.library.functions.object_processing import (
     watershed as library_watershed,
 )
-import skimage
 
 # Simple wrapper for the object_procceing watershed function
 def watershed(

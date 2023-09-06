@@ -7,15 +7,11 @@ import skimage.color
 import skimage.feature
 import skimage.filters
 import skimage.filters.rank
-import skimage.measure
 import skimage.segmentation
 import skimage.transform
-import skimage.util
 
 import cellprofiler_core.image
 import cellprofiler.modules.watershed
-
-from cellprofiler.library.functions.object_processing import watershed
 
 instance = cellprofiler.modules.watershed.Watershed()
 

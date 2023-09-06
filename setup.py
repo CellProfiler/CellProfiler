@@ -83,7 +83,7 @@ setuptools.setup(
         "sentry-sdk==0.18.0",
         "requests~=2.31.0",
         "scikit-image~=0.20.0",
-        "scikit-learn~=0.20.0",
+        "scikit-learn~=1.3.0",
         "scipy>=1.9.1,<1.11",
         "scyjava>=1.9.1",
         "six~=1.16.0",

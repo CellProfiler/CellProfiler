@@ -31,7 +31,6 @@ def shrink_defined_pixels(labels, fill, iterations):
                 labels, iterations=iterations
             )
 
-
 def add_dividing_lines(labels):
     """
     Remove pixels from an object that are adjacent to
@@ -55,7 +54,6 @@ def skeletonize(labels):
     """
     return centrosome.cpmorphology.skeletonize_labels(labels)
 
-
 def despur(labels, iterations):
     """
     Remove or reduce the length of spurs in a skeletonized
@@ -64,7 +62,6 @@ def despur(labels, iterations):
     return centrosome.cpmorphology.spur(
                 labels, iterations=iterations
             )
-
 
 def expand(labels, distance):
     """
@@ -141,7 +138,6 @@ def merge_objects(labels_x, labels_y, dimensions):
         output[to_segment] = labels_x[i[to_segment], j[to_segment], v[to_segment]]
     
     return output
-
 
 def preserve_objects(labels_x, labels_y):
     """
@@ -228,7 +224,6 @@ def segment_objects(labels_x, labels_y, dimensions):
         output[to_segment] = seeds[i[to_segment], j[to_segment], v[to_segment]]
 
     return output
-
 
 def watershed(
     input_image: numpy.ndarray,
@@ -407,7 +402,6 @@ def watershed(
     else:
         return watershed_image
 
-
 def fill_object_holes(labels, diameter, planewise=False):
     array = labels.copy()
     # Calculate radius from diameter
@@ -442,7 +436,6 @@ def fill_object_holes(labels, diameter, planewise=False):
             )
             array[filled_mask] = obj
     return array
-
 
 def fill_convex_hulls(labels):
     data = skimage.measure.regionprops(labels)

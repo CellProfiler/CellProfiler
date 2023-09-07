@@ -702,13 +702,15 @@ class Pipeline:
         headers = {
                       'Accept': 'text/x-bibliography; style=apa',
                     }
-        for module in self.modules(exclude_disabled=True):
+        
+        lines.append("Please cite the following when using CellProfiler: Stirling, D. R., Swain-Bowden, M. J., Lucas, A. M., Carpenter, A. E., Cimini, B. A., & Goodman, A. (2021). CellProfiler 4: improvements in speed, utility and usability. In BMC Bioinformatics (Vol. 22, Issue 1). Springer Science and Business Media LLC. https://doi.org/10.1186/s12859-021-04344-9")
+        lines.append("")
+        for module in self.modules(exclude_disabled=False):
             if module.enabled:
                 fmt = "[%4.d] [%s]"
             else:
                 fmt = "[%4.d] [%s] (disabled)"
             doi_link_list=module.doi
-
             if len(doi_link_list)>0:
                 citation_list = [
                     f"{doi_text} {requests.get(doi_link, headers=headers).content.decode('utf-8')}"

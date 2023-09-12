@@ -1,7 +1,11 @@
-import centrosome.cpmorphology 
+from typing import Literal
+import warnings
+import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
 import skimage.morphology
+import mahotas
+
 
 def shrink_to_point(labels, fill):
     """
@@ -25,7 +29,7 @@ def shrink_defined_pixels(labels, fill, iterations):
         labels=centrosome.cpmorphology.fill_labeled_holes(labels)
     return centrosome.cpmorphology.binary_shrink(
                 labels, iterations=iterations
-            )     
+            )
 
 def add_dividing_lines(labels):
     """
@@ -93,7 +97,7 @@ def expand_defined_pixels(labels, iterations):
     adjacent to the image `iterations` times. Processing stops 
     automatically if there are no more background pixels.
     """
-    return expand(labels,iterations)
+    return expand(labels, iterations)
 
 def merge_objects(labels_x, labels_y, dimensions):
     """
@@ -221,6 +225,183 @@ def segment_objects(labels_x, labels_y, dimensions):
 
     return output
 
+def watershed(
+    input_image: numpy.ndarray,
+    mask: numpy.ndarray = None,
+    watershed_method: Literal["distance", "markers", "intensity"] = "distance",
+    declump_method: Literal["shape", "intensity", "none"] = "shape",
+    seed_method: Literal["local", "regional"] = "local",
+    intensity_image: numpy.ndarray = None,
+    markers_image: numpy.ndarray = None,
+    max_seeds: int = -1,
+    downsample: int = 1,
+    min_distance: int = 1,
+    min_intensity: float = 0,
+    footprint: int = 8,
+    connectivity: int = 1,
+    compactness: float = 0.0,
+    exclude_border: bool = False,
+    watershed_line: bool = False,
+    gaussian_sigma: float = 0.0,
+    structuring_element: Literal[
+        "ball", "cube", "diamond", "disk", "octahedron", "square", "star"
+    ] = "disk",
+    structuring_element_size: int = 1,
+    return_seeds: bool = False,
+):
+    # Check inputs
+    if not numpy.array_equal(input_image, input_image.astype(bool)):
+        raise ValueError("Watershed expects a thresholded image as input")
+    if (
+        watershed_method.casefold() == "intensity" or declump_method.casefold() == "intensity"
+    ) and intensity_image is None:
+        raise ValueError(f"Intensity-based methods require an intensity image")
+
+    if watershed_method.casefold() == "markers" and markers_image is None:
+        raise ValueError("Markers watershed method require a markers image")
+
+    # No declumping, so just label the binary input image
+    if declump_method.casefold() == "none":
+        if mask is not None:
+            input_image[~mask] = 0
+        watershed_image = scipy.ndimage.label(input_image)[0]
+        if return_seeds:
+            return watershed_image, numpy.zeros_like(watershed_image, bool)
+        else:
+            return watershed_image
+
+    # Create and check structuring element for seed dilation
+    strel = getattr(skimage.morphology, structuring_element.casefold())(
+        structuring_element_size
+    )
+
+    if strel.ndim != input_image.ndim:
+        raise ValueError(
+            "Structuring element does not match object dimensions: "
+            "{} != {}".format(strel.ndim, input_image.ndim)
+        )
+
+    if input_image.ndim == 3:
+        maxima_footprint = numpy.ones((footprint, footprint, footprint))
+    else:
+        maxima_footprint = numpy.ones((footprint, footprint))
+
+    # Downsample input image
+    if downsample > 1:
+        input_shape = input_image.shape
+        if input_image.ndim > 2:
+            # Only scale x and y
+            factors = (1, downsample, downsample)
+        else:
+            factors = (downsample, downsample)
+
+        input_image = skimage.transform.downscale_local_mean(input_image, factors)
+        # Resize optional images
+        if intensity_image is not None:
+            intensity_image = skimage.transform.downscale_local_mean(
+                intensity_image, factors
+            )
+        if markers_image is not None:
+            markers_image = skimage.transform.downscale_local_mean(
+                markers_image, factors
+            )
+        if mask is not None:
+            mask = skimage.transform.downscale_local_mean(mask, factors)
+
+    # Only calculate the distance transform if required for shape-based declumping
+    # or distance-based seed generation
+    if declump_method.casefold() == "shape" or watershed_method.casefold() == "distance":
+        smoothed_input_image = skimage.filters.gaussian(
+            input_image, sigma=gaussian_sigma
+        )
+        # Calculate distance transform
+        distance = scipy.ndimage.distance_transform_edt(smoothed_input_image)
+
+    # Generate alternative input to the watershed based on declumping
+    if declump_method.casefold() == "shape":
+        # Invert the distance transform of the input image.
+        # The peaks of the distance tranform become the troughs and
+        # this image is given as input to watershed
+        watershed_input_image = -distance
+        # Move to positive realm
+        watershed_input_image = watershed_input_image - watershed_input_image.min()
+    elif declump_method.casefold() == "intensity":
+        # Convert pixel intensity peaks to troughs and
+        # use this as the image input in watershed
+        watershed_input_image = 1 - intensity_image
+    else:
+        raise ValueError(f"declump_method {declump_method} is not supported.")
+
+    # Determine image from which to calculate seeds
+    if watershed_method.casefold() == "distance":
+        seed_image = distance
+    elif watershed_method.casefold() == "intensity":
+        seed_image = intensity_image
+    elif watershed_method.casefold() == "markers":
+        # The user has provided their own seeds/markers
+        seeds = markers_image
+        seeds = skimage.morphology.binary_dilation(seeds, strel)
+    else:
+        raise NotImplementedError(
+            f"watershed method {watershed_method} is not supported"
+        )
+
+    if not watershed_method.casefold() == "markers":
+        # Generate seeds
+        if seed_method.casefold() == "local":
+            seed_coords = skimage.feature.peak_local_max(
+                seed_image,
+                min_distance=min_distance,
+                threshold_rel=min_intensity,
+                footprint=maxima_footprint,
+                num_peaks=max_seeds if max_seeds != -1 else numpy.inf,
+                exclude_border=False
+            )
+            seeds = numpy.zeros(seed_image.shape, dtype=bool)
+            seeds[tuple(seed_coords.T)] = True
+            seeds = skimage.morphology.binary_dilation(seeds, strel)
+            seeds = scipy.ndimage.label(seeds)[0]
+
+        elif seed_method.casefold() == "regional":
+            seeds = mahotas.regmax(seed_image, maxima_footprint)
+            seeds = skimage.morphology.binary_dilation(seeds, strel)
+            seeds = scipy.ndimage.label(seeds)[0]
+        else:
+            raise NotImplementedError(
+                f"seed_method {seed_method} is not supported."
+            )
+
+    # Run watershed
+    watershed_image = skimage.segmentation.watershed(
+        watershed_input_image,
+        markers=seeds,
+        mask=mask if mask is not None else input_image != 0,
+        connectivity=connectivity,
+        compactness=compactness,
+        watershed_line=watershed_line,
+    )
+
+    # Reverse downsampling
+    if downsample > 1:
+        watershed_image = skimage.transform.resize(
+            watershed_image, input_shape, mode="edge", order=0, preserve_range=True
+        )
+        watershed_image = numpy.rint(watershed_image).astype(numpy.uint16)
+
+    if exclude_border:
+        watershed_image = skimage.segmentation.clear_border(watershed_image)
+
+    if return_seeds:
+        # Reverse seed downsampling
+        if downsample > 1:
+            seeds = skimage.transform.resize(
+                seeds, input_shape, mode="edge", order=0, preserve_range=True
+            )
+            seeds = numpy.rint(seeds).astype(numpy.uint16)
+        return watershed_image, seeds
+    else:
+        return watershed_image
+
 def fill_object_holes(labels, diameter, planewise=False):
     array = labels.copy()
     # Calculate radius from diameter
@@ -229,11 +410,11 @@ def fill_object_holes(labels, diameter, planewise=False):
     # Check if grayscale, RGB or operation is being performed planewise
     if labels.ndim == 2 or labels.shape[-1] in (3, 4) or planewise:
         # 2D circle area will be calculated
-        factor = radius ** 2  
+        factor = radius ** 2
     else:
         # Calculate the volume of a sphere
-        factor = (4.0/3.0) * (radius ** 3)
-    
+        factor = (4.0 / 3.0) * (radius ** 3)
+
     min_obj_size = numpy.pi * factor
 
     if planewise and labels.ndim != 2 and labels.shape[-1] not in (3, 4):
@@ -241,14 +422,18 @@ def fill_object_holes(labels, diameter, planewise=False):
             for obj in numpy.unique(plane):
                 if obj == 0:
                     continue
-                filled_mask = skimage.morphology.remove_small_holes(plane == obj, min_obj_size)
-                plane[filled_mask] = obj    
+                filled_mask = skimage.morphology.remove_small_holes(
+                    plane == obj, min_obj_size
+                )
+                plane[filled_mask] = obj
         return array
     else:
         for obj in numpy.unique(array):
             if obj == 0:
                 continue
-            filled_mask = skimage.morphology.remove_small_holes(array == obj, min_obj_size)
+            filled_mask = skimage.morphology.remove_small_holes(
+                array == obj, min_obj_size
+            )
             array[filled_mask] = obj
     return array
 
@@ -256,11 +441,13 @@ def fill_convex_hulls(labels):
     data = skimage.measure.regionprops(labels)
     output = numpy.zeros_like(labels)
     for prop in data:
-        label = prop['label']
-        bbox = prop['bbox']
-        cmask = prop['convex_image']
+        label = prop["label"]
+        bbox = prop["bbox"]
+        cmask = prop["convex_image"]
         if len(bbox) <= 4:
-            output[bbox[0]:bbox[2], bbox[1]:bbox[3]][cmask] = label
+            output[bbox[0] : bbox[2], bbox[1] : bbox[3]][cmask] = label
         else:
-            output[bbox[0]:bbox[3], bbox[1]:bbox[4], bbox[2]: bbox[5]][cmask] = label
+            output[bbox[0] : bbox[3], bbox[1] : bbox[4], bbox[2] : bbox[5]][
+                cmask
+            ] = label
     return output

@@ -15,22 +15,15 @@ O_SHAPE = "Shape"
 O_INTENSITY = "Intensity"
 O_NONE = "None"
 
-default_settings = {
-    "use_advanced": False,
-    "watershed_method": O_DISTANCE,
+basic_mode_defaults = {
     "seed_method": O_LOCAL,
-    "display_maxima": False,
-    "intensity_name": "None",
+    "max_seeds": -1,
+    "min_distance": 1,
+    "min_intensity": 0.0,
     "connectivity": 1,
     "compactness": 0.0,
     "watershed_line": False,
-    "declump_method": O_SHAPE,
     "gaussian_sigma": 0.0,
-    "min_distance": 1,
-    "min_intensity": 0.0,
-    "exclude_border": False,
-    "max_seeds": -1,
-    "structuring_element": "Disk,1",
 }
 
 __doc__ = """
@@ -101,7 +94,7 @@ class Watershed(ImageSegmentation):
 
         self.use_advanced = Binary(
             "Use advanced settings?",
-            value=default_settings["use_advanced"],
+            value=False,
             doc="""\
 The advanced settings provide additional options to improve calculation of seed
 objects. If this option is not selected, then the watershed algorithm is applied
@@ -112,7 +105,7 @@ according to the basic settings.
         self.watershed_method = Choice(
             "Select watershed method",
             choices=[O_DISTANCE, O_MARKERS, O_INTENSITY],
-            value=default_settings["watershed_method"],
+            value=O_DISTANCE,
             doc="""\
 Select a method of inputs for the watershed algorithm:
 
@@ -137,7 +130,7 @@ Select a method of inputs for the watershed algorithm:
         self.seed_method = Choice(
             "Select seed generation method",
             choices=[O_LOCAL, O_REGIONAL],
-            value=default_settings["seed_method"],
+            value=basic_mode_defaults["seed_method"],
             doc="""\
 -  *{O_LOCAL}*: Seed objects will be found within the footprint. One 
     seed object will be proposed within each footprint 'window'.
@@ -154,7 +147,7 @@ Select a method of inputs for the watershed algorithm:
 
         self.display_maxima = Binary(
             "Display watershed seeds?",
-            value=default_settings["display_maxima"],
+            value=False,
             doc="""\
 Select "*{YES}*" to display the seeds used for watershed.
             """.format(
@@ -203,13 +196,13 @@ See `skimage watershed`_ for more information.
 """,
             minval=1,
             text="Connectivity",
-            value=default_settings["connectivity"],
+            value=basic_mode_defaults["connectivity"],
         )
 
         self.compactness = Float(
             text="Compactness",
             minval=0.0,
-            value=default_settings["compactness"],
+            value=basic_mode_defaults["compactness"],
             doc="""\
 Use `compact watershed`_ with a given compactness parameter. Higher values result
 in more regularly-shaped watershed basins.
@@ -257,7 +250,7 @@ segmentation.
 
         self.watershed_line = Binary(
             text="Separate watershed labels",
-            value=default_settings["watershed_line"],
+            value=basic_mode_defaults["watershed_line"],
             doc="""\
 Create a 1 pixel wide line around the watershed labels. This effectively
 separates the different objects identified by the watershed algorithm, rather
@@ -298,7 +291,7 @@ between segmented objects.
 
         self.gaussian_sigma = Float(
             text="Segmentation distance transform smoothing factor",
-            value=default_settings["gaussian_sigma"],
+            value=basic_mode_defaults["gaussian_sigma"],
             doc="""\
 Sigma defines how 'smooth' the Gaussian kernel makes the distance transformed
 input image. A higher sigma means a smoother image.
@@ -307,7 +300,7 @@ input image. A higher sigma means a smoother image.
 
         self.min_distance = Integer(
             text="Minimum distance between seeds",
-            value=default_settings["min_distance"],
+            value=basic_mode_defaults["min_distance"],
             minval=0,
             doc="""\
 Minimum number of pixels separating peaks in a region of `2 * min_distance + 1 `
@@ -318,7 +311,7 @@ of peaks, set this value to `1`.
 
         self.min_intensity = Float(
             text="Specify the minimum intensity of a peak",
-            value=default_settings["min_intensity"],
+            value=basic_mode_defaults["min_intensity"],
             minval=0.,
             doc="""\
 Intensity peaks below this threshold value will be excluded. Use this to ensure
@@ -328,13 +321,13 @@ that your local maxima are within objects of interest.
 
         self.exclude_border = Binary(
             "Discard objects touching the border of the image?",
-            value=default_settings["exclude_border"],
+            value=False,
             doc="Clear objects connected to the image border.",
         )
 
         self.max_seeds = Integer(
             text="Maximum number of seeds",
-            value=default_settings["max_seeds"],
+            value=basic_mode_defaults["max_seeds"],
             doc="""\
 Maximum number of seeds to generate. Default is no limit, defined by `-1`. When
 the number of seeds exceeds this number, seeds are chosen based on largest
@@ -488,21 +481,29 @@ require volumetric structuring elements.
                 mask=mask_data,
                 watershed_method=self.watershed_method.value,
                 declump_method=self.declump_method.value,
-                seed_method=self.seed_method.value if self.use_advanced else default_settings["seed_method"],
+                seed_method=self.seed_method.value if self.use_advanced \
+                    else basic_mode_defaults["seed_method"],
                 intensity_image=intensity_data,
                 markers_image=markers_data,
-                max_seeds=self.max_seeds.value if self.use_advanced else default_settings["max_seeds"],
+                max_seeds=self.max_seeds.value if self.use_advanced \
+                    else basic_mode_defaults["max_seeds"],
                 downsample=self.downsample.value,
-                min_distance=self.min_distance.value if self.use_advanced else default_settings["min_distance"],
-                min_intensity=self.min_intensity.value if self.use_advanced else default_settings["min_intensity"],
+                min_distance=self.min_distance.value if self.use_advanced \
+                    else basic_mode_defaults["min_distance"],
+                min_intensity=self.min_intensity.value if self.use_advanced \
+                    else basic_mode_defaults["min_intensity"],
                 footprint=self.footprint.value,
-                connectivity=self.connectivity.value if self.use_advanced else default_settings["connectivity"],
-                compactness=self.compactness.value if self.use_advanced else default_settings["compactness"],
+                connectivity=self.connectivity.value if self.use_advanced \
+                    else basic_mode_defaults["connectivity"],
+                compactness=self.compactness.value if self.use_advanced \
+                    else basic_mode_defaults["compactness"],
                 exclude_border=self.exclude_border.value,
-                watershed_line=self.watershed_line.value if self.use_advanced else default_settings["watershed_line"],
-                gaussian_sigma=self.gaussian_sigma.value if self.use_advanced else default_settings["gaussian_sigma"],
+                watershed_line=self.watershed_line.value if self.use_advanced \
+                    else basic_mode_defaults["watershed_line"],
+                gaussian_sigma=self.gaussian_sigma.value if self.use_advanced \
+                    else basic_mode_defaults["gaussian_sigma"],
                 structuring_element=self.structuring_element.shape,
-                structuring_element_size=self.structuring_element.size,  
+                structuring_element_size=self.structuring_element.size,
                 return_seeds=True,
                 )
 
@@ -575,8 +576,8 @@ require volumetric structuring elements.
             # Last two items were moved down to add more options for seeded watershed
             new_values = setting_values[:-2]
 
-            new_values += [default_settings["connectivity"],
-                           default_settings["compactness"]]
+            # add: connectivity, compactness
+            new_values += [1, 0.0]
 
             # Add the rest of the settings
             new_values += setting_values[-2:]
@@ -589,7 +590,8 @@ require volumetric structuring elements.
             # first two settings are unchanged
             new_values = setting_values[0:2]
 
-            new_values += [default_settings["use_advanced"]]
+            # add: use advanced?
+            new_values += [False]
 
             # add remainder of settings
             new_values += setting_values[2:]
@@ -598,34 +600,29 @@ require volumetric structuring elements.
             variable_revision_number = 3
 
         if variable_revision_number == 3:
+            # is "use advanced?" true?
             is_advanced = setting_values[2] == "Yes"
 
             new_values = setting_values[0:4]
 
-            new_values += [default_settings["seed_method"],
-                           default_settings["display_maxima"]]
+            # add: seed method and display maxima
+            new_values += [O_LOCAL, False]
 
             new_values += setting_values[4:5]
-            
-            new_values += [default_settings["intensity_name"]]
+
+            # add: intensity name
+            # if advanced: intensity name gets old reference image name
+            new_values += [setting_values[12] if is_advanced else "None"]
 
             new_values += setting_values[5:11]
 
             if is_advanced:
                 new_values += setting_values[11:12]
-
-                # intensity name gets old reference image name
-                new_values[7] = setting_values[12]
-
                 new_values += setting_values[13:]
             else:
-                new_values += [default_settings["declump_method"],
-                               default_settings["gaussian_sigma"],
-                               default_settings["min_distance"],
-                               default_settings["min_intensity"],
-                               default_settings["exclude_border"],
-                               default_settings["max_seeds"],
-                               default_settings["structuring_element"]]
+                # add declump method, gaussian sigma, min distance,
+                # min intensity, exlude border, max seeds, structuring element
+                new_values += [O_SHAPE, 0.0, 1, 0.0, False, -1, "Disk,1"]
 
             setting_values = new_values
             variable_revision_number = 4

@@ -1,7 +1,7 @@
 import cellprofiler_core.object
 import skimage
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
-from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Binary, StructuringElement
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float
@@ -16,14 +16,21 @@ O_INTENSITY = "Intensity"
 O_NONE = "None"
 
 default_settings = {
+    "use_advanced": False,
+    "watershed_method": O_DISTANCE,
     "seed_method": O_LOCAL,
-    "max_seeds": -1,
-    "min_distance": 1,
-    "min_intensity": 0.0,
+    "display_maxima": False,
+    "intensity_name": "None",
     "connectivity": 1,
     "compactness": 0.0,
     "watershed_line": False,
+    "declump_method": O_SHAPE,
     "gaussian_sigma": 0.0,
+    "min_distance": 1,
+    "min_intensity": 0.0,
+    "exclude_border": False,
+    "max_seeds": -1,
+    "structuring_element": "Disk,1",
 }
 
 __doc__ = """
@@ -94,7 +101,7 @@ class Watershed(ImageSegmentation):
 
         self.use_advanced = Binary(
             "Use advanced settings?",
-            value=False,
+            value=default_settings["use_advanced"],
             doc="""\
 The advanced settings provide additional options to improve calculation of seed
 objects. If this option is not selected, then the watershed algorithm is applied
@@ -105,7 +112,7 @@ according to the basic settings.
         self.watershed_method = Choice(
             "Select watershed method",
             choices=[O_DISTANCE, O_MARKERS, O_INTENSITY],
-            value=O_DISTANCE,
+            value=default_settings["watershed_method"],
             doc="""\
 Select a method of inputs for the watershed algorithm:
 
@@ -147,7 +154,7 @@ Select a method of inputs for the watershed algorithm:
 
         self.display_maxima = Binary(
             "Display watershed seeds?",
-            value=False,
+            value=default_settings["display_maxima"],
             doc="""\
 Select "*{YES}*" to display the seeds used for watershed.
             """.format(
@@ -212,16 +219,6 @@ in more regularly-shaped watershed basins.
 """,
         )
 
-        self.watershed_line = Binary(
-            text="Separate watershed labels",
-            value=default_settings["watershed_line"],
-            doc="""\
-Create a 1 pixel wide line around the watershed labels. This effectively
-separates the different objects identified by the watershed algorithm, rather
-than allowing them to touch. The line has the same label as the background.
-""",
-        )
-
         self.footprint = Integer(
             doc="""\
 The **Footprint** defines the dimensions of the window used to scan the input
@@ -258,7 +255,17 @@ segmentation.
             value=1,
         )
 
-        self.declump_method = cellprofiler_core.setting.choice.Choice(
+        self.watershed_line = Binary(
+            text="Separate watershed labels",
+            value=default_settings["watershed_line"],
+            doc="""\
+Create a 1 pixel wide line around the watershed labels. This effectively
+separates the different objects identified by the watershed algorithm, rather
+than allowing them to touch. The line has the same label as the background.
+""",
+        )
+
+        self.declump_method = Choice(
             text="Declump method",
             choices=[O_SHAPE, O_INTENSITY, O_NONE],
             value=O_SHAPE,
@@ -289,7 +296,7 @@ between segmented objects.
             })
         )
 
-        self.gaussian_sigma = cellprofiler_core.setting.text.Float(
+        self.gaussian_sigma = Float(
             text="Segmentation distance transform smoothing factor",
             value=default_settings["gaussian_sigma"],
             doc="""\
@@ -298,7 +305,7 @@ input image. A higher sigma means a smoother image.
 """
         )
 
-        self.min_distance = cellprofiler_core.setting.text.Integer(
+        self.min_distance = Integer(
             text="Minimum distance between seeds",
             value=default_settings["min_distance"],
             minval=0,
@@ -309,7 +316,7 @@ of peaks, set this value to `1`.
 """
         )
 
-        self.min_intensity = cellprofiler_core.setting.text.Float(
+        self.min_intensity = Float(
             text="Specify the minimum intensity of a peak",
             value=default_settings["min_intensity"],
             minval=0.,
@@ -321,11 +328,11 @@ that your local maxima are within objects of interest.
 
         self.exclude_border = Binary(
             "Discard objects touching the border of the image?",
-            value=False,
+            value=default_settings["exclude_border"],
             doc="Clear objects connected to the image border.",
         )
 
-        self.max_seeds = cellprofiler_core.setting.text.Integer(
+        self.max_seeds = Integer(
             text="Maximum number of seeds",
             value=default_settings["max_seeds"],
             doc="""\
@@ -335,7 +342,7 @@ internal distance.
         """
         )
 
-        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+        self.structuring_element = StructuringElement(
             text="Structuring element for seed dilation",
             doc="""\
 Structuring element to use for dilating the seeds. Volumetric images will
@@ -382,7 +389,7 @@ require volumetric structuring elements.
 
         __settings__ += [
             self.mask_name,
-            self.watershed_method,   
+            self.watershed_method,
         ]
 
         if self.watershed_method == O_MARKERS:
@@ -566,31 +573,61 @@ require volumetric structuring elements.
 
         if variable_revision_number == 1:
             # Last two items were moved down to add more options for seeded watershed
-            __settings__ = setting_values[:-2]
+            new_values = setting_values[:-2]
 
-            # Add default connectivity and compactness
-            __settings__ += [1, 0.0]
+            new_values += [default_settings["connectivity"],
+                           default_settings["compactness"]]
 
             # Add the rest of the settings
-            __settings__ += setting_values[-2:]
+            new_values += setting_values[-2:]
 
+            setting_values = new_values
             variable_revision_number = 2
 
         if variable_revision_number == 2:
             # Use advanced? is a new parameter
             # first two settings are unchanged
-            __settings__ = setting_values[0:2]
+            new_values = setting_values[0:2]
 
-            # add False for "Use advanced?"
-            __settings__ += [False]
+            new_values += [default_settings["use_advanced"]]
 
             # add remainder of settings
-            __settings__ += setting_values[2:]
+            new_values += setting_values[2:]
 
+            setting_values = new_values
             variable_revision_number = 3
 
+        if variable_revision_number == 3:
+            is_advanced = setting_values[2] == "Yes"
 
-        else:
-            __settings__ = setting_values
+            new_values = setting_values[0:4]
 
-        return __settings__, variable_revision_number
+            new_values += [default_settings["seed_method"],
+                           default_settings["display_maxima"]]
+
+            new_values += setting_values[4:5]
+            
+            new_values += [default_settings["intensity_name"]]
+
+            new_values += setting_values[5:11]
+
+            if is_advanced:
+                new_values += setting_values[11:12]
+
+                # intensity name gets old reference image name
+                new_values[7] = setting_values[12]
+
+                new_values += setting_values[13:]
+            else:
+                new_values += [default_settings["declump_method"],
+                               default_settings["gaussian_sigma"],
+                               default_settings["min_distance"],
+                               default_settings["min_intensity"],
+                               default_settings["exclude_border"],
+                               default_settings["max_seeds"],
+                               default_settings["structuring_element"]]
+
+            setting_values = new_values
+            variable_revision_number = 4
+
+        return setting_values, variable_revision_number

@@ -1,7 +1,7 @@
 import cellprofiler_core.object
 import skimage
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
-from cellprofiler_core.setting import Binary
+from cellprofiler_core.setting import Binary, StructuringElement
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float
@@ -15,7 +15,7 @@ O_SHAPE = "Shape"
 O_INTENSITY = "Intensity"
 O_NONE = "None"
 
-default_settings = {
+basic_mode_defaults = {
     "seed_method": O_LOCAL,
     "max_seeds": -1,
     "min_distance": 1,
@@ -130,7 +130,7 @@ Select a method of inputs for the watershed algorithm:
         self.seed_method = Choice(
             "Select seed generation method",
             choices=[O_LOCAL, O_REGIONAL],
-            value=default_settings["seed_method"],
+            value=basic_mode_defaults["seed_method"],
             doc="""\
 -  *{O_LOCAL}*: Seed objects will be found within the footprint. One 
     seed object will be proposed within each footprint 'window'.
@@ -196,29 +196,19 @@ See `skimage watershed`_ for more information.
 """,
             minval=1,
             text="Connectivity",
-            value=default_settings["connectivity"],
+            value=basic_mode_defaults["connectivity"],
         )
 
         self.compactness = Float(
             text="Compactness",
             minval=0.0,
-            value=default_settings["compactness"],
+            value=basic_mode_defaults["compactness"],
             doc="""\
 Use `compact watershed`_ with a given compactness parameter. Higher values result
 in more regularly-shaped watershed basins.
 
 
 .. _compact watershed: https://scikit-image.org/docs/stable/api/skimage.segmentation.html#skimage.segmentation.watershed
-""",
-        )
-
-        self.watershed_line = Binary(
-            text="Separate watershed labels",
-            value=default_settings["watershed_line"],
-            doc="""\
-Create a 1 pixel wide line around the watershed labels. This effectively
-separates the different objects identified by the watershed algorithm, rather
-than allowing them to touch. The line has the same label as the background.
 """,
         )
 
@@ -258,7 +248,17 @@ segmentation.
             value=1,
         )
 
-        self.declump_method = cellprofiler_core.setting.choice.Choice(
+        self.watershed_line = Binary(
+            text="Separate watershed labels",
+            value=basic_mode_defaults["watershed_line"],
+            doc="""\
+Create a 1 pixel wide line around the watershed labels. This effectively
+separates the different objects identified by the watershed algorithm, rather
+than allowing them to touch. The line has the same label as the background.
+""",
+        )
+
+        self.declump_method = Choice(
             text="Declump method",
             choices=[O_SHAPE, O_INTENSITY, O_NONE],
             value=O_SHAPE,
@@ -289,18 +289,18 @@ between segmented objects.
             })
         )
 
-        self.gaussian_sigma = cellprofiler_core.setting.text.Float(
+        self.gaussian_sigma = Float(
             text="Segmentation distance transform smoothing factor",
-            value=default_settings["gaussian_sigma"],
+            value=basic_mode_defaults["gaussian_sigma"],
             doc="""\
 Sigma defines how 'smooth' the Gaussian kernel makes the distance transformed
 input image. A higher sigma means a smoother image.
 """
         )
 
-        self.min_distance = cellprofiler_core.setting.text.Integer(
+        self.min_distance = Integer(
             text="Minimum distance between seeds",
-            value=default_settings["min_distance"],
+            value=basic_mode_defaults["min_distance"],
             minval=0,
             doc="""\
 Minimum number of pixels separating peaks in a region of `2 * min_distance + 1 `
@@ -309,9 +309,9 @@ of peaks, set this value to `1`.
 """
         )
 
-        self.min_intensity = cellprofiler_core.setting.text.Float(
+        self.min_intensity = Float(
             text="Specify the minimum intensity of a peak",
-            value=default_settings["min_intensity"],
+            value=basic_mode_defaults["min_intensity"],
             minval=0.,
             doc="""\
 Intensity peaks below this threshold value will be excluded. Use this to ensure
@@ -325,9 +325,9 @@ that your local maxima are within objects of interest.
             doc="Clear objects connected to the image border.",
         )
 
-        self.max_seeds = cellprofiler_core.setting.text.Integer(
+        self.max_seeds = Integer(
             text="Maximum number of seeds",
-            value=default_settings["max_seeds"],
+            value=basic_mode_defaults["max_seeds"],
             doc="""\
 Maximum number of seeds to generate. Default is no limit, defined by `-1`. When
 the number of seeds exceeds this number, seeds are chosen based on largest
@@ -335,7 +335,7 @@ internal distance.
         """
         )
 
-        self.structuring_element = cellprofiler_core.setting.StructuringElement(
+        self.structuring_element = StructuringElement(
             text="Structuring element for seed dilation",
             doc="""\
 Structuring element to use for dilating the seeds. Volumetric images will
@@ -382,7 +382,7 @@ require volumetric structuring elements.
 
         __settings__ += [
             self.mask_name,
-            self.watershed_method,   
+            self.watershed_method,
         ]
 
         if self.watershed_method == O_MARKERS:
@@ -481,21 +481,29 @@ require volumetric structuring elements.
                 mask=mask_data,
                 watershed_method=self.watershed_method.value,
                 declump_method=self.declump_method.value,
-                seed_method=self.seed_method.value if self.use_advanced else default_settings["seed_method"],
+                seed_method=self.seed_method.value if self.use_advanced \
+                    else basic_mode_defaults["seed_method"],
                 intensity_image=intensity_data,
                 markers_image=markers_data,
-                max_seeds=self.max_seeds.value if self.use_advanced else default_settings["max_seeds"],
+                max_seeds=self.max_seeds.value if self.use_advanced \
+                    else basic_mode_defaults["max_seeds"],
                 downsample=self.downsample.value,
-                min_distance=self.min_distance.value if self.use_advanced else default_settings["min_distance"],
-                min_intensity=self.min_intensity.value if self.use_advanced else default_settings["min_intensity"],
+                min_distance=self.min_distance.value if self.use_advanced \
+                    else basic_mode_defaults["min_distance"],
+                min_intensity=self.min_intensity.value if self.use_advanced \
+                    else basic_mode_defaults["min_intensity"],
                 footprint=self.footprint.value,
-                connectivity=self.connectivity.value if self.use_advanced else default_settings["connectivity"],
-                compactness=self.compactness.value if self.use_advanced else default_settings["compactness"],
+                connectivity=self.connectivity.value if self.use_advanced \
+                    else basic_mode_defaults["connectivity"],
+                compactness=self.compactness.value if self.use_advanced \
+                    else basic_mode_defaults["compactness"],
                 exclude_border=self.exclude_border.value,
-                watershed_line=self.watershed_line.value if self.use_advanced else default_settings["watershed_line"],
-                gaussian_sigma=self.gaussian_sigma.value if self.use_advanced else default_settings["gaussian_sigma"],
+                watershed_line=self.watershed_line.value if self.use_advanced \
+                    else basic_mode_defaults["watershed_line"],
+                gaussian_sigma=self.gaussian_sigma.value if self.use_advanced \
+                    else basic_mode_defaults["gaussian_sigma"],
                 structuring_element=self.structuring_element.shape,
-                structuring_element_size=self.structuring_element.size,  
+                structuring_element_size=self.structuring_element.size,
                 return_seeds=True,
                 )
 
@@ -566,31 +574,57 @@ require volumetric structuring elements.
 
         if variable_revision_number == 1:
             # Last two items were moved down to add more options for seeded watershed
-            __settings__ = setting_values[:-2]
+            new_values = setting_values[:-2]
 
-            # Add default connectivity and compactness
-            __settings__ += [1, 0.0]
+            # add: connectivity, compactness
+            new_values += [1, 0.0]
 
             # Add the rest of the settings
-            __settings__ += setting_values[-2:]
+            new_values += setting_values[-2:]
 
+            setting_values = new_values
             variable_revision_number = 2
 
         if variable_revision_number == 2:
             # Use advanced? is a new parameter
             # first two settings are unchanged
-            __settings__ = setting_values[0:2]
+            new_values = setting_values[0:2]
 
-            # add False for "Use advanced?"
-            __settings__ += [False]
+            # add: use advanced?
+            new_values += [False]
 
             # add remainder of settings
-            __settings__ += setting_values[2:]
+            new_values += setting_values[2:]
 
+            setting_values = new_values
             variable_revision_number = 3
 
+        if variable_revision_number == 3:
+            # is "use advanced?" true?
+            is_advanced = setting_values[2] == "Yes"
 
-        else:
-            __settings__ = setting_values
+            new_values = setting_values[0:4]
 
-        return __settings__, variable_revision_number
+            # add: seed method and display maxima
+            new_values += [O_LOCAL, False]
+
+            new_values += setting_values[4:5]
+
+            # add: intensity name
+            # if advanced: intensity name gets old reference image name
+            new_values += [setting_values[12] if is_advanced else "None"]
+
+            new_values += setting_values[5:11]
+
+            if is_advanced:
+                new_values += setting_values[11:12]
+                new_values += setting_values[13:]
+            else:
+                # add declump method, gaussian sigma, min distance,
+                # min intensity, exlude border, max seeds, structuring element
+                new_values += [O_SHAPE, 0.0, 1, 0.0, False, -1, "Disk,1"]
+
+            setting_values = new_values
+            variable_revision_number = 4
+
+        return setting_values, variable_revision_number

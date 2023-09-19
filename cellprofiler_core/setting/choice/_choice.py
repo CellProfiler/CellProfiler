@@ -45,7 +45,10 @@ class Choice(Setting):
     
     def get_enum_member(self):
         """The enum value for the current setting"""
-        return self.__enum(self.value)
+        if self.__enum:
+            return self.__enum(self.value)
+        else:
+            raise ValueError("Choice setting is not an enum")
     
     enum_member = property(__internal_get_enum_member)
 

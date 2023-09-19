@@ -1,4 +1,3 @@
-import scipy
 from cellprofiler.library.functions.image_processing import median_filter
 
 

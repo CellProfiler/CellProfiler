@@ -100,7 +100,6 @@ class Rules(Module):
                 cutoff = 1
 
             query = '_'.join((object_name,feature_name))
-            # closest_match = get_close_matches(query,measurement_list,1,cutoff)
             s = SequenceMatcher(b=query)
             closest_match = process.extractOne(
                 query,

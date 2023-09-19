@@ -45,7 +45,7 @@ class Choice(Setting):
     
     def get_enum_member(self):
         """The enum value for the current setting"""
-        return self.__enum._value2member_map_[self.value]
+        return self.__enum(self.value)
     
     enum_member = property(__internal_get_enum_member)
 

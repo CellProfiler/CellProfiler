@@ -1,0 +1,9 @@
+CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:300
+GitHash:
+ModuleCount:1
+HasImagePlaneDetails:False
+
+MeasurementFixture:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\'αβ\'|batch_state:array([], dtype=uint8)|enabled:True|wants_pause:False]
+    :∑

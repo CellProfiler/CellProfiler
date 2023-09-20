@@ -1,0 +1,1473 @@
+{
+    "has_image_plane_details": false,
+    "date_revision": 407,
+    "module_count": 16,
+    "modules": [
+        {
+            "attributes": {
+                "module_num": 1,
+                "notes": 1,
+                "show_window": false,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 2,
+                "module_name": "Images",
+                "module_path": "cellprofiler_core.modules.images.Images"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting._path_list_display.PathListDisplay",
+                    "text": "",
+                    "value": ""
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Filter images?",
+                    "value": "Images only"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the rule criteria",
+                    "value": "and (extension does isimage) (directory doesnot containregexp \"[\\\\\\\\\\\\\\\\/]\\\\\\\\.\")"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 2,
+                "notes": 2,
+                "show_window": false,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 6,
+                "module_name": "Metadata",
+                "module_path": "cellprofiler_core.modules.metadata.Metadata"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Extract metadata?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Metadata data type",
+                    "value": "Text"
+                },
+                {
+                    "name": "cellprofiler_core.setting._data_types.DataTypes",
+                    "text": "Metadata types",
+                    "value": "{}"
+                },
+                {
+                    "name": "cellprofiler_core.setting._hidden_count.HiddenCount",
+                    "text": "Extraction method count",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Metadata extraction method",
+                    "value": "Extract from image file headers"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Metadata source",
+                    "value": "File name"
+                },
+                {
+                    "name": "cellprofiler_core.setting._regexp_text.RegexpText",
+                    "text": "Regular expression to extract from file name",
+                    "value": "^(?P<Plate>.*)_(?P<Well>[A-P][0-9]{2})_s(?P<Site>[0-9])_w(?P<ChannelNumber>[0-9])"
+                },
+                {
+                    "name": "cellprofiler_core.setting._regexp_text.RegexpText",
+                    "text": "Regular expression to extract from folder name",
+                    "value": "(?P<Date>[0-9]{4}_[0-9]{2}_[0-9]{2})$"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Extract metadata from",
+                    "value": "All images"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the filtering criteria",
+                    "value": "and (file does contain \"\")"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._directory.Directory",
+                    "text": "Metadata file location",
+                    "value": "Elsewhere...|"
+                },
+                {
+                    "name": "cellprofiler_core.setting._joiner.Joiner",
+                    "text": "Match file and image metadata",
+                    "value": "[]"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Use case insensitive matching?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._filename.Filename",
+                    "text": "Metadata file name",
+                    "value": ""
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Does cached metadata exist?",
+                    "value": "No"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 3,
+                "notes": 3,
+                "show_window": false,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 8,
+                "module_name": "NamesAndTypes",
+                "module_path": "cellprofiler_core.modules.namesandtypes.NamesAndTypes"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Assign a name to",
+                    "value": "Images matching rules"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the image type",
+                    "value": "Grayscale image"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name.FileImageName",
+                    "text": "Name to assign these images",
+                    "value": "DNA"
+                },
+                {
+                    "name": "cellprofiler_core.setting._joiner.Joiner",
+                    "text": "Match metadata",
+                    "value": "[]"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Image set matching method",
+                    "value": "Order"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Set intensity range from",
+                    "value": "Image metadata"
+                },
+                {
+                    "name": "cellprofiler_core.setting._hidden_count.HiddenCount",
+                    "text": "Assignments count",
+                    "value": "3"
+                },
+                {
+                    "name": "cellprofiler_core.setting._hidden_count.HiddenCount",
+                    "text": "Single images count",
+                    "value": "0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Maximum intensity",
+                    "value": "255.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Process as 3D?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative pixel spacing in X",
+                    "value": "1.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative pixel spacing in Y",
+                    "value": "1.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative pixel spacing in Z",
+                    "value": "1.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the rule criteria",
+                    "value": "and (file does contain \"D.TIF\")"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name.FileImageName",
+                    "text": "Name to assign these images",
+                    "value": "OrigBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+                    "text": "Name to assign these objects",
+                    "value": "Cell"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the image type",
+                    "value": "Grayscale image"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Set intensity range from",
+                    "value": "Image metadata"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Maximum intensity",
+                    "value": "255.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the rule criteria",
+                    "value": "and (file does contain \"F.TIF\")"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name.FileImageName",
+                    "text": "Name to assign these images",
+                    "value": "OrigGreen"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+                    "text": "Name to assign these objects",
+                    "value": "Nucleus"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the image type",
+                    "value": "Grayscale image"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Set intensity range from",
+                    "value": "Image metadata"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Maximum intensity",
+                    "value": "255.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.filter._filter.Filter",
+                    "text": "Select the rule criteria",
+                    "value": "and (file does contain \"R.TIF\")"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._file_image_name.FileImageName",
+                    "text": "Name to assign these images",
+                    "value": "OrigRed"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+                    "text": "Name to assign these objects",
+                    "value": "Cytoplasm"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the image type",
+                    "value": "Grayscale image"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Set intensity range from",
+                    "value": "Image metadata"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Maximum intensity",
+                    "value": "255.0"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 4,
+                "notes": 4,
+                "show_window": false,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 2,
+                "module_name": "Groups",
+                "module_path": "cellprofiler_core.modules.groups.Groups"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Do you want to group your images?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting._hidden_count.HiddenCount",
+                    "text": "grouping metadata count",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Metadata category",
+                    "value": "None"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 5,
+                "notes": 5,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 3,
+                "module_name": "Crop",
+                "module_path": "cellprofiler.modules.crop.Crop"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the input image",
+                    "value": "OrigBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._crop_image_name.CropImageName",
+                    "text": "Name the output image",
+                    "value": "CropBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the cropping shape",
+                    "value": "Rectangle"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the cropping method",
+                    "value": "Coordinates"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Apply which cycle's cropping pattern?",
+                    "value": "First"
+                },
+                {
+                    "name": "cellprofiler_core.setting.range.integer_range._integer_or_unbounded_range.IntegerOrUnboundedRange",
+                    "text": "Left and right rectangle positions",
+                    "value": "501,700"
+                },
+                {
+                    "name": "cellprofiler_core.setting.range.integer_range._integer_or_unbounded_range.IntegerOrUnboundedRange",
+                    "text": "Top and bottom rectangle positions",
+                    "value": "251,450"
+                },
+                {
+                    "name": "cellprofiler_core.setting._coordinates.Coordinates",
+                    "text": "Coordinates of ellipse center",
+                    "value": "200,500"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Ellipse radius, X direction",
+                    "value": "400"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Ellipse radius, Y direction",
+                    "value": "200"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Remove empty rows and columns?",
+                    "value": "Edges"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the masking image",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._crop_image_subscriber.CropImageSubscriber",
+                    "text": "Select the image with a cropping mask",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber._label_subscriber.LabelSubscriber",
+                    "text": "Select the objects",
+                    "value": "None"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 6,
+                "notes": 6,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 3,
+                "module_name": "Crop",
+                "module_path": "cellprofiler.modules.crop.Crop"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the input image",
+                    "value": "OrigGreen"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._crop_image_name.CropImageName",
+                    "text": "Name the output image",
+                    "value": "CropGreen"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the cropping shape",
+                    "value": "Previous cropping"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the cropping method",
+                    "value": "Coordinates"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Apply which cycle's cropping pattern?",
+                    "value": "First"
+                },
+                {
+                    "name": "cellprofiler_core.setting.range.integer_range._integer_or_unbounded_range.IntegerOrUnboundedRange",
+                    "text": "Left and right rectangle positions",
+                    "value": "300,600"
+                },
+                {
+                    "name": "cellprofiler_core.setting.range.integer_range._integer_or_unbounded_range.IntegerOrUnboundedRange",
+                    "text": "Top and bottom rectangle positions",
+                    "value": "300,600"
+                },
+                {
+                    "name": "cellprofiler_core.setting._coordinates.Coordinates",
+                    "text": "Coordinates of ellipse center",
+                    "value": "500,500"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Ellipse radius, X direction",
+                    "value": "400"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Ellipse radius, Y direction",
+                    "value": "200"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Remove empty rows and columns?",
+                    "value": "Edges"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the masking image",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._crop_image_subscriber.CropImageSubscriber",
+                    "text": "Select the image with a cropping mask",
+                    "value": "CropBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber._label_subscriber.LabelSubscriber",
+                    "text": "Select the objects",
+                    "value": "None"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 7,
+                "notes": 7,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 3,
+                "module_name": "Crop",
+                "module_path": "cellprofiler.modules.crop.Crop"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the input image",
+                    "value": "OrigRed"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._crop_image_name.CropImageName",
+                    "text": "Name the output image",
+                    "value": "CropRed"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the cropping shape",
+                    "value": "Previous cropping"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the cropping method",
+                    "value": "Coordinates"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Apply which cycle's cropping pattern?",
+                    "value": "First"
+                },
+                {
+                    "name": "cellprofiler_core.setting.range.integer_range._integer_or_unbounded_range.IntegerOrUnboundedRange",
+                    "text": "Left and right rectangle positions",
+                    "value": "300,600"
+                },
+                {
+                    "name": "cellprofiler_core.setting.range.integer_range._integer_or_unbounded_range.IntegerOrUnboundedRange",
+                    "text": "Top and bottom rectangle positions",
+                    "value": "300,600"
+                },
+                {
+                    "name": "cellprofiler_core.setting._coordinates.Coordinates",
+                    "text": "Coordinates of ellipse center",
+                    "value": "500,500"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Ellipse radius, X direction",
+                    "value": "400"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Ellipse radius, Y direction",
+                    "value": "200"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Remove empty rows and columns?",
+                    "value": "Edges"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the masking image",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._crop_image_subscriber.CropImageSubscriber",
+                    "text": "Select the image with a cropping mask",
+                    "value": "CropBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber._label_subscriber.LabelSubscriber",
+                    "text": "Select the objects",
+                    "value": "None"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 8,
+                "notes": 8,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 14,
+                "module_name": "IdentifyPrimaryObjects",
+                "module_path": "cellprofiler.modules.identifyprimaryobjects.IdentifyPrimaryObjects"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the input image",
+                    "value": "CropBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+                    "text": "Name the primary objects to be identified",
+                    "value": "Nuclei"
+                },
+                {
+                    "name": "cellprofiler_core.setting.range.integer_range._integer_range.IntegerRange",
+                    "text": "Typical diameter of objects, in pixel units (Min,Max)",
+                    "value": "10,40"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Discard objects outside the diameter range?",
+                    "value": "Yes"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Discard objects touching the border of the image?",
+                    "value": "Yes"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Method to distinguish clumped objects",
+                    "value": "Shape"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Method to draw dividing lines between clumped objects",
+                    "value": "Shape"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Size of smoothing filter",
+                    "value": "10"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Suppress local maxima that are closer than this minimum allowed distance",
+                    "value": "5"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Speed up by using lower-resolution image to find local maxima?",
+                    "value": "Yes"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Fill holes in identified objects?",
+                    "value": "After declumping only"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Automatically calculate size of smoothing filter for declumping?",
+                    "value": "Yes"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Automatically calculate minimum allowed distance between local maxima?",
+                    "value": "Yes"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Handling of objects if excessive number of objects identified",
+                    "value": "Continue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Maximum number of objects",
+                    "value": "500"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Display accepted local maxima?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting._color.Color",
+                    "text": "Select maxima color",
+                    "value": "Blue"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Use advanced settings?",
+                    "value": "Yes"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Threshold setting version",
+                    "value": "12"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Threshold strategy",
+                    "value": "Global"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Thresholding method",
+                    "value": "Minimum Cross-Entropy"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Threshold smoothing scale",
+                    "value": "1.3488"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Threshold correction factor",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.range._float_range.FloatRange",
+                    "text": "Lower and upper bounds on threshold",
+                    "value": "0,1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Manual threshold",
+                    "value": "0.0"
+                },
+                {
+                    "name": "cellprofiler_core.setting._measurement.Measurement",
+                    "text": "Select the measurement to threshold with",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Two-class or three-class thresholding?",
+                    "value": "Three classes"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Log transform before thresholding?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Assign pixels in the middle intensity class to the foreground or the background?",
+                    "value": "Background"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Size of adaptive window",
+                    "value": "10"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Lower outlier fraction",
+                    "value": "0.05"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Upper outlier fraction",
+                    "value": "0.05"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Averaging method",
+                    "value": "Mean"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Variance method",
+                    "value": "Standard deviation"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "# of deviations",
+                    "value": "2"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Thresholding method",
+                    "value": "Otsu"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 9,
+                "notes": 9,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 10,
+                "module_name": "IdentifySecondaryObjects",
+                "module_path": "cellprofiler.modules.identifysecondaryobjects.IdentifySecondaryObjects"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.subscriber._label_subscriber.LabelSubscriber",
+                    "text": "Select the input objects",
+                    "value": "Nuclei"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+                    "text": "Name the objects to be identified",
+                    "value": "Cells"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the method to identify the secondary objects",
+                    "value": "Propagation"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the input image",
+                    "value": "CropGreen"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Number of pixels by which to expand the primary objects",
+                    "value": "10"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Regularization factor",
+                    "value": "0.05"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Discard secondary objects touching the border of the image?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Discard the associated primary objects?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+                    "text": "Name the new primary objects",
+                    "value": "FilteredNuclei"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Fill holes in identified objects?",
+                    "value": "Yes"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Threshold setting version",
+                    "value": "12"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Threshold strategy",
+                    "value": "Global"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Thresholding method",
+                    "value": "Minimum Cross-Entropy"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Threshold smoothing scale",
+                    "value": "0"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Threshold correction factor",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.range._float_range.FloatRange",
+                    "text": "Lower and upper bounds on threshold",
+                    "value": "0,1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Manual threshold",
+                    "value": "0"
+                },
+                {
+                    "name": "cellprofiler_core.setting._measurement.Measurement",
+                    "text": "Select the measurement to threshold with",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Two-class or three-class thresholding?",
+                    "value": "Two classes"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Log transform before thresholding?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Assign pixels in the middle intensity class to the foreground or the background?",
+                    "value": "Foreground"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Size of adaptive window",
+                    "value": "10"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Lower outlier fraction",
+                    "value": "0.05"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Upper outlier fraction",
+                    "value": "0.05"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Averaging method",
+                    "value": "Mean"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Variance method",
+                    "value": "Standard deviation"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "# of deviations",
+                    "value": "2"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Thresholding method",
+                    "value": "Otsu"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 10,
+                "notes": 10,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 3,
+                "module_name": "IdentifyTertiaryObjects",
+                "module_path": "cellprofiler.modules.identifytertiaryobjects.IdentifyTertiaryObjects"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.subscriber._label_subscriber.LabelSubscriber",
+                    "text": "Select the larger identified objects",
+                    "value": "Cells"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber._label_subscriber.LabelSubscriber",
+                    "text": "Select the smaller identified objects",
+                    "value": "Nuclei"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name._label_name.LabelName",
+                    "text": "Name the tertiary objects to be identified",
+                    "value": "Cytoplasm"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Shrink smaller object prior to subtraction?",
+                    "value": "Yes"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 11,
+                "notes": 11,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 3,
+                "module_name": "MeasureObjectSizeShape",
+                "module_path": "cellprofiler.modules.measureobjectsizeshape.MeasureObjectSizeShape"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.subscriber.list_subscriber._label_list_subscriber.LabelListSubscriber",
+                    "text": "Select object sets to measure",
+                    "value": "Cells, Nuclei, Cytoplasm"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Calculate the Zernike features?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Calculate the advanced features?",
+                    "value": "No"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 12,
+                "notes": 12,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 4,
+                "module_name": "MeasureObjectIntensity",
+                "module_path": "cellprofiler.modules.measureobjectintensity.MeasureObjectIntensity"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.subscriber.list_subscriber._image_list_subscriber.ImageListSubscriber",
+                    "text": "Select images to measure",
+                    "value": "CropBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.list_subscriber._label_list_subscriber.LabelListSubscriber",
+                    "text": "Select objects to measure",
+                    "value": "Nuclei, Cells, Cytoplasm"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 13,
+                "notes": 13,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 7,
+                "module_name": "MeasureTexture",
+                "module_path": "cellprofiler.modules.measuretexture.MeasureTexture"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.subscriber.list_subscriber._image_list_subscriber.ImageListSubscriber",
+                    "text": "Select images to measure",
+                    "value": "CropBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.list_subscriber._label_list_subscriber.LabelListSubscriber",
+                    "text": "Select objects to measure",
+                    "value": "Cells, Nuclei, Cytoplasm"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Enter how many gray levels to measure the texture at",
+                    "value": "256"
+                },
+                {
+                    "name": "cellprofiler_core.setting._hidden_count.HiddenCount",
+                    "text": "Hidden",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Measure whole images or objects?",
+                    "value": "Both"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Texture scale to measure",
+                    "value": "3"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 14,
+                "notes": 14,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 4,
+                "module_name": "GrayToColor",
+                "module_path": "cellprofiler.modules.graytocolor.GrayToColor"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select a color scheme",
+                    "value": "RGB"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Rescale intensity",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the image to be colored red",
+                    "value": "CropRed"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the image to be colored green",
+                    "value": "CropGreen"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the image to be colored blue",
+                    "value": "CropBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.alphanumeric.name.image_name._image_name.ImageName",
+                    "text": "Name the output image",
+                    "value": "RGBImage"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative weight for the red image",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative weight for the green image",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative weight for the blue image",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the image to be colored cyan",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the image to be colored magenta",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the image to be colored yellow",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the image that determines brightness",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative weight for the cyan image",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative weight for the magenta image",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative weight for the yellow image",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Relative weight for the brightness image",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting._hidden_count.HiddenCount",
+                    "text": "Hidden",
+                    "value": "1"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Image name",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting._color.Color",
+                    "text": "Color",
+                    "value": "#ff0000"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number._float.Float",
+                    "text": "Weight",
+                    "value": "1.0"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 15,
+                "notes": 15,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 15,
+                "module_name": "SaveImages",
+                "module_path": "cellprofiler.modules.saveimages.SaveImages"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select the type of image to save",
+                    "value": "Image"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the image to save",
+                    "value": "RGBImage"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select method for constructing file names",
+                    "value": "Sequential numbers"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._file_image_subscriber.FileImageSubscriber",
+                    "text": "Select image name for file prefix",
+                    "value": "OrigBlue"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._text.Text",
+                    "text": "Enter file prefix",
+                    "value": "CroppedFlyImage"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text.number.integer._integer.Integer",
+                    "text": "Number of digits",
+                    "value": "4"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Append a suffix to the image file name?",
+                    "value": "Yes"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._text.Text",
+                    "text": "Text to append to the image name",
+                    "value": "RGB"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Saved file format",
+                    "value": "tiff"
+                },
+                {
+                    "name": "cellprofiler.modules.saveimages.SaveImagesDirectoryPath",
+                    "text": "Output file location",
+                    "value": "Default Output Folder|None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Image bit depth",
+                    "value": "8-bit integer"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Overwrite existing files without warning?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "When to save",
+                    "value": "Every cycle"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Record the file and path information to the saved image?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Create subfolders in the output folder?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._directory.Directory",
+                    "text": "Base image folder",
+                    "value": "Default Input Folder"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "How to save the series",
+                    "value": "T (Time)"
+                }
+            ]
+        },
+        {
+            "attributes": {
+                "module_num": 16,
+                "notes": 16,
+                "show_window": true,
+                "wants_pause": false,
+                "svn_version": "Unknown",
+                "enabled": true,
+                "variable_revision_number": 13,
+                "module_name": "ExportToSpreadsheet",
+                "module_path": "cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet"
+            },
+            "settings": [
+                {
+                    "name": "cellprofiler_core.setting.choice._custom_choice.CustomChoice",
+                    "text": "Select the column delimiter",
+                    "value": "Comma (\",\")"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Add image metadata columns to your object data file?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Add image file and folder names to your object data file?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Select the measurements to export",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Calculate the per-image mean values for object measurements?",
+                    "value": "Yes"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Calculate the per-image median values for object measurements?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Calculate the per-image standard deviation values for object measurements?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._directory.Directory",
+                    "text": "Output file location",
+                    "value": "Default Output Folder|."
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Create a GenePattern GCT file?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Select source of sample row name",
+                    "value": "Metadata"
+                },
+                {
+                    "name": "cellprofiler_core.setting.subscriber.image_subscriber._image_subscriber.ImageSubscriber",
+                    "text": "Select the image to use as the identifier",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting._measurement.Measurement",
+                    "text": "Select the metadata to use as the identifier",
+                    "value": "None"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Export all measurement types?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.multichoice._measurement_multichoice.MeasurementMultiChoice",
+                    "text": "Press button to select measurements",
+                    "value": "None|None"
+                },
+                {
+                    "name": "cellprofiler_core.setting.choice._choice.Choice",
+                    "text": "Representation of Nan/Inf",
+                    "value": "NaN"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Add a prefix to file names?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._text.Text",
+                    "text": "Filename prefix",
+                    "value": "MyExpt_"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Overwrite existing files without warning?",
+                    "value": "Yes"
+                },
+                {
+                    "name": "cellprofiler.modules.exporttospreadsheet.EEObjectNameSubscriber",
+                    "text": "Data to export",
+                    "value": "Image"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Combine these object measurements with those of the previous object?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._text.Text",
+                    "text": "File name",
+                    "value": "Image.csv"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Use the object name for the file name?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler.modules.exporttospreadsheet.EEObjectNameSubscriber",
+                    "text": "Data to export",
+                    "value": "Nuclei"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Combine these object measurements with those of the previous object?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._text.Text",
+                    "text": "File name",
+                    "value": "Nuclei.csv"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Use the object name for the file name?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler.modules.exporttospreadsheet.EEObjectNameSubscriber",
+                    "text": "Data to export",
+                    "value": "Cells"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Combine these object measurements with those of the previous object?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._text.Text",
+                    "text": "File name",
+                    "value": "Cells.csv"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Use the object name for the file name?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler.modules.exporttospreadsheet.EEObjectNameSubscriber",
+                    "text": "Data to export",
+                    "value": "Cytoplasm"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Combine these object measurements with those of the previous object?",
+                    "value": "No"
+                },
+                {
+                    "name": "cellprofiler_core.setting.text._text.Text",
+                    "text": "File name",
+                    "value": "Cytoplasm.csv"
+                },
+                {
+                    "name": "cellprofiler_core.setting._binary.Binary",
+                    "text": "Use the object name for the file name?",
+                    "value": "No"
+                }
+            ]
+        }
+    ],
+    "version": "v6"
+}

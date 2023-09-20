@@ -186,13 +186,16 @@ class Pipeline:
     def needs_headless_extraction(self):
         return self.__needs_headless_extraction
 
-    def copy(self, save_image_plane_details=True):
+    def copy(self, save_image_plane_details=True, preserve_module_state=False):
         """Create a copy of the pipeline modules and settings"""
         fd = io.StringIO()
         self.dump(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
         fd.seek(0)
         pipeline.load(fd)
+        if preserve_module_state:
+            for orig_module, copied_module in zip(self.modules(), pipeline.modules()):
+                copied_module.shared_state = orig_module.shared_state.copy()
         return pipeline
 
     def settings_hash(self, until_module=None, as_string=False):

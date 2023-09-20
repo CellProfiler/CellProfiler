@@ -81,7 +81,7 @@ class Runner:
         self.initial_measurements_buf = initial_measurements_buf
 
         self.analysis_id = analysis_id
-        self.pipeline = pipeline.copy()
+        self.pipeline = pipeline.copy(preserve_module_state=True)
         self.event_listener = event_listener
 
         self.interface_work_cv = threading.Condition()
@@ -386,6 +386,9 @@ class Runner:
                         self.shared_dicts = finished_req.shared_dicts
                         waiting_for_first_imageset = False
                         assert len(self.shared_dicts) == len(self.pipeline.modules())
+                        for worker_dict, module in zip(self.shared_dicts, self.pipeline.modules()):
+                            # Apply those imported states to the master pipeline
+                            module.get_dictionary().update(worker_dict)
                         # if we had jobs waiting for the first image set to finish,
                         # queue them now that the shared state is available.
                         for job in job_groups:

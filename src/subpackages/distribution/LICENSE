@@ -1,6 +1,6 @@
 The BSD 3-Clause License
 
-Copyright © 2003 - 2021 Broad Institute, Inc. All rights reserved.
+Copyright © 2017-2018 Broad Institute, Inc. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
@@ -35,7 +35,3 @@ disclaimers are determined inapplicable, your sole remedy, regardless of the
 form of action, including, but not limited to, negligence and strict
 liability, shall be replacement of the software with an updated version if one
 exists.
-
-Development of CellProfiler has been funded in whole or in part with federal
-funds from the National Institutes of Health, the National Science Foundation,
-and the Human Frontier Science Program.

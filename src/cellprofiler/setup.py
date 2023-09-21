@@ -57,8 +57,8 @@ setuptools.setup(
     ],
     entry_points={"console_scripts": ["cellprofiler=cellprofiler.__main__:main"]},
     extras_require={
-        "build": ["black", "pre-commit", "pyinstaller", "twine"],
-        "docs": ["Sphinx>=3.1.1", "sphinx-rtd-theme>=0.5.0"],
+        "build": ["pyinstaller", "twine"],
+        "docs": ["sphinx>=3.1.1", "sphinx-rtd-theme>=0.5.0"],
         # pooch needed for scikit-image's example dataset,
         # e.g. skimage.data.human_mitosis
         # version pin should match scikit-image test requirements

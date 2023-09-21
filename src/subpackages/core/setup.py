@@ -11,10 +11,8 @@ setuptools.setup(
     ],
     extras_require={
         "dev": [
-            "black==19.10b0",
             "click>=7.1.2",
-            "pre-commit==2.2.0",
-            "sphinx==3.1.2",
+            "sphinx>=3.1.2",
             "twine==3.1.1",
         ],
         "test": ["pytest~=7.4.1", "pytest-timeout~=2.1.0"],

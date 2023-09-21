@@ -17,8 +17,10 @@ plugins/
 .pytest_cache/
 .python-version
 frozen_version.py
-docs/source/help
-docs/source/images
-docs/_build
 .mypy_cache/
 *.sqlite3
+docs/cellprofiler/source/help
+docs/cellprofiler/source/images
+docs/core/build
+docs/core/build
+

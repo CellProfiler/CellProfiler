@@ -2,7 +2,7 @@ author = "Allen Goodman"
 
 copyright = "Copyright © 2003 - 2021 Broad Institute, Inc. All rights reserved."
 
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["build", "Thumbs.db", ".DS_Store"]
 
 extensions = ["sphinx.ext.autodoc", "sphinx_rtd_theme"]
 

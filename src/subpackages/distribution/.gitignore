@@ -12,7 +12,7 @@
 *.rbc
 *.sage.py
 *.so
-#*.spec
+*.spec
 *.swp
 .cache
 .coverage

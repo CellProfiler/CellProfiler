@@ -65,7 +65,7 @@ jobs:
           JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.16-8\x64
         # cython necessary?
         run: |
-          pip install "cython<3.0.0" 
+          pip install "cython" 
           pip install mysqlclient==1.4.6
           pip install --editable src/cellprofiler --no-use-pep517
           pyinstaller distribution/windows/cellprofiler.spec

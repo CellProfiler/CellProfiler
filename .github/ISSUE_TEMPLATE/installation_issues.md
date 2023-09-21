@@ -12,7 +12,7 @@ Please include all requested information- reports without specification of OS/Ve
 
 **Desktop (please complete the following information):**
  - OS: [e.g. Windows 10, OSX 14.6]
- - CellProfiler Version [e.g. 2.2, 3.1.9]
+ - CellProfiler Version [e.g. 2.2, 3.1.9, 4.2.4]
  - Downloaded from the website or installed from source?
  - If the latter, how (cloned, installed from pypi, etc)?
 

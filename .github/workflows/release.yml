@@ -1,43 +1,56 @@
+name: Create CellProfiler Releases
 jobs:
-  build:
-    name: build
+  build-cp:
+    name: Build CellProfiler
+    strategy:
+      matrix:
+        os: [macos-10.15, windows-2019]
+        python-version: ["3.8"]
+      fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
-      - if: ${{ matrix.os == 'windows-2019' }}
+      - name: Windows - Cache pip
+        if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/cache@v2
         with:
           path: ~\AppData\Local\pip\Cache
           key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - if: ${{ matrix.os == 'macos-10.15' }}
+      - name: Mac - Cache pip
+        if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/cache@v2
         with:
           path: ~/Library/Caches/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}
-      - uses: actions/setup-java@v3
+      - name: Setup java
+        uses: actions/setup-java@v3
         with:
           distribution: "temurin"
           java-version: "11" # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
-      - run: |
+      - name: Install dependencies
+        run: |
           pip install --upgrade pip setuptools wheel
-          pip install numpy==1.23.1
+          pip install numpy~=1.24.4
           pip install pyinstaller==4.10
           git clone https://github.com/CellProfiler/distribution.git
-      - env:
+      - name: Mac - Build
+        if: ${{ matrix.os == 'macos-10.15' }}
+        env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
           CERTIFICATE_PASSWORD: ${{ secrets.P12_PASSWORD_CIMINI }}
-        if: ${{ matrix.os == 'macos-10.15' }}
         run: |
           sed -i '' 's/4.0.0/4.2.4/' Info.plist
           brew install mysql
@@ -46,40 +59,39 @@ jobs:
           chmod +x osx-codesign.sh && ./osx-codesign.sh
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.2.4.zip
         working-directory: ./distribution/macos
-      - env:
-          JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.16-8\x64
+      - name: Windows - Build
         if: ${{ matrix.os == 'windows-2019' }}
+        env:
+          JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.16-8\x64
+        # cython necessary?
         run: |
-          python -m pip install --upgrade pip setuptools wheel
-          pip install cython
+          pip install "cython<3.0.0" 
           pip install mysqlclient==1.4.6
-          pip install --editable . --no-use-pep517
-      - if: ${{ matrix.os == 'windows-2019' }}
-        run: |
+          pip install --editable src/cellprofiler --no-use-pep517
           pyinstaller distribution/windows/cellprofiler.spec
           iscc /dMyAppVersion="4.2.4" "distribution/windows/cellprofiler.iss"
-      - if: ${{ matrix.os == 'macos-10.15' }}
+      - name: Mac - Create Artifact
+        if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
         with:
           name: CellProfiler-macOS-4.2.4.zip
           path: ./distribution/macos/dist/CellProfiler-macOS-4.2.4.zip
-      - if: ${{ matrix.os == 'windows-2019' }}
+      - name: Windows - Create Artifact
+        if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/upload-artifact@v2
         with:
           name: CellProfiler-Windows-4.2.4.exe
           path: ./distribution/windows/Output/CellProfiler-Windows-4.2.4.exe
-    strategy:
-      matrix:
-        os: [macos-10.15, windows-2019]
-        python-version: ["3.8"]
-      fail-fast: false
-  upload:
-    name: upload
-    needs: build
+
+  upload-cp:
+    name: Upload CellProfiler
+    needs: build-cp
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - env:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Create Release
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         id: create_release
         uses: actions/create-release@v1
@@ -88,15 +100,18 @@ jobs:
           prerelease: true
           release_name: ${{ github.ref }}
           tag_name: ${{ github.ref }}
-      - uses: actions/download-artifact@v1
+      - name: Download Mac Artifact
+        uses: actions/download-artifact@v1
         with:
           name: CellProfiler-macOS-4.2.4.zip
           path: ./
-      - uses: actions/download-artifact@v1
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v1
         with:
           name: CellProfiler-Windows-4.2.4.exe
           path: ./
-      - env:
+      - name: Upload Mac Artifact
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/upload-release-asset@v1
         with:
@@ -104,7 +119,8 @@ jobs:
           asset_name: CellProfiler-macOS-4.2.4.zip
           asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.4.zip
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-      - env:
+      - name: Upload Windows Artifact
+        env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         uses: actions/upload-release-asset@v1
         with:
@@ -112,8 +128,44 @@ jobs:
           asset_name: CellProfiler-Windows-4.2.4.exe
           asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.2.4.exe
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-name: create-release
 on:
   push:
     tags:
       - "v*"
+
+name: Deploy Packages to PyPI
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Setup Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+    - name: Upload Library
+      working-directory: ./src/subpackages/library/
+      run: |
+        python setup.py sdist bdist_wheel
+        twine upload dist/*
+    - name: Upload Core
+      working-directory: ./src/subpackages/core/
+      run: |
+        python setup.py sdist bdist_wheel
+        twine upload dist/*
+    - name: Upload Library
+      working-directory: ./src/cellprofiler
+      run: |
+        python setup.py sdist bdist_wheel
+        twine upload dist/*
+on:
+  release:
+    types: [created]

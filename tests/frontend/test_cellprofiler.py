@@ -7,7 +7,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from tests.modules import get_test_resources_directory
+from tests.frontend.modules import get_test_resources_directory
 
 if hasattr(sys, "frozen"):
     ARGLIST_START = [sys.executable]
@@ -28,7 +28,8 @@ class TestCellProfiler(unittest.TestCase):
             # hopeless to try and find the right homebrew command
             self.skipTest("Can't start Python properly on OS/X + homebrew")
         else:
-            test_dir = os.path.dirname(__file__)
+            frontend_dir = os.path.dirname(__file__)
+            test_dir = os.path.dirname(frontend_dir)
             cellprofiler_dir = os.path.dirname(test_dir)
             root_dir = os.path.dirname(cellprofiler_dir)
             args = [

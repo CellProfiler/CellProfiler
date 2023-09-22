@@ -7,7 +7,7 @@ import cellprofiler.modules.tile
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
@@ -18,7 +18,7 @@ def input_image_name(index):
 
 
 def test_load_v1():
-    file = tests.modules.get_test_resources_directory("tile/v1.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("tile/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

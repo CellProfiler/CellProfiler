@@ -13,7 +13,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -52,7 +52,7 @@ def make_workspace(image, labels=None, dimensions=2):
 
 
 def test_load_v2():
-    file = tests.modules.get_test_resources_directory("overlayoutlines/v2.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("overlayoutlines/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -76,7 +76,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    file = tests.modules.get_test_resources_directory("overlayoutlines/v3.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("overlayoutlines/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

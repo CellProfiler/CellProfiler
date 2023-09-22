@@ -9,11 +9,11 @@ import cellprofiler.modules.labelimages
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 
 def test_load_v1():
-    file = tests.modules.get_test_resources_directory("labelimages/v1.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("labelimages/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

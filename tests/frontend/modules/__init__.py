@@ -13,9 +13,10 @@ import numpy
 import skimage.io
 from urllib.request import URLopener
 
-import cellprofiler.utilities
 import cellprofiler_core.utilities.legacy
 from cellprofiler_core.pipeline import ImageFile
+
+import tests.frontend
 
 
 LOGGER = logging.getLogger(__name__)
@@ -33,9 +34,9 @@ def example_images_directory():
     if "CP_EXAMPLEIMAGES" in os.environ:
         return os.environ["CP_EXAMPLEIMAGES"]
     fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.modules
-    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler.modules
-    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler
+    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.frontend.modules
+    d = os.path.split(d)[0]  # trunk.CellProfiler.tests.frontend
+    d = os.path.split(d)[0]  # trunk.CellProfiler.tests
     d = os.path.split(d)[0]  # trunk.CellProfiler
     d = os.path.split(d)[0]  # trunk
     for imagedir in ["CP-CPEXAMPLEIMAGES", "ExampleImages"]:
@@ -52,9 +53,9 @@ def example_images_directory():
 
 
 def get_test_resources_directory(file):
-    folder = os.path.dirname(cellprofiler.utilities.__file__)
+    folder = os.path.dirname(tests.frontend.__file__)
     return os.path.abspath(
-        os.path.join(folder, "../..", "tests/resources/modules", file)
+        os.path.join(folder, "resources/modules", file)
     )
 
 
@@ -79,7 +80,7 @@ def testimages_directory():
     if "CP_TESTIMAGES" in os.environ:
         return os.environ["CP_TESTIMAGES"]
     fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.modules
+    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.frontend.modules
     d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler.modules
     d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler
     d = os.path.split(d)[0]  # trunk.CellProfiler

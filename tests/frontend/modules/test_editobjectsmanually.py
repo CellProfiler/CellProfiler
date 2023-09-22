@@ -4,7 +4,7 @@ from cellprofiler_core.constants.measurement import FF_COUNT, COLTYPE_INTEGER, M
     M_LOCATION_CENTER_X, COLTYPE_FLOAT, M_LOCATION_CENTER_Y, FF_PARENT, FF_CHILDREN_COUNT, C_COUNT, C_CHILDREN, \
     C_LOCATION, FTR_CENTER_X, FTR_CENTER_Y, C_PARENT, C_NUMBER, FTR_OBJECT_NUMBER
 
-import tests.modules
+import tests.frontend.modules
 
 # Need to import modules before a manual identify module
 import cellprofiler_core.modules
@@ -17,7 +17,7 @@ OUTPUT_OBJECTS_NAME = "outputobjects"
 
 
 def test_load_v1():
-    file = tests.modules.get_test_resources_directory("editobjectsmanually/v1.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("editobjectsmanually/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -40,7 +40,7 @@ def test_load_v1():
 
 
 def test_load_v2():
-    file = tests.modules.get_test_resources_directory("editobjectsmanually/v2.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("editobjectsmanually/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -65,7 +65,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    file = tests.modules.get_test_resources_directory("editobjectsmanually/v3.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("editobjectsmanually/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -90,7 +90,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.get_test_resources_directory("editobjectsmanually/v4.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("editobjectsmanually/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

@@ -14,15 +14,15 @@ from cellprofiler_core.constants.measurement import FF_COUNT, COLTYPE_INTEGER, F
 from cellprofiler_core.constants.module._identify import TS_GLOBAL, TS_ADAPTIVE, O_TWO_CLASS, O_FOREGROUND, \
     O_THREE_CLASS, O_BACKGROUND, RB_MODE, RB_SD, RB_MEAN, RB_MEDIAN, RB_MAD, TS_MANUAL, TS_MEASUREMENT
 from cellprofiler_core.image import VanillaImage
-
-
 import cellprofiler.modules.identifyprimaryobjects
 import cellprofiler.modules.threshold
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
-import tests.modules
+
+import tests.frontend
+import tests.frontend.modules
 
 IMAGE_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
@@ -1004,7 +1004,7 @@ def test_propagate():
 
 def test_fly():
     """Run identify on the fly image"""
-    file = tests.modules.get_test_resources_directory("identifyprimaryobjects/fly.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("identifyprimaryobjects/fly.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -1124,7 +1124,7 @@ def test_maxima_suppression_zero():
 def test_load_v10():
     # Sorry about this overly-long pipeline, it seemed like we need to
     # revisit many of the choices.
-    file = tests.modules.get_test_resources_directory("identifyprimaryobjects/v10.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("identifyprimaryobjects/v10.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -1309,7 +1309,7 @@ def test_01_load_new_robust_background():
     #
     # Test custom robust background parameters.
     #
-    file = tests.modules.get_test_resources_directory(
+    file = tests.frontend.modules.get_test_resources_directory(
         "identifyprimaryobjects/robust_background.pipeline"
     )
     with open(file, "r") as fd:
@@ -2140,7 +2140,7 @@ def fly_image():
     from cellprofiler_core.reader import get_image_reader
     from cellprofiler_core.pipeline import ImageFile
 
-    path = os.path.join(os.path.dirname(__file__), "../resources/01_POS002_D.TIF")
+    path = os.path.join(os.path.dirname(tests.frontend.__file__), "resources/01_POS002_D.TIF")
     rdr = get_image_reader(ImageFile("file://"+path))
     return rdr.read()
 

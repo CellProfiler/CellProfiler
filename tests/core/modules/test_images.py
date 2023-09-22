@@ -9,13 +9,14 @@ import cellprofiler_core.pipeline.event._load_exception
 import cellprofiler_core.workspace
 import cellprofiler_core.modules.images
 import cellprofiler_core.modules.metadata
-import tests
 from cellprofiler_core.utilities.pathname import url2pathname, pathname2url
+
+import tests.core
 
 
 def get_data_directory():
-    folder = os.path.dirname(cellprofiler_core.workspace.__file__)
-    return os.path.abspath(os.path.join(folder, "../..", "tests/data/"))
+    folder = os.path.dirname(tests.core.__file__)
+    return os.path.abspath(os.path.join(folder, "data/"))
 
 
 class TestImages:
@@ -208,7 +209,7 @@ class TestImages:
     def test_extract_planes(self):
         module = cellprofiler_core.modules.images.Images()
         module.want_split.value = True
-        path = tests.modules.maybe_download_example_image(
+        path = tests.core.modules.maybe_download_example_image(
             ["ExampleColorToGray"], "nt_03_01_color.tif", (21, 31, 3)
         )
         url = pathname2url(path)

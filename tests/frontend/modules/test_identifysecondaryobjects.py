@@ -7,7 +7,7 @@ from cellprofiler_core.constants.measurement import FF_COUNT, COLTYPE_FLOAT, COL
 from cellprofiler_core.constants.module._identify import TS_GLOBAL, O_TWO_CLASS, O_FOREGROUND
 
 
-import tests.modules
+import tests.frontend.modules
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler.modules.identifysecondaryobjects
@@ -27,7 +27,7 @@ THRESHOLD_IMAGE_NAME = "threshold"
 
 
 def test_load_v9():
-    file = tests.modules.get_test_resources_directory(
+    file = tests.frontend.modules.get_test_resources_directory(
         "identifysecondaryobjects/v9.pipeline"
     )
     with open(file, "r") as fd:
@@ -78,7 +78,7 @@ def test_load_v9():
 
 
 def test_load_v10():
-    file = tests.modules.get_test_resources_directory(
+    file = tests.frontend.modules.get_test_resources_directory(
         "identifysecondaryobjects/v10.pipeline"
     )
     with open(file, "r") as fd:

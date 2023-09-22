@@ -19,7 +19,7 @@ import cellprofiler_core.measurement
 from cellprofiler_core.object import ObjectSet, Objects
 
 import cellprofiler.modules.trackobjects
-import tests.modules
+import tests.frontend.modules
 from cellprofiler_core.pipeline import Pipeline, LoadException, RunException
 from cellprofiler_core.workspace import Workspace
 
@@ -27,7 +27,7 @@ OBJECT_NAME = "objects"
 
 
 def test_load_v3():
-    file = tests.modules.get_test_resources_directory("trackobjects/v3.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("trackobjects/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -57,7 +57,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.get_test_resources_directory("trackobjects/v4.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("trackobjects/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -108,7 +108,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    file = tests.modules.get_test_resources_directory("trackobjects/v5.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("trackobjects/v5.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -145,7 +145,7 @@ def test_load_v5():
 
 
 def test_load_v6():
-    file = tests.modules.get_test_resources_directory("trackobjects/v6.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("trackobjects/v6.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

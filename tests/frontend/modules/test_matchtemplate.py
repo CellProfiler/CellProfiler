@@ -1,5 +1,4 @@
 import os
-
 import pytest
 import skimage
 import skimage.data
@@ -8,12 +7,12 @@ import skimage.io
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
-
-
 import cellprofiler.modules.matchtemplate
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
+
+import tests.frontend
 
 
 @pytest.fixture()
@@ -65,7 +64,7 @@ def test_run(module, image_set, workspace):
     module.output_image_name.value = "output"
 
     module.template_name.value = os.path.join(
-        os.path.dirname(__file__), "../resources/template.png"
+        os.path.dirname(tests.frontend.__file__), "resources/template.png"
     )
 
     module.run(workspace)

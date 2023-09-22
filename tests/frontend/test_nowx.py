@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from urllib.request import urlopen
 
-from tests.modules import example_images_directory, get_test_resources_directory
+from tests.frontend.modules import example_images_directory, get_test_resources_directory
 
 
 def import_all_but_wx(

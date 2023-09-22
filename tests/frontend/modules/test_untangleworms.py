@@ -19,7 +19,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 cellprofiler.modules.untangleworms.CAROLINAS_HACK = False
 
@@ -271,7 +271,7 @@ A02_image = imageio.imread(path)[:, :, 0] > 0
 
 
 def test_load_v1():
-    file = tests.modules.get_test_resources_directory("untangleworms/v1.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("untangleworms/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -307,7 +307,7 @@ def test_load_v1():
 
 
 def test_load_v2():
-    file = tests.modules.get_test_resources_directory("untangleworms/v2.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("untangleworms/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -934,7 +934,7 @@ def test_load_params():
 
 
 def test_load_xml_params():
-    file = tests.modules.get_test_resources_directory("untangleworms/parameters.xml")
+    file = tests.frontend.modules.get_test_resources_directory("untangleworms/parameters.xml")
     with open(file, "r") as fd:
         data = fd.read()
     data = data.encode()

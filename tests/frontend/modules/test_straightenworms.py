@@ -14,7 +14,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 import cellprofiler_core.preferences
-import tests.modules
+import tests.frontend.modules
 
 OBJECTS_NAME = "worms"
 STRAIGHTENED_OBJECTS_NAME = "straightenedworms"
@@ -25,7 +25,7 @@ AUX_STRAIGHTENED_IMAGE_NAME = "auxstraightenedimage"
 
 
 def test_load_v1():
-    file = tests.modules.get_test_resources_directory("straightenworms/v1.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("straightenworms/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -57,7 +57,7 @@ def test_load_v1():
 
 
 def test_load_v2():
-    file = tests.modules.get_test_resources_directory("straightenworms/v2.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("straightenworms/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

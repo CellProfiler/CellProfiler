@@ -14,10 +14,12 @@ import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 
+import tests.core
+
 
 def get_data_directory():
-    folder = os.path.dirname(cellprofiler_core.workspace.__file__)
-    return os.path.abspath(os.path.join(folder, "../..", "tests/data/"))
+    folder = os.path.dirname(tests.core.__file__)
+    return os.path.abspath(os.path.join(folder, "data/"))
 
 
 def test_load_v1():

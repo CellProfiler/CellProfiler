@@ -10,7 +10,7 @@ import cellprofiler.modules.measurecolocalization
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 IMAGE1_NAME = "image1"
 IMAGE2_NAME = "image2"
@@ -51,7 +51,7 @@ def make_workspace(image1, image2, objects=None):
 
 
 def test_load_v2():
-    file = tests.modules.get_test_resources_directory("measurecolocalization/v2.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("measurecolocalization/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -80,7 +80,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    file = tests.modules.get_test_resources_directory("measurecolocalization/v3.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("measurecolocalization/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

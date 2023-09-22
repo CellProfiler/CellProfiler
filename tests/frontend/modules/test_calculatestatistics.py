@@ -15,7 +15,7 @@ import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 
-import tests.modules
+import tests.frontend.modules
 
 INPUT_OBJECTS = "my_object"
 TEST_FTR = "my_measurement"
@@ -23,7 +23,7 @@ FIGURE_NAME = "figname"
 
 
 def test_load_v2():
-    path = tests.modules.get_test_resources_directory("calculatestatistics/v2.pipeline")
+    path = tests.frontend.modules.get_test_resources_directory("calculatestatistics/v2.pipeline")
     with open(path, "r") as fd:
         data = fd.read()
 

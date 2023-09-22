@@ -19,7 +19,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -477,7 +477,7 @@ def test_renumber_other():
 
 
 def test_load_v3():
-    file = tests.modules.get_test_resources_directory("filterobjects/v3.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("filterobjects/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -504,7 +504,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.get_test_resources_directory("filterobjects/v4.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("filterobjects/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -546,7 +546,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    file = tests.modules.get_test_resources_directory("filterobjects/v5.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("filterobjects/v5.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -589,7 +589,7 @@ def test_load_v5():
 
 
 def test_load_v6():
-    file = tests.modules.get_test_resources_directory("filterobjects/v6.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("filterobjects/v6.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -633,7 +633,7 @@ def test_load_v6():
 
 
 def test_load_v7():
-    file = tests.modules.get_test_resources_directory("filterobjects/v7.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("filterobjects/v7.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

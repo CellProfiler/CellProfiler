@@ -25,9 +25,9 @@ def example_images_directory():
     if "CP_EXAMPLEIMAGES" in os.environ:
         return os.environ["CP_EXAMPLEIMAGES"]
     fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.modules
-    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler.modules
-    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler
+    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.core.modules
+    d = os.path.split(d)[0]  # trunk.CellProfiler.tests.core
+    d = os.path.split(d)[0]  # trunk.CellProfiler.tests
     d = os.path.split(d)[0]  # trunk.CellProfiler
     d = os.path.split(d)[0]  # trunk
     for imagedir in ["CP-CPEXAMPLEIMAGES", "ExampleImages"]:
@@ -48,9 +48,9 @@ def testimages_directory():
     if "CP_TESTIMAGES" in os.environ:
         return os.environ["CP_TESTIMAGES"]
     fyle = os.path.abspath(__file__)
-    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.modules
-    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler.modules
-    d = os.path.split(d)[0]  # trunk.CellProfiler.cellprofiler
+    d = os.path.split(fyle)[0]  # trunk.CellProfiler.tests.core.modules
+    d = os.path.split(d)[0]  # trunk.CellProfiler.tests.core
+    d = os.path.split(d)[0]  # trunk.CellProfiler.tests
     d = os.path.split(d)[0]  # trunk.CellProfiler
     d = os.path.split(d)[0]  # trunk
     path = os.path.join(d, "TestImages")

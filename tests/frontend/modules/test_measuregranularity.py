@@ -10,7 +10,7 @@ import cellprofiler.modules.measuregranularity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 print((sys.path))
 
@@ -19,7 +19,7 @@ OBJECTS_NAME = "myobjects"
 
 
 def test_load_v3():
-    file = tests.modules.get_test_resources_directory("measuregranularity/v3.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("measuregranularity/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

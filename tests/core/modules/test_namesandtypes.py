@@ -21,8 +21,10 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
-import tests.modules
 from cellprofiler_core.pipeline import ImageFile, ImagePlane
+
+import tests.core
+import tests.core.modules
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]
@@ -92,8 +94,8 @@ def md(keys_and_counts):
 
 
 def get_data_directory():
-    folder = os.path.dirname(cellprofiler_core.workspace.__file__)
-    return os.path.abspath(os.path.join(folder, "../..", "tests/data/"))
+    folder = os.path.dirname(tests.core.__file__)
+    return os.path.abspath(os.path.join(folder, "data/"))
 
 
 def test_load_v1():
@@ -1716,7 +1718,7 @@ def run_workspace(
 
 def test_load_color():
     shape = (21, 31, 3)
-    path = tests.modules.maybe_download_example_image(
+    path = tests.core.modules.maybe_download_example_image(
         ["ExampleColorToGray"], "nt_03_01_color.tif", shape
     )
     with open(path, "rb") as fd:
@@ -1791,7 +1793,7 @@ def test_load_color_frame():
 def get_monochrome_image_path():
     folder = "ExampleGrayToColor"
     file_name = "AS_09125_050116030001_D03f00d0.tif"
-    return tests.modules.maybe_download_example_image([folder], file_name)
+    return tests.core.modules.maybe_download_example_image([folder], file_name)
 
 
 def test_load_monochrome():
@@ -1809,7 +1811,7 @@ def test_load_monochrome():
 
 def test_load_color_as_monochrome():
     shape = (21, 31, 3)
-    path = tests.modules.maybe_download_example_image(
+    path = tests.core.modules.maybe_download_example_image(
         ["ExampleColorToGray"], "nt_03_05_color.tif", shape
     )
     workspace = run_workspace(
@@ -1846,7 +1848,7 @@ def test_load_monochrome_plane():
 def test_load_raw():
     folder = "namesandtypes_03_07"
     file_name = "1-162hrh2ax2.tif"
-    path = tests.modules.make_12_bit_image(folder, file_name, (34, 19))
+    path = tests.core.modules.make_12_bit_image(folder, file_name, (34, 19))
     workspace = run_workspace(
         path, cellprofiler_core.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION
     )
@@ -1858,7 +1860,7 @@ def test_load_raw():
 
 
 def test_load_mask():
-    path = tests.modules.maybe_download_example_image(
+    path = tests.core.modules.maybe_download_example_image(
         ["ExampleSBSImages"], "Channel2-01-A-01.tif"
     )
     target = imageio.imread(path)
@@ -1872,7 +1874,7 @@ def test_load_mask():
 
 
 def test_load_objects():
-    path = tests.modules.maybe_download_example_image(
+    path = tests.core.modules.maybe_download_example_image(
         ["ExampleSBSImages"], "Channel2-01-A-01.tif"
     )
     target = imageio.imread(path)
@@ -1956,7 +1958,7 @@ def test_load_rescaled():
     # Test all color/monochrome rescaled paths
     folder = "namesandtypes_03_11"
     file_name = "1-162hrh2ax2.tif"
-    path = tests.modules.make_12_bit_image(folder, file_name, (34, 19))
+    path = tests.core.modules.make_12_bit_image(folder, file_name, (34, 19))
     for single in (True, False):
         for rescaled in (
             cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
@@ -1990,10 +1992,10 @@ def test_load_rescaled():
 
 def test_load_single_image():
     # Test loading a pipeline whose image set loads a single image
-    path = tests.modules.maybe_download_example_image(
+    path = tests.core.modules.maybe_download_example_image(
         ["ExampleSBSImages"], "Channel1-01-A-01.tif"
     )
-    lsi_path = tests.modules.maybe_download_example_image(
+    lsi_path = tests.core.modules.maybe_download_example_image(
         ["ExampleGrayToColor"], "AS_09125_050116030001_D03f00d0.tif"
     )
     target = imageio.imread(lsi_path)
@@ -2014,10 +2016,10 @@ def test_load_single_image():
 
 
 def test_load_single_object():
-    path = tests.modules.maybe_download_example_image(
+    path = tests.core.modules.maybe_download_example_image(
         ["ExampleSBSImages"], "Channel1-01-A-01.tif"
     )
-    lsi_path = tests.modules.maybe_download_example_image(
+    lsi_path = tests.core.modules.maybe_download_example_image(
         ["ExampleSBSImages"], "Channel2-01-A-01.tif"
     )
     target = imageio.imread(lsi_path)

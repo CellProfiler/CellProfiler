@@ -16,7 +16,7 @@ import cellprofiler.modules.smooth
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 IMAGES_NAME = "my_image"
 OBJECTS_NAME = "my_objects"
@@ -631,7 +631,7 @@ def check_error(caller, event):
 
 
 def test_load_v3():
-    file = tests.modules.get_test_resources_directory("measureimagequality/v3.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("measureimagequality/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -686,7 +686,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.get_test_resources_directory("measureimagequality/v4.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("measureimagequality/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

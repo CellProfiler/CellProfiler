@@ -2,9 +2,8 @@
 import io
 import queue
 import time
-
-import pytest
 import os
+import pytest
 import pickle
 import tempfile
 import threading
@@ -12,6 +11,8 @@ import traceback
 import unittest
 import uuid
 import zlib
+import numpy
+import zmq
 
 import cellprofiler_core.analysis
 import cellprofiler_core.analysis.reply as anareply
@@ -27,13 +28,13 @@ import cellprofiler_core.utilities.measurement
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.utilities.zmq
 import cellprofiler_core.worker
-import numpy
-import tests.modules
-import zmq
 import cellprofiler_core.analysis.request as anarequest
 from cellprofiler_core.constants.modules.namesandtypes import M_IMAGE_SET_ZIP_DICTIONARY
 from cellprofiler_core.pipeline import ImageFile
 from cellprofiler_core.pipeline import ImagePlane
+
+import tests.core
+import tests.core.modules
 
 
 class TestAnalysisWorker(unittest.TestCase):
@@ -359,17 +360,17 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertIsInstance(req, anarequest.PipelinePreferences)
         self.assertEqual(req.analysis_id, self.analysis_id)
 
-        tests.modules.maybe_download_example_image(
+        tests.core.modules.maybe_download_example_image(
             ["ExampleSBSImages"], "Channel1-01-A-01.tif"
         )
-        tests.modules.maybe_download_example_image(
+        tests.core.modules.maybe_download_example_image(
             ["ExampleHT29"], "AS_09125_050116030001_D03f00d0.tif"
         )
         input_dir = os.path.normcase(
-            os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
+            os.path.join(tests.core.modules.example_images_directory(), "ExampleSBSImages")
         )
         output_dir = os.path.normcase(
-            os.path.join(tests.modules.example_images_directory(), "ExampleHT29")
+            os.path.join(tests.core.modules.example_images_directory(), "ExampleHT29")
         )
         cellprofiler_core.preferences.set_default_image_directory(input_dir)
         input_dir = cellprofiler_core.preferences.get_default_image_directory()
@@ -384,10 +385,10 @@ class TestAnalysisWorker(unittest.TestCase):
             ),
         }
         cellprofiler_core.preferences.set_default_image_directory(
-            tests.modules.example_images_directory()
+            tests.core.modules.example_images_directory()
         )
         cellprofiler_core.preferences.set_default_output_directory(
-            tests.modules.example_images_directory()
+            tests.core.modules.example_images_directory()
         )
         rep = cellprofiler_core.utilities.zmq.Reply(
             pipeline_blob=numpy.array(GOOD_PIPELINE), preferences=preferences
@@ -439,9 +440,8 @@ class TestAnalysisWorker(unittest.TestCase):
 
         input_dir = os.path.abspath(
             os.path.join(
-                os.path.dirname(cellprofiler_core.__file__),
-                "..",
-                "tests/data/ExampleSBSImages",
+                os.path.dirname(tests.core.__file__),
+                "data/ExampleSBSImages",
             )
         )
 
@@ -521,7 +521,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
 
         input_dir = os.path.join(
-            tests.modules.example_images_directory(), "ExampleSBSImages"
+            tests.core.modules.example_images_directory(), "ExampleSBSImages"
         )
         cellprofiler_core.preferences.set_default_image_directory(input_dir)
         preferences = {
@@ -595,7 +595,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
 
         input_dir = os.path.join(
-            tests.modules.example_images_directory(), "ExampleSBSImages"
+            tests.core.modules.example_images_directory(), "ExampleSBSImages"
         )
         cellprofiler_core.preferences.set_default_image_directory(input_dir)
         preferences = {
@@ -709,7 +709,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
 
         input_dir = os.path.join(
-            tests.modules.example_images_directory(), "ExampleSBSImages"
+            tests.core.modules.example_images_directory(), "ExampleSBSImages"
         )
         cellprofiler_core.preferences.set_default_image_directory(input_dir)
         preferences = {
@@ -795,7 +795,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
 
         input_dir = os.path.join(
-            tests.modules.example_images_directory(), "ExampleSBSImages"
+            tests.core.modules.example_images_directory(), "ExampleSBSImages"
         )
         cellprofiler_core.preferences.set_default_image_directory(input_dir)
         preferences = {
@@ -958,7 +958,7 @@ class TestAnalysisWorker(unittest.TestCase):
     #             self.assertIsInstance(req, anarequest.PipelinePreferences)
     #             self.assertEqual(req.analysis_id, self.analysis_id)
     #
-    #             input_dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
+    #             input_dir = os.path.join(tests.core.modules.example_images_directory(), "ExampleSBSImages")
     #             cellprofiler_core.preferences.set_default_image_directory(input_dir)
     #             preferences = {cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY:
     #                            cellprofiler_core.preferences.config_read(cellprofiler_core.preferences.DEFAULT_IMAGE_DIRECTORY)}
@@ -1080,16 +1080,15 @@ DISPLAY_PIPELINE = GOOD_PIPELINE.replace(
 
 def get_measurements_for_good_pipeline(nimages=1, group_numbers=None):
     """Get an appropriately initialized measurements structure for the good pipeline"""
-    import cellprofiler_core
+    import tests.core
 
     path = os.path.abspath(
         os.path.join(
-            os.path.dirname(cellprofiler_core.__file__),
-            "..",
-            "tests/data/ExampleSBSImages",
+            os.path.dirname(tests.core.__file__),
+            "data/ExampleSBSImages",
         )
     )
-    # path = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
+    # path = os.path.join(tests.core.modules.example_images_directory(), "ExampleSBSImages")
     m = cellprofiler_core.measurement.Measurements()
     if group_numbers is None:
         group_numbers = [1] * nimages

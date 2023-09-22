@@ -9,14 +9,14 @@ import cellprofiler.modules.makeprojection
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 IMAGE_NAME = "image"
 PROJECTED_IMAGE_NAME = "projectedimage"
 
 
 def test_load_v2():
-    file = tests.modules.get_test_resources_directory("makeprojection/v2.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("makeprojection/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

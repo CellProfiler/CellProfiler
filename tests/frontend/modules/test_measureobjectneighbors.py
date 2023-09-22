@@ -11,7 +11,7 @@ import cellprofiler.modules.measureobjectneighbors
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 OBJECTS_NAME = "objectsname"
 NEIGHBORS_NAME = "neighborsname"
@@ -49,7 +49,7 @@ def make_workspace(labels, mode, distance=0, neighbors_labels=None):
 
 
 def test_load_v2():
-    file = tests.modules.get_test_resources_directory("measureobjectneighbors/v2.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("measureobjectneighbors/v2.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

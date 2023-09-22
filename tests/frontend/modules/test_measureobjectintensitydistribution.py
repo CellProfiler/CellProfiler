@@ -16,7 +16,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -150,7 +150,7 @@ Maximum radius:50
 
 
 def test_load_v3():
-    file = tests.modules.get_test_resources_directory(
+    file = tests.frontend.modules.get_test_resources_directory(
         "measureobjectintensitydistribution/v3.pipeline"
     )
     with open(file, "r") as fd:
@@ -198,7 +198,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.get_test_resources_directory(
+    file = tests.frontend.modules.get_test_resources_directory(
         "measureobjectintensitydistribution/v4.pipeline"
     )
     with open(file, "r") as fd:
@@ -303,7 +303,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    file = tests.modules.get_test_resources_directory(
+    file = tests.frontend.modules.get_test_resources_directory(
         "measureobjectintensitydistribution/v5.pipeline"
     )
     with open(file, "r") as fd:

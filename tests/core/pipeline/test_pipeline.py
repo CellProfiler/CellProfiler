@@ -16,7 +16,7 @@ import numpy.lib.index_tricks
 import six
 import six.moves
 
-import tests.modules
+import tests.core.modules
 from cellprofiler_core.constants.measurement import (
     COLTYPE_INTEGER,
     EXPERIMENT,
@@ -844,7 +844,7 @@ HasImagePlaneDetails:False"""
             in a location which can be found by example_images_directory().
             This directory should contain the pipeline ExampleAllModulesPipeline
             """
-            example_dir = tests.modules.example_images_directory()
+            example_dir = tests.core.modules.example_images_directory()
             if not example_dir:
                 import warnings
 
@@ -880,7 +880,7 @@ HasImagePlaneDetails:False"""
     #     fd = urlopen(
     #         "http://nucleus.org/ExampleFlyImages/ExampleFlyURL.cppipe")
     #     build_dir = os.path.join(
-    #         os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+    #         os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
     #         "build")
     #     if not os.path.isdir(build_dir):
     #         os.makedirs(build_dir)

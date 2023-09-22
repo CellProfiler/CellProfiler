@@ -10,7 +10,7 @@ import skimage.filters
 import skimage.transform
 
 
-import tests.modules
+import tests.frontend.modules
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
@@ -19,6 +19,8 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
+
+import tests.frontend
 
 cellprofiler_core.preferences.set_headless()
 
@@ -376,7 +378,7 @@ def test_suppress_masked_volume(image, module, workspace):
 
 def test_enhance_neurites_gradient(image, module, workspace):
     resources = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), "..", "resources")
+        os.path.join(os.path.dirname(tests.frontend.__file__), "resources")
     )
 
     data = numpy.load(os.path.join(resources, "neurite.npy"))
@@ -406,7 +408,7 @@ def test_enhance_neurites_gradient(image, module, workspace):
 
 def test_enhance_neurites_gradient_volume(image, module, workspace):
     resources = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), "..", "resources")
+        os.path.join(os.path.dirname(tests.frontend.__file__), "resources")
     )
 
     data = numpy.load(os.path.join(resources, "neurite.npy"))
@@ -949,7 +951,7 @@ def test_enhance_dic(image, module, workspace):
 
 
 def test_load_v2():
-    file = tests.modules.get_test_resources_directory(
+    file = tests.frontend.modules.get_test_resources_directory(
         "enhanceorsuppressfeatures/v2.pipeline"
     )
     with open(file, "r") as fd:
@@ -1039,7 +1041,7 @@ def test_load_v2():
 
 
 def test_load_v3():
-    file = tests.modules.get_test_resources_directory(
+    file = tests.frontend.modules.get_test_resources_directory(
         "enhanceorsuppressfeatures/v3.pipeline"
     )
     with open(file, "r") as fd:
@@ -1082,7 +1084,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.get_test_resources_directory(
+    file = tests.frontend.modules.get_test_resources_directory(
         "enhanceorsuppressfeatures/v4.pipeline"
     )
     with open(file, "r") as fd:
@@ -1129,7 +1131,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    file = tests.modules.get_test_resources_directory(
+    file = tests.frontend.modules.get_test_resources_directory(
         "enhanceorsuppressfeatures/v5.pipeline"
     )
     with open(file, "r") as fd:

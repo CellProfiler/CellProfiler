@@ -15,7 +15,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 
 IMAGE_NAME = "MyImage"
@@ -42,7 +42,7 @@ def tearDown():
 
 
 def test_load_v1():
-    file = tests.modules.get_test_resources_directory("measureobjectskeleton/v1.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("measureobjectskeleton/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 

@@ -1,14 +1,15 @@
 import os.path
 import re
-
 import pytest
 
 import cellprofiler.__main__
 
+import tests.frontend
+
 
 @pytest.fixture(scope="module")
 def resources():
-    return os.path.join(os.path.dirname(__file__), "resources", "test_main")
+    return os.path.join(os.path.dirname(tests.frontend.__file__), "resources/test_main")
 
 
 def test_get_batch_commands_grouped_batch_data(resources, capsys):

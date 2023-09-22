@@ -37,7 +37,9 @@ import cellprofiler_core.utilities.image
 import cellprofiler_core.utilities.pathname
 import cellprofiler_core.workspace
 from cellprofiler_core.utilities.java import start_java
-import tests.modules
+
+import tests.core
+import tests.core.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -45,7 +47,7 @@ OBJECTS_NAME = "objects"
 
 test_folder = "loaddata"
 
-test_path = os.path.join(tests.modules.example_images_directory(), test_folder)
+test_path = os.path.join(tests.core.modules.example_images_directory(), test_folder)
 
 test_filename = "image.tif"
 
@@ -53,8 +55,8 @@ test_shape = (13, 15)
 
 
 def get_data_directory():
-    folder = os.path.dirname(cellprofiler_core.workspace.__file__)
-    return os.path.abspath(os.path.join(folder, "../..", "tests/data/"))
+    folder = os.path.dirname(tests.core.__file__)
+    return os.path.abspath(os.path.join(folder, "data/"))
 
 
 @pytest.fixture
@@ -62,7 +64,7 @@ def test_images_path():
     return os.path.abspath(os.path.join(get_data_directory(), "modules/loadimages"))
 
 
-path = tests.modules.maybe_download_example_image(
+path = tests.core.modules.maybe_download_example_image(
     [test_folder], test_filename, shape=test_shape
 )
 
@@ -711,7 +713,7 @@ def test_scaling():
     """Test loading an image scaled and unscaled"""
     folder = "loaddata"
     file_name = "1-162hrh2ax2.tif"
-    path = tests.modules.make_12_bit_image(folder, file_name, (22, 18))
+    path = tests.core.modules.make_12_bit_image(folder, file_name, (22, 18))
     csv_text = (
         "Image_PathName_MyFile,Image_FileName_MyFile\n" "%s,%s\n" % os.path.split(path)
     )
@@ -912,8 +914,8 @@ def test_load_url():
 "bogusurl.png"
 """.format(
         **{
-            "cp_logo_url": tests.modules.cp_logo_url,
-            "cp_logo_url_filename": tests.modules.cp_logo_url_filename,
+            "cp_logo_url": tests.core.modules.cp_logo_url,
+            "cp_logo_url_filename": tests.core.modules.cp_logo_url_filename,
         }
     )
     pipeline, module, filename = make_pipeline(csv_text)
@@ -930,19 +932,19 @@ def test_load_url():
     assert module.prepare_run(workspace)
     assert (
         m.get_measurement("Image", "FileName_DNA", 1)
-        == tests.modules.cp_logo_url_filename
+        == tests.core.modules.cp_logo_url_filename
     )
     path = m.get_measurement("Image", "PathName_DNA", 1)
-    assert path == tests.modules.cp_logo_url_folder
-    assert m["Image", "URL_DNA", 1] == tests.modules.cp_logo_url
-    assert m["Image", "FileName_DNA", 2] == tests.modules.cp_logo_url_filename
+    assert path == tests.core.modules.cp_logo_url_folder
+    assert m["Image", "URL_DNA", 1] == tests.core.modules.cp_logo_url
+    assert m["Image", "FileName_DNA", 2] == tests.core.modules.cp_logo_url_filename
     assert m["Image", "PathName_DNA", 2] == "http:"
     assert m["Image", "FileName_DNA", 3] == "bogusurl.png"
     assert m["Image", "PathName_DNA", 3] == ""
     module.prepare_group(workspace, {}, [1])
     module.run(workspace)
     img = workspace.image_set.get_image("DNA", must_be_color=True)
-    assert tuple(img.pixel_data.shape) == tests.modules.cp_logo_url_shape
+    assert tuple(img.pixel_data.shape) == tests.core.modules.cp_logo_url_shape
 
 
 def test_extra_fields():
@@ -955,8 +957,8 @@ def test_extra_fields():
 "bogusurl.png"
 """.format(
         **{
-            "cp_logo_url": tests.modules.cp_logo_url,
-            "cp_logo_url_filename": tests.modules.cp_logo_url_filename,
+            "cp_logo_url": tests.core.modules.cp_logo_url,
+            "cp_logo_url_filename": tests.core.modules.cp_logo_url_filename,
         }
     )
     pipeline, module, filename = make_pipeline(csv_text)
@@ -973,26 +975,26 @@ def test_extra_fields():
     assert module.prepare_run(workspace)
     assert (
         m.get_measurement("Image", "FileName_DNA", 1)
-        == tests.modules.cp_logo_url_filename
+        == tests.core.modules.cp_logo_url_filename
     )
     path = m.get_measurement("Image", "PathName_DNA", 1)
-    assert path == tests.modules.cp_logo_url_folder
-    assert m.get_measurement("Image", "URL_DNA", 1) == tests.modules.cp_logo_url
-    assert m["Image", "FileName_DNA", 2] == tests.modules.cp_logo_url_filename
+    assert path == tests.core.modules.cp_logo_url_folder
+    assert m.get_measurement("Image", "URL_DNA", 1) == tests.core.modules.cp_logo_url
+    assert m["Image", "FileName_DNA", 2] == tests.core.modules.cp_logo_url_filename
     assert m["Image", "PathName_DNA", 2] == "http:"
     assert m["Image", "FileName_DNA", 3] == "bogusurl.png"
     assert m["Image", "PathName_DNA", 3] == ""
     module.prepare_group(workspace, {}, [1])
     module.run(workspace)
     img = workspace.image_set.get_image("DNA", must_be_color=True)
-    assert tuple(img.pixel_data.shape) == tests.modules.cp_logo_url_shape
+    assert tuple(img.pixel_data.shape) == tests.core.modules.cp_logo_url_shape
 
 
 def test_extra_lines():
     #
     # Regression test of issue #1211 - extra line at end / blank lines
     #
-    dir = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
+    dir = os.path.join(tests.core.modules.example_images_directory(), "ExampleSBSImages")
     file_name = "Channel2-01-A-01.tif"
 
     csv_text = """"Image_FileName_DNA","Image_PathName_DNA"
@@ -1028,7 +1030,7 @@ def test_extra_lines_skip_rows():
     # Regression test of issue #1211 - extra line at end / blank lines
     # Different code path from 13_04
     #
-    path = os.path.join(tests.modules.example_images_directory(), "ExampleSBSImages")
+    path = os.path.join(tests.core.modules.example_images_directory(), "ExampleSBSImages")
     file_names = ["Channel2-01-A-01.tif", "Channel2-02-A-02.tif"]
 
     csv_text = """"Image_FileName_DNA","Image_PathName_DNA"

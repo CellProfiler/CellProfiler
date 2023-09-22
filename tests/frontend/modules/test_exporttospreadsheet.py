@@ -12,7 +12,7 @@ import six.moves
 from cellprofiler_core.constants.measurement import EXPERIMENT, AGG_NAMES, AGG_MEAN, GROUP_INDEX, GROUP_NUMBER, C_COUNT, \
     M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, AGG_STD_DEV, AGG_MEDIAN, COLTYPE_VARCHAR, COLTYPE_FLOAT, IMAGE_NUMBER
 
-import tests.modules
+import tests.frontend.modules
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.measurement
@@ -24,7 +24,7 @@ import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
-import tests.modules
+import tests.frontend.modules
 
 OBJECTS_NAME = "MyObjects"
 IMG_MEAS = "my_image_measurement"
@@ -50,7 +50,7 @@ def output_dir():
 
 @pytest.mark.skip(reason="Outdated pipeline")
 def test_load_v3():
-    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v3.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("exporttospreadsheet/v3.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -87,7 +87,7 @@ def test_load_v3():
 
 
 def test_load_v4():
-    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v4.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("exporttospreadsheet/v4.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -132,7 +132,7 @@ def test_load_v4():
 
 
 def test_load_v5():
-    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v5.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("exporttospreadsheet/v5.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -198,7 +198,7 @@ def test_load_v5():
 
 
 def test_load_v6():
-    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v6.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("exporttospreadsheet/v6.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -301,7 +301,7 @@ def test_load_v6():
 
 
 def test_load_v8():
-    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v8.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("exporttospreadsheet/v8.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -345,7 +345,7 @@ def test_load_v8():
 
 
 def test_load_v9():
-    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v9.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("exporttospreadsheet/v9.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -391,7 +391,7 @@ def test_load_v9():
 
 
 def test_load_v10():
-    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v10.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("exporttospreadsheet/v10.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -438,7 +438,7 @@ def test_load_v10():
 
 
 def test_load_v11():
-    file = tests.modules.get_test_resources_directory("exporttospreadsheet/v11.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("exporttospreadsheet/v11.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -2419,9 +2419,9 @@ def add_gct_settings(output_csv_filename):
 
 def test_basic_gct_check():
     # LoadData with data
-    tests.modules.maybe_download_sbs()
+    tests.frontend.modules.maybe_download_sbs()
     input_dir = os.path.join(
-        tests.modules.example_images_directory(), "ExampleSBSImages"
+        tests.frontend.modules.example_images_directory(), "ExampleSBSImages"
     )
     metadata_name = "Metadata_Bar"
     info = (
@@ -2479,10 +2479,10 @@ def test_basic_gct_check():
 
 
 def test_make_gct_file_with_filename():
-    tests.modules.maybe_download_sbs()
+    tests.frontend.modules.maybe_download_sbs()
     # LoadData with data
     input_dir = os.path.join(
-        tests.modules.example_images_directory(), "ExampleSBSImages"
+        tests.frontend.modules.example_images_directory(), "ExampleSBSImages"
     )
     metadata_name = "Metadata_Bar"
     info = (
@@ -2530,11 +2530,11 @@ def test_make_gct_file_with_filename():
 
 
 def test_make_gct_file_with_metadata():
-    tests.modules.maybe_download_sbs()
+    tests.frontend.modules.maybe_download_sbs()
 
     # LoadData with data
     input_dir = os.path.join(
-        tests.modules.example_images_directory(), "ExampleSBSImages"
+        tests.frontend.modules.example_images_directory(), "ExampleSBSImages"
     )
     metadata_name = "Metadata_Bar"
     info = (

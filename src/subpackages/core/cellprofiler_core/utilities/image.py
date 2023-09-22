@@ -211,7 +211,7 @@ def make_dictionary_key(key):
 
 def image_resource(filename):
     try:
-        if os.path.join("CellProfiler", "docs") in os.path.abspath(os.curdir):
+        if os.path.join("cellprofiler", "docs", "frontend") in os.path.abspath(os.curdir).lower():
             # We're probably trying to buld the manual
             thepath = os.path.relpath(
                 os.path.abspath(

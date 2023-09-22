@@ -1,20 +1,20 @@
 import io
 import os
-
 import numpy
 import skimage.io
 
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.injectimage
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
-
 import cellprofiler.modules.measureobjectsizeshape
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
-import tests.modules
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+
+import tests.frontend
+import tests.frontend.modules
 
 cellprofiler_core.preferences.set_headless()
 
@@ -46,7 +46,7 @@ def make_workspace(labels):
 
 
 def test_01_load_v1():
-    file = tests.modules.get_test_resources_directory("measureobjectsizeshape/v1.pipeline")
+    file = tests.frontend.modules.get_test_resources_directory("measureobjectsizeshape/v1.pipeline")
     with open(file, "r") as fd:
         data = fd.read()
 
@@ -519,7 +519,7 @@ def test_run_volume():
 # https://github.com/CellProfiler/CellProfiler/issues/2813
 def test_run_without_zernikes():
     cells_resource = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), "..", "resources", "cells.tiff")
+        os.path.join(os.path.dirname(tests.frontend.__file__), "resources/cells.tiff")
     )
 
     workspace, module = make_workspace(skimage.io.imread(cells_resource))
@@ -536,7 +536,7 @@ def test_run_without_zernikes():
 
 def test_run_with_zernikes():
     cells_resource = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), "..", "resources", "cells.tiff")
+        os.path.join(os.path.dirname(tests.frontend.__file__), "resources/cells.tiff")
     )
 
     workspace, module = make_workspace(skimage.io.imread(cells_resource))
@@ -558,7 +558,7 @@ def test_run_with_zernikes():
 
 def test_run_without_advanced():
     cells_resource = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), "..", "resources", "cells.tiff")
+        os.path.join(os.path.dirname(tests.frontend.__file__), "resources/cells.tiff")
     )
 
     workspace, module = make_workspace(skimage.io.imread(cells_resource))
@@ -588,7 +588,7 @@ def test_run_without_advanced():
 
 def test_run_with_advanced():
     cells_resource = os.path.realpath(
-        os.path.join(os.path.dirname(__file__), "..", "resources", "cells.tiff")
+        os.path.join(os.path.dirname(tests.frontend.__file__), "resources/cells.tiff")
     )
 
     workspace, module = make_workspace(skimage.io.imread(cells_resource))

@@ -52,7 +52,7 @@ jobs:
           pip install --upgrade pip setuptools wheel
           pip install attrdict
           pip install numpy>=1.24.0
-      - name: Install CP
+      - name: Install cellprofiler
         run: |
           # pip install -e src/subpackages/library
           pip install -e src/subpackages/core
@@ -108,12 +108,15 @@ jobs:
           brew install mysql
           mysql.server start
           mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
-      - name: Installation
+      - name: Initial installs
         run:
           |
           pip install pyinstaller
           pip install --upgrade pip setuptools wheel
           pip install numpy>=1.24.0
+      - name: Install core
+        run:
+          |
           # pip install -e src/subpackages/library
           pip install -e src/subpackages/core[test]
       - name: Run Tests
@@ -147,7 +150,13 @@ jobs:
 #         with:
 #           path: ${{ steps.pip-cache-dir.outputs.dir }}
 #           key: ${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/setup.py') }}
-#       - name: Installation
+#       - name: Initial installs
+#         run:
+#           |
+#           pip install pyinstaller
+#           pip install --upgrade pip setuptools wheel
+#           pip install numpy>=1.24.0
+#       - name: Install library
 #         run:
 #           |
 #           pip install pyinstaller

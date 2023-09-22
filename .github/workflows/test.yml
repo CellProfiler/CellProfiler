@@ -56,10 +56,10 @@ jobs:
         run: |
           # pip install -e src/subpackages/library
           pip install -e src/subpackages/core
-          pip install -e src/cellprofiler[test]
+          pip install -e src/frontend[test]
       - name: Run tests
         run: |
-          pytest tests/cellprofiler
+          pytest tests/frontend
 
   test-core:
     name: Install and test Core

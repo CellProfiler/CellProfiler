@@ -27,7 +27,7 @@ jobs:
         python setup.py sdist bdist_wheel
         twine upload dist/*
     - name: Upload Library
-      working-directory: ./src/cellprofiler
+      working-directory: ./src/frontend/
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*

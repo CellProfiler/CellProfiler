@@ -23,6 +23,6 @@ clean:
 # Catch-all target: route all unknown targets to Sphinx using the new
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
-	rsync -rp --delete ../../src/cellprofiler/data/help source
-	rsync -rp --delete ../../src/cellprofiler/data/images source
+	rsync -rp --delete ../../src/frontend/data/help source
+	rsync -rp --delete ../../src/frontend/data/images source
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

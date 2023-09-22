@@ -19,8 +19,8 @@ plugins/
 frozen_version.py
 .mypy_cache/
 *.sqlite3
-docs/cellprofiler/source/help
-docs/cellprofiler/source/images
+docs/frontend/source/help
+docs/frontend/source/images
 docs/core/build
 docs/core/build
 

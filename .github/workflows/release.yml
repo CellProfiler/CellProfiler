@@ -67,7 +67,7 @@ jobs:
         run: |
           pip install "cython" 
           pip install mysqlclient==1.4.6
-          pip install --editable src/cellprofiler --no-use-pep517
+          pip install --editable src/frontend --no-use-pep517
           pyinstaller distribution/windows/cellprofiler.spec
           iscc /dMyAppVersion="4.2.4" "distribution/windows/cellprofiler.iss"
       - name: Mac - Create Artifact

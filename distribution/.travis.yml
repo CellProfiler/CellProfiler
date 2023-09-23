@@ -1,6 +1,0 @@
-services:
-  - docker
-script:
-  - cd docker && make
-  - cd docker && make test
-sudo: required

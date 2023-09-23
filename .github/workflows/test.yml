@@ -46,20 +46,16 @@ jobs:
           brew install mysql
           mysql.server start
           mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
-      - name: Initial installs
-        run: |
-          pip install pyinstaller
-          pip install --upgrade pip setuptools wheel
-          pip install attrdict
-          pip install numpy>=1.24.0
       - name: Install cellprofiler
+        working-directory: ${{ github.workspace }}
         run: |
-          # pip install -e src/subpackages/library
+          python -m pip install --upgrade pip
+          pip install -e src/subpackages/library
           pip install -e src/subpackages/core
           pip install -e src/frontend[test]
       - name: Run tests
         run: |
-          pytest tests/frontend
+          pytest ${{ github.workspace }}/tests/frontend
 
   test-core:
     name: Install and test Core
@@ -108,63 +104,52 @@ jobs:
           brew install mysql
           mysql.server start
           mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
-      - name: Initial installs
-        run:
-          |
-          pip install pyinstaller
-          pip install --upgrade pip setuptools wheel
-          pip install numpy>=1.24.0
       - name: Install core
+        working-directory: ${{ github.workspace }}
         run:
           |
-          # pip install -e src/subpackages/library
+          python -m pip install --upgrade pip
+          pip install -e src/subpackages/library
           pip install -e src/subpackages/core[test]
       - name: Run Tests
-        run: pytest -k 'not test_load_objects and not test_load_single_object' tests/core
+        run: pytest -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
 
-#   test-library:
-#     name: Install and test Library
-#     strategy:
-#       max-parallel: 4
-#       matrix:
-#         os: [macos-11]
-#         python-version: [ 3.8, 3.9 ]
-#       fail-fast: false
-#     runs-on: ${{ matrix.os }}
-#     if: github.event.pull_request.draft == false
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v2
-#       - name: Setup Python ${{ matrix.python-version }}
-#         uses: actions/setup-python@v2
-#         with:
-#           architecture: x64
-#           python-version: ${{ matrix.python-version }}
-#       - name: Get pip cache dir
-#         id: pip-cache-dir
-#         run: |
-#           echo "::set-output name=dir::$(pip cache dir)"
-#       - name: Cache pip
-#         uses: actions/cache@v3
-#         id: cache-pip
-#         with:
-#           path: ${{ steps.pip-cache-dir.outputs.dir }}
-#           key: ${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/setup.py') }}
-#       - name: Initial installs
-#         run:
-#           |
-#           pip install pyinstaller
-#           pip install --upgrade pip setuptools wheel
-#           pip install numpy>=1.24.0
-#       - name: Install library
-#         run:
-#           |
-#           pip install pyinstaller
-#           pip install --upgrade pip setuptools wheel
-#           pip install numpy>=1.24.0
-#           pip install -e src/subpackages/library[test]
-#       - name: Run Tests
-#         run: pytest tests/library
+  test-library:
+    name: Install and test Library
+    strategy:
+      max-parallel: 4
+      matrix:
+        os: [macos-11]
+        python-version: [ 3.8, 3.9 ]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          architecture: x64
+          python-version: ${{ matrix.python-version }}
+      - name: Get pip cache dir
+        id: pip-cache-dir
+        run: |
+          echo "::set-output name=dir::$(pip cache dir)"
+      - name: Cache pip
+        uses: actions/cache@v3
+        id: cache-pip
+        with:
+          path: ${{ steps.pip-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-${{ env.pythonLocation }}-${{ hashFiles('**/setup.py') }}
+      - name: Install library
+        working-directory: ${{ github.workspace }}
+        run:
+          |
+          python -m pip install --upgrade pip
+          pip install -e src/subpackages/library[test]
+#      - name: Run Tests
+#        run: pytest ${{ github.workspace }}/tests/library
 
 on:
   pull_request:

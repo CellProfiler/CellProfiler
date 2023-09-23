@@ -1,12 +1,8 @@
-import centrosome
-import numpy
-import skimage
-from cellprofiler.library.functions.image_processing import (
+from ..functions.image_processing import (
     get_adaptive_threshold,
     get_global_threshold,
     apply_threshold,
 )
-
 
 def threshold(
     image,

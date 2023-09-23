@@ -17,7 +17,7 @@ YES          YES          NO
 import skimage.morphology
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
-from cellprofiler.library.modules import morphologicalskeleton
+from cellprofiler_library.modules import morphologicalskeleton
 
 class MorphologicalSkeleton(ImageProcessing):
     category = "Advanced"

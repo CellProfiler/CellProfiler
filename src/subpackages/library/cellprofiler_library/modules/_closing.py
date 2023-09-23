@@ -1,5 +1,4 @@
-import skimage.morphology
-from cellprofiler.library.functions.image_processing import morphology_closing
+from ..functions.image_processing import morphology_closing
 
 
 def closing(image, structuring_element):

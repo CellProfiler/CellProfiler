@@ -5,7 +5,7 @@ Create an RGB image with color-coded labels overlaid on a grayscale image.
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting.subscriber import LabelSubscriber
 from cellprofiler_core.setting.text import Float
-from cellprofiler.library.modules import overlayobjects
+from cellprofiler_library.modules import overlayobjects
 from cellprofiler_core.preferences import get_default_colormap
 
 

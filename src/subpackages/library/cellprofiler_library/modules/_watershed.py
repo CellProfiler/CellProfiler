@@ -1,6 +1,8 @@
 from typing import Literal
+
 import numpy
-from cellprofiler.library.functions.object_processing import (
+
+from ..functions.object_processing import (
     watershed as library_watershed,
 )
 

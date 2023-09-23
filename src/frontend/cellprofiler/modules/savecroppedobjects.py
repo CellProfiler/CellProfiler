@@ -47,7 +47,7 @@ from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.subscriber import LabelSubscriber, ImageSubscriber, FileImageSubscriber
 from cellprofiler_core.setting.text import Directory
 from cellprofiler_core.constants.measurement import C_FILE_NAME
-from cellprofiler.library.modules import savecroppedobjects
+from cellprofiler_library.modules import savecroppedobjects
 
 O_PNG = "png"
 O_TIFF_8 = "8-bit tiff"

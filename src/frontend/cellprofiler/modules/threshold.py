@@ -46,8 +46,8 @@ from cellprofiler_core.setting.range import FloatRange
 from cellprofiler_core.setting.text import Float, Integer
 
 from cellprofiler.modules import _help
-from cellprofiler.library.modules import threshold
-from cellprofiler.library.functions.image_processing import apply_threshold
+from cellprofiler_library.modules import threshold
+from cellprofiler_library.functions.image_processing import apply_threshold
 
 O_TWO_CLASS = "Two classes"
 O_THREE_CLASS = "Three classes"
@@ -839,7 +839,7 @@ staining.
         Get manual, measurement or other thresholds
         """
         # Handle manual and measurement thresholds, which are not supported
-        # by cellprofiler.library
+        # by cellprofiler_library
         if self.threshold_operation == TM_MANUAL:
             final_threshold = self.manual_threshold.value 
             orig_threshold = self.manual_threshold.value

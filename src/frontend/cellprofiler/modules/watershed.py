@@ -1,11 +1,12 @@
-import cellprofiler_core.object
 import skimage
+
+import cellprofiler_core.object
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
 from cellprofiler_core.setting import Binary, StructuringElement
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float
-from cellprofiler.library.modules import watershed
+from cellprofiler_library.modules import watershed
 
 O_DISTANCE = "Distance"
 O_MARKERS = "Markers"

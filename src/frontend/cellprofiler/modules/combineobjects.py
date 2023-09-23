@@ -43,7 +43,7 @@ from cellprofiler_core.setting.text import LabelName
 from cellprofiler_core.utilities.core.module.identify import add_object_count_measurements
 from cellprofiler_core.utilities.core.module.identify import get_object_measurement_columns
 from cellprofiler_core.utilities.core.module.identify import add_object_location_measurements
-from cellprofiler.library.modules import combineobjects
+from cellprofiler_library.modules import combineobjects
 
 
 class CombineObjects(Identify):

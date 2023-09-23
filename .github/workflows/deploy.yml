@@ -17,17 +17,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install setuptools wheel twine
     - name: Upload Library
-      working-directory: ./src/subpackages/library/
+      working-directory: ${{ github.workspace }}/src/subpackages/library/
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*
     - name: Upload Core
-      working-directory: ./src/subpackages/core/
+      working-directory: ${{ github.workspace }}/src/subpackages/core/
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*
     - name: Upload Library
-      working-directory: ./src/frontend/
+      working-directory: ${{ github.workspace }}/src/frontend/
       run: |
         python setup.py sdist bdist_wheel
         twine upload dist/*

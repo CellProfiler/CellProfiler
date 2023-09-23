@@ -1,5 +1,4 @@
-from cellprofiler.library.functions.image_processing import reduce_noise
-
+from ..functions.image_processing import reduce_noise
 
 def reducenoise(image, patch_size, patch_distance, cutoff_distance, channel_axis=None):
     denoised = reduce_noise(

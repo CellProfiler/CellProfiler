@@ -1,7 +1,7 @@
+import numpy
 import skimage.color
 import skimage.morphology
 import centrosome
-import numpy
 import centrosome.threshold
 import scipy
 import matplotlib

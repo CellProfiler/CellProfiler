@@ -1,4 +1,4 @@
-from cellprofiler.library.functions.object_processing import add_dividing_lines, despur, expand_defined_pixels, expand_until_touching, shrink_defined_pixels, shrink_to_point, skeletonize
+from ..functions.object_processing import add_dividing_lines, despur, expand_defined_pixels, expand_until_touching, shrink_defined_pixels, shrink_to_point, skeletonize
 
 def expand_or_shrink_objects(mode,labels,fill=None,iterations=None):
     if mode == 'expand_defined_pixels':

@@ -22,7 +22,7 @@ YES          YES          NO
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting.text import Integer, Float
-from cellprofiler.library.modules import reducenoise
+from cellprofiler_library.modules import reducenoise
 
 
 class ReduceNoise(ImageProcessing):

@@ -18,7 +18,7 @@ YES          YES          NO
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting.text import Integer
-from cellprofiler.library.modules import medianfilter
+from cellprofiler_library.modules import medianfilter
 
 
 class MedianFilter(ImageProcessing):

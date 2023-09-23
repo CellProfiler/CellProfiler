@@ -39,14 +39,9 @@ jobs:
           java-version: "11" # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install numpy~=1.24.4
-          pip install pyinstaller==4.10
-          git clone https://github.com/CellProfiler/distribution.git
       - name: Mac - Build
         if: ${{ matrix.os == 'macos-10.15' }}
+        working-directory: ${{ github.workspace }}/distribution/macos
         env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
@@ -58,30 +53,29 @@ jobs:
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
           chmod +x osx-codesign.sh && ./osx-codesign.sh
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.2.4.zip
-        working-directory: ./distribution/macos
       - name: Windows - Build
         if: ${{ matrix.os == 'windows-2019' }}
         env:
           JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.16-8\x64
-        # cython necessary?
+        # cython necessary? mysql?
         run: |
           pip install "cython" 
           pip install mysqlclient==1.4.6
-          pip install --editable src/frontend --no-use-pep517
-          pyinstaller distribution/windows/cellprofiler.spec
-          iscc /dMyAppVersion="4.2.4" "distribution/windows/cellprofiler.iss"
+          pip install --editable ${{ github.workspace }}/src/frontend[build] --no-use-pep517
+          pyinstaller ${{ github.workspace }}/distribution/windows/cellprofiler.spec
+          iscc /dMyAppVersion="4.2.4" "${{ github.workspace }}/distribution/windows/cellprofiler.iss"
       - name: Mac - Create Artifact
         if: ${{ matrix.os == 'macos-10.15' }}
         uses: actions/upload-artifact@v1
         with:
           name: CellProfiler-macOS-4.2.4.zip
-          path: ./distribution/macos/dist/CellProfiler-macOS-4.2.4.zip
+          path: ${{ github.workspace }}/distribution/macos/dist/CellProfiler-macOS-4.2.4.zip
       - name: Windows - Create Artifact
         if: ${{ matrix.os == 'windows-2019' }}
         uses: actions/upload-artifact@v2
         with:
           name: CellProfiler-Windows-4.2.4.exe
-          path: ./distribution/windows/Output/CellProfiler-Windows-4.2.4.exe
+          path: ${{ github.workspace }}/distribution/windows/Output/CellProfiler-Windows-4.2.4.exe
 
   upload-cp:
     name: Upload CellProfiler

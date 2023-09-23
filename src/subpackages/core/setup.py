@@ -5,9 +5,9 @@ setuptools.setup(
     author_email="allen.goodman@icloud.com",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "License :: OSI Approved :: MIT License",
+        "License :: OSI Approved :: BSD License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
+        "Topic :: Scientific/Engineering",
     ],
     extras_require={
         "dev": [
@@ -19,6 +19,7 @@ setuptools.setup(
         "wx": ["wxPython==4.2.0"],
     },
     install_requires=[
+        "cellprofiler-library==5.0.0",
         "boto3>=1.12.28",
         "centrosome~=1.2.2",
         "docutils==0.15.2",
@@ -38,10 +39,8 @@ setuptools.setup(
     ],
     license="BSD",
     name="cellprofiler-core",
-    package_data={"cellprofiler_core": ["py.typed"]},
     packages=setuptools.find_packages(exclude=["tests"]),
     python_requires=">=3.8",
-    url="https://github.com/CellProfiler/core",
+    url="https://github.com/CellProfiler",
     version="5.0.0",
-    zip_safe=False,
 )

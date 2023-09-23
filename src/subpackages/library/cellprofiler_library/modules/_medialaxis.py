@@ -1,5 +1,6 @@
-from cellprofiler.library.functions.image_processing import rgb_to_greyscale, medial_axis
 import numpy
+
+from ..functions.image_processing import rgb_to_greyscale, medial_axis
 
 def medialaxis(image, multichannel, volumetric):
     if multichannel:

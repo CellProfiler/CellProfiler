@@ -1,4 +1,4 @@
-from cellprofiler.library.functions.file_processing import save_object_image_crops, save_object_masks
+from ..functions.file_processing import save_object_image_crops, save_object_masks
 
 def savecroppedobjects(
     input_objects,

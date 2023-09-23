@@ -18,7 +18,7 @@ YES          YES          NO
 
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting import StructuringElement
-from cellprofiler.library.modules import opening
+from cellprofiler_library.modules import opening
 
 from cellprofiler.modules._help import HELP_FOR_STREL
 

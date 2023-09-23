@@ -1,4 +1,4 @@
-from cellprofiler.library.functions.image_processing import morphological_skeleton_2d, morphological_skeleton_3d
+from ..functions.image_processing import morphological_skeleton_2d, morphological_skeleton_3d
 
 def morphologicalskeleton(image, volumetric):
     if volumetric: 

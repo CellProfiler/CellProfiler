@@ -1,7 +1,9 @@
 import warnings
+
 import numpy
 import centrosome
-from cellprofiler.library.functions.image_processing import (
+
+from ..functions.image_processing import (
     enhance_edges_sobel,
     enhance_edges_log,
     enhance_edges_prewitt,

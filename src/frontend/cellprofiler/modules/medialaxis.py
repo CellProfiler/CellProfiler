@@ -19,7 +19,7 @@ YES          YES          NO
 
 import numpy
 import skimage.color
-from cellprofiler.library.modules import medialaxis
+from cellprofiler_library.modules import medialaxis
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 

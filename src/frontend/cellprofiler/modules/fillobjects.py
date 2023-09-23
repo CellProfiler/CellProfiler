@@ -31,7 +31,7 @@ from cellprofiler_core.module.image_segmentation import ObjectProcessing
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.text import Float
-from cellprofiler.library.modules import fillobjects
+from cellprofiler_library.modules import fillobjects
 
 MODE_HOLES = "Holes"
 MODE_CHULL = "Convex hull"

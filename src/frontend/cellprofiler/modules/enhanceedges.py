@@ -34,7 +34,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
-from cellprofiler.library.modules import enhanceedges
+from cellprofiler_library.modules import enhanceedges
 
 M_SOBEL = "Sobel"
 M_PREWITT = "Prewitt"

@@ -1,6 +1,4 @@
-import skimage
-import numpy
-from cellprofiler.library.functions.object_processing import fill_object_holes, fill_convex_hulls
+from ..functions.object_processing import fill_object_holes, fill_convex_hulls
 
 def fillobjects(labels, mode="holes", diameter=64.0, planewise=False):
     if mode.casefold() == "holes":

@@ -1,5 +1,5 @@
 from typing import Literal
-import warnings
+
 import centrosome.cpmorphology
 import numpy
 import scipy.ndimage

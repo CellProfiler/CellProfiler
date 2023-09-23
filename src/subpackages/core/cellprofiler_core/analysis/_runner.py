@@ -7,7 +7,6 @@ import subprocess
 import sys
 import tempfile
 import threading
-from typing import List, Any
 import re
 
 import numpy

@@ -57,7 +57,7 @@ setuptools.setup(
     ],
     entry_points={"console_scripts": ["cellprofiler=cellprofiler.__main__:main"]},
     extras_require={
-        "build": ["pyinstaller", "twine"],
+        "build": ["pyinstaller", "setuptools", "wheel", "twine"],
         "docs": ["sphinx>=3.1.1", "sphinx-rtd-theme>=0.5.0"],
         # pooch needed for scikit-image's example dataset,
         # e.g. skimage.data.human_mitosis
@@ -65,8 +65,9 @@ setuptools.setup(
         "test": ["pytest~=7.4.1", "pooch>=1.3.0"],
     },
     install_requires=[
-        "boto3~=1.28.41",
+        "cellprofiler-library==5.0.0",
         "cellprofiler-core==5.0.0",
+        "boto3~=1.28.41",
         "centrosome==1.2.2",
         "docutils==0.15.2",
         "h5py~=3.6.0",
@@ -89,7 +90,7 @@ setuptools.setup(
         "six~=1.16.0",
         "tifffile>=2022.4.8,<2022.4.22",
         "wxPython==4.2.0",
-        "rapidfuzz~=3.0.0"
+        "rapidfuzz~=3.0.0",
     ],
     license="BSD",
     name="CellProfiler",

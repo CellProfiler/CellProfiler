@@ -1,4 +1,4 @@
-from cellprofiler.library.functions.object_processing import (
+from ..functions.object_processing import (
     merge_objects, preserve_objects, discard_objects, segment_objects
 )
 

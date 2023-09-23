@@ -10,7 +10,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     get_object_measurement_columns,
 )
 
-from cellprofiler.library.modules import expand_or_shrink_objects
+from cellprofiler_library.modules import expand_or_shrink_objects
 from cellprofiler.modules import _help
 
 __doc__ = """\

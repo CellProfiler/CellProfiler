@@ -34,8 +34,7 @@ until all image processing cycles have completed. Therefore, the
 projection should be created with a separate pipeline from your
 analysis pipeline.
 
-**MakeProjection** currently only works on single
-image Z-slices across image cycles; it will not work on images that
+**MakeProjection** will not work on images that
 have been loaded as 3D volumes in **NamesAndTypes** so be sure *Process
 as 3D* is set to *No* in that module. For more information on loading image stacks and movies,
 see *Help > Creating a Project > Loading Image Stacks and Movies*.

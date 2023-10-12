@@ -1,7 +1,3 @@
-# docker buildx build --platform linux/amd64 -t ctromanscoia/cellprofiler_dev:latest CellProfiler/docker/dev
-# docker run -it --rm -v $(PWD):/workspace --name cellprofiler_dev ctromanscoia/cellprofiler_dev:latest sh CellProfiler/docker/dev/prepare_env.sh
-# docker push ctromanscoia \cellprofiler_dev
-
 FROM mambaorg/micromamba:1.5.1-bullseye-slim
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1

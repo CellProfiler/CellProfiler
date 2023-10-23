@@ -5,16 +5,6 @@ import skimage.color
 from ...preferences import get_default_colormap
 
 
-def downsample_labels(labels):
-    """Convert a labels matrix to the smallest possible integer format"""
-    labels_max = numpy.max(labels)
-    if labels_max < 128:
-        return labels.astype(numpy.int8)
-    elif labels_max < 32768:
-        return labels.astype(numpy.int16)
-    return labels.astype(numpy.int32)
-
-
 def crop_labels_and_image(labels, image):
     """Crop a labels matrix and an image to the lowest common size
 

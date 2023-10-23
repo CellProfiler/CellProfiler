@@ -89,17 +89,16 @@ References
    *2009 IEEE 12th International Conference on Computer Vision*.
 """
 
+from cellprofiler.modules import _help
+
+from cellprofiler_library.modules import measureimageoverlap
+from cellprofiler_library.opts.measureimageoverlap import DM
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 from cellprofiler_core.module import Module
 from cellprofiler_core.setting import Binary
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer
-
-from cellprofiler.modules import _help
-
-from cellprofiler_library.modules import measureimageoverlap
-from cellprofiler_library.opts.measureimageoverlap import DM
 
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"
@@ -118,9 +117,9 @@ FTR_ALL = [
     FTR_PRECISION,
     FTR_RECALL,
     FTR_TRUE_POS_RATE,
-    FTR_TRUE_NEG_RATE,
     FTR_FALSE_POS_RATE,
     FTR_FALSE_NEG_RATE,
+    FTR_TRUE_NEG_RATE,
     FTR_RAND_INDEX,
     FTR_ADJUSTED_RAND_INDEX,
 ]

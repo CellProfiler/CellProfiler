@@ -44,6 +44,7 @@ class TestSegmentation:
         assert not s.has_dense()
         assert s.has_sparse()
 
+    # TODO - 4758: moved to library tests
     def test_02_01_sparse_to_dense(self):
         #
         # Make 10 circles that might overlap
@@ -103,6 +104,7 @@ class TestSegmentation:
         )
         assert numpy.all(numpy.sum(matches, 0) == 1)
 
+    # TODO - 4758: Moved to library tests
     def test_02_02_dense_to_sparse(self):
         #
         # Make 10 circles that might overlap

@@ -1,12 +1,19 @@
-import centrosome.index
-import centrosome.outline
-import numpy
+import numpy as np
+from numpy.random.mtrand import RandomState
 import scipy.ndimage
 import scipy.sparse
-from numpy.random.mtrand import RandomState
+
+import centrosome.index
+import centrosome.outline
+
+from cellprofiler_library.functions.segmentation import label_set_from_dense
+from cellprofiler_library.functions.segmentation import ijv_from_sparse
+from cellprofiler_library.functions.segmentation import indices_from_ijv
+from cellprofiler_library.functions.segmentation import count_from_ijv
+from cellprofiler_library.functions.segmentation import areas_from_ijv
+from cellprofiler_library.functions.segmentation import convert_labels_to_dense
 
 from ._segmentation import Segmentation
-from ..utilities.core.object import downsample_labels
 
 
 class Objects:
@@ -17,6 +24,9 @@ class Objects:
 
     There are three formats for segmentation, two of which support
     overlapping objects:
+
+    # TODO - 4758: update these, no longer used as listed
+    # especially set_labels
 
     get/set_segmented - legacy, a single plane of labels that does not
                         support overlapping objects
@@ -54,9 +64,11 @@ class Objects:
 
     @property
     def masked(self):
-        mask = self.parent_image.mask
+        parent_image = self.parent_image
 
-        return numpy.logical_and(self.segmented, mask)
+        assert parent_image is not None, "No parent image"
+
+        return np.logical_and(self.segmented, parent_image.mask)
 
     @property
     def shape(self):
@@ -80,16 +92,7 @@ class Objects:
 
     @staticmethod
     def __labels_to_segmentation(labels):
-        dense = downsample_labels(labels)
-
-        if dense.ndim == 3:
-            z, x, y = dense.shape
-        else:
-            x, y = dense.shape
-            z = 1
-
-        dense = dense.reshape((1, 1, 1, z, x, y))
-
+        dense = convert_labels_to_dense(labels)
         return Segmentation(dense=dense)
 
     @staticmethod
@@ -111,26 +114,15 @@ class Objects:
 
     @property
     def indices(self):
-        """Get the indices for a scipy.ndimage-style function from the segmented labels
-
-        """
-        if len(self.ijv) == 0:
-            return numpy.zeros(0, numpy.int32)
-        max_label = numpy.max(self.ijv[:, 2])
-
-        return numpy.arange(max_label).astype(numpy.int32) + 1
+        return indices_from_ijv(self.ijv)
 
     @property
     def count(self):
-        return len(self.indices)
+        return count_from_ijv(self.ijv)
 
     @property
     def areas(self):
-        """The area of each object"""
-        if len(self.indices) == 0:
-            return numpy.zeros(0, int)
-
-        return numpy.bincount(self.ijv[:, 2])[self.indices]
+        return areas_from_ijv(self.ijv)
 
     def set_ijv(self, ijv, shape=None):
         """Set the segmentation to an IJV object format
@@ -138,7 +130,7 @@ class Objects:
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         """
-        sparse = numpy.core.records.fromarrays(
+        sparse = np.core.records.fromarrays(
             (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
             [("y", ijv.dtype), ("x", ijv.dtype), ("label", ijv.dtype)],
         )
@@ -153,7 +145,7 @@ class Objects:
         and the label at the pixel in slot 2.
         """
         sparse = self.__segmented.sparse
-        return numpy.column_stack([sparse[axis] for axis in ("y", "x", "label")])
+        return ijv_from_sparse(sparse)
 
     ijv = property(get_ijv, set_ijv)
 
@@ -169,10 +161,7 @@ class Objects:
         """
         dense, indices = self.__segmented.get_dense()
 
-        if dense.shape[3] == 1:
-            return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
-
-        return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]
+        return label_set_from_dense(dense, indices=indices)
 
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""
@@ -275,11 +264,11 @@ class Objects:
             (centrosome.outline.outline(label), indexes)
             for label, indexes in self.get_labels()
         ]
-        image = numpy.zeros(list(all_labels[0][0].shape) + [3], numpy.float32)
+        image = np.zeros(list(all_labels[0][0].shape) + [3], np.float32)
         #
         # Find out how many unique labels in each
         #
-        counts = [numpy.sum(numpy.unique(l) != 0) for l, _ in all_labels]
+        counts = [np.sum(np.unique(l) != 0) for l, _ in all_labels]
         if len(counts) == 1 and counts[0] == 0:
             return image
 
@@ -287,25 +276,25 @@ class Objects:
             # Have to color 2 planes using the same color!
             # There's some chance that overlapping objects will get
             # the same color. Give me more colors to work with please.
-            colors = numpy.vstack([colors] * (1 + len(all_labels) // len(colors)))
+            colors = np.vstack([colors] * (1 + len(all_labels) // len(colors)))
         r = RandomState()
-        alpha = numpy.zeros(all_labels[0][0].shape, numpy.float32)
-        order = numpy.lexsort([counts])
+        alpha = np.zeros(all_labels[0][0].shape, np.float32)
+        order = np.lexsort([counts])
         label_colors = []
         for idx, i in enumerate(order):
             max_available = len(colors) / (len(all_labels) - idx)
             ncolors = min(counts[i], max_available)
             my_colors = colors[:ncolors]
             colors = colors[ncolors:]
-            my_colors = my_colors[r.permutation(numpy.arange(ncolors))]
+            my_colors = my_colors[r.permutation(np.arange(ncolors))]
             my_labels, indexes = all_labels[i]
-            color_idx = numpy.zeros(numpy.max(indexes) + 1, int)
-            color_idx[indexes] = numpy.arange(len(indexes)) % ncolors
+            color_idx = np.zeros(np.max(indexes) + 1, int)
+            color_idx[indexes] = np.arange(len(indexes)) % ncolors
             image[my_labels != 0, :] += my_colors[
                 color_idx[my_labels[my_labels != 0]], :
             ]
             alpha[my_labels != 0] += 1
-        image[alpha > 0, :] /= alpha[alpha > 0][:, numpy.newaxis]
+        image[alpha > 0, :] /= alpha[alpha > 0][:, np.newaxis]
         return image
 
     def relate_children(self, children):
@@ -347,13 +336,13 @@ class Objects:
         """
         parent_count = histogram.shape[0] - 1
 
-        parents_of_children = numpy.asarray(histogram.argmax(axis=0))
+        parents_of_children = np.asarray(histogram.argmax(axis=0))
         if len(parents_of_children.shape) == 2:
-            parents_of_children = numpy.squeeze(parents_of_children, axis=0)
+            parents_of_children = np.squeeze(parents_of_children, axis=0)
         #
         # Create a histogram of # of children per parent
-        children_per_parent = numpy.histogram(
-            parents_of_children[1:], numpy.arange(parent_count + 2)
+        children_per_parent = np.histogram(
+            parents_of_children[1:], np.arange(parent_count + 2)
         )[0][1:]
 
         #
@@ -373,12 +362,12 @@ class Objects:
         correspond to parent and child labels of 0.
 
         """
-        parent_count = numpy.max(parent_labels)
-        child_count = numpy.max(child_labels)
+        parent_count = np.max(parent_labels)
+        child_count = np.max(child_labels)
         #
         # If the labels are different shapes, crop to shared shape.
         #
-        common_shape = numpy.minimum(parent_labels.shape, child_labels.shape)
+        common_shape = np.minimum(parent_labels.shape, child_labels.shape)
 
         if parent_labels.ndim == 3:
             parent_labels = parent_labels[
@@ -395,7 +384,7 @@ class Objects:
         # Only look at points that are labeled in parent and child
         #
         not_zero = (parent_labels > 0) & (child_labels > 0)
-        not_zero_count = numpy.sum(not_zero)
+        not_zero_count = np.sum(not_zero)
 
         #
         # each row (axis = 0) is a parent
@@ -403,7 +392,7 @@ class Objects:
         #
         return scipy.sparse.coo_matrix(
             (
-                numpy.ones((not_zero_count,)),
+                np.ones((not_zero_count,)),
                 (parent_labels[not_zero], child_labels[not_zero]),
             ),
             shape=(parent_count + 1, child_count + 1),
@@ -422,25 +411,25 @@ class Objects:
         correspond to parent and child labels of 0.
 
         """
-        parent_count = 0 if (parent_ijv.shape[0] == 0) else numpy.max(parent_ijv[:, 2])
-        child_count = 0 if (child_ijv.shape[0] == 0) else numpy.max(child_ijv[:, 2])
+        parent_count = 0 if (parent_ijv.shape[0] == 0) else np.max(parent_ijv[:, 2])
+        child_count = 0 if (child_ijv.shape[0] == 0) else np.max(child_ijv[:, 2])
 
         if parent_count == 0 or child_count == 0:
-            return numpy.zeros((parent_count + 1, child_count + 1), int)
+            return np.zeros((parent_count + 1, child_count + 1), int)
 
-        dim_i = max(numpy.max(parent_ijv[:, 0]), numpy.max(child_ijv[:, 0])) + 1
-        dim_j = max(numpy.max(parent_ijv[:, 1]), numpy.max(child_ijv[:, 1])) + 1
+        dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + 1
+        dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + 1
         parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(
-            numpy.uint64
+            np.uint64
         )
-        child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(numpy.uint64)
+        child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(np.uint64)
 
         parent_matrix = scipy.sparse.coo_matrix(
-            (numpy.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)),
+            (np.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)),
             shape=(parent_count + 1, dim_i * dim_j),
         )
         child_matrix = scipy.sparse.coo_matrix(
-            (numpy.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])),
+            (np.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])),
             shape=(dim_i * dim_j, child_count + 1),
         )
         # I surely do not understand the sparse code.  Converting both
@@ -469,18 +458,18 @@ class Objects:
         Pass this function an "image" of all ones, for instance to compute
         a center or an area
         """
-        return func(numpy.ones(self.segmented.shape), self.segmented, self.indices)
+        return func(np.ones(self.segmented.shape), self.segmented, self.indices)
 
     def center_of_mass(self):
         labels = self.segmented
 
-        index = numpy.unique(labels)
+        index = np.unique(labels)
 
         if index[0] == 0:
             index = index[1:]
 
-        return numpy.array(
-            scipy.ndimage.center_of_mass(numpy.ones_like(labels), labels, index)
+        return np.array(
+            scipy.ndimage.center_of_mass(np.ones_like(labels), labels, index)
         )
 
     def overlapping(self):

@@ -1457,13 +1457,15 @@ class HDF5ObjectSet(object):
 
     Segmentations are stored in one of two formats:
 
-    A 6-d array composed of one or more 5-d integer labelings of
+    A dense 6-d array composed of one or more 5-d integer labelings of
     each pixel. The dimension order is labeling, c, t, z, y, x. Typically,
     a 2-D non-overlapping segmentation has dimensions of 1, 1, 1, 1, y, x.
 
-    The i, j, v labeling of the pixels. The labeling is stored in a record
-    data type with each column having a name of "c", "t", "z", "y", "x" or
-    "label". The "label" column is the object number, starting with 1.
+    Sparse labeling stored in a record data type with each column having a name
+    of "c", "t", "z", "y", "x" or "label". The "label" column is the object
+    number, starting with 1. When "c", "t", "z" are absent, this is the same as
+    an i, j, v labeling of the pixels, also known as a COOrdinate format
+    (as in scipy.sparse.coo_matrix).
 
     Naming is in 2 parts: object_name, segmentation. One group is reserved
     per 2-part name and the datasets within are named, "dense" and "sparse" with
@@ -1556,6 +1558,11 @@ class HDF5ObjectSet(object):
                         (HDF5ObjectSet.AXIS_X, np.uint32, 1),
                         (HDF5ObjectSet.AXIS_LABELS, np.uint32, 1)]
                data = np.array([(100, 200, 1)], dtype)
+               or:
+               ys = np.array([100], np.uint32)
+               xs = np.array([200], np.uint32)
+               ls = np.array([1], np.uint32)
+               data = np.core.records.fromarrays([ys,xs,ls], dtype)
         """
         segmentation_group = self.__ensure_group(objects_name, segmentation_name)
         create = False

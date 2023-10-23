@@ -9,6 +9,7 @@ import numpy.testing
 import pytest
 import skimage.measure
 
+import cellprofiler_library.functions.segmentation
 import cellprofiler_core.image
 import cellprofiler_core.image
 import cellprofiler_core.object
@@ -63,28 +64,28 @@ class TestDownsampleLabels:
     def test_01_01_downsample_127(self):
         i, j = numpy.mgrid[0:16, 0:8]
         labels = (i * 8 + j).astype(int)
-        result = cellprofiler_core.utilities.core.object.downsample_labels(labels)
+        result = cellprofiler_library.functions.segmentation.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int8)
         assert numpy.all(result == labels)
 
     def test_01_02_downsample_128(self):
         i, j = numpy.mgrid[0:16, 0:8]
         labels = (i * 8 + j).astype(int) + 1
-        result = cellprofiler_core.utilities.core.object.downsample_labels(labels)
+        result = cellprofiler_library.functions.segmentation.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int16)
         assert numpy.all(result == labels)
 
     def test_01_03_downsample_32767(self):
         i, j = numpy.mgrid[0:256, 0:128]
         labels = (i * 128 + j).astype(int)
-        result = cellprofiler_core.utilities.core.object.downsample_labels(labels)
+        result = cellprofiler_library.functions.segmentation.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int16)
         assert numpy.all(result == labels)
 
     def test_01_04_downsample_32768(self):
         i, j = numpy.mgrid[0:256, 0:128]
         labels = (i * 128 + j).astype(int) + 1
-        result = cellprofiler_core.utilities.core.object.downsample_labels(labels)
+        result = cellprofiler_library.functions.segmentation.downsample_labels(labels)
         assert result.dtype == numpy.dtype(numpy.int32)
         assert numpy.all(result == labels)
 

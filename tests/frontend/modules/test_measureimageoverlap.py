@@ -5,18 +5,19 @@ import numpy.random
 import numpy.testing
 import scipy.ndimage
 
+import cellprofiler_library.opts.measureimageoverlap
+
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.module
-from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
-
-
-import cellprofiler.modules.measureimageoverlap
-import cellprofiler_library.opts.measureimageoverlap
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.preferences
 import cellprofiler_core.workspace
+from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+
+import cellprofiler.modules.measureimageoverlap
+
 import tests.frontend.modules
 
 cellprofiler_core.preferences.set_headless()

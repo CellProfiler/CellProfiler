@@ -112,7 +112,8 @@ jobs:
           pip install -e src/subpackages/library
           pip install -e src/subpackages/core[test]
       - name: Run Tests
-        run: pytest -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
+        run: |
+          pytest -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
 
   test-library:
     name: Install and test Library
@@ -148,8 +149,9 @@ jobs:
           |
           python -m pip install --upgrade pip
           pip install -e src/subpackages/library[test]
-     - name: Run Tests
-       run: pytest ${{ github.workspace }}/tests/library
+      - name: Run Tests
+        run: |
+          pytest ${{ github.workspace }}/tests/library
 
 on:
   pull_request:

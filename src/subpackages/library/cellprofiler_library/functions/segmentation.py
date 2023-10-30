@@ -2,39 +2,136 @@ import numpy as np
 import centrosome.index
 
 def _validate_dense(dense):
-    assert dense.ndim == 6, "dense must be 6-dimensional - (labels, c, t, z, y, x)"
+    """
+    a 'dense' matrix is a 6 dimensional array with axis order:
+    (label, c, t, z, y, x)
+
+    when the 'label' dim = 1, there may in fact be only 1 label,
+    but there also may be many, non-overlapping labels
+
+    when the 'label' dim > 1, there is 1 label per index of the 'label' dim
+
+    technically it is possible to place multiple, non-overlapping labels
+    (or none) in each index of the 'label' dim, however that results in
+    undefined behaviour
+    """
+    assert type(dense == np.ndarray), "dense must be ndarray"
+    assert dense.ndim == 6, \
+    "dense must be 6-dimensional - (label, c, t, z, y, x)"
+
+def _validate_dense_shape(dense_shape):
+    """
+    dense_shape, as opposed to dense.shape, is the shape of the dense matrix
+    sans the label axis, i.e.
+    (c, t, z, y, z)
+    """
+    assert (dense_shape is None or
+            len(dense_shape) == 5
+    ), "dense_shape must be length 5, omitting labels dim"
+
+def _validate_labels(labels):
+    """
+    a 'labels' matrix is another, more constrained, dense representation
+
+    it is strictly 2- or 3-dimensional, of shape: (y, x) or (z, y, x)
+    it does not allow for overlapping labels
+
+    it is essentially a 'dense' of shape (1, 1, 1, 1, y, x), but squeezed
+    such that the ('label', 'c', 't', 'z') axes are removed
+    """
+    assert type(labels) == np.ndarray, "labels must be ndarray"
+    assert (
+        labels.ndim == 2 or
+        labels.ndim == 3
+    ), "labels must be 2- or 3-dimensional"
+
+def _validate_sparse(sparse):
+    """
+    'sparse' is a sparse representation of labelings
+    it's either a numpy recarray, or castable as such via arr.view(np.recarray)
+    where the data types are tpyed fields who's names are a subset of:
+    set('label', 'c', 't', 'z', 'y', 'x')
+    and where the data is a 1-dimensional array of tuples, matching the fields
+
+    e.g.
+    rec.array([(0, 0, 0, 1), (0, 1, 0, 1), (1, 0, 0, 1), (1, 1, 0, 1),
+               (0, 1, 0, 2), (0, 1, 1, 2), (1, 1, 0, 2), (1, 1, 1, 2)],
+              dtype=[('z', '<u2'), ('y', '<u2'), ('x', '<u2'), ('label', 'u1')])
+
+    note that each field may have its own type, the tuple order matches the
+    field order, each tuple is unique by at least one element, and there is
+    no need (although permissable) to specify a field if it will be the same
+    among all the data values (i.e. 'c' and 't' not specified above as they
+    would all be '0')
+
+    note also there is no tuple who's 'label' value is '0' because including
+    all '0' values would make 'sparse' equivilent in memory to 'dense',
+    and including any '0' values at all would be including a non-label
+    (i.e. background)
+    """
+    assert (
+        type(sparse) == np.ndarray or
+        type(sparse) == np.recarray
+    ), "sparse must be ndarray or recarray"
+
+    assert sparse.ndim == 1, "sparse mut be 1-dimensional"
+
+    axes = sparse.dtype.names
+
+    assert axes is not None, "sparse must have dtype fields"
+
+    axes_set = set(axes)
+    full_set = set(('label', 'c', 't', 'z', 'y', 'x'))
+
+    assert len(axes) == len(axes_set), "duplicate dtype fields in sparse"
+    assert axes_set.issubset(full_set), "sparse has unknown dtype fields"
+
+def _validate_ijv(ijv):
+    """
+    'ijv' is another, more constrained, sparse representation
+
+    it is a 2-dimensional array of triplets, of shape: (num_coords, 3)
+    it also allows for overlapping labels
+
+    unlike 'sparse', it is strictly an ndarray with a single dtype
+    for all values, and is strictly in triplet form, where
+    [i, j, v] = [y_coord, x_coord, label_value]
+    it cannot host values for 'c', 't' or 'z'
+
+    e.g. this 'sparse' record:
+    rec.array([(0, 0, 0, 1), (0, 1, 0, 1), (0, 1, 0, 2), (0, 1, 1, 2),],
+             dtype=[('z', '<u2'), ('y', '<u2'), ('x', '<u2'), ('label', 'u1')])
+
+    would equate to this 'ijv' matrix:
+    array([[0, 0, 1],
+           [1, 0, 1],
+           [1, 0, 2],
+           [1, 1, 2]],
+          dtype=uint16)
+    """
+    assert type(ijv) == np.ndarray, "ijv must be ndarray"
+    assert ijv.ndim == 2, "ijv must be 2-dimensional"
+    assert ijv.shape[1] == 3, "ijv must have 3 columns"
 
 def indices_from_dense(dense):
     indices = [np.unique(d) for d in dense]
     indices = [idx[1:] if idx[0] == 0 else idx for idx in indices]
     return np.array(indices)
 
-def shape_from_sparse(sparse):
+def dense_shape_from_sparse(sparse):
     return tuple([
         np.max(sparse[axis]) + 2
         if axis in list(sparse.dtype.fields.keys())
         else 1
-        for axis in ("c", "t", "z", "y", "x")
+        for axis in ('c', 't', 'z', 'y', 'x')
     ])
-
-def label_set_from_dense(dense, indices=None):
-    _validate_dense(dense)
-
-    if indices is None:
-        indices = indices_from_dense(dense)
-
-    if dense.shape[3] == 1:
-        return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
-
-    return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]
-
-def ijv_from_sparse(sparse):
-    return np.column_stack([sparse[axis] for axis in ("y", "x", "label")])
 
 def indices_from_ijv(ijv):
     """
     Get the indices for a scipy.ndimage-style function from the segmented labels
     """
+    _validate_ijv(ijv)
+
     if len(ijv) == 0:
         return np.zeros(0, np.int32)
 
@@ -61,7 +158,7 @@ def areas_from_ijv(ijv, indices=None):
 
 def downsample_labels(labels):
     """
-    Convert a labels matrix to the smallest possible integer format
+    Convert a 'labels' matrix to the smallest possible integer format
     """
     labels_max = np.max(labels)
     if labels_max < 128:
@@ -70,10 +167,31 @@ def downsample_labels(labels):
         return labels.astype(np.int16)
     return labels.astype(np.int32)
 
+def convert_dense_to_label_set(dense, indices=None):
+    """
+    Convert a 'dense' matrix into a list of 2-tuples,
+    where the number of tuples corresponds to the number of unique labels
+    in the 'dense' matrix, the tuple's first element is a 'labels' matrix,
+    and the tuple's second element is the single label which the 'labels' matrix
+    represents
+    """
+    _validate_dense(dense)
+
+    if indices is None:
+        indices = indices_from_dense(dense)
+
+    # z = 1 => 2-D
+    if dense.shape[3] == 1:
+        return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
+
+    return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]
+
 def convert_labels_to_dense(labels):
     """
-    Convert a labels matrix (e.g. scipy.ndimage.label) to dense labeling
+    Convert a 'labels' matrix (e.g. scipy.ndimage.label) to 'dense' matrix
     """
+    _validate_labels(labels)
+
     dense = downsample_labels(labels)
 
     if dense.ndim == 3:
@@ -94,7 +212,7 @@ def convert_dense_to_sparse(dense, indices=None):
     label_dim = dense.shape[0]
     dense_shape = dense.shape[1:]
 
-    axes_labels = np.array(("c", "t", "z", "y", "x"))
+    axes_labels = np.array(('c', 't', 'z', 'y', 'x'))
     axes = axes_labels[np.where(np.array(dense_shape) > 1)]
 
     compact = np.squeeze(dense)
@@ -128,19 +246,34 @@ def convert_dense_to_sparse(dense, indices=None):
 
     return sparse
 
+def convert_ijv_to_sparse(ijv):
+    _validate_ijv(ijv)
+
+    return np.core.records.fromarrays(
+        (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
+        [('y', ijv.dtype), ('x', ijv.dtype), ('label', ijv.dtype)],
+    )
+
+def convert_sparse_to_ijv(sparse):
+    _validate_sparse(sparse)
+
+    return np.column_stack([sparse[axis] for axis in ('y', 'x', 'label')])
+
 def convert_sparse_to_dense(sparse, dense_shape=None):
+    _validate_sparse(sparse)
+    _validate_dense_shape(dense_shape)
+
     if len(sparse) == 0:
         if dense_shape is None:
-            dense_shape = (1,1,1,1,1,1)
-        # normally the labels dim is ommitted for dense_shape
-        elif len(dense_shape) == 5:
-            dense_shape = (1,) + dense_shape
+            full_dense_shape = (1,1,1,1,1,1)
+        else:
+            full_dense_shape = (1,) + dense_shape
 
-        dense = np.zeros(dense_shape, np.uint8)
-        return dense, indices_from_dense(dense)
+        return np.zeros(full_dense_shape, np.uint8)
 
     if dense_shape is None:
-        dense_shape = shape_from_sparse(sparse)
+        # len 5
+        dense_shape = dense_shape_from_sparse(sparse)
 
     #
     # The code below assigns a "color" to each label so that no
@@ -182,7 +315,7 @@ def convert_sparse_to_dense(sparse, dense_shape=None):
     if len(counts) == 0:
         dense = np.zeros([1] + list(dense_shape), labels.dtype)
         dense[tuple([0] + positional_columns)] = labels
-        return dense, indices_from_dense(dense)
+        return dense
     #
     # There are n * n-1 pairs for each coordinate (n = # labels)
     # n = 1 -> 0 pairs, n = 2 -> 2 pairs, n = 3 -> 6 pairs
@@ -274,6 +407,5 @@ def convert_sparse_to_dense(sparse, dense_shape=None):
     dense = np.zeros([np.max(v_color)] + list(dense_shape), labels.dtype)
     slices = tuple([v_color[labels] - 1] + positional_columns)
     dense[slices] = labels
-    indices = [np.where(v_color == i)[0] for i in range(1, dense.shape[0] + 1)]
 
-    return dense, indices
+    return dense

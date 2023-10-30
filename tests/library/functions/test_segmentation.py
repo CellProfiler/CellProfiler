@@ -243,8 +243,10 @@ class TestSegmentation:
         sparse_plain = np.array([], dtype=[('label', 'u1')])
         sparse_shaped = np.array([], dtype=[('y', '<u2'), ('x', '<u2'), ('label', 'u1')])
 
-        dense_plain, dpi = lib_seg.convert_sparse_to_dense(sparse_plain)
-        dense_shaped, dsi = lib_seg.convert_sparse_to_dense(sparse_shaped, dense_shape=(1, 1, 1, 1, 3, 3))
+        dense_plain = lib_seg.convert_sparse_to_dense(sparse_plain)
+        dpi = lib_seg.indices_from_dense(dense_plain)
+        dense_shaped = lib_seg.convert_sparse_to_dense(sparse_shaped, dense_shape=(1, 1, 1, 3, 3))
+        dsi = lib_seg.indices_from_dense(dense_shaped)
 
         dense_plain_expected = np.zeros((1, 1, 1, 1, 1, 1), np.uint8)
         dense_shaped_expected = np.zeros((1, 1, 1, 1, 3, 3), np.uint8)
@@ -271,10 +273,12 @@ class TestSegmentation:
             dtype=[('y', '<u2'), ('x', '<u2'), ('label', 'u1')]
         )
 
-        dense_plain, dpi = lib_seg.convert_sparse_to_dense(sparse)
-        dense_shaped, dsi = lib_seg.convert_sparse_to_dense(
+        dense_plain = lib_seg.convert_sparse_to_dense(sparse)
+        dpi = lib_seg.indices_from_dense(dense_plain)
+        dense_shaped = lib_seg.convert_sparse_to_dense(
             sparse, dense_shape=(1, 1, 1, 3, 3)
         )
+        dsi = lib_seg.indices_from_dense(dense_shaped)
 
         # + 1 padding
         dense_plain_expected = np.array(
@@ -311,10 +315,12 @@ class TestSegmentation:
             dtype=[('y', '<u2'), ('x', '<u2'), ('label', 'u1')]
         )
 
-        dense_plain, dpi = lib_seg.convert_sparse_to_dense(sparse)
-        dense_shaped, dsi = lib_seg.convert_sparse_to_dense(
+        dense_plain = lib_seg.convert_sparse_to_dense(sparse)
+        dpi = lib_seg.indices_from_dense(dense_plain)
+        dense_shaped = lib_seg.convert_sparse_to_dense(
             sparse, dense_shape=(1, 1, 1, 3, 2)
         )
+        dsi = lib_seg.indices_from_dense(dense_shaped)
 
         # + 1 padding
         dense_plain_expected = np.array(
@@ -363,7 +369,7 @@ class TestSegmentation:
         )
 
         dense_shape = (1, 1, 1, 50, 50)
-        dense, indices = lib_seg.convert_sparse_to_dense(sparse, dense_shape=dense_shape)
+        dense = lib_seg.convert_sparse_to_dense(sparse, dense_shape=dense_shape)
         assert tuple(dense.shape[1:]) == dense_shape
         assert np.sum(dense > 0) == len(sparse)
 
@@ -410,10 +416,12 @@ class TestSegmentation:
             dtype=[('z', '<u2'), ('y', '<u2'), ('x', '<u2'), ('label', 'u1')]
         )
 
-        dense_plain, dpi = lib_seg.convert_sparse_to_dense(sparse)
-        dense_shaped, dsi = lib_seg.convert_sparse_to_dense(
+        dense_plain = lib_seg.convert_sparse_to_dense(sparse)
+        dpi = lib_seg.indices_from_dense(dense_plain)
+        dense_shaped = lib_seg.convert_sparse_to_dense(
             sparse, dense_shape=(1, 1, 3, 3, 2)
         )
+        dsi = lib_seg.indices_from_dense(dense_shaped)
 
         # + 1 padding
         dense_plain_expected = np.array(
@@ -472,10 +480,12 @@ class TestSegmentation:
             dtype=[('z', '<u2'), ('y', '<u2'), ('x', '<u2'), ('label', 'u1')]
         )
 
-        dense_plain, dpi = lib_seg.convert_sparse_to_dense(sparse)
-        dense_shaped, dsi = lib_seg.convert_sparse_to_dense(
+        dense_plain = lib_seg.convert_sparse_to_dense(sparse)
+        dpi = lib_seg.indices_from_dense(dense_plain)
+        dense_shaped = lib_seg.convert_sparse_to_dense(
             sparse, dense_shape=(1, 1, 3, 3, 2)
         )
+        dsi = lib_seg.indices_from_dense(dense_shaped)
 
         # + 1 padding
         dense_plain_expected = np.array(

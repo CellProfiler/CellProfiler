@@ -1,7 +1,7 @@
 from cellprofiler_library.functions.segmentation import convert_dense_to_sparse
 from cellprofiler_library.functions.segmentation import convert_sparse_to_dense
 from cellprofiler_library.functions.segmentation import indices_from_dense
-from cellprofiler_library.functions.segmentation import shape_from_sparse
+from cellprofiler_library.functions.segmentation import dense_shape_from_sparse
 
 
 class Segmentation:
@@ -49,6 +49,7 @@ class Segmentation:
     @property
     def shape(self):
         """Get or estimate the shape of the segmentation matrix
+        This is the dense shape, ('c', 't', 'z', 'y', 'x')
 
         Order of precedence:
         Shape supplied in the constructor
@@ -64,7 +65,7 @@ class Segmentation:
             if len(sparse) == 0:
                 self.__shape = (1, 1, 1, 1, 1)
             else:
-                self.__shape = shape_from_sparse(sparse)
+                self.__shape = dense_shape_from_sparse(sparse)
         return self.__shape
 
     @shape.setter
@@ -148,5 +149,7 @@ class Segmentation:
     def __convert_sparse_to_dense(self):
         sparse = self.sparse
         dense_shape = self.shape
-        dense, indices = convert_sparse_to_dense(sparse, dense_shape)
+        dense = convert_sparse_to_dense(sparse, dense_shape)
+        indices = indices_from_dense(dense)
+
         return self.__set_dense(dense, indices)

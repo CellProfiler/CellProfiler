@@ -6,12 +6,13 @@ import scipy.sparse
 import centrosome.index
 import centrosome.outline
 
-from cellprofiler_library.functions.segmentation import label_set_from_dense
-from cellprofiler_library.functions.segmentation import ijv_from_sparse
+from cellprofiler_library.functions.segmentation import convert_dense_to_label_set
+from cellprofiler_library.functions.segmentation import convert_sparse_to_ijv
 from cellprofiler_library.functions.segmentation import indices_from_ijv
 from cellprofiler_library.functions.segmentation import count_from_ijv
 from cellprofiler_library.functions.segmentation import areas_from_ijv
 from cellprofiler_library.functions.segmentation import convert_labels_to_dense
+from cellprofiler_library.functions.segmentation import convert_ijv_to_sparse
 
 from ._segmentation import Segmentation
 
@@ -130,12 +131,11 @@ class Objects:
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         """
-        sparse = np.core.records.fromarrays(
-            (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
-            [("y", ijv.dtype), ("x", ijv.dtype), ("label", ijv.dtype)],
-        )
+        sparse = convert_ijv_to_sparse(ijv)
+
         if shape is not None:
             shape = (1, 1, 1, shape[0], shape[1])
+
         self.__segmented = Segmentation(sparse=sparse, shape=shape)
 
     def get_ijv(self):
@@ -145,7 +145,7 @@ class Objects:
         and the label at the pixel in slot 2.
         """
         sparse = self.__segmented.sparse
-        return ijv_from_sparse(sparse)
+        return convert_sparse_to_ijv(sparse)
 
     ijv = property(get_ijv, set_ijv)
 
@@ -161,7 +161,7 @@ class Objects:
         """
         dense, indices = self.__segmented.get_dense()
 
-        return label_set_from_dense(dense, indices=indices)
+        return convert_dense_to_label_set(dense, indices=indices)
 
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""

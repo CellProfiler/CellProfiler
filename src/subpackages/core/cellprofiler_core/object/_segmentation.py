@@ -147,9 +147,6 @@ class Segmentation:
         return dense, self.__indices
 
     def __convert_sparse_to_dense(self):
-        sparse = self.sparse
-        dense_shape = self.shape
-        dense = convert_sparse_to_dense(sparse, dense_shape)
-        indices = indices_from_dense(dense)
+        dense, indices = convert_sparse_to_dense(self.sparse, self.shape)
 
         return self.__set_dense(dense, indices)

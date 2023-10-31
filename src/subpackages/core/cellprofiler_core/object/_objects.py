@@ -115,15 +115,15 @@ class Objects:
 
     @property
     def indices(self):
-        return indices_from_ijv(self.ijv)
+        return indices_from_ijv(self.ijv, validate=False)
 
     @property
     def count(self):
-        return count_from_ijv(self.ijv)
+        return count_from_ijv(self.ijv, validate=False)
 
     @property
     def areas(self):
-        return areas_from_ijv(self.ijv)
+        return areas_from_ijv(self.ijv, validate=False)
 
     def set_ijv(self, ijv, shape=None):
         """Set the segmentation to an IJV object format
@@ -145,7 +145,7 @@ class Objects:
         and the label at the pixel in slot 2.
         """
         sparse = self.__segmented.sparse
-        return convert_sparse_to_ijv(sparse)
+        return convert_sparse_to_ijv(sparse, validate=False)
 
     ijv = property(get_ijv, set_ijv)
 
@@ -161,7 +161,7 @@ class Objects:
         """
         dense, indices = self.__segmented.get_dense()
 
-        return convert_dense_to_label_set(dense, indices=indices)
+        return convert_dense_to_label_set(dense, indices=indices, validate=False)
 
     def has_unedited_segmented(self):
         """Return true if there is an unedited segmented matrix."""

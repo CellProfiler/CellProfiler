@@ -2,6 +2,9 @@ from cellprofiler_library.functions.segmentation import convert_dense_to_sparse
 from cellprofiler_library.functions.segmentation import convert_sparse_to_dense
 from cellprofiler_library.functions.segmentation import indices_from_dense
 from cellprofiler_library.functions.segmentation import dense_shape_from_sparse
+from cellprofiler_library.functions.segmentation import _validate_dense
+from cellprofiler_library.functions.segmentation import _validate_sparse
+from cellprofiler_library.functions.segmentation import _validate_dense_shape
 
 
 class Segmentation:
@@ -33,6 +36,12 @@ class Segmentation:
                 dense representation, but may not be exactly equal to the
                 original shape of the imaging site.
         """
+        if dense:
+            _validate_dense(dense)
+        if sparse:
+            _validate_sparse(sparse)
+        if shape:
+            _validate_dense_shape(shape)
 
         self.__dense = dense
         self.__sparse = sparse
@@ -65,7 +74,7 @@ class Segmentation:
             if len(sparse) == 0:
                 self.__shape = (1, 1, 1, 1, 1)
             else:
-                self.__shape = dense_shape_from_sparse(sparse)
+                self.__shape = dense_shape_from_sparse(sparse, validate=False)
         return self.__shape
 
     @shape.setter
@@ -132,7 +141,7 @@ class Segmentation:
 
     def __convert_dense_to_sparse(self):
         dense, _ = self.get_dense()
-        sparse = convert_dense_to_sparse(dense)
+        sparse = convert_dense_to_sparse(dense, validate=False)
         self.__sparse = sparse
         return sparse
 
@@ -147,6 +156,7 @@ class Segmentation:
         return dense, self.__indices
 
     def __convert_sparse_to_dense(self):
-        dense, indices = convert_sparse_to_dense(self.sparse, self.shape)
+        dense, indices = convert_sparse_to_dense(
+            self.sparse, self.shape, validate=False)
 
         return self.__set_dense(dense, indices)

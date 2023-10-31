@@ -276,20 +276,24 @@ def compute_earth_movers_distance(
         ground_truth_image & mask, np.ones((3, 3), bool)
     )[0]
     dest_labelset = cast_labels_to_label_set(dest_labels)
-    dest_ijv = convert_labels_to_ijv(dest_labels)
-    dest_ijv_indices = indices_from_ijv(dest_ijv)
-    dest_count = count_from_ijv(dest_ijv, indices=dest_ijv_indices)
-    dest_areas = areas_from_ijv(dest_ijv, indices=dest_ijv_indices)
+    dest_ijv = convert_labels_to_ijv(dest_labels, validate=False)
+    dest_ijv_indices = indices_from_ijv(dest_ijv, validate=False)
+    dest_count = count_from_ijv(
+        dest_ijv, indices=dest_ijv_indices, validate=False)
+    dest_areas = areas_from_ijv(
+        dest_ijv, indices=dest_ijv_indices, validate=False)
 
     # test labels
     src_labels = scipy.ndimage.label(
         test_image & mask, np.ones((3, 3), bool)
     )[0]
     src_labelset = cast_labels_to_label_set(src_labels)
-    src_ijv = convert_labels_to_ijv(src_labels)
-    src_ijv_indices = indices_from_ijv(src_ijv)
-    src_count = count_from_ijv(src_ijv, indices=src_ijv_indices)
-    src_areas = areas_from_ijv(src_ijv, indices=src_ijv_indices)
+    src_ijv = convert_labels_to_ijv(src_labels, validate=False)
+    src_ijv_indices = indices_from_ijv(src_ijv, validate=False)
+    src_count = count_from_ijv(
+        src_ijv, indices=src_ijv_indices, validate=False)
+    src_areas = areas_from_ijv(
+        src_ijv, indices=src_ijv_indices, validate=False)
 
     #
     # if either foreground set is empty, the emd is the penalty.

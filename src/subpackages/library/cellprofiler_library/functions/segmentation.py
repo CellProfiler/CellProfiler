@@ -119,7 +119,7 @@ def _validate_ijv(ijv):
     assert ijv.ndim == 2, "ijv must be 2-dimensional"
     assert ijv.shape[1] == 3, "ijv must have 3 columns"
 
-def indices_from_dense(dense):
+def indices_from_dense(dense, validate=True):
     """
     Retrieve indices of a 'dense' matrix
 
@@ -139,11 +139,17 @@ def indices_from_dense(dense):
     where the labels '1', '2', '4' are present at index '0', and the labels '3'
     and '4' are present at index '1'
     """
+    if validate:
+        _validate_dense(dense)
+
     indices = [np.unique(d) for d in dense]
     indices = [idx[1:] if idx[0] == 0 else idx for idx in indices]
     return indices
 
-def dense_shape_from_sparse(sparse):
+def dense_shape_from_sparse(sparse, validate=True):
+    if validate:
+        _validate_sparse(sparse)
+
     return tuple([
         np.max(sparse[axis]) + 2
         if axis in list(sparse.dtype.fields.keys())
@@ -151,7 +157,7 @@ def dense_shape_from_sparse(sparse):
         for axis in ('c', 't', 'z', 'y', 'x')
     ])
 
-def indices_from_ijv(ijv):
+def indices_from_ijv(ijv, validate=True):
     """
     TODO - 4758: not sure 'indices' is the correct name,
     it just returns the set of labels
@@ -159,7 +165,8 @@ def indices_from_ijv(ijv):
     Get the indices for a scipy.ndimage-style function from the 'ijv' formatted
     segmented labels
     """
-    _validate_ijv(ijv)
+    if validate:
+        _validate_ijv(ijv)
 
     if len(ijv) == 0:
         return np.zeros(0, np.int32)
@@ -168,34 +175,43 @@ def indices_from_ijv(ijv):
 
     return np.arange(max_label).astype(np.int32) + 1
 
-def count_from_ijv(ijv, indices=None):
+def count_from_ijv(ijv, indices=None, validate=True):
     """
     The number of labels in an 'ijv' formatted label matrix
     """
+    if validate:
+        _validate_ijv(ijv)
+
     if indices is None:
-        indices = indices_from_ijv(ijv)
+        indices = indices_from_ijv(ijv, validate=False)
 
     return len(indices)
 
-def areas_from_ijv(ijv, indices=None):
+def areas_from_ijv(ijv, indices=None, validate=True):
     """
     The area of each object in an 'ijv' formatted label matrix
 
     Because of the discrete nature of the matrix, this is simply equal to the
     occurrence count of each label in the matrix
     """
+    if validate:
+        _validate_ijv(ijv)
+
     if indices is None:
-        indices = indices_from_ijv(ijv)
+        indices = indices_from_ijv(ijv, validate=False)
 
     if len(indices) == 0:
         return np.zeros(0, int)
 
     return np.bincount(ijv[:, 2])[indices]
 
-def downsample_labels(labels):
+def downsample_labels(labels, validate=True):
     """
     Convert a 'labels' matrix to the smallest possible integer format
     """
+    if validate:
+        _validate_labels(labels)
+
     labels_max = np.max(labels)
     if labels_max < 128:
         return labels.astype(np.int8)
@@ -203,7 +219,7 @@ def downsample_labels(labels):
         return labels.astype(np.int16)
     return labels.astype(np.int32)
 
-def convert_dense_to_label_set(dense, indices=None):
+def convert_dense_to_label_set(dense, indices=None, validate=True):
     """
     Convert a 'dense' matrix into a list of 2-tuples,
     where the number of tuples corresponds to the 'label_idx' dim of the
@@ -213,10 +229,11 @@ def convert_dense_to_label_set(dense, indices=None):
     and the tuple's second element is the 1-d ndarray of labels in the matrix
     (see 'indices_from_dense' for details)
     """
-    _validate_dense(dense)
+    if validate:
+        _validate_dense(dense)
 
     if indices is None:
-        indices = indices_from_dense(dense)
+        indices = indices_from_dense(dense, validate=False)
 
     # z = 1 => 2-D
     if dense.shape[3] == 1:
@@ -230,21 +247,23 @@ def convert_dense_to_label_set(dense, indices=None):
 def indices_from_labels(labels):
     return np.unique(labels[labels != 0])
 
-def cast_labels_to_label_set(labels):
+def cast_labels_to_label_set(labels, validate=True):
     """
     Takes in a 'labels' matrix and casts it into a 1-element 'label_set'
     """
-    _validate_labels(labels)
+    if validate:
+        _validate_labels(labels)
 
-    return [(labels, indices_from_labels(labels))]
+    return [(labels, indices_from_labels(labels, validate=False))]
 
-def convert_labels_to_dense(labels):
+def convert_labels_to_dense(labels, validate=True):
     """
     Convert a 'labels' matrix (e.g. scipy.ndimage.label) to 'dense' matrix
     """
-    _validate_labels(labels)
+    if validate:
+        _validate_labels(labels)
 
-    dense = downsample_labels(labels)
+    dense = downsample_labels(labels, validate=False)
 
     if dense.ndim == 3:
         z, y, x = dense.shape
@@ -254,9 +273,9 @@ def convert_labels_to_dense(labels):
 
     return dense.reshape((1, 1, 1, z, y, x))
 
-
-def convert_dense_to_sparse(dense):
-    _validate_dense(dense)
+def convert_dense_to_sparse(dense, validate=True):
+    if validate:
+        _validate_dense(dense)
 
     label_dim = dense.shape[0]
     dense_shape = dense.shape[1:]
@@ -295,42 +314,46 @@ def convert_dense_to_sparse(dense):
 
     return sparse
 
-def convert_ijv_to_sparse(ijv):
-    _validate_ijv(ijv)
+def convert_ijv_to_sparse(ijv, validate=True):
+    if validate:
+        _validate_ijv(ijv)
 
     return np.core.records.fromarrays(
         (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
         [('y', ijv.dtype), ('x', ijv.dtype), ('label', ijv.dtype)],
     )
 
-def convert_sparse_to_ijv(sparse):
-    _validate_sparse(sparse)
+def convert_sparse_to_ijv(sparse, validate=True):
+    if validate:
+        _validate_sparse(sparse)
 
     return np.column_stack([sparse[axis] for axis in ('y', 'x', 'label')])
 
-def convert_labels_to_ijv(labels):
-    _validate_labels(labels)
+def convert_labels_to_ijv(labels, validate=True):
+    if validate:
+        _validate_labels(labels)
 
-    dense = convert_labels_to_dense(labels)
-    sparse = convert_dense_to_sparse(dense)
-    ijv = convert_sparse_to_ijv(sparse)
+    dense = convert_labels_to_dense(labels, validate=False)
+    sparse = convert_dense_to_sparse(dense, validate=False)
+    ijv = convert_sparse_to_ijv(sparse, validate=False)
 
     return ijv
 
-def convert_label_set_to_ijv(label_set):
+def convert_label_set_to_ijv(label_set, validate=True):
     return np.concatenate(
-        [convert_labels_to_ijv(l[0]) for l in label_set],
+        [convert_labels_to_ijv(l[0], validate) for l in label_set],
         axis=0
     )
 
-def convert_sparse_to_dense(sparse, dense_shape=None):
+def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     """
     Convert 'sparse' representation to 'dense' matrix
 
     Returns 'dense' matrix and corresponding 'indices'
     """
-    _validate_sparse(sparse)
-    _validate_dense_shape(dense_shape)
+    if validate:
+        _validate_sparse(sparse)
+        _validate_dense_shape(dense_shape)
 
     if len(sparse) == 0:
         if dense_shape is None:
@@ -339,11 +362,11 @@ def convert_sparse_to_dense(sparse, dense_shape=None):
             full_dense_shape = (1,) + dense_shape
 
         dense = np.zeros(full_dense_shape, np.uint8)
-        return dense, indices_from_dense(dense)
+        return dense, indices_from_dense(dense, validate=False)
 
     if dense_shape is None:
         # len 5
-        dense_shape = dense_shape_from_sparse(sparse)
+        dense_shape = dense_shape_from_sparse(sparse, validate=False)
 
     #
     # The code below assigns a "color" to each label so that no
@@ -385,7 +408,7 @@ def convert_sparse_to_dense(sparse, dense_shape=None):
     if len(counts) == 0:
         dense = np.zeros([1] + list(dense_shape), labels.dtype)
         dense[tuple([0] + positional_columns)] = labels
-        return dense, indices_from_dense(dense)
+        return dense, indices_from_dense(dense, validate=False)
     #
     # There are n * n-1 pairs for each coordinate (n = # labels)
     # n = 1 -> 0 pairs, n = 2 -> 2 pairs, n = 3 -> 6 pairs

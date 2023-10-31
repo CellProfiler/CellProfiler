@@ -282,19 +282,19 @@ def compute_earth_movers_distance(
     dest_dense = convert_labels_to_dense(ground_truth_labels)
     dest_sparse = convert_dense_to_sparse(dest_dense)
     dest_ijv = convert_sparse_to_ijv(dest_sparse)
-    dest_indices = indices_from_ijv(dest_ijv)
+    dest_ijv_indices = indices_from_ijv(dest_ijv)
     dest_labelset = convert_dense_to_label_set(dest_dense)
-    dest_count = count_from_ijv(dest_ijv, indices=dest_indices)
-    dest_areas = areas_from_ijv(dest_ijv, indices=dest_indices)
+    dest_count = count_from_ijv(dest_ijv, indices=dest_ijv_indices)
+    dest_areas = areas_from_ijv(dest_ijv, indices=dest_ijv_indices)
     dest_labels_shape = ground_truth_labels.shape
 
     src_dense = convert_labels_to_dense(test_labels)
     src_sparse = convert_dense_to_sparse(src_dense)
     src_ijv = convert_sparse_to_ijv(src_sparse)
-    src_indices = indices_from_ijv(src_ijv)
+    src_ijv_indices = indices_from_ijv(src_ijv)
     src_labelset = convert_dense_to_label_set(src_dense)
-    src_count = count_from_ijv(src_ijv, indices=src_indices)
-    src_areas = areas_from_ijv(src_ijv, indices=src_indices)
+    src_count = count_from_ijv(src_ijv, indices=src_ijv_indices)
+    src_areas = areas_from_ijv(src_ijv, indices=src_ijv_indices)
     src_labels_shape = test_labels.shape
 
     #

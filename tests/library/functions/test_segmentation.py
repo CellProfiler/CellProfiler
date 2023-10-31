@@ -651,3 +651,112 @@ class TestSegmentation:
         np.testing.assert_array_equal(dense_shaped, dense_shaped_expected)
         _check_indices(dpi, indices_expected)
         _check_indices(dsi, indices_expected)
+
+    def test_03_01_2d_dense_some_overlap_to_label_set(self):
+        """
+        Test conversion of 2D dense where some labels overlap and some do not
+        to label_set
+
+        dense input: label=2, c=1,t=1,z=1,y=4,x=5
+
+            1 1 2 0 0
+            1 1 2 0 0
+            0 0 0 4 4
+            0 0 0 0 0
+            ---
+            0 0 0 0 0
+            0 0 3 0 0
+            0 0 0 0 5
+            0 0 0 0 5
+        """
+        dense = np.array(
+            [[
+                1, 1, 2, 0, 0,
+                1, 1, 2, 0, 0,
+                0, 0, 0, 4, 4,
+                0, 0, 0, 0, 0,
+            ],[
+                0, 0, 0, 0, 0,
+                0, 0, 3, 0, 0,
+                0, 0, 0, 0, 5,
+                0, 0, 0, 0, 5,
+            ]],
+            np.uint8
+        ).reshape((2,1,1,1,4,5))
+
+        indices = lib_seg.indices_from_dense(dense)
+
+        label_set = lib_seg.convert_dense_to_label_set(dense)
+
+        for i in range(len(label_set)):
+            np.testing.assert_array_equal(
+                label_set[i][0],
+                np.squeeze(dense[i])
+            )
+            np.testing.assert_array_equal(label_set[i][1], indices[i])
+
+    def test_04_01_2d_dense_some_overlap_to_ijv(self):
+        """
+        Test conversion of 2D dense where some labels overlap and some do not
+        to ijv
+
+        dense input: label=2, c=1,t=1,z=1,y=4,x=5
+
+            1 1 2 0 0
+            1 1 2 0 0
+            0 0 0 4 4
+            0 0 0 0 0
+            ---
+            0 0 0 0 0
+            0 0 3 0 0
+            0 0 0 0 5
+            0 0 0 0 5
+
+        ijv output:
+
+            0 0 1
+            0 1 1
+            0 2 2
+            1 0 1
+            1 1 1
+            1 2 2
+            2 3 4
+            2 4 4
+            1 2 3
+            2 4 5
+            3 4 5
+        """
+        dense = np.array(
+            [[
+                1, 1, 2, 0, 0,
+                1, 1, 2, 0, 0,
+                0, 0, 0, 4, 4,
+                0, 0, 0, 0, 0,
+            ],[
+                0, 0, 0, 0, 0,
+                0, 0, 3, 0, 0,
+                0, 0, 0, 0, 5,
+                0, 0, 0, 0, 5,
+            ]],
+            np.uint8
+        ).reshape((2,1,1,1,4,5))
+
+        sparse = lib_seg.convert_dense_to_sparse(dense)
+        ijv = lib_seg.convert_sparse_to_ijv(sparse)
+
+        ijv_expected = np.array(
+            [[0, 0, 1],
+             [0, 1, 1],
+             [0, 2, 2],
+             [1, 0, 1],
+             [1, 1, 1],
+             [1, 2, 2],
+             [2, 3, 4],
+             [2, 4, 4],
+             [1, 2, 3],
+             [2, 4, 5],
+             [3, 4, 5]],
+             dtype=np.uint16
+        )
+
+        np.testing.assert_array_equal(ijv, ijv_expected)

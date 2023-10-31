@@ -36,11 +36,11 @@ class Segmentation:
                 dense representation, but may not be exactly equal to the
                 original shape of the imaging site.
         """
-        if dense:
+        if dense is not None:
             _validate_dense(dense)
-        if sparse:
+        if sparse is not None:
             _validate_sparse(sparse)
-        if shape:
+        if shape is not None:
             _validate_dense_shape(shape)
 
         self.__dense = dense

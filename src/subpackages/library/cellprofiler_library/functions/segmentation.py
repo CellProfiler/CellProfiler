@@ -40,6 +40,9 @@ def _validate_labels(labels):
 
     It is essentially a 'dense' of shape (1, 1, 1, 1, y, x), but squeezed
     such that the ('label_idx', 'c', 't', 'z') axes are removed
+
+    For a 'dense' with shape (2+, 1, 1, 1, y, x), a 'label_set' can be
+    constructed (see 'convert_dense_to_label_set' for more details)
     """
     assert type(labels) == np.ndarray, "labels must be ndarray"
     assert (
@@ -203,10 +206,12 @@ def downsample_labels(labels):
 def convert_dense_to_label_set(dense, indices=None):
     """
     Convert a 'dense' matrix into a list of 2-tuples,
-    where the number of tuples corresponds to the number of unique labels
-    in the 'dense' matrix, the tuple's first element is a 'labels' matrix,
-    and the tuple's second element is the single label which the 'labels' matrix
-    represents
+    where the number of tuples corresponds to the 'label_idx' dim of the
+    'dense' matrix (see '_validate_dense' for details),
+    the tuple's first element is a 'labels' matrix
+    (see '_validate_labels' for details),
+    and the tuple's second element is the 1-d ndarray of labels in the matrix
+    (see 'indices_from_dense' for details)
     """
     _validate_dense(dense)
 
@@ -217,6 +222,7 @@ def convert_dense_to_label_set(dense, indices=None):
     if dense.shape[3] == 1:
         return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
+    # z > 1 => 3-D
     return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
 def convert_labels_to_dense(labels):

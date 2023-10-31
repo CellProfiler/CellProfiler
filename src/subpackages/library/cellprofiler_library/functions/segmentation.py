@@ -225,6 +225,19 @@ def convert_dense_to_label_set(dense, indices=None):
     # z > 1 => 3-D
     return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
+# TODO - 4758: add validate as option here and everywhere else
+# first check where/when callers need to use False
+def indices_from_labels(labels):
+    return np.unique(labels[labels != 0])
+
+def cast_labels_to_label_set(labels):
+    """
+    Takes in a 'labels' matrix and casts it into a 1-element 'label_set'
+    """
+    _validate_labels(labels)
+
+    return [(labels, indices_from_labels(labels))]
+
 def convert_labels_to_dense(labels):
     """
     Convert a 'labels' matrix (e.g. scipy.ndimage.label) to 'dense' matrix
@@ -295,7 +308,27 @@ def convert_sparse_to_ijv(sparse):
 
     return np.column_stack([sparse[axis] for axis in ('y', 'x', 'label')])
 
+def convert_labels_to_ijv(labels):
+    _validate_labels(labels)
+
+    dense = convert_labels_to_dense(labels)
+    sparse = convert_dense_to_sparse(dense)
+    ijv = convert_sparse_to_ijv(sparse)
+
+    return ijv
+
+def convert_label_set_to_ijv(label_set):
+    return np.concatenate(
+        [convert_labels_to_ijv(l[0]) for l in label_set],
+        axis=0
+    )
+
 def convert_sparse_to_dense(sparse, dense_shape=None):
+    """
+    Convert 'sparse' representation to 'dense' matrix
+
+    Returns 'dense' matrix and corresponding 'indices'
+    """
     _validate_sparse(sparse)
     _validate_dense_shape(dense_shape)
 

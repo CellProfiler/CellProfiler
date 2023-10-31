@@ -8,13 +8,11 @@ import centrosome.fastemd
 from sklearn.cluster import KMeans
 
 from cellprofiler_library.opts import measureimageoverlap as mio
-from cellprofiler_library.functions.segmentation import convert_labels_to_dense
-from cellprofiler_library.functions.segmentation import convert_dense_to_sparse
-from cellprofiler_library.functions.segmentation import convert_sparse_to_ijv
-from cellprofiler_library.functions.segmentation import convert_dense_to_label_set
+from cellprofiler_library.functions.segmentation import convert_labels_to_ijv
 from cellprofiler_library.functions.segmentation import indices_from_ijv
 from cellprofiler_library.functions.segmentation import count_from_ijv
 from cellprofiler_library.functions.segmentation import areas_from_ijv
+from cellprofiler_library.functions.segmentation import cast_labels_to_label_set
 
 
 def measure_image_overlap_statistics(
@@ -273,29 +271,25 @@ def compute_earth_movers_distance(
 
         mask = mask.reshape(-1, mask.shape[-1])
 
-    ground_truth_labels = scipy.ndimage.label(
+    # ground truth labels
+    dest_labels = scipy.ndimage.label(
         ground_truth_image & mask, np.ones((3, 3), bool)
     )[0]
-
-    test_labels = scipy.ndimage.label(test_image & mask, np.ones((3, 3), bool))[0]
-
-    dest_dense = convert_labels_to_dense(ground_truth_labels)
-    dest_sparse = convert_dense_to_sparse(dest_dense)
-    dest_ijv = convert_sparse_to_ijv(dest_sparse)
+    dest_labelset = cast_labels_to_label_set(dest_labels)
+    dest_ijv = convert_labels_to_ijv(dest_labels)
     dest_ijv_indices = indices_from_ijv(dest_ijv)
-    dest_labelset = convert_dense_to_label_set(dest_dense)
     dest_count = count_from_ijv(dest_ijv, indices=dest_ijv_indices)
     dest_areas = areas_from_ijv(dest_ijv, indices=dest_ijv_indices)
-    dest_labels_shape = ground_truth_labels.shape
 
-    src_dense = convert_labels_to_dense(test_labels)
-    src_sparse = convert_dense_to_sparse(src_dense)
-    src_ijv = convert_sparse_to_ijv(src_sparse)
+    # test labels
+    src_labels = scipy.ndimage.label(
+        test_image & mask, np.ones((3, 3), bool)
+    )[0]
+    src_labelset = cast_labels_to_label_set(src_labels)
+    src_ijv = convert_labels_to_ijv(src_labels)
     src_ijv_indices = indices_from_ijv(src_ijv)
-    src_labelset = convert_dense_to_label_set(src_dense)
     src_count = count_from_ijv(src_ijv, indices=src_ijv_indices)
     src_areas = areas_from_ijv(src_ijv, indices=src_ijv_indices)
-    src_labels_shape = test_labels.shape
 
     #
     # if either foreground set is empty, the emd is the penalty.
@@ -313,15 +307,15 @@ def compute_earth_movers_distance(
         isrc, jsrc = get_kmeans_points(src_ijv, dest_ijv, max_points)
         idest, jdest = isrc, jsrc
     elif decimation_method == mio.DM.SKELETON:
-        isrc, jsrc = get_skeleton_points(src_labelset, src_labels_shape, max_points)
-        idest, jdest = get_skeleton_points(dest_labelset, dest_labels_shape, max_points)
+        isrc, jsrc = get_skeleton_points(src_labelset, src_labels.shape, max_points)
+        idest, jdest = get_skeleton_points(dest_labelset, dest_labels.shape, max_points)
     else:
         raise TypeError("Unknown type for decimation method: %s" % decimation_method)
     src_weights, dest_weights = [
         get_weights(i, j, get_labels_mask(labelset, shape))
         for i, j, labelset, shape in (
-            (isrc, jsrc, src_labelset, src_labels_shape),
-            (idest, jdest, dest_labelset, dest_labels_shape),
+            (isrc, jsrc, src_labelset, src_labels.shape),
+            (idest, jdest, dest_labelset, dest_labels.shape),
         )
     ]
     ioff, joff = [

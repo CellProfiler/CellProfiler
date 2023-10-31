@@ -760,3 +760,75 @@ class TestSegmentation:
         )
 
         np.testing.assert_array_equal(ijv, ijv_expected)
+
+    def test_05_01_label_set_to_ijv(self):
+        """
+        Test conversion of a label set to ijv
+
+        dense input: label=2, c=1,t=1,z=1,y=4,x=5
+
+            1 1 2 0 0
+            1 1 2 0 0
+            0 0 0 4 4
+            0 0 0 0 0
+            ---
+            0 0 0 0 0
+            0 0 3 0 0
+            0 0 0 0 5
+            0 0 0 0 5
+
+        ijv output:
+
+            0 0 1
+            0 1 1
+            0 2 2
+            1 0 1
+            1 1 1
+            1 2 2
+            2 3 4
+            2 4 4
+            1 2 3
+            2 4 5
+            3 4 5
+        """
+        label_set = [
+            (
+                np.array(
+                    [[1, 1, 2, 0, 0],
+                     [1, 1, 2, 0, 0],
+                     [0, 0, 0, 4, 4],
+                     [0, 0, 0, 0, 0]],
+                     dtype=np.uint8
+                ),
+                np.array([1,2,4], dtype=np.uint8)
+            ),
+            (
+                np.array(
+                    [[0, 0, 0, 0, 0],
+                     [0, 0, 3, 0, 0],
+                     [0, 0, 0, 0, 5],
+                     [0, 0, 0, 0, 5]],
+                     dtype=np.uint8
+                ),
+                np.array([1,2,4], dtype=np.uint8)
+            )
+        ]
+
+        ijv = lib_seg.convert_label_set_to_ijv(label_set)
+
+        ijv_expected = np.array(
+            [[0, 0, 1],
+             [0, 1, 1],
+             [0, 2, 2],
+             [1, 0, 1],
+             [1, 1, 1],
+             [1, 2, 2],
+             [2, 3, 4],
+             [2, 4, 4],
+             [1, 2, 3],
+             [2, 4, 5],
+             [3, 4, 5]],
+             dtype=np.uint16
+        )
+
+        np.testing.assert_array_equal(ijv, ijv_expected)

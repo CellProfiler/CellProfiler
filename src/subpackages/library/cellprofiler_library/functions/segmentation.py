@@ -236,11 +236,8 @@ def convert_labels_to_dense(labels):
     return dense.reshape((1, 1, 1, z, y, x))
 
 
-def convert_dense_to_sparse(dense, indices=None):
+def convert_dense_to_sparse(dense):
     _validate_dense(dense)
-
-    if indices is None:
-        indices = indices_from_dense(dense)
 
     label_dim = dense.shape[0]
     dense_shape = dense.shape[1:]
@@ -263,7 +260,7 @@ def convert_dense_to_sparse(dense, indices=None):
         coords_dtype = np.uint32
 
     if len(labels) > 0:
-        max_label = np.max(indices)
+        max_label = np.max(labels)
         if max_label < 2 ** 8:
             labels_dtype = np.uint8
         elif max_label < 2 ** 16:

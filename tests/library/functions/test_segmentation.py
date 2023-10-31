@@ -20,24 +20,24 @@ class TestSegmentation:
             0 0 0
         """
         dense = np.zeros((1, 1, 1, 1, 3, 3))
-        indices = np.array([])
-        sparse = lib_seg.convert_dense_to_sparse(dense, indices)
+        indices = lib_seg.indices_from_dense(dense)
+        indices_expected = [np.array([], dtype=np.uint8)]
 
-        expected_ys = np.array([])
-        expected_xs = np.array([])
-        expected_labels = np.array([])
+        _check_indices(indices, indices_expected)
 
-        expected_ys_dtype = np.uint16
-        expected_xs_dtype = np.uint16
-        expected_labels_dtype = np.uint8
+        sparse = lib_seg.convert_dense_to_sparse(dense)
+
+        expected_ys = np.array([], dtype=np.uint16)
+        expected_xs = np.array([], dtype=np.uint16)
+        expected_labels = np.array([], dtype=np.uint8)
 
         # TODO - 4758: change, x,y,z,label to enum
         np.testing.assert_array_equal(sparse['y'], expected_ys)
         np.testing.assert_array_equal(sparse['x'], expected_xs)
         np.testing.assert_array_equal(sparse['label'], expected_labels)
-        np.testing.assert_equal(sparse['y'].dtype, expected_ys_dtype)
-        np.testing.assert_equal(sparse['x'].dtype, expected_xs_dtype)
-        np.testing.assert_equal(sparse['label'].dtype, expected_labels_dtype)
+        np.testing.assert_equal(sparse['y'].dtype, expected_ys.dtype)
+        np.testing.assert_equal(sparse['x'].dtype, expected_xs.dtype)
+        np.testing.assert_equal(sparse['label'].dtype, expected_labels.dtype)
 
     def test_01_02_2d_dense_nonoverlap_to_sparse(self):
         """
@@ -50,23 +50,23 @@ class TestSegmentation:
             2 0 0
         """
         dense = np.array([1,1,0,2,0,0,2,0,0]).reshape((1,1,1,1,3,3))
-        indices = np.array([1,2])
-        sparse = lib_seg.convert_dense_to_sparse(dense, indices)
+        indices = lib_seg.indices_from_dense(dense)
+        indices_expected = [np.array([1, 2], dtype=np.uint8)]
 
-        expected_ys = np.array([0, 0, 1, 2])
-        expected_xs = np.array([0, 1, 0, 0])
-        expected_labels = np.array([1, 1, 2, 2])
+        _check_indices(indices, indices_expected)
 
-        expected_labels_dtype = np.uint8
-        expected_ys_dtype = np.uint16
-        expected_xs_dtype = np.uint16
+        sparse = lib_seg.convert_dense_to_sparse(dense)
+
+        expected_ys = np.array([0, 0, 1, 2], dtype=np.uint16)
+        expected_xs = np.array([0, 1, 0, 0], dtype=np.uint16)
+        expected_labels = np.array([1, 1, 2, 2], dtype=np.uint8)
 
         np.testing.assert_array_equal(sparse['y'], expected_ys)
         np.testing.assert_array_equal(sparse['x'], expected_xs)
         np.testing.assert_array_equal(sparse['label'], expected_labels)
-        np.testing.assert_equal(sparse['y'].dtype, expected_ys_dtype)
-        np.testing.assert_equal(sparse['x'].dtype, expected_xs_dtype)
-        np.testing.assert_equal(sparse['label'].dtype, expected_labels_dtype)
+        np.testing.assert_equal(sparse['y'].dtype, expected_ys.dtype)
+        np.testing.assert_equal(sparse['x'].dtype, expected_xs.dtype)
+        np.testing.assert_equal(sparse['label'].dtype, expected_labels.dtype)
 
     def test_01_03_2d_dense_overlap_to_sparse(self):
         """
@@ -83,23 +83,80 @@ class TestSegmentation:
             0 0
         """
         dense = np.array([[1,0,1,0,0,0],[0,0,2,2,0,0]]).reshape((2,1,1,1,3,2))
-        indices = np.array([[1], [2]])
-        sparse = lib_seg.convert_dense_to_sparse(dense, indices)
+        indices = lib_seg.indices_from_dense(dense)
+        indices_expected = [
+            np.array([1], dtype=np.uint8),
+            np.array([2], dtype=np.uint8)
+        ]
 
-        expected_ys = np.array([0,1,1,1])
-        expected_xs = np.array([0,0,0,1])
-        expected_labels = np.array([1,1,2,2])
+        _check_indices(indices, indices_expected)
 
-        expected_ys_dtype = np.uint16
-        expected_xs_dtype = np.uint16
-        expected_labels_dtype = np.uint8
+        sparse = lib_seg.convert_dense_to_sparse(dense)
+
+        expected_ys = np.array([0,1,1,1], dtype=np.uint16)
+        expected_xs = np.array([0,0,0,1], dtype=np.uint16)
+        expected_labels = np.array([1,1,2,2], dtype=np.uint8)
 
         np.testing.assert_array_equal(sparse['y'], expected_ys)
         np.testing.assert_array_equal(sparse['x'], expected_xs)
         np.testing.assert_array_equal(sparse['label'], expected_labels)
-        np.testing.assert_equal(sparse['y'].dtype, expected_ys_dtype)
-        np.testing.assert_equal(sparse['x'].dtype, expected_xs_dtype)
-        np.testing.assert_equal(sparse['label'].dtype, expected_labels_dtype)
+        np.testing.assert_equal(sparse['y'].dtype, expected_ys.dtype)
+        np.testing.assert_equal(sparse['x'].dtype, expected_xs.dtype)
+        np.testing.assert_equal(sparse['label'].dtype, expected_labels.dtype)
+
+    def test_02_04_2d_dense_some_overlap_to_sparse(self):
+        """
+        Test conversion of 2D dense where some labels overlap and some do not
+        to sparse
+
+        dense input: label=2, c=1,t=1,z=1,y=4,x=5
+
+            1 1 2 0 0
+            1 1 2 0 0
+            0 0 0 4 4
+            0 0 0 0 0
+            ---
+            0 0 0 0 0
+            0 0 3 0 0
+            0 0 0 0 5
+            0 0 0 0 5
+        """
+        dense = np.array(
+            [[
+                1, 1, 2, 0, 0,
+                1, 1, 2, 0, 0,
+                0, 0, 0, 4, 4,
+                0, 0, 0, 0, 0,
+            ],[
+                0, 0, 0, 0, 0,
+                0, 0, 3, 0, 0,
+                0, 0, 0, 0, 5,
+                0, 0, 0, 0, 5,
+            ]],
+            np.uint8
+        ).reshape((2,1,1,1,4,5))
+
+        indices = lib_seg.indices_from_dense(dense)
+
+        indices_expected = [
+            np.array([1, 2, 4], np.uint8),
+            np.array([3, 5], np.uint8)
+        ]
+
+        _check_indices(indices, indices_expected)
+
+        sparse = lib_seg.convert_dense_to_sparse(dense)
+
+        expected_ys = np.array([0,0,0,1,1,1,2,2,1,2,3], dtype=np.uint16)
+        expected_xs = np.array([0,1,2,0,1,2,3,4,2,4,4], dtype=np.uint16)
+        expected_labels = np.array([1,1,2,1,1,2,4,4,3,5,5], dtype=np.uint8)
+
+        np.testing.assert_array_equal(sparse['y'], expected_ys)
+        np.testing.assert_array_equal(sparse['x'], expected_xs)
+        np.testing.assert_array_equal(sparse['label'], expected_labels)
+        np.testing.assert_equal(sparse['y'].dtype, expected_ys.dtype)
+        np.testing.assert_equal(sparse['x'].dtype, expected_xs.dtype)
+        np.testing.assert_equal(sparse['label'].dtype, expected_labels.dtype)
 
     def test_01_04_2d_random_dense_to_sparse(self):
         """
@@ -120,7 +177,7 @@ class TestSegmentation:
             dense[idx, 0, 0, 0, mask] = idx + 1
 
         indices = np.array([[1], [2], [3], [4], [5], [6], [7], [8], [9], [10]])
-        sparse = lib_seg.convert_dense_to_sparse(dense, indices)
+        sparse = lib_seg.convert_dense_to_sparse(dense)
 
         assert np.sum(dense > 0) == len(sparse)
 
@@ -163,29 +220,28 @@ class TestSegmentation:
         dense = np.array(
             [1,0,2,2,0,0,1,0,2,2,0,0,1,0,2,2,0,0]
         ).reshape((1,1,1,3,3,2))
-        indices = np.array([[1], [2]])
-        sparse = lib_seg.convert_dense_to_sparse(dense, indices)
+        indices = lib_seg.indices_from_dense(dense)
+        indices_expected = [np.array([1, 2], dtype=np.uint8)]
 
-        expected_zs = np.array([0,0,0,1,1,1,2,2,2])
-        expected_ys = np.array([0,1,1,0,1,1,0,1,1])
-        expected_xs = np.array([0,0,1,0,0,1,0,0,1])
-        expected_labels = np.array([1,2,2,1,2,2,1,2,2])
+        _check_indices(indices, indices_expected)
 
-        expected_zs_dtype = np.uint16
-        expected_ys_dtype = np.uint16
-        expected_xs_dtype = np.uint16
-        expected_labels_dtype = np.uint8
+        sparse = lib_seg.convert_dense_to_sparse(dense)
+
+        expected_zs = np.array([0,0,0,1,1,1,2,2,2], dtype=np.uint16)
+        expected_ys = np.array([0,1,1,0,1,1,0,1,1], dtype=np.uint16)
+        expected_xs = np.array([0,0,1,0,0,1,0,0,1], dtype=np.uint16)
+        expected_labels = np.array([1,2,2,1,2,2,1,2,2], dtype=np.uint8)
 
         np.testing.assert_array_equal(sparse['z'], expected_zs)
         np.testing.assert_array_equal(sparse['y'], expected_ys)
         np.testing.assert_array_equal(sparse['x'], expected_xs)
         np.testing.assert_array_equal(sparse['label'], expected_labels)
-        np.testing.assert_equal(sparse['z'].dtype, expected_zs_dtype)
-        np.testing.assert_equal(sparse['y'].dtype, expected_ys_dtype)
-        np.testing.assert_equal(sparse['x'].dtype, expected_xs_dtype)
-        np.testing.assert_equal(sparse['label'].dtype, expected_labels_dtype)
+        np.testing.assert_equal(sparse['z'].dtype, expected_zs.dtype)
+        np.testing.assert_equal(sparse['y'].dtype, expected_ys.dtype)
+        np.testing.assert_equal(sparse['x'].dtype, expected_xs.dtype)
+        np.testing.assert_equal(sparse['label'].dtype, expected_labels.dtype)
 
-    def test_01_06_3d_dense_noverlap_to_sparse(self):
+    def test_01_06_3d_dense_overlap_to_sparse(self):
         """
         Test conversion of 3D dense with overlapping labels to sparse
 
@@ -214,29 +270,31 @@ class TestSegmentation:
             [1,1,1,1,0,0,1,1,1,1,0,0,1,1,1,1,0,0,
              0,0,0,0,0,0,2,2,2,2,2,2,0,0,0,0,0,0]
         ).reshape((2,1,1,3,3,2))
-        indices = np.array([[1], [2]])
-        sparse = lib_seg.convert_dense_to_sparse(dense, indices)
+        indices = lib_seg.indices_from_dense(dense)
+        indices_expected = [
+            np.array([1], dtype=np.uint8),
+            np.array([2], dtype=np.uint8)
+        ]
 
-        expected_zs = np.array([0,0,0,0,1,1,1,1,2,2,2,2, 1,1,1,1,1,1])
-        expected_ys = np.array([0,0,1,1,0,0,1,1,0,0,1,1, 0,0,1,1,2,2])
-        expected_xs = np.array([0,1,0,1,0,1,0,1,0,1,0,1, 0,1,0,1,0,1])
-        expected_labels = np.array([1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2])
+        _check_indices(indices, indices_expected)
 
-        expected_zs_dtype = np.uint16
-        expected_ys_dtype = np.uint16
-        expected_xs_dtype = np.uint16
-        expected_labels_dtype = np.uint8
+        sparse = lib_seg.convert_dense_to_sparse(dense)
+
+        expected_zs = np.array([0,0,0,0,1,1,1,1,2,2,2,2, 1,1,1,1,1,1], dtype=np.uint16)
+        expected_ys = np.array([0,0,1,1,0,0,1,1,0,0,1,1, 0,0,1,1,2,2], dtype=np.uint16)
+        expected_xs = np.array([0,1,0,1,0,1,0,1,0,1,0,1, 0,1,0,1,0,1], dtype=np.uint16)
+        expected_labels = np.array([1,1,1,1,1,1,1,1,1,1,1,1, 2,2,2,2,2,2], dtype=np.uint8)
 
         np.testing.assert_array_equal(sparse['z'], expected_zs)
         np.testing.assert_array_equal(sparse['y'], expected_ys)
         np.testing.assert_array_equal(sparse['x'], expected_xs)
         np.testing.assert_array_equal(sparse['label'], expected_labels)
-        np.testing.assert_equal(sparse['z'].dtype, expected_zs_dtype)
-        np.testing.assert_equal(sparse['y'].dtype, expected_ys_dtype)
-        np.testing.assert_equal(sparse['x'].dtype, expected_xs_dtype)
-        np.testing.assert_equal(sparse['label'].dtype, expected_labels_dtype)
+        np.testing.assert_equal(sparse['z'].dtype, expected_zs.dtype)
+        np.testing.assert_equal(sparse['y'].dtype, expected_ys.dtype)
+        np.testing.assert_equal(sparse['x'].dtype, expected_xs.dtype)
+        np.testing.assert_equal(sparse['label'].dtype, expected_labels.dtype)
 
-    def test_02_01_convert_sparse_to_2d_empty_dense(self):
+    def test_02_01_sparse_to_2d_empty_dense(self):
         """
         Test conversion of sparse to 2D dense with no labels
 
@@ -264,7 +322,7 @@ class TestSegmentation:
         _check_indices(dsi, indices_expected)
 
 
-    def test_02_02_convert_sparse_to_2d_nooverlap_dense(self):
+    def test_02_02_sparse_to_2d_dense_nooverlap(self):
         """
         Test conversion of sparse to 2D dense with no overlapping labels
 
@@ -300,7 +358,7 @@ class TestSegmentation:
         _check_indices(dpi, indices_expected)
         _check_indices(dsi, indices_expected)
 
-    def test_02_03_convert_sparse_to_2d_overlap_dense(self):
+    def test_02_03_sparse_to_2d_dense_overlap(self):
         """
         Test conversion of sparse to 2D dense with overlapping labels
 
@@ -343,7 +401,7 @@ class TestSegmentation:
         _check_indices(dpi, indices_expected)
         _check_indices(dsi, indices_expected)
 
-    def test_02_04_convert_sparse_to_2d_some_overlap_dense(self):
+    def test_02_04_sparse_to_2d_dense_some_overlap(self):
         """
         Test conversion of sparse to 2D dense where some labels overlap
         and some do not
@@ -417,8 +475,7 @@ class TestSegmentation:
         _check_indices(dpi, indices_expected)
         _check_indices(dsi, indices_expected)
 
-
-    def test_02_04_convert_random_sparse_to_dense(self):
+    def test_02_05_random_sparse_to_2d_dense(self):
         """
         Test conversion of 2D sparse with some more complex shapes to dense
 
@@ -463,7 +520,7 @@ class TestSegmentation:
         matches = (retrieval == sparse['label'][None, :])
         assert np.all(np.sum(matches, 0) == 1)
 
-    def test_02_05_convert_sparse_to_dense_3d_nooverlap(self):
+    def test_02_06_sparse_to_3d_dense_nooverlap(self):
         """
         Test conversion of sparse to 3D dense with no overlapping labels
 
@@ -521,7 +578,7 @@ class TestSegmentation:
         _check_indices(dpi, indices_expected)
         _check_indices(dsi, indices_expected)
 
-    def test_02_06_convert_sparse_to_dense_3d_overlap(self):
+    def test_02_07_sparse_to_3d_dense_overlap(self):
         """
         Test converstion of sparse to 3D dense with overlapping labels
 

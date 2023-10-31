@@ -131,8 +131,8 @@ class Segmentation:
         return self.__convert_sparse_to_dense()
 
     def __convert_dense_to_sparse(self):
-        dense, indices = self.get_dense()
-        sparse = convert_dense_to_sparse(dense, indices)
+        dense, _ = self.get_dense()
+        sparse = convert_dense_to_sparse(dense)
         self.__sparse = sparse
         return sparse
 

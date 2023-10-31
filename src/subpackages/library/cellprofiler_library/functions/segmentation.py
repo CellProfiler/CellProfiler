@@ -242,9 +242,10 @@ def convert_dense_to_label_set(dense, indices=None, validate=True):
     # z > 1 => 3-D
     return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]
 
-# TODO - 4758: add validate as option here and everywhere else
-# first check where/when callers need to use False
-def indices_from_labels(labels):
+def indices_from_labels(labels, validate=True):
+    if validate:
+        _validate_labels(labels)
+
     return np.unique(labels[labels != 0])
 
 def cast_labels_to_label_set(labels, validate=True):

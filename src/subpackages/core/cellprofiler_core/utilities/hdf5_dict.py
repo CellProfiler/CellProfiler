@@ -15,12 +15,14 @@ import threading
 import time
 import uuid
 
-import h5py
 import numpy
-from future.standard_library import install_aliases
+import h5py
 from h5py.h5t import string_dtype, check_string_dtype, vlen_dtype
+from future.standard_library import install_aliases
 
 import cellprofiler_core.utilities.legacy
+
+from cellprofiler_library.functions.segmentation import SPARSE_FIELD
 
 
 LOGGER = logging.getLogger(__name__)
@@ -1477,12 +1479,12 @@ class HDF5ObjectSet(object):
     DENSE = "dense"
     SPARSE = "sparse"
     ATTR_STALE = "stale"
-    AXIS_LABELS = "label"
-    AXIS_C = "c"
-    AXIS_T = "t"
-    AXIS_Z = "z"
-    AXIS_Y = "y"
-    AXIS_X = "x"
+    AXIS_LABELS = SPARSE_FIELD.label.value
+    AXIS_C = SPARSE_FIELD.c.value
+    AXIS_T = SPARSE_FIELD.t.value
+    AXIS_Z = SPARSE_FIELD.z.value
+    AXIS_Y = SPARSE_FIELD.y.value
+    AXIS_X = SPARSE_FIELD.x.value
     AXES = (AXIS_C, AXIS_T, AXIS_Z, AXIS_Y, AXIS_X)
 
     def __init__(self, hdf5_file, root_name=OBJECTS_GROUP):

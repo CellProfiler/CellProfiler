@@ -1,5 +1,27 @@
+from enum import Enum
 import numpy as np
 import centrosome.index
+
+class SPARSE_FIELD(Enum):
+    label = "label"
+    c = "c"
+    t = "t"
+    z = "z"
+    y = "y"
+    x = "x"
+    
+class DENSE_AXIS(Enum):
+    label_idx = 0
+    c = 1
+    t = 2
+    z = 3
+    y = 4
+    x = 5
+
+SPARSE_FIELDS = tuple([mem.value for mem in SPARSE_FIELD])
+SPARSE_AXES_FIELDS = SPARSE_FIELDS[1:]
+DENSE_AXIS_NAMES = tuple([mem.name for mem in DENSE_AXIS])
+DENSE_SHAPE_NAMES = DENSE_AXIS_NAMES[1:]
 
 def _validate_dense(dense):
     """
@@ -17,9 +39,10 @@ def _validate_dense(dense):
     which label values are present in which index of the 'label_idx' dim
     (see 'indices_from_dense' for more details)
     """
+    ndim = len(DENSE_AXIS_NAMES)
     assert type(dense == np.ndarray), "dense must be ndarray"
-    assert dense.ndim == 6, \
-    "dense must be 6-dimensional - (label_idx, c, t, z, y, x)"
+    assert dense.ndim == ndim, \
+    f"dense must be {ndim}-dimensional - f{DENSE_AXIS_NAMES}"
 
 def _validate_dense_shape(dense_shape):
     """
@@ -27,16 +50,17 @@ def _validate_dense_shape(dense_shape):
     matrix sans the 'label_idx' axis, i.e.
     (c, t, z, y, z)
     """
+    ndim = len(DENSE_SHAPE_NAMES)
     assert (dense_shape is None or
-            len(dense_shape) == 5
-    ), "dense_shape must be length 5, omitting 'label_idx' dim"
+            len(dense_shape) == ndim
+    ), f"dense_shape must be length {ndim}, omitting '{DENSE_AXIS.label_idx.name}' dim"
 
 def _validate_labels(labels):
     """
     A 'labels' matrix is another, more constrained, dense representation
 
     It is strictly 2- or 3-dimensional, of shape: (y, x) or (z, y, x)
-    It does not allow for overlapping labels
+    A single 'labels' matrix does not allow for overlapping labels within it
 
     It is essentially a 'dense' of shape (1, 1, 1, 1, y, x), but squeezed
     such that the ('label_idx', 'c', 't', 'z') axes are removed
@@ -87,7 +111,7 @@ def _validate_sparse(sparse):
     assert axes is not None, "sparse must have dtype fields"
 
     axes_set = set(axes)
-    full_set = set(('label', 'c', 't', 'z', 'y', 'x'))
+    full_set = set(SPARSE_FIELDS)
 
     assert len(axes) == len(axes_set), "duplicate dtype fields in sparse"
     assert axes_set.issubset(full_set), "sparse has unknown dtype fields"
@@ -154,14 +178,11 @@ def dense_shape_from_sparse(sparse, validate=True):
         np.max(sparse[axis]) + 2
         if axis in list(sparse.dtype.fields.keys())
         else 1
-        for axis in ('c', 't', 'z', 'y', 'x')
+        for axis in SPARSE_AXES_FIELDS
     ])
 
 def indices_from_ijv(ijv, validate=True):
     """
-    TODO - 4758: not sure 'indices' is the correct name,
-    it just returns the set of labels
-
     Get the indices for a scipy.ndimage-style function from the 'ijv' formatted
     segmented labels
     """
@@ -231,16 +252,21 @@ def convert_dense_to_label_set(dense, indices=None, validate=True):
     """
     if validate:
         _validate_dense(dense)
+        assert(
+            dense.shape[DENSE_AXIS.c.value] == 1 and 
+            dense.shape[DENSE_AXIS.t.value] == 1
+        ), f"dense must have shape where f{DENSE_AXIS.c.name} = 1 and f{DENSE_AXIS.t.name} = 1"
 
     if indices is None:
         indices = indices_from_dense(dense, validate=False)
 
-    # z = 1 => 2-D
-    if dense.shape[3] == 1:
-        return [(dense[i, 0, 0, 0], indices[i]) for i in range(dense.shape[0])]
+    label_set_len = dense.shape[DENSE_AXIS.label_idx.value]
+    squeezed_dense = dense.squeeze()
 
-    # z > 1 => 3-D
-    return [(dense[i, 0, 0], indices[i]) for i in range(dense.shape[0])]
+    if label_set_len == 1:
+        return [(squeezed_dense, indices[0])]
+    
+    return [(squeezed_dense[i], indices[i]) for i in range(label_set_len)]
 
 def indices_from_labels(labels, validate=True):
     if validate:
@@ -264,24 +290,35 @@ def convert_labels_to_dense(labels, validate=True):
     if validate:
         _validate_labels(labels)
 
-    dense = downsample_labels(labels, validate=False)
+    typed_labels = downsample_labels(labels, validate=False)
 
-    if dense.ndim == 3:
-        z, y, x = dense.shape
+    if labels.ndim == 3:
+        expand_axes = (
+            DENSE_AXIS.label_idx.value,
+            DENSE_AXIS.c.value,
+            DENSE_AXIS.t.value
+        )
     else:
-        y, x = dense.shape
-        z = 1
+        expand_axes = (
+            DENSE_AXIS.label_idx.value,
+            DENSE_AXIS.c.value,
+            DENSE_AXIS.t.value,
+            DENSE_AXIS.z.value
+        )
 
-    return dense.reshape((1, 1, 1, z, y, x))
+    return np.expand_dims(typed_labels, axis=expand_axes)
 
 def convert_dense_to_sparse(dense, validate=True):
     if validate:
         _validate_dense(dense)
 
-    label_dim = dense.shape[0]
-    dense_shape = dense.shape[1:]
+    full_shape = dense.shape
+    label_dim = full_shape[DENSE_AXIS.label_idx.value]
+    dense_shape = tuple(
+        [full_shape[DENSE_AXIS[n].value] for n in DENSE_SHAPE_NAMES]
+    )
 
-    axes_labels = np.array(('c', 't', 'z', 'y', 'x'))
+    axes_labels = np.array(SPARSE_AXES_FIELDS)
     axes = axes_labels[np.where(np.array(dense_shape) > 1)]
 
     compact = np.squeeze(dense)
@@ -310,7 +347,7 @@ def convert_dense_to_sparse(dense, validate=True):
         labels_dtype = np.uint8
 
     dtype = [(axis, coords_dtype) for axis in axes]
-    dtype.append(('label', labels_dtype))
+    dtype.append((SPARSE_FIELD.label.value, labels_dtype))
     sparse = np.core.records.fromarrays(list(coords) + [labels], dtype=dtype)
 
     return sparse
@@ -321,14 +358,20 @@ def convert_ijv_to_sparse(ijv, validate=True):
 
     return np.core.records.fromarrays(
         (ijv[:, 0], ijv[:, 1], ijv[:, 2]),
-        [('y', ijv.dtype), ('x', ijv.dtype), ('label', ijv.dtype)],
+        [
+            (SPARSE_FIELD.y.value, ijv.dtype),
+            (SPARSE_FIELD.x.value, ijv.dtype),
+            (SPARSE_FIELD.label.value, ijv.dtype)
+        ],
     )
 
 def convert_sparse_to_ijv(sparse, validate=True):
     if validate:
         _validate_sparse(sparse)
 
-    return np.column_stack([sparse[axis] for axis in ('y', 'x', 'label')])
+    return np.column_stack([sparse[axis] for axis in (
+        SPARSE_FIELD.y.value, SPARSE_FIELD.x.value, SPARSE_FIELD.label.value)
+    ])
 
 def convert_labels_to_ijv(labels, validate=True):
     if validate:
@@ -358,15 +401,16 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
 
     if len(sparse) == 0:
         if dense_shape is None:
-            full_dense_shape = (1,1,1,1,1,1)
-        else:
-            full_dense_shape = (1,) + dense_shape
+            dense_shape = tuple([1 for _ in range(len(DENSE_SHAPE_NAMES))])
 
-        dense = np.zeros(full_dense_shape, np.uint8)
+        dense = np.expand_dims(
+            np.zeros(dense_shape, np.uint8),
+            axis=DENSE_AXIS.label_idx.value
+        )
+
         return dense, indices_from_dense(dense, validate=False)
 
     if dense_shape is None:
-        # len 5
         dense_shape = dense_shape_from_sparse(sparse, validate=False)
 
     #
@@ -376,14 +420,14 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     positional_columns = []
     available_columns = []
     lexsort_columns = []
-    for axis in ("c", "t", "z", "y", "x"):
+    for axis in SPARSE_AXES_FIELDS:
         if axis in list(sparse.dtype.fields.keys()):
             positional_columns.append(sparse[axis])
             available_columns.append(sparse[axis])
             lexsort_columns.insert(0, sparse[axis])
         else:
             positional_columns.append(0)
-    labels = sparse['label']
+    labels = sparse[SPARSE_FIELD.label.value]
     lexsort_columns.insert(0, labels)
 
     sort_order = np.lexsort(lexsort_columns)

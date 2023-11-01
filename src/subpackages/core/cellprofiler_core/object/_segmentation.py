@@ -106,7 +106,7 @@ class Segmentation:
 
         returns a Numpy record array where every row represents
         the labeling of a pixel. The dtype record names are taken from
-        HDF5ObjectSet.AXIS_[X,Y,Z,C,T] and AXIS_LABELS for the object
+        HDF5ObjectSet.AXIS_[C,T,Z,Y,X] and AXIS_LABELS for the object
         numbers.
         """
         if self.__sparse is not None:
@@ -129,7 +129,7 @@ class Segmentation:
         for labels in self.get_dense():
             # do something
 
-        The remaining axes are in the order, C, T, Z, Y and X
+        The remaining axes are in the order, c, t, z, y and x
         """
         if self.__dense is not None:
             return self.__dense, self.__indices

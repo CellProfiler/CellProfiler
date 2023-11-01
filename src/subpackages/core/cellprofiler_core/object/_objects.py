@@ -26,19 +26,27 @@ class Objects:
     There are three formats for segmentation, two of which support
     overlapping objects:
 
-    # TODO - 4758: update these, no longer used as listed
-    # especially set_labels
+    get/set_segmented - Legacy, a single plane of labels that does not
+                        support overlapping objects.
 
-    get/set_segmented - legacy, a single plane of labels that does not
-                        support overlapping objects
-    get/set_labels - supports overlapping objects, returns one or more planes
-                     along with indices. A typical usage is to perform an
-                     operation per-plane as if the objects did not overlap.
-    get/set_ijv    - supports overlapping objects, returns a sparse
-                     representation in which the first two columns are the
-                     coordinates and the last is the object number. This
-                     is efficient for doing things like calculating intensity
-                     per-object.
+    (see cellprofiler_library.functions.segmentation._validate_labels)
+
+
+    get_labels        - Supports overlapping objects, returns one or more planes
+                        along with indices. A typical usage is to perform an
+                        operation per-plane as if the objects did not overlap.
+
+    (see cellprofiler_library.functions.segmentation.convert_dense_to_label_set)
+
+
+    get/set_ijv       - Supports overlapping objects, returns a sparse
+                        representation in which the first two columns are the
+                        coordinates and the last is the object number. This
+                        is efficient for doing things like calculating intensity
+                        per-object.
+
+    (see cellprofiler_library.functions.segmentation._validate_ijv)
+
 
     You can set one of the types and then get any of the types (except that
     get_segmented will raise an exception if objects overlap).
@@ -80,16 +88,16 @@ class Objects:
 
         return dense.shape[-3:]
 
-    @property
-    def segmented(self):
+    def get_segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix
         of object numbers.
         """
         return self.__segmentation_to_labels(self.__segmented)
 
-    @segmented.setter
-    def segmented(self, labels):
+    def set_segmented(self, labels):
         self.__segmented = self.__labels_to_segmentation(labels)
+
+    segmented = property(get_segmented, set_segmented)
 
     @staticmethod
     def __labels_to_segmentation(labels):

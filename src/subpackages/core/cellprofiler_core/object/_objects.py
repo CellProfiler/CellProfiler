@@ -3,7 +3,6 @@ from numpy.random.mtrand import RandomState
 import scipy.ndimage
 import scipy.sparse
 
-import centrosome.index
 import centrosome.outline
 
 from cellprofiler_library.functions.segmentation import convert_dense_to_label_set

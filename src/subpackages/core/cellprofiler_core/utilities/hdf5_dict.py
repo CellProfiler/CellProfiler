@@ -1465,8 +1465,8 @@ class HDF5ObjectSet(object):
 
     Sparse labeling stored in a record data type with each column having a name
     of "c", "t", "z", "y", "x" or "label". The "label" column is the object
-    number, starting with 1. When "c", "t", "z" are absent, this is the same as
-    an i, j, v labeling of the pixels, also known as a COOrdinate format
+    number, starting with 1. When "c", "t", "z" are absent, it is interoperable
+    with an i, j, v labeling of the pixels, or the COOrdinate format
     (as in scipy.sparse.coo_matrix).
 
     Naming is in 2 parts: object_name, segmentation. One group is reserved

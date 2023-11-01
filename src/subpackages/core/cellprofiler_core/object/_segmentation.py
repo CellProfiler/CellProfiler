@@ -14,7 +14,6 @@ class Segmentation:
     single plane (legacy), as multiple planes and as sparse ijv.
     """
 
-    # TODO: 4758 - should reject sparse=np.recarray(0, dtype=[('label', 'u1')]), shape=(1,1,1,1,3,3)
     def __init__(self, dense=None, sparse=None, shape=None):
         """Initialize the segmentation with either a dense or sparse labeling
 
@@ -26,8 +25,8 @@ class Segmentation:
         sparse - a labeling stored in a record data type with each column
                  having a name of "c", "t", "z", "y", "x" or "label".
                  The "label" column is the object number, starting with 1.
-                 When "c", "t", "z" are absent, this is the same as an ijv
-                 labeling of the pixels, also known as a COOrdinate format
+                 When "c", "t", "z" are absent, this is the interoperable with
+                 an ijv labeling of the pixels, or in the COOrdinate format
                  (as in scipy.sparse.coo_matrix).
 
         shape - the 5-D shape of the imaging site if sparse. If this is absent

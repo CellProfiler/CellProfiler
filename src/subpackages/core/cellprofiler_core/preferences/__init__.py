@@ -83,11 +83,11 @@ def get_config():
         return __headless_config
     import wx
 
-    try:
-        config = wx.Config.Get(False)
-    except wx.PyNoAppError:
+    if wx.App.Get() is None:
         app = wx.App(0)
-        config = wx.Config.Get(False)
+
+    config = wx.Config.Get(False)
+
     if not config:
         wx.Config.Set(
             wx.Config(

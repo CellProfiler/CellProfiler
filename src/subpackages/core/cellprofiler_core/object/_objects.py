@@ -1,9 +1,6 @@
 import numpy as np
-from numpy.random.mtrand import RandomState
 import scipy.ndimage
 import scipy.sparse
-
-import centrosome.outline
 
 from cellprofiler_library.functions.segmentation import convert_dense_to_label_set
 from cellprofiler_library.functions.segmentation import convert_sparse_to_ijv
@@ -12,6 +9,7 @@ from cellprofiler_library.functions.segmentation import count_from_ijv
 from cellprofiler_library.functions.segmentation import areas_from_ijv
 from cellprofiler_library.functions.segmentation import convert_labels_to_dense
 from cellprofiler_library.functions.segmentation import convert_ijv_to_sparse
+from cellprofiler_library.functions.segmentation import make_rgb_outlines
 
 from ._segmentation import Segmentation
 
@@ -262,47 +260,7 @@ class Objects:
 
         colors: a N x 3 color map to be used to color the outlines
         """
-        #
-        # Get planes of non-overlapping objects. The idea here is to use
-        # the most similar colors in the color space for objects that
-        # don't overlap.
-        #
-        all_labels = [
-            (centrosome.outline.outline(label), indexes)
-            for label, indexes in self.get_labels()
-        ]
-        image = np.zeros(list(all_labels[0][0].shape) + [3], np.float32)
-        #
-        # Find out how many unique labels in each
-        #
-        counts = [np.sum(np.unique(l) != 0) for l, _ in all_labels]
-        if len(counts) == 1 and counts[0] == 0:
-            return image
-
-        if len(colors) < len(all_labels):
-            # Have to color 2 planes using the same color!
-            # There's some chance that overlapping objects will get
-            # the same color. Give me more colors to work with please.
-            colors = np.vstack([colors] * (1 + len(all_labels) // len(colors)))
-        r = RandomState()
-        alpha = np.zeros(all_labels[0][0].shape, np.float32)
-        order = np.lexsort([counts])
-        label_colors = []
-        for idx, i in enumerate(order):
-            max_available = len(colors) / (len(all_labels) - idx)
-            ncolors = min(counts[i], max_available)
-            my_colors = colors[:ncolors]
-            colors = colors[ncolors:]
-            my_colors = my_colors[r.permutation(np.arange(ncolors))]
-            my_labels, indexes = all_labels[i]
-            color_idx = np.zeros(np.max(indexes) + 1, int)
-            color_idx[indexes] = np.arange(len(indexes)) % ncolors
-            image[my_labels != 0, :] += my_colors[
-                color_idx[my_labels[my_labels != 0]], :
-            ]
-            alpha[my_labels != 0] += 1
-        image[alpha > 0, :] /= alpha[alpha > 0][:, np.newaxis]
-        return image
+        return make_rgb_outlines(self.get_labels(), colors, validate=True)
 
     def relate_children(self, children):
         """Relate the object numbers in one label to the object numbers in another

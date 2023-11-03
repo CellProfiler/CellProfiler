@@ -1,4 +1,5 @@
 import numpy as np
+import centrosome.outline
 
 import cellprofiler_library.functions.segmentation as lib_seg
 from cellprofiler_library.functions.segmentation import SPARSE_FIELD
@@ -850,3 +851,53 @@ class TestSegmentation:
         )
 
         np.testing.assert_array_equal(ijv, ijv_expected)
+
+    def test_06_01_make_ivj_outlines_empty(self):
+        np.random.seed(70)
+        labels = np.zeros((10, 20), int)
+        label_set = lib_seg.cast_labels_to_label_set(labels)
+        colors = np.random.uniform(size=(5, 3))
+        rgb_image = lib_seg.make_rgb_outlines(label_set, colors)
+        assert np.all(rgb_image == 0)
+
+    def test_06_02_make_ijv_outlines(self):
+        np.random.seed(70)
+
+        ii, jj = np.mgrid[0:10, 0:20]
+        masks = [
+            (ii - ic) ** 2 + (jj - jc) ** 2 < r ** 2
+            for ic, jc, r in ((4, 5, 5), (4, 12, 5), (6, 8, 5))
+        ]
+        i = np.hstack([ii[mask] for mask in masks])
+        j = np.hstack([jj[mask] for mask in masks])
+        v = np.hstack([[k + 1] * np.sum(mask) for k, mask in enumerate(masks)])
+
+        ijv = np.column_stack((i, j, v))
+        label_set = lib_seg.convert_ijv_to_label_set(ijv, dense_shape=(1,1,1,*ii.shape))
+
+        colors = np.random.uniform(size=(3, 3)).astype(np.float32)
+
+        rgb_image = lib_seg.make_rgb_outlines(label_set, colors)
+
+        i1 = [i for i, color in enumerate(colors) if np.all(color == rgb_image[0, 5, :])]
+        assert len(i1) == 1
+        i2 = [
+            i for i, color in enumerate(colors) if np.all(color == rgb_image[0, 12, :])
+        ]
+        assert len(i2) == 1
+        i3 = [
+            i for i, color in enumerate(colors) if np.all(color == rgb_image[-1, 8, :])
+        ]
+        assert len(i3) == 1
+        assert i1[0] != i2[0]
+        assert i2[0] != i3[0]
+        colors = colors[np.array([i1[0], i2[0], i3[0]])]
+        outlines = np.zeros((10, 20, 3), np.float32)
+        alpha = np.zeros((10, 20))
+        for i, (color, mask) in enumerate(zip(colors, masks)):
+            my_outline = centrosome.outline.outline(mask)
+            outlines[my_outline] += color
+            alpha[my_outline] += 1
+        alpha[alpha == 0] = 1
+        outlines /= alpha[:, :, np.newaxis]
+        np.testing.assert_almost_equal(outlines, rgb_image)

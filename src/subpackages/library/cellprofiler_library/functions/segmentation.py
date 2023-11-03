@@ -1,6 +1,7 @@
 from enum import Enum
 import numpy as np
 from numpy.random.mtrand import RandomState
+import scipy.sparse
 import centrosome.index
 
 class SPARSE_FIELD(Enum):
@@ -648,3 +649,106 @@ def make_rgb_outlines(label_set, colors, random_seed=None, validate=True):
     rgb_image[alpha > 0, :] /= alpha[alpha > 0][:, np.newaxis]
 
     return rgb_image
+
+# needs library tests
+def find_label_overlaps(parent_labels, child_labels, validate=True):
+    """
+    Find per pixel overlap of parent labels and child labels
+
+    'parent_labels' - the parents which contain the children in 'labels' format
+    'child_labels' - the children to be mapped to a parent in 'labels' format
+
+    Returns a sparse 'coo_matrix' of overlap between each parent and child.
+    Note that the first row and column are empty, as these
+    correspond to parent and child labels of 0.
+    """
+    if validate:
+        _validate_labels(parent_labels)
+        _validate_labels(child_labels)
+
+    parent_count = np.max(parent_labels)
+    child_count = np.max(child_labels)
+    #
+    # If the labels are different shapes, crop to shared shape.
+    #
+    common_shape = np.minimum(parent_labels.shape, child_labels.shape)
+
+    if parent_labels.ndim == 3:
+        parent_labels = parent_labels[
+            0 : common_shape[0], 0 : common_shape[1], 0 : common_shape[2]
+        ]
+        child_labels = child_labels[
+            0 : common_shape[0], 0 : common_shape[1], 0 : common_shape[2]
+        ]
+    else:
+        parent_labels = parent_labels[0 : common_shape[0], 0 : common_shape[1]]
+        child_labels = child_labels[0 : common_shape[0], 0 : common_shape[1]]
+
+    #
+    # Only look at points that are labeled in parent and child
+    #
+    not_zero = (parent_labels > 0) & (child_labels > 0)
+    not_zero_count = np.sum(not_zero)
+
+    #
+    # each row (axis = 0) is a parent
+    # each column (axis = 1) is a child
+    #
+    return scipy.sparse.coo_matrix(
+        (
+            np.ones((not_zero_count,)),
+            (parent_labels[not_zero], child_labels[not_zero]),
+        ),
+        shape=(parent_count + 1, child_count + 1),
+    )
+
+# needs library tests
+def find_ijv_overlaps(parent_ijv, child_ijv, validate=True):
+    """
+    Find per pixel overlap of parent labels and child labels
+
+    'parent_ijv' - the parents which contain the children, in 'ijv' format
+    'child_ijv' - the children to be mapped to a parent, in 'ijv' format
+
+    Returns a sparse 'csc_matrix' of overlap between each parent and child.
+    Note that the first row and column are empty, as these
+    correspond to parent and child labels of 0.
+    """
+    if validate:
+        _validate_ijv(parent_ijv)
+        _validate_ijv(child_ijv)
+
+    parent_count = 0 if (parent_ijv.shape[0] == 0) else np.max(parent_ijv[:, 2])
+    child_count = 0 if (child_ijv.shape[0] == 0) else np.max(child_ijv[:, 2])
+
+    if parent_count == 0 or child_count == 0:
+        return np.zeros((parent_count + 1, child_count + 1), int)
+
+    dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + 1
+    dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + 1
+    parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(
+        np.uint64
+    )
+    child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(np.uint64)
+
+    parent_matrix = scipy.sparse.coo_matrix(
+        (np.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)),
+        shape=(parent_count + 1, dim_i * dim_j),
+    )
+    child_matrix = scipy.sparse.coo_matrix(
+        (np.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])),
+        shape=(dim_i * dim_j, child_count + 1),
+    )
+    # I surely do not understand the sparse code.  Converting both
+    # arrays to csc gives the best peformance... Why not p.csr and
+    # c.csc?
+    return parent_matrix.tocsc() * child_matrix.tocsc()
+
+def center_of_labels_mass(labels, validate=True):
+    if validate:
+        _validate_labels(labels)
+
+    indices = indices_from_labels(labels)
+    return np.array(
+        scipy.ndimage.center_of_mass(np.ones_like(labels), labels, indices)
+    )

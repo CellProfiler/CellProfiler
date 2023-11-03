@@ -1,6 +1,4 @@
 import numpy as np
-import scipy.ndimage
-import scipy.sparse
 
 from cellprofiler_library.functions.segmentation import convert_dense_to_label_set
 from cellprofiler_library.functions.segmentation import convert_sparse_to_ijv
@@ -10,6 +8,9 @@ from cellprofiler_library.functions.segmentation import areas_from_ijv
 from cellprofiler_library.functions.segmentation import convert_labels_to_dense
 from cellprofiler_library.functions.segmentation import convert_ijv_to_sparse
 from cellprofiler_library.functions.segmentation import make_rgb_outlines
+from cellprofiler_library.functions.segmentation import find_label_overlaps
+from cellprofiler_library.functions.segmentation import find_ijv_overlaps
+from cellprofiler_library.functions.segmentation import center_of_labels_mass
 
 from ._segmentation import Segmentation
 
@@ -325,43 +326,8 @@ class Objects:
         Returns a sparse matrix of overlap between each parent and child.
         Note that the first row and column are empty, as these
         correspond to parent and child labels of 0.
-
         """
-        parent_count = np.max(parent_labels)
-        child_count = np.max(child_labels)
-        #
-        # If the labels are different shapes, crop to shared shape.
-        #
-        common_shape = np.minimum(parent_labels.shape, child_labels.shape)
-
-        if parent_labels.ndim == 3:
-            parent_labels = parent_labels[
-                0 : common_shape[0], 0 : common_shape[1], 0 : common_shape[2]
-            ]
-            child_labels = child_labels[
-                0 : common_shape[0], 0 : common_shape[1], 0 : common_shape[2]
-            ]
-        else:
-            parent_labels = parent_labels[0 : common_shape[0], 0 : common_shape[1]]
-            child_labels = child_labels[0 : common_shape[0], 0 : common_shape[1]]
-
-        #
-        # Only look at points that are labeled in parent and child
-        #
-        not_zero = (parent_labels > 0) & (child_labels > 0)
-        not_zero_count = np.sum(not_zero)
-
-        #
-        # each row (axis = 0) is a parent
-        # each column (axis = 1) is a child
-        #
-        return scipy.sparse.coo_matrix(
-            (
-                np.ones((not_zero_count,)),
-                (parent_labels[not_zero], child_labels[not_zero]),
-            ),
-            shape=(parent_count + 1, child_count + 1),
-        )
+        return find_label_overlaps(parent_labels, child_labels, validate=True)
 
     @staticmethod
     def histogram_from_ijv(parent_ijv, child_ijv):
@@ -374,33 +340,8 @@ class Objects:
         Returns a sparse matrix of overlap between each parent and child.
         Note that the first row and column are empty, as these
         correspond to parent and child labels of 0.
-
         """
-        parent_count = 0 if (parent_ijv.shape[0] == 0) else np.max(parent_ijv[:, 2])
-        child_count = 0 if (child_ijv.shape[0] == 0) else np.max(child_ijv[:, 2])
-
-        if parent_count == 0 or child_count == 0:
-            return np.zeros((parent_count + 1, child_count + 1), int)
-
-        dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + 1
-        dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + 1
-        parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1].astype(
-            np.uint64
-        )
-        child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1].astype(np.uint64)
-
-        parent_matrix = scipy.sparse.coo_matrix(
-            (np.ones((parent_ijv.shape[0],)), (parent_ijv[:, 2], parent_linear_ij)),
-            shape=(parent_count + 1, dim_i * dim_j),
-        )
-        child_matrix = scipy.sparse.coo_matrix(
-            (np.ones((child_ijv.shape[0],)), (child_linear_ij, child_ijv[:, 2])),
-            shape=(dim_i * dim_j, child_count + 1),
-        )
-        # I surely do not understand the sparse code.  Converting both
-        # arrays to csc gives the best peformance... Why not p.csr and
-        # c.csc?
-        return parent_matrix.tocsc() * child_matrix.tocsc()
+        return find_ijv_overlaps(parent_ijv, child_ijv, validate=True)
 
     def fn_of_label_and_index(self, func):
         """Call a function taking a label matrix with the segmented labels
@@ -426,16 +367,7 @@ class Objects:
         return func(np.ones(self.segmented.shape), self.segmented, self.indices)
 
     def center_of_mass(self):
-        labels = self.segmented
-
-        index = np.unique(labels)
-
-        if index[0] == 0:
-            index = index[1:]
-
-        return np.array(
-            scipy.ndimage.center_of_mass(np.ones_like(labels), labels, index)
-        )
+        return center_of_labels_mass(self.segmented, validate=False)
 
     def overlapping(self):
         if not isinstance(self.__segmented, Segmentation):

@@ -1,5 +1,6 @@
 from enum import Enum
 import numpy as np
+from numpy.random.mtrand import RandomState
 import centrosome.index
 
 class SPARSE_FIELD(Enum):
@@ -23,6 +24,8 @@ SPARSE_AXES_FIELDS = SPARSE_FIELDS[1:]
 DENSE_AXIS_NAMES = tuple([mem.name for mem in DENSE_AXIS])
 DENSE_SHAPE_NAMES = DENSE_AXIS_NAMES[1:]
 
+# ------ Functions for validating segmentation formats ------
+
 def _validate_dense(dense):
     """
     A 'dense' matrix is a 6 dimensional array with axis order:
@@ -40,7 +43,7 @@ def _validate_dense(dense):
     (see 'indices_from_dense' for more details)
     """
     ndim = len(DENSE_AXIS_NAMES)
-    assert type(dense == np.ndarray), "dense must be ndarray"
+    assert type(dense) == np.ndarray, "dense must be ndarray"
     assert dense.ndim == ndim, \
     f"dense must be {ndim}-dimensional - f{DENSE_AXIS_NAMES}"
 
@@ -142,6 +145,8 @@ def _validate_ijv(ijv):
     assert type(ijv) == np.ndarray, "ijv must be ndarray"
     assert ijv.ndim == 2, "ijv must be 2-dimensional"
     assert ijv.shape[1] == 3, "ijv must have 3 columns"
+
+# ------ Functions converting between segmentation formats ------
 
 def indices_from_dense(dense, validate=True):
     """
@@ -383,6 +388,29 @@ def convert_labels_to_ijv(labels, validate=True):
 
     return ijv
 
+def convert_ijv_to_label_set(ijv, dense_shape=None, validate=True):
+    if validate:
+        _validate_ijv(ijv)
+
+    sparse = convert_ijv_to_sparse(ijv, validate=False)
+
+    if dense_shape is None:
+        dense_shape = dense_shape_from_sparse(sparse)
+
+    dense, indices = convert_sparse_to_dense(
+        sparse,
+        dense_shape=dense_shape,
+        validate=False
+    )
+
+    label_set = convert_dense_to_label_set(
+        dense,
+        indices=indices,
+        validate=False
+    )
+
+    return label_set
+
 def convert_label_set_to_ijv(label_set, validate=True):
     return np.concatenate(
         [convert_labels_to_ijv(l[0], validate) for l in label_set],
@@ -548,3 +576,75 @@ def convert_sparse_to_dense(sparse, dense_shape=None, validate=True):
     indices = [np.where(v_color == i)[0] for i in range(1, dense.shape[0] + 1)]
 
     return dense, indices
+
+# ------ Functions for operating on segmentation formats ------
+
+def make_rgb_outlines(label_set, colors, random_seed=None, validate=True):
+    """
+    Assign rgb colors to outlines of labels in 'label_set`
+
+    Make outlines, coloring each object differently to distinguish between
+    objects that might overlap.
+
+    'label_set': see 'convert_dense_to_label_set'
+
+    'colors': a N x 3 color map to be used to color the outlines
+    where N in dim 0 should match the number of unique labels in the
+    `label_set`, and values are R, G, and B values normalized to [0, 1]
+
+    'random_seed' when provided, will seed the RNG for permuting colors
+    between 'labels' matrices in the 'label_set'
+    """
+    if validate:
+        assert type(colors) == np.ndarray, "'colors' must be ndarray"
+        assert (
+            colors.ndim == 2 and
+            colors.shape[1] == 3
+        ), "'colors' must be of shape (N, 3)"
+        indices = [i for _, idxs in label_set for i in idxs]
+        # >= because technically you can have superflous colors (but don't)
+        assert colors.shape[0] >= len(indices), \
+            "axis 1 of 'colors' must be equal to the number of unique labels in 'label_set'"
+    #
+    # Get planes of non-overlapping objects. The idea here is to use
+    # the most similar colors in the color space for objects that
+    # don't overlap.
+    #
+    label_outline_set = [
+        (centrosome.outline.outline(label), indexes)
+        for label, indexes in label_set
+    ]
+    rgb_image = np.zeros(list(label_outline_set[0][0].shape) + [3], np.float32)
+    #
+    # Find out how many unique labels in each
+    #
+    counts = [np.sum(np.unique(l) != 0) for l, _ in label_outline_set]
+    if len(counts) == 1 and counts[0] == 0:
+        return rgb_image
+
+    if len(colors) < len(label_outline_set):
+        # Have to color 2 planes using the same color!
+        # There's some chance that overlapping objects will get
+        # the same color. Give me more colors to work with please.
+        colors = np.vstack([colors] * (1 + len(label_outline_set) // len(colors)))
+    r = RandomState()
+    r.seed(random_seed)
+    alpha = np.zeros(label_outline_set[0][0].shape, np.float32)
+    order = np.lexsort([counts])
+
+    for idx, i in enumerate(order):
+        max_available = len(colors) / (len(label_outline_set) - idx)
+        ncolors = min(counts[i], max_available)
+        my_colors = colors[:ncolors]
+        colors = colors[ncolors:]
+        my_colors = my_colors[r.permutation(np.arange(ncolors))]
+        my_labels, indexes = label_outline_set[i]
+        color_idx = np.zeros(np.max(indexes) + 1, int)
+        color_idx[indexes] = np.arange(len(indexes)) % ncolors
+        rgb_image[my_labels != 0, :] += my_colors[
+            color_idx[my_labels[my_labels != 0]], :
+        ]
+        alpha[my_labels != 0] += 1
+    rgb_image[alpha > 0, :] /= alpha[alpha > 0][:, np.newaxis]
+
+    return rgb_image

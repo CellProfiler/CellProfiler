@@ -1,9 +1,12 @@
-FROM mambaorg/micromamba:1.5.1-bullseye-slim
+# docker buildx build --platform linux/amd64 -t cellprofiler_dev:latest docker/dev
+# docker run -it --rm -v $(PWD):/workspace --name cellprofiler_dev cellprofiler_dev:latest
+
+FROM mambaorg/micromamba:1.5.1-jammy
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
 
 RUN micromamba install -y -n base -c conda-forge \
-    python=3.9.* \
+    python=3.8.* \
     freetype \
     gcc \
     gxx \
@@ -11,8 +14,7 @@ RUN micromamba install -y -n base -c conda-forge \
     mysql \
     && micromamba clean -qya
 
-
-RUN pip install --no-cache-dir --upgrade pip \
+RUN micromamba install -y -n base -c conda-forge -c bioconda \
     boto3~=1.28.41 \
     centrosome==1.2.2 \
     docutils==0.15.2 \
@@ -22,7 +24,6 @@ RUN pip install --no-cache-dir --upgrade pip \
     Jinja2~=3.1.2 \
     joblib~=1.3.2 \
     mahotas~=1.4.13 \
-    matplotlib~=3.1.3 \
     mysqlclient~=2.0.0 \
     numpy~=1.24.4 \
     Pillow~=10.0.0 \
@@ -52,9 +53,13 @@ RUN pip install --no-cache-dir --upgrade pip \
     pre-commit \ 
     pyinstaller \
     twine \
-    ipykernel
+    ipykernel \
+    && micromamba clean -qya
 
-RUN pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/debian-11/wxPython-4.2.0-cp39-cp39-linux_x86_64.whl
+# Matplotlib is unable to be resolved by micromamba at current version for some reason
+RUN pip install matplotlib~=3.1.3
+
+RUN pip install -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-22.04 wxPython==4.2.0
 
 ENV HOME=/workspace
 WORKDIR $HOME

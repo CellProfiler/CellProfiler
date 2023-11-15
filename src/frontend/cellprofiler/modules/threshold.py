@@ -787,7 +787,8 @@ staining.
         dimensions = input_image.dimensions
 
         if self.threshold_operation == TM_MANUAL:
-            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
+            # Thresholds added to class so they are accessible in tests
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
                     predefined_threshold=self.manual_threshold.value,
@@ -802,7 +803,7 @@ staining.
                     self.thresholding_measurement.value
                 )
             )
-            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
                     predefined_threshold=predefined_threshold,
@@ -824,7 +825,7 @@ staining.
                     threshold_method = "multiotsu"
                 else:
                     threshold_method = self.convert_setting(self.local_operation.value)
-            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
                     threshold_scope=self.threshold_scope.value,
@@ -847,9 +848,9 @@ staining.
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            final_threshold,
-            orig_threshold,
-            guide_threshold,
+            self.final_threshold,
+            self.orig_threshold,
+            self.guide_threshold,
         )
 
         self.add_fg_bg_measurements(

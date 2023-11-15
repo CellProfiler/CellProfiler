@@ -15,8 +15,8 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     get_object_measurement_columns,
 )
-from cellprofiler.library.functions.object_processing import size_similarly
-from cellprofiler.library.modules import identifytertiaryobjects
+from cellprofiler_library.functions.object_processing import size_similarly
+from cellprofiler_library.modules import identifytertiaryobjects
 
 from cellprofiler.modules import _help
 

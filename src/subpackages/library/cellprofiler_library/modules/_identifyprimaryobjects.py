@@ -1,13 +1,14 @@
-from typing import Literal
+# from cellprofiler_library.functions.object_processing import identify_primary_objects
 from cellprofiler_library.modules import threshold
 from cellprofiler_library.functions.object_processing import (
-    filter_on_size,
-    filter_on_border,
     separate_neighboring_objects,
+    filter_on_border,
+    filter_on_size
 )
 import centrosome
-import scipy
 import numpy
+import scipy
+from typing import Literal
 
 
 def identifyprimaryobjects(
@@ -46,10 +47,11 @@ def identifyprimaryobjects(
     maximum_object_count: int = None,
     predefined_threshold: float = None,
     return_cp_output: bool = False
-    # **kwargs
 ):
-    # Define automatic settings
+    
     if automatic:
+        # Define automatic settings by recursively calling identifyprimaryobjects and defining 
+        # the automatic settings
         return identifyprimaryobjects(
             image,
             mask=mask,
@@ -57,7 +59,7 @@ def identifyprimaryobjects(
             log_transform=False,
             threshold_scope="global",
             threshold_method="minimum_cross_entropy",
-            automatic=False,  # Since this call sets up automatic settings
+            automatic=False,  # False, since this recursive call defines what the automatic settings are
             exclude_size=exclude_size,
             min_size=min_size,
             max_size=max_size,
@@ -71,7 +73,7 @@ def identifyprimaryobjects(
             return_cp_output=return_cp_output,
         )
 
-    (final_threshold, orig_threshold, guide_threshold, binary_image, sigma) = threshold(
+    final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
         image=image,
         mask=mask,
         threshold_scope=threshold_scope,
@@ -88,7 +90,7 @@ def identifyprimaryobjects(
         averaging_method=averaging_method,
         variance_method=variance_method,
         number_of_deviations=number_of_deviations,
-        volumetric=False,  # IDPrimary does not support 3D
+        volumetric=False,  # IdentifyPrimaryObjects does not support 3D
         predefined_threshold=predefined_threshold,
     )
 
@@ -201,3 +203,36 @@ def identifyprimaryobjects(
         )
     else:
         return labeled_image
+
+    # return identify_primary_objects(
+    #     image,
+    #     mask=mask,
+    #     threshold_method=threshold_method,
+    #     threshold_scope=threshold_scope,
+    #     assign_middle_to_foreground=assign_middle_to_foreground,
+    #     log_transform=log_transform,
+    #     threshold_correction_factor=threshold_correction_factor,
+    #     threshold_min=threshold_min,
+    #     threshold_max=threshold_max,
+    #     window_size=window_size,
+    #     threshold_smoothing=threshold_smoothing,
+    #     lower_outlier_fraction=lower_outlier_fraction,
+    #     upper_outlier_fraction=upper_outlier_fraction,
+    #     averaging_method=averaging_method,
+    #     variance_method=variance_method,
+    #     number_of_deviations=number_of_deviations,
+    #     exclude_size=exclude_size,
+    #     min_size=min_size,
+    #     max_size=max_size,
+    #     exclude_border_objects=exclude_border_objects,
+    #     unclump_method=unclump_method,
+    #     watershed_method=watershed_method,
+    #     fill_holes_method=fill_holes_method,
+    #     smoothing_filter_size=smoothing_filter_size,
+    #     automatic_suppression=automatic_suppression,
+    #     maxima_suppression_size=maxima_suppression_size,
+    #     low_res_maxima=low_res_maxima,
+    #     maximum_object_count=maximum_object_count,
+    #     predefined_threshold=predefined_threshold,
+    #     return_cp_output=return_cp_output
+    # )

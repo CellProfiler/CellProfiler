@@ -19,11 +19,6 @@ YES          YES          YES
 import centrosome.smooth
 import centrosome.threshold
 import numpy
-import scipy.interpolate
-import scipy.ndimage
-import skimage.filters
-import skimage.filters.rank
-import skimage.morphology
 from cellprofiler_core.constants.measurement import (
     FF_WEIGHTED_VARIANCE,
     FF_FINAL_THRESHOLD,

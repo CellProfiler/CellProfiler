@@ -4,7 +4,7 @@ import scipy.ndimage
 import skimage.morphology
 import mahotas
 from typing import Literal
-# from cellprofiler.library.modules import threshold as library_threshold
+# from cellprofiler_library.modules import threshold as library_threshold
 
 
 def shrink_to_point(labels, fill):

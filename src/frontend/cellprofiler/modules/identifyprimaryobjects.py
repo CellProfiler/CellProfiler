@@ -20,6 +20,8 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 from cellprofiler.modules import _help, threshold
 
+from cellprofiler.library.functions.object_processing import get_maxima, smooth_image, filter_on_size, filter_on_border
+
 __doc__ = """\
 IdentifyPrimaryObjects
 ======================
@@ -1123,10 +1125,17 @@ If "*{NO}*" is selected, the following settings are used:
 
         # Filter out small and large objects
         size_excluded_labeled_image = labeled_image.copy()
-        labeled_image, small_removed_labels = self.filter_on_size(
-            labeled_image, object_count
-        )
+
+        if self.exclude_size.value:
+            labeled_image, small_removed_labels = filter_on_size(
+                labeled_image, self.size_range.min, self.size_range.max, return_only_small=True
+            )
+        else:
+            labeled_image, small_removed_labels = labeled_image, labeled_image.copy()
+        
+        
         size_excluded_labeled_image[labeled_image > 0] = 0
+
 
         #
         # Fill holes again after watershed
@@ -1284,7 +1293,7 @@ If "*{NO}*" is selected, the following settings are used:
         image = cpimage.pixel_data
         mask = cpimage.mask
 
-        blurred_image = self.smooth_image(image, mask)
+        blurred_image = smooth_image(image, mask, filter_size=self.calc_smoothing_filter_size(), min_obj_size=self.size_range.min)
         if self.size_range.min > 10 and (self.basic or self.low_res_maxima.value):
             image_resize_factor = 10.0 / float(self.size_range.min)
             if self.basic or self.automatic_suppression.value:
@@ -1309,7 +1318,7 @@ If "*{NO}*" is selected, the following settings are used:
         distance_transformed_image = None
         if self.basic or self.unclump_method == UN_INTENSITY:
             # Remove dim maxima
-            maxima_image = self.get_maxima(
+            maxima_image = get_maxima(
                 blurred_image, labeled_image, maxima_mask, image_resize_factor
             )
         elif self.unclump_method == UN_SHAPE:
@@ -1330,7 +1339,7 @@ If "*{NO}*" is selected, the following settings are used:
             distance_transformed_image += numpy.random.uniform(
                 0, 0.001, distance_transformed_image.shape
             )
-            maxima_image = self.get_maxima(
+            maxima_image = get_maxima(
                 distance_transformed_image,
                 labeled_image,
                 maxima_mask,

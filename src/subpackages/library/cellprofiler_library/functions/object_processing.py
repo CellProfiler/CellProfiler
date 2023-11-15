@@ -792,7 +792,7 @@ def separate_neighboring_objects(
     else:
         return watershed_boundaries
     
-
+    
 def filter_labels(labels_out, objects, mask=None, discard_edge=False):
     """Filter labels out of the output
 

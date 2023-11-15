@@ -4,6 +4,7 @@ import scipy.ndimage
 import skimage.morphology
 import mahotas
 from typing import Literal
+# from cellprofiler.library.modules import threshold as library_threshold
 
 
 def shrink_to_point(labels, fill):
@@ -915,3 +916,172 @@ def outline(labels):
 
     output[different] = labels[different]
     return output
+
+
+# def identify_primary_objects(
+#     image,
+#     mask=None,
+#     threshold_method: Literal[
+#         "minimum_cross_entropy", "otsu", "multiotsu", "robust_background"
+#     ] = "minimum_cross_entropy",
+#     threshold_scope: Literal["global", "adaptive"] = "global",
+#     assign_middle_to_foreground: Literal["foreground", "background"] = "background",
+#     log_transform: bool = False,
+#     threshold_correction_factor: float = 1.0,
+#     threshold_min: float = 0.0,
+#     threshold_max: float = 1.0,
+#     window_size: int = 50,
+#     threshold_smoothing: float = 0.0,
+#     lower_outlier_fraction: float = 0.05,
+#     upper_outlier_fraction: float = 0.05,
+#     averaging_method: Literal["mean", "median", "mode"] = "mean",
+#     variance_method: Literal[
+#         "standard_deviation", "median_absolute_deviation"
+#     ] = "standard_deviation",
+#     number_of_deviations: int = 2,
+#     exclude_size: bool = True,
+#     min_size: int = 10,
+#     max_size: int = 40,
+#     exclude_border_objects: bool = True,
+#     unclump_method: Literal["intensity", "shape", "none"] = "intensity",
+#     watershed_method: Literal["intensity", "shape", "propagate", "none"] = "intensity",
+#     fill_holes_method: Literal["never", "thresholding", "declumping"] = "thresholding",
+#     smoothing_filter_size: int = None,
+#     automatic_suppression: bool = True,
+#     maxima_suppression_size: float = 7,
+#     low_res_maxima: bool = True,
+#     maximum_object_count: int = None,
+#     predefined_threshold: float = None,
+#     return_cp_output: bool = False
+# ):
+
+#     final_threshold, orig_threshold, guide_threshold, binary_image, sigma = library_threshold(
+#         image=image,
+#         mask=mask,
+#         threshold_scope=threshold_scope,
+#         threshold_method=threshold_method,
+#         assign_middle_to_foreground=assign_middle_to_foreground,
+#         log_transform=log_transform,
+#         threshold_correction_factor=threshold_correction_factor,
+#         threshold_min=threshold_min,
+#         threshold_max=threshold_max,
+#         window_size=window_size,
+#         smoothing=threshold_smoothing,
+#         lower_outlier_fraction=lower_outlier_fraction,
+#         upper_outlier_fraction=upper_outlier_fraction,
+#         averaging_method=averaging_method,
+#         variance_method=variance_method,
+#         number_of_deviations=number_of_deviations,
+#         volumetric=False,  # IdentifyPrimaryObjects does not support 3D
+#         predefined_threshold=predefined_threshold,
+#     )
+
+#     global_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
+
+#     if fill_holes_method.casefold() == "thresholding":
+#         binary_image = centrosome.cpmorphology.fill_labeled_holes(
+#             binary_image, size_fn=lambda size, is_foreground: size < max_size * max_size
+#         )
+
+#     # Label the thresholded image
+#     labeled_image = scipy.ndimage.label(binary_image, numpy.ones((3, 3), bool))[0]
+
+#     if smoothing_filter_size is None:
+#         declump_smoothing_filter_size = 2.35 * min_size / 3.5
+#     else:
+#         declump_smoothing_filter_size = smoothing_filter_size
+
+#     # If no declumping is selected, a maxima image is not returned
+#     if return_cp_output:
+#         (
+#             labeled_image,
+#             labeled_maxima,
+#             maxima_suppression_size,
+#         ) = separate_neighboring_objects(
+#             image,
+#             labeled_image=labeled_image,
+#             mask=mask,
+#             unclump_method=unclump_method,
+#             watershed_method=watershed_method,
+#             fill_holes_method=fill_holes_method,
+#             filter_size=declump_smoothing_filter_size,
+#             min_size=min_size,
+#             max_size=max_size,
+#             low_res_maxima=low_res_maxima,
+#             automatic_suppression=automatic_suppression,
+#             maxima_suppression_size=maxima_suppression_size,
+#             return_cp_output=True,
+#         )
+#     # Maxima image will be retuened
+#     else:
+#         labeled_image = separate_neighboring_objects(
+#             image,
+#             labeled_image=labeled_image,
+#             mask=mask,
+#             unclump_method=unclump_method,
+#             watershed_method=watershed_method,
+#             fill_holes_method=fill_holes_method,
+#             filter_size=declump_smoothing_filter_size,
+#             min_size=min_size,
+#             max_size=max_size,
+#             low_res_maxima=low_res_maxima,
+#             maxima_suppression_size=maxima_suppression_size,
+#             automatic_suppression=automatic_suppression,
+#         )
+
+#     unedited_labels = labeled_image.copy()
+
+#     # Filter out objects touching the border or mask
+#     border_excluded_labeled_image = labeled_image.copy()
+#     if exclude_border_objects:
+#         labeled_image = filter_on_border(labeled_image, mask)
+#     border_excluded_labeled_image[labeled_image > 0] = 0
+
+#     # Filter out small and large objects
+#     size_excluded_labeled_image = labeled_image.copy()
+
+#     # If requested, remove cells that are outside the size range
+#     if exclude_size:
+#         labeled_image, small_removed_labels = filter_on_size(
+#             labeled_image, min_size, max_size, return_only_small=True
+#         )
+#     else:
+#         labeled_image, small_removed_labels = labeled_image, labeled_image.copy()
+
+#     size_excluded_labeled_image[labeled_image > 0] = 0
+
+#     #
+#     # Fill holes again after watershed
+#     #
+#     if fill_holes_method.casefold() != "never":
+#         labeled_image = centrosome.cpmorphology.fill_labeled_holes(labeled_image)
+
+#     # Relabel the image
+#     labeled_image, object_count = centrosome.cpmorphology.relabel(labeled_image)
+
+#     if maximum_object_count is not None:
+#         if object_count > maximum_object_count:
+#             labeled_image = numpy.zeros(labeled_image.shape, int)
+#             border_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
+#             size_excluded_labeled_image = numpy.zeros(labeled_image.shape, int)
+#             object_count = 0
+
+#     if return_cp_output:
+#         return (
+#             labeled_image,
+#             unedited_labels,
+#             small_removed_labels,
+#             size_excluded_labeled_image,
+#             border_excluded_labeled_image,
+#             labeled_maxima,
+#             maxima_suppression_size,
+#             object_count,
+#             final_threshold,
+#             orig_threshold,
+#             guide_threshold,
+#             binary_image,
+#             global_threshold,
+#             sigma,
+#         )
+#     else:
+#         return labeled_image

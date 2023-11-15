@@ -1,5 +1,8 @@
 ﻿import numpy
 import scipy.ndimage
+
+from cellprofiler.modules import _help, threshold
+
 from cellprofiler_core.constants.measurement import (
     FF_CHILDREN_COUNT,
     FF_PARENT,
@@ -11,7 +14,6 @@ from cellprofiler_core.constants.measurement import (
     FTR_OBJECT_NUMBER,
     C_PARENT,
     C_CHILDREN,
-    FF_COUNT,
     C_COUNT,
 )
 from cellprofiler_core.module.image_segmentation import ObjectProcessing
@@ -21,10 +23,8 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float, LabelName
 
-from cellprofiler.modules.threshold import TM_MANUAL, TM_MEASUREMENT
-from cellprofiler.library.modules import identifysecondaryobjects
+from cellprofiler_library.modules import identifysecondaryobjects
 
-from cellprofiler.modules import _help, threshold
 
 __doc__ = """\
 IdentifySecondaryObjects
@@ -539,10 +539,10 @@ segmentation.""",
         unedited_objects = objects.unedited_segmented.copy()
 
         # Get the threshold settings
-        if self.threshold.threshold_operation == TM_MANUAL:
+        if self.threshold.threshold_operation == threshold.TM_MANUAL:
             predefined_threshold = self.threshold.manual_threshold.value
             predefined_threshold = predefined_threshold
-        elif self.threshold.threshold_operation == TM_MEASUREMENT:
+        elif self.threshold.threshold_operation == threshold.TM_MEASUREMENT:
             predefined_threshold = float(
                 workspace.measurements.get_current_image_measurement(
                     self.threshold.thresholding_measurement.value

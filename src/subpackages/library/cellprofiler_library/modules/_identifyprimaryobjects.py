@@ -5,7 +5,7 @@ from cellprofiler_library.functions.object_processing import (
     filter_on_border,
     filter_on_size
 )
-import centrosome
+from centrosome import cpmorphology
 import numpy
 import scipy
 from typing import Literal
@@ -97,7 +97,7 @@ def identifyprimaryobjects(
     global_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
 
     if fill_holes_method.casefold() == "thresholding":
-        binary_image = centrosome.cpmorphology.fill_labeled_holes(
+        binary_image = cpmorphology.fill_labeled_holes(
             binary_image, size_fn=lambda size, is_foreground: size < max_size * max_size
         )
 
@@ -172,10 +172,10 @@ def identifyprimaryobjects(
     # Fill holes again after watershed
     #
     if fill_holes_method.casefold() != "never":
-        labeled_image = centrosome.cpmorphology.fill_labeled_holes(labeled_image)
+        labeled_image = cpmorphology.fill_labeled_holes(labeled_image)
 
     # Relabel the image
-    labeled_image, object_count = centrosome.cpmorphology.relabel(labeled_image)
+    labeled_image, object_count = cpmorphology.relabel(labeled_image)
 
     if maximum_object_count is not None:
         if object_count > maximum_object_count:

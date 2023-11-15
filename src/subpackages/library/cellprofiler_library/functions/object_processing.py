@@ -1,4 +1,3 @@
-
 import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
@@ -17,22 +16,22 @@ def shrink_to_point(labels, fill):
     """
 
     if fill:
-        labels=centrosome.cpmorphology.fill_labeled_holes(labels)
+        labels = centrosome.cpmorphology.fill_labeled_holes(labels)
     return centrosome.cpmorphology.binary_shrink(labels)
+
 
 def shrink_defined_pixels(labels, fill, iterations):
     """
     Remove pixels around the perimeter of an object unless
-    doing so would change the object’s Euler number `iterations` times. 
+    doing so would change the object’s Euler number `iterations` times.
     Processing stops automatically when there are no more pixels to
     remove.
     """
 
     if fill:
-        labels=centrosome.cpmorphology.fill_labeled_holes(labels)
-    return centrosome.cpmorphology.binary_shrink(
-                labels, iterations=iterations
-            )
+        labels = centrosome.cpmorphology.fill_labeled_holes(labels)
+    return centrosome.cpmorphology.binary_shrink(labels, iterations=iterations)
+
 
 def add_dividing_lines(labels):
     """
@@ -51,20 +50,21 @@ def add_dividing_lines(labels):
 
     return out_labels
 
+
 def skeletonize(labels):
     """
     Erode each object to its skeleton.
     """
     return centrosome.cpmorphology.skeletonize_labels(labels)
 
+
 def despur(labels, iterations):
     """
     Remove or reduce the length of spurs in a skeletonized
     image. The algorithm reduces spur size by `iterations` pixels.
     """
-    return centrosome.cpmorphology.spur(
-                labels, iterations=iterations
-            )
+    return centrosome.cpmorphology.spur(labels, iterations=iterations)
+
 
 def expand(labels, distance):
     """
@@ -85,6 +85,7 @@ def expand(labels, distance):
 
     return out_labels
 
+
 def expand_until_touching(labels):
     """
     Expand objects, assigning every pixel in the
@@ -94,22 +95,23 @@ def expand_until_touching(labels):
     distance = numpy.max(labels.shape)
     return expand(labels, distance)
 
+
 def expand_defined_pixels(labels, iterations):
     """
     Expand each object by adding background pixels
-    adjacent to the image `iterations` times. Processing stops 
+    adjacent to the image `iterations` times. Processing stops
     automatically if there are no more background pixels.
     """
     return expand(labels, iterations)
 
 def merge_objects(labels_x, labels_y, dimensions):
     """
-    Make overlapping objects combine into a single object, taking 
+    Make overlapping objects combine into a single object, taking
     on the label of the object from the initial set.
 
-    If an object overlaps multiple objects, each pixel of the added 
-    object will be assigned to the closest object from the initial 
-    set. This is primarily useful when the same objects appear in 
+    If an object overlaps multiple objects, each pixel of the added
+    object will be assigned to the closest object from the initial
+    set. This is primarily useful when the same objects appear in
     both sets.
     """
     output = numpy.zeros_like(labels_x)
@@ -129,7 +131,7 @@ def merge_objects(labels_x, labels_y, dimensions):
     output = numpy.where(mask, labels_y, output)
     labels_y[mask] = 0
     to_segment = numpy.logical_or(labels_x > 0, labels_y > 0)
-    if dimensions == 2: 
+    if dimensions == 2:
         distances, (i, j) = scipy.ndimage.distance_transform_edt(
             labels_x == 0, return_indices=True
         )
@@ -139,17 +141,19 @@ def merge_objects(labels_x, labels_y, dimensions):
             labels_x == 0, return_indices=True
         )
         output[to_segment] = labels_x[i[to_segment], j[to_segment], v[to_segment]]
-    
+
     return output
+
 
 def preserve_objects(labels_x, labels_y):
     """
-    Preserve the initial object set. Any overlapping regions from 
-    the second set will be ignored in favour of the object from 
-    the initial set. 
+    Preserve the initial object set. Any overlapping regions from
+    the second set will be ignored in favour of the object from
+    the initial set.
     """
     labels_y[labels_y > 0] += labels_x.max()
     return numpy.where(labels_x > 0, labels_x, labels_y)
+
 
 def discard_objects(labels_x, labels_y):
     """
@@ -172,6 +176,7 @@ def discard_objects(labels_x, labels_y):
     labels_y[mask] = 0
 
     return numpy.where(labels_x > 0, labels_x, output)
+
 
 def segment_objects(labels_x, labels_y, dimensions):
     """
@@ -440,6 +445,7 @@ def fill_object_holes(labels, diameter, planewise=False):
             array[filled_mask] = obj
     return array
 
+
 def fill_convex_hulls(labels):
     data = skimage.measure.regionprops(labels)
     output = numpy.zeros_like(labels)
@@ -460,8 +466,8 @@ def fill_convex_hulls(labels):
 def get_maxima(
     image,
     labeled_image=None,
-    maxima_mask=None, # This should be renamed to footprint
-    image_resize_factor=1.0
+    maxima_mask=None,  # This should be renamed to footprint
+    image_resize_factor=1.0,
 ):
     """_summary_
 
@@ -475,8 +481,7 @@ def get_maxima(
     if image_resize_factor < 1.0:
         shape = numpy.array(image.shape) * image_resize_factor
         i_j = (
-            numpy.mgrid[0 : shape[0], 0 : shape[1]].astype(float)
-            / image_resize_factor
+            numpy.mgrid[0 : shape[0], 0 : shape[1]].astype(float) / image_resize_factor
         )
         resized_image = scipy.ndimage.map_coordinates(image, i_j)
         resized_labels = scipy.ndimage.map_coordinates(
@@ -504,8 +509,7 @@ def get_maxima(
             / inverse_resize_factor
         )
         binary_maxima_image = (
-            scipy.ndimage.map_coordinates(binary_maxima_image.astype(float), i_j)
-            > 0.5
+            scipy.ndimage.map_coordinates(binary_maxima_image.astype(float), i_j) > 0.5
         )
         assert binary_maxima_image.shape[0] == image.shape[0]
         assert binary_maxima_image.shape[1] == image.shape[1]
@@ -560,7 +564,7 @@ def smooth_image(image, mask=None, filter_size=None, min_obj_size=10):
 
 
 def filter_on_size(labeled_image, min_size, max_size, return_only_small=False):
-    """ Filter the labeled image based on the size range
+    """Filter the labeled image based on the size range
 
     labeled_image - pixel image labels
     object_count - # of objects in the labeled image
@@ -570,7 +574,7 @@ def filter_on_size(labeled_image, min_size, max_size, return_only_small=False):
     labeled_image = labeled_image.copy()
 
     # Take the max since objects may have been removed, but their label number
-    # has not been adjusted accordingly. eg. array [2, 1, 0, 3] has label 2 
+    # has not been adjusted accordingly. eg. array [2, 1, 0, 3] has label 2
     # removed due to being on the border, so the array is [0, 1, 0, 3].
     # Object numbers/indices will be used for slicing in areas[labeled_image]
     object_count = numpy.max(labeled_image)
@@ -582,12 +586,8 @@ def filter_on_size(labeled_image, min_size, max_size, return_only_small=False):
             numpy.array(list(range(0, object_count + 1)), dtype=numpy.int32),
         )
         areas = numpy.array(areas, dtype=int)
-        min_allowed_area = (
-            numpy.pi * (min_size * min_size) / 4
-        )
-        max_allowed_area = (
-            numpy.pi * (max_size * max_size) / 4
-        )
+        min_allowed_area = numpy.pi * (min_size * min_size) / 4
+        max_allowed_area = numpy.pi * (max_size * max_size) / 4
         # area_image has the area of the object at every pixel within the object
         area_image = areas[labeled_image]
         labeled_image[area_image < min_allowed_area] = 0
@@ -642,10 +642,8 @@ def filter_on_border(labeled_image, mask=None):
         # The operation below gets the mask pixels that are on the border of the mask
         # The erosion turns all pixels touching an edge to zero. The not of this
         # is the border + formerly masked-out pixels.
-        mask_border = numpy.logical_not(
-            scipy.ndimage.binary_erosion(image.mask)
-        )
-        mask_border = numpy.logical_and(mask_border, image.mask)
+        mask_border = numpy.logical_not(scipy.ndimage.binary_erosion(mask))
+        mask_border = numpy.logical_and(mask_border, mask)
         border_labels = labeled_image[mask_border]
         border_labels = border_labels.flatten()
         histogram = scipy.sparse.coo_matrix(
@@ -661,33 +659,28 @@ def filter_on_border(labeled_image, mask=None):
             labeled_image[histogram_image > 0] = 0
     return labeled_image
 
+
 def separate_neighboring_objects(
     image,
+    labeled_image,
     mask=None,
     unclump_method: Literal["intensity", "shape", "none"] = "intensity",
     watershed_method: Literal["intensity", "shape", "propagate", "none"] = "intensity",
-    fill_holes: Literal["never", "thresholding", "declumping"] = "thresholding",
+    fill_holes_method: Literal["never", "thresholding", "declumping"] = "thresholding",
     filter_size=None,
-    min_size=10, 
+    min_size=10,
     max_size=40,
     low_res_maxima=False,
     maxima_suppression_size=7,
     automatic_suppression=False,
-    ):
+    return_count_and_suppression_size=False,
+):
 
-    # Expects a thresholded image
-    if not numpy.array_equal(input_image, input_image.astype(bool)):
-        raise ValueError("separate_neighboring_objects expects a thresholded image as input")
+    if unclump_method.casefold() == "none" or watershed_method.casefold() == "none":
+        if return_count_and_suppression_size:
+            return labeled_image, numpy.max(labeled_image), 7
 
-    # Label the thresholded image
-    labeled_image = sicpy.ndimage.label(
-        image, numpy.ones((3, 3), bool)
-    )
-
-    if unclump_method.casefold() == "none" and watershed_method.casefold() == "none":
-        return labeled_image
-    
-    blurred_image = smooth_image(image, mask)
+    blurred_image = smooth_image(image, mask, filter_size, min_size)
 
     # For image resizing, the min_size must be larger than 10
     if min_size > 10 and low_res_maxima:
@@ -704,7 +697,7 @@ def separate_neighboring_objects(
             maxima_suppression_size = min_size / 1.5
         else:
             maxima_suppression_size = maxima_suppression_size
-    
+
     maxima_mask = centrosome.cpmorphology.strel_disk(
         max(1, maxima_suppression_size - 0.5)
     )
@@ -714,11 +707,90 @@ def separate_neighboring_objects(
     if unclump_method.casefold() == "intensity":
         # Remove dim maxima
         maxima_image = get_maxima(
-            blurred_image,
+            blurred_image, labeled_image, maxima_mask, image_resize_factor
+        )
+    elif unclump_method.casefold() == "shape":
+        if fill_holes_method.casefold() == "never":
+            # For shape, even if the user doesn't want to fill holes,
+            # a point far away from the edge might be near a hole.
+            # So we fill just for this part.
+            foreground = centrosome.cpmorphology.fill_labeled_holes(labeled_image) > 0
+        else:
+            foreground = labeled_image > 0
+        distance_transformed_image = scipy.ndimage.distance_transform_edt(foreground)
+        # randomize the distance slightly to get unique maxima
+        numpy.random.seed(0)
+        distance_transformed_image += numpy.random.uniform(
+            0, 0.001, distance_transformed_image.shape
+        )
+        maxima_image = get_maxima(
+            distance_transformed_image,
             labeled_image,
             maxima_mask,
-            image_resize_factor
+            image_resize_factor,
+        )
+    else:
+        raise ValueError(f"Unsupported unclump method: {unclump_method}")
+
+    # Create the image for watershed
+    if watershed_method.casefold() == "intensity":
+        # use the reverse of the image to get valleys at peaks
+        watershed_image = 1 - image
+    elif watershed_method.casefold() == "shape":
+        if distance_transformed_image is None:
+            distance_transformed_image = scipy.ndimage.distance_transform_edt(
+                labeled_image > 0
             )
+        watershed_image = -distance_transformed_image
+        watershed_image = watershed_image - numpy.min(watershed_image)
+    elif watershed_method.casefold() == "propagate":
+        # No image used
+        pass
+    else:
+        raise ValueError(f"Unsupported watershed method: {watershed_method}")
+    #
+    # Create a marker array where the unlabeled image has a label of
+    # -(nobjects+1)
+    # and every local maximum has a unique label which will become
+    # the object's label. The labels are negative because that
+    # makes the watershed algorithm use FIFO for the pixels which
+    # yields fair boundaries when markers compete for pixels.
+    #
+    labeled_maxima, object_count = scipy.ndimage.label(
+        maxima_image, numpy.ones((3, 3), bool)
+    )
+    if watershed_method.casefold() == "propagate":
+        watershed_boundaries, distance = centrosome.propagate.propagate(
+            numpy.zeros(labeled_maxima.shape),
+            labeled_maxima,
+            labeled_image != 0,
+            1.0,
+        )
+    else:
+        markers_dtype = (
+            numpy.int16 if object_count < numpy.iinfo(numpy.int16).max else numpy.int32
+        )
+        markers = numpy.zeros(watershed_image.shape, markers_dtype)
+        markers[labeled_maxima > 0] = -labeled_maxima[labeled_maxima > 0]
+
+        #
+        # Some labels have only one maker in them, some have multiple and
+        # will be split up.
+        #
+
+        watershed_boundaries = skimage.segmentation.watershed(
+            connectivity=numpy.ones((3, 3), bool),
+            image=watershed_image,
+            markers=markers,
+            mask=labeled_image != 0,
+        )
+
+        watershed_boundaries = -watershed_boundaries
+
+    if return_count_and_suppression_size:
+        return watershed_boundaries, numpy.max(labeled_image), numpy.max(labeled_image)
+    else:
+        return watershed_boundaries
         
 #############################################################
 # ConvertObjectsToImage

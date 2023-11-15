@@ -25,6 +25,9 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Integer, Float, LabelName
 from cellprofiler_core.utilities.core.object import size_similarly
 
+from cellprofiler.modules.threshold import TM_MANUAL, TM_MEASUREMENT
+from cellprofiler.library.modules import identifysecondaryobjects
+
 from cellprofiler.modules import _help, threshold
 
 __doc__ = """\
@@ -526,190 +529,272 @@ segmentation.""",
         return setting_values, variable_revision_number
 
     def run(self, workspace):
+
+        # if img.shape != objects.shape:
+        #     raise ValueError(
+        #         "This module requires that the input image and object sets are the same size.\n"
+        #         "The %s image and %s objects are not (%s vs %s).\n"
+        #         "If they are paired correctly you may want to use the Resize, ResizeObjects or "
+        #         "Crop module(s) to make them the same size."
+        #         % (image_name, self.x_name.value, img.shape, objects.shape,)
+        #     )
+        # global_threshold = None
+        # if self.method == M_DISTANCE_N:
+        #     has_threshold = False
+        # else:
+        #     thresholded_image, global_threshold, sigma = self._threshold_image(
+        #         image_name, workspace
+        #     )
+        #     workspace.display_data.global_threshold = global_threshold
+        #     workspace.display_data.threshold_sigma = sigma
+        #     has_threshold = True
+
+        # #
+        # # Get the following labels:
+        # # * all edited labels
+        # # * labels touching the edge, including small removed
+        # #
+        # labels_in = objects.unedited_segmented.copy()
+        # labels_touching_edge = numpy.hstack(
+        #     (labels_in[0, :], labels_in[-1, :], labels_in[:, 0], labels_in[:, -1])
+        # )
+        # labels_touching_edge = numpy.unique(labels_touching_edge)
+        # is_touching = numpy.zeros(numpy.max(labels_in) + 1, bool)
+        # is_touching[labels_touching_edge] = True
+        # is_touching = is_touching[labels_in]
+
+        # labels_in[(~is_touching) & (objects.segmented == 0)] = 0
+        # #
+        # # Stretch the input labels to match the image size. If there's no
+        # # label matrix, then there's no label in that area.
+        # #
+        # if tuple(labels_in.shape) != tuple(img.shape):
+        #     tmp = numpy.zeros(img.shape, labels_in.dtype)
+        #     i_max = min(img.shape[0], labels_in.shape[0])
+        #     j_max = min(img.shape[1], labels_in.shape[1])
+        #     tmp[:i_max, :j_max] = labels_in[:i_max, :j_max]
+        #     labels_in = tmp
+
+        # if self.method in (M_DISTANCE_B, M_DISTANCE_N):
+        #     if self.method == M_DISTANCE_N:
+        #         distances, (i, j) = scipy.ndimage.distance_transform_edt(
+        #             labels_in == 0, return_indices=True
+        #         )
+        #         labels_out = numpy.zeros(labels_in.shape, int)
+        #         dilate_mask = distances <= self.distance_to_dilate.value
+        #         labels_out[dilate_mask] = labels_in[i[dilate_mask], j[dilate_mask]]
+        #     else:
+        #         labels_out, distances = centrosome.propagate.propagate(
+        #             img, labels_in, thresholded_image, 1.0
+        #         )
+        #         labels_out[distances > self.distance_to_dilate.value] = 0
+        #         labels_out[labels_in > 0] = labels_in[labels_in > 0]
+        #     if self.fill_holes:
+        #         label_mask = labels_out == 0
+        #         small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+        #             labels_out, mask=label_mask
+        #         )
+        #     else:
+        #         small_removed_segmented_out = labels_out
+        #     #
+        #     # Create the final output labels by removing labels in the
+        #     # output matrix that are missing from the segmented image
+        #     #
+        #     segmented_labels = objects.segmented
+        #     segmented_out = self.filter_labels(
+        #         small_removed_segmented_out, objects, workspace
+        #     )
+        # elif self.method == M_PROPAGATION:
+        #     labels_out, distance = centrosome.propagate.propagate(
+        #         img, labels_in, thresholded_image, self.regularization_factor.value
+        #     )
+        #     if self.fill_holes:
+        #         label_mask = labels_out == 0
+        #         small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+        #             labels_out, mask=label_mask
+        #         )
+        #     else:
+        #         small_removed_segmented_out = labels_out.copy()
+        #     segmented_out = self.filter_labels(
+        #         small_removed_segmented_out, objects, workspace
+        #     )
+        # elif self.method == M_WATERSHED_G:
+        #     #
+        #     # First, apply the sobel filter to the image (both horizontal
+        #     # and vertical). The filter measures gradient.
+        #     #
+        #     sobel_image = numpy.abs(scipy.ndimage.sobel(img))
+        #     #
+        #     # Combine the image mask and threshold to mask the watershed
+        #     #
+        #     watershed_mask = numpy.logical_or(thresholded_image, labels_in > 0)
+        #     watershed_mask = numpy.logical_and(watershed_mask, mask)
+
+        #     #
+        #     # Perform the first watershed
+        #     #
+
+        #     labels_out = skimage.segmentation.watershed(
+        #         connectivity=numpy.ones((3, 3), bool),
+        #         image=sobel_image,
+        #         markers=labels_in,
+        #         mask=watershed_mask,
+        #     )
+
+        #     if self.fill_holes:
+        #         label_mask = labels_out == 0
+        #         small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+        #             labels_out, mask=label_mask
+        #         )
+        #     else:
+        #         small_removed_segmented_out = labels_out.copy()
+        #     segmented_out = self.filter_labels(
+        #         small_removed_segmented_out, objects, workspace
+        #     )
+        # elif self.method == M_WATERSHED_I:
+        #     #
+        #     # invert the image so that the maxima are filled first
+        #     # and the cells compete over what's close to the threshold
+        #     #
+        #     inverted_img = 1 - img
+        #     #
+        #     # Same as above, but perform the watershed on the original image
+        #     #
+        #     watershed_mask = numpy.logical_or(thresholded_image, labels_in > 0)
+        #     watershed_mask = numpy.logical_and(watershed_mask, mask)
+        #     #
+        #     # Perform the watershed
+        #     #
+
+        #     labels_out = skimage.segmentation.watershed(
+        #         connectivity=numpy.ones((3, 3), bool),
+        #         image=inverted_img,
+        #         markers=labels_in,
+        #         mask=watershed_mask,
+        #     )
+
+        #     if self.fill_holes:
+        #         label_mask = labels_out == 0
+        #         small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
+        #             labels_out, mask=label_mask
+        #         )
+        #     else:
+        #         small_removed_segmented_out = labels_out
+        #     segmented_out = self.filter_labels(
+        #         small_removed_segmented_out, objects, workspace
+        #     )
+
+        # if self.wants_discard_edge:
+        #     lookup = scipy.ndimage.maximum(
+        #         segmented_out,
+        #         objects.segmented,
+        #         list(range(numpy.max(objects.segmented) + 1)),
+        #     )
+        #     lookup = centrosome.cpmorphology.fixup_scipy_ndimage_result(lookup)
+        #     lookup[0] = 0
+        #     lookup[lookup != 0] = numpy.arange(numpy.sum(lookup != 0)) + 1
+        #     segmented_labels = lookup[objects.segmented]
+        #     segmented_out = lookup[segmented_out]
+
+
         image_name = self.image_name.value
         image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
         workspace.display_data.statistics = []
         img = image.pixel_data
         mask = image.mask
         objects = workspace.object_set.get_objects(self.x_name.value)
-        if img.shape != objects.shape:
-            raise ValueError(
-                "This module requires that the input image and object sets are the same size.\n"
-                "The %s image and %s objects are not (%s vs %s).\n"
-                "If they are paired correctly you may want to use the Resize, ResizeObjects or "
-                "Crop module(s) to make them the same size."
-                % (image_name, self.x_name.value, img.shape, objects.shape,)
+        objects_segmented = objects.segmented
+        # Objects that have not had edge objects removed in IDPrimary
+        unedited_objects = objects.unedited_segmented.copy()
+
+
+        # Library function HERE
+
+        # Get the threshold settings
+        if self.threshold.threshold_operation == TM_MANUAL:
+            predefined_threshold = self.threshold.manual_threshold.value
+            predefined_threshold = predefined_threshold
+        elif self.threshold.threshold_operation == TM_MEASUREMENT:
+            predefined_threshold = float(
+                workspace.measurements.get_current_image_measurement(
+                    self.threshold.thresholding_measurement.value
+                )
             )
-        global_threshold = None
-        if self.method == M_DISTANCE_N:
-            has_threshold = False
         else:
-            thresholded_image, global_threshold, sigma = self._threshold_image(
-                image_name, workspace
-            )
-            workspace.display_data.global_threshold = global_threshold
-            workspace.display_data.threshold_sigma = sigma
-            has_threshold = True
+            predefined_threshold = None
 
-        #
-        # Get the following labels:
-        # * all edited labels
-        # * labels touching the edge, including small removed
-        #
-        labels_in = objects.unedited_segmented.copy()
-        labels_touching_edge = numpy.hstack(
-            (labels_in[0, :], labels_in[-1, :], labels_in[:, 0], labels_in[:, -1])
+        if self.threshold.threshold_scope == "Global":
+            if (
+                self.threshold.global_operation == "Otsu"
+                and self.threshold.two_class_otsu == "Three classes"
+            ):
+                threshold_method = "multiotsu"
+            else:
+                threshold_method = self.convert_setting(
+                    self.threshold.global_operation.value
+                )
+        elif self.threshold.threshold_scope == "Adaptive":
+            if (
+                self.threshold.local_operation == "Otsu"
+                and self.threshold.two_class_otsu == "Three classes"
+            ):
+                threshold_method = "multiotsu"
+            else:
+                threshold_method = self.convert_setting(
+                    self.threshold.local_operation.value
+                )
+
+        (
+            final_threshold,
+            orig_threshold,
+            guide_threshold,
+            binary_image,
+            sigma, 
+            segmented_labels, 
+            segmented_out,
+            small_removed_segmented_out
+        ) = identifysecondaryobjects(
+            image=img,
+            objects=objects_segmented,
+            unedited_objects=unedited_objects,
+            mask=mask,
+            secondary_object_method=self.convert_setting(self.method.value),
+            threshold_method=threshold_method,
+            threshold_scope=self.threshold.threshold_scope.value,
+            assign_middle_to_foreground=self.threshold.assign_middle_to_foreground.value,
+            log_transform=self.threshold.log_transform.value,
+            threshold_correction_factor=self.threshold.threshold_correction_factor.value,
+            threshold_min=self.threshold.threshold_range.min,
+            threshold_max=self.threshold.threshold_range.max,
+            window_size=self.threshold.adaptive_window_size.value,
+            threshold_smoothing=self.threshold.threshold_smoothing_scale.value,
+            lower_outlier_fraction=self.threshold.lower_outlier_fraction.value,
+            upper_outlier_fraction=self.threshold.upper_outlier_fraction.value,
+            averaging_method=self.threshold.averaging_method.value,
+            variance_method=self.convert_setting(self.threshold.variance_method.value),
+            number_of_deviations=self.threshold.number_of_deviations.value,
+            predefined_threshold=predefined_threshold,
+            distance_to_dilate=self.distance_to_dilate.value,
+            fill_holes=self.fill_holes,
+            discard_edge=self.wants_discard_edge,
+            regularization_factor=self.regularization_factor.value,
+            return_cp_output=True,
         )
-        labels_touching_edge = numpy.unique(labels_touching_edge)
-        is_touching = numpy.zeros(numpy.max(labels_in) + 1, bool)
-        is_touching[labels_touching_edge] = True
-        is_touching = is_touching[labels_in]
 
-        labels_in[(~is_touching) & (objects.segmented == 0)] = 0
-        #
-        # Stretch the input labels to match the image size. If there's no
-        # label matrix, then there's no label in that area.
-        #
-        if tuple(labels_in.shape) != tuple(img.shape):
-            tmp = numpy.zeros(img.shape, labels_in.dtype)
-            i_max = min(img.shape[0], labels_in.shape[0])
-            j_max = min(img.shape[1], labels_in.shape[1])
-            tmp[:i_max, :j_max] = labels_in[:i_max, :j_max]
-            labels_in = tmp
-
-        if self.method in (M_DISTANCE_B, M_DISTANCE_N):
-            if self.method == M_DISTANCE_N:
-                distances, (i, j) = scipy.ndimage.distance_transform_edt(
-                    labels_in == 0, return_indices=True
-                )
-                labels_out = numpy.zeros(labels_in.shape, int)
-                dilate_mask = distances <= self.distance_to_dilate.value
-                labels_out[dilate_mask] = labels_in[i[dilate_mask], j[dilate_mask]]
-            else:
-                labels_out, distances = centrosome.propagate.propagate(
-                    img, labels_in, thresholded_image, 1.0
-                )
-                labels_out[distances > self.distance_to_dilate.value] = 0
-                labels_out[labels_in > 0] = labels_in[labels_in > 0]
-            if self.fill_holes:
-                label_mask = labels_out == 0
-                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
-                    labels_out, mask=label_mask
-                )
-            else:
-                small_removed_segmented_out = labels_out
+        # I think this part should only exist in the GUI
+        # The library module should always return the same labels adn then the GUI allows
+        # a user to decide what to do with the output
+        if self.wants_discard_primary:
             #
-            # Create the final output labels by removing labels in the
-            # output matrix that are missing from the segmented image
+            # Make a new primary object
             #
-            segmented_labels = objects.segmented
-            segmented_out = self.filter_labels(
-                small_removed_segmented_out, objects, workspace
-            )
-        elif self.method == M_PROPAGATION:
-            labels_out, distance = centrosome.propagate.propagate(
-                img, labels_in, thresholded_image, self.regularization_factor.value
-            )
-            if self.fill_holes:
-                label_mask = labels_out == 0
-                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
-                    labels_out, mask=label_mask
-                )
-            else:
-                small_removed_segmented_out = labels_out.copy()
-            segmented_out = self.filter_labels(
-                small_removed_segmented_out, objects, workspace
-            )
-        elif self.method == M_WATERSHED_G:
-            #
-            # First, apply the sobel filter to the image (both horizontal
-            # and vertical). The filter measures gradient.
-            #
-            sobel_image = numpy.abs(scipy.ndimage.sobel(img))
-            #
-            # Combine the image mask and threshold to mask the watershed
-            #
-            watershed_mask = numpy.logical_or(thresholded_image, labels_in > 0)
-            watershed_mask = numpy.logical_and(watershed_mask, mask)
-
-            #
-            # Perform the first watershed
-            #
-
-            labels_out = skimage.segmentation.watershed(
-                connectivity=numpy.ones((3, 3), bool),
-                image=sobel_image,
-                markers=labels_in,
-                mask=watershed_mask,
-            )
-
-            if self.fill_holes:
-                label_mask = labels_out == 0
-                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
-                    labels_out, mask=label_mask
-                )
-            else:
-                small_removed_segmented_out = labels_out.copy()
-            segmented_out = self.filter_labels(
-                small_removed_segmented_out, objects, workspace
-            )
-        elif self.method == M_WATERSHED_I:
-            #
-            # invert the image so that the maxima are filled first
-            # and the cells compete over what's close to the threshold
-            #
-            inverted_img = 1 - img
-            #
-            # Same as above, but perform the watershed on the original image
-            #
-            watershed_mask = numpy.logical_or(thresholded_image, labels_in > 0)
-            watershed_mask = numpy.logical_and(watershed_mask, mask)
-            #
-            # Perform the watershed
-            #
-
-            labels_out = skimage.segmentation.watershed(
-                connectivity=numpy.ones((3, 3), bool),
-                image=inverted_img,
-                markers=labels_in,
-                mask=watershed_mask,
-            )
-
-            if self.fill_holes:
-                label_mask = labels_out == 0
-                small_removed_segmented_out = centrosome.cpmorphology.fill_labeled_holes(
-                    labels_out, mask=label_mask
-                )
-            else:
-                small_removed_segmented_out = labels_out
-            segmented_out = self.filter_labels(
-                small_removed_segmented_out, objects, workspace
-            )
-
-        if self.wants_discard_edge:
-            lookup = scipy.ndimage.maximum(
-                segmented_out,
-                objects.segmented,
-                list(range(numpy.max(objects.segmented) + 1)),
-            )
-            lookup = centrosome.cpmorphology.fixup_scipy_ndimage_result(lookup)
-            lookup[0] = 0
-            lookup[lookup != 0] = numpy.arange(numpy.sum(lookup != 0)) + 1
-            segmented_labels = lookup[objects.segmented]
-            segmented_out = lookup[segmented_out]
-
-        
-            if self.wants_discard_primary:
-                #
-                # Make a new primary object
-                #
-                new_objects = Objects()
-                new_objects.segmented = segmented_labels
-                if objects.has_unedited_segmented:
-                    new_objects.unedited_segmented = objects.unedited_segmented
-                if objects.has_small_removed_segmented:
-                    new_objects.small_removed_segmented = objects.small_removed_segmented
-                new_objects.parent_image = objects.parent_image
+            new_objects = Objects()
+            new_objects.segmented = segmented_labels
+            if objects.has_unedited_segmented:
+                new_objects.unedited_segmented = objects.unedited_segmented
+            if objects.has_small_removed_segmented:
+                new_objects.small_removed_segmented = objects.small_removed_segmented
+            new_objects.parent_image = objects.parent_image
 
         #
         # Add the objects to the object set
@@ -722,6 +807,26 @@ segmentation.""",
         objname = self.y_name.value
         workspace.object_set.add_objects(objects_out, objname)
         object_count = numpy.max(segmented_out)
+
+
+        if self.method == M_DISTANCE_N:
+            workspace.display_data.global_threshold = None
+        else:
+            workspace.display_data.global_threshold = numpy.mean(numpy.atleast_1d(final_threshold))
+            workspace.display_data.threshold_sigma = sigma
+
+            self.threshold.add_threshold_measurements(
+                self.y_name.value,
+                workspace.measurements,
+                final_threshold,
+                orig_threshold,
+                guide_threshold,
+            )
+
+            self.threshold.add_fg_bg_measurements(
+                self.y_name.value, workspace.measurements, image, binary_image
+            )
+
         #
         # Add measurements
         #
@@ -752,6 +857,7 @@ segmentation.""",
             image_numbers[mask],
             numpy.arange(1, len(parents_of_children) + 1)[mask],
         )
+
         #
         # If primary objects were created, add them
         #
@@ -875,6 +981,21 @@ segmentation.""",
             [[x[1]] for x in workspace.display_data.statistics],
             row_labels=[x[0] for x in workspace.display_data.statistics],
         )
+
+    def convert_setting(self, gui_setting_str):
+        """
+        Convert GUI setting strings to something cellprofiler
+        library compatible. That is, remove spaces and hyphens.
+        """
+        rep_list = (
+            (" - ", "_"), 
+            (" ", "_"), 
+            ("-", "_")
+            )
+        converted_str = gui_setting_str
+        for replacement in rep_list:
+            converted_str = converted_str.replace(*replacement)
+        return converted_str
 
     def filter_labels(self, labels_out, objects, workspace):
         """Filter labels out of the output

@@ -4,8 +4,12 @@ import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
 import skimage.morphology
+<<<<<<< HEAD
 import mahotas
 
+=======
+from typing import Literal
+>>>>>>> 0bc740bee (Adding library functions to IDPrimary to check that they work from library)
 
 def shrink_to_point(labels, fill):
     """
@@ -566,15 +570,17 @@ def filter_on_size(labeled_image, min_size, max_size, return_only_small=False):
     """
     labeled_image = labeled_image.copy()
 
-    object_count = len(numpy.unique(labeled_image))
+    # Take the max since objects may have been removed, but their label number
+    # has not been adjusted accordingly. eg. array [2, 1, 0, 3] has label 2 
+    # removed due to being on the border, so the array is [0, 1, 0, 3].
+    # Object numbers/indices will be used for slicing in areas[labeled_image]
+    object_count = numpy.max(labeled_image)
     # Check if there are no labelled objects
-    if object_count == 1:
-        small_removed_labels = labeled_image.copy()
-    else:
+    if object_count > 0:
         areas = scipy.ndimage.measurements.sum(
             numpy.ones(labeled_image.shape),
             labeled_image,
-            numpy.array(list(range(0, object_count)), dtype=numpy.int32),
+            numpy.array(list(range(0, object_count + 1)), dtype=numpy.int32),
         )
         areas = numpy.array(areas, dtype=int)
         min_allowed_area = (
@@ -592,6 +598,12 @@ def filter_on_size(labeled_image, min_size, max_size, return_only_small=False):
             return labeled_image, small_removed_labels
         else:
             labeled_image[area_image > max_allowed_area] = 0
+            return labeled_image
+    else:
+        if return_only_small:
+            small_removed_labels = labeled_image.copy()
+            return labeled_image, small_removed_labels
+        else:
             return labeled_image
 
 
@@ -650,56 +662,57 @@ def filter_on_border(labeled_image, mask=None):
             labeled_image[histogram_image > 0] = 0
     return labeled_image
 
-    def separate_neighboring_objects(
-        image,
-        mask=None,
-        unclump_method: Literal["intensity", "shape", "none"] = "intensity",
-        watershed_method: Literal["intensity", "shape", "propagate", "none"] = "intensity",
-        fill_holes: Literal["never", "thresholding", "declumping"] = "thresholding",
-        filter_size=None,
-        min_size=10, 
-        max_size=40,
-        low_res_maxima=False,
-        maxima_suppression_size=7,
-        automatic_suppression=False,
-        ):
+def separate_neighboring_objects(
+    image,
+    mask=None,
+    unclump_method: Literal["intensity", "shape", "none"] = "intensity",
+    watershed_method: Literal["intensity", "shape", "propagate", "none"] = "intensity",
+    fill_holes: Literal["never", "thresholding", "declumping"] = "thresholding",
+    filter_size=None,
+    min_size=10, 
+    max_size=40,
+    low_res_maxima=False,
+    maxima_suppression_size=7,
+    automatic_suppression=False,
+    ):
 
-        # Expects a thresholded image
-        if not numpy.array_equal(input_image, input_image.astype(bool)):
-            raise ValueError("separate_neighboring_objects expects a thresholded image as input")
+    # Expects a thresholded image
+    if not numpy.array_equal(input_image, input_image.astype(bool)):
+        raise ValueError("separate_neighboring_objects expects a thresholded image as input")
 
-        # Label the thresholded image
-        labeled_image = sicpy.ndimage.label(
-            image, numpy.ones((3, 3), bool)
-        )
+    # Label the thresholded image
+    labeled_image = sicpy.ndimage.label(
+        image, numpy.ones((3, 3), bool)
+    )
 
-        if unclump_method.casefold() == "none" and watershed_method.casefold() == "none":
-            return labeled_image
-        
-        blurred_image = smooth_image(image, mask)
+    if unclump_method.casefold() == "none" and watershed_method.casefold() == "none":
+        return labeled_image
+    
+    blurred_image = smooth_image(image, mask)
 
-        # For image resizing, the min_size must be larger than 10
-        if min_size > 10 and low_res_maxima:
-            image_resize_factor = 10.0 / float(min_size)
-            if automatic_suppression:
-                maxima_suppression_size = 7
-            else:
-                maxima_suppression_size = (
-                    maxima_suppression_size * image_resize_factor + 0.5
-                )
+    # For image resizing, the min_size must be larger than 10
+    if min_size > 10 and low_res_maxima:
+        image_resize_factor = 10.0 / float(min_size)
+        if automatic_suppression:
+            maxima_suppression_size = 7
         else:
-            image_resize_factor = 1.0
-            if automatic_suppression:
-                maxima_suppression_size = min_size / 1.5
-            else:
-                maxima_suppression_size = maxima_suppression_size
-        
-        maxima_mask = centrosome.cpmorphology.strel_disk(
-            max(1, maxima_suppression_size - 0.5)
-        )
+            maxima_suppression_size = (
+                maxima_suppression_size * image_resize_factor + 0.5
+            )
+    else:
+        image_resize_factor = 1.0
+        if automatic_suppression:
+            maxima_suppression_size = min_size / 1.5
+        else:
+            maxima_suppression_size = maxima_suppression_size
+    
+    maxima_mask = centrosome.cpmorphology.strel_disk(
+        max(1, maxima_suppression_size - 0.5)
+    )
 
-        distance_transformed_image = None
+    distance_transformed_image = None
 
+<<<<<<< HEAD
         if unclump_method.casefold() == "intensity":
             # Remove dim maxima
             maxima_image = get_maxima(
@@ -708,3 +721,13 @@ def filter_on_border(labeled_image, mask=None):
                 maxima_mask,
                 image_resize_factor
                 )
+=======
+    if unclump_method.casefold() == "intensity":
+        # Remove dim maxima
+        maxima_image = get_maxima(
+            blurred_image,
+            labeled_image,
+            maxima_mask,
+            image_resize_factor
+            )
+>>>>>>> 0bc740bee (Adding library functions to IDPrimary to check that they work from library)

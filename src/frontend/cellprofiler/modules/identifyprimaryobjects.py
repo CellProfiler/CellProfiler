@@ -20,7 +20,7 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 from cellprofiler.modules import _help, threshold
 
-from cellprofiler.library.functions.object_processing import get_maxima, smooth_image, filter_on_size, filter_on_border
+from cellprofiler.library.functions.object_processing import get_maxima, smooth_image, filter_on_size, filter_on_border, separate_neighboring_objects
 
 __doc__ = """\
 IdentifyPrimaryObjects
@@ -729,7 +729,7 @@ checking this box will have no effect.""".format(
             FH_ALL,
             value=FH_THRESHOLDING,
             doc="""\
-This option controls how holes (regions of background surrounded by one
+This option controls how holes (regions    f of background surrounded by one
 or more objects) are filled in:
 
 -  *{FH_THRESHOLDING}:* Fill in holes that are smaller than
@@ -1114,13 +1114,27 @@ If "*{NO}*" is selected, the following settings are used:
             labeled_image,
             object_count,
             maxima_suppression_size,
-        ) = self.separate_neighboring_objects(workspace, labeled_image, object_count)
+        ) = separate_neighboring_objects(
+            input_image.pixel_data,
+            labeled_image,
+            mask=input_image.mask,
+            unclump_method=self.unclump_method.value,
+            watershed_method=self.watershed_method.value,
+            fill_holes=self.fill_holes.value,
+            filter_size=self.calc_smoothing_filter_size(),
+            min_size=self.size_range.min, 
+            max_size=self.size_range.max,
+            low_res_maxima=self.low_res_maxima.value,
+            maxima_suppression_size=self.maxima_suppression_size.value,
+            automatic_suppression=self.automatic_suppression.value,
+            return_count_and_suppression_size=True
+            )
 
         unedited_labels = labeled_image.copy()
 
         # Filter out objects touching the border or mask
         border_excluded_labeled_image = labeled_image.copy()
-        labeled_image = self.filter_on_border(input_image, labeled_image)
+        labeled_image = filter_on_border(labeled_image, input_image.mask)
         border_excluded_labeled_image[labeled_image > 0] = 0
 
         # Filter out small and large objects
@@ -1135,7 +1149,6 @@ If "*{NO}*" is selected, the following settings are used:
         
         
         size_excluded_labeled_image[labeled_image > 0] = 0
-
 
         #
         # Fill holes again after watershed

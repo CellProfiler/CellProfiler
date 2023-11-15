@@ -842,13 +842,15 @@ staining.
         # Handle manual and measurement thresholds, which are not supported 
         # by cellprofiler_library
         if self.threshold_operation == TM_MANUAL:
-            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
-                input_image.pixel_data,
-                mask=input_image.mask,
-                predefined_threshold=self.manual_threshold.value,
-                threshold_correction_factor=self.threshold_correction_factor.value,
-                threshold_min=self.threshold_range.min,
-                threshold_max=self.threshold_range.max
+            # Thresholds added to class so they are accessible in tests
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
+                    input_image.pixel_data,
+                    mask=input_image.mask,
+                    predefined_threshold=self.manual_threshold.value,
+                    threshold_correction_factor=1,
+                    threshold_min=None, # Manual has no min/max fitlering
+                    threshold_max=None,
+                    volumetric=input_image.volumetric, 
             )
         elif self.threshold_operation == TM_MEASUREMENT:
             predefined_threshold = float(
@@ -856,7 +858,7 @@ staining.
                     self.thresholding_measurement.value
                 )
             )
-            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
                     predefined_threshold=predefined_threshold,
@@ -879,7 +881,7 @@ staining.
                     threshold_method = ThresholdOpts.Method(self.convert_setting(self.local_operation.value))
             else:
                 raise NotImplementedError(f"Threshold scope {self.threshold_scope.value} is not supported.")
-            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
                     input_image.pixel_data,
                     mask=input_image.mask,
                     threshold_scope=self.threshold_scope.value,
@@ -902,9 +904,9 @@ staining.
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            final_threshold,
-            orig_threshold,
-            guide_threshold,
+            self.final_threshold,
+            self.orig_threshold,
+            self.guide_threshold,
         )
 
         self.add_fg_bg_measurements(

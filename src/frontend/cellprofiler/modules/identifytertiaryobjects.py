@@ -15,8 +15,7 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     get_object_measurement_columns,
 )
-from cellprofiler_core.utilities.core.object import size_similarly
-from centrosome.outline import outline
+from cellprofiler.library.functions.object_processing import size_similarly
 from cellprofiler.library.modules import identifytertiaryobjects
 
 from cellprofiler.modules import _help
@@ -275,7 +274,6 @@ but the results will be zero or not-a-number (NaN).
         # #
         tertiary_objects = Objects()
         tertiary_objects.segmented = tertiary_labels
-        # Make sure you set this
         tertiary_objects.parent_image = tertiary_image
         #
         # Relate tertiary objects to their parents & record

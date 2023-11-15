@@ -2,15 +2,8 @@ import math
 
 import cellprofiler_core.module.image_segmentation
 import cellprofiler_core.object
-import centrosome.cpmorphology
-import centrosome.outline
-import centrosome.propagate
-import centrosome.threshold
 import numpy
 import scipy.ndimage
-import scipy.sparse
-import skimage.morphology
-import skimage.segmentation
 from cellprofiler_core.setting import Binary, Color
 from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.range import IntegerRange
@@ -21,7 +14,6 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 from cellprofiler.modules import _help, threshold
 
-# from cellprofiler.library.functions.object_processing import get_maxima, smooth_image, filter_on_size, filter_on_border, separate_neighboring_objects
 from cellprofiler.library.modules import identifyprimaryobjects
 
 __doc__ = """\
@@ -1083,7 +1075,6 @@ If "*{NO}*" is selected, the following settings are used:
         return converted_str
 
     def run(self, workspace):
-        print(11111, self.advanced)
         workspace.display_data.statistics = []
         input_image = workspace.image_set.get_image(
             self.x_name.value, must_be_grayscale=True

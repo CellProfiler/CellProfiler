@@ -354,6 +354,10 @@ def filter_on_size_3d(labeled_image, min_size, max_size, return_only_small=False
         # min_allowed_area = numpy.pi * (min_size**3) / 6 
         # max_allowed_area = numpy.pi * (max_size**3) / 6
         # Calculate volume as an ellipsoid with depth as the image z
+        # This strategy is imperfect, since there may be scenarios in which
+        # the depth of the image is greater than the depth of the cell
+        # Thus, depth should likely be user defined as it's difficult to define
+        # otherwise
         min_allowed_area = (numpy.pi / 6) * min_size * min_size * depth
         max_allowed_area = (numpy.pi / 6) * max_size * max_size * depth
 

@@ -451,3 +451,47 @@ def fill_convex_hulls(labels):
                 cmask
             ] = label
     return output
+
+
+def smooth_image(image, mask=None, filter_size=None, min_obj_size=10):
+    """Apply the smoothing filter to the image"""
+
+    if mask is None:
+        mask = numpy.ones_like(image, dtype=bool)
+
+    if filter_size is None:
+        filter_size = 2.35 * min_obj_size / 3.5
+
+    if filter_size == 0:
+        return image
+    sigma = filter_size / 2.35
+    #
+    # We not only want to smooth using a Gaussian, but we want to limit
+    # the spread of the smoothing to 2 SD, partly to make things happen
+    # locally, partly to make things run faster, partly to try to match
+    # the Matlab behavior.
+    #
+    filter_size = max(int(float(filter_size) / 2.0), 1)
+    f = (
+        1
+        / numpy.sqrt(2.0 * numpy.pi)
+        / sigma
+        * numpy.exp(
+            -0.5 * numpy.arange(-filter_size, filter_size + 1) ** 2 / sigma ** 2
+        )
+    )
+
+    def fgaussian(image):
+        output = scipy.ndimage.convolve1d(image, f, axis=0, mode="constant")
+        return scipy.ndimage.convolve1d(output, f, axis=1, mode="constant")
+
+    #
+    # Use the trick where you similarly convolve an array of ones to find
+    # out the edge effects, then divide to correct the edge effects
+    #
+    edge_array = fgaussian(mask.astype(float))
+    masked_image = image.copy()
+    masked_image[~mask] = 0
+    smoothed_image = fgaussian(masked_image)
+    masked_image[mask] = smoothed_image[mask] / edge_array[mask]
+    return masked_image

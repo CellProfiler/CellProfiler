@@ -21,7 +21,6 @@ import cellprofiler.gui.help
 import cellprofiler.gui.help.content
 from cellprofiler.modules import _help, threshold
 
-# from cellprofiler.library.functions.object_processing import get_maxima, smooth_image, filter_on_size, filter_on_border, separate_neighboring_objects
 from cellprofiler_library.modules._identifyprimaryobjects3d import identifyprimaryobjects3d
 
 __doc__ = """\

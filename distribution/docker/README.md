@@ -1,46 +1,47 @@
-Authors: [@purohit](https://github.com/purohit), [@mcquin](https://github.com/mcquin), [@0x00b1](https://github.com/0x00b1), [@bethac07](https://github.com/bethac07)
+# CellProfiler Docker containers
 
-This is configured to build a docker image for `4.0.0`. To build a different version, edit these lines:
+This folder contains the CellProfiler docker containers. `dockerhub` contains information and code for pushing images dockerhub. The remaining are containers intended for use in development of CellProfiler. 
 
-Makefile:
+The CellProfiler development containers allow for CellProfiler dependencies to be isolated in a container while using the local CellProfiler repo. This allows you to make changes to CellProfiler during development, but avoiding potentially tricky dependency installation on your system. 
 
-    VERSION := 4.0.0
+There are two development containers included here:
+1. `docker/dev`
+   1. This is intended to be used with the VSCode extension [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers), but can also be used to run CellProfiler in **headless** mode.
+2. `docker/dev_gui`
+   1. Launches a desktop environment at `http://localhost:9876/` that allows the CellProfiler GUI to be used in the browser. 
 
-Dockerfile:
+For **building and running** the above containers, there the same assumption for both: that the [CellProfiler repo](https://github.com/CellProfiler/CellProfiler) is cloned and that your terminal is in the root of this repo, as follows:
 
-    ARG version=4.0.0
-    
-You can do this using `sed` e.g.
-    
-    export VERSION=2.2.1
-    sed -i s,"ARG version=3.0.0","ARG version=${VERSION}",g Dockerfile
-    sed -i s,"VERSION := 3.0.0","VERSION := ${VERSION}",g Makefile
+```
+CellProfiler <- **Local terminal directory should be here**
+└── docker/
+    ├── dev/
+    │   ├── Dockerfile
+    │   └── prepare_env.sh
+    └── dev_gui/
+        └── Dockerfile
+```
 
-Note: the sed commands above are for GNU sed. If you're on OS X, see [this](https://stackoverflow.com/questions/30003570/how-to-use-gnu-sed-on-mac-os-x).
+## Building containers locally
 
-To build and test docker locally:
+Build the headless docker container with the following command:
+`docker buildx build --platform linux/amd64 -t cellprofiler_dev:latest CellProfiler/docker/dev`
 
-    make
-    make clean
-    make test
+Build the GUI enabled docker container with the following command:
+`docker buildx build --platform linux/amd64 -t cellprofiler_dev_gui:latest docker/dev_gui`
 
-Note: `make test` will work only for CellProfiler 4.0.0 and higher because the example pipeline in the test is not backward compatible.
+## Run the headless container and set up
 
-By default, s6 logging is output to stdout. To change this behavior, [set the environment variable](https://github.com/just-containers/s6-overlay#customizing-s6-behaviour) `S6_LOGGING` e.g.:
+Run the headless container as follows:
+1. `docker run -it --rm -v $(PWD):/workspace --name cellprofiler_dev cellprofiler_dev:latest`
+2. Once the docker bash terminal opens, run the following command to install your local CellProfiler repo: `bash docker/dev/prepare_env.sh`
+3. Attach to the running docker container with the [VSCode Dev Containers extension](https://code.visualstudio.com/docs/devcontainers/attach-container#:~:text=To%20attach%20to%20a%20Docker,you%20want%20to%20connect%20to.)
+4. If you would like to use Jupyter notebooks, you will need to install the [VSCode Jupyter extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter) in VSCode while inside your dev container to do this. 
+5. VSCode may not recognise that Python is installed. If this is the case, press `ctrl+shift+p` in VSCode and type `Python: Select Interpreter` and enter the Python path `/opt/conda/bin/python`. Jupyter notebooks should now work from inside the dev container in VSCode.
 
-    docker run -e S6_LOGGING=1 cellprofiler:${VERSION}
+## Run the CellProfiler GUI container
 
-
-To push to docker hub, do the following (look up instructions [here](https://docs.docker.com/docker-cloud/builds/push-images/) for details)
-
-    export DOCKER_ID_USER="username" # replace with your Docker Hub username 
-    export VERSION=4.0.0 # replace with the version you are building
-    docker login
-    docker tag cellprofiler:${VERSION}  ${DOCKER_ID_USER}/cellprofiler:${VERSION} 
-    docker push ${DOCKER_ID_USER}/cellprofiler:${VERSION} 
-    
- On a Linux host machine, running CellProfiler's GUI from the container:
-
-    # Note, the following line is insecure.
-    xhost +local:root
-    VERSION=4.0.0 docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix:ro cellprofiler:${VERSION} ""
+1. `docker run -it --rm -v $(PWD):/workspace --name cellprofiler_dev_gui -p 9876:9876 cellprofiler_dev_gui:latest`
+2. In your browser, go to [http://localhost:9876/](http://localhost:9876/)
+3. In the terminal window enter the command `bash docker/dev/prepare_env.sh`
+4. Start CellProfiler gui by entering the command `cellprofiler` in the terminal window

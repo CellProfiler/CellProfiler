@@ -23,7 +23,7 @@ import os
 import sys
 import psutil
 
-import pkg_resources
+import importlib.resources
 
 from cellprofiler_core.constants.worker import (
     DEADMAN_START_ADDR,
@@ -217,9 +217,9 @@ def main():
     if sys.platform == "darwin":
         import os.path
 
-        icon_path = pkg_resources.resource_filename(
-            "cellprofiler", os.path.join("data", "icons", "CellProfiler.png")
-        )
+        icon_path = str(importlib.resources.files("cellprofiler").joinpath(
+            "data", "icons", "CellProfiler.png"
+        ))
         os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
 

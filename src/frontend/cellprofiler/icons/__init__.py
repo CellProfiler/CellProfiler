@@ -1,11 +1,11 @@
 import os.path
 import weakref
 
-import pkg_resources
+import importlib.resources
 
 images = os.path.join("data", "images")
 
-resources = pkg_resources.resource_filename("cellprofiler", images)
+resources = str(importlib.resources.files("cellprofiler").joinpath(images))
 
 image_cache = weakref.WeakValueDictionary()
 

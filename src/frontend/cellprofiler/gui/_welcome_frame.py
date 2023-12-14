@@ -3,7 +3,7 @@ import os.path
 import logging
 
 import jinja2
-import pkg_resources
+import importlib.resources
 
 import wx
 import wx.html2
@@ -158,8 +158,11 @@ class WelcomeFrame(wx.Frame):
 
     @staticmethod
     def __load_example_pipeline(example_name):
-        example_dir = pkg_resources.resource_filename(
-            "cellprofiler", os.path.join("data", "examples", example_name)
+        example_dir =  os.path.join(
+            importlib.resources.files("cellprofiler"),
+            "data",
+            "examples",
+            example_name
         )
 
         pipeline_pathname = os.path.join(

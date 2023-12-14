@@ -9,7 +9,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 from urllib.request import urlopen
 import boto3
 import numpy
-import pkg_resources
+import importlib.resources
 import scipy.io
 from google.cloud import storage
 from google.cloud.exceptions import NotFound
@@ -215,8 +215,8 @@ def image_resource(filename):
             # We're probably trying to buld the manual
             thepath = os.path.relpath(
                 os.path.abspath(
-                    pkg_resources.resource_filename(
-                        "cellprofiler", os.path.join("..", "images", filename)
+                    importlib.resources.files("cellprofiler").joinpath(
+                        "..", "images", filename
                     )
                 ),
                 os.path.abspath(os.curdir),
@@ -225,14 +225,14 @@ def image_resource(filename):
             if hasattr(sys, "frozen"):
                 # Use relative paths if we're frozen.
                 thepath = os.path.relpath(
-                    pkg_resources.resource_filename(
-                        "cellprofiler", os.path.join("data", "images", filename)
+                    importlib.resources.files("cellprofiler").joinpath(
+                        "data", "images", filename
                     )
                 )
             else:
                 thepath = os.path.abspath(
-                    pkg_resources.resource_filename(
-                        "cellprofiler", os.path.join("data", "images", filename)
+                    importlib.resources.files("cellprofiler").joinpath(
+                        "data", "images", filename
                     )
                 )
         return thepath.replace("\\", "/")

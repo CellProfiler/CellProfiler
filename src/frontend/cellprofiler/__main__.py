@@ -13,7 +13,7 @@ import urllib.parse
 import h5py
 import matplotlib
 import numpy
-import pkg_resources
+import importlib.metadata
 from cellprofiler_core.constants.measurement import EXPERIMENT
 from cellprofiler_core.constants.measurement import GROUP_INDEX
 from cellprofiler_core.constants.measurement import GROUP_NUMBER
@@ -329,7 +329,7 @@ def main(args=None):
 
 
 def __version__(exit_code):
-    print(pkg_resources.get_distribution("CellProfiler").version)
+    print(importlib.metadata.version("cellprofiler"))
 
     sys.exit(exit_code)
 

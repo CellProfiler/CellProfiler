@@ -5,14 +5,14 @@ import os.path
 import re
 import base64
 
-import pkg_resources
+import importlib.resources
 
 import cellprofiler
 
 
 def read_content(filename):
-    resource_filename = pkg_resources.resource_filename(
-        "cellprofiler", os.path.join("data", "help", filename)
+    resource_filename = importlib.resources.files("cellprofiler").joinpath(
+        "data", "help", filename
     )
 
     with open(resource_filename, "r", encoding="utf-8") as f:
@@ -27,8 +27,8 @@ def read_content(filename):
 
 def image_resource(filename):
     relpath = os.path.relpath(
-        pkg_resources.resource_filename(
-            "cellprofiler", os.path.join("data", "images", filename)
+        importlib.resources.files("cellprofiler").joinpath(
+            "data", "images", filename
         )
     )
 

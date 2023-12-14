@@ -1,7 +1,6 @@
-import os
 import sys
 
-import pkg_resources
+import importlib.resources
 
 import cellprofiler.icons
 
@@ -18,9 +17,9 @@ def get_cp_image():
         try:
             cp_image = cellprofiler.icons.image_cache["CellProfiler"]
         except KeyError:
-            pathname = pkg_resources.resource_filename(
-                "cellprofiler", os.path.join("data", "icons", "CellProfiler.png")
-            )
+            pathname = str(importlib.resources.files("cellprofiler").joinpath(
+                "data", "icons", "CellProfiler.png"
+            ))
 
             cellprofiler.icons.image_cache["CellProfiler"] = cp_image = wx.Image(
                 pathname
@@ -44,9 +43,9 @@ def get_cp_icon(size=None):
     import wx
 
     if sys.platform.startswith("win"):
-        path = pkg_resources.resource_filename(
-            "cellprofiler", os.path.join("data", "icons", "CellProfiler.ico")
-        )
+        path = str(importlib.resources.files("cellprofiler").joinpath(
+            "data", "icons", "CellProfiler.ico"
+        ))
         icon = wx.Icon()
         icon.LoadFile(path, wx.BITMAP_TYPE_ICO)
         return icon

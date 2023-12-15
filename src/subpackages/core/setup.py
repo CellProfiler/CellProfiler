@@ -19,7 +19,7 @@ setuptools.setup(
         "wx": ["wxPython==4.2.0"],
     },
     install_requires=[
-        "cellprofiler-library==5.0.0",
+        "cellprofiler-library>=5.dev",
         "boto3>=1.12.28",
         "centrosome~=1.2.2",
         "docutils==0.15.2",
@@ -42,5 +42,5 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["tests"]),
     python_requires=">=3.8",
     url="https://github.com/CellProfiler",
-    version="5.0.0b1"
+    version="5.0.0.dev"
 )

@@ -412,7 +412,7 @@ class Pipeline:
         git_hash = None
         pipeline_version = __version__
         # assumes PEP 440 compliance, after normalization, exluding version epochs
-        current_version = int(re.sub(r"\.|rc\d+|a\d+|b\d+|post\d+|dev\d+", "", __version__))
+        current_version = int(re.sub(r"\.|rc\d+|a\d*|b\d*|post\d*|dev\d*|-.*", "", __version__))
         while True:
             line = readline(fd)
 

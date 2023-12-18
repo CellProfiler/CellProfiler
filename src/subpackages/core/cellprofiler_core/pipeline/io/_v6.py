@@ -29,7 +29,7 @@ def dump(pipeline, fp, save_image_plane_details):
     content = {
         "has_image_plane_details": save_image_plane_details,
         # assumes PEP 440 compliance, after normalization, exluding version epochs
-        "date_revision": int(re.sub(r"\.|rc\d+|a\d+|b\d+|post\d+|dev\d+", "", cellprofiler_core.__version__)),
+        "date_revision": int(re.sub(r"\.|rc\d+|a\d*|b\d*|post\d*|dev\d*|-.*", "", cellprofiler_core.__version__)),
         "module_count": len(pipeline.modules(False)),
         "modules": modules,
         "version": "v6",
@@ -55,7 +55,7 @@ def dump(pipeline, fp, save_image_plane_details):
 def load(pipeline, fd):
     pipeline_dict = json.load(fd)
     # assumes PEP 440 compliance, after normalization, exluding version epochs
-    cp_version = int(re.sub(r"\.|rc\d+|a\d+|b\d+|post\d+|dev\d+", "", cellprofiler_core.__version__))
+    cp_version = int(re.sub(r"\.|rc\d+|a\d*|b\d*|post\d*|dev\d*|-.*", "", cellprofiler_core.__version__))
     if cp_version != pipeline_dict['date_revision']:
         LOGGER.warning(f"Pipeline file is from a different version of CellProfiler. "
                         f"Current:v{cp_version} File:v{pipeline_dict['date_revision']}."

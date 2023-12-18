@@ -11,7 +11,7 @@ def dump(pipeline, fp, save_image_plane_details, sanitize=False):
         save_image_plane_details = False
 
     # assumes PEP 440 compliance, after normalization, exluding version epochs
-    date_revision = int(re.sub(r"\.|rc\d+|a\d+|b\d+|post\d+|dev\d+", "", cellprofiler_core.__version__))
+    date_revision = int(re.sub(r"\.|rc\d+|a\d*|b\d*|post\d*|dev\d*|-.*", "", cellprofiler_core.__version__))
     module_count = len(pipeline.modules(False))
 
     fp.write("CellProfiler Pipeline: http://www.cellprofiler.org\n")

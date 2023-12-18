@@ -4,10 +4,11 @@ import os
 import os.path
 import re
 import base64
-
 import importlib.resources
 
-import cellprofiler
+from packaging.version import Version
+
+from cellprofiler import __version__ as cellprofiler_version
 
 
 def read_content(filename):
@@ -65,7 +66,7 @@ def image_resource_dataUrl(filename):
 
 
 MANUAL_URL = "http://cellprofiler-manual.s3.amazonaws.com/CellProfiler-{}/index.html".format(
-    cellprofiler.__version__
+    Version(cellprofiler_version).base_version
 )
 
 

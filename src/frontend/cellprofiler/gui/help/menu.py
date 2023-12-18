@@ -108,7 +108,6 @@ class Menu(cellprofiler.gui.menu.Menu):
         wx.adv.AboutBox(info)
         if wx.GetKeyState(wx.WXK_SHIFT):
             from wx.py.shell import ShellFrame
-            from cellprofiler.__init__ import __version__
             cpapp = wx.GetApp()
             if cpapp:
                 cpapp = cpapp.frame

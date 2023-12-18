@@ -16,6 +16,7 @@ import urllib.request
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen
 
+from cellprofiler import __version__ as cellprofiler_version
 from cellprofiler_core.preferences import get_headless
 
 ED_STOP = "Stop"
@@ -322,11 +323,9 @@ def _display_error_dialog(
 
 def on_report(event, dialog, traceback_text, pipeline):
     """Report an error to us"""
-    import cellprofiler
-
     params = {
         "traceback": traceback_text,
-        "revision": cellprofiler.__version__,
+        "revision": cellprofiler_version,
         "platform": str(platform.platform()),
     }
     try:

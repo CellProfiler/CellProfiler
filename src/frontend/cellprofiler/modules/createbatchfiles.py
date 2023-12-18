@@ -27,8 +27,10 @@ import os
 import re
 import sys
 import zlib
-
 import numpy
+
+from packaging.version import Version
+
 from cellprofiler_core.constants.measurement import F_BATCH_DATA_H5
 from cellprofiler_core.measurement import Measurements
 from cellprofiler_core.module import Module
@@ -49,7 +51,7 @@ from cellprofiler_core.setting.do_something import RemoveSettingButton
 from cellprofiler_core.setting.text import Text, Integer
 from cellprofiler_core.workspace import Workspace
 
-import cellprofiler
+from cellprofiler import __version__ as cellprofiler_version
 
 LOGGER = logging.getLogger(__name__)
 
@@ -367,9 +369,8 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
             )
             pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
             bizarro_self = pipeline.module(self.module_num)
-            bizarro_self.revision.value = int(
-                re.sub(r"\.|rc\d{1}|b\d{1}", "", cellprofiler.__version__)
-            )
+            ver = Version(cellprofiler_version)
+            bizarro_self.revision.value = int(f"{ver.major}{ver.minor}{ver.micro}")
             if self.wants_default_output_directory:
                 bizarro_self.custom_output_directory.value = self.alter_path(
                     get_default_output_directory()
@@ -469,9 +470,10 @@ path and ``/server_name/your_name/`` here for the cluster root path.""",
             )
             variable_revision_number = 2
         if variable_revision_number == 2:
+            ver = Version(cellprofiler_version)
             setting_values = (
                 setting_values[:6]
-                + [int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))]
+                + [int(f"{ver.major}{ver.minor}{ver.micro}")]
                 + setting_values[6:]
             )
             variable_revision_number = 3

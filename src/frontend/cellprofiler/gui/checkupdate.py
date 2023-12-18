@@ -1,6 +1,9 @@
 import datetime
 import requests
 import wx
+import re
+
+from packaging.version import Version, VERSION_PATTERN
 
 from cellprofiler_core.preferences import get_check_update, set_check_update, get_check_update_bool
 from cellprofiler import __version__ as current_version
@@ -19,7 +22,9 @@ def check_update(parent, force=False):
         response = response.json()
         if status == 200 and 'name' in response:
             latest_version = response['name'][1:]
-            if current_version < latest_version or len(current_version) != len(latest_version):
+            if not re.match(VERSION_PATTERN, latest_version, re.IGNORECASE | re.VERBOSE):
+                message = f"Unable to parse version number from GitHub: {latest_version}"
+            elif Version(current_version) < Version(latest_version):
                 body_text = response['body']
                 if len(body_text) > 1000:
                     body_text = body_text[:1000] + "..."

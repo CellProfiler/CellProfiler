@@ -86,6 +86,7 @@ dependencies = [
     "tifffile>=2022.4.8,<2022.4.22",
     "wxPython==4.2.0",
     "rapidfuzz~=3.0.0",
+    "packaging>=20.0",
 ]
 dynamic = ["version"]
 
@@ -121,7 +122,7 @@ include-package-data = true
 where = ["."]
 include = ["cellprofiler*"]
 # exclude = ["cellprofiler.data*"]
-# disable PEP 420 namespace packages
+# enable PEP 420 namespace packages for cellprofiler/data dir
 namespaces = true
 
 [tool.setuptools.package-data]
@@ -130,4 +131,5 @@ namespaces = true
 
 [tool.setuptools_scm]
 root = "../.."
+# run pip install -e to get latest
 version_file = "cellprofiler/_version.py"

@@ -130,3 +130,5 @@ namespaces = true
 root = "../.."
 # run pip install -e to get latest
 version_file = "cellprofiler/_version.py"
+# disabled, but may be useful in future, for nightly release to TestPyPI and PyPI
+# local_scheme = "no-local-version"

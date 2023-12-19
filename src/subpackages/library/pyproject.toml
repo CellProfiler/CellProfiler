@@ -13,7 +13,7 @@ requires = ["setuptools>=64.0.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "CellProfiler"
+name = "cellprofiler-library"
 authors = [
     {name = "Anne Carpenter"},
     {name = "Thouis (Ray) Jones"},
@@ -35,10 +35,8 @@ maintainers = [
     {name = "Nodar Gogoberidze", email = "ngogober@broadinstitute.org"},
 ]
 description = """
-CellProfiler is a free open-source software designed \
-to enable biologists without training in computer vision \
-or programming to quantitatively measure phenotypes from \
-thousands of images automatically."""
+cellprofiler-lirary implements CellProfiler's image processing \
+and mathematical code, and is usable as a standalone library"""
 readme = "README.md"
 # we don't place upper bound pin for python:
 # https://iscinumpy.dev/post/bound-version-constraints/#pinning-the-python-version-is-special
@@ -60,47 +58,20 @@ classifiers = [
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
-    "cellprofiler-library>=5.dev",
-    "cellprofiler-core>=5.dev",
-    "boto3~=1.28.41",
-    "centrosome==1.2.2",
-    "docutils==0.15.2",
-    "h5py~=3.6.0",
-    "imageio~=2.31.3",
-    "inflect~=7.0.0",
-    "Jinja2~=3.1.2",
-    "joblib~=1.3.2",
-    "mahotas~=1.4.13",
-    "matplotlib~=3.1.3",
-    "mysqlclient~=2.0.0",
     "numpy~=1.24.4",
-    "Pillow~=10.0.0",
-    "pyzmq~=22.3.0",
-    "sentry-sdk>=0.18.0,<=1.31.0",
-    "requests~=2.31.0",
     "scikit-image~=0.20.0",
-    "scikit-learn~=1.3.0",
     "scipy>=1.9.1,<1.11",
-    "scyjava>=1.9.1",
-    "six~=1.16.0",
-    "tifffile>=2022.4.8,<2022.4.22",
-    "wxPython==4.2.0",
-    "rapidfuzz~=3.0.0",
+    "mahotas~=1.4.13",
+    "centrosome~=1.2.2",
+    "matplotlib~=3.1.3",
     "packaging>=20.0",
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-build = ["build", "pyinstaller", "twine"]
-docs = ["sphinx>=3.1.1", "sphinx-rtd-theme>=0.5.0"]
-# pooch needed for scikit-image's example dataset,
-# e.g. skimage.data.human_mitosis
-# version pin should match scikit-image test requirements
+dev = ["build", "pyinstaller", "twine"]
 # TODO: should be handled by nox or tox
-test = ["pytest~=7.4.1", "pooch>=1.3.0"]
-
-[project.scripts]
-cellprofiler = "cellprofiler.__main__:main"
+test = ["pytest~=7.4.1"]
 
 [project.urls]
 Homepage = "https://cellprofiler.org/"
@@ -114,21 +85,19 @@ Changelog = "https://github.com/CellProfiler/CellProfiler/releases"
 # true by default
 include-package-data = true
 
-# no need for this, automatic discovery works,
-# but keeping in case of customizations needed later
 # default exclusions for automatic discovery on flat-layout:
 # https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#flat-layout
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["cellprofiler*"]
+include = ["cellprofiler_library*"]
 # enable PEP 420 namespace packages for cellprofiler/data dir
 namespaces = true
 
 [tool.setuptools.package-data]
-"cellprofiler.data" = ["*.rst"]
-"cellprofiler.gui" = ["*.html"]
+# PEP 561
+cellprofiler_library = ["py.typed"]
 
 [tool.setuptools_scm]
-root = "../.."
+root = "../../.."
 # run pip install -e to get latest
-version_file = "cellprofiler/_version.py"
+version_file = "cellprofiler_library/_version.py"

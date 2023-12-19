@@ -1,4 +1,7 @@
 import numpy
+from packaging.version import Version
+
+from cellprofiler_core import __version__ as core_version
 
 IMAGE_NUMBER = "ImageNumber"
 GROUP_NUMBER = "Group_Number"
@@ -95,7 +98,7 @@ PREFERENCES_DTYPE = make_cell_struct_dtype(
         DISPLAY_WINDOWS,
     ]
 )
-NATIVE_VERSION = 5
+NATIVE_VERSION = Version(core_version).major
 IMAGE_PLANE_DESCRIPTOR_VERSION = 1
 H_SVN_REVISION = "SVNRevision"
 H_DATE_REVISION = "DateRevision"

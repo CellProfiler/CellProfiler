@@ -1,16 +1,14 @@
 import json
 import logging
-import os
-import re
+from packaging.version import Version
 
-LOGGER = logging.getLogger(__name__)
-
-import cellprofiler_core
+from cellprofiler_core import __version__ as core_version
 from cellprofiler_core.constants.pipeline import (
     IMAGE_PLANE_DESCRIPTOR_VERSION,
     H_PLANE_COUNT,
 )
 
+LOGGER = logging.getLogger(__name__)
 
 def dump(pipeline, fp, save_image_plane_details):
     """Serializes pipeline into JSON"""
@@ -25,11 +23,12 @@ def dump(pipeline, fp, save_image_plane_details):
 
     if len(pipeline.file_list) == 0:
         save_image_plane_details = False
+        
+    sem_ver = Version(core_version)
 
     content = {
         "has_image_plane_details": save_image_plane_details,
-        # assumes PEP 440 compliance, after normalization, exluding version epochs
-        "date_revision": int(re.sub(r"\.|rc\d+|a\d*|b\d*|post\d*|dev\d*|-.*", "", cellprofiler_core.__version__)),
+        "date_revision": int(f"{sem_ver.major}{sem_ver.minor}{sem_ver.micro}"),
         "module_count": len(pipeline.modules(False)),
         "modules": modules,
         "version": "v6",
@@ -54,8 +53,8 @@ def dump(pipeline, fp, save_image_plane_details):
 
 def load(pipeline, fd):
     pipeline_dict = json.load(fd)
-    # assumes PEP 440 compliance, after normalization, exluding version epochs
-    cp_version = int(re.sub(r"\.|rc\d+|a\d*|b\d*|post\d*|dev\d*|-.*", "", cellprofiler_core.__version__))
+    sem_ver = Version(core_version)
+    cp_version = int(f"{sem_ver.major}{sem_ver.minor}{sem_ver.micro}")
     if cp_version != pipeline_dict['date_revision']:
         LOGGER.warning(f"Pipeline file is from a different version of CellProfiler. "
                         f"Current:v{cp_version} File:v{pipeline_dict['date_revision']}."

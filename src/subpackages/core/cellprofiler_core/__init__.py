@@ -1,1 +1,1 @@
-__version__ = "5.0.0.dev"
+from cellprofiler_core._version import __version__

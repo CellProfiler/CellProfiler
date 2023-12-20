@@ -111,7 +111,7 @@ a.binaries += [
 ]
 
 exclude_binaries = [
-    ('libpng16.16.dylib', '/usr/local/lib/python3.8/site-packages/matplotlib/.dylibs/libpng16.16.dylib', 'BINARY'),
+    ('libpng16.16.dylib', '/usr/local/lib/python3.9/site-packages/matplotlib/.dylibs/libpng16.16.dylib', 'BINARY'),
 ]
 
 a.binaries = [binary for binary in a.binaries if binary not in exclude_binaries]

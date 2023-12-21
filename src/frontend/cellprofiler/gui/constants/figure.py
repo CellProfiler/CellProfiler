@@ -48,5 +48,8 @@ NAV_MODE_NONE = ""
 NAV_MODE_PAN = "pan/zoom"
 NAV_MODE_ZOOM = "zoom rect"
 NAV_MODE_MEASURE = "measure"
-BMP_MEASURE = wx.Bitmap(get_builtin_image("IMG_MEASURE"))
+try:
+    BMP_MEASURE = wx.Bitmap(get_builtin_image("IMG_MEASURE"))
+except wx.PyNoAppError:
+    BMP_MEASURE = None
 WINDOW_IDS = []

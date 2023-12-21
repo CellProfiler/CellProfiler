@@ -43,11 +43,11 @@ dist/CellProfiler.app: CellProfiler dependencies Info.plist
 
 .PHONY: clean
 clean:
-	if [ -d CellProfiler ]; then rm -rf CellProfiler; fi
+	# if [ -d CellProfiler ]; then rm -rf CellProfiler; fi
 
 	if [ -d build ]; then rm -rf build; fi
 
-	if [ -d dist ]; then rm -rf build; fi
+	if [ -d dist ]; then rm -rf dist; fi
 
 	if [ CellProfiler.dmg ]; then rm -rf CellProfiler.dmg; fi
 

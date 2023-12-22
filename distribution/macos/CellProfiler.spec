@@ -2,7 +2,10 @@
 
 import os.path
 
-import PyInstaller.utils.hooks
+import importlib.resources
+
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules, get_homebrew_path, copy_metadata
+from PyInstaller.compat import is_pure_conda
 
 binaries = []
 
@@ -10,12 +13,14 @@ block_cipher = None
 
 datas = []
 
-datas += PyInstaller.utils.hooks.collect_data_files("cellprofiler")
-datas += PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
+datas += collect_data_files("cellprofiler")
+datas += collect_data_files("skimage.io._plugins")
+# for skimage/feature/orb_descriptor_positions.txt
+datas += collect_data_files("skimage.feature")
 
 datas += [
-    ("./CellProfiler/src/frontend/cellprofiler/data/images/*", "cellprofiler/data/images"),
-    ("./CellProfiler/src/frontend/cellprofiler/data/icons/*", "cellprofiler/data/icons"),
+    ("../../src/frontend/cellprofiler/data/images/*", "cellprofiler/data/images"),
+    ("../../src/frontend/cellprofiler/data/icons/*", "cellprofiler/data/icons"),
 ]
 
 for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):
@@ -25,24 +30,31 @@ for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):
             for file in files:
                 datas += [(os.path.join(subdir, file), subdir_split)]
 
+# needed for packages getting version at runtime via importlib.metadata
+# https://pyinstaller.org/en/stable/hooks.html#PyInstaller.utils.hooks.copy_metadata
+copied_metadata = copy_metadata('scyjava')
+
+datas += copied_metadata
+
 hiddenimports = []
 
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("numpy")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("numpy.core")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("pandas")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("scipy")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("scipy.special")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("wx")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.gui')
-hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler.modules')
-hiddenimports += PyInstaller.utils.hooks.collect_submodules('cellprofiler_core.modules')
-hiddenimports += PyInstaller.utils.hooks.collect_submodules('skimage.io._plugins')
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("skimage.feature")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("skimage.filters")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("sklearn")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations")
-hiddenimports += PyInstaller.utils.hooks.collect_submodules("sentry_sdk.integrations.stdlib")
+hiddenimports += collect_submodules('cellprofiler.modules')
+hiddenimports += collect_submodules('cellprofiler_core.modules')
+hiddenimports += collect_submodules('cellprofiler_core.readers')
+
+hiddenimports += collect_submodules("numpy")
+hiddenimports += collect_submodules("numpy.core")
+hiddenimports += collect_submodules("pandas")
+hiddenimports += collect_submodules("scipy")
+hiddenimports += collect_submodules("scipy.special")
+hiddenimports += collect_submodules("wx")
+hiddenimports += collect_submodules('skimage.io._plugins')
+hiddenimports += collect_submodules("skimage.feature")
+hiddenimports += collect_submodules("skimage.filters")
+hiddenimports += collect_submodules("sklearn")
+hiddenimports += collect_submodules("sentry_sdk")
+hiddenimports += collect_submodules("sentry_sdk.integrations")
+hiddenimports += collect_submodules("sentry_sdk.integrations.stdlib")
 
 hiddenimports += [
     "pkg_resources.py2_warn",
@@ -83,24 +95,20 @@ excludes += [
 ]
 
 a = Analysis(
-    [
-        'CellProfiler.py'
-    ],
+    ['CellProfiler.py'],
     binaries=binaries,
     cipher=block_cipher,
     datas=datas,
     excludes=excludes,
     hiddenimports=hiddenimports,
     hookspath=[],
-    pathex=[
-        'CellProfiler'
-    ],
+    pathex=['../../src/frontend', '../../src/subpackages/core', '../../src/subpackages/library'],
     runtime_hooks=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False
 )
 
-libpng_pathname = PyInstaller.utils.hooks.get_homebrew_path("libpng")
+libpng_pathname = get_homebrew_path("libpng")
 libpng_pathname = os.path.join(libpng_pathname, "lib", "libpng16.16.dylib")
 
 java_pathname = os.path.join(os.environ["JAVA_HOME"], "lib/libjava.dylib")
@@ -111,8 +119,21 @@ a.binaries += [
 ]
 
 exclude_binaries = [
-    ('libpng16.16.dylib', '/usr/local/lib/python3.9/site-packages/matplotlib/.dylibs/libpng16.16.dylib', 'BINARY'),
+    ('libpng16.16.dylib', str(importlib.resources.files('matplotlib') / '.dylibs/libpng16.16.dylib'), 'BINARY'),
 ]
+
+# in conda, numpy 1.24 stores its dylibs in <conda_path>/envs/<env_name>/lib/libgfortran.5.dylib
+# scipy stores in <conda_path>/envs/C<env_name>/lib/python3.9/site-packages/scipy/.dylibs/libgfortran.5.dylib
+# causing scipy's (incorrectly specified architecture) build to be used instead of numpys (because of some internal pyintaller reason, I guess)
+# correct for that here
+if is_pure_conda:
+    from PyInstaller.utils.hooks import conda_support
+
+    libgfortran_path = list(filter(lambda d: 'libgfortran.5.dylib' in d, [d[0] for d in conda_support.collect_dynamic_libs("numpy", dependencies=True)]))[0]
+    # in python 3.9 specifically, it's compiled for arm64 (`lipo -info`), remove it
+    exclude_binaries += [('scipy/.dylibs/libgfortran.5.dylib', str(importlib.resources.files('scipy') / '.dylibs/libgfortran.5.dylib'), 'BINARY')]
+    # and replace it with the one numpy uses, which is x86_64
+    a.binaries += [('scipy/.dylibs/libgfortran.5.dylib', libgfortran_path, 'BINARY')]
 
 a.binaries = [binary for binary in a.binaries if binary not in exclude_binaries]
 
@@ -138,13 +159,13 @@ coll = COLLECT(
     a.binaries,
     a.zipfiles,
     a.datas,
-    icon="./CellProfiler/src/frontend/cellprofiler/data/icons/CellProfiler.icns",
+    icon="../../src/frontend/cellprofiler/data/icons/CellProfiler.icns",
     name="CellProfiler.app"
 )
 
 app = BUNDLE(
     coll,
     name="CellProfiler.app",
-    icon="./CellProfiler/src/frontend/cellprofiler/data/icons/CellProfiler.icns",
+    icon="../../src/frontend/cellprofiler/data/icons/CellProfiler.icns",
     bundle_identifier=None
 )

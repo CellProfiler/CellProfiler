@@ -1,3 +1,5 @@
+# make CP_VERSION=5.0.0.dev32 CP_BRANCH="" CP_DIR=/Users/ngogober/Developer/CellProfiler/CellProfiler
+
 MAKEFLAGS += --warn-undefined-variables
 
 SHELL := bash

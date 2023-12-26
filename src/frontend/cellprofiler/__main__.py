@@ -128,7 +128,7 @@ def main(args=None):
 
     exit_code = 0
 
-    switches = ("--work-announce", "--knime-bridge-address")
+    switches = ("--analysis-id", "--work-server", "--knime-bridge-address")
 
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         set_headless()

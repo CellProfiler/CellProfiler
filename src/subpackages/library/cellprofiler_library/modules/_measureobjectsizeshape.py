@@ -122,13 +122,25 @@ def measureobjectsizeshape(
         # Non overlapping labels
         # Add some generalised processing function here
         labels = convert_dense_to_labels(objects, validate=True)
-        return analyze_labels(
+        features_to_record = analyze_labels(
             labels, desired_properties, calculate_zernikes, calculate_advanced
         )
-    # else:
-    #     # Labels are overlapping. So, create a dense label map for each of these
-    #     # labels individually. Originally, this was in the IJV format, but we can
-    #     # just subset the dense
+    else:
+        features_to_record = {}
+        for lab_dim in range(objects.shape[0]):
+            labels = convert_dense_to_labels(objects[[lab_dim]])
+            buffer = analyze_labels(
+                labels, desired_properties, calculate_zernikes, calculate_advanced
+            )
+            for f, m in buffer.items():
+                if f in features_to_record:
+                    features_to_record[f] = numpy.concatenate(
+                        (features_to_record[f], m)
+                    )
+                else:
+                    features_to_record[f] = m
+                
+    return features_to_record
 
 
 def convert_dense_to_labels(dense, validate=True):
@@ -146,12 +158,14 @@ def convert_dense_to_labels(dense, validate=True):
     # Technically this is wrong. They can be overlapping
     # assert dense.shape[DENSE_AXIS.label_idx.value] == 1, "Labels are overlapping"
 
-    label_dim = numpy.unique(numpy.argwhere(dense > 0)[:, 0])
+    # label_dim = numpy.unique(numpy.argwhere(dense > 0)[:, 0])
 
-    assert len(label_dim) == 1, "Overlapping detected"
+    # assert len(label_dim) == 1, "Overlapping detected"
 
     # Remove axes with len == 1
-    label = dense[label_dim].squeeze()
+    # label = dense[label_dim].squeeze()
+    
+    label = dense.squeeze()
 
     return label
 

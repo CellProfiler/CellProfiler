@@ -1,10 +1,19 @@
-from cellprofiler_library.functions.segmentation import DENSE_AXIS_NAMES, SPARSE_AXES_FIELDS, _validate_labels, _validate_dense, _validate_ijv, _validate_sparse
+from cellprofiler_library.functions.segmentation import (
+    DENSE_AXIS_NAMES,
+    SPARSE_AXES_FIELDS,
+    DENSE_AXIS,
+    _validate_labels,
+    _validate_dense,
+    _validate_ijv,
+    _validate_sparse,
+)
 import numpy
 import skimage
 import centrosome
 import centrosome.zernike
 import cellprofiler_library
 import scipy
+
 
 def get_object_type(objects):
     """Determine what format objects are in: dense, sparse, ijv, or label"""
@@ -20,21 +29,22 @@ def get_object_type(objects):
     elif objects.ndim == 2 or objects.ndim == 3:
         _validate_labels(objects)
         return "labels"
-    # elif 
+    # elif
+
 
 def measureobjectsizeshape(
     objects,
     calculate_advanced: bool = True,
     calculate_zernikes: bool = True,
-    volumetric: bool = False
+    volumetric: bool = False,
 ):
     """
     Objects: dense, sparse, ijv, or label objects?
     For now, we will assume dense
     """
-    
+
     _validate_dense(objects)
-    
+
     # Define the feature names
     feature_names = list(F_STANDARD)
     if volumetric:
@@ -45,20 +55,21 @@ def measureobjectsizeshape(
         feature_names += list(F_STD_2D)
         if calculate_zernikes:
             feature_names += [
-                f"Zernike_{index[0]}_{index[1]}" for index in centrosome.zernike.get_zernike_indexes(ZERNIKE_N + 1)
+                f"Zernike_{index[0]}_{index[1]}"
+                for index in centrosome.zernike.get_zernike_indexes(ZERNIKE_N + 1)
             ]
         if calculate_advanced:
             feature_names += list(F_ADV_2D)
-            
+
     # Dictionary to store data
     # data = dict
-    
+
     if len(numpy.unique(objects)) == 0:
         data = dict(zip(feature_names, [None] * len(feature_names)))
         for ft in feature_names:
             data[ft] = numpy.zeros((0,))
         return data
-    
+
     if not volumetric:
         desired_properties = [
             "label",
@@ -87,7 +98,7 @@ def measureobjectsizeshape(
                 "moments_hu",
                 "moments_normalized",
             ]
-    else: 
+    else:
         desired_properties = [
             "label",
             "image",
@@ -105,70 +116,71 @@ def measureobjectsizeshape(
             desired_properties += [
                 "solidity",
             ]
-            
-    # Non-overlapping objects in the dense format have objects.shape[0] == 1
+
+    # Non-overlapping objects in the dense format have objects.shape[0] == 1
     if objects.shape[0] == 1:
         # Non overlapping labels
         # Add some generalised processing function here
-        labels = convert_dense_to_labels(objects, validate=False)
-        return analyze_labels(labels, desired_properties, calculate_zernikes, calculate_advanced)
+        labels = convert_dense_to_labels(objects, validate=True)
+        return analyze_labels(
+            labels, desired_properties, calculate_zernikes, calculate_advanced
+        )
     # else:
     #     # Labels are overlapping. So, create a dense label map for each of these
     #     # labels individually. Originally, this was in the IJV format, but we can
     #     # just subset the dense
-    
+
+
 def convert_dense_to_labels(dense, validate=True):
     """
     Convert **non-overlapping** dense array into labels. If the dense array
-    is overlapping, 
+    is overlapping,
     """
     if validate:
         _validate_dense(dense)
-        assert(
-            dense.shape[DENSE_AXIS.c.value] == 1 and 
-            dense.shape[DENSE_AXIS.t.value] == 1
+        assert (
+            dense.shape[DENSE_AXIS.c.value] == 1
+            and dense.shape[DENSE_AXIS.t.value] == 1
         ), f"dense must have shape where f{DENSE_AXIS.c.name} = 1 and f{DENSE_AXIS.t.name} = 1"
 
-        
-    # Technically this is wrong. They can be overlapping 
+    # Technically this is wrong. They can be overlapping
     # assert dense.shape[DENSE_AXIS.label_idx.value] == 1, "Labels are overlapping"
-    
+
     label_dim = numpy.unique(numpy.argwhere(dense > 0)[:, 0])
-    
+
     assert len(label_dim) == 1, "Overlapping detected"
-    
+
     # Remove axes with len == 1
     label = dense[label_dim].squeeze()
-    
+
     return label
-                    
-                    
+
+
 def analyze_labels(
     labels,
-    desired_features,
+    desired_properties,
     calculate_zernikes: bool = True,
-    calculate_advanced: bool = True
+    calculate_advanced: bool = True,
 ):
-    nobjects = cellprofiler_library.functions.segmentation.indices_from_labels(labels, validate=False)
+
     label_indices = numpy.unique(labels[labels != 0])
-    
+    nobjects = len(label_indices)
+
     if len(labels.shape) == 2:
         # 2D
-        props = skimage.measure.regionprops_table(
-            labels, properties=desired_features
-        )
-        
+        props = skimage.measure.regionprops_table(labels, properties=desired_properties)
+
         formfactor = 4.0 * numpy.pi * props["area"] / props["perimeter"] ** 2
         denom = [max(x, 1) for x in 4.0 * numpy.pi * props["area"]]
         compactness = props["perimeter"] ** 2 / denom
-        
+
         max_radius = numpy.zeros(nobjects)
         median_radius = numpy.zeros(nobjects)
         mean_radius = numpy.zeros(nobjects)
         min_feret_diameter = numpy.zeros(nobjects)
         max_feret_diameter = numpy.zeros(nobjects)
         zernike_numbers = centrosome.zernike.get_zernike_indexes(ZERNIKE_N + 1)
-        
+
         zf = {}
         for n, m in zernike_numbers:
             zf[(n, m)] = numpy.zeros(nobjects)
@@ -186,17 +198,15 @@ def analyze_labels(
             median_radius[index] = centrosome.cpmorphology.median_of_labels(
                 distances, mini_image.astype("int"), [1]
             )
-            
+
         #
         # Zernike features
         #
         if calculate_zernikes:
-            zf_l = centrosome.zernike.zernike(
-                zernike_numbers, labels, label_indices
-            )
+            zf_l = centrosome.zernike.zernike(zernike_numbers, labels, label_indices)
             for (n, m), z in zip(zernike_numbers, zf_l.transpose()):
                 zf[(n, m)] = z
-                
+
         if nobjects > 0:
             chulls, chull_counts = centrosome.cpmorphology.convex_hull(
                 labels, label_indices
@@ -210,7 +220,7 @@ def analyze_labels(
             ) = centrosome.cpmorphology.feret_diameter(
                 chulls, chull_counts, label_indices
             )
-            
+
             features_to_record = {
                 F_AREA: props["area"],
                 F_PERIMETER: props["perimeter"],
@@ -300,27 +310,33 @@ def analyze_labels(
                         ],
                     }
                 )
-                
+
             if calculate_zernikes:
                 features_to_record.update(
-                    {
-                        f"Zernike_{n}_{m}": zf[(n, m)] for n, m in zernike_numbers
-                    }
+                    {f"Zernike_{n}_{m}": zf[(n, m)] for n, m in zernike_numbers}
                 )
-                
+
             else:
                 # 3D
                 props = skimage.measure.regionprops_table(
-                    labels, properties=desired_features
+                    labels, properties=desired_properties
                 )
                 # SurfaceArea
                 surface_areas = numpy.zeros(len(props["label"]))
                 for index, label in enumerate(props["label"]):
                     # this seems less elegant than you might wish, given that regionprops returns a slice,
                     # but we need to expand the slice out by one voxel in each direction, or surface area freaks out
-                    volume = labels[max(props['bbox-0'][index]-1,0):min(props['bbox-3'][index]+1,labels.shape[0]),
-                                    max(props['bbox-1'][index]-1,0):min(props['bbox-4'][index]+1,labels.shape[1]),
-                                    max(props['bbox-2'][index]-1,0):min(props['bbox-5'][index]+1,labels.shape[2])] 
+                    volume = labels[
+                        max(props["bbox-0"][index] - 1, 0) : min(
+                            props["bbox-3"][index] + 1, labels.shape[0]
+                        ),
+                        max(props["bbox-1"][index] - 1, 0) : min(
+                            props["bbox-4"][index] + 1, labels.shape[1]
+                        ),
+                        max(props["bbox-2"][index] - 1, 0) : min(
+                            props["bbox-5"][index] + 1, labels.shape[2]
+                        ),
+                    ]
                     volume = volume == label
                     verts, faces, _normals, _values = skimage.measure.marching_cubes(
                         volume,
@@ -330,7 +346,9 @@ def analyze_labels(
                         else (1.0,) * labels.ndim,
                         level=0,
                     )
-                    surface_areas[index] = skimage.measure.mesh_surface_area(verts, faces)
+                    surface_areas[index] = skimage.measure.mesh_surface_area(
+                        verts, faces
+                    )
 
                 features_to_record = {
                     F_VOLUME: props["area"],
@@ -355,9 +373,6 @@ def analyze_labels(
                     features_to_record[F_SOLIDITY] = props["solidity"]
             return features_to_record
 
-            
-
-    
 
 """The category of the per-object measurements made by this module"""
 AREA_SHAPE = "AreaShape"
@@ -546,7 +561,3 @@ F_STANDARD = [
     F_MAX_X,
     F_MAX_Y,
 ]
-
-    
-    
-    

@@ -96,6 +96,18 @@ class Objects:
         self.__segmented = self.__labels_to_segmentation(labels)
 
     segmented = property(get_segmented, set_segmented)
+    
+    
+    
+    
+    # def get_dense(self):
+    #     """Get the de-facto segmentation of the image into objects: a matrix
+    #     of object numbers.
+    #     """
+    #     return self.__segmentation_to_labels(self.__segmented)
+
+    # def set_dense(self, labels):
+    #     self.__segmented = self.__labels_to_segmentation(labels)
 
     @staticmethod
     def __labels_to_segmentation(labels):
@@ -154,6 +166,15 @@ class Objects:
         return convert_sparse_to_ijv(sparse, validate=False)
 
     ijv = property(get_ijv, set_ijv)
+    
+    def get_dense(self):
+        dense, _ = self.__segmented.get_dense()
+        return dense
+    
+    def set_dense(self, dense):
+        self.__segmented = Segmentation(dense=dense)
+
+    dense = property(get_dense, set_dense)
 
     def get_labels(self):
         """Get a set of labels matrices consisting of non-overlapping labels

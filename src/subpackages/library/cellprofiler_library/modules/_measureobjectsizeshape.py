@@ -6,6 +6,7 @@ from cellprofiler_library.functions.segmentation import (
     _validate_dense,
     _validate_ijv,
     _validate_sparse,
+    convert_dense_to_label_set,
 )
 import numpy
 import skimage
@@ -13,23 +14,7 @@ import centrosome
 import centrosome.zernike
 import cellprofiler_library
 import scipy
-
-
-def get_object_type(objects):
-    """Determine what format objects are in: dense, sparse, ijv, or label"""
-    # Dense check
-    if objects.ndim == len(DENSE_AXIS_NAMES):
-        _validate_dense(objects)
-        return "dense"
-    # Sparse check
-    elif objects.ndim == 1:
-        _validate_sparse(objects)
-        return "sparse"
-    # Label check
-    elif objects.ndim == 2 or objects.ndim == 3:
-        _validate_labels(objects)
-        return "labels"
-    # elif
+from typing import Literal
 
 
 def measureobjectsizeshape(
@@ -42,7 +27,6 @@ def measureobjectsizeshape(
     Objects: dense, sparse, ijv, or label objects?
     For now, we will assume dense
     """
-
     _validate_dense(objects)
 
     # Define the feature names
@@ -60,9 +44,6 @@ def measureobjectsizeshape(
             ]
         if calculate_advanced:
             feature_names += list(F_ADV_2D)
-
-    # Dictionary to store data
-    # data = dict
 
     if len(numpy.unique(objects)) == 0:
         data = dict(zip(feature_names, [None] * len(feature_names)))
@@ -117,20 +98,15 @@ def measureobjectsizeshape(
                 "solidity",
             ]
 
-    # Non-overlapping objects in the dense format have objects.shape[0] == 1
-    if objects.shape[0] == 1:
-        # Non overlapping labels
-        # Add some generalised processing function here
-        labels = convert_dense_to_labels(objects, validate=True)
-        features_to_record = analyze_labels(
-            labels, desired_properties, calculate_zernikes, calculate_advanced
-        )
-    else:
+    labels = convert_dense_to_label_set(objects, validate=False)
+    labels = [i[0] for i in labels]  # Just need the labelmaps, not indices
+
+    if len(labels) > 1:
+        # Overlapping labels
         features_to_record = {}
-        for lab_dim in range(objects.shape[0]):
-            labels = convert_dense_to_labels(objects[[lab_dim]])
+        for labelmap in labels:
             buffer = analyze_labels(
-                labels, desired_properties, calculate_zernikes, calculate_advanced
+                labelmap, desired_properties, calculate_zernikes, calculate_advanced
             )
             for f, m in buffer.items():
                 if f in features_to_record:
@@ -139,35 +115,11 @@ def measureobjectsizeshape(
                     )
                 else:
                     features_to_record[f] = m
-                
+    else:
+        features_to_record = analyze_labels(
+            labels[0], desired_properties, calculate_zernikes, calculate_advanced
+        )
     return features_to_record
-
-
-def convert_dense_to_labels(dense, validate=True):
-    """
-    Convert **non-overlapping** dense array into labels. If the dense array
-    is overlapping,
-    """
-    if validate:
-        _validate_dense(dense)
-        assert (
-            dense.shape[DENSE_AXIS.c.value] == 1
-            and dense.shape[DENSE_AXIS.t.value] == 1
-        ), f"dense must have shape where f{DENSE_AXIS.c.name} = 1 and f{DENSE_AXIS.t.name} = 1"
-
-    # Technically this is wrong. They can be overlapping
-    # assert dense.shape[DENSE_AXIS.label_idx.value] == 1, "Labels are overlapping"
-
-    # label_dim = numpy.unique(numpy.argwhere(dense > 0)[:, 0])
-
-    # assert len(label_dim) == 1, "Overlapping detected"
-
-    # Remove axes with len == 1
-    # label = dense[label_dim].squeeze()
-    
-    label = dense.squeeze()
-
-    return label
 
 
 def analyze_labels(
@@ -176,7 +128,6 @@ def analyze_labels(
     calculate_zernikes: bool = True,
     calculate_advanced: bool = True,
 ):
-
     label_indices = numpy.unique(labels[labels != 0])
     nobjects = len(label_indices)
 
@@ -330,62 +281,58 @@ def analyze_labels(
                     {f"Zernike_{n}_{m}": zf[(n, m)] for n, m in zernike_numbers}
                 )
 
-            else:
-                # 3D
-                props = skimage.measure.regionprops_table(
-                    labels, properties=desired_properties
-                )
-                # SurfaceArea
-                surface_areas = numpy.zeros(len(props["label"]))
-                for index, label in enumerate(props["label"]):
-                    # this seems less elegant than you might wish, given that regionprops returns a slice,
-                    # but we need to expand the slice out by one voxel in each direction, or surface area freaks out
-                    volume = labels[
-                        max(props["bbox-0"][index] - 1, 0) : min(
-                            props["bbox-3"][index] + 1, labels.shape[0]
-                        ),
-                        max(props["bbox-1"][index] - 1, 0) : min(
-                            props["bbox-4"][index] + 1, labels.shape[1]
-                        ),
-                        max(props["bbox-2"][index] - 1, 0) : min(
-                            props["bbox-5"][index] + 1, labels.shape[2]
-                        ),
-                    ]
-                    volume = volume == label
-                    verts, faces, _normals, _values = skimage.measure.marching_cubes(
-                        volume,
-                        method="lewiner",
-                        spacing=objects.parent_image.spacing
-                        if objects.has_parent_image
-                        else (1.0,) * labels.ndim,
-                        level=0,
-                    )
-                    surface_areas[index] = skimage.measure.mesh_surface_area(
-                        verts, faces
-                    )
+    else:
+        # 3D
+        props = skimage.measure.regionprops_table(labels, properties=desired_properties)
+        # SurfaceArea
+        surface_areas = numpy.zeros(len(props["label"]))
+        for index, label in enumerate(props["label"]):
+            # this seems less elegant than you might wish, given that regionprops returns a slice,
+            # but we need to expand the slice out by one voxel in each direction, or surface area freaks out
+            volume = labels[
+                max(props["bbox-0"][index] - 1, 0) : min(
+                    props["bbox-3"][index] + 1, labels.shape[0]
+                ),
+                max(props["bbox-1"][index] - 1, 0) : min(
+                    props["bbox-4"][index] + 1, labels.shape[1]
+                ),
+                max(props["bbox-2"][index] - 1, 0) : min(
+                    props["bbox-5"][index] + 1, labels.shape[2]
+                ),
+            ]
+            volume = volume == label
+            verts, faces, _normals, _values = skimage.measure.marching_cubes(
+                volume,
+                method="lewiner",
+                # spacing=objects.parent_image.spacing
+                # if objects.has_parent_image
+                # else (1.0,) * labels.ndim,
+                level=0,
+            )
+            surface_areas[index] = skimage.measure.mesh_surface_area(verts, faces)
 
-                features_to_record = {
-                    F_VOLUME: props["area"],
-                    F_SURFACE_AREA: surface_areas,
-                    F_MAJOR_AXIS_LENGTH: props["major_axis_length"],
-                    F_MINOR_AXIS_LENGTH: props["minor_axis_length"],
-                    F_CENTER_X: props["centroid-2"],
-                    F_CENTER_Y: props["centroid-1"],
-                    F_CENTER_Z: props["centroid-0"],
-                    F_BBOX_VOLUME: props["bbox_area"],
-                    F_MIN_X: props["bbox-2"],
-                    F_MAX_X: props["bbox-5"],
-                    F_MIN_Y: props["bbox-1"],
-                    F_MAX_Y: props["bbox-4"],
-                    F_MIN_Z: props["bbox-0"],
-                    F_MAX_Z: props["bbox-3"],
-                    F_EXTENT: props["extent"],
-                    F_EULER_NUMBER: props["euler_number"],
-                    F_EQUIVALENT_DIAMETER: props["equivalent_diameter"],
-                }
-                if calculate_advanced:
-                    features_to_record[F_SOLIDITY] = props["solidity"]
-            return features_to_record
+        features_to_record = {
+            F_VOLUME: props["area"],
+            F_SURFACE_AREA: surface_areas,
+            F_MAJOR_AXIS_LENGTH: props["major_axis_length"],
+            F_MINOR_AXIS_LENGTH: props["minor_axis_length"],
+            F_CENTER_X: props["centroid-2"],
+            F_CENTER_Y: props["centroid-1"],
+            F_CENTER_Z: props["centroid-0"],
+            F_BBOX_VOLUME: props["bbox_area"],
+            F_MIN_X: props["bbox-2"],
+            F_MAX_X: props["bbox-5"],
+            F_MIN_Y: props["bbox-1"],
+            F_MAX_Y: props["bbox-4"],
+            F_MIN_Z: props["bbox-0"],
+            F_MAX_Z: props["bbox-3"],
+            F_EXTENT: props["extent"],
+            F_EULER_NUMBER: props["euler_number"],
+            F_EQUIVALENT_DIAMETER: props["equivalent_diameter"],
+        }
+        if calculate_advanced:
+            features_to_record[F_SOLIDITY] = props["solidity"]
+    return features_to_record
 
 
 """The category of the per-object measurements made by this module"""

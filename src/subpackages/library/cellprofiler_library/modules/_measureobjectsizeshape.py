@@ -18,7 +18,7 @@ from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFea
 
 import scipy
 from typing import Literal, Tuple
-
+from numba import jit
 
 def measureobjectsizeshape(
     objects,
@@ -31,7 +31,7 @@ def measureobjectsizeshape(
     Objects: dense, sparse, ijv, or label objects?
     For now, we will assume dense
     """
-    _validate_dense(objects)
+    # _validate_dense(objects)
 
     # Define the feature names
     feature_names = list(ObjectSizeShapeFeatures.F_STANDARD.value)

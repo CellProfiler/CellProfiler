@@ -194,7 +194,7 @@ References
 )
 
 """The category of the per-object measurements made by this module"""
-AREA_SHAPE = "AreaShape"
+
 
 # """Calculate Zernike features for N,M where N=0 through ZERNIKE_N"""
 # ZERNIKE_N = 9
@@ -465,7 +465,7 @@ module.""".format(
         """
         for object_set in self.objects_list.value:
             if object_set == object_name:
-                return [AREA_SHAPE]
+                return [ObjectSizeShapeFeatures.AREA_SHAPE.value]
         else:
             return []
 
@@ -509,7 +509,7 @@ module.""".format(
                       (or 'Image' for image measurements)
         category - return measurements made in this category
         """
-        if category == AREA_SHAPE and self.get_categories(pipeline, object_name):
+        if category == ObjectSizeShapeFeatures.AREA_SHAPE.value and self.get_categories(pipeline, object_name):
             return self.get_feature_names(pipeline)
         return []
 
@@ -889,7 +889,7 @@ module.""".format(
         """Record the result of a measurement in the workspace's measurements"""
         data = centrosome.cpmorphology.fixup_scipy_ndimage_result(result)
         workspace.add_measurement(
-            object_name, "%s_%s" % (AREA_SHAPE, feature_name), data
+            object_name, "%s_%s" % (ObjectSizeShapeFeatures.AREA_SHAPE.value, feature_name), data
         )
         if self.show_window and numpy.any(numpy.isfinite(data)) > 0:
             data = data[numpy.isfinite(data)]
@@ -910,7 +910,7 @@ module.""".format(
         cols = []
         for oname in self.objects_list.value:
             for mname in measurement_names:
-                cols += [(oname, AREA_SHAPE + "_" + mname, COLTYPE_FLOAT,)]
+                cols += [(oname, ObjectSizeShapeFeatures.AREA_SHAPE.value + "_" + mname, COLTYPE_FLOAT,)]
         return cols
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):

@@ -1,9 +1,11 @@
 from enum import Enum
 
+
 class ObjectSizeShapeFeatures(Enum):
     """The category of the per-object measurements made by the MeasureObjectSizeShape module"""
+
     AREA_SHAPE = "AreaShape"
-    
+
     ZERNIKE_N = 9
 
     F_AREA = "Area"

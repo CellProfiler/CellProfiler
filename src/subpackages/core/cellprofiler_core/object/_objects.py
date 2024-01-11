@@ -96,18 +96,6 @@ class Objects:
         self.__segmented = self.__labels_to_segmentation(labels)
 
     segmented = property(get_segmented, set_segmented)
-    
-    
-    
-    
-    # def get_dense(self):
-    #     """Get the de-facto segmentation of the image into objects: a matrix
-    #     of object numbers.
-    #     """
-    #     return self.__segmentation_to_labels(self.__segmented)
-
-    # def set_dense(self, labels):
-    #     self.__segmented = self.__labels_to_segmentation(labels)
 
     @staticmethod
     def __labels_to_segmentation(labels):

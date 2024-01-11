@@ -193,6 +193,7 @@ References
     }
 )
 
+
 class MeasureObjectSizeShape(Module):
     module_name = "MeasureObjectSizeShape"
     variable_revision_number = 3
@@ -283,7 +284,9 @@ module.""".format(
     def get_zernike_numbers(self):
         """The Zernike numbers measured by this module"""
         if self.calculate_zernikes.value:
-            return centrosome.zernike.get_zernike_indexes(ObjectSizeShapeFeatures.ZERNIKE_N.value + 1)
+            return centrosome.zernike.get_zernike_indexes(
+                ObjectSizeShapeFeatures.ZERNIKE_N.value + 1
+            )
         else:
             return []
 
@@ -320,7 +323,10 @@ module.""".format(
                       (or 'Image' for image measurements)
         category - return measurements made in this category
         """
-        if category == ObjectSizeShapeFeatures.AREA_SHAPE.value and self.get_categories(pipeline, object_name):
+        if (
+            category == ObjectSizeShapeFeatures.AREA_SHAPE.value
+            and self.get_categories(pipeline, object_name)
+        ):
             return self.get_feature_names(pipeline)
         return []
 
@@ -339,19 +345,19 @@ module.""".format(
             workspace.display_data.statistics = []
         for object_name in self.objects_list.value:
             # self.run_on_objects(object_name, workspace)
-            
+
             objects = workspace.get_objects(object_name)
-            
+
             features_to_record = measureobjectsizeshape(
-                objects = objects.dense,
-                calculate_advanced = self.calculate_advanced.value,
-                calculate_zernikes = self.calculate_zernikes.value,
-                volumetric = workspace.pipeline.volumetric(),
-                spacing = objects.parent_image.spacing
-                    if objects.has_parent_image
-                    else (1.0,) * objects.dimensions, # TODO: Check this change is OK
+                objects=objects.dense,
+                calculate_advanced=self.calculate_advanced.value,
+                calculate_zernikes=self.calculate_zernikes.value,
+                volumetric=workspace.pipeline.volumetric(),
+                spacing=objects.parent_image.spacing
+                if objects.has_parent_image
+                else (1.0,) * objects.dimensions,  # TODO: Check this change is OK
             )
-            
+
             for f, m in features_to_record.items():
                 self.record_measurement(workspace, object_name, f, m)
 
@@ -369,7 +375,9 @@ module.""".format(
         """Record the result of a measurement in the workspace's measurements"""
         data = centrosome.cpmorphology.fixup_scipy_ndimage_result(result)
         workspace.add_measurement(
-            object_name, "%s_%s" % (ObjectSizeShapeFeatures.AREA_SHAPE.value, feature_name), data
+            object_name,
+            "%s_%s" % (ObjectSizeShapeFeatures.AREA_SHAPE.value, feature_name),
+            data,
         )
         if self.show_window and numpy.any(numpy.isfinite(data)) > 0:
             data = data[numpy.isfinite(data)]
@@ -390,7 +398,13 @@ module.""".format(
         cols = []
         for oname in self.objects_list.value:
             for mname in measurement_names:
-                cols += [(oname, ObjectSizeShapeFeatures.AREA_SHAPE.value + "_" + mname, COLTYPE_FLOAT,)]
+                cols += [
+                    (
+                        oname,
+                        ObjectSizeShapeFeatures.AREA_SHAPE.value + "_" + mname,
+                        COLTYPE_FLOAT,
+                    )
+                ]
         return cols
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
@@ -407,5 +421,6 @@ module.""".format(
 
     def volumetric(self):
         return True
+
 
 MeasureObjectAreaShape = MeasureObjectSizeShape

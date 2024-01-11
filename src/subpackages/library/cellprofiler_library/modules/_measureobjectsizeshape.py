@@ -1,31 +1,25 @@
-from cellprofiler_library.functions.segmentation import (
-    DENSE_AXIS_NAMES,
-    SPARSE_AXES_FIELDS,
-    DENSE_AXIS,
-    _validate_labels,
-    _validate_dense,
-    _validate_ijv,
-    _validate_sparse,
-    convert_dense_to_label_set,
-)
+from typing import Tuple
 import numpy
 import skimage
+import scipy
+
 import centrosome
 import centrosome.zernike
-import cellprofiler_library
+
 from cellprofiler_library.functions.measurement import measure_object_size_shape
 from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
+from cellprofiler_library.functions.segmentation import (
+    _validate_dense,
+    convert_dense_to_label_set,
+)
 
-import scipy
-from typing import Literal, Tuple
-from numba import jit
 
 def measureobjectsizeshape(
     objects,
     calculate_advanced: bool = True,
     calculate_zernikes: bool = True,
     volumetric: bool = False,
-    spacing: Tuple = None
+    spacing: Tuple = None,
 ):
     """
     Objects: dense, sparse, ijv, or label objects?
@@ -44,11 +38,13 @@ def measureobjectsizeshape(
         if calculate_zernikes:
             feature_names += [
                 f"Zernike_{index[0]}_{index[1]}"
-                for index in centrosome.zernike.get_zernike_indexes(ObjectSizeShapeFeatures.ZERNIKE_N.value + 1)
+                for index in centrosome.zernike.get_zernike_indexes(
+                    ObjectSizeShapeFeatures.ZERNIKE_N.value + 1
+                )
             ]
         if calculate_advanced:
             feature_names += list(ObjectSizeShapeFeatures.F_ADV_2D.value)
-            
+
     if len(objects[objects != 0]) == 0:
         data = dict(zip(feature_names, [None] * len(feature_names)))
         for ft in feature_names:
@@ -110,11 +106,11 @@ def measureobjectsizeshape(
         features_to_record = {}
         for labelmap in labels:
             buffer = measure_object_size_shape(
-                labels = labelmap, 
-                desired_properties = desired_properties, 
-                calculate_zernikes = calculate_zernikes, 
-                calculate_advanced = calculate_advanced,
-                spacing = spacing
+                labels=labelmap,
+                desired_properties=desired_properties,
+                calculate_zernikes=calculate_zernikes,
+                calculate_advanced=calculate_advanced,
+                spacing=spacing,
             )
             for f, m in buffer.items():
                 if f in features_to_record:
@@ -125,11 +121,10 @@ def measureobjectsizeshape(
                     features_to_record[f] = m
     else:
         features_to_record = measure_object_size_shape(
-            labels = labels[0], 
-            desired_properties = desired_properties, 
-            calculate_zernikes = calculate_zernikes, 
-            calculate_advanced = calculate_advanced,
-            spacing = spacing
+            labels=labels[0],
+            desired_properties=desired_properties,
+            calculate_zernikes=calculate_zernikes,
+            calculate_advanced=calculate_advanced,
+            spacing=spacing,
         )
     return features_to_record
-

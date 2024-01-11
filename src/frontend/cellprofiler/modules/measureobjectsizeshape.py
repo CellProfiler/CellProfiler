@@ -344,7 +344,6 @@ module.""".format(
 
             workspace.display_data.statistics = []
         for object_name in self.objects_list.value:
-            # self.run_on_objects(object_name, workspace)
 
             objects = workspace.get_objects(object_name)
 

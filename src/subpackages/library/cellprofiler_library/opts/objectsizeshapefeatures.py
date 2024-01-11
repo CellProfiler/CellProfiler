@@ -1,7 +1,8 @@
 from enum import Enum
 
 class ObjectSizeShapeFeatures(Enum):
-    """Calculate Zernike features for N,M where N=0 through ZERNIKE_N"""
+    AREA_SHAPE = "AreaShape"
+    
     ZERNIKE_N = 9
 
     F_AREA = "Area"

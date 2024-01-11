@@ -12,7 +12,7 @@ from cellprofiler_core.setting.subscriber import LabelListSubscriber
 import cellprofiler.gui.help.content
 import cellprofiler.icons
 
-from cellprofiler_library.modules._measureobjectsizeshape import measureobjectsizeshape
+from cellprofiler_library.modules import measureobjectsizeshape
 from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
 
 __doc__ = """\

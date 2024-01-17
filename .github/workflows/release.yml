@@ -8,10 +8,12 @@ jobs:
         python-version: ["3.9"]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    outputs:
+      cp-version: ${{ steps.get-cp-version-mac.outputs.CP_VERSION }}
     steps:
       - name: Windows - Cache pip
         if: startsWith(matrix.os, 'windows')
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~\AppData\Local\pip\Cache
           key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
@@ -19,7 +21,7 @@ jobs:
             ${{ runner.os }}-pip-
       - name: Mac - Cache pip
         if: startsWith(matrix.os, 'macos')
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/Library/Caches/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
@@ -43,6 +45,7 @@ jobs:
           # reference with ${{ env.CP_VERSION }}
           echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)"
           echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)" >> "$GITHUB_ENV"
+          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)" >> "$GITHUB_OUTPUT"
       - name: Get CellProfiler Version - Windows
         if: startsWith(matrix.os, 'windows')
         id: get-cp-version-windows
@@ -87,68 +90,73 @@ jobs:
           # Tell the iss file where to find Java
           (Get-Content -Raw ${{ github.workspace }}/distribution/windows/cellprofiler.iss) -replace 'LOCAL_JDK_PATH_VAR', '"${{ env.JDK_HOME }}\*";' | Set-Content -NoNewLine ${{ github.workspace }}/distribution/windows/cellprofiler.iss
           iscc /dMyAppVersion="${{ env.CP_VERSION }}" "${{ github.workspace }}/distribution/windows/cellprofiler.iss"
-      - name: Mac - Create Artifact
+      - name: Mac - Create Actions Artifact
         if: startsWith(matrix.os, 'macos')
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v4
         with:
           name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
           path: ${{ github.workspace }}/distribution/macos/dist/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
-      - name: Windows - Create Artifact
+      - name: Windows - Create Actions Artifact
         if: startsWith(matrix.os, 'windows')
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
           path: ${{ github.workspace }}/distribution/windows/Output/CellProfiler-Windows-${{ env.CP_VERSION }}.exe
 
-# TODO re-enable, make some condition for this to run
-  # upload-cp:
-  #   name: Upload CellProfiler
-  #   needs: build-cp
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #       with:
-  #         # need to get git tags for setuptools-scm
-  #         fetch-depth: 0
-  #     - name: Create Release
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       id: create_release
-  #       uses: actions/create-release@v1
-  #       with:
-  #         draft: true
-  #         prerelease: true
-  #         release_name: ${{ github.ref }}
-  #         tag_name: ${{ github.ref }}
-  #     - name: Download Mac Artifact
-  #       uses: actions/download-artifact@v1
-  #       with:
-  #         name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
-  #         path: ./
-  #     - name: Download Windows Artifact
-  #       uses: actions/download-artifact@v1
-  #       with:
-  #         name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
-  #         path: ./
-  #     - name: Upload Mac Artifact
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       uses: actions/upload-release-asset@v1
-  #       with:
-  #         asset_content_type: application/zip
-  #         asset_name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
-  #         asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
-  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
-  #     - name: Upload Windows Artifact
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       uses: actions/upload-release-asset@v1
-  #       with:
-  #         asset_content_type: application/exe
-  #         asset_name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
-  #         asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-${{ env.CP_VERSION }}.exe
-  #         upload_url: ${{ steps.create_release.outputs.upload_url }}
+  upload-cp:
+    name: Upload CellProfiler
+    needs: build-cp
+    runs-on: ubuntu-latest
+    env:
+      CP_VERSION: ${{ needs.build-cp.outputs.cp-version }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # need to get git tags for setuptools-scm
+          fetch-depth: 0
+      - name: Download Mac Actions Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+          path: ./
+      - name: Download Windows Actions Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+          path: ./
+      - name: Upload Release Artifacts
+        id: upload-artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          prerelease: true
+          fail_on_unmatched_files: true
+          name: ${{ env.CP_VERSION }}
+          tag_name: ${{ env.CP_VERSION }}
+          files: |
+            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+      - name: Display Upload Info
+        run: |
+          echo "url: ${{ steps.upload-artifacts.outputs.url }}"
+          echo "release id: ${{ steps.upload-artifacts.outputs.id }}"
+          echo "upload_url: ${{ steps.upload-artifacts.outputs.upload_url }}"
+          echo "assets: ${{ steps.upload-artifacts.outputs.assets }}"
+      - name: Delete Action Artifacts
+        # artifacts attached to the action no longer necessary
+        # since they have been uploaded to releases
+        id: delete-artifacts
+        uses: geekyeggo/delete-artifact@v4
+        with:
+            name: |
+              CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+              CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+
 on:
   pull_request:
     types: [synchronize]

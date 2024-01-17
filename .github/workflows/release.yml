@@ -158,9 +158,7 @@ jobs:
               CellProfiler-Windows-${{ env.CP_VERSION }}.exe
 
 on:
-  pull_request:
-    types: [synchronize]
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
   workflow_dispatch:

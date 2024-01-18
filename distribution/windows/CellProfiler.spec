@@ -12,15 +12,12 @@ block_cipher = None
 
 datas = []
 
-datas += PyInstaller.utils.hooks.collect_data_files("bioformats")
 datas += PyInstaller.utils.hooks.collect_data_files("cellprofiler")
-datas += PyInstaller.utils.hooks.collect_data_files("javabridge")
-datas += PyInstaller.utils.hooks.collect_data_files("prokaryote")
 datas += PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
 
 datas += [
-    ("../../cellprofiler/data/images/*", "cellprofiler/data/images"),
-    ("../../cellprofiler/data/icons/*", "cellprofiler/data/icons")
+    ("../../src/frontend/cellprofiler/data/images/*", "cellprofiler/data/images"),
+    ("../../src/frontend/cellprofiler/data/icons/*", "cellprofiler/data/icons")
 ]
 
 hiddenimports = []
@@ -47,7 +44,7 @@ hiddenimports += [
     "scipy._lib.messagestream",
     "pywt._extensions._cwt",
     "sklearn.utils.sparsetools",
-	"sentry_sdk",
+    "sentry_sdk",
     "sentry_sdk.integrations.excepthook",
     "sentry_sdk.integrations.stdlib",
     "sentry_sdk.integrations.modules",
@@ -77,7 +74,7 @@ exe = EXE(pyz,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-		  icon='../../cellprofiler/data/icons/CellProfiler.ico',
+          icon='../../src/frontend/cellprofiler/data/icons/CellProfiler.ico',
           console=True )
 coll = COLLECT(exe,
                a.binaries,

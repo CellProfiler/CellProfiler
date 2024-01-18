@@ -1,6 +1,6 @@
 FROM ubuntu:18.04
 
-ARG version=4.2.3
+ARG cp_version=4.2.3
 
 RUN apt update
 RUN apt -y upgrade
@@ -16,7 +16,7 @@ RUN pip install wheel cython numpy
 
 RUN pip install  -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-18.04 wxPython==4.1.0
 
-RUN pip install cellprofiler==$version
+RUN pip install cellprofiler==$cp_version
 
 WORKDIR /usr/local/src
 ENTRYPOINT ["cellprofiler"]

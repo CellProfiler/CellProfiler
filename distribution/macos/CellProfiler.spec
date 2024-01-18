@@ -10,15 +10,12 @@ block_cipher = None
 
 datas = []
 
-datas += PyInstaller.utils.hooks.collect_data_files("bioformats")
 datas += PyInstaller.utils.hooks.collect_data_files("cellprofiler")
-datas += PyInstaller.utils.hooks.collect_data_files("javabridge")
-datas += PyInstaller.utils.hooks.collect_data_files("prokaryote")
 datas += PyInstaller.utils.hooks.collect_data_files("skimage.io._plugins")
 
 datas += [
-    ("./CellProfiler/cellprofiler/data/images/*", "cellprofiler/data/images"),
-    ("./CellProfiler/cellprofiler/data/icons/*", "cellprofiler/data/icons"),
+    ("./CellProfiler/src/frontend/cellprofiler/data/images/*", "cellprofiler/data/images"),
+    ("./CellProfiler/src/frontend/cellprofiler/data/icons/*", "cellprofiler/data/icons"),
 ]
 
 for subdir, dirs, files in os.walk(os.environ["JAVA_HOME"]):
@@ -141,13 +138,13 @@ coll = COLLECT(
     a.binaries,
     a.zipfiles,
     a.datas,
-    icon="./CellProfiler/cellprofiler/data/icons/CellProfiler.icns",
+    icon="./CellProfiler/src/frontend/cellprofiler/data/icons/CellProfiler.icns",
     name="CellProfiler.app"
 )
 
 app = BUNDLE(
     coll,
     name="CellProfiler.app",
-    icon="./CellProfiler/cellprofiler/data/icons/CellProfiler.icns",
+    icon="./CellProfiler/src/frontend/cellprofiler/data/icons/CellProfiler.icns",
     bundle_identifier=None
 )

@@ -7,29 +7,29 @@ jobs:
       TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
     - name: Setup Python
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v4
       with:
         python-version: '3.x'
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
+        pip install build twine
     - name: Upload Library
       working-directory: ${{ github.workspace }}/src/subpackages/library/
       run: |
-        python setup.py sdist bdist_wheel
+        python -m build
         twine upload dist/*
     - name: Upload Core
       working-directory: ${{ github.workspace }}/src/subpackages/core/
       run: |
-        python setup.py sdist bdist_wheel
+        python -m build
         twine upload dist/*
     - name: Upload Library
       working-directory: ${{ github.workspace }}/src/frontend/
       run: |
-        python setup.py sdist bdist_wheel
+        python -m build
         twine upload dist/*
 on:
   release:

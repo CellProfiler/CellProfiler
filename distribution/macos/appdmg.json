@@ -1,6 +1,6 @@
 {
   "title": "CellProfiler",
-  "icon": "./CellProfiler/cellprofiler/data/icons/CellProfiler.icns",
+  "icon": "./CellProfiler/src/frontend/cellprofiler/data/icons/CellProfiler.icns",
   "background": "./background.png",
   "contents": [
     {

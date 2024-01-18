@@ -1,81 +1,82 @@
 name: Create CellProfiler Releases
+env:
+  CP_VERSION: ${{ github.ref_name.replace('v', '') }}
 jobs:
   build-cp:
     name: Build CellProfiler
     strategy:
       matrix:
-        os: [macos-10.15, windows-2019]
-        python-version: ["3.8"]
+        os: [macos-latest, windows-2019]
+        python-version: ["3.9"]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
       - name: Windows - Cache pip
-        if: ${{ matrix.os == 'windows-2019' }}
+        if: startsWith(matrix.os, 'windows')
         uses: actions/cache@v2
         with:
           path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Mac - Cache pip
-        if: ${{ matrix.os == 'macos-10.15' }}
+        if: startsWith(matrix.os, 'macos')
         uses: actions/cache@v2
         with:
           path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}
       - name: Setup java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "11" # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
       - name: Mac - Build
-        if: ${{ matrix.os == 'macos-10.15' }}
+        if: startsWith(matrix.os, 'macos')
         working-directory: ${{ github.workspace }}/distribution/macos
         env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
           CERTIFICATE_PASSWORD: ${{ secrets.P12_PASSWORD_CIMINI }}
         run: |
-          sed -i '' 's/4.0.0/4.2.4/' Info.plist
           brew install mysql
-          make
+          make CP_VERSION=$CP_VERSION
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
           chmod +x osx-codesign.sh && ./osx-codesign.sh
-          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.2.4.zip
+          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-${CP_VERSION}.zip
       - name: Windows - Build
-        if: ${{ matrix.os == 'windows-2019' }}
+        if: startsWith(matrix.os, 'windows')
         env:
           JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.16-8\x64
         # cython necessary? mysql?
         run: |
           pip install "cython" 
           pip install mysqlclient==1.4.6
-          pip install --editable ${{ github.workspace }}/src/frontend[build] --no-use-pep517
+          pip install --editable "${{ github.workspace }}/src/frontend[build]"
           pyinstaller ${{ github.workspace }}/distribution/windows/cellprofiler.spec
-          iscc /dMyAppVersion="4.2.4" "${{ github.workspace }}/distribution/windows/cellprofiler.iss"
+          iscc /dMyAppVersion="$env:CP_VERSION" "${{ github.workspace }}/distribution/windows/cellprofiler.iss"
       - name: Mac - Create Artifact
-        if: ${{ matrix.os == 'macos-10.15' }}
+        if: startsWith(matrix.os, 'macos')
         uses: actions/upload-artifact@v1
         with:
-          name: CellProfiler-macOS-4.2.4.zip
-          path: ${{ github.workspace }}/distribution/macos/dist/CellProfiler-macOS-4.2.4.zip
+          name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+          path: ${{ github.workspace }}/distribution/macos/dist/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
       - name: Windows - Create Artifact
-        if: ${{ matrix.os == 'windows-2019' }}
+        if: startsWith(matrix.os, 'windows')
         uses: actions/upload-artifact@v2
         with:
-          name: CellProfiler-Windows-4.2.4.exe
-          path: ${{ github.workspace }}/distribution/windows/Output/CellProfiler-Windows-4.2.4.exe
+          name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+          path: ${{ github.workspace }}/distribution/windows/Output/CellProfiler-Windows-${{ env.CP_VERSION }}.exe
 
   upload-cp:
     name: Upload CellProfiler
@@ -83,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -97,12 +98,12 @@ jobs:
       - name: Download Mac Artifact
         uses: actions/download-artifact@v1
         with:
-          name: CellProfiler-macOS-4.2.4.zip
+          name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
           path: ./
       - name: Download Windows Artifact
         uses: actions/download-artifact@v1
         with:
-          name: CellProfiler-Windows-4.2.4.exe
+          name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
           path: ./
       - name: Upload Mac Artifact
         env:
@@ -110,8 +111,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/zip
-          asset_name: CellProfiler-macOS-4.2.4.zip
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.4.zip
+          asset_name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
           upload_url: ${{ steps.create_release.outputs.upload_url }}
       - name: Upload Windows Artifact
         env:
@@ -119,8 +120,8 @@ jobs:
         uses: actions/upload-release-asset@v1
         with:
           asset_content_type: application/exe
-          asset_name: CellProfiler-Windows-4.2.4.exe
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.2.4.exe
+          asset_name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-${{ env.CP_VERSION }}.exe
           upload_url: ${{ steps.create_release.outputs.upload_url }}
 on:
   push:

@@ -10,7 +10,7 @@
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{4948C255-0E77-4A37-B88D-F0A5BAD13CF4}
+AppId={4948C255-0E77-4A37-B88D-F0A5BAD13CF4}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -22,7 +22,7 @@ DefaultDirName={pf64}\{#MyAppName}
 DisableProgramGroupPage=yes
 LicenseFile=..\..\LICENSE
 OutputBaseFilename=CellProfiler-Windows-{#MyAppVersion}
-SetupIconFile=..\..\cellprofiler\data\icons\CellProfiler.ico
+SetupIconFile=..\..\cellprofiler\src\frontend\data\icons\CellProfiler.ico
 UninstallDisplayIcon={app}\cellprofiler\data\icons\CellProfiler.ico
 Compression=lzma
 SolidCompression=yes

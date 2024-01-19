@@ -1,4 +1,20 @@
-# make CP_VERSION=5.0.0.dev32 CP_BRANCH="" CP_DIR=/Users/ngogober/Developer/CellProfiler/CellProfiler
+# This is a Makefile for building CellProfiler.app bundle on MacOS
+# it is used by the CI process, but can also be used locally
+# THE CP_VERSION CP_BRANCH CP_DIR variables may be overridden on the command line
+#
+# CP_DIR:      If not provided - the parent of this directory, `../..` is used
+#              If provided - The path to the directory containing the CellProfiler source code
+#                            which may be the parent of this directory, i.e. `../..`
+#                            or may be a path to a seperate copy of the CellProfiler source code.
+# CP_VERSION:  Should match the version of CellProfiler in the CP_DIR, i.e. as reported by _version.py, setuptools-scm, etc.
+#              It is used to set the CFBundleVersion in Info.plist.template, which produces the final Info.plist file
+# CP_BRANCH:   If not provided - then the CP_DIR's working directory will be set to the default branch, "main"
+#              If provided with name - then the CP_DIR's working directory will be set to this branch
+#              If provided with empty string - then the CP_DIR's working directory will not be modified
+#
+# Example Usage:
+# make CP_VERSION=$(python -m setuptools_scm -c ../../src/frontend/pyproject.toml) CP_BRANCH=""
+
 
 MAKEFLAGS += --warn-undefined-variables
 
@@ -8,7 +24,7 @@ CP_VERSION ?= 4.2.3
 
 CP_BRANCH ?= main
 
-CP_DIR    ?= CellProfiler
+CP_DIR    ?= ../..
 
 CP_DIST   ?= ${CP_DIR}/distribution/macos
 
@@ -21,8 +37,6 @@ CP_DIST   ?= ${CP_DIR}/distribution/macos
 .SUFFIXES:
 
 CellProfiler:
-	if ! [ -d ${CP_DIR} ]; then git clone https://github.com/CellProfiler/CellProfiler.git $(CP_DIR); fi
-
 	if [ ! -z "$(CP_BRANCH)" ]; then cd ${CP_DIR} && git checkout ${CP_BRANCH}; fi
 
 .PHONY: dependencies
@@ -45,8 +59,6 @@ dist/CellProfiler.app: CellProfiler dependencies Info.plist
 
 .PHONY: clean
 clean:
-	# if [ -d CellProfiler ]; then rm -rf CellProfiler; fi
-
 	if [ -d build ]; then rm -rf build; fi
 
 	if [ -d dist ]; then rm -rf dist; fi

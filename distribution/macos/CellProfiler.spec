@@ -129,11 +129,14 @@ exclude_binaries = [
 if is_pure_conda:
     from PyInstaller.utils.hooks import conda_support
 
-    libgfortran_path = list(filter(lambda d: 'libgfortran.5.dylib' in d, [d[0] for d in conda_support.collect_dynamic_libs("numpy", dependencies=True)]))[0]
-    # in python 3.9 specifically, it's compiled for arm64 (`lipo -info`), remove it
-    exclude_binaries += [('scipy/.dylibs/libgfortran.5.dylib', str(importlib.resources.files('scipy') / '.dylibs/libgfortran.5.dylib'), 'BINARY')]
-    # and replace it with the one numpy uses, which is x86_64
-    a.binaries += [('scipy/.dylibs/libgfortran.5.dylib', libgfortran_path, 'BINARY')]
+    if conda_support.distributions.get('numpy') is not None:
+        numpy_dyn_libs = [d[0] for d in conda_support.collect_dynamic_libs("numpy", dependencies=True)]
+        libgfortran_path = list(filter(lambda d: 'libgfortran.5.dylib' in d, numpy_dyn_libs34j))
+        libgfortran_path = libgfortran_path[0]
+        # in python 3.9 specifically, it's compiled for arm64 (`lipo -info`), remove it
+        exclude_binaries += [('scipy/.dylibs/libgfortran.5.dylib', str(importlib.resources.files('scipy') / '.dylibs/libgfortran.5.dylib'), 'BINARY')]
+        # and replace it with the one numpy uses, which is x86_64
+        a.binaries += [('scipy/.dylibs/libgfortran.5.dylib', libgfortran_path, 'BINARY')]
 
 a.binaries = [binary for binary in a.binaries if binary not in exclude_binaries]
 

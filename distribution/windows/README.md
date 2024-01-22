@@ -4,8 +4,8 @@ Make sure the build machine has `pywin32` and `InnoSetup` installed.
 
 To Run:
 
-* clone CellProfiler at correct version into the `windows` directory
 * run `pyinstaller CellProfiler.spec` 
-
-* Update `CellProfiler.iss` to correct version number (and correct `Java`, if necessary)
-* Run `InnoSetup` on `.iss` file.
+* Make sure `JDK_HOME` and `CP_VERSION` environment variables are set
+    * Alternatively just open the `CellProfiler.iss` file and manually set `JDKPath` and `MyAppVersion` at the top
+    * `CP_VERSION` should be the value returned from (run from this directory): `python -m setuptools_scm ../../frontend/pyproject.toml`
+* Run `InnoSetup` on `.iss` file

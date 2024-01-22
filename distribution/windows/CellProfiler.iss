@@ -5,6 +5,9 @@
 #define MyAppPublisher "Broad Institute"
 #define MyAppURL "http://cellprofiler.org/"
 #define MyAppExeName "CellProfiler.exe"
+#define ExeDir "dist\CellProfiler"
+#define JDKPath GetEnv('JDK_HOME')
+#define MyAppVersion GetEnv('CP_VERSION')
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -38,9 +41,9 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "..\..\dist\CellProfiler\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\..\dist\CellProfiler\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: LOCAL_JDK_PATH_VAR DestDir: "{app}\java"; Flags: recursesubdirs
+Source: "{#ExeDir}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#ExeDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#JDKPath}\*"; DestDir: "{app}\java"; Flags: recursesubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

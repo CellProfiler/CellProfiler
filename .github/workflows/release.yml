@@ -86,10 +86,9 @@ jobs:
           pip install --editable "${{ github.workspace }}/src/subpackages/library" --upgrade
           pip install --editable "${{ github.workspace }}/src/subpackages/core" --upgrade
           pip install --editable "${{ github.workspace }}/src/frontend[build]" --upgrade
-          pyinstaller ${{ github.workspace }}/distribution/windows/cellprofiler.spec
-          # Tell the iss file where to find Java
-          (Get-Content -Raw ${{ github.workspace }}/distribution/windows/cellprofiler.iss) -replace 'LOCAL_JDK_PATH_VAR', '"${{ env.JDK_HOME }}\*";' | Set-Content -NoNewLine ${{ github.workspace }}/distribution/windows/cellprofiler.iss
-          iscc /dMyAppVersion="${{ env.CP_VERSION }}" "${{ github.workspace }}/distribution/windows/cellprofiler.iss"
+          cd ${{ github.workspace }}/distribution/windows
+          pyinstaller cellprofiler.spec
+          iscc cellprofiler.iss
       - name: Mac - Create Actions Artifact
         if: startsWith(matrix.os, 'macos')
         uses: actions/upload-artifact@v4
@@ -158,6 +157,9 @@ jobs:
               CellProfiler-Windows-${{ env.CP_VERSION }}.exe
 
 on:
+  # TODO - 4847: disable
+  pull_request:
+    types: [synchronize]
   push:
     branches:
       - main

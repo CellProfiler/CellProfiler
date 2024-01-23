@@ -64,5 +64,5 @@ On a Linux host machine, running CellProfiler's GUI from the container:
 # assumes you have done `export CP_VERSION="x.y.z"`
 # Note, the following line is insecure.
 xhost +local:root
-CP_VERSION=4.0.0 docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix:ro cellprofiler:${CP_VERSION} ""
+docker run -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix:ro cellprofiler:${CP_VERSION} ""
 ```

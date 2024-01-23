@@ -57,8 +57,12 @@ brew install upx
 Use the Makefile to create an [Apple Disk Image](https://en.wikipedia.org/wiki/Apple_Disk_Image) (CellProfiler.dmg) that contains the MacOS [package](https://en.wikipedia.org/wiki/Package_(macOS)) (CellProfiler.app), making sure to specify the version via environment variable `CP_VERSION`:
 
 ```sh
-# replace 4.2.6 with desired version
-make CP_VERSION="4.2.6"
+# Specify the version via environment variable CP_VERSION
+# can set manually if different version desired
+# can exclude --strip-dev for dev/local parts of version string
+export CP_VERSION="$(python -m setuptools_scm --strip-dev -c ../../src/frontend/pyproject.toml)"
+
+make CP_VERSION="$CP_VERSION"
 ```
 
-Among other things, the Makefile construct the file `Info.plist` from `Info.plist.template`. The `Info.plist.template` file contains the version number in double curly braces, `{{CP_VERSION}}`, which in `Info.plist` is replaced by the actual version you specify above.
+Among other things, the Makefile constructs the file `Info.plist` from `Info.plist.template`. The `Info.plist.template` file contains the version number in double curly braces, `{{CP_VERSION}}`, which in `Info.plist` is replaced by the actual version you specify above.

@@ -157,9 +157,6 @@ jobs:
               CellProfiler-Windows-${{ env.CP_VERSION }}.exe
 
 on:
-  # TODO - 4847: disable
-  pull_request:
-    types: [synchronize]
   push:
     branches:
       - main

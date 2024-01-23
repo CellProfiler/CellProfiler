@@ -168,9 +168,8 @@ jobs:
           pytest ${{ github.workspace }}/tests/library
 
 on:
-  # TODO 4847: re-enable
-  # pull_request:
-    # types: [opened, reopened, synchronize, ready_for_review, review_requested]
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, review_requested]
   push:
     branches:
       - 'main'

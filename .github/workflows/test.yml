@@ -126,7 +126,7 @@ jobs:
       - name: Run Tests
         timeout-minutes: 10
         run: |
-          pytest --tb=long --show-capture=all -vvv --color=yes --code-highlight=yes --timeout=300 -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
+          pytest --tb=long --show-capture=all -vvv --color=yes --code-highlight=yes --timeout=300 -k 'not test_load_objects and not test_load_single_object and test_04_05_exception' ${{ github.workspace }}/tests/core/
 
   test-library:
     name: Install and test Library

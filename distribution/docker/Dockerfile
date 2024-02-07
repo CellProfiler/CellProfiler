@@ -1,4 +1,8 @@
-FROM ubuntu:18.04
+# must be am64, wxPython wheel for arm64 is not available
+FROM amd64/ubuntu:20.04
+
+# bypass apt installation frontend interaction
+ARG DEBIAN_FRONTEND=noninteractive
 
 ARG cp_version=4.2.3
 
@@ -14,7 +18,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN pip install --upgrade pip
 RUN pip install wheel cython numpy
 
-RUN pip install  -f https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-18.04 wxPython==4.1.0
+RUN pip install https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl
 
 RUN pip install cellprofiler==$cp_version
 

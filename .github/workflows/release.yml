@@ -69,7 +69,7 @@ jobs:
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
           CERTIFICATE_PASSWORD: ${{ secrets.P12_PASSWORD_CIMINI }}
         run: |
-          brew install mysql
+          brew install mysql pkg-config
           make CP_VERSION=${{ env.CP_VERSION }} CP_BRANCH="" CP_DIR=${{ github.workspace }}
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
           chmod +x osx-codesign.sh && ./osx-codesign.sh

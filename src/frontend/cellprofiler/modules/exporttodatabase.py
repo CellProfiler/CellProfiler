@@ -2453,7 +2453,7 @@ available:
                     column_defs = [
                         column for column in column_defs if column[0] in onames
                     ]
-                self.create_database_tables(self.cursor, workspace)
+                self.create_database_tables(self.cursor, self.connection, workspace)
             return True
         except sqlite3.OperationalError as err:
             if str(err).startswith("too many columns"):
@@ -3015,7 +3015,7 @@ available:
     #
     # Create per_image and per_object tables in MySQL
     #
-    def create_database_tables(self, cursor, workspace):
+    def create_database_tables(self, cursor, connection, workspace):
         """Creates empty image and object tables
 
         Creates the MySQL database (if MySQL), drops existing tables of the
@@ -3101,14 +3101,14 @@ available:
         execute(
             cursor, "DROP TABLE IF EXISTS %s" % self.get_table_name(EXPERIMENT),
         )
-        for statement in self.get_experiment_table_statements(workspace):
+        for statement in self.get_experiment_table_statements(workspace, connection):
             execute(cursor, statement, return_result=False)
         if self.wants_relationship_table:
             for statement in self.get_create_relationships_table_statements(pipeline):
                 execute(cursor, statement, return_result=False)
         cursor.connection.commit()
 
-    def get_experiment_table_statements(self, workspace):
+    def get_experiment_table_statements(self, workspace, connection):
         statements = []
         if self.db_type == DB_MYSQL:
             autoincrement = "AUTO_INCREMENT"
@@ -3152,7 +3152,7 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
         insert_into_experiment_statement = """
 INSERT INTO %s (name) values ('%s')""" % (
             T_EXPERIMENT,
-            MySQLdb.escape_string(self.experiment_name.value).decode(),
+            connection.escape_string(self.experiment_name.value).decode(),
         )
         statements.append(insert_into_experiment_statement)
 
@@ -3166,8 +3166,8 @@ INSERT INTO %s (experiment_id, object_name, field, value)
 SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
                     T_EXPERIMENT_PROPERTIES,
                     p.object_name,
-                    MySQLdb.escape_string(k).decode(),
-                    MySQLdb.escape_string(v).decode(),
+                    connection.escape_string(k).decode(),
+                    connection.escape_string(v).decode(),
                     T_EXPERIMENT,
                 )
                 statements.append(statement)
@@ -3206,7 +3206,7 @@ CREATE TABLE %s (
                 if isinstance(value, str):
                     value = value
                 if self.db_type != DB_SQLITE:
-                    value = MySQLdb.escape_string(value).decode()
+                    value = connection.escape_string(value).decode()
                 else:
                     value = value.replace("'", "''")
                 value = "'" + value + "'"

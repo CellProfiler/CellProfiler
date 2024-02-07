@@ -33,7 +33,7 @@ jobs:
           # need to get git tags for setuptools-scm
           fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}

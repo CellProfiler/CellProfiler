@@ -125,7 +125,7 @@ jobs:
           pip install -e src/subpackages/core[test]
       - name: Run Tests
         run: |
-          pytest -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
+          pytest --tb=long --show-capture=all -vvv --color=yes --code-highlight=yes --timeout=300 -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
 
   test-library:
     name: Install and test Library

@@ -3152,7 +3152,7 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
         insert_into_experiment_statement = """
 INSERT INTO %s (name) values ('%s')""" % (
             T_EXPERIMENT,
-            MySQLdb.escape_string(self.experiment_name.value).decode(),
+            MySQLdb._mysql.escape_string(self.experiment_name.value).decode(),
         )
         statements.append(insert_into_experiment_statement)
 
@@ -3166,8 +3166,8 @@ INSERT INTO %s (experiment_id, object_name, field, value)
 SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
                     T_EXPERIMENT_PROPERTIES,
                     p.object_name,
-                    MySQLdb.escape_string(k).decode(),
-                    MySQLdb.escape_string(v).decode(),
+                    MySQLdb._mysql.escape_string(k).decode(),
+                    MySQLdb._mysql.escape_string(v).decode(),
                     T_EXPERIMENT,
                 )
                 statements.append(statement)
@@ -3206,7 +3206,7 @@ CREATE TABLE %s (
                 if isinstance(value, str):
                     value = value
                 if self.db_type != DB_SQLITE:
-                    value = MySQLdb.escape_string(value).decode()
+                    value = MySQLdb._mysql.escape_string(value).decode()
                 else:
                     value = value.replace("'", "''")
                 value = "'" + value + "'"

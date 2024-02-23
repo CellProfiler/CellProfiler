@@ -247,7 +247,7 @@ def main():
         monitor_thread = threading.Thread(
             target=monitor_keepalive,
             args=(the_zmq_context, notify_address, ),
-            name="heartbeat_monitor",
+            name="heartbeat_monitor thread",
             daemon=True
         )
         monitor_thread.start()

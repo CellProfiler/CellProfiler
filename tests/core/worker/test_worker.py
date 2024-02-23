@@ -89,6 +89,8 @@ class TestAnalysisWorker(unittest.TestCase):
 
     class AWThread(threading.Thread):
         def __init__(self, work_addr, context, *args, **kwargs):
+            if not 'name' in kwargs:
+                kwargs['name'] = "AW thread"
             threading.Thread.__init__(self, *args, **kwargs)
             self.analysis_id = uuid.uuid4().hex
             self.context = context
@@ -127,7 +129,7 @@ class TestAnalysisWorker(unittest.TestCase):
             up_queue_send_socket.connect(self.notify_addr)
 
             heartbeat_thread = threading.Thread(target=self.heartbeat_thread,
-                                                name="KeepAlive", daemon=True)
+                                                name="KeepAlive test thread", daemon=True)
             heartbeat_thread.start()
 
 

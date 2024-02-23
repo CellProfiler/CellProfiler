@@ -14,10 +14,7 @@ import cellprofiler.modules.identifysecondaryobjects
 import cellprofiler.modules.threshold
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
-
-cellprofiler_core.preferences.set_headless()
 
 INPUT_OBJECTS_NAME = "input_objects"
 OUTPUT_OBJECTS_NAME = "output_objects"

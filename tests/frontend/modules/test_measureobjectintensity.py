@@ -15,10 +15,7 @@ from cellprofiler_core.constants.measurement import EXPERIMENT, COLTYPE_FLOAT, C
 import cellprofiler.modules.measureobjectintensity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
-
-cellprofiler_core.preferences.set_headless()
 
 IMAGE_NAME = "MyImage"
 OBJECT_NAME = "MyObjects"

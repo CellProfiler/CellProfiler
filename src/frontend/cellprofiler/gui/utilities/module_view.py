@@ -239,10 +239,10 @@ def request_module_validation(validation_request):
     """
     if mv_constants.pipeline_queue_thread is None:
         mv_constants.pipeline_queue_thread = threading.Thread(
-            target=validation_queue_handler
+            target=validation_queue_handler,
+            name="Pipeline validation thread",
+            daemon=True
         )
-        mv_constants.pipeline_queue_thread.setName("Pipeline validation thread")
-        mv_constants.pipeline_queue_thread.setDaemon(True)
         mv_constants.pipeline_queue_thread.start()
     mv_constants.validation_queue.put(validation_request)
 

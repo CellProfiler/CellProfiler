@@ -369,7 +369,7 @@ class TestAnalysis(unittest.TestCase):
 
             messages = []
 
-            spy_thread = threading.Thread(target=collect_messages, args=(messages, ))
+            spy_thread = threading.Thread(target=collect_messages, name="test heartbeat thread", args=(messages, ))
             spy_thread.start()
             self.cancel_analysis()
             spy_thread.join(2000)

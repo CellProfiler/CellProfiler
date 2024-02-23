@@ -12,15 +12,12 @@ import cellprofiler_core.measurement
 import cellprofiler_core.module
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 
 import cellprofiler.modules.measureimageoverlap
 
 import tests.frontend.modules
-
-cellprofiler_core.preferences.set_headless()
 
 GROUND_TRUTH_IMAGE_NAME = "groundtruth"
 TEST_IMAGE_NAME = "test"

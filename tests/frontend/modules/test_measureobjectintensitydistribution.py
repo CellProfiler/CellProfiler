@@ -13,12 +13,9 @@ from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 import cellprofiler.modules.measureobjectintensitydistribution
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.setting
 import cellprofiler_core.workspace
 import tests.frontend.modules
-
-cellprofiler_core.preferences.set_headless()
 
 OBJECT_NAME = "objectname"
 CENTER_NAME = "centername"

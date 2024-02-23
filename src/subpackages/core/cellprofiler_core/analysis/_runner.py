@@ -134,7 +134,7 @@ class Runner:
             target=self.interface,
             args=(start_signal,),
             kwargs=dict(overwrite=overwrite),
-            name="AnalysisRunner.interface",
+            name="AnalysisRunner.interface thread",
         )
         #
         # Wait for signal on interface started.
@@ -143,7 +143,7 @@ class Runner:
         self.jobserver_thread = start_daemon_thread(
             target=self.jobserver,
             args=(start_signal, ),
-            name="AnalysisRunner.jobserver",
+            name="AnalysisRunner.jobserver thread",
         )
         #
         # Wait for signal on jobserver started.
@@ -723,7 +723,7 @@ class Runner:
                         break
 
             start_daemon_thread(
-                target=run_logger, args=(worker, idx), name="worker stdout logger"
+                target=run_logger, args=(worker, idx), name="worker stdout logger thread"
             )
 
             self.workers += [worker]

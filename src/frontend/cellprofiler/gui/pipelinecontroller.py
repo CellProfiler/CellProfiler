@@ -2264,9 +2264,8 @@ class PipelineController(object):
                 queue.put(urls)
 
             thread = threading.Thread(
-                target=fn, args=(filenames, interrupt, message, queue)
+                target=fn, name="File Processing thread", daemon=True, args=(filenames, interrupt, message, queue)
             )
-            thread.setDaemon(True)
             thread.start()
 
             def update_pulse(msg):

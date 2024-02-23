@@ -25,9 +25,8 @@ def import_all_but_wx(
 @unittest.skipIf(sys.platform.startswith("linux"), "Do not test under Linux")
 class TestNoWX(unittest.TestCase):
     def setUp(self):
-        from cellprofiler_core.preferences import set_headless, set_temporary_directory
+        from cellprofiler_core.preferences import set_temporary_directory
 
-        set_headless()
         set_temporary_directory(tempfile.gettempdir())
         self.old_import = builtins.__import__
         builtins.__import__ = import_all_but_wx

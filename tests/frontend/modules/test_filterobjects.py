@@ -21,8 +21,6 @@ import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 import tests.frontend.modules
 
-cellprofiler_core.preferences.set_headless()
-
 INPUT_IMAGE = "input_image"
 INPUT_OBJECTS = "input_objects"
 ENCLOSING_OBJECTS = "my_enclosing_objects"

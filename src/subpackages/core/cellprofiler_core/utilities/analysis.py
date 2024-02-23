@@ -63,8 +63,7 @@ def find_analysis_worker_source():
 
 
 def start_daemon_thread(target=None, args=(), kwargs=None, name=None):
-    thread = threading.Thread(target=target, args=args, kwargs=kwargs, name=name)
-    thread.daemon = True
+    thread = threading.Thread(target=target, daemon=True, args=args, kwargs=kwargs, name=name)
     thread.start()
     return thread
 

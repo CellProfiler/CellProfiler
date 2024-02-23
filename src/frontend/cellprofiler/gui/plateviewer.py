@@ -558,8 +558,7 @@ class PlateViewer(object):
             System = scyjava.jimport("java.lang.System")
             System.gc()
 
-        t = threading.Thread(target=fn)
-        t.setDaemon(True)
+        t = threading.Thread(target=fn, name="Display Well thread", daemon=True)
         t.start()
 
     def update_figure(self):

@@ -30,6 +30,7 @@ from ..preferences import get_awt_headless
 from ..preferences import set_preferences_from_dict
 from ..utilities.zmq.communicable.reply.upstream_exit import UpstreamExit
 from ..workspace import Workspace
+from ..reader import fill_readers
 
 
 LOGGER = logging.getLogger(__name__)
@@ -143,6 +144,9 @@ class Worker:
                 preferences_dict = rep.preferences
                 # update preferences to match remote values
                 set_preferences_from_dict(preferences_dict)
+                LOGGER.debug("Preferences updated")
+
+                fill_readers(check_config=True)
 
                 LOGGER.debug("Loading pipeline")
 

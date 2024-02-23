@@ -9,11 +9,8 @@ from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 import cellprofiler.modules.measureimageareaoccupied
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 import tests.frontend.modules
-
-cellprofiler_core.preferences.set_headless()
 
 OBJECTS_NAME = "MyObjects"
 

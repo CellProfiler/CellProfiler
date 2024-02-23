@@ -47,7 +47,6 @@ from cellprofiler_core.pipeline import (
 )
 from cellprofiler_core.pipeline.io._v6 import dump, load
 from cellprofiler_core.preferences import (
-    set_headless,
     set_default_output_directory,
     get_default_output_directory,
     set_default_image_directory,
@@ -125,7 +124,6 @@ def exploding_pipeline(test):
 class TestPipeline(unittest.TestCase):
     def setUp(self):
         # Change the default output directory to a temporary file
-        set_headless()
         self.new_output_directory = os.path.normcase(tempfile.mkdtemp())
         set_default_output_directory(self.new_output_directory)
         self.cpinstalled = find_spec("cellprofiler") != None

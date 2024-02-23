@@ -10,11 +10,8 @@ import cellprofiler_core.measurement
 import cellprofiler.modules.resize
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 import tests.frontend.modules
-
-cellprofiler_core.preferences.set_headless()
 
 INPUT_IMAGE_NAME = "input"
 OUTPUT_IMAGE_NAME = "output"

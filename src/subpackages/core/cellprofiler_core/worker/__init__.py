@@ -182,12 +182,15 @@ if __name__ == "__main__":
     # but one of the file descriptors inhertited by the child
     # corresponds to a TCP/IPv4 connection attached to the debugger,
     # so closing it would cause the debugger to detach from the subprocess.
-    # AFAICT the debugger fd is always 4, and is not associated with
+    # AFAICT the debugger fd is always 3 or 4, and is not associated with
     # any device + inode combo (both 0, ie null), so
     # if we find that, skip closing fd 4, else close all
     try:
-        stat = os.fstat(4)
-        if stat.st_ino == 0 and stat.st_dev == 0:
+        stat3 = os.fstat(3)
+        stat4 = os.fstat(4)
+        if stat3.st_ino == 0 and stat3.st_dev == 0:
+            os.closerange(4, maxfd)
+        elif stat4.st_ino == 0 and stat4.st_dev == 0:
             os.close(3)
             os.closerange(5, maxfd)
         else:

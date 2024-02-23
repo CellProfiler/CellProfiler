@@ -33,6 +33,7 @@ from cellprofiler_core.constants.worker import (
 )
 from cellprofiler_core.preferences import set_always_continue, set_conserve_memory
 from cellprofiler_core.worker._worker import Worker
+from cellprofiler_core.utilities.logging import set_log_level
 
 
 LOGGER = logging.getLogger(__name__)
@@ -59,8 +60,7 @@ def aw_parse_args():
     global work_server_address
     global notify_address
     global knime_bridge_address
-    set_headless()
-    set_awt_headless(True)
+
     parser = optparse.OptionParser()
     parser.add_option(
         "--analysis-id",
@@ -83,9 +83,17 @@ def aw_parse_args():
     parser.add_option(
         "--log-level",
         dest="log_level",
-        type="int",
-        help="Logging level for logger: DEBUG, INFO, WARNING, ERROR",
         default=os.environ.get(AW_LOG_LEVEL, logging.INFO),
+        help=(
+            "Set the verbosity for logging messages: "
+            + ("%d or %s for debugging, " % (logging.DEBUG, "DEBUG"))
+            + ("%d or %s for informational, " % (logging.INFO, "INFO"))
+            + ("%d or %s for warning, " % (logging.WARNING, "WARNING"))
+            + ("%d or %s for error, " % (logging.ERROR, "ERROR"))
+            + ("%d or %s for critical, " % (logging.CRITICAL, "CRITICAL"))
+            + ("%d or %s for fatal." % (logging.FATAL, "FATAL"))
+            + " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"
+        ),
     )
     parser.add_option(
         "--plugins-directory",
@@ -123,13 +131,15 @@ def aw_parse_args():
     )
 
     options, args = parser.parse_args()
+    
+    set_log_level(options.log_level, subprocess=True)
 
-    logging.root.setLevel(options.log_level)
-    if len(logging.root.handlers) == 0:
-        stream_handler = logging.StreamHandler()
-        fmt = logging.Formatter("%(process)d|%(levelno)s|%(name)s::%(funcName)s: %(message)s")
-        stream_handler.setFormatter(fmt)
-        logging.root.addHandler(stream_handler)
+    set_awt_headless(True)
+    set_headless()
+
+    # NOTE: don't call fill_readers here,
+    # woker needs to do PipelinePreferences req then set_preferences_from_dict,
+    # which it does later in worker.do_job
 
     if not options.work_server_address and options.work_server_address and \
             options.analysis_id:

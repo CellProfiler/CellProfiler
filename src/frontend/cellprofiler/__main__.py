@@ -53,6 +53,7 @@ from cellprofiler_core.utilities.hdf5_dict import HDF5FileList
 from cellprofiler_core.utilities.java import start_java, stop_java
 from cellprofiler_core.utilities.measurement import load_measurements
 from cellprofiler_core.utilities.zmq import join_to_the_boundary
+from cellprofiler_core.utilities.logging import set_log_level
 from cellprofiler_core.worker import aw_parse_args
 from cellprofiler_core.worker import main as worker_main
 from cellprofiler_core.workspace import Workspace
@@ -138,7 +139,10 @@ def main(args=None):
         return exit_code
 
     options, args = parse_args(args)
-    
+
+    # put up towards top, some things below need log level set
+    set_log_level(options.log_level)
+
     if options.print_version:
         set_headless()
         __version__(exit_code)
@@ -206,8 +210,6 @@ def main(args=None):
                 temp_data_file.write(line)
             options.data_file = temp_data_file.name
             to_clean.append(os.path.join(temp_dir, temp_data_file.name))
-
-    set_log_level(options)
 
     if options.print_groups_file is not None:
         print_groups(options.print_groups_file)
@@ -609,27 +611,6 @@ def parse_args(args):
             options.pipeline_filename = args[1]
             result_args = []
     return options, result_args
-
-
-def set_log_level(options):
-    """Set the logging package's log level based on command-line options"""
-    try:
-        if options.log_level.isdigit():
-            logging.root.setLevel(int(options.log_level))
-        else:
-            logging.root.setLevel(options.log_level)
-
-        if len(logging.root.handlers) == 0:
-            stream_handler = logging.StreamHandler()
-            fmt = logging.Formatter("[CP - %(levelname)s] %(name)s::%(funcName)s: %(message)s")
-            stream_handler.setFormatter(fmt)
-            logging.root.addHandler(stream_handler)
-
-        # silence matplotlib debug messages, they're super annoying
-        logging.getLogger('matplotlib').setLevel(logging.WARNING)
-    except ValueError as e:
-        logging.config.fileConfig(options.log_level)
-
 
 #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
 # def set_omero_credentials_from_string(credentials_string):

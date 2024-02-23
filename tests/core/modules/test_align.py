@@ -20,13 +20,9 @@ from cellprofiler_core.modules.align import (
 )
 from cellprofiler_core.object import ObjectSet
 from cellprofiler_core.pipeline import Pipeline, LoadException
-from cellprofiler_core.preferences import set_headless
 from cellprofiler_core.workspace import Workspace
 from tests.core.modules import read_example_image
 from cellprofiler_core.image import ImageSetList, Image
-
-
-set_headless()
 
 
 class TestAlign:

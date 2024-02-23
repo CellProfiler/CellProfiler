@@ -71,6 +71,8 @@ def activate_readers(check_config=True):
 
     if len(AVAILABLE_READERS) == 0:
         LOGGER.critical("No image readers are available, CellProfiler won't be able to load data!")
+    else:
+        LOGGER.debug("Image readers available and active: %s", ", ".join(AVAILABLE_READERS))
 
 
 def find_cp_reader(rdr):
@@ -127,5 +129,3 @@ def get_image_reader_by_name(reader_name):
         LOGGER.warning(f"Requested reader {reader_name} which is disabled by config."
                        f"CellProfiler will use this reader anyway.")
     return ALL_READERS[reader_name]
-
-fill_readers(check_config=False)

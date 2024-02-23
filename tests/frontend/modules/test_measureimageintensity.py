@@ -12,10 +12,7 @@ from cellprofiler_core.constants.measurement import COLTYPE_FLOAT, COLTYPE_INTEG
 import cellprofiler.modules.measureimageintensity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
-
-cellprofiler_core.preferences.set_headless()
 
 
 @pytest.fixture(scope="function")

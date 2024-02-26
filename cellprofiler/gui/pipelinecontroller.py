@@ -1572,7 +1572,8 @@ class PipelineController(object):
         """Set the title of the parent frame"""
         pathname = get_current_workspace_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler %s" % cellprofiler.__version__
+            self.__frame.Title = \
+                f"CellProfiler {cellprofiler.__version__} + AI"
             return
         path, filename = os.path.split(pathname)
         if self.__dirty_workspace:
@@ -2113,7 +2114,7 @@ class PipelineController(object):
                         if path.path in desired:
                             message[0] = "\nProcessing " + path.path
                             desired.remove(path.path)
-                            if path.is_file():
+                            if path.is_file() or path.path.lower().endswith('.zarr'):
                                 urls.append(pathname2url(path.path))
                                 if len(urls) > 100:
                                     queue.put(urls)
@@ -2145,7 +2146,7 @@ class PipelineController(object):
                         break
 
                     message[0] = "\nProcessing " + pathname
-                    if os.path.isfile(pathname):
+                    if os.path.isfile(pathname) or pathname.lower().endswith('.zarr'):
                         urls.append(pathname2url(pathname))
                         if len(urls) > 100:
                             queue.put(urls)

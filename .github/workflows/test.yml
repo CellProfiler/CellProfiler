@@ -64,6 +64,9 @@ jobs:
           pip install -e src/subpackages/library
           pip install -e src/subpackages/core
           pip install -e src/frontend[test]
+      - name: Get all packages
+        run: |
+          pip freeze
       - name: Run tests
         run: |
           pytest ${{ github.workspace }}/tests/frontend

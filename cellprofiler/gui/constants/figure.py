@@ -48,8 +48,5 @@ NAV_MODE_NONE = ""
 NAV_MODE_PAN = "pan/zoom"
 NAV_MODE_ZOOM = "zoom rect"
 NAV_MODE_MEASURE = "measure"
-if wx.App.Get() is not None:
-    BMP_MEASURE = wx.Bitmap(get_builtin_image("IMG_MEASURE"))
-else:
-    BMP_MEASURE = None
+BMP_MEASURE = wx.Bitmap(get_builtin_image("IMG_MEASURE"))
 WINDOW_IDS = []

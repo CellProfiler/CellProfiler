@@ -52,7 +52,7 @@ class TestAnalysis(unittest.TestCase):
             self.setDaemon(True)
             self.zmq_context = zmq.Context()
             self.zmq_context.setsockopt(zmq.LINGER, 0)
-            self.queue = queue.Queue()
+            self.request_queue = queue.Queue()
             self.response_queue = queue.Queue()
             self.start_signal = threading.Semaphore(0)
             self.keep_going = True
@@ -121,7 +121,7 @@ class TestAnalysis(unittest.TestCase):
                             if not self.keep_going:
                                 LOGGER.debug("FakeWorker::run - keep going is false, breaking")
                                 break
-                            fn_and_args = self.queue.get_nowait()
+                            fn_and_args = self.request_queue.get_nowait()
 
                         except queue.Empty:
                             LOGGER.debug("FakeWorker::run - queue empty, breaking")
@@ -144,7 +144,7 @@ class TestAnalysis(unittest.TestCase):
 
         def send(self, req):
             LOGGER.debug("    FakeWorker::send - Enqueueing send of %s" % str(type(req)))
-            self.queue.put((self.do_send, req))
+            self.request_queue.put((self.do_send, req))
             self.notify_socket.send(b"Send")
             return self.recv
 
@@ -191,7 +191,7 @@ class TestAnalysis(unittest.TestCase):
                 return result
 
         def listen_for_heartbeat(self, address):
-            self.queue.put((self.do_listen_for_heartbeat, address))
+            self.request_queue.put((self.do_listen_for_heartbeat, address))
             self.notify_socket.send(b"Listen for announcements")
             return self.recv
 
@@ -219,7 +219,7 @@ class TestAnalysis(unittest.TestCase):
 
         def connect(self, request_address, analysis_id):
             self.analysis_id = analysis_id
-            self.queue.put((self.do_connect, request_address))
+            self.request_queue.put((self.do_connect, request_address))
             self.notify_socket.send(b"Do connect")
             return self.recv()
 

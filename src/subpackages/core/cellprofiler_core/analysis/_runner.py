@@ -702,6 +702,12 @@ class Runner:
                 )
 
             def run_logger(workR, widx):
+                # this thread shuts itself down by reading from worker's stdout
+                # which either reads content from stdout or blocks until it can do so
+                # when the worker is shut down, empty byte string is returned continuously
+                # which evaluates as None so the break is hit
+                # I don't really like this approach; we should just shut it down with the other
+                # threads explicitly
                 while True:
                     try:
                         line = workR.stdout.readline()

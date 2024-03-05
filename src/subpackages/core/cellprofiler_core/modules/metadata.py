@@ -869,7 +869,9 @@ not being applied, your choice on this setting may be the culprit.
                     joins = group.csv_joiner.parse()
                     image_meta = file_object.metadata
                     valid = True
-                    for candidate_dict in group.imported_metadata_dicts:
+                    if group.imported_metadata_dicts is None:
+                        valid = False
+                    for candidate_dict in group.imported_metadata_dicts or []:
                         if None in candidate_dict:
                             # Extra columns without header labels were present. Delete them.
                             del candidate_dict[None]

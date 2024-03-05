@@ -307,6 +307,9 @@ def main(args=None):
             app = cellprofiler.gui.app.App(
                 0, workspace_path=workspace_path, pipeline_path=pipeline_path
             )
+            if options.image_directory is not None:
+                plc = app.frame.get_pipeline_controller()
+                plc.add_paths_to_pathlist([options.image_directory])
 
             if options.run_pipeline:
                 app.frame.pipeline_controller.do_analyze_images()

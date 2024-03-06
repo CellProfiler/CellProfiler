@@ -652,6 +652,7 @@ class PipelineListView(object):
             ID_EDIT_DUPLICATE,
             ID_HELP_MODULE,
             ID_EDIT_ENABLE_MODULE,
+            ID_EDIT_DISPLAY_MODULE,
             ID_DEBUG_RUN_FROM_THIS_MODULE,
             ID_DEBUG_STEP_FROM_THIS_MODULE,
             ID_FIND_USAGES,
@@ -683,7 +684,11 @@ class PipelineListView(object):
                     )
                     menu.Append(
                         ID_EDIT_ENABLE_MODULE,
-                        "Enable {} (#{})".format(module.module_name, module.module_num),
+                        "Disable {} (#{})".format(module.module_name, module.module_num),
+                    )
+                    menu.Append(
+                        ID_EDIT_DISPLAY_MODULE,
+                        "Disable Display of {} (#{})".format(module.module_name, module.module_num),
                     )
                     menu.Append(
                         ID_HELP_MODULE,
@@ -735,7 +740,11 @@ class PipelineListView(object):
                     )
                     menu.Append(
                         ID_EDIT_ENABLE_MODULE,
-                        "Enable selected modules ({})".format(num_modules),
+                        "Disable selected modules ({})".format(num_modules),
+                    )
+                    menu.Append(
+                        ID_EDIT_DISPLAY_MODULE,
+                        "Disable Display of selected modules ({})".format(num_modules),
                     )
 
             else:

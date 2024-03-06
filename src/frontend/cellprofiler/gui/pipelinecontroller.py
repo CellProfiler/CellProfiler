@@ -387,7 +387,16 @@ class PipelineController(object):
             self.on_module_enable,
             id=cellprofiler.gui.cpframe.ID_EDIT_ENABLE_MODULE,
         )
-
+        frame.Bind(
+            wx.EVT_UPDATE_UI,
+            self.on_update_module_display_toggle,
+            id=cellprofiler.gui.cpframe.ID_EDIT_DISPLAY_MODULE,
+        )
+        frame.Bind(
+            wx.EVT_MENU,
+            self.on_module_display_toggle,
+            id=cellprofiler.gui.cpframe.ID_EDIT_DISPLAY_MODULE,
+        )
         frame.Bind(
             wx.EVT_MENU,
             self.on_debug_toggle,
@@ -2724,6 +2733,55 @@ class PipelineController(object):
             self.__pipeline.disable_module(active_module)
         else:
             self.__pipeline.enable_module(active_module)
+
+    def on_update_module_display_toggle(self, event):
+        """Update the UI for the DISPLAY_MODULE menu item / button
+
+        event - an UpdateUIEvent for the item
+        """
+        num_modules = len(self.__pipeline_list_view.get_selected_modules())
+        active_module = self.__pipeline_list_view.get_active_module()
+        if num_modules > 1:
+            event.SetText(
+                "Disable Display of selected modules ({})".format(num_modules)
+                if self.__pipeline_list_view.get_selected_modules()[0].show_window
+                else "Enable Display of selected modules ({})".format(num_modules)
+            )
+        elif active_module is not None:
+            event.SetText(
+                "Disable Display of {} (#{})".format(
+                    active_module.module_name, active_module.module_num
+                )
+                if active_module.show_window
+                else "Enable Display of {} (#{})".format(
+                    active_module.module_name, active_module.module_num
+                )
+            )
+        if active_module is None or active_module.is_input_module():
+            event.Enable(False)
+        else:
+            event.Enable(True)
+
+    def on_module_display_toggle(self, event):
+        """Toggle the active module's display state"""
+        active_module = self.__pipeline_list_view.get_active_module()
+        selected_modules = self.__pipeline_list_view.get_selected_modules()
+        if len(selected_modules) > 1:
+            for module in selected_modules:
+                self.__pipeline.show_module_window(module, state=not module.show_window)
+            return
+
+        if active_module is None:
+            LOGGER.warning(
+                "User managed to fire the enable/disable module event and no module was active"
+            )
+            return
+        if active_module.is_input_module():
+            LOGGER.warning(
+                "User managed to fire the enable/disable module event when an input module was active"
+            )
+            return
+        self.__pipeline.show_module_window(active_module, state=not active_module.show_window)
 
     def on_undo(self, event):
         wx.BeginBusyCursor()

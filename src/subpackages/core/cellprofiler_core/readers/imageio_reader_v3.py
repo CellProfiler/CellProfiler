@@ -82,7 +82,7 @@ class ImageIOReaderV3(Reader):
             imax = self.find_scale_to_match_bioformats(data)
             data = data.astype(numpy.float32) / float(imax)
             if wants_max_intensity:
-                return data, 1
+                return data, imax
             return data
         if wants_max_intensity:
             return data, numpy.iinfo(data.dtype).max

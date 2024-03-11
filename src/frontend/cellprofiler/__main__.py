@@ -2,7 +2,7 @@ import io
 import json
 import logging
 import logging.config
-import optparse
+import argparse
 import os
 import os.path
 import sys
@@ -117,13 +117,13 @@ if hasattr(sys, "frozen"):
 numpy.seterr(all="ignore")
 
 
-def main(args=None):
+def main(main_args=None):
     """Run CellProfiler
 
     args - command-line arguments, e.g., sys.argv
     """
-    if args is None:
-        args = sys.argv
+    if main_args is None:
+        main_args = sys.argv
 
     set_awt_headless(True)
 
@@ -131,172 +131,172 @@ def main(args=None):
 
     switches = ("--analysis-id", "--work-server", "--knime-bridge-address")
 
-    if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
+    if any([any([arg.startswith(switch) for switch in switches]) for arg in main_args]):
         set_headless()
         aw_parse_args()
         fill_readers(check_config=True)
         worker_main()
         return exit_code
 
-    options, args = parse_args(args)
+    args = parse_args(main_args)
 
     # put up towards top, some things below need log level set
-    set_log_level(options.log_level)
+    set_log_level(args.log_level)
 
-    if options.print_version:
+    if args.print_version:
         set_headless()
         __version__(exit_code)
 
-    if (not options.show_gui) or options.write_schema_and_exit:
+    if (not args.show_gui) or args.write_schema_and_exit:
         set_headless()
 
-        options.run_pipeline = True
+        args.run_pipeline = True
 
-    if options.batch_commands_file or options.new_batch_commands_file:
+    if args.batch_commands_file or args.new_batch_commands_file:
         set_headless()
-        options.run_pipeline = False
-        options.show_gui = False
+        args.run_pipeline = False
+        args.show_gui = False
 
     # must be run after last possible invocation of set_headless()
     fill_readers(check_config=True)
 
-    if options.temp_dir is not None:
-        if not os.path.exists(options.temp_dir):
-            os.makedirs(options.temp_dir)
-        set_temporary_directory(options.temp_dir, globally=False)
+    if args.temp_dir is not None:
+        if not os.path.exists(args.temp_dir):
+            os.makedirs(args.temp_dir)
+        set_temporary_directory(args.temp_dir, globally=False)
 
     temp_dir = get_temporary_directory()
 
     to_clean = []
 
-    if options.pipeline_filename:
-        o = urllib.parse.urlparse(options.pipeline_filename)
+    if args.pipeline_filename:
+        o = urllib.parse.urlparse(args.pipeline_filename)
         if o[0] in ("ftp", "http", "https"):
             from urllib.request import urlopen
 
             temp_pipe_file = tempfile.NamedTemporaryFile(
                 mode="w+b", suffix=".cppipe", dir=temp_dir, delete=False
             )
-            downloaded_pipeline = urlopen(options.pipeline_filename)
+            downloaded_pipeline = urlopen(args.pipeline_filename)
             for line in downloaded_pipeline:
                 temp_pipe_file.write(line)
-            options.pipeline_filename = temp_pipe_file.name
+            args.pipeline_filename = temp_pipe_file.name
             to_clean.append(os.path.join(temp_dir, temp_pipe_file.name))
 
-    if options.image_set_file:
-        o = urllib.parse.urlparse(options.image_set_file)
+    if args.image_set_file:
+        o = urllib.parse.urlparse(args.image_set_file)
         if o[0] in ("ftp", "http", "https"):
             from urllib.request import urlopen
 
             temp_set_file = tempfile.NamedTemporaryFile(
                 mode="w+b", suffix=".csv", dir=temp_dir, delete=False
             )
-            downloaded_set_csv = urlopen(options.image_set_file)
+            downloaded_set_csv = urlopen(args.image_set_file)
             for line in downloaded_set_csv:
                 temp_set_file.write(line)
-            options.image_set_file = temp_set_file.name
+            args.image_set_file = temp_set_file.name
             to_clean.append(os.path.join(temp_dir, temp_set_file.name))
 
-    if options.data_file:
-        o = urllib.parse.urlparse(options.data_file)
+    if args.data_file:
+        o = urllib.parse.urlparse(args.data_file)
         if o[0] in ("ftp", "http", "https"):
             from urllib.request import urlopen
 
             temp_data_file = tempfile.NamedTemporaryFile(
                 mode="w+b", suffix=".csv", dir=temp_dir, delete=False
             )
-            downloaded_data_csv = urlopen(options.data_file)
+            downloaded_data_csv = urlopen(args.data_file)
             for line in downloaded_data_csv:
                 temp_data_file.write(line)
-            options.data_file = temp_data_file.name
+            args.data_file = temp_data_file.name
             to_clean.append(os.path.join(temp_dir, temp_data_file.name))
 
-    if options.print_groups_file is not None:
-        print_groups(options.print_groups_file)
+    if args.print_groups_file is not None:
+        print_groups(args.print_groups_file)
 
-    if options.batch_commands_file is not None:
+    if args.batch_commands_file is not None:
         try:
-            nr_per_batch = int(options.images_per_batch)
+            nr_per_batch = int(args.images_per_batch)
         except ValueError:
             LOGGER.warning(
                 "non-integer argument to --images-per-batch. Defaulting to 1."
             )
             nr_per_batch = 1
-        get_batch_commands(options.batch_commands_file, nr_per_batch)
+        get_batch_commands(args.batch_commands_file, nr_per_batch)
     
-    if options.new_batch_commands_file is not None:
+    if args.new_batch_commands_file is not None:
         try:
-            nr_per_batch = int(options.images_per_batch)
+            nr_per_batch = int(args.images_per_batch)
         except ValueError:
             LOGGER.warning(
                 "non-integer argument to --images-per-batch. Defaulting to 1."
             )
             nr_per_batch = 1
-        get_batch_commands_new(options.new_batch_commands_file, nr_per_batch)
+        get_batch_commands_new(args.new_batch_commands_file, nr_per_batch)
 
     #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
     # if options.omero_credentials is not None:
     #     set_omero_credentials_from_string(options.omero_credentials)
 
-    if options.plugins_directory is not None:
-        set_plugin_directory(options.plugins_directory, globally=False)
+    if args.plugins_directory is not None:
+        set_plugin_directory(args.plugins_directory, globally=False)
 
-    if options.conserve_memory is not None:
-        set_conserve_memory(options.conserve_memory, globally=False)
+    if args.conserve_memory is not None:
+        set_conserve_memory(args.conserve_memory, globally=False)
 
-    if options.force_bioformats is not None:
-        set_force_bioformats(options.force_bioformats, globally=False)
+    if args.force_bioformats is not None:
+        set_force_bioformats(args.force_bioformats, globally=False)
 
-    if options.always_continue is not None:
-        set_always_continue(options.always_continue, globally=False)
+    if args.always_continue is not None:
+        set_always_continue(args.always_continue, globally=False)
 
-    if not options.allow_schema_write:
+    if not args.allow_schema_write:
         set_allow_schema_write(False)
 
-    if options.output_directory:
-        if not os.path.exists(options.output_directory):
-            os.makedirs(options.output_directory)
+    if args.output_directory:
+        if not os.path.exists(args.output_directory):
+            os.makedirs(args.output_directory)
 
-        set_default_output_directory(options.output_directory)
+        set_default_output_directory(args.output_directory)
 
-    if options.image_directory:
-        set_default_image_directory(options.image_directory)
+    if args.image_directory:
+        set_default_image_directory(args.image_directory)
 
-    if options.run_pipeline and not options.pipeline_filename:
+    if args.run_pipeline and not args.pipeline_filename:
         raise ValueError("You must specify a pipeline filename to run")
 
-    if options.data_file is not None:
-        set_data_file(os.path.abspath(options.data_file))
+    if args.data_file is not None:
+        set_data_file(os.path.abspath(args.data_file))
 
-    if options.widget_inspector:
+    if args.widget_inspector:
         set_widget_inspector(True, globally=False)
 
     try:
 
-        if options.image_set_file is not None:
-            set_image_set_file(options.image_set_file)
+        if args.image_set_file is not None:
+            set_image_set_file(args.image_set_file)
 
         #
         # Handle command-line tasks that that need to load the modules to run
         #
-        if options.print_measurements:
-            print_measurements(options)
+        if args.print_measurements:
+            print_measurements(args)
 
-        if options.write_schema_and_exit:
-            write_schema(options.pipeline_filename)
+        if args.write_schema_and_exit:
+            write_schema(args.pipeline_filename)
 
-        if options.show_gui:
+        if args.show_gui:
             matplotlib.use("WXAgg")
 
             import cellprofiler.gui.app
 
-            if options.pipeline_filename:
-                if is_workspace_file(options.pipeline_filename):
-                    workspace_path = os.path.expanduser(options.pipeline_filename)
+            if args.pipeline_filename:
+                if is_workspace_file(args.pipeline_filename):
+                    workspace_path = os.path.expanduser(args.pipeline_filename)
 
                     pipeline_path = None
                 else:
-                    pipeline_path = os.path.expanduser(options.pipeline_filename)
+                    pipeline_path = os.path.expanduser(args.pipeline_filename)
 
                     workspace_path = None
             else:
@@ -307,18 +307,18 @@ def main(args=None):
             app = cellprofiler.gui.app.App(
                 0, workspace_path=workspace_path, pipeline_path=pipeline_path
             )
-            if options.image_directory is not None:
+            if args.image_directory is not None:
                 plc = app.frame.get_pipeline_controller()
-                plc.add_paths_to_pathlist([options.image_directory])
+                plc.add_paths_to_pathlist([args.image_directory])
 
-            if options.run_pipeline:
+            if args.run_pipeline:
                 app.frame.pipeline_controller.do_analyze_images()
 
             app.MainLoop()
 
             return
-        elif options.run_pipeline:
-            exit_code = run_pipeline_headless(options, args)
+        elif args.run_pipeline:
+            exit_code = run_pipeline_headless(args)
 
     finally:
         # Cleanup the temp files we made, if any
@@ -327,7 +327,7 @@ def main(args=None):
                 os.remove(each_temp)
         # If anything goes wrong during the startup sequence headlessly, the JVM needs
         # to be explicitly closed
-        if not options.show_gui:
+        if not args.show_gui:
             stop_cellprofiler()
 
     return exit_code
@@ -353,7 +353,7 @@ def stop_cellprofiler():
 
 def parse_args(args):
     """Parse the CellProfiler command-line arguments"""
-    usage = """usage: %prog [options] [<output-file>])
+    usage = """usage: %(prog)s [options] [<output-file>])
          where <output-file> is the optional filename for the output file of
                measurements when running headless.
          The flags -p, -r and -c are required for a headless run."""
@@ -363,9 +363,9 @@ def parse_args(args):
 
         args.remove("--do-not-fetch")
 
-    parser = optparse.OptionParser(usage=usage)
+    parser = argparse.ArgumentParser(usage=usage, prog="cellprofiler")
 
-    parser.add_option(
+    parser.add_argument(
         "-p",
         "--pipeline",
         "--project",
@@ -379,7 +379,7 @@ def parse_args(args):
     if sys.platform.startswith("linux") and not os.getenv("DISPLAY"):
         default_show_gui = False
 
-    parser.add_option(
+    parser.add_argument(
         "-c",
         "--run-headless",
         action="store_false",
@@ -388,7 +388,7 @@ def parse_args(args):
         help="Run headless (without the GUI)",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-r",
         "--run",
         action="store_true",
@@ -397,7 +397,7 @@ def parse_args(args):
         help="Run the given pipeline on startup",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-o",
         "--output-directory",
         dest="output_directory",
@@ -405,7 +405,7 @@ def parse_args(args):
         help="Make this directory the default output folder",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-i",
         "--image-directory",
         dest="image_directory",
@@ -413,7 +413,7 @@ def parse_args(args):
         help="Make this directory the default input folder",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-f",
         "--first-image-set",
         dest="first_image_set",
@@ -421,7 +421,7 @@ def parse_args(args):
         help="The one-based index of the first image set to process",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-l",
         "--last-image-set",
         dest="last_image_set",
@@ -429,7 +429,7 @@ def parse_args(args):
         help="The one-based index of the last image set to process",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-g",
         "--group",
         dest="groups",
@@ -437,27 +437,27 @@ def parse_args(args):
         help='Restrict processing to one grouping in a grouped pipeline. For instance, "-g ROW=H,COL=01", will process only the group of image sets that match the keys.',
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--plugins-directory",
         dest="plugins_directory",
         help="CellProfiler will look for plugin modules in this directory (headless-only).",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--conserve-memory",
         dest="conserve_memory",
         default=None,
         help="CellProfiler will attempt to release unused memory after each image set.",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--force-bioformats",
         dest="force_bioformats",
         default=None,
         help="CellProfiler will always use BioFormats for reading images.",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--version",
         dest="print_version",
         default=False,
@@ -465,7 +465,7 @@ def parse_args(args):
         help="Print the version and exit",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-t",
         "--temporary-directory",
         dest="temp_dir",
@@ -478,7 +478,7 @@ def parse_args(args):
         ),
     )
 
-    parser.add_option(
+    parser.add_argument(
         "-d",
         "--done-file",
         dest="done_file",
@@ -486,7 +486,7 @@ def parse_args(args):
         help='The path to the "Done" file, written by CellProfiler shortly before exiting',
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--measurements",
         dest="print_measurements",
         default=False,
@@ -494,14 +494,14 @@ def parse_args(args):
         help="Open the pipeline file specified by the -p switch and print the measurements made by that pipeline",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--print-groups",
         dest="print_groups_file",
         default=None,
         help="Open the measurements file following the --print-groups switch and print the groups in its image sets. The measurements file should be generated using CreateBatchFiles. The output is a JSON-encoded data structure containing the group keys and values and the image sets in each group.",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--get-batch-commands",
         dest="batch_commands_file",
         default=None,
@@ -509,7 +509,7 @@ def parse_args(args):
         "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh. Note that CellProfiler will always run in headless mode when --get-batch-commands is present and will exit after generating the batch commands without processing any pipeline. Note that this exact version is deprecated and will be removed in CellProfiler 5; you may use the new version now with --get-batch-commands-new",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--get-batch-commands-new",
         dest="new_batch_commands_file",
         default=None,
@@ -517,28 +517,28 @@ def parse_args(args):
         "with your invocation command in the script's text, for instance: CellProfiler --get-batch-commands-new Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh. Note that CellProfiler will always run in headless mode when --get-batch-commands is present and will exit after generating the batch commands without processing any pipeline.",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--images-per-batch",
         dest="images_per_batch",
         default="1",
         help="For pipelines that do not use image grouping this option specifies the number of images that should be processed in each batch if --get-batch-commands is used. Defaults to 1.",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--data-file",
         dest="data_file",
         default=None,
         help="Specify the location of a .csv file for LoadData. If this switch is present, this file is used instead of the one specified in the LoadData module.",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--file-list",
         dest="image_set_file",
         default=None,
         help="Specify a file list of one file or URL per line to be used to initially populate the Images module's file list.",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--do-not-write-schema",
         dest="allow_schema_write",
         default=True,
@@ -546,7 +546,7 @@ def parse_args(args):
         help="Do not execute the schema definition and other per-experiment SQL commands during initialization when running a pipeline in batch mode.",
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--write-schema-and-exit",
         dest="write_schema_and_exit",
         default=False,
@@ -555,7 +555,7 @@ def parse_args(args):
     )
 
     #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
-    # parser.add_option(
+    # parser.add_argument(
     #     "--omero-credentials",
     #     dest="omero_credentials",
     #     default=None,
@@ -574,7 +574,7 @@ def parse_args(args):
     #     % globals(),
     # )
 
-    parser.add_option(
+    parser.add_argument(
         "-L",
         "--log-level",
         dest="log_level",
@@ -591,7 +591,7 @@ def parse_args(args):
         ),
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--always-continue",
         dest="always_continue",
         default=None,
@@ -599,7 +599,7 @@ def parse_args(args):
         help="Keep running after an image set throws an error"
     )
 
-    parser.add_option(
+    parser.add_argument(
         "--widget-inspector",
         dest="widget_inspector",
         default=False,
@@ -607,13 +607,20 @@ def parse_args(args):
         help="Enable the widget inspector menu item under \"Test\""
     )
 
-    options, result_args = parser.parse_args(args[1:])
+    parser.add_argument(
+        "pipeline-filename",
+        nargs="?",
+        help="optional filename for the output file of measurements when running headless"
+    )
+
+    parsed_args = parser.parse_args()
+
     if len(args) == 2:
-        if args[1].lower().endswith((".cpproj", ".cppipe")):
+        if args[1].lower().endswith(".cppr", ".cppipe"):
             # Opening a file with CellProfiler will supply the file as an argument
-            options.pipeline_filename = args[1]
-            result_args = []
-    return options, result_args
+            parsed_args.pipeline_filename = args[1]
+
+    return parsed_args
 
 #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
 # def set_omero_credentials_from_string(credentials_string):
@@ -895,7 +902,7 @@ def write_schema(pipeline_filename):
     module.prepare_run(workspace)
 
 
-def run_pipeline_headless(options, args):
+def run_pipeline_headless(options):
     """
     Run a CellProfiler pipeline in headless mode
     """

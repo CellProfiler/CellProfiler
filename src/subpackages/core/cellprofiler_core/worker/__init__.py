@@ -54,33 +54,33 @@ def aw_parse_args():
         set_awt_headless,
         set_plugin_directory,
     )
-    import optparse
+    import argparse
 
     global analysis_id
     global work_server_address
     global notify_address
     global knime_bridge_address
 
-    parser = optparse.OptionParser()
-    parser.add_option(
+    parser = argparse.ArgumentParser()
+    parser.parser.add_argument(
         "--analysis-id",
         dest="analysis_id",
         help="Unique ID for the analysis to be performed",
         default=None,
     )
-    parser.add_option(
+    parser.parser.add_argument(
         "--work-server",
         dest="work_server_address",
         help="ZMQ port where work requests should be sent",
         default=None,
     )
-    parser.add_option(
+    parser.parser.add_argument(
         "--notify-server",
         dest="notify_address",
         help="ZMQ port where continue/shutdown notifications are published",
         default=None,
     )
-    parser.add_option(
+    parser.parser.add_argument(
         "--log-level",
         dest="log_level",
         default=os.environ.get(AW_LOG_LEVEL, logging.INFO),
@@ -95,19 +95,19 @@ def aw_parse_args():
             + " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"
         ),
     )
-    parser.add_option(
+    parser.parser.add_argument(
         "--plugins-directory",
         dest="plugins_directory",
         help="Folder containing the CellProfiler plugin modules needed by client pipelines",
         default=None,
     )
-    parser.add_option(
+    parser.parser.add_argument(
         "--conserve-memory",
         dest="conserve_memory",
         default=None,
         help="CellProfiler will attempt to release unused memory after each image set.",
     )
-    parser.add_option(
+    parser.parser.add_argument(
         "--jvm-heap-size",
         dest="jvm_heap_size",
         default=None,
@@ -117,22 +117,22 @@ def aw_parse_args():
             "Example formats: 512000k, 512m, 1g"
         ),
     )
-    parser.add_option(
+    parser.parser.add_argument(
         "--knime-bridge-address",
         dest="knime_bridge_address",
         help="Open up a port to handle the Knime bridge protocol",
         default=None,
     )
-    parser.add_option(
+    parser.parser.add_argument(
         "--always-continue",
         dest="always_continue",
         help="Don't stop the analysis when an image set raises an error",
         default=None
     )
 
-    options, args = parser.parse_args()
+    args = parser.parse_args()
     
-    set_log_level(options.log_level, subprocess=True)
+    set_log_level(args.log_level, subprocess=True)
 
     set_awt_headless(True)
     set_headless()
@@ -141,25 +141,25 @@ def aw_parse_args():
     # woker needs to do PipelinePreferences req then set_preferences_from_dict,
     # which it does later in worker.do_job
 
-    if not options.work_server_address and options.work_server_address and \
-            options.analysis_id:
+    if not args.work_server_address and args.work_server_address and \
+            args.analysis_id:
         parser.print_help()
         sys.exit(1)
-    analysis_id = options.analysis_id
-    notify_address = options.notify_address
-    work_server_address = options.work_server_address
-    knime_bridge_address = options.knime_bridge_address
+    analysis_id = args.analysis_id
+    notify_address = args.notify_address
+    work_server_address = args.work_server_address
+    knime_bridge_address = args.knime_bridge_address
 
     #
     # Set up the headless plugins directories before doing
     # anything so loading will get them
     #
-    if options.plugins_directory is not None:
-        set_plugin_directory(options.plugins_directory, globally=False)
-    if options.conserve_memory is not None:
-        set_conserve_memory(options.conserve_memory, globally=False)
-    if options.always_continue is not None:
-        set_always_continue(options.always_continue, globally=False)
+    if args.plugins_directory is not None:
+        set_plugin_directory(args.plugins_directory, globally=False)
+    if args.conserve_memory is not None:
+        set_conserve_memory(args.conserve_memory, globally=False)
+    if args.always_continue is not None:
+        set_always_continue(args.always_continue, globally=False)
     else:
         LOGGER.warning("Plugins directory not set")
 

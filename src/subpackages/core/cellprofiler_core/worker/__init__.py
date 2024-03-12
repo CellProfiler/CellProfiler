@@ -62,25 +62,25 @@ def aw_parse_args():
     global knime_bridge_address
 
     parser = argparse.ArgumentParser()
-    parser.parser.add_argument(
+    parser.add_argument(
         "--analysis-id",
         dest="analysis_id",
         help="Unique ID for the analysis to be performed",
         default=None,
     )
-    parser.parser.add_argument(
+    parser.add_argument(
         "--work-server",
         dest="work_server_address",
         help="ZMQ port where work requests should be sent",
         default=None,
     )
-    parser.parser.add_argument(
+    parser.add_argument(
         "--notify-server",
         dest="notify_address",
         help="ZMQ port where continue/shutdown notifications are published",
         default=None,
     )
-    parser.parser.add_argument(
+    parser.add_argument(
         "--log-level",
         dest="log_level",
         default=os.environ.get(AW_LOG_LEVEL, logging.INFO),
@@ -95,19 +95,19 @@ def aw_parse_args():
             + " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"
         ),
     )
-    parser.parser.add_argument(
+    parser.add_argument(
         "--plugins-directory",
         dest="plugins_directory",
         help="Folder containing the CellProfiler plugin modules needed by client pipelines",
         default=None,
     )
-    parser.parser.add_argument(
+    parser.add_argument(
         "--conserve-memory",
         dest="conserve_memory",
         default=None,
         help="CellProfiler will attempt to release unused memory after each image set.",
     )
-    parser.parser.add_argument(
+    parser.add_argument(
         "--jvm-heap-size",
         dest="jvm_heap_size",
         default=None,
@@ -117,13 +117,13 @@ def aw_parse_args():
             "Example formats: 512000k, 512m, 1g"
         ),
     )
-    parser.parser.add_argument(
+    parser.add_argument(
         "--knime-bridge-address",
         dest="knime_bridge_address",
         help="Open up a port to handle the Knime bridge protocol",
         default=None,
     )
-    parser.parser.add_argument(
+    parser.add_argument(
         "--always-continue",
         dest="always_continue",
         help="Don't stop the analysis when an image set raises an error",

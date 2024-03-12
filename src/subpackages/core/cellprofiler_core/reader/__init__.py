@@ -7,7 +7,7 @@ from ..constants.reader import ALL_READERS, builtin_readers, BAD_READERS, AVAILA
 
 import logging
 
-from ..preferences import get_force_bioformats, config_read_typed
+from ..preferences import config_read_typed
 
 LOGGER = logging.getLogger(__name__)
 
@@ -74,6 +74,25 @@ def activate_readers(check_config=True):
     else:
         LOGGER.debug("Image readers available and active: %s", ", ".join(AVAILABLE_READERS))
 
+def filter_active_readers(readers_to_keep, from_all_readers=True):
+    """
+    Filter out readers that are not in the readers_to_keep list.
+    from_all_readers - if True, use ALL_READERS instead of AVAILABLE_READERS
+    """
+    if from_all_readers:
+        readers_to_filter = ALL_READERS.copy()
+    else:
+        readers_to_filter = AVAILABLE_READERS.copy()
+
+    filtered_readers = {reader_name: classname for reader_name, classname in readers_to_filter.items() if classname.__module__.split('.')[-1] in readers_to_keep}
+
+    if len(filtered_readers) == 0:
+        LOGGER.critical("No image readers are available after filtering, CellProfiler won't be able to load data!")
+    else:
+        LOGGER.debug("Image readers available and active after filtering: %s", ", ".join(filtered_readers))
+
+    AVAILABLE_READERS.clear()
+    AVAILABLE_READERS.update(filtered_readers)
 
 def find_cp_reader(rdr):
     """Returns the CPModule from within the loaded Python module
@@ -92,8 +111,6 @@ def find_cp_reader(rdr):
 
 
 def get_image_reader_class(image_file, use_cached_name=True, volume=False):
-    if get_force_bioformats():
-        return ALL_READERS["Bio-Formats"]
     if not AVAILABLE_READERS:
         raise Exception("No image readers are enabled.\n"
                         "Please check reader configuration in the File menu.")

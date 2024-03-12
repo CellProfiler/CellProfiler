@@ -324,7 +324,7 @@ FUNCTION_SETTING_COUNT = 4
 class Morph(Module):
     module_name = "Morph"
     category = "Image Processing"
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     def create_settings(self):
         self.image_name = ImageSubscriber(

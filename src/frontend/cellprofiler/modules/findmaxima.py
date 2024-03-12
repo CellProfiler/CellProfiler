@@ -252,8 +252,9 @@ images.
             settings = setting_values[:2]
             settings += [False] # Set label_maxima as False
             settings += setting_values[2:]
+            setting_values = settings
             variable_revision_number = 2
-        return settings, variable_revision_number
+        return setting_values, variable_revision_number
 
     def volumetric(self):
         return True

@@ -25,18 +25,20 @@ PROCNAME="CellProfiler"
 LAUNCHER="${CONDA_PREFIX}/python.app/Contents/MacOS/python"
 OUTNAME="profile"
 THEPID=""
-B_DOLAUNCH=false
 CPARGS=""
 DEFAULT_PROFILE_TYPE="svg"
 PROFILE_TYPE="${DEFAULT_PROFILE_TYPE}"
+B_DOLAUNCH=false
+B_GUI=true
+B_TMPOUT=false
 
 usage () {
   echo "usage:"
-  echo "  doprofiler.sh [--speedscope] [--outname <name>] [-- <cp_args..>]"
+  echo "  doprofiler.sh [--speedscope | --memray] [--outname <name>] [-- <cp_args..>]"
   echo "    try to find existing process and attach to pid"
-  echo "  doprofiler.sh --pid <pid> [--speedscope] [--memray] [--outname <name>] [-- <cp_args..>]"
+  echo "  doprofiler.sh --pid <pid> [--speedscope | --memray] [--outname <name>] [--tmpout] [-- <cp_args..>]"
   echo "    attach to existing passed in pid"
-  echo "  doprofiler.sh --launch [--speedscope] [--memray] [--outname <name>] [-- <cp_args..>] [-- <cp_args..>] [--gui | --headless]"
+  echo "  doprofiler.sh --launch (gui | headless) [--speedscope | --memray] [--outname <name>] [--tmpout] [-- <cp_args..>]"
   echo "    launch process and attach to its pid"
   echo ""
   echo "  --outname is the name of the output profile with .svg, .json, or .bin automatically appended"
@@ -44,8 +46,9 @@ usage () {
   echo "      open in www.speedscope.app"
   echo "  --memray will output a memray .bin which can be converted to html with the memray's report generators"
   echo "  --speedscope and --memray are mutually exclusive"
-  echo "  [--gui | --headless] if --launch, choose whether to run the GUI (default) or headless mode"
-  echo "  -- <cp_args..> are cellprofiler arguments e.g. -h"
+  echo "  (--gui | --headless) argument for --launch, choose whether to run the GUI (default) or headless mode"
+  echo "  --tmpout will create a temporary directory to store the output of cellprofiler (not the profile) in and delete it when done"
+  echo "  -- <cp_args..> are cellprofiler arguments e.g. -h; don't use -o flag if --tmpdir is provided; don't use -L flag at all"
 }
 
 while [[ $# -gt 0 ]]; do
@@ -60,7 +63,16 @@ while [[ $# -gt 0 ]]; do
             ;;
         --launch)
             B_DOLAUNCH=true
-            shift 1
+            if [[ "$2" == "gui" ]]; then
+                B_GUI=true
+            elif [[ "$2" == "headless" ]]; then
+                B_GUI=false
+            else
+                echo "Invalid launch type ${launch_type}"
+                usage
+                exit 1
+            fi
+            shift 2
             ;;
         --help)
             usage
@@ -69,14 +81,6 @@ while [[ $# -gt 0 ]]; do
         -h)
             usage
             exit 0
-            ;;
-        --gui)
-            GUI=true
-            shift 1
-            ;;
-        --headless)
-            GUI=false
-            shift 1
             ;;
         --speedscope)
             if [[ "${PROFILE_TYPE}" != "${DEFAULT_PROFILE_TYPE}" ]]; then
@@ -96,6 +100,10 @@ while [[ $# -gt 0 ]]; do
             PROFILE_TYPE="memray"
             shift 1
             ;;
+        --tmpout)
+            B_TMPOUT=true
+            shift 1
+            ;;
         --)
             shift 1
             CPARGS+=${*}
@@ -111,18 +119,6 @@ done
 
 # uncomment to enable debugging
 #trap '(echo -e -n "\033[0;38;2;3;252;53m[$BASH_SOURCE:$LINENO]\033[0m $BASH_COMMAND" && read)' DEBUG
-
-# if --gui or --headless weren't passed, then GUI wasn't set, do so
-if [ -z ${GUI+x} ]; then
-    GUI=true
-else
-    # if we passed --gui or --headless, but not --launch, err
-    if ! ${B_DOLAUNCH}; then
-        echo "Error: passed --gui or --headless, without specifying --launch"
-        usage
-        exit 1
-    fi
-fi
 
 # if we passed both --launch and --pid, err
 if ${B_DOLAUNCH} && [[ -n "${THEPID}" ]]; then
@@ -140,10 +136,22 @@ fi
 # https://apple.stackexchange.com/questions/10139/how-do-i-increase-sudo-password-remember-timeout
 sudo printf "\033[0K"
 
+# if --tmpout make a temporary directory, add it to cellprofiler args
+if ${B_TMPOUT}; then
+    TMP_OUT_DIR="$(pwd)/doprofile_tmp"
+    mkdir "${TMP_OUT_DIR}"
+    CPARGS+=" -o ${TMP_OUT_DIR}"
+fi
+
+function ctrl_c() {
+        echo "** Trapped CTRL-C"
+}
+
+
 if ${B_DOLAUNCH}; then
     # debug flag args, always
     CPARGS+=" -L 10"
-    if ! ${GUI}; then
+    if ! ${B_GUI}; then
         # headless flags
         CPARGS+=" -c -r"
     fi
@@ -180,7 +188,15 @@ elif [[ "${PROFILE_TYPE}" == "memray" ]] && ${B_DOLAUNCH}; then
 elif [[ "${PROFILE_TYPE}" == "memray" ]] && [[ -n "${THEPID}" ]]; then
     ${LAUNCHER} -m memray attach "${THEPID}" -o "${OUTNAME}_memray.bin"
 else
-    echo "Error: unknown profile type: ${PROFILE_TYPE}"
+    echo "Error: unknown profile type: ${PROFILE_TYPE} or invalid arg combo"
     usage
     exit 1
 fi
+
+
+if ${B_TMPOUT}; then
+    echo doprofile cleaning up tmp directory
+    rm -rf "${TMP_OUT_DIR}"
+fi
+
+exit 0

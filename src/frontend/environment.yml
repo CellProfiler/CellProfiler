@@ -18,7 +18,6 @@ dependencies:
 
   # CellProfiler dependencies
   - imageio
-  - inflect
   - joblib
   - mahotas
   - mysqlclient

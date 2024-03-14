@@ -52,9 +52,6 @@ License: `GNU General Public License (GPL)`_
 Name: h5py 
 License: `BSD 3-Clause “New” or “Revised” license`_
 
-Name: inflect 
-License: `GNU General Public License (GPL)`_
-
 Name: joblib 
 License: `BSD 3-Clause “New” or “Revised” license`_
 

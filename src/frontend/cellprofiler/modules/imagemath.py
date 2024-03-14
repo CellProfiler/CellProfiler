@@ -31,7 +31,6 @@ See also **Threshold**, **RescaleIntensity**,
 **CorrectIlluminationCalculate**.
 """
 
-import inflect
 import numpy
 import skimage.util
 from cellprofiler_core.image import Image
@@ -320,17 +319,30 @@ is applied before other operations.""",
         group.append("divider", Divider())
         self.images.append(group)
 
-    def renumber_settings(self):
-        inflection = inflect.engine()
+    def __make_ordinal(self, n):
+        '''
+        Convert an integer into its ordinal representation::
 
+            make_ordinal(0)   => '0th'
+            make_ordinal(3)   => '3rd'
+            make_ordinal(122) => '122nd'
+            make_ordinal(213) => '213th'
+        '''
+        n = int(n)
+        if 11 <= (n % 100) <= 13:
+            suffix = 'th'
+        else:
+            suffix = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
+        return str(n) + suffix
+
+    def renumber_settings(self):
         for idx, image in enumerate(self.images):
             image.image_name.text = "Select the %s image" % (
-                inflection.number_to_words(inflection.ordinal(idx + 1))
+                self.__make_ordinal(idx + 1)
             )
-            image.factor.text = "Multiply the %s image by" % inflection.number_to_words(
-                inflection.ordinal(idx + 1)
+            image.factor.text = "Multiply the %s image by" % (
+                self.__make_ordinal(idx + 1)
             )
-
     def settings(self):
         result = [
             self.operation,

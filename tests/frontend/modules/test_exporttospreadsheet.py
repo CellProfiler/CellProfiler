@@ -1523,7 +1523,6 @@ def test_image_with_path_metadata(output_dir):
 def test_image_measurement_custom_directory(output_dir):
     """Test writing an image measurement"""
     path = os.path.join(output_dir, "my_dir", "my_file.csv")
-    cellprofiler_core.preferences.set_headless()
     cellprofiler_core.preferences.set_default_output_directory(output_dir)
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)
@@ -1564,7 +1563,6 @@ def test_image_measurement_custom_directory(output_dir):
 def test_unicode_image_metadata(output_dir):
     """Write image measurements containing unicode characters"""
     path = os.path.join(output_dir, "my_dir", "my_file.csv")
-    cellprofiler_core.preferences.set_headless()
     cellprofiler_core.preferences.set_default_output_directory(output_dir)
     module = cellprofiler.modules.exporttospreadsheet.ExportToSpreadsheet()
     module.set_module_num(1)

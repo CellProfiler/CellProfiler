@@ -2,6 +2,7 @@ import re
 
 builtin_readers = {
     "imageio_reader": "ImageIOReader",
+    "imageio_reader_v3": "ImageIOReaderV3",
     "ngff_reader": "NGFFReader",
     "bioformats_reader": "BioformatsReader",
     "gcs_reader": "GcsReader",

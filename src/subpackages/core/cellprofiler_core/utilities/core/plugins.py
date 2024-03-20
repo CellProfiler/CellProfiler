@@ -69,12 +69,12 @@ def load_plugin(source, modules_only=False):
                         break
                     elif line.endswith("Module):\n"):
                         break
-        LOGGER.warning("Could not load %s", source, exc_info=True)
+        LOGGER.warning("Could not load %s", source, exc_info=False)
         return
 
 
 def add_module(cp_module):
-    LOGGER.debug("Registering ", cp_module.__name__)
+    LOGGER.debug("Registering %s", cp_module.__name__)
     name = None
     try:
         name = cp_module.module_name
@@ -99,7 +99,7 @@ def add_module(cp_module):
 
 
 def add_reader(cp_reader):
-    LOGGER.debug("Registering ", cp_reader.__name__)
+    LOGGER.debug("Registering %s", cp_reader.__name__)
     name = None
     try:
         name = cp_reader.reader_name

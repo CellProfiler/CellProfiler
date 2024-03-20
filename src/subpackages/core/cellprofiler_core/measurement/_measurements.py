@@ -1625,9 +1625,13 @@ class Measurements:
 
     def get_providers(self):
         """The list of providers (populated during the image discovery phase)"""
-        return self.__image_providers
+        # return tuple to prevent mutating underlying list
+        return tuple(self.__image_providers)
 
     providers = property(get_providers)
+    
+    def add_provider(self, provider):
+        self.__image_providers.append(provider)
 
     def get_image_provider(self, name):
         """Get a named image provider
@@ -1674,9 +1678,9 @@ class Measurements:
         if len(old_providers) > 0:
             self.clear_image(name)
         for provider in old_providers:
-            self.providers.remove(provider)
+            self.remove_image_provider(provider.name)
         provider = VanillaImage(name, image)
-        self.providers.append(provider)
+        self.add_provider(provider)
         self.__images[name] = image
 
     def set_channel_descriptors(self, channel_descriptors):

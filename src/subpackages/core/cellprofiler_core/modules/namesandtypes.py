@@ -1543,7 +1543,7 @@ requests an object selection.
         else:
             raise NotImplementedError(f"Unknown load choice: {load_choice}")
         provider.reader_name = reader_name
-        workspace.image_set.providers.append(provider)
+        workspace.image_set.add_provider(provider)
 
         self.add_provider_measurements(provider, m, "Image")
 

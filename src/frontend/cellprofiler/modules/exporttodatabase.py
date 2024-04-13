@@ -90,10 +90,12 @@ import io
 import logging
 import os
 import re
+import numpy
+
+from packaging.version import Version
 
 import cellprofiler_core.pipeline
 import cellprofiler_core.utilities.legacy
-import numpy
 from cellprofiler_core.constants.measurement import AGG_MEAN
 from cellprofiler_core.constants.measurement import AGG_MEDIAN
 from cellprofiler_core.constants.measurement import AGG_STD_DEV
@@ -143,8 +145,7 @@ from cellprofiler_core.setting.text import Integer
 from cellprofiler_core.setting.text import Text
 from cellprofiler_core.utilities.measurement import agg_ignore_feature
 
-import cellprofiler
-import cellprofiler.icons
+from cellprofiler import __version__ as cellprofiler_version
 from cellprofiler.modules import _help
 from cellprofiler.modules._help import IO_FOLDER_CHOICE_HELP_TEXT
 
@@ -3151,7 +3152,7 @@ CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
         insert_into_experiment_statement = """
 INSERT INTO %s (name) values ('%s')""" % (
             T_EXPERIMENT,
-            MySQLdb.escape_string(self.experiment_name.value).decode(),
+            MySQLdb._mysql.escape_string(self.experiment_name.value).decode(),
         )
         statements.append(insert_into_experiment_statement)
 
@@ -3165,8 +3166,8 @@ INSERT INTO %s (experiment_id, object_name, field, value)
 SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
                     T_EXPERIMENT_PROPERTIES,
                     p.object_name,
-                    MySQLdb.escape_string(k).decode(),
-                    MySQLdb.escape_string(v).decode(),
+                    MySQLdb._mysql.escape_string(k).decode(),
+                    MySQLdb._mysql.escape_string(v).decode(),
                     T_EXPERIMENT,
                 )
                 statements.append(statement)
@@ -3205,7 +3206,7 @@ CREATE TABLE %s (
                 if isinstance(value, str):
                     value = value
                 if self.db_type != DB_SQLITE:
-                    value = MySQLdb.escape_string(value).decode()
+                    value = MySQLdb._mysql.escape_string(value).decode()
                 else:
                     value = value.replace("'", "''")
                 value = "'" + value + "'"
@@ -4820,11 +4821,10 @@ process_3D = {process_3D}
         file_name = self.make_full_filename(filename, workspace)
 
         fd = open(file_name, "w")
-        header_text = """CellProfiler Analyst workflow
+        ver = Version(cellprofiler_version)
+        header_text = f"""CellProfiler Analyst workflow
 version: 1
-CP version : %d\n""" % int(
-            re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__)
-        )
+CP version : {ver.major}{ver.minor}{ver.micro}\n""" 
         fd.write(header_text)
         display_tool_text = ""
         for workspace_group in self.workspace_measurement_groups:

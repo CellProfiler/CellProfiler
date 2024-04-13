@@ -10,16 +10,15 @@ from cellprofiler_core.preferences import get_telemetry_prompt
 from cellprofiler_core.preferences import get_telemetry
 from cellprofiler_core.preferences import set_telemetry
 from cellprofiler_core.preferences import set_telemetry_prompt
-from cellprofiler_core.utilities.java import start_java
 from cellprofiler_core.utilities.java import stop_java
 
+from cellprofiler import __version__ as cellprofiler_version
 from .dialog import Telemetry
 
 def init_telemetry():
     dsn = "https://c0b47db2a1b34f12b33ca8e78067617e:3cee11601374464dadd4b44da8a22dbd@sentry.io/152399"
 
-    from cellprofiler import __version__
-    sentry = sentry_sdk.init(dsn=dsn, release=__version__)
+    sentry = sentry_sdk.init(dsn=dsn, release=cellprofiler_version)
 
     sentry_sdk.set_user(
         {
@@ -65,14 +64,13 @@ class App(wx.App):
                 print(f"Python rejected the system locale detected by WX ('{self.locale.GetName()}').\n"
                       "This shouldn't cause problems, but please let us know if you encounter errors.")
         from .cpframe import CPFrame
-        from cellprofiler import __version__
 
         # This import is needed to populate the modules list
         import cellprofiler_core.modules
 
         # wx.lib.inspection.InspectionTool().Show()
 
-        self.SetAppName("CellProfiler{0:s}".format(__version__))
+        self.SetAppName("CellProfiler{0:s}".format(cellprofiler_version))
 
         self.frame = CPFrame(None, -1, "CellProfiler")
 

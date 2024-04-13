@@ -5,7 +5,6 @@ import logging.config
 import optparse
 import os
 import os.path
-import re
 import sys
 import tempfile
 import urllib.parse
@@ -13,7 +12,9 @@ import urllib.parse
 import h5py
 import matplotlib
 import numpy
-import pkg_resources
+
+from cellprofiler import __version__ as cellprofiler_version
+
 from cellprofiler_core.constants.measurement import EXPERIMENT
 from cellprofiler_core.constants.measurement import GROUP_INDEX
 from cellprofiler_core.constants.measurement import GROUP_NUMBER
@@ -101,8 +102,7 @@ if hasattr(sys, "frozen"):
     else:
         # Clear out deprecation warnings from PyInstaller
         os.system('clear')
-    from cellprofiler import __version__ as ver
-    print(f"Starting CellProfiler {ver}")
+    print(f"Starting CellProfiler {cellprofiler_version}")
 
 
 #TODO: disabled until CellProfiler/CellProfiler#4684 is resolved
@@ -128,7 +128,7 @@ def main(args=None):
 
     exit_code = 0
 
-    switches = ("--work-announce", "--knime-bridge-address")
+    switches = ("--analysis-id", "--work-server", "--knime-bridge-address")
 
     if any([any([arg.startswith(switch) for switch in switches]) for arg in args]):
         set_headless()
@@ -329,7 +329,7 @@ def main(args=None):
 
 
 def __version__(exit_code):
-    print(pkg_resources.get_distribution("CellProfiler").version)
+    print(cellprofiler_version)
 
     sys.exit(exit_code)
 

@@ -15,17 +15,18 @@ import re
 import string
 import sys
 import threading
+import h5py
+import numpy
+
 from functools import reduce, cmp_to_key
 from queue import PriorityQueue, Queue, Empty
 from urllib.request import urlretrieve, url2pathname
 from urllib.parse import urlparse
 
-import cellprofiler_core
-import h5py
-import numpy
 import wx
 import wx.lib.buttons
 import wx.lib.mixins.listctrl
+
 from cellprofiler_core.analysis import DEBUG
 from cellprofiler_core.analysis._analysis import Analysis
 from cellprofiler_core.analysis._runner import Runner
@@ -144,7 +145,6 @@ from cellprofiler_core.utilities.pathname import pathname2url
 from cellprofiler_core.utilities.zmq import Reply
 from wx.adv import Sound
 
-import cellprofiler
 import cellprofiler.gui._workspace_model
 import cellprofiler.gui.addmoduleframe
 import cellprofiler.gui.cpframe
@@ -162,6 +162,7 @@ import cellprofiler.gui.pipeline
 import cellprofiler.gui.workspace_view
 import cellprofiler.icons
 from cellprofiler.gui.pipelinelistview import EVT_PLV_VALID_STEP_COLUMN_CLICKED
+from cellprofiler import __version__ as cellprofiler_version
 from .workspace_view import WorkspaceView
 
 LOGGER = logging.getLogger(__name__)
@@ -1605,18 +1606,18 @@ class PipelineController(object):
         """Set the title of the parent frame"""
         pathname = get_current_workspace_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler %s" % cellprofiler.__version__
+            self.__frame.Title = "CellProfiler %s" % cellprofiler_version
             return
         path, filename = os.path.split(pathname)
         if self.__dirty_workspace:
             self.__frame.Title = "CellProfiler %s: %s* (%s)" % (
-                cellprofiler.__version__,
+                cellprofiler_version,
                 filename,
                 path,
             )
         else:
             self.__frame.Title = "CellProfiler %s: %s (%s)" % (
-                cellprofiler.__version__,
+                cellprofiler_version,
                 filename,
                 path,
             )

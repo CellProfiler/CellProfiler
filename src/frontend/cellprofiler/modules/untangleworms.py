@@ -90,13 +90,19 @@ References
 
 import logging
 import os
-import re
 import xml.dom.minidom as DOM
 from urllib.request import urlopen
+from packaging.version import Version
 
-import centrosome.cpmorphology
 import numpy
 import scipy.ndimage
+from scipy.interpolate import interp1d
+from scipy.io import loadmat
+from scipy.sparse import coo
+from centrosome.outline import outline
+from centrosome.propagate import propagate
+import centrosome.cpmorphology
+
 from cellprofiler_core.constants.measurement import C_LOCATION
 from cellprofiler_core.constants.measurement import C_NUMBER
 from cellprofiler_core.constants.measurement import FTR_CENTER_X
@@ -131,13 +137,8 @@ from cellprofiler_core.utilities.core.module.identify import (
     add_object_location_measurements,
     get_object_measurement_columns,
 )
-from centrosome.outline import outline
-from centrosome.propagate import propagate
-from scipy.interpolate import interp1d
-from scipy.io import loadmat
-from scipy.sparse import coo
 
-import cellprofiler
+from cellprofiler import __version__ as cellprofiler_version
 
 
 LOGGER = logging.getLogger(__name__)
@@ -1024,8 +1025,9 @@ should be processed.
             )
             top = doc.documentElement
             top.setAttribute("xmlns", T_NAMESPACE)
+            ver = Version(cellprofiler_version)
             for tag, value in (
-                (T_VERSION, int(re.sub(r"\.|rc\d{1}", "", cellprofiler.__version__))),
+                (T_VERSION, int(f"{ver.major}{ver.minor}{ver.micro}")),
                 (T_MIN_AREA, min_area),
                 (T_MAX_AREA, max_area),
                 (T_COST_THRESHOLD, max_cost),

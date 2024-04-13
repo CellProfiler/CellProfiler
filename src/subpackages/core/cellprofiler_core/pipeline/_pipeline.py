@@ -2,7 +2,6 @@ import bisect
 import datetime
 import gc
 import hashlib
-import importlib
 import io
 import logging
 import os
@@ -18,6 +17,7 @@ import requests
 import uuid
 import weakref
 from ast import literal_eval
+from packaging.version import Version
 
 import numpy
 
@@ -100,7 +100,7 @@ from ..setting.text import Name
 from ..utilities.measurement import load_measurements
 from ..workspace import Workspace
 
-from cellprofiler_core import __version__
+from cellprofiler_core import __version__ as core_version
 
 
 LOGGER = logging.getLogger(__name__)
@@ -410,8 +410,9 @@ class Pipeline:
         version = NATIVE_VERSION
         has_image_plane_details = False
         git_hash = None
-        pipeline_version = __version__
-        current_version = int(re.sub(r"\.|rc\d", "", __version__))
+        ver = Version(core_version)
+        pipeline_version = ver.base_version
+        current_version = int(f"{ver.major}{ver.minor}{ver.micro}")
         while True:
             line = readline(fd)
 
@@ -1465,7 +1466,7 @@ class Pipeline:
         assert isinstance(m, Measurements)
         self.write_pipeline_measurement(m)
         m.add_experiment_measurement(
-            M_VERSION, __version__,
+            M_VERSION, core_version,
         )
         m.add_experiment_measurement(
             M_TIMESTAMP, datetime.datetime.now().isoformat(),

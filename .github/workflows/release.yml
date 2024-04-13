@@ -4,125 +4,160 @@ jobs:
     name: Build CellProfiler
     strategy:
       matrix:
-        os: [macos-10.15, windows-2019]
-        python-version: ["3.8"]
+        os: [macos-latest, windows-2019]
+        python-version: ["3.9"]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    outputs:
+      cp-version: ${{ steps.get-cp-version-mac.outputs.CP_VERSION }}
     steps:
       - name: Windows - Cache pip
-        if: ${{ matrix.os == 'windows-2019' }}
-        uses: actions/cache@v2
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/cache@v4
         with:
           path: ~\AppData\Local\pip\Cache
-          key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Mac - Cache pip
-        if: ${{ matrix.os == 'macos-10.15' }}
-        uses: actions/cache@v2
+        if: startsWith(matrix.os, 'macos')
+        uses: actions/cache@v4
         with:
           path: ~/Library/Caches/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          # need to get git tags for setuptools-scm
+          fetch-depth: 0
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           architecture: x64
           python-version: ${{ matrix.python-version }}
+      - name: Get CellProfiler Version - Mac
+        if: startsWith(matrix.os, 'macos')
+        id: get-cp-version-mac
+        run: |
+          pip install --upgrade "setuptools>=64.0.0" "setuptools-scm>=8.0"
+          # reference with ${{ env.CP_VERSION }}
+          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)"
+          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)" >> "$GITHUB_ENV"
+          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)" >> "$GITHUB_OUTPUT"
+      - name: Get CellProfiler Version - Windows
+        if: startsWith(matrix.os, 'windows')
+        id: get-cp-version-windows
+        run: |
+          pip install --upgrade "setuptools>=64.0.0" "setuptools-scm>=8.0"
+          # reference with ${{ env.CP_VERSION }}
+          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)"
+          echo "CP_VERSION=$(python -m setuptools_scm -c ${{ github.workspace }}/src/frontend/pyproject.toml)" >> $env:GITHUB_ENV
       - name: Setup java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: "temurin"
           java-version: "11" # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
       - name: Mac - Build
-        if: ${{ matrix.os == 'macos-10.15' }}
+        if: startsWith(matrix.os, 'macos')
         working-directory: ${{ github.workspace }}/distribution/macos
         env:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
           CERTIFICATE_PASSWORD: ${{ secrets.P12_PASSWORD_CIMINI }}
         run: |
-          sed -i '' 's/4.0.0/4.2.4/' Info.plist
-          brew install mysql
-          make
+          brew install mysql pkg-config
+          make CP_VERSION=${{ env.CP_VERSION }} CP_BRANCH="" CP_DIR=${{ github.workspace }}
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
           chmod +x osx-codesign.sh && ./osx-codesign.sh
-          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.2.4.zip
+          ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
       - name: Windows - Build
-        if: ${{ matrix.os == 'windows-2019' }}
+        if: startsWith(matrix.os, 'windows')
         env:
-          JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.16-8\x64
+          JDK_HOME: ${{ env.JAVA_HOME }}
         # cython necessary? mysql?
         run: |
           pip install "cython" 
-          pip install mysqlclient==1.4.6
-          pip install --editable ${{ github.workspace }}/src/frontend[build] --no-use-pep517
-          pyinstaller ${{ github.workspace }}/distribution/windows/cellprofiler.spec
-          iscc /dMyAppVersion="4.2.4" "${{ github.workspace }}/distribution/windows/cellprofiler.iss"
-      - name: Mac - Create Artifact
-        if: ${{ matrix.os == 'macos-10.15' }}
-        uses: actions/upload-artifact@v1
+          pip install mysqlclient==2.0.3 #tbh, I suspect this is outside the pip install below because it's crashy and takes a long time, not for real reasons
+          echo "Installing ${{ env.CP_VERSION }}..."
+          pip install --editable "${{ github.workspace }}/src/subpackages/library" --upgrade
+          pip install --editable "${{ github.workspace }}/src/subpackages/core" --upgrade
+          pip install --editable "${{ github.workspace }}/src/frontend[build]" --upgrade
+          cd ${{ github.workspace }}/distribution/windows
+          pyinstaller cellprofiler.spec
+          iscc cellprofiler.iss
+      - name: Mac - Create Actions Artifact
+        if: startsWith(matrix.os, 'macos')
+        uses: actions/upload-artifact@v4
         with:
-          name: CellProfiler-macOS-4.2.4.zip
-          path: ${{ github.workspace }}/distribution/macos/dist/CellProfiler-macOS-4.2.4.zip
-      - name: Windows - Create Artifact
-        if: ${{ matrix.os == 'windows-2019' }}
-        uses: actions/upload-artifact@v2
+          name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+          path: ${{ github.workspace }}/distribution/macos/dist/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+      - name: Windows - Create Actions Artifact
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/upload-artifact@v4
         with:
-          name: CellProfiler-Windows-4.2.4.exe
-          path: ${{ github.workspace }}/distribution/windows/Output/CellProfiler-Windows-4.2.4.exe
+          name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+          path: ${{ github.workspace }}/distribution/windows/Output/CellProfiler-Windows-${{ env.CP_VERSION }}.exe
 
   upload-cp:
     name: Upload CellProfiler
     needs: build-cp
     runs-on: ubuntu-latest
+    env:
+      CP_VERSION: ${{ needs.build-cp.outputs.cp-version }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+      actions: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Create Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        id: create_release
-        uses: actions/create-release@v1
+        uses: actions/checkout@v4
+        with:
+          # need to get git tags for setuptools-scm
+          fetch-depth: 0
+      - name: Download Mac Actions Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+          path: ./
+      - name: Download Windows Actions Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+          path: ./
+      - name: Upload Release Artifacts
+        id: upload-artifacts
+        uses: softprops/action-gh-release@v1
         with:
           draft: true
           prerelease: true
-          release_name: ${{ github.ref }}
-          tag_name: ${{ github.ref }}
-      - name: Download Mac Artifact
-        uses: actions/download-artifact@v1
+          fail_on_unmatched_files: true
+          name: ${{ env.CP_VERSION }}
+          tag_name: ${{ env.CP_VERSION }}
+          files: |
+            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+      - name: Display Upload Info
+        run: |
+          echo "url: ${{ steps.upload-artifacts.outputs.url }}"
+          echo "release id: ${{ steps.upload-artifacts.outputs.id }}"
+          echo "upload_url: ${{ steps.upload-artifacts.outputs.upload_url }}"
+          echo "assets: ${{ steps.upload-artifacts.outputs.assets }}"
+      - name: Delete Action Artifacts
+        # artifacts attached to the action no longer necessary
+        # since they have been uploaded to releases
+        id: delete-artifacts
+        uses: geekyeggo/delete-artifact@v4
         with:
-          name: CellProfiler-macOS-4.2.4.zip
-          path: ./
-      - name: Download Windows Artifact
-        uses: actions/download-artifact@v1
-        with:
-          name: CellProfiler-Windows-4.2.4.exe
-          path: ./
-      - name: Upload Mac Artifact
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: actions/upload-release-asset@v1
-        with:
-          asset_content_type: application/zip
-          asset_name: CellProfiler-macOS-4.2.4.zip
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.4.zip
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-      - name: Upload Windows Artifact
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: actions/upload-release-asset@v1
-        with:
-          asset_content_type: application/exe
-          asset_name: CellProfiler-Windows-4.2.4.exe
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.2.4.exe
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+            name: |
+              CellProfiler-macOS-${{ env.CP_VERSION }}.zip
+              CellProfiler-Windows-${{ env.CP_VERSION }}.exe
+
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - main
+  workflow_dispatch:

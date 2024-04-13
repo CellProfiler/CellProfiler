@@ -83,6 +83,10 @@ def get_config():
         return __headless_config
     import wx
 
+    # Return simple config on build
+    if not wx.App.IsDisplayAvailable():
+        return __headless_config
+
     if wx.App.Get() is None:
         app = wx.App(0)
 

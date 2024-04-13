@@ -4,14 +4,14 @@ EXAMPLE_CDN = https://github.com/CellProfiler/examples/archive/master.zip
 # Public gold output files
 S3_GOLD = https://s3.amazonaws.com/cellprofiler-examples/example-human-gold-standard
 
-VERSION := 4.2.3
+CP_VERSION ?= 4.2.3
 
 TAG := latest
 
 .DEFAULT_GOAL: build
 build:
-	docker build -t cellprofiler:$(VERSION) --build-arg version=$(VERSION) .
-	#docker tag cellprofiler:$(VERSION) cellprofiler:$(VERSION)
+	docker build -t cellprofiler:$(CP_VERSION) --build-arg cp_version=$(CP_VERSION) .
+	#docker tag cellprofiler:$(CP_VERSION) cellprofiler:$(CP_VERSION)
 
 .PHONY: input
 input:
@@ -53,7 +53,7 @@ test: input output output/gold data input/filelist.txt AS_09125_050116030001_D03
 	docker run \
 		--volume=`pwd`/input:/input \
 		--volume=`pwd`/output:/output \
-		cellprofiler:$(VERSION) \
+		cellprofiler:$(CP_VERSION) \
 		--image-directory=/input \
 		--output-directory=/output \
 		--pipeline=/input/ExampleHuman.cppipe \

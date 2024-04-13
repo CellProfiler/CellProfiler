@@ -1,0 +1,115 @@
+# build: sdist and wheel: python -m build
+# test: pytest
+# install: pip install [-e] .
+# upload: twine upload dist/*
+# check: twine check dist/*
+
+[build-system]
+# setuptools>=61 supports PEPs 517, 518, 621, 660
+# https://setuptools.pypa.io/en/latest/history.html#v61-0-0
+# setuptools-scm asks for setuptools>=64
+# https://setuptools-scm.readthedocs.io/en/latest/
+requires = ["setuptools>=64.0.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cellprofiler-core"
+authors = [
+    {name = "Anne Carpenter"},
+    {name = "Thouis (Ray) Jones"},
+    {name = "Lee Kamentsky"},
+    {name = "Vebjorn Ljosa"},
+    {name = "David Logan"},
+    {name = "Mark Bray"},
+    {name = "Madison Swain-Bowden"},
+    {name = "Allen Goodman"},
+    {name = "Claire McQuinn"},
+    {name = "Beth Cimini", email = "bcimini@broadinstitute.org"},
+    {name = "David Stirling", email = "dstirling@glencoesoftware.com"},
+    {name = "Alice Lucas"},
+    {name = "Nodar Gogoberidze", email = "ngogober@broadinstitute.org"},
+    {name = "Callum Tromans-Coia"},
+]
+maintainers = [
+    {name = "Beth Cimini", email = "bcimini@broadinstitute.org"},
+    {name = "Nodar Gogoberidze", email = "ngogober@broadinstitute.org"},
+]
+description = """
+cellprofiler-core implements the bulk of CellProfiler's \
+non-gui functionality"""
+readme = "README.md"
+# we don't place upper bound pin for python:
+# https://iscinumpy.dev/post/bound-version-constraints/#pinning-the-python-version-is-special
+requires-python = ">=3.9"
+# TODO: should be dynamic, top level, shared across all
+license = {file = "LICENSE"}
+keywords = ["computer vision", "image analysis", "biology", "cell", "cellprofiler"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Topic :: Scientific/Engineering",
+]
+dependencies = [
+    "cellprofiler-library>=5.dev",
+    "boto3>=1.12.28",
+    "centrosome~=1.2.2",
+    "docutils==0.15.2",
+    "future>=0.18.2",
+    "fsspec>=2021.11.0",
+    "h5py~=3.6.0",
+    "lxml>=4.6.4",
+    "matplotlib>=3.1.3,<4",
+    "numpy~=1.24.4",
+    "psutil>=5.9.5",
+    "pyzmq~=22.3.0",
+    "scikit-image~=0.20.0",
+    "scipy>=1.9.1,<1.11",
+    "scyjava>=1.9.1",
+    "zarr~=2.16.1",
+    "google-cloud-storage~=2.10.0",
+    "packaging>=20.0",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+build = [
+    "build",
+    "pyinstaller",
+    "twine",
+    "sphinx>=3.1.1",
+    "click>=7.1.2"
+]
+# TODO: should be handled by nox or tox
+test = ["pytest~=7.4.1", "pytest-timeout~=2.1.0"]
+wx = ["wxPython==4.2.0"]
+
+[project.urls]
+Homepage = "https://cellprofiler.org/"
+Documentation = "https://cellprofiler.org/manuals"
+Wiki = "https://github.com/CellProfiler/CellProfiler/wiki"
+Repository = "https://github.com/CellProfiler/CellProfiler"
+Issues = "https://github.com/CellProfiler/CellProfiler/issues"
+Changelog = "https://github.com/CellProfiler/CellProfiler/releases"
+
+[tool.setuptools]
+# true by default
+include-package-data = false
+
+# default exclusions for automatic discovery on flat-layout:
+# https://setuptools.pypa.io/en/latest/userguide/package_discovery.html#flat-layout
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cellprofiler_core*"]
+# enable PEP 420 namespace packages for cellprofiler/data dir
+namespaces = false
+
+[tool.setuptools_scm]
+root = "../../.."
+# run pip install -e to get latest
+version_file = "cellprofiler_core/_version.py"

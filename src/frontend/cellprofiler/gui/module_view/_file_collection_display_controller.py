@@ -38,29 +38,31 @@ class FileCollectionDisplayController:
                              item without traversing the entire tree.
     """
 
-    IMAGE_LIST = wx.ImageList(16, 16, 3)
-    FOLDER_IMAGE_INDEX = IMAGE_LIST.Add(
-        wx.ArtProvider.GetBitmap(wx.ART_FOLDER, wx.ART_OTHER, size=(16, 16))
-    )
-    FOLDER_OPEN_IMAGE_INDEX = IMAGE_LIST.Add(
-        wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN, wx.ART_OTHER, size=(16, 16))
-    )
-    FILE_IMAGE_INDEX = IMAGE_LIST.Add(
-        wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, size=(16, 16))
-    )
-    IMAGE_PLANE_IMAGE_INDEX = IMAGE_LIST.Add(
-        get_builtin_image("microscope-icon_16").ConvertToBitmap()
-    )
-    IMAGE_PLANES_IMAGE_INDEX = IMAGE_LIST.Add(
-        get_builtin_image("microscopes_16").ConvertToBitmap()
-    )
-    COLOR_IMAGE_INDEX = IMAGE_LIST.Add(
-        get_builtin_image("microscope-color_16").ConvertToBitmap()
-    )
-    MOVIE_IMAGE_INDEX = IMAGE_LIST.Add(get_builtin_image("movie_16").ConvertToBitmap())
+    # Don't defining constants on build, where no display available
+    if wx.App.IsDisplayAvailable():
+        IMAGE_LIST = wx.ImageList(16, 16, 3)
+        FOLDER_IMAGE_INDEX = IMAGE_LIST.Add(
+            wx.ArtProvider.GetBitmap(wx.ART_FOLDER, wx.ART_OTHER, size=(16, 16))
+        )
+        FOLDER_OPEN_IMAGE_INDEX = IMAGE_LIST.Add(
+            wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN, wx.ART_OTHER, size=(16, 16))
+        )
+        FILE_IMAGE_INDEX = IMAGE_LIST.Add(
+            wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE, wx.ART_OTHER, size=(16, 16))
+        )
+        IMAGE_PLANE_IMAGE_INDEX = IMAGE_LIST.Add(
+            get_builtin_image("microscope-icon_16").ConvertToBitmap()
+        )
+        IMAGE_PLANES_IMAGE_INDEX = IMAGE_LIST.Add(
+            get_builtin_image("microscopes_16").ConvertToBitmap()
+        )
+        COLOR_IMAGE_INDEX = IMAGE_LIST.Add(
+            get_builtin_image("microscope-color_16").ConvertToBitmap()
+        )
+        MOVIE_IMAGE_INDEX = IMAGE_LIST.Add(get_builtin_image("movie_16").ConvertToBitmap())
 
-    ACTIVE_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
-    FILTERED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+        ACTIVE_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
+        FILTERED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
 
     class FCDCDropTarget(wx.PyDropTarget):
         def __init__(self, file_callback_fn, text_callback_fn):

@@ -17,9 +17,9 @@
 	<key>CFBundleName</key>
 	<string>CellProfiler</string>
 	<key>CFBundleVersion</key>
-	<string>4.0.0</string>
+	<string>{{CP_VERSION}}</string>
 	<key>CFBundleShortVersionString</key>
-	<string>4.0.0</string>
+	<string>{{CP_VERSION}}</string>
 	<key>LSApplicationCategoryType</key>
 	<string></string>
 	<key>CFBundleDocumentTypes</key>

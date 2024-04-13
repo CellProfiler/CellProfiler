@@ -4,15 +4,16 @@ import os
 import os.path
 import re
 import base64
+import importlib.resources
 
-import pkg_resources
+from packaging.version import Version
 
-import cellprofiler
+from cellprofiler import __version__ as cellprofiler_version
 
 
 def read_content(filename):
-    resource_filename = pkg_resources.resource_filename(
-        "cellprofiler", os.path.join("data", "help", filename)
+    resource_filename = importlib.resources.files("cellprofiler").joinpath(
+        "data", "help", filename
     )
 
     with open(resource_filename, "r", encoding="utf-8") as f:
@@ -27,8 +28,8 @@ def read_content(filename):
 
 def image_resource(filename):
     relpath = os.path.relpath(
-        pkg_resources.resource_filename(
-            "cellprofiler", os.path.join("data", "images", filename)
+        importlib.resources.files("cellprofiler").joinpath(
+            "data", "images", filename
         )
     )
 
@@ -65,7 +66,7 @@ def image_resource_dataUrl(filename):
 
 
 MANUAL_URL = "http://cellprofiler-manual.s3.amazonaws.com/CellProfiler-{}/index.html".format(
-    cellprofiler.__version__
+    Version(cellprofiler_version).base_version
 )
 
 

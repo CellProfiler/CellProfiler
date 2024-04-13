@@ -13,6 +13,7 @@ import wx.adv
 import wx.html
 import wx.lib.inspection
 import wx.lib.scrolledpanel
+
 from cellprofiler_core.preferences import EXT_PIPELINE
 from cellprofiler_core.preferences import EXT_PROJECT
 from cellprofiler_core.preferences import get_show_sampling
@@ -20,9 +21,10 @@ from cellprofiler_core.preferences import get_startup_blurb
 from cellprofiler_core.preferences import get_widget_inspector
 from cellprofiler_core.utilities.core.modules import instantiate_module
 
-import cellprofiler
 import cellprofiler.gui
 import cellprofiler.gui.utilities.icon
+from cellprofiler import __version__ as cellprofiler_version
+
 from .plugins_menu import PLUGIN_MENU_ENTRIES
 from ._workspace_model import Workspace
 from .utilities.figure import close_all
@@ -548,7 +550,7 @@ class CPFrame(wx.Frame):
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler %s" % cellprofiler.__version__)
+        self.SetTitle("CellProfiler %s" % cellprofiler_version)
         self.SetSize((1024, 600))
 
     def enable_edit_commands(self, ids):

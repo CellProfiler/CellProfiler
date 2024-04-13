@@ -1,21 +1,24 @@
-import re
+from packaging.version import Version
 
 import cellprofiler_core.constants.pipeline
 import cellprofiler_core.measurement
 import cellprofiler_core.pipeline
 import cellprofiler_core.utilities.core.pipeline
+from cellprofiler_core import __version__ as core_version
 
 
 def dump(pipeline, fp, save_image_plane_details, sanitize=False):
     if len(pipeline.file_list) == 0:
         save_image_plane_details = False
 
-    date_revision = int(re.sub(r"\.|rc\d", "", cellprofiler_core.__version__))
+    sem_ver = Version(core_version)
+
+    ver = int(f"{sem_ver.major}{sem_ver.minor}{sem_ver.micro}")
     module_count = len(pipeline.modules(False))
 
     fp.write("CellProfiler Pipeline: http://www.cellprofiler.org\n")
     fp.write(f"Version:{cellprofiler_core.constants.pipeline.NATIVE_VERSION :d}\n")
-    fp.write(f"DateRevision:{date_revision:d}\n")
+    fp.write(f"DateRevision:{ver:d}\n")
     fp.write(f"GitHash:{''}\n")
     fp.write(f"ModuleCount:{module_count:d}\n")
     fp.write(f"HasImagePlaneDetails:{save_image_plane_details}\n")

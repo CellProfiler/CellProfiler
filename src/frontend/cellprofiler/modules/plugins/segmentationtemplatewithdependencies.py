@@ -196,7 +196,7 @@ Select which Docker image to use for running your plugin.
                     shutil.rmtree(temp_dir)
                 except:
                     LOGGER.error("Unable to delete temporary directory, files may be in use by another program.")
-                    LOGGER.error("Temp folder is subfolder {tempdir} in your Default Output Folder.\nYou may need to remove it manually.")
+                    LOGGER.error(f"Temp folder is subfolder {temp_dir} in your Default Output Folder.\nYou may need to remove it manually.")
 
 
         y = Objects()

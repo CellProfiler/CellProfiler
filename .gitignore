@@ -13,7 +13,6 @@ settings.json
 build/
 dist/
 pip-wheel-metadata/
-plugins/
 .pytest_cache/
 .python-version
 frozen_version.py

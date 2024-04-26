@@ -7,14 +7,13 @@
 import numpy
 import os
 import skimage
-import importlib.metadata
 import subprocess
 import uuid
 import shutil
 import logging
 import sys
 
-import your_dependency_with_a_long_and_improbable_name
+from your_dependency_with_a_long_and_improbable_name import somefunction
 
 #################################
 #
@@ -22,20 +21,12 @@ import your_dependency_with_a_long_and_improbable_name
 #
 ##################################
 
-from cellprofiler_core.image import Image
 from cellprofiler_core.module.image_segmentation import ImageSegmentation
 from cellprofiler_core.object import Objects
-from cellprofiler_core.setting import Binary, ValidationError
 from cellprofiler_core.setting.choice import Choice
-from cellprofiler_core.setting.do_something import DoSomething
-from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.preferences import get_default_output_directory
 from cellprofiler_core.setting.text import (
-    Integer,
-    ImageName,
-    Directory,
-    Filename,
-    Float,
+    Integer
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -50,6 +41,19 @@ Supports 2D? Supports 3D? Respects masks?
 YES/NO       YES/NO       YES/NO
 ============ ============ ===============
 
+This template class is intended to aid in adding segmentation models that
+introduce external dependencies (often, but not always, deep learning).
+
+In order to use a plugin that requires dependencies packaged with CellProfiler's build,
+the user will need to do one of two things - install CellProfiler with Python 
+or get that dependency from a software container like Docker. Here we assume you 
+want to support both possible options; if not, you can delete the docker_or_python settings 
+(and any settings that relate to that, or to the mode you don't want to support).
+
+If you're using deep learning and want to do GPU stuff, you may want to add things
+from that library that test for GPU access; we recommend checking RunCellpose for
+examples of doing this with PyTorch and RunStardist for exampels of doing this with 
+Tensorflow
 """
 #
 # Constants
@@ -135,16 +139,11 @@ Select which Docker image to use for running your plugin.
         if self.docker_or_python.value == "Docker":
             vis_settings += [self.docker_image]
 
-
         vis_settings += [
             self.some_numerical_parameter,
             self.some_listy_parameter,
             self.y_name,
         ]
-
-        if self.docker_or_python.value == 'Python':
-            if self.use_gpu.value:
-                vis_settings += [self.gpu_test]
 
         return vis_settings
 
@@ -159,12 +158,9 @@ Select which Docker image to use for running your plugin.
 
         if self.docker_or_python.value == "Python":
 
-            from your_dependency_with_a_long_and_improbable_name import somefunction
-
             try:
-                y_data = some_function(uses_our_parameters)
+                y_data = somefunction(x_data, self.some_numerical_parameter.value,self.some_listy_parameter.value)
         
-
             except Exception as a:
                         print(f"Unable to create masks. Check your module settings. {a}")
         elif self.docker_or_python.value == "Docker":
@@ -184,14 +180,13 @@ Select which Docker image to use for running your plugin.
             # Save the image to the Docker mounted directory
             skimage.io.imsave(temp_img_path, x_data)
 
-            cmd = f"""
-            {docker_path} run --rm -v {temp_dir}:/data
-            {self.docker_image.value}
-            {some_flags}
-            """
+            # You will need of course to figure out exactly the right command in your docker container
+            cmd = [docker_path,"run","--rm","-v",f"{temp_dir}:/data",self.docker_image.value,
+                   "--some-numerical-flag", self.some_numerical_parameter.value,
+                   "--some-other-flag", self.some_listy_parameter.value]
 
             try:
-                subprocess.run(cmd.split(), text=True)
+                subprocess.run(cmd, text=True)
                 #here the external library made a numpy array, you might use skimage.io.imread if it's a tiff file, etc
                 y_data = numpy.load(os.path.join(temp_img_dir, "some_segmentation_file_name"), allow_pickle=True).item()
 

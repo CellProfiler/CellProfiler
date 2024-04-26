@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+
 import glob
 import os.path
 import sys
@@ -14,6 +15,22 @@ try:
     __cython = True
 except ImportError:
     __cython = False
+
+
+class BuildExtension(setuptools.command.build_ext.build_ext):
+    def build_extensions(self):
+        numpy_includes = pkg_resources.resource_filename("numpy", "core/include")
+
+        for extension in self.extensions:
+            if (
+                    hasattr(extension, "include_dirs")
+                    and numpy_includes not in extension.include_dirs
+            ):
+                extension.include_dirs.append(numpy_includes)
+
+            extension.include_dirs.append("centrosome/include")
+
+        setuptools.command.build_ext.build_ext.build_extensions(self)
 
 
 class Test(setuptools.command.test.test):
@@ -78,7 +95,7 @@ for pyxfile in glob.glob(os.path.join("centrosome", "*.pyx")):
     ]
 
 if __suffix == "pyx":
-    __extensions = Cython.Build.cythonize(__extensions, compiler_directives={'language_level' : "3"})
+    __extensions = Cython.Build.cythonize(__extensions, compiler_directives={'language_level': "3"})
 
 setuptools.setup(
     author="Nodar Gogoberidze",
@@ -95,6 +112,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Topic :: Scientific/Engineering",
     ],
@@ -107,20 +125,11 @@ setuptools.setup(
     },
     install_requires=[
         "deprecation",
-        "matplotlib>=3.1.3,<3.8",
-        # we don't depend on this directly but matplotlib does
-        # and does not put an upper pin on it
-        # if removing upper pin on scikit-image here,
-        # then delete contourpy as a dependency as well
-        "contourpy<1.2.0",
-        "numpy>=1.18.2,<2",
-        "scikit-image>=0.17.2,<0.22.0",
-        # we don't depend on this directly but scikit-image does
-        # and does not put an upper pin on it
-        # if removing upper pin on scikit-image here,
-        # then delete PyWavelets as a dependency as well
-        "PyWavelets<1.5",
-        "scipy>=1.4.1,<1.11",
+        "matplotlib>=3.1.3",
+        "numpy>=1.18.2",
+        "pillow>=7.1.0",
+        "scikit-image>=0.17.2",
+        "scipy>=1.4.1,!=1.11.0",
     ],
     tests_require=[
         "pytest",
@@ -130,7 +139,7 @@ setuptools.setup(
     long_description="",
     name="centrosome",
     packages=["centrosome"],
-    setup_requires=["cython", "numpy", "pytest",],
+    setup_requires=["cython", "numpy", "pytest", ],
     url="https://github.com/CellProfiler/centrosome",
     version="1.2.3",
 )

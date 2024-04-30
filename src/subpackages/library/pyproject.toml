@@ -35,7 +35,7 @@ maintainers = [
     {name = "Nodar Gogoberidze", email = "ngogober@broadinstitute.org"},
 ]
 description = """
-cellprofiler-lirary implements CellProfiler's image processing \
+cellprofiler-library implements CellProfiler's image processing \
 and mathematical code, and is usable as a standalone library"""
 readme = "README.md"
 # we don't place upper bound pin for python:

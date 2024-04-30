@@ -103,4 +103,4 @@ version_file = "cellprofiler_library/_version.py"
 # https://peps.python.org/pep-0440/#local-version-identifiers%3E
 # but not accepted by TestPyPI and PyPi
 # https://setuptools-scm.readthedocs.io/en/stable/usage/#default-versioning-scheme
-# local_scheme = "no-local-version"
+local_scheme = "no-local-version"

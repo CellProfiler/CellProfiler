@@ -26,17 +26,17 @@ jobs:
       working-directory: ${{ github.workspace }}/src/subpackages/library/
       run: |
         python -m build
-        twine upload --verbose testpypi dist/*
+        twine upload dist/*
     - name: Upload Core
       working-directory: ${{ github.workspace }}/src/subpackages/core/
       run: |
         python -m build
-        twine upload testpypi dist/*
+        twine upload dist/*
     - name: Upload Frontend
       working-directory: ${{ github.workspace }}/src/frontend/
       run: |
         python -m build
-        twine upload testpypi dist/*
+        twine upload dist/*
 on:
   push:
     branches:

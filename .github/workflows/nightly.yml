@@ -18,7 +18,10 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install build twine
+        pip install build twine toml
+    - name: Prepare nightly config
+      run: |
+        python ${{ github.workspace }}/scripts/nightly_build.py
     - name: Upload Library
       working-directory: ${{ github.workspace }}/src/subpackages/library/
       run: |

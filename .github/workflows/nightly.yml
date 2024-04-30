@@ -1,15 +1,18 @@
-name: Deploy Production Packages to PyPI
+name: Deploy Nightly Packages to PyPI
 jobs:
-  deploy-production:
+  deploy-nightly:
     runs-on: ubuntu-latest
     env:
-      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      TWINE_USERNAME: ${{ secrets.TEST_PYPI_UN }}
+      TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PWD }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        # need to get git tags for setuptools-scm
+        fetch-depth: 0
     - name: Setup Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
     - name: Install dependencies
@@ -20,17 +23,21 @@ jobs:
       working-directory: ${{ github.workspace }}/src/subpackages/library/
       run: |
         python -m build
-        twine upload dist/*
+        twine upload --verbose --repository testpypi dist/*
     - name: Upload Core
       working-directory: ${{ github.workspace }}/src/subpackages/core/
       run: |
         python -m build
-        twine upload dist/*
-    - name: Upload Library
+        twine upload --repository testpypi dist/*
+    - name: Upload Frontend
       working-directory: ${{ github.workspace }}/src/frontend/
       run: |
         python -m build
-        twine upload dist/*
+        twine upload --repository testpypi dist/*
 on:
-  release:
-    types: [created]
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:

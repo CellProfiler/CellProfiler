@@ -3,8 +3,8 @@ jobs:
   deploy-nightly:
     runs-on: ubuntu-latest
     env:
-      TWINE_USERNAME: ${{ secrets.TEST_PYPI_UN }}
-      TWINE_PASSWORD: ${{ secrets.TEST_PYPI_PWD }}
+      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -26,21 +26,19 @@ jobs:
       working-directory: ${{ github.workspace }}/src/subpackages/library/
       run: |
         python -m build
-        twine upload --verbose --repository testpypi dist/*
+        twine upload --verbose testpypi dist/*
     - name: Upload Core
       working-directory: ${{ github.workspace }}/src/subpackages/core/
       run: |
         python -m build
-        twine upload --repository testpypi dist/*
+        twine upload testpypi dist/*
     - name: Upload Frontend
       working-directory: ${{ github.workspace }}/src/frontend/
       run: |
         python -m build
-        twine upload --repository testpypi dist/*
+        twine upload testpypi dist/*
 on:
   push:
     branches:
       - main
-  pull_request:
-    types: [opened, synchronize]
   workflow_dispatch:

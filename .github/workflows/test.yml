@@ -4,9 +4,10 @@ jobs:
     name: Install and test Cellprofiler
     strategy:
       matrix:
-        # macos 12 as of 2023-12-20:
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-        os: [macos-latest]
+        # https://github.com/actions/runner-images/tree/main
+        # ensure macos tag uses architecture identical to setup-python (x64 vs arm)
+        os: [macos-13]
         python-version: [ 3.9 ]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -74,7 +75,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [macos-latest]
+        os: [macos-13]
         python-version: [ 3.9 ]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -136,7 +137,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [macos-latest]
+        os: [macos-13]
         python-version: [ 3.9 ]
       fail-fast: false
     runs-on: ${{ matrix.os }}

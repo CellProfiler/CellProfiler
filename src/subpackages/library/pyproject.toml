@@ -35,7 +35,7 @@ maintainers = [
     {name = "Nodar Gogoberidze", email = "ngogober@broadinstitute.org"},
 ]
 description = """
-cellprofiler-lirary implements CellProfiler's image processing \
+cellprofiler-library implements CellProfiler's image processing \
 and mathematical code, and is usable as a standalone library"""
 readme = "README.md"
 # we don't place upper bound pin for python:
@@ -99,3 +99,8 @@ cellprofiler_library = ["py.typed"]
 root = "../../.."
 # run pip install -e to get latest
 version_file = "cellprofiler_library/_version.py"
+# local scheme complies with PEP 440
+# https://peps.python.org/pep-0440/#local-version-identifiers%3E
+# but not accepted by TestPyPI and PyPi
+# https://setuptools-scm.readthedocs.io/en/stable/usage/#default-versioning-scheme
+local_scheme = "no-local-version"

@@ -2,7 +2,7 @@
 GaussianFilter
 ==============
 
-**GuassianFilter** will blur an image and remove noise. Filtering an
+**GaussianFilter** will blur an image and remove noise. Filtering an
 image with a Gaussian filter can be helpful if the foreground signal is
 noisy or near the noise floor.
 

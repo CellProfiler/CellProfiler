@@ -10,11 +10,8 @@ import cellprofiler_core.module
 import cellprofiler.modules.expandorshrinkobjects
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 import cellprofiler_core.measurement
-
-cellprofiler_core.preferences.set_headless()
 
 INPUT_NAME = "input"
 OUTPUT_NAME = "output"

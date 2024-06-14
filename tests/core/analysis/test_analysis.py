@@ -53,7 +53,7 @@ class TestAnalysis(unittest.TestCase):
             self.setDaemon(True)
             self.zmq_context = zmq.Context()
             self.zmq_context.setsockopt(zmq.LINGER, 0)
-            self.queue = six.moves.queue.Queue()
+            self.request_queue = six.moves.queue.Queue()
             self.response_queue = six.moves.queue.Queue()
             self.start_signal = threading.Semaphore(0)
             self.keep_going = True
@@ -102,7 +102,7 @@ class TestAnalysis(unittest.TestCase):
                         try:
                             if not self.keep_going:
                                 break
-                            fn_and_args = self.queue.get_nowait()
+                            fn_and_args = self.request_queue.get_nowait()
 
                         except six.moves.queue.Empty:
                             break
@@ -124,7 +124,7 @@ class TestAnalysis(unittest.TestCase):
 
         def send(self, req):
             LOGGER.debug("    Enqueueing send of %s" % str(type(req)))
-            self.queue.put((self.do_send, req))
+            self.request_queue.put((self.do_send, req))
             self.notify_socket.send(b"Send")
             return self.recv
 
@@ -171,7 +171,7 @@ class TestAnalysis(unittest.TestCase):
                 return result
 
         def listen_for_heartbeat(self, address):
-            self.queue.put((self.do_listen_for_heartbeat, address))
+            self.request_queue.put((self.do_listen_for_heartbeat, address))
             self.notify_socket.send(b"Listen for announcements")
             return self.recv
 
@@ -199,7 +199,7 @@ class TestAnalysis(unittest.TestCase):
 
         def connect(self, request_address, analysis_id):
             self.analysis_id = analysis_id
-            self.queue.put((self.do_connect, request_address))
+            self.request_queue.put((self.do_connect, request_address))
             self.notify_socket.send(b"Do connect")
             return self.recv()
 
@@ -369,7 +369,7 @@ class TestAnalysis(unittest.TestCase):
 
             messages = []
 
-            spy_thread = threading.Thread(target=collect_messages, args=(messages, ))
+            spy_thread = threading.Thread(target=collect_messages, name="test heartbeat thread", args=(messages, ))
             spy_thread.start()
             self.cancel_analysis()
             spy_thread.join(2000)

@@ -478,7 +478,7 @@ color map.
         image_set_list = workspace.image_set_list
         image_set = image_set_list.get_image_set(0)
         ip = FileImage(im_id, pathname, filename)
-        image_set.providers.append(ip)
+        image_set.add_provider(ip)
 
         self.run(workspace)
 

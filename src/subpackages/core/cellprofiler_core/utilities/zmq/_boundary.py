@@ -67,7 +67,7 @@ class Boundary:
 
         self.thread = threading.Thread(
             target=self.spin,
-            name="Boundary spin()",
+            name="Boundary spin() thread",
         )
         self.thread.start()
 

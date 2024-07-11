@@ -1,10 +1,7 @@
-cdef extern from "numpy/arrayobject.h":
-        cdef void import_array()
-import_array()
-
 import numpy as np
 import struct
 cimport numpy as np
+np.import_array()
 cimport cython
 cdef extern from "stdlib.h":
     double sqrt(double) nogil

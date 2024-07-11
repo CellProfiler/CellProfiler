@@ -12,11 +12,10 @@ cdef extern from "numpy/arrayobject.h":
         cdef int nd
         cdef Py_intptr_t *dimensions
         cdef Py_intptr_t *strides
-    cdef void import_array()
     cdef int  PyArray_ITEMSIZE(np.ndarray)
     cdef void * PyArray_DATA(np.ndarray)
 
-import_array()
+np.import_array()
 
 __eps = np.sqrt(np.finfo(np.float64).eps)
 

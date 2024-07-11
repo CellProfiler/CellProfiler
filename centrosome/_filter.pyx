@@ -10,7 +10,6 @@ cdef extern from "numpy/arrayobject.h":
     ctypedef class numpy.ndarray [object PyArrayObject]:
         cdef char *data
         cdef Py_intptr_t *strides
-    cdef void import_array()
     cdef int  PyArray_ITEMSIZE(np.ndarray)
 
 cdef extern from "stdlib.h":
@@ -21,7 +20,7 @@ cdef extern from "stdlib.h":
 cdef extern from "string.h":
     void *memset(void *, int, int)
 
-import_array()
+np.import_array()
 
 ##############################################################################
 # 

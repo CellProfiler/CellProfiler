@@ -3,10 +3,10 @@ import glob
 import os.path
 import sys
 
-import pkg_resources
 import setuptools
 import setuptools.command.build_ext
 import setuptools.command.test
+import numpy
 
 try:
     import Cython.Build
@@ -14,22 +14,6 @@ try:
     __cython = True
 except ImportError:
     __cython = False
-
-
-class BuildExtension(setuptools.command.build_ext.build_ext):
-    def build_extensions(self):
-        numpy_includes = pkg_resources.resource_filename("numpy", "core/include")
-
-        for extension in self.extensions:
-            if (
-                hasattr(extension, "include_dirs")
-                and numpy_includes not in extension.include_dirs
-            ):
-                extension.include_dirs.append(numpy_includes)
-
-            extension.include_dirs.append("centrosome/include")
-
-        setuptools.command.build_ext.build_ext.build_extensions(self)
 
 
 class Test(setuptools.command.test.test):
@@ -72,6 +56,7 @@ __extensions = [
             "centrosome/_propagate.{}".format("c" if __suffix == "cpp" else __suffix)
         ],
         define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")] if __suffix == "pyx" else None,
+        include_dirs=["centrosome/include", numpy.get_include()],
     )
 ]
 
@@ -85,6 +70,7 @@ for pyxfile in glob.glob(os.path.join("centrosome", "*.pyx")):
         setuptools.Extension(
             name="centrosome.{}".format(name),
             sources=["centrosome/{}.{}".format(name, __suffix)],
+            include_dirs=["centrosome/include", numpy.get_include()],
             **__extkwargs
         )
     ]
@@ -124,7 +110,7 @@ setuptools.setup(
     install_requires=[
         "deprecation",
         "matplotlib>=3.1.3",
-        "numpy>=1.18.2",
+        "numpy>=1.18.2,<2",
         "pillow>=7.1.0",
         "scikit-image>=0.17.2",
         "scipy>=1.4.1,<1.11",

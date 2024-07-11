@@ -12,10 +12,9 @@ cdef extern from "numpy/arrayobject.h":
         cdef Py_intptr_t *dimensions
         cdef Py_intptr_t *shape        
         cdef Py_intptr_t *strides
-    cdef void import_array()
     cdef int  PyArray_ITEMSIZE(np.ndarray)
 
-import_array()
+np.import_array()
 
 @cython.boundscheck(False)
 def skeletonize_loop(np.ndarray[dtype=np.uint8_t, ndim=2, 

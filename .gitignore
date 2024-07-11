@@ -6,6 +6,7 @@
 .eggs
 .idea
 .tox
+centrosome/_propagate.c
 __pycache__
 build
 centrosome.egg-info/

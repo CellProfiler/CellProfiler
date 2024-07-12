@@ -100,7 +100,7 @@ setuptools.setup(
         "Topic :: Scientific/Engineering :: Bio-Informatics",
         "Topic :: Scientific/Engineering",
     ],
-    cmdclass={"build_ext": BuildExtension, "test": Test},
+    cmdclass={"test": Test},
     description="An open source image processing library",
     ext_modules=__extensions,
     extras_require={

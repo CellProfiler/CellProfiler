@@ -107,6 +107,11 @@ setuptools.setup(
         "matplotlib>=3.1.3,<3.8",
         "numpy>=1.18.2,<2",
         "scikit-image>=0.17.2,<0.22.0",
+        # we don't depend on this directly but scikit-image does
+        # and does not put an upper pin on it
+        # if removing upper pin on scikit-image here,
+        # then delete PyWavelets as a dependency as well
+        "PyWavelets<1.5",
         "scipy>=1.4.1,<1.11",
     ],
     tests_require=[

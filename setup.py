@@ -105,6 +105,11 @@ setuptools.setup(
     install_requires=[
         "deprecation",
         "matplotlib>=3.1.3,<3.8",
+        # we don't depend on this directly but matplotlib does
+        # and does not put an upper pin on it
+        # if removing upper pin on scikit-image here,
+        # then delete contourpy as a dependency as well
+        "contourpy<1.2.0",
         "numpy>=1.18.2,<2",
         "scikit-image>=0.17.2,<0.22.0",
         # we don't depend on this directly but scikit-image does

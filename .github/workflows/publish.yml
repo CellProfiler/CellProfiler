@@ -19,7 +19,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install "cython<3.0"
         pip install "numpy<2"
-        python3 setup.py install
         pip install -e .
     # - name: Install cibuildwheel
     #   run: python -m pip install cibuildwheel==2.19.2

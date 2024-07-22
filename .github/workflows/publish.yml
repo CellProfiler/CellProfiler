@@ -1,0 +1,44 @@
+jobs:
+  build:
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.8, 3.9, 3.10]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Installation
+      run:
+        |
+        python -m pip install --upgrade pip
+        pip install "cython<3.0"
+        pip install "numpy<2"
+        python3 setup.py install
+        pip install -e .
+    - name: Install cibuildwheel
+      run: python -m pip install cibuildwheel==2.19.2
+
+    - name: Build wheels
+      run: python -m cibuildwheel --output-dir wheelhouse
+      # to supply options, put them in 'env', like:
+      # env:
+      #   CIBW_SOME_OPTION: value
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+        path: ./wheelhouse/*.whl
+name: meiosis
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, reopened, synchronize, ready_for_review, review_requested]
+

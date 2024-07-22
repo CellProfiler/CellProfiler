@@ -43,7 +43,8 @@ if __cython:
     __suffix = "pyx"
     __extkwargs = {
         "language": "c++",
-         "define_macros": [("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
+        # TODO: needed for cython 3.0
+        # "define_macros": [("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")]
     }
 else:
     __suffix = "cpp"
@@ -55,7 +56,8 @@ __extensions = [
         sources=[
             "centrosome/_propagate.{}".format("c" if __suffix == "cpp" else __suffix)
         ],
-        define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")] if __suffix == "pyx" else None,
+        # TODO: needed for cython 3.0
+        # define_macros=[("NPY_NO_DEPRECATED_API", "NPY_1_7_API_VERSION")] if __suffix == "pyx" else None,
         include_dirs=["centrosome/include", numpy.get_include()],
     )
 ]

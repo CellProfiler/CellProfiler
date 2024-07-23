@@ -1,8 +1,8 @@
-{ pkgs, centrosome, cellprofiler-library, scyjava }:
+{ pkgs, cp_version, centrosome, cellprofiler-library, scyjava }:
 
 pkgs.python3Packages.buildPythonPackage rec {
-  pname = "cellprofiler_core_nightly";
-  version = "5.dev";
+  pname = "cellprofiler_core";
+  version = cp_version;
 
   src = ../src/subpackages/core;
   pyproject = true;  

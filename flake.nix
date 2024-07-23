@@ -17,7 +17,15 @@
           in
           with pkgs;
         rec {
-          packages = import ./nix {inherit pkgs;};
+          # A hacky way to get version number from pyproject toml of frontend package
+          # It reads the version from the first item of the dependencies array
+          cp_version = ( builtins.elemAt (pkgs.lib.strings.splitString "="
+            (builtins.elemAt
+              (builtins.fromTOML (builtins.readFile ./src/frontend/pyproject.toml)).project.dependencies
+              0
+            )
+          ) 1 );
+          packages = import ./nix {inherit pkgs cp_version;};
           apps = {
             cellprofiler = {
               type = "app";

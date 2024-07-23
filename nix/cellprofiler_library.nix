@@ -1,7 +1,7 @@
-{ pkgs, centrosome }:
+{ pkgs, cp_version, centrosome }:
 pkgs.python3Packages.buildPythonPackage rec {
   pname = "cellprofiler_library";
-  version = "5.dev";
+  version = cp_version;
 
   src = ../src/subpackages/library;
   pyproject = true;

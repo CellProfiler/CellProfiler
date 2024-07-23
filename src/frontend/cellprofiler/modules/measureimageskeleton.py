@@ -199,8 +199,8 @@ You can create a morphological skeleton with the
 
         if object_name == "Image" and category == "Skeleton":
             return [
-                "Skeleton_Branches_{}".format(name),
-                "Skeleton_Endpoints_{}".format(name),
+                "Branches",
+                "Endpoints"
             ]
 
         return []

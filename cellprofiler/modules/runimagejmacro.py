@@ -292,7 +292,7 @@ temporary directory and assign its path as a value to this variable."""
 
             cmd += [self.stringify_metadata(tempdir)]
 
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, errors='backslashreplace')
             for image_group in self.image_groups_out:
                 if not os.path.exists(os.path.join(tempdir, image_group.input_filename.value)):
                     # Cleanup the error logs for display, we want to remove less-useful lines to keep it succinct.

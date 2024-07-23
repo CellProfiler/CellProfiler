@@ -310,6 +310,9 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
         # In volumetric case the 3D image stack gets converted to a long 2D image and gets analyzed
         if ground_truth_image.volumetric:
+
+            orig_shape = ground_truth_pixels.shape
+            
             ground_truth_pixels = ground_truth_pixels.reshape(
                 -1, ground_truth_pixels.shape[-1]
             )
@@ -451,6 +454,15 @@ the two images. Set this setting to “No” to assess no penalty.""",
             )
 
         if self.show_window:
+
+            workspace.display_data.dimensions = test_image.dimensions
+
+            if ground_truth_image.volumetric:
+                true_positives = true_positives.reshape(orig_shape)
+                true_negatives = true_negatives.reshape(orig_shape)
+                false_positives = false_positives.reshape(orig_shape)
+                false_negatives = false_negatives.reshape(orig_shape)
+
             workspace.display_data.true_positives = true_positives
 
             workspace.display_data.true_negatives = true_negatives
@@ -741,7 +753,7 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
     def display(self, workspace, figure):
         """Display the image confusion matrix & statistics"""
-        figure.set_subplots((3, 2))
+        figure.set_subplots((3, 2),dimensions=workspace.display_data.dimensions)
 
         for x, y, image, label in (
             (0, 0, workspace.display_data.true_positives, "True positives"),

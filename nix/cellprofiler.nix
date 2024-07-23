@@ -16,8 +16,19 @@ pkgs.python3Packages.buildPythonPackage rec {
     echo 'fallback_version = "${version}"' >> pyproject.toml
   '';
 
+  preBuild = ''
+    git init .
+    git config user.name 'Anonymous'
+    git config user.email '<>'
+    git add .
+    git commit -m "hack: please fix me later"
+    git tag "v${version}"
+  '';
+
+  nativeBuildInputs = with pkgs; [ git ];
   buildInputs  = with pkgs.python3Packages; [
     pytest
+    setuptools
     (
       setuptools-scm.overrideAttrs rec {
         version = "8.1.0";

@@ -61,7 +61,7 @@ dependencies = [
     "cellprofiler-library>=5.dev",
     "cellprofiler-core>=5.dev",
     "boto3~=1.28.41",
-    "centrosome==1.2.2",
+    "centrosome>=1.2.3",
     "docutils==0.15.2",
     "h5py~=3.6.0",
     "imageio~=2.31.3",

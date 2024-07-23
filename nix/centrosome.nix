@@ -1,7 +1,7 @@
 { pkgs }:
 pkgs.python3Packages.buildPythonPackage {
   pname = "centrosome";
-  version = "1.2.23";
+  version = "1.2.3";
 
   src = pkgs.fetchFromGitHub {
     owner = "CellProfiler";

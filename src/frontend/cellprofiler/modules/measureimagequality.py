@@ -1038,7 +1038,7 @@ to the foreground pixels or the background pixels.
                         if image_names in self.images_to_process(
                             image_group, None, pipeline
                         ):
-                            result += [scale_group.scale]
+                            result += [scale_group.scale.value]
                 return result
             if measurement.startswith(F_THRESHOLD):
                 result = []

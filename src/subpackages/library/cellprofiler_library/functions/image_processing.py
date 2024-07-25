@@ -248,6 +248,9 @@ def get_adaptive_threshold(
 
     if len(image) == 0 or numpy.all(image == numpy.nan):
         thresh_out = numpy.zeros_like(image)
+    elif numpy.all((image == 0) | numpy.isnan(image)):
+        #test if all values are a mixture of 0 or nan
+        thresh_out = numpy.zeros_like(image)
     elif numpy.all(image == image.ravel()[0]):
         thresh_out = numpy.full_like(image, image.ravel()[0])
     # Define the threshold method to be run in each adaptive window

@@ -932,6 +932,10 @@ staining.
         elif numpy.all(image_data == image_data[0]):
             local_threshold = numpy.full_like(image_data, image_data[0])
 
+        elif numpy.unique(numpy.where(numpy.isnan(image_data),0,image_data)).shape == (1,):
+            #test if all values are a mixture of 0 or nan
+            local_threshold = numpy.zeros_like(image_data)
+
         elif self.threshold_operation == TM_LI:
             local_threshold = self._run_local_threshold(
                 image_data,

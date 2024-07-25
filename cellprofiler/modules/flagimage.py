@@ -716,6 +716,10 @@ image is not flagged.
                 d[path_] = joblib.load(path_)
         return d[path_]
 
+    def get_dictionary_for_worker(self):
+        # Sklearn models can't be serialized, so workers will need to read them from disk.
+        return {}
+
     def get_classifier(self, measurement_group):
         return self.load_classifier(measurement_group)[0]
 

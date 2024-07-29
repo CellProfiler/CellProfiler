@@ -33,21 +33,20 @@ jobs:
           pip install numpy==1.23.1 matplotlib==3.1.3
           pip install pyinstaller==4.10
           git clone --branch 4.2.x https://github.com/CellProfiler/distribution.git 
+      # this is a separate step because we need to set the CPPFLAGS and LDFLAGS env variables *after* installing mysql, in the next step
+      - if: ${{ matrix.os == 'macos-12' }}
+        run: |
+          brew install mysql@8.0
       - env:
-          LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
           CERTIFICATE_PASSWORD: ${{ secrets.P12_PASSWORD_CIMINI }}
-        if: ${{ matrix.os == 'macos-12' }}
-        run: |
-          sed -i '' 's/4.0.0/4.2.7/' Info.plist
-          brew install mysql@8.0
-        working-directory: ./distribution/macos
-      - env:
           # needed for mysql@8.0
           CPPFLAGS: -I/usr/local/opt/mysql@8.0/include
-          LDFLAGS: -L/usr/local/opt/mysql@8.0/lib
+          LDFLAGS: "-L/usr/local/opt/mysql@8.0/lib -L/usr/local/opt/openssl/lib"
         if: ${{ matrix.os == 'macos-12' }}
+        working-directory: ./distribution/macos
         run: |
+          sed -i '' 's/4.0.0/4.2.7/' Info.plist
           make
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
           chmod +x osx-codesign.sh && ./osx-codesign.sh

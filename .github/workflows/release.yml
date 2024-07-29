@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: "11" # The JDK version to make available on the path.
+          java-version: "11.0.20-8" # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
       - run: |
@@ -47,7 +47,7 @@ jobs:
           ditto -ck --keepParent --rsrc --sequesterRsrc ./dist/CellProfiler.app ./dist/CellProfiler-macOS-4.2.7.zip
         working-directory: ./distribution/macos
       - env:
-          JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.24-8\x64
+          JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.20-8\x64
         if: ${{ matrix.os == 'windows-2019' }}
         run: |
           python -m pip install --upgrade pip setuptools wheel

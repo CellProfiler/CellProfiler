@@ -10,7 +10,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - if: ${{ matrix.os == 'macos-11' }}
+      - if: ${{ matrix.os == 'macos-12' }}
         uses: actions/cache@v2
         with:
           path: ~/Library/Caches/pip
@@ -25,7 +25,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: "temurin"
-          java-version: "11.0.20-8" # The JDK version to make available on the path.
+          java-version: "11.0.20+8" # The JDK version to make available on the path.
           java-package: jdk
           architecture: x64
       - run: |
@@ -37,7 +37,7 @@ jobs:
           LDFLAGS: -L/usr/local/opt/openssl/lib
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
           CERTIFICATE_PASSWORD: ${{ secrets.P12_PASSWORD_CIMINI }}
-        if: ${{ matrix.os == 'macos-11' }}
+        if: ${{ matrix.os == 'macos-12' }}
         run: |
           sed -i '' 's/4.0.0/4.2.7/' Info.plist
           brew install mysql
@@ -59,7 +59,7 @@ jobs:
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
           iscc /dMyAppVersion="4.2.7" "distribution/windows/cellprofiler.iss"
-      - if: ${{ matrix.os == 'macos-11' }}
+      - if: ${{ matrix.os == 'macos-12' }}
         uses: actions/upload-artifact@v1
         with:
           name: CellProfiler-macOS-4.2.7.zip
@@ -71,7 +71,7 @@ jobs:
           path: ./distribution/windows/Output/CellProfiler-Windows-4.2.7.exe
     strategy:
       matrix:
-        os: [macos-11, windows-2019]
+        os: [macos-12, windows-2019]
         python-version: ["3.8"]
       fail-fast: false
   upload:

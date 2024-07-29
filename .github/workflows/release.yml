@@ -40,7 +40,7 @@ jobs:
         if: ${{ matrix.os == 'macos-12' }}
         run: |
           sed -i '' 's/4.0.0/4.2.7/' Info.plist
-          brew install mysql
+          brew install mysql@8.0
           make
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh
           chmod +x osx-codesign.sh && ./osx-codesign.sh
@@ -48,6 +48,9 @@ jobs:
         working-directory: ./distribution/macos
       - env:
           JDK_HOME: C:\hostedtoolcache\windows\Java_Temurin-Hotspot_jdk\11.0.20-8\x64
+          # needed for mysql@8.0
+          CPPFLAGS: -I/usr/local/opt/mysql@8.0/include
+          LDFLAGS: -L/usr/local/opt/mysql@8.0/lib
         if: ${{ matrix.os == 'windows-2019' }}
         run: |
           python -m pip install --upgrade pip setuptools wheel

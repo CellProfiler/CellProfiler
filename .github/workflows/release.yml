@@ -44,11 +44,11 @@ jobs:
           CPPFLAGS: -I/usr/local/opt/mysql@8.0/include
           LDFLAGS: "-L/usr/local/opt/mysql@8.0/lib -L/usr/local/opt/openssl/lib"
           PKG_CONFIG_PATH: /usr/local/opt/mysql@8.0/lib/pkgconfig
-          PATH: /usr/local/opt/mysql@8.0/bin:$PATH
         if: ${{ matrix.os == 'macos-12' }}
         working-directory: ./distribution/macos
         run: |
-          env #debug
+          # needed for mysql@8.0
+          echo "/usr/local/opt/mysql@8.0/bin" >> $GITHUB_PATH
           sed -i '' 's/4.0.0/4.2.7/' Info.plist
           make
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh

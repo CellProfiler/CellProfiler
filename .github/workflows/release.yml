@@ -36,7 +36,7 @@ jobs:
       # this is a separate step because we need to set the CPPFLAGS and LDFLAGS env variables *after* installing mysql, in the next step
       - if: ${{ matrix.os == 'macos-12' }}
         run: |
-          brew install mysql@8.0 pkg-config
+          brew install mysql@8.0
       - env:
           CERTIFICATE_OSX_APPLICATION: ${{ secrets.BUILD_CERTIFICATE_BASE64_CIMINI }}
           CERTIFICATE_PASSWORD: ${{ secrets.P12_PASSWORD_CIMINI }}
@@ -44,9 +44,11 @@ jobs:
           CPPFLAGS: -I/usr/local/opt/mysql@8.0/include
           LDFLAGS: "-L/usr/local/opt/mysql@8.0/lib -L/usr/local/opt/openssl/lib"
           PKG_CONFIG_PATH: /usr/local/opt/mysql@8.0/lib/pkgconfig
+          PATH: /usr/local/opt/mysql@8.0/bin:${{ env.PATH }}
         if: ${{ matrix.os == 'macos-12' }}
         working-directory: ./distribution/macos
         run: |
+          env #debug
           sed -i '' 's/4.0.0/4.2.7/' Info.plist
           make
           chmod +x add-osx-certificate.sh && ./add-osx-certificate.sh

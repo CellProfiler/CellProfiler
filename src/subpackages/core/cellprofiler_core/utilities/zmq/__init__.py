@@ -25,7 +25,21 @@ NOTIFY_SOCKET_ADDR = "inproc://BoundaryNotifications"
 SD_KEY_DICT = "__keydict__"
 
 
-def make_CP_encoder(buffers):
+class CPJSONEncoder(json.JSONEncoder):
+    def encode(self, obj):
+        def hint_tuples(item):
+            if isinstance(item, tuple):
+                return {'__tuple__': True, 'items': item}
+            if isinstance(item, list):
+                return [hint_tuples(e) for e in item]
+            if isinstance(item, dict):
+                return {key: hint_tuples(value) for key, value in item.items()}
+            else:
+                return item
+
+        return super().encode(hint_tuples(obj))
+
+def make_CP_fallback_encoder(buffers):
     """create an encoder for CellProfiler data and numpy arrays (which will be
     stored in the input argument)"""
 
@@ -77,6 +91,8 @@ def make_CP_encoder(buffers):
 
 def make_CP_decoder(buffers):
     def decoder(dct, buffers=buffers):
+        if '__tuple__' in dct:
+            return tuple(dct['items'])
         if "__ndarray__" in dct:
             buf = memoryview(buffers[dct["idx"]])
             shape = dct["shape"]
@@ -128,7 +144,10 @@ def make_sendable_sequence(l):
             result.append(make_sendable_dictionary(v))
         else:
             result.append(v)
-    return tuple(result)
+    if isinstance(l, tuple):
+        return tuple(result)
+    else: # else return as list
+        return result
 
 
 def decode_sendable_dictionary(d):
@@ -173,8 +192,8 @@ def json_encode(o):
 
     # replace each buffer with its metadata, and send it separately
     buffers = []
-    encoder = make_CP_encoder(buffers)
-    json_str = json.dumps(sendable_dict, default=encoder)
+    fallback_encoder = make_CP_fallback_encoder(buffers)
+    json_str = json.dumps(sendable_dict, cls=CPJSONEncoder, default=fallback_encoder)
     return json_str, buffers
 
 

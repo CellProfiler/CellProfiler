@@ -23,4 +23,5 @@ docs/frontend/source/images
 docs/core/build
 docs/core/build
 _version.py
-
+result
+scratch/

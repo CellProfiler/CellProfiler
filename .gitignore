@@ -25,3 +25,6 @@ docs/core/build
 _version.py
 result
 scratch/
+
+# pixi environments
+.pixi

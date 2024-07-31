@@ -1,0 +1,24 @@
+[project]
+name = "CellProfiler"
+description = """
+CellProfiler is a free open-source software designed \
+to enable biologists without training in computer vision \
+or programming to quantitatively measure phenotypes from \
+thousands of images automatically."""
+channels = ["conda-forge"]
+platforms = ["osx-64"]
+
+[tasks]
+cp = { cmd = [".pixi/envs/dev/pythonapp/Contents/MacOS/python", "-m", "cellprofiler"], env = { PYTHONEXECUTABLE = ".pixi/envs/dev/bin/python" } }
+
+[dependencies]
+python = "3.9.*"
+"python.app" = ">=1.4,<2"
+
+[feature.mod.pypi-dependencies]
+cellprofiler-library = { path = "./src/subpackages/library", editable = true }
+cellprofiler-core = { path = "./src/subpackages/core", editable = true }
+cellprofiler = { path = "./src/frontend", editable = true }
+
+[environments]
+dev = ["mod"]

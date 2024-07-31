@@ -9,7 +9,7 @@ channels = ["conda-forge"]
 platforms = ["osx-64"]
 
 [tasks]
-cp = { cmd = [".pixi/envs/dev/pythonapp/Contents/MacOS/python", "-m", "cellprofiler"], env = { PYTHONEXECUTABLE = ".pixi/envs/dev/bin/python" } }
+cp = { cmd = ["$PIXI_PROJECT_ROOT/.pixi/envs/dev/pythonapp/Contents/MacOS/python", "-m", "cellprofiler"], env = { PYTHONEXECUTABLE = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/bin/python" } }
 
 [dependencies]
 python = "3.9.*"

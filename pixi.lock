@@ -773,7 +773,7 @@ packages:
   requires_python: '>=3.7'
 - kind: pypi
   name: cellprofiler
-  version: 5.0.0.dev88
+  version: 5.0.0.dev90
   path: ./src/frontend
   sha256: 00c9cdb67c9bc2f942389b9ec259136aed979a749d5cdea3b43cfb70fd4d51b3
   requires_dist:
@@ -815,7 +815,7 @@ packages:
   editable: true
 - kind: pypi
   name: cellprofiler-core
-  version: 5.0.0.dev88
+  version: 5.0.0.dev90
   path: ./src/subpackages/core
   sha256: ac613ccb90cc9bccda5d519c51f63c27e64da76c58b063283030baeeca3b1af5
   requires_dist:
@@ -849,7 +849,7 @@ packages:
   editable: true
 - kind: pypi
   name: cellprofiler-library
-  version: 5.0.0.dev88
+  version: 5.0.0.dev90
   path: ./src/subpackages/library
   sha256: 46d34769022260bb8d27063ff544ff8c284293148be2d08572e917f58e5cfdd2
   requires_dist:

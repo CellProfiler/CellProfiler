@@ -6,13 +6,15 @@ to enable biologists without training in computer vision \
 or programming to quantitatively measure phenotypes from \
 thousands of images automatically."""
 channels = ["conda-forge"]
-platforms = ["osx-64"]
+platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 
 [tasks]
 cp = { cmd = ["$PIXI_PROJECT_ROOT/.pixi/envs/dev/pythonapp/Contents/MacOS/python", "-m", "cellprofiler"], env = { PYTHONEXECUTABLE = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/bin/python" } }
 
 [dependencies]
 python = "3.9.*"
+
+[target.osx.dependencies]
 "python.app" = ">=1.4,<2"
 
 [feature.mod.pypi-dependencies]

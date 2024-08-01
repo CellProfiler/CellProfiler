@@ -1103,7 +1103,7 @@ safe to press it.""",
             image_size = None
             for image_name in self.other_providers("imagegroup"):
                 provider = self.fetch_provider(image_name, m)
-                image_set.providers.append(provider)
+                image_set.add_provider(provider)
                 image = image_set.get_image(image_name)
                 pixel_data = image.pixel_data
                 m.add_image_measurement(

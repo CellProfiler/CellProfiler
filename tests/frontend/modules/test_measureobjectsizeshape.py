@@ -9,14 +9,11 @@ import cellprofiler_core.modules.injectimage
 import cellprofiler.modules.measureobjectsizeshape
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
 
 import tests.frontend
 import tests.frontend.modules
-
-cellprofiler_core.preferences.set_headless()
 
 OBJECTS_NAME = "myobjects"
 

@@ -301,8 +301,7 @@ def start_lock_thread():
         __lock_thread = None
         LOGGER.info("Exiting the lock thread")
 
-    __lock_thread = threading.Thread(target=lock_thread_fn)
-    __lock_thread.setName("FileLockThread")
+    __lock_thread = threading.Thread(target=lock_thread_fn, name="FileLock thread")
     __lock_thread.start()
 
 

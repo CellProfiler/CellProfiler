@@ -745,10 +745,10 @@ fewer iterations, but less accuracy.
             ):
                 avg_image = output_image_provider.provide_avg_image()
                 dilated_image = output_image_provider.provide_dilated_image()
-                workspace.image_set.providers.append(output_image_provider)
+                workspace.image_set.add_provider(output_image_provider)
                 output_image = output_image_provider.provide_image(workspace.image_set)
             else:
-                workspace.image_set.providers.append(output_image_provider)
+                workspace.image_set.add_provider(output_image_provider)
         else:
             orig_image = workspace.image_set.get_image(self.image_name.value)
             pixels = orig_image.pixel_data
@@ -789,7 +789,7 @@ fewer iterations, but less accuracy.
             )
             assert isinstance(output_image_provider, CorrectIlluminationImageProvider)
             if not self.illumination_image_name.value in image_set.names:
-                workspace.image_set.providers.append(output_image_provider)
+                workspace.image_set.add_provider(output_image_provider)
             if (
                 self.save_average_image
                 and self.average_image_name.value not in image_set.names

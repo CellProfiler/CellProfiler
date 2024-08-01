@@ -41,8 +41,6 @@ from cellprofiler_core.utilities.java import start_java
 import tests.core
 import tests.core.modules
 
-cellprofiler_core.preferences.set_headless()
-
 OBJECTS_NAME = "objects"
 
 test_folder = "loaddata"

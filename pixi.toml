@@ -9,6 +9,9 @@ channels = ["conda-forge"]
 platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 
 [tasks]
+cp = { cmd = ["python", "-m", "cellprofiler"] }
+
+[target.osx.tasks]
 cp = { cmd = ["$PIXI_PROJECT_ROOT/.pixi/envs/dev/pythonapp/Contents/MacOS/python", "-m", "cellprofiler"], env = { PYTHONEXECUTABLE = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/bin/python" } }
 
 [dependencies]
@@ -16,6 +19,11 @@ python = "3.9.*"
 
 [target.osx.dependencies]
 "python.app" = ">=1.4,<2"
+
+# enable this to avoid building wxPython wheel
+# url must be changed to match linux distro: https://extras.wxpython.org/wxPython4/extras/linux/gtk3/
+# [target.linux.pypi-dependencies]
+# wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl" }
 
 [feature.mod.pypi-dependencies]
 cellprofiler-library = { path = "./src/subpackages/library", editable = true }

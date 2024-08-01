@@ -1,4 +1,4 @@
-# must be am64, wxPython wheel for arm64 is not available
+# must be amd64, wxPython wheel for arm64 is not available
 FROM amd64/ubuntu:20.04
 
 # bypass apt installation frontend interaction

@@ -19,11 +19,6 @@ YES          YES          YES
 import centrosome.smooth
 import centrosome.threshold
 import numpy
-import scipy.interpolate
-import scipy.ndimage
-import skimage.filters
-import skimage.filters.rank
-import skimage.morphology
 from cellprofiler_core.constants.measurement import (
     FF_WEIGHTED_VARIANCE,
     FF_FINAL_THRESHOLD,
@@ -786,17 +781,71 @@ staining.
         )
         dimensions = input_image.dimensions
 
-        final_threshold, orig_threshold, guide_threshold, binary_image, _ = self.get_threshold(
-            input_image,
-            workspace
-        )
+        if self.threshold_operation == TM_MANUAL:
+            # Thresholds added to class so they are accessible in tests
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
+                    input_image.pixel_data,
+                    mask=input_image.mask,
+                    predefined_threshold=self.manual_threshold.value,
+                    threshold_correction_factor=1, # No correction applied
+                    threshold_min=None, # Manual has no min/max fitlering
+                    threshold_max=None,
+                    volumetric=input_image.volumetric, 
+            )
+        elif self.threshold_operation == TM_MEASUREMENT:
+            predefined_threshold = float(
+                workspace.measurements.get_current_image_measurement(
+                    self.thresholding_measurement.value
+                )
+            )
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
+                    input_image.pixel_data,
+                    mask=input_image.mask,
+                    predefined_threshold=predefined_threshold,
+                    threshold_correction_factor=self.threshold_correction_factor.value,
+                    threshold_min=self.threshold_range.min,
+                    threshold_max=self.threshold_range.max,
+                    smoothing=self.threshold_smoothing_scale.value,
+                    volumetric=input_image.volumetric,  
+            )
+        else:
+            # Convert threshold method for CellProfiler Library
+            if self.threshold_scope == "Global":
+                if self.global_operation == "Otsu" and self.two_class_otsu == "Three classes":
+                    threshold_method = "multiotsu"
+                else:
+                    threshold_method = self.convert_setting(self.global_operation.value)
+            elif self.threshold_scope == "Adaptive":
+                if self.local_operation == "Otsu" and self.two_class_otsu == "Three classes":
+                    threshold_method = "multiotsu"
+                else:
+                    threshold_method = self.convert_setting(self.local_operation.value)
+            self.final_threshold, self.orig_threshold, self.guide_threshold, binary_image, sigma = threshold(
+                    input_image.pixel_data,
+                    mask=input_image.mask,
+                    threshold_scope=self.threshold_scope.value,
+                    threshold_method=threshold_method,
+                    assign_middle_to_foreground=self.assign_middle_to_foreground.value,
+                    log_transform=self.log_transform.value,
+                    threshold_correction_factor=self.threshold_correction_factor.value,
+                    threshold_min=self.threshold_range.min,
+                    threshold_max=self.threshold_range.max,
+                    window_size=self.adaptive_window_size.value,
+                    smoothing=self.threshold_smoothing_scale.value,
+                    lower_outlier_fraction=self.lower_outlier_fraction.value,
+                    upper_outlier_fraction=self.upper_outlier_fraction.value,
+                    averaging_method=self.averaging_method.value,
+                    variance_method=self.convert_setting(self.variance_method.value),
+                    number_of_deviations=self.number_of_deviations.value,
+                    volumetric=input_image.volumetric,  
+            )
 
         self.add_threshold_measurements(
             self.get_measurement_objects_name(),
             workspace.measurements,
-            final_threshold,
-            orig_threshold,
-            guide_threshold,
+            self.final_threshold,
+            self.orig_threshold,
+            self.guide_threshold,
         )
 
         self.add_fg_bg_measurements(
@@ -817,7 +866,7 @@ staining.
             statistics = workspace.display_data.statistics = []
             workspace.display_data.col_labels = ("Feature", "Value")
             if self.threshold_scope == TS_ADAPTIVE:
-                workspace.display_data.threshold_image = final_threshold
+                workspace.display_data.threshold_image = self.final_threshold
 
             for column in self.get_measurement_columns(workspace.pipeline):
                 value = workspace.measurements.get_current_image_measurement(column[1])
@@ -833,73 +882,6 @@ staining.
         for replacement in rep_list:
             converted_str = converted_str.replace(*replacement)
         return converted_str
-
-    def get_threshold(self, input_image, workspace, automatic=False):
-        """
-        Get manual, measurement or other thresholds
-        """
-        # Handle manual and measurement thresholds, which are not supported
-        # by cellprofiler_library
-        if self.threshold_operation == TM_MANUAL:
-            final_threshold = self.manual_threshold.value 
-            orig_threshold = self.manual_threshold.value
-            guide_threshold = None 
-            binary_image, sigma = apply_threshold(
-                input_image.pixel_data,
-                threshold=final_threshold,
-                mask=input_image.mask,
-                smoothing=self.threshold_smoothing_scale.value
-            )
-        elif self.threshold_operation == TM_MEASUREMENT:
-            orig_threshold = float(
-                workspace.measurements.get_current_image_measurement(
-                    self.thresholding_measurement.value
-                )
-            )
-            final_threshold = orig_threshold
-            final_threshold *= self.threshold_correction_factor.value
-            final_threshold = min(max(final_threshold, self.threshold_range.min), self.threshold_range.max)
-            guide_threshold = None 
-            binary_image, sigma = apply_threshold(
-                input_image.pixel_data,
-                threshold=final_threshold,
-                mask=input_image.mask,
-                smoothing=self.threshold_smoothing_scale.value
-            )
-        else:
-            # Convert threshold method for CellProfiler Library
-            if self.threshold_scope == "Global":
-                if self.global_operation == "Otsu" and self.two_class_otsu == "Three classes":
-                    threshold_method = "multiotsu"
-                else:
-                    threshold_method = self.convert_setting(self.global_operation.value)
-            elif self.threshold_scope == "Adaptive":
-                if self.local_operation == "Otsu" and self.two_class_otsu == "Three classes":
-                    threshold_method = "multiotsu"
-                else:
-                    threshold_method = self.convert_setting(self.local_operation.value)
-            final_threshold, orig_threshold, guide_threshold, binary_image, sigma = threshold(
-                    input_image.pixel_data,
-                    mask=input_image.mask,
-                    threshold_scope=self.threshold_scope.value,
-                    threshold_method=threshold_method,
-                    assign_middle_to_foreground=self.assign_middle_to_foreground.value,
-                    log_transform=self.log_transform.value,
-                    threshold_correction_factor=self.threshold_correction_factor.value,
-                    threshold_min=self.threshold_range.min,
-                    threshold_max=self.threshold_range.max,
-                    window_size=self.adaptive_window_size.value,
-                    smoothing=self.threshold_smoothing_scale.value,
-                    lower_outlier_fraction=self.lower_outlier_fraction.value,
-                    upper_outlier_fraction=self.upper_outlier_fraction.value,
-                    averaging_method=self.averaging_method.value,
-                    variance_method=self.convert_setting(self.variance_method.value),
-                    number_of_deviations=self.number_of_deviations.value,
-                    volumetric=input_image.volumetric,  
-                    automatic=automatic
-            )
-        
-        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
 
     def display(self, workspace, figure):
         dimensions = workspace.display_data.dimensions

@@ -323,9 +323,9 @@ previously discarded objects.""".format(
             neighbor_has_pixels = has_pixels
         else:
             _, neighbor_numbers = neighbor_objects.relate_labels(
-                neighbor_labels, neighbor_objects.small_removed_segmented
+                neighbor_labels, neighbor_kept_labels
             )
-            neighbor_has_pixels = numpy.bincount(neighbor_labels.ravel())[1:] > 0
+            neighbor_has_pixels = numpy.bincount(neighbor_kept_labels.ravel())[1:] > 0
         neighbor_count = numpy.zeros((nobjects,))
         pixel_count = numpy.zeros((nobjects,))
         first_object_number = numpy.zeros((nobjects,), int)
@@ -703,6 +703,7 @@ previously discarded objects.""".format(
             )
 
         labels = kept_labels
+        neighbor_labels = neighbor_kept_labels
 
         neighbor_count_image = numpy.zeros(labels.shape, int)
         object_mask = objects.segmented != 0

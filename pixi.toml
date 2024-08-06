@@ -26,9 +26,9 @@ python = "3.9.*"
 # wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl" }
 
 [feature.mod.pypi-dependencies]
-cellprofiler-library = { path = "./src/subpackages/library", editable = true }
-cellprofiler-core = { path = "./src/subpackages/core", editable = true }
-cellprofiler = { path = "./src/frontend", editable = true }
+cellprofiler-library = { path = "./src/subpackages/library", extras = ["test"], editable = true }
+cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editable = true }
+cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
 
 [environments]
 dev = ["mod"]

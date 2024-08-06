@@ -730,9 +730,12 @@ class Runner:
 
     def stop_workers(self):
         if self.boundary is not None:
+            LOGGER.debug("joining boundary")
             self.boundary.join()
+            LOGGER.debug("destroying boundary zmq context")
             self.boundary.zmq_context.destroy(0)
             self.boundary = None
         for worker in self.workers:
+            LOGGER.debug("waiting on worker")
             worker.wait()
         self.workers = []

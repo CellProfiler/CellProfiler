@@ -222,6 +222,7 @@ class Boundary:
                     with self.analysis_context_lock:
                         if not self.analysis_context.enqueue(req):
                             continue
+            LOGGER.debug("boundary received stop")
             # Give the workers an explicit stop command
             self.keepalive_socket.send(NOTIFY_STOP)
             self.keepalive_socket.close()
@@ -237,7 +238,9 @@ class Boundary:
             # blocks?
             with self.analysis_context_lock:
                 self.analysis_context.cancel()
-                for request_class_queue in self.request_dictionary.values():
+                request_dict_values = self.request_dictionary.values()
+                LOGGER.debug(f"joining {len(request_dict_values)} threads")
+                for request_class_queue in request_dict_values:
                     #
                     # Tell each response class to stop. Wait for a reply
                     # which may be a thread instance. If so, join to the
@@ -248,6 +251,7 @@ class Boundary:
                         [self, self.NOTIFY_STOP, response_queue]
                     )
                     thread = response_queue.get()
+                    LOGGER.debug("joining on thread from response_queue")
                     if isinstance(thread, threading.Thread):
                         thread.join()
 

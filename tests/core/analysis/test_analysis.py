@@ -283,6 +283,7 @@ class TestAnalysis(unittest.TestCase):
         return pipeline, m
 
     def make_pipeline_and_measurements_and_start(self, **kwargs):
+        LOGGER.debug("Making pipeline and measurements, and starting analysis")
         pipeline, m = self.make_pipeline_and_measurements(**kwargs)
         if "status" in kwargs:
             overwrite = False
@@ -348,8 +349,6 @@ class TestAnalysis(unittest.TestCase):
             "Entering %s" % inspect.getframeinfo(inspect.currentframe()).function
         )
         pipeline, m = self.make_pipeline_and_measurements_and_start()
-        
-        print("I AM STARTING THE HEARTBEAT TEST")
 
         with self.FakeWorker() as worker:
             heartbeat_address = self.analysis.runner.boundary.keepalive_address

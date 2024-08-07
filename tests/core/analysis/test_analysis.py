@@ -13,8 +13,8 @@ import traceback
 import unittest
 import uuid
 import zmq
-import six.moves
-import six.moves.queue
+import queue
+from io import StringIO
 from importlib.util import find_spec
 
 import cellprofiler_core.constants.measurement
@@ -53,8 +53,8 @@ class TestAnalysis(unittest.TestCase):
             self.setDaemon(True)
             self.zmq_context = zmq.Context()
             self.zmq_context.setsockopt(zmq.LINGER, 0)
-            self.queue = six.moves.queue.Queue()
-            self.response_queue = six.moves.queue.Queue()
+            self.queue = queue.Queue()
+            self.response_queue = queue.Queue()
             self.start_signal = threading.Semaphore(0)
             self.keep_going = True
             self.analysis_id = None
@@ -76,7 +76,8 @@ class TestAnalysis(unittest.TestCase):
             for socket in self.sockets:
                 if socket is not None:
                     socket.close(linger=0)
-            self.zmq_context.destroy(linger=0)
+            self.zmq_context.setsockopt(zmq.LINGER, 0)
+            self.zmq_context.destroy()
 
             self.join()
 
@@ -104,7 +105,7 @@ class TestAnalysis(unittest.TestCase):
                                 break
                             fn_and_args = self.queue.get_nowait()
 
-                        except six.moves.queue.Empty:
+                        except queue.Empty:
                             break
                         try:
                             response = fn_and_args[0](*fn_and_args[1:])
@@ -276,12 +277,13 @@ class TestAnalysis(unittest.TestCase):
             ] = group_index
         pipeline = cellprofiler_core.pipeline.Pipeline()
         if self.cpinstalled:
-            pipeline.loadtxt(six.moves.StringIO(SBS_PIPELINE), raise_on_error=True)
+            pipeline.loadtxt(StringIO(SBS_PIPELINE), raise_on_error=True)
         else:
-            pipeline.loadtxt(six.moves.StringIO(SBS_PIPELINE_CORE_ONLY), raise_on_error=True)
+            pipeline.loadtxt(StringIO(SBS_PIPELINE_CORE_ONLY), raise_on_error=True)
         return pipeline, m
 
     def make_pipeline_and_measurements_and_start(self, **kwargs):
+        LOGGER.debug("Making pipeline and measurements, and starting analysis")
         pipeline, m = self.make_pipeline_and_measurements(**kwargs)
         if "status" in kwargs:
             overwrite = False
@@ -450,7 +452,7 @@ class TestAnalysis(unittest.TestCase):
     #         #
     #         client_pipeline = cellprofiler_core.pipeline.Pipeline()
     #         pipeline_txt = response.pipeline_blob.tostring()
-    #         client_pipeline.loadtxt(six.moves.StringIO(pipeline_txt),
+    #         client_pipeline.loadtxt(StringIO(pipeline_txt),
     #                                 raise_on_error=True)
     #         self.assertEqual(len(pipeline.modules()),
     #                          len(client_pipeline.modules()))
@@ -701,15 +703,20 @@ class TestAnalysis(unittest.TestCase):
         r = numpy.random.RandomState()
         r.seed(52)
         with self.FakeWorker() as worker:
+            LOGGER.debug("05_02: Worker connecting")
             worker.connect(self.analysis.runner.boundary.request_address, self.analysis.runner.analysis_id)
             response = worker.request_work()
+            LOGGER.debug("05_02: Worker got work response")
             self.assertTrue(response.worker_runs_post_group)
             self.assertFalse(response.wants_dictionary)
             self.assertSequenceEqual(response.image_set_numbers, [1, 2])
+            LOGGER.debug("05_02: Worker sending imageset success, getting response")
             response = worker.send(
                 ImageSetSuccess(worker.analysis_id, response.image_set_numbers[0])
             )()
+            LOGGER.debug("05_02: Worker got response, getting new work")
             response = worker.request_work()
+            LOGGER.debug("05_02: Worker got work response")
             self.assertSequenceEqual(response.image_set_numbers, [3, 4])
             self.assertTrue(response.worker_runs_post_group)
             self.assertFalse(response.wants_dictionary)

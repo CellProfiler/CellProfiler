@@ -77,7 +77,7 @@ class TestAnalysis(unittest.TestCase):
                 if socket is not None:
                     socket.close(linger=0)
             self.zmq_context.setsockopt(zmq.LINGER, 0)
-            self.zmq_context.term()
+            self.zmq_context.destroy()
 
             self.join()
 

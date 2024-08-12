@@ -53,7 +53,8 @@ jobs:
         env:
           LC_ALL: "en_US.UTF-8"
         run: |
-          brew install mysql
+          brew install mysql@8.4
+          brew link mysql@8.4 --force
           mysql.server start
           mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
       - name: Install cellprofiler
@@ -115,7 +116,8 @@ jobs:
         env:
           LC_ALL: "en_US.UTF-8"
         run: |
-          brew install mysql
+          brew install mysql@8.4
+          brew link mysql@8.4 --force
           mysql.server start
           mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
       - name: Install core

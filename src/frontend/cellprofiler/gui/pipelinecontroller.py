@@ -1723,6 +1723,7 @@ class PipelineController(object):
         self.__workspace.close()
 
     def __on_pipeline_event(self, caller, event):
+        print("👺 __on_pipeline_event invoked")
         if not wx.IsMainThread():
             wx.CallAfter(self.__on_pipeline_event, caller, event)
         if isinstance(event, RunException):
@@ -1765,7 +1766,9 @@ class PipelineController(object):
                 ) % (event.module.module_name, error_msg)
                 continue_only = False
 
+            print("👺 issuing a dialog error")
             error = cellprofiler.gui.dialog.Error("Error", message)
+            print("👺 error", error, "with status", error.status, "as opposed to ", wx.ID_CANCEL)
 
             if error.status is wx.ID_CANCEL:
                 cancel_progress()
@@ -3023,6 +3026,7 @@ class PipelineController(object):
             )
 
     def analysis_event_handler(self, evt):
+        print("👺 analysis_event_handler got evt", evt)
         PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = list(range(3))
 
         if isinstance(evt, Started):
@@ -3398,6 +3402,7 @@ class PipelineController(object):
             IMAGE, Runner.STATUS, m.get_image_numbers(),
         ]
         n_image_sets = sum([x == Runner.STATUS_DONE for x in status])
+        print("👺 on_stop_analysis, stopping running")
         self.stop_running()
         if get_wants_pony():
             Sound(os.path.join(cellprofiler.icons.resources, "wantpony.wav")).Play()

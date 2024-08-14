@@ -285,24 +285,14 @@ Select the measurement value to use as the divisor for the final image.
             % globals(),
         )
 
-        self.quantile_low = Float(
-            "Lower Quantile",
-            .005,
+        self.quantile_range = FloatRange(
+            "Lower and Upper Quantiles",
+            (.005,.995),
             minval=0,
             doc="""\
 *(Used only if “%(M_SCALE_BY_IMAGE_QUANTILE)s” is selected)*
-Enter the value to use as lower quantile.
-"""
-            % globals(),
-        )
-
-        self.quantile_high = Float(
-            "Upper Quantile",
-            .95,
-            maxval=1,
-            doc="""\
-*(Used only if “%(M_SCALE_BY_IMAGE_QUANTILE)s” is selected)*
-Enter the value to use as lower quantile.
+Enter the values to use as lower and upper quantiles. If you do not want
+to use both quantiles, set lower quantile to 0 or upper quantile to 1.
 """
             % globals(),
         )
@@ -321,8 +311,7 @@ Enter the value to use as lower quantile.
             self.matching_image_name,
             self.divisor_value,
             self.divisor_measurement,
-            self.quantile_low,
-            self.quantile_high
+            self.quantile_range,
         ]
 
     def visible_settings(self):
@@ -350,7 +339,7 @@ Enter the value to use as lower quantile.
         elif self.rescale_method == M_DIVIDE_BY_VALUE:
             __settings__ += [self.divisor_value]
         elif self.rescale_method == M_SCALE_BY_IMAGE_QUANTILE:
-            __settings__ += [self.quantile_low,self.quantile_high]
+            __settings__ += [self.quantile_range]
         return __settings__
 
     def set_automatic_minimum(self, image_set_list, value):
@@ -449,7 +438,7 @@ Enter the value to use as lower quantile.
         elif self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
             output_image = self.scale_by_image_maximum(workspace, input_image)
         elif self.rescale_method == M_SCALE_BY_IMAGE_QUANTILE:
-            output_image = self.scale_by_image_quantile(workspace, input_image)
+            output_image = self.scale_by_image_quantile(input_image)
 
         rescaled_image = Image(
             output_image,
@@ -635,11 +624,10 @@ Enter the value to use as lower quantile.
             src_max = self.source_high.value
         return src_min, src_max
     
-    def rescale_by_quantile(self, input_image, workspace):
-        print (self.quantile_low,self.quantile_high)
-        low_value = numpy.quantile(input_image, self.quantile_low)
-        high_value = numpy.quantile(input_image, self.quantile_high)
-        print (low_value, high_value)
+    def scale_by_image_quantile(self, input_image):
+        input_pixels = input_image.pixel_data
+        low_value = numpy.quantile(input_pixels, self.quantile_range.min)
+        high_value = numpy.quantile(input_pixels, self.quantile_range.max)
         return self.rescale(input_image, (low_value,high_value))
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
@@ -670,8 +658,7 @@ Enter the value to use as lower quantile.
             # 
             # added quantile rescaling
             #
-            #TODO
-            setting_values += [.005,.9]
+            setting_values += [(.005,.995)]
             variable_revision_number = 4
 
         return setting_values, variable_revision_number

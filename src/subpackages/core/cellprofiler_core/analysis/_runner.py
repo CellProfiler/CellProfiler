@@ -353,6 +353,8 @@ class Runner:
             # We loop until every image is completed, or an outside event breaks the loop.
             while not self.cancelled:
 
+                LOGGER.debug("Interface - gathering measurements from queue")
+
                 # gather measurements
                 while not self.received_measurements_queue.empty():
                     image_numbers, buf = self.received_measurements_queue.get()
@@ -364,6 +366,8 @@ class Runner:
                     recd_measurements.close()
                     del recd_measurements
 
+                LOGGER.debug("Interface - check for in-progress jobs in queue")
+
                 # check for jobs in progress
                 while not self.in_process_queue.empty():
                     image_set_numbers = self.in_process_queue.get()
@@ -371,6 +375,8 @@ class Runner:
                         measurements[
                             "Image", self.STATUS, int(image_set_number),
                         ] = self.STATUS_IN_PROCESS
+
+                LOGGER.debug("Interface - check for finished jobs in queue")
 
                 # check for finished jobs that haven't returned measurements, yet
                 while not self.finished_queue.empty():
@@ -394,6 +400,8 @@ class Runner:
                             self.work_queue.put((job, worker_runs_post_group, False))
                     finished_req.reply(anareply.Ack())
 
+                LOGGER.debug("Interface - counting status and sending Progress")
+
                 # check progress and report
                 counts = collections.Counter(
                     measurements["Image", self.STATUS, image_set_number,]
@@ -403,6 +411,8 @@ class Runner:
 
                 # Are we finished?
                 if counts[self.STATUS_DONE] == len(image_sets_to_process):
+                    LOGGER.debug(f"Interface - all {len(image_sets_to_process)} done, doing post run")
+
                     last_image_number = measurements.get_image_numbers()[-1]
                     measurements.image_set_number = last_image_number
                     if not worker_runs_post_group:
@@ -415,6 +425,7 @@ class Runner:
                     self.pipeline.post_run(workspace)
                     break
 
+                LOGGER.debug("Interface - waiting for more work")
                 measurements.flush()
                 # not done, wait for more work
                 with self.interface_work_cv:

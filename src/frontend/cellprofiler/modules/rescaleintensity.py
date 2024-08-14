@@ -43,6 +43,7 @@ M_DIVIDE_BY_IMAGE_MAXIMUM = "Divide by the image's maximum"
 M_DIVIDE_BY_VALUE = "Divide each image by the same value"
 M_DIVIDE_BY_MEASUREMENT = "Divide each image by a previously calculated value"
 M_SCALE_BY_IMAGE_MAXIMUM = "Match the image's maximum to another image's maximum"
+M_SCALE_BY_IMAGE_QUANTILE = "Scale the image by a given quantile of that image"
 
 M_ALL = [
     M_STRETCH,
@@ -53,6 +54,7 @@ M_ALL = [
     M_DIVIDE_BY_VALUE,
     M_DIVIDE_BY_MEASUREMENT,
     M_SCALE_BY_IMAGE_MAXIMUM,
+    M_SCALE_BY_IMAGE_QUANTILE,
 ]
 
 R_SCALE = "Scale similarly to others"
@@ -75,7 +77,7 @@ HIGH_ALL = [CUSTOM_VALUE, HIGH_EACH_IMAGE, HIGH_ALL_IMAGES]
 class RescaleIntensity(ImageProcessing):
     module_name = "RescaleIntensity"
 
-    variable_revision_number = 3
+    variable_revision_number = 4
 
     def create_settings(self):
         super(RescaleIntensity, self).create_settings()
@@ -117,7 +119,10 @@ There are a number of options for rescaling the input image:
    loaded by the **Metadata** module.
 -  *%(M_SCALE_BY_IMAGE_MAXIMUM)s:* Scale an image so that its
    maximum value is the same as the maximum value within the reference
-   image."""
+   image.
+-  *%(M_SCALE_BY_IMAGE_QUANTILE)s:* Scale an image so that its minimum value
+   is set by a given quantile and/or its maximum value is set by a given
+   quantile."""
             % globals(),
         )
 
@@ -280,6 +285,28 @@ Select the measurement value to use as the divisor for the final image.
             % globals(),
         )
 
+        self.quantile_low = Float(
+            "Lower Quantile",
+            .005,
+            minval=0,
+            doc="""\
+*(Used only if “%(M_SCALE_BY_IMAGE_QUANTILE)s” is selected)*
+Enter the value to use as lower quantile.
+"""
+            % globals(),
+        )
+
+        self.quantile_high = Float(
+            "Upper Quantile",
+            .95,
+            maxval=1,
+            doc="""\
+*(Used only if “%(M_SCALE_BY_IMAGE_QUANTILE)s” is selected)*
+Enter the value to use as lower quantile.
+"""
+            % globals(),
+        )
+
     def settings(self):
         __settings__ = super(RescaleIntensity, self).settings()
 
@@ -294,6 +321,8 @@ Select the measurement value to use as the divisor for the final image.
             self.matching_image_name,
             self.divisor_value,
             self.divisor_measurement,
+            self.quantile_low,
+            self.quantile_high
         ]
 
     def visible_settings(self):
@@ -320,6 +349,8 @@ Select the measurement value to use as the divisor for the final image.
             __settings__ += [self.divisor_measurement]
         elif self.rescale_method == M_DIVIDE_BY_VALUE:
             __settings__ += [self.divisor_value]
+        elif self.rescale_method == M_SCALE_BY_IMAGE_QUANTILE:
+            __settings__ += [self.quantile_low,self.quantile_high]
         return __settings__
 
     def set_automatic_minimum(self, image_set_list, value):
@@ -417,6 +448,8 @@ Select the measurement value to use as the divisor for the final image.
             output_image = self.divide_by_measurement(workspace, input_image)
         elif self.rescale_method == M_SCALE_BY_IMAGE_MAXIMUM:
             output_image = self.scale_by_image_maximum(workspace, input_image)
+        elif self.rescale_method == M_SCALE_BY_IMAGE_QUANTILE:
+            output_image = self.scale_by_image_quantile(workspace, input_image)
 
         rescaled_image = Image(
             output_image,
@@ -601,6 +634,13 @@ Select the measurement value to use as the divisor for the final image.
         else:
             src_max = self.source_high.value
         return src_min, src_max
+    
+    def rescale_by_quantile(self, input_image, workspace):
+        print (self.quantile_low,self.quantile_high)
+        low_value = numpy.quantile(input_image, self.quantile_low)
+        high_value = numpy.quantile(input_image, self.quantile_high)
+        print (low_value, high_value)
+        return self.rescale(input_image, (low_value,high_value))
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         if variable_revision_number == 1:
@@ -626,5 +666,12 @@ Select the measurement value to use as the divisor for the final image.
             setting_values = setting_values[:9] + setting_values[13:]
 
             variable_revision_number = 3
+        if variable_revision_number == 3:
+            # 
+            # added quantile rescaling
+            #
+            #TODO
+            setting_values += [.005,.9]
+            variable_revision_number = 4
 
         return setting_values, variable_revision_number

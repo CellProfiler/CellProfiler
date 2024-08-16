@@ -1213,7 +1213,7 @@ class Pipeline:
 
     def run_image_set(
         self,
-        measurements,
+        measurements : Measurements,
         image_set_number,
         interaction_handler,
         display_handler,
@@ -1288,7 +1288,7 @@ class Pipeline:
                 # the UI has cancelled the run. Forward exception upward.
                 raise
             except Exception as exception:
-                print("run_image_set_exception, get_always_continue",get_always_continue())
+                LOGGER.debug("run_image_set_exception, get_always_continue",get_always_continue())
                 LOGGER.error(
                     "Error detected during run of module %s#%d",
                     module.module_name,

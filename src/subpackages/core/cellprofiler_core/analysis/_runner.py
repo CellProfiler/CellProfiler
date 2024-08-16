@@ -587,6 +587,7 @@ class Runner:
                 LOGGER.debug("Sent shared dictionary reply")
             elif isinstance(req, anarequest.MeasurementsReport):
                 LOGGER.debug("Received measurements report")
+                print("👺 Measurments Report image set numbers", req.image_set_numbers)
                 self.queue_received_measurements(req.image_set_numbers, req.buf)
                 req.reply(anareply.Ack())
                 LOGGER.debug("Acknowledged measurements report")

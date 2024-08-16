@@ -148,7 +148,6 @@ class Measurements:
         self.__relationships = set()
         self.__images = {}
         self.__image_providers = []
-        self.__image_providers = []
         self.__image_number_relationships = {}
         if RELATIONSHIP in self.hdf5_dict.top_group:
             rgroup = self.hdf5_dict.top_group[RELATIONSHIP]

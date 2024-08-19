@@ -436,6 +436,7 @@ class Runner:
                         and self.received_measurements_queue.empty()
                     ):
                         self.interface_work_cv.wait()  # wait for a change of status or work to arrive
+            LOGGER.debug("Interface - done waiting because of cancellation")
         except Exception as e:
             print(e)
         finally:

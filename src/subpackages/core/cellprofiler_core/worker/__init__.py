@@ -267,6 +267,7 @@ def main():
             with KnimeBridgeServer(
                 the_zmq_context, knime_bridge_address, NOTIFY_ADDR, NOTIFY_STOP
             ):
+                LOGGER.debug("👺 joining worker thread")
                 worker_thread.join()
             the_zmq_context.destroy(linger=0)
         LOGGER.debug("Worker thread joined")

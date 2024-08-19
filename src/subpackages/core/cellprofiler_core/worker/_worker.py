@@ -121,6 +121,7 @@ class Worker:
                         continue
                     self.do_job(job)
                 except CancelledException:
+                    LOGGER.debug("👺 Worker cancelled")
                     break
 
     def do_job(self, job):
@@ -135,6 +136,7 @@ class Worker:
             send_dictionary = job.wants_dictionary
 
             LOGGER.info("Starting job")
+            LOGGER.debug(f"👺 job is: {str(job.image_set_numbers)}")
             # Fetch the pipeline and preferences for this analysis if we don't have it
             current_pipeline = self.pipeline
             current_preferences = self.preferences
@@ -307,6 +309,7 @@ class Worker:
                 buf=current_measurements.file_contents(),
                 image_set_numbers=image_set_numbers,
             )
+            LOGGER.debug("👺 worker sending MeasurementsReport")
             rep = self.send(req)
 
         except CancelledException:
@@ -321,6 +324,8 @@ class Worker:
             # Clean up any measurements owned by us
             for m in job_measurements:
                 m.close()
+                
+            LOGGER.debug(f"👺 worker finished with job {str(job.image_set_numbers)}")
 
     def interaction_handler(self, module, *args, **kwargs):
         """handle interaction requests by passing them to the jobserver and wait for the reply."""

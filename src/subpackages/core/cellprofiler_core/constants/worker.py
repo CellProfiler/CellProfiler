@@ -1,4 +1,4 @@
-from _weakrefset import WeakSet
+from weakref import WeakSet
 
 import zmq
 

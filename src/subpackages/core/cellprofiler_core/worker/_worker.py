@@ -116,7 +116,7 @@ class Worker:
 
                     if isinstance(job, NoWork):
                         LOGGER.debug("Requesting a job received NoWork, now I'm napping")
-                        time.sleep(10)  # avoid hammering server
+                        time.sleep(60)  # avoid hammering server
                         # no work, currently.
                         continue
                     self.do_job(job)

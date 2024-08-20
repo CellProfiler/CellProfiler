@@ -353,7 +353,7 @@ class Runner:
             # We loop until every image is completed, or an outside event breaks the loop.
             while not self.cancelled:
 
-                LOGGER.debug("Interface - gathering measurements from queue")
+                LOGGER.debug(f"Interface - gathering measurements from queue, sized {self.received_measurements_queue.qsize()}")
 
                 # gather measurements
                 while not self.received_measurements_queue.empty():
@@ -364,6 +364,7 @@ class Runner:
                         recd_measurements, measurements, image_numbers
                     )
                     recd_measurements.close()
+                    LOGGER.debug(f"👺 deleting measurements for {image_numbers} as it has be consolidated")
                     del recd_measurements
 
                 LOGGER.debug("Interface - check for in-progress jobs in queue")

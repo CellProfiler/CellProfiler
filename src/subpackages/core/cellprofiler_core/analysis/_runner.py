@@ -408,6 +408,12 @@ class Runner:
                     measurements["Image", self.STATUS, image_set_number,]
                     for image_set_number in image_sets_to_process
                 )
+                _debug_count = list()
+                for im_set_num in image_sets_to_process:
+                    _debug_status = measurements["Image", self.STATUS, im_set_num,]
+                    if _debug_status != self.STATUS_DONE:
+                        _debug_count.append((im_set_num, _debug_status))
+                LOGGER.debug(f"👺 sending Progress - {_debug_count}")
                 self.post_event(Progress(counts))
 
                 # Are we finished?

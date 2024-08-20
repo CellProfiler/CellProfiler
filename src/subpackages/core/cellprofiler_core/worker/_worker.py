@@ -309,8 +309,9 @@ class Worker:
                 buf=current_measurements.file_contents(),
                 image_set_numbers=image_set_numbers,
             )
-            LOGGER.debug("👺 worker sending MeasurementsReport")
+            LOGGER.debug(f"👺 worker sending MeasurementsReport for job {str(job.image_set_numbers)}")
             rep = self.send(req)
+            LOGGER.debug(f"👺 worker received MeasurementsReport ACK for job {str(job.image_set_numbers)}")
 
         except CancelledException:
             # Main thread received shutdown signal

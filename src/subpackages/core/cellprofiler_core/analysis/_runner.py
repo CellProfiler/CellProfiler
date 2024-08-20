@@ -640,7 +640,10 @@ class Runner:
             self.interface_work_cv.notify()
 
     def queue_received_measurements(self, image_set_numbers, measurements):
-        self.received_measurements_queue.put((image_set_numbers, measurements))
+        try:
+            self.received_measurements_queue.put_nowait((image_set_numbers, measurements))
+        except queue.Full:
+            LOGGER.warning("👺 received_measurements_queuue is full, dropping measurements for image set %s" % image_set_numbers)
         # notify interface thread
         with self.interface_work_cv:
             self.interface_work_cv.notify()

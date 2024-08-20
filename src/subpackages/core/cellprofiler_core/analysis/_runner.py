@@ -458,7 +458,7 @@ class Runner:
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
     def copy_recieved_measurements(
-        self, recd_measurements, measurements, image_numbers
+        self, recd_measurements: Measurements, measurements: Measurements, image_numbers
     ):
         """Copy the received measurements to the local process' measurements
 
@@ -647,10 +647,13 @@ class Runner:
             self.interface_work_cv.notify()
 
     def queue_received_measurements(self, image_set_numbers, measurements):
-        try:
-            self.received_measurements_queue.put_nowait((image_set_numbers, measurements))
-        except queue.Full:
-            LOGGER.warning("👺 received_measurements_queuue is full, dropping measurements for image set %s" % image_set_numbers)
+        # try:
+        #     self.received_measurements_queue.put_nowait((image_set_numbers, measurements))
+        # except queue.Full:
+        #     LOGGER.warning("👺 received_measurements_queuue is full, dropping measurements for image set %s" % image_set_numbers)
+        LOGGER.debug(f"👺 QUEUE OP: jobserver starting to put measurements in queue for interface, img_set_nums {image_set_numbers}; may block")
+        self.received_measurements_queue.put((image_set_numbers, measurements))
+        LOGGER.debug(f"👺 QUEUE OP: jobserver done putting measurements in queue for interface, img_set_nums {image_set_numbers}")
         # notify interface thread
         with self.interface_work_cv:
             self.interface_work_cv.notify()

@@ -594,11 +594,10 @@ class Runner:
                 req.reply(anareply.SharedDictionary(dictionaries=self.shared_dicts))
                 LOGGER.debug("Sent shared dictionary reply")
             elif isinstance(req, anarequest.MeasurementsReport):
-                LOGGER.debug("Received measurements report")
-                print("👺 Measurements Report image set numbers", req.image_set_numbers)
+                LOGGER.debug(f"Received measurements report for {req.image_set_numbers}")
                 self.queue_received_measurements(req.image_set_numbers, req.buf)
                 req.reply(anareply.Ack())
-                LOGGER.debug("Acknowledged measurements report")
+                LOGGER.debug(f"Acknowledged measurements report for {req.image_set_numbers}")
             elif isinstance(req, anarequest.AnalysisCancel):
                 # Signal the interface that we are cancelling
                 LOGGER.debug("Received analysis worker cancel request")
@@ -651,7 +650,11 @@ class Runner:
         #     self.received_measurements_queue.put_nowait((image_set_numbers, measurements))
         # except queue.Full:
         #     LOGGER.warning("👺 received_measurements_queuue is full, dropping measurements for image set %s" % image_set_numbers)
-        LOGGER.debug(f"👺 QUEUE OP: jobserver starting to put measurements in queue for interface, img_set_nums {image_set_numbers}; may block")
+        if self.received_measurements_queue.full():
+            LOGGER.debug(f"👺 QUEUE OP: jobserver starting to put measurements in queue for interface, img_set_nums {image_set_numbers}; is full")
+        else:
+            LOGGER.debug(f"👺 QUEUE OP: jobserver starting to put measurements in queue for interface, img_set_nums {image_set_numbers}; is not full")
+
         self.received_measurements_queue.put((image_set_numbers, measurements))
         LOGGER.debug(f"👺 QUEUE OP: jobserver done putting measurements in queue for interface, img_set_nums {image_set_numbers}")
         # notify interface thread

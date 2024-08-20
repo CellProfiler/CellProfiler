@@ -100,7 +100,7 @@ class Runner:
         # should have jobserver() call load_measurements_from_buffer() rather
         # than interface() doing so.  Currently, passing measurements in this
         # way seems like it might be buggy:
-        # http://code.google.com/p/h5py/issues/detail?id=244
+        # https://github.com/h5py/h5py/issues/244
         self.received_measurements_queue = queue.Queue(maxsize=10)
 
         self.shared_dicts = None

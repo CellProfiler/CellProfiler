@@ -364,7 +364,7 @@ class Runner:
                         recd_measurements, measurements, image_numbers
                     )
                     recd_measurements.close()
-                    LOGGER.debug(f"👺 deleting measurements for {image_numbers} as it has be consolidated")
+                    LOGGER.debug(f"👺 deleting measurements for {image_numbers} as it has been consolidated")
                     del recd_measurements
 
                 LOGGER.debug("Interface - check for in-progress jobs in queue")

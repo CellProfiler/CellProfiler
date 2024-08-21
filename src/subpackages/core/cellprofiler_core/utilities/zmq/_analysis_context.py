@@ -1,5 +1,9 @@
+import logging
+from cellprofiler_core.analysis.request._measurements_report import MeasurementsReport
 from .communicable import Communicable
 from .communicable.reply.upstream_exit import BoundaryExited
+
+LOGGER = logging.getLogger(__name__)
 
 
 class AnalysisContext:
@@ -49,6 +53,8 @@ class AnalysisContext:
                 assert req not in self.reqs_pending
                 self.reqs_pending.add(req)
                 self.upq.put(req)
+                if isinstance(req, MeasurementsReport):
+                    LOGGER.debug(f"👺 enquing req in up queue, num: {req.image_set_numbers}")
                 return True
             else:
                 Communicable.reply(req, BoundaryExited())

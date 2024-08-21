@@ -4,6 +4,7 @@ import threading
 
 import zmq
 
+from cellprofiler_core.analysis.request._measurements_report import MeasurementsReport
 import cellprofiler_core.utilities.zmq
 from cellprofiler_core.utilities.zmq._analysis_context import AnalysisContext
 from .communicable import Communicable
@@ -197,6 +198,8 @@ class Boundary:
                             received_stop = True
                         continue
                     req = Communicable.recv(s, routed=True)
+                    if isinstance(req, MeasurementsReport):
+                        LOGGER.debug(f"👺 Boundary - received measurements report, {req.image_set_numbers}")
                     req.set_boundary(self)
                     if not isinstance(req, AnalysisRequest):
                         for request_class in self.request_dictionary:

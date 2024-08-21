@@ -1,9 +1,24 @@
-{ pkgs }:
-pkgs.python3Packages.buildPythonPackage {
+{
+  lib,
+  # build deps
+  buildPythonPackage,
+  fetchFromGitHub,
+  # test deps
+  pytest,
+  cython,
+  # runtime deps
+  deprecation,
+  contourpy,
+  pywavelets,
+  numpy,
+  scipy,
+  scikit-image,
+}:
+buildPythonPackage {
   pname = "centrosome";
   version = "1.2.3";
 
-  src = pkgs.fetchFromGitHub {
+  src = fetchFromGitHub {
     owner = "CellProfiler";
     repo = "centrosome";
     rev = "5cdaa5a";
@@ -14,15 +29,18 @@ pkgs.python3Packages.buildPythonPackage {
   postPatch = ''
     substituteInPlace setup.py \
       --replace "scipy>=1.4.1,<1.11" "scipy>=1.4.1" \
-      --replace "matplotlib>=3.1.3,<3.8" "matplotlib>=3.1.3"
+      --replace "matplotlib>=3.1.3,<3.8" "matplotlib>=3.1.3" \
+      --replace "PyWavelets<1.5" "PyWavelets<=1.6" \
+      --replace "scikit-image>=0.17.2,<0.22.0" "scikit-image>=0.17.2,<=0.22.0" \
+      --replace "contourpy<1.2.0" "contourpy<=1.2.0"
   '';
 
-  buildInputs = with pkgs.python3Packages; [
+  buildInputs = [
     pytest
     cython
   ];
 
-  propagatedBuildInputs = with pkgs.python3Packages; [
+  propagatedBuildInputs = [
     deprecation
     contourpy
     pywavelets
@@ -32,10 +50,9 @@ pkgs.python3Packages.buildPythonPackage {
   ];
   pythonImportsCheck = [];
 
-  meta = with pkgs.lib; {
+  meta = {
     description = "Centrosome";
     homepage = "https://cellprofiler.org";
-    # license = license.mit;
+    license = lib.licenses.bsd3;
   };
-
 }

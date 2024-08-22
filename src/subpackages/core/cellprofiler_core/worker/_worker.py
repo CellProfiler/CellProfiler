@@ -403,7 +403,11 @@ class Worker:
         req.send_only(work_socket)
         response = None
         while response is None:
-            for socket, state in poller.poll(2000):
+            poll_res = poller.poll(2000)
+            if len(poll_res) == 0:
+                LOGGER.debug("👺 Worker did not poll for response, timeout")
+                continue
+            for socket, state in poll_res:
                 LOGGER.debug("👺 Worker did poll for response")
                 if state != zmq.POLLIN:
                     continue

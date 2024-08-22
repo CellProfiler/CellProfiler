@@ -32,7 +32,7 @@ class Communicable:
             message_parts + buffers, copy=False,
         )
         if hasattr(self, "_debug_i_am_report") and self._debug_i_am_report is not None:
-            self._debug_i_am_report(f"👺 MeasurementsReport done sending multipart for {self.iamge_set_numbers}")
+            self._debug_i_am_report(f"👺 MeasurementsReport done sending multipart for {self.image_set_numbers}")
 
     class MultipleReply(RuntimeError):
         pass

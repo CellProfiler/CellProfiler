@@ -403,7 +403,7 @@ class Worker:
         req.send_only(work_socket)
         response = None
         while response is None:
-            for socket, state in poller.poll():
+            for socket, state in poller.poll(2000):
                 LOGGER.debug("👺 Worker did poll for response")
                 if state != zmq.POLLIN:
                     continue
@@ -421,7 +421,7 @@ class Worker:
                     else:
                         LOGGER.error("Unexpected message on keepalive: " + notify_msg.decode())
                 elif socket == work_socket:
-                    LOGGER.debug("👺 Worker did get poll repsonse for work socket")
+                    LOGGER.debug("👺 Worker did get poll response for work socket")
                     if isinstance(req, MeasurementsReport):
                         response = req.recv(work_socket, debug_print=LOGGER.debug, num=req.image_set_numbers)
                     else:

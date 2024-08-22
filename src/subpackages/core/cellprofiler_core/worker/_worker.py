@@ -61,6 +61,7 @@ class Worker:
 
         # Setup the work server socket
         self.work_socket = self.context.socket(zmq.REQ)
+        self.work_socket.set_hwm(2000)
         self.work_socket.connect(self.work_request_address)
 
         # Establish a connection to the keepalive socket

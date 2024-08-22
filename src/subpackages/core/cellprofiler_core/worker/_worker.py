@@ -306,7 +306,7 @@ class Worker:
             )
             while True:
                 try:
-                    rep = self.send(req)
+                    rep = self.send(req, timeout=4000)
                     break
                 except PollTimeoutException:
                     LOGGER.debug(f"Worker timeout on sending MeasurementsReport; reconstructing socket and retry for job {str(job.image_set_numbers)}")
@@ -381,7 +381,7 @@ class Worker:
     #     rep = self.send(req)
     #     use_omero_credentials(rep.credentials)
 
-    def send(self, req, work_socket=None):
+    def send(self, req, work_socket=None, timeout=None):
         """Send a request and receive a reply
 
         req - request to send
@@ -412,7 +412,7 @@ class Worker:
             # calling function of send is welcome to retry.
             # See https://github.com/CellProfiler/CellProfiler/pull/4934
             # for more details.
-            poll_res = poller.poll(2000)
+            poll_res = poller.poll(timeout)
             if len(poll_res) == 0:
                 LOGGER.debug("Worker timeout on polling for response")
                 raise PollTimeoutException

@@ -308,6 +308,7 @@ class Worker:
                 self.current_analysis_id,
                 buf=current_measurements.file_contents(),
                 image_set_numbers=image_set_numbers,
+                debug_i_am_report = lambda s: LOGGER.debug(s)
             )
             LOGGER.debug(f"👺 worker sending MeasurementsReport for job {str(job.image_set_numbers)}")
             rep = self.send(req)

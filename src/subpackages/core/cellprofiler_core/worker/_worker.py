@@ -417,7 +417,10 @@ class Worker:
                     else:
                         LOGGER.error("Unexpected message on keepalive: " + notify_msg.decode())
                 elif socket == work_socket:
-                    response = req.recv(work_socket)
+                    if isinstance(req, MeasurementsReport):
+                        response = req.recv(work_socket, debug_print=LOGGER.debug, num=req.image_set_numbers)
+                    else:
+                        response = req.recv(work_socket)
         if isinstance(response, (UpstreamExit, ServerExited)):
             self.raise_cancel(
                 "Received UpstreamExit for analysis %s during request %s"

@@ -26,20 +26,25 @@ class Communicable:
             + [json_str]
         )
         if hasattr(self, "_debug_i_am_report") and self._debug_i_am_report is not None:
-            self._debug_i_am_report(f"👺 MeasurementsReport sending multipart for {self.image_set_numbers}")
-            print(f"👺 MeasurementsReport for {self.image_set_numbers} has", message_parts)
+            self._debug_i_am_report(f"👺 MeasurementsReport - sending multipart for {self.image_set_numbers}")
+            print(f"👺 MeasurementsReport - for {self.image_set_numbers} has", message_parts)
         socket.send_multipart(
             message_parts + buffers, copy=False,
         )
         if hasattr(self, "_debug_i_am_report") and self._debug_i_am_report is not None:
-            self._debug_i_am_report(f"👺 MeasurementsReport done sending multipart for {self.image_set_numbers}")
+            self._debug_i_am_report(f"👺 MeasurementsReport - done sending multipart for {self.image_set_numbers}")
 
     class MultipleReply(RuntimeError):
         pass
 
     @classmethod
-    def recv(cls, socket, routed=False):
+    def recv(cls, socket, routed=False, debug_print=None, num=None):
+        if debug_print is not None:
+            debug_print(f"👺 MeasurementsReport - start receive for multipart for {num}")
         message = socket.recv_multipart()
+        if debug_print is not None:
+            debug_print(f"👺 MeasurementsReport - done receive for multipart for {num}")
+            print(f"👺 MeasurementsReport - for {num} received:", message)
         if routed:
             split = message.index(b"") + 1
             routing = message[:split]

@@ -25,6 +25,7 @@ from ..constants.worker import NOTIFY_STOP
 from ..constants.worker import all_measurements
 from ..measurement import Measurements
 from ..utilities.measurement import load_measurements_from_buffer
+from ..utilities.zmq import PollTimeoutException
 from ..pipeline import CancelledException
 from ..preferences import get_awt_headless
 from ..preferences import set_preferences_from_dict
@@ -39,7 +40,7 @@ class Worker:
 
     """
 
-    def __init__(self, context, analysis_id, work_request_address, keepalive_address, with_stop_run_loop=True):
+    def __init__(self, context: zmq.Context, analysis_id, work_request_address, keepalive_address, with_stop_run_loop=True):
 
         self.context = context
         self.work_request_address = work_request_address
@@ -303,7 +304,17 @@ class Worker:
                 buf=current_measurements.file_contents(),
                 image_set_numbers=image_set_numbers,
             )
-            rep = self.send(req)
+            while True:
+                try:
+                    rep = self.send(req)
+                    break
+                except PollTimeoutException:
+                    LOGGER.debug(f"Worker timeout on sending MeasurementsReport; reconstructing socket and retry for job {str(job.image_set_numbers)}")
+                    self.work_socket.close(linger=0)
+                    self.work_socket = self.context.socket(zmq.REQ)
+                    self.work_socket.set_hwm(2000)
+                    self.work_socket.connect(self.work_request_address)
+                    continue
 
         except CancelledException:
             # Main thread received shutdown signal
@@ -391,7 +402,11 @@ class Worker:
         req.send_only(work_socket)
         response = None
         while response is None:
-            for socket, state in poller.poll():
+            poll_res = poller.poll(2000)
+            if len(poll_res) == 0:
+                LOGGER.debug("Worker timeout on polling for response")
+                raise PollTimeoutException
+            for socket, state in poll_res:
                 if state != zmq.POLLIN:
                     continue
                 elif socket == self.keepalive_socket:

@@ -25,13 +25,13 @@ class Communicable:
             ]
             + [json_str]
         )
-        if self._debug_i_am_report is not None:
+        if hasattr(self, "_debug_i_am_report") and self._debug_i_am_report is not None:
             self._debug_I_am_report(f"👺 MeasurementsReport sending multipart for {self.image_set_numbers}")
             print(f"👺 MeasurementsReport for {self.image_set_numbers} has", message_parts)
         socket.send_multipart(
             message_parts + buffers, copy=False,
         )
-        if self._debug_i_am_report is not None:
+        if hasattr(self, "_debug_i_am_report") and self._debug_i_am_report is not None:
             self._debug_I_am_report(f"👺 MeasurementsReport done sending multipart for {self.iamge_set_numbers}")
 
     class MultipleReply(RuntimeError):

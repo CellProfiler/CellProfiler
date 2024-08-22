@@ -17,6 +17,7 @@ from cellprofiler_core.utilities.zmq.communicable.request import (
     LockStatusRequest,
     Request,
 )
+from ._event import PollTimeoutException
 
 
 LOGGER = logging.getLogger(__name__)

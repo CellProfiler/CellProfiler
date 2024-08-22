@@ -315,7 +315,7 @@ class Worker:
             LOGGER.debug(f"👺 worker sending MeasurementsReport for job {str(job.image_set_numbers)}")
             while True:
                 try:
-                    rep = self.send(req)
+                    rep = self.send(req, timeout=2000)
                     break
                 except PollTimeoutException:
                     LOGGER.debug(f"👺 worker sending MeasurementsReport (retry) for job {str(job.image_set_numbers)}")
@@ -394,7 +394,7 @@ class Worker:
     #     rep = self.send(req)
     #     use_omero_credentials(rep.credentials)
 
-    def send(self, req, work_socket=None):
+    def send(self, req, work_socket=None, timeout=None):
         """Send a request and receive a reply
 
         req - request to send
@@ -415,7 +415,7 @@ class Worker:
         req.send_only(work_socket)
         response = None
         while response is None:
-            poll_res = poller.poll(2000)
+            poll_res = poller.poll(timeout)
             if len(poll_res) == 0:
                 LOGGER.debug("👺 Worker did not poll for response, timeout, sending again")
                 raise PollTimeoutException

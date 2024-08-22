@@ -404,9 +404,12 @@ class Worker:
         response = None
         while response is None:
             for socket, state in poller.poll():
+                LOGGER.debug("👺 Worker did poll for response")
                 if state != zmq.POLLIN:
                     continue
                 elif socket == self.keepalive_socket:
+                    LOGGER.debug("👺 Worker did get poll response for keepalive")
+
                     notify_msg = self.keepalive_socket.recv()
                     if notify_msg == NOTIFY_STOP:
                         LOGGER.debug("Worker received cancel notification")
@@ -418,6 +421,7 @@ class Worker:
                     else:
                         LOGGER.error("Unexpected message on keepalive: " + notify_msg.decode())
                 elif socket == work_socket:
+                    LOGGER.debug("👺 Worker did get poll repsonse for work socket")
                     if isinstance(req, MeasurementsReport):
                         response = req.recv(work_socket, debug_print=LOGGER.debug, num=req.image_set_numbers)
                     else:

@@ -405,7 +405,8 @@ class Worker:
         while response is None:
             poll_res = poller.poll(2000)
             if len(poll_res) == 0:
-                LOGGER.debug("👺 Worker did not poll for response, timeout")
+                LOGGER.debug("👺 Worker did not poll for response, timeout, sending again")
+                req.send_only(work_socket)
                 continue
             for socket, state in poll_res:
                 LOGGER.debug("👺 Worker did poll for response")

@@ -280,18 +280,21 @@ class Worker:
                     return
 
                 if worker_runs_post_group:
-                    last_workspace.interaction_handler = self.interaction_handler
-                    last_workspace.cancel_handler = self.cancel_handler
-                    last_workspace.post_group_display_handler = (
-                        self.post_group_display_handler
-                    )
-                    # There might be an exception in this call, but it will be
-                    # handled elsewhere, and there's nothing we can do for it
-                    # here.
-                    current_pipeline.post_group(
-                        last_workspace, current_measurements.get_grouping_keys()
-                    )
-                    del last_workspace
+                    if not last_workspace is None:
+                        last_workspace.interaction_handler = self.interaction_handler
+                        last_workspace.cancel_handler = self.cancel_handler
+                        last_workspace.post_group_display_handler = (
+                            self.post_group_display_handler
+                        )
+                        # There might be an exception in this call, but it will be
+                        # handled elsewhere, and there's nothing we can do for it
+                        # here.
+                        current_pipeline.post_group(
+                            last_workspace, current_measurements.get_grouping_keys()
+                        )
+                        del last_workspace
+                    else:
+                        LOGGER.error("No workspace from last image set, cannot run post group")
 
             # send measurements back to server
             req = MeasurementsReport(

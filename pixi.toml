@@ -14,8 +14,22 @@ cp = { cmd = ["python", "-m", "cellprofiler"] }
 [target.osx.tasks]
 cp = { cmd = ["$PIXI_PROJECT_ROOT/.pixi/envs/dev/pythonapp/Contents/MacOS/python", "-m", "cellprofiler"], env = { PYTHONEXECUTABLE = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/bin/python" } }
 
+[activation]
+env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/default/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/default/lib -lmysqlclient -rpath $PIXI_PROJECT_ROOT/.pixi/envs/default/lib" }
+
+[feature.java.activation]
+env = { JAVA_HOME = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib/jvm" }
+
 [dependencies]
 python = "3.9.*"
+h5py = "<3.11"
+mysql = "=8.0"
+
+[pypi-dependencies]
+mysqlclient = ">=2.2.3"
+
+[feature.java.dependencies]
+openjdk = "11.*"
 
 [target.osx.dependencies]
 "python.app" = ">=1.4,<2"
@@ -31,4 +45,4 @@ cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editab
 cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
 
 [environments]
-dev = ["mod"]
+dev = ["mod", "java"]

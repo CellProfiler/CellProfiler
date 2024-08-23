@@ -402,6 +402,16 @@ class Worker:
         req.send_only(work_socket)
         response = None
         while response is None:
+            # we timeout here because we have noticed in cases of piplines with
+            # many image sets (e.g. 240) and many workers (e.g. 15),
+            # that for some small number of image sets (e.g 5), Workers will
+            # successfully send MeasurementReports, but the Boundary.spin
+            # thread never receives them. It is difficult to diagnose,
+            # and difficult to fix "properly". Instead we notice we haven't
+            # received an ACK for a while, and assume we're hung, and the
+            # calling function of send is welcome to retry.
+            # See https://github.com/CellProfiler/CellProfiler/pull/4934
+            # for more details.
             poll_res = poller.poll(2000)
             if len(poll_res) == 0:
                 LOGGER.debug("Worker timeout on polling for response")

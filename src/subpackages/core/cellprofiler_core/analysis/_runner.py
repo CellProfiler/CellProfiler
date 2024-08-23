@@ -627,7 +627,13 @@ class Runner:
             self.interface_work_cv.notify()
 
     def queue_received_measurements(self, image_set_numbers, measurements):
+        did_block = False
+        if self.received_measurements_queue.full():
+            did_block = True
+            LOGGER.debug("Received measurements queue is full, blocking until space is available")
         self.received_measurements_queue.put((image_set_numbers, measurements))
+        if did_block:
+            LOGGER.debug("Received measurements queue no longer blocked")
         # notify interface thread
         with self.interface_work_cv:
             self.interface_work_cv.notify()

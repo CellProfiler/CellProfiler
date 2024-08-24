@@ -15,6 +15,7 @@ cp = { cmd = ["python", "-m", "cellprofiler"] }
 cp = { cmd = ["$PIXI_PROJECT_ROOT/.pixi/envs/dev/pythonapp/Contents/MacOS/python", "-m", "cellprofiler"], env = { PYTHONEXECUTABLE = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/bin/python" } }
 
 [activation]
+# https://github.com/PyMySQL/mysqlclient/issues/496#issuecomment-1614688099
 env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/default/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/default/lib -lmysqlclient -rpath $PIXI_PROJECT_ROOT/.pixi/envs/default/lib" }
 
 [feature.java.activation]

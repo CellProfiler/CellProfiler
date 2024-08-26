@@ -59,7 +59,7 @@ setuptools.setup(
     extras_require={
         "build": ["black", "pre-commit", "pyinstaller", "twine"],
         "docs": ["Sphinx>=3.1.1", "sphinx-rtd-theme>=0.5.0"],
-        "test": ["pytest>=3.3.2,<4"],
+        "test": ["pytest~=7.4.1"],
     },
     install_requires=[
         "boto3>=1.12.28",

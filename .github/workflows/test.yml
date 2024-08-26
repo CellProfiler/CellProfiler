@@ -4,7 +4,7 @@ jobs:
     name: Install and test Cellprofiler
     strategy:
       matrix:
-        os: [macos-11]
+        os: [macos-13]
         python-version: [ 3.8, 3.9 ]
       fail-fast: false
     runs-on: ${{ matrix.os }}
@@ -46,11 +46,13 @@ jobs:
         env:
           LC_ALL: "en_US.UTF-8"
         run: |
-          brew install mysql
+          brew install mysql@8.0
+          brew link mysql@8.0 --force
           mysql.server start
           mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
       - name: Install CP
         run: |
+          pip install "numpy>=1.20.1,<2" "Cython<3"
           pip install -e ~/core
           pip install -e .[test]
       - name: Run tests

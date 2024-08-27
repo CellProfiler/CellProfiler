@@ -31,6 +31,7 @@ mysqlclient = ">=2.2.3"
 
 [feature.java.dependencies]
 openjdk = "11.*"
+maven = ">=3.9.9,<4"
 
 [target.osx.dependencies]
 "python.app" = ">=1.4,<2"

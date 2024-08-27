@@ -289,6 +289,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libxcrypt-4.4.36-hd590300_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/libzlib-1.3.1-h4ab18f5_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/lz4-c-1.9.4-hcb278e6_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/maven-3.9.9-ha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/mysql-8.0.33-h27aab58_6.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/mysql-client-8.0.33-h545f5f4_6.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/mysql-common-8.0.33-hf1915f5_6.conda
@@ -444,6 +445,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/llvm-openmp-18.1.8-h15ab845_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/lz4-c-1.9.4-hf0c8a7f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/macports-legacy-support-1.3.0-hfdf4475_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-64/maven-3.9.9-h694c41f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/mysql-8.0.33-h88f4db0_6.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/mysql-client-8.0.33-he819ae3_6.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/mysql-common-8.0.33-h1d20c9b_6.conda
@@ -578,6 +580,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/llvm-openmp-18.1.8-hde57baf_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/lz4-c-1.9.4-hb7217d7_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/macports-legacy-support-1.3.0-h99b78c6_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/maven-3.9.9-hce30654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/mysql-8.0.33-h44b9a77_6.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/mysql-client-8.0.33-hf1148c8_6.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/mysql-common-8.0.33-hf9e6398_6.conda
@@ -704,6 +707,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/libxml2-2.12.7-h0f24e4e_4.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/libzlib-1.3.1-h2466b09_1.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/lz4-c-1.9.4-hcfcfb64_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/win-64/maven-3.9.9-h57928b3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/mkl-2024.1.0-h66d3029_694.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/mysql-8.0.33-h9c18f36_6.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/mysql-client-8.0.33-hed9f4ee_6.conda
@@ -1120,7 +1124,7 @@ packages:
   timestamp: 1718985592664
 - kind: pypi
   name: cellprofiler
-  version: 5.0.0.dev104
+  version: 5.0.0.dev106
   path: ./src/frontend
   sha256: 0e2f57eaaab488a9691a2c1c55cc5ce8d1e8556f49e9e16a51006ec0eb748e58
   requires_dist:
@@ -1162,7 +1166,7 @@ packages:
   editable: true
 - kind: pypi
   name: cellprofiler-core
-  version: 5.0.0.dev104
+  version: 5.0.0.dev106
   path: ./src/subpackages/core
   sha256: 5f5ac6f9555ae886782212aa2093dd13dac6fe872afed72420abf9c4c0b9215d
   requires_dist:
@@ -1196,7 +1200,7 @@ packages:
   editable: true
 - kind: pypi
   name: cellprofiler-library
-  version: 5.0.0.dev104
+  version: 5.0.0.dev106
   path: ./src/subpackages/library
   sha256: 04fdcc67ca34d216bbd2c5c16794eea5559d7bda5d9526c7f64b8988c492e7e6
   requires_dist:
@@ -4679,6 +4683,66 @@ packages:
   - python-dateutil>=2.7
   - importlib-resources>=3.2.0 ; python_version < '3.10'
   requires_python: '>=3.8'
+- kind: conda
+  name: maven
+  version: 3.9.9
+  build: h57928b3_0
+  subdir: win-64
+  url: https://conda.anaconda.org/conda-forge/win-64/maven-3.9.9-h57928b3_0.conda
+  sha256: 6019065a9e0b8577dc5620017a154025a477969d1c518e4329ccac4a2aab3401
+  md5: e41829b08c30a9b2a0725db2fc47651e
+  depends:
+  - openjdk
+  license: Apache-2.0
+  license_family: APACHE
+  purls: []
+  size: 8798634
+  timestamp: 1723935846436
+- kind: conda
+  name: maven
+  version: 3.9.9
+  build: h694c41f_0
+  subdir: osx-64
+  url: https://conda.anaconda.org/conda-forge/osx-64/maven-3.9.9-h694c41f_0.conda
+  sha256: a583302ead0073c90fab8e54704b2e07b6697934f01a065702b3681f3c6e0c0d
+  md5: 58de6831b949d71da41f2addec76ec0f
+  depends:
+  - openjdk
+  license: Apache-2.0
+  license_family: APACHE
+  purls: []
+  size: 8799070
+  timestamp: 1723935491352
+- kind: conda
+  name: maven
+  version: 3.9.9
+  build: ha770c72_0
+  subdir: linux-64
+  url: https://conda.anaconda.org/conda-forge/linux-64/maven-3.9.9-ha770c72_0.conda
+  sha256: 1bc4a6d5c39882531762082c198ddc01f73af754e042527f4f8cb39d15d3ffd7
+  md5: 6125de8b37596364d7b4a6c7ca36e665
+  depends:
+  - openjdk
+  license: Apache-2.0
+  license_family: APACHE
+  purls: []
+  size: 8800158
+  timestamp: 1723935521445
+- kind: conda
+  name: maven
+  version: 3.9.9
+  build: hce30654_0
+  subdir: osx-arm64
+  url: https://conda.anaconda.org/conda-forge/osx-arm64/maven-3.9.9-hce30654_0.conda
+  sha256: 39bacf6ecb67b880f1f9dac64ef482e46737f88603e28db516bec480eda87fb8
+  md5: af8e2a59a654f6d1b8d5a5a87a937eda
+  depends:
+  - openjdk
+  license: Apache-2.0
+  license_family: APACHE
+  purls: []
+  size: 8793535
+  timestamp: 1723935563639
 - kind: conda
   name: mkl
   version: 2024.1.0

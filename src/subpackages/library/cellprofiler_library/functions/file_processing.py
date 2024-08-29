@@ -59,23 +59,23 @@ def save_object_image_crops(
         mask = properties[0].intensity_image
         
         if file_format.casefold() == "png":
-                skimage.io.imsave(
-                    label_save_filename, 
-                    skimage.img_as_ubyte(mask), 
-                    check_contrast=False
-                )
+            skimage.io.imsave(
+                label_save_filename,
+                skimage.img_as_ubyte(mask),
+                check_contrast=False
+            )
         elif file_format.casefold() == "tiff8":
             skimage.io.imsave(
                 label_save_filename,
                 skimage.img_as_ubyte(mask),
-                compress=6,
+                compression=(8,6),
                 check_contrast=False,
             )
         elif file_format.casefold() == "tiff16":
             skimage.io.imsave(
                 label_save_filename,
                 skimage.img_as_uint(mask),
-                compress=6,
+                compression=(8,6),
                 check_contrast=False,
             )
         else:
@@ -138,14 +138,14 @@ def save_object_masks(
             skimage.io.imsave(
                 label_save_filename,
                 skimage.img_as_ubyte(mask),
-                compress=6,
+                compression=(8, 6),
                 check_contrast=False,
             )
         elif file_format.casefold() == "tiff16":
             skimage.io.imsave(
                 label_save_filename,
                 skimage.img_as_uint(mask),
-                compress=6,
+                compression=(8, 6),
                 check_contrast=False,
             )
         else:

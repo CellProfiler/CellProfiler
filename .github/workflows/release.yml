@@ -91,15 +91,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          draft: true
-          prerelease: true
-          release_name: ${{ github.ref }}
-          tag_name: ${{ github.ref }}
       - uses: actions/download-artifact@v3
         with:
           name: CellProfiler-macOS-4.2.8.zip
@@ -110,20 +101,17 @@ jobs:
           path: ./
       - env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: actions/upload-release-asset@v1
+        id: create_upload_release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
         with:
-          asset_content_type: application/zip
-          asset_name: CellProfiler-macOS-4.2.8.zip
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.8.zip
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-      - env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: actions/upload-release-asset@v1
-        with:
-          asset_content_type: application/exe
-          asset_name: CellProfiler-Windows-4.2.8.exe
-          asset_path: /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.2.8.exe
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          draft: true
+          prerelease: true
+          name: ${{ github.ref }}
+          files: |
+            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.8.zip
+            /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.2.8.exe
+
 name: create-release
 on:
   push:

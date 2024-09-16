@@ -107,7 +107,7 @@ jobs:
         with:
           draft: true
           prerelease: true
-          name: ${{ github.ref }}
+          name: v4.2.8
           files: |
             /home/runner/work/CellProfiler/CellProfiler/CellProfiler-macOS-4.2.8.zip
             /home/runner/work/CellProfiler/CellProfiler/CellProfiler-Windows-4.2.8.exe

@@ -65,7 +65,7 @@ jobs:
           pip install cython
           pip install mysqlclient==1.4.6
           pip install wxPython==4.1.0
-          pip install --editable . --no-use-pep517
+          pip install --editable .
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
           pyinstaller distribution/windows/cellprofiler.spec

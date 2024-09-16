@@ -71,12 +71,12 @@ jobs:
           pyinstaller distribution/windows/cellprofiler.spec
           iscc /dMyAppVersion="4.2.8" "distribution/windows/cellprofiler.iss"
       - if: ${{ matrix.os == 'macos-12' }}
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: CellProfiler-macOS-4.2.8.zip
           path: ./distribution/macos/dist/CellProfiler-macOS-4.2.8.zip
       - if: ${{ matrix.os == 'windows-2019' }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: CellProfiler-Windows-4.2.8.exe
           path: ./distribution/windows/Output/CellProfiler-Windows-4.2.8.exe

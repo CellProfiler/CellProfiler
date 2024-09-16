@@ -119,8 +119,6 @@ jobs:
           name: |
             CellProfiler-macOS-4.2.8.zip
             CellProfiler-Windows-4.2.8.exe
-
-
 name: create-release
 on:
   push:

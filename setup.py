@@ -59,7 +59,7 @@ setuptools.setup(
     entry_points={"console_scripts": ["cellprofiler=cellprofiler.__main__:main"]},
     extras_require={
         "build": ["pyinstaller", "twine"],
-        "docs": ["Sphinx>=3.1.1", "sphinx-rtd-theme>=0.5.0"],
+        "docs": ["Sphinx>=3.1.1", "sphinx-rtd-theme>=0.5.0", "markupsafe<2.0.1"],
         "test": ["pytest~=7.4.1"],
     },
     install_requires=[

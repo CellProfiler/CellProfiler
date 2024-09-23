@@ -12,13 +12,13 @@ platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 cp = { cmd = ["python", "-m", "cellprofiler"] }
 
 [target.osx.tasks]
-cp = { cmd = ["$PIXI_PROJECT_ROOT/.pixi/envs/dev/pythonapp/Contents/MacOS/python", "-m", "cellprofiler"], env = { PYTHONEXECUTABLE = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/bin/python" } }
+cp = { cmd = ["$PIXI_PROJECT_ROOT/.pixi/envs/dev/pythonapp/Contents/MacOS/python", "-Wd", "-m", "cellprofiler"], env = { PYTHONEXECUTABLE = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/bin/python" } }
 
-[activation]
+[feature.mysql.activation]
 # https://github.com/PyMySQL/mysqlclient/issues/496#issuecomment-1614688099
 env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/default/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/default/lib -lmysqlclient -rpath $PIXI_PROJECT_ROOT/.pixi/envs/default/lib" }
 
-[target.linux-64.activation]
+[feature.mysql.target.linux-64.activation]
 env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/default/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/default/lib" }
 
 [feature.java.activation]
@@ -27,6 +27,8 @@ env = { JAVA_HOME = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib/jvm" }
 [dependencies]
 python = "3.9.*"
 h5py = "<3.11"
+
+[feature.mysql.dependencies]
 mysql = "=8.0"
 
 [pypi-dependencies]
@@ -51,4 +53,4 @@ cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editab
 cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
 
 [environments]
-dev = ["mod", "java"]
+dev = ["mod", "java", "mysql"]

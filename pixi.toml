@@ -12,14 +12,22 @@ platforms = ["win-64", "linux-64", "osx-64", "osx-arm64"]
 cp = { cmd = ["python", "-m", "cellprofiler"] }
 
 [target.osx.tasks]
-cp = { cmd = ["$PIXI_PROJECT_ROOT/.pixi/envs/dev/pythonapp/Contents/MacOS/python", "-Wd", "-m", "cellprofiler"], env = { PYTHONEXECUTABLE = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/bin/python" } }
+# run using python.app (i.e. pythonw)
+cp = { cmd = ["pythonw", "-m", "cellprofiler", "-L", "10"] }
+cpd = { cmd = ["pythonw", "-Wd", "-m", "cellprofiler", "-L", "10"] }
+
+[target.osx.activation]
+# needed until https://github.com/prefix-dev/pixi/issues/1573 is resolved
+# python.app has a post-link script that coppies the contents of the pythonapp directory to a new python.app directory
+# that is not being run, hence the need for this hack
+scripts = ["scripts/link-pythonapp.sh"]
 
 [feature.mysql.activation]
 # https://github.com/PyMySQL/mysqlclient/issues/496#issuecomment-1614688099
-env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/default/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/default/lib -lmysqlclient -rpath $PIXI_PROJECT_ROOT/.pixi/envs/default/lib" }
+env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/dev/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib -lmysqlclient -rpath $PIXI_PROJECT_ROOT/.pixi/envs/dev/lib", PKG_CONFIG_PATH = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib/pkgconfig" }
 
 [feature.mysql.target.linux-64.activation]
-env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/default/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/default/lib" }
+env = { MYSQLCLIENT_CFLAGS = "-I$PIXI_PROJECT_ROOT/.pixi/envs/dev/include/mysql", MYSQLCLIENT_LDFLAGS = "-L$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib" }
 
 [feature.java.activation]
 env = { JAVA_HOME = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib/jvm" }
@@ -29,10 +37,8 @@ python = "3.9.*"
 h5py = "<3.11"
 
 [feature.mysql.dependencies]
+pkg-config = "<1.0.0"
 mysql = "=8.0"
-
-[pypi-dependencies]
-mysqlclient = ">=2.2.3"
 
 [feature.java.dependencies]
 openjdk = "11.*"

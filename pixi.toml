@@ -36,14 +36,6 @@ env = { JAVA_HOME = "$PIXI_PROJECT_ROOT/.pixi/envs/dev/lib/jvm" }
 python = "3.9.*"
 h5py = "<3.11"
 
-[feature.mysql.dependencies]
-pkg-config = "<1.0.0"
-mysql = "=8.0"
-
-[feature.java.dependencies]
-openjdk = "11.*"
-maven = ">=3.9.9,<4"
-
 [target.osx.dependencies]
 "python.app" = ">=1.4,<2"
 
@@ -53,10 +45,23 @@ maven = ">=3.9.9,<4"
 [target.linux-64.pypi-dependencies]
 wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl" }
 
+[feature.mysql.dependencies]
+pkg-config = "<1.0.0"
+mysql = "=8.0"
+
+[feature.java.dependencies]
+openjdk = "11.*"
+maven = ">=3.9.9,<4"
+
 [feature.mod.pypi-dependencies]
 cellprofiler-library = { path = "./src/subpackages/library", extras = ["test"], editable = true }
 cellprofiler-core = { path = "./src/subpackages/core", extras = ["test"], editable = true }
 cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
 
+[feature.profile.pypi-dependencies]
+py-spy = "*"
+memray = "*"
+
 [environments]
 dev = ["mod", "java", "mysql"]
+profile = ["mod", "java", "mysql", "profile"]

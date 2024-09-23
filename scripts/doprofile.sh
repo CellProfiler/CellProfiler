@@ -3,10 +3,10 @@
 # deps:
 #   pip install py-spy
 #   https://github.com/benfred/py-spy
-#   
+#
 #   pip install memray
 #   https://github.com/bloomberg/memray
-# 
+#
 # example usage:
 #   remove all files in default output dir (use zsh N glob to avoid error) if dir empty
 #   then run doprofile script

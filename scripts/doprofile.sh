@@ -32,23 +32,39 @@ B_DOLAUNCH=false
 B_GUI=true
 B_TMPOUT=false
 
-usage () {
-  echo "usage:"
-  echo "  doprofiler.sh [--speedscope | --memray] [--outname <name>] [-- <cp_args..>]"
-  echo "    try to find existing process and attach to pid"
-  echo "  doprofiler.sh --pid <pid> [--speedscope | --memray] [--outname <name>] [--tmpout] [-- <cp_args..>]"
-  echo "    attach to existing passed in pid"
-  echo "  doprofiler.sh --launch (gui | headless) [--speedscope | --memray] [--outname <name>] [--tmpout] [-- <cp_args..>]"
-  echo "    launch process and attach to its pid"
-  echo ""
-  echo "  --outname is the name of the output profile with .svg, .json, or .bin automatically appended"
-  echo "  --speedscope will output a speedscope .json file rather than a plain .svg"
-  echo "      open in www.speedscope.app"
-  echo "  --memray will output a memray .bin which can be converted to html with the memray's report generators"
-  echo "  --speedscope and --memray are mutually exclusive"
-  echo "  (--gui | --headless) argument for --launch, choose whether to run the GUI (default) or headless mode"
-  echo "  --tmpout will create a temporary directory to store the output of cellprofiler (not the profile) in and delete it when done"
-  echo "  -- <cp_args..> are cellprofiler arguments e.g. -h; don't use -o flag if --tmpdir is provided; don't use -L flag at all"
+usage() {
+  cat <<EOF
+Usage:
+  doprofiler.sh [--speedscope | --memray] [--outname <name>] [-- <cp_args..>]
+    Attempt to find an existing process and attach to its PID. 
+  doprofiler.sh --pid <pid> [--speedscope | --memray] [--outname <name>] [--tmpout] [-- <cp_args..>]
+    Attach to a specified PID.
+
+  doprofiler.sh --launch (gui | headless) [--speedscope | --memray] [--outname <name>] [--tmpout] [-- <cp_args..>]
+    Launch a new process and attach to its PID.
+
+Options:
+  --outname <name>       Specify the name of the output profile. The file extension
+                         (.svg, .json, or .bin) will be appended automatically.
+
+  --speedscope           Output a Speedscope .json file (open with www.speedscope.app).
+
+  --memray               Output a Memray .bin file (which can be converted to HTML
+                         using Memray's report generators).
+
+    NOTE:                If neither --speedscope or --memray is specified, defaults to SVG.
+
+  --pid <pid>            Attach to a specified process ID (PID).
+
+  --launch (gui | headless)
+                         Launch the process in GUI mode (default) or headless mode.
+
+  --tmpout               Create a temporary directory for storing CellProfiler output
+                         (excluding the profile) and delete it when done.
+
+  -- <cp_args..>         Arguments to pass to CellProfiler, e.g., -h. Do not use the
+                         -o flag if --tmpout is specified. Avoid using the -L flag.
+EOF
 }
 
 while [[ $# -gt 0 ]]; do

@@ -308,7 +308,6 @@ def test_load_v2():
 #     temp_dir = tempfile.mkdtemp()
 #     m = None
 #     try:
-#         cpprefs.set_headless()
 #         cpprefs.set_default_output_directory(temp_dir)
 #         print "Writing output to %s"%temp_dir
 #         path = os.path.split(__file__)[0]

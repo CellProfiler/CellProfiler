@@ -1248,7 +1248,7 @@ class Pipeline:
         grids = None
         should_write_measurements = True
         for module in self.modules():
-            print("Running module", module.module_name, module.module_num)
+            LOGGER.info(f"Running module {module.module_name} {module.module_num}")
             if module.should_stop_writing_measurements():
                 should_write_measurements = False
             workspace = Workspace(

@@ -10,10 +10,7 @@ import cellprofiler_core.module
 import cellprofiler.modules.convertobjectstoimage
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
-
-cellprofiler_core.preferences.set_headless()
 
 OBJECTS_NAME = "inputobjects"
 IMAGE_NAME = "outputimage"

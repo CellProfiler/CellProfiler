@@ -57,7 +57,7 @@ class TestImageSetList:
         z = cellprofiler_core.image.abstract_image._callback_image.CallbackImage(
             "TestImageProvider", fn
         )
-        y.providers.append(z)
+        y.add_provider(z)
         assert img == y.get_image("TestImageProvider")
 
     def test_add_two_image_providers(self):
@@ -75,12 +75,12 @@ class TestImageSetList:
             assert y == image_set, "Callback was not called with the correct image set"
             return img2
 
-        y.providers.append(
+        y.add_provider(
             cellprofiler_core.image.abstract_image._callback_image.CallbackImage(
                 "IP1", fn1
             )
         )
-        y.providers.append(
+        y.add_provider(
             cellprofiler_core.image.abstract_image._callback_image.CallbackImage(
                 "IP2", fn2
             )

@@ -17,12 +17,9 @@ import cellprofiler_core.module
 import cellprofiler.modules.enhanceorsuppressfeatures
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
 
 import tests.frontend
-
-cellprofiler_core.preferences.set_headless()
 
 
 @pytest.fixture(scope="function")

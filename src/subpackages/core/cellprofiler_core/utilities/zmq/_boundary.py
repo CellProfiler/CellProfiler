@@ -67,7 +67,7 @@ class Boundary:
 
         self.thread = threading.Thread(
             target=self.spin,
-            name="Boundary spin()",
+            name="Boundary spin() thread",
         )
         self.thread.start()
 
@@ -153,6 +153,7 @@ class Boundary:
             # socket where we receive Requests
             request_socket = self.zmq_context.socket(zmq.ROUTER)
             request_socket.setsockopt(zmq.LINGER, 0)
+            request_socket.set_hwm(2000)
             request_port = request_socket.bind_to_random_port(
                 self.zmq_address)
             self.request_address = self.zmq_address + (":%d" % request_port)

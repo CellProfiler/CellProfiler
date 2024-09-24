@@ -25,11 +25,13 @@ from ..constants.worker import NOTIFY_STOP
 from ..constants.worker import all_measurements
 from ..measurement import Measurements
 from ..utilities.measurement import load_measurements_from_buffer
+from ..utilities.zmq import PollTimeoutException
 from ..pipeline import CancelledException
 from ..preferences import get_awt_headless
 from ..preferences import set_preferences_from_dict
 from ..utilities.zmq.communicable.reply.upstream_exit import UpstreamExit
 from ..workspace import Workspace
+from ..reader import fill_readers
 
 
 LOGGER = logging.getLogger(__name__)
@@ -39,7 +41,7 @@ class Worker:
 
     """
 
-    def __init__(self, context, analysis_id, work_request_address, keepalive_address, with_stop_run_loop=True):
+    def __init__(self, context: zmq.Context, analysis_id, work_request_address, keepalive_address, with_stop_run_loop=True):
 
         self.context = context
         self.work_request_address = work_request_address
@@ -61,6 +63,7 @@ class Worker:
 
         # Setup the work server socket
         self.work_socket = self.context.socket(zmq.REQ)
+        self.work_socket.set_hwm(2000)
         self.work_socket.connect(self.work_request_address)
 
         # Establish a connection to the keepalive socket
@@ -143,6 +146,9 @@ class Worker:
                 preferences_dict = rep.preferences
                 # update preferences to match remote values
                 set_preferences_from_dict(preferences_dict)
+                LOGGER.debug("Preferences updated")
+
+                fill_readers(check_config=True)
 
                 LOGGER.debug("Loading pipeline")
 
@@ -280,18 +286,21 @@ class Worker:
                     return
 
                 if worker_runs_post_group:
-                    last_workspace.interaction_handler = self.interaction_handler
-                    last_workspace.cancel_handler = self.cancel_handler
-                    last_workspace.post_group_display_handler = (
-                        self.post_group_display_handler
-                    )
-                    # There might be an exception in this call, but it will be
-                    # handled elsewhere, and there's nothing we can do for it
-                    # here.
-                    current_pipeline.post_group(
-                        last_workspace, current_measurements.get_grouping_keys()
-                    )
-                    del last_workspace
+                    if not last_workspace is None:
+                        last_workspace.interaction_handler = self.interaction_handler
+                        last_workspace.cancel_handler = self.cancel_handler
+                        last_workspace.post_group_display_handler = (
+                            self.post_group_display_handler
+                        )
+                        # There might be an exception in this call, but it will be
+                        # handled elsewhere, and there's nothing we can do for it
+                        # here.
+                        current_pipeline.post_group(
+                            last_workspace, current_measurements.get_grouping_keys()
+                        )
+                        del last_workspace
+                    else:
+                        LOGGER.error("No workspace from last image set, cannot run post group")
 
             # send measurements back to server
             req = MeasurementsReport(
@@ -299,7 +308,17 @@ class Worker:
                 buf=current_measurements.file_contents(),
                 image_set_numbers=image_set_numbers,
             )
-            rep = self.send(req)
+            while True:
+                try:
+                    rep = self.send(req, timeout=4000)
+                    break
+                except PollTimeoutException:
+                    LOGGER.debug(f"Worker timeout on sending MeasurementsReport; reconstructing socket and retry for job {str(job.image_set_numbers)}")
+                    self.work_socket.close(linger=0)
+                    self.work_socket = self.context.socket(zmq.REQ)
+                    self.work_socket.set_hwm(2000)
+                    self.work_socket.connect(self.work_request_address)
+                    continue
 
         except CancelledException:
             # Main thread received shutdown signal
@@ -366,7 +385,7 @@ class Worker:
     #     rep = self.send(req)
     #     use_omero_credentials(rep.credentials)
 
-    def send(self, req, work_socket=None):
+    def send(self, req, work_socket=None, timeout=None):
         """Send a request and receive a reply
 
         req - request to send
@@ -387,7 +406,21 @@ class Worker:
         req.send_only(work_socket)
         response = None
         while response is None:
-            for socket, state in poller.poll():
+            # we timeout here because we have noticed in cases of piplines with
+            # many image sets (e.g. 240) and many workers (e.g. 15),
+            # that for some small number of image sets (e.g 5), Workers will
+            # successfully send MeasurementReports, but the Boundary.spin
+            # thread never receives them. It is difficult to diagnose,
+            # and difficult to fix "properly". Instead we notice we haven't
+            # received an ACK for a while, and assume we're hung, and the
+            # calling function of send is welcome to retry.
+            # See https://github.com/CellProfiler/CellProfiler/pull/4934
+            # for more details.
+            poll_res = poller.poll(timeout)
+            if len(poll_res) == 0:
+                LOGGER.debug("Worker timeout on polling for response")
+                raise PollTimeoutException
+            for socket, state in poll_res:
                 if state != zmq.POLLIN:
                     continue
                 elif socket == self.keepalive_socket:

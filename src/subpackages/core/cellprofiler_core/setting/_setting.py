@@ -38,7 +38,7 @@ class Setting(abc.ABC):
                 "text": text,
                 "value": self.unicode_value}
 
-    def from_dict(setting_dict: dict) -> "Setting":
+    def from_dict(self, setting_dict: dict) -> "Setting":
         parts = setting_dict["name"].split('.') #example: "cellprofiler_core.setting._path_list_display.PathListDisplay"
         module = __import__(parts[0])
         for part in parts[1:]:

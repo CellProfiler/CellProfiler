@@ -203,7 +203,7 @@ slices."""
 
     def run(self, workspace):
         provider = ImageProvider.restore_from_state(self.get_dictionary())
-        workspace.image_set.providers.append(provider)
+        workspace.image_set.add_provider(provider)
         image = workspace.image_set.get_image(self.image_name.value)
         pixels = image.pixel_data
         if not provider.has_image:
@@ -230,7 +230,7 @@ slices."""
         image_set = workspace.image_set
         if self.projection_image_name.value not in image_set.names:
             provider = ImageProvider.restore_from_state(self.get_dictionary())
-            image_set.providers.append(provider)
+            image_set.add_provider(provider)
 
     def display(self, workspace, figure):
         pixels = workspace.display_data.pixels

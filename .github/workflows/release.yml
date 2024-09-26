@@ -10,7 +10,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('setup.py') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      - if: ${{ matrix.os == 'macos-12' }}
+      - if: ${{ matrix.os == 'macos-13' }}
         uses: actions/cache@v2
         with:
           path: ~/Library/Caches/pip
@@ -34,7 +34,7 @@ jobs:
           pip install pyinstaller==4.10
           git clone --branch 4.2.x https://github.com/CellProfiler/distribution.git 
       # this is a separate step because we need to set the CPPFLAGS and LDFLAGS env variables *after* installing mysql, in the next step
-      - if: ${{ matrix.os == 'macos-12' }}
+      - if: ${{ matrix.os == 'macos-13' }}
         run: |
           brew install mysql@8.0
           # needed for mysql@8.0
@@ -48,7 +48,7 @@ jobs:
           CPPFLAGS: -I/usr/local/opt/mysql@8.0/include
           LDFLAGS: "-L/usr/local/opt/mysql@8.0/lib -L/usr/local/opt/openssl/lib"
           PKG_CONFIG_PATH: /usr/local/opt/mysql@8.0/lib/pkgconfig
-        if: ${{ matrix.os == 'macos-12' }}
+        if: ${{ matrix.os == 'macos-13' }}
         working-directory: ./distribution/macos
         run: |
           echo $PATH
@@ -70,7 +70,7 @@ jobs:
         run: |
           pyinstaller distribution/windows/cellprofiler.spec
           iscc /dMyAppVersion="4.2.8" "distribution/windows/cellprofiler.iss"
-      - if: ${{ matrix.os == 'macos-12' }}
+      - if: ${{ matrix.os == 'macos-13' }}
         uses: actions/upload-artifact@v3
         with:
           name: CellProfiler-macOS-4.2.8.zip
@@ -82,7 +82,7 @@ jobs:
           path: ./distribution/windows/Output/CellProfiler-Windows-4.2.8.exe
     strategy:
       matrix:
-        os: [macos-12, windows-2019]
+        os: [macos-13, windows-2019]
         python-version: ["3.8"]
       fail-fast: false
   upload:

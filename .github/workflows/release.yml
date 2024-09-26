@@ -65,7 +65,15 @@ jobs:
           pip install cython
           pip install mysqlclient==1.4.6
           pip install wxPython==4.1.0
-          pip install --editable .
+          # be super careful here
+          # --no-use-pep517 used to work but no longer does
+          # and --editable started causeing trouble for a hard to discern reason
+          # check pyinstaller output in build logs, and if you see
+          # "ERROR: Hidden import 'cellprofiler.<some_module>' not found"
+          # then the build will succeed, but the resulting .exe will not run properly
+          pip install .
+          echo "pip 🥶🧊"
+          pip freeze
       - if: ${{ matrix.os == 'windows-2019' }}
         run: |
           pyinstaller distribution/windows/cellprofiler.spec

@@ -121,6 +121,7 @@ jobs:
             CellProfiler-Windows-4.2.8.exe
 name: create-release
 on:
+  workflow_dispatch:
   push:
     tags:
       - "v*"

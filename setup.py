@@ -67,7 +67,7 @@ setuptools.setup(
         "cellprofiler-core==4.2.8",
         "centrosome>=1.2.3,<1.3",
         "docutils==0.15.2",
-        "h5py~=3.6.0,<4",
+        "h5py>=3.6.0,<4",
         "imageio>=2.5",
         "inflect>=2.1,<7",
         "Jinja2>=2.11.2",

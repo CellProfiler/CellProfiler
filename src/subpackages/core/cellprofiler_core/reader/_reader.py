@@ -202,6 +202,130 @@ class Reader(ABC):
         return []
 
     @staticmethod
+    def float_cast(dtype):
+        '''
+        For a given dtype, return the minimally sized floating dtype needed
+        to store the values of the given dtype without loss in precision.
+
+        For example, uint32 cannot simply be cast to float32 because
+        float32 can only accurately represent consecutive integer values
+        between -16_777_216 to 16_777_216. The further beyond that range, the
+        more precision is lost.
+        e.g. The uint32 value of 16_777_217, when cast to float32,
+        becomes 16_777_216.0, but when cast to float64 remains 16_777_217.0.
+
+        Since an integer to float conversion entails casting up to a larger
+        size, the minimal floating type needed is returned (rather than
+        unconditionally returning float64) in order to save memory.
+        '''
+        if dtype == numpy.uint8:
+            return numpy.float16
+        elif dtype == numpy.uint16:
+            return numpy.float32
+        elif dtype == numpy.uint32:
+            return numpy.float64
+        elif dtype == numpy.int8:
+            return numpy.float16
+        elif dtype == numpy.int16:
+            return numpy.float32
+        elif dtype == numpy.int32:
+            return numpy.float64
+        elif dtype == numpy.float16:
+            return numpy.float16
+        elif dtype == numpy.float32:
+            return numpy.float32
+        else:
+            raise ValueError(f"Unsupported dtype: {dtype}")
+
+    @staticmethod
+    def float_to_int(dtype):
+        '''
+        Convert a float dtype of some size, to a [u]int dtype of the same size.
+        '''
+        if dtype != numpy.dtype('float16') and dtype != numpy.dtype('float32'):
+            raise ValueError(f"Unsupported dtype: {dtype}")
+
+        dtype_info = numpy.finfo(dtype)
+        dtype_min, dtype_max = dtype_info.min, dtype_info.max
+
+        if dtype_min >= 0 and dtype_max <= 1:
+            raise ValueError(f"{dtype} cannot be converted to an integer dtype")
+        elif dtype_min >= 0 and dtype_max < 2**8:
+            return numpy.uint8
+        elif dtype_min >= 0 and dtype_max < 2**16:
+            return numpy.uint16
+        elif dtype_min >= 0 and dtype_max < 2**32:
+            return numpy.uint32
+        elif dtype_min >= -2**7 and dtype_max < 2**7:
+            return numpy.int8
+        elif dtype_min >= -2**15 and dtype_max < 2**15:
+            return numpy.int16
+        elif dtype_min >= -2**31 and dtype_max < 2**31:
+            return numpy.int32
+        else:
+            raise ValueError(f"Unsupported dtype: {dtype}")
+
+    @staticmethod
+    def normalize_to_float32(data):
+        '''
+        Convert an array of given data of some type to float32,
+        normalizing it to the range 0-1.
+
+        Unlike skimage.exposure.rescale_intensity, this function
+        does not scale the data such that the minimal pixel value
+        is force to 0. and the maximal pixel value is forced to 1.
+        (i.e. stretching/shrinking the data).
+        Instead, relative ranges are preserved
+        (i.e. range of the data wrt range of the data type is kept).
+
+        For example, for unsigned type, the scaling *will not* be
+        data / (max_val - min_val)
+        but rather
+        data / (2^bit_depth - 1)
+
+        The conversion also handles signed types by shifting the data first.
+
+        Finally the conversion handles two conditions present in floating
+        point images:
+        1. Floating point images which already have values inside the range 0-1.
+           In this case, it is simply cast to float32.
+        2. Floating point values which *represent* integers but stored as float
+           e.g. ..., -65535.0, -255.0, -1.0, 0.0, 1.0, 65535.0, ...
+           i.e. data that really should be an integer type, but for whatever
+           reason, are stored as float type.
+           In this case, it is cast to the appropriate integer type first,
+           and then cast to float32 in the range 0-1.
+        '''
+        data_dtype = data.dtype
+        return_dtype = numpy.float32
+
+        # handle integer types
+        if numpy.issubdtype(data_dtype, numpy.integer):
+            dtype_info = numpy.iinfo(data_dtype)
+            dtype_min, dtype_max = dtype_info.min, dtype_info.max
+
+            # convert to suitable float type
+            data = data.astype(Reader.float_cast(data_dtype))
+            # normalize to 0-1 range
+            # handle signed integers by shifting first
+            normalized_image = (data - dtype_min) / (dtype_max - dtype_min)
+            return normalized_image.astype(return_dtype)
+
+        # handle floating-point types
+        elif numpy.issubdtype(data_dtype, numpy.floating):
+            if data.min() >= 0.0 and data.max() <= 1.0:
+                # already in the range 0-1, just cast
+                return data.astype(numpy.float32)
+            else:
+                # assume values *represent* integers
+                # cast to integer type and recurse to use integer condition
+                return Reader.normalize_to_float32(
+                    data.astype(Reader.float_to_int(return_dtype)))
+
+        else:
+            raise ValueError("Unsupported data type")
+
+    @staticmethod
     def find_scale_to_match_bioformats(data):
         """
         When we're rescaling we'll usually want to match the output from BioFormats.

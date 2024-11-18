@@ -151,6 +151,7 @@ class Image:
         mval = 0.0
         scale = 1.0
         fix_range = False
+        # TODO - 4955: just use iinfo and finfo min and max instead of hand calculating
         if issubclass(img.dtype.type, numpy.floating):
             pass
         elif img.dtype.type is numpy.uint8:

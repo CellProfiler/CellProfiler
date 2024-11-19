@@ -51,8 +51,8 @@ class FileImage(AbstractImage):
         :type pathname:
         :param filename: Filename of file or last chunk of URL
         :type filename:
-        :param rescale:
-        :type rescale:
+        :param rescale: Whether to do metadata-based rescale (True), type-based rescale (False), or manual rescale (float)
+        :type rescale: boolean or float
         :param series:
         :type series:
         :param index:
@@ -359,6 +359,7 @@ class FileImage(AbstractImage):
                     stack.append(img)
                 img = numpy.dstack(stack)
         if isinstance(self.rescale, float):
+            # TODO - 4955: careful here with casting
             # Apply a manual rescale
             img = img.astype(numpy.float32) / self.rescale
         self.__image = Image(

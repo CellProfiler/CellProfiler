@@ -27,6 +27,7 @@ INTENSITY_ALL = [
 ]
 MANUAL_INTENSITY_LABEL = "Maximum intensity"
 
+# TODO - 4955: Revise help text for NamesAndTypes
 RESCALING_HELP_TEXT = """\
 This option determines how the image intensity should be rescaled from
 0.0 – 1.0.

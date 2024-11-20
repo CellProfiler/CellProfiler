@@ -56,6 +56,11 @@ ID_PARAM_SELECT_CHECK_LIST_BOX = wx.NewId()
 ID_SAMPLE_BUTTON = wx.NewId()
 
 
+# TODO: we have decided to tear out parameter sampling
+# it is currently broken, and even if we fix it, it writes out
+# data to files that are then meant to be browsed in another APP that no longer exists.
+# the client app can still work and can be found here (Panorama2):
+# https://github.com/CellProfiler/cellprofiler.github.com/pull/180/files#diff-acbd757001916c40aaf34d2fad8e124318b460844302b7df34cc18f2d31d6d83
 class ParameterSampleFrame(wx.Frame):
     """A frame to get sampling settings and to calculate samples for a
     CellProfiler module.

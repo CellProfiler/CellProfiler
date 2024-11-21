@@ -99,6 +99,7 @@ class BioformatsReader(Reader):
         # FIXME instead of np.frombuffer use scyjava.to_python, ideally that wraps memory
         pixel_type = self._reader.getPixelType()
         little_endian = self._reader.isLittleEndian()
+        # TODO - 4955: fix this too
         if pixel_type == FormatTools.INT8:
             dtype = np.int8
             scale = 255

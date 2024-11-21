@@ -79,6 +79,7 @@ class ImageIOReaderV3(Reader):
             # Remove alpha channel
             data = data[:, :, :3, ...]
         if rescale:
+            # TODO - 4955: fix here as well
             imax = self.find_scale_to_match_bioformats(data)
             data = data.astype(numpy.float32) / float(imax)
             if wants_max_intensity:

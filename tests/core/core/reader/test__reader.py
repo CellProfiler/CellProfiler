@@ -7,7 +7,7 @@ from cellprofiler_core.image import MonochromeImage
 from cellprofiler_core.utilities.pathname import pathname2url
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="class")
 def readers():
     # init readers
     fill_readers()
@@ -43,12 +43,84 @@ def create_image(reader, img_data, path, rescale=True):
 
     return provider.provide_image(None) # img.pixel_data for array
 
+# used to name the test something legible
+# https://docs.pytest.org/en/stable/how-to/fixtures.html#parametrizing-fixtures
+def idfn(fixture_value):
+    return fixture_value["img_name"]
+
+@pytest.fixture(scope="class", ids=idfn, params=[
+    {
+        "img_ext": "tiff",
+        "img_name": "uint8_full_range",
+        "dtype": "uint8",
+        "divisor": numpy.float32(2**8-1),
+        "shift": 0,
+        "start": numpy.iinfo("uint8").min,
+        "stop": numpy.iinfo("uint8").max,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "uint8_partial_range",
+        "dtype": "uint8",
+        "divisor": numpy.float32(2**8-1),
+        "shift": 0,
+        "start": 64,
+        "stop": 128,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "uint8_smallest_range",
+        "dtype": "uint8",
+        "divisor": numpy.float32(2**8-1),
+        "shift": 0,
+        "start": 0,
+        "stop": 1,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "int8_full_range",
+        "dtype": "int8",
+        "divisor": numpy.float32(2**8-1),
+        "shift": numpy.iinfo("int8").min,
+        "start": numpy.iinfo("int8").min,
+        "stop": numpy.iinfo("int8").max,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "int8_partial_range",
+        "dtype": "int8",
+        "divisor": numpy.float32(2**8-1),
+        "shift": numpy.iinfo("int8").min,
+        "start": -10,
+        "stop": 10,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "int8_smallest_range",
+        "dtype": "int8",
+        "divisor": numpy.float32(2**8-1),
+        "shift": numpy.iinfo("int8").min,
+        "start": 0,
+        "stop": 1,
+    },
+])
+def monochrome_image(request):
+    shift = request.param["shift"]
+    start = request.param["start"]
+    stop = request.param["stop"]
+    dtype = request.param["dtype"]
+    divisor = request.param["divisor"]
+    img_name = request.param["img_name"]
+    img_ext = request.param["img_ext"]
+
+    img_data = numpy.linspace(start, stop, num=4, dtype=numpy.dtype(dtype)).reshape(2,2)
+
+    return img_data, img_ext, img_name, dtype, divisor, shift, start, stop
+
 
 class TestReaders:
-    def test_uint8_tif_full_range(self, readers, tmp_path):
-        img_ext = "tiff"
-        img_name = "uint8_full_range"
-        img_data = numpy.array([0,128,255,0], dtype=numpy.dtype("uint8")).reshape(2,2)
+    def test_integer_types(self, monochrome_image, readers, tmp_path):
+        img_data, img_ext, img_name, dtype, divisor, shift, start, stop = monochrome_image
 
         for reader in readers:
 
@@ -59,34 +131,11 @@ class TestReaders:
                 continue
 
             test_img_data = test_img.pixel_data
-            ref_img_data = (img_data / (2**8-1)).astype("float32")
+            ref_img_data = ((img_data - shift) / divisor).astype("float32")
 
             assert test_img_data.dtype == numpy.dtype("float32"), "dtype mismatch"
             assert test_img_data.shape == ref_img_data.shape, "shape mismatch"
-            assert test_img_data.min() == ref_img_data.min(), "min mismatch"
-            assert test_img_data.max() == ref_img_data.max(), "max mismatch"
-            # test_img intensity values should range from 0 to 1
+            assert test_img_data.min() == numpy.float32((start - shift) / divisor), "min mismatch"
+            assert test_img_data.max() == numpy.float32((stop - shift) / divisor), "max mismatch"
             assert numpy.all(test_img_data == ref_img_data), "data mismatch"
-
-    def test_uint8_tif_partial_range(self, readers, tmp_path):
-        img_ext = "tiff"
-        img_name = "uint8_partial_range"
-        img_data = numpy.array([64,65,127,128], dtype=numpy.dtype("uint8")).reshape(2,2)
-
-        for reader in readers:
-
-            test_img = create_image(reader, img_data, tmp_path / f"{img_name}.{img_ext}", rescale=True)
-
-            # ext not supported, skip testing reader for this image
-            if test_img == None:
-                continue
-
-            test_img_data = test_img.pixel_data
-            ref_img_data = (img_data / (2**8-1)).astype("float32")
-
-            assert test_img_data.dtype == numpy.dtype("float32"), "dtype mismatch"
-            assert test_img_data.shape == ref_img_data.shape, "shape mismatch"
-            assert test_img_data.min() == ref_img_data.min(), "min mismatch"
-            assert test_img_data.max() == ref_img_data.max(), "max mismatch"
-            # test_img intensity values should range from 64/255 to 128/255
-            assert numpy.all(test_img_data == ref_img_data), "data mismatch"
+            assert numpy.all((test_img_data * divisor + shift).astype(dtype) == img_data), "precision lost"

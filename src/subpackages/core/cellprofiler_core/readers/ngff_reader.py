@@ -145,6 +145,7 @@ class NGFFReader(Reader):
             image = numpy.moveaxis(image, 0, -1)
         elif len(image.shape) > 3:
             image = numpy.moveaxis(image, 0, -1)
+        # TODO - 4955: Assumes integer type, and unsigned
         scale = numpy.iinfo(image.dtype).max
         if rescale:
             image = image.astype(float) / scale

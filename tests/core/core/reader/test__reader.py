@@ -49,6 +49,7 @@ def idfn(fixture_value):
     return fixture_value["img_name"]
 
 @pytest.fixture(scope="class", ids=idfn, params=[
+    # 8 bit images
     {
         "img_ext": "tiff",
         "img_name": "uint8_full_range",
@@ -103,6 +104,7 @@ def idfn(fixture_value):
         "start": 0,
         "stop": 1,
     },
+    # 16 bit integer images
     {
         "img_ext": "tiff",
         "img_name": "uint16_full_range",
@@ -157,6 +159,7 @@ def idfn(fixture_value):
         "start": 0,
         "stop": 1,
     },
+    # 32 bit integer images
     {
         "img_ext": "tiff",
         "img_name": "uint32_full_range",
@@ -210,6 +213,82 @@ def idfn(fixture_value):
         "shift": numpy.iinfo("int32").min,
         "start": 0,
         "stop": 1,
+    },
+    # 16 bit float types
+    {
+        "img_ext": "tiff",
+        "img_name": "float16_zero_one_full_range",
+        "dtype": "float16",
+        "divisor": numpy.float32(1),
+        "shift": 0,
+        "start": 0,
+        "stop": 1,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "float16_zero_one_partial_range",
+        "dtype": "float16",
+        "divisor": numpy.float32(1),
+        "shift": 0,
+        "start": 0.25,
+        "stop": 0.75,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "float16_zero_one_smallest_range",
+        "dtype": "float16",
+        "divisor": numpy.float32(1),
+        "shift": 0,
+        "start": 0.,
+        "stop": 2**(-24), # smallest positive float16
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "float16_intlike_full_range",
+        "dtype": "float16",
+        "divisor": numpy.float32(1),
+        "shift": 0,
+        "start": 0.,
+        # divisible by 3, so for 2x2 matrix, values are int-like
+        "stop": numpy.finfo("float16").max,
+    },
+    # 32 bit float types
+    {
+        "img_ext": "tiff",
+        "img_name": "float32_zero_one_full_range",
+        "dtype": "float32",
+        "divisor": numpy.float32(1),
+        "shift": 0,
+        "start": 0,
+        "stop": 1,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "float32_zero_one_partial_range",
+        "dtype": "float32",
+        "divisor": numpy.float32(1),
+        "shift": 0,
+        "start": 0.25,
+        "stop": 0.75,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "float32_zero_one_smallest_range",
+        "dtype": "float32",
+        "divisor": numpy.float32(1),
+        "shift": 0,
+        "start": 0.,
+        "stop": 2**(-149), # smallest positive float32
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "float32_intlike_full_range",
+        "dtype": "float32",
+        "divisor": numpy.float32(1),
+        "shift": 0,
+        "start": 0.,
+        # divisible by 3, so for 2x2 matrix, values are int-like
+        "stop": numpy.finfo("float32").max,
     },
 ])
 def monochrome_image(request):

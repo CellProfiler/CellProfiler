@@ -328,3 +328,16 @@ class Reader(ABC):
             return Reader.__uint_to_float32(data)
         else:
             raise ValueError(f"Unsupported data type: {data.dtype}")
+
+    # TODO - 4955: Temporary. This needs to be fixed, it is currently very naive
+    @staticmethod
+    def naive_scale(data):
+        if numpy.issubdtype(data.dtype, numpy.integer):
+            scale = numpy.iinfo(data.dtype).max
+        elif numpy.issubdtype(data.dtype, numpy.floating): # assume
+            # assume float is already normalized
+            scale = 1
+        else:
+            raise NotImplementedError(f"Unsupported dtype: {data.dtype}")
+        return scale
+

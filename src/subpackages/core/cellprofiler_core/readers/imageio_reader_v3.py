@@ -81,10 +81,10 @@ class ImageIOReaderV3(Reader):
         if rescale:
             data = self.normalize_to_float32(data)
             if wants_max_intensity:
-                return data, 1
+                return data, 1.0
             return data
         if wants_max_intensity:
-            return data, numpy.iinfo(data.dtype).max
+            return data, self.naive_scale(data)
         return data
 
     def read_volume(self,
@@ -106,8 +106,10 @@ class ImageIOReaderV3(Reader):
         if rescale:
             data = self.normalize_to_float32(data)
             if wants_max_intensity:
-                return data, 1
+                return data, 1.0
             return data
+        if wants_max_intensity:
+                return data, self.naive_scale(data)
         return data
 
     @classmethod

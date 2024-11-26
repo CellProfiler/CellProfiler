@@ -99,37 +99,22 @@ class BioformatsReader(Reader):
         # FIXME instead of np.frombuffer use scyjava.to_python, ideally that wraps memory
         pixel_type = self._reader.getPixelType()
         little_endian = self._reader.isLittleEndian()
-        # TODO - 4955: fix this too
         if pixel_type == FormatTools.INT8:
             dtype = np.int8
-            scale = 255
         elif pixel_type == FormatTools.UINT8:
             dtype = np.uint8
-            scale = 255
         elif pixel_type == FormatTools.UINT16:
             dtype = '<u2' if little_endian else '>u2'
-            scale = 65535
         elif pixel_type == FormatTools.INT16:
             dtype = '<i2' if little_endian else '>i2'
-            scale = 65535
         elif pixel_type == FormatTools.UINT32:
             dtype = '<u4' if little_endian else '>u4'
-            scale = 2**32
         elif pixel_type == FormatTools.INT32:
             dtype = '<i4' if little_endian else '>i4'
-            scale = 2**32-1
         elif pixel_type == FormatTools.FLOAT:
             dtype = '<f4' if little_endian else '>f4'
-            scale = 1
         elif pixel_type == FormatTools.DOUBLE:
             dtype = '<f8' if little_endian else '>f8'
-            scale = 1
-        max_sample_value = self._reader.getMetadataValue('MaxSampleValue')
-        if max_sample_value is not None:
-            try:
-                scale = scyjava.to_python(max_sample_value)
-            except:
-                LOGGER.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
         if index is not None:
             image = np.frombuffer(openBytes_func(index), dtype)
             if len(image) / height / width in (3,4):
@@ -213,10 +198,18 @@ class BioformatsReader(Reader):
             image = self.normalize_to_float32(image)
 
             if wants_max_intensity:
-                return image, 1
+                return image, 1.0
             return image
 
         if wants_max_intensity:
+            max_sample_value = self._reader.getMetadataValue('MaxSampleValue')
+            if max_sample_value is not None:
+                try:
+                    scale = scyjava.to_python(max_sample_value)
+                except:
+                    LOGGER.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
+            else:
+                scale = self.naive_scale(image)
             return image, scale
         return image
 
@@ -264,7 +257,11 @@ class BioformatsReader(Reader):
                 channel_names=channel_names,
             )
             image_stack.append(data)
-        return np.stack(image_stack)
+        image_stack = np.stack(image_stack)
+
+        if wants_max_intensity:
+            return data, self.naive_scale(image_stack)
+        return data
 
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False):

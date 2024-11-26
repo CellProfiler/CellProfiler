@@ -14,7 +14,7 @@ def readers():
     # do not test GCS Reader
     filter_active_readers(
         #[x for x in ALL_READERS.keys() if "Google Cloud Storage" not in x],
-        ["ImageIO"], # TODO - 4955: remove this, temp
+        ["ImageIO", "ImageIOV3"], # TODO - 4955: remove this, temp
         by_module_name=False)
     # post-filtered readers
     return AVAILABLE_READERS
@@ -315,7 +315,7 @@ def idfn(fixture_value):
         # float32 goes way beyond the max uint32 value
         # but it starts to get so sparse, we don't define values for the
         # higher ranges of uintlike
-        "stop": 4000000000., 
+        "stop": 4000000000.,
     },
     {
         "img_ext": "tiff",

@@ -145,21 +145,22 @@ class NGFFReader(Reader):
             image = numpy.moveaxis(image, 0, -1)
         elif len(image.shape) > 3:
             image = numpy.moveaxis(image, 0, -1)
-        # TODO - 4955: Assumes integer type, and unsigned
-        scale = numpy.iinfo(image.dtype).max
         if rescale:
-            image = image.astype(float) / scale
+            image = self.normalize_to_float32(image)
+
+            if wants_max_intensity:
+                return image, 1
+
+        # TODO - 4955: This needs to be fixed, it is currently very naive
         if wants_max_intensity:
-            if image.dtype in [numpy.int8, numpy.uint8]:
-                scale = 255
-            elif image.dtype in [numpy.int16, numpy.uint16]:
-                scale = 65535
-            elif image.dtype == numpy.int32:
-                scale = 2 ** 32 - 1
-            elif image.dtype == numpy.uint32:
-                scale = 2 ** 32
-            else:
+            scale = numpy.iinfo(image.dtype).max
+            if numpy.issubdtype(image.dtype, numpy.integer):
+                scale = numpy.iinfo(image.dtype).max
+            elif numpy.issubdtype(image.dtype, numpy.floating): # assume
+                # assume float is already normalized
                 scale = 1
+            else:
+                raise NotImplementedError(f"Unsupported dtype: {image.dtype}")
             return image, scale
         return image
 

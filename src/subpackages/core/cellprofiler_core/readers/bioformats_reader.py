@@ -210,7 +210,12 @@ class BioformatsReader(Reader):
             image.shape = (height,width)
 
         if rescale:
-            image = image.astype(np.float32) / float(scale)
+            image = self.normalize_to_float32(image)
+
+            if wants_max_intensity:
+                return image, 1
+            return image
+
         if wants_max_intensity:
             return image, scale
         return image

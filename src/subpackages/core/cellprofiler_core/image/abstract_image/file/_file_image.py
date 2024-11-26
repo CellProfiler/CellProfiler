@@ -387,24 +387,12 @@ class FileImage(AbstractImage):
             data = numpy.load(pathname)
         else:
             reader = self.get_reader(volume=True)
-            data = reader.read_volume(c=self.channel,
+            data, self.scale = reader.read_volume(c=self.channel,
                                       z=self.z,
                                       t=self.t,
                                       series=self.series,
                                       rescale=self.rescale,
-                                      wants_max_intensity=False)
-
-        # https://github.com/CellProfiler/python-bioformats/blob/855f2fb7807f00ef41e6d169178b7f3d22530b79/bioformats/formatreader.py#L768-L791
-        if data.dtype in [numpy.int8, numpy.uint8]:
-            self.scale = 255
-        elif data.dtype in [numpy.int16, numpy.uint16]:
-            self.scale = 65535
-        elif data.dtype == numpy.int32:
-            self.scale = 2 ** 32 - 1
-        elif data.dtype == numpy.uint32:
-            self.scale = 2 ** 32
-        else:
-            self.scale = 1
+                                      wants_max_intensity=True)
 
         self.__image = Image(
             image=data,

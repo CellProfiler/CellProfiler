@@ -149,19 +149,10 @@ class NGFFReader(Reader):
             image = self.normalize_to_float32(image)
 
             if wants_max_intensity:
-                return image, 1
+                return image, 1.0
 
-        # TODO - 4955: This needs to be fixed, it is currently very naive
         if wants_max_intensity:
-            scale = numpy.iinfo(image.dtype).max
-            if numpy.issubdtype(image.dtype, numpy.integer):
-                scale = numpy.iinfo(image.dtype).max
-            elif numpy.issubdtype(image.dtype, numpy.floating): # assume
-                # assume float is already normalized
-                scale = 1
-            else:
-                raise NotImplementedError(f"Unsupported dtype: {image.dtype}")
-            return image, scale
+            return image, self.naive_scale(image)
         return image
 
     def read_volume(self,

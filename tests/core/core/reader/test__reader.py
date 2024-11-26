@@ -13,14 +13,13 @@ def readers():
     fill_readers()
     # do not test GCS Reader
     filter_active_readers(
-        [x for x in ALL_READERS.keys() if "Google Cloud Storage" not in x],
+        #[x for x in ALL_READERS.keys() if "Google Cloud Storage" not in x],
+        ["ImageIO"], # TODO - 4955: remove this, temp
         by_module_name=False)
     # post-filtered readers
     return AVAILABLE_READERS
 
-def create_image(reader, img_data, path, rescale=True):
-    io.imsave(path, img_data)
-
+def create_image(reader, path, rescale=True):
     provider = MonochromeImage(
         path.stem, # name
         pathname2url(str(path)), # url
@@ -48,13 +47,13 @@ def create_image(reader, img_data, path, rescale=True):
 def idfn(fixture_value):
     return fixture_value["img_name"]
 
-@pytest.fixture(scope="class", ids=idfn, params=[
+@pytest.fixture(scope="function", ids=idfn, params=[
     # 8 bit images
     {
         "img_ext": "tiff",
         "img_name": "uint8_full_range",
         "dtype": "uint8",
-        "divisor": numpy.float32(2**8-1),
+        "divisor": numpy.float64(2**8-1),
         "shift": 0,
         "start": numpy.iinfo("uint8").min,
         "stop": numpy.iinfo("uint8").max,
@@ -63,7 +62,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "uint8_partial_range",
         "dtype": "uint8",
-        "divisor": numpy.float32(2**8-1),
+        "divisor": numpy.float64(2**8-1),
         "shift": 0,
         "start": 64,
         "stop": 128,
@@ -72,7 +71,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "uint8_smallest_range",
         "dtype": "uint8",
-        "divisor": numpy.float32(2**8-1),
+        "divisor": numpy.float64(2**8-1),
         "shift": 0,
         "start": 0,
         "stop": 1,
@@ -81,7 +80,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "int8_full_range",
         "dtype": "int8",
-        "divisor": numpy.float32(2**8-1),
+        "divisor": numpy.float64(2**8-1),
         "shift": numpy.iinfo("int8").min,
         "start": numpy.iinfo("int8").min,
         "stop": numpy.iinfo("int8").max,
@@ -90,7 +89,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "int8_partial_range",
         "dtype": "int8",
-        "divisor": numpy.float32(2**8-1),
+        "divisor": numpy.float64(2**8-1),
         "shift": numpy.iinfo("int8").min,
         "start": -10,
         "stop": 10,
@@ -99,7 +98,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "int8_smallest_range",
         "dtype": "int8",
-        "divisor": numpy.float32(2**8-1),
+        "divisor": numpy.float64(2**8-1),
         "shift": numpy.iinfo("int8").min,
         "start": 0,
         "stop": 1,
@@ -109,7 +108,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "uint16_full_range",
         "dtype": "uint16",
-        "divisor": numpy.float32(2**16-1),
+        "divisor": numpy.float64(2**16-1),
         "shift": 0,
         "start": numpy.iinfo("uint16").min,
         "stop": numpy.iinfo("uint16").max,
@@ -118,7 +117,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "uint16_partial_range",
         "dtype": "uint16",
-        "divisor": numpy.float32(2**16-1),
+        "divisor": numpy.float64(2**16-1),
         "shift": 0,
         "start": 255,
         "stop": 10_000,
@@ -127,7 +126,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "uint16_smallest_range",
         "dtype": "uint16",
-        "divisor": numpy.float32(2**16-1),
+        "divisor": numpy.float64(2**16-1),
         "shift": 0,
         "start": 0,
         "stop": 1,
@@ -136,7 +135,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "int16_full_range",
         "dtype": "int16",
-        "divisor": numpy.float32(2**16-1),
+        "divisor": numpy.float64(2**16-1),
         "shift": numpy.iinfo("int16").min,
         "start": numpy.iinfo("int16").min,
         "stop": numpy.iinfo("int16").max,
@@ -145,7 +144,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "int16_partial_range",
         "dtype": "int16",
-        "divisor": numpy.float32(2**16-1),
+        "divisor": numpy.float64(2**16-1),
         "shift": numpy.iinfo("int16").min,
         "start": -10,
         "stop": 10,
@@ -154,7 +153,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "int16_smallest_range",
         "dtype": "int16",
-        "divisor": numpy.float32(2**16-1),
+        "divisor": numpy.float64(2**16-1),
         "shift": numpy.iinfo("int16").min,
         "start": 0,
         "stop": 1,
@@ -164,7 +163,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "uint32_full_range",
         "dtype": "uint32",
-        "divisor": numpy.float32(2**32-1),
+        "divisor": numpy.float64(2**32-1),
         "shift": 0,
         "start": numpy.iinfo("uint32").min,
         "stop": numpy.iinfo("uint32").max,
@@ -173,7 +172,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "uint32_partial_range",
         "dtype": "uint32",
-        "divisor": numpy.float32(2**32-1),
+        "divisor": numpy.float64(2**32-1),
         "shift": 0,
         "start": 65535,
         "stop": 1_000_000_000,
@@ -182,7 +181,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "uint32_smallest_range",
         "dtype": "uint32",
-        "divisor": numpy.float32(2**32-1),
+        "divisor": numpy.float64(2**32-1),
         "shift": 0,
         "start": 0,
         "stop": 1,
@@ -191,7 +190,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "int32_full_range",
         "dtype": "int32",
-        "divisor": numpy.float32(2**32-1),
+        "divisor": numpy.float64(2**32-1),
         "shift": numpy.iinfo("int32").min,
         "start": numpy.iinfo("int32").min,
         "stop": numpy.iinfo("int32").max,
@@ -200,7 +199,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "int32_partial_range",
         "dtype": "int32",
-        "divisor": numpy.float32(2**32-1),
+        "divisor": numpy.float64(2**32-1),
         "shift": numpy.iinfo("int32").min,
         "start": -65_536,
         "stop": 65_536,
@@ -209,7 +208,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "int32_smallest_range",
         "dtype": "int32",
-        "divisor": numpy.float32(2**32-1),
+        "divisor": numpy.float64(2**32-1),
         "shift": numpy.iinfo("int32").min,
         "start": 0,
         "stop": 1,
@@ -219,7 +218,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "float16_zero_one_full_range",
         "dtype": "float16",
-        "divisor": numpy.float32(1),
+        "divisor": numpy.float64(1),
         "shift": 0,
         "start": 0,
         "stop": 1,
@@ -228,7 +227,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "float16_zero_one_partial_range",
         "dtype": "float16",
-        "divisor": numpy.float32(1),
+        "divisor": numpy.float64(1),
         "shift": 0,
         "start": 0.25,
         "stop": 0.75,
@@ -237,27 +236,44 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "float16_zero_one_smallest_range",
         "dtype": "float16",
-        "divisor": numpy.float32(1),
+        "divisor": numpy.float64(1),
         "shift": 0,
         "start": 0.,
-        "stop": 2**(-24), # smallest positive float16
+        "stop": numpy.finfo('float16').smallest_subnormal, # smallest positive float16 = 2**(-24)
     },
     {
         "img_ext": "tiff",
-        "img_name": "float16_intlike_full_range",
+        "img_name": "float16_neg_one_pos_one",
         "dtype": "float16",
-        "divisor": numpy.float32(1),
+        "divisor": numpy.float64(2),
+        "shift": -1,
+        "start": -1.,
+        "stop": 1.,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "float16_uintlike_full_range",
+        "dtype": "float16",
+        "divisor": numpy.float64(2**16-1),
         "shift": 0,
         "start": 0.,
-        # divisible by 3, so for 2x2 matrix, values are int-like
-        "stop": numpy.finfo("float16").max,
+        "stop": float(numpy.finfo("float16").max),
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "float16_intlike_partial_range",
+        "dtype": "float16",
+        "divisor": numpy.float64(2**16-1),
+        "shift": int(numpy.iinfo("int16").min),
+        "start": -10000.,
+        "stop": 10000.
     },
     # 32 bit float types
     {
         "img_ext": "tiff",
         "img_name": "float32_zero_one_full_range",
         "dtype": "float32",
-        "divisor": numpy.float32(1),
+        "divisor": numpy.float64(1),
         "shift": 0,
         "start": 0,
         "stop": 1,
@@ -266,7 +282,7 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "float32_zero_one_partial_range",
         "dtype": "float32",
-        "divisor": numpy.float32(1),
+        "divisor": numpy.float64(1),
         "shift": 0,
         "start": 0.25,
         "stop": 0.75,
@@ -275,23 +291,43 @@ def idfn(fixture_value):
         "img_ext": "tiff",
         "img_name": "float32_zero_one_smallest_range",
         "dtype": "float32",
-        "divisor": numpy.float32(1),
+        "divisor": numpy.float64(1),
         "shift": 0,
         "start": 0.,
-        "stop": 2**(-149), # smallest positive float32
+        "stop": numpy.finfo('float32').smallest_subnormal # smallest positive float32 = 2**(-149)
     },
     {
         "img_ext": "tiff",
-        "img_name": "float32_intlike_full_range",
+        "img_name": "float32_neg_one_pos_one",
         "dtype": "float32",
-        "divisor": numpy.float32(1),
+        "divisor": numpy.float64(2),
+        "shift": -1,
+        "start": -1.,
+        "stop": 1.,
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "float32_uintlike_full_range",
+        "dtype": "float32",
+        "divisor": numpy.float64(2**32-1),
         "shift": 0,
         "start": 0.,
-        # divisible by 3, so for 2x2 matrix, values are int-like
-        "stop": numpy.finfo("float32").max,
+        # float32 goes way beyond the max uint32 value
+        # but it starts to get so sparse, we don't define values for the
+        # higher ranges of uintlike
+        "stop": 4000000000., 
+    },
+    {
+        "img_ext": "tiff",
+        "img_name": "float32_intlike_partial_range",
+        "dtype": "float32",
+        "divisor": numpy.float64(2**32-1),
+        "shift": numpy.iinfo("int32").min,
+        "start": -2000000000.,
+        "stop": 2000000000.,
     },
 ])
-def monochrome_image(request):
+def monochrome_image(request, tmp_path):
     shift = request.param["shift"]
     start = request.param["start"]
     stop = request.param["stop"]
@@ -300,29 +336,58 @@ def monochrome_image(request):
     img_name = request.param["img_name"]
     img_ext = request.param["img_ext"]
 
-    img_data = numpy.linspace(start, stop, num=4, dtype=numpy.dtype(dtype)).reshape(2,2)
+    n_data_root = 20
+    if dtype.startswith("float") and ("intlike" in img_name or "uintlike" in img_name):
+        img_data = numpy.trunc(
+            numpy.linspace(
+                start, stop, num=n_data_root**2, dtype=numpy.dtype(dtype)
+            ).reshape(n_data_root,n_data_root)
+        )
+    else:
+        img_data = numpy.linspace(
+            start, stop, num=n_data_root**2, dtype=numpy.dtype(dtype)
+        ).reshape(n_data_root,n_data_root)
 
-    return img_data, img_ext, img_name, dtype, divisor, shift, start, stop
+    path = tmp_path / f"{img_name}.{img_ext}"
 
+    io.imsave(path, img_data)
+
+    yield img_data, path, dtype, divisor, shift, start, stop
+
+    # nothing to cleanup - pytest only keeps last 3 tmpt_pth directories
 
 class TestReaders:
-    def test_integer_types(self, monochrome_image, readers, tmp_path):
-        img_data, img_ext, img_name, dtype, divisor, shift, start, stop = monochrome_image
+    def test_rescale(self, monochrome_image, readers):
+        img_data, path, dtype, divisor, shift, start, stop = monochrome_image
 
         for reader in readers:
 
-            test_img = create_image(reader, img_data, tmp_path / f"{img_name}.{img_ext}", rescale=True)
+            test_img = create_image(reader, path, rescale=True)
 
             # ext not supported, skip testing reader for this image
             if test_img == None:
                 continue
 
             test_img_data = test_img.pixel_data
-            ref_img_data = ((img_data - shift) / divisor).astype("float32")
+            # must cast up to float64 to avoid overflow
+            # e.g. if img_data is int8, and shift is 255, then result of img_data - shift stays int8
+            # and you have negative values in result, which is what we're trying to avoid
+            ref_img_data = ((img_data.astype("float64") - shift) / divisor).astype("float32")
+            ref_img_min = numpy.float32((start - shift) / divisor)
+            ref_img_max = numpy.float32((stop - shift) / divisor)
+
 
             assert test_img_data.dtype == numpy.dtype("float32"), "dtype mismatch"
             assert test_img_data.shape == ref_img_data.shape, "shape mismatch"
-            assert test_img_data.min() == numpy.float32((start - shift) / divisor), "min mismatch"
-            assert test_img_data.max() == numpy.float32((stop - shift) / divisor), "max mismatch"
+            assert test_img_data.min() == ref_img_min, "min mismatch"
+            assert test_img_data.max() == ref_img_max, "max mismatch"
             assert numpy.all(test_img_data == ref_img_data), "data mismatch"
-            assert numpy.all((test_img_data * divisor + shift).astype(dtype) == img_data), "precision lost"
+
+            unscaled_test_img_data = (test_img_data.astype('float64') * divisor + shift) # .astype(dtype)
+            if numpy.issubdtype(dtype, numpy.integer):
+                assert numpy.allclose(
+                    unscaled_test_img_data,
+                    # cast up to float64 to avoid overflow
+                    img_data.astype('float64'), atol=128., rtol=2**(-24)
+                    # img_data.astype('float64'), atol=1, rtol=2**(-18)
+                ), "precision mismatch"

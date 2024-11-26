@@ -253,15 +253,7 @@ class Reader(ABC):
 
     @staticmethod
     def __int_to_float32(data):
-        # see note above in __uint_to_float64 about float64 out type
-        data = rescale_intensity(data, in_range="dtype", out_range="float64")
-
-        # rescale_intensity will scale to a range of [-1, 1] for signed integer types
-        # we want to scale to [0, 1] always, so correct if necessary
-        # issue raised here, to avoid needing to do this:
-        # https://github.com/scikit-image/scikit-image/issues/7620
-        data = (data + 1) / 2.
-
+        data = rescale_intensity(data, in_range="dtype", out_range=(0., 1.))
         return data.astype("float32")
 
     @staticmethod

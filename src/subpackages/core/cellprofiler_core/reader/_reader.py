@@ -19,6 +19,8 @@ import uuid
 from abc import ABC, abstractmethod
 
 import numpy
+from skimage.exposure import rescale_intensity
+from skimage.util import img_as_float32
 
 
 class Reader(ABC):
@@ -324,6 +326,64 @@ class Reader(ABC):
 
         else:
             raise ValueError("Unsupported data type")
+
+    @staticmethod
+    def __uint_to_float32(data):
+        # out_range set to float64 seems wasteful for small types like
+        # [u]int[8,16] (and it is), but it gets us a bit of extra precision
+        # before a final cast to float32, and the internals of
+        # rescale_intensity do it *anyway* (it does np.clip, w/ min/max values
+        # set to float64, causing the img to become float64) so we don't
+        # incur *extra* inefficiencies on top of what skimage is already doing
+        data = rescale_intensity(data, in_range="dtype", out_range="float64")
+        return data.astype("float32")
+
+    @staticmethod
+    def __int_to_float32(data):
+        # see note above in __uint_to_float64 about float64 out type
+        data = rescale_intensity(data, in_range="dtype", out_range="float64")
+
+        # rescale_intensity will scale to a range of [-1, 1] for signed integer types
+        # we want to scale to [0, 1] always, so correct if necessary
+        # issue raised here, to avoid needing to do this:
+        # https://github.com/scikit-image/scikit-image/issues/7620
+        data = (data + 1) / 2.
+
+        return data.astype("float32")
+
+    @staticmethod
+    def __float_to_float32(data):
+        # data is normalized float, just cast to 32 bit
+        if data.min() >= 0 and data.max() <= 1:
+            data = img_as_float32(data)
+        # data is normalized float, but not in [0, 1]
+        # adjust and cast to 32 bit
+        elif data.min() >= -1 and data.max() <= 1:
+            # a bit nasty to cast to 64,
+            # but it buys us some extra precision until final cast to 32
+            data = (data.astype("float64") + 1) / 2.
+            data = img_as_float32(data)
+        # data is unnormalized, with non-negative values
+        # treat as uint of the same bitdepth and normalize
+        elif data.min() >= 0:
+            data = Reader.__uint_to_float32(data.astype(f"u{data.dtype.itemsize}"))
+        # data is unnormalized, with negative values
+        # treat as int of the same bitdepth and normalize
+        else:
+            data = Reader.__int_to_float32(data.astype(f"i{data.dtype.itemsize}"))
+
+        return data
+
+    @staticmethod
+    def normalize_to_float32_alt(data):
+        if numpy.issubdtype(data.dtype, numpy.floating):
+            return Reader.__float_to_float32(data)
+        elif numpy.issubdtype(data.dtype, numpy.signedinteger):
+            return Reader.__int_to_float32(data)
+        elif numpy.issubdtype(data.dtype, numpy.unsignedinteger):
+            return Reader.__uint_to_float32(data)
+        else:
+            raise ValueError(f"Unsupported data type: {data.dtype}")
 
     @staticmethod
     def find_scale_to_match_bioformats(data):

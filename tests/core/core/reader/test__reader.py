@@ -7,40 +7,16 @@ from cellprofiler_core.image import MonochromeImage
 from cellprofiler_core.utilities.pathname import pathname2url
 
 
-@pytest.fixture(scope="class")
 def readers():
     # init readers
     fill_readers()
     # do not test GCS Reader
     filter_active_readers(
         #[x for x in ALL_READERS.keys() if "Google Cloud Storage" not in x],
-        ["ImageIO", "ImageIOV3"], # TODO - 4955: remove this, temp
+        ["Bio-Formats", "ImageIO", "ImageIOV3"], # TODO - 4955: remove this, temp
         by_module_name=False)
     # post-filtered readers
     return AVAILABLE_READERS
-
-def create_image(reader, path, rescale=True):
-    provider = MonochromeImage(
-        path.stem, # name
-        pathname2url(str(path)), # url
-        0, # series
-        None, # index
-        None, # channel
-        rescale=rescale,
-        volume=False,
-        spacing=None,
-        z=None,
-        t=None
-    )
-
-    provider._FileImage__preferred_reader = reader
-
-    # check if image reader supports ext
-    image_file = provider.get_image_file()
-    if ALL_READERS[reader].supports_format(image_file) == -1:
-        return None
-
-    return provider.provide_image(None) # img.pixel_data for array
 
 # used to name the test something legible
 # https://docs.pytest.org/en/stable/how-to/fixtures.html#parametrizing-fixtures
@@ -327,7 +303,7 @@ def idfn(fixture_value):
         "stop": 2000000000.,
     },
 ])
-def monochrome_image(request, tmp_path):
+def img_details(request, tmp_path):
     shift = request.param["shift"]
     start = request.param["start"]
     stop = request.param["stop"]
@@ -356,38 +332,65 @@ def monochrome_image(request, tmp_path):
 
     # nothing to cleanup - pytest only keeps last 3 tmpt_pth directories
 
+def create_image(reader, path, rescale=True):
+    provider = MonochromeImage(
+        path.stem, # name
+        pathname2url(str(path)), # url
+        0, # series
+        None, # index
+        None, # channel
+        rescale=rescale,
+        volume=False,
+        spacing=None,
+        z=None,
+        t=None
+    )
+
+    provider._FileImage__preferred_reader = reader
+
+    # check if image reader supports ext
+    image_file = provider.get_image_file()
+    if ALL_READERS[reader].supports_format(image_file) == -1:
+        return None
+
+    return provider.provide_image(None) # img.pixel_data for array
+
 class TestReaders:
-    def test_rescale(self, monochrome_image, readers):
-        img_data, path, dtype, divisor, shift, start, stop = monochrome_image
+    @pytest.mark.parametrize("reader", readers())
+    def test_rescale(self, img_details, reader):
+        img_data, path, dtype, divisor, shift, start, stop = img_details
 
-        for reader in readers:
+        # Bio-Formats only supports FLOAT (float32) and DOUBLE (float64)
+        # it will think float16 is FLOAT, and try to process it as such
+        if dtype == "float16" and reader == "Bio-Formats":
+            return
 
-            test_img = create_image(reader, path, rescale=True)
+        test_img = create_image(reader, path, rescale=True)
 
-            # ext not supported, skip testing reader for this image
-            if test_img == None:
-                continue
+        # ext not supported, skip testing reader for this image
+        if test_img == None:
+            return
 
-            test_img_data = test_img.pixel_data
-            # must cast up to float64 to avoid overflow
-            # e.g. if img_data is int8, and shift is 255, then result of img_data - shift stays int8
-            # and you have negative values in result, which is what we're trying to avoid
-            ref_img_data = ((img_data.astype("float64") - shift) / divisor).astype("float32")
-            ref_img_min = numpy.float32((start - shift) / divisor)
-            ref_img_max = numpy.float32((stop - shift) / divisor)
+        test_img_data = test_img.pixel_data
+        # must cast up to float64 to avoid overflow
+        # e.g. if img_data is int8, and shift is 255, then result of img_data - shift stays int8
+        # and you have negative values in result, which is what we're trying to avoid
+        ref_img_data = ((img_data.astype("float64") - shift) / divisor).astype("float32")
+        ref_img_min = numpy.float32((start - shift) / divisor)
+        ref_img_max = numpy.float32((stop - shift) / divisor)
 
 
-            assert test_img_data.dtype == numpy.dtype("float32"), "dtype mismatch"
-            assert test_img_data.shape == ref_img_data.shape, "shape mismatch"
-            assert test_img_data.min() == ref_img_min, "min mismatch"
-            assert test_img_data.max() == ref_img_max, "max mismatch"
-            assert numpy.all(test_img_data == ref_img_data), "data mismatch"
+        assert test_img_data.dtype == numpy.dtype("float32"), "dtype mismatch"
+        assert test_img_data.shape == ref_img_data.shape, "shape mismatch"
+        assert test_img_data.min() == ref_img_min, "min mismatch"
+        assert test_img_data.max() == ref_img_max, "max mismatch"
+        assert numpy.all(test_img_data == ref_img_data), "data mismatch"
 
-            unscaled_test_img_data = (test_img_data.astype('float64') * divisor + shift) # .astype(dtype)
-            if numpy.issubdtype(dtype, numpy.integer):
-                assert numpy.allclose(
-                    unscaled_test_img_data,
-                    # cast up to float64 to avoid overflow
-                    img_data.astype('float64'), atol=128., rtol=2**(-24)
-                    # img_data.astype('float64'), atol=1, rtol=2**(-18)
-                ), "precision mismatch"
+        unscaled_test_img_data = (test_img_data.astype('float64') * divisor + shift) # .astype(dtype)
+        if numpy.issubdtype(dtype, numpy.integer):
+            assert numpy.allclose(
+                unscaled_test_img_data,
+                # cast up to float64 to avoid overflow
+                img_data.astype('float64'), atol=128., rtol=2**(-24)
+                # img_data.astype('float64'), atol=1, rtol=2**(-18)
+            ), "precision mismatch"

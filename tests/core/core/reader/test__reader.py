@@ -6,14 +6,15 @@ from cellprofiler_core.constants.reader import ALL_READERS, AVAILABLE_READERS
 from cellprofiler_core.image import MonochromeImage
 from cellprofiler_core.utilities.pathname import pathname2url
 
+# TODO - 4955: create ome.zarr conversion of img_details objects
+
 
 def readers():
     # init readers
     fill_readers()
     # do not test GCS Reader
     filter_active_readers(
-        #[x for x in ALL_READERS.keys() if "Google Cloud Storage" not in x],
-        ["Bio-Formats", "ImageIO", "ImageIOV3"], # TODO - 4955: remove this, temp
+        [x for x in ALL_READERS.keys() if "Google Cloud Storage" not in x],
         by_module_name=False)
     # post-filtered readers
     return AVAILABLE_READERS

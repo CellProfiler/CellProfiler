@@ -50,7 +50,7 @@ class ImageIOReaderV3(Reader):
              c=None,
              z=None,
              t=None,
-             rescale=True,
+             autoscale=True,
              xywh=None,
              wants_max_intensity=False,
              channel_names=None,
@@ -62,7 +62,7 @@ class ImageIOReaderV3(Reader):
         :param t: time index
         :param series: series for ``.flex`` and similar multi-stack formats
         :param index: if `None`, fall back to ``zct``, otherwise load the indexed frame
-        :param rescale: `True` to rescale the intensity scale to 0 and 1; `False` to
+        :param autoscale: `True` to autoscale the intensity scale to 0 and 1; `False` to
                   return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
         :param wants_max_intensity: if `False`, only return the image; if `True`,
@@ -78,7 +78,7 @@ class ImageIOReaderV3(Reader):
         elif c is None and len(data.shape) > 2 and data.shape[2] == 4:
             # Remove alpha channel
             data = data[:, :, :3, ...]
-        if rescale:
+        if autoscale:
             data = self.normalize_to_float32(data)
             if wants_max_intensity:
                 return data, 1.0
@@ -92,7 +92,7 @@ class ImageIOReaderV3(Reader):
                     c=None,
                     z=None,
                     t=None,
-                    rescale=True,
+                    autoscale=True,
                     xywh=None,
                     wants_max_intensity=False,
                     channel_names=None,
@@ -103,7 +103,7 @@ class ImageIOReaderV3(Reader):
         data = reader.read(index=series)
         if c is not None and len(data.shape) > 3:
             data = data[:, :, :,  c, ...]
-        if rescale:
+        if autoscale:
             data = self.normalize_to_float32(data)
             if wants_max_intensity:
                 return data, 1.0

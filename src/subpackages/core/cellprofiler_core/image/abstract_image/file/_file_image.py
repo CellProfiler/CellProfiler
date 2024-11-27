@@ -89,6 +89,7 @@ class FileImage(AbstractImage):
         else:
             self.__url = pathname2url(os.path.join(pathname, filename))
         self.rescale = rescale
+        self.scale = None
         self.__series = series
         self.__channel = channel
         self.__index = index
@@ -104,7 +105,6 @@ class FileImage(AbstractImage):
         else:
             self.__z = z if z is not None else 0
             self.__t = t if t is not None else 0
-        self.scale = None
 
     @property
     def series(self):
@@ -313,6 +313,7 @@ class FileImage(AbstractImage):
 
         self.cache_file()
         channel_names = []
+
         if is_matlab_file(self.__filename):
             img = load_data_file(self.get_full_name(), loadmat)
             self.scale = 1.0
@@ -328,7 +329,9 @@ class FileImage(AbstractImage):
                     t=self.t,
                     series=self.series,
                     index=self.index,
-                    rescale=self.rescale if isinstance(self.rescale, bool) else False,
+                    # if rescale is true, then we don't want autoscale
+                    # since we'll do it manually by img metadata or manual scale
+                    autoscale=not self.rescale if isinstance(self.rescale, bool) else False,
                     wants_max_intensity=True,
                     channel_names=channel_names,
                 )
@@ -352,16 +355,23 @@ class FileImage(AbstractImage):
                         t=self.t,
                         series=series,
                         index=index,
-                        rescale=self.rescale if isinstance(self.rescale, bool) else False,
+                        # if rescale is true, then we don't want autoscale
+                        # since we'll do it manually by img metadata or manual scale
+                        autoscale=not self.rescale if isinstance(self.rescale, bool) else False,
                         wants_max_intensity=True,
                         channel_names=channel_names,
                     )
                     stack.append(img)
                 img = numpy.dstack(stack)
+
         if isinstance(self.rescale, float):
+            self.scale = self.rescale
             # TODO - 4955: careful here with casting
             # Apply a manual rescale
-            img = img.astype(numpy.float32) / self.rescale
+            img = img.astype(numpy.float32) / self.scale
+        elif self.rescale == True: # is bool and True
+            img = (img / self.scale).astype(numpy.float32)
+
         self.__image = Image(
             img,
             path_name=self.get_pathname(),
@@ -369,6 +379,7 @@ class FileImage(AbstractImage):
             scale=self.scale,
             channelstack=img.ndim == 3 and img.shape[-1]>3
         )
+
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
             self.__image.channel_names = list(channel_names)
 
@@ -387,6 +398,7 @@ class FileImage(AbstractImage):
             data = numpy.load(pathname)
         else:
             reader = self.get_reader(volume=True)
+            # TODO - 4955: make sure read_volume has the same nuances around self.scale as read above
             data, self.scale = reader.read_volume(c=self.channel,
                                       z=self.z,
                                       t=self.t,

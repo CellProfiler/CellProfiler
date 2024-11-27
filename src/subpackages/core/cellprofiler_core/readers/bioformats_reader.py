@@ -60,7 +60,7 @@ class BioformatsReader(Reader):
              c=None,
              z=0,
              t=0,
-             rescale=True,
+             autoscale=True,
              xywh=None,
              wants_max_intensity=False,
              channel_names=None,
@@ -73,7 +73,7 @@ class BioformatsReader(Reader):
         :param t: time index
         :param series: series for ``.flex`` and similar multi-stack formats
         :param index: if `None`, fall back to ``zct``, otherwise load the indexed frame
-        :param rescale: `True` to rescale the intensity scale to 0 and 1; `False` to
+        :param autoscale: `True` to autoscale the intensity scale to 0 and 1; `False` to
                   return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
         :param wants_max_intensity: if `False`, only return the image; if `True`,
@@ -194,7 +194,7 @@ class BioformatsReader(Reader):
             image = np.frombuffer(openBytes_func(index),dtype)
             image.shape = (height,width)
 
-        if rescale:
+        if autoscale:
             image = self.normalize_to_float32(image)
 
             if wants_max_intensity:
@@ -218,7 +218,7 @@ class BioformatsReader(Reader):
                     c=None,
                     z=None,
                     t=None,
-                    rescale=True,
+                    autoscale=True,
                     xywh=None,
                     wants_max_intensity=False,
                     channel_names=None,
@@ -251,7 +251,7 @@ class BioformatsReader(Reader):
                 c=c,
                 z=z_index,
                 t=t_index,
-                rescale=rescale,
+                autoscale=autoscale,
                 XYWH=xywh,
                 wants_max_intensity=False,
                 channel_names=channel_names,

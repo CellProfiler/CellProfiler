@@ -85,7 +85,7 @@ class NGFFReader(Reader):
              c=None,
              z=None,
              t=None,
-             rescale=True,
+             autoscale=True,
              xywh=None,
              wants_max_intensity=False,
              channel_names=None,
@@ -97,7 +97,7 @@ class NGFFReader(Reader):
         :param t: time index
         :param series: series for ``.flex`` and similar multi-stack formats
         :param index: if `None`, fall back to ``zct``, otherwise load the indexed frame
-        :param rescale: `True` to rescale the intensity scale to 0 and 1; `False` to
+        :param autoscale: `True` to autoscale the intensity scale to 0 and 1; `False` to
                   return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
         :param wants_max_intensity: if `False`, only return the image; if `True`,
@@ -145,7 +145,7 @@ class NGFFReader(Reader):
             image = numpy.moveaxis(image, 0, -1)
         elif len(image.shape) > 3:
             image = numpy.moveaxis(image, 0, -1)
-        if rescale:
+        if autoscale:
             image = self.normalize_to_float32(image)
 
             if wants_max_intensity:
@@ -160,7 +160,7 @@ class NGFFReader(Reader):
                     c=None,
                     z=None,
                     t=None,
-                    rescale=True,
+                    autoscale=True,
                     xywh=None,
                     wants_max_intensity=False,
                     channel_names=None,
@@ -170,7 +170,7 @@ class NGFFReader(Reader):
             c=c,
             z=None,
             t=t,
-            rescale=rescale,
+            autoscale=autoscale,
             xywh=xywh,
             wants_max_intensity=wants_max_intensity,
             channel_names=channel_names

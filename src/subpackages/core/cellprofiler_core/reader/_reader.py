@@ -72,7 +72,7 @@ class Reader(ABC):
              c=None,
              z=None,
              t=None,
-             rescale=True,
+             autoscale=True,
              xywh=None,
              wants_max_intensity=False,
              channel_names=None,
@@ -84,7 +84,7 @@ class Reader(ABC):
         :param t: time index
         :param series: series for ``.flex`` and similar multi-stack formats
         :param index: if `None`, fall back to ``zct``, otherwise load the indexed frame
-        :param rescale: `True` to rescale the intensity scale to 0 and 1; `False` to
+        :param autoscale: `True` to autoscale the intensity scale to 0 and 1; `False` to
                   return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
         :param wants_max_intensity: if `False`, only return the image; if `True`,
@@ -100,7 +100,7 @@ class Reader(ABC):
                     c=None,
                     z=None,
                     t=None,
-                    rescale=True,
+                    autoscale=True,
                     xywh=None,
                     wants_max_intensity=False,
                     channel_names=None,
@@ -112,7 +112,7 @@ class Reader(ABC):
         :param t: time index
         n.b. either z or t should be "None" to specify which channel to read across.
         :param series: series for ``.flex`` and similar multi-stack formats
-        :param rescale: `True` to rescale the intensity scale to 0 and 1; `False` to
+        :param autoscale: `True` to autoscale the intensity scale to 0 and 1; `False` to
                   return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
         :param wants_max_intensity: if `False`, only return the image; if `True`,

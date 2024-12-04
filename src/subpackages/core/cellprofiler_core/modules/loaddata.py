@@ -331,6 +331,7 @@ Select *{YES}* to have **LoadData** load images based on the
             ),
         )
 
+        # TODO - 4955: clear up these docs if necessary
         self.rescale = Binary(
             "Rescale intensities?",
             True,
@@ -1075,7 +1076,8 @@ safe to press it.""",
             name,
             path,
             filename,
-            rescale=self.rescale.value and is_image_name,
+            rescale_range=None,
+            metadata_rescale=self.rescale.value and is_image_name,
             series=keyword_args[series_feature],
             index=keyword_args[frame_feature],
             channel=keyword_args[channel_feature],

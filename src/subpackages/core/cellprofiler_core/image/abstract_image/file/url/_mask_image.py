@@ -4,12 +4,23 @@ from ._monochrome_image import MonochromeImage
 class MaskImage(MonochromeImage):
     """Provide a boolean image, converting nonzero to True, zero to False if needed"""
 
-    def __init__(self, name, url, series, index, channel, volume=False, spacing=None, z=None, t=None):
+    def __init__(self,
+                 name,
+                 url,
+                 series,
+                 index,
+                 channel,
+                 volume=False,
+                 spacing=None,
+                 z=None,
+                 t=None
+                ):
         MonochromeImage.__init__(
             self,
             name,
             url,
-            rescale=True,
+            rescale_range=None,
+            metadata_rescale=False,
             series=series,
             index=index,
             channel=channel,

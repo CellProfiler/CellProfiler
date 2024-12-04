@@ -20,7 +20,16 @@ class ObjectsImage(URLImage):
         self.__image = None
         self.__spacing = spacing
         URLImage.__init__(
-            self, name, url, rescale=False, series=series, index=index, volume=volume, z=z, t=t
+            self,
+            name,
+            url,
+            rescale_range=None,
+            metadata_rescale=False,
+            series=series,
+            index=index,
+            volume=volume,
+            z=z,
+            t=t
         )
 
     def provide_image(self, image_set):

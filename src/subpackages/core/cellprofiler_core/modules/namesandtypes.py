@@ -325,17 +325,17 @@ See help for *Relative pixel spacing in X* for details.
             "Name to assign these images", IMAGE_NAMES[0]
         )
 
-        self.single_rescale = Choice(
+        self.single_rescale_method = Choice(
             "Set intensity range from",
             INTENSITY_ALL,
-            value=INTENSITY_RESCALING_BY_METADATA,
+            value=INTENSITY_RESCALING_BY_DATATYPE,
             doc=RESCALING_HELP_TEXT,
         )
 
         self.manual_rescale = Float(
             MANUAL_INTENSITY_LABEL,
             DEFAULT_MANUAL_RESCALE,
-            minval=numpy.finfo(numpy.float32).eps,
+            minval=numpy.finfo(numpy.float32).smallest_subnormal,
             doc=MANUAL_RESCALE_HELP_TEXT,
         )
 
@@ -609,7 +609,7 @@ by ASCII letters, underbars or digits.
         )
 
         group.append(
-            "rescale",
+            "rescale_method",
             Choice(
                 "Set intensity range from",
                 INTENSITY_ALL,
@@ -767,7 +767,7 @@ requests an object selection.
         )
 
         group.append(
-            "rescale",
+            "rescale_method",
             Choice(
                 "Set intensity range from",
                 INTENSITY_ALL,
@@ -812,7 +812,7 @@ requests an object selection.
             self.single_image_provider,
             self.join,
             self.matching_choice,
-            self.single_rescale,
+            self.single_rescale_method,
             self.assignments_count,
             self.single_images_count,
             self.manual_rescale,
@@ -828,7 +828,7 @@ requests an object selection.
                 assignment.image_name,
                 assignment.object_name,
                 assignment.load_as_choice,
-                assignment.rescale,
+                assignment.rescale_method,
                 assignment.manual_rescale,
             ]
 
@@ -838,7 +838,7 @@ requests an object selection.
                 single_image.image_name,
                 single_image.object_name,
                 single_image.load_as_choice,
-                single_image.rescale,
+                single_image.rescale_method,
                 single_image.manual_rescale,
             ]
 
@@ -849,7 +849,7 @@ requests an object selection.
             self.assignment_method,
             self.single_load_as_choice,
             self.matching_choice,
-            self.single_rescale,
+            self.single_rescale_method,
             self.assignments_count,
             self.single_images_count,
             self.manual_rescale,
@@ -864,7 +864,7 @@ requests an object selection.
             assignment.image_name,
             assignment.object_name,
             assignment.load_as_choice,
-            assignment.rescale,
+            assignment.rescale_method,
             assignment.manual_rescale,
         ]
         return result
@@ -882,8 +882,8 @@ requests an object selection.
                 LOAD_AS_GRAYSCALE_IMAGE,
             ):
                 if not self.process_as_3d.value:
-                    result += [self.single_rescale]
-                    if self.single_rescale == INTENSITY_MANUAL:
+                    result += [self.single_rescale_method]
+                    if self.single_rescale_method == INTENSITY_MANUAL:
                         result += [self.manual_rescale]
         elif self.assignment_method == ASSIGN_RULES:
             for assignment in self.assignments:
@@ -900,8 +900,8 @@ requests an object selection.
                     LOAD_AS_GRAYSCALE_IMAGE,
                 ):
                     if not self.process_as_3d.value:
-                        result += [assignment.rescale]
-                        if assignment.rescale == INTENSITY_MANUAL:
+                        result += [assignment.rescale_method]
+                        if assignment.rescale_method == INTENSITY_MANUAL:
                             result += [self.manual_rescale]
                 result += [assignment.copy_button]
                 if assignment.can_remove:
@@ -918,8 +918,8 @@ requests an object selection.
                     LOAD_AS_GRAYSCALE_IMAGE,
                 ):
                     if not self.process_as_3d.value:
-                        result += [single_image.rescale]
-                        if single_image.rescale == INTENSITY_MANUAL:
+                        result += [single_image.rescale_method]
+                        if single_image.rescale_method == INTENSITY_MANUAL:
                             result += [single_image.manual_rescale]
                 result += [single_image.copy_button, single_image.remover]
             result += [self.add_assignment_divider, self.add_assignment_button]
@@ -1453,43 +1453,47 @@ requests an object selection.
         if self.assignment_method == ASSIGN_ALL:
             name = self.single_image_provider.value
             load_choice = self.single_load_as_choice.value
-            rescale = self.single_rescale.value
-            if rescale == INTENSITY_MANUAL:
-                rescale = self.manual_rescale.value
-            self.add_image_provider(workspace, name, load_choice, rescale, image_set)
+            rescale_method = self.single_rescale_method.value
+            if rescale_method == INTENSITY_MANUAL:
+                rescale_method = (0.0, self.manual_rescale.value)
+            self.add_image_provider(workspace, name, load_choice, rescale_method, image_set)
         else:
             for group in self.assignments + self.single_images:
                 if group.load_as_choice == LOAD_AS_OBJECTS:
                     self.add_objects(workspace, group.object_name.value, image_set)
                 else:
-                    rescale = group.rescale.value
-                    if rescale == INTENSITY_MANUAL:
-                        rescale = group.manual_rescale.value
+                    rescale_method = group.rescale_method.value
+                    if rescale_method == INTENSITY_MANUAL:
+                        rescale_method = (0.0, group.manual_rescale.value)
                     self.add_image_provider(
                         workspace,
                         group.image_name.value,
                         group.load_as_choice.value,
-                        rescale,
+                        rescale_method,
                         image_set,
                     )
 
-    def add_image_provider(self, workspace, name, load_choice, rescale, image_set):
+    def add_image_provider(self, workspace, name, load_choice, rescale_method, image_set):
         """Put an image provider into the image set
 
         workspace - current workspace
         name - name of the image
         load_choice - one of the LOAD_AS_... choices
-        rescale - whether to rescale the image intensity (ignored
+        rescale_method - whether to rescale the image intensity (ignored
                   for mask and illumination function). Either
                   INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE
-                  or a floating point manual value.
+                  or a 2-tuple of manual floating point values.
         stack - the ImagePlaneDetailsStack that describes the image's planes
         """
-        if rescale == INTENSITY_RESCALING_BY_METADATA:
-            rescale = True
-        elif rescale == INTENSITY_RESCALING_BY_DATATYPE:
-            rescale = False
-        # else it's a manual rescale.
+        if rescale_method == INTENSITY_RESCALING_BY_DATATYPE:
+            rescale_range = None
+            metadata_rescale = False
+        elif rescale_method == INTENSITY_RESCALING_BY_METADATA:
+            rescale_range = None
+            metadata_rescale = True
+        elif rescale_method == INTENSITY_MANUAL:
+            rescale_range = rescale_method
+            metadata_rescale = False
 
         image_plane = image_set[name]
 
@@ -1501,11 +1505,11 @@ requests an object selection.
         t = image_plane.t
         reader_name = image_plane.reader_name
         self.add_simple_image(
-            workspace, name, load_choice, rescale, url, series, index, channel, z, t, reader_name
+            workspace, name, load_choice, rescale_range, metadata_rescale, url, series, index, channel, z, t, reader_name
         )
 
     def add_simple_image(
-        self, workspace, name, load_choice, rescale, url, series, index, channel, z=None, t=None, reader_name=None,
+        self, workspace, name, load_choice, rescale_range, metadata_rescale, url, series, index, channel, z=None, t=None, reader_name=None,
     ):
         m = workspace.measurements
 
@@ -1517,7 +1521,16 @@ requests an object selection.
 
         if load_choice == LOAD_AS_COLOR_IMAGE:
             provider = ColorImage(
-                name, url, series, index, rescale, volume=volume, spacing=spacing, z=z, t=t
+                name,
+                url,
+                series,
+                index,
+                rescale_range=rescale_range,
+                metadata_rescale=metadata_rescale,
+                volume=volume,
+                spacing=spacing,
+                z=z,
+                t=t
             )
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
             provider = MonochromeImage(
@@ -1526,7 +1539,8 @@ requests an object selection.
                 series,
                 index,
                 channel,
-                rescale,
+                rescale_range=rescale_range,
+                metadata_rescale=metadata_rescale,
                 volume=volume,
                 spacing=spacing,
                 z=z,
@@ -1534,7 +1548,7 @@ requests an object selection.
             )
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
             provider = MonochromeImage(
-                name, url, series, index, channel, False, volume=volume, spacing=spacing, z=z, t=t
+                name, url, series, index, channel, rescale_range=None, metadata_rescale=False, volume=volume, spacing=spacing, z=z, t=t
             )
         elif load_choice == LOAD_AS_MASK:
             provider = MaskImage(
@@ -1963,7 +1977,7 @@ requests an object selection.
             assignment_load_as_choice = setting_values[offset + 3 :: n_settings][
                 :n_assignments
             ]
-            assignment_rescale = setting_values[offset + 4 :: n_settings][
+            assignment_rescale_method = setting_values[offset + 4 :: n_settings][
                 :n_assignments
             ]
             assignment_manual_rescale = setting_values[offset + 7 :: n_settings][
@@ -1978,7 +1992,7 @@ requests an object selection.
                         assignment_image_name,
                         assignment_object_name,
                         assignment_load_as_choice,
-                        assignment_rescale,
+                        assignment_rescale_method,
                         assignment_manual_rescale,
                     )
                 ],
@@ -2003,7 +2017,7 @@ requests an object selection.
             single_image_load_as_choice = setting_values[offset + 3 :: n_settings][
                 :n_single_images
             ]
-            single_image_rescale = setting_values[offset + 4 :: n_settings][
+            single_image_rescale_method = setting_values[offset + 4 :: n_settings][
                 :n_single_images
             ]
             single_image_manual_rescale = setting_values[offset + 7 :: n_settings][
@@ -2018,7 +2032,7 @@ requests an object selection.
                         single_image_image_name,
                         single_image_object_name,
                         single_image_load_as_choice,
-                        single_image_rescale,
+                        single_image_rescale_method,
                         single_image_manual_rescale,
                     )
                 ],

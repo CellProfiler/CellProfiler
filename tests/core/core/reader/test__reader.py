@@ -333,14 +333,15 @@ def img_details(request, tmp_path):
 
     # nothing to cleanup - pytest only keeps last 3 tmpt_pth directories
 
-def create_image(reader, path, rescale=True):
+def create_image(reader, path, metadata_rescale=False, rescale_range=None):
     provider = MonochromeImage(
         path.stem, # name
         pathname2url(str(path)), # url
         0, # series
         None, # index
         None, # channel
-        rescale=rescale,
+        metadata_rescale=metadata_rescale,
+        rescale_range=rescale_range,
         volume=False,
         spacing=None,
         z=None,
@@ -358,7 +359,7 @@ def create_image(reader, path, rescale=True):
 
 class TestReaders:
     @pytest.mark.parametrize("reader", readers())
-    def test_rescale(self, img_details, reader):
+    def test_autoscale(self, img_details, reader):
         img_data, path, dtype, divisor, shift, start, stop = img_details
 
         # Bio-Formats only supports FLOAT (float32) and DOUBLE (float64)
@@ -366,7 +367,7 @@ class TestReaders:
         if dtype == "float16" and reader == "Bio-Formats":
             return
 
-        test_img = create_image(reader, path, rescale=True)
+        test_img = create_image(reader, path, metadata_rescale=False)
 
         # ext not supported, skip testing reader for this image
         if test_img == None:

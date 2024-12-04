@@ -80,28 +80,26 @@ class NGFFReader(Reader):
         NGFFReader.ZARR_READER_CACHE.clear()
 
     def read(self,
+             wants_metadata_rescale=False,
              series=None,
              index=None,
              c=None,
              z=None,
              t=None,
-             autoscale=True,
              xywh=None,
-             wants_max_intensity=False,
              channel_names=None,
              ):
         """Read a single plane from the image file.
+        :param wants_metadata_rescale: if `True`, return a tuple of image and a
+               tuple of (min, max) for range values of image dtype gathered from
+               file metadata; if `False`, returns only the image
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
         :param z: z-stack index
         :param t: time index
         :param series: series for ``.flex`` and similar multi-stack formats
         :param index: if `None`, fall back to ``zct``, otherwise load the indexed frame
-        :param autoscale: `True` to autoscale the intensity scale to 0 and 1; `False` to
-                  return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
-        :param wants_max_intensity: if `False`, only return the image; if `True`,
-                  return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
         """
         LOGGER.debug(f"Reading {c=}, {z=}, {t=}, {series=}, {index=}, {xywh=}")
@@ -145,34 +143,29 @@ class NGFFReader(Reader):
             image = numpy.moveaxis(image, 0, -1)
         elif len(image.shape) > 3:
             image = numpy.moveaxis(image, 0, -1)
-        if autoscale:
-            image = self.normalize_to_float32(image)
 
-            if wants_max_intensity:
-                return image, 1.0
-
-        if wants_max_intensity:
-            return image, self.naive_scale(image)
+        if wants_metadata_rescale:
+            # TODO - 4955: No scale metadata for OME-NGFF?
+            scale = None
+            return image, scale
         return image
 
     def read_volume(self,
+                    wants_metadata_rescale=False,
                     series=None,
                     c=None,
                     z=None,
                     t=None,
-                    autoscale=True,
                     xywh=None,
-                    wants_max_intensity=False,
                     channel_names=None,
                     ):
         return self.read(
+            wants_metadata_rescale=wants_metadata_rescale,
             series=series,
             c=c,
             z=None,
             t=t,
-            autoscale=autoscale,
             xywh=xywh,
-            wants_max_intensity=wants_max_intensity,
             channel_names=channel_names
         )
 

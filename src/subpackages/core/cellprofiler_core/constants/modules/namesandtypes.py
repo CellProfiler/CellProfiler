@@ -17,12 +17,12 @@ LOAD_AS_ALL = [
     LOAD_AS_OBJECTS,
 ]
 
-INTENSITY_RESCALING_BY_METADATA = "Image metadata"
 INTENSITY_RESCALING_BY_DATATYPE = "Image bit-depth"
+INTENSITY_RESCALING_BY_METADATA = "Image metadata"
 INTENSITY_MANUAL = "Manual"
 INTENSITY_ALL = [
-    INTENSITY_RESCALING_BY_METADATA,
     INTENSITY_RESCALING_BY_DATATYPE,
+    INTENSITY_RESCALING_BY_METADATA,
     INTENSITY_MANUAL,
 ]
 MANUAL_INTENSITY_LABEL = "Maximum intensity"
@@ -32,8 +32,11 @@ RESCALING_HELP_TEXT = """\
 This option determines how the image intensity should be rescaled from
 0.0 – 1.0.
 
+-  *{INTENSITY_RESCALING_BY_DATATYPE}:* Rescale the image to 0 – 1
+   by dividing by 255 or 65535, depending on the number of bits used
+   to store the image.
 -  *{INTENSITY_RESCALING_BY_METADATA}:* Rescale the image intensity
-   so that saturated values are rescaled to 1.0 by dividing all pixels
+   so that saturated values are rescaled to 0 - 1 by dividing all pixels
    in the image by the maximum possible intensity value allowed by the
    imaging hardware. Some image formats save the maximum possible
    intensity value along with the pixel data. For instance, a microscope
@@ -42,9 +45,6 @@ This option determines how the image intensity should be rescaled from
    field that can take values up to 65535. Choosing this setting ensures
    that the intensity scaling value is the maximum allowed by the
    hardware, and not the maximum allowable by the file format.
--  *{INTENSITY_RESCALING_BY_DATATYPE}:* Ignore the image metadata and
-   rescale the image to 0 – 1 by dividing by 255 or 65535, depending on
-   the number of bits used to store the image.
 -  *{INTENSITY_MANUAL}:* Divide each pixel value by the value entered
    in the *{MANUAL_INTENSITY_LABEL}* setting. *{INTENSITY_MANUAL}*
    can be used to rescale an image whose maximum intensity metadata
@@ -57,9 +57,9 @@ the unscaled image, use the **ImageMath** module to multiply the scaled
 image by the actual image bit-depth.
 """.format(
     **{
-        "INTENSITY_MANUAL": INTENSITY_MANUAL,
         "INTENSITY_RESCALING_BY_DATATYPE": INTENSITY_RESCALING_BY_DATATYPE,
         "INTENSITY_RESCALING_BY_METADATA": INTENSITY_RESCALING_BY_METADATA,
+        "INTENSITY_MANUAL": INTENSITY_MANUAL,
         "MANUAL_INTENSITY_LABEL": MANUAL_INTENSITY_LABEL,
     }
 )

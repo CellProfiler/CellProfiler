@@ -270,7 +270,7 @@ def test_load_v3():
     )
     assert module.single_image_provider.value == "PI"
     assert (
-        module.single_rescale
+        module.single_rescale_method
         == cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
     )
     assert (
@@ -352,7 +352,7 @@ def test_load_v4():
     )
     assert module.single_image_provider.value == "PI"
     assert (
-        module.single_rescale
+        module.single_rescale_method
         == cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
     )
     assert (
@@ -1536,7 +1536,7 @@ def run_workspace(
     )
     n.single_image_provider.value = IMAGE_NAME
     n.single_load_as_choice.value = load_as_type
-    n.single_rescale.value = rescaled
+    n.single_rescale_method.value = rescaled
     n.manual_rescale.value = manual_rescale
     n.process_as_3d.value = volume
     if spacing is not None:

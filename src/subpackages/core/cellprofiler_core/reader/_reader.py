@@ -18,10 +18,6 @@ import uuid
 
 from abc import ABC, abstractmethod
 
-import numpy
-from skimage.exposure import rescale_intensity
-from skimage.util import img_as_float32
-
 
 class Reader(ABC):
     """
@@ -67,28 +63,26 @@ class Reader(ABC):
 
     @abstractmethod
     def read(self,
+             wants_metadata_rescale=False,
              series=None,
              index=None,
              c=None,
              z=None,
              t=None,
-             autoscale=True,
              xywh=None,
-             wants_max_intensity=False,
              channel_names=None,
              ):
         """Read a single plane from the image file. Mimics the Bioformats API
+        :param wants_metadata_rescale: if `True`, return a tuple of image and a
+               tuple of (min, max) for range values of image dtype gathered from
+               file metadata; if `False`, returns only the image
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
         :param z: z-stack index
         :param t: time index
         :param series: series for ``.flex`` and similar multi-stack formats
         :param index: if `None`, fall back to ``zct``, otherwise load the indexed frame
-        :param autoscale: `True` to autoscale the intensity scale to 0 and 1; `False` to
-                  return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
-        :param wants_max_intensity: if `False`, only return the image; if `True`,
-                  return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
 
         Should return a data array with channel order X, Y, (C)
@@ -96,27 +90,25 @@ class Reader(ABC):
         return None
 
     def read_volume(self,
+                    wants_metadata_rescale=False,
                     series=None,
                     c=None,
                     z=None,
                     t=None,
-                    autoscale=True,
                     xywh=None,
-                    wants_max_intensity=False,
                     channel_names=None,
                     ):
         """Read a series of planes from the image file. Mimics the Bioformats API
+        :param wants_metadata_rescale: if `True`, return a tuple of image and a
+               tuple of (min, max) for range values of image dtype gathered from
+               file metadata; if `False`, returns only the image
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
         :param z: z-stack index
         :param t: time index
         n.b. either z or t should be "None" to specify which channel to read across.
         :param series: series for ``.flex`` and similar multi-stack formats
-        :param autoscale: `True` to autoscale the intensity scale to 0 and 1; `False` to
-                  return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
-        :param wants_max_intensity: if `False`, only return the image; if `True`,
-                  return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
 
         Should return a data array with channel order Z, X, Y, (C)
@@ -202,134 +194,3 @@ class Reader(ABC):
         :return: list of setting tuples
         """
         return []
-
-    @staticmethod
-    def float_cast(dtype):
-        '''
-        For a given dtype, return the minimally sized floating dtype needed
-        to store the values of the given dtype without loss in precision.
-
-        For example, uint32 cannot simply be cast to float32 because
-        float32 can only accurately represent consecutive integer values
-        between -16_777_216 to 16_777_216. The further beyond that range, the
-        more precision is lost.
-        e.g. The uint32 value of 16_777_217, when cast to float32,
-        becomes 16_777_216.0, but when cast to float64 remains 16_777_217.0.
-
-        Since an integer to float conversion entails casting up to a larger
-        size, the minimal floating type needed is returned (rather than
-        unconditionally returning float64) in order to save memory.
-        '''
-        if dtype == numpy.uint8:
-            return numpy.float16
-        elif dtype == numpy.uint16:
-            return numpy.float32
-        elif dtype == numpy.uint32:
-            return numpy.float64
-        elif dtype == numpy.int8:
-            return numpy.float16
-        elif dtype == numpy.int16:
-            return numpy.float32
-        elif dtype == numpy.int32:
-            return numpy.float64
-        elif dtype == numpy.float16:
-            return numpy.float16
-        elif dtype == numpy.float32:
-            return numpy.float32
-        else:
-            raise ValueError(f"Unsupported dtype: {dtype}")
-
-
-    @staticmethod
-    def __uint_to_float32(data):
-        # out_range set to float64 seems wasteful for small types like
-        # [u]int[8,16] (and it is), but it gets us a bit of extra precision
-        # before a final cast to float32, and the internals of
-        # rescale_intensity do it *anyway* (it does np.clip, w/ min/max values
-        # set to float64, causing the img to become float64) so we don't
-        # incur *extra* inefficiencies on top of what skimage is already doing
-        data = rescale_intensity(data, in_range="dtype", out_range="float64")
-        return data.astype("float32")
-
-    @staticmethod
-    def __int_to_float32(data):
-        data = rescale_intensity(data, in_range="dtype", out_range=(0., 1.))
-        return data.astype("float32")
-
-    @staticmethod
-    def __float_to_float32(data):
-        # data is normalized float, just cast to 32 bit
-        if data.min() >= 0 and data.max() <= 1:
-            data = img_as_float32(data)
-        # data is normalized float, but not in [0, 1]
-        # adjust and cast to 32 bit
-        elif data.min() >= -1 and data.max() <= 1:
-            # a bit nasty to cast to 64,
-            # but it buys us some extra precision until final cast to 32
-            data = (data.astype("float64") + 1) / 2.
-            data = img_as_float32(data)
-        # data is unnormalized, with non-negative values
-        # treat as uint of the same bitdepth and normalize
-        elif data.min() >= 0:
-            data = Reader.__uint_to_float32(data.astype(f"u{data.dtype.itemsize}"))
-        # data is unnormalized, with negative values
-        # treat as int of the same bitdepth and normalize
-        else:
-            data = Reader.__int_to_float32(data.astype(f"i{data.dtype.itemsize}"))
-
-        return data
-
-    @staticmethod
-    def normalize_to_float32(data):
-        '''
-        Convert an array of given data of some type to float32,
-        normalizing it to the range 0-1.
-
-        The scaling IS NOT done such that the data's minimal pixel value
-        is forced to 0. and the maximal pixel value is forced to 1.
-        (i.e. stretching/shrinking the data).
-        Instead, scaling IS done such that relative ranges are preserved
-        (i.e. range of the data wrt range of the data type is kept).
-
-        For example, for unsigned type, the scaling *will not* be
-        data / (max_val - min_val)
-        but rather
-        data / (2^bit_depth - 1)
-
-        The conversion also handles signed types by shifting the data first.
-
-        Finally the conversion handles three conditions present in floating
-        point images:
-        1. Floating point images which already have values inside the range 0-1.
-           In this case, it is simply cast to float32.
-        2. Floating point images which have values normalized inside the range -1-1.
-           In this case, the data is renormalized to the range 0-1, and then cast to float32.
-        2. Floating point values which *represent* signed/unsigned integers but stored as float
-           e.g. ..., -65535.0, -255.0, -1.0, 0.0, 1.0, 65535.0, ...
-           i.e. data that really should be an signed/unsigned integer type, but for whatever
-           reason, are stored as float type.
-           In this case, it is converted to the appropriate integer type first,
-           and then normalized and cast to float32 in the range 0-1.
-        '''
-
-        if numpy.issubdtype(data.dtype, numpy.floating):
-            return Reader.__float_to_float32(data)
-        elif numpy.issubdtype(data.dtype, numpy.signedinteger):
-            return Reader.__int_to_float32(data)
-        elif numpy.issubdtype(data.dtype, numpy.unsignedinteger):
-            return Reader.__uint_to_float32(data)
-        else:
-            raise ValueError(f"Unsupported data type: {data.dtype}")
-
-    # TODO - 4955: Temporary. This needs to be fixed, it is currently very naive
-    @staticmethod
-    def naive_scale(data):
-        if numpy.issubdtype(data.dtype, numpy.integer):
-            scale = numpy.iinfo(data.dtype).max
-        elif numpy.issubdtype(data.dtype, numpy.floating): # assume
-            # assume float is already normalized
-            scale = 1
-        else:
-            raise NotImplementedError(f"Unsupported dtype: {data.dtype}")
-        return scale
-

@@ -1569,8 +1569,8 @@ class Measurements:
                 #             from LoadImages etc.
                 #             and stored in the measurements.
                 #
-                rescale = True
-                provider = URLImage(name, url, rescale, series, index)
+                metadata_rescale = True
+                provider = URLImage(name, url, series, index, metadata_rescale=metadata_rescale)
                 self.__image_providers.append(provider)
                 matching_providers.append(provider)
             image = matching_providers[0].provide_image(self)

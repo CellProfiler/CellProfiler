@@ -42,35 +42,32 @@ class ImageIOReader(Reader):
         return self._reader
 
     def read(self,
+             wants_metadata_rescale=False,
              series=None,
              index=None,
              c=None,
              z=None,
              t=None,
-             autoscale=True,
              xywh=None,
-             wants_max_intensity=False,
              channel_names=None,
              ):
-        """Read a single plane from the image file.
+        """Read a single plane from the image file. Mimics the Bioformats API
+        :param wants_metadata_rescale: if `True`, return a tuple of image and a
+               tuple of (min, max) for range values of image dtype gathered from
+               file metadata; if `False`, returns only the image
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
         :param z: z-stack index
         :param t: time index
         :param series: series for ``.flex`` and similar multi-stack formats
         :param index: if `None`, fall back to ``zct``, otherwise load the indexed frame
-        :param autoscale: `True` to autoscale the intensity scale to 0 and 1; `False` to
-                  return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
-        :param wants_max_intensity: if `False`, only return the image; if `True`,
-                  return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
         """
         reader = self.get_reader()
         if series is None:
             series = 0
         img = reader.get_data(series)
-        # scale = getattr(img.meta, "BitsPerSample", None)
         # https://imageio.readthedocs.io/en/v2.8.0/devapi.html#imageio.core.Array
         data = numpy.asarray(img)
         if c is not None and len(data.shape) > 2:
@@ -78,48 +75,32 @@ class ImageIOReader(Reader):
         elif c is None and len(data.shape) > 2 and data.shape[2] == 4:
             # Remove alpha channel
             data = data[:, :, :3, ...]
-        if autoscale:
-            # TODO - 4955: make sure this is cleaned up
-            #imax = self.find_scale_to_match_bioformats(data)
-            #data = data.astype(numpy.float32) / float(imax)
-
-            data = self.normalize_to_float32(data)
-
-            if wants_max_intensity:
-                return data, 1.0
-            return data
-        if wants_max_intensity:
-            return data, self.naive_scale(data)
+        if wants_metadata_rescale == True:
+            # TODO - 4955: handle extensions other than tiff
+            scale = getattr(img.meta, "BitsPerSample", None)
+            return data, (0.0, float(2**scale-1)) if scale else None
         return data
 
     def read_volume(self,
+                    wants_metadata_rescale=False,
                     series=None,
                     c=None,
                     z=None,
                     t=None,
-                    autoscale=True,
                     xywh=None,
-                    wants_max_intensity=False,
                     channel_names=None,
                     ):
         reader = self.get_reader(volume=True)
         if series is None:
             series = 0
-        data = reader.get_data(series)
+        img = reader.get_data(series)
+        data = numpy.asarray(img)
         if c is not None and len(data.shape) > 3:
             data = data[:, :, :,  c, ...]
-        if autoscale:
-            # TODO - 4955: make sure this is cleaned up
-            #imax = self.find_scale_to_match_bioformats(data)
-            #data = data.astype(numpy.float32) / float(imax)
-
-            data = self.normalize_to_float32(data)
-
-            if wants_max_intensity:
-                return data, 1.0
-            return data
-        if wants_max_intensity:
-            return data, self.naive_scale(data)
+        if wants_metadata_rescale == True:
+            # TODO - 4955: handle extensions other than tiff
+            scale = getattr(img.meta, "BitsPerSample", None)
+            return data, (0.0, float(2**scale-1)) if scale else None
         return data
 
     @classmethod

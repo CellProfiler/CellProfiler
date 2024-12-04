@@ -230,18 +230,6 @@ class FileImage(AbstractImage):
             return data, scale
         return data
 
-    # TODO - 4955: Temporary. This needs to be fixed, it is currently very naive
-    @staticmethod
-    def naive_scale(data):
-        if numpy.issubdtype(data.dtype, numpy.integer):
-            scale = numpy.iinfo(data.dtype).max
-        elif numpy.issubdtype(data.dtype, numpy.floating): # assume
-            # assume float is already normalized
-            scale = 1
-        else:
-            raise NotImplementedError(f"Unsupported dtype: {data.dtype}")
-        return scale
-
     @property
     def series(self):
         return self.__series

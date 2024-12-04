@@ -543,7 +543,6 @@ class FileImage(AbstractImage):
             img = numpy.load(pathname)
         else:
             reader = self.get_reader(volume=True)
-            # TODO - 4955: make sure read_volume has the same nuances around meta_scale.scale as read above
             img, self.rescale_range = reader.read_volume(
                 wants_metadata_rescale=True,
                 c=self.channel,

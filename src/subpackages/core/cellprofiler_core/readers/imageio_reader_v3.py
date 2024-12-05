@@ -81,7 +81,7 @@ class ImageIOReaderV3(Reader):
         if wants_metadata_rescale == True and hasattr(reader, "metadata"):
             # TODO - 4955: handle extensions other than tiff
             meta = reader.metadata(index=series)
-            scale = getattr(meta, "BitsPerSample", None)
+            scale = getattr(meta, "MaxSampleValue", None)
             return data, (0.0, float(2**scale-1)) if scale else None
         return data
 

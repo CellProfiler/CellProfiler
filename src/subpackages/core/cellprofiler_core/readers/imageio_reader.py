@@ -77,8 +77,8 @@ class ImageIOReader(Reader):
             data = data[:, :, :3, ...]
         if wants_metadata_rescale == True:
             # TODO - 4955: handle extensions other than tiff
-            scale = getattr(img.meta, "BitsPerSample", None)
-            return data, (0.0, float(2**scale-1)) if scale else None
+            scale = getattr(img.meta, "MaxSampleValue", None)
+            return data, (0.0, float(scale)) if scale else None
         return data
 
     def read_volume(self,

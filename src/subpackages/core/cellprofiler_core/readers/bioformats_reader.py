@@ -191,7 +191,7 @@ class BioformatsReader(Reader):
             image.shape = (height,width)
 
         if wants_metadata_rescale == True:
-            max_sample_value = self._reader.getMetadataValue('MaxSampleValue')
+            max_sample_value = self._reader.getMetadataValue("MaxSampleValue")
             scale = None
             if max_sample_value is not None:
                 try:
@@ -199,7 +199,7 @@ class BioformatsReader(Reader):
                 except:
                     LOGGER.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
                     scale = None
-            return image, (0.0, float(2**scale-1)) if scale else None
+            return image, (0.0, float(scale)) if scale else None
         return image
 
     def read_volume(self,

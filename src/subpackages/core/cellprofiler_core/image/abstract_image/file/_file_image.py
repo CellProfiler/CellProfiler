@@ -466,6 +466,8 @@ class FileImage(AbstractImage):
         self.cache_file()
         channel_names = []
 
+        # .mat and .npy are special cases, intended for flatfield illumination correction images
+        # we do not want to rescale them
         if is_matlab_file(self.__filename):
             img = load_data_file(self.get_full_name(), loadmat)
             self.rescale_range = None

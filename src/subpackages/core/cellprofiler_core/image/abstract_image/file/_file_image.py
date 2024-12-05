@@ -206,7 +206,7 @@ class FileImage(AbstractImage):
            In this case, it is simply cast to float32.
         2. Floating point images which have values normalized inside the range -1-1.
            In this case, the data is renormalized to the range 0-1, and then cast to float32.
-        2. Floating point values which *represent* signed/unsigned integers but stored as float
+        3. Floating point values which *represent* signed/unsigned integers but stored as float
            e.g. ..., -65535.0, -255.0, -1.0, 0.0, 1.0, 65535.0, ...
            i.e. data that really should be an signed/unsigned integer type, but for whatever
            reason, are stored as float type.
@@ -468,12 +468,12 @@ class FileImage(AbstractImage):
 
         if is_matlab_file(self.__filename):
             img = load_data_file(self.get_full_name(), loadmat)
-            # TODO - 4955: should we be overwriting if not None?
-            self.rescale_range = (0.0, 1.0)
+            self.rescale_range = None
+            self.__scale = 1.0
         elif is_numpy_file(self.__filename):
             img = load_data_file(self.get_full_name(), numpy.load)
-            # TODO - 4955: should we be overwriting if not None?
-            self.rescale_range = (0.0, 1.0)
+            self.rescale_range = None
+            self.__scale = 1.0
         else:
             rdr = self.get_reader()
             if numpy.isscalar(self.index) or self.index is None:
@@ -512,10 +512,10 @@ class FileImage(AbstractImage):
                     stack.append(img)
                 img = numpy.dstack(stack)
 
-        if self.metadata_rescale:
-            img, self.__scale = FileImage.normalize_to_float32(img, in_range=self.rescale_range, wants_inscale=True)
-        else:
-            img, self.__scale = FileImage.normalize_to_float32(img, wants_inscale=True)
+            if self.metadata_rescale:
+                img, self.__scale = FileImage.normalize_to_float32(img, in_range=self.rescale_range, wants_inscale=True)
+            else:
+                img, self.__scale = FileImage.normalize_to_float32(img, wants_inscale=True)
 
         self.__image = Image(
             img,

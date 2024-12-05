@@ -16,6 +16,7 @@ from ..constants.image import C_MD5_DIGEST
 from ..constants.image import C_SCALING
 from ..constants.image import C_SERIES
 from ..constants.image import C_WIDTH
+from ..constants.image import NO_RESCALE
 from ..constants.measurement import COLTYPE_FLOAT, C_OBJECTS_Z, C_OBJECTS_T, C_Z, C_T, C_OBJECTS_SERIES_NAME, \
     C_SERIES_NAME
 from ..constants.measurement import FTR_CENTER_Z
@@ -1548,7 +1549,7 @@ requests an object selection.
             )
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
             provider = MonochromeImage(
-                name, url, series, index, channel, rescale_range=None, metadata_rescale=False, volume=volume, spacing=spacing, z=z, t=t
+                name, url, series, index, channel, rescale_range=NO_RESCALE, metadata_rescale=False, volume=volume, spacing=spacing, z=z, t=t
             )
         elif load_choice == LOAD_AS_MASK:
             provider = MaskImage(

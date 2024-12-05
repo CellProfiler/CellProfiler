@@ -367,7 +367,7 @@ class TestReaders:
         if dtype == "float16" and reader == "Bio-Formats":
             return
 
-        test_img = create_image(reader, path, metadata_rescale=False)
+        test_img = create_image(reader, path, metadata_rescale=False, rescale_range=None)
 
         # ext not supported, skip testing reader for this image
         if test_img == None:
@@ -396,3 +396,47 @@ class TestReaders:
                 img_data.astype('float64'), atol=128., rtol=2**(-24)
                 # img_data.astype('float64'), atol=1, rtol=2**(-18)
             ), "precision mismatch"
+
+    @pytest.mark.parametrize("reader", readers())
+    def test_manualscale(self, img_details, reader):
+        img_data, path, dtype, divisor, shift, start, stop = img_details
+        start = float(start)
+        stop = float(stop)
+        shift = start
+        divisor = stop - start
+
+        # Bio-Formats only supports FLOAT (float32) and DOUBLE (float64)
+        # it will think float16 is FLOAT, and try to process it as such
+        if dtype == "float16" and reader == "Bio-Formats":
+            return
+
+        test_img = create_image(reader, path, metadata_rescale=False, rescale_range=(float(start), float(stop)))
+
+        # ext not supported, skip testing reader for this image
+        if test_img == None:
+            return
+
+        test_img_data = test_img.pixel_data
+        # must cast up to float64 to avoid overflow
+        # e.g. if img_data is int8, and shift is 255, then result of img_data - shift stays int8
+        # and you have negative values in result, which is what we're trying to avoid
+        ref_img_data = ((img_data.astype("float64") - shift) / divisor).astype("float32")
+        ref_img_min = numpy.float32((start - shift) / divisor)
+        ref_img_max = numpy.float32((stop - shift) / divisor)
+
+
+        assert test_img_data.dtype == numpy.dtype("float32"), "dtype mismatch"
+        assert test_img_data.shape == ref_img_data.shape, "shape mismatch"
+        assert test_img_data.min() == ref_img_min, "min mismatch"
+        assert test_img_data.max() == ref_img_max, "max mismatch"
+        assert numpy.all(test_img_data == ref_img_data), "data mismatch"
+
+        unscaled_test_img_data = (test_img_data.astype('float64') * divisor + shift) # .astype(dtype)
+        if numpy.issubdtype(dtype, numpy.integer):
+            assert numpy.allclose(
+                unscaled_test_img_data,
+                # cast up to float64 to avoid overflow
+                img_data.astype('float64'), atol=128., rtol=2**(-24)
+                # img_data.astype('float64'), atol=1, rtol=2**(-18)
+            ), "precision mismatch"
+

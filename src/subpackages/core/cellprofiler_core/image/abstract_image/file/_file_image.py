@@ -20,7 +20,7 @@ from ....utilities.image import is_matlab_file
 from ....utilities.image import loadmat
 from ....utilities.image import load_data_file
 from ....utilities.image import generate_presigned_url
-from ....constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES
+from ....constants.image import FILE_SCHEME, PASSTHROUGH_SCHEMES, NO_RESCALE
 from ....utilities.pathname import pathname2url, url2pathname
 
 LOGGER = logging.getLogger(__name__)
@@ -57,6 +57,8 @@ class FileImage(AbstractImage):
         :param rescale_range: a 2-tuple of min/max float values dictating the values to manually rescale the image from
                               if `None`, autorescaling will occur by dtype (if `metadata_rescale` is `False`)
                               or by values dictated in the image fle header's metadata (if `metadata_rescale` is `True`)
+                              if (0.0, 1.0) is given, no rescaling will occur (see NO_RESCALE constant), regardless of
+                              image values
         :type rescale_range: (float, float)
         :param metadata_rescale: If `True`, rescale the image by the bitdepth values located in image file header's metadata
                                  (useful for e.g. 12-bit images stored in float16 dtype)
@@ -97,6 +99,9 @@ class FileImage(AbstractImage):
         else:
             self.__url = pathname2url(os.path.join(pathname, filename))
         self.__scale = None
+        if rescale_range != None and metadata_rescale != False:
+            LOGGER.error("Cannot specify both rescale_range and metadata_rescale, prioritizing rescale_range")
+            metadata_rescale = False
         self.__rescale_range = rescale_range
         self.__metadata_rescale = metadata_rescale
         self.__series = series
@@ -212,11 +217,22 @@ class FileImage(AbstractImage):
            reason, are stored as float type.
            In this case, it is converted to the appropriate integer type first,
            and then normalized and cast to float32 in the range 0-1.
+
+        param: data - the numpy data to be converted to rescaled and cast as float32
+        param: in_range - `None` for automatic range detection, or a tuple of (min, max)
+                          dictating the range of values in the input data
+                          if equal to (0.0, 1,0) no rescaling will be performed (even if image is not normalized 0-1)
+        param: wants_inscale - if True, return the rescaled data, and scale factor used to rescale it
         '''
 
         if in_range is not None:
             scale = float(in_range[1] - in_range[0])
-            data = rescale_intensity(data, in_range=in_range, out_range=(0., 1.)).astype("float32")
+            # if (0.0, 1.0), do not rescale
+            if in_range[0] == 0.0 and in_range[1] == 1.0:
+                data = data.astype("float32")
+            else:
+                # see notes above about casting to float64
+                data = rescale_intensity(data.astype("float64"), in_range=in_range, out_range=(0., 1.)).astype("float32")
         elif numpy.issubdtype(data.dtype, numpy.floating):
             data, scale = FileImage.__float_to_float32(data, wants_inscale=True)
         elif numpy.issubdtype(data.dtype, numpy.signedinteger):
@@ -278,13 +294,9 @@ class FileImage(AbstractImage):
             FileImage.__validate_rescale_range(rescale_range)
 
         if (self.__rescale_range != None):
-            LOGGER.debug(
-                f"Overwriting rescale_range from \
-                {str(self.__rescale_range)} to \
-                {str(rescale_range)}"
-            )
-
+            LOGGER.warning(f"Rescale range was {str(self.__rescale_range)}, now {str(rescale_range)}")
         self.__rescale_range = rescale_range
+
 
     @property
     def metadata_rescale(self):
@@ -470,16 +482,17 @@ class FileImage(AbstractImage):
         # we do not want to rescale them
         if is_matlab_file(self.__filename):
             img = load_data_file(self.get_full_name(), loadmat)
-            self.rescale_range = None
+            self.rescale_range = NO_RESCALE
             self.__scale = 1.0
         elif is_numpy_file(self.__filename):
             img = load_data_file(self.get_full_name(), numpy.load)
-            self.rescale_range = None
+            self.rescale_range = NO_RESCALE
             self.__scale = 1.0
         else:
             rdr = self.get_reader()
+            _rescale_range = None
             if numpy.isscalar(self.index) or self.index is None:
-                img, self.rescale_range = rdr.read(
+                img, _rescale_range = rdr.read(
                     wants_metadata_rescale=True,
                     c=self.channel,
                     z=self.z,
@@ -502,7 +515,7 @@ class FileImage(AbstractImage):
                 for series, index, channel in zip(
                     series_list, self.index, channel_list
                 ):
-                    img, self.rescale_range = rdr.read(
+                    img, _rescale_range = rdr.read(
                         wants_metadata_rescale=True,
                         c=channel,
                         z=self.z,
@@ -514,10 +527,14 @@ class FileImage(AbstractImage):
                     stack.append(img)
                 img = numpy.dstack(stack)
 
-            if self.metadata_rescale:
-                img, self.__scale = FileImage.normalize_to_float32(img, in_range=self.rescale_range, wants_inscale=True)
-            else:
-                img, self.__scale = FileImage.normalize_to_float32(img, wants_inscale=True)
+            # if rescale_range is not manually set in __init__
+            # then set it from the metadata, if requested
+            if self.rescale_range is None and self.metadata_rescale:
+                # _rescale_range might stil be None (reader didn't find anything)
+                # but that's okay
+                self.rescale_range = _rescale_range
+
+            img, self.__scale = FileImage.normalize_to_float32(img, in_range=self.rescale_range, wants_inscale=True)
 
         self.__image = Image(
             img,

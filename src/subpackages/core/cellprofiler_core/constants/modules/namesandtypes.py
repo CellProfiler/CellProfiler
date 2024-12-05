@@ -27,24 +27,25 @@ INTENSITY_ALL = [
 ]
 MANUAL_INTENSITY_LABEL = "Maximum intensity"
 
-# TODO - 4955: Revise help text for NamesAndTypes
 RESCALING_HELP_TEXT = """\
 This option determines how the image intensity should be rescaled from
 0.0 – 1.0.
 
 -  *{INTENSITY_RESCALING_BY_DATATYPE}:* Rescale the image to 0 – 1
-   by dividing by 255 or 65535, depending on the number of bits used
-   to store the image.
+   depending on the number of bits used to store the image
+   (e.g. 255, 65535, etc.)
 -  *{INTENSITY_RESCALING_BY_METADATA}:* Rescale the image intensity
-   so that saturated values are rescaled to 0 - 1 by dividing all pixels
+   so that saturated values are rescaled to 1.0 by dividing all pixels
    in the image by the maximum possible intensity value allowed by the
    imaging hardware. Some image formats save the maximum possible
    intensity value along with the pixel data. For instance, a microscope
    might acquire images using a 12-bit A/D converter which outputs
    intensity values between zero and 4095, but stores the values in a
-   field that can take values up to 65535. Choosing this setting ensures
-   that the intensity scaling value is the maximum allowed by the
-   hardware, and not the maximum allowable by the file format.
+   field that can take values up to 65535.Choosing this setting will try its
+   hardest to ensure that the intensity scaling value is the maximum
+   allowed by the hardware, and not the maximum allowable by the file format.
+   Although, this information is often unavailable, so may need to default
+   to image datatype instead.
 -  *{INTENSITY_MANUAL}:* Divide each pixel value by the value entered
    in the *{MANUAL_INTENSITY_LABEL}* setting. *{INTENSITY_MANUAL}*
    can be used to rescale an image whose maximum intensity metadata

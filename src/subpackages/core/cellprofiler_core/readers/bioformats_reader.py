@@ -191,6 +191,7 @@ class BioformatsReader(Reader):
             image.shape = (height,width)
 
         if wants_metadata_rescale == True:
+            # tiff-specific
             max_sample_value = self._reader.getMetadataValue("MaxSampleValue")
             scale = None
             if max_sample_value is not None:

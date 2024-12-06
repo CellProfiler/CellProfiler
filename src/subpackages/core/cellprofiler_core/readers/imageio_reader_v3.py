@@ -76,10 +76,10 @@ class ImageIOReaderV3(Reader):
         elif c is None and len(data.shape) > 2 and data.shape[2] == 4:
             # Remove alpha channel
             data = data[:, :, :3, ...]
-        # depends on the plugin whether metadata() is a thing
-        # e.g.: https://imageio.readthedocs.io/en/stable/_autosummary/imageio.plugins.tifffile_v3.TifffilePlugin.metadata.html#imageio.plugins.tifffile_v3.TifffilePlugin.metadata
+        # tiff-specific
         if wants_metadata_rescale == True and hasattr(reader, "metadata"):
-            # TODO - 4955: handle extensions other than tiff
+            # depends on the plugin whether metadata() is a thing
+            # e.g.: https://imageio.readthedocs.io/en/stable/_autosummary/imageio.plugins.tifffile_v3.TifffilePlugin.metadata.html#imageio.plugins.tifffile_v3.TifffilePlugin.metadata
             meta = reader.metadata(index=series)
             scale = getattr(meta, "MaxSampleValue", None)
             return data, (0.0, float(2**scale-1)) if scale else None
@@ -102,7 +102,7 @@ class ImageIOReaderV3(Reader):
         if c is not None and len(data.shape) > 3:
             data = data[:, :, :,  c, ...]
         if wants_metadata_rescale == True:
-            # TODO - 4955: handle extensions other than tiff
+            # tiff-specific
             scale = getattr(img.meta, "BitsPerSample", None)
             return data, (0.0, float(2**scale-1)) if scale else None
         return data

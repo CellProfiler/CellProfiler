@@ -26,7 +26,7 @@
           callPackage = lib.callPackageWith (pkgs // mypackages // python3Packages);
           
           mypackages = {
-              centrosome = callPackage ./centrosome.nix {};
+              centrosome = callPackage ./nix/centrosome.nix {};
             };
 
           # formatter = pkgs.alejandra;

@@ -23,36 +23,21 @@
         
       in
         with pkgs; rec {
-          callPackage = lib.callPackageWith (pkgs // mypackages // python3Packages);
+          callPackage = lib.callPackageWith (pkgs // packages // python3Packages);
           
-          mypackages = {
+          packages = {
               centrosome = callPackage ./nix/centrosome.nix {};
             };
 
-          # formatter = pkgs.alejandra;
           devShells = {
             default = let
               python_with_pkgs = (pkgs.python3.withPackages(pp: [
-                mypackages.centrosome
+                packages.centrosome
                 ]));
               in
               mkShell {
-                NIX_LD = runCommand "ld.so" {} ''
-                  ln -s "$(cat '${pkgs.stdenv.cc}/nix-support/dynamic-linker')" $out
-                '';
-                NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [
-                  # Add needed packages here
-                  stdenv.cc.cc
-                  libGL
-                  zlib
-                  glib
-                ];
                 packages = [
                   python_with_pkgs
-                  # git
-                  # gtk3
-                  glib
-                  pkg-config
                 ];
                 venvDir = "./.venv";
                 postVenvCreation = ''
@@ -62,7 +47,6 @@
                   unset SOURCE_DATE_EPOCH
                 '';
                 shellHook = ''
-                  export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH
                   runHook venvShellHook
                   export PYTHONPATH=${python_with_pkgs}/${python_with_pkgs.sitePackages}:$PYTHONPATH
                 '';

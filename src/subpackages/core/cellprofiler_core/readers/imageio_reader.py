@@ -76,7 +76,7 @@ class ImageIOReader(Reader):
             # Remove alpha channel
             data = data[:, :, :3, ...]
         if wants_metadata_rescale == True:
-            # TODO - 4955: handle extensions other than tiff
+            # tiff-specific
             scale = getattr(img.meta, "MaxSampleValue", None)
             return data, (0.0, float(scale)) if scale else None
         return data
@@ -98,7 +98,7 @@ class ImageIOReader(Reader):
         if c is not None and len(data.shape) > 3:
             data = data[:, :, :,  c, ...]
         if wants_metadata_rescale == True:
-            # TODO - 4955: handle extensions other than tiff
+            # tiff-specific
             scale = getattr(img.meta, "BitsPerSample", None)
             return data, (0.0, float(2**scale-1)) if scale else None
         return data

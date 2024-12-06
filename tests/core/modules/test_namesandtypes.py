@@ -504,7 +504,7 @@ def test_load_v4():
 #             assertEqual(module.assignment_method, N.ASSIGN_RULES)
 #             assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
 #             assertEqual(module.single_image_provider.value, "PI")
-#             assertEqual(module.single_rescale, N.INTENSITY_RESCALING_BY_DATATYPE)
+#             assertEqual(module.single_rescale_method, N.INTENSITY_RESCALING_BY_DATATYPE)
 #             assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
 #             assertEqual(module.assignments_count.value, 1)
 #             assertEqual(module.single_images_count.value, 5)
@@ -514,13 +514,13 @@ def test_load_v4():
 #             assertEqual(assignment.image_name, "DNA")
 #             assertEqual(assignment.object_name, "Nuclei")
 #             assertEqual(assignment.load_as_choice, N.LOAD_AS_GRAYSCALE_IMAGE)
-#             assertEqual(assignment.rescale, N.INTENSITY_RESCALING_BY_METADATA)
+#             assertEqual(assignment.rescale_method, N.INTENSITY_RESCALING_BY_METADATA)
 #             assertEqual(assignment.should_save_outlines, False)
 #             assertEqual(assignment.save_outlines, "LoadedOutlines")
 #             aa = module.single_images
 #             first = True
 #             for assignment, image_name, objects_name, load_as, \
-#                 rescale, should_save_outlines, outlines_name in (
+#                 rescale_method, should_save_outlines, outlines_name in (
 #                 (aa[0], "sDNA", "sNuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
 #                 (aa[1], "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
 #                 (aa[2], "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
@@ -538,7 +538,7 @@ def test_load_v4():
 #                 assertEqual(assignment.image_name.value, image_name)
 #                 assertEqual(assignment.object_name.value, objects_name)
 #                 assertEqual(assignment.load_as_choice.value, load_as)
-#                 assertEqual(assignment.rescale.value, rescale)
+#                 assertEqual(assignment.rescale_method.value, rescale_method)
 #                 assertEqual(assignment.should_save_outlines.value, should_save_outlines)
 #                 assertEqual(assignment.save_outlines.value, outlines_name)
 #                 first = False
@@ -644,25 +644,25 @@ def test_load_v4():
 #         assertEqual(module.assignment_method, N.ASSIGN_RULES)
 #         assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
 #         assertEqual(module.single_image_provider.value, "PI")
-#         assertEqual(module.single_rescale, N.INTENSITY_RESCALING_BY_DATATYPE)
+#         assertEqual(module.single_r_methodescale, N.INTENSITY_RESCALING_BY_DATATYPE)
 #         assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
 #         assertEqual(module.assignments_count.value, 1)
 #         assertEqual(module.single_images_count.value, 5)
-#         assertEqual(module.manual_rescale.value, 100)
+#         assertEqual(module.manual_rescale_method.value, 100)
 #         assignment = module.assignments[0]
 #         assertEqual(assignment.rule_filter,
 #                          'or (metadata does ChannelNumber "0")')
 #         assertEqual(assignment.image_name, "DNA")
 #         assertEqual(assignment.object_name, "Nuclei")
 #         assertEqual(assignment.load_as_choice, N.LOAD_AS_GRAYSCALE_IMAGE)
-#         assertEqual(assignment.rescale, N.INTENSITY_RESCALING_BY_METADATA)
+#         assertEqual(assignment.rescale_method, N.INTENSITY_RESCALING_BY_METADATA)
 #         assertEqual(assignment.should_save_outlines, False)
 #         assertEqual(assignment.save_outlines, "LoadedOutlines")
-#         assertEqual(assignment.manual_rescale.value, 200)
+#         assertEqual(assignment.manual_rescale_method.value, 200)
 #         aa = module.single_images
 #         first = True
 #         for assignment, image_name, objects_name, load_as, \
-#             rescale, should_save_outlines, outlines_name, manual_rescale in (
+#             rescale_method, should_save_outlines, outlines_name, manual_rescale in (
 #             (aa[0], "sDNA", "sNuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 300),
 #             (aa[1], "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines", 400),
 #             (aa[2], "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines", 500),
@@ -680,10 +680,10 @@ def test_load_v4():
 #             assertEqual(assignment.image_name.value, image_name)
 #             assertEqual(assignment.object_name.value, objects_name)
 #             assertEqual(assignment.load_as_choice.value, load_as)
-#             assertEqual(assignment.rescale.value, rescale)
+#             assertEqual(assignment.rescale_method.value, rescale_method)
 #             assertEqual(assignment.should_save_outlines.value, should_save_outlines)
 #             assertEqual(assignment.save_outlines.value, outlines_name)
-#             assertEqual(assignment.manual_rescale, manual_rescale)
+#             assertEqual(assignment.manual_rescale_method, manual_rescale_method)
 #             first = False
 
 url_root = "file:" + urllib.request.pathname2url(os.path.abspath(os.path.curdir))
@@ -1485,7 +1485,7 @@ def test_prepare_to_create_batch_single_image():
 #         assertEquals(tuple(img.pixel_data.shape),
 #                           tuple(target.shape))
 #         objs = workspace.object_set.get_objects(OBJECTS_NAME)
-#         target = load_image(ooi_path, rescale = False)
+#         target = load_image(ooi_path, rescale_method = False)
 #         n_objects = np.max(target)
 #         assertEquals(objs.count, n_objects)
 #     finally:
@@ -1547,7 +1547,7 @@ def run_workspace(
     n.assignments[0].image_name.value = IMAGE_NAME
     n.assignments[0].object_name.value = OBJECTS_NAME
     n.assignments[0].load_as_choice.value = load_as_type
-    n.assignments[0].rescale.value = rescaled
+    n.assignments[0].rescale_method.value = rescaled
     n.assignments[0].manual_rescale.value = manual_rescale
     n.module_num = 1
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1657,7 +1657,7 @@ def run_workspace(
         si.image_name.value = name
         si.object_name.value = name
         si.load_as_choice.value = load_as_type
-        si.rescale.value = rescaled
+        si.rescale_method.value = rescaled
         si.manual_rescale.value = manual_rescale
         url = cellprofiler_core.utilities.pathname.pathname2url(path)
         si.image_plane.value = si.image_plane.build(ImagePlane(ImageFile(url)))
@@ -1910,7 +1910,7 @@ def test_load_objects():
 
 def test_load_objects_3D():
     path = os.path.realpath(os.path.join(os.path.dirname(__file__), "../data/3d_monolayer_xy1_ch2_labels.tiff"))
-    #target = bioformats.load_image(path, rescale=False)
+    #target = bioformats.load_image(path, rescale_method=False)
     target = skimage.io.imread(path)
 
     with open(path, "rb") as fd:

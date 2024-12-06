@@ -360,7 +360,7 @@ def test_load_v4():
     )
     assert module.assignments_count.value == 5
     aa = module.assignments
-    for assignment, rule, image_name, objects_name, load_as, rescale in (
+    for assignment, rule, image_name, objects_name, load_as, rescale_method in (
         (
             aa[0],
             'or (metadata does ChannelNumber "0")',
@@ -406,7 +406,7 @@ def test_load_v4():
         assert assignment.image_name.value == image_name
         assert assignment.object_name.value == objects_name
         assert assignment.load_as_choice.value == load_as
-        assert assignment.rescale.value == rescale
+        assert assignment.rescale_method.value == rescale_method
         assert (
             assignment.manual_rescale.value
             == cellprofiler_core.modules.namesandtypes.DEFAULT_MANUAL_RESCALE
@@ -2256,7 +2256,7 @@ def test_validate_single_channel():
             module.validate_module(pipeline)
             break
     else:
-        fail()
+        pytest.fail()
 
 
 def test_load_grayscale_volume():

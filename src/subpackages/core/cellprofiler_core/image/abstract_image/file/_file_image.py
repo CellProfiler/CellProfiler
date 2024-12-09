@@ -285,6 +285,24 @@ class FileImage(AbstractImage):
         return self.__t
 
     @property
+    def scale(self):
+        return self.__scale
+
+    @scale.setter
+    def scale(self, scale):
+        if self.__scale is not None:
+            LOGGER.warning(f"Setting scale to {scale} but scale was {self.__scale}")
+        if scale is None:
+            LOGGER.warning(f"Setting scale to None, but scale was {self.__scale}")
+            self.__scale = scale
+        elif isinstance(scale, int):
+            self.__scale = float(scale)
+        elif isinstance(scale, float):
+            self.__scale = scale
+        else:
+            raise ValueError("scale must be a float or int")
+
+    @property
     def rescale_range(self):
         return self.__rescale_range
 

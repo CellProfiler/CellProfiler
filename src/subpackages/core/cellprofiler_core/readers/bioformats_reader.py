@@ -245,7 +245,6 @@ class BioformatsReader(Reader):
                 z=z_index,
                 t=t_index,
                 xywh=xywh,
-                wants_max_intensity=False,
                 channel_names=channel_names,
             )
             if wants_metadata_rescale == True and type(data) is tuple:

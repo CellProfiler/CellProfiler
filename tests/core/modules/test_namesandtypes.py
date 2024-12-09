@@ -1502,7 +1502,7 @@ def run_workspace(
     index=None,
     channel=None,
     single=False,
-    rescaled=cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
+    rescaled=cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, # TODO 4955: rescale_method
     lsi=[],
     volume=False,
     spacing=None,

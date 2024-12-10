@@ -69,7 +69,7 @@ class ObjectsImage(URLImage):
                 else:
                     properties["series"] = self.series[i]
             rdr = self.get_reader()
-            img = rdr.read(rescale=False, **properties).astype(int)
+            img = rdr.read(**properties).astype(int)
             img = convert_image_to_objects(img).astype(numpy.int32)
             img[img != 0] += offset
             offset += numpy.max(img)

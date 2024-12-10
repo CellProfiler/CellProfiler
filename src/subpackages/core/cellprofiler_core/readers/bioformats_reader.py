@@ -254,8 +254,8 @@ class BioformatsReader(Reader):
         image_stack = np.stack(image_stack)
 
         if wants_metadata_rescale == True:
-            return data, scale
-        return data
+            return image_stack, scale
+        return image_stack
 
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False):

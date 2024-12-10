@@ -1513,13 +1513,13 @@ def run_workspace(
     load_as_type - one of the LOAD_AS... constants
     series, index, channel - pick a plane from within a file
     single - use ASSIGN_ALL to assign all images to a single channel
-    rescaled - rescale the image if True
+    rescaled - rescale method to use
     lsi - a list of single images to load. Each list item is a dictionary
             describing the single image. Format of the dictionary is:
             "path": <path-to-file>
             "load_as_type": <how to load single image>
             "name": <image or object name>
-            "rescaled": True or False (defaults to True)
+            "rescaled": rescale_method to use (defaults to metadata)
 
     returns the workspace after running
     """
@@ -1651,7 +1651,7 @@ def run_workspace(
         load_as_type = d["load_as_type"]
         name = d["name"]
         names.append(name)
-        rescaled = d.get("rescaled", True)
+        rescaled = d.get("rescaled", cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA) # TODO 4955: rescale_method
         n.add_single_image()
         si = n.single_images[-1]
         si.image_name.value = name

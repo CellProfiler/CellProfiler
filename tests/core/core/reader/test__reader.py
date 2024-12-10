@@ -6,8 +6,6 @@ from cellprofiler_core.constants.reader import ALL_READERS, AVAILABLE_READERS
 from cellprofiler_core.image import MonochromeImage
 from cellprofiler_core.utilities.pathname import pathname2url
 
-# TODO - 4955: create ome.zarr conversion of img_details objects
-
 
 def readers():
     # init readers

@@ -1492,7 +1492,7 @@ requests an object selection.
         elif rescale_method == INTENSITY_RESCALING_BY_METADATA:
             rescale_range = None
             metadata_rescale = True
-        elif rescale_method == INTENSITY_MANUAL:
+        elif type(rescale_method) == tuple and len(rescale_method) == 2:
             rescale_range = rescale_method
             metadata_rescale = False
 

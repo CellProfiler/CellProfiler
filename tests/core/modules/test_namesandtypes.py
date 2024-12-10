@@ -1502,7 +1502,7 @@ def run_workspace(
     index=None,
     channel=None,
     single=False,
-    rescaled=cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA, # TODO 4955: rescale_method
+    rescale_method=cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
     lsi=[],
     volume=False,
     spacing=None,
@@ -1513,19 +1513,19 @@ def run_workspace(
     load_as_type - one of the LOAD_AS... constants
     series, index, channel - pick a plane from within a file
     single - use ASSIGN_ALL to assign all images to a single channel
-    rescaled - rescale method to use
+    rescale_method - rescale method to use
     lsi - a list of single images to load. Each list item is a dictionary
             describing the single image. Format of the dictionary is:
             "path": <path-to-file>
             "load_as_type": <how to load single image>
             "name": <image or object name>
-            "rescaled": rescale_method to use (defaults to metadata)
+            "rescale_method": rescale_method to use (defaults to metadata)
 
     returns the workspace after running
     """
-    if isinstance(rescaled, float):
-        manual_rescale = rescaled
-        rescaled = cellprofiler_core.modules.namesandtypes.INTENSITY_MANUAL
+    if isinstance(rescale_method, float):
+        manual_rescale = rescale_method
+        rescale_method = cellprofiler_core.modules.namesandtypes.INTENSITY_MANUAL
     else:
         manual_rescale = 255.0
     n = cellprofiler_core.modules.namesandtypes.NamesAndTypes()
@@ -1536,7 +1536,7 @@ def run_workspace(
     )
     n.single_image_provider.value = IMAGE_NAME
     n.single_load_as_choice.value = load_as_type
-    n.single_rescale_method.value = rescaled
+    n.single_rescale_method.value = rescale_method
     n.manual_rescale.value = manual_rescale
     n.process_as_3d.value = volume
     if spacing is not None:
@@ -1547,7 +1547,7 @@ def run_workspace(
     n.assignments[0].image_name.value = IMAGE_NAME
     n.assignments[0].object_name.value = OBJECTS_NAME
     n.assignments[0].load_as_choice.value = load_as_type
-    n.assignments[0].rescale_method.value = rescaled
+    n.assignments[0].rescale_method.value = rescale_method
     n.assignments[0].manual_rescale.value = manual_rescale
     n.module_num = 1
     pipeline = cellprofiler_core.pipeline.Pipeline()
@@ -1651,13 +1651,13 @@ def run_workspace(
         load_as_type = d["load_as_type"]
         name = d["name"]
         names.append(name)
-        rescaled = d.get("rescaled", cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA) # TODO 4955: rescale_method
+        rescale_method = d.get("rescale_method", cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA)
         n.add_single_image()
         si = n.single_images[-1]
         si.image_name.value = name
         si.object_name.value = name
         si.load_as_choice.value = load_as_type
-        si.rescale_method.value = rescaled
+        si.rescale_method.value = rescale_method
         si.manual_rescale.value = manual_rescale
         url = cellprofiler_core.utilities.pathname.pathname2url(path)
         si.image_plane.value = si.image_plane.build(ImagePlane(ImageFile(url)))
@@ -1916,7 +1916,7 @@ def test_load_objects_3D():
     with open(path, "rb") as fd:
         md5 = hashlib.md5(fd.read()).hexdigest()
     workspace = run_workspace(
-        path, cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS, volume=True, rescaled=False,
+        path, cellprofiler_core.modules.namesandtypes.LOAD_AS_OBJECTS, volume=True, rescale_method=False,
     )
     o = workspace.object_set.get_objects(OBJECTS_NAME)
     assert isinstance(o, cellprofiler_core.object.Objects)
@@ -1960,7 +1960,7 @@ def test_load_rescaled():
     file_name = "1-162hrh2ax2.tif"
     path = tests.core.modules.make_12_bit_image(folder, file_name, (34, 19))
     for single in (True, False):
-        for rescaled in (
+        for rescale_method in (
             cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA,
             cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE,
             float(2 ** 17),
@@ -1970,18 +1970,18 @@ def test_load_rescaled():
                 cellprofiler_core.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE,
             ):
                 workspace = run_workspace(
-                    path, load_as, single=single, rescaled=rescaled
+                    path, load_as, single=single, rescale_method=rescale_method
                 )
                 image = workspace.image_set.get_image(IMAGE_NAME)
                 pixel_data = image.pixel_data
                 assert numpy.all(pixel_data >= 0)
                 if (
-                    rescaled
+                    rescale_method
                     == cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_METADATA
                 ):
                     assert numpy.any(pixel_data > 1.0 / 16.0)
                 elif (
-                    rescaled
+                    rescale_method
                     == cellprofiler_core.modules.namesandtypes.INTENSITY_RESCALING_BY_DATATYPE
                 ):
                     assert numpy.all(pixel_data <= 1.0 / 16.0)

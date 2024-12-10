@@ -57,7 +57,7 @@ class FileImage(AbstractImage):
         :param rescale_range: a 2-tuple of min/max float values dictating the values to manually rescale the image from
                               if `None`, autorescaling will occur by dtype (if `metadata_rescale` is `False`)
                               or by values dictated in the image fle header's metadata (if `metadata_rescale` is `True`)
-                              if (0.0, 1.0) is given, no rescaling will occur (see NO_RESCALE constant), regardless of
+                              if (None, None) is given, no rescaling will occur (see NO_RESCALE constant), regardless of
                               image values
         :type rescale_range: (float, float)
         :param metadata_rescale: If `True`, rescale the image by the bitdepth values located in image file header's metadata
@@ -221,16 +221,16 @@ class FileImage(AbstractImage):
         param: data - the numpy data to be converted to rescaled and cast as float32
         param: in_range - `None` for automatic range detection, or a tuple of (min, max)
                           dictating the range of values in the input data
-                          if equal to (0.0, 1,0) no rescaling will be performed (even if image is not normalized 0-1)
+                          if equal to (None, None) no rescaling or type converstion will be performed
         param: wants_inscale - if True, return the rescaled data, and scale factor used to rescale it
         '''
 
         if in_range is not None:
-            scale = float(in_range[1] - in_range[0])
-            # if (0.0, 1.0), do not rescale
-            if in_range[0] == 0.0 and in_range[1] == 1.0:
-                data = data.astype("float32")
-            else:
+            if in_range == NO_RESCALE:
+                scale = 1.0
+                # do not scale or typecast data
+            if in_range != NO_RESCALE:
+                scale = float(in_range[1] - in_range[0])
                 # see notes above about casting to float64
                 data = rescale_intensity(data.astype("float64"), in_range=in_range, out_range=(0., 1.)).astype("float32")
         elif numpy.issubdtype(data.dtype, numpy.floating):

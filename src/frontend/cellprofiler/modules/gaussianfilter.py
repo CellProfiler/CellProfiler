@@ -51,7 +51,7 @@ class GaussianFilter(ImageProcessing):
 
         x_data = x.pixel_data
 
-        sigma = numpy.divide(self.sigma.value, x.spacing)
+        sigma = numpy.divide(self.sigma.value, x.spacing) #library function
 
         y_data = skimage.filters.gaussian(x_data, sigma=sigma)
 

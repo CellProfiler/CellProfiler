@@ -519,3 +519,8 @@ def overlay_objects(image, labels, opacity=0.3, max_label=None, seed=None, color
         colors=colors,
         image=image,
     )
+
+def gaussian_filter(image, sigma):
+    #to do: add documentation
+    y_data = skimage.filters.gaussian(image, sigma=sigma)
+    return y_data

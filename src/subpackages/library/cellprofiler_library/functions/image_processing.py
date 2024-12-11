@@ -520,7 +520,9 @@ def overlay_objects(image, labels, opacity=0.3, max_label=None, seed=None, color
         image=image,
     )
 
-def gaussian_filter(image, sigma):
-    #to do: add documentation
+def gaussianfilter(image, sigma):
+    #GaussianFilter will blur an image and remove noise, and can be helpful where the foreground signal is noisy or near the noise floor.
+    #image=input image, y_data=output image
+    #Sigma is the standard deviation of the kernel to be used for blurring, larger sigmas induce more blurring. 
     y_data = skimage.filters.gaussian(image, sigma=sigma)
     return y_data

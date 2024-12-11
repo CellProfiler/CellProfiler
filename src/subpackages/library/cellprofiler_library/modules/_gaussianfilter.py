@@ -1,7 +1,7 @@
-from cellprofiler_library.functions.image_processing import gaussian_filter
+from cellprofiler_library.functions.image_processing import gaussianfilter
 
 def gaussianfilter(image, sigma):
-    return gaussian_filter(
+    return gaussianfilter(
         image,
         sigma,
     )

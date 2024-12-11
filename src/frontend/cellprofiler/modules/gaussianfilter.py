@@ -20,7 +20,7 @@ import skimage.filters
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting.text import Integer
-from cellprofiler.library.modules import gaussian_filter
+from cellprofiler_library.modules import gaussian_filter
 
 class GaussianFilter(ImageProcessing):
     category = "Advanced"

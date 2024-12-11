@@ -305,8 +305,9 @@ values below this threshold as not being edges.
                 sharexy=figure.subplot(0, 0),
             )
         color_image = numpy.zeros((output_pixels.shape[0], output_pixels.shape[1], 3))
-        color_image[:, :, 0] = centrosome.filter.stretch(orig_pixels)
-        color_image[:, :, 1] = centrosome.filter.stretch(output_pixels)
+        color_image[:, :, 0] = 0.5 * centrosome.filter.stretch(orig_pixels)  # Red channel for magenta
+        color_image[:, :, 1] = centrosome.filter.stretch(output_pixels) # Green channel for green
+        color_image[:, :, 2] = 0.5 * centrosome.filter.stretch(orig_pixels)  # Blue channel for magenta
         figure.subplot_imshow(
             1, 0, color_image, "Composite image", sharexy=figure.subplot(0, 0)
         )

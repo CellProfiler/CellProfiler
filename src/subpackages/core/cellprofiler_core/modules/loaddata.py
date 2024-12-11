@@ -345,11 +345,11 @@ that can take values up to 65535.
 Select *{YES}* to rescale the image intensity so that the camera's maximum
 possible intensity value is rescaled to 1.0 (by dividing all pixels in
 the image by the camera's maximum possible intensity value, as indicated by
-image metadata).
+image metadata, if available, else by the datatype of the image).
 
 Select *{NO}* to ignore the image metadata and rescale the image to a
-maximum of 1.0 by dividing by 255 or 65535, depending on the maximum possible
-intensity value of the image file format.
+maximum of 1.0 by dividing by max possible intensity value of the
+image datatype (e.g. 255 or 65535).
 """.format(
                 **{"YES": "Yes", "NO": "No"}
             ),
@@ -1075,7 +1075,8 @@ safe to press it.""",
             name,
             path,
             filename,
-            rescale=self.rescale.value and is_image_name,
+            rescale_range=None,
+            metadata_rescale=self.rescale.value and is_image_name,
             series=keyword_args[series_feature],
             index=keyword_args[frame_feature],
             channel=keyword_args[channel_feature],

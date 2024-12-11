@@ -74,17 +74,21 @@ def activate_readers(check_config=True):
     else:
         LOGGER.debug("Image readers available and active: %s", ", ".join(AVAILABLE_READERS))
 
-def filter_active_readers(readers_to_keep, from_all_readers=True):
+def filter_active_readers(readers_to_keep, from_all_readers=True, by_module_name=True):
     """
     Filter out readers that are not in the readers_to_keep list.
     from_all_readers - if True, use ALL_READERS instead of AVAILABLE_READERS
+    by_module_name - if True, use the module name, if False use the reader name
     """
     if from_all_readers:
         readers_to_filter = ALL_READERS.copy()
     else:
         readers_to_filter = AVAILABLE_READERS.copy()
 
-    filtered_readers = {reader_name: classname for reader_name, classname in readers_to_filter.items() if classname.__module__.split('.')[-1] in readers_to_keep}
+    if by_module_name:
+        filtered_readers = {reader_name: classname for reader_name, classname in readers_to_filter.items() if classname.__module__.split('.')[-1] in readers_to_keep}
+    else:
+        filtered_readers = {reader_name: classname for reader_name, classname in readers_to_filter.items() if classname.reader_name in readers_to_keep}
 
     if len(filtered_readers) == 0:
         LOGGER.critical("No image readers are available after filtering, CellProfiler won't be able to load data!")

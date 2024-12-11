@@ -151,35 +151,12 @@ class Image:
         mval = 0.0
         scale = 1.0
         fix_range = False
-        if issubclass(img.dtype.type, numpy.floating):
-            pass
-        elif img.dtype.type is numpy.uint8:
-            scale = math.pow(2.0, 8.0) - 1
-        elif img.dtype.type is numpy.uint16:
-            scale = math.pow(2.0, 16.0) - 1
-        elif img.dtype.type is numpy.uint32:
-            scale = math.pow(2.0, 32.0) - 1
-        elif img.dtype.type is numpy.uint64:
-            scale = math.pow(2.0, 64.0) - 1
-        elif img.dtype.type is numpy.int8:
-            scale = math.pow(2.0, 8.0)
-            mval = -scale / 2.0
-            scale -= 1
-            fix_range = True
-        elif img.dtype.type is numpy.int16:
-            scale = math.pow(2.0, 16.0)
-            mval = -scale / 2.0
-            scale -= 1
-            fix_range = True
-        elif img.dtype.type is numpy.int32:
-            scale = math.pow(2.0, 32.0)
-            mval = -scale / 2.0
-            scale -= 1
-            fix_range = True
-        elif img.dtype.type is numpy.int64:
-            scale = math.pow(2.0, 64.0)
-            mval = -scale / 2.0
-            scale -= 1
+        # unsigend and signed integer types
+        if numpy.issubdtype(img.dtype, numpy.integer):
+            scale = float(numpy.iinfo(img.dtype).max)
+        # signed integer types need shifting
+        if numpy.issubdtype(img.dtype, numpy.signedinteger):
+            mval = float(numpy.iinfo(img.dtype).min)
             fix_range = True
         # Avoid temporaries by doing the shift/scale in place.
         img = img.astype(numpy.float32)

@@ -55,31 +55,27 @@ class BioformatsReader(Reader):
             self._is_file_open = True
 
     def read(self,
+             wants_metadata_rescale=False,
              series=None,
              index=None,
              c=None,
              z=0,
              t=0,
-             rescale=True,
              xywh=None,
-             wants_max_intensity=False,
              channel_names=None,
-             XYWH=None,
              ):
         """Read a single plane from the image file.
+        :param wants_metadata_rescale: if `True`, return a tuple of image and a
+               tuple of (min, max) for range values of image dtype gathered from
+               file metadata; if `False`, returns only the image
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
         :param z: z-stack index
         :param t: time index
         :param series: series for ``.flex`` and similar multi-stack formats
         :param index: if `None`, fall back to ``zct``, otherwise load the indexed frame
-        :param rescale: `True` to rescale the intensity scale to 0 and 1; `False` to
-                  return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
-        :param wants_max_intensity: if `False`, only return the image; if `True`,
-                  return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
-        :param XYWH: a (x, y, w, h) tuple
         """
         self._ensure_file_open()
 
@@ -88,10 +84,10 @@ class BioformatsReader(Reader):
         if series is not None:
             self._reader.setSeries(series)
 
-        if XYWH is not None:
-            assert isinstance(XYWH, tuple) and len(XYWH) == 4, "Invalid XYWH tuple"
-            openBytes_func = lambda x: self._reader.openBytes(x, XYWH[0], XYWH[1], XYWH[2], XYWH[3])
-            width, height = XYWH[2], XYWH[3]
+        if xywh is not None:
+            assert isinstance(xywh, tuple) and len(xywh) == 4, "Invalid xywh tuple"
+            openBytes_func = lambda x: self._reader.openBytes(x, xywh[0], xywh[1], xywh[2], xywh[3])
+            width, height = xywh[2], xywh[3]
         else:
             openBytes_func = self._reader.openBytes
             width, height = self._reader.getSizeX(), self._reader.getSizeY()
@@ -101,34 +97,20 @@ class BioformatsReader(Reader):
         little_endian = self._reader.isLittleEndian()
         if pixel_type == FormatTools.INT8:
             dtype = np.int8
-            scale = 255
         elif pixel_type == FormatTools.UINT8:
             dtype = np.uint8
-            scale = 255
         elif pixel_type == FormatTools.UINT16:
             dtype = '<u2' if little_endian else '>u2'
-            scale = 65535
         elif pixel_type == FormatTools.INT16:
             dtype = '<i2' if little_endian else '>i2'
-            scale = 65535
         elif pixel_type == FormatTools.UINT32:
             dtype = '<u4' if little_endian else '>u4'
-            scale = 2**32
         elif pixel_type == FormatTools.INT32:
             dtype = '<i4' if little_endian else '>i4'
-            scale = 2**32-1
         elif pixel_type == FormatTools.FLOAT:
             dtype = '<f4' if little_endian else '>f4'
-            scale = 1
         elif pixel_type == FormatTools.DOUBLE:
             dtype = '<f8' if little_endian else '>f8'
-            scale = 1
-        max_sample_value = self._reader.getMetadataValue('MaxSampleValue')
-        if max_sample_value is not None:
-            try:
-                scale = scyjava.to_python(max_sample_value)
-            except:
-                LOGGER.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
         if index is not None:
             image = np.frombuffer(openBytes_func(index), dtype)
             if len(image) / height / width in (3,4):
@@ -155,8 +137,8 @@ class BioformatsReader(Reader):
             rdr = ChannelSeparator(self._reader)
             planes = [
                 np.frombuffer(
-                    (rdr.openBytes(rdr.getIndex(z,i,t)) if XYWH is None else
-                      rdr.openBytes(rdr.getIndex(z,i,t), XYWH[0], XYWH[1], XYWH[2], XYWH[3])),
+                    (rdr.openBytes(rdr.getIndex(z,i,t)) if xywh is None else
+                      rdr.openBytes(rdr.getIndex(z,i,t), xywh[0], xywh[1], xywh[2], xywh[3])),
                       dtype
                 ) for i in range(n_planes)]
 
@@ -208,20 +190,26 @@ class BioformatsReader(Reader):
             image = np.frombuffer(openBytes_func(index),dtype)
             image.shape = (height,width)
 
-        if rescale:
-            image = image.astype(np.float32) / float(scale)
-        if wants_max_intensity:
-            return image, scale
+        if wants_metadata_rescale == True:
+            # tiff-specific
+            max_sample_value = self._reader.getMetadataValue("MaxSampleValue")
+            scale = None
+            if max_sample_value is not None:
+                try:
+                    scale = scyjava.to_python(max_sample_value)
+                except:
+                    LOGGER.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
+                    scale = None
+            return image, (0.0, float(scale)) if scale else None
         return image
 
     def read_volume(self,
+                    wants_metadata_rescale=False,
                     series=None,
                     c=None,
                     z=None,
                     t=None,
-                    rescale=True,
                     xywh=None,
-                    wants_max_intensity=False,
                     channel_names=None,
                     ):
         # Whether a volume has planes stored in the z or t axis is often ambiguous.
@@ -245,20 +233,29 @@ class BioformatsReader(Reader):
                 t_range = range(bf_reader.getSizeT())
         else:
             t_range = [t]
+
         image_stack = []
+        # potentially needed for metadata rescale value
+        scale = None
         for z_index, t_index in itertools.product(z_range, t_range):
             data = self.read(
+                wants_metadata_rescale=wants_metadata_rescale,
                 series=series,
                 c=c,
                 z=z_index,
                 t=t_index,
-                rescale=rescale,
-                XYWH=xywh,
-                wants_max_intensity=False,
+                xywh=xywh,
                 channel_names=channel_names,
             )
+            if wants_metadata_rescale == True and type(data) is tuple:
+                scale = data[1]
+                data = data[0]
             image_stack.append(data)
-        return np.stack(image_stack)
+        image_stack = np.stack(image_stack)
+
+        if wants_metadata_rescale == True:
+            return image_stack, scale
+        return image_stack
 
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False):

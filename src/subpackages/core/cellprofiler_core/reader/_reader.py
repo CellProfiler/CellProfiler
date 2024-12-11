@@ -18,8 +18,6 @@ import uuid
 
 from abc import ABC, abstractmethod
 
-import numpy
-
 
 class Reader(ABC):
     """
@@ -65,28 +63,26 @@ class Reader(ABC):
 
     @abstractmethod
     def read(self,
+             wants_metadata_rescale=False,
              series=None,
              index=None,
              c=None,
              z=None,
              t=None,
-             rescale=True,
              xywh=None,
-             wants_max_intensity=False,
              channel_names=None,
              ):
         """Read a single plane from the image file. Mimics the Bioformats API
+        :param wants_metadata_rescale: if `True`, return a tuple of image and a
+               tuple of (min, max) for range values of image dtype gathered from
+               file metadata; if `False`, returns only the image
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
         :param z: z-stack index
         :param t: time index
         :param series: series for ``.flex`` and similar multi-stack formats
         :param index: if `None`, fall back to ``zct``, otherwise load the indexed frame
-        :param rescale: `True` to rescale the intensity scale to 0 and 1; `False` to
-                  return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
-        :param wants_max_intensity: if `False`, only return the image; if `True`,
-                  return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
 
         Should return a data array with channel order X, Y, (C)
@@ -94,27 +90,25 @@ class Reader(ABC):
         return None
 
     def read_volume(self,
+                    wants_metadata_rescale=False,
                     series=None,
                     c=None,
                     z=None,
                     t=None,
-                    rescale=True,
                     xywh=None,
-                    wants_max_intensity=False,
                     channel_names=None,
                     ):
         """Read a series of planes from the image file. Mimics the Bioformats API
+        :param wants_metadata_rescale: if `True`, return a tuple of image and a
+               tuple of (min, max) for range values of image dtype gathered from
+               file metadata; if `False`, returns only the image
         :param c: read from this channel. `None` = read color image if multichannel
             or interleaved RGB.
         :param z: z-stack index
         :param t: time index
         n.b. either z or t should be "None" to specify which channel to read across.
         :param series: series for ``.flex`` and similar multi-stack formats
-        :param rescale: `True` to rescale the intensity scale to 0 and 1; `False` to
-                  return the raw values native to the file.
         :param xywh: a (x, y, w, h) tuple
-        :param wants_max_intensity: if `False`, only return the image; if `True`,
-                  return a tuple of image and max intensity
         :param channel_names: provide the channel names for the OME metadata
 
         Should return a data array with channel order Z, X, Y, (C)
@@ -200,25 +194,3 @@ class Reader(ABC):
         :return: list of setting tuples
         """
         return []
-
-    @staticmethod
-    def find_scale_to_match_bioformats(data):
-        """
-        When we're rescaling we'll usually want to match the output from BioFormats.
-        skimage.exposure.rescale_intensity would normally work beautifully, but
-        python-bioformats did things differently. To rescale with that system we
-        divide by the max possible value determined by the image format.
-
-        This utility function will look at an array and return the correct max value to
-        divide the array by.
-        """
-        if data.dtype in (numpy.int8, numpy.uint8):
-            return 255
-        elif data.dtype in (numpy.int16, numpy.uint16):
-            return 65535
-        elif data.dtype == numpy.int32:
-            return 2 ** 32 - 1
-        elif data.dtype == numpy.uint32:
-            return 2 ** 32
-        else:
-            return 1

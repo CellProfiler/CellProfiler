@@ -20,7 +20,7 @@ import skimage.filters
 from cellprofiler_core.image import Image
 from cellprofiler_core.module import ImageProcessing
 from cellprofiler_core.setting.text import Integer
-
+from cellprofiler.library.modules import gaussian_filter
 
 class GaussianFilter(ImageProcessing):
     category = "Advanced"
@@ -53,7 +53,7 @@ class GaussianFilter(ImageProcessing):
 
         sigma = numpy.divide(self.sigma.value, x.spacing) #library function
 
-        y_data = skimage.filters.gaussian(x_data, sigma=sigma)
+        y_data = gaussian_filter(x_data, sigma=sigma)
 
         y = Image(dimensions=dimensions, image=y_data, parent_image=x)
 

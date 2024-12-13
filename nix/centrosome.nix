@@ -21,8 +21,8 @@ buildPythonPackage {
   src = fetchFromGitHub {
     owner = "afermg";
     repo = "centrosome";
-    rev = "87f142083e010c88666efed341a905b98a3977c3";
-    sha256 = "sha256-bCbsQ67b67N3+TBOorZJV7URCglHrUj5eLaV648dH/w=";
+    rev = "d9313e13c557264f8899f6bac3a5210e4580b40e";
+    sha256 = "sha256-ufCLHpYdC6XeWGIa4TulhuO08+ZtQ8iSZv0uGcRhZkQ=";
   };
   pyproject = true;
   buildInputs = [

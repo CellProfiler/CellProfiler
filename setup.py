@@ -109,11 +109,11 @@ setuptools.setup(
     },
     install_requires=[
         "deprecation",
-        "matplotlib>=3.1.3",
-        "numpy>=1.18.2",
-        "pillow>=7.1.0",
-        "scikit-image>=0.17.2",
-        "scipy>=1.4.1,!=1.11.0",
+        "matplotlib>=3.1.3,<4",
+        "numpy>=1.18.2,<3",
+        "pillow>=7.1.0,<12",
+        "scikit-image>=0.17.2,<=0.24",
+        "scipy>=1.4.1,!=1.11.0,<2",
     ],
     tests_require=[
         "pytest",

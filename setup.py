@@ -17,22 +17,6 @@ except ImportError:
     __cython = False
 
 
-class BuildExtension(setuptools.command.build_ext.build_ext):
-    def build_extensions(self):
-        numpy_includes = pkg_resources.resource_filename("numpy", "core/include")
-
-        for extension in self.extensions:
-            if (
-                    hasattr(extension, "include_dirs")
-                    and numpy_includes not in extension.include_dirs
-            ):
-                extension.include_dirs.append(numpy_includes)
-
-            extension.include_dirs.append("centrosome/include")
-
-        setuptools.command.build_ext.build_ext.build_extensions(self)
-
-
 class Test(setuptools.command.test.test):
     user_options = [("pytest-args=", "a", "Arguments to pass to py.test")]
 

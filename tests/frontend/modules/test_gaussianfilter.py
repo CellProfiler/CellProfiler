@@ -6,7 +6,7 @@ import cellprofiler.modules.gaussianfilter
 instance = cellprofiler.modules.gaussianfilter.GaussianFilter()
 
 
-def test_run(request, image, module, image_set, workspace):
+def test_run(image, module, image_set, workspace):
     module.x_name.value = "example"
 
     module.y_name.value = "GaussianFilter"

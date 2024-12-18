@@ -1,0 +1,17 @@
+[project]
+authors = ["Nodar Gogoberidze <gnodar01@gmail.com>"]
+channels = ["conda-forge"]
+description = "Dev environment for centrosome"
+name = "centrosome"
+platforms = ["osx-64"]
+
+[tasks]
+
+[pypi-dependencies]
+centrosome = { path = ".", extras = ["dev", "test"], editable = true }
+setuptools = ">=75.6.0, <76"
+
+[dependencies]
+python = "3.9.*"
+cython = "<3.0"
+numpy = "<2"

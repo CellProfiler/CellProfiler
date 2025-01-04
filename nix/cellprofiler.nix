@@ -41,7 +41,11 @@
   wxPython_4_2,
   rapidfuzz,
   cp_version,
+  python3Packages,
 }:
+let
+  helper = import ./version_patch.nix { inherit lib python3Packages; };
+in
 buildPythonPackage rec {
   pname = "cellprofiler";
   version = cp_version;
@@ -51,22 +55,7 @@ buildPythonPackage rec {
 
   postPatch = ''
     substituteInPlace pyproject.toml \
-      --replace "docutils==0.15.2" "docutils>=0.15.2" \
-      --replace "wxPython~=4.2.0" "wxPython~=4.2" \
-      --replace-warn "h5py~=3.6.0" "h5py<=3.11.0" \
-      --replace-warn "numpy~=1.24.4" "numpy<=1.26.4" \
-      --replace-warn "scikit-image~=0.20.0" "scikit-image<=0.22.0" \
-      --replace-warn "scipy>=1.9.1,<1.11" "scipy>=1.9.1,<=1.13" \
-      --replace-warn "pyzmq~=22.3.0" "pyzmq<=25.1.2" \
-      --replace-warn "boto3~=1.28.41" "boto3<=1.34.58" \
-      --replace-warn "imageio~=2.31.3" "imageio<=2.34.1" \
-      --replace-warn "inflect~=7.0.0" "inflect<=7.2.0" \
-      --replace-warn "joblib~=1.3.2" "joblib<=1.4.0" \
-      --replace-warn "Pillow~=10.0.0" "Pillow<=10.3.0" \
-      --replace-warn "sentry-sdk>=0.18.0,<=1.31.0" "sentry-sdk>=0.18.0,<=1.45.0" \
-      --replace-warn "scikit-learn~=1.3.0" "scikit-learn<=1.4.2" \
-      --replace-warn "tifffile>=2022.4.8,<2022.4.22" "tifffile>=2022.4.8,<=2024.4.18" \
-      --replace-warn "rapidfuzz~=3.0.0" "rapidfuzz<=3.9.1"
+      ${(helper.patchPackageVersions ../src/frontend/pyproject.toml).subStr}
     echo 'fallback_version = "${version}"' >> pyproject.toml
   '';
 
@@ -79,20 +68,18 @@ buildPythonPackage rec {
     git tag "v${version}"
   '';
 
-  nativeBuildInputs = [git];
+  nativeBuildInputs = [ git ];
   buildInputs = [
     pytest
     setuptools
-    (
-      setuptools-scm.overrideAttrs rec {
-        version = "8.1.0";
-        src = fetchPypi {
-          pname = "setuptools_scm";
-          inherit version;
-          hash = "sha256-Qt6htldxy6k7elFdZaZdgkblYHaKZrkQalksjn8myKc=";
-        };
-      }
-    )
+    (setuptools-scm.overrideAttrs rec {
+      version = "8.1.0";
+      src = fetchPypi {
+        pname = "setuptools_scm";
+        inherit version;
+        hash = "sha256-Qt6htldxy6k7elFdZaZdgkblYHaKZrkQalksjn8myKc=";
+      };
+    })
   ];
 
   propagatedBuildInputs = [

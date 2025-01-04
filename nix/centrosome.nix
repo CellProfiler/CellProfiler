@@ -13,26 +13,26 @@
   numpy,
   scipy,
   scikit-image,
+  python3Packages,
 }:
+let
+  helper = import ./version_patch.nix { inherit lib python3Packages; };
+in
 buildPythonPackage {
   pname = "centrosome";
-  version = "1.2.3";
+  version = "1.3.0";
 
   src = fetchFromGitHub {
     owner = "CellProfiler";
     repo = "centrosome";
-    rev = "5cdaa5a";
-    sha256 = "sha256-cXzji/KQAQ6uY43IDis8WGl1s+Czz/S1BEhuRnYBJjY=";
+    rev = "570b3f8c9568b3ffe1743f3a9fe3b223cc43fcb4";
+    sha256 = "sha256-w0rrMFovPzsg02J8oMZKaSYk7l/kqsNeSY44q1dQ8KI=";
   };
 
   # Relax deps constraints
   postPatch = ''
     substituteInPlace setup.py \
-      --replace "scipy>=1.4.1,<1.11" "scipy>=1.4.1" \
-      --replace "matplotlib>=3.1.3,<3.8" "matplotlib>=3.1.3" \
-      --replace "PyWavelets<1.5" "PyWavelets<=1.6" \
-      --replace "scikit-image>=0.17.2,<0.22.0" "scikit-image>=0.17.2,<=0.22.0" \
-      --replace "contourpy<1.2.0" "contourpy<=1.2.0"
+      ${(helper.patchPackageVersions ../src/subpackages/library/pyproject.toml).subStr}
   '';
 
   buildInputs = [
@@ -48,7 +48,7 @@ buildPythonPackage {
     scipy
     scikit-image
   ];
-  pythonImportsCheck = [];
+  pythonImportsCheck = [ ];
 
   meta = {
     description = "Centrosome";

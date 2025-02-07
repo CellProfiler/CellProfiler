@@ -346,6 +346,9 @@ the two images. Set this setting to “No” to assess no penalty.""",
             )
 
         if self.show_window:
+           
+            workspace.display_data.dimensions = test_image.dimensions
+           
             workspace.display_data.true_positives = data["true_positives"]
 
             workspace.display_data.true_negatives = data["true_negatives"]
@@ -376,7 +379,7 @@ the two images. Set this setting to “No” to assess no penalty.""",
 
     def display(self, workspace, figure):
         """Display the image confusion matrix & statistics"""
-        figure.set_subplots((3, 2))
+        figure.set_subplots((3, 2), dimensions=workspace.display_data.dimensions)
 
         for x, y, image, label in (
             (0, 0, workspace.display_data.true_positives, "True positives"),

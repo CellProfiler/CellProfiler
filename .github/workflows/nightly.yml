@@ -1,0 +1,44 @@
+name: Deploy Nightly Packages to PyPI
+jobs:
+  deploy-nightly:
+    runs-on: ubuntu-latest
+    env:
+      TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+      TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        # need to get git tags for setuptools-scm
+        fetch-depth: 0
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install build twine toml
+    - name: Prepare nightly config
+      run: |
+        python ${{ github.workspace }}/scripts/nightly_build.py
+    - name: Upload Library
+      working-directory: ${{ github.workspace }}/src/subpackages/library/
+      run: |
+        python -m build
+        twine upload dist/*
+    - name: Upload Core
+      working-directory: ${{ github.workspace }}/src/subpackages/core/
+      run: |
+        python -m build
+        twine upload dist/*
+    - name: Upload Frontend
+      working-directory: ${{ github.workspace }}/src/frontend/
+      run: |
+        python -m build
+        twine upload dist/*
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:

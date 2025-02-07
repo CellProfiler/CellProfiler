@@ -58,20 +58,20 @@ classifiers = [
 dependencies = [
     "cellprofiler-library>=5.dev",
     "boto3>=1.12.28",
-    "centrosome~=1.2.2",
-    "docutils==0.15.2",
+    "centrosome>=1.3.0",
+    "docutils>=0.15.2",
     "future>=0.18.2",
     "fsspec>=2021.11.0",
-    "h5py~=3.6.0",
+    "h5py>=3.7.0",
     "lxml>=4.6.4",
     "matplotlib>=3.1.3,<4",
-    "numpy~=1.24.4",
+    "numpy>=1.24.4,<2",
     "psutil>=5.9.5",
-    "pyzmq~=22.3.0",
-    "scikit-image~=0.20.0",
+    "pyzmq>=22.3.0",
+    "scikit-image>=0.20.0",
     "scipy>=1.9.1,<1.11",
     "scyjava>=1.9.1",
-    "zarr~=2.16.1",
+    "zarr>=2.16.1",
     "google-cloud-storage~=2.10.0",
     "packaging>=20.0",
 ]
@@ -113,3 +113,8 @@ namespaces = false
 root = "../../.."
 # run pip install -e to get latest
 version_file = "cellprofiler_core/_version.py"
+# local scheme complies with PEP 440
+# https://peps.python.org/pep-0440/#local-version-identifiers%3E
+# but not accepted by TestPyPI and PyPi
+# https://setuptools-scm.readthedocs.io/en/stable/usage/#default-versioning-scheme
+local_scheme = "no-local-version"

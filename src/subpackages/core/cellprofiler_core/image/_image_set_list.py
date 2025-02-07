@@ -24,7 +24,7 @@ class ImageSetList:
         provider - an instance of AbstractImageProvider
         """
         for image_set in self.__image_sets:
-            image_set.providers.append(provider)
+            image_set.add_provider(provider)
 
     def count(self):
         return len(self.__image_sets)

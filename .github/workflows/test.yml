@@ -4,10 +4,11 @@ jobs:
     name: Install and test Cellprofiler
     strategy:
       matrix:
-        # macos 12 as of 2023-12-20:
         # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
-        os: [macos-latest]
-        python-version: [ 3.9 ]
+        # https://github.com/actions/runner-images/tree/main
+        # ensure macos tag uses architecture identical to setup-python (x64 vs arm)
+        os: [macos-13]
+        python-version: [3.9]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     if: github.event.pull_request.draft == false
@@ -44,7 +45,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: '11'
+          java-version: "11"
           java-package: jdk
           architecture: x64
       - name: Mac - Install and setup mysql
@@ -52,7 +53,8 @@ jobs:
         env:
           LC_ALL: "en_US.UTF-8"
         run: |
-          brew install mysql
+          brew install mysql@8.4
+          brew link mysql@8.4 --force
           mysql.server start
           mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
       - name: Install cellprofiler
@@ -62,6 +64,9 @@ jobs:
           pip install -e src/subpackages/library
           pip install -e src/subpackages/core
           pip install -e src/frontend[test]
+      - name: Get all packages
+        run: |
+          pip freeze --all
       - name: Run tests
         run: |
           pytest ${{ github.workspace }}/tests/frontend
@@ -71,8 +76,8 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        os: [macos-latest]
-        python-version: [ 3.9 ]
+        os: [macos-13]
+        python-version: [3.9]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     if: github.event.pull_request.draft == false
@@ -106,7 +111,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: '11'
+          java-version: "11"
           java-package: jdk
           architecture: x64
       - name: Mac - Install and setup mysql
@@ -114,7 +119,8 @@ jobs:
         env:
           LC_ALL: "en_US.UTF-8"
         run: |
-          brew install mysql
+          brew install mysql@8.4
+          brew link mysql@8.4 --force
           mysql.server start
           mysql --host=$CP_MYSQL_TEST_HOST --user=$CP_MYSQL_TEST_USER --execute="CREATE DATABASE $CP_MYSQL_TEST_DB;" --skip-password
       - name: Install core
@@ -126,15 +132,16 @@ jobs:
       - name: Run Tests
         timeout-minutes: 10
         run: |
-          pytest --tb=long --show-capture=all -vvv --color=yes --code-highlight=yes --timeout=300 -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
+          # add -rP if you want to see debug for all tests, not just failed ones
+          pytest -v --exitfirst --disable-warnings -o log_cli_level=10 --tb=long --show-capture=all --capture=sys --color=yes --code-highlight=yes --timeout=60 -k 'not test_load_objects and not test_load_single_object' ${{ github.workspace }}/tests/core
 
   test-library:
     name: Install and test Library
     strategy:
       max-parallel: 4
       matrix:
-        os: [macos-latest]
-        python-version: [ 3.9 ]
+        os: [macos-13]
+        python-version: [3.9]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     if: github.event.pull_request.draft == false
@@ -173,5 +180,5 @@ on:
     types: [opened, reopened, synchronize, ready_for_review, review_requested]
   push:
     branches:
-      - 'main'
+      - "main"
   workflow_dispatch:

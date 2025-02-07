@@ -11,7 +11,8 @@ class URLImage(FileImage):
         self,
         name,
         url,
-        rescale=True,
+        rescale_range=None,
+        metadata_rescale=False,
         series=None,
         index=None,
         channel=None,
@@ -27,7 +28,18 @@ class URLImage(FileImage):
             pathname = ""
             filename = url
         super(URLImage, self).__init__(
-            name, pathname, filename, rescale, series, index, channel, volume, spacing, z=z, t=t
+            name,
+            pathname,
+            filename,
+            rescale_range=rescale_range,
+            metadata_rescale=metadata_rescale,
+            series=series,
+            index=index,
+            channel=channel,
+            volume=volume,
+            spacing=spacing,
+            z=z,
+            t=t
         )
         self.url = url
 

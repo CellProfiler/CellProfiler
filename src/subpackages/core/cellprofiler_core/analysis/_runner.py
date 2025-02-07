@@ -100,7 +100,7 @@ class Runner:
         # should have jobserver() call load_measurements_from_buffer() rather
         # than interface() doing so.  Currently, passing measurements in this
         # way seems like it might be buggy:
-        # http://code.google.com/p/h5py/issues/detail?id=244
+        # https://github.com/h5py/h5py/issues/244
         self.received_measurements_queue = queue.Queue(maxsize=10)
 
         self.shared_dicts = None
@@ -134,7 +134,7 @@ class Runner:
             target=self.interface,
             args=(start_signal,),
             kwargs=dict(overwrite=overwrite),
-            name="AnalysisRunner.interface",
+            name="AnalysisRunner.interface thread",
         )
         #
         # Wait for signal on interface started.
@@ -143,7 +143,7 @@ class Runner:
         self.jobserver_thread = start_daemon_thread(
             target=self.jobserver,
             args=(start_signal, ),
-            name="AnalysisRunner.jobserver",
+            name="AnalysisRunner.jobserver thread",
         )
         #
         # Wait for signal on jobserver started.
@@ -627,7 +627,13 @@ class Runner:
             self.interface_work_cv.notify()
 
     def queue_received_measurements(self, image_set_numbers, measurements):
+        did_block = False
+        if self.received_measurements_queue.full():
+            did_block = True
+            LOGGER.debug("Received measurements queue is full, blocking until space is available")
         self.received_measurements_queue.put((image_set_numbers, measurements))
+        if did_block:
+            LOGGER.debug("Received measurements queue no longer blocked")
         # notify interface thread
         with self.interface_work_cv:
             self.interface_work_cv.notify()
@@ -702,6 +708,12 @@ class Runner:
                 )
 
             def run_logger(workR, widx):
+                # this thread shuts itself down by reading from worker's stdout
+                # which either reads content from stdout or blocks until it can do so
+                # when the worker is shut down, empty byte string is returned continuously
+                # which evaluates as None so the break is hit
+                # I don't really like this approach; we should just shut it down with the other
+                # threads explicitly
                 while True:
                     try:
                         line = workR.stdout.readline()
@@ -723,16 +735,19 @@ class Runner:
                         break
 
             start_daemon_thread(
-                target=run_logger, args=(worker, idx), name="worker stdout logger"
+                target=run_logger, args=(worker, idx), name="worker stdout logger thread"
             )
 
             self.workers += [worker]
 
     def stop_workers(self):
         if self.boundary is not None:
+            LOGGER.debug("joining boundary")
             self.boundary.join()
+            LOGGER.debug("destroying boundary zmq context")
             self.boundary.zmq_context.destroy(0)
             self.boundary = None
         for worker in self.workers:
+            LOGGER.debug("waiting on worker")
             worker.wait()
         self.workers = []

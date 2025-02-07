@@ -60,30 +60,29 @@ classifiers = [
 dependencies = [
     "cellprofiler-library>=5.dev",
     "cellprofiler-core>=5.dev",
-    "boto3~=1.28.41",
-    "centrosome==1.2.2",
+    "boto3>=1.28.41",
+    "centrosome>=1.3.0",
     "docutils==0.15.2",
-    "h5py~=3.6.0",
-    "imageio~=2.31.3",
-    "inflect~=7.0.0",
-    "Jinja2~=3.1.2",
-    "joblib~=1.3.2",
-    "mahotas~=1.4.13",
+    "h5py>=3.7.0",
+    "imageio>=2.31.3",
+    "Jinja2>=3.1.2",
+    "joblib>=1.3.2",
+    "mahotas>=1.4.13",
     "matplotlib>=3.1.3,<4",
-    "mysqlclient~=2.2.3",
-    "numpy~=1.24.4",
-    "Pillow~=10.0.0",
-    "pyzmq~=22.3.0",
-    "sentry-sdk>=0.18.0,<=1.31.0",
-    "requests~=2.31.0",
-    "scikit-image~=0.20.0",
-    "scikit-learn~=1.3.0",
+    "mysqlclient>=2.2.3",
+    "numpy>=1.24.4,<2",
+    "Pillow>=10.0.0",
+    "pyzmq>=22.3.0",
+    "sentry-sdk~=2.8.0",
+    "requests>=2.31.0",
+    "scikit-image>=0.20.0",
+    "scikit-learn>=1.3.0",
     "scipy>=1.9.1,<1.11",
     "scyjava>=1.9.1",
-    "six~=1.16.0",
-    "tifffile>=2022.4.8,<2022.4.22",
-    "wxPython==4.2.0",
-    "rapidfuzz~=3.0.0",
+    "six>=1.16.0",
+    "tifffile>=2022.4.8",
+    "wxPython>=4.2.0",
+    "rapidfuzz>=3.0.0",
     "packaging>=20.0",
 ]
 dynamic = ["version"]
@@ -130,5 +129,8 @@ namespaces = true
 root = "../.."
 # run pip install -e to get latest
 version_file = "cellprofiler/_version.py"
-# disabled, but may be useful in future, for nightly release to TestPyPI and PyPI
-# local_scheme = "no-local-version"
+# local scheme complies with PEP 440
+# https://peps.python.org/pep-0440/#local-version-identifiers%3E
+# but not accepted by TestPyPI and PyPi
+# https://setuptools-scm.readthedocs.io/en/stable/usage/#default-versioning-scheme
+local_scheme = "no-local-version"

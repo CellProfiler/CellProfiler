@@ -1,6 +1,6 @@
-name: Deploy Packages to PyPI
+name: Deploy Production Packages to PyPI
 jobs:
-  deploy:
+  deploy-production:
     runs-on: ubuntu-latest
     env:
       TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}

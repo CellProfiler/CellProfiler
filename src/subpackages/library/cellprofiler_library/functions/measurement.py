@@ -30,8 +30,11 @@ def measure_image_overlap_statistics(
     if mask is None:
         mask = np.ones_like(ground_truth_image, bool)
 
+    orig_shape = ground_truth_image.shape
+    
     # Covert 3D image to 2D long
     if ground_truth_image.ndim > 2:
+        
         ground_truth_image = ground_truth_image.reshape(
             -1, ground_truth_image.shape[-1]
         )
@@ -114,10 +117,10 @@ def measure_image_overlap_statistics(
     )
 
     data = {
-        "true_positives": true_positives,
-        "true_negatives": true_negatives,
-        "false_positives": false_positives,
-        "false_negatives": false_negatives,
+        "true_positives": true_positives.reshape(orig_shape),
+        "true_negatives": true_negatives.reshape(orig_shape),
+        "false_positives": false_positives.reshape(orig_shape),
+        "false_negatives": false_negatives.reshape(orig_shape),
         "Ffactor": f_factor,
         "Precision": precision,
         "Recall": recall,

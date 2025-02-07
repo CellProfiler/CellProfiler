@@ -14,10 +14,7 @@ import cellprofiler_core.modules.injectimage
 import cellprofiler.modules.rescaleintensity
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
-import cellprofiler_core.preferences
 import cellprofiler_core.workspace
-
-cellprofiler_core.preferences.set_headless()
 
 INPUT_NAME = "input"
 OUTPUT_NAME = "output"

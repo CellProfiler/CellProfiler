@@ -536,3 +536,31 @@ def gaussian_filter(image, sigma):
         channel_axis = None
     y_data = skimage.filters.gaussian(image, sigma=sigma, channel_axis=channel_axis)
     return y_data
+
+def findmaxima(image, 
+               min_distance=1, 
+               threshold_abs=None, 
+               mask_image=None
+               ):
+
+    '''
+    FindMaxima isolates local peaks of high intensity from an image.
+    The returned image will feature single pixels at each position where a peak of intensity was found 
+    in the input image. This can be useful for finding particular points of interest, identifying very small objects or 
+    generating markers for segmentation with the Watershed module.
+    '''
+
+    if threshold_abs is None and mask_image is not None: 
+        mask_image = mask_image.astype(bool) #defensive in case what they pass is a segmentation 
+        image[~mask_image] = 0 # mask out regions outside the mask
+
+    # Step 2: Call peak_local_max
+    maxima_coords = skimage.feature.peak_local_max(
+        image,
+        min_distance=min_distance,
+        threshold_abs=threshold_abs
+    )
+
+    y_data = numpy.zeros(image.shape, dtype=bool)
+    y_data[tuple(maxima_coords.T)] = True
+    return y_data

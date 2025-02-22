@@ -32,6 +32,7 @@ from cellprofiler_core.setting.choice import Choice
 from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
 from cellprofiler_core.setting.text import Integer, Float
 from cellprofiler_core.utilities.core.object import overlay_labels
+from cellprofiler_library.modules import findmaxima
 
 MODE_THRESHOLD = "Threshold"
 MODE_MASK = "Mask"
@@ -159,22 +160,24 @@ images.
 
     def run(self, workspace):
 
-        x_name = self.x_name.value
+        x_name = self.x_name.value # get name of input image
 
-        y_name = self.y_name.value
+        y_name = self.y_name.value # get name of output image
 
-        images = workspace.image_set
+        images = workspace.image_set # accesses image set in current workspace
 
-        x = images.get_image(x_name)
+        x = images.get_image(x_name) # retrieves input image
 
-        dimensions = x.dimensions
+        dimensions = x.dimensions # get dimensions of input image
 
-        x_data_orig = x.pixel_data
+        x_data_orig = x.pixel_data # get pixel data of input image, which will be the raw data
 
-        x_data = x_data_orig.copy()
+        x_data = x_data_orig.copy() # creates a copy of the pixel data of the input image that will be modified later
 
-        th_abs = None
+        # Background exclusion -- optional
+        th_abs = None #threshold value for intensity when threshold value is selected
 
+        # apply threshold, mask, or objects depending on user input
         if self.exclude_mode.value == MODE_THRESHOLD:
             th_abs = self.min_intensity.value
         elif self.exclude_mode.value == MODE_MASK:
@@ -187,19 +190,21 @@ images.
         else:
             raise NotImplementedError("Invalid background method choice")
 
-        maxima_coords = peak_local_max(
-            x_data,
-            min_distance=self.min_distance.value,
-            threshold_abs=th_abs,
+        maxima_coords = peak_local_max(   # function from skimage
+            x_data, # input image
+            min_distance=self.min_distance.value, # minimum distane between two maxima
+            threshold_abs=th_abs, #minimum intensity to be considered a peak, if threshold option was used
         )
-        y_data = numpy.zeros(x_data.shape, dtype=bool)
-        y_data[tuple(maxima_coords.T)] = True
+        y_data = numpy.zeros(x_data.shape, dtype=bool) #create output binary image
+        y_data[tuple(maxima_coords.T)] = True # transpose coordinates of the local maxima to match the requirements of NumPy
 
         if self.label_maxima:
-            y_data = scipy.ndimage.label(y_data)[0]
+            y_data = scipy.ndimage.label(y_data)[0] #if labelself.label_maxima is True, apply labels to output binary image
 
+        # new image y is created using dimensions of the original image, the binary image (y_data) containing the local maxima, and the original image (x) as the parent image
         y = Image(dimensions=dimensions, image=y_data, parent_image=x, convert=False)
-
+        
+        #store the output image in the workspace using y_name
         images.add(y_name, y)
 
         if self.show_window:

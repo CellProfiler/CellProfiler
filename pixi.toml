@@ -74,6 +74,7 @@ ipykernel = "*"
 ruff = "*"
 
 [environments]
+default = ["java", "mysql"]
 dev = ["mod", "java", "mysql"]
 profile = ["mod", "java", "mysql", "profile"]
 hack = ["mod", "java", "mysql", "jupyter", "static"]

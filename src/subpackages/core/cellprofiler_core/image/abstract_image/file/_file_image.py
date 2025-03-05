@@ -126,6 +126,8 @@ class FileImage(AbstractImage):
             raise ValueError(f"rescale_range must be a tuple, got {type(rescale_range)}")
         if len(rescale_range) != 2:
             raise ValueError("rescale_range must be a tuple of length 2")
+        if rescale_range == NO_RESCALE:
+            return
         if not isinstance(rescale_range[0], (float, int)):
             raise ValueError("rescale_range must be a tuple of floats")
         if not isinstance(rescale_range[1], (float, int)):

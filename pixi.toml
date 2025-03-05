@@ -68,7 +68,12 @@ memray = "*"
 [feature.jupyter.dependencies]
 ipykernel = "*"
 
+[feature.static.dependencies]
+
+[feature.static.pypi-dependencies]
+ruff = "*"
+
 [environments]
 dev = ["mod", "java", "mysql"]
 profile = ["mod", "java", "mysql", "profile"]
-hack = ["mod", "java", "mysql", "jupyter"]
+hack = ["mod", "java", "mysql", "jupyter", "static"]

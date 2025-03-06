@@ -38,6 +38,7 @@ builtin_modules = {
     "identifyobjectsingrid": "IdentifyObjectsInGrid",
     "identifyobjectsmanually": "IdentifyObjectsManually",
     "identifyprimaryobjects": "IdentifyPrimaryObjects",
+    "identifyprimaryobjects3d": "IdentifyPrimaryObjects3d",
     "identifysecondaryobjects": "IdentifySecondaryObjects",
     "identifytertiaryobjects": "IdentifyTertiaryObjects",
     "imagemath": "ImageMath",

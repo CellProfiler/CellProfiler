@@ -39,6 +39,9 @@ h5py = "<3.11"
 [target.osx.dependencies]
 "python.app" = ">=1.4,<2"
 
+[target.osx-arm64.dependencies]
+wxPython = "==4.2.1"
+
 # enable this to avoid building wxPython wheel on Linux
 # disable to build wheel from scratch
 # url must be changed to match linux distro: https://extras.wxpython.org/wxPython4/extras/linux/gtk3/

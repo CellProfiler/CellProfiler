@@ -89,7 +89,10 @@ from cellprofiler_core.setting.subscriber import (
     LabelListSubscriber,
     ImageListSubscriber,
 )
+from cellprofiler_core.setting import SettingsGroup
 from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
@@ -150,6 +153,8 @@ class MeasureColocalization(Module):
 Select the objects to be measured.""",
         )
 
+        self.thresholds_list = []
+
         self.thr = Float(
             "Set threshold as percentage of maximum intensity for the images",
             15,
@@ -184,6 +189,14 @@ All methods measure correlation on a pixel by pixel basis.
         )
 
         self.spacer = Divider(line=True)
+        self.spacer_2 = Divider(line=True)
+        self.spacer_3 = Divider(line=True)
+        self.spacer_4 = Divider(line=True)
+        self.wants_channel_thresholds = Binary(
+            "Enable channel specific thresholds?",
+            False,
+            doc="""TODO""", #TODO write docstring
+        )
 
         self.do_all = Binary(
             "Run all metrics?",
@@ -268,6 +281,38 @@ Alternatively, you may want to disable these specific measurements entirely
 (available when "*Run All Metrics?*" is set to "*No*").
 """
         )
+        self.add_threshold_button = DoSomething("", "Add another threshold", self.add_threshold)
+
+
+    def add_threshold(self, removable=True):
+        group = SettingsGroup()
+        group.removable = removable
+        
+        group.append(
+            "image_name",
+            ImageSubscriber(
+                "Select the image",
+                "None",
+                doc="""\
+Select the image that you want to use for this operation.""",
+            ),
+        )
+        group.append(
+            "threshold_for_channel",
+            Float(
+                "Threshold for image",
+                15.0,
+                minval=0.0,
+                maxval=99.0,
+                doc="""TODO""", #TODO
+            ),
+        )
+
+        if removable:
+            group.append("remover", RemoveSettingButton("", "Remove this image", self.thresholds_list, group))
+        group.append("divider", Divider())
+        self.thresholds_list.append(group)
+        
 
     def settings(self):
         """Return the settings to be saved in the pipeline"""
@@ -283,7 +328,10 @@ Alternatively, you may want to disable these specific measurements entirely
             self.do_overlap,
             self.do_costes,
             self.fast_costes,
+            self.wants_channel_thresholds # TODO move this to the right plave in the list and add a hidden counts variable to track the number of thresholds
         ]
+        for threshold in self.thresholds_list: # TODO move this to the right place in the list
+            result += [threshold.threshold_for_channel, threshold.image_name]
         return result
 
     def visible_settings(self):
@@ -291,8 +339,15 @@ Alternatively, you may want to disable these specific measurements entirely
             self.images_list,
             self.spacer,
             self.thr,
-            self.images_or_objects,
+            self.wants_channel_thresholds,
         ]
+        if self.wants_channel_thresholds.value:
+            for threshold in self.thresholds_list:
+                result += [threshold.image_name, threshold.threshold_for_channel]
+                if threshold.removable:
+                    result += [threshold.remover, Divider(line=False)]
+            result += [self.add_threshold_button, self.spacer_4]
+        result += [self.images_or_objects,]
         if self.wants_objects():
             result += [self.objects_list]
         result += [self.do_all]

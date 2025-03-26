@@ -89,7 +89,10 @@ from cellprofiler_core.setting.subscriber import (
     LabelListSubscriber,
     ImageListSubscriber,
 )
+from cellprofiler_core.setting import SettingsGroup, HiddenCount
 from cellprofiler_core.setting.text import Float
+from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
@@ -97,6 +100,12 @@ from scipy.linalg import lstsq
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
 M_IMAGES_AND_OBJECTS = "Both"
+
+# The number of settings per threshold
+THRESHOLD_SETTING_COUNT = 2
+
+# The number of settings other than the threshold settings
+FIXED_SETTING_COUNT = 13
 
 M_FAST = "Fast"
 M_FASTER = "Faster"
@@ -130,7 +139,7 @@ F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 class MeasureColocalization(Module):
     module_name = "MeasureColocalization"
     category = "Measurement"
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     def create_settings(self):
         """Create the initial settings for the module"""
@@ -149,6 +158,8 @@ class MeasureColocalization(Module):
 
 Select the objects to be measured.""",
         )
+
+        self.thresholds_list = []
 
         self.thr = Float(
             "Set threshold as percentage of maximum intensity for the images",
@@ -184,6 +195,15 @@ All methods measure correlation on a pixel by pixel basis.
         )
 
         self.spacer = Divider(line=True)
+        self.spacer_2 = Divider(line=True)
+        self.spacer_3 = Divider(line=True)
+        self.spacer_4 = Divider(line=True)
+        self.thresholds_count = HiddenCount(self.thresholds_list)
+        self.wants_channel_thresholds = Binary(
+            "Enable channel specific thresholds?",
+            False,
+            doc="""TODO""", #TODO write docstring
+        )
 
         self.do_all = Binary(
             "Run all metrics?",
@@ -268,12 +288,49 @@ Alternatively, you may want to disable these specific measurements entirely
 (available when "*Run All Metrics?*" is set to "*No*").
 """
         )
+        self.add_threshold_button = DoSomething("", "Add another threshold", self.add_threshold)
+
+
+    def add_threshold(self, removable=True):
+        group = SettingsGroup()
+        group.removable = removable
+        
+        group.append(
+            "image_name",
+            ImageSubscriber(
+                "Select the image",
+                "None",
+                doc="""\
+Select the image that you want to use for this operation.""",
+            ),
+        )
+        group.append(
+            "threshold_for_channel",
+            Float(
+                "Threshold for image",
+                15.0,
+                minval=0.0,
+                maxval=99.0,
+                doc="""TODO""", #TODO
+            ),
+        )
+
+        if removable:
+            group.append("remover", RemoveSettingButton("", "Remove this image", self.thresholds_list, group))
+        group.append("divider", Divider())
+        self.thresholds_list.append(group)
+        
 
     def settings(self):
         """Return the settings to be saved in the pipeline"""
         result = [
             self.images_list,
-            self.thr,
+            self.thr
+            ]
+        result += [self.wants_channel_thresholds, self.thresholds_count]
+        for threshold in self.thresholds_list:
+            result += [threshold.image_name, threshold.threshold_for_channel]
+        result += [
             self.images_or_objects,
             self.objects_list,
             self.do_all,
@@ -284,6 +341,7 @@ Alternatively, you may want to disable these specific measurements entirely
             self.do_costes,
             self.fast_costes,
         ]
+        
         return result
 
     def visible_settings(self):
@@ -291,8 +349,16 @@ Alternatively, you may want to disable these specific measurements entirely
             self.images_list,
             self.spacer,
             self.thr,
-            self.images_or_objects,
+            self.wants_channel_thresholds,
         ]
+        if self.wants_channel_thresholds.value:
+            for threshold in self.thresholds_list:
+                result += [threshold.image_name, threshold.threshold_for_channel]
+                if threshold.removable:
+                    result += [threshold.remover, Divider(line=False)]
+            result += [self.add_threshold_button, self.spacer_4]
+        
+        result += [self.images_or_objects,]
         if self.wants_objects():
             result += [self.objects_list]
         result += [self.do_all]
@@ -313,12 +379,24 @@ Alternatively, you may want to disable these specific measurements entirely
         help_settings = [
             self.images_or_objects,
             self.thr,
+            # TODO complete this list with newly added thresholds
             self.images_list,
             self.objects_list,
             self.do_all,
             self.fast_costes,
         ]
         return help_settings
+    
+    def prepare_settings(self, setting_values):
+        # TODO: understand what's going on here
+        value_count = len(setting_values)
+        assert ((value_count - FIXED_SETTING_COUNT)  % THRESHOLD_SETTING_COUNT == 0)
+        threshold_count = (value_count - FIXED_SETTING_COUNT) // THRESHOLD_SETTING_COUNT
+        while len(self.thresholds_list) > threshold_count:
+            self.thresholds_list.pop()
+        while len(self.thresholds_list) < threshold_count:
+            self.add_threshold(removable=True)
+
 
     def get_image_pairs(self):
         """Yield all permutations of pairs of images to correlate
@@ -1608,6 +1686,14 @@ Alternatively, you may want to disable these specific measurements entirely
             # Add costes mode switch
             setting_values += [M_FASTER]
             variable_revision_number = 5
+
+        if variable_revision_number == 5:
+            """
+            add 'No' for custom thresholds and '0' for custom threshold counts
+            """
+            setting_values = setting_values[:2] + ['No', '0'] + setting_values[2:]
+            variable_revision_number = 6
+
         return setting_values, variable_revision_number
 
     def volumetric(self):

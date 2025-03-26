@@ -89,7 +89,7 @@ from cellprofiler_core.setting.subscriber import (
     LabelListSubscriber,
     ImageListSubscriber,
 )
-from cellprofiler_core.setting import SettingsGroup
+from cellprofiler_core.setting import SettingsGroup, HiddenCount
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
@@ -100,6 +100,12 @@ from scipy.linalg import lstsq
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
 M_IMAGES_AND_OBJECTS = "Both"
+
+# The number of settings per threshold
+THRESHOLD_SETTING_COUNT = 2
+
+# The number of settings other than the threshold settings
+FIXED_SETTING_COUNT = 13
 
 M_FAST = "Fast"
 M_FASTER = "Faster"
@@ -133,7 +139,7 @@ F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
 class MeasureColocalization(Module):
     module_name = "MeasureColocalization"
     category = "Measurement"
-    variable_revision_number = 5
+    variable_revision_number = 6
 
     def create_settings(self):
         """Create the initial settings for the module"""
@@ -192,6 +198,7 @@ All methods measure correlation on a pixel by pixel basis.
         self.spacer_2 = Divider(line=True)
         self.spacer_3 = Divider(line=True)
         self.spacer_4 = Divider(line=True)
+        self.thresholds_count = HiddenCount(self.thresholds_list)
         self.wants_channel_thresholds = Binary(
             "Enable channel specific thresholds?",
             False,
@@ -318,7 +325,12 @@ Select the image that you want to use for this operation.""",
         """Return the settings to be saved in the pipeline"""
         result = [
             self.images_list,
-            self.thr,
+            self.thr
+            ]
+        result += [self.wants_channel_thresholds, self.thresholds_count]
+        for threshold in self.thresholds_list:
+            result += [threshold.image_name, threshold.threshold_for_channel]
+        result += [
             self.images_or_objects,
             self.objects_list,
             self.do_all,
@@ -328,10 +340,8 @@ Select the image that you want to use for this operation.""",
             self.do_overlap,
             self.do_costes,
             self.fast_costes,
-            self.wants_channel_thresholds # TODO move this to the right plave in the list and add a hidden counts variable to track the number of thresholds
         ]
-        for threshold in self.thresholds_list: # TODO move this to the right place in the list
-            result += [threshold.threshold_for_channel, threshold.image_name]
+        
         return result
 
     def visible_settings(self):
@@ -347,6 +357,7 @@ Select the image that you want to use for this operation.""",
                 if threshold.removable:
                     result += [threshold.remover, Divider(line=False)]
             result += [self.add_threshold_button, self.spacer_4]
+        
         result += [self.images_or_objects,]
         if self.wants_objects():
             result += [self.objects_list]
@@ -368,12 +379,24 @@ Select the image that you want to use for this operation.""",
         help_settings = [
             self.images_or_objects,
             self.thr,
+            # TODO complete this list with newly added thresholds
             self.images_list,
             self.objects_list,
             self.do_all,
             self.fast_costes,
         ]
         return help_settings
+    
+    def prepare_settings(self, setting_values):
+        # TODO: understand what's going on here
+        value_count = len(setting_values)
+        assert ((value_count - FIXED_SETTING_COUNT)  % THRESHOLD_SETTING_COUNT == 0)
+        threshold_count = (value_count - FIXED_SETTING_COUNT) // THRESHOLD_SETTING_COUNT
+        while len(self.thresholds_list) > threshold_count:
+            self.thresholds_list.pop()
+        while len(self.thresholds_list) < threshold_count:
+            self.add_threshold(removable=True)
+
 
     def get_image_pairs(self):
         """Yield all permutations of pairs of images to correlate
@@ -1663,6 +1686,14 @@ Select the image that you want to use for this operation.""",
             # Add costes mode switch
             setting_values += [M_FASTER]
             variable_revision_number = 5
+
+        if variable_revision_number == 5:
+            """
+            add 'No' for custom thresholds and '0' for custom threshold counts
+            """
+            setting_values = setting_values[:2] + ['No', '0'] + setting_values[2:]
+            variable_revision_number = 6
+
         return setting_values, variable_revision_number
 
     def volumetric(self):

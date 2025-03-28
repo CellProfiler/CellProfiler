@@ -16,8 +16,26 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
     """Navigation toolbar for EditObjectsDialog"""
 
     def __init__(self, canvas, want_measure=False):
+
+        # list of toolitems to add to the toolbar, format is:
+        # (
+        #   text, # the text of the button (often not visible to users)
+        #   tooltip_text, # the tooltip shown on hover (where possible)
+        #   image_file, # name of the image for the button (without the extension)
+        #   name_of_method, # name of the method in NavigationToolbar2 to call
+        # )
+        # NOTE: must come before super so we overload it
+        #self.toolitems = tuple(self.toolitems) + (
+        #    ('Tile Left', 'tile left', 'help', 'tile_left'),
+        #    ('Tile Right', 'tile right', 'help', 'tile_right'),
+        #    ('Tile Up', 'tile up', 'help', 'tile_up'),
+        #    ('Tile Down', 'tile down', 'help', 'tile_down'),
+        #    ('Pyramid Up', 'pyramid up', 'help', 'pyramid_up'),
+        #    ('Pyramid Down', 'pyramid down', 'help', 'pyramid_down'),
+        #)
         super(NavigationToolbar, self).__init__(canvas)
         self.volumetric = False
+        self.tiled = False
         if want_measure:
             self.bmp_error = wx.Bitmap(BMP_MEASURE)
             self.wx_ids["Measure"] = wx.NewId()
@@ -31,6 +49,62 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
             )
             self.InsertTool(6, self.measure_tool)
         self.Realize()
+
+    # len(args) == 0, the wx event
+    def tile_left(self, *args):
+        print("TILE LEFT OP")
+    def tile_right(self, *args):
+        print("TILE RIGHT OP")
+    def tile_up(self, *args):
+        print("TILE UP OP")
+    def tile_down(self, *args):
+        print("TILE DOWN OP")
+    def pyramid_up(self, *args):
+        print("PYRAMID UP OP")
+    def pyramid_down(self, *args):
+        print("PYRAMID DOWN OP")
+
+    def set_tiled(self):
+        if not self.tiled:
+            self.tilelabel = wx.StaticText(self, label="Tiles:")
+            self.left_tile = wx.Button(self, label="<", size=wx.Size(22,22))
+            self.right_tile = wx.Button(self, label=">", size=wx.Size(22,22))
+            self.up_tile = wx.Button(self, label="^", size=wx.Size(22,22))
+            self.down_tile = wx.Button(self, label="v", size=wx.Size(22,22))
+
+            self.pyramidlabel = wx.StaticText(self, label="Pyramid Levels:")
+            self.up_pyramid = wx.Button(self, label="^", size=wx.Size(22,22))
+            self.down_pyramid = wx.Button(self, label="v", size=wx.Size(22,22))
+
+            self.AddSeparator()
+            self.AddStretchableSpace()
+
+            pos = self.GetToolsCount()
+
+            self.InsertControl(pos, self.tilelabel, "Tile")
+            self.InsertControl(pos + 1, self.left_tile, "Tile Left")
+            self.InsertControl(pos + 2, self.right_tile, "Tile Right")
+            self.InsertControl(pos + 3, self.up_tile, "Tile Up")
+            self.InsertControl(pos + 4, self.down_tile, "Tile Down")
+            self.InsertControl(pos + 5, self.pyramidlabel, "Pyramid")
+            self.InsertControl(pos + 6, self.up_pyramid, "Pyramid Up")
+            self.InsertControl(pos + 7, self.down_pyramid, "Pyramid Down")
+
+            for control in (
+                self.tilelabel,
+                self.left_tile,
+                self.right_tile,
+                self.up_tile,
+                self.down_tile,
+                self.pyramidlevel,
+                self.up_pyramid,
+                self.down_pyramid):
+                # Hacky fix for OSX display issues
+                control.Hide()
+                control.Show()
+            self.Realize()
+
+            self.tiled = True
 
     def set_volumetric(self):
         if not self.volumetric:

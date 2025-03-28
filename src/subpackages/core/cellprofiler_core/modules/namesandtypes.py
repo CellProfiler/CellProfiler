@@ -219,7 +219,7 @@ Measurements made by this module
 
 
 class NamesAndTypes(Module):
-    variable_revision_number = 9
+    variable_revision_number = 10
     module_name = "NamesAndTypes"
     category = "File Processing"
 
@@ -265,6 +265,16 @@ The choices are:
             "Select the image type",
             [LOAD_AS_GRAYSCALE_IMAGE, LOAD_AS_COLOR_IMAGE, LOAD_AS_MASK],
             doc=LOAD_AS_CHOICE_HELP_TEXT,
+        )
+
+        self.process_as_tiled = Binary(
+            text="Process as Tiled?",
+            value=False,
+            doc="""\
+If you want to treat the data as a tiled image, select "Yes" to
+load files as tiled. Otherwise, select "No" to load files as whole images.
+""",
+            callback=lambda value: self.pipeline.set_tiled(value),
         )
 
         self.process_as_3d = Binary(
@@ -817,6 +827,7 @@ requests an object selection.
             self.assignments_count,
             self.single_images_count,
             self.manual_rescale,
+            self.process_as_tiled,
             self.process_as_3d,
             self.x,
             self.y,
@@ -854,6 +865,7 @@ requests an object selection.
             self.assignments_count,
             self.single_images_count,
             self.manual_rescale,
+            self.process_as_tiled,
             self.process_as_3d,
             self.x,
             self.y,
@@ -871,7 +883,7 @@ requests an object selection.
         return result
 
     def visible_settings(self):
-        result = [self.assignment_method, self.process_as_3d]
+        result = [self.assignment_method, self.process_as_tiled, self.process_as_3d]
 
         if self.process_as_3d.value:
             result += [self.x, self.y, self.z]
@@ -2047,6 +2059,14 @@ requests an object selection.
             )
 
             variable_revision_number = 8
+
+        if variable_revision_number == 8:
+            variable_revision_number = 9
+
+        if variable_revision_number == 9:
+            # insert False for process_as_tiled
+            setting_values.insert(9, False)
+            variable_revision_number = 10
 
         return setting_values, variable_revision_number
 

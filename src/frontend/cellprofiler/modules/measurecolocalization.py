@@ -105,7 +105,7 @@ M_IMAGES_AND_OBJECTS = "Both"
 THRESHOLD_SETTING_COUNT = 2
 
 # The number of settings other than the threshold settings
-FIXED_SETTING_COUNT = 13
+FIXED_SETTING_COUNT = 15
 
 M_FAST = "Fast"
 M_FASTER = "Faster"
@@ -202,6 +202,16 @@ All methods measure correlation on a pixel by pixel basis.
         self.wants_channel_thresholds = Binary(
             "Enable channel specific thresholds?",
             False,
+            doc="""TODO""", #TODO write docstring
+        )
+        self.wants_threshold_visualization = Binary(
+            "Enable threshold visualization?",
+            False,
+            doc="""TODO""", #TODO write docstring
+        )
+        self.threshold_visualization_list = ImageListSubscriber(
+            "Select images to visualize thresholds",
+            [],
             doc="""TODO""", #TODO write docstring
         )
 
@@ -331,6 +341,8 @@ Select the image that you want to use for this operation.""",
         for threshold in self.thresholds_list:
             result += [threshold.image_name, threshold.threshold_for_channel]
         result += [
+            self.wants_threshold_visualization,
+            self.threshold_visualization_list,
             self.images_or_objects,
             self.objects_list,
             self.do_all,
@@ -357,7 +369,9 @@ Select the image that you want to use for this operation.""",
                 if threshold.removable:
                     result += [threshold.remover, Divider(line=False)]
             result += [self.add_threshold_button, self.spacer_4]
-        
+        result += [self.wants_threshold_visualization]
+        if self.wants_threshold_visualization.value == True:
+            result += [self.threshold_visualization_list]
         result += [self.images_or_objects,]
         if self.wants_objects():
             result += [self.objects_list]
@@ -439,15 +453,123 @@ Select the image that you want to use for this operation.""",
             workspace.display_data.col_labels = col_labels
 
     def display(self, workspace, figure):
+        print("Inside display for measure colocalization")
         statistics = workspace.display_data.statistics
         if self.wants_objects():
             helptext = "default"
         else:
-            helptext = None
-        figure.set_subplots((1, 1))
+            # helptext = None # try adding some title 
+            helptext = " " # try adding some title 
+        num_image_rows = 1 
+        num_image_cols = 1 # for the results table
+        # For each image, create a new column and for each object, create a new row of subplot
+        if self.wants_threshold_visualization.value:
+            num_image_cols += len(self.threshold_visualization_list.value)
+            if self.wants_objects():
+                num_image_rows += len(self.objects_list.value)
+            if self.wants_images():
+                num_image_rows += 1
+            if self.threshold_visualization_list.value:
+                print(f"Number of images to visualize = {num_image_cols} x {num_image_rows}")
+                figure.set_subplots((num_image_cols+1, num_image_rows))
+                self.show_threshold_visualization(figure, workspace, (num_image_rows, num_image_cols))
+        else:
+            figure.set_subplots((1, 1))
+            
         figure.subplot_table(
-            0, 0, statistics, workspace.display_data.col_labels, title=helptext
+            num_image_cols, 0, statistics, workspace.display_data.col_labels, title=helptext
         )
+
+    def show_threshold_visualization(self, figure, workspace, grid_shape):
+        """
+        Visualize the thresholded images.
+        Assumptions:
+        - Image mask is used to determine the pixels to be thresholded
+        - When object correlation is selected, all objects selected are visualized
+        - All images are shown on the same subplot
+        """
+        print("Inside show_threshold_visualization")
+        def imshow(x, y, image, *args, **kwargs):
+                if image.ndim == 2:
+                    f = figure.subplot_imshow_grayscale
+                else:
+                    f = figure.subplot_imshow_color
+                return f(x, y, image, *args, **kwargs)
+        if not self.wants_threshold_visualization.value:
+            return
+        print("Iterating through images to visualize")
+        for idx, image_name in enumerate(self.threshold_visualization_list.value):
+            plotting_row = 0
+            image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+            imshow(
+                idx,
+                plotting_row,
+                image.pixel_data,
+                title = image_name + " (Original)",
+                sharexy=figure.subplot(0, 0)
+                )
+            plotting_row += 1
+            image_pixel_data = image.pixel_data
+            image_mask = image.mask
+            image_mask = image_mask & (~numpy.isnan(image_pixel_data))
+            if numpy.any(image_mask):
+                threshold_value = self.get_image_threshold_value(image_name)
+                thr_i = threshold_value * numpy.max(image_pixel_data) / 100
+                thr_i_out = image_pixel_data > thr_i # TODO: ask if mask shouldbe outputted or original values at the mask positions
+                imshow(
+                    idx,
+                    plotting_row, 
+                    thr_i_out,
+                    title = image_name + f" (Threshold = {threshold_value})",
+                    sharexy=figure.subplot(0, 0)
+                    )
+                plotting_row += 1
+            if self.wants_objects():
+                print(f"Visualizing {image_name} object threshold")
+                for object_name in self.objects_list.value:
+                    print(f"Visualizing {image_name} object {object_name}")
+                    objects = workspace.object_set.get_objects(object_name)
+                    labels = objects.segmented
+                    try:
+                        image_pixels = objects.crop_image_similarly(image.pixel_data)
+                        image_mask = objects.crop_image_similarly(image.mask)
+                    except ValueError:
+                        image_pixels, m1 = size_similarly(labels, image.pixel_data)
+                        image_mask, m1 = size_similarly(labels, image.mask)
+                        image_mask[~m1] = False
+                    mask = ((labels > 0) & image_mask) & (~numpy.isnan(image_pixels))
+                    labels = labels[mask]
+                    
+                    if numpy.any(mask):
+                        image_pixels = image_pixels[mask]
+                    n_objects = objects.count
+
+                    if (not (n_objects == 0)) and (not (numpy.where(mask)[0].__len__() == 0)):
+                        lrange = numpy.arange(n_objects, dtype=numpy.int32) + 1
+                        im_threshold = self.get_image_threshold_value(image_name)
+                        # Threshold as percentage of maximum intensity of objects in each channel
+                        # same as tff
+                        scaled_image = (im_threshold / 100) * fix(
+                            scipy.ndimage.maximum(image_pixels, labels, lrange) # TODO: review this implementation
+                        )
+                        # same as combined threshold
+                        threshold_mask = (image_pixels >= scaled_image[labels - 1])
+                        threshold_out = image_pixels[threshold_mask]
+                        imshow(
+                            idx,
+                            plotting_row,
+                            threshold_out,
+                            title=image_name  + f" (Object: {object_name})" + " (Threshold: {im_threshold})",
+                            sharexy=figure.subplot(0, 0)
+                        )
+                        plotting_row += 1
+                                      
+
+    def get_image_threshold_value(self, image_name):
+        for threshold in self.thresholds_list:
+            if threshold.image_name == image_name:
+                return threshold.threshold_for_channel.value
+        return self.thr.value
 
     def run_image_pair_images(self, workspace, first_image_name, second_image_name):
         """Calculate the correlation between the pixels of two images"""
@@ -510,10 +632,13 @@ Select the image that you want to use for this operation.""",
                 ]
 
             if any((self.do_manders, self.do_rwc, self.do_overlap)):
+                # Get channel-specific thresholds from thresholds array
                 # Threshold as percentage of maximum intensity in each channel
-                thr_fi = self.thr.value * numpy.max(fi) / 100
-                thr_si = self.thr.value * numpy.max(si) / 100
-                combined_thresh = (fi > thr_fi) & (si > thr_si)
+                thr_fi = self.get_image_threshold_value(first_image_name) * numpy.max(fi) / 100
+                thr_si = self.get_image_threshold_value(second_image_name) * numpy.max(si) / 100
+                thr_fi_out = fi > thr_fi
+                thr_si_out = si > thr_si
+                combined_thresh = (thr_fi_out) & (thr_si_out)
                 fi_thresh = fi[combined_thresh]
                 si_thresh = si[combined_thresh]
                 tot_fi_thr = fi[(fi > thr_fi)].sum()
@@ -847,11 +972,14 @@ Select the image that you want to use for this operation.""",
                 ]
 
             if any((self.do_manders, self.do_rwc, self.do_overlap)):
+                # Get channel-specific thresholds from thresholds array
+                im1_threshold = self.get_image_threshold_value(first_image_name)
+                im2_threshold = self.get_image_threshold_value(second_image_name)
                 # Threshold as percentage of maximum intensity of objects in each channel
-                tff = (self.thr.value / 100) * fix(
+                tff = (im1_threshold / 100) * fix(
                     scipy.ndimage.maximum(first_pixels, labels, lrange)
                 )
-                tss = (self.thr.value / 100) * fix(
+                tss = (im2_threshold / 100) * fix(
                     scipy.ndimage.maximum(second_pixels, labels, lrange)
                 )
 
@@ -1691,7 +1819,7 @@ Select the image that you want to use for this operation.""",
             """
             add 'No' for custom thresholds and '0' for custom threshold counts
             """
-            setting_values = setting_values[:2] + ['No', '0'] + setting_values[2:]
+            setting_values = setting_values[:2] + ['No', '0', 'No', ''] + setting_values[2:]
             variable_revision_number = 6
 
         return setting_values, variable_revision_number

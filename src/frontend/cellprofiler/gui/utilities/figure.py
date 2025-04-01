@@ -132,7 +132,7 @@ def format_plate_data_as_array(plate_dict, plate_type):
     return data
 
 
-def show_image(url, parent=None, needs_raise_after=True, dimensions=2, series=None):
+def show_image(url, parent=None, needs_raise_after=True, dimensions=2, series=None, tiled=False):
     from ..figure import Figure
 
     filename = url[(url.rfind("/") + 1) :]
@@ -143,6 +143,7 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2, series=No
             name=os.path.splitext(filename)[0],
             pathname=os.path.dirname(url),
             volume=True if dimensions == 3 else False,
+            tiled=tiled,
             series=series,
         )
         image = provider.provide_image(None).pixel_data
@@ -158,7 +159,7 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2, series=No
         return
 
     frame = Figure(parent=parent, title=filename)
-    frame.set_subplots(dimensions=dimensions, subplots=(1, 1))
+    frame.set_subplots(subplots=(1,1), dimensions=dimensions, tiled=tiled)
 
     if dimensions == 2 and image.ndim == 3:  # multichannel images
         frame.subplot_imshow_color(0, 0, image[:, :, :3], title=filename, normalize=True)

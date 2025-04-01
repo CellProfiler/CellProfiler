@@ -147,7 +147,6 @@ class Figure(wx.Frame):
         self.current_plane = 0
         self.images = {}
         self.colorbar = {}
-        self.volumetric = False
         self.subplot_params = {}
         self.subplot_user_params = {}
         self.event_bindings = {}
@@ -166,6 +165,7 @@ class Figure(wx.Frame):
         )
         self.__gridspec = None
         self.dimensions = 2
+        self.tiled = False
         if secret_panel_class is None:
             secret_panel_class = wx.Panel
         self.secret_panel = secret_panel_class(self)
@@ -722,10 +722,11 @@ class Figure(wx.Frame):
 
                 self.figure.savefig(path, format=file_format, bbox_inches=extent)
 
-    def set_subplots(self, subplots, dimensions=2):
+    def set_subplots(self, subplots, dimensions=2, tiled=False):
         self.clf()  # get rid of any existing subplots, menus, etc.
 
         self.dimensions = dimensions
+        self.tiled=tiled
 
         if max(subplots) > 3:
             self.many_plots = True
@@ -1564,7 +1565,7 @@ class Figure(wx.Frame):
         rgb_mask = kwargs["rgb_mask"]
         interpolation = kwargs["interpolation"]
 
-        # Note: if we do not do this, then passing in vmin,vmax without setting
+        # NOTE: if we do not do this, then passing in vmin,vmax without setting
         # normalize=False will cause the normalized image to be stretched
         # further which makes no sense.
         # ??? - We may want to change the normalize vs vmin,vmax behavior so if
@@ -1756,6 +1757,29 @@ class Figure(wx.Frame):
             self.navtoolbar.prevplane.Bind(wx.EVT_BUTTON, prev_plane)
             self.navtoolbar.slider.Bind(wx.EVT_SLIDER, change_slider)
             self.navtoolbar.planetext.Bind(wx.EVT_TEXT, change_text)
+
+        if self.tiled:
+            self.navtoolbar.set_tiled()
+
+            def go_tile_left(evt):
+                print("go tile left")
+            def go_tile_right(evt):
+                print("go tile right")
+            def go_tile_up(evt):
+                print("go tile up")
+            def go_tile_down(evt):
+                print("go tile down")
+            def go_level_up(evt):
+                print("go level up")
+            def go_level_down(evt):
+                print("go level down")
+
+            self.navtoolbar.left_tile.Bind(wx.EVT_BUTTON, go_tile_left)
+            self.navtoolbar.right_tile.Bind(wx.EVT_BUTTON, go_tile_right)
+            self.navtoolbar.up_tile.Bind(wx.EVT_BUTTON, go_tile_up)
+            self.navtoolbar.down_tile.Bind(wx.EVT_BUTTON, go_tile_down)
+            self.navtoolbar.up_pyramid.Bind(wx.EVT_BUTTON, go_level_up)
+            self.navtoolbar.down_pyramid.Bind(wx.EVT_BUTTON, go_level_down)
 
         return subplot
 

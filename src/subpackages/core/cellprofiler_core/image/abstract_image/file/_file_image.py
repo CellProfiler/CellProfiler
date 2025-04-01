@@ -45,7 +45,8 @@ class FileImage(AbstractImage):
         volume=False,
         spacing=None,
         z=None,
-        t=None
+        t=None,
+        tiled=False,
     ):
         """
         :param name: Name of image to be provided
@@ -73,6 +74,8 @@ class FileImage(AbstractImage):
         :type volume:
         :param spacing:
         :type spacing:
+        :param tiled:
+        :type tiled:
         """
         if pathname.startswith(FILE_SCHEME):
             pathname = url2pathname(pathname)
@@ -119,6 +122,7 @@ class FileImage(AbstractImage):
         else:
             self.__z = z if z is not None else 0
             self.__t = t if t is not None else 0
+        self.__tiled = tiled
 
     @staticmethod
     def __validate_rescale_range(rescale_range):

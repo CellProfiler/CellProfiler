@@ -465,19 +465,27 @@ Select the image that you want to use for this operation.""",
         # For each image, create a new column and for each object, create a new row of subplot
         if self.wants_threshold_visualization.value:
             num_image_cols += len(self.threshold_visualization_list.value)
+            num_image_rows += 1 # for original image
             if self.wants_objects():
                 num_image_rows += len(self.objects_list.value)
             if self.wants_images():
                 num_image_rows += 1
             if self.threshold_visualization_list.value:
                 print(f"Number of images to visualize = {num_image_cols} x {num_image_rows}")
-                figure.set_subplots((num_image_cols+1, num_image_rows))
+                figure.set_subplots((num_image_cols, num_image_rows))
                 self.show_threshold_visualization(figure, workspace, (num_image_rows, num_image_cols))
+                # figure.figure.tight_layout()
+                # figure.figure.subplots_adjust(bottom=0.1, right=0.1, top=0.1)
         else:
             figure.set_subplots((1, 1))
             
+        # TODO: Look into features provided by CellProfiler's Figure class insted of gridspec/matplotlib editing
+        axs = figure.figure.get_axes()
+        gs = axs[-1].get_gridspec()
+        ax = figure.figure.add_subplot(gs[:, -1])
+        ax.set_axis_off()
         figure.subplot_table(
-            num_image_cols, 0, statistics, workspace.display_data.col_labels, title=helptext
+            num_image_cols-1, 0, statistics, workspace.display_data.col_labels, title='', n_rows=num_image_rows
         )
 
     def show_threshold_visualization(self, figure, workspace, grid_shape):
@@ -538,28 +546,25 @@ Select the image that you want to use for this operation.""",
                         image_mask, m1 = size_similarly(labels, image.mask)
                         image_mask[~m1] = False
                     mask = ((labels > 0) & image_mask) & (~numpy.isnan(image_pixels))
-                    labels = labels[mask]
+                    labels = labels * mask
                     
                     if numpy.any(mask):
-                        image_pixels = image_pixels[mask]
+                        image_pixels = image_pixels * mask
                     n_objects = objects.count
 
                     if (not (n_objects == 0)) and (not (numpy.where(mask)[0].__len__() == 0)):
                         lrange = numpy.arange(n_objects, dtype=numpy.int32) + 1
                         im_threshold = self.get_image_threshold_value(image_name)
                         # Threshold as percentage of maximum intensity of objects in each channel
-                        # same as tff
                         scaled_image = (im_threshold / 100) * fix(
                             scipy.ndimage.maximum(image_pixels, labels, lrange) # TODO: review this implementation
                         )
-                        # same as combined threshold
                         threshold_mask = (image_pixels >= scaled_image[labels - 1])
-                        threshold_out = image_pixels[threshold_mask]
                         imshow(
                             idx,
                             plotting_row,
-                            threshold_out,
-                            title=image_name  + f" (Object: {object_name})" + " (Threshold: {im_threshold})",
+                            threshold_mask,
+                            title=image_name  + f" (Object: {object_name}), (Threshold: {im_threshold})",
                             sharexy=figure.subplot(0, 0)
                         )
                         plotting_row += 1
@@ -982,6 +987,19 @@ Select the image that you want to use for this operation.""",
                 tss = (im2_threshold / 100) * fix(
                     scipy.ndimage.maximum(second_pixels, labels, lrange)
                 )
+                # # below is the same as tff
+                # tff2 = (im1_threshold / 100) * fix(
+                #     scipy.ndimage.maximum((objects.crop_image_similarly(first_image.pixel_data))*mask, (objects.segmented)*mask, lrange)
+                # )
+                # combined_thresh = (((objects.crop_image_similarly(first_image.pixel_data))*mask) >= tff2[((objects.segmented)*mask) - 1])
+                # # tff2 has length 1610, same as the number of objects. objects.segmented contains the labels assigned to each object.
+                # # We want to use these labels and map them to the intensity values in tff2 per object label. i.e. replace object label 3 with 
+                # # tff2[3]
+                # object_mask = objects.segmented.copy().astype(float)
+                # for object_idx in lrange:
+                #     object_mask[object_mask == object_idx-1] = tff2[object_idx-1] # do we need to subtract 1 here?
+
+                # ###############
 
                 combined_thresh = (first_pixels >= tff[labels - 1]) & (
                     second_pixels >= tss[labels - 1]

@@ -677,6 +677,7 @@ class Pipeline:
         module.set_settings_from_values(settings, variable_revision_number, module_name)
         if module_name == "NamesAndTypes":
             self.__volumetric = module.process_as_3d.value
+            self.__tiled = module.process_as_tiled.value
 
         return module
 

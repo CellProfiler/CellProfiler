@@ -16,23 +16,6 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
     """Navigation toolbar for EditObjectsDialog"""
 
     def __init__(self, canvas, want_measure=False):
-
-        # list of toolitems to add to the toolbar, format is:
-        # (
-        #   text, # the text of the button (often not visible to users)
-        #   tooltip_text, # the tooltip shown on hover (where possible)
-        #   image_file, # name of the image for the button (without the extension)
-        #   name_of_method, # name of the method in NavigationToolbar2 to call
-        # )
-        # NOTE: must come before super so we overload it
-        #self.toolitems = tuple(self.toolitems) + (
-        #    ('Tile Left', 'tile left', 'help', 'tile_left'),
-        #    ('Tile Right', 'tile right', 'help', 'tile_right'),
-        #    ('Tile Up', 'tile up', 'help', 'tile_up'),
-        #    ('Tile Down', 'tile down', 'help', 'tile_down'),
-        #    ('Pyramid Up', 'pyramid up', 'help', 'pyramid_up'),
-        #    ('Pyramid Down', 'pyramid down', 'help', 'pyramid_down'),
-        #)
         super(NavigationToolbar, self).__init__(canvas)
         self.volumetric = False
         self.tiled = False
@@ -49,20 +32,6 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
             )
             self.InsertTool(6, self.measure_tool)
         self.Realize()
-
-    # len(args) == 0, the wx event
-    def tile_left(self, *args):
-        print("TILE LEFT OP")
-    def tile_right(self, *args):
-        print("TILE RIGHT OP")
-    def tile_up(self, *args):
-        print("TILE UP OP")
-    def tile_down(self, *args):
-        print("TILE DOWN OP")
-    def pyramid_up(self, *args):
-        print("PYRAMID UP OP")
-    def pyramid_down(self, *args):
-        print("PYRAMID DOWN OP")
 
     def set_tiled(self):
         if not self.tiled:
@@ -96,7 +65,7 @@ class NavigationToolbar(matplotlib.backends.backend_wxagg.NavigationToolbar2WxAg
                 self.right_tile,
                 self.up_tile,
                 self.down_tile,
-                self.pyramidlevel,
+                self.pyramidlabel,
                 self.up_pyramid,
                 self.down_pyramid):
                 # Hacky fix for OSX display issues

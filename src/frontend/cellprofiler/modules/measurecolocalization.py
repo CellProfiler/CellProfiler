@@ -474,18 +474,11 @@ Select the image that you want to use for this operation.""",
                 print(f"Number of images to visualize = {num_image_cols} x {num_image_rows}")
                 figure.set_subplots((num_image_cols, num_image_rows))
                 self.show_threshold_visualization(figure, workspace, (num_image_rows, num_image_cols))
-                # figure.figure.tight_layout()
-                # figure.figure.subplots_adjust(bottom=0.1, right=0.1, top=0.1)
         else:
             figure.set_subplots((1, 1))
             
-        # TODO: Look into features provided by CellProfiler's Figure class insted of gridspec/matplotlib editing
-        axs = figure.figure.get_axes()
-        gs = axs[-1].get_gridspec()
-        ax = figure.figure.add_subplot(gs[:, -1])
-        ax.set_axis_off()
         figure.subplot_table(
-            num_image_cols-1, 0, statistics, workspace.display_data.col_labels, title='', n_rows=num_image_rows
+            num_image_cols-1, 0, statistics, workspace.display_data.col_labels, title='', n_cols=1, n_rows=num_image_rows
         )
 
     def show_threshold_visualization(self, figure, workspace, grid_shape):

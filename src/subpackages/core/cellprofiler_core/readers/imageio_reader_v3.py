@@ -34,7 +34,7 @@ class ImageIOReaderV3(Reader):
     def __del__(self):
         self.close()
 
-    def get_reader(self, volume=False):
+    def __get_reader(self, volume=False):
         if self._reader is None or volume != self._volume:
             path = self.file.path
             if volume:
@@ -67,7 +67,7 @@ class ImageIOReaderV3(Reader):
         :param xywh: a (x, y, w, h) tuple
         :param channel_names: provide the channel names for the OME metadata
         """
-        reader = self.get_reader()
+        reader = self.__get_reader()
         if series is None:
             series = 0
         data = reader.read(index=series)
@@ -94,7 +94,7 @@ class ImageIOReaderV3(Reader):
                     xywh=None,
                     channel_names=None,
                     ):
-        reader = self.get_reader(volume=True)
+        reader = self.__get_reader(volume=True)
         if series is None:
             series = 0
         img = reader.read(index=series)
@@ -108,7 +108,7 @@ class ImageIOReaderV3(Reader):
         return data
 
     @classmethod
-    def supports_format(cls, image_file, allow_open=False, volume=False):
+    def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):
         """This function needs to evaluate whether a given ImageFile object
         can be read by this reader class.
 
@@ -125,6 +125,8 @@ class ImageIOReaderV3(Reader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
+        if tiled:
+            return -1
         if image_file.scheme not in SUPPORTED_SCHEMES:
             return -1
         if image_file.file_extension in SUPPORTED_EXTENSIONS:
@@ -154,7 +156,7 @@ class ImageIOReaderV3(Reader):
         MD_SERIES_NAME - list of series names, one element per series.
         """
         meta_dict = collections.defaultdict(list)
-        reader = self.get_reader()
+        reader = self.__get_reader()
         series_count = reader.get_length()
         meta_dict[MD_SIZE_S] = series_count
         for i in range(series_count):

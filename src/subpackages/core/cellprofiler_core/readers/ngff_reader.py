@@ -49,7 +49,7 @@ class NGFFReader(Reader):
     def __del__(self):
         self.close()
 
-    def get_reader(self):
+    def __get_reader(self):
         if self._reader is not None:
             return self._reader
         elif self.root in NGFFReader.ZARR_READER_CACHE:
@@ -114,7 +114,7 @@ class NGFFReader(Reader):
             y2 = y + h
         else:
             y, y2, x, x2 = None, None, None, None
-        reader = self.get_reader()
+        reader = self.__get_reader()
         if series is None:
             series = 0
         if self._series_map is None:
@@ -169,7 +169,7 @@ class NGFFReader(Reader):
         )
 
     @classmethod
-    def supports_format(cls, image_file, allow_open=False, volume=False):
+    def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):
         """This function needs to evaluate whether a given ImageFile object
         can be read by this reader class.
 
@@ -229,7 +229,7 @@ class NGFFReader(Reader):
             MD_SIZE_T: [],
             MD_SERIES_NAME: [],
         }
-        reader = self.get_reader()
+        reader = self.__get_reader()
         arrays = self.find_arrays(reader, multiscales=False, first_only=False)
         self.build_series_map(arrays)
         series_count = len(arrays)

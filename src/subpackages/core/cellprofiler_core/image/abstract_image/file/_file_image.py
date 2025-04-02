@@ -332,10 +332,10 @@ class FileImage(AbstractImage):
             raise ValueError("metadata_rescale must be a boolean")
         self.__metadata_rescale = metadata_rescale
 
-    def get_reader(self, create=True, volume=False):
+    def get_reader(self, create=True, volume=False, tiled=False):
         if self.__reader is None and create:
             image_file = self.get_image_file()
-            self.__reader = get_image_reader(image_file, volume=volume)
+            self.__reader = get_image_reader(image_file, volume=volume, tiled=tiled)
             ACTIVE_READERS.add(self)
         return self.__reader
 
@@ -498,6 +498,8 @@ class FileImage(AbstractImage):
         if self.__volume:
             self.__set_image_volume()
             return
+        if self.__tiled:
+            return self.__set_image_tiled()
 
         self.cache_file()
         channel_names = []
@@ -593,6 +595,29 @@ class FileImage(AbstractImage):
                 t=self.t,
                 series=self.series
             )
+
+        if self.metadata_rescale:
+            img, self.__scale = FileImage.normalize_to_float32(img, in_range=self.rescale_range, wants_inscale=True)
+        else:
+            img, self.__scale = FileImage.normalize_to_float32(img, wants_inscale=True)
+
+        self.__image = Image(
+            image=img,
+            path_name=self.get_pathname(),
+            file_name=self.get_filename(),
+            dimensions=3,
+            scale=self.__scale,
+            spacing=self.__spacing,
+        )
+
+    def __set_image_tiled(self):
+        reader = self.get_reader(tiled=True)
+        img, self.rescale_range = reader.read_tiled(
+            wants_metadata_rescale=True,
+            c=self.channel,
+            z=self.z,
+            t=self.t,
+        )
 
         if self.metadata_rescale:
             img, self.__scale = FileImage.normalize_to_float32(img, in_range=self.rescale_range, wants_inscale=True)

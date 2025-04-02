@@ -74,6 +74,8 @@ dependencies = [
     "zarr>=2.16.1",
     "google-cloud-storage~=2.10.0",
     "packaging>=20.0",
+    "xmltodict>=0.14.0",
+    "dask<=2025.3.0",
 ]
 dynamic = ["version"]
 

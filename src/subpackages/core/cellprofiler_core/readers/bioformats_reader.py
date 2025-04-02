@@ -40,7 +40,7 @@ class BioformatsReader(Reader):
         self._is_file_open = False
         super().__init__(image_file)
 
-    def get_reader(self):
+    def __get_reader(self):
         if self._reader is None:
             ImageReader = jimport("loci.formats.ImageReader")
             self._reader = ImageReader()
@@ -51,7 +51,7 @@ class BioformatsReader(Reader):
 
     def _ensure_file_open(self):
         if not self._is_file_open:
-            self.get_reader().setId(self.file.path)
+            self.__get_reader().setId(self.file.path)
             self._is_file_open = True
 
     def read(self,
@@ -156,7 +156,7 @@ class BioformatsReader(Reader):
                       for i in range(self._reader.getSizeC())]
             image = np.dstack(images)
             image.shape = (height, width, self._reader.getSizeC())
-            if not channel_names is None:
+            if channel_names is not None:
                 metadata = self._reader.getMetadataStore()
                 for i in range(self._reader.getSizeC()):
                     index = self._reader.getIndex(z, 0, t)
@@ -215,7 +215,7 @@ class BioformatsReader(Reader):
         # Whether a volume has planes stored in the z or t axis is often ambiguous.
         # If z-size > 1 we'll use z, else we'll use t. Otherwise user should choose
         # an axis to split in Images.
-        bf_reader = self.get_reader()
+        bf_reader = self.__get_reader()
         self._ensure_file_open()
         if series is None:
             series = 0
@@ -258,7 +258,7 @@ class BioformatsReader(Reader):
         return image_stack
 
     @classmethod
-    def supports_format(cls, image_file, allow_open=False, volume=False):
+    def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):
         """This function needs to evaluate whether a given ImageFile object
         can be read by this reader class.
 
@@ -305,7 +305,7 @@ class BioformatsReader(Reader):
         """
         meta_dict = collections.defaultdict(list)
         self._ensure_file_open()
-        reader = self.get_reader()
+        reader = self.__get_reader()
         series_count = reader.getSeriesCount()
         meta_dict[MD_SIZE_S] = series_count
         for i in range(series_count):

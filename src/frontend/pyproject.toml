@@ -84,6 +84,8 @@ dependencies = [
     "wxPython>=4.2.0",
     "rapidfuzz>=3.0.0",
     "packaging>=20.0",
+    "xmltodict>=0.14.0",
+    "dask<=2025.3.0",
 ]
 dynamic = ["version"]
 

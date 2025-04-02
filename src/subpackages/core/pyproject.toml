@@ -76,6 +76,8 @@ dependencies = [
     "packaging>=20.0",
     # TODO: python update - not needed for python > 3.9
     "importlib_metadata",
+    "xmltodict>=0.14.0",
+    "dask<=2025.3.0",
 ]
 dynamic = ["version"]
 

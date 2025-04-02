@@ -115,9 +115,33 @@ class Reader(ABC):
         """
         raise NotImplementedError(f"This reader ({self.reader_name}) does not support 3D reading.")
 
+    def read_tiled(self,
+                   wants_metadata_rescale=False,
+                   c=None,
+                   z=None,
+                   t=None,
+                   xywh=None,
+                   channel_names=None,
+                   ):
+        """Read a series of planes from the image file. Mimics the Bioformats API
+        :param wants_metadata_rescale: if `True`, return a tuple of image and a
+               tuple of (min, max) for range values of image dtype gathered from
+               file metadata; if `False`, returns only the image
+        :param c: read from this channel. `None` = read color image if multichannel
+            or interleaved RGB.
+        :param z: z-stack index
+        :param t: time index
+        n.b. either z or t should be "None" to specify which channel to read across.
+        :param xywh: a (x, y, w, h) tuple
+        :param channel_names: provide the channel names for the OME metadata
+
+        Should return a data array with channel order Z, X, Y, (C)
+        """
+        raise NotImplementedError(f"This reader ({self.reader_name}) does not support tiled reading.")
+
     @classmethod
     @abstractmethod
-    def supports_format(cls, image_file, allow_open=False, volume=False):
+    def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):
         """This function needs to evaluate whether a given ImageFile object
         can be read by this reader class.
 

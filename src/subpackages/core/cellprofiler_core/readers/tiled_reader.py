@@ -85,6 +85,7 @@ class TiledImageReader(Reader):
 
     def read_tiled(self,
                    wants_metadata_rescale=False,
+                   # TODO: LIS - support c,z,t,xywh
                    c=None,
                    z=None,
                    t=None,
@@ -114,6 +115,9 @@ class TiledImageReader(Reader):
             ]
             self.__data: list[daskArray] = [dask.array.from_zarr(z) for z in self.__zarr_data]
 
+        if channel_names is not None:
+            channel_names.extend(self._meta["channel_names"])
+
         if wants_metadata_rescale:
             dtype = self._meta["dtype"]
             if numpy.issubdtype(dtype, numpy.integer):
@@ -125,6 +129,8 @@ class TiledImageReader(Reader):
 
             return (self.__data, (float(info.min), float(info.max)))
 
+        # TODO: - LIS: Not sure what the best thing is to return here
+        # right now its an array of pyramid levels
         return self.__data
 
     @classmethod

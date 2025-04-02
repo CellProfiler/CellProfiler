@@ -402,7 +402,6 @@ Select the image that you want to use for this operation.""",
         return help_settings
     
     def prepare_settings(self, setting_values):
-        # TODO: understand what's going on here
         value_count = len(setting_values)
         assert ((value_count - FIXED_SETTING_COUNT)  % THRESHOLD_SETTING_COUNT == 0)
         threshold_count = (value_count - FIXED_SETTING_COUNT) // THRESHOLD_SETTING_COUNT

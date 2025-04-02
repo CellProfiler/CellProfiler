@@ -452,7 +452,6 @@ Select the image that you want to use for this operation.""",
             workspace.display_data.col_labels = col_labels
 
     def display(self, workspace, figure):
-        print("Inside display for measure colocalization")
         statistics = workspace.display_data.statistics
         if self.wants_objects():
             helptext = "default"
@@ -460,17 +459,15 @@ Select the image that you want to use for this operation.""",
             # helptext = None # try adding some title 
             helptext = " " # try adding some title 
         num_image_rows = 1 
-        num_image_cols = 1 # for the results table
+        num_image_cols = 1 # for the results table and original images
         # For each image, create a new column and for each object, create a new row of subplot
         if self.wants_threshold_visualization.value and self.threshold_visualization_list.value:
             num_image_cols += len(self.threshold_visualization_list.value)
-            # num_image_rows += 1 # this row for original images
             if self.wants_objects():
                 num_image_rows += len(self.objects_list.value)
             if self.wants_images():
                 num_image_rows += 1
             if self.threshold_visualization_list.value:
-                print(f"Number of images to visualize = {num_image_cols} x {num_image_rows}")
                 figure.set_subplots((num_image_cols, num_image_rows))
                 self.show_threshold_visualization(figure, workspace)
         else:
@@ -485,10 +482,11 @@ Select the image that you want to use for this operation.""",
         Visualize the thresholded images.
         Assumptions:
         - Image mask is used to determine the pixels to be thresholded
+        - Mask generated after thresholding is visualized
         - When object correlation is selected, all objects selected are visualized
         - All images are shown on the same subplot
         """
-        print("Inside show_threshold_visualization")
+        # imshow snippet taken from correctilluminationapply.py
         def imshow(x, y, image, *args, **kwargs):
                 if image.ndim == 2:
                     f = figure.subplot_imshow_grayscale
@@ -497,10 +495,10 @@ Select the image that you want to use for this operation.""",
                 return f(x, y, image, *args, **kwargs)
         if not self.wants_threshold_visualization.value:
             return
-        print("Iterating through images to visualize")
         for idx, image_name in enumerate(self.threshold_visualization_list.value):
             plotting_row = 0
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+            # Plot original
             imshow(
                 idx,
                 plotting_row,
@@ -509,6 +507,8 @@ Select the image that you want to use for this operation.""",
                 sharexy=figure.subplot(0, 0)
                 )
             plotting_row += 1
+
+            # Thresholding code used from run_image_pair_images() and run_image_pair_objects()
             image_pixel_data = image.pixel_data
             image_mask = image.mask
             image_mask = image_mask & (~numpy.isnan(image_pixel_data))
@@ -526,9 +526,7 @@ Select the image that you want to use for this operation.""",
                         )
                 plotting_row += 1
             if self.wants_objects():
-                print(f"Visualizing {image_name} object threshold")
                 for object_name in self.objects_list.value:
-                    print(f"Visualizing {image_name} object {object_name}")
                     objects = workspace.object_set.get_objects(object_name)
                     labels = objects.segmented
                     try:
@@ -538,11 +536,13 @@ Select the image that you want to use for this operation.""",
                         image_pixels, m1 = size_similarly(labels, image.pixel_data)
                         image_mask, m1 = size_similarly(labels, image.mask)
                         image_mask[~m1] = False
+
+                    # This part is slightly different from the run_image_pair_objects code
                     mask = ((labels > 0) & image_mask) & (~numpy.isnan(image_pixels))
-                    labels = labels * mask
+                    labels = labels * mask # changed from labels[mask] to keep the labels as a 2D array
                     
                     if numpy.any(mask):
-                        image_pixels = image_pixels * mask
+                        image_pixels = image_pixels * mask # changed from image_pixels[mask] to keep the labels as a 2D array
                     n_objects = objects.count
 
                     if (not (n_objects == 0)) and (not (numpy.where(mask)[0].__len__() == 0)):

@@ -462,9 +462,9 @@ Select the image that you want to use for this operation.""",
         num_image_rows = 1 
         num_image_cols = 1 # for the results table
         # For each image, create a new column and for each object, create a new row of subplot
-        if self.wants_threshold_visualization.value:
+        if self.wants_threshold_visualization.value and self.threshold_visualization_list.value:
             num_image_cols += len(self.threshold_visualization_list.value)
-            num_image_rows += 1 # for original image
+            # num_image_rows += 1 # this row for original images
             if self.wants_objects():
                 num_image_rows += len(self.objects_list.value)
             if self.wants_images():
@@ -472,7 +472,7 @@ Select the image that you want to use for this operation.""",
             if self.threshold_visualization_list.value:
                 print(f"Number of images to visualize = {num_image_cols} x {num_image_rows}")
                 figure.set_subplots((num_image_cols, num_image_rows))
-                self.show_threshold_visualization(figure, workspace, (num_image_rows, num_image_cols))
+                self.show_threshold_visualization(figure, workspace)
         else:
             figure.set_subplots((1, 1))
             
@@ -480,7 +480,7 @@ Select the image that you want to use for this operation.""",
             num_image_cols-1, 0, statistics, workspace.display_data.col_labels, title='', n_cols=1, n_rows=num_image_rows
         )
 
-    def show_threshold_visualization(self, figure, workspace, grid_shape):
+    def show_threshold_visualization(self, figure, workspace):
         """
         Visualize the thresholded images.
         Assumptions:
@@ -512,17 +512,18 @@ Select the image that you want to use for this operation.""",
             image_pixel_data = image.pixel_data
             image_mask = image.mask
             image_mask = image_mask & (~numpy.isnan(image_pixel_data))
-            if numpy.any(image_mask):
-                threshold_value = self.get_image_threshold_value(image_name)
-                thr_i = threshold_value * numpy.max(image_pixel_data) / 100
-                thr_i_out = image_pixel_data > thr_i # TODO: ask if mask shouldbe outputted or original values at the mask positions
-                imshow(
-                    idx,
-                    plotting_row, 
-                    thr_i_out,
-                    title = image_name + f" (Threshold = {threshold_value})",
-                    sharexy=figure.subplot(0, 0)
-                    )
+            if self.wants_images():
+                if numpy.any(image_mask):
+                    threshold_value = self.get_image_threshold_value(image_name)
+                    thr_i = threshold_value * numpy.max(image_pixel_data) / 100
+                    thr_i_out = image_pixel_data > thr_i # TODO: ask if mask shouldbe outputted or original values at the mask positions
+                    imshow(
+                        idx,
+                        plotting_row, 
+                        thr_i_out,
+                        title = image_name + f" (Threshold = {threshold_value})",
+                        sharexy=figure.subplot(0, 0)
+                        )
                 plotting_row += 1
             if self.wants_objects():
                 print(f"Visualizing {image_name} object threshold")
@@ -556,16 +557,17 @@ Select the image that you want to use for this operation.""",
                             idx,
                             plotting_row,
                             threshold_mask,
-                            title=image_name  + f" (Object: {object_name}), (Threshold: {im_threshold})",
+                            title=image_name  + f" ({object_name}), (Threshold: {im_threshold})",
                             sharexy=figure.subplot(0, 0)
                         )
                         plotting_row += 1
                                       
 
     def get_image_threshold_value(self, image_name):
-        for threshold in self.thresholds_list:
-            if threshold.image_name == image_name:
-                return threshold.threshold_for_channel.value
+        if self.wants_channel_thresholds.value:
+            for threshold in self.thresholds_list:
+                if threshold.image_name == image_name:
+                    return threshold.threshold_for_channel.value
         return self.thr.value
 
     def run_image_pair_images(self, workspace, first_image_name, second_image_name):

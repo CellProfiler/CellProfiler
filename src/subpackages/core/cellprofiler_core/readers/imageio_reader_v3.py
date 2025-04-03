@@ -71,9 +71,9 @@ class ImageIOReaderV3(Reader):
         if series is None:
             series = 0
         data = reader.read(index=series)
-        if c is not None and len(data.shape) > 2:
+        if c is not None and data.ndim > 2:
             data = data[:, :, c, ...]
-        elif c is None and len(data.shape) > 2 and data.shape[2] == 4:
+        elif c is None and data.ndim > 2 and data.shape[2] == 4:
             # Remove alpha channel
             data = data[:, :, :3, ...]
         # tiff-specific
@@ -99,7 +99,7 @@ class ImageIOReaderV3(Reader):
             series = 0
         img = reader.read(index=series)
         data = numpy.asarray(img)
-        if c is not None and len(data.shape) > 3:
+        if c is not None and data.ndim > 3:
             data = data[:, :, :,  c, ...]
         if wants_metadata_rescale == True:
             # tiff-specific

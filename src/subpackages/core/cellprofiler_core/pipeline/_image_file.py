@@ -191,6 +191,27 @@ class ImageFile:
         file_name = os.path.basename(self.path).lower()
         return file_name[file_name.find('.'):]
 
+    @cached_property
+    def safe_full_extension(self):
+        """The `file_extension` property is greedy, in that it only returns the extensiion after the final `.`
+        e.g. for `/path/to/something.ome.tiff`, it would return `.tiff`.
+        The `full_extension` property is too lax, in that it doesn't account for hidden files starting with `.`
+        and misses some edgecases.
+        This is ungreedy, and accounts for some edge cases, so would return everything after the first `.`,
+        unless the filename begins with a `.` (a hidden file)
+        e.g. for `/path/to/.something.ome.tiff` it would return `.ome.tiff`"""
+        basename = os.path.basename(self.path)
+        if not basename:
+            LOGGER.warning(f"The path '{self.path}' contains a '/' at the end, and so has no filename. Auto-removing the '/' to retrieve filename.")
+            basename = os.path.basename(self.path[:-1])
+        basename = basename[1:].lower() if basename[0] == '.' else basename.lower()
+        name_and_ext = basename.split(os.path.extsep, 1)
+        if len(name_and_ext) < 2:
+            LOGGER.warning(f"The path '{self.path}' has no extension.")
+            return ""
+        # put back leading '.'
+        return '.' + name_and_ext[1]
+
     @property
     def metadata(self):
         return self._metadata_dict

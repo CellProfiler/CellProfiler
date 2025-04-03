@@ -6,11 +6,10 @@ from dask.array.core import Array as daskArray
 import xmltodict
 
 from math import ceil
-from typing import TypedDict, Literal
+from typing import TypedDict, Literal, Optional
 from collections import defaultdict
 
 from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, MD_SERIES_NAME
-from ..preferences import config_read_typed
 from ..reader import Reader
 
 class Resolution(TypedDict):
@@ -66,7 +65,14 @@ class TiledImageReader(Reader):
 
     def __init__(self, image_file):
         self.variable_revision_number = 1
+        self.__data = None
+        self.__zarr_data = None
+        self.__store = None
+        self.__lru_cache = None
         self.__reader = None
+        self.__path = None
+        self.__cached_meta = None
+        self.__cached_full_meta = None
         super().__init__(image_file)
 
     def __del__(self):
@@ -106,6 +112,14 @@ class TiledImageReader(Reader):
 
         Should return a data array with channel order Z, X, Y, (C)
         """
+        def order_dims(zarr_array: zarr.Array):
+            if zarr_array.ndim == 3:
+                return zarr_array.transpose([1,2,0])
+            if zarr_array.ndim == 4:
+                # TODO: LIS - this is a guess for 3D data, not sure if always true
+                return zarr_array.transpose([0, 2, 3, 1])
+            return zarr_array
+
         path = self.file.path
         if not self.__data or path is None or path != self.__path:
             reader = self.__get_reader()
@@ -113,7 +127,7 @@ class TiledImageReader(Reader):
                 reader[int(dataset["path"])]
                 for dataset in reader.attrs["multiscales"][0]["datasets"]
             ]
-            self.__data: list[daskArray] = [dask.array.from_zarr(z) for z in self.__zarr_data]
+            self.__data: list[daskArray] = [order_dims(dask.array.from_zarr(z)) for z in self.__zarr_data]
 
         if channel_names is not None:
             channel_names.extend(self._meta["channel_names"])
@@ -127,11 +141,11 @@ class TiledImageReader(Reader):
             else:
                 raise TypeError(f"Unsupported data type: {dtype}")
 
-            return (self.__data, (float(info.min), float(info.max)))
+            return self.__data[len(self.__data)-1], (float(info.min), float(info.max))
 
-        # TODO: - LIS: Not sure what the best thing is to return here
-        # right now its an array of pyramid levels
-        return self.__data
+        # TODO: - LIS: Not sure what the best thing is to return here yet
+        # right now just the lowest resolution in the pyramid
+        return self.__data[len(self.__data)-1]
 
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):
@@ -155,15 +169,28 @@ class TiledImageReader(Reader):
             return -1
         if image_file.scheme not in SUPPORTED_SCHEMES:
             return -1
-        if image_file.file_extension in SUPPORTED_EXTENSIONS:
+        if image_file.safe_full_extension in SUPPORTED_EXTENSIONS:
             return 1
         return -1
 
     def close(self):
         # If your reader opens a file, this needs to release any active lock,
-        if self.__reader:
-            self.__reader.close()
+
+
+        if self.__lru_cache:
+            self.__lru_cache.invalidate()
+            self.__lru_cache.close()
+        if self.__store:
+            self.__store.close()
+
+        self.__data = None
+        self.__zarr_data = None
+        self.__store = None
+        self.__lru_cache = None
         self.__reader = None
+        self.__path = None
+        self.__cached_meta = None
+        self.__cached_full_meta = None
 
     def get_series_metadata(self):
         """Should return a dictionary with the following keys:
@@ -226,13 +253,13 @@ class TiledImageReader(Reader):
 
         return tile
 
-    def _decrement_frame(self, curr_frame: slice, level: int | None) -> slice:
+    def _decrement_frame(self, curr_frame: slice, level: Optional[int]) -> slice:
         return self._set_frame(start = curr_frame.start - 1, stop = curr_frame.stop - 1, step = curr_frame.step, level = level)
 
-    def _increment_frame(self, curr_frame: slice, level: int | None) -> slice:
+    def _increment_frame(self, curr_frame: slice, level: Optional[int]) -> slice:
         return self._set_frame(start = curr_frame.start + 1, stop = curr_frame.stop + 1, step = curr_frame.step, level = level)
 
-    def _set_frame(self, start: int, stop: int | None = None, step: int | None = None, lvl: int | None = None) -> slice:
+    def _set_frame(self, start: int, stop: Optional[int] = None, step: Optional[int] = None, lvl: Optional[int] = None) -> slice:
         if lvl:
             max_frame = self._res[lvl]["channels"] - 1
         else:
@@ -427,7 +454,7 @@ class TiledImageReader(Reader):
             "resolutions": resolutions,
         }
 
-    def __extract_metadata(self, max_pages: int | None = 0, include_tags=False):
+    def __extract_metadata(self, max_pages: Optional[int] = None, include_tags: bool = False):
         def sp(val): return f"{val:_}" if type(val) is type(
             1) or type(val) is type(1.1) else val
 

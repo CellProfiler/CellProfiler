@@ -31,7 +31,7 @@ class ImageIOReader(Reader):
     def __del__(self):
         self.close()
 
-    def __get_readererer(self, volume=False):
+    def __get_reader(self, volume=False):
         if self._reader is None or volume != self._volume:
             path = self.file.path
             if volume:
@@ -64,18 +64,18 @@ class ImageIOReader(Reader):
         :param xywh: a (x, y, w, h) tuple
         :param channel_names: provide the channel names for the OME metadata
         """
-        reader = self.__get_readererer()
+        reader = self.__get_reader()
         if series is None:
             series = 0
         img = reader.get_data(series)
         # https://imageio.readthedocs.io/en/v2.8.0/devapi.html#imageio.core.Array
         data = numpy.asarray(img)
-        if c is not None and len(data.shape) > 2:
+        if c is not None and data.ndim > 2:
             data = data[:, :, c, ...]
-        elif c is None and len(data.shape) > 2 and data.shape[2] == 4:
+        elif c is None and data.ndim > 2 and data.shape[2] == 4:
             # Remove alpha channel
             data = data[:, :, :3, ...]
-        if wants_metadata_rescale == True:
+        if wants_metadata_rescale:
             # tiff-specific
             scale = getattr(img.meta, "MaxSampleValue", None)
             return data, (0.0, float(scale)) if scale else None
@@ -90,14 +90,14 @@ class ImageIOReader(Reader):
                     xywh=None,
                     channel_names=None,
                     ):
-        reader = self.__get_readererer(volume=True)
+        reader = self.__get_reader(volume=True)
         if series is None:
             series = 0
         img = reader.get_data(series)
         data = numpy.asarray(img)
-        if c is not None and len(data.shape) > 3:
+        if c is not None and data.ndim > 3:
             data = data[:, :, :,  c, ...]
-        if wants_metadata_rescale == True:
+        if wants_metadata_rescale:
             # tiff-specific
             scale = getattr(img.meta, "BitsPerSample", None)
             return data, (0.0, float(2**scale-1)) if scale else None
@@ -152,7 +152,7 @@ class ImageIOReader(Reader):
         MD_SERIES_NAME - list of series names, one element per series.
         """
         meta_dict = collections.defaultdict(list)
-        reader = self.__get_readererer()
+        reader = self.__get_reader()
         series_count = reader.get_length()
         meta_dict[MD_SIZE_S] = series_count
         for i in range(series_count):

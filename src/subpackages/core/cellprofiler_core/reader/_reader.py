@@ -61,7 +61,6 @@ class Reader(ABC):
         # This should be a class property. Give the reader a human-readable name (string).
         pass
 
-    @abstractmethod
     def read(self,
              wants_metadata_rescale=False,
              series=None,
@@ -87,7 +86,7 @@ class Reader(ABC):
 
         Should return a data array with channel order X, Y, (C)
         """
-        return None
+        raise NotImplementedError(f"This reader ({self.reader_name}) does not support plain reads (perhaps it only supports volume or tiled reading).")
 
     def read_volume(self,
                     wants_metadata_rescale=False,

@@ -654,3 +654,73 @@ def test_non_overlapping_object_intensity():
     assert len(values) == 1
 
     assert values[0] == 0.0
+
+def test_channel_specific_threshold_changes_manders():
+    numpy.random.seed(0)
+    image1 = numpy.random.rand(10, 10)
+    image1[5:, :] = 0
+    image1[-1, -1] = 1
+
+    image2 = numpy.random.rand(10, 10)
+    image2[5:, :] = 0
+    image2[-1, -1] = 1
+
+    objects = cellprofiler_core.object.Objects()
+    objects.segmented = numpy.ones_like(image1, dtype=numpy.uint8)
+
+    workspace, module = make_workspace(
+        cellprofiler_core.image.Image(image1),
+        cellprofiler_core.image.Image(image2),
+        objects,
+    )
+    module.wants_channel_thresholds.set_value(True)
+
+    module.add_threshold()
+    module.thresholds_list[0].image_name.value = IMAGE1_NAME
+    module.thresholds_list[0].threshold_for_channel.value = 90.0
+
+    module.add_threshold()
+    module.thresholds_list[1].image_name.value = IMAGE2_NAME
+    module.thresholds_list[1].threshold_for_channel.value = 90.0
+
+    module.run(workspace)
+
+    m = workspace.measurements
+    mi = module.get_measurement_images(
+        None, "Image", "Correlation", "Manders"
+    )
+
+    manders1 = m.get_current_measurement(
+        "Image", "Correlation_Manders_%s" % mi[0]
+    )
+
+    module.thresholds_list[0].threshold_for_channel.value = 10.0
+    module.run(workspace)
+
+    m_2 = workspace.measurements
+    mi_2 = module.get_measurement_images(
+        None, "Image", "Correlation", "Manders"
+    )
+    manders2 = m_2.get_current_measurement(
+        "Image", "Correlation_Manders_%s" % mi_2[0]
+    )
+
+    assert manders1 != manders2
+
+    module.thresholds_list[0].threshold_for_channel.value = 90.0
+    module.thresholds_list[1].threshold_for_channel.value = 10.0
+    module.run(workspace)
+
+    m_3 = workspace.measurements
+    mi_3 = module.get_measurement_images(
+        None, "Image", "Correlation", "Manders"
+    )
+    manders3 = m_3.get_current_measurement(
+        "Image", "Correlation_Manders_%s" % mi_3[0]
+    )
+    assert manders1 != manders3
+    assert manders2 != manders3
+
+
+def test_channel_specific_threshold_for_object():
+    pass

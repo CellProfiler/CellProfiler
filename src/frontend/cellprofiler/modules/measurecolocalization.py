@@ -327,7 +327,7 @@ Select the image that you want to use for this operation.""",
 
         if removable:
             group.append("remover", RemoveSettingButton("", "Remove this image", self.thresholds_list, group))
-        group.append("divider", Divider())
+        group.append("divider", Divider()) # TODO: review: Can this cause memory leaks as it is never removed?
         self.thresholds_list.append(group)
         
 
@@ -456,8 +456,7 @@ Select the image that you want to use for this operation.""",
         if self.wants_objects():
             helptext = "default"
         else:
-            # helptext = None # try adding some title 
-            helptext = " " # try adding some title 
+            helptext = " "
         num_image_rows = 1 
         num_image_cols = 1 # for the results table and original images
         # For each image, create a new column and for each object, create a new row of subplot
@@ -1828,10 +1827,22 @@ Select the image that you want to use for this operation.""",
             variable_revision_number = 5
 
         if variable_revision_number == 5:
+            # Settings values returned by upgrade_settings() should match the setting values in settings()
+            # Version upgrade from 4 --> 5 does not apply this rule so it is fixed here:
+            
+            # To determine if the upgrade is needed, check the total number of settings
+            if len(setting_values) == 5:
+                # Assumption: `run_all` is set to "Yes" by default
+                setting_values = setting_values[:-1] + ['Yes']*6 + setting_values[-1:]
+
+            if len(setting_values) != 11:
+                raise Warning(f"The Measure Colocalization module contains an invalid number of settings. Please check the module configuration and save a new pipeline. ")
+            
             """
             add 'No' for custom thresholds and '0' for custom threshold counts
             """
             setting_values = setting_values[:2] + ['No', '0', 'No', ''] + setting_values[2:]
+            
             variable_revision_number = 6
 
         return setting_values, variable_revision_number

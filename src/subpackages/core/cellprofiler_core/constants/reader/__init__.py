@@ -6,6 +6,7 @@ builtin_readers = {
     "ngff_reader": "NGFFReader",
     "bioformats_reader": "BioformatsReader",
     "gcs_reader": "GcsReader",
+    "tiled_reader": "TiledImageReader",
 }
 # All successfully loaded reader classes. Maps name:class
 ALL_READERS = dict()

@@ -1,4 +1,5 @@
 import numpy
+import pytest
 import six.moves
 
 import cellprofiler_core.image
@@ -15,9 +16,12 @@ import tests.frontend.modules
 IMAGE1_NAME = "image1"
 IMAGE2_NAME = "image2"
 OBJECTS_NAME = "objects"
+M_IMAGES = cellprofiler.modules.measurecolocalization.M_IMAGES
+M_OBJECTS = cellprofiler.modules.measurecolocalization.M_OBJECTS
+M_IMAGES_AND_OBJECTS = cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
 
 
-def make_workspace(image1, image2, objects=None):
+def make_workspace(image1, image2, objects=None, thresholds=None):
     """Make a workspace for testing Threshold"""
     module = cellprofiler.modules.measurecolocalization.MeasureColocalization()
     image_set_list = cellprofiler_core.image.ImageSetList()
@@ -38,6 +42,16 @@ def make_workspace(image1, image2, objects=None):
         )
         module.objects_list.value = OBJECTS_NAME
         object_set.add_objects(objects, OBJECTS_NAME)
+    if thresholds is not None:
+        module.wants_channel_thresholds.set_value(True)
+        for idx, threshold in enumerate(thresholds):
+            if threshold is None:
+                continue
+            module.add_threshold()
+            module.thresholds_list[-1].image_name.value = f'image{idx+1}'
+            module.thresholds_list[-1].threshold_for_channel.value = (
+                threshold
+            )
     pipeline = cellprofiler_core.pipeline.Pipeline()
     workspace = cellprofiler_core.workspace.Workspace(
         pipeline,
@@ -48,6 +62,17 @@ def make_workspace(image1, image2, objects=None):
         image_set_list,
     )
     return workspace, module
+
+
+def get_x_measurement(workspace, module, x, image_or_object="Image"):
+    m = workspace.measurements
+    mi = module.get_measurement_images(
+        None, image_or_object, "Correlation", x
+    )
+    x = m.get_current_measurement(
+        image_or_object, f"Correlation_{x}_{mi[0]}"
+    )
+    return x
 
 
 def test_load_v2():
@@ -655,72 +680,142 @@ def test_non_overlapping_object_intensity():
 
     assert values[0] == 0.0
 
-def test_channel_specific_threshold_changes_manders():
+
+@pytest.fixture(scope="function")
+def two_images_with_50_50_overlap():
     numpy.random.seed(0)
     image1 = numpy.random.rand(10, 10)
-    image1[5:, :] = 0
+    image1[:2, :] = 0
+    image1[6:, :] = 0
     image1[-1, -1] = 1
-
     image2 = numpy.random.rand(10, 10)
-    image2[5:, :] = 0
+    image2[:4, :] = 0
+    image2[8:, :] = 0
     image2[-1, -1] = 1
+    image1 = cellprofiler_core.image.Image(image1)
+    image1.image_name = IMAGE1_NAME
+    image2 = cellprofiler_core.image.Image(image2)
+    image2.image_name = IMAGE2_NAME
+    image1.mask = numpy.ones_like(image1.pixel_data, dtype=bool)
+    image2.mask = numpy.ones_like(image2.pixel_data, dtype=bool)
+    return image1, image2
 
-    objects = cellprofiler_core.object.Objects()
-    objects.segmented = numpy.ones_like(image1, dtype=numpy.uint8)
+
+def channel_specific_threshold_workspace(threshold1, threshold2):
+    image1 = numpy.zeros((10, 10), dtype=numpy.float32)
+    image1[2:6, :] = 1
+    image1[-1, -1] = 1
+    image2 = numpy.zeros((10, 10), dtype=numpy.float32)
+    image2[4:8, :] = 1
+    image2[-1, -1] = 1
+    image1 = cellprofiler_core.image.Image(image1)
+    image2 = cellprofiler_core.image.Image(image2)
+    image1.mask = numpy.zeros_like(image1.pixel_data, dtype=bool)
+    image2.mask = numpy.zeros_like(image2.pixel_data, dtype=bool)
 
     workspace, module = make_workspace(
-        cellprofiler_core.image.Image(image1),
-        cellprofiler_core.image.Image(image2),
-        objects,
+        image1,
+        image2,
     )
     module.wants_channel_thresholds.set_value(True)
-
     module.add_threshold()
     module.thresholds_list[0].image_name.value = IMAGE1_NAME
-    module.thresholds_list[0].threshold_for_channel.value = 90.0
-
+    module.thresholds_list[0].threshold_for_channel.value = threshold1
     module.add_threshold()
     module.thresholds_list[1].image_name.value = IMAGE2_NAME
-    module.thresholds_list[1].threshold_for_channel.value = 90.0
+    module.thresholds_list[1].threshold_for_channel.value = threshold2
 
-    module.run(workspace)
+    return workspace, module
+     
 
-    m = workspace.measurements
-    mi = module.get_measurement_images(
-        None, "Image", "Correlation", "Manders"
+@pytest.mark.parametrize(
+    "inp,expected",
+    [
+        (((90, 90), (10, 90)), False),
+        (((90, 90), (90, 10)), False),
+        (((90, 90), (10, 10)), False),
+        (((90, 90), (90, 90)), True),
+        (((20, 20), (50, 50)), False),
+        (((20, 20), (20, 50)), False),
+        (((20, 20), (50, 20)), False),
+        (((20, 20), (20, 20)), True),
+
+    ]
+)
+def test_channel_specific_threshold_changes_manders(inp, expected, two_images_with_50_50_overlap):
+    image1, image2 = two_images_with_50_50_overlap
+
+    thr1a, thr1b = inp[0]
+    thr2a, thr2b = inp[1]
+    objects = cellprofiler_core.object.Objects()
+    objects.segmented = numpy.ones_like(image1.pixel_data, dtype=numpy.uint8)
+    workspace1, module1 = make_workspace(
+        image1,
+        image2,
+        objects=objects,
+        thresholds=[thr1a, thr1b]
     )
+    module1.run(workspace1)
 
-    manders1 = m.get_current_measurement(
-        "Image", "Correlation_Manders_%s" % mi[0]
+    workspace2, module2 = make_workspace(
+        image1,
+        image2,
+        objects=objects,
+        thresholds=[thr2a, thr2b]
     )
+    module2.run(workspace2)
 
-    module.thresholds_list[0].threshold_for_channel.value = 10.0
-    module.run(workspace)
+    measure = 'Manders'
+    measure1 = get_x_measurement(workspace1, module1, measure)
+    measure2 = get_x_measurement(workspace2, module2, measure)
+    assert numpy.isnan(measure1) == False
+    assert numpy.isnan(measure2) == False
+    assert (measure1 == measure2) == expected
 
-    m_2 = workspace.measurements
-    mi_2 = module.get_measurement_images(
-        None, "Image", "Correlation", "Manders"
+
+@pytest.mark.parametrize(
+    "inp,expected",
+    [
+        (((90, 90), (10, 90)), False),
+        (((90, 90), (90, 10)), False),
+        (((90, 90), (10, 10)), False),
+        (((90, 90), (90, 90)), True),
+        (((20, 20), (50, 50)), False),
+        (((20, 20), (20, 50)), False),
+        (((20, 20), (50, 20)), False),
+        (((20, 20), (20, 20)), True),
+
+    ]
+)
+def test_channel_specific_threshold_for_object(inp, expected, two_images_with_50_50_overlap):
+    image1, image2 = two_images_with_50_50_overlap
+
+    thr1a, thr1b = inp[0]
+    thr2a, thr2b = inp[1]
+    objects = cellprofiler_core.object.Objects()
+    objects.segmented = numpy.ones_like(image1.pixel_data, dtype=numpy.uint8)
+    workspace1, module1 = make_workspace(
+        image1,
+        image2,
+        objects=objects,
+        thresholds=[thr1a, thr1b]
     )
-    manders2 = m_2.get_current_measurement(
-        "Image", "Correlation_Manders_%s" % mi_2[0]
+    module1.images_or_objects.value = M_OBJECTS
+
+    module1.run(workspace1)
+
+    workspace2, module2 = make_workspace(
+        image1,
+        image2,
+        objects=objects,
+        thresholds=[thr2a, thr2b]
     )
+    module2.images_or_objects.value = M_OBJECTS
+    module2.run(workspace2)
 
-    assert manders1 != manders2
-
-    module.thresholds_list[0].threshold_for_channel.value = 90.0
-    module.thresholds_list[1].threshold_for_channel.value = 10.0
-    module.run(workspace)
-
-    m_3 = workspace.measurements
-    mi_3 = module.get_measurement_images(
-        None, "Image", "Correlation", "Manders"
-    )
-    manders3 = m_3.get_current_measurement(
-        "Image", "Correlation_Manders_%s" % mi_3[0]
-    )
-    assert manders1 != manders3
-    assert manders2 != manders3
-
-
-def test_channel_specific_threshold_for_object():
-    pass
+    measure = 'Manders'
+    measure1 = get_x_measurement(workspace1, module1, measure)
+    measure2 = get_x_measurement(workspace2, module2, measure)
+    assert numpy.isnan(measure1) == False
+    assert numpy.isnan(measure2) == False
+    assert (measure1 == measure2) == expected

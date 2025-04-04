@@ -787,6 +787,7 @@ def test_channel_specific_threshold_changes_manders(inp, expected, two_images_wi
 
     ]
 )
+
 def test_channel_specific_threshold_for_object(inp, expected, two_images_with_50_50_overlap):
     image1, image2 = two_images_with_50_50_overlap
 
@@ -814,8 +815,8 @@ def test_channel_specific_threshold_for_object(inp, expected, two_images_with_50
     module2.run(workspace2)
 
     measure = 'Manders'
-    measure1 = get_x_measurement(workspace1, module1, measure)
-    measure2 = get_x_measurement(workspace2, module2, measure)
+    measure1 = get_x_measurement(workspace1, module1, measure, 'objects')
+    measure2 = get_x_measurement(workspace2, module2, measure, 'objects')
     assert numpy.isnan(measure1) == False
     assert numpy.isnan(measure2) == False
     assert (measure1 == measure2) == expected

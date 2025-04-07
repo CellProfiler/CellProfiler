@@ -395,12 +395,10 @@ def test_anticorrelated():
     assert round(abs(corr - -1), 7) == 0
 
 
-def test_slope():
+def test_slope(uniform_random_image_20):
     """Test the slope measurement"""
-    numpy.random.seed(0)
-    image1 = numpy.random.uniform(size=(10, 10)).astype(numpy.float32)
+    image1, i1 = uniform_random_image_20
     image2 = image1 * 0.5
-    i1 = cellprofiler_core.image.Image(image1)
     i2 = cellprofiler_core.image.Image(image2)
     workspace, module = make_workspace(i1, i2)
     module.run(workspace)
@@ -417,11 +415,16 @@ def test_slope():
         assert round(abs(slope - 2), 7) == 0
 
 
-def test_crop():
-    """Test similarly cropping one image to another"""
+@pytest.fixture(scope="function")
+def uniform_random_image_20():
     numpy.random.seed(0)
     image1 = numpy.random.uniform(size=(20, 20))
     i1 = cellprofiler_core.image.Image(image1)
+    return image1, i1
+
+def test_crop(uniform_random_image_20):
+    """Test similarly cropping one image to another"""
+    image1, i1 = uniform_random_image_20
     crop_mask = numpy.zeros((20, 20), bool)
     crop_mask[5:16, 5:16] = True
     i2 = cellprofiler_core.image.Image(image1[5:16, 5:16], crop_mask=crop_mask)
@@ -504,11 +507,9 @@ def test_objects():
             assert column[1] in object_features
 
 
-def test_cropped_objects():
+def test_cropped_objects(uniform_random_image_20):
     """Test images and objects with a cropping mask"""
-    numpy.random.seed(0)
-    image1 = numpy.random.uniform(size=(20, 20))
-    i1 = cellprofiler_core.image.Image(image1)
+    image1, i1 = uniform_random_image_20
     crop_mask = numpy.zeros((20, 20), bool)
     crop_mask[5:15, 5:15] = True
     i2 = cellprofiler_core.image.Image(image1[5:15, 5:15], crop_mask=crop_mask)
@@ -560,11 +561,9 @@ def test_no_objects():
             assert column[1] in object_features
 
 
-def test_wrong_size():
+def test_wrong_size(uniform_random_image_20):
     """Regression test of IMG-961 - objects and images of different sizes"""
-    numpy.random.seed(0)
-    image1 = numpy.random.uniform(size=(20, 20))
-    i1 = cellprofiler_core.image.Image(image1)
+    image1, i1 = uniform_random_image_20
     labels = numpy.zeros((10, 30), int)
     labels[:4, :4] = 1
     labels[6:, 6:] = 2
@@ -699,37 +698,12 @@ def two_images_with_50_50_overlap():
     image1.mask = numpy.ones_like(image1.pixel_data, dtype=bool)
     image2.mask = numpy.ones_like(image2.pixel_data, dtype=bool)
     return image1, image2
-
-
-def channel_specific_threshold_workspace(threshold1, threshold2):
-    image1 = numpy.zeros((10, 10), dtype=numpy.float32)
-    image1[2:6, :] = 1
-    image1[-1, -1] = 1
-    image2 = numpy.zeros((10, 10), dtype=numpy.float32)
-    image2[4:8, :] = 1
-    image2[-1, -1] = 1
-    image1 = cellprofiler_core.image.Image(image1)
-    image2 = cellprofiler_core.image.Image(image2)
-    image1.mask = numpy.zeros_like(image1.pixel_data, dtype=bool)
-    image2.mask = numpy.zeros_like(image2.pixel_data, dtype=bool)
-
-    workspace, module = make_workspace(
-        image1,
-        image2,
-    )
-    module.wants_channel_thresholds.set_value(True)
-    module.add_threshold()
-    module.thresholds_list[0].image_name.value = IMAGE1_NAME
-    module.thresholds_list[0].threshold_for_channel.value = threshold1
-    module.add_threshold()
-    module.thresholds_list[1].image_name.value = IMAGE2_NAME
-    module.thresholds_list[1].threshold_for_channel.value = threshold2
-
-    return workspace, module
      
 
+@pytest.mark.parametrize('measure',['Manders','RWC'])
+@pytest.mark.parametrize('method',['Image','objects'])
 @pytest.mark.parametrize(
-    "inp,expected",
+    "inp, expected",
     [
         (((90, 90), (10, 90)), False),
         (((90, 90), (90, 10)), False),
@@ -739,10 +713,11 @@ def channel_specific_threshold_workspace(threshold1, threshold2):
         (((20, 20), (20, 50)), False),
         (((20, 20), (50, 20)), False),
         (((20, 20), (20, 20)), True),
+        (((1, 1), (1, 10)), False)
 
     ]
-)
-def test_channel_specific_threshold_changes_manders(inp, expected, two_images_with_50_50_overlap):
+    )
+def test_channel_specific_threshold_changes_manders(inp, expected, measure, method, two_images_with_50_50_overlap):
     image1, image2 = two_images_with_50_50_overlap
 
     thr1a, thr1b = inp[0]
@@ -765,58 +740,8 @@ def test_channel_specific_threshold_changes_manders(inp, expected, two_images_wi
     )
     module2.run(workspace2)
 
-    measure = 'Manders'
-    measure1 = get_x_measurement(workspace1, module1, measure)
-    measure2 = get_x_measurement(workspace2, module2, measure)
-    assert numpy.isnan(measure1) == False
-    assert numpy.isnan(measure2) == False
-    assert (measure1 == measure2) == expected
-
-
-@pytest.mark.parametrize(
-    "inp,expected",
-    [
-        (((90, 90), (10, 90)), False),
-        (((90, 90), (90, 10)), False),
-        (((90, 90), (10, 10)), False),
-        (((90, 90), (90, 90)), True),
-        (((20, 20), (50, 50)), False),
-        (((20, 20), (20, 50)), False),
-        (((20, 20), (50, 20)), False),
-        (((20, 20), (20, 20)), True),
-
-    ]
-)
-
-def test_channel_specific_threshold_for_object(inp, expected, two_images_with_50_50_overlap):
-    image1, image2 = two_images_with_50_50_overlap
-
-    thr1a, thr1b = inp[0]
-    thr2a, thr2b = inp[1]
-    objects = cellprofiler_core.object.Objects()
-    objects.segmented = numpy.ones_like(image1.pixel_data, dtype=numpy.uint8)
-    workspace1, module1 = make_workspace(
-        image1,
-        image2,
-        objects=objects,
-        thresholds=[thr1a, thr1b]
-    )
-    module1.images_or_objects.value = M_OBJECTS
-
-    module1.run(workspace1)
-
-    workspace2, module2 = make_workspace(
-        image1,
-        image2,
-        objects=objects,
-        thresholds=[thr2a, thr2b]
-    )
-    module2.images_or_objects.value = M_OBJECTS
-    module2.run(workspace2)
-
-    measure = 'Manders'
-    measure1 = get_x_measurement(workspace1, module1, measure, 'objects')
-    measure2 = get_x_measurement(workspace2, module2, measure, 'objects')
+    measure1 = get_x_measurement(workspace1, module1, measure, method)
+    measure2 = get_x_measurement(workspace2, module2, measure, method)
     assert numpy.isnan(measure1) == False
     assert numpy.isnan(measure2) == False
     assert (measure1 == measure2) == expected

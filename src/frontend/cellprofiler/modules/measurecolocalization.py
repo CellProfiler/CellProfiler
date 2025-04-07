@@ -202,17 +202,32 @@ All methods measure correlation on a pixel by pixel basis.
         self.wants_channel_thresholds = Binary(
             "Enable channel specific thresholds?",
             False,
-            doc="""TODO""", #TODO write docstring
+            doc="""\
+Select *{YES}* to specify a unique threshold for images.
+        """.format(
+                **{"YES": "Yes"}
+            ),
+        #TODO review docstring
         )
         self.wants_threshold_visualization = Binary(
             "Enable threshold visualization?",
             False,
-            doc="""TODO""", #TODO write docstring
+            doc="""
+Select *{YES}* to choose images to visualize the thresholding output.
+        """.format(
+                **{"YES": "Yes"}
+            ),
+            #TODO review docstring
         )
         self.threshold_visualization_list = ImageListSubscriber(
             "Select images to visualize thresholds",
             [],
-            doc="""TODO""", #TODO write docstring
+            doc="""
+Select images to visualize the thresholding output.
+        """.format(
+                **{"YES": "Yes"}
+            ),
+            #TODO review docstring
         )
 
         self.do_all = Binary(
@@ -321,7 +336,11 @@ Select the image that you want to use for this operation.""",
                 15.0,
                 minval=0.0,
                 maxval=99.0,
-                doc="""TODO""", #TODO
+                doc="""\
+Select the threshold as a percentage of the maximum intensity of the above image [0-99].
+You can set a different threshold for each image selected in the module.
+""",
+                #TODO review docstring
             ),
         )
 
@@ -393,7 +412,11 @@ Select the image that you want to use for this operation.""",
         help_settings = [
             self.images_or_objects,
             self.thr,
-            # TODO complete this list with newly added thresholds
+            # TODO review this list with newly added thresholds
+            self.wants_channel_thresholds,
+            self.wants_threshold_visualization,
+            self.threshold_visualization_list,
+
             self.images_list,
             self.objects_list,
             self.do_all,

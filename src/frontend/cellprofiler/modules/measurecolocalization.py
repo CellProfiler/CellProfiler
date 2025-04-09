@@ -200,14 +200,13 @@ All methods measure correlation on a pixel by pixel basis.
         self.spacer_4 = Divider(line=True)
         self.thresholds_count = HiddenCount(self.thresholds_list)
         self.wants_channel_thresholds = Binary(
-            "Enable channel specific thresholds?",
+            "Enable image specific thresholds?",
             False,
             doc="""\
-Select *{YES}* to specify a unique threshold for images.
+Select *{YES}* to specify a unique threshold fo selected images.
         """.format(
                 **{"YES": "Yes"}
             ),
-        #TODO review docstring
         )
         self.wants_threshold_visualization = Binary(
             "Enable threshold visualization?",
@@ -217,7 +216,6 @@ Select *{YES}* to choose images to visualize the thresholding output.
         """.format(
                 **{"YES": "Yes"}
             ),
-            #TODO review docstring
         )
         self.threshold_visualization_list = ImageListSubscriber(
             "Select images to visualize thresholds",
@@ -227,7 +225,6 @@ Select images to visualize the thresholding output.
         """.format(
                 **{"YES": "Yes"}
             ),
-            #TODO review docstring
         )
 
         self.do_all = Binary(
@@ -314,7 +311,7 @@ Alternatively, you may want to disable these specific measurements entirely
 """
         )
         self.add_threshold_button = DoSomething("", "Add another threshold", self.add_threshold)
-
+        #TODO: Automatically add one threshold box below when this button is pressed if one does not exist already
 
     def add_threshold(self, removable=True):
         group = SettingsGroup()
@@ -332,7 +329,7 @@ Select the image that you want to use for this operation.""",
         group.append(
             "threshold_for_channel",
             Float(
-                "Threshold for image",
+                "Select the threshold as a percentage of the maximum intensity of the selected image.",
                 15.0,
                 minval=0.0,
                 maxval=99.0,
@@ -340,7 +337,6 @@ Select the image that you want to use for this operation.""",
 Select the threshold as a percentage of the maximum intensity of the above image [0-99].
 You can set a different threshold for each image selected in the module.
 """,
-                #TODO review docstring
             ),
         )
 
@@ -412,7 +408,6 @@ You can set a different threshold for each image selected in the module.
         help_settings = [
             self.images_or_objects,
             self.thr,
-            # TODO review this list with newly added thresholds
             self.wants_channel_thresholds,
             self.wants_threshold_visualization,
             self.threshold_visualization_list,
@@ -483,6 +478,7 @@ You can set a different threshold for each image selected in the module.
         num_image_rows = 1 
         num_image_cols = 1 # for the results table and original images
         # For each image, create a new column and for each object, create a new row of subplot
+        #TODO: add another column as a buffer to prevent overdrawing onto the images / alternatively look into changing width prop of the table component
         if self.wants_threshold_visualization.value and self.threshold_visualization_list.value:
             num_image_cols += len(self.threshold_visualization_list.value)
             if self.wants_objects():
@@ -538,7 +534,7 @@ You can set a different threshold for each image selected in the module.
                 if numpy.any(image_mask):
                     threshold_value = self.get_image_threshold_value(image_name)
                     thr_i = threshold_value * numpy.max(image_pixel_data) / 100
-                    thr_i_out = image_pixel_data > thr_i # TODO: ask if mask shouldbe outputted or original values at the mask positions
+                    thr_i_out = image_pixel_data > thr_i
                     imshow(
                         idx,
                         plotting_row, 

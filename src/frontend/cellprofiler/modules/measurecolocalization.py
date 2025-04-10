@@ -571,7 +571,7 @@ You can set a different threshold for each image selected in the module.
                         im_threshold = self.get_image_threshold_value(image_name)
                         # Threshold as percentage of maximum intensity of objects in each channel
                         scaled_image = (im_threshold / 100) * fix(
-                            scipy.ndimage.maximum(image_pixels, labels, lrange) # TODO: review this implementation
+                            scipy.ndimage.maximum(image_pixels, labels, lrange)
                         )
 
                         # convert 1d array into 2d image using mask as index

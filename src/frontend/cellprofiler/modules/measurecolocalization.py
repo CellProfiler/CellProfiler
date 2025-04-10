@@ -585,7 +585,7 @@ You can set a different threshold for each image selected in the module.
                             sharexy=figure.subplot(0, 0)
                         )
                         plotting_row += 1
-                                      
+
 
     def get_image_threshold_value(self, image_name):
         if self.wants_channel_thresholds.value:
@@ -1005,19 +1005,6 @@ You can set a different threshold for each image selected in the module.
                 tss = (im2_threshold / 100) * fix(
                     scipy.ndimage.maximum(second_pixels, labels, lrange)
                 )
-                # # below is the same as tff
-                # tff2 = (im1_threshold / 100) * fix(
-                #     scipy.ndimage.maximum((objects.crop_image_similarly(first_image.pixel_data))*mask, (objects.segmented)*mask, lrange)
-                # )
-                # combined_thresh = (((objects.crop_image_similarly(first_image.pixel_data))*mask) >= tff2[((objects.segmented)*mask) - 1])
-                # # tff2 has length 1610, same as the number of objects. objects.segmented contains the labels assigned to each object.
-                # # We want to use these labels and map them to the intensity values in tff2 per object label. i.e. replace object label 3 with 
-                # # tff2[3]
-                # object_mask = objects.segmented.copy().astype(float)
-                # for object_idx in lrange:
-                #     object_mask[object_mask == object_idx-1] = tff2[object_idx-1] # do we need to subtract 1 here?
-
-                # ###############
 
                 combined_thresh = (first_pixels >= tff[labels - 1]) & (
                     second_pixels >= tss[labels - 1]

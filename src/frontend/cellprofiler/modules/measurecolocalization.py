@@ -559,12 +559,11 @@ You can set a different threshold for each image selected in the module.
                         image_mask, m1 = size_similarly(labels, image.mask)
                         image_mask[~m1] = False
 
-                    # This part is slightly different from the run_image_pair_objects code
                     mask = ((labels > 0) & image_mask) & (~numpy.isnan(image_pixels))
-                    labels = labels * mask # changed from labels[mask] to keep the labels as a 2D array
+                    labels = labels[mask]
                     
                     if numpy.any(mask):
-                        image_pixels = image_pixels * mask # changed from image_pixels[mask] to keep the labels as a 2D array
+                        image_pixels = image_pixels[mask]
                     n_objects = objects.count
 
                     if (not (n_objects == 0)) and (not (numpy.where(mask)[0].__len__() == 0)):
@@ -574,11 +573,14 @@ You can set a different threshold for each image selected in the module.
                         scaled_image = (im_threshold / 100) * fix(
                             scipy.ndimage.maximum(image_pixels, labels, lrange) # TODO: review this implementation
                         )
-                        threshold_mask = (image_pixels >= scaled_image[labels - 1])
+
+                        # convert 1d array into 2d image using mask as index
+                        threshold_mask_image = numpy.zeros_like(mask)
+                        threshold_mask_image[mask] = (image_pixels >= scaled_image[labels - 1])
                         imshow(
                             idx,
                             plotting_row,
-                            threshold_mask,
+                            threshold_mask_image,
                             title=image_name  + f" ({object_name}), (Threshold: {im_threshold})",
                             sharexy=figure.subplot(0, 0)
                         )

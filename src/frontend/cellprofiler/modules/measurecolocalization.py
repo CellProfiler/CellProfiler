@@ -207,8 +207,7 @@ Select *{YES}* to specify a unique threshold fo selected images.
         """.format(
                 **{"YES": "Yes"}
             ),
-            callback=self.temp_callback,
-            # callback=lambda x: print("callback called") and self.add_threshold() if ((self.thresholds_count == 0) and self.wants_channel_thresholds.value) else None,
+            callback=self.__auto_add_threshold_input_box,
         )
         self.wants_threshold_visualization = Binary(
             "Enable threshold visualization?",
@@ -314,7 +313,7 @@ Alternatively, you may want to disable these specific measurements entirely
         )
         self.add_threshold_button = DoSomething("", "Add another threshold", self.add_threshold)
     
-    def temp_callback(self, x):
+    def __auto_add_threshold_input_box(self, _):
         if not self.wants_channel_thresholds.value:
             if self.thresholds_count.value == 0:
                 self.add_threshold()    

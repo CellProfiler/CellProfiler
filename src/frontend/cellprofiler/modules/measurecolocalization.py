@@ -207,6 +207,8 @@ Select *{YES}* to specify a unique threshold fo selected images.
         """.format(
                 **{"YES": "Yes"}
             ),
+            callback=self.temp_callback,
+            # callback=lambda x: print("callback called") and self.add_threshold() if ((self.thresholds_count == 0) and self.wants_channel_thresholds.value) else None,
         )
         self.wants_threshold_visualization = Binary(
             "Enable threshold visualization?",
@@ -215,7 +217,7 @@ Select *{YES}* to specify a unique threshold fo selected images.
 Select *{YES}* to choose images to visualize the thresholding output.
         """.format(
                 **{"YES": "Yes"}
-            ),
+            )
         )
         self.threshold_visualization_list = ImageListSubscriber(
             "Select images to visualize thresholds",
@@ -311,8 +313,12 @@ Alternatively, you may want to disable these specific measurements entirely
 """
         )
         self.add_threshold_button = DoSomething("", "Add another threshold", self.add_threshold)
-        #TODO: Automatically add one threshold box below when this button is pressed if one does not exist already
-
+    
+    def temp_callback(self, x):
+        if not self.wants_channel_thresholds.value:
+            if self.thresholds_count.value == 0:
+                self.add_threshold()    
+        
     def add_threshold(self, removable=True):
         group = SettingsGroup()
         group.removable = removable
@@ -475,10 +481,9 @@ You can set a different threshold for each image selected in the module.
             helptext = "default"
         else:
             helptext = " "
-        num_image_rows = 1 
-        num_image_cols = 1 # for the results table and original images
+        num_image_rows = 1 # for the original images
+        num_image_cols = 2 # for the results table + padding before the results table to prevent overlap
         # For each image, create a new column and for each object, create a new row of subplot
-        #TODO: add another column as a buffer to prevent overdrawing onto the images / alternatively look into changing width prop of the table component
         if self.wants_threshold_visualization.value and self.threshold_visualization_list.value:
             num_image_cols += len(self.threshold_visualization_list.value)
             if self.wants_objects():

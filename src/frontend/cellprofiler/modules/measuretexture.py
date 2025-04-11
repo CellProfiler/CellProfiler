@@ -547,9 +547,7 @@ measured and will result in a undefined value in the output file.
 
         gray_levels = int(self.gray_levels.value)
 
-        unique_labels = numpy.unique(labels)
-        if unique_labels[0] == 0:
-            unique_labels = unique_labels[1:]
+        unique_labels = objects.indices
 
         n_directions = 13 if objects.volumetric else 4
 
@@ -594,17 +592,16 @@ measured and will result in a undefined value in the output file.
                 pixel_data, in_range=(0, 255), out_range=(0, gray_levels - 1)
             ).astype(numpy.uint8)
         props = skimage.measure.regionprops(labels, pixel_data)
+        features = numpy.empty((n_directions, 13, max(unique_labels)))
 
-        features = numpy.empty((n_directions, 13, len(unique_labels)))
-
-        for index, prop in enumerate(props):
+        for prop in props:
             label_data = prop["intensity_image"]
             try:
-                features[:, :, index] = mahotas.features.haralick(
+                features[:, :, prop.label-1] = mahotas.features.haralick(
                     label_data, distance=scale, ignore_zeros=True
                 )
             except ValueError:
-                features[:, :, index] = numpy.nan
+                features[:, :, prop.label-1] = numpy.nan
 
         for direction, direction_features in enumerate(features):
             for feature_name, feature in zip(F_HARALICK, direction_features):

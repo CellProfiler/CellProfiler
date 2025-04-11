@@ -180,6 +180,47 @@ def test_two_objects():
         assert numpy.all(expected_labels == output_labels)
 
 
+def test_objects_with_same_area_no_shrink():
+    """Test creation of two tertiary objects, one with the same area"""
+    primary_labels = numpy.zeros((10, 20), int)
+    secondary_labels = numpy.zeros((10, 20), int)
+    expected_primary_parents = numpy.zeros((10, 20), int)
+    expected_secondary_parents = numpy.zeros((10, 20), int)
+    primary_labels[3:6, 4:7] = 1
+    primary_labels[3:6, 14:18] = 2
+    secondary_labels[3:6, 4:7] = 1
+    secondary_labels[2:7, 13:19] = 2
+    expected_primary_parents[2:7, 13:19] = 2
+    expected_primary_parents[3:6, 14:18] = 0
+    expected_primary_parents[3, 4] = 1
+    expected_secondary_parents[expected_primary_parents > 0] = expected_primary_parents[
+        expected_primary_parents > 0
+    ]
+
+    workspace = make_workspace(primary_labels, secondary_labels)
+    module = workspace.module
+    module.shrink_primary.value = False
+    module.run(workspace)
+    measurements = workspace.measurements
+    count_feature = "Count_%s" % TERTIARY
+    value = measurements.get_current_measurement("Image", count_feature)
+    assert value == 2
+
+    output_labels = workspace.object_set.get_objects(TERTIARY).segmented
+    for parent_name, parent_labels in (
+        (PRIMARY, expected_primary_parents),
+        (SECONDARY, expected_secondary_parents),
+    ):
+        parents_of_feature = "Parent_%s" % parent_name
+        pvalue = measurements.get_current_measurement(TERTIARY, parents_of_feature)
+        label_map = numpy.zeros((numpy.product(pvalue.shape) + 1,), int)
+        label_map[1:] = pvalue.flatten()
+        mapped_labels = label_map[output_labels]
+        assert numpy.all(parent_labels == mapped_labels)
+
+
+
+
 def test_overlapping_secondary():
     """Make sure that an overlapping tertiary is assigned to the larger parent"""
     expected_primary_parents = numpy.zeros((10, 20), int)
@@ -337,6 +378,8 @@ def test_do_not_shrink_identical():
     secondary_labels[3:6, 14:17] = 2
     primary_labels[13:16, 14:17] = 4
     secondary_labels[13:16, 14:17] = 4
+    expected_labels[3, 14] = 2
+    expected_labels[13, 14] = 4
     workspace = make_workspace(primary_labels, secondary_labels)
 
     module = workspace.module
@@ -348,7 +391,7 @@ def test_do_not_shrink_identical():
     measurements = workspace.measurements
     count_feature = "Count_%s" % TERTIARY
     value = measurements.get_current_measurement("Image", count_feature)
-    assert value == 3
+    assert value == 4
 
     child_count_feature = "Children_%s_Count" % TERTIARY
     for parent_name in PRIMARY, SECONDARY:
@@ -357,9 +400,9 @@ def test_do_not_shrink_identical():
         child_count = measurements.get_current_measurement(
             parent_name, child_count_feature
         )
-        for parent, expected_child_count in ((1, 1), (2, 0), (3, 1), (4, 0)):
+        for parent, expected_child_count in ((1, 1), (2, 1), (3, 1), (4, 1)):
             assert child_count[parent - 1] == expected_child_count
-        for child in (1, 3):
+        for child in (1, 2, 3, 4):
             assert parent_of[child - 1] == child
 
     for location_feature in (
@@ -367,7 +410,7 @@ def test_do_not_shrink_identical():
         M_LOCATION_CENTER_Y,
     ):
         values = measurements.get_current_measurement(TERTIARY, location_feature)
-        assert numpy.all(numpy.isnan(values) == [False, True, False])
+        assert numpy.all(numpy.isnan(values) == [False, False, False, False])
 
 
 def test_do_not_shrink_missing():
@@ -489,3 +532,60 @@ def test_load_v3():
     assert module.primary_objects_name.value == "IdentifyPrimaryObjects"
     assert module.subregion_objects_name.value == "IdentifyTertiaryObjects"
     assert module.shrink_primary.value
+
+
+def test_no_secondary_objects():
+    """Test the case where there are no secondary objects"""
+    primary_labels = numpy.zeros((10, 20), int)
+    secondary_labels = numpy.zeros((10, 20), int)
+    primary_labels[3:6, 4:7] = 1
+    primary_labels[3:6, 14:17] = 2
+    expected_labels = numpy.zeros((10, 20), int)
+    # expected_labels[3:6, 4:7] = 1
+    workspace = make_workspace(primary_labels, secondary_labels)
+    module = workspace.module
+    module.shrink_primary.value = False
+    module.run(workspace)
+    measurements = workspace.measurements
+
+    output_objects = workspace.object_set.get_objects(TERTIARY)
+    assert numpy.all(output_objects.segmented == expected_labels)
+    
+
+def test_first_primary_object_has_no_secondary():
+    """Test the case where the first primary object has no secondary objects"""
+    primary_labels = numpy.zeros((10, 20), int)
+    secondary_labels = numpy.zeros((10, 20), int)
+    primary_labels[3:6, 4:7] = 1
+    primary_labels[3:6, 14:17] = 2
+    secondary_labels[2:7, 12:19] = 1
+    expected_labels = numpy.zeros((10, 20), int)
+    expected_labels[2:7, 12:19] = 1
+    expected_labels[3:6, 14:17] = 0
+    # expected_labels[3:6, 4:7] = 1
+    workspace = make_workspace(primary_labels, secondary_labels)
+    module = workspace.module
+    module.shrink_primary.value = False
+    module.run(workspace)
+    measurements = workspace.measurements
+
+    output_objects = workspace.object_set.get_objects(TERTIARY)
+    assert numpy.all(output_objects.segmented == expected_labels)
+
+def test_no_primary_objects():
+    """Test the case where there are no primary objects"""
+    primary_labels = numpy.zeros((10, 20), int)
+    secondary_labels = numpy.zeros((10, 20), int)
+    secondary_labels[2:7, 4:7] = 1
+    secondary_labels[2:7, 14:17] = 2
+    expected_labels = numpy.zeros((10, 20), int)
+    expected_labels[2:7, 4:7] = 1
+    expected_labels[2:7, 14:17] = 2
+    workspace = make_workspace(primary_labels, secondary_labels)
+    module = workspace.module
+    module.shrink_primary.value = False
+    module.run(workspace)
+    measurements = workspace.measurements
+
+    output_objects = workspace.object_set.get_objects(TERTIARY)
+    assert numpy.all(output_objects.segmented == expected_labels)

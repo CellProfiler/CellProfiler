@@ -190,7 +190,6 @@ def test_objects_with_same_area_no_shrink():
     primary_labels[3:6, 14:18] = 2
     secondary_labels[3:6, 4:7] = 1
     secondary_labels[2:7, 13:19] = 2
-    # expected_primary_parents[3:6, 4:7] = 1
     expected_primary_parents[2:7, 13:19] = 2
     expected_primary_parents[3:6, 14:18] = 0
     expected_secondary_parents[expected_primary_parents > 0] = expected_primary_parents[

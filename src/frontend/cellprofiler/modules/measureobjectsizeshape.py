@@ -378,6 +378,21 @@ F_STANDARD = [
     F_MAX_Y,
 ]
 
+DEFAULT_INVALID_VALUE_DTYPE = {
+    numpy.float64: numpy.nan,
+    numpy.float32: numpy.nan,
+    numpy.float16: numpy.nan,
+    numpy.uint8: 0,
+    numpy.uint16: 0,
+    numpy.uint32: 0,
+    numpy.uint64: 0,
+    numpy.int8: 0,
+    numpy.int16: 0,
+    numpy.int32: 0,
+    numpy.int64: 0,
+    numpy.bool_: False,
+}
+
 
 class MeasureObjectSizeShape(Module):
     module_name = "MeasureObjectSizeShape"
@@ -814,6 +829,18 @@ module.""".format(
             }
             if self.calculate_advanced.value:
                 features_to_record[F_SOLIDITY] = props["solidity"]
+
+        # ensure that all objects (objects.indices) are represented in the
+        # output, even if they are not present in the label matrix. Fill with nan if missing
+        if len(props["label"]) < nobjects:
+            for i in objects.indices:
+                if i not in props["label"]:
+                    for f in features_to_record:
+                        features_to_record[f] = numpy.insert(
+                            features_to_record[f], i-1, DEFAULT_INVALID_VALUE_DTYPE.get(
+                                features_to_record[f].dtype.type, numpy.nan
+                            )
+                        )
         return features_to_record
 
     def display(self, workspace, figure):

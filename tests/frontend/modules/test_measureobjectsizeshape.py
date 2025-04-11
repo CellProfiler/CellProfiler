@@ -19,13 +19,15 @@ import tests.frontend.modules
 OBJECTS_NAME = "myobjects"
 
 
-def make_workspace(labels):
+def make_workspace(labels, object_set=None):
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler_core.object.ObjectSet()
+
     objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
-    object_set.add_objects(objects, OBJECTS_NAME)
+    if object_set is None:
+        object_set = cellprofiler_core.object.ObjectSet()
+        object_set.add_objects(objects, OBJECTS_NAME)
     m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.set_module_num(1)
@@ -420,6 +422,31 @@ def test_overlapping():
             assert numpy.all(numpy.isnan(v))
         else:
             assert tuple(v) == expected
+
+def test_measurements_overlapping_objects():
+    labels = numpy.zeros((20, 20), int)
+    labels[11:19, 2:7] = 1
+    objects = cellprofiler_core.object.Objects()
+    objects.segmented = labels
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(objects, OBJECTS_NAME)
+    
+    workspace, module = make_workspace(labels, object_set=object_set)
+    # update labels of object1 to 0 to simulate removal of object1 via a module like
+    # identify tertiary objects
+    objects.segmented[labels == 1] = 0
+    module.run(workspace)
+    m = workspace.measurements
+    assert len(workspace.object_set.get_objects(OBJECTS_NAME).indices) == 0
+    for i in workspace.object_set.get_object_names():
+        assert i in ['myobjects']
+    measurements_values = m.get_current_measurement(
+            OBJECTS_NAME,
+            ObjectSizeShapeFeatures.AREA_SHAPE.value
+            + "_"
+            + ObjectSizeShapeFeatures.F_AREA.value,
+        )
+    assert len(measurements_values) == 0
 
 
 def test_max_radius():

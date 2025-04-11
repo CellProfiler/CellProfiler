@@ -180,6 +180,47 @@ def test_two_objects():
         assert numpy.all(expected_labels == output_labels)
 
 
+def test_objects_with_same_area_no_shrink():
+    """Test creation of two tertiary objects, one with the same area"""
+    primary_labels = numpy.zeros((10, 20), int)
+    secondary_labels = numpy.zeros((10, 20), int)
+    expected_primary_parents = numpy.zeros((10, 20), int)
+    expected_secondary_parents = numpy.zeros((10, 20), int)
+    primary_labels[3:6, 4:7] = 1
+    primary_labels[3:6, 14:18] = 2
+    secondary_labels[3:6, 4:7] = 1
+    secondary_labels[2:7, 13:19] = 2
+    # expected_primary_parents[3:6, 4:7] = 1
+    expected_primary_parents[2:7, 13:19] = 2
+    expected_primary_parents[3:6, 14:18] = 0
+    expected_secondary_parents[expected_primary_parents > 0] = expected_primary_parents[
+        expected_primary_parents > 0
+    ]
+
+    workspace = make_workspace(primary_labels, secondary_labels)
+    module = workspace.module
+    module.shrink_primary.value = False
+    module.run(workspace)
+    measurements = workspace.measurements
+    count_feature = "Count_%s" % TERTIARY
+    value = measurements.get_current_measurement("Image", count_feature)
+    assert value == 2
+
+    output_labels = workspace.object_set.get_objects(TERTIARY).segmented
+    for parent_name, parent_labels in (
+        (PRIMARY, expected_primary_parents),
+        (SECONDARY, expected_secondary_parents),
+    ):
+        parents_of_feature = "Parent_%s" % parent_name
+        pvalue = measurements.get_current_measurement(TERTIARY, parents_of_feature)
+        label_map = numpy.zeros((numpy.product(pvalue.shape) + 1,), int)
+        label_map[1:] = pvalue.flatten()
+        mapped_labels = label_map[output_labels]
+        assert numpy.all(parent_labels == mapped_labels)
+
+
+
+
 def test_overlapping_secondary():
     """Make sure that an overlapping tertiary is assigned to the larger parent"""
     expected_primary_parents = numpy.zeros((10, 20), int)

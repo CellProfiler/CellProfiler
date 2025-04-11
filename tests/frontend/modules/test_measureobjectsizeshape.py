@@ -18,13 +18,15 @@ import tests.frontend.modules
 OBJECTS_NAME = "myobjects"
 
 
-def make_workspace(labels):
+def make_workspace(labels, object_set=None):
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler_core.object.ObjectSet()
+
     objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
-    object_set.add_objects(objects, OBJECTS_NAME)
+    if object_set is None:
+        object_set = cellprofiler_core.object.ObjectSet()
+        object_set.add_objects(objects, OBJECTS_NAME)
     m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.set_module_num(1)
@@ -419,6 +421,27 @@ def test_overlapping():
             assert numpy.all(numpy.isnan(v))
         else:
             assert tuple(v) == expected
+
+
+def test_measurements_overlapping_and_non_overlapping_in_same_image():
+    labels = numpy.zeros((20, 20), int)
+    labels[11:19, 2:7] = 2
+    labels[3:8, 3:6] = 1
+    workspace, module = make_workspace(labels)
+    # set the labels for object1 to zero
+    workspace.object_set.get_objects("myobjects").segmented[labels == 1] = 0
+    module.run(workspace)
+    m = workspace.measurements
+    # Check that the measurements for object1 are NaN
+    assert len(workspace.object_set.get_objects("myobjects").indices) == 2
+    measurements_values = m.get_current_measurement(
+            "myobjects",
+            cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE
+            + "_"
+            + cellprofiler.modules.measureobjectsizeshape.F_AREA,
+        )
+    assert len(measurements_values) == 2
+    assert numpy.isnan(measurements_values[0])
 
 
 def test_max_radius():

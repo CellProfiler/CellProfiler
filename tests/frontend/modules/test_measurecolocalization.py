@@ -133,6 +133,35 @@ def test_load_v3():
         assert name in ["Nuclei", "Cells"]
 
 
+def test_load_v5():
+    file = tests.frontend.modules.get_test_resources_directory("measurecolocalization/v5.pipeline")
+    with open(file, "r") as fd:
+        data = fd.read()
+
+    fd = six.moves.StringIO(data)
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+
+    def callback(caller, event):
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
+
+    pipeline.add_listener(callback)
+    pipeline.load(fd)
+    assert len(pipeline.modules()) == 5
+    module = pipeline.modules()[-1]
+    assert (
+        module.images_or_objects.value
+        == cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
+    )
+    assert len(module.images_list.value) == 2
+    assert module.thr == 15.0
+    for name in module.images_list.value:
+        assert name in ["OrigStain1", "OrigStain2"]
+    assert module.wants_channel_thresholds.value is False
+    assert module.wants_threshold_visualization.value is False
+
+    assert len(module.objects_list.value) == 0
+
+
 all_object_measurement_formats = [
     cellprofiler.modules.measurecolocalization.F_CORRELATION_FORMAT,
     cellprofiler.modules.measurecolocalization.F_COSTES_FORMAT,

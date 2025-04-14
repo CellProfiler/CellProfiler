@@ -282,6 +282,16 @@ class WorkspaceView:
                 else get_tertiary_outline_color() if row == 3
                 else wx.WHITE
             )
+        elif row_class == WorkspaceViewImageRow:
+            color = (
+                wx.WHITE
+                if row == 1
+                else wx.GREEN
+                if row == 2
+                else wx.RED
+                if row == 3
+                else wx.BLUE
+            )
         else:
             color = (
                 wx.BLUE
@@ -292,6 +302,7 @@ class WorkspaceView:
                 if row == 3
                 else wx.WHITE
             )
+
         vw_row = row_class(self, color, can_delete)
 
         grid_sizer.Add(vw_row.chooser, (row, C_CHOOSER), flag=wx.EXPAND)

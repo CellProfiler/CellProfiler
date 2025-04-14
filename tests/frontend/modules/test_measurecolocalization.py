@@ -16,10 +16,6 @@ import tests.frontend.modules
 IMAGE1_NAME = "image1"
 IMAGE2_NAME = "image2"
 OBJECTS_NAME = "objects"
-M_IMAGES = cellprofiler.modules.measurecolocalization.M_IMAGES
-M_OBJECTS = cellprofiler.modules.measurecolocalization.M_OBJECTS
-M_IMAGES_AND_OBJECTS = cellprofiler.modules.measurecolocalization.M_IMAGES_AND_OBJECTS
-
 
 def make_workspace(image1, image2, objects=None, thresholds=None):
     """Make a workspace for testing Threshold"""
@@ -744,7 +740,7 @@ def test_non_overlapping_object_intensity():
 
 
 @pytest.fixture(scope="function")
-def two_images_with_50_50_overlap():
+def two_images_with_50_percent_overlap():
     numpy.random.seed(0)
     image1 = numpy.random.rand(10, 10)
     image1[:2, :] = 0
@@ -761,7 +757,7 @@ def two_images_with_50_50_overlap():
     image1.mask = numpy.ones_like(image1.pixel_data, dtype=bool)
     image2.mask = numpy.ones_like(image2.pixel_data, dtype=bool)
     return image1, image2
-     
+
 
 @pytest.mark.parametrize('measure',['Manders','RWC'])
 @pytest.mark.parametrize('method',['Image','objects'])
@@ -780,8 +776,10 @@ def two_images_with_50_50_overlap():
 
     ]
     )
-def test_channel_specific_threshold_changes_manders(inp, expected, measure, method, two_images_with_50_50_overlap):
-    image1, image2 = two_images_with_50_50_overlap
+
+
+def test_channel_specific_threshold_changes_manders(inp, expected, measure, method, two_images_with_50_percent_overlap):
+    image1, image2 = two_images_with_50_percent_overlap
 
     thr1a, thr1b = inp[0]
     thr2a, thr2b = inp[1]

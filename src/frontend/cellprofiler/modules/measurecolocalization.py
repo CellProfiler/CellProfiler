@@ -203,7 +203,7 @@ All methods measure correlation on a pixel by pixel basis.
             "Enable image specific thresholds?",
             False,
             doc="""\
-Select *{YES}* to specify a unique threshold fo selected images.
+Select *{YES}* to specify a unique threshold for selected images. Default value set above will be used for all selected images without a custom threshold.
         """.format(
                 **{"YES": "Yes"}
             ),
@@ -334,7 +334,7 @@ Select the image that you want to use for this operation.""",
         group.append(
             "threshold_for_channel",
             Float(
-                "Select the threshold as a percentage of the maximum intensity of the selected image.",
+                "Set threshold as percentage of maximum intensity of selected image",
                 15.0,
                 minval=0.0,
                 maxval=99.0,

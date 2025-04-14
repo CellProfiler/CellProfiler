@@ -162,6 +162,40 @@ def test_load_v5():
     assert len(module.objects_list.value) == 0
 
 
+def test_load_v6():
+    file = tests.frontend.modules.get_test_resources_directory("measurecolocalization/v6.pipeline")
+    with open(file, "r") as fd:
+        data = fd.read()
+
+    fd = six.moves.StringIO(data)
+    pipeline = cellprofiler_core.pipeline.Pipeline()
+
+    def callback(caller, event):
+        assert not isinstance(event, cellprofiler_core.pipeline.event.LoadException)
+
+    pipeline.add_listener(callback)
+    pipeline.load(fd)
+    assert len(pipeline.modules()) == 5
+    module = pipeline.modules()[-1]
+    assert (
+        module.images_or_objects.value
+        == cellprofiler.modules.measurecolocalization.M_IMAGES
+    )
+    assert len(module.images_list.value) == 2
+    assert module.thr == 15.0
+    for name in module.images_list.value:
+        assert name in ["OrigStain1", "OrigStain2"]
+
+    assert module.get_image_threshold_value("OrigStain1") == 42.5
+    assert module.get_image_threshold_value("OrigStain2") == 15.0
+    assert module.wants_channel_thresholds.value is True
+    assert module.wants_threshold_visualization.value is True
+    assert module.threshold_visualization_list.value[0] == "OrigStain2"
+
+
+    assert len(module.objects_list.value) == 0
+
+
 all_object_measurement_formats = [
     cellprofiler.modules.measurecolocalization.F_CORRELATION_FORMAT,
     cellprofiler.modules.measurecolocalization.F_COSTES_FORMAT,

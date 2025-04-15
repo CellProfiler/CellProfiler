@@ -4,6 +4,7 @@ import os
 import sys
 import textwrap
 import uuid
+import functools
 
 import centrosome.cpmorphology
 import centrosome.outline
@@ -43,6 +44,7 @@ from cellprofiler_core.preferences import get_tertiary_outline_color
 from cellprofiler_core.preferences import get_title_font_name
 from cellprofiler_core.preferences import get_title_font_size
 from cellprofiler_core.utilities.core.object import overlay_labels
+from cellprofiler_core.setting import ValidationError
 
 from ._navigation_toolbar import NavigationToolbar
 from ._outline_artist import OutlineArtist
@@ -146,6 +148,7 @@ class Figure(wx.Frame):
         self.table = None
         self.current_plane = 0
         self.images = {}
+        self.__tile_providers = {}
         self.colorbar = {}
         self.subplot_params = {}
         self.subplot_user_params = {}
@@ -801,6 +804,7 @@ class Figure(wx.Frame):
 
         try:
             del self.images[(x, y)]
+            del self.__tile_providers[(x, y)]
 
             del self.popup_menus[(x, y)]
         except:
@@ -1760,19 +1764,74 @@ class Figure(wx.Frame):
 
         if self.tiled:
             self.navtoolbar.set_tiled()
+            rdr = self.__tile_providers[(x,y)].get_reader(
+                create=False, volume=self.dimensions==3, tiled=self.tiled)
+            self.navtoolbar.tileNum.SetValue(rdr.get_nth())
+            self.navtoolbar.pyramidNum.SetValue(rdr.get_level())
 
-            def go_tile_left(evt):
-                print("go tile left")
-            def go_tile_right(evt):
-                print("go tile right")
-            def go_tile_up(evt):
-                print("go tile up")
-            def go_tile_down(evt):
-                print("go tile down")
-            def go_level_up(evt):
-                print("go level up")
-            def go_level_down(evt):
-                print("go level down")
+            def loop_read_display_subplots(f):
+                numx, numy = self.subplots.shape
+
+                @functools.wraps(f)
+                def do_x(*args):
+                    for xcoord in range(numx):
+                        for ycoord in range(numy):
+                            # get the reader for these coords
+                            sp_rdr = self.__tile_providers[(xcoord, ycoord)].get_reader(
+                                create=False, volume=self.dimensions==3, tiled=self.tiled
+                            )
+
+                            # do the wrapped function
+                            # changin reader state and fetching next tile
+                            self.images[(xcoord, ycoord)] = f(sp_rdr, *args)
+
+                            # update the subplot at these coords
+                            # passing in the updated tile
+                            subplot_item = self.subplot(xcoord, ycoord)
+                            if hasattr(subplot_item, "displayed"):
+                                params = self.subplot_params[(xcoord, ycoord)]
+                                img_data = self.normalize_image(
+                                    self.images[(xcoord, ycoord)], **params
+                                )
+                                subplot_item.displayed.set_data(img_data)
+                            else:
+                                # Should be a table, we don't need the axis.
+                                if not hasattr(subplot_item, "deleted"):
+                                    self.figure.delaxes(subplot_item)
+                                    subplot_item.deleted = True
+                    self.figure.canvas.draw()
+                return do_x
+
+            @loop_read_display_subplots
+            def go_tile_left(sp_rdr, evt):
+                new_tile = sp_rdr.go_tile_left()
+                self.navtoolbar.tileNum.SetValue(sp_rdr.get_nth())
+                return new_tile
+            @loop_read_display_subplots
+            def go_tile_right(sp_rdr, evt):
+                new_tile = sp_rdr.go_tile_right()
+                self.navtoolbar.tileNum.SetValue(sp_rdr.get_nth())
+                return new_tile
+            @loop_read_display_subplots
+            def go_tile_up(sp_rdr, evt):
+                new_tile = sp_rdr.go_tile_up()
+                self.navtoolbar.tileNum.SetValue(sp_rdr.get_nth())
+                return new_tile
+            @loop_read_display_subplots
+            def go_tile_down(sp_rdr, evt):
+                new_tile = sp_rdr.go_tile_down()
+                self.navtoolbar.tileNum.SetValue(sp_rdr.get_nth())
+                return new_tile
+            @loop_read_display_subplots
+            def go_level_up(sp_rdr, evt):
+                new_tile = sp_rdr.go_level_up()
+                self.navtoolbar.pyramidNum.SetValue(sp_rdr.get_level())
+                return new_tile
+            @loop_read_display_subplots
+            def go_level_down(sp_rdr, evt):
+                new_tile = sp_rdr.go_level_down()
+                self.navtoolbar.pyramidNum.SetValue(sp_rdr.get_level())
+                return new_tile
 
             self.navtoolbar.left_tile.Bind(wx.EVT_BUTTON, go_tile_left)
             self.navtoolbar.right_tile.Bind(wx.EVT_BUTTON, go_tile_right)
@@ -1803,6 +1862,53 @@ class Figure(wx.Frame):
                         colors=numpy.array(cplabels[CPLD_OUTLINE_COLOR], float) / 255.0,
                     )
                 )
+
+    @allow_sharexy
+    def subplot_imshow_tiled(self, x, y, initial_image, tile_provider, title=None, normalize=False, volumetric=False, **kwargs):
+        if not self.__tile_providers:
+            self.__tile_providers = dict()
+        # store the FileImage
+        self.__tile_providers[(x,y)] = tile_provider
+
+        if volumetric and initial_image.ndim == 4: # z, x, y, c
+            return self.subplot_imshow(
+                x,
+                y,
+                initial_image[:,:,:,:3],
+                title,
+                normalize=normalize,
+                **kwargs
+            )
+        elif volumetric and initial_image.ndim == 3: # z, x, y
+            return self.subplot_imshow(
+                x,
+                y,
+                initial_image[:,:,:],
+                title,
+                normalize=normalize,
+                **kwargs
+            )
+        elif not volumetric and initial_image.ndim == 3: # x, y, c
+            return self.subplot_imshow(
+                x,
+                y,
+                initial_image[:,:,:3],
+                title,
+                normalize=normalize,
+                **kwargs
+            )
+        elif not volumetric and initial_image.ndim == 2: # x, y
+            return self.subplot_imshow(
+                x,
+                y,
+                initial_image[:,:],
+                title,
+                normalize=normalize,
+                **kwargs
+            )
+        else:
+            raise ValidationError(f"Unexpected image dimensions: {initial_image.shape}")
+
 
     @allow_sharexy
     def subplot_imshow_color(

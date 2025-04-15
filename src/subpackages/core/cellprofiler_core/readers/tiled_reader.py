@@ -20,27 +20,27 @@ class Resolution(TypedDict):
     channels: int
     max_tile_height: int
     max_tile_width: int
-    n_tiles_x: int
     n_tiles_y: int
+    n_tiles_x: int
 
 
 class StandardMetadata(TypedDict):
     endiness: Literal["<", ">"]
     dim_order: str
-    x_idx: int
     y_idx: int
+    x_idx: int
     c_idx: int
     z_idx: int
     t_idx: int
-    x_size: int
     y_size: int
+    x_size: int
     z_size: int
     c_size: int
     t_size: int
-    x_mag: float
-    x_mag_unit: str
     y_mag: float
     y_mag_unit: str
+    x_mag: float
+    x_mag_unit: str
     z_mag: float
     z_mag_unit: str
     shape: tuple[int, ...]
@@ -73,6 +73,14 @@ class TiledImageReader(Reader):
         self.__path = None
         self.__cached_meta = None
         self.__cached_full_meta = None
+        self.__read_tracker = {
+                "level": None,
+                "frame": None,
+                "nth": None,
+                "frame_idx": 0,
+                "row_idx": 1,
+                "col_idx": 2,
+        }
         super().__init__(image_file)
 
     def __del__(self):
@@ -83,6 +91,14 @@ class TiledImageReader(Reader):
             self.__path = self.file.path 
             self.__cached_meta = None
             self.__cached_full_meta = None
+            self.__read_tracker = {
+                    "level": None,
+                    "frame": None,
+                    "nth": None,
+                    "frame_idx": 0,
+                    "row_idx": 1,
+                    "col_idx": 2,
+            }
 
             self.__store = tifffile.imread(self.__path, aszarr=True)
             self.__lru_cache = zarr.LRUStoreCache(self.__store, max_size=2**29)
@@ -110,15 +126,32 @@ class TiledImageReader(Reader):
         :param xywh: a (x, y, w, h) tuple
         :param channel_names: provide the channel names for the OME metadata
 
-        Should return a data array with channel order Z, X, Y, (C)
+        Should return a data array with channel order [Z, ]Y, X[, C]
         """
-        def order_dims(zarr_array: zarr.Array):
-            if zarr_array.ndim == 3:
-                return zarr_array.transpose([1,2,0])
-            if zarr_array.ndim == 4:
-                # TODO: LIS - this is a guess for 3D data, not sure if always true
-                return zarr_array.transpose([0, 2, 3, 1])
-            return zarr_array
+        def order_dims(dask_array: dask.array.Array, level: int):
+            row_idx = self._res[level]["dims"].index("height")
+            col_idx = self._res[level]["dims"].index("width")
+            frame_idx = self._res[level]["dims"].index("sequence")
+
+            standard_idxs = (0, 1, 2)
+            assert row_idx != col_idx
+            assert row_idx != frame_idx
+            assert col_idx != frame_idx
+            assert row_idx in standard_idxs
+            assert col_idx in standard_idxs
+            assert frame_idx in standard_idxs
+
+            idxs: dict[int, slice] = dict()
+            self.__read_tracker["row_idx"] = row_idx
+            self.__read_tracker["col_idx"] = col_idx
+            self.__read_tracker["frame_idx"] = frame_idx
+
+            if dask_array.ndim == 3:
+                return dask_array.transpose([row_idx, col_idx, frame_idx])
+            if dask_array.ndim == 4:
+                # TODO: LIS - implement volumetric
+                raise NotImplementedError("Not yet implemented")
+            return dask_array
 
         path = self.file.path
         if not self.__data or path is None or path != self.__path:
@@ -127,10 +160,19 @@ class TiledImageReader(Reader):
                 reader[int(dataset["path"])]
                 for dataset in reader.attrs["multiscales"][0]["datasets"]
             ]
-            self.__data: list[daskArray] = [order_dims(dask.array.from_zarr(z)) for z in self.__zarr_data]
+            self.__data: list[daskArray] = [
+                order_dims(
+                    dask.array.from_zarr(z),
+                    len(self.__zarr_data)-1
+                ) for z in self.__zarr_data
+            ]
 
         if channel_names is not None:
             channel_names.extend(self._meta["channel_names"])
+
+        self.__read_tracker["level"] = len(self.__data) - 1
+        self.__read_tracker["frame"] = self._set_frame(start=0, stop=3, lvl=self.__read_tracker["level"])
+        self.__read_tracker["nth"] = 0
 
         if wants_metadata_rescale:
             dtype = self._meta["dtype"]
@@ -141,11 +183,94 @@ class TiledImageReader(Reader):
             else:
                 raise TypeError(f"Unsupported data type: {dtype}")
 
-            return self.__data[len(self.__data)-1], (float(info.min), float(info.max))
+            return self.__data[self.__read_tracker["level"]], (float(info.min), float(info.max))
 
         # TODO: - LIS: Not sure what the best thing is to return here yet
         # right now just the lowest resolution in the pyramid
-        return self.__data[len(self.__data)-1]
+        return self.__data[self.__read_tracker["level"]]
+
+    def get_level(self):
+        return self.__read_tracker["level"]
+
+    def get_nth(self):
+        return self.__read_tracker["nth"]
+
+    def get_frame(self):
+        return self.__read_tracker["frame"]
+
+    def _tracked_tile(self):
+        nth = self.__read_tracker["nth"]
+        level = self.__read_tracker["level"]
+        frame = self.__read_tracker["frame"]
+
+        assert nth >= 0
+        assert nth <= self._nn(level), f"only {self._nn(level)} tiles at level {level}, got {nth}"
+
+        return self._tile_n(nth=nth, frame=frame, level=level)
+
+    def go_tile_left(self):
+        nth = self.__read_tracker["nth"]
+        level = self.__read_tracker["level"]
+        curr_x = nth % self._nx(level)
+        if curr_x > 0:
+            self.__read_tracker["nth"] = nth - 1
+        return self._tracked_tile()
+
+    def go_tile_right(self):
+        nth = self.__read_tracker["nth"]
+        level = self.__read_tracker["level"]
+        curr_x = nth % self._nx(level)
+        if curr_x < (self._nx(level) - 1):
+            self.__read_tracker["nth"] = nth + 1
+        return self._tracked_tile()
+
+    def go_tile_up(self):
+        nth = self.__read_tracker["nth"]
+        level = self.__read_tracker["level"]
+        new_nth = nth - self._nx(level)
+        if new_nth >= 0:
+            self.__read_tracker["nth"] = new_nth
+        return self._tracked_tile()
+
+    # up the inverted pyramid (upscale)
+    def go_tile_down(self):
+        nth = self.__read_tracker["nth"]
+        level = self.__read_tracker["level"]
+        new_nth = nth + self._nx(level)
+        if new_nth < self._nn(level):
+            self.__read_tracker["nth"] = new_nth
+        return self._tracked_tile()
+
+    #  down the inverted pyramid (downscale)
+    def go_level_up(self):
+        level = self.__read_tracker["level"]
+        nth = self.__read_tracker["nth"]
+        if level < (len(self._res) - 1):
+            new_iy = self._iy(level, nth) // 2
+            new_ix = self._ix(level, nth) // 2
+
+            level += 1
+
+            new_nx = self._nx(level)
+
+            self.__read_tracker["level"] = level
+            self.__read_tracker["nth"] = new_iy * new_nx + new_ix
+        return self._tracked_tile()
+
+    def go_level_down(self):
+        level = self.__read_tracker["level"]
+        nth = self.__read_tracker["nth"]
+        if level > 0:
+            new_iy = self._iy(level, nth) * 2
+            new_ix = self._ix(level, nth) * 2
+
+            level = max(0, level - 1)
+
+            new_nx = self._nx(level)
+
+            self.__read_tracker["level"] = level
+            self.__read_tracker["nth"] = new_iy * new_nx + new_ix
+        return self._tracked_tile()
 
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):
@@ -191,13 +316,21 @@ class TiledImageReader(Reader):
         self.__path = None
         self.__cached_meta = None
         self.__cached_full_meta = None
+        self.__read_tracker = {
+                "level": None,
+                "frame": None,
+                "nth": None,
+                "frame_idx": 0,
+                "row_idx": 1,
+                "col_idx": 2,
+        }
 
     def get_series_metadata(self):
         """Should return a dictionary with the following keys:
         Key names are in cellprofiler_core.constants.image
         MD_SIZE_S - int reflecting the number of series
-        MD_SIZE_X - list of X dimension sizes, one element per series.
         MD_SIZE_Y - list of Y dimension sizes, one element per series.
+        MD_SIZE_X - list of X dimension sizes, one element per series.
         MD_SIZE_Z - list of Z dimension sizes, one element per series.
         MD_SIZE_C - list of C dimension sizes, one element per series.
         MD_SIZE_T - list of T dimension sizes, one element per series.
@@ -218,6 +351,7 @@ class TiledImageReader(Reader):
 
             meta_dict[MD_SIZE_Z].append(standard_meta["size_z"])
             meta_dict[MD_SIZE_T].append(standard_meta["size_t"])
+            # TODO: LIS - don't hardcode 0,1,2
             meta_dict[MD_SIZE_C].append(meta_series_shape[0])
             meta_dict[MD_SIZE_Y].append(meta_series_shape[1])
             meta_dict[MD_SIZE_X].append(meta_series_shape[2])
@@ -228,26 +362,11 @@ class TiledImageReader(Reader):
         assert self.__data, "No data read yet (read_tile failed or was never called)"
         assert len(self.__data) > level
         assert level >= 0
+
         _res = self._res
-        col_slice, row_slice = self._n_slices(nth, level)
-        row_idx = _res[level]["dims"].index("height")
-        col_idx = _res[level]["dims"].index("width")
-        frame_idx = _res[level]["dims"].index("sequence")
+        row_slice, col_slice = self._n_slices(nth, level)
 
-        standard_idxs = (0, 1, 2)
-        assert row_idx != col_idx
-        assert row_idx != frame_idx
-        assert col_idx != frame_idx
-        assert row_idx in standard_idxs
-        assert col_idx in standard_idxs
-        assert frame_idx in standard_idxs
-
-        idxs: dict[int, slice] = dict()
-        idxs[row_idx] = row_slice
-        idxs[col_idx] = col_slice
-        idxs[frame_idx] = frame
-
-        tile = self.__data[level][idxs[0], idxs[1], idxs[2]].transpose(row_idx, col_idx, frame_idx)
+        tile = self.__data[level][row_slice, col_slice, frame]
 
         assert 0 not in tile.shape, f"invalid shape {tile.shape}, from idxs {idxs}"
 
@@ -288,16 +407,16 @@ class TiledImageReader(Reader):
 
         assert n_tiles_x > 0
 
-        col_start = int(tile_col * self._res[lvl]["max_tile_width"])
-        col_end = int(col_start + self._res[lvl]["max_tile_width"])
-
         row_start = int(tile_row * self._res[lvl]["max_tile_height"])
         row_end = int(row_start + self._res[lvl]["max_tile_height"])
 
-        assert col_end > col_start
+        col_start = int(tile_col * self._res[lvl]["max_tile_width"])
+        col_end = int(col_start + self._res[lvl]["max_tile_width"])
+
         assert row_end > row_start
+        assert col_end > col_start
         
-        return (slice(col_start, col_end, 1), slice(row_start, row_end, 1))
+        return (slice(row_start, row_end, 1), slice(col_start, col_end, 1))
 
     def _nn(self, lvl: int):
         """num of nth values"""
@@ -352,7 +471,7 @@ class TiledImageReader(Reader):
             self.__cached_full_meta = self.__extract_metadata(max_pages=None, include_tags=True)
         return self.__cached_full_meta
 
-    # TODO: - LIS: Clean this up
+    # TODO: LIS - Clean this up
 
     def __extract_standard_metadata(self) -> StandardMetadata:
         full_meta = self.__extract_metadata(max_pages=None, include_tags=False)
@@ -361,28 +480,28 @@ class TiledImageReader(Reader):
         endiness = "<" if pixels_meta["@BigEndian"] == "false" else ">"
         dim_order = str(pixels_meta["@DimensionOrder"])
 
-        x_idx = dim_order.index("X")
         y_idx = dim_order.index("Y")
+        x_idx = dim_order.index("X")
         c_idx = dim_order.index("C")
         z_idx = dim_order.index("Z")
         t_idx = dim_order.index("T")
 
-        x_size = int(pixels_meta["@SizeX"])
         y_size = int(pixels_meta["@SizeY"])
+        x_size = int(pixels_meta["@SizeX"])
         z_size = int(pixels_meta["@SizeZ"])
         c_size = int(pixels_meta["@SizeC"])
         t_size = int(pixels_meta["@SizeT"])
 
-        x_mag = float(pixels_meta["@PhysicalSizeX"])
-        x_mag_unit = str(pixels_meta["@PhysicalSizeXUnit"])
         y_mag = float(pixels_meta["@PhysicalSizeY"])
         y_mag_unit = str(pixels_meta["@PhysicalSizeYUnit"])
+        x_mag = float(pixels_meta["@PhysicalSizeX"])
+        x_mag_unit = str(pixels_meta["@PhysicalSizeXUnit"])
         z_mag = float(pixels_meta["@PhysicalSizeZ"])
         z_mag_unit = str(pixels_meta["@PhysicalSizeZUnit"])
 
         shape = [1] * 5
-        shape[x_idx] = x_size
         shape[y_idx] = y_size
+        shape[x_idx] = x_size
         shape[c_idx] = c_size
         shape[z_idx] = z_size
         shape[t_idx] = t_size
@@ -412,8 +531,8 @@ class TiledImageReader(Reader):
             level_channels = level_shape[levels_seq_idx]
             level_max_tile_height = min(tile_height, level_height)
             level_max_tile_width = min(tile_width, level_width)
-            level_n_tiles_x = ceil(level_width / level_max_tile_width)
             level_n_tiles_y = ceil(level_height / level_max_tile_height)
+            level_n_tiles_x = ceil(level_width / level_max_tile_width)
 
             resolutions[i] = {
                 "shape": level_shape,
@@ -423,27 +542,27 @@ class TiledImageReader(Reader):
                 "channels": level_channels,
                 "max_tile_height": level_max_tile_height,
                 "max_tile_width": level_max_tile_width,
+                "n_tiles_y": level_n_tiles_y,
                 "n_tiles_x": level_n_tiles_x,
-                "n_tiles_y": level_n_tiles_y
             }
 
         return {
             "endiness": endiness,
             "dim_order": dim_order,
-            "x_idx": x_idx,
             "y_idx": y_idx,
+            "x_idx": x_idx,
             "c_idx": c_idx,
             "z_idx": z_idx,
             "t_idx": t_idx,
-            "x_size": x_size,
             "y_size": y_size,
+            "x_size": x_size,
             "z_size": z_size,
             "c_size": c_size,
             "t_size": t_size,
-            "x_mag": x_mag,
-            "x_mag_unit": x_mag_unit,
             "y_mag": y_mag,
             "y_mag_unit": y_mag_unit,
+            "x_mag": x_mag,
+            "x_mag_unit": x_mag_unit,
             "z_mag": z_mag,
             "z_mag_unit": z_mag_unit,
             "shape": shape,
@@ -605,5 +724,4 @@ class TiledImageReader(Reader):
         del tif
 
         return metadata
-
 

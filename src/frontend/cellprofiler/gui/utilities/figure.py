@@ -161,7 +161,9 @@ def show_image(url, parent=None, needs_raise_after=True, dimensions=2, series=No
     frame = Figure(parent=parent, title=filename)
     frame.set_subplots(subplots=(1,1), dimensions=dimensions, tiled=tiled)
 
-    if dimensions == 2 and image.ndim == 3:  # multichannel images
+    if tiled:
+        frame.subplot_imshow_tiled(0, 0, image, provider, title=filename, normalize=True)
+    elif dimensions == 2 and image.ndim == 3:  # multichannel images
         frame.subplot_imshow_color(0, 0, image[:, :, :3], title=filename, normalize=True)
     else:  # grayscale image or volume
         frame.subplot_imshow_grayscale(0, 0, image, title=filename, normalize=True)

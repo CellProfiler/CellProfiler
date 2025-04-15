@@ -84,7 +84,7 @@ class Reader(ABC):
         :param xywh: a (x, y, w, h) tuple
         :param channel_names: provide the channel names for the OME metadata
 
-        Should return a data array with channel order X, Y, (C)
+        Should return a data array with channel order Y, X, (C)
         """
         raise NotImplementedError(f"This reader ({self.reader_name}) does not support plain reads (perhaps it only supports volume or tiled reading).")
 
@@ -110,7 +110,7 @@ class Reader(ABC):
         :param xywh: a (x, y, w, h) tuple
         :param channel_names: provide the channel names for the OME metadata
 
-        Should return a data array with channel order Z, X, Y, (C)
+        Should return a data array with channel order Z, Y, X, (C)
         """
         raise NotImplementedError(f"This reader ({self.reader_name}) does not support 3D reading.")
 
@@ -134,7 +134,7 @@ class Reader(ABC):
         :param xywh: a (x, y, w, h) tuple
         :param channel_names: provide the channel names for the OME metadata
 
-        Should return a data array with channel order Z, X, Y, (C)
+        Should return a data array with channel order (Z, )Y, X(, C)
         """
         raise NotImplementedError(f"This reader ({self.reader_name}) does not support tiled reading.")
 

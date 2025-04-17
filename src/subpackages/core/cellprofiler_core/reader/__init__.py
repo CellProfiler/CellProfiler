@@ -3,6 +3,7 @@ import sys
 import traceback
 
 from ._reader import Reader
+from ._large_image_reader import LargeImageReader
 from ..constants.reader import ALL_READERS, builtin_readers, BAD_READERS, AVAILABLE_READERS
 
 import logging

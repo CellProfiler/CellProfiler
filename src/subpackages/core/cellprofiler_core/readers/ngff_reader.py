@@ -186,6 +186,8 @@ class NGFFReader(Reader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         ."""
+        if tiled:
+            return -1
         if FORMAT_TESTER.search(image_file.url) is not None:
             head, tail = os.path.splitext(image_file.path)
             if tail.lower() not in ('', '.zarr'):

@@ -65,6 +65,10 @@ cellprofiler = { path = "./src/frontend", extras = ["test"], editable = true }
 py-spy = "*"
 memray = "*"
 
+[feature.jupyter.dependencies]
+ipykernel = "*"
+
 [environments]
 dev = ["mod", "java", "mysql"]
 profile = ["mod", "java", "mysql", "profile"]
+hack = ["mod", "java", "mysql", "jupyter"]

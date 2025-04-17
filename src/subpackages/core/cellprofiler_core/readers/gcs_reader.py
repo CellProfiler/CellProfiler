@@ -55,6 +55,9 @@ class GcsReader(ImageIOReader):
 
         The volume parameter specifies whether the reader will need to return a 3D array.
         """
+        if tiled:
+            return -1
+
         if image_file.scheme not in SUPPORTED_SCHEMES:
             return -1
 

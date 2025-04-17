@@ -74,12 +74,16 @@ class TiledImageReader(LargeImageReader):
         self.__cached_meta = None
         self.__cached_full_meta = None
         self._read_tracker = {
-                "level": None,
-                "frame": None,
-                "nth": None,
-                "frame_idx": 0,
-                "row_idx": 1,
-                "col_idx": 2,
+            "level": None,
+            "nth": None,
+            "c": None,
+            "z": None,
+            "t": None,
+        }
+        self.__dim_idxs = {
+            "channel_idx": 0,
+            "row_idx": 1,
+            "col_idx": 2,
         }
         super().__init__(image_file)
 
@@ -92,12 +96,16 @@ class TiledImageReader(LargeImageReader):
             self.__cached_meta = None
             self.__cached_full_meta = None
             self._read_tracker = {
-                    "level": None,
-                    "frame": None,
-                    "nth": None,
-                    "frame_idx": 0,
-                    "row_idx": 1,
-                    "col_idx": 2,
+                "level": None,
+                "nth": None,
+                "c": None,
+                "z": None,
+                "t": None,
+            }
+            self.__dim_idxs = {
+                "channel_idx": 0,
+                "row_idx": 1,
+                "col_idx": 2,
             }
 
             self.__store = tifffile.imread(self.__path, aszarr=True)
@@ -131,23 +139,23 @@ class TiledImageReader(LargeImageReader):
         def order_dims(dask_array: dask.array.Array, level: int):
             row_idx = self._res[level]["dims"].index("height")
             col_idx = self._res[level]["dims"].index("width")
-            frame_idx = self._res[level]["dims"].index("sequence")
+            channel_idx = self._res[level]["dims"].index("sequence")
 
             standard_idxs = (0, 1, 2)
             assert row_idx != col_idx
-            assert row_idx != frame_idx
-            assert col_idx != frame_idx
+            assert row_idx != channel_idx
+            assert col_idx != channel_idx
             assert row_idx in standard_idxs
             assert col_idx in standard_idxs
-            assert frame_idx in standard_idxs
+            assert channel_idx in standard_idxs
 
             idxs: dict[int, slice] = dict()
-            self._read_tracker["row_idx"] = row_idx
-            self._read_tracker["col_idx"] = col_idx
-            self._read_tracker["frame_idx"] = frame_idx
+            self.__dim_idxs["row_idx"] = row_idx
+            self.__dim_idxs["col_idx"] = col_idx
+            self.__dim_idxs["channel_idx"] = channel_idx
 
             if dask_array.ndim == 3:
-                return dask_array.transpose([row_idx, col_idx, frame_idx])
+                return dask_array.transpose([row_idx, col_idx, channel_idx])
             if dask_array.ndim == 4:
                 # TODO: LIS - implement volumetric
                 raise NotImplementedError("Not yet implemented")
@@ -171,7 +179,7 @@ class TiledImageReader(LargeImageReader):
             channel_names.extend(self._meta["channel_names"])
 
         self._read_tracker["level"] = len(self.__data) - 1
-        self._read_tracker["frame"] = self._set_frame(start=0, stop=3, lvl=self._read_tracker["level"])
+        self._read_tracker["c"] = self._set_channel(start=0, stop=3, lvl=self._read_tracker["level"])
         self._read_tracker["nth"] = 0
 
         if wants_metadata_rescale:
@@ -192,12 +200,12 @@ class TiledImageReader(LargeImageReader):
     def _tracked_tile(self):
         nth = self._read_tracker["nth"]
         level = self._read_tracker["level"]
-        frame = self._read_tracker["frame"]
+        channel = self._read_tracker["c"]
 
         assert nth >= 0
         assert nth <= self._nn(level), f"only {self._nn(level)} tiles at level {level}, got {nth}"
 
-        return self._tile_n(nth=nth, frame=frame, level=level)
+        return self._tile_n(nth=nth, channel=channel, level=level)
 
     def go_tile_left(self):
         nth = self._read_tracker["nth"]
@@ -305,12 +313,16 @@ class TiledImageReader(LargeImageReader):
         self.__cached_meta = None
         self.__cached_full_meta = None
         self._read_tracker = {
-                "level": None,
-                "frame": None,
-                "nth": None,
-                "frame_idx": 0,
-                "row_idx": 1,
-                "col_idx": 2,
+            "level": None,
+            "nth": None,
+            "c": None,
+            "z": None,
+            "t": None,
+        }
+        self.__dim_idxs = {
+            "channel_idx": 0,
+            "row_idx": 1,
+            "col_idx": 2,
         }
 
     def get_series_metadata(self):
@@ -346,7 +358,7 @@ class TiledImageReader(LargeImageReader):
             meta_dict[MD_SERIES_NAME].append(meta_series["name"] or "<no_name>")
         return meta_dict
 
-    def _tile_n(self, nth: int, frame: slice = slice(0,1,1), level: int = 0) -> daskArray:
+    def _tile_n(self, nth: int, channel: slice = slice(0,1,1), level: int = 0) -> daskArray:
         assert self.__data, "No data read yet (read_tile failed or was never called)"
         assert len(self.__data) > level
         assert level >= 0
@@ -354,26 +366,26 @@ class TiledImageReader(LargeImageReader):
         _res = self._res
         row_slice, col_slice = self._n_slices(nth, level)
 
-        tile = self.__data[level][row_slice, col_slice, frame]
+        tile = self.__data[level][row_slice, col_slice, channel]
 
         assert 0 not in tile.shape, f"invalid shape {tile.shape}, from idxs {idxs}"
 
         return tile
 
-    def _decrement_frame(self, curr_frame: slice, level: Optional[int]) -> slice:
-        return self._set_frame(start = curr_frame.start - 1, stop = curr_frame.stop - 1, step = curr_frame.step, level = level)
+    def _decrement_channel(self, curr_channel: slice, level: Optional[int]) -> slice:
+        return self._set_channel(start = curr_channel.start - 1, stop = curr_channel.stop - 1, step = curr_channel.step, level = level)
 
-    def _increment_frame(self, curr_frame: slice, level: Optional[int]) -> slice:
-        return self._set_frame(start = curr_frame.start + 1, stop = curr_frame.stop + 1, step = curr_frame.step, level = level)
+    def _increment_channel(self, curr_channel: slice, level: Optional[int]) -> slice:
+        return self._set_channel(start = curr_channel.start + 1, stop = curr_channel.stop + 1, step = curr_channel.step, level = level)
 
-    def _set_frame(self, start: int, stop: Optional[int] = None, step: Optional[int] = None, lvl: Optional[int] = None) -> slice:
+    def _set_channel(self, start: int, stop: Optional[int] = None, step: Optional[int] = None, lvl: Optional[int] = None) -> slice:
         if lvl:
-            max_frame = self._res[lvl]["channels"] - 1
+            max_channel = self._res[lvl]["channels"] - 1
         else:
-            max_frame = self._meta["c_size"] - 1
+            max_channel = self._meta["c_size"] - 1
 
-        # start can't surpass max_frame, can't go below 0
-        start = max(0, min(start, max_frame))
+        # start can't surpass max_channel, can't go below 0
+        start = max(0, min(start, max_channel))
 
         if stop is None:
             stop = start + 1
@@ -383,7 +395,7 @@ class TiledImageReader(LargeImageReader):
 
         if step is None:
             step = 1
-        # step is allowed to exceed max_frame, as long as stop is set properly
+        # step is allowed to exceed max_channel, as long as stop is set properly
 
         return slice(start, stop, step)
 

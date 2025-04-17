@@ -7,16 +7,30 @@ This abstract class extends Reader for large image specific reading. Large image
 A LargeImageReader is (more) stateful compared to Reader. While Reader *may* keep state, such as the file handler,
 LargeImageReader keeps track of the current tile and pyramid level.
 """
+from typing import TypedDict, Optional, Union, Tuple
+
 from ._reader import Reader
+
+class ReadTracker(TypedDict):
+    # pyramid level
+    level: Optional[int]
+    # tile number
+    nth: Optional[int]
+    # following may contain a single single idx, or a list of idxs
+    c: Optional[Union[int, list[int]]]
+    z: Optional[Union[int, list[int]]]
+    t: Optional[Union[int, list[int]]]
 
 class LargeImageReader(Reader):
     def __init__(self, image_file):
         super().__init__(image_file)
 
-        self._read_tracker = {
+        self._read_tracker: ReadTracker = {
             "level": None,
-            "frame": None,
             "nth": None,
+            "c": None,
+            "z": None,
+            "t": None,
         }
 
     def read_tiled(self,
@@ -50,8 +64,8 @@ class LargeImageReader(Reader):
     def get_nth(self):
         return self._read_tracker["nth"]
 
-    def get_frame(self):
-        return self._read_tracker["frame"]
+    def get_channel(self):
+        return self._read_tracker["c"]
 
     def go_tile_left(self):
         raise NotImplementedError(f"This reader ({self.reader_name}) does not support tiled reads")

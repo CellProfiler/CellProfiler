@@ -96,6 +96,8 @@ from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingBut
 from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
 from scipy.linalg import lstsq
+from cellprofiler_core.setting.text import ImageName
+from cellprofiler_core.image import Image
 
 M_IMAGES = "Across entire image"
 M_OBJECTS = "Within objects"
@@ -137,6 +139,9 @@ F_RWC_FORMAT = "Correlation_RWC_%s_%s"
 
 """Feature name format for the Costes Coefficient measurement"""
 F_COSTES_FORMAT = "Correlation_Costes_%s_%s"
+
+# This is the text that will be displayed in the blank text for the can_be_blank flag""
+SAVE_IMAGE_THRESHOLDING_METHOD_IMAGE = "Image"
 
 
 class MeasureColocalization(Module):
@@ -563,6 +568,8 @@ You can set a different threshold for each image selected in the module.
                     statistics += self.run_image_pair_objects(
                         workspace, first_image_name, second_image_name, object_name
                     )
+        if self.wants_masks_saved.value:
+            self.save_requested_masks(workspace)
         if self.show_window:
             workspace.display_data.statistics = statistics
             workspace.display_data.col_labels = col_labels
@@ -627,57 +634,104 @@ You can set a different threshold for each image selected in the module.
             image_pixel_data = image.pixel_data
             image_mask = image.mask
             image_mask = image_mask & (~numpy.isnan(image_pixel_data))
+            threshold_value = self.get_image_threshold_value(image_name)
             if self.wants_images():
-                if numpy.any(image_mask):
-                    threshold_value = self.get_image_threshold_value(image_name)
-                    thr_i = threshold_value * numpy.max(image_pixel_data) / 100
-                    thr_i_out = image_pixel_data > thr_i
-                    imshow(
-                        idx,
-                        plotting_row, 
-                        thr_i_out,
-                        title = image_name + f" (Threshold = {threshold_value})",
-                        sharexy=figure.subplot(0, 0)
-                        )
+                
+                thr_i_out = self.get_thresholded_mask(workspace, image_name, t_val=threshold_value)
+                imshow(
+                    idx,
+                    plotting_row, 
+                    thr_i_out,
+                    title = image_name + f" (Threshold = {threshold_value})",
+                    sharexy=figure.subplot(0, 0)
+                    )
                 plotting_row += 1
             if self.wants_objects():
                 for object_name in self.objects_list.value:
-                    objects = workspace.object_set.get_objects(object_name)
-                    labels = objects.segmented
-                    try:
-                        image_pixels = objects.crop_image_similarly(image.pixel_data)
-                        image_mask = objects.crop_image_similarly(image.mask)
-                    except ValueError:
-                        image_pixels, m1 = size_similarly(labels, image.pixel_data)
-                        image_mask, m1 = size_similarly(labels, image.mask)
-                        image_mask[~m1] = False
+                    threshold_mask_image = self.get_thresholded_mask(workspace, image_name, object_name=object_name, t_val=threshold_value)
+                    imshow(
+                        idx,
+                        plotting_row,
+                        threshold_mask_image,
+                        title=image_name  + f" ({object_name}), (Threshold: {threshold_value})",
+                        sharexy=figure.subplot(0, 0)
+                    )
+                    plotting_row += 1
 
-                    mask = ((labels > 0) & image_mask) & (~numpy.isnan(image_pixels))
-                    labels = labels[mask]
-                    
-                    if numpy.any(mask):
-                        image_pixels = image_pixels[mask]
-                    n_objects = objects.count
+    def get_thresholded_mask(self, workspace, image_name, object_name=None, t_val=None):
+        """
+        Get the numpy array of the mask of the thresholded image
 
-                    if (not (n_objects == 0)) and (not (numpy.where(mask)[0].__len__() == 0)):
-                        lrange = numpy.arange(n_objects, dtype=numpy.int32) + 1
-                        im_threshold = self.get_image_threshold_value(image_name)
-                        # Threshold as percentage of maximum intensity of objects in each channel
-                        scaled_image = (im_threshold / 100) * fix(
-                            scipy.ndimage.maximum(image_pixels, labels, lrange)
-                        )
+        :param image: The image object
+        :type image: cellprofiler_core.image.Image
+        :param objects: The objects object, Performs thresholding on the entire image if None
+        :type objects: cellprofiler_core.object.Objects
+        :param t_val: The threshold value to use for thresholding. If not None, the default / user specified value will be overridden
+        :type t_val: float
+        :return: The numpy array of the mask of the thresholded image
+        """
+        image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+        if t_val is None:
+            t_val = self.get_image_threshold_value(image_name)
+        # Thresholding code used from run_image_pair_images() and run_image_pair_objects()
+        image_pixel_data = image.pixel_data
+        image_mask = image.mask
+        image_mask = image_mask & (~numpy.isnan(image_pixel_data))
+        output_image_arr = numpy.zeros_like(image_pixel_data)
+        if object_name is None:
+            # perform on the entire image
+            if numpy.any(image_mask):
+                    thr_i = t_val * numpy.max(image_pixel_data) / 100
+                    output_image_arr = image_pixel_data > thr_i
+        else:
+            # perform on the object
+            objects = workspace.object_set.get_objects(object_name)
+            labels = objects.segmented
+            try:
+                image_pixels = objects.crop_image_similarly(image.pixel_data)
+                image_mask = objects.crop_image_similarly(image.mask)
+            except ValueError:
+                image_pixels, m1 = size_similarly(labels, image.pixel_data)
+                image_mask, m1 = size_similarly(labels, image.mask)
+                image_mask[~m1] = False
 
-                        # convert 1d array into 2d image using mask as index
-                        threshold_mask_image = numpy.zeros_like(mask)
-                        threshold_mask_image[mask] = (image_pixels >= scaled_image[labels - 1])
-                        imshow(
-                            idx,
-                            plotting_row,
-                            threshold_mask_image,
-                            title=image_name  + f" ({object_name}), (Threshold: {im_threshold})",
-                            sharexy=figure.subplot(0, 0)
-                        )
-                        plotting_row += 1
+            mask = ((labels > 0) & image_mask) & (~numpy.isnan(image_pixels))
+            labels = labels[mask]
+            
+            if numpy.any(mask):
+                image_pixels = image_pixels[mask]
+            n_objects = objects.count
+
+            if (not (n_objects == 0)) and (not (numpy.where(mask)[0].__len__() == 0)):
+                lrange = numpy.arange(n_objects, dtype=numpy.int32) + 1
+                # Threshold as percentage of maximum intensity of objects in each channel
+                scaled_image = (t_val / 100) * fix(
+                    scipy.ndimage.maximum(image_pixels, labels, lrange)
+                )
+
+                # convert 1d array into 2d image using mask as index
+                output_image_arr = numpy.zeros_like(mask)
+                output_image_arr[mask] = (image_pixels >= scaled_image[labels - 1])
+        return output_image_arr
+
+
+    def save_requested_masks(self, workspace):
+        # Iterate over the list of save masks
+        for save_mask in self.save_mask_list:
+            image_name = save_mask.image_name.value
+            object_name = save_mask.choose_object.value
+            save_image_name = save_mask.save_image_name.value
+            original_image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
+            
+            if object_name == SAVE_IMAGE_THRESHOLDING_METHOD_IMAGE:
+                object_name = None
+            
+            # Call the relevant funcitons to get the thresholded masks
+            output_image = Image(self.get_thresholded_mask(workspace, image_name, object_name), parent_image=original_image)
+
+            # Save the mask to the image set
+            workspace.image_set.add(save_image_name, output_image)
+            
 
 
     def get_image_threshold_value(self, image_name):

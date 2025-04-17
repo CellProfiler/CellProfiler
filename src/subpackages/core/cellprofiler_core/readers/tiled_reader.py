@@ -73,13 +73,6 @@ class TiledImageReader(LargeImageReader):
         self.__path = None
         self.__cached_meta = None
         self.__cached_full_meta = None
-        self._read_tracker = {
-            "level": None,
-            "nth": None,
-            "c": None,
-            "z": None,
-            "t": None,
-        }
         self.__dim_idxs = {
             "channel_idx": 0,
             "row_idx": 1,
@@ -92,16 +85,14 @@ class TiledImageReader(LargeImageReader):
 
     def __get_reader(self):
         if self.__reader is None:
+            del self.level
+            del self.nth
+            del self.channel
+            del self.plane
+            del self.frame
             self.__path = self.file.path 
             self.__cached_meta = None
             self.__cached_full_meta = None
-            self._read_tracker = {
-                "level": None,
-                "nth": None,
-                "c": None,
-                "z": None,
-                "t": None,
-            }
             self.__dim_idxs = {
                 "channel_idx": 0,
                 "row_idx": 1,
@@ -178,9 +169,9 @@ class TiledImageReader(LargeImageReader):
         if channel_names is not None:
             channel_names.extend(self._meta["channel_names"])
 
-        self._read_tracker["level"] = len(self.__data) - 1
-        self._read_tracker["c"] = self._set_channel(start=0, stop=3, lvl=self._read_tracker["level"])
-        self._read_tracker["nth"] = 0
+        self.level = len(self.__data) - 1
+        self.channel = self._set_channel(start=0, stop=3, lvl=self.level)
+        self.nth = 0
 
         if wants_metadata_rescale:
             dtype = self._meta["dtype"]
@@ -191,16 +182,16 @@ class TiledImageReader(LargeImageReader):
             else:
                 raise TypeError(f"Unsupported data type: {dtype}")
 
-            return self.__data[self._read_tracker["level"]], (float(info.min), float(info.max))
+            return self.__data[self.level], (float(info.min), float(info.max))
 
         # TODO: - LIS: Not sure what the best thing is to return here yet
         # right now just the lowest resolution in the pyramid
-        return self.__data[self._read_tracker["level"]]
+        return self.__data[self.level]
 
     def _tracked_tile(self):
-        nth = self._read_tracker["nth"]
-        level = self._read_tracker["level"]
-        channel = self._read_tracker["c"]
+        nth = self.nth
+        level = self.level
+        channel = self.channel
 
         assert nth >= 0
         assert nth <= self._nn(level), f"only {self._nn(level)} tiles at level {level}, got {nth}"
@@ -208,41 +199,41 @@ class TiledImageReader(LargeImageReader):
         return self._tile_n(nth=nth, channel=channel, level=level)
 
     def go_tile_left(self):
-        nth = self._read_tracker["nth"]
-        level = self._read_tracker["level"]
+        nth = self.nth
+        level = self.level
         curr_x = nth % self._nx(level)
         if curr_x > 0:
-            self._read_tracker["nth"] = nth - 1
+            self.nth = nth - 1
         return self._tracked_tile()
 
     def go_tile_right(self):
-        nth = self._read_tracker["nth"]
-        level = self._read_tracker["level"]
+        nth = self.nth
+        level = self.level
         curr_x = nth % self._nx(level)
         if curr_x < (self._nx(level) - 1):
-            self._read_tracker["nth"] = nth + 1
+            self.nth = nth + 1
         return self._tracked_tile()
 
     def go_tile_up(self):
-        nth = self._read_tracker["nth"]
-        level = self._read_tracker["level"]
+        nth = self.nth
+        level = self.level
         new_nth = nth - self._nx(level)
         if new_nth >= 0:
-            self._read_tracker["nth"] = new_nth
+            self.nth = new_nth
         return self._tracked_tile()
 
     def go_tile_down(self):
-        nth = self._read_tracker["nth"]
-        level = self._read_tracker["level"]
+        nth = self.nth
+        level = self.level
         new_nth = nth + self._nx(level)
         if new_nth < self._nn(level):
-            self._read_tracker["nth"] = new_nth
+            self.nth = new_nth
         return self._tracked_tile()
 
     #  down the inverted pyramid (downscale)
     def go_level_up(self):
-        level = self._read_tracker["level"]
-        nth = self._read_tracker["nth"]
+        level = self.level
+        nth = self.nth
         if level < (len(self._res) - 1):
             new_iy = self._iy(level, nth) // 2
             new_ix = self._ix(level, nth) // 2
@@ -251,14 +242,14 @@ class TiledImageReader(LargeImageReader):
 
             new_nx = self._nx(level)
 
-            self._read_tracker["level"] = level
-            self._read_tracker["nth"] = new_iy * new_nx + new_ix
+            self.level = level
+            self.nth = new_iy * new_nx + new_ix
         return self._tracked_tile()
 
     # up the inverted pyramid (upscale)
     def go_level_down(self):
-        level = self._read_tracker["level"]
-        nth = self._read_tracker["nth"]
+        level = self.level
+        nth = self.nth
         if level > 0:
             new_iy = self._iy(level, nth) * 2
             new_ix = self._ix(level, nth) * 2
@@ -267,8 +258,8 @@ class TiledImageReader(LargeImageReader):
 
             new_nx = self._nx(level)
 
-            self._read_tracker["level"] = level
-            self._read_tracker["nth"] = new_iy * new_nx + new_ix
+            self.level = level
+            self.nth = new_iy * new_nx + new_ix
         return self._tracked_tile()
 
     @classmethod
@@ -312,18 +303,16 @@ class TiledImageReader(LargeImageReader):
         self.__path = None
         self.__cached_meta = None
         self.__cached_full_meta = None
-        self._read_tracker = {
-            "level": None,
-            "nth": None,
-            "c": None,
-            "z": None,
-            "t": None,
-        }
         self.__dim_idxs = {
             "channel_idx": 0,
             "row_idx": 1,
             "col_idx": 2,
         }
+        del self.level
+        del self.nth
+        del self.channel
+        del self.plane
+        del self.frame
 
     def get_series_metadata(self):
         """Should return a dictionary with the following keys:

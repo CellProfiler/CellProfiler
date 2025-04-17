@@ -61,11 +61,57 @@ class LargeImageReader(Reader):
     def get_level(self):
         return self._read_tracker["level"]
 
+    def set_level(self, level: int):
+        self._read_tracker["level"] = level
+
+    def del_level(self):
+        self._read_tracker["level"] = None
+
+    level = property(get_level, set_level, del_level, "pyramid level")
+
     def get_nth(self):
         return self._read_tracker["nth"]
 
+    def set_nth(self, nth: int):
+        self._read_tracker["nth"] = nth
+
+    def del_nth(self):
+        self._read_tracker["nth"] = None
+
+    nth = property(get_nth, set_nth, del_nth, "tile number")
+
     def get_channel(self):
         return self._read_tracker["c"]
+
+    def set_channel(self, channel: Union[int, list[int]]):
+        self._read_tracker["c"] = channel
+
+    def del_channel(self):
+        self._read_tracker["c"] = None
+
+    channel = property(get_channel, set_channel, del_channel, "channel number(s)")
+
+    def get_plane(self):
+        return self._read_tracker["z"]
+
+    def set_plane(self, plane: Union[int, list[int]]):
+        self._read_tracker["z"] = plane
+
+    def del_plane(self):
+        self._read_tracker["z"] = None
+
+    plane = property(get_plane, set_plane, del_plane, "plane number(s)")
+
+    def get_frame(self):
+        return self._read_tracker["t"]
+
+    def set_frame(self, frame: Union[int, list[int]]):
+        self._read_tracker["t"] = frame
+
+    def del_frame(self):
+        self._read_tracker["t"] = None
+
+    frame = property(get_frame, set_frame, del_frame, "time frame number(s)")
 
     def go_tile_left(self):
         raise NotImplementedError(f"This reader ({self.reader_name}) does not support tiled reads")
@@ -75,12 +121,6 @@ class LargeImageReader(Reader):
 
     def go_tile_up(self):
         raise NotImplementedError(f"This reader ({self.reader_name}) does not support tiled reads")
-        nth = self._read_tracker["nth"]
-        level = self._read_tracker["level"]
-        new_nth = nth - self._nx(level)
-        if new_nth >= 0:
-            self._read_tracker["nth"] = new_nth
-        return self._tracked_tile()
 
     def go_tile_down(self):
         raise NotImplementedError(f"This reader ({self.reader_name}) does not support tiled reads")

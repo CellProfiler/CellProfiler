@@ -589,10 +589,10 @@ You can set a different threshold for each image selected in the module.
                 num_image_rows += len(self.objects_list.value)
             if self.wants_images():
                 num_image_rows += 1
-            if self.threshold_visualization_list.value:
-                figure.set_subplots((num_image_cols, num_image_rows))
-                self.show_threshold_visualization(figure, workspace)
+            figure.set_subplots((num_image_cols, num_image_rows))
+            self.show_threshold_visualization(figure, workspace)
         else:
+            num_image_cols -= 1
             figure.set_subplots((1, 1))
             
         figure.subplot_table(

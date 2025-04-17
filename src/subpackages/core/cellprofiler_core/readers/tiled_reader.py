@@ -10,7 +10,7 @@ from typing import TypedDict, Literal, Optional
 from collections import defaultdict
 
 from ..constants.image import MD_SIZE_S, MD_SIZE_C, MD_SIZE_Z, MD_SIZE_T, MD_SIZE_Y, MD_SIZE_X, MD_SERIES_NAME
-from ..reader import Reader
+from ..reader import LargeImageReader
 
 class Resolution(TypedDict):
     shape: tuple[int, ...]
@@ -53,7 +53,7 @@ class StandardMetadata(TypedDict):
 SUPPORTED_EXTENSIONS = {'.ome.tif', '.ome.tiff'}
 SUPPORTED_SCHEMES = {'file'}
 
-class TiledImageReader(Reader):
+class TiledImageReader(LargeImageReader):
     """
     Reads tiled/pyramidal ome-tiff images
     """
@@ -73,7 +73,7 @@ class TiledImageReader(Reader):
         self.__path = None
         self.__cached_meta = None
         self.__cached_full_meta = None
-        self.__read_tracker = {
+        self._read_tracker = {
                 "level": None,
                 "frame": None,
                 "nth": None,
@@ -91,7 +91,7 @@ class TiledImageReader(Reader):
             self.__path = self.file.path 
             self.__cached_meta = None
             self.__cached_full_meta = None
-            self.__read_tracker = {
+            self._read_tracker = {
                     "level": None,
                     "frame": None,
                     "nth": None,
@@ -142,9 +142,9 @@ class TiledImageReader(Reader):
             assert frame_idx in standard_idxs
 
             idxs: dict[int, slice] = dict()
-            self.__read_tracker["row_idx"] = row_idx
-            self.__read_tracker["col_idx"] = col_idx
-            self.__read_tracker["frame_idx"] = frame_idx
+            self._read_tracker["row_idx"] = row_idx
+            self._read_tracker["col_idx"] = col_idx
+            self._read_tracker["frame_idx"] = frame_idx
 
             if dask_array.ndim == 3:
                 return dask_array.transpose([row_idx, col_idx, frame_idx])
@@ -170,9 +170,9 @@ class TiledImageReader(Reader):
         if channel_names is not None:
             channel_names.extend(self._meta["channel_names"])
 
-        self.__read_tracker["level"] = len(self.__data) - 1
-        self.__read_tracker["frame"] = self._set_frame(start=0, stop=3, lvl=self.__read_tracker["level"])
-        self.__read_tracker["nth"] = 0
+        self._read_tracker["level"] = len(self.__data) - 1
+        self._read_tracker["frame"] = self._set_frame(start=0, stop=3, lvl=self._read_tracker["level"])
+        self._read_tracker["nth"] = 0
 
         if wants_metadata_rescale:
             dtype = self._meta["dtype"]
@@ -183,25 +183,16 @@ class TiledImageReader(Reader):
             else:
                 raise TypeError(f"Unsupported data type: {dtype}")
 
-            return self.__data[self.__read_tracker["level"]], (float(info.min), float(info.max))
+            return self.__data[self._read_tracker["level"]], (float(info.min), float(info.max))
 
         # TODO: - LIS: Not sure what the best thing is to return here yet
         # right now just the lowest resolution in the pyramid
-        return self.__data[self.__read_tracker["level"]]
-
-    def get_level(self):
-        return self.__read_tracker["level"]
-
-    def get_nth(self):
-        return self.__read_tracker["nth"]
-
-    def get_frame(self):
-        return self.__read_tracker["frame"]
+        return self.__data[self._read_tracker["level"]]
 
     def _tracked_tile(self):
-        nth = self.__read_tracker["nth"]
-        level = self.__read_tracker["level"]
-        frame = self.__read_tracker["frame"]
+        nth = self._read_tracker["nth"]
+        level = self._read_tracker["level"]
+        frame = self._read_tracker["frame"]
 
         assert nth >= 0
         assert nth <= self._nn(level), f"only {self._nn(level)} tiles at level {level}, got {nth}"
@@ -209,42 +200,41 @@ class TiledImageReader(Reader):
         return self._tile_n(nth=nth, frame=frame, level=level)
 
     def go_tile_left(self):
-        nth = self.__read_tracker["nth"]
-        level = self.__read_tracker["level"]
+        nth = self._read_tracker["nth"]
+        level = self._read_tracker["level"]
         curr_x = nth % self._nx(level)
         if curr_x > 0:
-            self.__read_tracker["nth"] = nth - 1
+            self._read_tracker["nth"] = nth - 1
         return self._tracked_tile()
 
     def go_tile_right(self):
-        nth = self.__read_tracker["nth"]
-        level = self.__read_tracker["level"]
+        nth = self._read_tracker["nth"]
+        level = self._read_tracker["level"]
         curr_x = nth % self._nx(level)
         if curr_x < (self._nx(level) - 1):
-            self.__read_tracker["nth"] = nth + 1
+            self._read_tracker["nth"] = nth + 1
         return self._tracked_tile()
 
     def go_tile_up(self):
-        nth = self.__read_tracker["nth"]
-        level = self.__read_tracker["level"]
+        nth = self._read_tracker["nth"]
+        level = self._read_tracker["level"]
         new_nth = nth - self._nx(level)
         if new_nth >= 0:
-            self.__read_tracker["nth"] = new_nth
+            self._read_tracker["nth"] = new_nth
         return self._tracked_tile()
 
-    # up the inverted pyramid (upscale)
     def go_tile_down(self):
-        nth = self.__read_tracker["nth"]
-        level = self.__read_tracker["level"]
+        nth = self._read_tracker["nth"]
+        level = self._read_tracker["level"]
         new_nth = nth + self._nx(level)
         if new_nth < self._nn(level):
-            self.__read_tracker["nth"] = new_nth
+            self._read_tracker["nth"] = new_nth
         return self._tracked_tile()
 
     #  down the inverted pyramid (downscale)
     def go_level_up(self):
-        level = self.__read_tracker["level"]
-        nth = self.__read_tracker["nth"]
+        level = self._read_tracker["level"]
+        nth = self._read_tracker["nth"]
         if level < (len(self._res) - 1):
             new_iy = self._iy(level, nth) // 2
             new_ix = self._ix(level, nth) // 2
@@ -253,13 +243,14 @@ class TiledImageReader(Reader):
 
             new_nx = self._nx(level)
 
-            self.__read_tracker["level"] = level
-            self.__read_tracker["nth"] = new_iy * new_nx + new_ix
+            self._read_tracker["level"] = level
+            self._read_tracker["nth"] = new_iy * new_nx + new_ix
         return self._tracked_tile()
 
+    # up the inverted pyramid (upscale)
     def go_level_down(self):
-        level = self.__read_tracker["level"]
-        nth = self.__read_tracker["nth"]
+        level = self._read_tracker["level"]
+        nth = self._read_tracker["nth"]
         if level > 0:
             new_iy = self._iy(level, nth) * 2
             new_ix = self._ix(level, nth) * 2
@@ -268,8 +259,8 @@ class TiledImageReader(Reader):
 
             new_nx = self._nx(level)
 
-            self.__read_tracker["level"] = level
-            self.__read_tracker["nth"] = new_iy * new_nx + new_ix
+            self._read_tracker["level"] = level
+            self._read_tracker["nth"] = new_iy * new_nx + new_ix
         return self._tracked_tile()
 
     @classmethod
@@ -299,9 +290,6 @@ class TiledImageReader(Reader):
         return -1
 
     def close(self):
-        # If your reader opens a file, this needs to release any active lock,
-
-
         if self.__lru_cache:
             self.__lru_cache.invalidate()
             self.__lru_cache.close()
@@ -316,7 +304,7 @@ class TiledImageReader(Reader):
         self.__path = None
         self.__cached_meta = None
         self.__cached_full_meta = None
-        self.__read_tracker = {
+        self._read_tracker = {
                 "level": None,
                 "frame": None,
                 "nth": None,

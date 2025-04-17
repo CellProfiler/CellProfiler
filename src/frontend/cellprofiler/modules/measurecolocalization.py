@@ -91,7 +91,7 @@ from cellprofiler_core.setting.subscriber import (
 )
 from cellprofiler_core.setting import SettingsGroup, HiddenCount
 from cellprofiler_core.setting.text import Float
-from cellprofiler_core.setting.subscriber import ImageSubscriber
+from cellprofiler_core.setting.subscriber import ImageSubscriber, LabelSubscriber
 from cellprofiler_core.setting.do_something import DoSomething, RemoveSettingButton
 from cellprofiler_core.utilities.core.object import size_similarly
 from centrosome.cpmorphology import fixup_scipy_ndimage_result as fix
@@ -104,8 +104,11 @@ M_IMAGES_AND_OBJECTS = "Both"
 # The number of settings per threshold
 THRESHOLD_SETTING_COUNT = 2
 
-# The number of settings other than the threshold settings
-FIXED_SETTING_COUNT = 15
+# The number of settings per save mask
+SAVE_MASK_SETTING_COUNT = 3
+
+# The number of settings other than the threshold or save image mask settings 
+FIXED_SETTING_COUNT = 17
 
 M_FAST = "Fast"
 M_FASTER = "Faster"
@@ -312,11 +315,26 @@ Alternatively, you may want to disable these specific measurements entirely
 """
         )
         self.add_threshold_button = DoSomething("", "Add another threshold", self.add_threshold)
-    
+        self.save_mask_list = []
+        self.save_image_mask_count = HiddenCount(self.save_mask_list)
+        self.wants_masks_saved = Binary(
+            "Save thresholded mask?",
+            False,
+            doc="""\
+            """,
+            callback=self.__auto_add_save_mask_input_box,
+        )
+        self.add_save_mask_button = DoSomething("", "Add another save mask", self.add_save_mask)
+
     def __auto_add_threshold_input_box(self, _):
         if not self.wants_channel_thresholds.value:
             if self.thresholds_count.value == 0:
-                self.add_threshold()    
+                self.add_threshold()
+
+    def __auto_add_save_mask_input_box(self, _):
+        if not self.wants_masks_saved.value:
+            if self.save_image_mask_count.value == 0:
+                self.add_save_mask()
         
     def add_threshold(self, removable=True):
         group = SettingsGroup()
@@ -416,7 +434,15 @@ You can set a different threshold for each image selected in the module.
             self.do_overlap,
             self.do_costes,
             self.fast_costes,
+            self.wants_masks_saved,
+            self.save_image_mask_count,
         ]
+        if self.wants_masks_saved.value:
+            for save_mask in self.save_mask_list:
+                # image_name is the name of the image in the image set
+                # save_image_name is the name that the user would like to give to the output mask
+                result += [save_mask.image_name, save_mask.choose_object, save_mask.save_image_name]
+
         
         return result
 
@@ -450,6 +476,14 @@ You can set a different threshold for each image selected in the module.
             ]
         if self.do_all or self.do_costes:
             result += [self.fast_costes]
+        result += [Divider(line=True)]
+        result += [ self.wants_masks_saved ]
+        if self.wants_masks_saved.value:
+            for save_mask in self.save_mask_list:
+                result += [save_mask.image_name, save_mask.save_image_name, save_mask.choose_object]
+                if save_mask.removable:
+                    result += [save_mask.remover, Divider(line=False)]
+            result += [self.add_save_mask_button]
         return result
 
     def help_settings(self):
@@ -470,12 +504,27 @@ You can set a different threshold for each image selected in the module.
     
     def prepare_settings(self, setting_values):
         value_count = len(setting_values)
-        assert ((value_count - FIXED_SETTING_COUNT)  % THRESHOLD_SETTING_COUNT == 0)
+        threshold_settings_count = int(setting_values[3])
+
+        # compute the index at which the save image settings count is stored
+        save_image_settings_count_idx = 4 + (int(setting_values[3])*THRESHOLD_SETTING_COUNT) + 12
+        
+        save_image_settings_count = int(setting_values[save_image_settings_count_idx])
+        assert (
+            (value_count - FIXED_SETTING_COUNT)  
+            - (THRESHOLD_SETTING_COUNT * threshold_settings_count) 
+            - (SAVE_MASK_SETTING_COUNT * save_image_settings_count) 
+            == 0
+            )
         threshold_count = (value_count - FIXED_SETTING_COUNT) // THRESHOLD_SETTING_COUNT
         while len(self.thresholds_list) > threshold_count:
             self.thresholds_list.pop()
         while len(self.thresholds_list) < threshold_count:
             self.add_threshold(removable=True)
+        while len(self.save_mask_list) > save_image_settings_count:
+            self.save_mask_list.pop()
+        while len(self.save_mask_list) < save_image_settings_count:
+            self.add_save_mask(removable=True)
 
 
     def get_image_pairs(self):
@@ -1897,7 +1946,7 @@ You can set a different threshold for each image selected in the module.
             """
             add 'No' for custom thresholds and '0' for custom threshold counts
             """
-            setting_values = setting_values[:2] + ['No', '0', 'No', ''] + setting_values[2:]
+            setting_values = setting_values[:2] + ['No', '0', 'No', ''] + setting_values[2:] + ['No', '0']
             
             variable_revision_number = 6
 

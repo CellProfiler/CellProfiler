@@ -349,6 +349,50 @@ You can set a different threshold for each image selected in the module.
             group.append("remover", RemoveSettingButton("", "Remove this image", self.thresholds_list, group))
         group.append("divider", Divider()) # TODO: review: Can this cause memory leaks as it is never removed?
         self.thresholds_list.append(group)
+
+    def add_save_mask(self, removable=True):
+        """Add a new group for each image to save the mask for"""
+        group = SettingsGroup()
+        group.removable = removable
+        """Save the thresholded mask to the image set"""
+        
+        # The name of the image from the image set
+        group.append(
+            "image_name",
+            ImageSubscriber(
+                "Select the image that you would like to threshold and save a mask   " #TODO: write this docstring
+            )
+        )
+
+        # The name of the object that the user would like to use for thresholding
+        # Default value "Image" is used to indicate that the user would like to threshold using the
+        # entire image instead of using the objects
+        group.append(
+            "choose_object",
+            LabelSubscriber(
+            "Select the objects or image to threshold and save",
+            "Image",
+            can_be_blank=True,
+            blank_text="Image",
+            doc="" #TODO: write this docstring
+            )
+        )
+        
+        # This is the name that will be given to the new image (mask) that is created by thresholding
+        group.append(
+            "save_image_name",
+            ImageName(
+            "Name the output image",
+            "MaskBlue",
+            doc="", #TODO: write this docstring
+            )
+        )
+
+        if removable:
+            group.append("remover", RemoveSettingButton("", "Remove this image", self.save_mask_list, group))
+        group.append("divider", Divider()) # TODO: review: Can this cause memory leaks as it is never removed?
+        self.save_mask_list.append(group)
+        
         
 
     def settings(self):

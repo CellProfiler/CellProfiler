@@ -733,12 +733,9 @@ You can set a different threshold for each image selected in the module.
         # Iterate over the list of save masks
         for save_mask in self.save_mask_list:
             image_name = save_mask.image_name.value
-            object_name = save_mask.choose_object.value
+            object_name = save_mask.choose_object.value if save_mask.save_mask_wants_objects.value else None
             save_image_name = save_mask.save_image_name.value
             original_image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
-            
-            if object_name == SAVE_IMAGE_THRESHOLDING_METHOD_IMAGE:
-                object_name = None
             
             # Call the relevant funcitons to get the thresholded masks
             output_image = Image(self.get_thresholded_mask(workspace, image_name, object_name), parent_image=original_image)

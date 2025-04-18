@@ -387,19 +387,47 @@ You can set a different threshold for each image selected in the module.
             )
         )
 
-        # The name of the object that the user would like to use for thresholding
-        # Default value "Image" is used to indicate that the user would like to threshold using the
-        # entire image instead of using the objects
+        # # The name of the object that the user would like to use for thresholding
+        # # Default value "Image" is used to indicate that the user would like to threshold using the
+        # # entire image instead of using the objects
+        # group.append(
+            # "choose_object",
+            # LabelSubscriber(
+            # "Select the objects or image to threshold and save",
+            # "Image",
+            # can_be_blank=True,
+            # blank_text="Image",
+            # doc="" #TODO: write this docstring
+            # )
+        # )
+
+        # ask if the user wants to perform thresholding over the entire image or a specific object
+        group.append(
+            "save_mask_wants_objects",
+            Binary(
+                "Use object for thresholding?",
+                False,
+                doc="""\
+    Select *{YES}* to use obejcts when performing the thresholding operation
+            """.format(
+                    **{"YES": "Yes"}
+                ), # TODO: review this docstring
+                callback=self.__auto_add_threshold_input_box,
+            )
+        )
+
         group.append(
             "choose_object",
             LabelSubscriber(
-            "Select the objects or image to threshold and save",
-            "Image",
-            can_be_blank=True,
-            blank_text="Image",
-            doc="" #TODO: write this docstring
+                "Select the objects or image to threshold and save",
+                "Image",
+                can_be_blank=True,
+                blank_text="Image",
+                doc="" #TODO: write this docstring
             )
+
         )
+
         
         # This is the name that will be given to the new image (mask) that is created by thresholding
         group.append(
@@ -415,6 +443,8 @@ You can set a different threshold for each image selected in the module.
             group.append("remover", RemoveSettingButton("", "Remove this image", self.save_mask_list, group))
         group.append("divider", Divider()) # TODO: review: Can this cause memory leaks as it is never removed?
         self.save_mask_list.append(group)
+
+        
         
         
 
@@ -485,7 +515,10 @@ You can set a different threshold for each image selected in the module.
         result += [ self.wants_masks_saved ]
         if self.wants_masks_saved.value:
             for save_mask in self.save_mask_list:
-                result += [save_mask.image_name, save_mask.save_image_name, save_mask.choose_object]
+                result += [save_mask.image_name, save_mask.save_mask_wants_objects]
+                if save_mask.save_mask_wants_objects.value:
+                    result += [save_mask.choose_object]
+                result += [save_mask.save_image_name]
                 if save_mask.removable:
                     result += [save_mask.remover, Divider(line=False)]
             result += [self.add_save_mask_button]

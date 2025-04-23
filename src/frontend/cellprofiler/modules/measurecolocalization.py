@@ -584,6 +584,7 @@ You can set a different threshold for each image selected in the module.
         if self.show_window:
             workspace.display_data.statistics = statistics
             workspace.display_data.col_labels = col_labels
+            workspace.display_data.dimenstions = workspace.image_set.get_image(self.images_list.value[0]).dimensions
 
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
@@ -601,6 +602,11 @@ You can set a different threshold for each image selected in the module.
             if self.wants_images():
                 num_image_rows += 1
             figure.set_subplots((num_image_cols, num_image_rows))
+            # set subplot dimensions to enable 3d visualization
+            figure.set_subplots(
+                dimensions=workspace.display_data.dimenstions,
+                subplots=(num_image_cols, num_image_rows)
+            )
             self.show_threshold_visualization(figure, workspace)
         else:
             num_image_cols -= 1
@@ -619,26 +625,19 @@ You can set a different threshold for each image selected in the module.
         - When object correlation is selected, all objects selected are visualized
         - All images are shown on the same subplot
         """
-        # imshow snippet taken from correctilluminationapply.py
-        def imshow(x, y, image, *args, **kwargs):
-                if image.ndim == 2:
-                    f = figure.subplot_imshow_grayscale
-                else:
-                    f = figure.subplot_imshow_color
-                return f(x, y, image, *args, **kwargs)
         if not self.wants_threshold_visualization.value:
             return
         for idx, image_name in enumerate(self.threshold_visualization_list.value):
             plotting_row = 0
             image = workspace.image_set.get_image(image_name, must_be_grayscale=True)
             # Plot original
-            imshow(
+            figure.subplot_imshow_grayscale(
                 idx,
                 plotting_row,
                 image.pixel_data,
                 title = image_name + " (Original)",
                 sharexy=figure.subplot(0, 0)
-                )
+            )
             plotting_row += 1
 
             # Thresholding code used from run_image_pair_images() and run_image_pair_objects()
@@ -649,18 +648,19 @@ You can set a different threshold for each image selected in the module.
             if self.wants_images():
                 
                 thr_i_out = self.get_thresholded_mask(workspace, image_name, t_val=threshold_value)
-                imshow(
+                figure.subplot_imshow_grayscale(
                     idx,
                     plotting_row, 
                     thr_i_out,
                     title = image_name + f" (Threshold = {threshold_value})",
                     sharexy=figure.subplot(0, 0)
                     )
+                
                 plotting_row += 1
             if self.wants_objects():
                 for object_name in self.objects_list.value:
                     threshold_mask_image = self.get_thresholded_mask(workspace, image_name, object_name=object_name, t_val=threshold_value)
-                    imshow(
+                    figure.subplot_imshow_grayscale(
                         idx,
                         plotting_row,
                         threshold_mask_image,

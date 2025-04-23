@@ -321,8 +321,8 @@ Alternatively, you may want to disable these specific measurements entirely
         self.wants_masks_saved = Binary(
             "Save thresholded mask?",
             False,
-            doc="""\
-            """,
+            doc="""Select *{YES}* to save the masks obtained after performing the thresholding operation.
+            """.format(**{'YES': "Yes"}),
             callback=self.__auto_add_save_mask_input_box,
         )
         self.add_save_mask_button = DoSomething("", "Add another save mask", self.add_save_mask)
@@ -379,7 +379,7 @@ You can set a different threshold for each image selected in the module.
         group.append(
             "image_name",
             ImageSubscriber(
-                "Select the image that you would like to threshold and save a mask   " #TODO: write this docstring
+                "Which image's mask would you like to save" #TODO: review this docstring
             )
         )
 
@@ -390,7 +390,7 @@ You can set a different threshold for each image selected in the module.
                 "Use object for thresholding?",
                 False,
                 doc="""\
-    Select *{YES}* to use obejcts when performing the thresholding operation
+    Select *{YES}* to use obejcts when performing the thresholding operation.
             """.format(
                     **{"YES": "Yes"}
                 ), # TODO: review this docstring
@@ -402,9 +402,9 @@ You can set a different threshold for each image selected in the module.
         group.append(
             "choose_object",
             LabelSubscriber(
-                "Select the objects or image to threshold and save",
+                "Select an Object for threhsolding",
                 "Select an Object",
-                doc="" #TODO: write this docstring
+                doc="""Select the name of the object that you would like to use to generate the mask. Custom threshold is applied if previously specified; default value will be used otherwise""" #TODO: review this docstring
             )
         )
         
@@ -413,8 +413,8 @@ You can set a different threshold for each image selected in the module.
             "save_image_name",
             ImageName(
             "Name the output image",
-            "MaskBlue",
-            doc="", #TODO: write this docstring
+            "ColocalizationMask",
+            doc="""Enter the name you want to call the image mask produced by this module. """, # TODO: review this docstring
             )
         )
 
@@ -517,7 +517,7 @@ You can set a different threshold for each image selected in the module.
             self.objects_list,
             self.do_all,
             self.fast_costes,
-            # TODO: add help settings for saving masks to image set
+            self.wants_masks_saved
         ]
         return help_settings
     

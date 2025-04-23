@@ -202,7 +202,7 @@ All methods measure correlation on a pixel by pixel basis.
         self.spacer_2 = Divider(line=True)
         self.spacer_3 = Divider(line=True)
         self.spacer_4 = Divider(line=True)
-        self.thresholds_count = HiddenCount(self.thresholds_list)
+        self.thresholds_count = HiddenCount(self.thresholds_list, "Threshold count")
         self.wants_channel_thresholds = Binary(
             "Enable image specific thresholds?",
             False,
@@ -317,7 +317,7 @@ Alternatively, you may want to disable these specific measurements entirely
         )
         self.add_threshold_button = DoSomething("", "Add another threshold", self.add_threshold)
         self.save_mask_list = []
-        self.save_image_mask_count = HiddenCount(self.save_mask_list)
+        self.save_image_mask_count = HiddenCount(self.save_mask_list, "Save mask count")
         self.wants_masks_saved = Binary(
             "Save thresholded mask?",
             False,
@@ -523,26 +523,23 @@ You can set a different threshold for each image selected in the module.
     
     def prepare_settings(self, setting_values):
         value_count = len(setting_values)
-        threshold_settings_count = int(setting_values[3])
+        threshold_count = int(setting_values[3])
 
         # compute the index at which the save image settings count is stored
         save_image_settings_count_idx = 4 + (int(setting_values[3])*THRESHOLD_SETTING_COUNT) + 12
         
-        save_image_settings_count = int(setting_values[save_image_settings_count_idx])
+        save_image_count = int(setting_values[save_image_settings_count_idx])
         assert (
             (value_count - FIXED_SETTING_COUNT)  
-            - (THRESHOLD_SETTING_COUNT * threshold_settings_count) 
-            - (SAVE_MASK_SETTING_COUNT * save_image_settings_count) 
+            - (THRESHOLD_SETTING_COUNT * threshold_count) 
+            - (SAVE_MASK_SETTING_COUNT * save_image_count) 
             == 0
             )
-        threshold_count = (value_count - FIXED_SETTING_COUNT) // THRESHOLD_SETTING_COUNT
-        while len(self.thresholds_list) > threshold_count:
-            self.thresholds_list.pop()
+        del self.thresholds_list[threshold_count:]
         while len(self.thresholds_list) < threshold_count:
             self.add_threshold(removable=True)
-        while len(self.save_mask_list) > save_image_settings_count:
-            self.save_mask_list.pop()
-        while len(self.save_mask_list) < save_image_settings_count:
+        del self.save_mask_list[save_image_count:]
+        while len(self.save_mask_list) < save_image_count:
             self.add_save_mask(removable=True)
 
 

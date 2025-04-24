@@ -379,7 +379,7 @@ You can set a different threshold for each image selected in the module.
         group.append(
             "image_name",
             ImageSubscriber(
-                "Which image's mask would you like to save" #TODO: review this docstring
+                "Which image mask would you like to save" #TODO: review this docstring
             )
         )
 
@@ -451,11 +451,13 @@ You can set a different threshold for each image selected in the module.
             self.wants_masks_saved,
             self.save_image_mask_count,
         ]
-        if self.wants_masks_saved.value:
-            for save_mask in self.save_mask_list:
-                # image_name is the name of the image in the image set
-                # save_image_name is the name that the user would like to give to the output mask
-                result += [save_mask.image_name, save_mask.choose_object, save_mask.save_image_name]
+        for save_mask in self.save_mask_list:
+            # image_name is the name of the image in the image set
+            # save_image_name is the name that the user would like to give to the output mask
+            result += [save_mask.image_name, save_mask.save_mask_wants_objects] 
+            if save_mask.save_mask_wants_objects.value:
+                result += [save_mask.choose_object] 
+            result += [save_mask.save_image_name]
 
         
         return result

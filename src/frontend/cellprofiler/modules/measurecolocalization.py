@@ -584,7 +584,7 @@ You can set a different threshold for each image selected in the module.
         if self.show_window:
             workspace.display_data.statistics = statistics
             workspace.display_data.col_labels = col_labels
-            workspace.display_data.dimenstions = workspace.image_set.get_image(self.images_list.value[0]).dimensions
+            workspace.display_data.dimensions = workspace.image_set.get_image(self.images_list.value[0]).dimensions
 
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
@@ -604,7 +604,7 @@ You can set a different threshold for each image selected in the module.
             figure.set_subplots((num_image_cols, num_image_rows))
             # set subplot dimensions to enable 3d visualization
             figure.set_subplots(
-                dimensions=workspace.display_data.dimenstions,
+                dimensions=workspace.display_data.dimensions,
                 subplots=(num_image_cols, num_image_rows)
             )
             self.show_threshold_visualization(figure, workspace)

@@ -187,6 +187,16 @@ def test_load_v6():
     assert module.wants_channel_thresholds.value is True
     assert module.wants_threshold_visualization.value is True
     assert module.threshold_visualization_list.value[0] == "OrigStain2"
+    assert len(module.threshold_visualization_list.value) == 1
+    assert module.wants_masks_saved.value is True
+    assert module.save_mask_list[0].save_image_name.value == "ColocalizationMask12"
+    assert module.save_mask_list[0].image_name.value == "OrigStain1"
+    assert module.save_mask_list[0].save_mask_wants_objects.value is False
+    assert module.save_mask_list[1].save_image_name.value == "ColocalizationMask34"
+    assert module.save_mask_list[1].image_name.value == "OrigStain2"
+    assert module.save_mask_list[1].save_mask_wants_objects.value is False
+
+    
 
 
     assert len(module.objects_list.value) == 0

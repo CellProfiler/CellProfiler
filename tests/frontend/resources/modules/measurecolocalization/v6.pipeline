@@ -80,3 +80,11 @@ MeasureColocalization:[module_num:5|svn_version:'Unknown'|variable_revision_numb
     Calculate the Overlap coefficients?:Yes
     Calculate the Manders coefficients using Costes auto threshold?:Yes
     Method for Costes thresholding:Accurate
+    Save thresholded mask?:Yes
+    Save mask count:2
+    Which image mask would you like to save:OrigStain1
+    Use object for thresholding?:No
+    Name the output image:ColocalizationMask12
+    Which image mask would you like to save:OrigStain2
+    Use object for thresholding?:No
+    Name the output image:ColocalizationMask34

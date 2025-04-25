@@ -200,8 +200,6 @@ All methods measure correlation on a pixel by pixel basis.
 
         self.spacer = Divider(line=True)
         self.spacer_2 = Divider(line=True)
-        self.spacer_3 = Divider(line=True)
-        self.spacer_4 = Divider(line=True)
         self.thresholds_count = HiddenCount(self.thresholds_list, "Threshold count")
         self.wants_channel_thresholds = Binary(
             "Enable image specific thresholds?",
@@ -366,7 +364,7 @@ You can set a different threshold for each image selected in the module.
 
         if removable:
             group.append("remover", RemoveSettingButton("", "Remove this image", self.thresholds_list, group))
-        group.append("divider", Divider()) # TODO: review: Can this cause memory leaks as it is never removed?
+        group.append("divider", Divider())
         self.thresholds_list.append(group)
 
     def add_save_mask(self, removable=True):
@@ -420,7 +418,7 @@ You can set a different threshold for each image selected in the module.
 
         if removable:
             group.append("remover", RemoveSettingButton("", "Remove this image", self.save_mask_list, group))
-        group.append("divider", Divider()) # TODO: review: Can this cause memory leaks as it is never removed?
+        group.append("divider", Divider())
         self.save_mask_list.append(group)
 
         
@@ -474,7 +472,7 @@ You can set a different threshold for each image selected in the module.
                 result += [threshold.image_name, threshold.threshold_for_channel]
                 if threshold.removable:
                     result += [threshold.remover, Divider(line=False)]
-            result += [self.add_threshold_button, self.spacer_4]
+            result += [self.add_threshold_button, self.spacer_2]
         result += [self.wants_threshold_visualization]
         if self.wants_threshold_visualization.value == True:
             result += [self.threshold_visualization_list]
@@ -1955,6 +1953,10 @@ You can set a different threshold for each image selected in the module.
         if self.wants_objects():
             if len(self.objects_list.value) == 0:
                 raise ValidationError("No object sets selected", self.objects_list)
+            
+        # TODO: Should the validator also check for images that are not selected for colocalization but the user is tring to visualize them?
+        # TODO: Should it also check if an image mask is being saved for a channel that is not selected?
+        # TODO: what other validations should be done?
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting values for pipelines saved under old revisions"""

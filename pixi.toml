@@ -43,10 +43,7 @@ h5py = "<3.11"
 # disable to build wheel from scratch
 # url must be changed to match linux distro: https://extras.wxpython.org/wxPython4/extras/linux/gtk3/
 [target.linux-64.pypi-dependencies]
-wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxPython-4.2.1-cp39-cp39-linux_x86_64.whl" }
-
-[target.osx-arm64.pypi-dependencies]
-wxpython = "==4.2.1"
+wxPython = { url = "https://extras.wxpython.org/wxPython4/extras/linux/gtk3/ubuntu-20.04/wxpython-4.2.3-cp39-cp39-linux_x86_64.whl" }
 
 [feature.mysql.dependencies]
 pkg-config = "<1.0.0"

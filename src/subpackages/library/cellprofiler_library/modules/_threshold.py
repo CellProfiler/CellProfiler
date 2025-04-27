@@ -23,6 +23,7 @@ def threshold(
     number_of_deviations=2,
     volumetric=False,
     automatic=False,
+    predefined_threshold=None,
     **kwargs,
 ):
     """
@@ -39,6 +40,23 @@ def threshold(
     This is the global threshold that constrains the adaptive threshold
     within a certain range, as defined by global_limits (default [0.7, 1.5])
     """
+    
+    # A predefined threshold has been requested (ie. a manual or measurement one)
+    if predefined_threshold is not None:
+        final_threshold = predefined_threshold
+        final_threshold *= threshold_correction_factor
+        # For manual thresholds in the GUI, min/max filtering is not applied
+        if threshold_min is not None and threshold_max is not None:
+            final_threshold = min(max(final_threshold, threshold_min), threshold_max)
+        orig_threshold = predefined_threshold
+        guide_threshold = None
+        binary_image, sigma = apply_threshold(
+            image=image,
+            threshold=final_threshold,
+            mask=mask,
+            smoothing=smoothing
+            )
+        return final_threshold, orig_threshold, guide_threshold, binary_image, sigma
 
     if automatic:
         # Use automatic settings

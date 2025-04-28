@@ -215,7 +215,7 @@ Select *{YES}* to specify a unique threshold for selected images. Default value 
             "Enable threshold visualization?",
             False,
             doc="""
-Select *{YES}* to choose images to visualize the thresholding output.
+Select *{YES}* to choose images to visualize the thresholding output. This outputs the image mask that is generated after thresholding.
         """.format(
                 **{"YES": "Yes"}
             )
@@ -377,7 +377,8 @@ You can set a different threshold for each image selected in the module.
         group.append(
             "image_name",
             ImageSubscriber(
-                "Which image mask would you like to save" #TODO: review this docstring
+                "Which image mask would you like to save",
+                doc="""Select the image mask that you would like to save. The default thresholding value will be used unless an image specific threshold is specified. The mask will be saved as a new image in the image set.""",
             )
         )
 
@@ -391,7 +392,7 @@ You can set a different threshold for each image selected in the module.
     Select *{YES}* to use obejcts when performing the thresholding operation.
             """.format(
                     **{"YES": "Yes"}
-                ), # TODO: review this docstring
+                ),
                 callback=self.__auto_add_threshold_input_box,
             )
         )
@@ -402,7 +403,7 @@ You can set a different threshold for each image selected in the module.
             LabelSubscriber(
                 "Select an Object for threhsolding",
                 "Select an Object",
-                doc="""Select the name of the object that you would like to use to generate the mask. Custom threshold is applied if previously specified; default value will be used otherwise""" #TODO: review this docstring
+                doc="""Select the name of the object that you would like to use to generate the mask. Custom threshold is applied if previously specified; default value will be used otherwise"""
             )
         )
         
@@ -412,7 +413,7 @@ You can set a different threshold for each image selected in the module.
             ImageName(
             "Name the output image",
             "ColocalizationMask",
-            doc="""Enter the name you want to call the image mask produced by this module. """, # TODO: review this docstring
+            doc="""Enter the name you want to call the image mask produced by this module. """,
             )
         )
 

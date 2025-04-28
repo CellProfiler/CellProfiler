@@ -562,14 +562,27 @@ You can set a different threshold for each image selected in the module.
     def wants_objects(self):
         """True if the user wants to measure per-object correlations"""
         return self.images_or_objects in (M_OBJECTS, M_IMAGES_AND_OBJECTS)
+    
+    def verify_image_dims(self, workspace, image_name1, image_name2):
+        """Verify that the images have the same dimensions and return the dimensions"""
+        image1_dims = workspace.image_set.get_image(image_name1).dimensions
+        image2_dims = workspace.image_set.get_image(image_name2).dimensions
+        if image1_dims != image2_dims:
+            raise ValidationError(
+                f"Image dimensions do not match for {image_name1}({image1_dims}) and {image_name2}({image2_dims}). "
+            )
+        return image1_dims
 
     def run(self, workspace):
         """Calculate measurements on an image set"""
         col_labels = ["First image", "Second image", "Objects", "Measurement", "Value"]
         statistics = []
+        image_dims = None
         if len(self.images_list.value) < 2:
             raise ValueError("At least 2 images must be selected for analysis.")
         for first_image_name, second_image_name in self.get_image_pairs():
+            image_dims = self.verify_image_dims(workspace, first_image_name, second_image_name)
+
             if self.wants_images():
                 statistics += self.run_image_pair_images(
                     workspace, first_image_name, second_image_name
@@ -579,12 +592,13 @@ You can set a different threshold for each image selected in the module.
                     statistics += self.run_image_pair_objects(
                         workspace, first_image_name, second_image_name, object_name
                     )
+
         if self.wants_masks_saved.value:
             self.save_requested_masks(workspace)
         if self.show_window:
             workspace.display_data.statistics = statistics
             workspace.display_data.col_labels = col_labels
-            workspace.display_data.dimensions = workspace.image_set.get_image(self.images_list.value[0]).dimensions
+            workspace.display_data.dimensions = image_dims
 
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
@@ -1954,9 +1968,10 @@ You can set a different threshold for each image selected in the module.
             if len(self.objects_list.value) == 0:
                 raise ValidationError("No object sets selected", self.objects_list)
             
-        # TODO: Should the validator also check for images that are not selected for colocalization but the user is tring to visualize them?
-        # TODO: Should it also check if an image mask is being saved for a channel that is not selected?
-        # TODO: what other validations should be done?
+        # Raise validation error if threshold is set twice
+        thresholds_list_image_names = [i.image_name.value for i in self.thresholds_list]
+        if len(thresholds_list_image_names) != len(set(thresholds_list_image_names)):
+            raise ValidationError("Thresholds are set for the same image more than once", thresholds_list_image_names)
 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name):
         """Adjust the setting values for pipelines saved under old revisions"""

@@ -64,6 +64,11 @@ memray = "*"
 
 [feature.jupyter.dependencies]
 ipykernel = "*"
+jupyter = ">=1.1.1,<2"
+
+[feature.jupyter.pypi-dependencies]
+jldracula = ">=0.2.0, <0.3"
+urllib3 = ">=1.25.4,<1.27"
 
 [feature.static.dependencies]
 

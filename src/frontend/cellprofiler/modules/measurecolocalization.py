@@ -526,8 +526,9 @@ You can set a different threshold for each image selected in the module.
         value_count = len(setting_values)
         threshold_count = int(setting_values[3])
 
-        # compute the index at which the save image settings count is stored
-        save_image_settings_count_idx = 4 + (int(setting_values[3])*THRESHOLD_SETTING_COUNT) + 12
+        # compute the index at which the save image settings count is stored 
+        # 4 fixed settings + <n settings for threshold> + 12 fixed settings
+        save_image_settings_count_idx = 4 + (threshold_count * THRESHOLD_SETTING_COUNT) + 12
         
         save_image_count = int(setting_values[save_image_settings_count_idx])
         assert (

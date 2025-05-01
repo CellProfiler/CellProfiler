@@ -391,6 +391,8 @@ DEFAULT_INVALID_VALUE_DTYPE = {
     numpy.int32: 0,
     numpy.int64: 0,
     numpy.bool_: False,
+    numpy.object_: None,
+    numpy.str_: "",
 }
 
 

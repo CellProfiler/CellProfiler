@@ -604,3 +604,8 @@ def test_get_measurement_columns_volume():
     measurement_columns = module.get_measurement_columns(workspace.pipeline)
 
     assert len(measurement_columns) == 2 * 13 * 13
+
+
+def test_ghost_object_measurements_empty():
+    # TODO: Implement this test
+    pass

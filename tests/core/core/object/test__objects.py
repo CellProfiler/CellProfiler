@@ -156,40 +156,6 @@ class TestObjects:
         assert sum(children_per_parent) == len(children_per_parent) -1 
         assert sum([i == j for i, j in zip(parents_of_children, range(1, len(children_per_parent) + 1))]) != len(children_per_parent)
 
-    @pytest.mark.xfail
-    def test_relate_children_monotonically_increasing_parent_ids_label_swapped(self, create_lil_shaped_objects):
-        # Create an image like "|:|" or "lil" where there is one long vertical object, with two small objects on the right followed by a large vertical object
-        parent, child = create_lil_shaped_objects
-        obj_num1 = 2
-        obj_num2 = 3
-        # swap the labels of the two small objects
-        # this means that the nucleus of object 2 is now the nucleus of object 3 but the cell label is still object 2
-        child.segmented[child.segmented == obj_num1] = -1
-        child.segmented[child.segmented == obj_num2] = obj_num1
-        child.segmented[child.segmented == -1] = obj_num2
-        children_per_parent, parents_of_children = parent.relate_children(child)
-        # TODO: I'm unsure of the expected behavior here
-        assert sum(children_per_parent) == len(children_per_parent) 
-        assert sum([i == j for i, j in zip(parents_of_children, range(1, len(children_per_parent) + 1))]) == len(children_per_parent)
-
-    @pytest.mark.xfail
-    def test_relate_children_monotonically_increasing_nucleus_overflow_equal_parts(self, create_object_primary_overflows_equal_parts_into_other_object):
-        # Create an image where we have two cells with one nucleus each but one of the nucleus overflows into parts of the other cell
-        parent, child = create_object_primary_overflows_equal_parts_into_other_object
-        children_per_parent, parents_of_children = parent.relate_children(child)
-        # TODO: I'm unsure of the expected behavior here
-        assert sum(children_per_parent) == len(children_per_parent) 
-        assert sum([i == j for i, j in zip(parents_of_children, range(1, len(children_per_parent) + 1))]) == len(children_per_parent)
-
-    @pytest.mark.xfail
-    def test_relate_children_monotonically_increasing_nucleus_overflow_unequal_parts(self, create_object_primary_overflows_unequal_parts_into_other_object):
-        # Create an image where we have two cells with one nucleus each but one of the nucleus overflows into parts of the other cell
-        parent, child = create_object_primary_overflows_unequal_parts_into_other_object
-        children_per_parent, parents_of_children = parent.relate_children(child)
-        # TODO: I'm unsure of the expected behavior here
-        assert sum(children_per_parent) == len(children_per_parent) 
-        assert sum([i == j for i, j in zip(parents_of_children, range(1, len(children_per_parent) + 1))]) == len(children_per_parent)
-
 
 @pytest.fixture(
     scope="function", 

@@ -304,6 +304,23 @@ but the results will be zero or not-a-number (NaN).
         child_count_of_secondary, secondary_parents = secondary_objects.relate_children(
             tertiary_objects
         )
+        if 0 in child_count_of_secondary:
+            # If a secondary object has no children, it means that there is a perfect overlap
+            # between the primary and secondary object(s). To prevent issues with parent-child
+            # relationships we infer the missing secondary parent from the primary and secondary
+            child_count_of_alternative, alternative_parents = secondary_objects.relate_children(
+            primary_objects
+            )
+            mask = child_count_of_secondary == 0
+            if 0 in child_count_of_alternative:
+                # This should not happen unless the relationship between the primary and secondary objects is not 1-1
+                raise ValueError(
+                    "Unable to establish parent-child relationship between the secondary and tertiary objects.\n"
+                    "This can happen if the primary and secondary objects overlap perfectly and secondary object's primary parent cannot be found\n"
+                )
+            child_count_of_secondary[mask] = 1
+            secondary_parents[mask] = alternative_parents[mask]
+
         if self.shrink_primary:
             child_count_of_primary, primary_parents = primary_objects.relate_children(
                 tertiary_objects

@@ -31,6 +31,7 @@ import wx
 import wx.grid
 import wx.lib.intctrl
 import wx.lib.masked
+
 from cellprofiler_core.preferences import INTENSITY_MODE_GAMMA
 from cellprofiler_core.preferences import INTENSITY_MODE_LOG
 from cellprofiler_core.preferences import INTENSITY_MODE_RAW
@@ -97,6 +98,7 @@ from ..utilities.figure import get_menu_id
 from ..utilities.figure import match_rgbmask_to_image
 from ..utilities.figure import wraparound
 from ..utilities.icon import get_cp_icon
+from ..utilities.ndv import ndv_display
 
 LOGGER = logging.getLogger(__name__)
 
@@ -149,6 +151,7 @@ class Figure(wx.Frame):
         self.current_plane = 0
         self.images = {}
         self.__tile_providers = {}
+        self._ndv_viewer = None
         self.colorbar = {}
         self.subplot_params = {}
         self.subplot_user_params = {}
@@ -819,6 +822,7 @@ class Figure(wx.Frame):
     def get_imshow_menu(self, coordinates):
         """returns a menu corresponding to the specified subplot with items to:
         - launch the image in a new cpfigure window
+        - launch the image in ndv
         - Show image histogram
         - Change contrast stretching
         - Toggle channels on/off
@@ -834,6 +838,10 @@ class Figure(wx.Frame):
         has_image = params["vmax"] is not None
         open_in_new_figure_item = wx.MenuItem(popup, -1, "Open image in new window")
         popup.Append(open_in_new_figure_item)
+
+        open_in_ndv_item = wx.MenuItem(popup, -1, "Open image in ndv")
+        popup.Append(open_in_ndv_item)
+
         if has_image:
             contrast_item = wx.MenuItem(popup, -1, "Adjust Contrast")
             popup.Append(contrast_item)
@@ -903,6 +911,16 @@ class Figure(wx.Frame):
             fig.subplot(0, 0).set_xlim(xlims[0], xlims[1])
             fig.subplot(0, 0).set_ylim(ylims[0], ylims[1])
             fig.figure.canvas.draw()
+
+        def open_image_in_ndv(evt):
+            if self.tiled:
+                rdr = self.__tile_providers[(x,y)].get_reader(
+                    create=False, volume=self.dimensions==3, tiled=self.tiled)
+                img = rdr.current_tile()
+            else:
+                img = self.images[(x,y)]
+
+            self._ndv_viewer = ndv_display(img, self._ndv_viewer)
 
         def show_hist(evt):
             """Callback for "Show image histogram" popup menu item"""
@@ -1343,6 +1361,7 @@ class Figure(wx.Frame):
                 popup.Append(-1, name, submenu)
 
         self.Bind(wx.EVT_MENU, open_image_in_new_figure, open_in_new_figure_item)
+        self.Bind(wx.EVT_MENU, open_image_in_ndv, open_in_ndv_item)
         if has_image:
             self.Bind(wx.EVT_MENU, open_contrast_dialog, contrast_item)
             self.Bind(wx.EVT_MENU, show_hist, show_hist_item)
@@ -1769,11 +1788,11 @@ class Figure(wx.Frame):
             self.navtoolbar.tileNum.SetValue(rdr.get_nth())
             self.navtoolbar.pyramidNum.SetValue(rdr.get_level())
 
-            def loop_read_display_subplots(f):
+            def loop_read_display_subplots(nav_func):
                 numx, numy = self.subplots.shape
 
-                @functools.wraps(f)
-                def do_x(*args):
+                @functools.wraps(nav_func)
+                def do_loop_read_display(*args):
                     for xcoord in range(numx):
                         for ycoord in range(numy):
                             # get the reader for these coords
@@ -1782,8 +1801,8 @@ class Figure(wx.Frame):
                             )
 
                             # do the wrapped function
-                            # changin reader state and fetching next tile
-                            self.images[(xcoord, ycoord)] = f(sp_rdr, *args)
+                            # changing reader state and fetching next tile
+                            self.images[(xcoord, ycoord)] = nav_func(sp_rdr, *args)
 
                             # update the subplot at these coords
                             # passing in the updated tile
@@ -1800,7 +1819,9 @@ class Figure(wx.Frame):
                                     self.figure.delaxes(subplot_item)
                                     subplot_item.deleted = True
                     self.figure.canvas.draw()
-                return do_x
+                    if self._ndv_viewer:
+                        self._ndv_viewer = ndv_display(rdr.current_tile(), ndv_viewer=self._ndv_viewer)
+                return do_loop_read_display
 
             @loop_read_display_subplots
             def go_tile_left(sp_rdr, evt):

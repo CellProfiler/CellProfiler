@@ -1812,7 +1812,11 @@ class Figure(wx.Frame):
                                 img_data = self.normalize_image(
                                     self.images[(xcoord, ycoord)], **params
                                 )
+                                imshape = img_data.shape if self.dimensions == 2 else img_data.shape[1:]
+                                subplot_item.set_xlim([0, imshape[1]])
+                                subplot_item.set_ylim([imshape[0] - 0.5, -0.5])
                                 subplot_item.displayed.set_data(img_data)
+                                subplot_item.displayed.set_extent([0, imshape[1], imshape[0], 0])
                             else:
                                 # Should be a table, we don't need the axis.
                                 if not hasattr(subplot_item, "deleted"):

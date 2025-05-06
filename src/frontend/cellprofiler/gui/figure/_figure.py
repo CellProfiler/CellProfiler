@@ -916,7 +916,7 @@ class Figure(wx.Frame):
             if self.tiled:
                 rdr = self.__tile_providers[(x,y)].get_reader(
                     create=False, volume=self.dimensions==3, tiled=self.tiled)
-                img = rdr.current_tile()
+                img = rdr.current_tile(all_channels=True)
             else:
                 img = self.images[(x,y)]
 
@@ -1824,7 +1824,10 @@ class Figure(wx.Frame):
                                     subplot_item.deleted = True
                     self.figure.canvas.draw()
                     if self._ndv_viewer:
-                        self._ndv_viewer = ndv_display(rdr.current_tile(), ndv_viewer=self._ndv_viewer)
+                        self._ndv_viewer = ndv_display(
+                            rdr.current_tile(all_channels=True),
+                            ndv_viewer=self._ndv_viewer
+                        )
                 return do_loop_read_display
 
             @loop_read_display_subplots

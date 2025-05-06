@@ -89,7 +89,6 @@ class TiledImageReader(LargeImageReader):
             del self.nth
             del self.channel
             del self.plane
-            del self.frame
             self.__path = self.file.path 
             self.__cached_meta = None
             self.__cached_full_meta = None
@@ -188,10 +187,14 @@ class TiledImageReader(LargeImageReader):
         # right now just the lowest resolution in the pyramid
         return self.__data[self.level]
 
-    def current_tile(self):
+    def current_tile(self, all_channels=False):
         nth = self.nth
         level = self.level
-        channel = self.channel
+        if all_channels:
+            num_channels = self._res[level]["channels"]
+            channel = slice(0,num_channels,1)
+        else:
+            channel = self.channel
 
         assert nth >= 0
         assert nth <= self._nn(level), f"only {self._nn(level)} tiles at level {level}, got {nth}"
@@ -312,7 +315,6 @@ class TiledImageReader(LargeImageReader):
         del self.nth
         del self.channel
         del self.plane
-        del self.frame
 
     def get_series_metadata(self):
         """Should return a dictionary with the following keys:

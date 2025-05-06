@@ -113,6 +113,9 @@ class LargeImageReader(Reader):
 
     frame = property(get_frame, set_frame, del_frame, "time frame number(s)")
 
+    def current_tile(self):
+        raise NotImplementedError(f"This reader ({self.reader_name}) does not support tiled reads")
+
     def go_tile_left(self):
         raise NotImplementedError(f"This reader ({self.reader_name}) does not support tiled reads")
 

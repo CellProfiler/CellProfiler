@@ -188,7 +188,7 @@ class TiledImageReader(LargeImageReader):
         # right now just the lowest resolution in the pyramid
         return self.__data[self.level]
 
-    def _tracked_tile(self):
+    def current_tile(self):
         nth = self.nth
         level = self.level
         channel = self.channel
@@ -204,7 +204,7 @@ class TiledImageReader(LargeImageReader):
         curr_x = nth % self._nx(level)
         if curr_x > 0:
             self.nth = nth - 1
-        return self._tracked_tile()
+        return self.current_tile()
 
     def go_tile_right(self):
         nth = self.nth
@@ -212,7 +212,7 @@ class TiledImageReader(LargeImageReader):
         curr_x = nth % self._nx(level)
         if curr_x < (self._nx(level) - 1):
             self.nth = nth + 1
-        return self._tracked_tile()
+        return self.current_tile()
 
     def go_tile_up(self):
         nth = self.nth
@@ -220,7 +220,7 @@ class TiledImageReader(LargeImageReader):
         new_nth = nth - self._nx(level)
         if new_nth >= 0:
             self.nth = new_nth
-        return self._tracked_tile()
+        return self.current_tile()
 
     def go_tile_down(self):
         nth = self.nth
@@ -228,7 +228,7 @@ class TiledImageReader(LargeImageReader):
         new_nth = nth + self._nx(level)
         if new_nth < self._nn(level):
             self.nth = new_nth
-        return self._tracked_tile()
+        return self.current_tile()
 
     #  down the inverted pyramid (downscale)
     def go_level_up(self):
@@ -244,7 +244,7 @@ class TiledImageReader(LargeImageReader):
 
             self.level = level
             self.nth = new_iy * new_nx + new_ix
-        return self._tracked_tile()
+        return self.current_tile()
 
     # up the inverted pyramid (upscale)
     def go_level_down(self):
@@ -260,7 +260,7 @@ class TiledImageReader(LargeImageReader):
 
             self.level = level
             self.nth = new_iy * new_nx + new_ix
-        return self._tracked_tile()
+        return self.current_tile()
 
     @classmethod
     def supports_format(cls, image_file, allow_open=False, volume=False, tiled=False):

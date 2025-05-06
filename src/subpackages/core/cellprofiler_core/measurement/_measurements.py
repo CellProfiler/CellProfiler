@@ -1626,7 +1626,7 @@ class Measurements:
     def get_providers(self):
         """The list of providers (populated during the image discovery phase)"""
         # return tuple to prevent mutating underlying list
-        return list(self.__image_providers)
+        return tuple(self.__image_providers)
 
     providers = property(get_providers)
     

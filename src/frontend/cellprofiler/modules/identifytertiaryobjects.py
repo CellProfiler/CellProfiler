@@ -289,6 +289,19 @@ but the results will be zero or not-a-number (NaN).
             primary_mask = primary_labels == 0
         tertiary_labels[primary_mask == False] = 0
         #
+        # Check if a label was deleted as a result of the subtraction
+        #
+        secondary_unique_labels, secondary_unique_indices = numpy.unique(secondary_labels, return_index=True)
+        tertiary_unique_labels = numpy.unique(tertiary_labels)
+        missing_labels = numpy.setdiff1d(secondary_unique_labels, tertiary_unique_labels)
+        for missing_label in missing_labels:
+            # If a label was deleted, manually add a pixel to the tertiary_labels.
+            # This workaround ensures that ghost objects do not get created by identifytertiaryobjects.
+            
+            # first non-zero (top-left) coodrinate of the secondary object is used to add a pixel to the tertiary_labels
+            first_row, first_col = numpy.unravel_index(secondary_unique_indices[missing_label], secondary_labels.shape)
+            tertiary_labels[first_row, first_col] = missing_label
+        #
         # Get the outlines of the tertiary image
         #
         tertiary_outlines = outline(tertiary_labels) != 0
@@ -304,22 +317,6 @@ but the results will be zero or not-a-number (NaN).
         child_count_of_secondary, secondary_parents = secondary_objects.relate_children(
             tertiary_objects
         )
-        if 0 in child_count_of_secondary:
-            # If a secondary object has no children, it means that there is a perfect overlap
-            # between the primary and secondary object(s). To prevent issues with parent-child
-            # relationships we infer the missing secondary parent from the primary and secondary
-            child_count_of_alternative, alternative_parents = secondary_objects.relate_children(
-            primary_objects
-            )
-            mask = child_count_of_secondary == 0
-            if 0 in child_count_of_alternative:
-                # This should not happen unless the relationship between the primary and secondary objects is not 1-1
-                raise ValueError(
-                    "Unable to establish parent-child relationship between the secondary and tertiary objects.\n"
-                    "This can happen if the primary and secondary objects overlap perfectly and secondary object's primary parent cannot be found\n"
-                )
-            child_count_of_secondary[mask] = 1
-            secondary_parents[mask] = alternative_parents[mask]
 
         if self.shrink_primary:
             child_count_of_primary, primary_parents = primary_objects.relate_children(

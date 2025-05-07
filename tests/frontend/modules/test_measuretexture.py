@@ -606,6 +606,19 @@ def test_get_measurement_columns_volume():
     assert len(measurement_columns) == 2 * 13 * 13
 
 
-def test_ghost_object_measurements_empty():
-    # TODO: Implement this test
-    pass
+def test_single_pixel_object_measurements_zero():
+    image = numpy.zeros((10, 10), dtype=numpy.uint8)
+    image[5, 5] = 1
+    labels = numpy.zeros_like(image, dtype=numpy.uint8)
+    labels[5, 5] = 1
+    workspace, module = make_workspace(image, labels)
+    workspace.pipeline.set_volumetric(False)
+    module.run(workspace)
+    measurements = workspace.measurements
+
+    for feature_name in measurements.get_feature_names(INPUT_OBJECTS_NAME):
+        if feature_name.startswith(cellprofiler.modules.measuretexture.TEXTURE):
+            values = measurements.get_current_measurement(
+                INPUT_OBJECTS_NAME, feature_name
+            )
+            assert numpy.all(values == 0)

@@ -1,6 +1,7 @@
 import logging
 from ndv import ArrayViewer
 from ndv.models import DataWrapper, ChannelMode
+from ndv.views import call_later
 from cmap import Colormap
 import numpy
 import dask.array.core as da
@@ -95,7 +96,6 @@ STANDARD_LUTS = [
 #   ortho viewer: https://github.com/pyapp-kit/ndv/issues/11 (can do outside of ndv)
 # add supported features:
 #   play button: https://github.com/pyapp-kit/ndv/pull/163
-#   figure out if we can populate color dropdown with more choices
 # add guards against existing issues:
 #   handle float LUT issue until resolved: https://github.com/pyapp-kit/ndv/issues/157
 #   zoom might be broken: https://github.com/pyapp-kit/ndv/issues/116
@@ -121,13 +121,24 @@ def ndv_display(img, ndv_viewer=None):
             luts=luts
         )
 
+        LOGGER.debug("Rendering image for display in ndv")
+        ndv_viewer.show()
+
         # TODO: ndv - temporary
         #ndv_viewer._async = False
+
+        # TODO: ndv - temporary hack until resolved: https://github.com/pyapp-kit/ndv/issues/189
+        def _set_channels_hack():
+            lut_dict = ndv_viewer._view._luts
+            for ch_idx in lut_dict.keys():
+                wx_combo = lut_dict[ch_idx]._wxwidget.cmap
+                #wx_combo.Clear()
+                #wx_combo.Set([])
+                wx_combo.Append(['magma'])
+
+        call_later(1000, _set_channels_hack)
     else:
         LOGGER.debug("Updating ndv data")
         ndv_viewer.data = img
-
-    LOGGER.debug("Rendering image for display in ndv")
-    ndv_viewer.show()
 
     return ndv_viewer

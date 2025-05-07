@@ -88,6 +88,18 @@ STANDARD_LUTS = [
     {'visible': True, 'cmap': Colormap('blue')},
 ]
 
+# TODO: ndv
+# stated goals not yet implemented: https://pyapp-kit.github.io/ndv/latest/motivation/#scope-and-roadmap
+#   masks support: no outstanding issues/pulls (can do outside of ndv)
+#   mult-resolution: no outstanding issues/pulls (can partialy do outside of ndv)
+#   ortho viewer: https://github.com/pyapp-kit/ndv/issues/11 (can do outside of ndv)
+# add supported features:
+#   play button: https://github.com/pyapp-kit/ndv/pull/163
+#   figure out if we can populate color dropdown with more choices
+# add guards against existing issues:
+#   handle float LUT issue until resolved: https://github.com/pyapp-kit/ndv/issues/157
+#   zoom might be broken: https://github.com/pyapp-kit/ndv/issues/116
+#   ROI breaks things - figure out if button is removable
 def ndv_display(img, ndv_viewer=None):
     if ndv_viewer is None:
         LOGGER.debug("Initializing ndv")

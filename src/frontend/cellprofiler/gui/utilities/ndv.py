@@ -32,7 +32,7 @@ def get_data_wrapper(img):
             'C' : 3,
         }
     else:
-        raise ValidationError(f"Unsupported image dimensions: {img.ndim}")
+        raise ValueError(f"Unsupported image dimensions: {img.ndim}")
 
     class CustomWrapper(DataWrapper):
         PRIORITY = 10
@@ -81,7 +81,7 @@ def get_data_wrapper(img):
     elif CustomWrapper.supports(img):
         return CustomWrapper
     else:
-        raise ValidationError(f"Unsupported image data type {type(img)}")
+        raise ValueError(f"Unsupported image data type {type(img)}")
 
 STANDARD_LUTS = [
     {'visible': True, 'cmap': Colormap('red')},
@@ -94,18 +94,19 @@ STANDARD_LUTS = [
 #   masks support: no outstanding issues/pulls (can do outside of ndv)
 #   mult-resolution: no outstanding issues/pulls (can partialy do outside of ndv)
 #   ortho viewer: https://github.com/pyapp-kit/ndv/issues/11 (can do outside of ndv)
-# add supported features:
-#   play button: https://github.com/pyapp-kit/ndv/pull/163
+#   wx play button: https://github.com/pyapp-kit/ndv/issues/167
 # add guards against existing issues:
 #   handle float LUT issue until resolved: https://github.com/pyapp-kit/ndv/issues/157
 #   zoom might be broken: https://github.com/pyapp-kit/ndv/issues/116
-#   ROI breaks things - figure out if button is removable
 def ndv_display(img, ndv_viewer=None):
     if ndv_viewer is None:
         LOGGER.debug("Initializing ndv")
 
+        # initialize data wrapper for this img type (numpy/dask)
+        # giving it labeled axes, without having to use xarray
         data_wrapper = get_data_wrapper(img)
 
+        # set the luts and visibility of each channel
         num_visible_axes = min(img.shape[data_wrapper._li['C']], len(STANDARD_LUTS))
         visible_axes = list(range(num_visible_axes))
         luts = {ax: STANDARD_LUTS[ax] for ax in visible_axes}
@@ -121,13 +122,24 @@ def ndv_display(img, ndv_viewer=None):
             luts=luts
         )
 
+        # TODO: ndv - hack to disable the ROI button
+        # remove once resolved: https://github.com/pyapp-kit/ndv/issues/191
+        #for child in ndv_viewer.widget().Children:
+        #    if child.GetLabel() == 'ROI':
+        #        child.Destroy()
+        #        break
+        ndv_viewer._viewer_model.show_roi_button = False
+
         LOGGER.debug("Rendering image for display in ndv")
         ndv_viewer.show()
 
         # TODO: ndv - temporary
         #ndv_viewer._async = False
 
-        # TODO: ndv - temporary hack until resolved: https://github.com/pyapp-kit/ndv/issues/189
+        ## set color choices for dropdowns ##
+
+        # TODO: ndv - temporary hack to set the color choices in dropdowns
+        # remove once resolved: https://github.com/pyapp-kit/ndv/issues/189
         def _set_channels_hack():
             lut_dict = ndv_viewer._view._luts
             for ch_idx in lut_dict.keys():

@@ -121,7 +121,7 @@ def ndv_display(img, ndv_viewer=None):
             data_wrapper(img),
             visible_axes=('Y', 'X'),
             channel_axis='C',
-            channel_mode=ChannelMode.COMPOSITE,
+            channel_mode=ChannelMode.GRAYSCALE,
             default_lut=DEFAULT_LUT,
             luts=luts
         )
@@ -153,6 +153,7 @@ def ndv_display(img, ndv_viewer=None):
                 wx_combo.Append(['magma'])
 
         call_later(1000, _set_channels_hack)
+        ndv_viewer._view.channelModeChanged.connect(lambda: call_later(1000, _set_channels_hack))
     else:
         LOGGER.debug("Updating ndv data")
         ndv_viewer.data = img

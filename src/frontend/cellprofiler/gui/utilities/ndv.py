@@ -83,6 +83,7 @@ def get_data_wrapper(img):
     else:
         raise ValueError(f"Unsupported image data type {type(img)}")
 
+DEFAULT_LUT = {'visible': True, 'cmap': Colormap('magma')}
 STANDARD_LUTS = [
     {'visible': True, 'cmap': Colormap('red')},
     {'visible': True, 'cmap': Colormap('green')},
@@ -106,19 +107,22 @@ def ndv_display(img, ndv_viewer=None):
         # giving it labeled axes, without having to use xarray
         data_wrapper = get_data_wrapper(img)
 
-        # set the luts and visibility of each channel
-        num_visible_axes = min(img.shape[data_wrapper._li['C']], len(STANDARD_LUTS))
-        visible_axes = list(range(num_visible_axes))
-        luts = {ax: STANDARD_LUTS[ax] for ax in visible_axes}
-        for ax in range(num_visible_axes, img.shape[data_wrapper._li['C']]):
-            luts[ax] = {'visible': False}
+        if img.ndim > 2:
+            # set the luts and visibility of each channel
+            num_visible_axes = min(img.shape[data_wrapper._li['C']], len(STANDARD_LUTS))
+            visible_axes = list(range(num_visible_axes))
+            luts = {ax: STANDARD_LUTS[ax] for ax in visible_axes}
+            for ax in range(num_visible_axes, img.shape[data_wrapper._li['C']]):
+                luts[ax] = {'visible': False}
+        else:
+            luts = {0: DEFAULT_LUT}
 
         ndv_viewer = ArrayViewer(
             data_wrapper(img),
             visible_axes=('Y', 'X'),
             channel_axis='C',
             channel_mode=ChannelMode.COMPOSITE,
-            default_lut={'visible': False, 'cmap': Colormap('viridis')},
+            default_lut=DEFAULT_LUT,
             luts=luts
         )
 

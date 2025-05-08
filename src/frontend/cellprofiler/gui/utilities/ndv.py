@@ -5,6 +5,7 @@ from ndv.views import call_later
 from cmap import Colormap
 import numpy
 import dask.array.core as da
+from skimage.exposure import rescale_intensity
 from typing import Any, Hashable, Mapping, Sequence
 
 LOGGER = logging.getLogger(__name__)
@@ -97,11 +98,17 @@ STANDARD_LUTS = [
 #   ortho viewer: https://github.com/pyapp-kit/ndv/issues/11 (can do outside of ndv)
 #   wx play button: https://github.com/pyapp-kit/ndv/issues/167
 # add guards against existing issues:
-#   handle float LUT issue until resolved: https://github.com/pyapp-kit/ndv/issues/157
 #   zoom might be broken: https://github.com/pyapp-kit/ndv/issues/116
 def ndv_display(img, ndv_viewer=None):
     if ndv_viewer is None:
         LOGGER.debug("Initializing ndv")
+
+        # TODO: ndv - temporary unoptimal conversion needed
+        # to handle float LUT issue until resolved: https://github.com/pyapp-kit/ndv/issues/157
+        if numpy.issubdtype(img.dtype, numpy.floating):
+            img = rescale_intensity(img, in_range=(0,1), out_range='uint16').astype('uint16')
+        elif not img.dtype == numpy.uint16:
+            img = rescale_intensity(img, in_range='image', out_range='uint16').astype('uint16')
 
         # initialize data wrapper for this img type (numpy/dask)
         # giving it labeled axes, without having to use xarray
@@ -140,7 +147,7 @@ def ndv_display(img, ndv_viewer=None):
         # TODO: ndv - temporary
         #ndv_viewer._async = False
 
-        ## set color choices for dropdowns ##
+        # set color choices for dropdowns
 
         # TODO: ndv - temporary hack to set the color choices in dropdowns
         # remove once resolved: https://github.com/pyapp-kit/ndv/issues/189

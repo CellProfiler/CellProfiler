@@ -532,3 +532,60 @@ def test_load_v3():
     assert module.primary_objects_name.value == "IdentifyPrimaryObjects"
     assert module.subregion_objects_name.value == "IdentifyTertiaryObjects"
     assert module.shrink_primary.value
+
+
+def test_no_secondary_objects():
+    """Test the case where there are no secondary objects"""
+    primary_labels = numpy.zeros((10, 20), int)
+    secondary_labels = numpy.zeros((10, 20), int)
+    primary_labels[3:6, 4:7] = 1
+    primary_labels[3:6, 14:17] = 2
+    expected_labels = numpy.zeros((10, 20), int)
+    # expected_labels[3:6, 4:7] = 1
+    workspace = make_workspace(primary_labels, secondary_labels)
+    module = workspace.module
+    module.shrink_primary.value = False
+    module.run(workspace)
+    measurements = workspace.measurements
+
+    output_objects = workspace.object_set.get_objects(TERTIARY)
+    assert numpy.all(output_objects.segmented == expected_labels)
+    
+
+def test_first_primary_object_has_no_secondary():
+    """Test the case where the first primary object has no secondary objects"""
+    primary_labels = numpy.zeros((10, 20), int)
+    secondary_labels = numpy.zeros((10, 20), int)
+    primary_labels[3:6, 4:7] = 1
+    primary_labels[3:6, 14:17] = 2
+    secondary_labels[2:7, 12:19] = 1
+    expected_labels = numpy.zeros((10, 20), int)
+    expected_labels[2:7, 12:19] = 1
+    expected_labels[3:6, 14:17] = 0
+    # expected_labels[3:6, 4:7] = 1
+    workspace = make_workspace(primary_labels, secondary_labels)
+    module = workspace.module
+    module.shrink_primary.value = False
+    module.run(workspace)
+    measurements = workspace.measurements
+
+    output_objects = workspace.object_set.get_objects(TERTIARY)
+    assert numpy.all(output_objects.segmented == expected_labels)
+
+def test_no_primary_objects():
+    """Test the case where there are no primary objects"""
+    primary_labels = numpy.zeros((10, 20), int)
+    secondary_labels = numpy.zeros((10, 20), int)
+    secondary_labels[2:7, 4:7] = 1
+    secondary_labels[2:7, 14:17] = 2
+    expected_labels = numpy.zeros((10, 20), int)
+    expected_labels[2:7, 4:7] = 1
+    expected_labels[2:7, 14:17] = 2
+    workspace = make_workspace(primary_labels, secondary_labels)
+    module = workspace.module
+    module.shrink_primary.value = False
+    module.run(workspace)
+    measurements = workspace.measurements
+
+    output_objects = workspace.object_set.get_objects(TERTIARY)
+    assert numpy.all(output_objects.segmented == expected_labels)

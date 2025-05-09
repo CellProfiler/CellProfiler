@@ -474,6 +474,47 @@ def test_renumber_other():
     assert numpy.all(alternates.segmented == expected_alternates)
 
 
+def test_renumber_other_object_numbers_reversed():
+    """Renumber an associated object"""
+    n = 40
+    labels = numpy.zeros((10, n * 10), int)
+    alternates = numpy.zeros((10, n * 10), int)
+    for i in range(40):
+        labels[2:5, i * 10 + 3 : i * 10 + 7] = i + 1
+        alternates[3:7, i * 10 + 2 : i * 10 + 5] = 40-i
+    numpy.random.seed(0)
+    values = numpy.random.uniform(size=n)
+    idx = 1
+    my_min = 0.3
+    my_max = 0.7
+    expected = numpy.zeros(labels.shape, int)
+    expected_alternates = numpy.zeros(alternates.shape, int)
+    for i, value in zip(list(range(n)), values):
+        if my_min <= value <= my_max:
+            expected[labels == i + 1] = idx
+            expected_alternates[alternates == 40 - i] = idx
+            idx += 1
+    workspace, module = make_workspace(
+        {INPUT_OBJECTS: labels, "my_alternates": alternates}
+    )
+    module.x_name.value = INPUT_OBJECTS
+    module.y_name.value = OUTPUT_OBJECTS
+    module.measurements[0].measurement.value = TEST_FTR
+    module.filter_choice.value = cellprofiler.modules.filterobjects.FI_LIMITS
+    module.measurements[0].min_limit.value = my_min
+    module.measurements[0].max_limit.value = my_max
+    module.add_additional_object()
+    module.additional_objects[0].object_name.value = "my_alternates"
+    module.additional_objects[0].target_name.value = "my_additional_result"
+    m = workspace.measurements
+    m.add_measurement(INPUT_OBJECTS, TEST_FTR, values)
+    module.run(workspace)
+    labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
+    alternates = workspace.object_set.get_objects("my_additional_result")
+    assert numpy.all(labels.segmented == expected)
+    assert numpy.all(alternates.segmented == expected_alternates)
+
+
 def test_load_v3():
     file = tests.frontend.modules.get_test_resources_directory("filterobjects/v3.pipeline")
     with open(file, "r") as fd:

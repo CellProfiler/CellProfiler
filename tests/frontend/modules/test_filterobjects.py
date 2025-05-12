@@ -474,8 +474,8 @@ def test_renumber_other():
     assert numpy.all(alternates.segmented == expected_alternates)
 
 
-def test_renumber_other_object_numbers_reversed():
-    """Renumber an associated object"""
+def test_renumber_other_object_numbers_reversed_does_not_relate():
+    """Filter should not automatically relate objects if renumbering setting is selected"""
     n = 40
     labels = numpy.zeros((10, n * 10), int)
     alternates = numpy.zeros((10, n * 10), int)
@@ -512,7 +512,7 @@ def test_renumber_other_object_numbers_reversed():
     labels = workspace.object_set.get_objects(OUTPUT_OBJECTS)
     alternates = workspace.object_set.get_objects("my_additional_result")
     assert numpy.all(labels.segmented == expected)
-    assert numpy.all(alternates.segmented == expected_alternates)
+    assert numpy.any(alternates.segmented != expected_alternates)
 
 
 def test_load_v3():

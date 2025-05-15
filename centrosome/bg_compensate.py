@@ -406,10 +406,7 @@ def bg_compensate(img, sigma, splinepoints, scale):
     """Reads file, subtracts background. Returns [compensated image, background]."""
 
     from PIL import Image
-    import pylab
-    from matplotlib.image import pil_to_array
     from centrosome.filter import canny
-    import matplotlib
 
     img = Image.open(img)
     if img.mode == "I;16":
@@ -432,10 +429,7 @@ def bg_compensate(img, sigma, splinepoints, scale):
         else:
             img = new_img.astype(np.float32) / 65535.0
     else:
-        img = pil_to_array(img)
-
-    pylab.subplot(1, 3, 1).imshow(img, cmap=matplotlib.cm.Greys_r)
-    pylab.show()
+        img = np.array(img)
 
     if len(img.shape) > 2:
         raise ValueError("Image must be grayscale")
@@ -457,6 +451,4 @@ def bg_compensate(img, sigma, splinepoints, scale):
     print("Executed in %f sec" % (time.process_time() - t0))
     bg[~mask] = img[~mask]
 
-    pylab.subplot(1, 3, 2).imshow(img - bg, cmap=matplotlib.cm.Greys_r)
-    pylab.subplot(1, 3, 3).imshow(bg, cmap=matplotlib.cm.Greys_r)
-    pylab.show()
+    return img - bg, bg

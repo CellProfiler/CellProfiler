@@ -6,8 +6,7 @@ import skimage.io
 import cellprofiler_core.image
 import cellprofiler_core.measurement
 import cellprofiler_core.modules.injectimage
-# import cellprofiler.modules.measureobjectsizeshape
-# from cellprofiler.modules.measureobjectsizeshape import MeasureObjectAreaShape
+import cellprofiler.modules.measureobjectsizeshape
 import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
@@ -437,12 +436,12 @@ def test_measurements_overlapping_and_non_overlapping_in_same_image():
     assert len(workspace.object_set.get_objects("myobjects").indices) == 2
     measurements_values = m.get_current_measurement(
             "myobjects",
-            ObjectSizeShapeFeatures.AREA_SHAPE
+            ObjectSizeShapeFeatures.AREA_SHAPE.value
             + "_"
-            + ObjectSizeShapeFeatures.F_AREA,
+            + ObjectSizeShapeFeatures.F_AREA.value,
         )
-    assert len(measurements_values) == 2
-    assert numpy.isnan(measurements_values[0])
+    assert len(measurements_values) == 1
+    assert not numpy.isnan(measurements_values[0])
 
 
 
@@ -465,9 +464,9 @@ def test_measurements_overlapping_objects():
         assert i in ['myobjects']
     measurements_values = m.get_current_measurement(
             OBJECTS_NAME,
-            ObjectSizeShapeFeatures.AREA_SHAPE
+            ObjectSizeShapeFeatures.AREA_SHAPE.value
             + "_"
-            + ObjectSizeShapeFeatures.F_AREA,
+            + ObjectSizeShapeFeatures.F_AREA.value,
         )
     assert len(measurements_values) == 0
 

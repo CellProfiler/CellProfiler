@@ -11,6 +11,7 @@ import cellprofiler_core.object
 import cellprofiler_core.pipeline
 import cellprofiler_core.workspace
 from cellprofiler_core.constants.measurement import COLTYPE_FLOAT
+from cellprofiler_library.opts.objectsizeshapefeatures import ObjectSizeShapeFeatures
 
 import tests.frontend
 import tests.frontend.modules
@@ -18,13 +19,15 @@ import tests.frontend.modules
 OBJECTS_NAME = "myobjects"
 
 
-def make_workspace(labels):
+def make_workspace(labels, object_set=None):
     image_set_list = cellprofiler_core.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
-    object_set = cellprofiler_core.object.ObjectSet()
+
     objects = cellprofiler_core.object.Objects()
     objects.segmented = labels
-    object_set.add_objects(objects, OBJECTS_NAME)
+    if object_set is None:
+        object_set = cellprofiler_core.object.ObjectSet()
+        object_set.add_objects(objects, OBJECTS_NAME)
     m = cellprofiler_core.measurement.Measurements()
     module = cellprofiler.modules.measureobjectsizeshape.MeasureObjectAreaShape()
     module.set_module_num(1)
@@ -91,26 +94,26 @@ def test_zeros():
     module.run(workspace)
 
     for f in (
-        cellprofiler.modules.measureobjectsizeshape.F_AREA,
-        cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
-        cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
-        cellprofiler.modules.measureobjectsizeshape.F_ECCENTRICITY,
-        cellprofiler.modules.measureobjectsizeshape.F_EULER_NUMBER,
-        cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
-        cellprofiler.modules.measureobjectsizeshape.F_FORM_FACTOR,
-        cellprofiler.modules.measureobjectsizeshape.F_MAJOR_AXIS_LENGTH,
-        cellprofiler.modules.measureobjectsizeshape.F_MINOR_AXIS_LENGTH,
-        cellprofiler.modules.measureobjectsizeshape.F_ORIENTATION,
-        cellprofiler.modules.measureobjectsizeshape.F_PERIMETER,
-        cellprofiler.modules.measureobjectsizeshape.F_SOLIDITY,
-        cellprofiler.modules.measureobjectsizeshape.F_COMPACTNESS,
-        cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS,
-        cellprofiler.modules.measureobjectsizeshape.F_MEAN_RADIUS,
-        cellprofiler.modules.measureobjectsizeshape.F_MEDIAN_RADIUS,
-        cellprofiler.modules.measureobjectsizeshape.F_MIN_FERET_DIAMETER,
-        cellprofiler.modules.measureobjectsizeshape.F_MAX_FERET_DIAMETER,
+        ObjectSizeShapeFeatures.F_AREA.value,
+        ObjectSizeShapeFeatures.F_CENTER_X.value,
+        ObjectSizeShapeFeatures.F_CENTER_Y.value,
+        ObjectSizeShapeFeatures.F_ECCENTRICITY.value,
+        ObjectSizeShapeFeatures.F_EULER_NUMBER.value,
+        ObjectSizeShapeFeatures.F_EXTENT.value,
+        ObjectSizeShapeFeatures.F_FORM_FACTOR.value,
+        ObjectSizeShapeFeatures.F_MAJOR_AXIS_LENGTH.value,
+        ObjectSizeShapeFeatures.F_MINOR_AXIS_LENGTH.value,
+        ObjectSizeShapeFeatures.F_ORIENTATION.value,
+        ObjectSizeShapeFeatures.F_PERIMETER.value,
+        ObjectSizeShapeFeatures.F_SOLIDITY.value,
+        ObjectSizeShapeFeatures.F_COMPACTNESS.value,
+        ObjectSizeShapeFeatures.F_MAXIMUM_RADIUS.value,
+        ObjectSizeShapeFeatures.F_MEAN_RADIUS.value,
+        ObjectSizeShapeFeatures.F_MEDIAN_RADIUS.value,
+        ObjectSizeShapeFeatures.F_MIN_FERET_DIAMETER.value,
+        ObjectSizeShapeFeatures.F_MAX_FERET_DIAMETER.value,
     ):
-        m = cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + f
+        m = ObjectSizeShapeFeatures.AREA_SHAPE.value + "_" + f
         a = measurements.get_current_measurement("SomeObjects", m)
         assert len(a) == 0
 
@@ -200,8 +203,8 @@ def test_measurements_zernike():
     for object_name in settings[:-1]:
         measurements = module.get_measurements(pipeline, object_name, "AreaShape")
         for measurement in (
-            cellprofiler.modules.measureobjectsizeshape.F_STANDARD
-            + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+            ObjectSizeShapeFeatures.F_STANDARD.value
+            + ObjectSizeShapeFeatures.F_STD_2D.value
         ):
             assert measurement in measurements
         assert "Zernike_3_1" in measurements
@@ -215,8 +218,8 @@ def test_measurements_no_zernike():
     for object_name in settings[:-1]:
         measurements = module.get_measurements(pipeline, object_name, "AreaShape")
         for measurement in (
-            cellprofiler.modules.measureobjectsizeshape.F_STANDARD
-            + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+            ObjectSizeShapeFeatures.F_STANDARD.value
+            + ObjectSizeShapeFeatures.F_STD_2D.value
         ):
             assert measurement in measurements
         assert not ("Zernike_3_1" in measurements)
@@ -340,8 +343,8 @@ def test_extent():
         "SomeObjects",
         "_".join(
             (
-                cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE,
-                cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
+                ObjectSizeShapeFeatures.AREA_SHAPE.value,
+                ObjectSizeShapeFeatures.F_EXTENT.value,
             )
         ),
     )
@@ -420,6 +423,31 @@ def test_overlapping():
         else:
             assert tuple(v) == expected
 
+def test_measurements_overlapping_objects():
+    labels = numpy.zeros((20, 20), int)
+    labels[11:19, 2:7] = 1
+    objects = cellprofiler_core.object.Objects()
+    objects.segmented = labels
+    object_set = cellprofiler_core.object.ObjectSet()
+    object_set.add_objects(objects, OBJECTS_NAME)
+    
+    workspace, module = make_workspace(labels, object_set=object_set)
+    # update labels of object1 to 0 to simulate removal of object1 via a module like
+    # identify tertiary objects
+    objects.segmented[labels == 1] = 0
+    module.run(workspace)
+    m = workspace.measurements
+    assert len(workspace.object_set.get_objects(OBJECTS_NAME).indices) == 0
+    for i in workspace.object_set.get_object_names():
+        assert i in ['myobjects']
+    measurements_values = m.get_current_measurement(
+            OBJECTS_NAME,
+            ObjectSizeShapeFeatures.AREA_SHAPE.value
+            + "_"
+            + ObjectSizeShapeFeatures.F_AREA.value,
+        )
+    assert len(measurements_values) == 0
+
 
 def test_max_radius():
     labels = numpy.zeros((20, 10), int)
@@ -430,9 +458,9 @@ def test_max_radius():
     m = workspace.measurements
     max_radius = m.get_current_measurement(
         OBJECTS_NAME,
-        cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE
+        ObjectSizeShapeFeatures.AREA_SHAPE.value
         + "_"
-        + cellprofiler.modules.measureobjectsizeshape.F_MAXIMUM_RADIUS,
+        + ObjectSizeShapeFeatures.F_MAXIMUM_RADIUS.value,
     )
     assert len(max_radius) == 2
     assert max_radius[0] == 2
@@ -462,23 +490,23 @@ def test_run_volume():
     module.run(workspace)
 
     for feature in [
-        cellprofiler.modules.measureobjectsizeshape.F_VOLUME,
-        cellprofiler.modules.measureobjectsizeshape.F_EXTENT,
-        cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
-        cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
-        cellprofiler.modules.measureobjectsizeshape.F_CENTER_Z,
-        cellprofiler.modules.measureobjectsizeshape.F_SURFACE_AREA,
+        ObjectSizeShapeFeatures.F_VOLUME.value,
+        ObjectSizeShapeFeatures.F_EXTENT.value,
+        ObjectSizeShapeFeatures.F_CENTER_X.value,
+        ObjectSizeShapeFeatures.F_CENTER_Y.value,
+        ObjectSizeShapeFeatures.F_CENTER_Z.value,
+        ObjectSizeShapeFeatures.F_SURFACE_AREA.value,
     ]:
         assert workspace.measurements.has_current_measurements(
             OBJECTS_NAME,
-            cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE + "_" + feature,
+            ObjectSizeShapeFeatures.AREA_SHAPE.value + "_" + feature,
         )
 
         assert (
             len(
                 workspace.measurements.get_current_measurement(
                     OBJECTS_NAME,
-                    cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE
+                    ObjectSizeShapeFeatures.AREA_SHAPE.value
                     + "_"
                     + feature,
                 )
@@ -492,8 +520,8 @@ def test_run_volume():
         OBJECTS_NAME,
         "_".join(
             [
-                cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE,
-                cellprofiler.modules.measureobjectsizeshape.F_CENTER_X,
+                ObjectSizeShapeFeatures.AREA_SHAPE.value,
+                ObjectSizeShapeFeatures.F_CENTER_X.value,
             ]
         ),
     )[0]
@@ -504,8 +532,8 @@ def test_run_volume():
         OBJECTS_NAME,
         "_".join(
             [
-                cellprofiler.modules.measureobjectsizeshape.AREA_SHAPE,
-                cellprofiler.modules.measureobjectsizeshape.F_CENTER_Y,
+                ObjectSizeShapeFeatures.AREA_SHAPE.value,
+                ObjectSizeShapeFeatures.F_CENTER_Y.value,
             ]
         ),
     )[0]
@@ -569,12 +597,12 @@ def test_run_without_advanced():
 
     standard = [
         f"AreaShape_{name}"
-        for name in cellprofiler.modules.measureobjectsizeshape.F_STANDARD
-        + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
+        for name in ObjectSizeShapeFeatures.F_STANDARD.value
+        + ObjectSizeShapeFeatures.F_STD_2D.value
     ]
     advanced = [
         f"AreaShape_{name}"
-        for name in cellprofiler.modules.measureobjectsizeshape.F_ADV_2D
+        for name in ObjectSizeShapeFeatures.F_ADV_2D.value
     ]
     measures = measurements.get_feature_names(OBJECTS_NAME)
     for feature in standard:
@@ -599,9 +627,9 @@ def test_run_with_advanced():
 
     allfeatures = [
         f"AreaShape_{name}"
-        for name in cellprofiler.modules.measureobjectsizeshape.F_STANDARD
-        + cellprofiler.modules.measureobjectsizeshape.F_STD_2D
-        + cellprofiler.modules.measureobjectsizeshape.F_ADV_2D
+        for name in ObjectSizeShapeFeatures.F_STANDARD.value
+        + ObjectSizeShapeFeatures.F_STD_2D.value
+        + ObjectSizeShapeFeatures.F_ADV_2D.value
     ]
     measures = measurements.get_feature_names(OBJECTS_NAME)
     for feature in allfeatures:

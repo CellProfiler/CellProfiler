@@ -167,6 +167,8 @@ def adjacent(labels):
        a different label.
        
     """
+    # upcast for numpy 2 compatibility
+    labels = labels.astype(np.int32, copy=False)
     high = labels.max() + 1
     if high > np.iinfo(labels.dtype).max:
         labels = labels.astype(np.int32)

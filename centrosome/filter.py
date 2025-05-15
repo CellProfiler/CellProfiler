@@ -25,6 +25,7 @@ from .cpmorphology import (
     grey_reconstruction,
 )
 from six.moves import range
+from centrosome._np_compat import np_product, np_NaN
 
 """# of points handled in the first pass of the convex hull code"""
 CONVEX_HULL_CHUNKSIZE = 250000
@@ -39,7 +40,7 @@ def stretch(image, mask=None):
     returns the stretched image
     """
     image = np.array(image, float)
-    if np.product(image.shape) == 0:
+    if np_product(image.shape) == 0:
         return image
     if mask is None:
         minval = np.min(image)
@@ -1898,7 +1899,7 @@ def hessian(
         #
         # Calculate for d01 != 0
         #
-        v = np.ones((image.shape[0], image.shape[1], 2, 2)) * np.nan
+        v = np.ones((image.shape[0], image.shape[1], 2, 2)) * np_NaN
         v[:, :, :, 0] = L - hessian[:, :, 1, 1, np.newaxis]
         v[:, :, :, 1] = hessian[:, :, 0, 1, np.newaxis]
         #

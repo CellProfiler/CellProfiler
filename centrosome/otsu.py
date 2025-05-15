@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from __future__ import division
 import numpy as np
+from centrosome._np_compat import np_Inf, np_NaN
 
 
 def otsu(data, min_threshold=None, max_threshold=None, bins=256):
@@ -167,7 +168,7 @@ def otsu3(data, min_threshold=None, max_threshold=None, bins=128):
     mean = (cs[j] - cs[i]) / diff
     mean2 = (cs2[j] - cs2[i]) / diff
     score_middle = w * (mean2 - mean ** 2)
-    score_middle[i >= j] = np.Inf
+    score_middle[i >= j] = np_Inf
     score = (
         score_low[i * bins // len(data)]
         + score_middle
@@ -217,7 +218,7 @@ def entropy3(data, bins=128):
     mean = (cs[j] - cs[i]) / diff
     mean2 = (cs2[j] - cs2[i]) / diff
     score_middle = entropy_score(mean2 - mean ** 2 + 1.0 / 512.0, bins, w, False)
-    score_middle[(i >= j) | np.isnan(score_middle)] = np.Inf
+    score_middle[(i >= j) | np.isnan(score_middle)] = np_Inf
     score = score_low[i // bin_len] + score_middle + score_high[j // bin_len]
     best_score = np.min(score)
     best_i_j = np.argwhere(score == best_score)
@@ -235,13 +236,13 @@ def entropy_score(var, bins, w=None, decimate=True):
         n = len(var)
         var = var[0 : n : n // bins]
     score = w * np.log(var * w * np.sqrt(2 * np.pi * np.exp(1)))
-    score[np.isnan(score)] = np.Inf
+    score[np.isnan(score)] = np_Inf
     return score
 
 
 def weighted_variance(cs, cs2, lo, hi):
     if hi == lo:
-        return np.Infinity
+        return np_Inf
     w = (hi - lo) / float(len(cs))
     mean = (cs[hi] - cs[lo]) / (hi - lo)
     mean2 = (cs2[hi] - cs2[lo]) / (hi - lo)
@@ -250,7 +251,7 @@ def weighted_variance(cs, cs2, lo, hi):
 
 def otsu_entropy(cs, cs2, lo, hi):
     if hi == lo:
-        return np.Infinity
+        return np_Inf
     w = (hi - lo) / float(len(cs))
     mean = (cs[hi] - cs[lo]) / (hi - lo)
     mean2 = (cs2[hi] - cs2[lo]) / (hi - lo)

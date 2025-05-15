@@ -8,6 +8,7 @@ import unittest
 import centrosome.threshold as T
 
 
+
 class TestThreshold(unittest.TestCase):
     def test_01_00_nothing(self):
         result = T.get_otsu_threshold(-np.ones((10, 10)))

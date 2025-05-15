@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import unittest
 import numpy as np
 from centrosome.otsu import otsu, entropy, otsu3, entropy3
+from centrosome._np_compat import np_NaN
 
 
 class TestOtsu(unittest.TestCase):
@@ -72,7 +73,7 @@ class TestOtsu(unittest.TestCase):
         r = np.random.RandomState()
         r.seed(6)
         data = r.uniform(size=100)
-        data[r.uniform(size=100) > 0.8] = np.NaN
+        data[r.uniform(size=100) > 0.8] = np_NaN
         self.assertEqual(otsu(data), otsu(data[~np.isnan(data)]))
         self.assertEqual(entropy(data), entropy(data[~np.isnan(data)]))
         self.assertEqual(otsu3(data), otsu3(data[~np.isnan(data)]))

@@ -15,6 +15,7 @@ from .smooth import smooth_with_noise
 from .filter import stretch, unstretch
 from six.moves import range
 from six.moves import zip
+from centrosome._np_compat import np_product, np_Inf
 
 TM_OTSU = "Otsu"
 TM_OTSU_GLOBAL = "Otsu Global"
@@ -374,7 +375,7 @@ def get_mog_threshold(image, mask=None, object_fraction=0.2):
     the user.        
     """
     cropped_image = np.array(image.flat) if mask is None else image[mask]
-    pixel_count = np.product(cropped_image.shape)
+    pixel_count = np_product(cropped_image.shape)
     max_count = 512 ** 2  # maximum # of pixels analyzed
     #
     # We need at least 3 pixels to keep from crashing because the highest
@@ -401,9 +402,9 @@ def get_mog_threshold(image, mask=None, object_fraction=0.2):
     # in case there are any quantization effects that have resulted in
     # unnaturally many 0:s or 1:s in the image.
     cropped_image.sort()
-    one_percent = (np.product(cropped_image.shape) + 99) // 100
+    one_percent = (np_product(cropped_image.shape) + 99) // 100
     cropped_image = cropped_image[one_percent:-one_percent]
-    pixel_count = np.product(cropped_image.shape)
+    pixel_count = np_product(cropped_image.shape)
     # Guess at the class means for the 3 classes: background,
     # in-between and object
     bg_pixel = cropped_image[int(round(pixel_count * background_fraction / 2.0))]
@@ -420,7 +421,7 @@ def get_mog_threshold(image, mask=None, object_fraction=0.2):
     # distributions/classes to the data. Note, the code below is general
     # and works for any number of classes. Iterate until parameters don't
     # change anymore.
-    class_count = np.prod(class_mean.shape)
+    class_count = np_product(class_mean.shape)
     #
     # Do a coarse iteration on subsampled data and a fine iteration on the real
     # data
@@ -500,7 +501,7 @@ def get_background_threshold(image, mask=None):
     2 (an arbitrary empirical factor). The user will presumably adjust the
     multiplication factor as needed."""
     cropped_image = np.array(image.flat) if mask is None else image[mask]
-    if np.product(cropped_image.shape) == 0:
+    if np_product(cropped_image.shape) == 0:
         return 0
     img_min = np.min(cropped_image)
     img_max = np.max(cropped_image)
@@ -566,7 +567,7 @@ def get_robust_background_threshold(
     """
 
     cropped_image = np.array(image.flat) if mask is None else image[mask]
-    n_pixels = np.product(cropped_image.shape)
+    n_pixels = np_product(cropped_image.shape)
     if n_pixels < 3:
         return 0
 
@@ -593,7 +594,7 @@ def mad(a):
     
     returns the median of the deviation of a from its median.
     """
-    a = np.asfarray(a).flatten()
+    a = np.asarray(a, dtype=float).flatten()
     return np.median(np.abs(a - np.median(a)))
 
 
@@ -625,7 +626,7 @@ def get_ridler_calvard_threshold(image, mask=None):
     Cybernetics, vol. 8, no. 8, August 1978.
     """
     cropped_image = np.array(image.flat) if mask is None else image[mask]
-    if np.product(cropped_image.shape) < 3:
+    if np_product(cropped_image.shape) < 3:
         return 0
     if np.min(cropped_image) == np.max(cropped_image):
         return cropped_image[0]
@@ -661,7 +662,7 @@ get_ridler_calvard_threshold.args = inspect.getfullargspec(
 def get_kapur_threshold(image, mask=None):
     """The Kapur, Sahoo, & Wong method of thresholding, adapted to log-space."""
     cropped_image = np.array(image.flat) if mask is None else image[mask]
-    if np.product(cropped_image.shape) < 3:
+    if np_product(cropped_image.shape) < 3:
         return 0
     if np.min(cropped_image) == np.max(cropped_image):
         return cropped_image[0]
@@ -678,7 +679,7 @@ def get_kapur_threshold(image, mask=None):
     histogram = histogram[keep]
     histogram_values = histogram_values[keep]
     # check for corner cases
-    if np.product(histogram_values) == 1:
+    if np_product(histogram_values) == 1:
         return 2 ** histogram_values[0]
         # Normalize to probabilities
     p = histogram.astype(float) / float(np.sum(histogram))
@@ -693,7 +694,7 @@ def get_kapur_threshold(image, mask=None):
     hi_entropy = hi_e / hi_sum - np.log2(hi_sum)
 
     sum_entropy = lo_entropy[:-1] + hi_entropy[:-1]
-    sum_entropy[np.logical_not(np.isfinite(sum_entropy))] = np.Inf
+    sum_entropy[np.logical_not(np.isfinite(sum_entropy))] = np_Inf
     entry = np.argmin(sum_entropy)
     return 2 ** ((histogram_values[entry] + histogram_values[entry + 1]) / 2)
 
@@ -785,8 +786,8 @@ def weighted_variance(image, mask, binary_image):
 
     fg = np.log2(np.maximum(image[binary_image & mask], minval))
     bg = np.log2(np.maximum(image[(~binary_image) & mask], minval))
-    nfg = np.product(fg.shape)
-    nbg = np.product(bg.shape)
+    nfg = np_product(fg.shape)
+    nbg = np_product(bg.shape)
     if nfg == 0:
         return np.var(bg)
     elif nbg == 0:
@@ -845,9 +846,9 @@ def sum_of_entropies(image, mask, binary_image):
     #
     hfg = hfg[hfg > 0]
     hbg = hbg[hbg > 0]
-    if np.product(hfg.shape) == 0:
+    if np_product(hfg.shape) == 0:
         hfg = np.ones((1,), int)
-    if np.product(hbg.shape) == 0:
+    if np_product(hbg.shape) == 0:
         hbg = np.ones((1,), int)
     #
     # Normalize

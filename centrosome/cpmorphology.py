@@ -24,6 +24,8 @@ except:
     pass
 from . import _convex_hull
 
+from centrosome._np_compat import np_Inf, np_product, np_NaN
+
 logger = logging.getLogger(__name__)
 """A structuring element for eight-connecting a neigborhood"""
 eight_connect = scind.generate_binary_structure(2, 2)
@@ -1383,7 +1385,7 @@ def median_of_labels(image, labels, indices):
     labels = anti_indices[labels[include]]
     image = image[include]
     if len(labels) == 0:
-        return np.array([np.nan] * len(indices))
+        return np.array([np_NaN] * len(indices))
     index = np.lexsort((image, labels))
     labels, image = labels[index], image[index]
     counts = np.bincount(labels)
@@ -1397,7 +1399,7 @@ def median_of_labels(image, labels, indices):
     median[counts > 0] = image[middle_low[counts > 0]]
     median[evens] += image[middle_low[evens] + 1]
     median[evens] /= 2
-    median[counts == 0] = np.nan
+    median[counts == 0] = np_NaN
     return median
 
 
@@ -1477,7 +1479,7 @@ def minimum_enclosing_circle(labels, indexes=None, hull_and_point_count=None):
     #
     # Start out by eliminating the degenerate cases: 0, 1 and 2
     #
-    centers[point_count == 0, :] = np.NaN
+    centers[point_count == 0, :] = np_NaN
     if np.all(point_count == 0):
         # Bail if there are no points in any hull to prevent
         # index failures below.
@@ -1813,7 +1815,7 @@ def associate_by_distance(labels_a, labels_b, distance):
     ab_consider = (ab_distance_minus_radii <= distance) & (~ab_easy_wins)
     ij_consider = np.dstack((i[ab_consider], j[ab_consider]))
     ij_consider.shape = ij_consider.shape[1:]
-    if np.product(ij_consider.shape) == 0:
+    if np_product(ij_consider.shape) == 0:
         return ij_wins
     if True:
         wins = []
@@ -2941,7 +2943,7 @@ def block(shape, block_shape):
     i = (i * multiplier[0]).astype(int)
     j = (j * multiplier[1]).astype(int)
     labels = i * ijmax[1] + j
-    indexes = np.array(list(range(np.product(ijmax))))
+    indexes = np.array(list(range(np_product(ijmax))))
     return labels, indexes
 
 
@@ -4197,7 +4199,7 @@ def skeletonize(image, mask=None, ordering=None):
     # of skeletons
     #
     np.random.seed(0)
-    tiebreaker = np.random.permutation(np.arange(np.product(masked_image.shape)))
+    tiebreaker = np.random.permutation(np.arange(np_product(masked_image.shape)))
     tiebreaker.shape = masked_image.shape
     order = np.lexsort((tiebreaker[masked_image], corner_score[masked_image], distance))
     order = np.ascontiguousarray(order, np.int32)
@@ -4429,7 +4431,7 @@ def regional_maximum(image, mask=None, structure=None, ties_are_ok=False):
         labels, label_count = scind.label(result, eight_connect)
         np.random.seed(0)
         ro_distance = rank_order(distance)[0].astype(float)
-        count = np.product(ro_distance.shape)
+        count = np_product(ro_distance.shape)
         ro_distance.flat += np.random.permutation(count).astype(float) / float(count)
         positions = scind.maximum_position(
             ro_distance, labels, np.arange(label_count) + 1

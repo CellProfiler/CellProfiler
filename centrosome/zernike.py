@@ -8,6 +8,7 @@ from .cpmorphology import minimum_enclosing_circle, fixup_scipy_ndimage_result
 from .cpmorphology import fill_labeled_holes, draw_line
 from six.moves import range
 from six.moves import zip
+from centrosome._np_compat import np_cumproduct
 
 
 def construct_zernike_lookuptable(zernike_indexes):
@@ -19,7 +20,7 @@ def construct_zernike_lookuptable(zernike_indexes):
     """
     n_max = np.max(zernike_indexes[:, 0])
     factorial = np.ones((1 + n_max,), dtype=float)
-    factorial[1:] = np.cumproduct(np.arange(1, 1 + n_max, dtype=float))
+    factorial[1:] = np_cumproduct(np.arange(1, 1 + n_max, dtype=float))
     width = int(n_max // 2 + 1)
     lut = np.zeros((zernike_indexes.shape[0], width), dtype=float)
     for idx, (n, m) in enumerate(zernike_indexes):

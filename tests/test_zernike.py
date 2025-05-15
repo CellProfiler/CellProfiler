@@ -6,6 +6,7 @@ import unittest
 import centrosome.zernike as z
 from centrosome.cpmorphology import fill_labeled_holes, draw_line
 from six.moves import range
+from centrosome._np_compat import np_product
 
 
 class TestZernike(unittest.TestCase):
@@ -117,7 +118,7 @@ class TestZernike(unittest.TestCase):
         self.assertTrue(np.all(zf[:, :, m_ne_0] == 0))
         self.assertTrue(np.all(zf[:, :, m_eq_0] != 0))
         scores = z.score_zernike(zf, np.array([]), np.zeros((100, 100), int))
-        self.assertEqual(np.product(scores.shape), 0)
+        self.assertEqual(np_product(scores.shape), 0)
 
     def test_01_01_one_object(self):
         """Test Zernike on one single circle"""

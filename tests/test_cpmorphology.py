@@ -13,6 +13,7 @@ from centrosome.filter import permutations
 from six.moves import range
 from six.moves import zip
 
+from centrosome._np_compat import np_product, np_Inf, np_NaN
 
 class TestFillLabeledHoles(unittest.TestCase):
     def test_01_00_zeros(self):
@@ -434,7 +435,7 @@ class TestBinaryShrink(unittest.TestCase):
         result = morph.binary_shrink(input)
         where = np.argwhere(result)
         self.assertTrue(len(where) > 1)
-        self.assertFalse(result[9:9])
+        self.assertFalse(result[9, 9])
 
     def test_06_random_filled(self):
         """Shrink random blobs
@@ -564,14 +565,14 @@ class TestConvexHull(unittest.TestCase):
     def test_00_00_zeros(self):
         """Make sure convex_hull can handle an empty array"""
         result, counts = morph.convex_hull(np.zeros((10, 10), int), [])
-        self.assertEqual(np.product(result.shape), 0)
-        self.assertEqual(np.product(counts.shape), 0)
+        self.assertEqual(np_product(result.shape), 0)
+        self.assertEqual(np_product(counts.shape), 0)
 
     def test_01_01_zeros(self):
         """Make sure convex_hull can work if a label has no points"""
         result, counts = morph.convex_hull(np.zeros((10, 10), int), [1])
-        self.assertEqual(np.product(result.shape), 0)
-        self.assertEqual(np.product(counts.shape), 1)
+        self.assertEqual(np_product(result.shape), 0)
+        self.assertEqual(np_product(counts.shape), 1)
         self.assertEqual(counts[0], 0)
 
     def test_01_02_point(self):
@@ -988,14 +989,14 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
     def test_00_00_zeros(self):
         """Make sure minimum_enclosing_circle can handle an empty array"""
         center, radius = morph.minimum_enclosing_circle(np.zeros((10, 10), int), [])
-        self.assertEqual(np.product(center.shape), 0)
-        self.assertEqual(np.product(radius.shape), 0)
+        self.assertEqual(np_product(center.shape), 0)
+        self.assertEqual(np_product(radius.shape), 0)
 
     def test_01_01_01_zeros(self):
         """Make sure minimum_enclosing_circle can work if a label has no points"""
         center, radius = morph.minimum_enclosing_circle(np.zeros((10, 10), int), [1])
         self.assertEqual(center.shape, (1, 2))
-        self.assertEqual(np.product(radius.shape), 1)
+        self.assertEqual(np_product(radius.shape), 1)
         self.assertEqual(radius[0], 0)
 
     def test_01_01_02_zeros(self):
@@ -1011,7 +1012,7 @@ class TestMinimumEnclosingCircle(unittest.TestCase):
             labels, hull_and_point_count=hull_and_point_count
         )
         self.assertEqual(center.shape, (2, 2))
-        self.assertEqual(np.product(radius.shape), 2)
+        self.assertEqual(np_product(radius.shape), 2)
 
     def test_01_02_point(self):
         """Make sure minimum_enclosing_circle can handle the degenerate case of one point"""

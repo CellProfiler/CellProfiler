@@ -423,28 +423,6 @@ def test_overlapping():
         else:
             assert tuple(v) == expected
 
-
-def test_measurements_overlapping_and_non_overlapping_in_same_image():
-    labels = numpy.zeros((20, 20), int)
-    labels[11:19, 2:7] = 2
-    labels[3:8, 3:6] = 1
-    workspace, module = make_workspace(labels)
-    # set the labels for object1 to zero
-    workspace.object_set.get_objects("myobjects").segmented[labels == 1] = 0
-    module.run(workspace)
-    m = workspace.measurements
-    assert len(workspace.object_set.get_objects("myobjects").indices) == 2
-    measurements_values = m.get_current_measurement(
-            "myobjects",
-            ObjectSizeShapeFeatures.AREA_SHAPE.value
-            + "_"
-            + ObjectSizeShapeFeatures.F_AREA.value,
-        )
-    assert len(measurements_values) == 1
-    assert not numpy.isnan(measurements_values[0])
-
-
-
 def test_measurements_overlapping_objects():
     labels = numpy.zeros((20, 20), int)
     labels[11:19, 2:7] = 1

@@ -36,9 +36,9 @@ def threshold(
     automatic:                  Annotated[bool, Field(description="Automatic thresholding")] = Field(default=False),
     **kwargs:                   Annotated[Dict[str, Any], Field(description="Additional keyword arguments")]
 ) -> Tuple[
-    Annotated[Any | float | int, Field(description="Final threshold")],
-    Annotated[Any | float | int, Field(description="Original threshold")],
-    Annotated[Any | float | int, Field(description="Guide threshold")],
+    Annotated[Union[Any, float, int], Field(description="Final threshold")],
+    Annotated[Union[Any, float, int], Field(description="Original threshold")],
+    Annotated[Union[Any, float, int], Field(description="Guide threshold")],
     Annotated[Any, Field(description="Binary image")],
     Annotated[float, Field(description="Sigma value")],
 

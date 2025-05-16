@@ -5,6 +5,7 @@ import centrosome
 import centrosome.threshold
 import scipy
 import matplotlib
+from ..opts import threshold as Threshold
 
 
 def rgb_to_greyscale(image):
@@ -135,8 +136,8 @@ def get_threshold_robust_background(
     image,
     lower_outlier_fraction=0.05,
     upper_outlier_fraction=0.05,
-    averaging_method="mean",
-    variance_method="standard_deviation",
+    averaging_method=Threshold.AveragingMethod.MEAN,
+    variance_method=Threshold.VarianceMethod.STANDARD_DEVIATION,
     number_of_deviations=2,
 ):
     """Calculate threshold based on mean & standard deviation.
@@ -166,24 +167,29 @@ def get_threshold_robust_background(
     variance_fn - function used to calculate the amount of variance.
                     Default = np.sd
     """
-
-    if averaging_method.casefold() == "mean":
-        average_fn = numpy.mean
-    elif averaging_method.casefold() == "median":
-        average_fn = numpy.median
-    elif averaging_method.casefold() == "mode":
-        average_fn = centrosome.threshold.binned_mode
-    else:
-        raise ValueError(f"{averaging_method} not in 'Mean', 'Median', 'Mode'")
-
-    if variance_method.casefold() == "standard_deviation":
-        variance_fn = numpy.std
-    elif variance_method.casefold() == "median_absolute_deviation":
-        variance_fn = centrosome.threshold.mad
-    else:
+    averaging_method_map = {
+        Threshold.AveragingMethod.MEAN: numpy.mean,
+        Threshold.AveragingMethod.MEDIAN: numpy.median,
+        Threshold.AveragingMethod.MODE: centrosome.threshold.binned_mode,
+    }
+    variance_method_map = {
+        Threshold.VarianceMethod.STANDARD_DEVIATION: numpy.std,
+        Threshold.VarianceMethod.MEDIAN_ABSOLUTE_DEVIATION: centrosome.threshold.mad,
+    }
+    # Check if the averaging method is valid
+    if averaging_method not in averaging_method_map:
         raise ValueError(
-            f"{variance_method} not in 'standard_deviation', 'median_absolute_deviation'"
+            f"{averaging_method} not in 'Mean', 'Median', 'Mode'. "
         )
+    # Check if the variance method is valid
+    if variance_method not in variance_method_map:
+        raise ValueError(
+            f"{variance_method} not in 'standard_deviation', 'median_absolute_deviation'. "
+        )
+    
+    average_fn = averaging_method_map[averaging_method]
+    variance_fn = variance_method_map[variance_method]
+
 
     flat_image = image.flatten()
     n_pixels = len(flat_image)
@@ -201,15 +207,99 @@ def get_threshold_robust_background(
     return mean + sd * number_of_deviations
 
 
+def apply_threshold_function(image, window_size, threshold_method, threshold_fn, bin_wanted, **kwargs):
+    image_size = numpy.array(image.shape[:2], dtype=int)
+    nblocks = image_size // window_size
+    if any(n < 2 for n in nblocks):
+        raise ValueError(
+            "Adaptive window cannot exceed 50%% of an image dimension.\n"
+            "Window of %dpx is too large for a %sx%s image"
+            % (window_size, image_size[1], image_size[0])
+        )
+    #
+    # Use a floating point block size to apportion the roundoff
+    # roughly equally to each block
+    #
+    increment = numpy.array(image_size, dtype=float) / numpy.array(
+        nblocks, dtype=float
+    )
+    #
+    # Put the answer here
+    #
+    thresh_out = numpy.zeros(image_size, image.dtype)
+    #
+    # Loop once per block, computing the "global" threshold within the
+    # block.
+    #
+    block_threshold = numpy.zeros([nblocks[0], nblocks[1]])
+    for i in range(nblocks[0]):
+        i0 = int(i * increment[0])
+        i1 = int((i + 1) * increment[0])
+        for j in range(nblocks[1]):
+            j0 = int(j * increment[1])
+            j1 = int((j + 1) * increment[1])
+            block = image[i0:i1, j0:j1]
+            block = block[~numpy.logical_not(block)]
+            if len(block) == 0:
+                threshold_out = 0.0
+            elif numpy.all(block == block[0]):
+                # Don't compute blocks with only 1 value.
+                threshold_out = block[0]
+            elif threshold_method == Threshold.Method.MULTI_OTSU and len(numpy.unique(block)) < 3:
+                # Region within window has only 2 values.
+                # Can't run 3-class otsu on only 2 values.
+                threshold_out = skimage.filters.threshold_otsu(block)
+            else:
+                try:
+                    threshold_out = threshold_fn(block, **kwargs)
+                except ValueError:
+                    # Drop nbins kwarg when multi-otsu fails. See issue #6324 scikit-image
+                    threshold_out = threshold_fn(block)
+            if isinstance(threshold_out, numpy.ndarray):
+                # Select correct bin if running multiotsu
+                threshold_out = threshold_out[bin_wanted]
+            block_threshold[i, j] = threshold_out
+    #
+    # Use a cubic spline to blend the thresholds across the image to avoid image artifacts
+    #
+    spline_order = min(3, numpy.min(nblocks) - 1)
+    xStart = int(increment[0] / 2)
+    xEnd = int((nblocks[0] - 0.5) * increment[0])
+    yStart = int(increment[1] / 2)
+    yEnd = int((nblocks[1] - 0.5) * increment[1])
+    xtStart = 0.5
+    xtEnd = image.shape[0] - 0.5
+    ytStart = 0.5
+    ytEnd = image.shape[1] - 0.5
+    block_x_coords = numpy.linspace(xStart, xEnd, nblocks[0])
+    block_y_coords = numpy.linspace(yStart, yEnd, nblocks[1])
+    adaptive_interpolation = scipy.interpolate.RectBivariateSpline(
+        block_x_coords,
+        block_y_coords,
+        block_threshold,
+        bbox=(xtStart, xtEnd, ytStart, ytEnd),
+        kx=spline_order,
+        ky=spline_order,
+    )
+    thresh_out_x_coords = numpy.linspace(
+        0.5, int(nblocks[0] * increment[0]) - 0.5, thresh_out.shape[0]
+    )
+    thresh_out_y_coords = numpy.linspace(
+        0.5, int(nblocks[1] * increment[1]) - 0.5, thresh_out.shape[1]
+    )
+    # Smooth out the "blocky" adaptive threshold
+    thresh_out = adaptive_interpolation(thresh_out_x_coords, thresh_out_y_coords)
+    return thresh_out
+
 def get_adaptive_threshold(
     image,
     mask=None,
-    threshold_method="otsu",
+    threshold_method=Threshold.Method.OTSU,
     window_size=50,
     threshold_min=0,
     threshold_max=1,
     threshold_correction_factor=1,
-    assign_middle_to_foreground="foreground",
+    assign_middle_to_foreground=Threshold.Assignment.FOREGROUND,
     global_limits=[0.7, 1.5],
     log_transform=False,
     volumetric=False,
@@ -242,138 +332,56 @@ def get_adaptive_threshold(
 
     if log_transform:
         image, conversion_dict = centrosome.threshold.log_transform(image)
-    bin_wanted = 0 if assign_middle_to_foreground.casefold() == "foreground" else 1
+    bin_wanted = 0 if assign_middle_to_foreground.casefold() == Threshold.Assignment.FOREGROUND else 1
 
     thresh_out = None
 
     if len(image) == 0 or numpy.all(image == numpy.nan):
         thresh_out = numpy.zeros_like(image)
+
     elif numpy.all(image == image.ravel()[0]):
         thresh_out = numpy.full_like(image, image.ravel()[0])
+
     # Define the threshold method to be run in each adaptive window
-    elif threshold_method.casefold() == "otsu":
+    elif threshold_method == Threshold.Method.OTSU:
         threshold_fn = skimage.filters.threshold_otsu
-    elif threshold_method.casefold() == "multiotsu":
+
+    elif threshold_method == Threshold.Method.MULTI_OTSU:
         threshold_fn = skimage.filters.threshold_multiotsu
         # If nbins not set in kwargs, use default 128
-        kwargs["nbins"] = kwargs["nbins"] if "nbins" in kwargs else 128
-    elif threshold_method.casefold() == "minimum_cross_entropy":
+        kwargs["nbins"] = kwargs.get("nbins", 128)
+
+    elif threshold_method == Threshold.Method.MINIMUM_CROSS_ENTROPY:
         tol = max(numpy.min(numpy.diff(numpy.unique(image))) / 2, 0.5 / 65536)
         kwargs["tolerance"] = tol
         threshold_fn = skimage.filters.threshold_li
-    elif threshold_method.casefold() == "robust_background":
+
+    elif threshold_method == Threshold.Method.ROBUST_BACKGROUND:
         threshold_fn = get_threshold_robust_background
-        kwargs["lower_outlier_fraction"] = (
-            kwargs["lower_outlier_fraction"]
-            if "lower_outlier_fraction" in kwargs
-            else 0.05
-        )
-        kwargs["upper_outlier_fraction"] = (
-            kwargs["upper_outlier_fraction"]
-            if "upper_outlier_fraction" in kwargs
-            else 0.05
-        )
-        kwargs["averaging_method"] = (
-            kwargs["averaging_method"] if "averaging_method" in kwargs else "mean"
-        )
-        kwargs["variance_method"] = (
-            kwargs["variance_method"]
-            if "variance_method" in kwargs
-            else "standard_deviation"
-        )
-        kwargs["number_of_deviations"] = (
-            kwargs["number_of_deviations"] if "number_of_deviations" in kwargs else 2
-        )
-    elif threshold_method.casefold() == "sauvola":
+        kwargs["lower_outlier_fraction"] = kwargs.get("lower_outlier_fraction", 0.05)
+        kwargs["upper_outlier_fraction"] = kwargs.get("upper_outlier_fraction", 0.05)
+        kwargs["averaging_method"] = kwargs.get("averaging_method", Threshold.AveragingMethod.MEAN)
+        kwargs["variance_method"] = kwargs.get("variance_method", Threshold.VarianceMethod.STANDARD_DEVIATION)
+        kwargs["number_of_deviations"] = kwargs.get("number_of_deviations", 2)
+        
+    elif threshold_method == Threshold.Method.SAUVOLA:
         if window_size % 2 == 0:
             window_size += 1
         thresh_out = skimage.filters.threshold_sauvola(image, window_size)
+        
     else:
         raise NotImplementedError(f"Threshold method {threshold_method} not supported.")
 
     if thresh_out is None:
-        image_size = numpy.array(image.shape[:2], dtype=int)
-        nblocks = image_size // window_size
-        if any(n < 2 for n in nblocks):
-            raise ValueError(
-                "Adaptive window cannot exceed 50%% of an image dimension.\n"
-                "Window of %dpx is too large for a %sx%s image"
-                % (window_size, image_size[1], image_size[0])
-            )
-        #
-        # Use a floating point block size to apportion the roundoff
-        # roughly equally to each block
-        #
-        increment = numpy.array(image_size, dtype=float) / numpy.array(
-            nblocks, dtype=float
+        thresh_out = apply_threshold_function(
+            image,
+            window_size,
+            threshold_method,
+            threshold_fn,
+            bin_wanted,
+            **kwargs,
         )
-        #
-        # Put the answer here
-        #
-        thresh_out = numpy.zeros(image_size, image.dtype)
-        #
-        # Loop once per block, computing the "global" threshold within the
-        # block.
-        #
-        block_threshold = numpy.zeros([nblocks[0], nblocks[1]])
-        for i in range(nblocks[0]):
-            i0 = int(i * increment[0])
-            i1 = int((i + 1) * increment[0])
-            for j in range(nblocks[1]):
-                j0 = int(j * increment[1])
-                j1 = int((j + 1) * increment[1])
-                block = image[i0:i1, j0:j1]
-                block = block[~numpy.logical_not(block)]
-                if len(block) == 0:
-                    threshold_out = 0.0
-                elif numpy.all(block == block[0]):
-                    # Don't compute blocks with only 1 value.
-                    threshold_out = block[0]
-                elif threshold_method == "multiotsu" and len(numpy.unique(block)) < 3:
-                    # Region within window has only 2 values.
-                    # Can't run 3-class otsu on only 2 values.
-                    threshold_out = skimage.filters.threshold_otsu(block)
-                else:
-                    try:
-                        threshold_out = threshold_fn(block, **kwargs)
-                    except ValueError:
-                        # Drop nbins kwarg when multi-otsu fails. See issue #6324 scikit-image
-                        threshold_out = threshold_fn(block)
-                if isinstance(threshold_out, numpy.ndarray):
-                    # Select correct bin if running multiotsu
-                    threshold_out = threshold_out[bin_wanted]
-                block_threshold[i, j] = threshold_out
-        #
-        # Use a cubic spline to blend the thresholds across the image to avoid image artifacts
-        #
-        spline_order = min(3, numpy.min(nblocks) - 1)
-        xStart = int(increment[0] / 2)
-        xEnd = int((nblocks[0] - 0.5) * increment[0])
-        yStart = int(increment[1] / 2)
-        yEnd = int((nblocks[1] - 0.5) * increment[1])
-        xtStart = 0.5
-        xtEnd = image.shape[0] - 0.5
-        ytStart = 0.5
-        ytEnd = image.shape[1] - 0.5
-        block_x_coords = numpy.linspace(xStart, xEnd, nblocks[0])
-        block_y_coords = numpy.linspace(yStart, yEnd, nblocks[1])
-        adaptive_interpolation = scipy.interpolate.RectBivariateSpline(
-            block_x_coords,
-            block_y_coords,
-            block_threshold,
-            bbox=(xtStart, xtEnd, ytStart, ytEnd),
-            kx=spline_order,
-            ky=spline_order,
-        )
-        thresh_out_x_coords = numpy.linspace(
-            0.5, int(nblocks[0] * increment[0]) - 0.5, thresh_out.shape[0]
-        )
-        thresh_out_y_coords = numpy.linspace(
-            0.5, int(nblocks[1] * increment[1]) - 0.5, thresh_out.shape[1]
-        )
-        # Smooth out the "blocky" adaptive threshold
-        thresh_out = adaptive_interpolation(thresh_out_x_coords, thresh_out_y_coords)
-
+        
     # Get global threshold
     global_threshold = get_global_threshold(
         image,
@@ -408,11 +416,11 @@ def get_adaptive_threshold(
 def get_global_threshold(
     image,
     mask=None,
-    threshold_method="otsu",
+    threshold_method=Threshold.Method.OTSU,
     threshold_min=0,
     threshold_max=1,
     threshold_correction_factor=1,
-    assign_middle_to_foreground="foreground",
+    assign_middle_to_foreground=Threshold.Assignment.FOREGROUND,
     log_transform=False,
     **kwargs,
 ):
@@ -431,16 +439,16 @@ def get_global_threshold(
         # All pixels are the same value
         threshold = image.ravel()[0]
 
-    elif threshold_method.casefold() in ("minimum_cross_entropy", "sauvola"):
+    elif threshold_method.casefold() in (Threshold.Method.MINIMUM_CROSS_ENTROPY, Threshold.Method.SAUVOLA):
         tol = max(numpy.min(numpy.diff(numpy.unique(image))) / 2, 0.5 / 65536)
         threshold = skimage.filters.threshold_li(image, tolerance=tol)
-    elif threshold_method.casefold() == "robust_background":
+    elif threshold_method.casefold() == Threshold.Method.ROBUST_BACKGROUND:
         threshold = get_threshold_robust_background(image, **kwargs)
-    elif threshold_method.casefold() == "otsu":
+    elif threshold_method.casefold() == Threshold.Method.OTSU:
         threshold = skimage.filters.threshold_otsu(image)
-    elif threshold_method.casefold() == "multiotsu":
-        bin_wanted = 0 if assign_middle_to_foreground.casefold() == "foreground" else 1
-        kwargs["nbins"] = kwargs["nbins"] if "nbins" in kwargs else 128
+    elif threshold_method.casefold() == Threshold.Method.MULTI_OTSU:
+        bin_wanted = 0 if assign_middle_to_foreground.casefold() == Threshold.Assignment.FOREGROUND else 1
+        kwargs["nbins"] = kwargs.get("nbins", 128)
         threshold = skimage.filters.threshold_multiotsu(image, **kwargs)
         threshold = threshold[bin_wanted]
     else:

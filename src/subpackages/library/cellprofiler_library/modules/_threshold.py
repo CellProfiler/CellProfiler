@@ -34,7 +34,7 @@ def threshold(
     number_of_deviations:       Annotated[int, Field(description="Number of deviations")] = Field(default=2),
     volumetric:                 Annotated[bool, Field(description="Volumetric thresholding")] = Field(default=False),
     automatic:                  Annotated[bool, Field(description="Automatic thresholding")] = Field(default=False),
-    **kwargs:                   Annotated[Dict[str, Any], Field(description="Additional keyword arguments")]
+    **kwargs:                   Annotated[Any, Field(description="Additional keyword arguments")]
 ) -> Tuple[
     Annotated[Union[Any, float, int], Field(description="Final threshold")],
     Annotated[Union[Any, float, int], Field(description="Original threshold")],

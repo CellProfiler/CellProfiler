@@ -6,6 +6,8 @@ import centrosome.threshold
 import scipy
 import matplotlib
 from ..opts import threshold as Threshold
+from typing import Annotated, Any, Optional, Tuple, Callable
+from pydantic import Field, validate_call, BeforeValidator
 
 
 def rgb_to_greyscale(image):
@@ -133,13 +135,13 @@ def reduce_noise(image, patch_size, patch_distance, cutoff_distance, channel_axi
 
 
 def get_threshold_robust_background(
-    image,
-    lower_outlier_fraction=0.05,
-    upper_outlier_fraction=0.05,
-    averaging_method=Threshold.AveragingMethod.MEAN,
-    variance_method=Threshold.VarianceMethod.STANDARD_DEVIATION,
-    number_of_deviations=2,
-):
+    image:                  Annotated[Any, Field(description="Image to threshold")],
+    lower_outlier_fraction: Annotated[float, Field(description="Lower outlier fraction")] = 0.05,
+    upper_outlier_fraction: Annotated[float, Field(description="Upper outlier fraction")] = 0.05,
+    averaging_method:       Threshold.AveragingMethod = Threshold.AveragingMethod.MEAN,
+    variance_method:        Threshold.VarianceMethod = Threshold.VarianceMethod.STANDARD_DEVIATION,
+    number_of_deviations:   Annotated[int, Field(description="Number of deviations")] = 2,
+) -> Annotated[float, Field(description="Threshold")]:
     """Calculate threshold based on mean & standard deviation.
     The threshold is calculated by trimming the top and bottom 5% of
     pixels off the image, then calculating the mean and standard deviation
@@ -206,8 +208,15 @@ def get_threshold_robust_background(
     sd = variance_fn(im)
     return mean + sd * number_of_deviations
 
-
-def apply_threshold_function(image, window_size, threshold_method, threshold_fn, bin_wanted, **kwargs):
+# Helper function for get_adaptive_threshold()
+def __apply_threshold_function(
+        image:              Annotated[Any, Field(description="Image to threshold")],
+        window_size:        Annotated[int, Field(description="Window size for adaptive thresholding")],
+        threshold_method:   Annotated[Threshold.Method, Field(description="Thresholding method")],
+        threshold_fn:       Annotated[Callable[[Any], Any], Field(description="Thresholding function")], 
+        bin_wanted:         Annotated[int, Field(description="Bin wanted")], 
+        **kwargs:           Annotated[Any, Field(description="Additional keyword arguments")],
+        )   -> Annotated[Any, Field(description="Thresholded image")]:
     image_size = numpy.array(image.shape[:2], dtype=int)
     nblocks = image_size // window_size
     if any(n < 2 for n in nblocks):
@@ -292,19 +301,19 @@ def apply_threshold_function(image, window_size, threshold_method, threshold_fn,
     return thresh_out
 
 def get_adaptive_threshold(
-    image,
-    mask=None,
-    threshold_method=Threshold.Method.OTSU,
-    window_size=50,
-    threshold_min=0,
-    threshold_max=1,
-    threshold_correction_factor=1,
-    assign_middle_to_foreground=Threshold.Assignment.FOREGROUND,
-    global_limits=[0.7, 1.5],
-    log_transform=False,
-    volumetric=False,
-    **kwargs,
-):
+    image:                          Annotated[Any, Field(description="Image to threshold")],
+    mask:                           Annotated[Optional[Any], Field(description="Mask to apply to the image")] = None,
+    threshold_method:               Annotated[Threshold.Method, Field(description="Thresholding method"), BeforeValidator(str.casefold)] = Threshold.Method.OTSU,
+    window_size:                    Annotated[int, Field(description="Window size for adaptive thresholding")] = 50,
+    threshold_min:                  Annotated[float, Field(description="Minimum threshold")] = 0,
+    threshold_max:                  Annotated[float, Field(description="Maximum threshold")] = 1,
+    threshold_correction_factor:    Annotated[float, Field(description="Threshold correction factor")] = 1,
+    assign_middle_to_foreground:    Annotated[Threshold.Assignment, Field(description="Assign middle to foreground"), BeforeValidator(str.casefold)] = Threshold.Assignment.FOREGROUND,
+    global_limits:                  Annotated[Tuple[float, float], Field(description="Global limits for thresholding")] = (0.7, 1.5),
+    log_transform:                  Annotated[bool, Field(description="Log transform")] = False,
+    volumetric:                     Annotated[bool, Field(description="Volumetric thresholding")] = False,
+    **kwargs:                       Annotated[Any, Field(description="Additional keyword arguments")]
+) -> Annotated[Any, Field(description="Thresholded image")]:
 
     if mask is not None:
         # Apply mask and preserve image shape
@@ -329,12 +338,13 @@ def get_adaptive_threshold(
                 **kwargs,
             )
         return thresh_out
-
+    conversion_dict = None
     if log_transform:
         image, conversion_dict = centrosome.threshold.log_transform(image)
     bin_wanted = 0 if assign_middle_to_foreground.casefold() == Threshold.Assignment.FOREGROUND else 1
 
     thresh_out = None
+    threshold_fn = lambda x: None
 
     if len(image) == 0 or numpy.all(image == numpy.nan):
         thresh_out = numpy.zeros_like(image)
@@ -373,7 +383,7 @@ def get_adaptive_threshold(
         raise NotImplementedError(f"Threshold method {threshold_method} not supported.")
 
     if thresh_out is None:
-        thresh_out = apply_threshold_function(
+        thresh_out = __apply_threshold_function(
             image,
             window_size,
             threshold_method,
@@ -414,17 +424,17 @@ def get_adaptive_threshold(
 
 
 def get_global_threshold(
-    image,
-    mask=None,
-    threshold_method=Threshold.Method.OTSU,
-    threshold_min=0,
-    threshold_max=1,
-    threshold_correction_factor=1,
-    assign_middle_to_foreground=Threshold.Assignment.FOREGROUND,
-    log_transform=False,
-    **kwargs,
-):
-
+    image:                       Annotated[Any, Field(description="Image to threshold")],
+    mask:                        Annotated[Optional[Any], Field(description="Mask to apply to the image")] = None,
+    threshold_method:            Annotated[Threshold.Method, Field(description="Thresholding method"), BeforeValidator(str.casefold)] = Threshold.Method.OTSU,
+    threshold_min:               Annotated[float, Field(description="Minimum threshold")] = 0,
+    threshold_max:               Annotated[float, Field(description="Maximum threshold")] = 1,
+    threshold_correction_factor: Annotated[float, Field(description="Threshold correction factor")] = 1,
+    assign_middle_to_foreground: Annotated[Threshold.Assignment, Field(description="Assign middle to foreground"), BeforeValidator(str.casefold)] = Threshold.Assignment.FOREGROUND,
+    log_transform:               Annotated[bool, Field(description="Log transform")] = False,
+    **kwargs:                    Annotated[Any, Field(description="Additional keyword arguments")],
+) -> Annotated[float, Field(description="Threshold")]:
+    conversion_dict = None
     if log_transform:
         image, conversion_dict = centrosome.threshold.log_transform(image)
 
@@ -464,7 +474,12 @@ def get_global_threshold(
     return threshold
 
 
-def apply_threshold(image, threshold, mask=None, smoothing=0):
+def apply_threshold(
+        image: Annotated[Any, Field(description="Image to threshold")],
+        threshold: Annotated[float, Field(description="Threshold value")],
+        mask: Annotated[Optional[Any], Field(description="Mask to apply to the image")] = None,
+        smoothing: Annotated[float, Field(description="Smoothing factor")] = 0,
+        ) -> Tuple[Annotated[Any, Field(description="Binary image")], Annotated[float, Field(description="Sigma value")]]:
     if mask is None:
         # Create a fake mask if one isn't provided
         mask = numpy.full(image.shape, True)

@@ -43,6 +43,7 @@ from cellprofiler_core.setting.subscriber import ImageSubscriber
 from cellprofiler_core.setting.text import Float
 from cellprofiler_core.setting.text import ImageName
 from cellprofiler_core.setting.text import Integer
+from cellprofiler_library.modules._colortogray import combine_colortogray
 
 COMBINE = "Combine"
 SPLIT = "Split"
@@ -556,15 +557,9 @@ Select the name of the output grayscale image.""",
         """
         input_image = image.pixel_data
         channels, contributions = list(zip(*self.channels_and_contributions()))
-        denominator = sum(contributions)
-        channels = numpy.array(channels, int)
-        contributions = numpy.array(contributions) / denominator
 
-        output_image = numpy.sum(
-            input_image[:, :, channels]
-            * contributions[numpy.newaxis, numpy.newaxis, :],
-            2,
-        )
+        output_image = combine_colortogray(input_image, channels, contributions)
+
         image = Image(output_image, parent_image=image)
         workspace.image_set.add(self.grayscale_name.value, image)
 

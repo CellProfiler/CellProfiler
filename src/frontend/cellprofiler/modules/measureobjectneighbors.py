@@ -788,6 +788,7 @@ previously discarded objects.""".format(
                 0,
                 workspace.display_data.neighbor_labels,
                 "Neighbors: %s" % self.neighbors_name.value,
+                sharexy=figure.subplot(0, 0),
             )
         if numpy.any(object_mask):
             figure.subplot_imshow(

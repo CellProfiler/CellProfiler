@@ -1,4 +1,3 @@
-import abc
 import logging
 import sys
 import uuid
@@ -122,10 +121,6 @@ class Module:
         self.set_settings_from_values(
             setting_values, attributes['variable_revision_number'], self.module_path
         )
-
-    @abc.abstractmethod
-    def update_settings(self, setting: list):
-        pass
 
     def __setattr__(self, slot, value):
         if hasattr(self, slot) and isinstance(getattr(self, slot), Setting):

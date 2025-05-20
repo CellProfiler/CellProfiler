@@ -15,7 +15,11 @@
   scipy,
   packaging,
   cp_version,
+  python3Packages,
 }:
+let
+  helper = import ./version_patch.nix { inherit lib python3Packages; };
+in
 buildPythonPackage rec {
   pname = "cellprofiler_library";
   version = cp_version;
@@ -25,24 +29,20 @@ buildPythonPackage rec {
 
   postPatch = ''
     substituteInPlace pyproject.toml \
-      --replace-warn "numpy~=1.24.4" "numpy<=1.26.4" \
-      --replace-warn "scikit-image~=0.20.0" "scikit-image>=0.17.2,<=0.22.0" \
-      --replace-warn "scipy>=1.9.1,<1.11" "scipy>=1.9.1,<=1.13"
+      ${(helper.patchPackageVersions ../src/subpackages/library/pyproject.toml).subStr}
     echo 'fallback_version = "${version}"' >> pyproject.toml
   '';
 
   buildInputs = [
     pytest
-    (
-      setuptools-scm.overrideAttrs rec {
-        version = "8.1.0";
-        src = fetchPypi {
-          pname = "setuptools_scm";
-          inherit version;
-          hash = "sha256-Qt6htldxy6k7elFdZaZdgkblYHaKZrkQalksjn8myKc=";
-        };
-      }
-    )
+    (setuptools-scm.overrideAttrs rec {
+      version = "8.1.0";
+      src = fetchPypi {
+        pname = "setuptools_scm";
+        inherit version;
+        hash = "sha256-Qt6htldxy6k7elFdZaZdgkblYHaKZrkQalksjn8myKc=";
+      };
+    })
   ];
 
   propagatedBuildInputs = [
@@ -55,7 +55,7 @@ buildPythonPackage rec {
     packaging
   ];
 
-  pythonImportsCheck = ["cellprofiler_library"];
+  pythonImportsCheck = [ "cellprofiler_library" ];
 
   meta = {
     description = "Cellprofiler library";

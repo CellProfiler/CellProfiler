@@ -411,7 +411,11 @@ This may be useful if you want to make use of the negative (filtered out) popula
             doc="""\
 Click this button to add an object to receive the same post-filtering labels as
 the filtered object. This is useful in making sure that labeling is maintained
-between related objects (e.g., primary and secondary objects) after filtering.""",
+between related objects (e.g., primary and secondary objects) after filtering. 
+
+**Note:** To ensure correct parent-child relationships, you must use the 
+**RelateObjects** module prior to using this setting. Otherwise, the output 
+could have unexpected parent-child relations.""",
         )
 
         self.rules.create_settings()
